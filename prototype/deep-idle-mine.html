@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Idle Mine</title>
+<style>
+:root{--bg:#14110f;--panel:#1f1a17;--line:#3a312b;--txt:#eadfd3;--mut:#9a8b7d;--acc:#ffb84d;--ok:#6fcf7f;--bad:#e5534b;--o2:#5bc0eb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:16px;margin:0;color:var(--acc)}
+.timer{font-variant-numeric:tabular-nums;font-size:18px;font-weight:600}
+.bar{height:10px;background:#2c2520;border-radius:5px;overflow:hidden;position:relative}
+.bar>i{display:block;height:100%;width:0;background:var(--acc);transition:width .1s}
+.grow{flex:1;min-width:120px}
+button,select,input{font:inherit;color:var(--txt);background:#2c2520;border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#1a1208;border-color:var(--acc);font-weight:600}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;padding:12px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+#cv{width:100%;height:auto;display:block;background:#000;border:1px solid var(--line);border-radius:8px;image-rendering:pixelated}
+aside{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.row{display:flex;justify-content:space-between;gap:8px;margin:3px 0}
+.mut{color:var(--mut)}
+.comp{display:flex;align-items:center;gap:6px;margin:3px 0;font-size:12px}
+.comp .n{width:62px}.comp .b{flex:1}.comp .v{width:92px;text-align:right;color:var(--mut)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+#log{font-size:12px;max-height:190px;overflow:auto;color:var(--mut)}
+#log div{padding:1px 0;border-bottom:1px dashed #2b241f}
+#log b{color:var(--txt);font-weight:500}
+details summary{cursor:pointer;color:var(--mut)}
+.dev{display:grid;grid-template-columns:1fr 78px;gap:4px 8px;margin-top:8px;align-items:center;font-size:12px}
+.dev input{width:78px;padding:2px 6px}
+#end{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:9}
+#end .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:22px 26px;max-width:420px;width:92%}
+#end h3{margin:0 0 10px;color:var(--acc)}
+.pill{display:inline-block;background:#2c2520;border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin:2px 3px 2px 0;font-size:12px}
+.st{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>⛏ Deep Idle Mine</h1>
+  <div class="timer" id="timer">00:00 / 60:00</div>
+  <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
+  <div id="speedBtns"></div>
+  <button id="pauseBtn">⏸ Pause</button>
+  <button id="newBtn">↻ Nouvelle session</button>
+  <span class="mut">Seed <input id="seedIn" type="text" inputmode="numeric" style="width:110px" title="Seed de la session en cours. Modifie-la puis clique sur Rejouer pour relancer exactement la même partie."></span>
+  <button id="seedBtn" title="Relance une session avec cette seed">▶ Rejouer</button>
+</header>
+<main>
+  <canvas id="cv"></canvas>
+  <aside>
+    <div class="card" id="areaCard"><h2>Area</h2><div id="areaBody"></div></div>
+    <div class="card">
+      <h2>Mineur</h2>
+      <div class="row"><span>État</span><span class="st" id="mStatus">—</span></div>
+      <div class="row"><span>Profondeur</span><span id="mDepth">0</span></div>
+      <div class="row"><span>Oxygène</span><span id="mO2">0</span></div>
+      <div class="bar"><i id="o2Bar" style="background:var(--o2)"></i></div>
+      <div class="row" style="margin-top:8px"><span>Pods</span><span id="mPods">0</span></div>
+      <div class="bar"><i id="podBar" style="background:var(--ok)"></i></div>
+      <div class="row" style="margin-top:8px"><span>Torches</span><span id="mTorch">0</span></div>
+      <div class="row"><span>Sur lui</span><span id="mInv" class="mut">—</span></div>
+    </div>
+    <div class="card">
+      <h2>Coffre (session) → Inventaire global</h2>
+      <div id="chestBox" class="mut">vide</div>
+      <div class="row" style="margin-top:8px"><span>Inventaire global</span></div>
+      <div id="globalBox" class="mut">vide</div>
+    </div>
+    <div class="card"><h2>Journal</h2><div id="log"></div></div>
+    <div class="card">
+      <details>
+        <summary>Dev : stats &amp; préférences</summary>
+        <div class="dev" id="dev"></div>
+        <div class="dev">
+          <span>Priorité de l'IA</span>
+          <select id="prefPrio" style="width:78px"><option value="minerais">minerais</option><option value="descendre">descendre</option></select>
+          <span>Combat les mobs</span>
+          <select id="prefFight" style="width:78px"><option value="1">oui</option><option value="0">non</option></select>
+        </div>
+      </details>
+    </div>
+  </aside>
+</main>
+<div id="end"><div class="box" id="endBox"></div></div>
+
+<script>
+'use strict';
+/* ============================ CONFIG ============================ */
+const W = 50, AREA_H = 25, SESSION_LEN = 3600, DT = 0.1;
+/* couche 1 (juste sous la surface) : toujours en terre, hors areas (ne fausse pas les pourcentages).
+   L'area 0 occupe donc les couches 2 à 26, l'area 1 les couches 27 à 51, etc. */
+const TOP_DIRT_ROWS = 1, AREA_Y0 = 1 + TOP_DIRT_ROWS;
+const SPAWN_X = 25, CHEST_X = 22;
+const STATS = { oxygenMax:300, speed:3, mineSpeed:1, damage:5, pods:200, light:6, compass:8, torches:20, torchRadius:5, discoverMax:2, bridges:10 };
+const CFG   = { ladderTime:2, refillRate:30, unlockRatio:0.4, climbFactor:0.75, oreReach:12, bridgeTime:1, futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9, attackInterval:0.8, returnMargin:12, torchThreshold:0.33, darkLum:0.1, fallSpeed:8 };
+const PREFS = { priority:'minerais', fightMobs:true };
+
+const BLOCKS = {
+  1:{name:'Terre',   tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240'},
+  2:{name:'Pierre',  tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3'},
+  3:{name:'Charbon', tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', ore:true, val:1},
+  4:{name:'Fer',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', ore:true, val:2},
+  5:{name:'Or',      tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', ore:true, val:4},
+  6:{name:'Diamant', tex:'diamond', w:5, hard:5.0, color:'#7d828c', dot:'#4de8f0', ore:true, val:8},
+  /* bloc spécial : délimite deux areas tant que la suivante est verrouillée ; infranchissable et incassable */
+  7:{name:'Barrière', tex:'barrier', w:0, hard:Infinity, color:'#34344a', dot:'#4a4a66', unbreakable:true},
+  /* passerelle : posée par le mineur pour combler un trou ; cassable, ne rapporte rien */
+  8:{name:'Passerelle', tex:'bridge', w:0, hard:0.4, color:'#9a6b36', dot:'#5c3a1a', noDrop:true}
+};
+const BARRIER = 7, BRIDGE = 8;
+/* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
+const TEXTURES = ['dirt','grass','stone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','ladder','chest','miner','mimic','bug','torch'];
+const IDS = {dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6};
+/* composition en % par area (la dernière est répétée au-delà) */
+const AREAS = [
+  {dirt:57, stone:33, coal:10},
+  {dirt:30, stone:45, coal:15, iron:10},
+  {dirt:10, stone:55, coal:12, iron:15, gold:8},
+  {stone:60, coal:8, iron:15, gold:10, diamond:7}
+];
+const areaComp = k => AREAS[Math.min(k, AREAS.length-1)];
+const areaOf = y => y < AREA_Y0 ? -1 : Math.floor((y-AREA_Y0)/AREA_H);
+const areaTop = k => AREA_Y0 + k*AREA_H;   // première couche de l'area k
+
+/* ============================ UTILS ============================ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(a,b){let h=Math.imul(a^0x85ebca6b,0xcc9e2d51)^Math.imul(b+0x1b873593,0x85ebca6b);h^=h>>>13;h=Math.imul(h,0xc2b2ae35);return(h^h>>>16)>>>0}
+function shuffle(a,r){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+const $ = id => document.getElementById(id);
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+
+/* ============================ ÉTAT ============================ */
+let G;
+let GLOBAL = {};
+try { GLOBAL = JSON.parse(localStorage.getItem('deepIdleMine.global')||'{}'); } catch(e){}
+
+function log(msg){ G.log.unshift({t:G.t,msg}); if(G.log.length>40) G.log.pop(); }
+
+function newSession(seed){
+  seed = seed ?? (Math.random()*2**31)|0;
+  G = {
+    seed, t:0, over:false, rng:mulberry32(seed^0x51ed270b),
+    tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
+    areas:[], unlockedAreas:0, mobs:[], chest:{}, mobId:1, log:[], pings:[], torches:[], light:new Map(),
+    spawnTimer:25, lastArea:-1,
+    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0},
+    miner:{x:SPAWN_X, y:0, ox:STATS.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
+           action:null, exploring:false, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(), torches:STATS.torches, bridges:STATS.bridges,
+           dir:0, face:1, reason:''}
+  };
+  for(let y=1;y<=TOP_DIRT_ROWS;y++){   // couche(s) de terre sous la surface, visibles dès le départ
+    G.tiles.push(new Uint8Array(W).fill(IDS.dirt)); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));
+  }
+  genArea(0); G.unlockedAreas = 1;
+  log('Session démarrée (seed '+seed+')');
+  $('end').style.display='none';
+  $('seedIn').value=seed;
+}
+
+/* ============================ GÉNÉRATION ============================ */
+function genArea(k){
+  const r = mulberry32(hash(G.seed, k+1));
+  const comp = areaComp(k), N = W*AREA_H;
+  const counts = {}; let sum = 0;
+  for(const n in comp){ counts[n]=Math.round(comp[n]*N/100); sum+=counts[n]; }
+  const big = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  counts[big] += N - sum;
+  const grid = new Uint8Array(N);
+  let oreTotal = 0; const oreCells = [];
+  for(const n in counts){
+    const id = IDS[n]; if(!BLOCKS[id].ore) continue;
+    oreTotal += counts[n]; let rem = counts[n];
+    while(rem>0){
+      let c; do{ c=Math.floor(r()*N); }while(grid[c]);
+      const size = Math.min(rem, 1+Math.floor(r()*4));
+      const cells=[c]; grid[c]=id; let g=0;
+      while(cells.length<size && g++<30){
+        const b=cells[Math.floor(r()*cells.length)], bx=b%W, by=(b/W)|0, d=DIRS[Math.floor(r()*4)];
+        const nx=bx+d[0], ny=by+d[1];
+        if(nx<0||nx>=W||ny<0||ny>=AREA_H) continue;
+        const ni=ny*W+nx; if(grid[ni]) continue;
+        grid[ni]=id; cells.push(ni);
+      }
+      cells.forEach(ci=>oreCells.push(ci));
+      rem -= cells.length;
+    }
+  }
+  const filler=[];
+  for(const n in counts) if(!BLOCKS[IDS[n]].ore) for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
+  shuffle(filler, r); let fi=0;
+  for(let i=0;i<N;i++) if(!grid[i]) grid[i]=filler[fi++];
+  for(let ry=0; ry<AREA_H; ry++){
+    G.tiles.push(grid.slice(ry*W,(ry+1)*W));
+    G.ladder.push(new Uint8Array(W));
+    G.seen.push(new Uint8Array(W));
+  }
+  // mimics : de faux minerais
+  shuffle(oreCells, r);
+  const nMim = Math.min(2+k, oreCells.length);
+  for(let i=0;i<nMim;i++){
+    const c=oreCells[i], x=c%W, ry=(c/W)|0, y=areaTop(k)+ry;
+    const hp=25+10*k;
+    G.mobs.push({id:G.mobId++, type:'mimic', x, y, hp, maxhp:hp, revealed:false, ore:grid[c]});
+  }
+  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0};
+}
+function tryUnlock(){
+  const k = G.unlockedAreas-1, a = G.areas[k];
+  if(a.oreMined >= Math.ceil(CFG.unlockRatio*a.oreTotal)){
+    genArea(G.unlockedAreas); G.unlockedAreas++; G.miner.exploring=false; G.miner.skipRows.clear();
+    log('🔓 Area '+(k+1)+' débloquée !');
+  }
+}
+
+/* ============================ MONDE ============================ */
+const maxRow = () => G.tiles.length-1;
+/* sous la dernière area débloquée, tout est barrière (l'IA l'ignore comme case non franchissable) */
+const tileAt = (x,y) => y>maxRow() ? BARRIER : G.tiles[y][x];
+const isAir = (x,y) => y>=0 && y<G.tiles.length && x>=0 && x<W && G.tiles[y][x]===0;
+/* gravité : sol sous la case (x,y) ? Non s'il y a du vide dessous sans échelle (ni sur la case, ni juste dessous) */
+const supported = (x,y) => !(y+1<=maxRow() && isAir(x,y+1) && !G.ladder[y+1][x] && !(y>0 && G.ladder[y][x]));
+function landing(x,y){ let n=0; while(!supported(x,y)){ y++; n++; } return {y,n}; }
+
+/* Itinéraire de retour au coffre : Dijkstra sur le TEMPS (pas le nombre de cases).
+   Arêtes : marcher dans le vide (+ chute éventuelle), monter (échelle existante = climbT ;
+   sinon poser une échelle = ladderTime + climbT ; bloc au-dessus = on le mine d'abord), descendre.
+   L'échelle étant plus lente que la marche, l'IA préfère un détour horizontal vers une échelle existante
+   à l'idée de remonter « à tout prix » en posant des échelles. Renvoie {cost, dx, dy} (premier pas) ou null. */
+function search(sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlanWeight){
+  const H=G.tiles.length, N=H*W, dist=new Float64Array(N).fill(Infinity), par=new Int32Array(N).fill(-1), typ=new Uint8Array(N);
+  const heap=[];
+  const push=(d,n)=>{ heap.push([d,n]); let i=heap.length-1; while(i>0){ const p=(i-1)>>1; if(heap[p][0]<=heap[i][0]) break; [heap[p],heap[i]]=[heap[i],heap[p]]; i=p; } };
+  const pop=()=>{ const top=heap[0], last=heap.pop(); if(heap.length){ heap[0]=last; let i=0; for(;;){ let l=2*i+1, r=l+1, s=i; if(l<heap.length&&heap[l][0]<heap[s][0]) s=l; if(r<heap.length&&heap[r][0]<heap[s][0]) s=r; if(s===i) break; [heap[s],heap[i]]=[heap[i],heap[s]]; i=s; } } return top; };
+  const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x, nd=d+c; if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
+  /* durées de BASE (sans malus d'obscurité) : le plan ne doit pas dépendre de la lumière de la case où se trouve
+     le mineur, sinon le meilleur chemin change d'une case à l'autre et il fait des va-et-vient. */
+  const moveT=baseMoveT, climbT=baseClimbT, mineT=baseMineT;
+  const start=sy*W+sx; dist[start]=0; push(0,start);
+  while(heap.length){
+    const [d,n]=pop(); if(d>dist[n]) continue;
+    if(d>maxCost) break;
+    const x=n%W, y=(n/W)|0;
+    if(goalFn && goalFn(x,y)) return {n,dist,par,typ,start,sx,sy};
+    for(const dx of [-1,1]){                       // marcher (et tomber si pas de sol)
+      const nx=x+dx; if(nx<0||nx>=W) continue;
+      if(!isAir(nx,y)){                           // galerie : miner horizontalement (build uniquement)
+        const t=tileAt(nx,y);
+        if(build && t && t!==BARRIER && !BLOCKS[t].unbreakable){
+          const l=landing(nx,y); relax(n,d,nx,l.y,mineT(t)+moveT()+l.n/CFG.fallSpeed);
+        }
+        continue;
+      }
+      const l=landing(nx,y); relax(n,d,nx,l.y,moveT()+l.n/CFG.fallSpeed);
+      if(l.n>0 && G.miner.bridges>0) relax(n,d,nx,y,moveT()+CFG.bridgeTime,1);   // combler le trou (typ 1 = passerelle)
+    }
+    if(y>=1){                                       // monter (build=false : uniquement par les échelles existantes)
+      const t=tileAt(x,y-1), has=y>0&&G.ladder[y][x], lad=has ? 0 : CFG.ladderTime*lw;
+      if(t===0){ if(build||has) relax(n,d,x,y-1,lad+climbT()); }
+      else if(build && t!==BARRIER && !BLOCKS[t].unbreakable) relax(n,d,x,y-1,mineT(t)+lad+climbT());
+    }
+    /* Chaque nœud doit être une case où le mineur TIENT (sol, échelle sur sa case ou juste dessous) :
+       il ne peut rien faire dans le vide. Toute arrivée sur une case sans appui continue donc en chute (landing). */
+    if(isAir(x,y+1)){                               // descendre (par l'échelle, ou se laisser tomber)
+      const l=landing(x,y+1);
+      relax(n,d,x,l.y,((G.ladder[y][x]||G.ladder[y+1][x]) ? climbT() : 1/CFG.fallSpeed)+l.n/CFG.fallSpeed);
+    } else if(build){                               // creuser vers le bas : miner + chute ; l'échelle ne se pose qu'au retour,
+      const t=tileAt(x,y+1);                        // on compte donc d'avance ce « voyage futur » (pose + montée)
+      if(t!==BARRIER && !BLOCKS[t].unbreakable){
+        const l=landing(x,y+1);
+        relax(n,d,x,l.y,mineT(t)+(1+l.n)/CFG.fallSpeed+CFG.futureTravelWeight*(CFG.ladderTime*lw+climbT()));
+      }
+    }
+  }
+  return goalFn ? null : {dist,par,typ,start,sx,sy};
+}
+/* premier pas pour atteindre le nœud n d'une recherche */
+function firstStep(r,n){
+  if(n===r.start) return {dx:0,dy:0};
+  let c=n; while(r.par[c]!==r.start){ c=r.par[c]; if(c<0) return null; }
+  const cx=c%W, cy=(c/W)|0;
+  return cx!==r.sx ? {dx:Math.sign(cx-r.sx),dy:0,bridge:r.typ[c]===1} : {dx:0,dy:Math.sign(cy-r.sy)};
+}
+function planReturn(sx,sy){
+  const r=search(sx,sy,true,(x,y)=>y===0&&x===CHEST_X,Infinity,1); if(!r) return null;   // temps réel (poids 1)
+  const s=firstStep(r,r.n); return s && {cost:r.dist[r.n],...s};
+}
+/* Descendre en réutilisant l'existant : si une échelle/galerie déjà posée mène bien plus bas, y aller coûte moins
+   cher que creuser un nouveau puits (mine + échelle à chaque case). Renvoie le premier pas, ou null → creuser du neuf. */
+function planDown(sx,sy){
+  const r=search(sx,sy,false,null); let best=-1;
+  for(let n=0;n<r.dist.length;n++){
+    if(r.dist[n]===Infinity) continue;
+    if(best<0 || (n/W|0)>(best/W|0) || ((n/W|0)===(best/W|0) && r.dist[n]<r.dist[best])) best=n;
+  }
+  const gain=(best/W|0)-sy;
+  // nouveau puits : mine ~1 s + chute par case + échelle à poser au retour ; existant : trajet aller + retour
+  const fresh=gain*(1+1/CFG.fallSpeed+CFG.futureTravelWeight*(CFG.ladderTime*CFG.ladderPlanWeight+baseClimbT()));
+  if(gain<3 || r.dist[best]*(1+CFG.futureTravelWeight) >= fresh) return null;
+  return firstStep(r,best);
+}
+
+/* ============================ STATS DÉRIVÉES ============================ */
+/* Luminosité 0..1 à la position du mineur : 1 en surface (jour), sinon donnée par les torches posées */
+const lumAt  = (x,y) => y===0 ? 1 : (G.light.get(y*W+x)||0);
+const curLum = () => lumAt(G.miner.x, G.miner.y);
+const lit = () => curLum() >= CFG.darkLum;
+const dk = () => lit() ? 1 : 0.65;
+const moveT  = () => 1/(STATS.speed*dk());
+const climbT = () => 1/(STATS.speed*dk()*CFG.climbFactor);
+const mineT  = t => BLOCKS[t].hard/(STATS.mineSpeed*dk());
+const baseMoveT  = () => 1/STATS.speed;
+const baseClimbT = () => 1/(STATS.speed*CFG.climbFactor);
+const baseMineT  = t => BLOCKS[t].hard/STATS.mineSpeed;
+const lightR = () => 2.2+(STATS.light-2.2)*curLum();
+const compassR = () => Math.floor(STATS.compass*(lit() ? 1 : 0.5));
+/* Lumière des torches : se propage de proche en proche dans les cases creusées (air), jamais à travers les murs.
+   Torches infinies. Intensité = 1 - distance/(rayon+1). Recalculée à la pose d'une torche et quand un bloc est détruit. */
+function updateLight(){
+  const map=new Map(), R=STATS.torchRadius;
+  for(const T of G.torches){
+    const f=1, dist=new Map([[T.y*W+T.x,0]]), q=[[T.x,T.y]];
+    for(let qi=0;qi<q.length;qi++){
+      const [x,y]=q[qi], k=y*W+x, d=dist.get(k), v=f*(1-d/(R+1));
+      if(v>(map.get(k)||0)) map.set(k,v);
+      if(d>=R) continue;
+      for(const [dx,dy] of DIRS){
+        const nx=x+dx, ny=y+dy; if(ny<1||!isAir(nx,ny)) continue;
+        const nk=ny*W+nx; if(dist.has(nk)) continue;
+        dist.set(nk,d+1); q.push([nx,ny]);
+      }
+    }
+  }
+  G.light=map;
+}
+
+/* ============================ ACTIONS ============================ */
+function startAction(type,dur,data){ G.miner.action={type,dur:Math.max(0.05,dur),t:0,data:data||{}}; }
+function collect(name,w,n){
+  const m=G.miner; m.inv[name]=(m.inv[name]||0)+n; m.load+=w*n;
+}
+function mineBlock(x,y){
+  const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
+  if(mim){ if(!mim.revealed){ mim.revealed=true; log('⚠ Un mimic se cachait dans la roche !'); } return; }
+  const t=G.tiles[y][x]; if(!t) return;
+  G.tiles[y][x]=0; G.stats.mined++; updateLight();
+  if(!BLOCKS[t].noDrop) collect(BLOCKS[t].name, BLOCKS[t].w, 1);
+  if(BLOCKS[t].ore){ const a=G.areas[areaOf(y)]; a.oreMined++; tryUnlock(); }
+}
+function killMob(o){
+  o.hp=0; G.stats.kills++;
+  if(o.type==='mimic'){
+    G.tiles[o.y][o.x]=0; updateLight(); const b=BLOCKS[o.ore];
+    collect(b.name,b.w,3); G.areas[areaOf(o.y)].oreMined++; tryUnlock();
+    log('🗡 Mimic vaincu (+3 '+b.name+')');
+  } else {
+    const n=1+Math.floor(G.rng()*2); collect('Chitine',1,n);
+    log('🗡 Bestiole vaincue (+'+n+' chitine)');
+  }
+  G.mobs = G.mobs.filter(x=>x.hp>0);
+}
+function finishAction(a){
+  const m=G.miner;
+  switch(a.type){
+    case 'move':
+      m.face = Math.sign(a.data.x-m.x)||m.face;
+      m.x=a.data.x; m.y=a.data.y;
+      if(m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;
+      { const ai=areaOf(m.y); if(ai>=0 && ai!==G.lastArea){ G.lastArea=ai; log('⬇ Entrée dans l\'area '+ai); } }
+      break;
+    case 'mine': mineBlock(a.data.x,a.data.y); break;
+    case 'ladder': G.ladder[m.y][m.x]=1; break;
+    case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(); break;
+    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y}); updateLight(); break;
+    case 'deposit': {
+      const parts=[];
+      for(const k in m.inv){ G.chest[k]=(G.chest[k]||0)+m.inv[k]; parts.push(m.inv[k]+' '+k); }
+      log('📦 Dépôt : '+parts.join(', ')); G.stats.trips++;
+      m.inv={}; m.load=0; break; }
+    case 'attack': {
+      const o=a.data.mob; if(o.hp>0){ o.hp-=STATS.damage; m.foeHit=G.t; if(o.hp<=0) killMob(o); } break; }
+  }
+}
+
+/* ============================ DÉPLACEMENT ============================ */
+function stepDir(dx,dy,opt){
+  const m=G.miner, nx=m.x+dx, ny=m.y+dy;
+  if(nx<0||nx>=W||ny<0) return false;
+  // trou à traverser horizontalement : une passerelle (1 s) vaut mieux que tomber puis poser des échelles (2 s chacune)
+  // règle : on ne pose une passerelle que s'il tient lui-même (sol ou échelle), jamais dans le vide
+  if(dy===0 && m.bridges>0 && !(opt&&opt.noBridge) && supported(m.x,m.y) && isAir(nx,ny) && !supported(nx,ny)){
+    startAction('bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true;
+  }
+  if(!isAir(nx,ny)){
+    const t=tileAt(nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
+    startAction('mine', mineT(t), {x:nx,y:ny}); return true;
+  }
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x]){ startAction('ladder', CFG.ladderTime, {}); return true; }
+  startAction('move', dy? climbT() : moveT(), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y});
+  return true;
+}
+function idle(t){ if(!G.miner.action) startAction('wait', t||0.5, {}); }
+
+/* ============================ IA ============================ */
+function compassScan(R){
+  const m=G.miner, out=[];
+  const y=m.y;  // la boussole ne renseigne que la hauteur du mineur
+  if(y>=1 && y<=maxRow()){
+    for(let x=Math.max(0,m.x-R); x<=Math.min(W-1,m.x+R); x++){
+      const t=G.tiles[y][x];
+      if(t && BLOCKS[t].ore) out.push({x,y,t,seen:G.seen[y][x]===1});
+    }
+  }
+  G.pings=out; return out;
+}
+const rowDone = y => { for(let x=0;x<W;x++) if(!isAir(x,y)) return false; return true; };
+
+function explore(){
+  const m=G.miner, k=G.unlockedAreas-1, base=areaTop(k)-1;   // couches base+1 … base+AREA_H
+  m.exploring=true;  // évite l'oscillation « descend / change de galerie » ; levé au déblocage de l'area suivante
+  const primary=[], secondary=[];
+  for(let r=1;r<=AREA_H;r++){ const y=base+r; if(rowDone(y)||m.skipRows.has(y)) continue; (r%3===0 && r<=24 ? primary : secondary).push(y); }
+  const pool = primary.length ? primary : secondary;
+  if(!pool.length){ m.status='Plus rien à explorer'; idle(1); return; }
+  const target = pool.reduce((a,b)=>Math.abs(b-m.y)<Math.abs(a-m.y)?b:a);
+  m.status = target===m.y ? 'Creuse une galerie' : 'Change de galerie';
+  /* Objectif : se tenir SUR la ligne de la galerie, à côté d'un bloc à creuser. L'itinéraire (au moindre temps)
+     ne passe que par des cases où le mineur tient : il ne s'avance plus au-dessus d'un trou pour retomber
+     (c'était une boucle « avance, tombe, remonte » quand il n'avait plus de passerelle). */
+  const solidAt=(x,y)=> x>=0 && x<W && !isAir(x,y) && tileAt(x,y)!==BARRIER;
+  const r=search(m.x,m.y,true,(x,y)=>y===target && (solidAt(x-1,y)||solidAt(x+1,y)),2*CFG.planMaxCost);
+  if(!r){ m.skipRows.add(target); idle(0.2); return; }   // galerie inatteignable : on en prendra une autre
+  if(r.n===r.start){                                     // déjà en place : on creuse, en gardant la direction si possible
+    const L=solidAt(m.x-1,m.y), R=solidAt(m.x+1,m.y);
+    if(!((m.dir===-1&&L)||(m.dir===1&&R))) m.dir = (L&&R) ? (G.rng()<0.5?-1:1) : (L?-1:1);
+    if(!stepDir(m.dir,0)) idle(0.5);
+    return;
+  }
+  const s=firstStep(r,r.n);
+  if(s && (s.dx||s.dy) && stepDir(s.dx,s.dy,{noBridge:!s.bridge})) return;
+  m.skipRows.add(target); idle(0.2);
+}
+/* Va vers un minerai : mine la dernière case s'il est adjacent, sinon suit l'itinéraire au moindre temps
+   jusqu'à la case voisine bn (réutilise échelles/galeries, pose une passerelle si besoin). */
+function goOre(o,r,bn){
+  const m=G.miner, dx=o.x-m.x, dy=o.y-m.y;
+  if(Math.abs(dx)+Math.abs(dy)===1){ if(!stepDir(dx,dy)) idle(0.3); return; }
+  const s=firstStep(r,bn);
+  if(s && (s.dx||s.dy) && stepDir(s.dx,s.dy,{noBridge:!s.bridge})) return;
+  idle(0.3);
+}
+function nearestThreat(){
+  const m=G.miner, R=lightR(); let best=null,bd=1e9;
+  for(const o of G.mobs){
+    if(o.hp<=0 || m.ignored.has(o.id)) continue;
+    const d=Math.hypot(o.x-m.x,o.y-m.y);
+    if(o.type==='mimic'){
+      if(!o.revealed && d<=2.3){ o.revealed=true; log('⚠ Un mimic se dévoile !'); }
+      if(!o.revealed) continue;
+    } else if(d>R) continue;
+    if(d<bd){bd=d;best=o;}
+  }
+  return best;
+}
+function fight(o){
+  const m=G.miner, dx=o.x-m.x, dy=o.y-m.y;
+  m.status='Combat ('+(o.type==='mimic'?'mimic':'bestiole')+')';
+  if(Math.abs(dx)+Math.abs(dy)<=1){ startAction('attack', CFG.attackInterval/dk(), {mob:o}); return; }
+  let ok = dx!==0 ? stepDir(Math.sign(dx),0) : stepDir(0,Math.sign(dy));
+  if(!ok) idle(0.3);
+}
+
+function decideSurface(){
+  const m=G.miner, left=SESSION_LEN-G.t;
+  if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(Math.sign(CHEST_X-m.x),0)) idle(); return; }
+  if(m.load>0){ m.status='Dépose au coffre'; startAction('deposit',1,{}); return; }
+  if(m.ox<STATS.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(0.5); return; }
+  if(left<45){ m.status='Fin de session proche'; idle(1); return; }
+  m.mode='work'; m.dir=0; m.target=null; m.skipRows.clear();   // repart de la surface : pas obligé de retourner à l'ancien front
+  m.exploring=false;
+  decideWork();
+}
+function decideReturn(rp){
+  const m=G.miner;
+  if(m.y===0){ m.mode='surface'; return decideSurface(); }
+  const p = rp || planReturn(m.x,m.y);
+  m.status='Retour ('+m.reason+')';
+  if(p && (p.dx||p.dy) && stepDir(p.dx,p.dy,{noBridge:!p.bridge})) return;
+  if(!stepDir(0,-1)) idle();
+}
+function decideWork(){
+  const m=G.miner, left=SESSION_LEN-G.t;
+  const rp=m.y>0 ? planReturn(m.x,m.y) : null;
+  const tRet = rp ? rp.cost*1.25 : 0;
+  if(m.y>0){
+    let reason=null;
+    if(m.ox<=tRet+CFG.returnMargin) reason='oxygène';
+    else if(m.load>=STATS.pods-2) reason='pods pleins';
+    else if(left<=tRet+12) reason='fin de session';
+    else if(m.torches<=0) reason='plus de torches';
+    if(reason){ m.mode='return'; m.reason=reason; log('↑ Remonte : '+reason); return decideReturn(rp); }
+    if(curLum()<CFG.torchThreshold && m.torches>0){ m.status='Pose une torche'; startAction('torch',1,{}); return; }
+  }
+  const R=compassR(), ores=compassScan(R);
+  let best=null,bs=0;
+  /* l'IA ne vise que les minerais découverts (révélés par le mineur) ou signalés par la boussole (sa ligne) */
+  const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
+  for(let y=1;y<=maxRow();y++) for(let x=0;x<W;x++){
+    const t=G.tiles[y][x];
+    if(t && BLOCKS[t].ore && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
+  }
+  /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
+     galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
+  const r=search(m.x,m.y,true,null,CFG.planMaxCost); let bestN=-1;
+  const nbrBest = o => { let bd=Infinity, bn=-1;
+    for(const [dx,dy] of DIRS){ const nx=o.x+dx, ny=o.y+dy; if(nx<0||nx>=W||ny<1||ny>maxRow()) continue;
+      const n=ny*W+nx; if(r.dist[n]<bd){ bd=r.dist[n]; bn=n; } }
+    return {bd,bn}; };
+  // engagement : on garde la cible tant qu'elle existe et reste atteignable (évite les va-et-vient entre deux choix)
+  const tg=m.target;
+  if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg);
+    if(t && BLOCKS[t].ore && nb.bn>=0){ m.status='Suit un filon ('+BLOCKS[t].name+')'; return goOre(tg,r,nb.bn); }
+    m.target=null; }
+  for(const o of known.values()){
+    const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
+    if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
+    const {bd,bn}=nbrBest(o);
+    if(bn<0) continue;
+    const travel=Math.abs(o.x-m.x)*moveT()+Math.abs(o.y-m.y)*climbT();
+    const s=BLOCKS[o.t].val/(bd+mineT(o.t)+CFG.futureTravelWeight*travel+1);
+    if(s>bs){ bs=s; best=o; bestN=bn; }
+  }
+  // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
+  const down = !m.exploring && tileAt(m.x,m.y+1) !== BARRIER;
+  const range = (PREFS.priority==='minerais'||!down) ? R : 3;
+  if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status='Suit un filon ('+BLOCKS[best.t].name+')'; return goOre(best,r,bestN); }
+  if(down){
+    const pd=planDown(m.x,m.y);
+    if(pd && (pd.dx||pd.dy) && stepDir(pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; return; }
+    m.status='Creuse vers le bas'; if(!stepDir(0,1)) idle(); return;
+  }
+  explore();
+}
+/* gravité : le mineur tombe d'une case s'il y a du vide dessous, sauf s'il est sur une échelle
+   (échelle sur sa case) ou posé au sommet d'une échelle (échelle sur la case du dessous) */
+const mustFall = () => !supported(G.miner.x, G.miner.y);
+/* tacle : une bestiole sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
+const tackler = () => { const m=G.miner; return G.mobs.find(o=>o.type==='bestiole' && o.hp>0 && o.x===m.x && o.y===m.y) || null; };
+function decide(){
+  const m=G.miner;
+  if(mustFall()){ m.status='Tombe'; G.stats.falls++; startAction('move', 1/CFG.fallSpeed, {x:m.x,y:m.y+1,down:true,fall:true,fx:m.x,fy:m.y}); return; }
+  // taclé : il ne peut plus bouger, il doit tuer la bestiole (même si « Combat les mobs » est sur non, même en retour)
+  { const tk=tackler(); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(tk); m.status='Taclé ! (bestiole)'; return; } }
+  if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; }  // tombé dans un trou en rejoignant le coffre
+  if(m.y>0){
+    /* engagement : une fois déclenché, le combat continue même si le mob sort du champ de vision
+       (sinon va-et-vient entre une case éclairée et une case sombre). On lâche s'il s'éloigne trop ;
+       on l'ignore si aucun coup n'a porté depuis foeGiveUp secondes (mob inatteignable). */
+    let th=null;
+    const foe=m.foe && G.mobs.find(o=>o.id===m.foe && o.hp>0);
+    if(foe && G.t-m.foeHit>CFG.foeGiveUp){ m.ignored.add(foe.id); m.foe=null; }
+    else if(foe && Math.hypot(foe.x-m.x,foe.y-m.y)<=CFG.foeLeash) th=foe;
+    else m.foe=null;
+    if(!th) th=nearestThreat();
+    // en retour, il ne se bat que contre un mimic qui lui bloque le passage (sinon il le « mine » à l'infini)
+    const blocking = th && th.type==='mimic' && Math.abs(th.x-m.x)+Math.abs(th.y-m.y)<=1;
+    if(th && ((PREFS.fightMobs && m.mode!=='return') || blocking)){
+      if(m.foe!==th.id){ m.foe=th.id; m.foeHit=G.t; }
+      fight(th); return;
+    }
+  }
+  if(m.mode==='surface') return decideSurface();
+  if(m.mode==='return')  return decideReturn();
+  return decideWork();
+}
+
+/* ============================ MOBS ============================ */
+function updateMobs(){
+  const m=G.miner;
+  /* bestioles : même physique que le mineur. Gravité (même règle d'appui), pas de saut,
+     montée uniquement par une échelle, descente par l'échelle ou en se laissant tomber.
+     Elles ne creusent pas et ne posent rien ; elles ne remontent pas jusqu'à la surface. */
+  for(const o of G.mobs){
+    if(o.type!=='bestiole'||o.hp<=0) continue;
+    if(!supported(o.x,o.y)){                        // chute, à la même vitesse que le mineur
+      o.fall=(o.fall||0)+DT*CFG.fallSpeed;
+      while(o.fall>=1 && !supported(o.x,o.y)){ o.y++; o.fall-=1; }
+      if(supported(o.x,o.y)) o.fall=0;
+      continue;
+    }
+    o.cd=(o.cd||0)-DT;
+    if(o.cd>0) continue;
+    const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y), dist=Math.abs(m.x-o.x)+Math.abs(m.y-o.y);
+    o.cd=CFG.mobStep;
+    if(dist===0||dist>14) continue;   // elle va jusque SUR le mineur pour le tacler
+    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(o.x,o.y-1)){ o.y--; o.cd=CFG.mobStep/CFG.climbFactor; }   // grimpe
+    else if(dy>0 && isAir(o.x,o.y+1)){ o.y++; o.cd=CFG.mobStep/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
+    else if(dx && isAir(o.x+dx,o.y)) o.x+=dx;                                      // marche (et tombera s'il n'y a pas de sol)
+  }
+  G.spawnTimer-=DT;
+  if(G.spawnTimer<=0){
+    const k=G.unlockedAreas-1;
+    G.spawnTimer = (40+G.rng()*30)/(1+0.15*k);
+    const live=G.mobs.filter(o=>o.type==='bestiole'&&o.hp>0).length;
+    if(live<2+k && m.y>0){
+      const cand=[];
+      for(let y=Math.max(1,m.y-10);y<=Math.min(maxRow(),m.y+10);y++)
+        for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=5&&d<=10&&isAir(x,y)&&supported(x,y)) cand.push([x,y]); }   // apparaît posée au sol
+      if(cand.length){
+        const [x,y]=cand[Math.floor(G.rng()*cand.length)], hp=8+4*k;
+        G.mobs.push({id:G.mobId++,type:'bestiole',x,y,hp,maxhp:hp,cd:1});
+      }
+    }
+  }
+}
+
+/* ============================ TICK ============================ */
+function revealAround(){
+  // zone de découverte : discoverMax × luminosité (au moins 1 bloc dès qu'il y a de la lumière), autour du mineur uniquement
+  const m=G.miner, lum=curLum(), R=lum>0 ? Math.max(1,STATS.discoverMax*lum) : 0, r=Math.ceil(R);
+  for(let dy=-r;dy<=r;dy++){ const y=m.y+dy; if(y<1||y>maxRow()) continue;
+    for(let dx=-r;dx<=r;dx++){ const x=m.x+dx; if(x<0||x>=W) continue;
+      if(dx*dx+dy*dy<=R*R) G.seen[y][x]=1; } }
+}
+function tick(){
+  if(G.over) return;
+  const m=G.miner;
+  G.t+=DT;
+  if(m.y===0){
+    m.ox=Math.min(STATS.oxygenMax, m.ox+CFG.refillRate*DT);
+    m.torches=STATS.torches; m.bridges=STATS.bridges;
+  } else {
+    m.ox=Math.max(0,m.ox-DT);
+  }
+  let budget = DT*(m.ox<=0?0.5:1), guard=0;
+  while(budget>1e-9 && guard++<30){
+    if(!m.action){ decide(); if(!m.action) break; }
+    const a=m.action, need=a.dur-a.t;
+    if(budget>=need){
+      budget-=need; m.action=null; finishAction(a);
+    } else { a.t+=budget; budget=0; }
+  }
+  updateMobs();
+  // une bestiole vient de le tacler : l'action en cours est interrompue (sauf une chute, et sauf s'il frappe déjà)
+  if(m.action && m.action.type!=='attack' && !m.action.data.fall && tackler()) m.action=null;
+  revealAround();
+  if(G.t>=SESSION_LEN) endSession();
+}
+
+/* ============================ FIN DE SESSION ============================ */
+function endSession(){
+  G.over=true;
+  const lines=[];
+  for(const k in G.chest){ GLOBAL[k]=(GLOBAL[k]||0)+G.chest[k]; lines.push('<span class="pill">'+G.chest[k]+' '+k+'</span>'); }
+  try{ localStorage.setItem('deepIdleMine.global',JSON.stringify(GLOBAL)); }catch(e){}
+  const lost = Object.keys(G.miner.inv).length ? '<p class="mut">Le mineur portait encore des ressources : perdues.</p>' : '';
+  $('endBox').innerHTML =
+    '<h3>Session terminée</h3>'+
+    '<div class="row"><span>Seed</span><b>'+G.seed+'</b></div>'+
+    '<div class="row"><span>Profondeur max</span><b>'+G.stats.maxDepth+'</b></div>'+
+    '<div class="row"><span>Areas débloquées</span><b>'+(G.unlockedAreas-1)+'</b></div>'+
+    '<div class="row"><span>Blocs minés</span><b>'+G.stats.mined+'</b></div>'+
+    '<div class="row"><span>Mobs vaincus</span><b>'+G.stats.kills+'</b></div>'+
+    '<div class="row"><span>Allers-retours coffre</span><b>'+G.stats.trips+'</b></div>'+
+    '<p>Transféré dans l\'inventaire global :</p><div>'+(lines.join('')||'<span class="mut">rien</span>')+'</div>'+lost+
+    '<p style="text-align:right"><button class="on" onclick="newSession()">Nouvelle session</button></p>';
+  $('end').style.display='flex';
+}
+
+/* ============================ RENDU ============================ */
+const TILE=16, VIEW_ROWS=34, cv=$('cv'), ctx=cv.getContext('2d');
+cv.width=W*TILE; cv.height=VIEW_ROWS*TILE;
+ctx.imageSmoothingEnabled=false;
+let camY=-3;
+const TEX={};
+TEXTURES.forEach(n=>{ const i=new Image(); i.src='../textures/'+n+'.png'; TEX[n]=i; });
+/* dessine une texture ; repli sur une couleur unie tant qu'elle n'est pas chargée */
+function blit(name,px,py,fallback){
+  const i=TEX[name];
+  if(i && i.complete && i.naturalWidth) ctx.drawImage(i,px,py,TILE,TILE);
+  else if(fallback){ ctx.fillStyle=fallback; ctx.fillRect(px,py,TILE,TILE); }
+}
+/* lumière affichée sur une case : max de la case et de ses voisines (un mur éclairé par la galerie voisine) */
+function lightShown(x,y){
+  let l=G.light.get(y*W+x)||0;
+  for(const [dx,dy] of DIRS){ const v=G.light.get((y+dy)*W+x+dx)||0; if(v>l) l=v; }
+  return l;
+}
+function draw(){
+  const m=G.miner;
+  const tgt=Math.max(-3, m.y-VIEW_ROWS/2+2); camY+=(tgt-camY)*0.15;
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+  const y0=Math.floor(camY), offY=-(camY-y0)*TILE, R=lightR(), mr=maxRow();
+  // position interpolée du mineur
+  let mx=m.x, my=m.y; const a=m.action;
+  if(a&&a.type==='move'){ const p=Math.min(1,a.t/a.dur); mx=a.data.fx+(a.data.x-a.data.fx)*p; my=a.data.fy+(a.data.y-a.data.fy)*p; }
+  for(let y=y0;y<=y0+VIEW_ROWS+1;y++){
+    const py=(y-y0)*TILE+offY;
+    for(let x=0;x<W;x++){
+      const px=x*TILE;
+      if(y<=0){ blit('sky',px,py,'#6cc3ee'); continue; }
+      if(y===mr+1){
+        if(G.seen[mr][x]) blit('barrier',px,py,'#34344a');
+        continue;
+      }
+      if(y>mr) continue;
+      if(!G.seen[y][x]){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
+      const t=G.tiles[y][x];
+      if(t===0) blit('tunnel',px,py,'#2a1f18');
+      else{
+        const b=BLOCKS[t];
+        if(t===BRIDGE) blit('tunnel',px,py,'#2a1f18');   // la dalle ne remplit que le haut de la case
+        blit(y===1&&t===1 ? 'grass' : b.tex, px, py, t===BRIDGE ? null : b.color);
+        if(y===1&&t!==1){ ctx.fillStyle='#4caf50'; ctx.fillRect(px,py,TILE,3); }
+      }
+      if(G.ladder[y][x]&&t===0) blit('ladder',px,py);
+      if(y>1){
+        const al = 0.72*(1-Math.min(1,lightShown(x,y)));
+        if(al>0.005){ ctx.fillStyle='rgba(0,0,0,'+al.toFixed(2)+')'; ctx.fillRect(px,py,TILE,TILE); }
+      }
+    }
+  }
+  const sy = y => (y-y0)*TILE+offY;
+  // boussole
+  ctx.strokeStyle='rgba(255,215,64,.9)'; ctx.lineWidth=1;
+  for(const o of G.pings){ if(G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
+  // coffre
+  blit('chest',CHEST_X*TILE,sy(0));
+  // torches posées
+  for(const T of G.torches){
+    const px=T.x*TILE, py=sy(T.y), f=1;
+    const g=ctx.createRadialGradient(px+8,py+8,2,px+8,py+8,TILE*3); g.addColorStop(0,'rgba(255,200,90,'+(0.35*f).toFixed(2)+')'); g.addColorStop(1,'rgba(255,200,90,0)');
+    ctx.fillStyle=g; ctx.fillRect(px-TILE*3,py-TILE*3,TILE*7,TILE*7);
+    blit('torch',px,py);
+  }
+  // mobs
+  for(const o of G.mobs){
+    if(o.hp<=0) continue;
+    const d=Math.hypot(o.x-m.x,o.y-m.y);
+    const px=o.x*TILE, py=sy(o.y);
+    if(o.type==='mimic'){
+      if(!o.revealed) continue;
+      blit(BLOCKS[o.ore].tex,px,py,BLOCKS[o.ore].dot); blit('mimic',px,py);
+    } else {
+      // visible si le mineur la voit, OU si elle est dans une galerie éclairée par une torche
+      // (affichage seulement : la détection par l'IA reste le champ de vision du mineur)
+      if(d>R+0.5 && lightShown(o.x,o.y)<CFG.darkLum) continue;
+      blit('bug',px,py,'#d14b4b');
+    }
+    if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
+  }
+  // mineur
+  { const px=mx*TILE, py=sy(my);
+    ctx.save();
+    if(m.face<0){ ctx.translate(px+TILE,0); ctx.scale(-1,1); blit('miner',0,py); } else blit('miner',px,py);
+    ctx.restore();
+    if(a&&(a.type==='mine'||a.type==='attack')){
+      const sw=Math.sin(a.t*18)*0.8; ctx.strokeStyle='#cfd3d8'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(px+8,py+9); ctx.lineTo(px+8+m.face*(8+sw*3), py+9+sw*5); ctx.stroke();
+    }
+  }
+}
+
+/* ============================ HUD ============================ */
+function chips(obj){ const k=Object.keys(obj); return k.length? k.map(n=>'<span class="pill">'+obj[n]+' '+n+'</span>').join('') : '<span class="mut">vide</span>'; }
+function updateHUD(){
+  const m=G.miner;
+  $('timer').textContent=fmt(G.t)+' / '+fmt(SESSION_LEN);
+  $('timeBar').style.width=(G.t/SESSION_LEN*100)+'%';
+  $('mStatus').textContent=m.status;
+  $('mDepth').textContent=m.y+' blocs'+(areaOf(m.y)>=0?' (area '+areaOf(m.y)+')':' (surface)');
+  $('mO2').textContent=Math.round(m.ox)+' / '+STATS.oxygenMax;
+  $('o2Bar').style.width=(m.ox/STATS.oxygenMax*100)+'%';
+  $('mPods').textContent=Math.round(m.load)+' / '+STATS.pods;
+  $('podBar').style.width=Math.min(100,m.load/STATS.pods*100)+'%';
+  $('podBar').style.background=m.load>=STATS.pods*0.9?'var(--bad)':'var(--ok)';
+  $('mTorch').textContent=m.torches+' en réserve · luminosité '+Math.round(curLum()*100)+'% · '+m.bridges+' passerelles';
+  $('mInv').innerHTML=chips(m.inv);
+  $('chestBox').innerHTML=chips(G.chest);
+  $('globalBox').innerHTML=chips(GLOBAL);
+  $('log').innerHTML=G.log.slice(0,14).map(l=>'<div><b>['+fmt(l.t)+']</b> '+l.msg+'</div>').join('');
+  // panel d'area
+  const ai=areaOf(m.y), box=$('areaBody');
+  if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
+  const a=G.areas[ai], need=Math.ceil(CFG.unlockRatio*a.oreTotal);
+  const done = ai < G.unlockedAreas-1 || a.oreMined>=need;
+  let h='<div class="row"><b>Area '+ai+'</b><span class="mut">'+W+'×'+AREA_H+' = '+W*AREA_H+' blocs</span></div>';
+  const colors={dirt:'#7a5230',stone:'#7d828c',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0'};
+  const names={dirt:'Terre',stone:'Pierre',coal:'Charbon',iron:'Fer',gold:'Or',diamond:'Diamant'};
+  for(const n in a.comp){
+    h+='<div class="comp"><span class="n"><i class="sw" style="background:'+colors[n]+'"></i>'+names[n]+'</span><div class="bar b"><i style="width:'+a.comp[n]+'%;background:'+colors[n]+'"></i></div><span class="v">'+a.comp[n]+'% ('+a.counts[n]+')</span></div>';
+  }
+  h+='<div class="row" style="margin-top:8px"><span>Objectif : '+Math.round(CFG.unlockRatio*100)+'% des minerais</span><span>'+a.oreMined+' / '+need+'</span></div>';
+  h+='<div class="bar"><i style="width:'+Math.min(100,a.oreMined/need*100)+'%;background:'+(done?'var(--ok)':'var(--acc)')+'"></i></div>';
+  h+='<div class="mut" style="margin-top:4px">'+(done?'✔ Area suivante débloquée':'🔒 Accès à l\'area '+(ai+1)+' verrouillé')+'</div>';
+  box.innerHTML=h;
+}
+
+/* ============================ UI / BOUCLE ============================ */
+let simSpeed=1, paused=false;
+[1,5,20,60,300].forEach(s=>{
+  const b=document.createElement('button'); b.textContent='x'+s; b.dataset.s=s; if(s===1) b.className='on';
+  b.onclick=()=>{ simSpeed=s; document.querySelectorAll('#speedBtns button').forEach(x=>x.className=x.dataset.s==s?'on':''); };
+  $('speedBtns').appendChild(b);
+});
+$('pauseBtn').onclick=()=>{ paused=!paused; $('pauseBtn').textContent=paused?'▶ Reprendre':'⏸ Pause'; };
+$('newBtn').onclick=()=>newSession();
+$('seedBtn').onclick=()=>{ const v=parseInt($('seedIn').value,10); if(!isNaN(v)) newSession(v|0); };
+$('prefPrio').onchange=e=>PREFS.priority=e.target.value;
+$('prefFight').onchange=e=>PREFS.fightMobs=e.target.value==='1';
+[['oxygenMax','Oxygène max',STATS],['speed','Vitesse (blocs/s)',STATS],['mineSpeed','Vitesse de minage',STATS],['damage','Dégâts',STATS],['pods','Pods',STATS],['torchRadius','Rayon torche (blocs creusés)',STATS],['discoverMax','Découverte max (blocs)',STATS],['light','Vision mobs max',STATS],['compass','Portée boussole',STATS],['torches','Torches',STATS],['bridges','Passerelles',STATS],['ladderTime','Temps échelle (s)',CFG],['unlockRatio','Seuil déblocage (0-1)',CFG]]
+.forEach(([k,label,obj])=>{
+  const l=document.createElement('span'); l.textContent=label;
+  const i=document.createElement('input'); i.type='number'; i.step='any'; i.value=obj[k];
+  i.onchange=()=>{ const v=parseFloat(i.value); if(!isNaN(v)) obj[k]=v; };
+  $('dev').append(l,i);
+});
+
+newSession();
+let last=performance.now(), acc=0, lastHud=0;
+function frame(now){
+  const dtr=Math.min(0.25,(now-last)/1000); last=now;
+  if(!paused && !G.over){
+    acc+=dtr*simSpeed; let n=0;
+    while(acc>=DT && n<900){ tick(); acc-=DT; n++; }
+    if(n>=900) acc=0;
+  }
+  draw();
+  if(now-lastHud>120){ updateHUD(); lastHud=now; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

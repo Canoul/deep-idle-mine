@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deep Idle Mine</title>
+<link rel="stylesheet" href="src/ui/style.css">
+</head>
+<body>
+<header>
+  <h1>⛏ Deep Idle Mine</h1>
+  <div class="timer" id="timer">00:00 / 60:00</div>
+  <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
+  <div id="speedBtns"></div>
+  <button id="pauseBtn">⏸ Pause</button>
+  <button id="newBtn">↻ Nouvelle session</button>
+  <label class="mut">Mineurs
+    <select id="minersSel" title="Nombre de mineurs sur la carte (le jeu est prévu pour 3)">
+      <option value="1">1</option><option value="3" selected>3</option>
+    </select>
+  </label>
+  <span class="mut">Seed <input id="seedIn" type="text" inputmode="numeric" style="width:110px" title="Seed de la session en cours. Modifie-la puis clique sur Rejouer pour relancer exactement la même partie."></span>
+  <button id="seedBtn" title="Relance une session avec cette seed">▶ Rejouer</button>
+</header>
+<main>
+  <canvas id="cv"></canvas>
+  <aside>
+    <div class="card"><h2>Équipe <span class="mut" style="text-transform:none;letter-spacing:0">(clic = suivre)</span></h2><div id="teamBody"></div></div>
+    <div class="card" id="areaCard"><h2>Area</h2><div id="areaBody"></div></div>
+    <div class="card">
+      <h2 id="minerTitle">Mineur</h2>
+      <div class="row"><span>État</span><span class="st" id="mStatus">—</span></div>
+      <div class="row"><span>Profondeur</span><span id="mDepth">0</span></div>
+      <div class="row"><span>Oxygène</span><span id="mO2">0</span></div>
+      <div class="bar"><i id="o2Bar" style="background:var(--o2)"></i></div>
+      <div class="row" style="margin-top:8px"><span>Pods</span><span id="mPods">0</span></div>
+      <div class="bar"><i id="podBar" style="background:var(--ok)"></i></div>
+      <div class="row" style="margin-top:8px"><span>Torches</span><span id="mTorch">0</span></div>
+      <div class="row"><span>Sur lui</span><span id="mInv" class="mut">—</span></div>
+    </div>
+    <div class="card">
+      <h2>Coffre commun (session) → Inventaire global</h2>
+      <div id="chestBox" class="mut">vide</div>
+      <div id="chestByBox" style="margin-top:6px;font-size:12px"></div>
+      <div class="row" style="margin-top:8px"><span>Inventaire global</span></div>
+      <div id="globalBox" class="mut">vide</div>
+    </div>
+    <div class="card"><h2>Journal</h2><div id="log"></div></div>
+    <div class="card">
+      <details>
+        <summary>Dev : stats &amp; préférences</summary>
+        <div class="dev" id="dev"></div>
+        <div class="dev">
+          <span>Priorité de l'IA</span>
+          <select id="prefPrio" style="width:78px"><option value="minerais">minerais</option><option value="descendre">descendre</option></select>
+          <span>Combat les mobs</span>
+          <select id="prefFight" style="width:78px"><option value="1">oui</option><option value="0">non</option></select>
+        </div>
+      </details>
+    </div>
+  </aside>
+</main>
+<div id="end" hidden><div class="box" id="endBox"></div></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
