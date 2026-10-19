@@ -1,6 +1,6 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE } from '../config.js';
-import { areaOf, isOre, typeOf, isAir, tileAt, supported, tryUnlock } from './world.js';
+import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT } from './miner.js';
 import { log } from './log.js';
@@ -17,18 +17,14 @@ export function mineBlock(G,m,x,y){
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
 }
 
-/* coffre au trésor : son butin va dans l'inventaire du mineur (minerais de l'area + objet Trésor).
-   Les minerais du butin ne comptent pas pour le déblocage de l'area. */
+/* treasure : un objet Treasure TX (tier selon l'area du treasure) va dans l'inventaire du mineur.
+   Aucun minerai : rien ne compte pour le déblocage de l'area. */
 function openTreasure(G,m,x,y){
-  const tr=G.treasures.get(y*W+x), parts=[];
-  if(tr){
-    tr.opened=true;
-    for(const id in tr.loot){ const b=BLOCKS[id]; collect(m, b.name, b.w, tr.loot[id]); parts.push(tr.loot[id]+' '+b.name); }
-  }
-  collect(m, TREASURE.item, TREASURE.itemWeight, TREASURE.itemCount);
-  parts.push(TREASURE.itemCount+' '+TREASURE.item);
+  const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(areaOf(y));
+  if(tr) tr.opened=true;
+  collect(m, item, TREASURE.itemWeight, TREASURE.itemCount);
   G.stats.treasures++; m.stats.treasures++;
-  log(G, `💰 ${m.name} ouvre un coffre au trésor : ${parts.join(', ')}`);
+  log(G, `💰 ${m.name} ouvre un treasure : +${TREASURE.itemCount} ${item}`);
 }
 
 export function killMob(G,m,o){

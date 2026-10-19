@@ -3,7 +3,7 @@
    - Chaque joueur de la session (un par mineur, jusqu'à 3) reçoit une part égale de chaque ressource.
    - Le reste d'une division qui ne tombe pas juste est donné au hasard, une unité par joueur au plus :
      100 charbons à 3 → 33, 33, 33 + 1 au hasard. Le tirage dépend de la seed (même partie = même partage).
-   - Les objets de SHARE.copyToAll (le Trésor) ne se partagent pas : chaque joueur en reçoit la quantité entière.
+   - Les objets de SHARE.copyToAll (les Treasure TX) ne se partagent pas : chaque joueur en reçoit la quantité entière.
    - Un joueur qui quitte la session avant la fin ne reçoit rien : on ne partage qu'entre les joueurs présents.
    Garanties anti-duplication (tests/anticheat) : la somme des parts = le coffre (hors copyToAll), jamais plus. */
 import { SHARE } from '../config.js';

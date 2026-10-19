@@ -10,7 +10,7 @@ import { newSession, endSession, leaveSession, tick } from '../../src/sim/sessio
 import { createInventory, addItem, addAll, removeItem, countOf, creditSession, serialize, deserialize } from '../../src/meta/inventory.js';
 
 ITEMS['Pioche test'] = { cat:'stuff', tex:null, w:0, stack:false };
-const NAMES = ['Terre', 'Pierre', 'Charbon', 'Fer', 'Or', 'Diamant', 'Chitine', TREASURE.item];
+const NAMES = ['Terre', 'Pierre', 'Charbon', 'Fer', 'Or', 'Diamant', 'Chitine', TREASURE.tiers[0].item];
 
 /* coffre aléatoire (déterministe) pour les tests de propriété */
 function randomChest(r){

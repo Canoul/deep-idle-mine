@@ -43,7 +43,7 @@ test('les objets non empilables (stuff) prennent un slot chacun', () => {
 });
 
 test('tous les objets ramenés par la simulation sont au catalogue et empilables', () => {
-  for(const n of ['Terre','Pierre','Pierre dure','Charbon','Fer','Or','Diamant', TREASURE.item, MOBS.bugItem]){
+  for(const n of ['Terre','Pierre','Pierre dure','Charbon','Fer','Or','Diamant', ...TREASURE.tiers.map(t=>t.item), MOBS.bugItem]){
     assert.ok(ITEMS[n], n+' au catalogue');
     assert.equal(isStackable(n), true, n);
   }
@@ -86,7 +86,7 @@ test('grille : au moins 48 cases, lignes complètes, toujours une case libre', (
 
 test('sauvegarde : aller-retour identique, et les identifiants de stuff continuent', () => {
   const inv = createInventory();
-  addAll(inv, { Charbon:12, Trésor:1 }); addItem(inv, 'Épée test', 2);
+  addAll(inv, { Charbon:12, 'Treasure T1':1 }); addItem(inv, 'Épée test', 2);
   const back = deserialize(serialize(inv));
   assert.deepEqual(back.slots, inv.slots);
   addItem(back, 'Épée test', 1);

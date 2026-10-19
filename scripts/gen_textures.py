@@ -102,6 +102,22 @@ def main():
     rect(treasure, 7, 9, 2, 1, hexc('#3b2410'))
     tex['treasure'] = treasure
 
+    # icônes d'inventaire des objets Treasure TX : même coffre, ferrures à la couleur du tier
+    # (T1 argent, T2 or) et marques de tier (1 ou 2 barres) en bas à droite
+    for tier, trim, lock in [(1, '#c0c6cf', '#e8ecf1'), (2, '#d4a017', '#ffd23f')]:
+        icon = blank()
+        rect(icon, 1, 4, 14, 10, hexc('#8a5a2b'))
+        rect(icon, 1, 4, 14, 3, hexc('#5c3a1a'))
+        rect(icon, 1, 13, 14, 1, hexc('#3b2410'))
+        rect(icon, 1, 4, 1, 10, hexc(trim))
+        rect(icon, 14, 4, 1, 10, hexc(trim))
+        rect(icon, 1, 7, 14, 1, hexc(trim))
+        rect(icon, 7, 6, 2, 3, hexc(lock))
+        for i in range(tier):
+            rect(icon, 11 + i * 2, 15, 1, 1, hexc(lock))
+            rect(icon, 11 + i * 2, 14, 1, 1, hexc(lock))
+        tex['treasure_t%d' % tier] = icon
+
     tex['coal'] = ore(3, '#7d828c', '#1b1b1f')
     tex['iron'] = ore(4, '#7d828c', '#d9a67f')
     tex['gold'] = ore(5, '#7d828c', '#ffd23f')

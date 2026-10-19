@@ -1,7 +1,8 @@
-/* Partage du coffre commun en fin de session : parts égales, reste au hasard (seed), Trésor pour chacun. */
+/* Partage du coffre commun en fin de session : parts égales, reste au hasard (seed), Treasure TX pour chacun. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TREASURE, MOBS } from '../src/config.js';
+const [T1, T2] = TREASURE.tiers.map(t => t.item);
 import { shareChest, shareIndexFor } from '../src/meta/share.js';
 import { newSession, endSession, leaveSession, tick } from '../src/sim/session.js';
 
@@ -40,14 +41,14 @@ test('chaque part garde l\'ordre du coffre (ordre d\'arrivée dans l\'inventaire
   for(const b of bags) assert.deepEqual(Object.keys(b).filter(k => b[k]), ['Terre','Charbon','Fer'].filter(k => b[k]));
 });
 
-test('le Trésor ne se partage pas : chaque joueur reçoit la quantité entière', () => {
-  const bags = shareChest({ [TREASURE.item]:2, Charbon:3 }, 3, 7);
-  for(const b of bags) assert.deepEqual(b, { [TREASURE.item]:2, Charbon:1 });
+test('les Treasure TX ne se partagent pas : chaque joueur reçoit la quantité entière', () => {
+  const bags = shareChest({ [T1]:2, Charbon:3 }, 3, 7);
+  for(const b of bags) assert.deepEqual(b, { [T1]:2, Charbon:1 });
 });
 
 test('solo : le joueur garde tout', () => {
-  assert.deepEqual(shareChest({ Charbon:7, [TREASURE.item]:1, [MOBS.bugItem]:5 }, 1, 3),
-    [{ Charbon:7, [TREASURE.item]:1, [MOBS.bugItem]:5 }]);
+  assert.deepEqual(shareChest({ Charbon:7, [T1]:1, [MOBS.bugItem]:5 }, 1, 3),
+    [{ Charbon:7, [T1]:1, [MOBS.bugItem]:5 }]);
 });
 
 test('coffre vide ou quantités invalides : parts vides', () => {
@@ -57,13 +58,13 @@ test('coffre vide ou quantités invalides : parts vides', () => {
 
 test('fin de session : une part par mineur, rattachée à son compte', () => {
   const G = newSession(42, { miners:3, accounts:['7K3Q-9XHP', 'AAAA-BBBB'] });
-  G.chest = { Charbon:10, [TREASURE.item]:1 };
+  G.chest = { Charbon:10, [T1]:1 };
   endSession(G);
   const s = G.summary.shares;
   assert.deepEqual(s.map(p => p.miner), ['Rouge', 'Bleu', 'Vert']);
   assert.deepEqual(s.map(p => p.account), ['7K3Q-9XHP', 'AAAA-BBBB', null]);
   assert.equal(s.reduce((n, p) => n + p.bag.Charbon, 0), 10);
-  assert.ok(s.every(p => p.bag[TREASURE.item] === 1));
+  assert.ok(s.every(p => p.bag[T1] === 1));
 });
 
 test('la part du joueur : celle de son compte, sinon celle du premier mineur', () => {
@@ -76,15 +77,15 @@ test('la part du joueur : celle de son compte, sinon celle du premier mineur', (
 test('un joueur qui quitte ne reçoit rien ; les présents se partagent tout le coffre', () => {
   const G = newSession(5, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
   assert.equal(leaveSession(G, 'BBBB'), true);
-  G.chest = { Charbon:10, [TREASURE.item]:1 };
+  G.chest = { Charbon:10, [TREASURE.tiers[0].item]:1 };
   endSession(G);
   const [a, b, c] = G.summary.shares;
   assert.equal(b.left, true);
   assert.deepEqual(b.bag, {});
   assert.equal(a.bag.Charbon + c.bag.Charbon, 10);
   assert.ok(Math.abs(a.bag.Charbon - c.bag.Charbon) <= 1);
-  assert.equal(a.bag[TREASURE.item], 1);
-  assert.equal(c.bag[TREASURE.item], 1);
+  assert.equal(a.bag[TREASURE.tiers[0].item], 1);
+  assert.equal(c.bag[TREASURE.tiers[0].item], 1);
 });
 
 test('le mineur d\'un joueur parti disparaît de la mine, la session continue sans lui', () => {
@@ -114,4 +115,10 @@ test('quitter : par compte, et un compte inconnu ne fait rien', () => {
   assert.equal(G.miners.length, 3);
   assert.equal(leaveSession(G, 'AAAA'), true);
   assert.equal(G.miners.length, 2);
+});
+
+test('chaque tier de Treasure se copie à tous les joueurs', () => {
+  const bags = shareChest({ [T1]:1, [T2]:2, Fer:4 }, 3, 11);
+  for(const b of bags){ assert.equal(b[T1], 1); assert.equal(b[T2], 2); }
+  assert.equal(bags.reduce((s,b)=>s+b.Fer,0), 4, 'le fer, lui, se partage');
 });

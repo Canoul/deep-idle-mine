@@ -19,7 +19,7 @@ export function compassScan(G,m,R){
   m.pings=out; return out;
 }
 
-const targetStatus = t => typeOf(t)==='treasure' ? 'Va ouvrir un coffre au trésor' : 'Suit un filon ('+BLOCKS[t].name+')';
+const targetStatus = t => typeOf(t)==='treasure' ? 'Va ouvrir un treasure' : 'Suit un filon ('+BLOCKS[t].name+')';
 
 /* ---- coordination entre mineurs : réservation des cibles ----
    Chacun reste indépendant, mais ne vise pas ce qu'un autre vise déjà (minerai, ligne de galerie, puits).

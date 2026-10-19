@@ -5,7 +5,7 @@ import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js'
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', treasure:'Trésor', mob:'Butin de mob', stuff:'Équipement' };
+export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', treasure:'Treasure', mob:'Butin de mob', stuff:'Équipement' };
 
 const fr = (n, d) => n.toFixed(d).replace('.', ',').replace(/,0$/, '');
 /* quantité compacte pour tenir dans un slot : 950 · 9 999 · 12,3k · 456k · 1,2M */

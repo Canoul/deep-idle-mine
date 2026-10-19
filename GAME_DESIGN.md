@@ -42,7 +42,7 @@ Chaque bloc appartient à une catégorie :
 | `terrain` | terre, pierre, pierre dure | remplissage, se mine et se ramasse |
 | `ore` | charbon, fer, or, diamant | minerais : comptent pour le déblocage, visés par l'IA, signalés par la boussole |
 | `build` | passerelle, échelle, torche | posés par le mineur (l'échelle et la torche se posent par-dessus une case vide) |
-| `treasure` | coffre au trésor | trésor enfoui, voir ci-dessous |
+| `treasure` | treasure | entité enfouie dans la mine, voir ci-dessous |
 | `special` | barrière | bloc de jeu sans rôle de ressource |
 
 ### Compositions des areas
@@ -61,12 +61,21 @@ La dernière ligne se répète au-delà. Les comptes sont exacts, pas probabilis
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
 
-### Coffres au trésor
-- Chaque area a une **probabilité** qu'un coffre au trésor y soit enfoui : **30 %** par défaut *(provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même coffre.
-- Le coffre remplace un bloc de terrain au hasard dans l'area.
-- **Butin** *(provisoire)* : 6 minerais tirés parmi ceux de l'area (au prorata de leur nombre) + 1 objet **Trésor** (poids 2, usage défini plus tard avec le craft). Ce butin **ne compte pas** pour le déblocage de l'area.
-- L'IA vise un coffre au trésor **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
-- Le panneau d'area affiche la probabilité, et « trouvé » une fois le coffre ouvert.
+### Treasures
+Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appeler « coffre » à l'oral, c'est bien un treasure, pas le coffre de dépôt de la surface) ; l'**objet** qu'il donne s'appelle **Treasure TX**, X étant son tier.
+- Chaque area a une **probabilité** qu'un treasure y soit enfoui : **30 %** par défaut *(provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même treasure.
+- Le treasure remplace un bloc de terrain au hasard dans l'area.
+- **Butin** *(décision ferme)* : **1 objet Treasure TX**, **aucun minerai**. Le tier dépend de l'area où le treasure est enfoui :
+
+  | Areas | Objet |
+  |---|---|
+  | 0 à 2 | **Treasure T1** |
+  | 3 à 5 | **Treasure T2** |
+
+  Au-delà de l'area 5, le dernier tier s'applique (T2) *(provisoire, en attendant un T3)*. Poids 2 *(provisoire)*, usage défini plus tard avec le craft. Rien dans ce butin ne compte pour le déblocage de l'area.
+- L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
+- Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
+- Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
 
 ## 3. Le mineur
 
@@ -106,7 +115,7 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - À 0 le mineur n'est pas mort : il est fortement ralenti.
 
 ### Pods (inventaire)
-- Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Trésor 2 *(provisoire)*).
+- Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Treasure TX 2 *(provisoire)*).
 - Inventaire plein : remontée **automatique**, dépôt dans le coffre, puis retour au front.
 
 ## 4. Outils
@@ -152,7 +161,7 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rattaché à un ID de compte). Le coffre est commun ; en fin de session, son contenu est réparti :
 - **parts égales** : chaque joueur reçoit le même nombre de chaque ressource, quelle que soit sa contribution ;
 - **reste** d'une division qui ne tombe pas juste : donné **au hasard**, une unité au plus par joueur (100 charbons à 3 → 33, 33, 34). Le tirage dépend de la seed : même partie, même partage ;
-- **Trésor** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Trésor rapporté (un coffre au trésor ouvert à 3 = 1 Trésor pour chacun) ;
+- **Treasure TX** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Treasure TX rapporté, quel que soit son tier (un treasure ouvert à 3 = 1 Treasure TX pour chacun) ;
 - **solo** : le joueur garde tout ;
 - ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
 - **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu, et le coffre est partagé entre les joueurs **présents à la fin** (sa part leur revient). Si tout le monde part, la session s'arrête et personne ne reçoit rien.

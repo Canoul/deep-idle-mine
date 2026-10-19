@@ -114,7 +114,7 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 - **Toujours coder contre la duplication et la triche.** Tout ce qui crée, déplace ou retire des ressources ou des objets (coffre, partage, inventaire, craft, échanges, sauvegarde) doit :
   - refuser les quantités invalides (négatives, décimales, Infinity, NaN, texte, trop grandes) et les objets inconnus là où ça compte ;
   - être **idempotent** quand une action peut être rejouée (double clic, rechargement, requête renvoyée) : une session n'est créditée qu'une fois (`creditSession`), une fin de session ou un départ appelé deux fois ne fait rien ;
-  - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. le Trésor un pour chacun) ;
+  - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. les Treasure TX, un pour chacun) ;
   - ne jamais faire confiance au navigateur pour ce qui a de la valeur : à terme, c'est le serveur qui calcule et qui fait foi.
   Ces cas ont leurs tests dans `tests/anticheat/` (à compléter à chaque nouveau chemin de ressources), lancés à la demande avec `npm run test:anticheat`, pas à chaque modification.
 - **Tests unitaires à chaque étape** : toute nouvelle fonctionnalité ou modification vient avec ses tests unitaires, et on lance la suite complète avant de conclure, pour s'assurer qu'on ne régresse pas sur l'existant.
