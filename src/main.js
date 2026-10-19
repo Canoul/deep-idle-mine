@@ -9,9 +9,12 @@ import { loadInventory, saveInventory } from './ui/storage.js';
 import { addAll } from './meta/inventory.js';
 import { renderInventory } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
+import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 
 const $ = id => document.getElementById(id);
-const ui = { speed:1, paused:false, focus:0, inv:loadInventory(), fresh:new Set(), tab:'mine' };
+const ui = { speed:1, paused:false, focus:0, inv:null, fresh:new Set(), tab:'mine' };
+/* compte connecté (null = hors ligne, sans serveur de jeu) */
+const acct = { account:null, offline:false };
 const renderer = createRenderer($('cv'));
 const sessionHooks = [];
 let G;
@@ -30,9 +33,23 @@ let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soi
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
   ui.tab = id;
-  if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
+  if(id==='inventaire' && ui.inv){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }   // inv : chargé une fois le compte connu
 });
 setupControls(ui, { newSession:start, getG:()=>G, onSession:f=>sessionHooks.push(f) });
+
+/* compte : on attend d'être connecté (ou hors ligne) avant de charger l'inventaire et de lancer la session */
+const accountUI = createAccountUI($('account'), acct, {
+  onChange: () => renderNavAccount($('navAccount'), acct),
+  confirmLeave: () => confirm([
+    acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
+    !G.over && 'La session en cours sera perdue.',
+    'Se déconnecter quand même ?'].filter(Boolean).join('\n')),
+});
+Object.assign(acct, await bootAccount(accountUI));
+renderNavAccount($('navAccount'), acct);
+$('navAccount').onclick = () => accountUI.openProfile();
+ui.inv = loadInventory(acct.account?.id);
+if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
 
 /* paramètres d'adresse (reproduire un bug) : ?seed=123&miners=3&at=600 → cette partie, avancée à 10:00 */
 const q = new URLSearchParams(location.search);
@@ -43,7 +60,7 @@ if(q.has('focus')) ui.focus=+q.get('focus');
 /* fin de session : le coffre commun est versé dans l'inventaire global */
 function endSession(){
   for(const i of addAll(ui.inv, G.summary.chest)) ui.fresh.add(i);
-  saveInventory(ui.inv);
+  saveInventory(ui.inv, acct.account?.id);
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
   showEnd(G, ()=>start(undefined, G.miners.length), ()=>{ $('end').hidden=true; nav.show('inventaire'); });
