@@ -56,6 +56,8 @@ système est amusant, lisible et équilibrable.
 
 Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1h, rapporte des ressources dans un inventaire global, qu'on utilise hors session pour crafter.
 
+**Cap de design :** le but est l'évolution du mineur de session en session. Un joueur ne doit pas finir le contenu actuel (area 5) en un essai ; il doit sentir sa progression, qui passe par l'amélioration de son stuff avec les ressources rapportées. Juge chaque réglage d'équilibrage à cette aune (voir `GAME_DESIGN.md` §1, « Intention de progression »).
+
 Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant toute modification de gameplay. Si une décision de design manque ou est ambiguë, demande-moi plutôt que d'inventer.
 
 ## État actuel

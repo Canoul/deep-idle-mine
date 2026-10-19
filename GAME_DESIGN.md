@@ -12,6 +12,12 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - Hors session, une **UI de craft** permet de gérer les caractéristiques et le stuff du mineur.
 - Boucle de méta-progression : récolter → crafter/améliorer → redescendre plus profond à la session suivante.
 
+### Intention de progression *(décision ferme)*
+- **Le but du jeu est l'évolution du mineur de session en session.** Le joueur doit **sentir** qu'il progresse d'une session à l'autre.
+- **On ne veut pas qu'il finisse le contenu actuel (jusqu'à l'area 5) en une seule session.** Une session avec le mineur de base doit s'arrêter bien avant.
+- L'évolution passe par **l'amélioration du stuff grâce aux ressources rapportées** pendant les sessions : chaque session finance la suivante, qui va plus loin.
+- Conséquence pour l'équilibrage : une progression trop rapide (tout le contenu en un essai) est un défaut, pas une réussite. Les minerais profonds (or, diamant) sont des objectifs des sessions suivantes, pas de la première.
+
 ## 2. Monde
 
 - Monde 2D en blocs, raisonnement en blocs (pas en pixels).
