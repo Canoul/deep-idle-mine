@@ -34,7 +34,10 @@ aside{display:flex;flex-direction:column;gap:10px}
 details summary{cursor:pointer;color:var(--mut)}
 .dev{display:grid;grid-template-columns:1fr 78px;gap:4px 8px;margin-top:8px;align-items:center;font-size:12px}
 .dev input{width:78px;padding:2px 6px}
-#end{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9}
+/* bilan de fin de session : calque limité à l'onglet Mine (pas à toute la fenêtre) */
+.view[data-view="mine"]{position:relative;min-height:100vh}
+#end{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:8vh 12px 12px;z-index:9}
+#end .box{position:sticky;top:8vh}
 #end .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:22px 26px;max-width:440px;width:92%}
 #end h3{margin:0 0 10px;color:var(--acc)}
 .pill{display:inline-block;background:#2c2520;border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin:2px 3px 2px 0;font-size:12px}
