@@ -3,7 +3,7 @@
 
 /* Le serveur répond par une erreur lisible (pseudo pris, mauvais mot de passe…). */
 export class ApiError extends Error {
-  constructor(status, code, message){ super(message); this.status = status; this.code = code; }
+  constructor(status, code, message, retryAfter = null){ super(message); this.status = status; this.code = code; this.retryAfter = retryAfter; }
 }
 /* Pas de serveur de jeu joignable (hors ligne, ou page servie par un simple serveur de fichiers). */
 export class OfflineError extends Error {}
@@ -21,7 +21,8 @@ export async function request(method, path, body){
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
   if(!isJson) throw new OfflineError('Pas de serveur de jeu à cette adresse.');
   const data = await res.json();
-  if(!res.ok) throw new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.');
+  if(!res.ok) throw new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
+                                 +res.headers.get('retry-after') || null);
   return data;
 }
 
@@ -35,4 +36,15 @@ export const accountApi = {
   claim:    (name, password)         => request('POST', '/api/account/claim', { name, password }),
   recover:  (name, recoveryCode, newPassword) => request('POST', '/api/account/recover', { name, recoveryCode, newPassword }),
   changePassword: (oldPassword, newPassword)  => request('POST', '/api/account/password', { oldPassword, newPassword }),
+};
+
+/* Sessions de jeu : le serveur décide et vérifie tout ; le navigateur affiche et prévient. */
+export const gameApi = {
+  info:   ()           => request('GET', '/api/game/info'),
+  state:  ()           => request('GET', '/api/game/state'),
+  prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
+  start:  (opts = {})  => request('POST', '/api/game/start', opts),
+  leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
+  finish: ()           => request('POST', '/api/game/finish', {}),
+  ack:    id           => request('POST', '/api/game/ack', { id }),
 };

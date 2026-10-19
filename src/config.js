@@ -161,3 +161,27 @@ export const ACCOUNT = {
   reservedNames: ['admin', 'administrateur', 'moderateur', 'modo', 'support', 'staff', 'systeme', 'system',
                   'invite', 'guest', 'anonyme', 'deepidlemine', 'serveur', 'server', 'root'],
 };
+
+/* ---- Sessions de jeu (décidées et vérifiées par le serveur) ----
+   speed : vitesse du jeu normal (multiplicateur de ticks) ; une session dure SESSION_LEN / speed en temps réel
+           (x2 : 30 min). Le serveur refuse une fin de session avant ce temps.
+   devSpeeds : vitesses proposées en mode développeur (serveur lancé avec npm run dev), où la fin est libre.
+   maxPlayers : places dans le lobby (jeu prévu à 3). */
+export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
+
+/* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
+   Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
+export const PREF_OPTIONS = {
+  priority:  { label:'Priorité',        options:[['minerais','Minerais'], ['descendre','Descendre']] },
+  fightMobs: { label:'Face aux mobs',   options:[[true,'Combattre'], [false,'Ignorer']] },
+};
+
+/* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
+   Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
+export const DEV_TUNABLES = [
+  ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
+  ['STATS','damage','Dégâts',0,1e4], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
+  ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50],
+  ['STATS','torches','Torches',0,1000], ['STATS','bridges','Passerelles',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
+  ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],
+];

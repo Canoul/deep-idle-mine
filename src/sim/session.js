@@ -17,7 +17,7 @@ export function newSession(seed, opts={}){
   const n = opts.miners ?? 1;
   const specs = Array.isArray(n) ? n : (n>1 ? TEAM.slice(0,n) : [{}]);
   const G = {
-    seed, t:0, over:false, rng:mulberry32(seed^0x51ed270b),
+    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
@@ -66,7 +66,7 @@ function stepMiner(G,m){
 
 export function tick(G){
   if(G.over) return;
-  G.t+=DT;
+  G.t+=DT; G.ticks++;
   for(const m of G.miners) stepMiner(G,m);
   updateMobs(G);
   for(const m of G.miners){
@@ -102,6 +102,7 @@ export function endSession(G){
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
     kills:G.stats.kills, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
+    miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };
   const present = G.roster.filter(m => m.left==null);
   const bags = shareChest(G.chest, present.length, G.seed);

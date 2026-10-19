@@ -1,0 +1,62 @@
+/* Stockage du jeu : inventaires, préférences et sessions de jeu, rangés par ID de compte.
+   Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
+   fichier JSON (data/game.json) écrit de façon atomique sinon. Passer à une vraie base = réécrire ce fichier.
+
+   Session de jeu : { id, seed, players:[{account, name}], bots, prefs, overrides, dev, speed, startedAt, finishAt,
+                      leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt } */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+export function createMemoryGameStore(initial = {}){
+  const inventories = new Map(Object.entries(initial.inventories ?? {}));
+  const prefs = new Map(Object.entries(initial.prefs ?? {}));
+  const sessions = new Map(Object.entries(initial.sessions ?? {}));
+  const copy = o => o && structuredClone(o);
+
+  const store = {
+    async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
+    async putInventory(accountId, inv){ inventories.set(accountId, copy(inv)); await store.changed(); },
+
+    async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
+    async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed(); },
+
+    async getGameSession(id){ return copy(sessions.get(id)) ?? null; },
+    async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed(); },
+    /* sessions où ce compte joue, les plus récentes d'abord */
+    async sessionsOf(accountId){
+      return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId))
+        .sort((a, b) => b.startedAt - a.startedAt).map(copy);
+    },
+    async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
+    async deleteGameSession(id){ if(sessions.delete(id)) await store.changed(); },
+
+    async changed(){},
+    async close(){},
+    snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), prefs: Object.fromEntries(prefs),
+                         sessions: Object.fromEntries(sessions) }; },
+  };
+  return store;
+}
+
+export async function createFileGameStore(dir){
+  const file = path.join(dir, 'game.json');
+  await fs.mkdir(dir, { recursive: true });
+  let initial = {};
+  try { initial = JSON.parse(await fs.readFile(file, 'utf8')); }
+  catch(e){ if(e.code !== 'ENOENT') throw new Error(`Lecture impossible de ${file} : ${e.message}`); }
+
+  const store = createMemoryGameStore(initial);
+  let writing = Promise.resolve();
+  store.changed = () => {
+    const next = writing.catch(() => {}).then(async () => {
+      const tmp = file + '.tmp';
+      await fs.writeFile(tmp, JSON.stringify(store.snapshot()));
+      await fs.rename(tmp, file);
+    });
+    writing = next;
+    return next;
+  };
+  store.close = () => writing;
+  store.file = file;
+  return store;
+}

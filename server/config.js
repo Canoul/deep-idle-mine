@@ -33,5 +33,16 @@ export const LIMITS = {
   createPerIp:  { max: 10, window: HOUR },       // comptes créés (invités ou non) depuis une même adresse
 };
 
+/* Sessions de jeu. dev : mode développeur (npm run dev ou DIM_DEV=1) : toutes les vitesses, panneau dev, fin de
+   session libre. Jamais en ligne. replayWorkers : rejeux de fin de session en parallèle (un thread chacun). */
+export const GAME_SERVER = {
+  dev: process.env.DIM_DEV === '1',
+  replayWorkers: Math.max(1, +(process.env.DIM_REPLAY_WORKERS || 2)),
+  replayTimeout: 10 * MIN,          // un rejeu plus long est abandonné (puis retenté)
+  settleEvery: MIN,                 // vérification des sessions arrivées à leur fin (joueur absent)
+  keepEnded: 30 * DAY,              // sessions terminées gardées ce temps, puis supprimées
+  startsPerHour: 30,                // sessions lancées par compte et par heure (anti spam)
+};
+
 /* Hachage des mots de passe et codes de secours (scrypt, intégré à Node). ~50 ms par vérification. */
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };

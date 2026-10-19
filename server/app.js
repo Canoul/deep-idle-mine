@@ -9,11 +9,13 @@ import { HttpError, sendJson, sendError, readJson, parseCookies, sessionCookie, 
 import { serveStatic } from './http/static.js';
 import { createAccountService, AccountError } from './accounts/service.js';
 import { accountRoutes } from './accounts/routes.js';
+import { gameRoutes } from './game/routes.js';
 
-export function createApp({ store, root, config = SERVER, service } = {}){
+/* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent */
+export function createApp({ store, root, config = SERVER, service, game } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde, lobby, social…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts) };
+  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}) };
 
   async function handleApi(req, res, pathname){
     const route = routes[`${req.method} ${pathname}`];
