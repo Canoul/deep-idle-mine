@@ -3,12 +3,13 @@
 import { DT, DEFAULT_MINERS } from './config.js';
 import { newSession, tick } from './sim/session.js';
 import { createRenderer } from './render/canvas.js';
-import { updateHUD, showEnd } from './ui/hud.js';
+import { updateHUD, showEnd, updateNavSession } from './ui/hud.js';
 import { setupControls } from './ui/controls.js';
 import { loadGlobal, addToGlobal } from './ui/storage.js';
+import { setupNav } from './ui/nav.js';
 
 const $ = id => document.getElementById(id);
-const ui = { speed:1, paused:false, focus:0, global:loadGlobal() };
+const ui = { speed:1, paused:false, focus:0, global:loadGlobal(), tab:'mine' };
 const renderer = createRenderer($('cv'));
 const sessionHooks = [];
 let G;
@@ -23,6 +24,7 @@ function start(seed, miners=DEFAULT_MINERS){
   window.G = G;   // pour le débogage depuis la console (F12)
 }
 
+setupNav($('nav'), $('views'), id => { ui.tab = id; });
 setupControls(ui, { newSession:start, getG:()=>G, onSession:f=>sessionHooks.push(f) });
 
 /* paramètres d'adresse (reproduire un bug) : ?seed=123&miners=3&at=600 → cette partie, avancée à 10:00 */
@@ -41,8 +43,13 @@ function frame(now){
     if(n>=MAX_TICKS_PER_FRAME) acc=0;
     if(G.over){ addToGlobal(ui.global, G.summary.chest); showEnd(G, ()=>start(undefined, G.miners.length)); }
   }
-  renderer.draw(G, ui.focus);
-  if(now-lastHud>120){ updateHUD(G, ui); lastHud=now; }
+  // la simulation tourne quel que soit l'onglet ; on ne dessine la mine que si elle est visible
+  if(ui.tab==='mine') renderer.draw(G, ui.focus);
+  if(now-lastHud>120){
+    if(ui.tab==='mine') updateHUD(G, ui);
+    updateNavSession(G);
+    lastHud=now;
+  }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

@@ -7,8 +7,18 @@
 <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
+<div class="app">
+<nav id="nav">
+  <div class="brand">⛏ Deep Idle Mine</div>
+  <ul></ul>
+  <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
+    <div class="row"><span class="mut">Session</span><span id="navTimer">00:00</span></div>
+    <div class="bar"><i id="navBar"></i></div>
+  </div>
+</nav>
+<div class="views" id="views">
+<section class="view" data-view="mine">
 <header>
-  <h1>⛏ Deep Idle Mine</h1>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
   <div id="speedBtns"></div>
@@ -60,6 +70,9 @@
     </div>
   </aside>
 </main>
+</section>
+</div>
+</div>
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 <script type="module" src="src/main.js"></script>
 </body>

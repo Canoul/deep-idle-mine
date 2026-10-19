@@ -67,6 +67,12 @@ export function updateHUD(G, ui){
   box.innerHTML=h;
 }
 
+/* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
+export function updateNavSession(G){
+  $('navTimer').textContent = G.over ? 'terminée' : fmt(G.t)+' / '+fmt(SESSION_LEN);
+  $('navBar').style.width = Math.min(100, G.t/SESSION_LEN*100)+'%';
+}
+
 export function showEnd(G, onNew){
   const s=G.summary, lines=chips(s.chest);
   const by = G.miners.length>1
