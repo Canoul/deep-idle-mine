@@ -2,10 +2,10 @@
   "name": "deep-idle-mine",
   "version": "0.1.0",
   "private": true,
-  "description": "Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions d'1 h.",
+  "description": "Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions d'1 h. Serveur Node sans dépendance (jeu + comptes).",
   "type": "module",
   "scripts": {
-    "start": "node scripts/serve.js",
+    "start": "node server/main.js",
     "test": "node --test \"tests/*.test.js\"",
     "simulate": "node scripts/simulate.js",
     "textures": "python scripts/gen_textures.py"

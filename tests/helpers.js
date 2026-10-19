@@ -28,3 +28,6 @@ export function worldFrom(rows, opts={}){
 /* avance la simulation de n ticks */
 import { tick } from '../src/sim/session.js';
 export function run(G, n){ for(let i=0;i<n && !G.over;i++) tick(G); return G; }
+
+/* Comptes : hachage scrypt allégé pour les tests (mêmes chemins de code, ~50 fois plus rapide) */
+export const FAST_SCRYPT = { N: 1024, r: 8, p: 1, keyLen: 32, saltLen: 16 };

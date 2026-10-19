@@ -133,3 +133,17 @@ export const ITEMS = {
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;
    capacité illimitée pour l'instant (une ligne s'ajoute quand la grille est pleine) */
 export const INVENTORY = { cols:8, minSlots:48 };
+
+/* ---- Comptes joueur (règles partagées par le jeu et le serveur) ----
+   Pas d'adresse e-mail : un pseudo + un mot de passe, ou un compte invité à sécuriser plus tard.
+   Chaque compte a un ID public, court et lisible (ex. 7K3Q-9XHP) : c'est lui qu'on donnera à un ami.
+   Les réglages purement serveur (durée des connexions, limites de tentatives…) sont dans server/config.js. */
+export const ACCOUNT = {
+  nameMin: 3, nameMax: 16,          // longueur du pseudo
+  passMin: 8, passMax: 128,         // longueur du mot de passe
+  idLength: 8,                      // caractères de l'ID de compte (affiché en 2 groupes de 4)
+  recoveryLength: 16,               // caractères du code de secours (affiché en 4 groupes de 4)
+  /* pseudos interdits (comparés sans majuscules ni accents) */
+  reservedNames: ['admin', 'administrateur', 'moderateur', 'modo', 'support', 'staff', 'systeme', 'system',
+                  'invite', 'guest', 'anonyme', 'deepidlemine', 'serveur', 'server', 'root'],
+};
