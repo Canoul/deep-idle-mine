@@ -165,14 +165,31 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 - **solo** : le joueur garde tout ;
 - ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
 - **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu, et le coffre est partagé entre les joueurs **présents à la fin** (sa part leur revient). Si tout le monde part, la session s'arrête et personne ne reçoit rien.
-- **le partage est calculé par le serveur** (anti-triche) : décision prise ; pour l'instant la session tourne encore dans le navigateur (voir le plan « session côté serveur »).
-- Tant qu'il n'y a pas de lobby, les 3 mineurs tournent sur la machine du joueur : **il contrôle Rouge** et ne reçoit que **sa part** ; Bleu et Vert sont des coéquipiers sans compte.
+- **le partage est calculé par le serveur** (anti-triche) : voir « Lancer une session » ci-dessous.
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.
 
+### Lancer une session (onglet Mine)
+Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Mine**, qui affiche un **lobby** :
+- **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres ;
+- **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
+- **Inviter des joueurs** : visible, pas encore actif (affiche l'ID de compte à donner à un ami). Le vrai multijoueur réseau est l'étape suivante ;
+- **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs ; voir §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
+
+Pendant la session, l'onglet Mine montre la mine ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+
+**Le serveur fait foi** (anti-triche) :
+- c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) ; le navigateur ne fait que l'afficher ;
+- **vitesse du jeu normal : ×2** *(valeur de config)* : une session de 60 min de jeu dure **30 min en temps réel**. Pas de pause : elle avance au rythme du temps réel, **même page fermée** ; en revenant, le navigateur rattrape le temps écoulé ;
+- le serveur **refuse la fin d'une session avant l'heure** ; à la fin, il **rejoue lui-même la partie** depuis son enregistrement, partage le coffre et verse les parts dans les inventaires. Un joueur absent à la fin reçoit quand même sa part ;
+- **l'inventaire est stocké sur le serveur** ; le navigateur le lit, il ne peut pas l'écrire ;
+- une seule session en cours par joueur.
+
+**Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause, seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre. Le serveur rejoue avec les mêmes réglages.
+
 ### Navigation
 Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Talents, Social**.
-- **Mine** : la session en cours (les mineurs, la carte, le coffre commun).
+- **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - Stuff, Craft, Four, Talents, Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
@@ -194,7 +211,7 @@ Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 - **Pseudo** unique (sans tenir compte des majuscules ni des accents), 3 à 16 caractères *(valeurs de config)*.
 - Mot de passe oublié : un **code de secours** est donné à la création (montré une seule fois) ; avec pseudo + code, on choisit un nouveau mot de passe.
 - Le compte est visible en bas de la barre de navigation (pseudo + ID, ou « Invité · à sécuriser ») ; un clic ouvre « Mon compte ».
-- Pour l'instant l'inventaire reste sauvegardé dans le navigateur (une sauvegarde par compte) ; l'inventaire d'avant les comptes est repris par le premier compte connecté.
+- L'inventaire est rattaché au compte et stocké **sur le serveur** : on le retrouve sur n'importe quel appareil.
 
 ## 7. Vision long terme (à ne pas casser)
 
@@ -226,7 +243,7 @@ Le comportement du mineur est configurable. Exemples prévus :
 - préfère fuir un mob plutôt que de se battre ?
 - se déplace vers un mob déclenché par un allié ?
 
-Déjà dans le prototype : priorité `minerais` ou `descendre`, combattre les mobs oui/non.
+Déjà en jeu, dans « Critères / préférences » du lobby : priorité `minerais` ou `descendre`, combattre les mobs oui/non (`PREF_OPTIONS` en config). Les autres arriveront une par une, chacune avec ses tests de blocage.
 
 ### Questions ouvertes (gravité)
 - Une chute fait-elle perdre du temps/de l'oxygène, ou est-elle gratuite ? (Recommandé : un petit ralentissement après la chute, pour que boucher un trou avec une fondation ait un intérêt.)

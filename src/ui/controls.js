@@ -1,40 +1,25 @@
-/* Contrôles : vitesse, pause, seed, nombre de mineurs, panneau dev (stats et préférences). */
-import { STATS, CFG } from '../config.js';
-
+/* Contrôles de la session en cours : vitesse et pause (mode développeur seulement), quitter, mineur suivi.
+   En jeu normal, la vitesse est fixée par le serveur (GAME.speed) et la session ne se met pas en pause :
+   elle avance au rythme du temps réel, même page fermée. */
 const $ = id => document.getElementById(id);
 
-const DEV_FIELDS = [
-  ['oxygenMax','Oxygène max',STATS], ['speed','Vitesse (blocs/s)',STATS], ['mineSpeed','Vitesse de minage',STATS],
-  ['damage','Dégâts',STATS], ['pods','Pods',STATS], ['torchRadius','Rayon torche (blocs creusés)',STATS],
-  ['discoverMax','Découverte max (blocs)',STATS], ['light','Vision mobs max',STATS], ['compass','Portée boussole',STATS],
-  ['torches','Torches',STATS], ['bridges','Passerelles',STATS], ['ladderTime','Temps échelle (s)',CFG],
-  ['unlockRatio','Seuil déblocage (0-1)',CFG],
-];
-
-/* ui : état de l'interface ({speed, paused, focus}) ; h : callbacks {newSession(seed, miners), getG()} */
-export function setupControls(ui, h){
-  for(const s of [1,5,20,60,300]){
-    const b=document.createElement('button'); b.textContent='x'+s; b.dataset.s=s; if(s===ui.speed) b.className='on';
-    b.onclick=()=>{ ui.speed=s; document.querySelectorAll('#speedBtns button').forEach(x=>x.className=(+x.dataset.s===s)?'on':''); };
-    $('speedBtns').appendChild(b);
-  }
-  $('pauseBtn').onclick=()=>{ ui.paused=!ui.paused; $('pauseBtn').textContent=ui.paused?'▶ Reprendre':'⏸ Pause'; };
-  $('newBtn').onclick=()=>h.newSession(undefined, +$('minersSel').value);
-  $('seedBtn').onclick=()=>{ const v=parseInt($('seedIn').value,10); if(!isNaN(v)) h.newSession(v|0, +$('minersSel').value); };
-  $('minersSel').onchange=()=>h.newSession(h.getG().seed, +$('minersSel').value);
-
-  // préférences : appliquées à tous les mineurs
-  const applyPrefs=()=>{ for(const m of h.getG().miners){ m.prefs.priority=$('prefPrio').value; m.prefs.fightMobs=$('prefFight').value==='1'; } };
-  $('prefPrio').onchange=applyPrefs; $('prefFight').onchange=applyPrefs;
-  h.onSession(applyPrefs);
-
+/* ui : état de l'interface ({ speed, paused, focus }) ; h : { onLeave() } */
+export function setupRunControls(ui, h){
+  $('pauseBtn').onclick = () => { ui.paused = !ui.paused; $('pauseBtn').textContent = ui.paused ? '▶ Reprendre' : '⏸ Pause'; };
+  $('leaveBtn').onclick = () => h.onLeave();
   // clic sur un mineur de l'équipe : la caméra le suit
-  $('teamBody').onclick=e=>{ const r=e.target.closest('[data-i]'); if(r) ui.focus=+r.dataset.i; };
+  $('teamBody').onclick = e => { const r = e.target.closest('[data-i]'); if(r) ui.focus = +r.dataset.i; };
+}
 
-  for(const [k,label,obj] of DEV_FIELDS){
-    const l=document.createElement('span'); l.textContent=label;
-    const i=document.createElement('input'); i.type='number'; i.step='any'; i.value=obj[k];
-    i.onchange=()=>{ const v=parseFloat(i.value); if(!isNaN(v)) obj[k]=v; };
-    $('dev').append(l,i);
+/* boutons de vitesse : en dev, toutes les vitesses ; en normal, l'unique vitesse affichée pour information */
+export function renderSpeeds(ui, info){
+  const box = $('speedBtns');
+  box.innerHTML = '';
+  $('pauseBtn').hidden = !info.dev;
+  if(!info.dev){ box.innerHTML = `<span class="mut">Vitesse ×${info.speed}</span>`; return; }
+  for(const s of info.speeds){
+    const b = document.createElement('button'); b.textContent = 'x'+s; b.dataset.s = s; if(s === ui.speed) b.className = 'on';
+    b.onclick = () => { ui.speed = s; box.querySelectorAll('button').forEach(x => x.className = (+x.dataset.s === s) ? 'on' : ''); };
+    box.appendChild(b);
   }
 }

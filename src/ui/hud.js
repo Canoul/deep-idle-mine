@@ -67,23 +67,36 @@ export function updateHUD(G, ui){
 }
 
 /* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
-export function updateNavSession(G){
-  $('navTimer').textContent = G.over ? 'terminée' : fmt(G.t)+' / '+fmt(SESSION_LEN);
-  $('navBar').style.width = Math.min(100, G.t/SESSION_LEN*100)+'%';
+/* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
+export function updateNavSession(G, waiting=false){
+  $('navTimer').textContent = !G ? (waiting ? 'résultat…' : 'aucune') : G.over ? 'terminée' : fmt(G.t)+' / '+fmt(SESSION_LEN);
+  $('navBar').style.width = (G ? Math.min(100, G.t/SESSION_LEN*100) : 0)+'%';
 }
 
-/* me : index de la part du joueur dans G.summary.shares */
-export function showEnd(G, me, onNew, onInventory){
-  const s=G.summary, shares=s.shares, n=shares.filter(p=>!p.left).length;
+/* attente du résultat calculé par le serveur (il rejoue la session : jusqu'à une minute) */
+export function showSettling(){
+  $('endBox').innerHTML = '<h3>Session terminée</h3><p>Le serveur vérifie la partie et partage le coffre…</p>'+
+    '<div class="bar"><i class="indet"></i></div>';
+  $('end').hidden=false;
+}
+
+/* Bilan d'une session, d'après le résultat du SERVEUR (celui qui fait foi).
+   rec : la session publique ({ result, players, … }) ; me : ID du compte du joueur. */
+export function showEnd(rec, me, onBack, onInventory){
+  const s=rec.result, shares=s.shares, n=shares.filter(p=>!p.left).length;
+  const nameOf = acc => rec.players.find(p=>p.account===acc)?.name;
+  const who = p => `${sw(p.color)}${esc(p.miner)}${p.account ? ' — '+esc(nameOf(p.account) ?? '') : ''}${p.account===me?' (toi)':''}`;
+  const mine = shares.find(p=>p.account===me);
   const split = shares.length>1
     ? `<p>Coffre commun : ${chips(s.chest)}</p>`+
-      `<p>Partagé à parts égales entre les ${n} joueur${n>1?'s':''} présent${n>1?'s':''} à la fin <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
-      shares.map((p,i)=>`<div class="row share${i===me?' me':''}"><span>${sw(p.color)}${esc(p.miner)}${i===me?' (toi)':''}</span><span>${p.left?'<span class="mut">a quitté la session : rien</span>':chips(p.bag)}</span></div>`).join('')
-    : `<p>Transféré dans ton inventaire :</p><div>${chips(shares[0].bag)}</div>`;
-  const by = G.miners.length>1
-    ? '<p>Contributions :</p>'+G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
+      `<p>Partagé à parts égales entre les ${n} présent${n>1?'s':''} à la fin <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
+      shares.map(p=>`<div class="row share${p.account===me?' me':''}"><span>${who(p)}</span><span>${p.left?'<span class="mut">a quitté la session : rien</span>':chips(p.bag)}</span></div>`).join('')
+    : `<p>Versé dans ton inventaire :</p><div>${chips(mine?.bag)}</div>`;
+  const miners = s.miners || [];
+  const by = miners.length>1
+    ? '<p>Contributions :</p>'+miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
     : '';
-  const lost = s.lost.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
+  const lost = s.lost?.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
   $('endBox').innerHTML =
     '<h3>Session terminée</h3>'+
     `<div class="row"><span>Seed</span><b>${s.seed}</b></div>`+
@@ -94,8 +107,9 @@ export function showEnd(G, me, onNew, onInventory){
     `<div class="row"><span>Treasures ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
     by+split+lost+
-    '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endNew">Nouvelle session</button></p>';
+    '<p class="mut small">Résultat vérifié par le serveur.</p>'+
+    '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';
   $('end').hidden=false;
-  $('endNew').onclick=onNew;
+  $('endBack').onclick=onBack;
   $('endInv').onclick=onInventory;
 }

@@ -88,12 +88,21 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
 - Sans serveur de jeu (page servie par un simple serveur de fichiers), le jeu démarre **hors ligne**,
   sans compte, comme avant.
 
-## Ce qui reste dans le navigateur (pour l'instant)
+## Inventaire et sessions de jeu
 
-L'**inventaire** est encore sauvegardé dans le navigateur, **une sauvegarde par compte**
-(`deepIdleMine.inventory.<ID>`). L'inventaire d'avant les comptes est repris par le premier compte qui se
-connecte sur ce navigateur. Conséquence : se connecter sur un autre appareil retrouve le compte, pas encore
-l'inventaire. La sauvegarde côté serveur est l'étape suivante (voir « Questions ouvertes »).
+L'**inventaire**, les **préférences** et les **sessions de jeu** sont stockés sur le serveur, rattachés à l'ID de
+compte (`data/game.json`, `server/game/`). Le navigateur ne peut que les lire ; seul le serveur verse les parts
+d'une session terminée (après l'avoir rejouée). L'ancienne sauvegarde dans le navigateur est effacée au chargement.
+
+| Route | Corps | Réponse |
+|---|---|---|
+| `GET /api/game/info` | | `{ dev, speed, speeds, maxPlayers }` |
+| `GET /api/game/state` | | `{ inventory, prefs, session, ended }` (connecté) |
+| `POST /api/game/prefs` | `{ priority, fightMobs }` | `{ prefs }` |
+| `POST /api/game/start` | `{}` (dev : `{ seed, bots, overrides }`) | 201 `{ session }` ; 409 `session_running` |
+| `POST /api/game/leave` | `{}` (dev : `{ tick }`) | `{ left }` |
+| `POST /api/game/finish` | `{}` | `{ session }` ; 409 `too_early` + `Retry-After` |
+| `POST /api/game/ack` | `{ id }` | 204 (bilan vu) |
 
 ## Évolutions prévues par l'architecture
 

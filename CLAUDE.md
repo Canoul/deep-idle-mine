@@ -67,7 +67,8 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
-- `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Le serveur sert le jeu et gère les comptes (`data/accounts.json`, ignoré par git). Sans lui (simple serveur de fichiers), le jeu démarre hors ligne, sans compte. Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1` ; l'onglet s'ouvre par `#inventaire`, `#craft`…
+- `npm start` puis http://localhost:8000 : jeu normal (vitesse ×2, le serveur fait foi). `npm run dev` : **mode développeur** (vitesses ×1–×300, pause, seed, mineurs de test, réglages des stats dans le lobby, fin libre). Les modules ne s'ouvrent pas par double-clic. Données : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro). Sans serveur de jeu, on ne peut pas lancer de session. L'onglet s'ouvre par `#inventaire`, `#craft`…
+- Pour reproduire une partie précise : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
 - `npm test` : tests unitaires + sessions complètes de non-régression (`node:test`, aucune dépendance).
 - `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
 - `npm run simulate -- --miners 3 --count 8` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
@@ -80,14 +81,15 @@ src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre)
-src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID)
+src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), hud, controls, inventory (grille), account (connexion, mon compte), storage (localStorage, par compte), style.css
-src/main.js             boucle de frames (vitesse = multiplicateur de ticks)
+src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), account (connexion, mon compte), style.css
+src/main.js             lobby → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, gen_textures.py
-server/                 serveur du jeu (npm start) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit)
+server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
+                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions)
 docs/                   documentation technique (comptes.md)
 textures/               PNG 16×16
 ```

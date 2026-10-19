@@ -12,26 +12,51 @@
   <div class="brand">⛏ Deep Idle Mine</div>
   <ul></ul>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
-    <div class="row"><span class="mut">Session</span><span id="navTimer">00:00</span></div>
+    <div class="row"><span class="mut">Session</span><span id="navTimer">—</span></div>
     <div class="bar"><i id="navBar"></i></div>
   </div>
   <button class="navAccount" id="navAccount" hidden></button>
 </nav>
 <div class="views" id="views">
 <section class="view" data-view="mine">
+<!-- lobby : avant de lancer une session -->
+<div id="lobby" class="lobbyWrap" hidden>
+  <h1>⛏ Mine</h1>
+  <div class="card">
+    <h2>Équipe de la prochaine session</h2>
+    <div class="pslots" id="lobbySlots"></div>
+    <div class="lobbyActions">
+      <button class="on big" id="launchBtn">▶ Lancer la session</button>
+      <button id="inviteBtn">✉ Inviter des joueurs</button>
+    </div>
+    <div class="invite" id="inviteBox" hidden></div>
+    <p class="mut" id="lobbyInfo"></p>
+    <p class="err" id="lobbyErr" hidden></p>
+  </div>
+  <div class="card">
+    <h2>Critères / préférences</h2>
+    <div class="prefs" id="prefsBox"></div>
+    <p class="mut small">Appliquées à ton mineur pour toute la session. Bientôt : fuir les mobs, préférer les zones navigables, aider un allié.</p>
+  </div>
+  <div class="card devCard" id="devCard" hidden>
+    <h2>Mode développeur</h2>
+    <div class="dev">
+      <span>Seed (vide = au hasard)</span><input id="devSeed" type="text" inputmode="numeric">
+      <span>Mineurs de test (sans compte)</span><select id="devBots"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
+    </div>
+    <div class="dev" id="devStats"></div>
+  </div>
+</div>
+<!-- session en cours -->
+<div id="run" hidden>
 <header>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>
+  <span class="mut" id="realLeft"></span>
   <div id="speedBtns"></div>
-  <button id="pauseBtn">⏸ Pause</button>
-  <button id="newBtn">↻ Nouvelle session</button>
-  <label class="mut">Mineurs
-    <select id="minersSel" title="Nombre de mineurs sur la carte (le jeu est prévu pour 3)">
-      <option value="1">1</option><option value="3" selected>3</option>
-    </select>
-  </label>
-  <span class="mut">Seed <input id="seedIn" type="text" inputmode="numeric" style="width:110px" title="Seed de la session en cours. Modifie-la puis clique sur Rejouer pour relancer exactement la même partie."></span>
-  <button id="seedBtn" title="Relance une session avec cette seed">▶ Rejouer</button>
+  <button id="pauseBtn" hidden>⏸ Pause</button>
+  <span class="mut small" id="seedLbl"></span>
+  <button id="leaveBtn" title="Tu ne recevras rien de cette session">⏏ Quitter la session</button>
 </header>
 <main>
   <canvas id="cv"></canvas>
@@ -56,20 +81,9 @@
       <div class="mut" style="margin-top:6px;font-size:12px">Versé dans l'inventaire à la fin de la session.</div>
     </div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
-    <div class="card">
-      <details>
-        <summary>Dev : stats &amp; préférences</summary>
-        <div class="dev" id="dev"></div>
-        <div class="dev">
-          <span>Priorité de l'IA</span>
-          <select id="prefPrio" style="width:78px"><option value="minerais">minerais</option><option value="descendre">descendre</option></select>
-          <span>Combat les mobs</span>
-          <select id="prefFight" style="width:78px"><option value="1">oui</option><option value="0">non</option></select>
-        </div>
-      </details>
-    </div>
   </aside>
 </main>
+</div>
 </section>
 <section class="view" data-view="inventaire" hidden>
   <div class="invWrap">
