@@ -18,7 +18,7 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - **Surface plate**, 50 blocs de large. Le mineur démarre à la surface et creuse vers le bas.
 - Le monde est découpé en **areas** de 25 blocs de haut sur 50 de large (1250 blocs pour l'area 0).
 - Chaque area a une **composition en pourcentages**, affichée dans un panneau quand le mineur y entre.
-  - Exemple area 0 : 57% terre, 33% pierre, 10% charbon, soit 125 charbons sur 1250 blocs.
+  - Exemple area 0 : 52% terre, 33% pierre, 10% charbon, 5% vide, soit 125 charbons sur 1250 blocs.
 - **Déblocage de l'area suivante** : miner un seuil de minerais de l'area courante, par défaut **40%** des minerais.
   - Exemple area 0 : 40% de 125 charbons = 50 charbons.
   - Tant que le seuil n'est pas atteint, le fond de l'area est une **barrière infranchissable** : un bloc spécial « Barrière », incassable, qui délimite les deux areas. Pour l'IA c'est une case non franchissable, ignorée dans ses chemins. Quand l'area suivante se débloque, la barrière disparaît.
@@ -27,16 +27,40 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - **La couche 1 du monde (juste sous la surface) est toujours en terre.** Elle **ne fait partie d'aucune area** (pour ne pas fausser les pourcentages) : l'area 0 occupe les couches 2 à 26, l'area 1 les couches 27 à 51, etc.
 - Le **coffre** est généré au spawn, sur la surface. Les ressources déposées dedans partent dans l'inventaire global à la fin de la session du joueur.
 
-### Compositions provisoires (prototype)
+### Catégories de blocs
 
-| Area | Composition |
-|---|---|
-| 0 | terre 57, pierre 33, charbon 10 *(décision ferme)* |
-| 1 | terre 30, pierre 45, charbon 15, fer 10 *(provisoire)* |
-| 2 | terre 10, pierre 55, charbon 12, fer 15, or 8 *(provisoire)* |
-| 3+ | pierre 60, charbon 8, fer 15, or 10, diamant 7 *(provisoire)* |
+Chaque bloc appartient à une catégorie :
 
-Les minerais sont générés en petits filons (1 à 4 blocs). Les comptes sont exacts, pas probabilistes.
+| Catégorie | Blocs | Rôle |
+|---|---|---|
+| `terrain` | terre, pierre, pierre dure | remplissage, se mine et se ramasse |
+| `ore` | charbon, fer, or, diamant | minerais : comptent pour le déblocage, visés par l'IA, signalés par la boussole |
+| `build` | passerelle, échelle, torche | posés par le mineur (l'échelle et la torche se posent par-dessus une case vide) |
+| `treasure` | coffre au trésor | trésor enfoui, voir ci-dessous |
+| `special` | barrière | bloc de jeu sans rôle de ressource |
+
+### Compositions des areas
+
+| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Vide |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 52 | 33 | – | 10 | – | – | – | 5 |
+| 1 | 30 | 49 | – | 15 | 1 | – | – | 5 |
+| 2 | 20 | 55 | – | 10 | 10 | – | – | 5 |
+| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | 5 |
+| 4 | – | 60 | 15 | 5 | 10 | 5 | – | 5 |
+| 5+ | – | 55 | 20 | 3 | 8 | 7 | 2 | 5 |
+
+La dernière ligne se répète au-delà. Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+- Les minerais sont générés en petits filons (1 à 4 blocs).
+- Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
+- **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
+
+### Coffres au trésor
+- Chaque area a une **probabilité** qu'un coffre au trésor y soit enfoui : **30 %** par défaut *(provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même coffre.
+- Le coffre remplace un bloc de terrain au hasard dans l'area.
+- **Butin** *(provisoire)* : 6 minerais tirés parmi ceux de l'area (au prorata de leur nombre) + 1 objet **Trésor** (poids 2, usage défini plus tard avec le craft). Ce butin **ne compte pas** pour le déblocage de l'area.
+- L'IA vise un coffre au trésor **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
+- Le panneau d'area affiche la probabilité, et « trouvé » une fois le coffre ouvert.
 
 ## 3. Le mineur
 
@@ -76,7 +100,7 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - À 0 le mineur n'est pas mort : il est fortement ralenti.
 
 ### Pods (inventaire)
-- Chaque bloc a un poids (terre 1, pierre 2, charbon 2, fer 3, or 4, diamant 5 *(provisoire)*).
+- Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Trésor 2 *(provisoire)*).
 - Inventaire plein : remontée **automatique**, dépôt dans le coffre, puis retour au front.
 
 ## 4. Outils
@@ -112,7 +136,7 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 - Types prévus :
   - **Bestioles** : apparaissent dans les tunnels (posées au sol) et se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien.
     - **Tacle** : la bestiole va jusque sur la case du mineur. Tant qu'elle est sur lui, **il ne peut plus bouger** (son action en cours est interrompue, sauf une chute) et il la combat obligatoirement, même si l'option « combat les mobs » est désactivée et même s'il remonte. C'est le mécanisme principal de ralentissement. Elles laissent de la **chitine** (1 à 2, poids 1) *(provisoire : ressource du prototype, sans usage tant que le craft n'est pas défini)*.
-  - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à proximité. Les vaincre rapporte des minerais.
+  - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à proximité. Les vaincre rapporte des minerais. Comme les bestioles, un mimic dévoilé ne déclenche le combat que s'il est dans le champ de vision du mineur.
 
 ## 6. Hors session
 
