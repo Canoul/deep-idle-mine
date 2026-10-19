@@ -1,7 +1,7 @@
 /* Coffres au trésor : un tirage par area, butin déterministe, ouverture, attrait pour l'IA. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREAS, IDS, TREASURE, TREASURE_BLOCK, BLOCKS } from '../src/config.js';
+import { W, AREA_H, AREAS, IDS, TREASURE, TREASURE_BLOCK, BLOCKS } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
 import { genArea, typeOf } from '../src/sim/world.js';
 import { decide } from '../src/sim/ai.js';
@@ -59,7 +59,7 @@ test('le coffre remplace un bloc de terrain, pas un minerai ni du vide', () => {
     for(let seed=1;seed<=20;seed++){
       const G=newSession(seed), a=G.areas[0];
       assert.equal(a.counts.treasure, 1);
-      assert.equal(a.oreTotal, 125, 'les minerais ne bougent pas');
+      assert.equal(a.oreTotal, Math.round(0.10*W*AREA_H), 'les minerais ne bougent pas');
     }
   });
 });

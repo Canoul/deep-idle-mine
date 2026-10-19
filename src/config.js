@@ -1,9 +1,9 @@
 /* Toutes les valeurs d'équilibrage et constantes du jeu, au même endroit (voir GAME_DESIGN.md).
    Aucun nombre magique dans la logique : on ajoute une clé ici et on la lit ailleurs. */
 
-export const W = 50, AREA_H = 25, SESSION_LEN = 3600, DT = 0.1;
+export const W = 50, AREA_H = 50, SESSION_LEN = 3600, DT = 0.1;
 /* couche 1 (juste sous la surface) : toujours en terre, hors areas (ne fausse pas les pourcentages).
-   L'area 0 occupe donc les couches 2 à 26, l'area 1 les couches 27 à 51, etc. */
+   L'area 0 occupe donc les couches 2 à 51, l'area 1 les couches 52 à 101, etc. */
 export const TOP_DIRT_ROWS = 1, AREA_Y0 = 1 + TOP_DIRT_ROWS;
 export const SPAWN_X = 25, CHEST_X = 22;
 

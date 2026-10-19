@@ -52,7 +52,7 @@ function explore(G,m){
   const k=G.unlockedAreas-1, base=areaTop(k)-1;   // couches base+1 … base+AREA_H
   m.exploring=true;  // évite l'oscillation « descend / change de galerie » ; levé au déblocage de l'area suivante
   const primary=[], secondary=[];
-  for(let r=1;r<=AREA_H;r++){ const y=base+r; if(rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<=24 ? primary : secondary).push(y); }
+  for(let r=1;r<=AREA_H;r++){ const y=base+r; if(rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
   let pool = primary.length ? primary : secondary;
   if(!pool.length){ m.status='Plus rien à explorer'; idle(m,1); return; }
   const free = pool.filter(y=>!rowTaken(G,m,y));     // lignes que personne d'autre ne creuse

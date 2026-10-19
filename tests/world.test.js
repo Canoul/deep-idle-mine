@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, IDS, BARRIER, AREAS, TREASURE_BLOCK } from '../src/config.js';
+import { W, AREA_H, AREA_Y0, IDS, BARRIER, AREAS, TREASURE_BLOCK } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
 import { areaOf, areaTop, tileAt, supported, landing, genArea, typeOf } from '../src/sim/world.js';
 import { mulberry32 } from '../src/core/rng.js';
@@ -29,18 +29,19 @@ test('couche 1 toujours en terre, hors de toute area', () => {
     assert.ok(G.tiles[1].every(t=>t===IDS.dirt));
   }
   assert.equal(areaOf(0), -1); assert.equal(areaOf(1), -1);
-  assert.equal(areaOf(2), 0);  assert.equal(areaOf(26), 0); assert.equal(areaOf(27), 1);
-  assert.equal(areaTop(0), 2); assert.equal(areaTop(1), 27);
+  const last0=AREA_Y0+AREA_H-1;   // dernière couche de l'area 0
+  assert.equal(areaOf(2), 0);  assert.equal(areaOf(last0), 0); assert.equal(areaOf(last0+1), 1);
+  assert.equal(areaTop(0), 2); assert.equal(areaTop(1), last0+1);
 });
 
-test('area 0 : 1250 blocs, comptes exacts (52/33/10/5 %), 125 charbons', () => {
-  const G=newSession(777), c=countRows(G, 2, 26);
+test('area 0 : W×AREA_H blocs, comptes exacts (52/33/10/5 %), 10 % de charbon', () => {
+  const N=W*AREA_H, G=newSession(777), c=countRows(G, 2, AREA_Y0+AREA_H-1);
   assert.equal(G.tiles.length, 1+1+AREA_H);
   assert.equal(c[IDS.dirt]+c[IDS.stone]+c[IDS.coal]+c[IDS.air]+(c[TREASURE_BLOCK]||0), W*AREA_H);
-  assert.equal(c[IDS.coal], 125);
-  assert.equal(G.areas[0].oreTotal, 125);
-  assert.ok(Math.abs(c[IDS.dirt]-0.52*1250)<=2 && Math.abs(c[IDS.stone]-0.33*1250)<=2);
-  assert.ok(Math.abs(c[IDS.air]-0.05*1250)<=1, `vide : ${c[IDS.air]}`);
+  assert.equal(c[IDS.coal], Math.round(0.10*N));
+  assert.equal(G.areas[0].oreTotal, Math.round(0.10*N));
+  assert.ok(Math.abs(c[IDS.dirt]-0.52*N)<=2 && Math.abs(c[IDS.stone]-0.33*N)<=2);
+  assert.ok(Math.abs(c[IDS.air]-0.05*N)<=1, `vide : ${c[IDS.air]}`);
 });
 
 test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à l\'arrondi près)', () => {
@@ -52,11 +53,11 @@ test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à 
     for(const n in comp){
       assert.equal(c[IDS[n]]||0, a.counts[n], `area ${k} ${n} : posés ≠ comptés`);
       // arrondis (au plus 1 bloc par entrée, absorbés par le terrain principal) + 1 bloc remplacé par un coffre au trésor
-      assert.ok(Math.abs(a.counts[n]-comp[n]*12.5)<=3, `area ${k} ${n} : ${a.counts[n]}`);
+      assert.ok(Math.abs(a.counts[n]-comp[n]*W*AREA_H/100)<=3, `area ${k} ${n} : ${a.counts[n]}`);
       total+=c[IDS[n]]||0;
     }
     assert.equal(total+(c[TREASURE_BLOCK]||0), W*AREA_H, `area ${k} : aucun autre bloc`);
-    for(const n in comp) if(typeOf(IDS[n])==='ore') assert.equal(c[IDS[n]], Math.round(comp[n]*12.5), `area ${k} ${n} : minerais exacts`);
+    for(const n in comp) if(typeOf(IDS[n])==='ore') assert.equal(c[IDS[n]], Math.round(comp[n]*W*AREA_H/100), `area ${k} ${n} : minerais exacts`);
   }
 });
 
@@ -89,15 +90,15 @@ test('génération des areas profondes déterministe', () => {
 test('mimics placés sur des minerais de leur area', () => {
   const G=newSession(31337);
   for(const o of G.mobs.filter(o=>o.type==='mimic')){
-    assert.ok(o.y>=2 && o.y<=26);
+    assert.ok(o.y>=AREA_Y0 && o.y<AREA_Y0+AREA_H);
     assert.equal(G.tiles[o.y][o.x], o.ore);
   }
 });
 
 test('sous la dernière area débloquée : barrière', () => {
   const G=newSession(1);
-  assert.equal(tileAt(G, 10, 27), BARRIER);
-  assert.notEqual(tileAt(G, 10, 26), BARRIER);
+  assert.equal(tileAt(G, 10, AREA_Y0+AREA_H), BARRIER);
+  assert.notEqual(tileAt(G, 10, AREA_Y0+AREA_H-1), BARRIER);
 });
 
 test('gravité : règles d\'appui', () => {
