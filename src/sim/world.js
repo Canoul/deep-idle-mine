@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 
@@ -9,7 +9,8 @@ export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 export const typeOf = t => t ? BLOCKS[t].type : null;
 export const isOre  = t => typeOf(t)==='ore';
 
-export const areaComp = k => AREAS[Math.min(k, AREAS.length-1)];
+export const areaDef  = k => AREAS[Math.min(k, AREAS.length-1)];
+export const areaComp = k => areaDef(k).comp;
 export const areaOf   = y => y < AREA_Y0 ? -1 : Math.floor((y-AREA_Y0)/AREA_H);
 export const areaTop  = k => AREA_Y0 + k*AREA_H;   // première couche de l'area k
 
@@ -24,38 +25,48 @@ export const supported = (G,x,y) =>
 export function landing(G,x,y){ let n=0; while(!supported(G,x,y)){ y++; n++; } return {y,n}; }
 export const rowDone = (G,y) => { for(let x=0;x<W;x++) if(!isAir(G,x,y)) return false; return true; };
 
-/* Génère l'area k uniquement depuis seed + k (déterministe). Comptes exacts, minerais en filons de 1 à 4. */
+/* filons / poches : `count` cases de `id` en groupes d'un seul tenant de 1 à `maxSize` cases, sur des cases libres */
+const FREE = 255;   // case pas encore attribuée pendant la génération (0 = air est une vraie valeur)
+function placeClusters(grid, r, id, count, maxSize, out){
+  const N = grid.length; let rem = count;
+  while(rem>0){
+    let c; do{ c=Math.floor(r()*N); }while(grid[c]!==FREE);
+    const size = Math.min(rem, 1+Math.floor(r()*maxSize));
+    const cells=[c]; grid[c]=id; let g=0;
+    while(cells.length<size && g++<30){
+      const b=cells[Math.floor(r()*cells.length)], bx=b%W, by=(b/W)|0, d=DIRS[Math.floor(r()*4)];
+      const nx=bx+d[0], ny=by+d[1];
+      if(nx<0||nx>=W||ny<0||ny>=AREA_H) continue;
+      const ni=ny*W+nx; if(grid[ni]!==FREE) continue;
+      grid[ni]=id; cells.push(ni);
+    }
+    if(out) cells.forEach(ci=>out.push(ci));
+    rem -= cells.length;
+  }
+}
+
+/* Génère l'area k uniquement depuis seed + k (déterministe). Comptes exacts :
+   minerais en filons, vide en poches, puis le reste (terrain) mélangé. */
 export function genArea(G,k){
   const r = mulberry32(hash(G.seed, k+1));
   const comp = areaComp(k), N = W*AREA_H;
   const counts = {}; let sum = 0;
   for(const n in comp){ counts[n]=Math.round(comp[n]*N/100); sum+=counts[n]; }
-  const big = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  // l'arrondi est absorbé par le terrain le plus présent
+  const big = Object.keys(counts).filter(n=>typeOf(IDS[n])==='terrain').sort((a,b)=>counts[b]-counts[a])[0];
   counts[big] += N - sum;
-  const grid = new Uint8Array(N);
+  const grid = new Uint8Array(N).fill(FREE);
   let oreTotal = 0; const oreCells = [];
   for(const n in counts){
     const id = IDS[n]; if(!isOre(id)) continue;
-    oreTotal += counts[n]; let rem = counts[n];
-    while(rem>0){
-      let c; do{ c=Math.floor(r()*N); }while(grid[c]);
-      const size = Math.min(rem, 1+Math.floor(r()*4));
-      const cells=[c]; grid[c]=id; let g=0;
-      while(cells.length<size && g++<30){
-        const b=cells[Math.floor(r()*cells.length)], bx=b%W, by=(b/W)|0, d=DIRS[Math.floor(r()*4)];
-        const nx=bx+d[0], ny=by+d[1];
-        if(nx<0||nx>=W||ny<0||ny>=AREA_H) continue;
-        const ni=ny*W+nx; if(grid[ni]) continue;
-        grid[ni]=id; cells.push(ni);
-      }
-      cells.forEach(ci=>oreCells.push(ci));
-      rem -= cells.length;
-    }
+    oreTotal += counts[n];
+    placeClusters(grid, r, id, counts[n], GEN.veinMax, oreCells);
   }
+  if(counts.air) placeClusters(grid, r, IDS.air, counts.air, GEN.airPocketMax);
   const filler=[];
-  for(const n in counts) if(!isOre(IDS[n])) for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
+  for(const n in counts) if(typeOf(IDS[n])==='terrain') for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;
-  for(let i=0;i<N;i++) if(!grid[i]) grid[i]=filler[fi++];
+  for(let i=0;i<N;i++) if(grid[i]===FREE) grid[i]=filler[fi++];
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));

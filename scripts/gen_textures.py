@@ -82,6 +82,26 @@ def main():
         rect(stone, r.randrange(S - 1), r.randrange(S - 1), 2, 2, hexc('#9298a3'))
     tex['stone'] = stone
 
+    # pierre dure : plus sombre et plus dense que la pierre, veinée de fissures
+    hard = noisy(hexc('#575c66'), 12, 0.10)
+    r = random.Random(23)
+    for _ in range(8):
+        rect(hard, r.randrange(S - 1), r.randrange(S - 1), 2, 2, hexc('#6c727d'))
+    for (x, y) in [(2, 3), (3, 4), (4, 4), (5, 5), (10, 9), (11, 10), (12, 10), (12, 11), (7, 12), (8, 13)]:
+        rect(hard, x, y, 1, 1, hexc('#2f3238'))
+    tex['hardstone'] = hard
+
+    # coffre au trésor enfoui : un petit coffre dans la roche
+    treasure = noisy(hexc('#7d828c'), 13)
+    rect(treasure, 2, 5, 12, 9, hexc('#8a5a2b'))
+    rect(treasure, 2, 5, 12, 3, hexc('#5c3a1a'))
+    rect(treasure, 2, 13, 12, 1, hexc('#3b2410'))
+    rect(treasure, 2, 5, 1, 9, hexc('#d4a017'))
+    rect(treasure, 13, 5, 1, 9, hexc('#d4a017'))
+    rect(treasure, 7, 7, 2, 3, hexc('#ffd23f'))
+    rect(treasure, 7, 9, 2, 1, hexc('#3b2410'))
+    tex['treasure'] = treasure
+
     tex['coal'] = ore(3, '#7d828c', '#1b1b1f')
     tex['iron'] = ore(4, '#7d828c', '#d9a67f')
     tex['gold'] = ore(5, '#7d828c', '#ffd23f')

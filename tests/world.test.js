@@ -33,20 +33,51 @@ test('couche 1 toujours en terre, hors de toute area', () => {
   assert.equal(areaTop(0), 2); assert.equal(areaTop(1), 27);
 });
 
-test('area 0 : 1250 blocs, comptes exacts (57/33/10 %), 125 charbons', () => {
+test('area 0 : 1250 blocs, comptes exacts (52/33/10/5 %), 125 charbons', () => {
   const G=newSession(777), c=countRows(G, 2, 26);
   assert.equal(G.tiles.length, 1+1+AREA_H);
-  assert.equal(c[IDS.dirt]+c[IDS.stone]+c[IDS.coal], W*AREA_H);
+  assert.equal(c[IDS.dirt]+c[IDS.stone]+c[IDS.coal]+c[IDS.air], W*AREA_H);
   assert.equal(c[IDS.coal], 125);
   assert.equal(G.areas[0].oreTotal, 125);
-  assert.ok(Math.abs(c[IDS.dirt]-0.57*1250)<=1 && Math.abs(c[IDS.stone]-0.33*1250)<=1);
+  assert.ok(Math.abs(c[IDS.dirt]-0.52*1250)<=1 && Math.abs(c[IDS.stone]-0.33*1250)<=1);
+  assert.ok(Math.abs(c[IDS.air]-0.05*1250)<=1, `vide : ${c[IDS.air]}`);
 });
 
-test('area 3 : composition exacte (diamants compris)', () => {
+test('chaque area (0 à 6) : composition exacte (arrondis : 2 blocs près)', () => {
   const G=newSession(5);
-  for(let k=1;k<=3;k++) genArea(G,k);
-  const c=countRows(G, areaTop(3), areaTop(3)+AREA_H-1), comp=AREAS[3];
-  for(const n in comp) assert.ok(Math.abs(c[IDS[n]]-comp[n]*12.5)<=1, n);
+  for(let k=1;k<=6;k++) genArea(G,k);
+  for(let k=0;k<=6;k++){
+    const comp=AREAS[Math.min(k,AREAS.length-1)].comp, c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
+    let total=0;
+    for(const n in comp){ assert.ok(Math.abs((c[IDS[n]]||0)-comp[n]*12.5)<=2, `area ${k} ${n} : ${c[IDS[n]]}`); total+=c[IDS[n]]||0; }
+    assert.equal(total, W*AREA_H, `area ${k} : aucun autre bloc`);
+  }
+});
+
+test('compositions : chaque area totalise 100 %', () => {
+  for(const a of AREAS) assert.equal(Object.values(a.comp).reduce((s,v)=>s+v,0), 100);
+});
+
+test('pierre dure : absente avant l\'area 3, présente ensuite', () => {
+  const G=newSession(9);
+  for(let k=1;k<=5;k++) genArea(G,k);
+  const hard = k => countRows(G, areaTop(k), areaTop(k)+AREA_H-1)[IDS.hardstone]||0;
+  assert.equal(hard(2), 0);
+  assert.ok(hard(3)>0 && hard(4)>hard(3) && hard(5)>hard(4));
+});
+
+test('poches de vide : cachées tant qu\'elles ne sont pas découvertes', () => {
+  const G=newSession(4242);
+  let air=0, seenAir=0;
+  for(let y=areaTop(0)+3;y<areaTop(0)+AREA_H;y++) for(let x=0;x<W;x++) if(G.tiles[y][x]===0){ air++; if(G.seen[y][x]) seenAir++; }
+  assert.ok(air>0);
+  assert.equal(seenAir, 0);
+});
+
+test('génération des areas profondes déterministe', () => {
+  const A=newSession(31), B=newSession(31);
+  for(let k=1;k<=5;k++){ genArea(A,k); genArea(B,k); }
+  assert.deepEqual(A.tiles, B.tiles);
 });
 
 test('mimics placés sur des minerais de leur area', () => {

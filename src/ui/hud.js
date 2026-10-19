@@ -1,5 +1,5 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS } from '../config.js';
 import { areaOf, unlockNeed } from '../sim/world.js';
 import { curLum } from '../sim/miner.js';
 
@@ -9,8 +9,9 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const chips = obj => { const k=Object.keys(obj||{}); return k.length ? k.map(n=>`<span class="pill">${obj[n]} ${esc(n)}</span>`).join('') : '<span class="mut">vide</span>'; };
 const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';
 
-const COLORS={dirt:'#7a5230',stone:'#7d828c',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0'};
-const NAMES={dirt:'Terre',stone:'Pierre',coal:'Charbon',iron:'Fer',gold:'Or',diamond:'Diamant'};
+/* couleur et nom de chaque entrée de composition (les noms viennent des blocs ; « air » = poches de vide) */
+const COLORS={dirt:'#7a5230',stone:'#7d828c',hardstone:'#575c66',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0',air:'#1a1410'};
+const compName = n => n==='air' ? 'Vide' : BLOCKS[IDS[n]].name;
 
 function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+a+')':(m.y===0?' (surface)':' (couche de terre)')); }
 
@@ -56,7 +57,7 @@ export function updateHUD(G, ui){
   const done = ai < G.unlockedAreas-1 || a.oreMined>=need;
   let h=`<div class="row"><b>Area ${ai}</b><span class="mut">${W}×${AREA_H} = ${W*AREA_H} blocs</span></div>`;
   for(const n in a.comp)
-    h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${NAMES[n]}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
+    h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
   h+=`<div class="row" style="margin-top:8px"><span>Objectif : ${Math.round(CFG.unlockRatio*100)}% des minerais</span><span>${a.oreMined} / ${need}</span></div>`;
   h+=`<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:${done?'var(--ok)':'var(--acc)'}"></i></div>`;
   h+=`<div class="mut" style="margin-top:4px">${done?'✔ Area suivante débloquée':'🔒 Accès à l\'area '+(ai+1)+' verrouillé'}</div>`;

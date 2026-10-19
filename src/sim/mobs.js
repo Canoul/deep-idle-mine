@@ -38,7 +38,8 @@ export function updateMobs(G){
 }
 
 /* Apparitions : hasard « live » (G.rng, séparé de la génération du monde). Autour des mineurs sous terre,
-   chacun son tour, posées au sol dans une galerie à distance 5–10. */
+   chacun son tour, posées au sol dans une galerie à distance 5–10. Jamais dans une poche de vide encore
+   cachée (non découverte) : une bestiole y serait coincée derrière la roche. */
 function spawnBugs(G){
   G.spawnTimer-=DT;
   if(G.spawnTimer>0) return;
@@ -49,7 +50,7 @@ function spawnBugs(G){
   if(live>=MOBS.bugCap(k) || m.y<=0) return;
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.bugSpawnMax);y<=Math.min(maxRow(G),m.y+MOBS.bugSpawnMax);y++)
-    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.bugSpawnMin&&d<=MOBS.bugSpawnMax&&isAir(G,x,y)&&supported(G,x,y)) cand.push([x,y]); }
+    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.bugSpawnMin&&d<=MOBS.bugSpawnMax&&isAir(G,x,y)&&G.seen[y][x]&&supported(G,x,y)) cand.push([x,y]); }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)], hp=MOBS.bugHp(k);
   G.mobs.push({id:G.mobId++,type:'bestiole',x,y,hp,maxhp:hp,cd:1});
