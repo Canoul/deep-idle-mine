@@ -89,10 +89,9 @@ function nearestThreat(G,m){
   for(const o of G.mobs){
     if(o.hp<=0 || m.ignored.has(o.id)) continue;
     const d=Math.hypot(o.x-m.x,o.y-m.y);
-    if(o.type==='mimic'){
-      if(!o.revealed && d<=MOBS.mimicRevealDist){ o.revealed=true; log(G,'⚠ Un mimic se dévoile !'); }
-      if(!o.revealed) continue;
-    } else if(d>R) continue;
+    if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist){ o.revealed=true; log(G,'⚠ Un mimic se dévoile !'); }
+    if(o.type==='mimic' && !o.revealed) continue;
+    if(d>R) continue;   // un mob (bestiole ou mimic dévoilé) ne déclenche le combat que dans le champ de vision
     if(d<bd){bd=d;best=o;}
   }
   return best;

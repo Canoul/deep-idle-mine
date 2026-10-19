@@ -104,3 +104,29 @@ test('retour : préfère marcher jusqu\'à une échelle existante plutôt que d\
   const p=planReturn(G,m);
   assert.deepEqual([p.dx,p.dy],[1,0], 'premier pas : vers la droite, vers l\'échelle');
 });
+
+test('mimic dévoilé hors du champ de vision : il n\'attire pas le mineur', () => {
+  const G=worldFrom([
+    '',
+    'd'.repeat(50),
+    '#@'+'#'.repeat(28)+'c',   // mimic dévoilé à 29 cases, derrière la roche
+  ]);
+  const m=G.miners[0];
+  G.mobs.push({id:99, type:'mimic', x:30, y:2, hp:25, maxhp:25, revealed:true, ore:IDS.coal});
+  decide(G,m);
+  assert.notEqual(m.foe, 99);
+  assert.ok(!m.status.startsWith('Combat'), m.status);
+});
+
+test('mimic dévoilé juste à côté : le mineur le combat', () => {
+  const G=worldFrom([
+    '',
+    'd'.repeat(50),
+    '#@c#',
+  ]);
+  const m=G.miners[0];
+  G.mobs.push({id:99, type:'mimic', x:2, y:2, hp:25, maxhp:25, revealed:true, ore:IDS.coal});
+  decide(G,m);
+  assert.equal(m.foe, 99);
+  assert.equal(m.action.type, 'attack');
+});
