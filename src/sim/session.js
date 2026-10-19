@@ -25,6 +25,12 @@ export function newSession(seed, opts={}){
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
   };
+  /* id unique de la session (distinct de la seed : rejouer une seed = une autre session) ; sert à ne créditer
+     qu'une seule fois le coffre d'une session dans un inventaire */
+  G.id = opts.id ?? `${seed}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+  /* roster : tous les joueurs de la session, dans l'ordre, y compris ceux qui sont partis.
+     G.miners ne contient que les mineurs encore présents : toute la simulation (IA, mobs, rendu) ne voit qu'eux. */
+  G.roster = [...G.miners];
   for(let y=1;y<=TOP_DIRT_ROWS;y++){   // couche(s) de terre sous la surface, visibles dès le départ
     G.tiles.push(new Uint8Array(W).fill(IDS.dirt)); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));
   }
@@ -71,17 +77,36 @@ export function tick(G){
   if(G.t>=SESSION_LEN) endSession(G);
 }
 
-/* fin de session : le coffre est figé dans G.summary et partagé entre les joueurs (summary.shares, un par mineur) ;
-   c'est l'UI qui verse la part du joueur dans son inventaire */
+/* Un joueur quitte la session : son mineur disparaît de la mine, ce qu'il portait est perdu, et il ne recevra
+   rien du coffre (sa part revient aux joueurs encore présents à la fin). S'il ne reste personne, la session s'arrête.
+   Idempotent : quitter deux fois, ou après la fin, ne fait rien. Renvoie true si le départ a eu lieu. */
+export function leaveSession(G, who){
+  if(G.over) return false;
+  const m = typeof who==='object' ? who : G.miners.find(x => x.account!==null && x.account===who);
+  if(!m || m.left!=null || !G.miners.includes(m)) return false;
+  m.left = G.t; m.action = null; m.status = 'A quitté la session';
+  G.miners = G.miners.filter(x => x!==m);
+  log(G, `${m.name} a quitté la session`+(Object.keys(m.inv).length ? ' (ce qu\'il portait est perdu)' : ''));
+  if(!G.miners.length) endSession(G);
+  return true;
+}
+
+/* fin de session : le coffre est figé dans G.summary et partagé entre les joueurs encore présents
+   (summary.shares : une entrée par joueur du roster, vide pour ceux qui sont partis) ;
+   c'est l'UI (plus tard le serveur) qui verse la part du joueur dans son inventaire.
+   Idempotent : un second appel ne recalcule rien. */
 export function endSession(G){
+  if(G.summary) return;
   G.over=true;
   G.summary = {
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
     kills:G.stats.kills, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
-    lost: G.miners.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
+    id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
   };
-  const bags = shareChest(G.chest, G.miners.length, G.seed);
-  G.summary.shares = G.miners.map((m,i)=>({ miner:m.name, color:m.color, account:m.account, bag:bags[i] }));
+  const present = G.roster.filter(m => m.left==null);
+  const bags = shareChest(G.chest, present.length, G.seed);
+  G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
+    left: m.left!=null, bag: m.left!=null ? {} : bags[present.indexOf(m)] }));
 }
 
 /* simule une session complète d'un coup (Node, tests) */

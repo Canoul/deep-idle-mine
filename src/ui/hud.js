@@ -74,11 +74,11 @@ export function updateNavSession(G){
 
 /* me : index de la part du joueur dans G.summary.shares */
 export function showEnd(G, me, onNew, onInventory){
-  const s=G.summary, shares=s.shares, n=shares.length;
-  const split = n>1
+  const s=G.summary, shares=s.shares, n=shares.filter(p=>!p.left).length;
+  const split = shares.length>1
     ? `<p>Coffre commun : ${chips(s.chest)}</p>`+
-      `<p>Partagé à parts égales entre les ${n} joueurs <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
-      shares.map((p,i)=>`<div class="row share${i===me?' me':''}"><span>${sw(p.color)}${esc(p.miner)}${i===me?' (toi)':''}</span><span>${chips(p.bag)}</span></div>`).join('')
+      `<p>Partagé à parts égales entre les ${n} joueur${n>1?'s':''} présent${n>1?'s':''} à la fin <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
+      shares.map((p,i)=>`<div class="row share${i===me?' me':''}"><span>${sw(p.color)}${esc(p.miner)}${i===me?' (toi)':''}</span><span>${p.left?'<span class="mut">a quitté la session : rien</span>':chips(p.bag)}</span></div>`).join('')
     : `<p>Transféré dans ton inventaire :</p><div>${chips(shares[0].bag)}</div>`;
   const by = G.miners.length>1
     ? '<p>Contributions :</p>'+G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')

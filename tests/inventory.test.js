@@ -97,7 +97,7 @@ test('sauvegarde corrompue : inventaire vide plutôt qu\'un plantage', () => {
   assert.equal(usedSlots(deserialize('pas du json')), 0);
   assert.equal(usedSlots(deserialize('{"v":1}')), 0);
   assert.deepEqual(deserialize('{"v":1,"slots":[{"item":"Fer","qty":2},{"bad":1},null]}').slots,
-    [{item:'Fer', qty:2}, null, null]);
+    [{item:'Fer', qty:2}], 'slots invalides vidés, cases vides en fin de grille retirées');
 });
 
 test('reprise de l\'ancien inventaire { nom: quantité }', () => {

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TREASURE, MOBS } from '../src/config.js';
 import { shareChest, shareIndexFor } from '../src/meta/share.js';
-import { newSession, endSession } from '../src/sim/session.js';
+import { newSession, endSession, leaveSession, tick } from '../src/sim/session.js';
 
 const total = (bags, k) => bags.reduce((n, b) => n + (b[k] || 0), 0);
 
@@ -71,4 +71,47 @@ test('la part du joueur : celle de son compte, sinon celle du premier mineur', (
   assert.equal(shareIndexFor(shares, 'B'), 1);
   assert.equal(shareIndexFor(shares, 'Z'), 0);
   assert.equal(shareIndexFor(shares, null), 0);
+});
+
+test('un joueur qui quitte ne reçoit rien ; les présents se partagent tout le coffre', () => {
+  const G = newSession(5, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
+  assert.equal(leaveSession(G, 'BBBB'), true);
+  G.chest = { Charbon:10, [TREASURE.item]:1 };
+  endSession(G);
+  const [a, b, c] = G.summary.shares;
+  assert.equal(b.left, true);
+  assert.deepEqual(b.bag, {});
+  assert.equal(a.bag.Charbon + c.bag.Charbon, 10);
+  assert.ok(Math.abs(a.bag.Charbon - c.bag.Charbon) <= 1);
+  assert.equal(a.bag[TREASURE.item], 1);
+  assert.equal(c.bag[TREASURE.item], 1);
+});
+
+test('le mineur d\'un joueur parti disparaît de la mine, la session continue sans lui', () => {
+  const G = newSession(11, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
+  for(let i=0; i<300; i++) tick(G);
+  const blue = G.miners[1];
+  leaveSession(G, blue);
+  assert.deepEqual(G.miners.map(m => m.name), ['Rouge', 'Vert']);
+  assert.equal(G.roster.length, 3);
+  for(let i=0; i<3000; i++) tick(G);                  // pas de plantage (IA, mobs, réservations)
+  assert.equal(G.over, false);
+  assert.ok(G.miners.every(m => m.left == null));
+});
+
+test('si tout le monde part, la session s\'arrête et personne ne reçoit rien', () => {
+  const G = newSession(3, { miners:3 });
+  G.chest = { Charbon:9 };
+  for(const m of [...G.miners]) leaveSession(G, m);
+  assert.equal(G.over, true);
+  assert.ok(G.summary.shares.every(p => p.left && Object.keys(p.bag).length === 0));
+});
+
+test('quitter : par compte, et un compte inconnu ne fait rien', () => {
+  const G = newSession(3, { miners:3, accounts:['AAAA'] });
+  assert.equal(leaveSession(G, 'ZZZZ'), false);
+  assert.equal(leaveSession(G, null), false, 'les mineurs sans compte ne partent pas par erreur');
+  assert.equal(G.miners.length, 3);
+  assert.equal(leaveSession(G, 'AAAA'), true);
+  assert.equal(G.miners.length, 2);
 });

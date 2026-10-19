@@ -155,6 +155,8 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 - **Trésor** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Trésor rapporté (un coffre au trésor ouvert à 3 = 1 Trésor pour chacun) ;
 - **solo** : le joueur garde tout ;
 - ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
+- **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu, et le coffre est partagé entre les joueurs **présents à la fin** (sa part leur revient). Si tout le monde part, la session s'arrête et personne ne reçoit rien.
+- **le partage est calculé par le serveur** (anti-triche) : décision prise ; pour l'instant la session tourne encore dans le navigateur (voir le plan « session côté serveur »).
 - Tant qu'il n'y a pas de lobby, les 3 mineurs tournent sur la machine du joueur : **il contrôle Rouge** et ne reçoit que **sa part** ; Bleu et Vert sont des coéquipiers sans compte.
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.

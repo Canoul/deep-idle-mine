@@ -69,6 +69,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ### Lancer, tester, simuler
 - `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Le serveur sert le jeu et gère les comptes (`data/accounts.json`, ignoré par git). Sans lui (simple serveur de fichiers), le jeu démarre hors ligne, sans compte. Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1` ; l'onglet s'ouvre par `#inventaire`, `#craft`…
 - `npm test` : tests unitaires + sessions complètes de non-régression (`node:test`, aucune dépendance).
+- `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
 - `npm run simulate -- --miners 3 --count 8` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
 - `npm run textures` : régénère `textures/` (Python).
 
@@ -110,6 +111,12 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 - Garde la boucle de jeu **vérifiable sans navigateur** : prévois un script (Node) qui simule une session complète en quelques secondes et affiche : areas débloquées, profondeur max, ressources au coffre, nombre d'allers-retours. Lance-le après chaque changement touchant la simulation ou l'IA.
 - Avant de conclure qu'une modif de gameplay fonctionne, lance la simulation et regarde les chiffres, ne te fie pas à la lecture du code.
 - Les pannes classiques de ce genre d'IA : mineur bloqué sans issue, oscillation entre deux actions, remontée impossible faute d'échelle, area qui ne se débloque jamais. Teste ces cas.
+- **Toujours coder contre la duplication et la triche.** Tout ce qui crée, déplace ou retire des ressources ou des objets (coffre, partage, inventaire, craft, échanges, sauvegarde) doit :
+  - refuser les quantités invalides (négatives, décimales, Infinity, NaN, texte, trop grandes) et les objets inconnus là où ça compte ;
+  - être **idempotent** quand une action peut être rejouée (double clic, rechargement, requête renvoyée) : une session n'est créditée qu'une fois (`creditSession`), une fin de session ou un départ appelé deux fois ne fait rien ;
+  - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. le Trésor un pour chacun) ;
+  - ne jamais faire confiance au navigateur pour ce qui a de la valeur : à terme, c'est le serveur qui calcule et qui fait foi.
+  Ces cas ont leurs tests dans `tests/anticheat/` (à compléter à chaque nouveau chemin de ressources), lancés à la demande avec `npm run test:anticheat`, pas à chaque modification.
 - **Tests unitaires à chaque étape** : toute nouvelle fonctionnalité ou modification vient avec ses tests unitaires, et on lance la suite complète avant de conclure, pour s'assurer qu'on ne régresse pas sur l'existant.
 - **Structure du dossier optimisée et segmentée** : organise les dossiers et fichiers de façon claire (ex. `src/` pour le code, `tests/` pour les tests, `docs/` pour la doc, `scripts/` pour les outils de simulation). Range chaque chose à sa place et garde la racine propre.
 - **Un fichier par module** : crée un fichier distinct pour chaque module (monde, IA, simulation, rendu, UI, config…) au lieu d'un seul gros fichier. Le prototype monolithique n'est qu'une référence, pas un modèle de structure.

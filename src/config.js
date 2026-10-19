@@ -136,7 +136,9 @@ export const ITEMS = {
 
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;
    capacité illimitée pour l'instant (une ligne s'ajoute quand la grille est pleine) */
-export const INVENTORY = { cols:8, minSlots:48 };
+/* maxUniqueAdd : nombre max de pièces non empilables ajoutées en une fois (chacune prend un slot) : protège d'une
+   quantité aberrante (bug ou triche) qui créerait des millions de slots */
+export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000 };
 
 /* ---- Comptes joueur (règles partagées par le jeu et le serveur) ----
    Pas d'adresse e-mail : un pseudo + un mot de passe, ou un compte invité à sécuriser plus tard.
