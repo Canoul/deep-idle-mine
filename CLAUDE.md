@@ -69,9 +69,9 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ### Lancer, tester, simuler
 - `npm start` puis http://localhost:8000 : jeu normal (vitesse ×2, le serveur fait foi). `npm run dev` : **mode développeur** (vitesses ×1–×300, pause, seed, mineurs de test, réglages des stats dans le lobby, fin libre). Les modules ne s'ouvrent pas par double-clic. Données : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro). Sans serveur de jeu, on ne peut pas lancer de session. L'onglet s'ouvre par `#inventaire`, `#craft`…
 - Pour reproduire une partie précise : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
-- `npm test` : tests unitaires + sessions complètes de non-régression (`node:test`, aucune dépendance).
+- `node --test tests/<sujet>.test.js` : les tests d'un seul sujet (c'est ce qu'on lance après une modification). `npm test` : toute la suite, longue (plusieurs minutes), seulement si le créateur le demande.
 - `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
-- `npm run simulate -- --miners 3 --count 8` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
+- `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
 - `npm run textures` : régénère `textures/` (Python).
 
 ### Structure
@@ -110,7 +110,7 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 
 ## Règles de travail
 
-- Garde la boucle de jeu **vérifiable sans navigateur** : prévois un script (Node) qui simule une session complète en quelques secondes et affiche : areas débloquées, profondeur max, ressources au coffre, nombre d'allers-retours. Lance-le après chaque changement touchant la simulation ou l'IA.
+- Garde la boucle de jeu **vérifiable sans navigateur** : prévois un script (Node) qui simule une session complète en quelques secondes et affiche : areas débloquées, profondeur max, ressources au coffre, nombre d'allers-retours. Lance-le après chaque changement touchant la simulation ou l'IA, **sur 5 sessions** (`--count 5`), pas plus.
 - Avant de conclure qu'une modif de gameplay fonctionne, lance la simulation et regarde les chiffres, ne te fie pas à la lecture du code.
 - Les pannes classiques de ce genre d'IA : mineur bloqué sans issue, oscillation entre deux actions, remontée impossible faute d'échelle, area qui ne se débloque jamais. Teste ces cas.
 - **Toujours coder contre la duplication et la triche.** Tout ce qui crée, déplace ou retire des ressources ou des objets (coffre, partage, inventaire, craft, échanges, sauvegarde) doit :
@@ -119,7 +119,8 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
   - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. les Treasure TX, un pour chacun) ;
   - ne jamais faire confiance au navigateur pour ce qui a de la valeur : à terme, c'est le serveur qui calcule et qui fait foi.
   Ces cas ont leurs tests dans `tests/anticheat/` (à compléter à chaque nouveau chemin de ressources), lancés à la demande avec `npm run test:anticheat`, pas à chaque modification.
-- **Tests unitaires à chaque étape** : toute nouvelle fonctionnalité ou modification vient avec ses tests unitaires, et on lance la suite complète avant de conclure, pour s'assurer qu'on ne régresse pas sur l'existant.
+- **Tests unitaires à chaque étape** : toute nouvelle fonctionnalité ou modification vient avec ses tests unitaires. Avant de conclure, **ne relance que les fichiers de tests liés à ce que tu as modifié** (`node --test tests/<sujet>.test.js`), pas toute la suite.
+- **Temps de vérification limité** : une simulation de contrôle = **5 sessions**, pas plus. Le créateur ne peut pas attendre 30 min entre deux demandes ; vise quelques minutes de vérification au total.
 - **Structure du dossier optimisée et segmentée** : organise les dossiers et fichiers de façon claire (ex. `src/` pour le code, `tests/` pour les tests, `docs/` pour la doc, `scripts/` pour les outils de simulation). Range chaque chose à sa place et garde la racine propre.
 - **Un fichier par module** : crée un fichier distinct pour chaque module (monde, IA, simulation, rendu, UI, config…) au lieu d'un seul gros fichier. Le prototype monolithique n'est qu'une référence, pas un modèle de structure.
 - **Textures** : toutes les textures vivent dans `textures/` (PNG 16×16) et sont chargées par le code, jamais dessinées en dur. Toute nouvelle texture s'ajoute dans ce dossier (générées par `scripts/gen_textures.py` tant qu'on n'a pas de vrais assets).
