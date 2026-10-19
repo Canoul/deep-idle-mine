@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, IDS, BARRIER, AREAS } from '../src/config.js';
+import { W, AREA_H, IDS, BARRIER, AREAS, TREASURE_BLOCK } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
-import { areaOf, areaTop, tileAt, supported, landing, genArea } from '../src/sim/world.js';
+import { areaOf, areaTop, tileAt, supported, landing, genArea, typeOf } from '../src/sim/world.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { worldFrom } from './helpers.js';
 
@@ -36,21 +36,27 @@ test('couche 1 toujours en terre, hors de toute area', () => {
 test('area 0 : 1250 blocs, comptes exacts (52/33/10/5 %), 125 charbons', () => {
   const G=newSession(777), c=countRows(G, 2, 26);
   assert.equal(G.tiles.length, 1+1+AREA_H);
-  assert.equal(c[IDS.dirt]+c[IDS.stone]+c[IDS.coal]+c[IDS.air], W*AREA_H);
+  assert.equal(c[IDS.dirt]+c[IDS.stone]+c[IDS.coal]+c[IDS.air]+(c[TREASURE_BLOCK]||0), W*AREA_H);
   assert.equal(c[IDS.coal], 125);
   assert.equal(G.areas[0].oreTotal, 125);
-  assert.ok(Math.abs(c[IDS.dirt]-0.52*1250)<=1 && Math.abs(c[IDS.stone]-0.33*1250)<=1);
+  assert.ok(Math.abs(c[IDS.dirt]-0.52*1250)<=2 && Math.abs(c[IDS.stone]-0.33*1250)<=2);
   assert.ok(Math.abs(c[IDS.air]-0.05*1250)<=1, `vide : ${c[IDS.air]}`);
 });
 
-test('chaque area (0 à 6) : composition exacte (arrondis : 2 blocs près)', () => {
+test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à l\'arrondi près)', () => {
   const G=newSession(5);
   for(let k=1;k<=6;k++) genArea(G,k);
   for(let k=0;k<=6;k++){
-    const comp=AREAS[Math.min(k,AREAS.length-1)].comp, c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
+    const a=G.areas[k], comp=AREAS[Math.min(k,AREAS.length-1)].comp, c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
     let total=0;
-    for(const n in comp){ assert.ok(Math.abs((c[IDS[n]]||0)-comp[n]*12.5)<=2, `area ${k} ${n} : ${c[IDS[n]]}`); total+=c[IDS[n]]||0; }
-    assert.equal(total, W*AREA_H, `area ${k} : aucun autre bloc`);
+    for(const n in comp){
+      assert.equal(c[IDS[n]]||0, a.counts[n], `area ${k} ${n} : posés ≠ comptés`);
+      // arrondis (au plus 1 bloc par entrée, absorbés par le terrain principal) + 1 bloc remplacé par un coffre au trésor
+      assert.ok(Math.abs(a.counts[n]-comp[n]*12.5)<=3, `area ${k} ${n} : ${a.counts[n]}`);
+      total+=c[IDS[n]]||0;
+    }
+    assert.equal(total+(c[TREASURE_BLOCK]||0), W*AREA_H, `area ${k} : aucun autre bloc`);
+    for(const n in comp) if(typeOf(IDS[n])==='ore') assert.equal(c[IDS[n]], Math.round(comp[n]*12.5), `area ${k} ${n} : minerais exacts`);
   }
 });
 

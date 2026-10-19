@@ -63,8 +63,10 @@ export const BLOCKS = {
   8:{name:'Passerelle', type:'build', tex:'bridge', w:0, hard:0.4, color:'#9a6b36', dot:'#5c3a1a', noDrop:true},
   /* pierre dure : roche des areas profondes, deux fois plus longue à miner que la pierre (provisoire) */
   9:{name:'Pierre dure', type:'terrain', tex:'hardstone', w:3, hard:2.4, color:'#575c66', dot:'#6c727d'},
+  /* coffre au trésor enfoui : son butin (TREASURE) remplace le bloc ; val = attrait pour l'IA une fois découvert */
+  10:{name:'Coffre au trésor', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
 };
-export const BARRIER = 7, BRIDGE = 8;
+export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9 };
 
@@ -77,15 +79,20 @@ export const BUILDS = {
 };
 
 /* composition en % par area (la dernière est répétée au-delà). Comptes exacts, pas probabilistes.
-   air = cases déjà vides à la génération (poches naturelles), cachées tant qu'elles ne sont pas découvertes. */
+   air = cases déjà vides à la génération (poches naturelles), cachées tant qu'elles ne sont pas découvertes.
+   chestChance = probabilité qu'un coffre au trésor soit enfoui dans l'area (0 à 1, tirée depuis la seed). */
 export const AREAS = [
-  { comp:{dirt:52, stone:33,                coal:10,                                 air:5} },
-  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5} },
-  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5} },
-  { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5} },
-  { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5} },
-  { comp:{         stone:55, hardstone:20,  coal:3,  iron:8,  gold:7,  diamond:2,    air:5} },
+  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.3 },
+  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.3 },
+  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.3 },
+  { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.3 },
+  { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.3 },
+  { comp:{         stone:55, hardstone:20,  coal:3,  iron:8,  gold:7,  diamond:2,    air:5}, chestChance:0.3 },
 ];
+
+/* butin d'un coffre au trésor (provisoire) : des minerais tirés parmi ceux de l'area (au prorata de leur nombre)
+   + un objet Trésor (usage défini plus tard avec le craft). Ce butin ne compte pas pour le déblocage. */
+export const TREASURE = { oreLoot:6, item:'Trésor', itemWeight:2, itemCount:1 };
 
 /* génération : minerais en filons et vide en poches, de 1 à N cases d'un seul tenant */
 export const GEN = { veinMax:4, airPocketMax:4 };
@@ -105,5 +112,5 @@ export const MOBS = {
 };
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure',
   'ladder','chest','miner','mimic','bug','torch'];

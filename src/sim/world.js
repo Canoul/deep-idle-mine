@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN, TREASURE, TREASURE_BLOCK } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 
@@ -8,6 +8,8 @@ export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 /* catégories de blocs (voir BLOCK_TYPES dans config) ; 0 = case vide, sans catégorie */
 export const typeOf = t => t ? BLOCKS[t].type : null;
 export const isOre  = t => typeOf(t)==='ore';
+/* ce que l'IA peut viser une fois découvert : minerais et coffres au trésor */
+export const isTarget = t => isOre(t) || typeOf(t)==='treasure';
 
 export const areaDef  = k => AREAS[Math.min(k, AREAS.length-1)];
 export const areaComp = k => areaDef(k).comp;
@@ -67,6 +69,7 @@ export function genArea(G,k){
   for(const n in counts) if(typeOf(IDS[n])==='terrain') for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;
   for(let i=0;i<N;i++) if(grid[i]===FREE) grid[i]=filler[fi++];
+  const treasure = placeTreasure(G, k, grid, counts, oreTotal, r);
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -79,7 +82,27 @@ export function genArea(G,k){
     const c=oreCells[i], x=c%W, ry=(c/W)|0, y=areaTop(k)+ry, hp=MOBS.mimicHp(k);
     G.mobs.push({id:G.mobId++, type:'mimic', x, y, hp, maxhp:hp, revealed:false, ore:grid[c]});
   }
-  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0};
+  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, chestChance:areaDef(k).chestChance||0, treasure};
+}
+
+/* Coffre au trésor : un tirage par area (chestChance) ; s'il sort, le coffre remplace un bloc de terrain au hasard.
+   Son butin est tiré dès la génération : même seed → même coffre, même butin. */
+function placeTreasure(G, k, grid, counts, oreTotal, r){
+  if(!(r() < (areaDef(k).chestChance||0))) return null;
+  const spots=[]; for(let i=0;i<grid.length;i++) if(typeOf(grid[i])==='terrain') spots.push(i);
+  if(!spots.length) return null;
+  const c=spots[Math.floor(r()*spots.length)], name=Object.keys(IDS).find(n=>IDS[n]===grid[c]);
+  counts[name]--; counts.treasure=1; grid[c]=TREASURE_BLOCK;
+  const loot={};   // id de minerai → quantité, au prorata des minerais de l'area
+  const ores=Object.keys(counts).filter(n=>isOre(IDS[n]) && counts[n]>0);
+  for(let i=0;i<TREASURE.oreLoot && oreTotal>0;i++){
+    let p=r()*oreTotal, n=ores[0];
+    for(const o of ores){ if(p<counts[o]){ n=o; break; } p-=counts[o]; }
+    loot[IDS[n]]=(loot[IDS[n]]||0)+1;
+  }
+  const t={k, x:c%W, y:areaTop(k)+((c/W)|0), loot, opened:false};
+  G.treasures.set(t.y*W+t.x, t);
+  return t;
 }
 
 export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);

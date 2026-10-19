@@ -1,7 +1,7 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X } from '../config.js';
-import { DIRS, isOre, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
+import { DIRS, isOre, isTarget, typeOf, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
@@ -18,6 +18,8 @@ export function compassScan(G,m,R){
   }
   m.pings=out; return out;
 }
+
+const targetStatus = t => typeOf(t)==='treasure' ? 'Va ouvrir un coffre au trésor' : 'Suit un filon ('+BLOCKS[t].name+')';
 
 /* ---- coordination entre mineurs : réservation des cibles ----
    Chacun reste indépendant, mais ne vise pas ce qu'un autre vise déjà (minerai, ligne de galerie, puits).
@@ -152,11 +154,12 @@ function decideWork(G,m){
   }
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
-  /* l'IA ne vise que les minerais découverts (révélés) ou signalés par la boussole (sa ligne) */
+  /* l'IA ne vise que les minerais découverts (révélés) ou signalés par la boussole (sa ligne),
+     et les coffres au trésor découverts (la boussole ne les signale pas) */
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(isOre(t) && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
+    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -169,7 +172,7 @@ function decideWork(G,m){
   // … sauf si un autre mineur (plus petit numéro) la vise aussi
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isOre(t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status='Suit un filon ('+BLOCKS[t].name+')'; return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
@@ -188,7 +191,7 @@ function decideWork(G,m){
   // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
   const down = !m.exploring && tileAt(G,m.x,m.y+1) !== BARRIER;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
-  if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status='Suit un filon ('+BLOCKS[best.t].name+')'; return goOre(G,m,best,r,bestN); }
+  if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
   if(down){
     // ne pas descendre là où un autre travaille déjà, ni loin de son secteur
     const pd=planDown(G,m,(x,y)=>crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1);

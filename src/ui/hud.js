@@ -58,6 +58,9 @@ export function updateHUD(G, ui){
   let h=`<div class="row"><b>Area ${ai}</b><span class="mut">${W}×${AREA_H} = ${W*AREA_H} blocs</span></div>`;
   for(const n in a.comp)
     h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
+  // coffre au trésor : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
+  if(a.chestChance>0)
+    h+=`<div class="row" style="margin-top:6px"><span>💰 Coffre au trésor</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
   h+=`<div class="row" style="margin-top:8px"><span>Objectif : ${Math.round(CFG.unlockRatio*100)}% des minerais</span><span>${a.oreMined} / ${need}</span></div>`;
   h+=`<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:${done?'var(--ok)':'var(--acc)'}"></i></div>`;
   h+=`<div class="mut" style="margin-top:4px">${done?'✔ Area suivante débloquée':'🔒 Accès à l\'area '+(ai+1)+' verrouillé'}</div>`;
@@ -77,6 +80,7 @@ export function showEnd(G, onNew){
     `<div class="row"><span>Areas débloquées</span><b>${s.areasUnlocked}</b></div>`+
     `<div class="row"><span>Blocs minés</span><b>${s.mined}</b></div>`+
     `<div class="row"><span>Mobs vaincus</span><b>${s.kills}</b></div>`+
+    `<div class="row"><span>Coffres au trésor ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
     by+`<p>Transféré dans l'inventaire global :</p><div>${lines}</div>`+lost+
     '<p style="text-align:right"><button class="on" id="endNew">Nouvelle session</button></p>';

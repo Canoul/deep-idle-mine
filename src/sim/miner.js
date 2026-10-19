@@ -12,7 +12,7 @@ export function createMiner(id, opts={}){
     returnStart:0, lastReturnDur:0, // durée de son dernier retour (sert à juger s'il vaut la peine de repartir)
     torches:STATS.torches, bridges:STATS.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
     prefs: { ...PREFS, ...(opts.prefs||{}) },
-    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0 },
+    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0 },
   };
 }
 

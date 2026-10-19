@@ -1,15 +1,15 @@
 /* Fabrique une mine à partir d'un dessin texte, pour tester des situations précises.
-   Légende : ' ' vide · '#' pierre · 'h' pierre dure · 'd' terre · 'c' charbon · 'H' échelle (case vide) · '=' passerelle · '@' mineur (case vide)
+   Légende : ' ' vide · '#' pierre · 'h' pierre dure · 'd' terre · 'c' charbon · 'T' coffre au trésor · 'H' échelle (case vide) · '=' passerelle · '@' mineur (case vide)
    La ligne 0 du dessin est la surface. Les lignes plus courtes que W sont complétées en pierre.
    Sous la dernière ligne : barrière (area suivante verrouillée). */
-import { W, IDS, BRIDGE } from '../src/config.js';
+import { W, IDS, BRIDGE, TREASURE_BLOCK } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
 
-const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal, 'H':0, '=':BRIDGE, '@':0 };
+const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal, 'T':TREASURE_BLOCK, 'H':0, '=':BRIDGE, '@':0 };
 
 export function worldFrom(rows, opts={}){
   const G = newSession(opts.seed ?? 1, { miners: opts.miners ?? 1 });
-  G.tiles=[]; G.ladder=[]; G.seen=[]; G.mobs=[]; G.torches=[]; G.light=new Map();
+  G.tiles=[]; G.ladder=[]; G.seen=[]; G.mobs=[]; G.treasures=new Map(); G.torches=[]; G.light=new Map();
   let at=null;
   rows.forEach((line,y)=>{
     const t=new Uint8Array(W).fill(y===0?0:IDS.stone), l=new Uint8Array(W);
