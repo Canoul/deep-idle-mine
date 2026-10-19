@@ -160,6 +160,16 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 
+### Comptes joueur
+Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
+- Au lancement, écran de connexion : **se connecter** (pseudo + mot de passe), **créer un compte**, ou **jouer en invité** (1 clic).
+- Un **invité** n'a ni pseudo ni mot de passe : son compte n'existe que dans ce navigateur. Il peut le **sécuriser** à tout moment (pseudo + mot de passe) sans rien perdre.
+- Chaque compte a un **ID de compte** public et définitif (ex. `7K3Q-9XHP`), qui servira à ajouter un ami ou à l'inviter dans un lobby. C'est à cet ID qu'est rattaché tout ce que possède le joueur.
+- **Pseudo** unique (sans tenir compte des majuscules ni des accents), 3 à 16 caractères *(valeurs de config)*.
+- Mot de passe oublié : un **code de secours** est donné à la création (montré une seule fois) ; avec pseudo + code, on choisit un nouveau mot de passe.
+- Le compte est visible en bas de la barre de navigation (pseudo + ID, ou « Invité · à sécuriser ») ; un clic ouvre « Mon compte ».
+- Pour l'instant l'inventaire reste sauvegardé dans le navigateur (une sauvegarde par compte) ; l'inventaire d'avant les comptes est repris par le premier compte connecté.
+
 ## 7. Vision long terme (à ne pas casser)
 
 ### Multijoueur

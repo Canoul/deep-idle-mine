@@ -61,10 +61,11 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ## État actuel
 
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
+- **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Serveur Node sans dépendance. Détails : `docs/comptes.md`.
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
-- `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1` ; l'onglet s'ouvre par `#inventaire`, `#craft`…
+- `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Le serveur sert le jeu et gère les comptes (`data/accounts.json`, ignoré par git). Sans lui (simple serveur de fichiers), le jeu démarre hors ligne, sans compte. Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1` ; l'onglet s'ouvre par `#inventaire`, `#craft`…
 - `npm test` : tests unitaires + sessions complètes de non-régression (`node:test`, aucune dépendance).
 - `npm run simulate -- --miners 3 --count 8` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
 - `npm run textures` : régénère `textures/` (Python).
@@ -76,17 +77,22 @@ src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles)
+src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID)
+src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), hud, controls, inventory (grille), storage (localStorage), style.css
+src/ui/                 nav (onglets), hud, controls, inventory (grille), account (connexion, mon compte), storage (localStorage, par compte), style.css
 src/main.js             boucle de frames (vitesse = multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
-scripts/                simulate.js, serve.js, gen_textures.py
+scripts/                simulate.js, gen_textures.py
+server/                 serveur du jeu (npm start) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit)
+docs/                   documentation technique (comptes.md)
 textures/               PNG 16×16
 ```
 
 ## Stack
 
 HTML/JS vanilla, sans dépendance pour l'instant. Pas de framework ni de bundler sans me demander.
+Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serveur importe les règles partagées depuis `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
 
 ## Principes d'architecture à ne pas casser
 
@@ -95,6 +101,7 @@ HTML/JS vanilla, sans dépendance pour l'instant. Pas de framework ni de bundler
 3. **L'IA du mineur lit un objet de préférences.** Ajouter une option de comportement (fuir, aider un allié, préférer les zones navigables…) = ajouter une clé de config et la lire dans l'IA, pas réécrire l'IA.
 4. **Toutes les valeurs d'équilibrage dans des constantes de config au même endroit** (stats, durées, seuils, compositions d'areas, dureté et poids des blocs). Pas de nombres magiques dans la logique.
 5. **Temps réel = 1h**, mais le facteur d'accélération doit rester un simple multiplicateur de ticks par frame.
+6. **Le serveur fait foi pour les comptes.** Le jeu vérifie les formulaires pour le confort, le serveur refait toujours les vérifications. Aucun secret côté navigateur (connexion = cookie HttpOnly). Tout ce qui sera rattaché à un joueur l'est à son **ID de compte**, jamais à son pseudo.
 
 ## Règles de travail
 
@@ -110,4 +117,4 @@ HTML/JS vanilla, sans dépendance pour l'instant. Pas de framework ni de bundler
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : l'UI de craft, le lobby / multijoueur en réseau (les 3 mineurs tournent localement), la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : l'UI de craft, le lobby / multijoueur en réseau (les 3 mineurs tournent localement ; les comptes existent, pas encore le lobby), la sauvegarde de l'inventaire côté serveur, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
