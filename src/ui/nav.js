@@ -1,10 +1,10 @@
 /* Barre de navigation (onglets), toujours ouverte à gauche.
    Changer d'onglet ne met jamais la session en pause : la mine continue de tourner en arrière-plan. */
 
-/* id : identifiant (aussi utilisé dans l'adresse : #inventaire) ; ready : contenu déjà construit */
+/* id : identifiant (aussi utilisé dans l'adresse : #inventaire) ; ready : contenu déjà construit (sinon page d'attente) */
 export const TABS = [
   { id:'mine',       label:'Mine',       icon:'⛏',  ready:true  },
-  { id:'inventaire', label:'Inventaire', icon:'🎒', ready:false },
+  { id:'inventaire', label:'Inventaire', icon:'🎒', ready:true  },
   { id:'stuff',      label:'Stuff',      icon:'🛡',  ready:false },
   { id:'craft',      label:'Craft',      icon:'🔨', ready:false },
   { id:'four',       label:'Four',       icon:'🔥', ready:false },
@@ -36,7 +36,7 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
   }
   const list = navEl.querySelector('ul');
   list.innerHTML = TABS.map(t =>
-    `<li><button data-tab="${t.id}" title="${t.label}"><span class="ico">${t.icon}</span><span class="lbl">${t.label}</span></button></li>`).join('');
+    `<li><button data-tab="${t.id}" title="${t.label}"><span class="ico">${t.icon}</span><span class="lbl">${t.label}</span><i class="dot" hidden></i></button></li>`).join('');
 
   let cur = null;
   function show(id){
@@ -53,5 +53,7 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
 
   let saved = null; try { saved = localStorage.getItem(KEY); } catch(e){}
   show(pickTab(location.hash, saved));
-  return { current: () => cur, show };
+  /* pastille « nouveau » sur un onglet (ex. objets arrivés dans l'inventaire) */
+  const badge = (id, on) => { const d = list.querySelector(`[data-tab="${id}"] .dot`); if(d) d.hidden = !on; };
+  return { current: () => cur, show, badge };
 }

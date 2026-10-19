@@ -47,7 +47,6 @@ export function updateHUD(G, ui){
   $('chestByBox').innerHTML = G.miners.length>1
     ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
     : '';
-  $('globalBox').innerHTML=chips(ui.global);
   $('log').innerHTML=G.log.slice(0,16).map(l=>`<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join('');
 
   // area du mineur suivi
@@ -73,7 +72,7 @@ export function updateNavSession(G){
   $('navBar').style.width = Math.min(100, G.t/SESSION_LEN*100)+'%';
 }
 
-export function showEnd(G, onNew){
+export function showEnd(G, onNew, onInventory){
   const s=G.summary, lines=chips(s.chest);
   const by = G.miners.length>1
     ? '<p>Contributions :</p>'+G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
@@ -88,8 +87,9 @@ export function showEnd(G, onNew){
     `<div class="row"><span>Mobs vaincus</span><b>${s.kills}</b></div>`+
     `<div class="row"><span>Coffres au trésor ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
-    by+`<p>Transféré dans l'inventaire global :</p><div>${lines}</div>`+lost+
-    '<p style="text-align:right"><button class="on" id="endNew">Nouvelle session</button></p>';
+    by+`<p>Transféré dans l'inventaire :</p><div>${lines}</div>`+lost+
+    '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endNew">Nouvelle session</button></p>';
   $('end').hidden=false;
   $('endNew').onclick=onNew;
+  $('endInv').onclick=onInventory;
 }

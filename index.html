@@ -49,11 +49,10 @@
       <div class="row"><span>Sur lui</span><span id="mInv" class="mut">—</span></div>
     </div>
     <div class="card">
-      <h2>Coffre commun (session) → Inventaire global</h2>
+      <h2>Coffre commun (session)</h2>
       <div id="chestBox" class="mut">vide</div>
       <div id="chestByBox" style="margin-top:6px;font-size:12px"></div>
-      <div class="row" style="margin-top:8px"><span>Inventaire global</span></div>
-      <div id="globalBox" class="mut">vide</div>
+      <div class="mut" style="margin-top:6px;font-size:12px">Versé dans l'inventaire à la fin de la session.</div>
     </div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
     <div class="card">
@@ -70,6 +69,13 @@
     </div>
   </aside>
 </main>
+</section>
+<section class="view" data-view="inventaire" hidden>
+  <div class="invWrap">
+    <div class="invHead"><h1>🎒 Inventaire</h1><span id="invCount" class="mut"></span></div>
+    <div id="invGrid" class="invGrid"></div>
+    <div id="invInfo" class="invInfo"></div>
+  </div>
 </section>
 </div>
 </div>

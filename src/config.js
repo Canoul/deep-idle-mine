@@ -109,8 +109,27 @@ export const MOBS = {
   bugFirstSpawn: 25,
   bugSpawnMin: 5, bugSpawnMax: 10, // distance d'apparition autour du mineur
   bugLoot: rng => 1 + Math.floor(rng()*2),   // chitine
+  bugItem: 'Chitine',              // objet laissé par une bestiole
 };
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure',
   'ladder','chest','miner','mimic','bug','torch'];
+
+/* ---- Hors session : inventaire global ----
+   Catalogue des objets qu'on peut posséder, indexé par leur nom (celui que la simulation met dans les coffres).
+   cat   : catégorie d'objet (terrain, ore, treasure, mob, stuff)
+   tex   : texture de l'icône (textures/)
+   stack : true = les exemplaires s'empilent dans un seul slot, sans maximum ;
+           false = chaque exemplaire prend son propre slot (stuff : chaque pièce aura ses propres stats)
+   Les blocs qui se ramassent sont ajoutés automatiquement. Un objet absent du catalogue s'empile par défaut. */
+export const ITEMS = {
+  ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
+    .map(b => [b.name, { cat:b.type, tex:b.tex, w:b.w, stack:true }])),
+  [TREASURE.item]:   { cat:'treasure', tex:'treasure', w:TREASURE.itemWeight, stack:true },
+  [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
+};
+
+/* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;
+   capacité illimitée pour l'instant (une ligne s'ajoute quand la grille est pleine) */
+export const INVENTORY = { cols:8, minSlots:48 };

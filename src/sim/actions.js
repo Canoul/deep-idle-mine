@@ -38,7 +38,7 @@ export function killMob(G,m,o){
     collect(m, b.name, b.w, MOBS.mimicLoot); oreMinedIn(G,o.y);
     log(G, `🗡 ${m.name} : mimic vaincu (+${MOBS.mimicLoot} ${b.name})`);
   } else {
-    const n=MOBS.bugLoot(G.rng); collect(m,'Chitine',1,n);
+    const n=MOBS.bugLoot(G.rng); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
   G.mobs = G.mobs.filter(x=>x.hp>0);

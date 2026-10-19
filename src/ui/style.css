@@ -63,3 +63,22 @@ details summary{cursor:pointer;color:var(--mut)}
   #nav ul{flex-direction:row}
   #nav ul button{padding:6px 8px;white-space:nowrap}
 }
+#nav ul button{position:relative}
+#nav .dot{position:absolute;right:10px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:var(--acc);box-shadow:0 0 6px var(--acc)}
+
+/* ---- onglet Inventaire ---- */
+.invWrap{max-width:760px;margin:0 auto;padding:20px 16px}
+.invHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.invHead h1{font-size:20px;margin:0}
+.invGrid{display:grid;grid-template-columns:repeat(var(--cols,8),minmax(0,1fr));gap:6px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.slot{position:relative;aspect-ratio:1;background:#16120f;border:1px solid #3a312b;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+.slot.empty{cursor:default;background:#181410;border-color:#2b241f}
+.slot:not(.empty):hover{border-color:var(--acc)}
+.slot.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.slot img{width:62%;height:62%;image-rendering:pixelated;pointer-events:none}
+.slot .noicon{font-weight:700;color:var(--mut);text-transform:uppercase}
+.slot .q{position:absolute;right:4px;bottom:2px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 #000,0 0 3px #000;pointer-events:none}
+.slot.fresh{border-color:var(--ok);box-shadow:0 0 8px rgba(111,207,127,.45)}
+.invInfo{min-height:22px;margin-top:10px;padding:8px 12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:13px}
+@media(max-width:520px){.slot .q{font-size:10px;right:2px}.invGrid{gap:4px;padding:6px}}
+.slot.fresh:hover,.slot.fresh.sel{border-color:var(--acc)}

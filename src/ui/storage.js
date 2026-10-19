@@ -1,13 +1,20 @@
-/* Inventaire global (hors session), conservé dans le navigateur. */
-const KEY='deepIdleMine.global';
+/* Sauvegarde de l'inventaire global dans le navigateur (localStorage).
+   La logique de l'inventaire est dans src/meta/inventory.js ; ici on ne fait que lire et écrire. */
+import { createInventory, serialize, deserialize, fromLegacy } from '../meta/inventory.js';
 
-export function loadGlobal(){
-  try { return JSON.parse(localStorage.getItem(KEY)||'{}'); } catch(e){ return {}; }
+const KEY = 'deepIdleMine.inventory';
+const LEGACY_KEY = 'deepIdleMine.global';   // ancien format { nom: quantité }, repris une seule fois
+
+export function loadInventory(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if(raw) return deserialize(raw);
+    const old = localStorage.getItem(LEGACY_KEY);
+    if(old){ const inv = fromLegacy(JSON.parse(old)); saveInventory(inv); return inv; }
+  } catch(e){}
+  return createInventory();
 }
 
-/* verse le coffre de fin de session dans l'inventaire global */
-export function addToGlobal(global, chest){
-  for(const k in chest) global[k]=(global[k]||0)+chest[k];
-  try { localStorage.setItem(KEY, JSON.stringify(global)); } catch(e){}
-  return global;
+export function saveInventory(inv){
+  try { localStorage.setItem(KEY, serialize(inv)); } catch(e){}
 }

@@ -144,6 +144,22 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.
 
+### Navigation
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Talents, Social**.
+- **Mine** : la session en cours (les mineurs, la carte, le coffre commun).
+- **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
+- Stuff, Craft, Four, Talents, Social : à concevoir (page d'attente pour l'instant).
+- Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
+
+### Inventaire global
+Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (ex. « Charbon × 100 »).
+- Un objet **déjà présent s'empile** sur son slot, **sans taille maximum**.
+- Un objet **absent prend un nouveau slot** : le premier slot libre (**ordre d'arrivée**, un objet garde sa place).
+- Les objets de **stuff ne s'empilent pas** : chaque exemplaire prend son propre slot (chaque pièce pourra avoir ses propres stats).
+- **Capacité illimitée** pour l'instant : au moins 48 slots affichés (8 colonnes), une ligne s'ajoute quand la grille est pleine. Une limite pourra devenir une amélioration plus tard *(valeur de config)*.
+- Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
+- Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
+
 ## 7. Vision long terme (à ne pas casser)
 
 ### Multijoueur

@@ -64,7 +64,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
-- `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1`.
+- `npm start` puis http://localhost:8000 (les modules ne s'ouvrent pas par double-clic). Paramètres d'adresse pour reproduire un bug : `?seed=123&miners=3&at=600&focus=1` ; l'onglet s'ouvre par `#inventaire`, `#craft`…
 - `npm test` : tests unitaires + sessions complètes de non-régression (`node:test`, aucune dépendance).
 - `npm run simulate -- --miners 3 --count 8` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
 - `npm run textures` : régénère `textures/` (Python).
@@ -75,8 +75,9 @@ index.html              page du jeu
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
+src/meta/               progression hors session, logique pure (inventory : grille de slots, piles)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 hud, controls, storage, style.css
+src/ui/                 nav (onglets), hud, controls, inventory (grille), storage (localStorage), style.css
 src/main.js             boucle de frames (vitesse = multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, serve.js, gen_textures.py
