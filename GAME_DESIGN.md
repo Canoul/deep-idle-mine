@@ -146,7 +146,16 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 
 ## 6. Hors session
 
-- Les ressources du coffre sont transférées dans l'**inventaire global** en fin de session.
+- Les ressources du coffre sont transférées dans l'**inventaire global** en fin de session, **partagées entre les joueurs** de la session (voir ci-dessous).
+
+### Partage du coffre en fin de session
+Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rattaché à un ID de compte). Le coffre est commun ; en fin de session, son contenu est réparti :
+- **parts égales** : chaque joueur reçoit le même nombre de chaque ressource, quelle que soit sa contribution ;
+- **reste** d'une division qui ne tombe pas juste : donné **au hasard**, une unité au plus par joueur (100 charbons à 3 → 33, 33, 34). Le tirage dépend de la seed : même partie, même partage ;
+- **Trésor** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Trésor rapporté (un coffre au trésor ouvert à 3 = 1 Trésor pour chacun) ;
+- **solo** : le joueur garde tout ;
+- ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
+- Tant qu'il n'y a pas de lobby, les 3 mineurs tournent sur la machine du joueur : **il contrôle Rouge** et ne reçoit que **sa part** ; Bleu et Vert sont des coéquipiers sans compte.
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.
 
@@ -180,7 +189,7 @@ Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 
 ### Multijoueur
 - La mine s'explore à **3 joueurs** (lobby entre amis). Le monde est le même pour tous (même seed).
-- **Coffre commun** : un seul coffre au spawn, tout le monde y dépose ; on affiche la contribution de chacun.
+- **Coffre commun** : un seul coffre au spawn, tout le monde y dépose ; on affiche la contribution de chacun. En fin de session il est partagé à parts égales (§6, « Partage du coffre »).
 - **Les mineurs se traversent** : deux mineurs peuvent être sur la même case (pas de blocage dans les galeries d'un bloc ni sur les échelles).
 - **Coordination des IA (réservation)** : chaque mineur reste indépendant, mais ne vise pas un minerai déjà visé ou en cours de minage par un autre, évite une ligne de galerie qu'un autre creuse, et ne creuse pas dans un puits qu'un autre creuse sous lui (il se décale d'au moins 3 colonnes). En cas de conflit, le plus petit numéro garde la cible.
 - **Répartition dans la mine** *(valeurs provisoires)* : pour ne pas se marcher dessus,

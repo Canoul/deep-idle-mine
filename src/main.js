@@ -7,6 +7,7 @@ import { updateHUD, showEnd, updateNavSession } from './ui/hud.js';
 import { setupControls } from './ui/controls.js';
 import { loadInventory, saveInventory } from './ui/storage.js';
 import { addAll } from './meta/inventory.js';
+import { shareIndexFor } from './meta/share.js';
 import { renderInventory } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
@@ -20,7 +21,8 @@ const sessionHooks = [];
 let G;
 
 function start(seed, miners=DEFAULT_MINERS){
-  G = newSession(seed, { miners });
+  // le joueur contrôle le premier mineur (Rouge) ; les autres sont des coéquipiers sans compte tant qu'il n'y a pas de lobby
+  G = newSession(seed, { miners, accounts:[acct.account?.id ?? null] });
   ui.focus = 0;
   $('seedIn').value = G.seed;
   $('minersSel').value = String(miners);
@@ -57,13 +59,14 @@ start(q.has('seed') ? (+q.get('seed'))|0 : undefined, q.has('miners') ? +q.get('
 if(q.has('at')){ const n=Math.round(+q.get('at')/DT); for(let i=0;i<n && !G.over;i++) tick(G); }
 if(q.has('focus')) ui.focus=+q.get('focus');
 
-/* fin de session : le coffre commun est versé dans l'inventaire global */
+/* fin de session : le coffre commun est partagé entre les joueurs ; seule la part du joueur entre dans son inventaire */
 function endSession(){
-  for(const i of addAll(ui.inv, G.summary.chest)) ui.fresh.add(i);
+  const me = shareIndexFor(G.summary.shares, acct.account?.id);
+  for(const i of addAll(ui.inv, G.summary.shares[me].bag)) ui.fresh.add(i);
   saveInventory(ui.inv, acct.account?.id);
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
-  showEnd(G, ()=>start(undefined, G.miners.length), ()=>{ $('end').hidden=true; nav.show('inventaire'); });
+  showEnd(G, me, ()=>start(undefined, G.miners.length), ()=>{ $('end').hidden=true; nav.show('inventaire'); });
 }
 
 const MAX_TICKS_PER_FRAME = 900;

@@ -1,5 +1,5 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS, SHARE } from '../config.js';
 import { areaOf, unlockNeed } from '../sim/world.js';
 import { curLum } from '../sim/miner.js';
 
@@ -72,8 +72,14 @@ export function updateNavSession(G){
   $('navBar').style.width = Math.min(100, G.t/SESSION_LEN*100)+'%';
 }
 
-export function showEnd(G, onNew, onInventory){
-  const s=G.summary, lines=chips(s.chest);
+/* me : index de la part du joueur dans G.summary.shares */
+export function showEnd(G, me, onNew, onInventory){
+  const s=G.summary, shares=s.shares, n=shares.length;
+  const split = n>1
+    ? `<p>Coffre commun : ${chips(s.chest)}</p>`+
+      `<p>Partagé à parts égales entre les ${n} joueurs <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
+      shares.map((p,i)=>`<div class="row share${i===me?' me':''}"><span>${sw(p.color)}${esc(p.miner)}${i===me?' (toi)':''}</span><span>${chips(p.bag)}</span></div>`).join('')
+    : `<p>Transféré dans ton inventaire :</p><div>${chips(shares[0].bag)}</div>`;
   const by = G.miners.length>1
     ? '<p>Contributions :</p>'+G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
     : '';
@@ -87,7 +93,7 @@ export function showEnd(G, onNew, onInventory){
     `<div class="row"><span>Mobs vaincus</span><b>${s.kills}</b></div>`+
     `<div class="row"><span>Coffres au trésor ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
-    by+`<p>Transféré dans l'inventaire :</p><div>${lines}</div>`+lost+
+    by+split+lost+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endNew">Nouvelle session</button></p>';
   $('end').hidden=false;
   $('endNew').onclick=onNew;

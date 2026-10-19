@@ -124,3 +124,8 @@ details summary{cursor:pointer;color:var(--mut)}
 #account .code.sm{font-size:14px;padding:2px 8px;display:inline-block}
 #account .code.copied{border-style:solid;border-color:var(--ok)}
 #account .chk{display:flex;gap:8px;align-items:center;cursor:pointer}
+#end .share{align-items:flex-start;padding:3px 6px;border-radius:6px}
+#end .share>span:last-child{text-align:right}
+#end .share.me{background:#2a221d;border:1px solid var(--acc)}
+#end .box{max-height:92vh;overflow:auto}
+#end .share>span:first-child{white-space:nowrap}

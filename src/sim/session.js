@@ -8,8 +8,10 @@ import { finishAction } from './actions.js';
 import { decide, tackler } from './ai.js';
 import { updateMobs } from './mobs.js';
 import { log } from './log.js';
+import { shareChest } from '../meta/share.js';
 
-/* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x} */
+/* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x}
+   opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre */
 export function newSession(seed, opts={}){
   seed = seed ?? ((Math.random()*2**31)|0);
   const n = opts.miners ?? 1;
@@ -20,7 +22,7 @@ export function newSession(seed, opts={}){
     areas:[], unlockedAreas:0, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0},
-    miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s})),
+    miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
   };
   for(let y=1;y<=TOP_DIRT_ROWS;y++){   // couche(s) de terre sous la surface, visibles dès le départ
@@ -69,7 +71,8 @@ export function tick(G){
   if(G.t>=SESSION_LEN) endSession(G);
 }
 
-/* fin de session : le coffre est figé dans G.summary ; c'est l'UI qui le verse dans l'inventaire global */
+/* fin de session : le coffre est figé dans G.summary et partagé entre les joueurs (summary.shares, un par mineur) ;
+   c'est l'UI qui verse la part du joueur dans son inventaire */
 export function endSession(G){
   G.over=true;
   G.summary = {
@@ -77,6 +80,8 @@ export function endSession(G){
     kills:G.stats.kills, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     lost: G.miners.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
   };
+  const bags = shareChest(G.chest, G.miners.length, G.seed);
+  G.summary.shares = G.miners.map((m,i)=>({ miner:m.name, color:m.color, account:m.account, bag:bags[i] }));
 }
 
 /* simule une session complète d'un coup (Node, tests) */

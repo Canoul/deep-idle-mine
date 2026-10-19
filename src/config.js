@@ -94,6 +94,10 @@ export const AREAS = [
    + un objet Trésor (usage défini plus tard avec le craft). Ce butin ne compte pas pour le déblocage. */
 export const TREASURE = { oreLoot:6, item:'Trésor', itemWeight:2, itemCount:1 };
 
+/* partage du coffre commun en fin de session (src/meta/share.js) : parts égales entre les joueurs,
+   reste tiré au hasard depuis la seed ; les objets de copyToAll ne se partagent pas, chacun reçoit la quantité entière */
+export const SHARE = { copyToAll:[TREASURE.item] };
+
 /* génération : minerais en filons et vide en poches, de 1 à N cases d'un seul tenant */
 export const GEN = { veinMax:4, airPocketMax:4 };
 

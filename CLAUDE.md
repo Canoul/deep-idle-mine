@@ -78,7 +78,7 @@ index.html              page du jeu
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
-src/meta/               progression hors session, logique pure (inventory : grille de slots, piles)
+src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre)
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
