@@ -5,6 +5,10 @@ import { log } from './log.js';
 
 export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 
+/* catégories de blocs (voir BLOCK_TYPES dans config) ; 0 = case vide, sans catégorie */
+export const typeOf = t => t ? BLOCKS[t].type : null;
+export const isOre  = t => typeOf(t)==='ore';
+
 export const areaComp = k => AREAS[Math.min(k, AREAS.length-1)];
 export const areaOf   = y => y < AREA_Y0 ? -1 : Math.floor((y-AREA_Y0)/AREA_H);
 export const areaTop  = k => AREA_Y0 + k*AREA_H;   // première couche de l'area k
@@ -31,7 +35,7 @@ export function genArea(G,k){
   const grid = new Uint8Array(N);
   let oreTotal = 0; const oreCells = [];
   for(const n in counts){
-    const id = IDS[n]; if(!BLOCKS[id].ore) continue;
+    const id = IDS[n]; if(!isOre(id)) continue;
     oreTotal += counts[n]; let rem = counts[n];
     while(rem>0){
       let c; do{ c=Math.floor(r()*N); }while(grid[c]);
@@ -49,7 +53,7 @@ export function genArea(G,k){
     }
   }
   const filler=[];
-  for(const n in counts) if(!BLOCKS[IDS[n]].ore) for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
+  for(const n in counts) if(!isOre(IDS[n])) for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;
   for(let i=0;i<N;i++) if(!grid[i]) grid[i]=filler[fi++];
   for(let ry=0; ry<AREA_H; ry++){

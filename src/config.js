@@ -42,20 +42,36 @@ export const DEFAULT_MINERS = 3;
 /* préférences de l'IA par défaut (chaque mineur en reçoit une copie) */
 export const PREFS = { priority:'minerais', fightMobs:true };
 
+/* Catégories de blocs : chaque bloc a un `type`.
+   - terrain  : roche de remplissage (terre, pierre…)
+   - ore      : minerai — compte pour le déblocage, visé par l'IA, signalé par la boussole
+   - build    : construit par le mineur (passerelle ; échelles et torches, voir BUILDS)
+   - treasure : trésor caché dans la mine (coffre au trésor)
+   - special  : bloc de jeu sans rôle de ressource (barrière) */
+export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
+
 export const BLOCKS = {
-  1:{name:'Terre',   tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240'},
-  2:{name:'Pierre',  tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3'},
-  3:{name:'Charbon', tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', ore:true, val:1},
-  4:{name:'Fer',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', ore:true, val:2},
-  5:{name:'Or',      tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', ore:true, val:4},
-  6:{name:'Diamant', tex:'diamond', w:5, hard:5.0, color:'#7d828c', dot:'#4de8f0', ore:true, val:8},
-  /* bloc spécial : délimite deux areas tant que la suivante est verrouillée ; infranchissable et incassable */
-  7:{name:'Barrière', tex:'barrier', w:0, hard:Infinity, color:'#34344a', dot:'#4a4a66', unbreakable:true},
+  1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240'},
+  2:{name:'Pierre',  type:'terrain', tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3'},
+  3:{name:'Charbon', type:'ore',     tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', val:1},
+  4:{name:'Fer',     type:'ore',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', val:2},
+  5:{name:'Or',      type:'ore',     tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', val:4},
+  6:{name:'Diamant', type:'ore',     tex:'diamond', w:5, hard:5.0, color:'#7d828c', dot:'#4de8f0', val:8},
+  /* délimite deux areas tant que la suivante est verrouillée ; infranchissable et incassable */
+  7:{name:'Barrière', type:'special', tex:'barrier', w:0, hard:Infinity, color:'#34344a', dot:'#4a4a66', unbreakable:true},
   /* passerelle : posée par le mineur pour combler un trou ; cassable, ne rapporte rien */
-  8:{name:'Passerelle', tex:'bridge', w:0, hard:0.4, color:'#9a6b36', dot:'#5c3a1a', noDrop:true},
+  8:{name:'Passerelle', type:'build', tex:'bridge', w:0, hard:0.4, color:'#9a6b36', dot:'#5c3a1a', noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8;
 export const IDS = { dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6 };
+
+/* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
+   se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
+export const BUILDS = {
+  bridge: {name:'Passerelle', type:'build', tex:'bridge', block:BRIDGE},
+  ladder: {name:'Échelle',    type:'build', tex:'ladder'},
+  torch:  {name:'Torche',     type:'build', tex:'torch'},
+};
 
 /* composition en % par area (la dernière est répétée au-delà) */
 export const AREAS = [

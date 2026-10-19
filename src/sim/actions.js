@@ -1,6 +1,6 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS } from '../config.js';
-import { areaOf, isAir, tileAt, supported, tryUnlock } from './world.js';
+import { areaOf, isOre, isAir, tileAt, supported, tryUnlock } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT } from './miner.js';
 import { log } from './log.js';
@@ -13,7 +13,7 @@ export function mineBlock(G,m,x,y){
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
-  if(BLOCKS[t].ore){ m.stats.ore++; oreMinedIn(G,y); }
+  if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y); }
 }
 
 export function killMob(G,m,o){

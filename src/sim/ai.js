@@ -1,7 +1,7 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X } from '../config.js';
-import { DIRS, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
+import { DIRS, isOre, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
@@ -13,7 +13,7 @@ export function compassScan(G,m,R){
   if(y>=1 && y<=maxRow(G)){
     for(let x=Math.max(0,m.x-R); x<=Math.min(W-1,m.x+R); x++){
       const t=G.tiles[y][x];
-      if(t && BLOCKS[t].ore) out.push({x,y,t,seen:G.seen[y][x]===1});
+      if(isOre(t)) out.push({x,y,t,seen:G.seen[y][x]===1});
     }
   }
   m.pings=out; return out;
@@ -157,7 +157,7 @@ function decideWork(G,m){
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(t && BLOCKS[t].ore && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
+    if(isOre(t) && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -170,7 +170,7 @@ function decideWork(G,m){
   // … sauf si un autre mineur (plus petit numéro) la vise aussi
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(t && BLOCKS[t].ore && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status='Suit un filon ('+BLOCKS[t].name+')'; return goOre(G,m,tg,r,nb.bn); }
+    if(isOre(t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status='Suit un filon ('+BLOCKS[t].name+')'; return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
