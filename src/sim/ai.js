@@ -145,7 +145,7 @@ function decideWork(G,m){
   const tRet = rp ? rp.cost*1.25 : 0;
   if(m.y>0){
     let reason=null;
-    if(m.ox<=tRet+CFG.returnMargin) reason='oxygène';
+    if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=STATS.pods-2) reason='pods pleins';
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';

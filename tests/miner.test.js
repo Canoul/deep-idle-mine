@@ -130,3 +130,41 @@ test('mimic dévoilé juste à côté : le mineur le combat', () => {
   assert.equal(m.foe, 99);
   assert.equal(m.action.type, 'attack');
 });
+
+/* oxygène : il ne remonte qu'à 0, et la remontée n'est pas ralentie */
+const SHAFT = [
+  '',
+  '##H##',
+  '##H##',
+  '##H##',
+  '##H##',
+  '##H##',
+  '##@c#',
+  '#####',
+];
+
+test('oxygène : tant qu\'il en reste, le mineur ne remonte pas pour l\'oxygène', () => {
+  const G=worldFrom(SHAFT), m=G.miners[0];
+  m.ox=1;   // moins que le trajet de retour : l'ancienne règle le faisait déjà remonter
+  decide(G,m);
+  assert.equal(m.mode, 'work');
+});
+
+test('oxygène : à 0, le mineur remonte', () => {
+  const G=worldFrom(SHAFT), m=G.miners[0];
+  m.ox=0;
+  decide(G,m);
+  assert.equal(m.mode, 'return'); assert.equal(m.reason, 'oxygène');
+});
+
+test('oxygène : la remontée à 0 d\'oxygène n\'est pas plus lente qu\'avec de l\'oxygène', () => {
+  const surfaceAfter = ox => {
+    const G=worldFrom(SHAFT), m=G.miners[0];
+    m.mode='return'; m.reason='test'; m.returnStart=0; m.ox=ox;
+    let n=0; while(m.y>0 && n<2000){ run(G,1); n++; if(ox===0) m.ox=0; }
+    return n;
+  };
+  const withOx=surfaceAfter(300), without=surfaceAfter(0);
+  assert.ok(withOx<2000, 'il atteint la surface');
+  assert.equal(without, withOx);
+});

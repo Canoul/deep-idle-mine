@@ -111,8 +111,8 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 ### Oxygène
 - 1 seconde dans la mine = 1 d'oxygène consommé.
 - En surface : +30 par seconde.
-- À court d'oxygène, l'IA remonte pour se recharger. (Le prototype remonte un peu avant 0, quand l'oxygène restant ne couvre plus que le trajet de retour plus une marge, pour ne pas rester coincé.)
-- À 0 le mineur n'est pas mort : il est fortement ralenti.
+- **Quand l'oxygène atteint 0, le mineur remonte** (il termine l'action en cours, puis part). Il n'anticipe pas le trajet de retour.
+- **Il n'a pas besoin d'oxygène pour remonter** : à 0, il n'est ni mort ni ralenti, la remontée se fait à vitesse normale. L'oxygène mesure donc exactement son temps de travail sous terre.
 
 ### Pods (inventaire)
 - Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Treasure TX 2 *(provisoire)*).
