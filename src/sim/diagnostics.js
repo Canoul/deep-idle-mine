@@ -4,7 +4,10 @@ import { DT } from '../config.js';
 export const STUCK_WINDOW = 90;   // secondes sans rien miner ni déposer, sous terre
 
 /* Détecteur de blocage : un mineur est « bloqué » s'il passe STUCK_WINDOW s sous terre sans miner ni déposer,
-   sauf s'il est en train de remonter pour de vrai (au moins 3 couches gagnées sur la période). */
+   sauf s'il est en train de remonter pour de vrai (au moins STUCK_MIN_PROGRESS couches gagnées sur la période)
+   ou de redescendre vers le front (au moins STUCK_MIN_PROGRESS couches descendues) : avec des areas profondes,
+   le simple trajet jusqu'au front peut dépasser STUCK_WINDOW. */
+export const STUCK_MIN_PROGRESS = 3;
 export function stuckDetector(windowSec=STUCK_WINDOW){
   const W=Math.round(windowSec/DT), hist=new Map(), found=[];
   return {
@@ -14,7 +17,9 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         const h=push(m);
         if(h.length<W || found.some(f=>f.miner===m.name)) continue;
         const a=h[0], b=h[h.length-1];
-        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !(b.mode==='return' && b.y<=a.y-3))
+        const climbing  = b.mode==='return' && b.y<=a.y-STUCK_MIN_PROGRESS;
+        const descending = b.mode!=='return' && b.y>=a.y+STUCK_MIN_PROGRESS;
+        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });
       }
       function push(m){
