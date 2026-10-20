@@ -1,7 +1,8 @@
-/* Lobby de l'onglet Mine : les 3 places de la prochaine session, Lancer, Inviter, Critères / préférences,
-   et (mode développeur seulement) seed, mineurs de test et réglages. Lit l'état et appelle des fonctions :
-   la création de la session est faite par le serveur. */
+/* Lobby de l'onglet Mine : les places de la prochaine session (le groupe), Lancer, Inviter (code, lien, ID),
+   invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs de test et réglages.
+   Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { GAME, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, SESSION_LEN } from '../config.js';
+import { joinLink } from '../shared/party.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -10,30 +11,98 @@ const TARGETS = { STATS, CFG };
 /* durée réelle lisible : 1800 s → « 30 min » */
 const realLen = speed => { const m = Math.round(SESSION_LEN / speed / 60); return m >= 1 ? `${m} min` : `${Math.round(SESSION_LEN / speed)} s`; };
 
-/* h : { onLaunch(opts), onPrefs(prefs) } */
+/* Places du lobby, depuis l'état du serveur (logique pure, testée) :
+   membres du groupe (chef en premier), invitations en attente, puis places libres ; sans groupe : soi + places libres. */
+export function lobbySlots(account, party, max = GAME.maxPlayers){
+  const slots = [];
+  if(party){
+    for(const m of party.members) slots.push({ kind:'member', ...m });
+    for(const i of party.invited) if(slots.length < max) slots.push({ kind:'invited', ...i });
+  } else if(account){
+    slots.push({ kind:'member', account:account.id, displayId:account.displayId, name:account.displayName, me:true, leader:false });
+  }
+  while(slots.length < max) slots.push({ kind:'free' });
+  return slots.slice(0, Math.max(max, party?.members.length ?? 0));
+}
+
+/* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef */
+export function launchState({ account, party, offline, busy }){
+  if(offline || !account) return { can:false, label:'▶ Lancer la session' };
+  if(busy || party?.launching) return { can:false, label:'… Lancement' };
+  const leader = !party || party.leader === account.id;
+  if(!leader) return { can:false, label:'En attente du chef…' };
+  const n = party?.members.length ?? 1;
+  return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
+}
+
+/* h : { onLaunch(opts), onPrefs(prefs), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+   Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
-  const st = { account:null, offline:false, info:null, prefs:null, busy:false };
+  const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false };
 
   function render(){
-    const { account, offline, info } = st, me = account;
-    /* places : toi, puis les places libres (le jeu est prévu à 3) */
-    let slots = `<div class="pslot me"><span class="av">${esc(me?.displayName?.[0]?.toUpperCase() ?? '?')}</span>
-      <span><b>${esc(me?.displayName ?? '—')}</b><small>Toi${me?.guest ? ' · invité' : ''}</small></span></div>`;
-    for(let i = 1; i < GAME.maxPlayers; i++)
-      slots += `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
-    $('lobbySlots').innerHTML = slots;
+    const { account, offline, info, party } = st;
+    const lead = party && party.leader === account?.id;
+    $('lobbySlots').innerHTML = lobbySlots(account, party).map(s => {
+      if(s.kind === 'free')
+        return `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
+      if(s.kind === 'invited')
+        return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
+               (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
+      const tags = [s.me && 'Toi', s.leader && 'chef', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
+             `<span><b>${esc(s.name)}</b><small>${esc(tags)}</small></span>`+
+             (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
+    }).join('');
 
-    const dev = !!info?.dev;
+    const ls = launchState(st);
+    $('launchBtn').disabled = !ls.can; $('launchBtn').textContent = ls.label;
+    $('inviteBtn').disabled = offline || !account;
+    $('inviteBtn').classList.toggle('on', st.inviteOpen);
+    $('partyLeaveBtn').hidden = !party || party.members.length < 2;
+    $('joinRow').hidden = offline || !account || (party && party.members.length > 1);
+
+    const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
-      : dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
-      : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b> en temps réel (vitesse ×${info?.speed ?? GAME.speed}). `+
-        'Elle continue même si tu fermes la page. Seul, tu gardes tout le coffre.';
-    const err = offline ? 'Serveur de jeu injoignable : lance le jeu avec « npm start » (ou « npm run dev »).' : '';
-    $('lobbyErr').hidden = !err; $('lobbyErr').textContent = err;
-    $('launchBtn').disabled = offline || !account || st.busy;
-    $('launchBtn').textContent = st.busy ? '… Lancement' : '▶ Lancer la session';
-    $('devCard').hidden = !dev;
+      : (n > 1 ? `Session commune à <b>${n}</b> : même mine pour tous, coffre partagé à parts égales entre les présents à la fin. ` : '')+
+        (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
+             : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b> en temps réel (vitesse ×${info?.speed ?? GAME.speed}). `+
+               'Elle continue même si tu fermes la page.'+(n > 1 ? '' : ' Seul, tu gardes tout le coffre.'));
+    if(offline) error('Serveur de jeu injoignable : lance le jeu avec « npm start » (ou « npm run dev »).');
+    $('devCard').hidden = !dev || (party && !lead);        // seuls les réglages de celui qui lance comptent
+    renderInvite();
+    renderInvites();
     renderPrefs();
+  }
+
+  /* panneau « Inviter » : code + lien du groupe, invitation par ID, son propre ID */
+  function renderInvite(){
+    const box = $('inviteBox'), p = st.party;
+    box.hidden = !st.inviteOpen;
+    /* reconstruit seulement si le code change : le lobby se rafraîchit souvent, on ne perd pas l'ID en cours de frappe */
+    const key = st.inviteOpen ? `${p?.code ?? ''}|${st.account?.displayId ?? ''}` : '';
+    if(box.dataset.key === key) return;
+    box.dataset.key = key;
+    if(!st.inviteOpen) return;
+    const link = p ? joinLink(location.href, p.code) : '';
+    box.innerHTML = (p ? `<div class="irow"><span>Code du groupe</span><b class="code" data-copy="${esc(p.code)}" title="Copier">${esc(p.code)}</b>
+        <button data-copy="${esc(link)}">🔗 Copier le lien</button></div>
+        <p class="mut small">Envoie le lien (ou le code) : ton ami clique, se connecte, et prend une place.</p>`
+        : `<p class="mut small">Création du groupe…</p>`)+
+      `<form class="irow" id="inviteForm"><span>Inviter par ID</span><input id="inviteId" placeholder="7K3Q-9XHP" autocomplete="off" spellcheck="false" maxlength="12">
+        <button>✉ Inviter</button></form>
+      <p class="mut small">Ton ID, à donner à un ami : <b class="code" data-copy="${esc(st.account?.displayId ?? '')}" title="Copier">${esc(st.account?.displayId ?? '—')}</b></p>`;
+    $('inviteForm').onsubmit = e => { e.preventDefault(); act(() => h.party.invite($('inviteId').value), () => { $('inviteId').value = ''; }); };
+  }
+
+  /* invitations reçues */
+  function renderInvites(){
+    const list = st.invites ?? [];
+    $('invitesCard').hidden = !list.length;
+    $('invitesList').innerHTML = list.map(i =>
+      `<div class="row invitation"><span><b>${esc(i.from)}</b> t'invite <span class="mut">(${esc(i.members.join(', '))})</span></span>
+        <span><button class="on" data-accept="${esc(i.code)}"${i.full ? ' disabled title="Groupe complet"' : ''}>Rejoindre</button>
+        <button data-decline="${esc(i.code)}">Refuser</button></span></div>`).join('');
   }
 
   function renderPrefs(){
@@ -41,6 +110,24 @@ export function setupLobby(h){
     $('prefsBox').innerHTML = Object.entries(PREF_OPTIONS).map(([k, def]) =>
       `<div class="pref"><span>${esc(def.label)}</span><div class="seg">${def.options.map(([v, label], i) =>
         `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}">${esc(label)}</button>`).join('')}</div></div>`).join('');
+  }
+
+  function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; }
+
+  /* action sur le groupe : met à jour l'état renvoyé par le serveur, affiche l'erreur sinon */
+  async function act(fn, done){
+    error('');
+    try {
+      const r = await fn();
+      if(r && 'party' in r) st.party = r.party;
+      done?.();
+    } catch(e){ error(e.message); }
+    render();
+  }
+
+  async function copy(text, el){
+    try { await navigator.clipboard.writeText(text); el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1200); }
+    catch { prompt('Copie ce texte :', text); }
   }
 
   $('prefsBox').onclick = e => {
@@ -52,10 +139,27 @@ export function setupLobby(h){
   };
 
   $('inviteBtn').onclick = () => {
-    const box = $('inviteBox');
-    box.hidden = !box.hidden;
-    box.innerHTML = `Les invitations arrivent bientôt. Ton ID de compte, à donner à un ami :
-      <b class="code">${esc(st.account?.displayId ?? '—')}</b>`;
+    st.inviteOpen = !st.inviteOpen;
+    render();
+    if(st.inviteOpen && !st.party) act(() => h.party.create());          // un code à partager tout de suite
+    if(st.inviteOpen) setTimeout(() => $('inviteId')?.focus(), 0);
+  };
+  $('inviteBox').onclick = e => { const c = e.target.closest('[data-copy]'); if(c) copy(c.dataset.copy, c); };
+  $('lobbySlots').onclick = e => {
+    const b = e.target.closest('[data-kick]'); if(!b) return;
+    act(() => h.party.kick(b.dataset.kick));
+  };
+  $('invitesList').onclick = e => {
+    const a = e.target.closest('[data-accept]'), d = e.target.closest('[data-decline]');
+    if(a) act(() => h.party.join(a.dataset.accept), () => { st.invites = st.invites.filter(i => i.code !== a.dataset.accept); });
+    if(d) act(() => h.party.decline(d.dataset.decline), () => { st.invites = st.invites.filter(i => i.code !== d.dataset.decline); });
+  };
+  $('partyLeaveBtn').onclick = () => {
+    if(confirm('Quitter le groupe ? Tu te retrouves seul dans ton lobby.')) act(() => h.party.leave(), () => { st.inviteOpen = false; });
+  };
+  $('joinForm').onsubmit = e => {
+    e.preventDefault();
+    act(() => h.party.join($('joinCode').value), () => { $('joinCode').value = ''; });
   };
 
   /* panneau dev : réglages appliqués à la session lancée (le serveur les vérifie et les borne) */
@@ -79,6 +183,8 @@ export function setupLobby(h){
 
   return {
     update(patch){ Object.assign(st, patch); render(); },
-    error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; },
+    /* rejoindre par un code venu d'un lien d'invitation */
+    join(code){ return act(() => h.party.join(code)); },
+    error,
   };
 }

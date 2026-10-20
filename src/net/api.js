@@ -48,3 +48,14 @@ export const gameApi = {
   finish: ()           => request('POST', '/api/game/finish', {}),
   ack:    id           => request('POST', '/api/game/ack', { id }),
 };
+
+/* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
+export const partyApi = {
+  state:   ()   => request('GET', '/api/party'),
+  create:  ()   => request('POST', '/api/party/create', {}),
+  join:    code => request('POST', '/api/party/join', { code }),
+  invite:  id   => request('POST', '/api/party/invite', { id }),
+  decline: code => request('POST', '/api/party/decline', { code }),
+  leave:   ()   => request('POST', '/api/party/leave', {}),
+  kick:    id   => request('POST', '/api/party/kick', { id }),
+};

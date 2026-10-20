@@ -19,6 +19,7 @@ const isTab = id => TABS.some(t => t.id === id);
 export function pickTab(hash, saved){
   const h = String(hash||'').replace(/^#/, '').toLowerCase();
   if(isTab(h)) return h;
+  if(h.startsWith('rejoindre=')) return 'mine';     // lien d'invitation à un groupe : le lobby est dans Mine
   if(isTab(saved)) return saved;
   return TABS[0].id;
 }
