@@ -40,15 +40,17 @@ Dans les journaux (**Logs**) après un déploiement :
 ## Mettre à jour
 
 Pousser sur la branche suivie (`main`) suffit : Render reconstruit et redémarre tout seul. Les comptes, inventaires
-et sessions en cours sont dans la base : un redéploiement ne les efface pas. Une session en cours continue (le
-serveur la rejoue à sa fin) ; les joueurs connectés voient juste une petite coupure.
+et sessions en cours sont dans la base : un redéploiement ne les efface pas. Une session en cours est reconstruite
+au redémarrage (même seed + choix enregistrés) puis reprend ; les joueurs connectés voient juste une petite coupure.
 
 ## Limites de l'offre gratuite
 
-- **Mise en veille** du serveur après 15 min sans visite : le premier chargement prend ensuite ~1 min. Une session
-  finie pendant la veille est versée au réveil.
-- **0,1 CPU** : le serveur rejoue chaque session terminée pour calculer les parts (anti-triche). À 3 joueurs, c'est
-  ~67 s de calcul sur un cœur entier, donc **~10 min** sur l'offre gratuite : le bilan de fin de session arrive avec
-  ce retard. Réglé pour : un rejeu à la fois, délai max 40 min (`DIM_REPLAY_WORKERS`, `DIM_REPLAY_TIMEOUT_MIN`).
-  L'instance à 0,5 CPU (~7 $/mois) ramène ça à ~2 min.
+- **0,1 CPU** : le serveur fait tourner chaque session en direct (une partie à 3 joueurs ≈ 67 s de calcul sur un
+  cœur entier par heure de jeu, étalées sur les 30 min de la session) : ~37 % du processeur par session. D'où
+  **2 sessions en même temps au maximum** (`DIM_MAX_LIVE`) ; au-delà, le lancement est refusé (« serveur plein »).
+  L'instance à 0,5 CPU (~7 $/mois) en permet environ 10.
+- **Mise en veille** du serveur après 15 min sans visite. Tant qu'un joueur a la page ouverte, le serveur reste
+  éveillé. Si tout le monde ferme la page, la session s'arrête avec le serveur endormi ; au réveil (prochaine
+  visite, ~1 min), elle est reconstruite et rattrape le temps écoulé, ce qui peut prendre plusieurs minutes sur
+  0,1 CPU (la partie affiche « connexion… » en attendant). Elle se termine et se partage normalement ensuite.
 - Neon gratuit : 1 Go de données, se met en veille après 5 min sans requête (réveil en ~1 s, invisible).

@@ -1,0 +1,113 @@
+/* Diffusion de la partie : le serveur fait tourner LA partie, les navigateurs en reçoivent une copie d'affichage.
+   Logique pure, partagée : createViewer(G) (serveur, à côté de la partie) fabrique les envois ; applyView(M, v)
+   (navigateur) les applique à sa copie M, que le rendu et l'interface lisent comme une partie normale.
+
+   Un envoi dit « voici la partie au tick T ». La première fois (since absent, ou trop ancien) : la carte entière.
+   Ensuite : seulement les cases qui ont changé depuis le tick que le navigateur a déjà (since). Le reste (mineurs,
+   mobs, coffre, areas…) est petit et envoyé à chaque fois. La lumière n'est pas envoyée : le navigateur la recalcule
+   (même calcul, src/sim/light.js). Le navigateur ne calcule aucun résultat : il affiche. */
+import { W } from '../config.js';
+import { updateLight } from '../sim/light.js';
+
+const HISTORY = 400;           // changements gardés (un navigateur plus en retard reçoit la carte entière)
+const row = (a, enc) => Array.from(a, enc).join('');
+const enc36 = v => v.toString(36);
+const dec36 = c => parseInt(c, 36);
+
+/* ce que l'affichage lit d'un mineur (pas de références internes à la simulation) */
+function minerView(m){
+  const a = m.action, d = a?.data || {};
+  return {
+    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, face: m.face,
+    status: m.status, mode: m.mode, reason: m.reason, ox: m.ox, load: m.load, inv: m.inv,
+    torches: m.torches, bridges: m.bridges, prefs: m.prefs, focusNotice: m.focusNotice ?? null, stats: m.stats,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall } } : null,
+  };
+}
+const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore });
+
+/* ---------- serveur ---------- */
+
+export function createViewer(G){
+  /* copie de la carte au dernier passage, et historique des changements, chacun du tick from au tick to :
+     [{ from, to, H (lignes au tick from), cells:[y,x,tuile,échelle,vue,…] (lignes déjà là), torches (nombre au tick
+     from), log (le journal a changé) }]. Les lignes apparues (nouvelle area) partent en bloc, comme la carte entière. */
+  let prev = null, frames = [], logHead = null;
+  const rowsFrom = y0 => ({ y0, tiles: G.tiles.slice(y0).map(r => row(r, enc36)), ladder: G.ladder.slice(y0).map(r => row(r, enc36)),
+                            seen: G.seen.slice(y0).map(r => row(r, enc36)) });
+
+  function snapshotRows(){ return { tiles: G.tiles.map(r => r.slice()), ladder: G.ladder.map(r => r.slice()), seen: G.seen.map(r => r.slice()) }; }
+
+  /* enregistre ce qui a changé depuis le dernier passage (une fois par tick au plus) */
+  function record(){
+    if(!prev){ prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; logHead = G.log[0]; return; }
+    if(prev.tick === G.ticks) return;
+    const cells = [];
+    const H = prev.tiles.length;
+    for(let y = 0; y < H; y++){
+      const pt = prev.tiles[y], pl = prev.ladder[y], ps = prev.seen[y];
+      const t = G.tiles[y], l = G.ladder[y], s = G.seen[y];
+      for(let x = 0; x < W; x++)
+        if(pt[x] !== t[x] || pl[x] !== l[x] || ps[x] !== s[x]) cells.push(y, x, t[x], l[x], s[x]);
+    }
+    frames.push({ from: prev.tick, to: G.ticks, H, cells, torches: prev.torches, log: G.log[0] !== logHead });
+    if(frames.length > HISTORY) frames.shift();
+    prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; logHead = G.log[0];
+  }
+
+  /* l'envoi pour un navigateur qui a déjà la partie au tick since (absent : rien) */
+  return function view(since){
+    record();
+    const base = {
+      tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
+      miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
+      chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas,
+    };
+    /* changements depuis since : le navigateur est à jour, ou on a tous les lots depuis son tick */
+    if(since === G.ticks) return { ...base, cells: [], torches: [], torchesFrom: G.torches.length };
+    const i = Number.isSafeInteger(since) ? frames.findIndex(f => f.from === since) : -1;
+    if(i >= 0){
+      const list = frames.slice(i), y0 = list[0].H;
+      return { ...base, rows: G.tiles.length > y0 ? rowsFrom(y0) : undefined,
+               cells: list.flatMap(f => f.cells), torches: G.torches.slice(list[0].torches), torchesFrom: list[0].torches,
+               log: list.some(f => f.log) ? G.log : undefined };
+    }
+    /* carte entière */
+    return { ...base, full: true,
+             rows: rowsFrom(0),
+             torches: G.torches, torchesFrom: 0, log: G.log };
+  };
+}
+
+/* ---------- navigateur ---------- */
+
+/* copie d'affichage vide (avant le premier envoi) */
+export function emptyView(){
+  return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], chest: {}, chestBy: {},
+           stats: {}, areas: [], unlockedAreas: 0, log: [], t: 0, ticks: -1, over: false, ready: false };
+}
+
+/* applique un envoi du serveur ; renvoie M (modifié) */
+export function applyView(M, v){
+  let mapChanged = false;
+  const dec = s => Uint8Array.from(s, dec36);
+  if(!v.full){                                     // cases changées des lignes que le navigateur avait déjà
+    const c = v.cells;
+    for(let i = 0; i < c.length; i += 5) if(c[i] < M.tiles.length){ M.tiles[c[i]][c[i+1]] = c[i+2]; M.ladder[c[i]][c[i+1]] = c[i+3]; M.seen[c[i]][c[i+1]] = c[i+4]; }
+    if(c.length) mapChanged = true;
+  }
+  if(v.rows){                                      // carte entière, ou lignes apparues (nouvelle area), dans leur état actuel
+    const { y0 } = v.rows;
+    M.tiles.length = M.ladder.length = M.seen.length = y0;
+    M.tiles.push(...v.rows.tiles.map(dec)); M.ladder.push(...v.rows.ladder.map(dec)); M.seen.push(...v.rows.seen.map(dec));
+    mapChanged = true;
+  }
+  if(v.torchesFrom === 0) M.torches = v.torches.slice();
+  else { M.torches.length = v.torchesFrom; M.torches.push(...v.torches); }
+  if(v.torches.length || v.full) mapChanged = true;
+  if(mapChanged) updateLight(M);
+  if(v.log) M.log = v.log;
+  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
+                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, ready: true });
+  return M;
+}

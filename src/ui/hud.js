@@ -73,9 +73,9 @@ export function updateNavSession(G, waiting=false){
   $('navBar').style.width = (G ? Math.min(100, G.t/SESSION_LEN*100) : 0)+'%';
 }
 
-/* attente du résultat calculé par le serveur (il rejoue la session : jusqu'à une minute) */
+/* la partie du serveur est finie : le coffre est partagé et versé (quelques instants) */
 export function showSettling(){
-  $('endBox').innerHTML = '<h3>Session terminée</h3><p>Le serveur vérifie la partie et partage le coffre…</p>'+
+  $('endBox').innerHTML = '<h3>Session terminée</h3><p>Partage du coffre…</p>'+
     '<div class="bar"><i class="indet"></i></div>';
   $('end').hidden=false;
 }

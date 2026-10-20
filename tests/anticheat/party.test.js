@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { createMemoryGameStore } from '../../server/game/store.js';
+import { fakeLive } from '../helpers.js';
 import { createGameService } from '../../server/game/service.js';
 import { createPartyService } from '../../server/party/service.js';
 import { PARTY_SERVER } from '../../server/config.js';
@@ -17,9 +18,9 @@ const ACC = { [A.id]:A, [B.id]:B, [C.id]:C };
 function setup(){
   let now = 1_000_000;
   const store = createMemoryGameStore();
-  const replay = async rec => ({ shares: rec.players.map(p => ({ account:p.account, left:rec.leaves.some(l => l.account === p.account),
-                                                                bag:{ Or:10 } })) });
-  const game = createGameService({ store, replay, clock:() => now, config:{ startsPerHour:1000, keepEnded:1e12 } });
+  const summary = rec => ({ shares: rec.players.map(p => ({ account:p.account, left:rec.leaves.some(l => l.account === p.account),
+                                                             bag:{ Or:10 } })) });
+  const game = createGameService({ store, liveRunner:fakeLive(summary), clock:() => now, config:{ startsPerHour:1000, keepEnded:1e12 } });
   const party = createPartyService({ game, clock:() => now, getAccount:async id => ACC[id] ?? null, newCode:() => 'K7Q4P2' });
   return { game, party, store, advance: ms => { now += ms; } };
 }
@@ -46,7 +47,7 @@ test('partir juste avant la fin : aucune part, même si le départ tombe sur le 
   await game.leave(B, {});
   assert.ok((await store.getGameSession(session.id)).leaves[0].tick < TOTAL_TICKS);
   advance(1000);
-  await game.settleDue();
+  await game.pump();
   assert.equal(await gold(game, A), 10);
   assert.equal(await gold(game, B), 0);
 });

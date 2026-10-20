@@ -31,3 +31,34 @@ export function run(G, n){ for(let i=0;i<n && !G.over;i++) tick(G); return G; }
 
 /* Comptes : hachage scrypt allégé pour les tests (mêmes chemins de code, ~50 fois plus rapide) */
 export const FAST_SCRYPT = { N: 1024, r: 8, p: 1, keyLen: 32, saltLen: 16 };
+
+/* Faux gestionnaire de parties en direct (même interface que server/game/live.js), pour tester le service sans faire
+   tourner la simulation : la partie « avance » jusqu'au tick demandé et se termine au dernier tick (ou quand tous les
+   joueurs sont partis, ou sur finish) avec le résumé summaryOf(enregistrement). ended : ids des parties terminées. */
+import { TOTAL_TICKS } from '../src/shared/game.js';
+export function fakeLive(summaryOf){
+  const ended = [];
+  const factory = ({ onEnd }) => {
+    const games = new Map();
+    const end = id => { const g = games.get(id); games.delete(id); ended.push(id); onEnd(id, summaryOf(g.rec)); };
+    const get = id => { const g = games.get(id); if(!g) throw new Error(`partie ${id} introuvable`); return g; };
+    return {
+      open(rec){ if(!games.has(rec.id)) games.set(rec.id, { rec:{ ...rec, leaves:[...rec.leaves], focus:[...(rec.focus||[])] }, tick:0 }); },
+      has: id => games.has(id),
+      tickOf: id => games.get(id)?.tick ?? null,
+      get size(){ return games.size; },
+      close: id => { games.delete(id); },
+      closeAll: () => games.clear(),
+      async advance(id, target){ const g = get(id); g.tick = Math.max(g.tick, Math.min(target, TOTAL_TICKS)); if(g.tick >= TOTAL_TICKS) end(id); },
+      async leave(id, account){
+        const g = get(id); g.rec.leaves.push({ account, tick:g.tick });
+        if(!g.rec.bots && g.rec.players.every(p => g.rec.leaves.some(l => l.account === p.account))) end(id);
+        return g.tick;
+      },
+      async focus(id, account, focus){ const g = get(id); g.rec.focus.push({ account, tick:g.tick, focus }); return g.tick; },
+      async finish(id){ get(id); end(id); },
+    };
+  };
+  factory.ended = ended;
+  return factory;
+}

@@ -46,12 +46,15 @@ export const gameApi = {
   start:  (opts = {})  => request('POST', '/api/game/start', opts),
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
-  focus:  (focus, tick) => request('POST', '/api/game/focus', { focus, tick }),
+  focus:  focus        => request('POST', '/api/game/focus', { focus }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
   furnace: op          => request('POST', '/api/game/furnace', op),
   craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
-  stuff:  op           => request('POST', '/api/game/stuff', op),        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
+  stuff:  op           => request('POST', '/api/game/stuff', op),
+  /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
+  view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),
+  clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */

@@ -1,5 +1,5 @@
 /* Sessions de jeu côté serveur : lancement, départ, fin (refusée avant l'heure), versement des parts.
-   Horloge simulée et rejeu factice (le vrai rejeu est testé dans game-replay.test.js). */
+   Horloge simulée et faux gestionnaire de parties (les vraies parties en direct sont testées dans live.test.js). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GAME, TREASURE, FOCUS } from '../src/config.js';
@@ -7,15 +7,14 @@ const T1 = TREASURE.tiers[0].item;   // Treasure T1 : un exemplaire pour chacun
 import { realDurationMs, tickAt, TOTAL_TICKS } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
+import { fakeLive } from './helpers.js';
 
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 const OTHER = { id:'BBBB2222', name:null, guest:true };
 
-/* rejeu factice : le coffre est fixé par le test ; on partage comme le vrai (un sac par joueur présent) */
-function fakeReplay(chestOf = () => ({ Charbon:9, [T1]:1 })){
-  const calls = [];
-  const replay = async rec => {
-    calls.push(rec.id);
+/* résumé de fin factice : le coffre est fixé par le test ; on partage comme le vrai (un sac par joueur présent) */
+function fakeSummary(chestOf = () => ({ Charbon:9, [T1]:1 })){
+  return rec => {
     const present = rec.players.filter(p => !rec.leaves.some(l => l.account === p.account));
     const chest = chestOf(rec), n = present.length;
     return { id:rec.id, chest, shares: rec.players.map(p => {
@@ -25,18 +24,16 @@ function fakeReplay(chestOf = () => ({ Charbon:9, [T1]:1 })){
       return { account:p.account, left, bag };
     }) };
   };
-  replay.calls = calls;
-  return replay;
 }
 
-function setup({ dev = false, replay = fakeReplay() } = {}){
+function setup({ dev = false, summary = fakeSummary() } = {}){
   let now = 1_000_000;
   const clock = () => now;
   const store = createMemoryGameStore();
-  const game = createGameService({ store, replay, clock, dev, randomSeed: () => 4242 });
-  return { game, store, replay, advance: ms => { now += ms; }, clock };
+  const live = fakeLive(summary);
+  const game = createGameService({ store, liveRunner: live, clock, dev, randomSeed: () => 4242 });
+  return { game, store, live, advance: ms => { now += ms; }, clock };
 }
-const flush = () => new Promise(r => setTimeout(r, 0));
 
 test('lancer : la session est créée par le serveur (seed, joueur, préférences, heure de fin)', async () => {
   const { game } = setup();
@@ -71,17 +68,17 @@ test('mode normal : fin refusée avant l\'heure, avec le temps restant', async (
   await assert.rejects(game.finish(ME), e => e.code === 'too_early' && e.retryAfter === 5);
 });
 
-test('fin à l\'heure : rejeu, part versée dans l\'inventaire, résultat montré une fois', async () => {
-  const { game, advance, replay } = setup();
+test('fin à l\'heure : la partie du serveur se termine, part versée dans l\'inventaire, résultat montré une fois', async () => {
+  const { game, advance, live } = setup();
   const { session } = await game.start(ME, {});
   advance(realDurationMs());
-  await game.finish(ME); await flush(); await flush();
+  await game.pump();
   const st = await game.state(ME);
   assert.equal(st.session, null);
   assert.equal(st.ended.id, session.id);
   assert.equal(st.ended.status, 'done');
   assert.deepEqual(st.inventory.slots, [{ item:'Charbon', qty:9 }, { item:T1, qty:1 }]);
-  assert.deepEqual(replay.calls, [session.id]);
+  assert.deepEqual(live.ended, [session.id]);
   await game.ack(ME, session.id);
   assert.equal((await game.state(ME)).ended, null);
 });
@@ -90,12 +87,12 @@ test('joueur absent : la session arrivée à sa fin est versée quand même (au 
   const { game, advance } = setup();
   await game.start(ME, {});
   advance(realDurationMs() + 60_000);
-  await game.settleDue();
+  await game.pump();
   assert.equal((await game.state(ME)).inventory.slots[0].qty, 9);
 });
 
-test('quitter : on ne reçoit rien ; seul, la session s\'arrête sans rejeu', async () => {
-  const { game, advance, replay } = setup();
+test('quitter : on ne reçoit rien ; seul, la session s\'arrête', async () => {
+  const { game, advance, live } = setup();
   await game.start(ME, {});
   advance(60_000);
   await game.leave(ME, {});
@@ -103,25 +100,21 @@ test('quitter : on ne reçoit rien ; seul, la session s\'arrête sans rejeu', as
   assert.equal(st.session, null);
   assert.equal(st.ended, null, 'pas de bilan pour celui qui est parti');
   assert.deepEqual(st.inventory.slots, []);
-  assert.deepEqual(replay.calls, []);
+  assert.deepEqual(live.ended, [], 'pas de partage : abandonnée');
   await game.start(ME, {});   // et on peut relancer
 });
 
-test('quitter : le moment du départ est calculé par le serveur (ticks à vitesse x2), pas fourni par le navigateur', async () => {
+test('quitter : le départ a lieu tout de suite, au tick de la partie du serveur (pas fourni par le navigateur)', async () => {
   const { game, advance, store } = setup();
-  const { session } = await game.start(ME, {});
+  const { session } = await game.start(ME, {}, team.slice(0, 2));
   advance(10_000);                                   // 10 s réelles à x2 = 20 s de jeu = 200 ticks
+  await game.pump();                                 // le serveur fait avancer la partie
   await game.leave(ME, { tick: 999999 });
-  /* + préavis de GAME.leaveNotice s réelles (15 s à x2 = 300 ticks) pour que les autres navigateurs l'apprennent */
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 200 + GAME.leaveNotice * GAME.speed * 10);
-});
-
-test('quitter juste avant la fin : le départ a lieu au plus tard au dernier tick (jamais après la fin)', async () => {
-  const { game, advance, store } = setup();
-  const { session } = await game.start(ME, {});
-  advance(realDurationMs() - 2000);
-  await game.leave(ME, {});
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, TOTAL_TICKS - 1);
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 200);
+  advance(realDurationMs() - 12_000);                // juste avant la fin
+  await game.pump();
+  await game.leave(OTHER, {});
+  assert.equal((await store.getGameSession(session.id)).leaves[1].tick, TOTAL_TICKS - 40);
 });
 
 /* ---------- à plusieurs (groupe lancé par son chef) ---------- */
@@ -168,7 +161,7 @@ test('groupe : un joueur part, les autres continuent et reçoivent leur part ; l
   assert.equal((await game.state(ME)).session.leaves.length, 1, 'les autres voient le départ (et son tick)');
   assert.equal((await game.state(OTHER)).session, null);
   advance(realDurationMs());
-  await game.settleDue();
+  await game.pump();
   assert.equal((await game.state(ME)).inventory.slots[0].qty, 9, 'seul présent : tout le coffre');
   assert.deepEqual((await game.state(OTHER)).inventory.slots, []);
   assert.equal((await game.state(ME)).ended.id, session.id);
@@ -181,27 +174,25 @@ test('quitter après la fin : refusé (la part est acquise)', async () => {
   await assert.rejects(game.leave(ME, {}), { code:'session_over' });
 });
 
-test('rejeu en échec : la session reste à verser et sera retentée, sans rien verser deux fois', async () => {
-  let fail = true;
-  const ok = fakeReplay();
-  const replay = async rec => { if(fail) throw new Error('panne'); return ok(rec); };
-  const { game, advance } = setup({ replay });
-  await game.start(ME, {});
+test('partie en panne : relancée au passage suivant (reconstruite), versée une seule fois', async () => {
+  const { game, advance, store } = setup();
+  const { session } = await game.start(ME, {});
+  advance(realDurationMs() / 2);
+  await game.pump();
+  game.close();                                      // comme si la partie (ou le serveur) s'était arrêtée
   advance(realDurationMs());
-  await game.finish(ME); await flush(); await flush();
-  assert.equal((await game.state(ME)).session.status, 'running');
-  fail = false;
-  await game.settleDue(); await game.settleDue();
+  await game.pump(); await game.pump();
   assert.equal((await game.state(ME)).inventory.slots[0].qty, 9);
+  assert.equal((await store.getGameSession(session.id)).status, 'done');
 });
 
-test('redémarrage pendant un rejeu : repris au démarrage, versé une seule fois', async () => {
+test('redémarrage du serveur : les sessions en cours repartent et se terminent ; rien n\'est versé deux fois', async () => {
   const { game, advance, store } = setup();
   const { session } = await game.start(ME, {});
   advance(realDurationMs());
   await game.settle(session.id);
   const rec = await store.getGameSession(session.id);
-  rec.status = 'settling'; await store.putGameSession(rec);    // comme si le serveur s'était arrêté en plein versement
+  rec.status = 'settling'; await store.putGameSession(rec);    // ancien format : arrêté en plein versement
   await game.recover();
   assert.equal((await game.state(ME)).inventory.slots[0].qty, 9, 'pas de double versement');
 });
@@ -220,7 +211,7 @@ test('mode normal : seed, mineurs de test et réglages dev du navigateur ignoré
   assert.equal(session.overrides, null);
 });
 
-test('mode dev : seed, mineurs de test et réglages acceptés (bornés) ; fin libre ; départ au tick fourni', async () => {
+test('mode dev : seed, mineurs de test et réglages acceptés (bornés) ; départ au tick de la partie', async () => {
   const { game, store } = setup({ dev:true });
   const { session } = await game.start(ME, { seed:7, bots:5, overrides:{ STATS:{ pods:500, speed:-3 }, CFG:{ evil:1 } } });
   assert.equal(session.seed, 7);
@@ -228,14 +219,14 @@ test('mode dev : seed, mineurs de test et réglages acceptés (bornés) ; fin li
   assert.deepEqual(session.overrides, { STATS:{ pods:500 } });
   assert.equal(session.finishAt, null);
   await game.leave(ME, { tick:123 });
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 123);
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 0, 'le tick du navigateur est ignoré');
   assert.equal(game.info().dev, true);
 });
 
 test('mode dev : fin quand le navigateur le dit', async () => {
   const { game } = setup({ dev:true });
   await game.start(ME, {});
-  await game.finish(ME); await flush(); await flush();
+  await game.finish(ME);
   assert.equal((await game.state(ME)).inventory.slots[0].qty, 9);
 });
 
@@ -251,24 +242,38 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
 
 /* ---------- focus minerai (changé pendant la session) ---------- */
 
-test('focus : enregistré avec le tick du serveur (+ délai), nettoyé, visible dans la session', async () => {
+test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async () => {
   const { game, advance } = setup();
   const { session } = await game.start(ME, {});
   advance(10_000);
+  await game.pump();
   const { event } = await game.focus(ME, { focus:{ coal:'only', stone:'target', iron:'boom' }, tick:5 });
-  assert.equal(event.tick, tickAt(10_000, GAME.speed) + FOCUS.delayTicks, 'le tick du navigateur est ignoré en jeu normal');
+  assert.equal(event.tick, tickAt(10_000, GAME.speed), 'le tick du navigateur est ignoré');
   assert.deepEqual(event.focus, { coal:'only' });
   const st = await game.state(ME);
   assert.deepEqual(st.session.focus, [{ account:ME.id, tick:event.tick, focus:{ coal:'only' } }]);
   assert.equal(st.session.id, session.id);
 });
 
-test('focus : ticks toujours croissants ; dev = tick du navigateur', async () => {
-  const { game } = setup({ dev:true });
+test('mode dev : vitesse et pause sur le serveur ; la partie suit cette horloge', async () => {
+  const { game, advance } = setup({ dev:true });
   await game.start(ME, {});
-  assert.equal((await game.focus(ME, { focus:{}, tick:300 })).event.tick, 300);
-  assert.equal((await game.focus(ME, { focus:{}, tick:100 })).event.tick, 300, 'jamais avant le précédent');
-  assert.equal((await game.focus(ME, { focus:{}, tick:-5 })).event.tick, 300);
+  await game.devClock(ME, { speed:20 });
+  advance(1000);                                     // 1 s à x20 = 20 s de jeu = 200 ticks
+  await game.pump();
+  assert.equal((await game.focus(ME, { focus:{} })).event.tick, 200);
+  await game.devClock(ME, { paused:true });
+  advance(60_000);
+  await game.pump();
+  assert.equal((await game.focus(ME, { focus:{} })).event.tick, 200, 'en pause : la partie n\'avance pas');
+  await game.devClock(ME, { paused:false, speed:7 });
+  assert.equal((await game.state(ME)).session.clock.speed, 20, 'vitesse hors liste ignorée');
+});
+
+test('horloge dev refusée en jeu normal', async () => {
+  const { game } = setup();
+  await game.start(ME, {});
+  await assert.rejects(game.devClock(ME, { speed:300 }), { code:'forbidden' });
 });
 
 test('focus : refusé sans session, après la fin, mal formé, ou trop souvent', async () => {

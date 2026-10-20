@@ -9,14 +9,14 @@ import { createAccountService } from '../server/accounts/service.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { ROOT } from '../server/config.js';
-import { FAST_SCRYPT } from './helpers.js';
+import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
 let server, base, now = 5_000_000;
 before(async () => {
   const store = createMemoryStore();
   const service = createAccountService({ store, scrypt: FAST_SCRYPT });
-  const replay = async rec => ({ shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Fer:4 } })), chest:{ Fer:4 } });
-  const game = createGameService({ store: createMemoryGameStore(), replay, clock: () => now, dev: false });
+  const summary = rec => ({ shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Fer:4 } })), chest:{ Fer:4 } });
+  const game = createGameService({ store: createMemoryGameStore(), liveRunner: fakeLive(summary), clock: () => now, dev: false });
   server = http.createServer(createApp({ store, service, game, root: ROOT }));
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
@@ -62,7 +62,6 @@ test('parcours : invité, préférences, lancement, fin refusée avant l\'heure,
 
   now += 1800e3;
   assert.equal((await b('POST', '/api/game/finish', {})).status, 200);
-  await new Promise(r => setTimeout(r, 20));
   const st = (await b('GET', '/api/game/state')).data;
   assert.deepEqual(st.inventory.slots, [{ item:'Fer', qty:4 }]);
   assert.equal(st.ended.status, 'done');

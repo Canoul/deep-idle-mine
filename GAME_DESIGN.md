@@ -124,7 +124,7 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choi
 - Le jeu connaît, pour chaque area, le **nombre initial et le restant** de chaque minerai.
 - **Area épuisée** : s'il reste moins de **20 %** *(provisoire)* du nombre initial d'un minerai visé dans l'area du mineur, il part vers **l'area débloquée la plus proche** qui en a encore (au-dessus ou en dessous ; à égalité, celle du dessous). Il ne descend pas non plus dans une area épuisée : il explore la sienne en galeries.
 - **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
-- Le serveur **enregistre chaque changement avec son tick** (comme un départ) et le rejoue : la partie affichée et la partie du serveur restent identiques. Un changement prend effet ~1 s de jeu après le clic *(valeur de config)*.
+- Le changement est envoyé au serveur, qui l'**applique tout de suite** dans la partie (il n'y en a qu'une, sur le serveur) : tous les joueurs le voient en même temps. Il est enregistré avec son tick (comme un départ).
 
 ### Focus area
 Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir **où** travaille le mineur du joueur :
@@ -133,7 +133,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 - **Area vidée** *(décision ferme)* : s'il reste moins de **20 %** *(même seuil que le focus minerai, provisoire)* de tous les minerais de l'area choisie, le focus area **saute** : retour à « Plus profond », avec un message dans le panneau. Le mineur ne perd pas la fin de session à creuser des galeries vides (en simulation, 3 mineurs vident l'area 0 en ~25 min).
 - **Avec le focus minerai** *(décision ferme)* : le focus area décide **où** va le mineur, le focus minerai décide **ce qu'il vise** dans cette area. Si l'area choisie passe sous le seuil pour un minerai visé, ce focus minerai saute (message dans le panneau), le focus area reste.
 - Choisir une area plus haute empêche de débloquer les suivantes (rien n'est miné dans la dernière) : c'est un arbitrage du joueur.
-- Même enregistrement que le focus minerai (clé `area`) : changement enregistré avec son tick par le serveur, puis rejoué.
+- Même enregistrement que le focus minerai (clé `area`) : appliqué tout de suite par le serveur, enregistré avec son tick.
 
 ### Caractéristiques
 | Stat | Rôle | Valeur de base |
@@ -246,17 +246,19 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 - Places : le **chef** (celui qui a créé le groupe, ★) puis les membres, les invités en attente, les places libres (3 au total). Un membre absent (onglet fermé) est marqué « absent », puis retiré après 5 min sans nouvelles.
 - **Seul le chef lance** (« Lancer à N ») ; les autres voient « En attente du chef… ». La session est créée pour tous les membres présents dans le groupe ; le chef est le mineur Rouge, puis Bleu, Vert dans l'ordre d'arrivée. Chacun garde ses propres préférences.
 - Le chef peut **retirer** un membre ou annuler une invitation (×). **Quitter le groupe** = on se retrouve seul. Si le chef part, le membre suivant devient chef.
-- Pendant la session, chaque navigateur affiche la même mine (même partie, calculée à l'identique). Un joueur qui quitte part **15 s plus tard** (préavis, `GAME.leaveNotice`) : son mineur disparaît au même moment chez tous et dans le rejeu du serveur. Partir dans les toutes dernières secondes ne rapporte rien non plus (le départ a lieu au plus tard au dernier tick).
+- Pendant la session, tout le monde voit **la même partie** : il n'y en a qu'une, elle tourne sur le serveur. Un joueur qui quitte part **tout de suite** : son mineur disparaît de la partie, chez tous. Partir dans les toutes dernières secondes ne rapporte rien non plus.
 - Les groupes sont une salle d'attente : un redémarrage du serveur les vide (chacun se retrouve seul), sans rien perdre d'autre.
 
 **Le serveur fait foi** (anti-triche) :
-- c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) ; le navigateur ne fait que l'afficher ;
-- **vitesse du jeu normal : ×2** *(valeur de config)* : une session de 60 min de jeu dure **30 min en temps réel**. Pas de pause : elle avance au rythme du temps réel, **même page fermée** ; en revenant, le navigateur rattrape le temps écoulé ;
-- le serveur **refuse la fin d'une session avant l'heure** ; à la fin, il **rejoue lui-même la partie** depuis son enregistrement, partage le coffre et verse les parts dans les inventaires. Un joueur absent à la fin reçoit quand même sa part ;
+- c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) et qui **fait tourner la partie** : une seule copie, sur le serveur. Le navigateur la reçoit et l'**affiche** ; il ne calcule rien. Il envoie seulement les choix du joueur (lancer, quitter, focus), appliqués tout de suite. Comme le navigateur ne produit aucun résultat, il n'y a rien à vérifier : ni rejeu, ni contrôle de vraisemblance ;
+- **vitesse du jeu normal : ×2** *(valeur de config)* : une session de 60 min de jeu dure **30 min en temps réel**. Pas de pause : elle avance au rythme du temps réel, **même page fermée** ; en revenant, on voit directement où en est la partie ;
+- la session se termine d'elle-même au dernier tick : le serveur partage aussitôt le coffre et verse les parts dans les inventaires. Un joueur absent à la fin reçoit quand même sa part ;
+- après un redémarrage du serveur, une session en cours est reconstruite à l'identique (même seed + choix enregistrés avec leur tick), puis reprend ;
+- le nombre de sessions en même temps est limité par la puissance du serveur *(valeur de config, 2 sur l'offre gratuite de Render)* : au-delà, « serveur plein, réessaie dans quelques minutes » ;
 - **l'inventaire est stocké sur le serveur** ; le navigateur le lit, il ne peut pas l'écrire ;
 - une seule session en cours par joueur.
 
-**Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause, seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre. Le serveur rejoue avec les mêmes réglages.
+**Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
 Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Talents, Social**.
@@ -297,7 +299,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
-- **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session pour le rejeu du serveur).
+- **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session, lu par la partie du serveur).
 - Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire, mais ne s'appliquent pas encore en session (voir le point précédent).
 
 ### Four (onglet Four)

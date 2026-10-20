@@ -12,18 +12,35 @@ import { baseMoveT, baseClimbT, baseMineT } from './miner.js';
    lw : poids de planification d'une NOUVELLE échelle (>1 pousse à réutiliser l'existant ; 1 = temps réel). */
 export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlanWeight){
   const H=G.tiles.length, N=H*W, dist=new Float64Array(N).fill(Infinity), par=new Int32Array(N).fill(-1), typ=new Uint8Array(N);
-  const heap=[];
-  const push=(d,n)=>{ heap.push([d,n]); let i=heap.length-1; while(i>0){ const p=(i-1)>>1; if(heap[p][0]<=heap[i][0]) break; [heap[p],heap[i]]=[heap[i],heap[p]]; i=p; } };
-  const pop=()=>{ const top=heap[0], last=heap.pop(); if(heap.length){ heap[0]=last; let i=0; for(;;){ const l=2*i+1, r=l+1; let s=i; if(l<heap.length&&heap[l][0]<heap[s][0]) s=l; if(r<heap.length&&heap[r][0]<heap[s][0]) s=r; if(s===i) break; [heap[s],heap[i]]=[heap[i],heap[s]]; i=s; } } return top; };
+  /* tas binaire (file de priorité) en deux tableaux parallèles : distance hd, nœud hn. Mêmes comparaisons et mêmes
+     échanges qu'un tas de paires [d,n] : les nœuds sortent dans le même ordre (itinéraires identiques, à égalité
+     comprise), sans créer de petits tableaux à chaque opération. popD/popN : le dernier élément sorti. */
+  const hd=[], hn=[];
+  let popD=0, popN=0;
+  const push=(d,n)=>{
+    let i=hd.length; hd.push(d); hn.push(n);
+    while(i>0){ const p=(i-1)>>1; if(hd[p]<=hd[i]) break;
+      const td=hd[p]; hd[p]=hd[i]; hd[i]=td; const tn=hn[p]; hn[p]=hn[i]; hn[i]=tn; i=p; }
+  };
+  const pop=()=>{
+    popD=hd[0]; popN=hn[0];
+    const ld=hd.pop(), ln=hn.pop(), len=hd.length;
+    if(len){ hd[0]=ld; hn[0]=ln; let i=0;
+      for(;;){ const l=2*i+1, r=l+1; let s=i;
+        if(l<len&&hd[l]<hd[s]) s=l; if(r<len&&hd[r]<hd[s]) s=r; if(s===i) break;
+        const td=hd[s]; hd[s]=hd[i]; hd[i]=td; const tn=hn[s]; hn[s]=hn[i]; hn[i]=tn; i=s; } }
+  };
   /* lignes occupées par les autres mineurs (leur ligne, celle du dessus et celle du dessous) : un chemin qui y passe
      coûte plus cher, pour que chacun travaille sur ses propres lignes */
   const busy=new Uint8Array(H+2);
   for(const o of G.miners) if(o!==m && o.y>0) for(let k=-1;k<=1;k++) if(o.y+k>=1 && o.y+k<H) busy[o.y+k]=1;
   const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x, nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
-  const moveT=baseMoveT, climbT=baseClimbT, mineT=baseMineT, fall=1/CFG.fallSpeed;
+  /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
+  const mv=baseMoveT(), cl=baseClimbT(), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed;
+  const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(t); mineCache.set(t,v); } return v; };
   const start=sy*W+sx; dist[start]=0; push(0,start);
-  while(heap.length){
-    const [d,n]=pop(); if(d>dist[n]) continue;
+  while(hd.length){
+    pop(); const d=popD, n=popN; if(d>dist[n]) continue;
     if(d>maxCost) break;
     const x=n%W, y=(n/W)|0;
     if(goalFn && goalFn(x,y)) return {n,dist,par,typ,start,sx,sy};

@@ -11,7 +11,7 @@ import { createMemoryStore } from '../server/accounts/store.js';
 import { createAccountService } from '../server/accounts/service.js';
 import { createApp } from '../server/app.js';
 import { SERVER, PARTY_SERVER, ROOT } from '../server/config.js';
-import { FAST_SCRYPT } from './helpers.js';
+import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
 const B = { id:'BBBB2222', name:null, guest:true };
@@ -19,12 +19,12 @@ const C = { id:'CCCC3333', name:'Max', guest:false };
 const D = { id:'DDDD4444', name:'Lou', guest:false };
 const ACCOUNTS = Object.fromEntries([A, B, C, D].map(a => [a.id, a]));
 
-const fakeReplay = async rec => ({ id:rec.id, shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Charbon:1 } })) });
+const fakeSummary = rec => ({ id:rec.id, shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Charbon:1 } })) });
 
 function setup(){
   let now = 5_000_000;
   const clock = () => now;
-  const game = createGameService({ store:createMemoryGameStore(), replay:fakeReplay, clock, randomSeed:() => 7 });
+  const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
   let n = 0;
   const party = createPartyService({ game, clock, getAccount:async id => ACCOUNTS[id] ?? null,
                                      newCode:() => ['K7Q4P2', 'H3XM9T', 'R5B8NC'][n++ % 3] });
@@ -189,7 +189,7 @@ test('pendant le lancement, personne n\'entre ni ne sort (l\'équipe lancée est
 test('HTTP : Zoé crée, Max rejoint par le code, Zoé lance, les deux sont dans la même session', async () => {
   const store = createMemoryStore();
   const service = createAccountService({ store, scrypt:FAST_SCRYPT });
-  const game = createGameService({ store:createMemoryGameStore(), replay:fakeReplay });
+  const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(fakeSummary) });
   const party = createPartyService({ game, getAccount:id => store.getAccount(id) });
   const server = http.createServer(createApp({ store, service, game, party, root:ROOT, config:{ ...SERVER, logProxyCheck:false } }));
   await new Promise(r => server.listen(0, '127.0.0.1', r));

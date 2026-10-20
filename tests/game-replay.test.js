@@ -1,11 +1,10 @@
-/* Rejeu d'une session par le serveur : même partie que dans le navigateur (déterminisme), départs rejoués
-   au bon moment, réglages dev isolés, et rejeu dans un thread (worker_threads). Sessions raccourcies (maxTicks). */
+/* Reconstruction d'une session depuis son enregistrement (seed + choix des joueurs avec leur tick) : utilisée par le
+   serveur après un redémarrage. Déterminisme, départs au bon moment, réglages dev isolés. Sessions raccourcies (maxTicks). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STATS } from '../src/config.js';
 import { buildSession, applyDueLeaves, replayRecord, minerSpecs, applyOverrides, tickAt } from '../src/shared/game.js';
 import { tick, endSession } from '../src/sim/session.js';
-import { createReplayer } from '../server/game/replay.js';
 
 const N = 4500;   // 7,5 min de jeu : l'oxygène (300 s) force au moins un aller-retour au coffre
 const rec = (extra = {}) => ({ id:'S1', seed:777, players:[{ account:'AAAA', name:'Zoe' }], bots:2,
@@ -61,17 +60,4 @@ test('temps réel → ticks : x2, 10 s réelles = 200 ticks, jamais au-delà de 
   assert.equal(tickAt(10_000, 2), 200);
   assert.equal(tickAt(-5, 2), 0);
   assert.equal(tickAt(1e12, 2), 36000);
-});
-
-test('rejeu dans un thread : même résultat qu\'en direct, file d\'attente respectée', async () => {
-  const replay = createReplayer({ workers:1, options:{ maxTicks:800 } });
-  const records = [rec({ id:'A' }), rec({ id:'B', seed:5 }), rec({ id:'C', bots:0 })];
-  const out = await Promise.all(records.map(replay));
-  for(const [i, r] of records.entries())
-    assert.deepEqual(strip(out[i]), strip(replayRecord(r, { maxTicks:800 })), r.id);
-});
-
-test('rejeu dans un thread : un rejeu trop long est abandonné', async () => {
-  const replay = createReplayer({ workers:1, timeout:1, options:{ maxTicks:5000 } });
-  await assert.rejects(replay(rec()), /trop long/);
 });
