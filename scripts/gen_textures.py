@@ -262,45 +262,79 @@ def main():
     rect(pick, 13, 9, 2, 2, hexc('#5f646c'))
     tex['pickaxe_stone'] = pick
 
-    # pièces en chitine (stuff) : plaques rouge sombre de carapace, reflets clairs, joints foncés
-    chit, chit_hi, chit_lo = hexc('#a8343a'), hexc('#d65a5a'), hexc('#5e1a1e')
-    helmet = blank()
-    rect(helmet, 3, 3, 10, 7, chit)
-    rect(helmet, 4, 2, 8, 1, chit)
-    rect(helmet, 3, 10, 3, 3, chit)
-    rect(helmet, 10, 10, 3, 3, chit)
-    rect(helmet, 5, 4, 4, 1, chit_hi)
-    rect(helmet, 3, 7, 10, 1, chit_lo)
-    tex['helmet_chitin'] = helmet
+    # pièces d'armure (stuff), mêmes formes par matériau : chitine = plaques rouge sombre de carapace, fer = gris acier
+    for mat, base, hi, lo in [('chitin', '#a8343a', '#d65a5a', '#5e1a1e'),
+                              ('iron', '#9aa1ab', '#d9dde3', '#5a6069')]:
+        chit, chit_hi, chit_lo = hexc(base), hexc(hi), hexc(lo)
+        helmet = blank()
+        rect(helmet, 3, 3, 10, 7, chit)
+        rect(helmet, 4, 2, 8, 1, chit)
+        rect(helmet, 3, 10, 3, 3, chit)
+        rect(helmet, 10, 10, 3, 3, chit)
+        rect(helmet, 5, 4, 4, 1, chit_hi)
+        rect(helmet, 3, 7, 10, 1, chit_lo)
+        tex['helmet_' + mat] = helmet
 
-    chest = blank()
-    rect(chest, 2, 2, 12, 4, chit)
-    rect(chest, 4, 6, 8, 8, chit)
-    rect(chest, 6, 2, 4, 2, (0, 0, 0, 0))
-    for y in (7, 10):
-        rect(chest, 4, y, 8, 1, chit_lo)
-    rect(chest, 3, 3, 2, 1, chit_hi)
-    rect(chest, 5, 8, 2, 1, chit_hi)
-    tex['chest_chitin'] = chest
+        chest = blank()
+        rect(chest, 2, 2, 12, 4, chit)
+        rect(chest, 4, 6, 8, 8, chit)
+        rect(chest, 6, 2, 4, 2, (0, 0, 0, 0))
+        for y in (7, 10):
+            rect(chest, 4, y, 8, 1, chit_lo)
+        rect(chest, 3, 3, 2, 1, chit_hi)
+        rect(chest, 5, 8, 2, 1, chit_hi)
+        tex['chest_' + mat] = chest
 
-    legs = blank()
-    rect(legs, 4, 2, 8, 3, chit)
-    rect(legs, 4, 5, 3, 9, chit)
-    rect(legs, 9, 5, 3, 9, chit)
-    rect(legs, 4, 4, 8, 1, chit_lo)
-    rect(legs, 4, 9, 3, 1, chit_lo)
-    rect(legs, 9, 9, 3, 1, chit_lo)
-    rect(legs, 5, 6, 1, 2, chit_hi)
-    rect(legs, 10, 6, 1, 2, chit_hi)
-    tex['legs_chitin'] = legs
+        legs = blank()
+        rect(legs, 4, 2, 8, 3, chit)
+        rect(legs, 4, 5, 3, 9, chit)
+        rect(legs, 9, 5, 3, 9, chit)
+        rect(legs, 4, 4, 8, 1, chit_lo)
+        rect(legs, 4, 9, 3, 1, chit_lo)
+        rect(legs, 9, 9, 3, 1, chit_lo)
+        rect(legs, 5, 6, 1, 2, chit_hi)
+        rect(legs, 10, 6, 1, 2, chit_hi)
+        tex['legs_' + mat] = legs
 
-    boots = blank()
-    for x0 in (2, 9):
-        rect(boots, x0, 5, 4, 6, chit)
-        rect(boots, x0, 11, 6 if x0 == 2 else 5, 3, chit)
-        rect(boots, x0, 13, 6 if x0 == 2 else 5, 1, chit_lo)
-        rect(boots, x0 + 1, 6, 1, 2, chit_hi)
-    tex['boots_chitin'] = boots
+        boots = blank()
+        for x0 in (2, 9):
+            rect(boots, x0, 5, 4, 6, chit)
+            rect(boots, x0, 11, 6 if x0 == 2 else 5, 3, chit)
+            rect(boots, x0, 13, 6 if x0 == 2 else 5, 1, chit_lo)
+            rect(boots, x0 + 1, 6, 1, 2, chit_hi)
+        tex['boots_' + mat] = boots
+
+    # pioche en fer (stuff) : la forme de la pioche en pierre, tête en acier clair
+    pick = blank()
+    for i in range(10):
+        rect(pick, 3 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
+    for x, y in [(4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(pick, x, y, 2, 2, hexc('#b8bec7'))
+    rect(pick, 5, 2, 4, 1, hexc('#eef0f3'))
+    rect(pick, 3, 4, 2, 2, hexc('#6f7680'))
+    rect(pick, 13, 9, 2, 2, hexc('#6f7680'))
+    tex['pickaxe_iron'] = pick
+
+    # épée en fer (stuff) : lame en diagonale, garde et poignée
+    sword = blank()
+    for i in range(9):
+        rect(sword, 5 + i, 9 - i, 2, 2, hexc('#c9cdd4'))
+    for i in range(8):
+        rect(sword, 6 + i, 9 - i, 1, 1, hexc('#eef0f3'))
+    rect(sword, 3, 9, 5, 2, hexc('#6b4f3a'))       # garde
+    rect(sword, 4, 8, 2, 4, hexc('#6b4f3a'))
+    rect(sword, 2, 12, 2, 2, hexc('#8a5a2b'))      # poignée
+    rect(sword, 1, 14, 2, 1, hexc('#ffd23f'))      # pommeau
+    tex['sword_iron'] = sword
+
+    # ceinture en peau de gobelin (stuff) : bande de cuir vert, boucle dorée
+    belt = blank()
+    rect(belt, 1, 6, 14, 4, hexc('#4f7d32'))
+    rect(belt, 1, 6, 14, 1, hexc('#6fa64a'))
+    rect(belt, 1, 9, 14, 1, hexc('#2f5420'))
+    rect(belt, 6, 5, 4, 6, hexc('#ffd23f'))
+    rect(belt, 7, 6, 2, 4, hexc('#4f7d32'))
+    tex['belt_goblin'] = belt
 
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
@@ -333,37 +367,51 @@ def main():
     rect(sk_body, 9, 14, 2, 2, hexc('#3a2a1e'))
     tex['skins/body'] = sk_body
 
-    red, red_hi, red_lo = hexc('#b3261e'), hexc('#e0503f'), hexc('#6e1410')   # chitine : rouge
-    sk_helmet = blank()
-    rect(sk_helmet, 4, 1, 8, 3, red)
-    rect(sk_helmet, 5, 1, 4, 1, red_hi)
-    rect(sk_helmet, 7, 0, 2, 1, red_lo)             # crête
-    rect(sk_helmet, 4, 4, 2, 1, red_lo)             # protège-joues
-    rect(sk_helmet, 10, 4, 2, 1, red_lo)
-    tex['skins/chitin_helmet'] = sk_helmet
-    sk_chest = blank()
-    rect(sk_chest, 4, 7, 8, 3, red)
-    rect(sk_chest, 5, 8, 6, 1, red_lo)              # jointure des plaques
-    rect(sk_chest, 5, 7, 2, 1, red_hi)
-    rect(sk_chest, 4, 7, 1, 3, red_lo)              # épaulières
-    rect(sk_chest, 11, 7, 1, 3, red_lo)
-    tex['skins/chitin_chest'] = sk_chest
-    sk_legs = blank()
-    rect(sk_legs, 5, 11, 6, 3, red)
-    rect(sk_legs, 5, 12, 6, 1, red_lo)
-    rect(sk_legs, 7, 11, 2, 3, red_lo)
-    rect(sk_legs, 5, 11, 1, 1, red_hi)
-    tex['skins/chitin_legs'] = sk_legs
-    sk_boots = blank()
-    for x0 in (5, 9):
-        rect(sk_boots, x0, 14, 2, 2, red)
-        rect(sk_boots, x0, 15, 2, 1, red_lo)
-        rect(sk_boots, x0 + 1, 14, 1, 1, red_hi)
-    tex['skins/chitin_boots'] = sk_boots
+    # calques d'armure par matériau : chitine = rouge, fer = gris acier
+    for mat, r0, r1, r2 in [('chitin', '#b3261e', '#e0503f', '#6e1410'), ('iron', '#9aa1ab', '#d9dde3', '#5a6069')]:
+        red, red_hi, red_lo = hexc(r0), hexc(r1), hexc(r2)
+        sk_helmet = blank()
+        rect(sk_helmet, 4, 1, 8, 3, red)
+        rect(sk_helmet, 5, 1, 4, 1, red_hi)
+        rect(sk_helmet, 7, 0, 2, 1, red_lo)             # crête
+        rect(sk_helmet, 4, 4, 2, 1, red_lo)             # protège-joues
+        rect(sk_helmet, 10, 4, 2, 1, red_lo)
+        tex['skins/' + mat + '_helmet'] = sk_helmet
+        sk_chest = blank()
+        rect(sk_chest, 4, 7, 8, 3, red)
+        rect(sk_chest, 5, 8, 6, 1, red_lo)              # jointure des plaques
+        rect(sk_chest, 5, 7, 2, 1, red_hi)
+        rect(sk_chest, 4, 7, 1, 3, red_lo)              # épaulières
+        rect(sk_chest, 11, 7, 1, 3, red_lo)
+        tex['skins/' + mat + '_chest'] = sk_chest
+        sk_legs = blank()
+        rect(sk_legs, 5, 11, 6, 3, red)
+        rect(sk_legs, 5, 12, 6, 1, red_lo)
+        rect(sk_legs, 7, 11, 2, 3, red_lo)
+        rect(sk_legs, 5, 11, 1, 1, red_hi)
+        tex['skins/' + mat + '_legs'] = sk_legs
+        sk_boots = blank()
+        for x0 in (5, 9):
+            rect(sk_boots, x0, 14, 2, 2, red)
+            rect(sk_boots, x0, 15, 2, 1, red_lo)
+            rect(sk_boots, x0 + 1, 14, 1, 1, red_hi)
+        tex['skins/' + mat + '_boots'] = sk_boots
+    sk_belt = blank()                              # ceinture en peau de gobelin : bande verte, boucle dorée
+    rect(sk_belt, 5, 10, 6, 1, hexc('#4f7d32'))
+    rect(sk_belt, 7, 10, 2, 1, hexc('#ffd23f'))
+    tex['skins/goblin_belt'] = sk_belt
+    # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
+    sk_sword = blank()
+    for i in range(9):
+        rect(sk_sword, 5 + i, 10 - i, 2, 2, hexc('#c9cdd4'))
+    rect(sk_sword, 3, 10, 5, 2, hexc('#6b4f3a'))
+    rect(sk_sword, 2, 12, 2, 3, hexc('#8a5a2b'))
+    tex['skins/sword_iron'] = sk_sword
 
     # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
     for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),
-                                    ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c')]:
+                                    ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c'),
+                                    ('skins/pick_iron', '#b8bec7', '#eef0f3', '#6f7680')]:
         pk = blank()
         for i in range(9):
             rect(pk, 2 + i, 13 - i, 2, 2, hexc('#8a5a2b'))

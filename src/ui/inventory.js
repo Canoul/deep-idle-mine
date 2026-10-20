@@ -1,8 +1,9 @@
 /* Onglet Inventaire : affiche la grille de slots. Lit l'inventaire, ne le modifie jamais : ouvrir un treasure
-   est demandé au serveur (onOpen), qui renvoie le nouvel inventaire. */
+   (onOpen) ou utiliser un blueprint (onLearn) est demandé au serveur, qui renvoie le nouvel inventaire. */
 import { INVENTORY } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
+import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
 import { statsText } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 
@@ -37,7 +38,16 @@ function slotHtml(s, i, fresh){
   return `<div class="slot${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${s.item} × ${fullQty(s.qty)}`)}>${iconHtml(s.item)}${q}</div>`;
 }
 
-function infoHtml(s, pinned=false){
+/* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
+function blueprintHtml(inv, s){
+  if(itemDef(s.item)?.cat !== 'blueprint' || s.item === 'Blueprint parts') return '';
+  const r = recipeOfBlueprint(s.item);
+  if(!r) return ' <span class="mut">· ne débloque rien pour l\'instant</span>';
+  if(isUnlocked(r, inv)) return ` <span class="mut">· recette « ${esc(r)} » déjà débloquée</span>`;
+  return ` <button class="on invLearn" data-item="${esc(s.item)}" title="Le blueprint est consommé, la recette reste débloquée pour toujours">Utiliser</button>`;
+}
+
+function infoHtml(s, pinned=false, inv=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const bits = [ `<b>${esc(s.item)}</b>`, `× ${fullQty(s.qty)}` ];
@@ -46,12 +56,14 @@ function infoHtml(s, pinned=false){
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(statsText(s.item)) bits.push(`<span class="stuffStats">${esc(statsText(s.item))}</span>`);
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>` : '';
-  return bits.join(' <span class="mut">·</span> ') + open;
+  const learn = pinned && inv ? blueprintHtml(inv, s) : '';
+  return bits.join(' <span class="mut">·</span> ') + open + learn;
 }
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
-   onOpen(item) : le joueur demande à ouvrir un treasure (le bouton apparaît sur un treasure sélectionné) */
-export function renderInventory(inv, fresh=new Set(), onOpen=null){
+   onOpen(item) : le joueur demande à ouvrir un treasure (le bouton apparaît sur un treasure sélectionné) ;
+   onLearn(item) : le joueur utilise un blueprint (bouton sur un blueprint sélectionné) */
+export function renderInventory(inv, fresh=new Set(), onOpen=null, onLearn=null){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
   grid.style.setProperty('--cols', INVENTORY.cols);
   let h = '';
@@ -71,13 +83,15 @@ export function renderInventory(inv, fresh=new Set(), onOpen=null){
     const s = inv.slots[+c.dataset.i] || null;
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
-    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned);
+    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv);
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen');
-    if(!b || !onOpen) return;
+    const b = e.target.closest('.invOpen, .invLearn');
+    if(!b) return;
+    const h = b.classList.contains('invOpen') ? onOpen : onLearn;
+    if(!h) return;
     b.disabled = true;               // un clic = une demande
-    onOpen(b.dataset.item);
+    h(b.dataset.item);
   };
 }
 

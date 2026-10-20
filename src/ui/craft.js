@@ -16,7 +16,8 @@ export function setupCraft({ onCraft }){
   let inv = { slots:[] }, sel = null, busy = false, msg = '';
 
   function render(){
-    const list = craftable();
+    /* seulement les recettes débloquées : celles à blueprint restent secrètes tant qu'on ne l'a pas utilisé */
+    const list = craftable(inv);
     if(!sel || !list.includes(sel)) sel = list[0] ?? null;
     $('craftList').innerHTML = list.map(n =>
       `<button class="slot craftItem${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')

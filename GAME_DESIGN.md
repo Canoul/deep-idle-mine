@@ -89,7 +89,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | **Un blueprint** parmi : Pioche en fer, Épée en fer, Casque en fer, Plastron en fer, Jambes en fer, Bottes en fer, Four en fer, Boussole en or, Ceinture en peau de gobelin | 1 | 1 % chacun (9 % au total) |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1 % chacune (3 % au total) |
 
-  *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints et des gemmes : défini plus tard avec le craft.
+  *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints : débloquer une recette (§6, Craft). Usage des gemmes : défini plus tard.
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
@@ -294,12 +294,16 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
+- Un blueprint sélectionné peut s'**utiliser** : il débloque sa recette (voir Craft).
 
 ### Craft (onglet Craft)
 - Les **recettes** sont dans un fichier à part : `src/recipes.js` (ingrédients, quantité obtenue, déblocage).
 - L'onglet montre une **icône par recette disponible**. Un clic montre la recette : chaque ingrédient en **x / besoin** (x = ce que le joueur a dans son inventaire ; rouge s'il en manque, vert sinon).
 - Le bouton **Craft** est grisé tant qu'il manque un ingrédient. Sinon, un clic retire les ingrédients et met l'objet dans l'inventaire (tout ou rien, fait par le serveur ; un double clic ne fabrique qu'une fois).
-- Recettes **débloquées de base** pour l'instant ; plus tard, d'autres seront débloquées par les blueprints (champ `unlock`).
+- Certaines recettes sont **débloquées de base** ; les autres par un **blueprint** (champ `unlock`) *(décision ferme)* :
+  - elles sont **secrètes** : l'onglet Craft ne les montre pas tant que le blueprint n'a pas été utilisé ;
+  - dans l'Inventaire, un blueprint sélectionné a un bouton **Utiliser** : le blueprint est **consommé**, la recette est **débloquée pour toujours** sur le compte (fait par le serveur, en une fois ; un double clic n'en consomme qu'un) ;
+  - recette déjà débloquée : le bouton n'apparaît pas, le blueprint est gardé. Un blueprint qui ne débloque encore rien (Four en fer BP, Boussole en or BP) l'indique.
 - Recettes actuelles *(provisoires)* :
 
   | Objet | Recette | Bonus |
@@ -310,13 +314,25 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
   | Bottes en chitine | 4 lingots de fer + 70 chitine | Vitesse (marche) +0,5 |
 
+  Débloquées par leur blueprint (« Pioche en fer BP »…, Treasure T1) :
+
+  | Objet | Recette | Effet |
+  |---|---|---|
+  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,2 |
+  | Épée en fer | 10 Tainted iron | Dégâts 11 (remplace les mains nues : 5) |
+  | Casque en fer | 5 Tainted iron | Oxygène +38 |
+  | Plastron en fer | 8 Tainted iron | Pods +33 |
+  | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +0,6 |
+  | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
+  | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Découverte +1 |
+
 ### Stuff (onglet Stuff)
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
-- Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
+- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vision, boussole, torches, passerelles) : base + bonus des pièces portées, le bonus en vert.
 

@@ -5,7 +5,7 @@ import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/miner.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
-import { SKIN, armorLayers, pickaxeOf } from '../skins.js';
+import { SKIN, armorLayers, toolOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 
 export const TILE=16, VIEW_ROWS=34;
@@ -44,7 +44,7 @@ export function createRenderer(cv){
     const a=m.action;
     if(a&&(a.type==='mine'||a.type==='attack')){
       /* la pioche, tenue à la main, se balance : rotation autour de la main */
-      const swing=Math.sin(a.t*18)*0.7, i=TEX[pickaxeOf(m.look)];
+      const swing=Math.sin(a.t*18)*0.7, i=TEX[toolOf(m.look, a.type)];
       if(i && i.complete && i.naturalWidth){
         ctx.save(); ctx.translate(bx+11,py+10); ctx.rotate(swing-0.35);
         ctx.drawImage(i,-3,-12,13,13); ctx.restore();

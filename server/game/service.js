@@ -22,7 +22,7 @@ import { createInventory, deserialize, serialize, creditSession } from '../../sr
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
-import { craft } from '../../src/meta/craft.js';
+import { craft, learn } from '../../src/meta/craft.js';
 import { sanitizeStuff, stuffOp, lookOf } from '../../src/meta/stuff.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
@@ -36,6 +36,10 @@ const fail = (code, status, message, extra) => { throw new GameError(code, statu
 const ACTIVE = ['running', 'settling'];
 const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore débloquée.',
                        not_enough: 'Il te manque des ingrédients.' };
+const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
+                       not_owned: 'Tu n\'as pas ce blueprint.' };
+/* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
+const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
                        wrong_slot: 'Cette pièce ne va pas dans cette case.' };
 const FURNACE_ERRORS = {
@@ -210,7 +214,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
       const inv = await loadInventory(me.id);
-      return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
+      return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)),
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: publicProgress(await loadProgress(me.id)),
                prefs: await loadPrefs(me.id),
@@ -365,7 +369,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const res = openTreasure(inv, item, opId, random);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, loot: res.loot, inventory: { slots: inv.slots } };
+        return { item, loot: res.loot, inventory: publicInventory(inv) };
       });
     },
 
@@ -380,7 +384,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = furnaceOp(st, inv, op, clock());
         if(r.error) fail(r.error, ['not_enough', 'slot_busy', 'not_empty', 'no_recipe'].includes(r.error) ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
-        return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(st) };
+        return { inventory: publicInventory(inv), furnaces: publicFurnaces(st) };
       });
     },
 
@@ -395,7 +399,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = craft(inv, item, opId);
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, inventory: { slots: inv.slots } };
+        return { item, inventory: publicInventory(inv) };
+      });
+    },
+
+    /* utiliser un blueprint : le serveur le retire de l'inventaire et débloque sa recette, en une seule écriture
+       (opId : une demande renvoyée ne consomme pas un second blueprint) */
+    async learn(me, body = {}){
+      const { item, opId } = body;
+      if(typeof item !== 'string') fail('bad_item', 400, 'Objet inconnu.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        const r = learn(inv, item, opId);
+        if(r.error) fail(r.error, r.error === 'no_use' ? 400 : 409, LEARN_ERRORS[r.error]);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { item, recipe: r.recipe, inventory: publicInventory(inv) };
       });
     },
 
@@ -409,7 +428,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = stuffOp(inv, st, op);
         if(r.error) fail(r.error, r.error === 'not_owned' ? 409 : 400, STUFF_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndStuff(me.id, JSON.parse(serialize(inv)), st);
-        return { inventory: { slots: inv.slots }, stuff: st.worn };
+        return { inventory: publicInventory(inv), stuff: st.worn };
       });
     },
 

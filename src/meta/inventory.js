@@ -8,6 +8,7 @@
    - capacité illimitée pour l'instant.
    Un slot vidé (objet consommé) devient null : le trou est réutilisé par le prochain nouvel objet. */
 import { ITEMS, INVENTORY } from '../config.js';
+import { RECIPES } from '../recipes.js';
 
 export const SAVE_VERSION = 1;
 
@@ -19,9 +20,11 @@ export const CREDIT_MEMORY = 200;
 /* opened : dernières ouvertures de Treasure TX { id, item, loot } (anti-duplication : une requête renvoyée
    retrouve son butin au lieu d'ouvrir un second treasure) */
 export const OPEN_MEMORY = 50;
-/* crafted : ids des dernières demandes de craft (une demande renvoyée ne fabrique pas un second objet) */
+/* crafted : ids des dernières demandes de craft et de blueprints utilisés (une demande renvoyée ne fabrique pas un
+   second objet, ne consomme pas un second blueprint) */
 export const CRAFT_MEMORY = 50;
-export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[] }; }
+/* unlocked : recettes débloquées par un blueprint (src/meta/craft.js), pour toujours */
+export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[], unlocked:[] }; }
 
 /* une quantité acceptable : entier positif « sûr » (pas d'Infinity, NaN, décimale ni nombre trop grand) */
 const validQty = q => Number.isSafeInteger(q) && q > 0;
@@ -112,7 +115,7 @@ export function creditSession(inv, sessionId, bag){
 }
 
 /* ---- sauvegarde ---- */
-export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted });
+export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted, unlocked:inv.unlocked });
 
 const validBag = b => b && typeof b === 'object' && !Array.isArray(b) && Object.values(b).every(validQty);
 
@@ -137,6 +140,9 @@ export function deserialize(json){
         .map(o => ({ id:o.id, item:o.item, loot:{ ...o.loot } })).slice(-OPEN_MEMORY)
     : [];
   inv.crafted = Array.isArray(d.crafted) ? d.crafted.filter(x => typeof x === 'string').slice(-CRAFT_MEMORY) : [];
+  /* recettes débloquées : seulement des recettes à blueprint existantes, chacune une fois */
+  inv.unlocked = Array.isArray(d.unlocked)
+    ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && Object.hasOwn(RECIPES, n) && RECIPES[n].unlock))] : [];
   return inv;
 }
 

@@ -329,6 +329,24 @@ test('four : mode Alliage par le serveur (Tainted iron en 3 min), changement ref
   assert.equal((await game.state(ME)).furnaces.list[0].mode, 'alloy', 'le mode est enregistré');
 });
 
+test('blueprint par le serveur : consommé une fois, recette débloquée et renvoyée au navigateur', async () => {
+  const { game, store } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Épée en fer BP', qty:1 }, { item:'Tainted iron', qty:10 }], nextUid:1, credited:[] });
+  await assert.rejects(game.craft(ME, { item:'Épée en fer', opId:'op-sword-0' }), { code:'locked' });
+  const o = { item:'Épée en fer BP', opId:'op-learn-sword' };
+  let r = await game.learn(ME, o);
+  assert.equal(r.recipe, 'Épée en fer'); assert.deepEqual(r.inventory.unlocked, ['Épée en fer']);
+  r = await game.learn(ME, o);                                            // double clic : rien de plus
+  assert.deepEqual(r.inventory.unlocked, ['Épée en fer']);
+  await assert.rejects(game.learn(ME, { item:'Épée en fer BP', opId:'op-learn-again' }), { code:'known' });
+  await assert.rejects(game.learn(ME, { item:'Four en fer BP', opId:'op-learn-four' }), { code:'no_use' });
+  r = await game.craft(ME, { item:'Épée en fer', opId:'op-sword-1' });
+  assert.ok(r.inventory.slots.some(s => s?.item === 'Épée en fer'));
+  const st = await game.state(ME);
+  assert.deepEqual(st.inventory.unlocked, ['Épée en fer']);
+  assert.ok(!st.inventory.slots.some(s => s?.item === 'Épée en fer BP' || s?.item === 'Tainted iron'));
+});
+
 test('four : refus lisibles, rien ne bouge ; demande rejouée appliquée une fois', async () => {
   const { game, store } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }], nextUid:1, credited:[] });

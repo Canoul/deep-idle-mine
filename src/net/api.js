@@ -51,6 +51,7 @@ export const gameApi = {
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
   furnace: op          => request('POST', '/api/game/furnace', op),
   craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
+  learn:  (item, opId) => request('POST', '/api/game/learn', { item, opId }),   // utiliser un blueprint
   stuff:  op           => request('POST', '/api/game/stuff', op),
   /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),

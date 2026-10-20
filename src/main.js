@@ -42,7 +42,7 @@ const renderer = createRenderer($('cv'));
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, openTreasure);
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, openTreasure, useBlueprint);
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -54,6 +54,15 @@ async function openTreasure(item){
     ui.fresh.clear();
     setInventory(r.inventory, r.loot);
     showLoot(item, r.loot);
+  } catch(e){ lootError(e.message); }
+}
+
+/* utiliser un blueprint : le serveur le consomme et débloque sa recette (onglet Craft) */
+async function useBlueprint(item){
+  try {
+    const r = await gameApi.learn(item, newOpId());
+    setInventory(r.inventory);
+    $('invInfo').innerHTML = `<span class="okmsg">✔ Recette débloquée : ${r.recipe.replace(/[&<>]/g, '')}. Elle est dans l'onglet Craft.</span>`;
   } catch(e){ lootError(e.message); }
 }
 
@@ -251,7 +260,7 @@ function showResult(st){
 
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
-  ui.inv = { slots: inv?.slots ?? [] };
+  ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
   furnace.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);

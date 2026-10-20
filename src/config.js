@@ -197,6 +197,7 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
+  'pickaxe_iron','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'ladder','chest','miner','mimic','bug','goblin','torch','stun'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -242,12 +243,20 @@ export const STUFF = {
     'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
+    /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
+    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.2 } },
+    'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
+    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:33 } },
+    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
+    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
+    'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole',
-                torches:'Torches', bridges:'Passerelles' },
+                torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte' },
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','light','compass','torches','bridges'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','discoverMax','light','compass','torches','bridges'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
