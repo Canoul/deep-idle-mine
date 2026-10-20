@@ -118,6 +118,40 @@ def main():
             rect(icon, 11 + i * 2, 14, 1, 1, hexc(lock))
         tex['treasure_t%d' % tier] = icon
 
+    # blueprint : feuille bleue roulée en haut, tracé blanc d'un objet
+    bp = blank()
+    rect(bp, 2, 2, 12, 12, hexc('#2f6fb5'))
+    rect(bp, 2, 2, 12, 2, hexc('#5b95d6'))
+    rect(bp, 2, 13, 12, 1, hexc('#1d4a7d'))
+    line = hexc('#e8f1fb')
+    rect(bp, 5, 6, 6, 1, line)
+    rect(bp, 5, 6, 1, 5, line)
+    rect(bp, 10, 6, 1, 5, line)
+    rect(bp, 5, 10, 6, 1, line)
+    rect(bp, 7, 8, 2, 1, line)
+    tex['blueprint'] = bp
+
+    # morceaux de blueprint : trois fragments de feuille bleue
+    parts = blank()
+    for (x, y, w, h) in [(1, 2, 6, 5), (9, 4, 6, 5), (4, 9, 7, 5)]:
+        rect(parts, x, y, w, h, hexc('#2f6fb5'))
+        rect(parts, x, y, w, 1, hexc('#5b95d6'))
+        rect(parts, x + 1, y + 2, w - 2, 1, hexc('#e8f1fb'))
+    tex['bp_parts'] = parts
+
+    # gemmes inférieures : petite pierre taillée, reflet clair en haut à gauche
+    for name, base in [('gem_ruby', '#c81d3a'), ('gem_jade', '#2fa66a'), ('gem_sapphire', '#2a5bd7')]:
+        g = blank()
+        c = hexc(base)
+        rect(g, 6, 3, 4, 1, shade(c, 1.3))
+        rect(g, 4, 4, 8, 2, shade(c, 1.15))
+        rect(g, 3, 6, 10, 2, c)
+        rect(g, 4, 8, 8, 2, shade(c, 0.85))
+        rect(g, 5, 10, 6, 2, shade(c, 0.7))
+        rect(g, 7, 12, 2, 1, shade(c, 0.55))
+        rect(g, 5, 5, 2, 1, hexc('#ffffff'))
+        tex[name] = g
+
     tex['coal'] = ore(3, '#7d828c', '#1b1b1f')
     tex['iron'] = ore(4, '#7d828c', '#d9a67f')
     tex['gold'] = ore(5, '#7d828c', '#ffd23f')

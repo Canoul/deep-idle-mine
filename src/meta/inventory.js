@@ -16,7 +16,10 @@ export const isStackable = item => (ITEMS[item]?.stack ?? true);
 
 /* credited : ids des dernières sessions déjà versées (anti-duplication : un coffre n'est crédité qu'une fois) */
 export const CREDIT_MEMORY = 200;
-export function createInventory(){ return { slots:[], nextUid:1, credited:[] }; }
+/* opened : dernières ouvertures de Treasure TX { id, item, loot } (anti-duplication : une requête renvoyée
+   retrouve son butin au lieu d'ouvrir un second treasure) */
+export const OPEN_MEMORY = 50;
+export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[] }; }
 
 /* une quantité acceptable : entier positif « sûr » (pas d'Infinity, NaN, décimale ni nombre trop grand) */
 const validQty = q => Number.isSafeInteger(q) && q > 0;
@@ -89,7 +92,9 @@ export function creditSession(inv, sessionId, bag){
 }
 
 /* ---- sauvegarde ---- */
-export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited });
+export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened });
+
+const validBag = b => b && typeof b === 'object' && !Array.isArray(b) && Object.values(b).every(validQty);
 
 export function deserialize(json){
   const inv = createInventory();
@@ -107,6 +112,10 @@ export function deserialize(json){
   while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
   inv.nextUid = Math.max(Number.isSafeInteger(d.nextUid) ? d.nextUid : 1, 1, ...[...uids].map(u => u + 1));
   inv.credited = Array.isArray(d.credited) ? d.credited.filter(x => typeof x === 'string').slice(-CREDIT_MEMORY) : [];
+  inv.opened = Array.isArray(d.opened)
+    ? d.opened.filter(o => o && typeof o.id === 'string' && typeof o.item === 'string' && validBag(o.loot))
+        .map(o => ({ id:o.id, item:o.item, loot:{ ...o.loot } })).slice(-OPEN_MEMORY)
+    : [];
   return inv;
 }
 

@@ -13,7 +13,7 @@ import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
-import { renderInventory } from './ui/inventory.js';
+import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, ApiError } from './net/api.js';
@@ -31,6 +31,22 @@ const renderer = createRenderer($('cv'));
 
 /* ancienne sauvegarde d'inventaire dans le navigateur : l'inventaire est maintenant sur le serveur */
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
+
+/* ---------- inventaire ---------- */
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, openTreasure);
+
+/* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
+const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+
+/* ouvrir un treasure : le serveur tire le butin et renvoie l'inventaire à jour */
+async function openTreasure(item){
+  try {
+    const r = await gameApi.open(item, newOpId());
+    ui.fresh.clear();
+    setInventory(r.inventory, r.loot);
+    showLoot(item, r.loot);
+  } catch(e){ lootError(e.message); }
+}
 
 /* ---------- navigation ---------- */
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné

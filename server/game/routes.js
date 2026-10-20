@@ -1,5 +1,6 @@
 /* Routes HTTP du jeu (/api/game/…). Toutes exigent un compte connecté, sauf info.
-   Le navigateur n'a aucune route pour écrire dans un inventaire : seul le serveur y verse les parts. */
+   Le navigateur n'écrit jamais dans un inventaire : il demande une action (ouvrir un treasure), le serveur la vérifie
+   et calcule le résultat. */
 import { GameError } from './service.js';
 
 const needMe = ctx => { if(!ctx.me) throw new GameError('not_authenticated', 401, 'Connecte-toi pour jouer.'); };
@@ -13,6 +14,7 @@ export function gameRoutes(game){
     'POST /api/game/start':  async ctx => { needMe(ctx); return [201, await game.start(ctx.me, obj(ctx.body))]; },
     'POST /api/game/leave':  async ctx => { needMe(ctx); return game.leave(ctx.me, obj(ctx.body)); },
     'POST /api/game/finish': async ctx => { needMe(ctx); return game.finish(ctx.me); },
+    'POST /api/game/open':   async ctx => { needMe(ctx); return game.open(ctx.me, obj(ctx.body)); },
     'POST /api/game/ack':    async ctx => { needMe(ctx); await game.ack(ctx.me, obj(ctx.body).id); return [204]; },
   };
 }

@@ -47,4 +47,5 @@ export const gameApi = {
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
   ack:    id           => request('POST', '/api/game/ack', { id }),
+  open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
 };

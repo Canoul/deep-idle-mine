@@ -72,7 +72,19 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | 0 à 2 | **Treasure T1** |
   | 3 à 5 | **Treasure T2** |
 
-  Au-delà de l'area 5, le dernier tier s'applique (T2) *(provisoire, en attendant un T3)*. Poids 2 *(provisoire)*, usage défini plus tard avec le craft. Rien dans ce butin ne compte pour le déblocage de l'area.
+  Au-delà de l'area 5, le dernier tier s'applique (T2) *(provisoire, en attendant un T3)*. Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
+- **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas encore (T2 pour l'instant).
+- **Contenu du Treasure T1** *(valeurs provisoires)* :
+
+  | Objet | Quantité | Chance |
+  |---|---|---|
+  | Blueprint parts | 5 à 15 | 100 % |
+  | Charbon | 100 à 150 | 100 % |
+  | Fer | 50 à 80 | 100 % |
+  | **Un blueprint** parmi : Pioche en fer, Épée en fer, Casque en fer, Plastron en fer, Jambes en fer, Bottes en fer, Four en fer, Boussole en or, Ceinture en peau de gobelin | 1 | 1 % chacun (9 % au total) |
+  | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1 % chacune (3 % au total) |
+
+  *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints et des gemmes : défini plus tard avec le craft.
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
@@ -206,6 +218,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Capacité illimitée** pour l'instant : au moins 48 slots affichés (8 colonnes), une ligne s'ajoute quand la grille est pleine. Une limite pourra devenir une amélioration plus tard *(valeur de config)*.
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
+- Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.

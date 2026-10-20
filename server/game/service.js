@@ -14,6 +14,7 @@ import { GAME, PREFS } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
+import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 
@@ -40,7 +41,8 @@ function createLocks(){
 }
 
 export function createGameService({ store, replay, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
-                                    config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31) }){
+                                    config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
+                                    random = () => crypto.randomInt(2**48) / 2**48 }){
   const withLock = createLocks();
   const settling = new Set();
   const startLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);
@@ -181,6 +183,21 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         fail('too_early', 409, 'La session n\'est pas encore terminée.', { retryAfter: Math.ceil((rec.finishAt - clock()) / 1000) });
       settle(rec.id).catch(console.error);
       return { session: publicSession({ ...rec, status: 'settling' }) };
+    },
+
+    /* ouvrir un Treasure TX de son inventaire : le serveur tire le butin. opId (choisi par le navigateur) rend la
+       demande rejouable sans effet : la même demande renvoie le même butin. */
+    async open(me, body = {}){
+      const { item, opId } = body;
+      if(typeof item !== 'string' || !canOpen(item)) fail('bad_item', 400, 'Cet objet ne s\'ouvre pas.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        const res = openTreasure(inv, item, opId, random);
+        if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
+        if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { item, loot: res.loot, inventory: { slots: inv.slots } };
+      });
     },
 
     /* le joueur a vu le résultat : on ne le lui remontre plus */

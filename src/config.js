@@ -102,6 +102,38 @@ export const TREASURE = {
   ],
 };
 
+/* contenu d'un objet Treasure TX, ouvert hors session depuis l'inventaire (src/meta/loot.js). Tirage fait par le serveur.
+   always : toujours obtenu, quantité tirée entre min et max (inclus) ;
+   oneOf  : un seul tirage par famille → au plus un objet de la famille, chaque objet avec sa chance (0 à 1).
+   Un Treasure TX sans table ne s'ouvre pas encore. Valeurs provisoires. */
+export const LOOT = {
+  'Treasure T1': {
+    always: [
+      { item:'Blueprint parts', min:5,   max:15  },
+      { item:'Charbon',         min:100, max:150 },
+      { item:'Fer',             min:50,  max:80  },
+    ],
+    oneOf: [
+      { family:'blueprint', tex:'blueprint', items:[
+        { item:'Pioche en fer BP',             chance:0.01 },
+        { item:'Épée en fer BP',               chance:0.01 },
+        { item:'Casque en fer BP',             chance:0.01 },
+        { item:'Plastron en fer BP',           chance:0.01 },
+        { item:'Jambes en fer BP',             chance:0.01 },
+        { item:'Bottes en fer BP',             chance:0.01 },
+        { item:'Four en fer BP',               chance:0.01 },
+        { item:'Boussole en or BP',            chance:0.01 },
+        { item:'Ceinture en peau de gobelin BP', chance:0.01 },
+      ]},
+      { family:'gem', items:[
+        { item:'Rubis inférieur',  chance:0.01, tex:'gem_ruby' },
+        { item:'Jade inférieur',   chance:0.01, tex:'gem_jade' },
+        { item:'Saphir inférieur', chance:0.01, tex:'gem_sapphire' },
+      ]},
+    ],
+  },
+};
+
 /* partage du coffre commun en fin de session (src/meta/share.js) : parts égales entre les joueurs,
    reste tiré au hasard depuis la seed ; les objets de copyToAll ne se partagent pas, chacun reçoit la quantité entière */
 export const SHARE = { copyToAll:TREASURE.tiers.map(t => t.item) };   // tous les Treasure TX
@@ -136,11 +168,12 @@ export const MOBS = {
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
+  'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ladder','chest','miner','mimic','bug','goblin','torch'];
 
 /* ---- Hors session : inventaire global ----
    Catalogue des objets qu'on peut posséder, indexé par leur nom (celui que la simulation met dans les coffres).
-   cat   : catégorie d'objet (terrain, ore, treasure, mob, stuff)
+   cat   : catégorie d'objet (terrain, ore, treasure, blueprint, gem, mob, stuff)
    tex   : texture de l'icône (textures/)
    stack : true = les exemplaires s'empilent dans un seul slot, sans maximum ;
            false = chaque exemplaire prend son propre slot (stuff : chaque pièce aura ses propres stats)
@@ -151,6 +184,9 @@ export const ITEMS = {
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },
+  'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
+  ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
+    f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
 };
 
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;
