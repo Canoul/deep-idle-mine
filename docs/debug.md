@@ -437,3 +437,28 @@ Règles (voir CLAUDE.md) :
 - **Fichiers** : `src/ui/inventory.js` (`equipHtml`), `src/ui/stuff.js` (`worn()`), `src/main.js`, GAME_DESIGN §6.
 - **Tests** : 1 test dans `tests/stuff.test.js` ; stuff + inventory 23/23.
 - **Vérification** : ✅ tests, modules chargés. ⚠️ Pas regardé dans un navigateur.
+
+### Onglet Skills : 3 arbres (Mineur, Logisticien, Barbare), provocation, échelles posées par le logisticien
+- **Quoi** (demande du créateur) : 1 point par niveau ; 3 arbres de 3 étapes (3 / 1 / 5 rangs), étape suivante =
+  précédente au max, un seul arbre (les autres bloqués), reset gratuit hors session. Décisions : vitesse = marche
+  seulement ; Logisticien 3 = retour + redescente (`travelling` : modes return / surface / departure, `goingDown` par
+  l'existant) ; provocation = le mob ne vise plus que le barbare (`o.taunt`, `canTackle`). Ajouts du créateur pendant
+  le travail : le mineur libéré par la provocation reprend son travail ; au retour, un non-logisticien laisse le
+  logisticien proche (≤ 5 cases, en dessous ou à sa hauteur, en retour) poser l'échelle, au plus 4 s (`yieldLadder`).
+  Effets : `m.skill` (`skillEffects`), multiplicateurs minage / dégâts dans `carac`, `buildT`, `walkBoost`, `lootOf`
+  (G.rng seulement si le skill est pris), échelle de 2 (`tall_ladder`), oxygène / rush après un minerai.
+- **Serveur** : skills stockés à part (ns `skills`, pas dans la progression : un versement d'XP n'écrase rien),
+  revérifiés avec les points du niveau à chaque lecture ; `POST /api/game/skills` (learn / reset, opId) ; reset refusé
+  en session ; figés dans `rec.skills` au lancement et revérifiés à la construction de la partie.
+- **Trou trouvé par le test anti-triche et corrigé** : un nœud « __proto__ » faisait planter le calcul (500) →
+  `Object.hasOwn`.
+- **Fichiers** : `src/meta/skills.js`, `src/ui/skills.js` (nouveaux) ; `src/config.js` (`SKILLS`, `CFG.torchTime`),
+  `src/sim/{miner,actions,ai,mobs}.js`, `src/shared/game.js`, `server/game/{service,routes,store}.js`,
+  `server/db/postgres.js`, `src/net/api.js`, `src/main.js`, `src/ui/{nav,level}.js` (onglet Talents → Skills,
+  « points de skill »), `index.html`, `src/ui/style.css`, `scripts/simulate.js` (`--skills mixed|<arbre>`),
+  GAME_DESIGN §3 « Skills », §6, CLAUDE.md.
+- **Tests** : `tests/skills.test.js` (10), `tests/anticheat/skills.test.js` (2), `game-service` (+1), `nav` adapté.
+  138/138 liés, anti-triche complète 52/52.
+- **Vérification** : ✅ sans skills, simulation 3 × 5 **identique au caractère près**. `--skills mixed` (3 × 5) :
+  0 blocage, areas 4,0 (3,6 sans), profondeur 196,2 (185,8), étourdissements 9,4 (12,2).
+  ⚠️ Onglet pas regardé dans un navigateur.

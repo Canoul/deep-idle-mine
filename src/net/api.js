@@ -52,7 +52,8 @@ export const gameApi = {
   furnace: op          => request('POST', '/api/game/furnace', op),
   craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
   learn:  (item, opId) => request('POST', '/api/game/learn', { item, opId }),   // utiliser un blueprint
-  research: op         => request('POST', '/api/game/research', op),          // { action:'research', tier } | { action:'recycle', item }
+  research: op         => request('POST', '/api/game/research', op),
+  skills: op           => request('POST', '/api/game/skills', op),            // { action:'learn', node } | { action:'reset' }          // { action:'research', tier } | { action:'recycle', item }
   stuff:  op           => request('POST', '/api/game/stuff', op),
   /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab } from '../src/ui/nav.js';
 
 test('les 7 onglets sont dans l\'ordre voulu, Mine en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Recherche','Talents','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Recherche','Skills','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 
@@ -19,7 +19,7 @@ test('l\'adresse (#craft) passe avant le dernier onglet ouvert', () => {
 });
 
 test('sans adresse, on rouvre le dernier onglet', () => {
-  assert.equal(pickTab('', 'talents'), 'talents');
+  assert.equal(pickTab('', 'skills'), 'skills');
 });
 
 test('le bilan de fin de session ne bloque que l\'onglet Mine, pas tout le site', () => {

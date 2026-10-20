@@ -257,6 +257,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .craftList{display:grid;grid-template-columns:repeat(auto-fill,64px);gap:8px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
 .craftItem{padding:0}
 .craftItem.ready{border-color:var(--ok)}
+.skWrap{max-width:1000px}
+.skHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:820px){.skTrees{grid-template-columns:1fr}}
+.skTree{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.skTree h3{margin:0 0 10px;font-size:15px}
+.skTree.chosen{border-color:var(--acc)}
+.skTree.locked{opacity:.45}
+.skNode{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px}
+.skNode.some{border-color:#6b5a3a}
+.skNode.max{border-color:var(--ok)}
+.skNode.off{opacity:.6}
+.skRank{font-variant-numeric:tabular-nums;min-width:28px}
+.skPlus{width:26px;height:26px;padding:0;font-weight:700}
+.skLink{width:2px;height:12px;background:var(--line);margin:0 auto}
 .rsTabs{margin-bottom:10px}
 .rsBody{margin-top:0}
 .rsRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}

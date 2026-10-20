@@ -1,4 +1,4 @@
-/* Stockage du jeu : inventaires, fours, stuff, préférences, progression (XP) et sessions de jeu, rangés par ID de compte.
+/* Stockage du jeu : inventaires, fours, stuff, préférences, progression (XP), skills et sessions de jeu, rangés par ID de compte.
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
@@ -13,6 +13,7 @@ export function createMemoryGameStore(initial = {}){
   const furnaces = new Map(Object.entries(initial.furnaces ?? {}));
   const stuff = new Map(Object.entries(initial.stuff ?? {}));
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
+  const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const copy = o => o && structuredClone(o);
 
@@ -38,6 +39,10 @@ export function createMemoryGameStore(initial = {}){
     async getProgress(accountId){ return copy(progress.get(accountId)) ?? null; },
     async putProgress(accountId, p){ progress.set(accountId, copy(p)); await store.changed([{ ns: 'progress', key: accountId, value: p }]); },
 
+    /* skills : à part de la progression (un versement d'XP en fin de session n'écrase jamais un point dépensé) */
+    async getSkills(accountId){ return copy(skills.get(accountId)) ?? null; },
+    async putSkills(accountId, s){ skills.set(accountId, copy(s)); await store.changed([{ ns: 'skills', key: accountId, value: s }]); },
+
     async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
     async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed([{ ns: 'prefs', key: accountId, value: p }]); },
 
@@ -55,7 +60,7 @@ export function createMemoryGameStore(initial = {}){
     async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
-                         stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress),
+                         stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions) }; },
   };
@@ -87,9 +92,9 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'game_session']);
+  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, stuff: rows.stuff, prefs: rows.prefs,
-                                        progress: rows.progress,
+                                        progress: rows.progress, skills: rows.skills,
                                         sessions: rows.game_session });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();

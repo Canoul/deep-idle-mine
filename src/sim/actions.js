@@ -1,12 +1,26 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS } from '../config.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT } from './miner.js';
+import { startAction, collect, mineT, moveT, climbT, buildT } from './miner.js';
+import { isWalker } from './mobs.js';
 import { log } from './log.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
+
+/* skills Mineur après un minerai : un peu d'oxygène (ore_oxygen), bonus de marche pendant SKILLS.rushTime (ore_rush,
+   remis à zéro à chaque minerai : ne se cumule pas) */
+function oreSkills(G,m){
+  if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen*m.carac.oxygenMax);
+  if(m.skill.ore_rush) m.rushUntil=G.t+SKILLS.rushTime;
+}
+/* skill Barbare loot : butin d'un mob +loot (×), la part décimale tirée au hasard (G.rng : hasard « live ») */
+function lootOf(G,m,n){
+  const b=m.skill.loot; if(!b) return n;
+  const v=n*(1+b), base=Math.floor(v);
+  return base + (G.rng() < v-base ? 1 : 0);
+}
 
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }
 
@@ -16,7 +30,7 @@ export function mineBlock(G,m,x,y){
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
-  if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); }
+  if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
 }
 
@@ -33,15 +47,15 @@ function openTreasure(G,m,x,y){
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(o.type==='mimic'){
-    G.tiles[o.y][o.x]=0; updateLight(G); const b=BLOCKS[o.ore];
-    collect(m, b.name, b.w, MOBS.mimicLoot); oreMinedIn(G,o.y,o.ore);
-    log(G, `🗡 ${m.name} : mimic vaincu (+${MOBS.mimicLoot} ${b.name})`);
+    G.tiles[o.y][o.x]=0; updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
+    collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
+    log(G, `🗡 ${m.name} : mimic vaincu (+${n} ${b.name})`);
   } else if(o.type==='gobelin'){
-    const n=MOBS.goblinLoot(G.rng);
-    collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.goblinChitin);
-    log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${MOBS.goblinChitin} chitine)`);
+    const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
+    collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
   } else {
-    const n=MOBS.bugLoot(G.rng); collect(m,MOBS.bugItem,1,n);
+    const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
   G.mobs = G.mobs.filter(x=>x.hp>0);
@@ -57,7 +71,11 @@ export function finishAction(G,m,a){
       { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea){ m.lastArea=ai; log(G, `⬇ ${m.name} entre dans l'area ${ai}`); } }
       break;
     case 'mine': mineBlock(G,m,a.data.x,a.data.y); break;
-    case 'ladder': G.ladder[m.y][m.x]=1; break;
+    case 'ladder':
+      G.ladder[m.y][m.x]=1;
+      // skill tall_ladder : une échelle de 2 de haut si la case du dessus est vide
+      if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0) G.ladder[m.y-1][m.x]=1;
+      break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
     case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y}); updateLight(G); break;
     case 'deposit': {
@@ -71,7 +89,10 @@ export function finishAction(G,m,a){
       m.inv={}; m.load=0; break; }
     case 'stun': break;   // étourdi : il ne fait rien pendant toute l'action
     case 'attack': {
-      const o=a.data.mob; if(o.hp>0){ o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o); } break; }
+      const o=a.data.mob; if(o.hp>0){
+        if(m.skill.taunt && isWalker(o)) o.taunt=m.id;   // provocation : il ne vise plus que ce mineur
+        o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o);
+      } break; }
   }
 }
 
@@ -93,19 +114,19 @@ export function stepDir(G,m,dx,dy,opt){
   /* trou connu trop profond : par-dessus avec une passerelle s'il peut (même si on lui demandait de ne pas en poser),
      sinon il refuse le pas (celui qui l'a demandé choisit autre chose) */
   if(deepFall(G,m,dx,dy)){
-    if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true; }
+    if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', buildT(m,CFG.bridgeTime), {x:nx,y:ny+1}); return true; }
     return false;
   }
   // trou à traverser horizontalement : une passerelle (1 s) vaut mieux que tomber puis poser des échelles (2 s chacune)
   // règle : on ne pose une passerelle que s'il tient lui-même (sol ou échelle), jamais dans le vide
   if(dy===0 && m.bridges>0 && !(opt&&opt.noBridge) && supported(G,m.x,m.y) && isAir(G,nx,ny) && !supported(G,nx,ny)){
-    startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true;
+    startAction(m,'bridge', buildT(m,CFG.bridgeTime), {x:nx,y:ny+1}); return true;
   }
   if(!isAir(G,nx,ny)){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
     startAction(m,'mine', mineT(G,m,t), {x:nx,y:ny}); return true;
   }
-  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x]){ startAction(m,'ladder', CFG.ladderTime, {}); return true; }
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x]){ startAction(m,'ladder', buildT(m,CFG.ladderTime), {}); return true; }
   startAction(m,'move', dy? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y});
   return true;
 }

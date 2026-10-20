@@ -10,6 +10,7 @@ import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN,
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { sanitizeLook, equippedStats } from '../meta/stuff.js';
+import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 
 /* ---------- préférences ---------- */
 
@@ -60,9 +61,16 @@ export function minerSpecs(record){
                                          : 'Mineur test ' + (i - players.length + 1);
   const lookOf = i => i < players.length ? sanitizeLook(record.looks?.[players[i].account]) : {};
   /* caractéristiques : base + stuff porté au lancement (le même que l'apparence : record.looks, revérifié) */
-  const caracOf = i => equippedStats(Object.values(lookOf(i)));
-  if(n <= 1) return [{ name: players.length ? nameOf(0) : undefined, prefs: prefsOf(0), look: lookOf(0), carac: caracOf(0) }];
-  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i) }));
+  /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats */
+  const skillsOf = i => skillEffects(sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null));
+  const caracOf = i => {
+    const c = equippedStats(Object.values(lookOf(i))), s = skillsOf(i);
+    return { ...c, mineSpeed: c.mineSpeed * (1 + s.mine_speed), damage: c.damage * (1 + s.damage) };
+  };
+  const treeOf = i => sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null).tree;
+  const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i) });
+  if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
+  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
 }
 
 export function buildSession(record){

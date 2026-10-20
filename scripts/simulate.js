@@ -9,11 +9,15 @@
      node scripts/simulate.js --focus iron:only   → focus minerai de tous les mineurs dès le départ
                                                     (clé:mode séparés par des virgules ; modes target / only)
      node scripts/simulate.js --focus area:0      → focus d'area (combinable : area:1,coal:only)
+     node scripts/simulate.js --skills barbare    → chaque mineur a l'arbre complet (mineur, logisticien, barbare) ;
+                                                     mixed = un arbre différent par mineur (1er mineur, 2e logisticien, 3e barbare)
    Affiche : areas débloquées, profondeur max, coffre, allers-retours, coffres au trésor ouverts / enfouis
    (dans les areas générées), et un détecteur de blocage. */
 import { runSession } from '../src/sim/session.js';
 import { stuckDetector } from '../src/sim/diagnostics.js';
 import { setFocus } from '../src/sim/focus.js';
+import { SKILLS } from '../src/config.js';
+import { sanitizeSkills, skillEffects } from '../src/meta/skills.js';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i=args.indexOf('--'+name); return i<0 ? def : (args[i+1] ?? true); };
@@ -21,6 +25,14 @@ const miners = +opt('miners', 1);
 const count  = +opt('count', 8);
 const seeds  = opt('seeds', null) ? String(opt('seeds')).split(',').map(Number) : Array.from({length:count},(_,i)=>(i+1)*7919);
 const json   = args.includes('--json');
+const skills = opt('skills', null);
+/* arbre de skills complet (tous les rangs) pour un mineur : mêmes effets qu'en session (src/shared/game.js) */
+function giveTree(m, tree){
+  const t = SKILLS.trees.find(x => x.id === tree); if(!t) throw new Error('arbre inconnu : ' + tree);
+  const st = sanitizeSkills({ tree, ranks:Object.fromEntries(t.nodes.map(n => [n.id, n.max])) });
+  m.skill = { ...m.skill, ...skillEffects(st) }; m.skillTree = tree;
+  m.carac.mineSpeed *= 1 + m.skill.mine_speed; m.carac.damage *= 1 + m.skill.damage;
+}
 const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))
   .map(([k, v]) => [k, k === 'area' ? +v : v])) : null;
 
@@ -29,6 +41,7 @@ for(const seed of seeds){
   const det = stuckDetector();
   const G = runSession(seed, { miners, onTick: (G,i) => {
     if(i===0 && focus) for(const m of G.miners) setFocus(G, m, focus);
+    if(i===0 && skills) G.miners.forEach((m, k) => giveTree(m, skills === 'mixed' ? SKILLS.trees[k % 3].id : skills));
     det.onTick(G,i);
   } });
   rows.push({

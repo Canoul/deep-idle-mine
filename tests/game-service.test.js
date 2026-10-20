@@ -460,3 +460,24 @@ test('ouvrir un Treasure T1 avec le vrai hasard du serveur (pas de hasard fourni
   assert.ok(r.loot['Charbon'] > 0, 'un butin a été tiré');
   assert.equal(r.inventory.slots.find(s => s?.item === T1).qty, 1);
 });
+
+/* ---------- skills ---------- */
+
+test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé en session, skills figés au lancement', async () => {
+  const { game, store } = setup();
+  await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-0' }), { code:'no_points' });
+  await store.putProgress(ME.id, { xp:2600, credited:[] });                 // niveau 3 : 2 points
+  let r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-1' });
+  r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-1' });       // double clic
+  assert.deepEqual([r.skills.ranks.damage, r.skills.spent, r.skills.points], [1, 1, 2]);
+  await assert.rejects(game.skills(ME, { action:'learn', node:'mine_speed', opId:'op-skill-2' }), { code:'other_tree' });
+  r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-3' });
+  await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-4' }), { code:'no_points' });
+  assert.deepEqual((await game.state(ME)).skills, { tree:'barbare', ranks:{ damage:2 }, points:2, spent:2 });
+  const { session } = await game.start(ME, {});
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 } });
+  await assert.rejects(game.skills(ME, { action:'reset', opId:'op-skill-5' }), { code:'session_running' });
+  await game.leave(ME);
+  r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
+  assert.deepEqual([r.skills.tree, r.skills.spent], [null, 0]);
+});

@@ -1,13 +1,21 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire. */
-import { STATS, CFG, BLOCKS, PREFS, SPAWN_X } from '../config.js';
+import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS } from '../config.js';
 import { lumAt } from './light.js';
+
+const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
 
 /* opts.carac : caractéristiques de CE mineur (stats de base + bonus de son stuff, voir equippedStats dans
    src/meta/stuff.js), calculées au lancement ; absentes = les STATS de base. Copiées à la création : un réglage dev
    (valeurs globales STATS) appliqué pendant la construction de la partie est donc pris en compte. */
+/* opts.skills : effets des skills du joueur (src/meta/skills.js skillEffects), figés au lancement ; absents = aucun */
 export function createMiner(id, opts={}){
   const carac = { ...STATS, ...(opts.carac||{}) };
   return {
+    skill: { ...NO_SKILLS, ...(opts.skills||{}) },
+    skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null
+    yieldSince: null,               // attend qu'un logisticien pose l'échelle (depuis ce temps)
+    rushUntil: -1,                  // fin du bonus de vitesse après un minerai (skill ore_rush)
+    goingDown: false,               // redescend au front par l'existant (skill travel_rush)
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
@@ -29,7 +37,12 @@ export function createMiner(id, opts={}){
 export const curLum = (G,m) => lumAt(G, m.x, m.y);
 export const lit    = (G,m) => curLum(G,m) >= CFG.darkLum;
 export const dk     = (G,m) => lit(G,m) ? 1 : CFG.darkSlow;
-export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m));
+/* bonus de marche des skills : après un minerai (Mineur), en trajet vers la surface ou vers le front (Logisticien) */
+export const travelling = m => m.mode==='return' || m.mode==='surface' || m.mode==='departure' || m.goingDown;
+export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0);
+export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
+/* temps d'une construction (échelle, passerelle, torche), réduit par le skill build_time */
+export const buildT = (m,t) => t*(1-m.skill.build_time);
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m));
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*dk(G,m));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);

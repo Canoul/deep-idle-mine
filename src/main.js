@@ -21,6 +21,7 @@ import { renderInventory as drawInventory, showLoot, lootError } from './ui/inve
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
 import { setupResearch } from './ui/research.js';
+import { setupSkills } from './ui/skills.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupTooltips } from './ui/tooltip.js';
@@ -99,6 +100,12 @@ const research = setupResearch({
   onOp: async op => { const r = await gameApi.research({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
 });
 
+/* skills : le serveur vérifie et enregistre ; reset refusé pendant une session */
+const skills = setupSkills({
+  onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
+  inSession: () => !!G && !G.over,
+});
+
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
 
 /* ---------- navigation ---------- */
@@ -107,6 +114,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
   ui.tab = id;
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
+  if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
 });
 
 /* ---------- compte ---------- */
@@ -268,6 +276,7 @@ function showResult(st){
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false;
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
+  skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
   const done = () => gameApi.ack(ended.id).catch(() => {});
   showEnd(ended, acct.account?.id,
     () => { done(); $('end').hidden = true; showLobby(); },
@@ -298,6 +307,7 @@ async function refresh(){
   if(!st.ended || st.session) setProgress(st.progress);
   furnace.set(st.furnaces);
   stuff.set(st.stuff);
+  skills.set(st.skills);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
   else showLobby();

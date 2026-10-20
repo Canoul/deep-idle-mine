@@ -154,9 +154,23 @@ Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'*
 - **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5** (mob de base, sans XP de minerai en plus).
 - **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents à la fin, comme le coffre (arrondi vers le bas). **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
-- **Récompense** : **1 point de talent par niveau**, à dépenser plus tard dans l'onglet Talents (pas encore conçu).
+- **Récompense** : **1 point de skill par niveau**, à dépenser dans l'onglet Skills (ci-dessous).
 - Affichage : carte « Mineur » du lobby et carte « Stats du mineur » de l'onglet Stuff (niveau, barre d'XP avec **pourcentage** et **XP / XP requise** pour le niveau suivant, points de talent ; « Niveau max » au dernier niveau) ; XP de la session pendant la partie ; XP gagnée et montée de niveau au bilan.
 - Repères (simulation, mineur de base) : **≈ 860 XP par session en solo** (60 % minerais, 40 % bestioles) ; **≈ 740 par joueur à 3** (≈ 2220 au total) : les bestioles apparaissent au même rythme quelle que soit la taille de l'équipe, donc à 3 on se les partage. À surveiller : le jeu à 3 rapporte un peu moins d'XP par tête que le solo.
+
+### Skills *(règles fermes ; valeurs provisoires, par rang)*
+Trois arbres, chacun une suite de 3 étapes ; une étape exige la précédente **au rang max**. Dépenser un point dans un arbre **bloque les deux autres**. Bouton **Reset** : gratuit, rend tous les points, **refusé pendant une session**. Les skills sont **figés au lancement** de la session (comme le stuff) ; c'est le serveur qui les vérifie (jamais plus de rangs que de points).
+
+| Arbre | Étape 1 | Étape 2 | Étape 3 |
+|---|---|---|---|
+| **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend 1 % de l'oxygène max | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
+| **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | 0/1 : échelle de 2 de haut au lieu de 1 (si la case du dessus est vide) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
+| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
+
+- « Vitesse de marche » = vitesse horizontale seulement (pas l'échelle) *(décision ferme)*.
+- Provocation : un mineur taclé par ce mob est libéré tout de suite et reprend son travail (même s'il est réglé sur « Ignorer les mobs »).
+- **Échelles au retour** *(décision ferme)* : quand plusieurs mineurs remontent au même endroit, c'est le **logisticien** qui pose les échelles. Un autre mineur qui devrait en poser une attend s'il y a un logisticien qui remonte à moins de 5 cases, en dessous de lui ou à sa hauteur ; au-delà de 4 s d'attente, il la pose lui-même (jamais bloqué).
+- Repère (simulation, 3 mineurs × 5 sessions, un arbre complet chacun) : areas 3,6 → 4,0, profondeur 186 → 196.
 
 ### Oxygène
 - 1 seconde dans la mine = 1 d'oxygène consommé.
@@ -276,14 +290,15 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Talents, Social**.
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Skills, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
 - **Recherche** (table de recherche) : dépenser les Blueprint parts, recycler des blueprints (voir ci-dessous).
 - **Craft** : fabriquer des objets (voir ci-dessous).
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
-- Talents, Social : à concevoir (page d'attente pour l'instant).
+- **Skills** : dépenser les points gagnés aux niveaux (voir §3, Skills).
+- Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
 
 ### Inventaire global

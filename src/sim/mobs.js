@@ -13,8 +13,15 @@ const ORE_W = new Map(Object.values(BLOCKS).filter(b=>b.type==='ore').map(b=>[b.
 
 const manhattan = (a,b) => Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 
-/* mineur poursuivi par une bestiole : le plus proche (à égalité, le premier de la liste) */
+/* provocation (skill Barbare « taunt ») : un mob frappé par un barbare ne vise plus que lui, jusqu'à sa mort (ou au
+   départ du barbare). o.taunt = id du mineur. */
+export const tauntedBy = (G,o) => o.taunt==null ? null : G.miners.find(m=>m.id===o.taunt) ?? null;
+/* ce mob peut-il tacler ce mineur ? (pas s'il est provoqué par un autre) */
+export const canTackle = (G,o,m) => { const t=tauntedBy(G,o); return !t || t===m; };
+
+/* mineur poursuivi par une bestiole : celui qui l'a provoquée, sinon le plus proche (à égalité, le premier de la liste) */
 function preyOf(G,o){
+  const t=tauntedBy(G,o); if(t) return t;
   let best=null, bd=Infinity;
   for(const m of G.miners){ const d=manhattan(m,o); if(d<bd){ bd=d; best=m; } }
   return best;
@@ -51,7 +58,7 @@ export function updateMobs(G){
    secondes, tiré au hasard parmi les minerais portés (chaque unité a la même chance). Le minerai est perdu.
    Le compteur repart de zéro quand il ne tacle plus personne. */
 function goblinSteal(G,o){
-  const m=G.miners.find(m=>m.x===o.x && m.y===o.y);
+  const m=G.miners.find(m=>m.x===o.x && m.y===o.y && canTackle(G,o,m));
   if(!m){ o.steal=0; return; }
   o.steal=(o.steal||0)+DT;
   if(o.steal < MOBS.goblinStealEvery-1e-9) return;

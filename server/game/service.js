@@ -20,6 +20,7 @@ import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
+import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { craft, learn } from '../../src/meta/craft.js';
@@ -39,6 +40,9 @@ const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore
                        not_enough: 'Il te manque des ingrédients.' };
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
+const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
+                       maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
+                       no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.' };
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
@@ -97,6 +101,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp) });
+  /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
+  const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
+  const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
+  const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st) });
 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
@@ -221,6 +229,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)),
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: publicProgress(await loadProgress(me.id)),
+               skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },
@@ -250,9 +259,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
-        const prefs = {}, looks = {};
+        const prefs = {}, looks = {}, skills = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
+          skills[p.account] = skillRanks(await loadSkills(p.account));   // figés pour toute la session
           /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) */
           looks[p.account] = lookOf(await loadStuff(p.account, await loadInventory(p.account)));
         }
@@ -261,7 +271,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
-          prefs, looks,
+          prefs, looks, skills,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
@@ -404,6 +414,21 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, inventory: publicInventory(inv) };
+      });
+    },
+
+    /* skills : { action:'learn', node } ou { action:'reset' } (gratuit, refusé pendant une session : les skills de la
+       session en cours sont figés au lancement). opId : une demande renvoyée n'agit qu'une fois. */
+    async skills(me, body = {}){
+      const { action, opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('skills:' + me.id, async () => {
+        if(action === 'reset' && await activeOf(me.id)) fail('session_running', 409, 'Reset impossible pendant une session : termine-la d\'abord.');
+        const points = await pointsOf(me.id), st = await loadSkills(me.id);
+        const r = skillOp(st, { action, node: body.node, opId }, points);
+        if(r.error) fail(r.error, r.error === 'unknown' || r.error === 'bad_request' ? 400 : 409, SKILL_ERRORS[r.error] ?? 'Demande invalide.');
+        if(!r.repeated) await store.putSkills(me.id, st);
+        return { skills: publicSkills(st, points) };
       });
     },
 

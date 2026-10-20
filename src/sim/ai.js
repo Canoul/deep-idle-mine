@@ -1,12 +1,12 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS } from '../config.js';
 import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
+import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT } from './miner.js';
 import { log } from './log.js';
-import { isWalker } from './mobs.js';
+import { isWalker, canTackle } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
 
 /* boussole : minerais sur la ligne du mineur uniquement */
@@ -133,16 +133,32 @@ function decideDeparture(G,m){
   decideWork(G,m);
 }
 
+/* au retour, une échelle à poser sur sa case alors qu'un logisticien remonte juste à côté (en dessous ou à sa hauteur) :
+   c'est à lui de la poser (il est plus rapide). On l'attend, au plus SKILLS.ladderYieldMax secondes. */
+const needsLadder = (G,m,dy) => dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && isAir(G,m.x,m.y-1);
+function yieldLadder(G,m){
+  if(m.skillTree==='logisticien') return false;
+  const near = others(G,m).some(o=>o.skillTree==='logisticien' && o.mode==='return' && o.y>=m.y
+    && Math.abs(o.x-m.x)+Math.abs(o.y-m.y)<=SKILLS.ladderYieldRadius);
+  if(!near){ m.yieldSince=null; return false; }
+  m.yieldSince ??= G.t;
+  return G.t-m.yieldSince < SKILLS.ladderYieldMax;
+}
+
 function decideReturn(G,m,rp){
   if(m.y===0){ m.mode='surface'; m.lastReturnDur=G.t-m.returnStart; return decideSurface(G,m); }
   const p = rp || planReturn(G,m);
   m.status='Retour ('+m.reason+')';
+  const dy = p && (p.dx||p.dy) ? p.dy : -1;
+  if((!p || !p.dx) && needsLadder(G,m,dy) && yieldLadder(G,m)){ m.status='Laisse le logisticien poser l\'échelle'; idle(m,0.3); return; }
+  m.yieldSince=null;
   if(p && (p.dx||p.dy) && stepDir(G,m,p.dx,p.dy,{noBridge:!p.bridge})) return;
   if(!stepDir(G,m,0,-1)) idle(m);
 }
 
 function decideWork(G,m){
   const left=SESSION_LEN-G.t;
+  m.goingDown=false;   // redescend au front par l'existant (skill Logisticien) : remis à vrai par digDown
   m.digCol=null;   // réservations rafraîchies à chaque décision
   if(!m.exploring) m.galleryRow=null;
   const rp=m.y>0 ? planReturn(G,m) : null;
@@ -154,7 +170,7 @@ function decideWork(G,m){
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
-    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',1,{}); return; }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
   }
   /* focus minerai : abandonne les minerais épuisés partout, change d'area si la sienne est épuisée */
   dropDepleted(G,m);
@@ -224,7 +240,7 @@ function decideWork(G,m){
 function digDown(G,m){
   // ne pas descendre là où un autre travaille déjà, ni loin de son secteur
   const pd=planDown(G,m,(x,y)=>crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1);
-  if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; return; }
+  if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; m.goingDown=true; return; }
   // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
   if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
   m.digCol=m.x; m.status='Creuse vers le bas';
@@ -272,7 +288,7 @@ function shiftColumn(G,m,ok=null){
 }
 
 /* tacle : une bestiole (ou un gobelin) sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
-export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y) || null;
+export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y && canTackle(G,o,m)) || null;
 
 export function decide(G,m){
   // gravité : sans appui, il tombe d'une case. Au début de la chute, on note d'où il part et s'il connaissait le trou.

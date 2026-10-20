@@ -17,6 +17,7 @@ export const CFG = {
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
+  torchTime:1,            // s pour poser une torche
   attackInterval:0.8, torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
   maxFall:3,              // chute la plus haute (cases) que le mineur accepte de faire en connaissance de cause
   stunFall:3,             // chute IMPRÉVUE (cases non découvertes) à partir de laquelle il est étourdi…
@@ -203,6 +204,38 @@ export const XP = {
    fond de la mine connue, ease = vitesse de glissade vers le mineur suivi (part du chemin par image),
    wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
+
+/* ---- Skills (onglet Skills, src/meta/skills.js) ----
+   1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
+   (jusqu'au reset, gratuit, hors session). Chaque étape exige l'étape précédente au rang max.
+   Un nœud : id, max (rangs), per (valeur par rang ; 1 = interrupteur), desc (texte, {v} = valeur au rang actuel).
+   Les effets sont figés au lancement de la session (comme le stuff). Valeurs provisoires. */
+export const SKILLS = {
+  trees: [
+    { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
+      { id:'mine_speed',  max:3, per:0.02, desc:'Vitesse de minage +{v}' },
+      { id:'ore_oxygen',  max:1, per:0.01, desc:'Miner un minerai rend {v} de l\'oxygène max' },
+      { id:'ore_rush',    max:5, per:0.03, desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
+    ]},
+    { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
+      { id:'build_time',  max:3, per:0.05, desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
+      { id:'tall_ladder', max:1, per:1,    desc:'Pose une échelle de 2 de haut au lieu de 1 (si la case du dessus est vide)' },
+      { id:'travel_rush', max:5, per:0.03, desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+    ]},
+    { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
+      { id:'damage',      max:3, per:0.05, desc:'Dégâts infligés +{v}' },
+      { id:'taunt',       max:1, per:1,    desc:'Provocation : le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui' },
+      { id:'loot',        max:5, per:0.03, desc:'Butin des mobs +{v}' },
+    ]},
+  ],
+  rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
+  /* au retour, un mineur qui doit poser une échelle laisse faire un logisticien qui remonte aussi, à moins de
+     ladderYieldRadius cases (Manhattan), en dessous ou à sa hauteur ; au-delà de ladderYieldMax s d'attente, il la pose
+     lui-même (le logisticien a pris un autre chemin : jamais bloqué) */
+  ladderYieldRadius: 5,
+  ladderYieldMax: 4,
+  opMemory: 50,         // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
