@@ -167,6 +167,7 @@ Trois arbres, chacun une suite de 3 étapes ; une étape exige la précédente *
 | **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | 0/1 : échelle de 2 de haut au lieu de 1 (si la case du dessus est vide) **+ Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
 | **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
 
+- **Les pourcentages des skills sont des multiplicateurs** *(décision ferme)* : ils s'appliquent après le stuff. Vitesse de minage = (base + stuff) × (1 + 2 % par rang) ; ex. pioche en fer et 3 rangs : (1 + 0,2) × 1,06 = 1,27. Idem pour les dégâts (+5 %/rang) et les vitesses de marche (+3 %/rang).
 - « Vitesse de marche » = vitesse horizontale seulement (pas l'échelle) *(décision ferme)*.
 - **Échelle de 2** : quand il monte en posant une échelle, il en pose 2 cases si celle du dessus est vide ; l'IA en tient compte dans ses itinéraires (en moyenne moitié moins d'échelles à poser).
 - **Treuil** *(décision ferme ; vitesse provisoire)* : une sorte d'ascenseur, un seau en bois tiré par une poulie.
@@ -357,7 +358,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
-- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, découverte, vision, boussole, torches, passerelles) : base + bonus des pièces portées (en vert) + bonus des skills (en bleu, ex. vitesse de minage, dégâts). Le total est exactement ce que le mineur a en session.
+- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

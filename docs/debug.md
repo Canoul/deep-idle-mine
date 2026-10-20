@@ -502,3 +502,11 @@ Règles (voir CLAUDE.md) :
 - **Fichiers** : `src/config.js`, `src/shared/party.js`, `tests/party.test.js`, GAME_DESIGN §6, `docs/deploiement.md`.
 - **Tests** : party, lobby, nav 25/25.
 - **Vérification** : ✅ tests. ⚠️ Pas vérifié en ligne (domaine, cookie, proxy).
+
+### Onglet Stuff : le bonus des skills affiché en multiplicateur (×1,06) et non en ajout (+0,07)
+- **Remarque du créateur** : « vitesse de minage +2 % est un multiplicateur : (1 + bonus) × multiplicateur, pas +0,02 ».
+  Le calcul l'était déjà ((base + stuff) × (1 + 2 % × rang), en session comme dans l'onglet) ; seul l'affichage montrait
+  l'écart (+0,07), qui ressemblait à un ajout. Maintenant : « 1,27 (1 +0,2) ×1,06 ». `minerStats` renvoie `mult`.
+- **Fichiers** : `src/meta/stuff.js`, `src/ui/stuff.js`, `index.html`, GAME_DESIGN §3 Skills et §6 Stuff.
+- **Tests** : skills, stuff, carac 27/27 (dont (1 + 0,2) × 1,06 = 1,27 avec la pioche en fer).
+- **Vérification** : ✅ tests ; calcul de la partie inchangé. ⚠️ Pas regardé dans un navigateur.
