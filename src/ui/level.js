@@ -1,4 +1,5 @@
-/* Niveau du mineur (carte du lobby) : niveau, barre d'XP, points de talent. Lit l'état envoyé par le serveur. */
+/* Niveau du mineur (carte du lobby et stats de l'onglet Stuff) : niveau, barre d'XP (pourcentage et XP / XP requise),
+   points de talent. Lit l'état envoyé par le serveur. */
 const fmtN = n => Math.round(n).toLocaleString('fr-FR');
 
 /* progress : { xp, level, into, need, talentPoints } (server/game/service.js) */
@@ -7,7 +8,9 @@ export function renderLevel(el, progress){
   if(!progress){ el.innerHTML = '<span class="mut">—</span>'; return; }
   const { level, into, need, talentPoints, xp } = progress;
   const pct = need ? Math.min(100, into / need * 100) : 100;
-  el.innerHTML = `<div class="row"><b class="lvl">Niveau ${level}</b><span class="mut">${fmtN(into)} / ${fmtN(need)} XP</span></div>`+
+  /* au niveau max, il n'y a plus d'XP à gagner : pas de « x / 0 XP » */
+  const prog = need ? `<b>${Math.floor(pct)} %</b> · ${fmtN(into)} / ${fmtN(need)} XP` : 'Niveau max';
+  el.innerHTML = `<div class="row"><b class="lvl">Niveau ${level}</b><span class="mut">${prog}</span></div>`+
     `<div class="bar"><i style="width:${pct}%;background:var(--o2)"></i></div>`+
     `<div class="row small" style="margin-top:6px"><span class="mut">XP totale ${fmtN(xp)}</span>`+
     `<span>${talentPoints} point${talentPoints > 1 ? 's' : ''} de talent</span></div>`;

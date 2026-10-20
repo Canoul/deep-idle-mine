@@ -23,7 +23,7 @@ import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { craft } from '../../src/meta/craft.js';
-import { sanitizeStuff, stuffOp } from '../../src/meta/stuff.js';
+import { sanitizeStuff, stuffOp, lookOf } from '../../src/meta/stuff.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
@@ -91,7 +91,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
     if(!rec) return null;
-    return { id: rec.id, seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, overrides: rec.overrides,
+    return { id: rec.id, seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, looks: rec.looks ?? {}, overrides: rec.overrides,
              dev: rec.dev, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
              tick: live.tickOf(rec.id), clock: rec.dev ? rec.clock : null,
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
@@ -240,14 +240,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
-        const prefs = {};
-        for(const p of players) prefs[p.account] = await loadPrefs(p.account);
+        const prefs = {}, looks = {};
+        for(const p of players){
+          prefs[p.account] = await loadPrefs(p.account);
+          /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) */
+          looks[p.account] = lookOf(await loadStuff(p.account, await loadInventory(p.account)));
+        }
         const rec = {
           id: crypto.randomUUID(),
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
-          prefs,
+          prefs, looks,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [],

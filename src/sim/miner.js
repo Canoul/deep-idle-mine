@@ -5,6 +5,7 @@ import { lumAt } from './light.js';
 export function createMiner(id, opts={}){
   return {
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
+    look: opts.look || {},          // équipement visible (src/skins.js) : purement visuel
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
     x: opts.x ?? SPAWN_X, y:0, ox:STATS.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
     action:null, exploring:false, exploreArea:null, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),

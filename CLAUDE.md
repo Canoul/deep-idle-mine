@@ -83,6 +83,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 index.html              page du jeu
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js          recettes de craft (fichier séparé, demandé par le créateur)
+src/skins.js            apparence des mineurs : corps commun, calques d'armure et pioche selon le stuff (fichier séparé, demandé par le créateur)
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; craft : recettes ; stuff : pièces portées)
@@ -97,7 +98,7 @@ server/                 serveur du jeu (npm start / npm run dev) : app (routeur)
                         game/ (service : sessions qui font foi ; live + live-game + live-worker : la partie de chaque session, en direct, dans son fil d'exécution ; routes ; store),
                         party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), db/ (postgres : stockage en ligne)
 docs/                   documentation technique (comptes.md, deploiement.md : Render + Neon), journal de debug des sessions Claude (debug.md)
-textures/               PNG 16×16
+textures/               PNG 16×16 (skins des mineurs dans textures/skins/)
 ```
 
 ## Stack

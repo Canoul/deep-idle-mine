@@ -260,7 +260,11 @@ function setInventory(inv, bag){
 /* état complet depuis le serveur : inventaire, préférences, session en cours, résultat pas encore vu */
 /* niveau du mineur : relu au serveur avec l'état ; montée de niveau annoncée au bilan */
 let progress = null;
-function setProgress(p){ const up = levelUpText(progress, p); progress = p ?? null; renderLevel($('levelBody'), progress); return up; }
+function setProgress(p){
+  const up = levelUpText(progress, p); progress = p ?? null;
+  renderLevel($('levelBody'), progress); renderLevel($('stuffLevelBody'), progress);   // lobby et onglet Stuff
+  return up;
+}
 
 async function refresh(){
   const st = await gameApi.state();

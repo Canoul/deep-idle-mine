@@ -25,7 +25,7 @@ export function updateHUD(G, ui){
   team.parentElement.hidden = G.miners.length<2;
   if(G.miners.length>1) team.innerHTML=G.miners.map((t,i)=>`
     <div class="mrow${i===ui.focus?' on':''}" data-i="${i}" title="Suivre ${esc(t.name)}">
-      <span class="mname">${sw(t.color)}${esc(t.name)}${ui.names?.[t.account] ? ` <span class="mut">${esc(ui.names[t.account])}</span>` : ''}</span>
+      <span class="mname">${esc(t.name)}</span>
       <span class="mst">${esc(t.status)}</span>
       <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}</span>
     </div>`).join('');
@@ -89,7 +89,7 @@ export function showSettling(){
 export function showEnd(rec, me, onBack, onInventory, levelUp=null){
   const s=rec.result, shares=s.shares, n=shares.filter(p=>!p.left).length;
   const nameOf = acc => rec.players.find(p=>p.account===acc)?.name;
-  const who = p => `${sw(p.color)}${esc(p.miner)}${p.account ? ' — '+esc(nameOf(p.account) ?? '') : ''}${p.account===me?' (toi)':''}`;
+  const who = p => `${esc(p.account ? nameOf(p.account) ?? p.miner : p.miner)}${p.account===me?' (toi)':''}`;   // le mineur porte le pseudo
   const mine = shares.find(p=>p.account===me);
   const split = shares.length>1
     ? `<p>Coffre commun : ${chips(s.chest)}</p>`+

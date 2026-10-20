@@ -27,6 +27,21 @@ test('levelOf : niveau, avancement dans le niveau, points de talent (1 par nivea
   assert.ok(levelOf(Number.MAX_SAFE_INTEGER).level <= XP.maxLevel, 'pas de boucle infinie');
 });
 
+test('affichage : niveau, pourcentage (arrondi vers le bas) et XP / XP requise ; niveau max sans « / 0 »', async () => {
+  const { renderLevel } = await import('../src/ui/level.js');
+  const el = { innerHTML:'' };
+  renderLevel(el, { xp:2600, ...levelOf(2600) });                  // niveau 3 : 100 / 2250 → 4,4 %
+  assert.match(el.innerHTML, /Niveau 3/);
+  assert.match(el.innerHTML, /<b>4 %<\/b>/);
+  assert.match(el.innerHTML, /100 \/ 2\s250 XP/u);
+  assert.match(el.innerHTML, /width:4\.4\d*%/);
+  renderLevel(el, { xp:1e9, level:XP.maxLevel, into:0, need:0, talentPoints:XP.maxLevel - 1 });   // dernier niveau
+  assert.match(el.innerHTML, /Niveau max/);
+  assert.doesNotMatch(el.innerHTML, /\/ 0 XP/);
+  renderLevel(el, null);
+  assert.match(el.innerHTML, /—/);
+});
+
 /* ---------- partage et versement ---------- */
 
 test('partage : parts égales arrondies vers le bas, jamais plus que le pot', () => {

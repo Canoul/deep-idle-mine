@@ -254,6 +254,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .okmsg{color:var(--ok)}
 .stuffStats{color:var(--o2);font-weight:600}
 .stuffStatsCard{margin-top:12px;max-width:420px}
+.stuffLevel{padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid var(--line)}
 /* bulle d'info (src/ui/tooltip.js) : titre, puis un effet par ligne */
 #tip{position:fixed;z-index:50;pointer-events:none;max-width:240px;padding:6px 10px;background:#0f0c0a;border:1px solid var(--acc);border-radius:8px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #tip b{display:block;margin-bottom:2px}

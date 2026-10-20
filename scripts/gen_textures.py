@@ -307,7 +307,66 @@ def main():
     rect(torch, 7, 2, 2, 3, hexc('#ffd23f'))
     tex['torch'] = torch
 
+    # ---- skins des mineurs (src/skins.js) : un corps commun + calques d'équipement, regard vers la droite ----
+    sk_body = blank()
+    rect(sk_body, 5, 2, 6, 2, hexc('#5a3a22'))       # cheveux
+    rect(sk_body, 5, 4, 6, 3, hexc('#e0ac7d'))       # visage
+    rect(sk_body, 9, 4, 1, 1, hexc('#2b1d14'))       # œil
+    rect(sk_body, 5, 7, 6, 4, hexc('#3f5f8a'))       # tenue de base (bleu)
+    rect(sk_body, 4, 7, 1, 3, hexc('#3f5f8a'))       # bras
+    rect(sk_body, 11, 7, 1, 3, hexc('#3f5f8a'))
+    rect(sk_body, 4, 10, 1, 1, hexc('#e0ac7d'))      # mains
+    rect(sk_body, 11, 10, 1, 1, hexc('#e0ac7d'))
+    rect(sk_body, 5, 10, 6, 1, hexc('#2b2b2b'))      # ceinture
+    rect(sk_body, 5, 11, 6, 3, hexc('#6b4f3a'))      # pantalon
+    rect(sk_body, 7, 12, 2, 2, hexc('#4e3829'))      # entrejambe
+    rect(sk_body, 5, 14, 2, 2, hexc('#3a2a1e'))      # chaussures
+    rect(sk_body, 9, 14, 2, 2, hexc('#3a2a1e'))
+    tex['skins/body'] = sk_body
+
+    red, red_hi, red_lo = hexc('#b3261e'), hexc('#e0503f'), hexc('#6e1410')   # chitine : rouge
+    sk_helmet = blank()
+    rect(sk_helmet, 4, 1, 8, 3, red)
+    rect(sk_helmet, 5, 1, 4, 1, red_hi)
+    rect(sk_helmet, 7, 0, 2, 1, red_lo)             # crête
+    rect(sk_helmet, 4, 4, 2, 1, red_lo)             # protège-joues
+    rect(sk_helmet, 10, 4, 2, 1, red_lo)
+    tex['skins/chitin_helmet'] = sk_helmet
+    sk_chest = blank()
+    rect(sk_chest, 4, 7, 8, 3, red)
+    rect(sk_chest, 5, 8, 6, 1, red_lo)              # jointure des plaques
+    rect(sk_chest, 5, 7, 2, 1, red_hi)
+    rect(sk_chest, 4, 7, 1, 3, red_lo)              # épaulières
+    rect(sk_chest, 11, 7, 1, 3, red_lo)
+    tex['skins/chitin_chest'] = sk_chest
+    sk_legs = blank()
+    rect(sk_legs, 5, 11, 6, 3, red)
+    rect(sk_legs, 5, 12, 6, 1, red_lo)
+    rect(sk_legs, 7, 11, 2, 3, red_lo)
+    rect(sk_legs, 5, 11, 1, 1, red_hi)
+    tex['skins/chitin_legs'] = sk_legs
+    sk_boots = blank()
+    for x0 in (5, 9):
+        rect(sk_boots, x0, 14, 2, 2, red)
+        rect(sk_boots, x0, 15, 2, 1, red_lo)
+        rect(sk_boots, x0 + 1, 14, 1, 1, red_hi)
+    tex['skins/chitin_boots'] = sk_boots
+
+    # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
+    for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),
+                                    ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c')]:
+        pk = blank()
+        for i in range(9):
+            rect(pk, 2 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
+        for x, y in [(5, 3), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7)]:
+            rect(pk, x, y, 2, 2, hexc(head))
+        rect(pk, 6, 2, 3, 1, hexc(light))
+        rect(pk, 4, 4, 2, 1, hexc(dark))
+        rect(pk, 13, 8, 2, 1, hexc(dark))
+        tex[name] = pk
+
     for name, px in tex.items():
+        os.makedirs(os.path.dirname(os.path.join(OUT, name + '.png')), exist_ok=True)
         png(os.path.join(OUT, name + '.png'), px)
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 

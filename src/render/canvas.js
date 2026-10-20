@@ -5,6 +5,7 @@ import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/miner.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
+import { SKIN, armorLayers, pickaxeOf } from '../skins.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -31,19 +32,31 @@ export function createRenderer(cv){
     return [m.x,m.y];
   }
 
+  /* le mineur : même corps pour tous, son équipement par-dessus (src/skins.js), sa pioche quand il mine ou frappe,
+     et son pseudo au-dessus de la tête */
   function drawMiner(m,px,py,focused){
     ctx.save();
     let bx=px;   // dessiné en miroir quand il regarde à gauche
     if(m.face<0){ ctx.translate(px+TILE,0); ctx.scale(-1,1); bx=0; }
-    blit('miner',bx,py);
-    if(m.color){ ctx.fillStyle=m.color; ctx.fillRect(bx+3,py+2,10,4); ctx.fillStyle='#fff7b0'; ctx.fillRect(bx+11,py+3,2,2); }  // casque à sa couleur
-    ctx.restore();
+    blit(SKIN.body,bx,py,'#3f5f8a');
+    for(const l of armorLayers(m.look)) blit(l,bx,py);
     const a=m.action;
     if(a&&(a.type==='mine'||a.type==='attack')){
-      const sw=Math.sin(a.t*18)*0.8; ctx.strokeStyle='#cfd3d8'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(px+8,py+9); ctx.lineTo(px+8+m.face*(8+sw*3), py+9+sw*5); ctx.stroke();
+      /* la pioche, tenue à la main, se balance : rotation autour de la main */
+      const swing=Math.sin(a.t*18)*0.7, i=TEX[pickaxeOf(m.look)];
+      if(i && i.complete && i.naturalWidth){
+        ctx.save(); ctx.translate(bx+11,py+10); ctx.rotate(swing-0.35);
+        ctx.drawImage(i,-3,-12,13,13); ctx.restore();
+      }
     }
-    if(focused){ ctx.strokeStyle=m.color||'#ffb84d'; ctx.lineWidth=1; ctx.strokeRect(px-1.5,py-1.5,TILE+3,TILE+3); }
+    ctx.restore();
+    if(focused){ ctx.strokeStyle='#ffb84d'; ctx.lineWidth=1; ctx.strokeRect(px-1.5,py-1.5,TILE+3,TILE+3); }
+    /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel */
+    if(m.name){
+      ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(m.name,px+TILE/2,py-2);
+      ctx.fillStyle=focused?'#ffd27a':'#f2ece4'; ctx.fillText(m.name,px+TILE/2,py-2);
+    }
   }
 
   /* focus : index du mineur suivi par la caméra */

@@ -11,6 +11,16 @@ export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
 export const slotOf = item => ITEMS[item]?.cat === 'stuff' ? ITEMS[item].slot ?? null : null;
 
+/* apparence d'un mineur en session : { case: objet } des pièces portées (src/skins.js). Visuel seulement.
+   sanitizeLook : revérifiée (case connue, pièce qui va dans cette case) ; lookOf : depuis le stuff d'un joueur. */
+export function sanitizeLook(look){
+  const out = {};
+  if(!look || typeof look !== 'object') return out;
+  for(const slot of SLOT_IDS) if(typeof look[slot] === 'string' && slotOf(look[slot]) === slot) out[slot] = look[slot];
+  return out;
+}
+export const lookOf = st => Object.fromEntries(Object.entries(st.worn).filter(([, p]) => p).map(([slot, p]) => [slot, p.item]));
+
 /* bonus d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] */
 export const statLines = item => Object.entries(ITEMS[item]?.stats || {})
   .map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${String(v).replace('.', ',')}`);

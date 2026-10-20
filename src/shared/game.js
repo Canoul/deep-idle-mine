@@ -1,13 +1,15 @@
 /* Règles partagées entre le jeu (navigateur) et le serveur pour les sessions de jeu. Logique pure.
 
    Une session est décrite par un « enregistrement » créé par le serveur :
-     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, overrides, leaves:[{account, tick}],
-       focus:[{account, tick, focus}] }   (focus : changements de focus minerai faits pendant la session)
-   À partir de lui, buildSession construit exactement la même partie des deux côtés : le navigateur l'affiche,
-   le serveur la rejoue (replayRecord) pour calculer le partage du coffre. C'est le résultat du serveur qui fait foi. */
+     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, looks:{<compte>: {case: objet}}, overrides,
+       leaves:[{account, tick}], focus:[{account, tick, focus}] }
+   (looks : équipement visible de chaque joueur au lancement ; focus : changements faits pendant la session)
+   À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
+   seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
 import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
+import { sanitizeLook } from '../meta/stuff.js';
 
 /* ---------- préférences ---------- */
 
@@ -49,11 +51,16 @@ export function applyOverrides(overrides){
 /* ---------- construction et rejeu d'une session ---------- */
 
 /* mineurs de la session : un par joueur, puis les mineurs de test (mode dev) ; seul = le mineur solo habituel */
+/* chaque mineur porte le pseudo de son joueur (record.players[i].name) et l'apparence de son équipement au lancement
+   (record.looks[compte]) ; les mineurs de test (dev) s'appellent « Mineur test 1 », … */
 export function minerSpecs(record){
   const players = record.players || [], n = players.length + (record.bots|0);
   const prefsOf = i => i < players.length ? sanitizePrefs(record.prefs?.[players[i].account]) : { ...PREFS };
-  if(n <= 1) return [{ prefs: prefsOf(0) }];
-  return TEAM.slice(0, n).map((t, i) => ({ ...t, prefs: prefsOf(i) }));
+  const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
+                                         : 'Mineur test ' + (i - players.length + 1);
+  const lookOf = i => i < players.length ? sanitizeLook(record.looks?.[players[i].account]) : {};
+  if(n <= 1) return [{ name: players.length ? nameOf(0) : undefined, prefs: prefsOf(0), look: lookOf(0) }];
+  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, name: nameOf(i), prefs: prefsOf(i), look: lookOf(i) }));
 }
 
 export function buildSession(record){

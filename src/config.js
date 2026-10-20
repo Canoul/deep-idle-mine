@@ -35,10 +35,12 @@ export const CFG = {
 /* équipe : le jeu est prévu pour 3 joueurs sur la même carte (même seed, même monde, coffre commun) */
 /* home : centre du secteur de préférence de chacun (un tiers de la largeur) ; il repart de cette colonne
    après chaque passage au coffre, ce qui évite que tous redescendent par le même trou et travaillent au même endroit */
+/* En session, chaque mineur porte le pseudo de son joueur et le même skin (src/skins.js, selon son équipement) ;
+   les noms ci-dessous ne servent qu'aux simulations sans joueurs (scripts/simulate.js, tests). */
 export const TEAM = [
-  { name:'Rouge', color:'#e63946', x:8,  home:8 },
-  { name:'Bleu',  color:'#3a86ff', x:25, home:25 },
-  { name:'Vert',  color:'#2ec4b6', x:42, home:42 },
+  { name:'Rouge', x:8,  home:8 },
+  { name:'Bleu',  x:25, home:25 },
+  { name:'Vert',  x:42, home:42 },
 ];
 export const DEFAULT_MINERS = 3;
 
