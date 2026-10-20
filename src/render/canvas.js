@@ -4,6 +4,7 @@ import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/miner.js';
 import { loadTextures } from './textures.js';
+import { shownPos } from '../shared/view.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -22,7 +23,9 @@ export function createRenderer(cv){
   }
 
   /* position affichée (interpolée pendant un déplacement) */
+  /* position affichée : glissade entre deux envois du serveur (src/shared/view.js), sinon d'après l'action en cours */
   function drawPos(m){
+    if(m._to) return shownPos(curG, m, frameNow);
     const a=m.action;
     if(a&&a.type==='move'){ const p=Math.min(1,a.t/a.dur); return [a.data.fx+(a.data.x-a.data.fx)*p, a.data.fy+(a.data.y-a.data.fy)*p]; }
     return [m.x,m.y];
@@ -44,7 +47,9 @@ export function createRenderer(cv){
   }
 
   /* focus : index du mineur suivi par la caméra */
+  let curG=null, frameNow=0;   // partie et heure de l'image en cours (pour les glissades)
   function draw(G, focus=0){
+    curG=G; frameNow=performance.now();
     const fm=G.miners[Math.min(focus, G.miners.length-1)];
     const [, fy]=drawPos(fm);
     const tgt=Math.max(-3, fy-VIEW_ROWS/2+2); camY+=(tgt-camY)*0.15;
@@ -86,7 +91,7 @@ export function createRenderer(cv){
     }
     for(const o of G.mobs){
       if(o.hp<=0) continue;
-      const px=o.x*TILE, py=sy(o.y);
+      const [ox,oy]=o._to ? shownPos(G,o,frameNow) : [o.x,o.y], px=ox*TILE, py=sy(oy);
       if(o.type==='mimic'){
         if(!o.revealed) continue;
         blit(BLOCKS[o.ore].tex,px,py,BLOCKS[o.ore].dot); blit('mimic',px,py);

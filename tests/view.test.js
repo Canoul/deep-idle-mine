@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLiveGame } from '../server/game/live-game.js';
-import { emptyView, applyView } from '../src/shared/view.js';
+import { emptyView, applyView, shownPos } from '../src/shared/view.js';
 
 const rec = { id:'S1', seed:7919, players:[{ account:'AAAA', name:'A' }], bots:2, prefs:{}, overrides:null, leaves:[], focus:[] };
 const same = (M, G) => {
@@ -65,4 +65,21 @@ test('à jour : envoi sans changement de carte', () => {
   const M = applyView(emptyView(), g.view(null));
   const v = g.view(M.ticks);
   assert.deepEqual([v.full, v.cells.length, v.torches.length], [undefined, 0, 0]);
+});
+
+test('mouvement fluide : à l\'arrivée d\'un envoi, rien ne saute ; la glissade finit sur la position du serveur', () => {
+  const g = createLiveGame(rec);
+  const M = applyView(emptyView(), g.view(null), 0);
+  let now = 0, jumps = 0;
+  for(let k = 1; k <= 200; k++){
+    g.advance(k * 5); now += 250;
+    const before = M.miners.map(m => shownPos(M, m, now));
+    applyView(M, g.view(M.ticks), now);
+    M.miners.forEach((m, i) => {                                // juste à l'arrivée : même position qu'avant
+      const d = Math.hypot(shownPos(M, m, now)[0] - before[i][0], shownPos(M, m, now)[1] - before[i][1]);
+      if(d > 1e-9 && d <= 6) jumps++;
+    });
+    M.miners.forEach(m => assert.deepEqual(shownPos(M, m, now + M._dur), m._to));
+  }
+  assert.equal(jumps, 0, 'aucun saut à l\'arrivée d\'un envoi');
 });

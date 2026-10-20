@@ -82,14 +82,38 @@ export function createViewer(G){
 
 /* ---------- navigateur ---------- */
 
+/* Mouvement fluide (interpolation) : entre deux envois, un mineur fait plusieurs pas. Au lieu de sauter, chaque
+   mineur et chaque mob glisse de la position où il est affiché quand l'envoi arrive (jamais de saut) vers sa
+   nouvelle position, sur la durée moyenne entre deux envois. L'image a ainsi ~un envoi de retard sur la partie. */
+const TELEPORT = 6;            // au-delà de cette distance (cases), pas de glissade : il apparaît directement
+const minerPos = m => {        // position exacte au moment de l'envoi (un pas en cours compte pour sa part faite)
+  const a = m.action;
+  if(a && a.type === 'move'){ const p = Math.min(1, a.t / a.dur); return [a.data.fx + (a.data.x - a.data.fx) * p, a.data.fy + (a.data.y - a.data.fy) * p]; }
+  return [m.x, m.y];
+};
+/* position affichée de o (mineur ou mob de la copie M) à l'instant now (ms, horloge de la page) */
+export function shownPos(M, o, now = performance.now()){
+  if(!o._to) return [o.x, o.y];
+  const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
+  return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
+}
+function glide(M, oldList, newList, target, now){
+  const old = new Map(oldList.map(o => [o.id, o]));
+  for(const o of newList){
+    const to = target(o), was = old.get(o.id), from = was ? shownPos(M, was, now) : to;
+    o._to = to;
+    o._from = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) > TELEPORT ? to : from;
+  }
+}
+
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
   return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], chest: {}, chestBy: {},
            stats: {}, areas: [], unlockedAreas: 0, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
-/* applique un envoi du serveur ; renvoie M (modifié) */
-export function applyView(M, v){
+/* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
+export function applyView(M, v, now = performance.now()){
   let mapChanged = false;
   const dec = s => Uint8Array.from(s, dec36);
   if(!v.full){                                     // cases changées des lignes que le navigateur avait déjà
@@ -108,6 +132,11 @@ export function applyView(M, v){
   if(v.torches.length || v.full) mapChanged = true;
   if(mapChanged) updateLight(M);
   if(v.log) M.log = v.log;
+  /* glissades : depuis la position affichée maintenant (calculée avec l'envoi précédent), vers la nouvelle */
+  glide(M, M.miners, v.miners, minerPos, now);
+  glide(M, M.mobs, v.mobs, o => [o.x, o.y], now);
+  M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
+  M._at = now;
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, ready: true });
   return M;
