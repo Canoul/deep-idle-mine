@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN, TREASURE, TREASURE_BLOCK } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN, TREASURE, TREASURE_BLOCK, WINCH } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 
@@ -22,9 +22,12 @@ export const maxRow = G => G.tiles.length-1;
 /* sous la dernière area débloquée, tout est barrière (l'IA l'ignore comme case non franchissable) */
 export const tileAt = (G,x,y) => y>maxRow(G) ? BARRIER : G.tiles[y][x];
 export const isAir  = (G,x,y) => y>=0 && y<G.tiles.length && x>=0 && x<W && G.tiles[y][x]===0;
-/* gravité : sol sous la case (x,y) ? Non s'il y a du vide dessous sans échelle (ni sur la case, ni juste dessous) */
+/* treuil : G.winch = { x, bottom } une fois posé (colonne x, lignes 1 à bottom), sinon null */
+export const isWinch = (G,x,y) => !!G.winch && x===G.winch.x && y>=1 && y<=G.winch.bottom;
+/* gravité : sol sous la case (x,y) ? Non s'il y a du vide dessous sans échelle (ni sur la case, ni juste dessous) ;
+   le puits du treuil tient comme une échelle (le seau) */
 export const supported = (G,x,y) =>
-  !(y+1<=maxRow(G) && isAir(G,x,y+1) && !G.ladder[y+1][x] && !(y>0 && G.ladder[y][x]));
+  !(y+1<=maxRow(G) && isAir(G,x,y+1) && !G.ladder[y+1][x] && !isWinch(G,x,y+1) && !(y>0 && (G.ladder[y][x] || isWinch(G,x,y))));
 /* case où l'on finit en tombant depuis (x,y) ; n = nombre de cases de chute */
 export function landing(G,x,y){ let n=0; while(!supported(G,x,y)){ y++; n++; } return {y,n}; }
 /* chute depuis (x,y) : landing + known = le mineur connaît ce trou (toutes les cases traversées et le sol d'arrivée
@@ -129,5 +132,8 @@ export function tryUnlock(G){
   genArea(G, G.unlockedAreas); G.unlockedAreas++;
   for(const m of G.miners){ m.exploring=false; m.skipRows.clear(); }
   log(G, `🔓 Area ${k+1} débloquée !`);
+  /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle area */
+  const lg=G.miners.find(m=>m.skill?.tall_ladder);
+  if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
   return true;
 }

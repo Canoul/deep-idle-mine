@@ -20,7 +20,7 @@ export function newSession(seed, opts={}){
   const G = {
     seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
-    areas:[], unlockedAreas:0, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
+    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),

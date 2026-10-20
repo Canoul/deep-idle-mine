@@ -24,7 +24,7 @@ function minerView(m){
     pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)
     look: m.look || {},                                              // équipement visible (skin, src/skins.js)
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
   };
 }
 const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore });
@@ -64,7 +64,7 @@ export function createViewer(G){
     const base = {
       tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
       miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
-      chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas,
+      chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
     };
     /* changements depuis since : le navigateur est à jour, ou on a tous les lots depuis son tick */
     if(since === G.ticks) return { ...base, cells: [], torches: [], torchesFrom: G.torches.length };
@@ -111,7 +111,7 @@ function glide(M, oldList, newList, target, now){
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
   return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], chest: {}, chestBy: {},
-           stats: {}, areas: [], unlockedAreas: 0, log: [], t: 0, ticks: -1, over: false, ready: false };
+           stats: {}, areas: [], unlockedAreas: 0, winch: null, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
 /* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
@@ -140,6 +140,6 @@ export function applyView(M, v, now = performance.now()){
   M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
   M._at = now;
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
-                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, ready: true });
+                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, ready: true });
   return M;
 }

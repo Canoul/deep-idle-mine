@@ -164,10 +164,16 @@ Trois arbres, chacun une suite de 3 étapes ; une étape exige la précédente *
 | Arbre | Étape 1 | Étape 2 | Étape 3 |
 |---|---|---|---|
 | **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend 1 % de l'oxygène max | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
-| **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | 0/1 : échelle de 2 de haut au lieu de 1 (si la case du dessus est vide) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
+| **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | 0/1 : échelle de 2 de haut au lieu de 1 (si la case du dessus est vide) **+ Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
 | **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
 
 - « Vitesse de marche » = vitesse horizontale seulement (pas l'échelle) *(décision ferme)*.
+- **Échelle de 2** : quand il monte en posant une échelle, il en pose 2 cases si celle du dessus est vide ; l'IA en tient compte dans ses itinéraires (en moyenne moitié moins d'échelles à poser).
+- **Treuil** *(décision ferme ; vitesse provisoire)* : une sorte d'ascenseur, un seau en bois tiré par une poulie.
+  - **Pose** : quand une nouvelle area est débloquée, le logisticien qui a ce skill (le premier s'il y en a plusieurs) arrête ce qu'il fait, remonte à la surface (dépôt, oxygène), va **au milieu de la mine** (x = 25) et creuse tout droit vers le bas. Arrivé au **haut de la nouvelle area**, il pose **tout le treuil d'un coup**, de la surface jusque-là. Pendant ce chantier il n'est **jamais étourdi** et peut tomber de plus de 3 cases dans son puits. S'il doit remonter (oxygène, pods, torches, fin de session), il reprend le chantier ensuite.
+  - **Prolongement** : à l'area suivante, il redescend par le treuil et prolonge le **même puits**.
+  - **Utilisation** : tous les mineurs, en même temps, sans attente, **dans les deux sens**, à **0,85 × leur vitesse de montée** (stuff compris). On peut s'arrêter à **n'importe quelle ligne** du puits pour miner à gauche ou à droite. Les itinéraires de l'IA le prennent en compte (pas d'échelle à poser, chemin tout droit).
+  - Repère (simulation, 3 logisticiens complets × 5 sessions) : profondeur 207 (186 sans skills), ≈ 15 min par mineur et par session dans le seau. À noter : le seau (0,85×) est plus lent qu'une échelle déjà posée ; il fait gagner du temps parce qu'il évite les échelles à poser et les détours.
 - Provocation : un mineur taclé par ce mob est libéré tout de suite et reprend son travail (même s'il est réglé sur « Ignorer les mobs »).
 - **Échelles au retour** *(décision ferme)* : quand plusieurs mineurs remontent au même endroit, c'est le **logisticien** qui pose les échelles. Un autre mineur qui devrait en poser une attend s'il y a un logisticien qui remonte à moins de 5 cases, en dessous de lui ou à sa hauteur ; au-delà de 4 s d'attente, il la pose lui-même (jamais bloqué).
 - Repère (simulation, 3 mineurs × 5 sessions, un arbre complet chacun) : areas 3,6 → 4,0, profondeur 186 → 196.

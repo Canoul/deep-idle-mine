@@ -1,5 +1,5 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire. */
-import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS } from '../config.js';
+import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH } from '../config.js';
 import { lumAt } from './light.js';
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
@@ -14,6 +14,7 @@ export function createMiner(id, opts={}){
     skill: { ...NO_SKILLS, ...(opts.skills||{}) },
     skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null
     yieldSince: null,               // attend qu'un logisticien pose l'échelle (depuis ce temps)
+    winchJob: null,                 // chantier du treuil (logisticien) : { bottom : ligne à atteindre }
     rushUntil: -1,                  // fin du bonus de vitesse après un minerai (skill ore_rush)
     goingDown: false,               // redescend au front par l'existant (skill travel_rush)
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
@@ -44,6 +45,8 @@ export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
 /* temps d'une construction (échelle, passerelle, torche), réduit par le skill build_time */
 export const buildT = (m,t) => t*(1-m.skill.build_time);
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m));
+/* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens) */
+export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*dk(G,m));
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*dk(G,m));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
@@ -52,6 +55,10 @@ export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5)
    de la case où se trouve le mineur, sinon le meilleur chemin change d'une case à l'autre (va-et-vient). */
 export const baseMoveT  = m => 1/m.carac.speed;
 export const baseClimbT = m => 1/m.carac.climbSpeed;
+export const baseWinchT = m => 1/(m.carac.climbSpeed*WINCH.speedFactor);
+/* temps de PLANIFICATION d'une nouvelle échelle : skill build_time, et une sur deux est déjà posée avec l'échelle de 2
+   de haut (tall_ladder : en moyenne moitié moins d'échelles à poser pour monter) */
+export const baseLadderT = m => CFG.ladderTime*(1-m.skill.build_time)*(m.skill.tall_ladder ? 0.5 : 1);
 export const baseMineT  = (m,t) => BLOCKS[t].hard/m.carac.mineSpeed;
 
 /* ---- actions ---- */

@@ -203,6 +203,11 @@ export const XP = {
 /* caméra de la session (affichage) : top = ligne la plus haute affichée (le ciel), margin = lignes affichées sous le
    fond de la mine connue, ease = vitesse de glissade vers le mineur suivi (part du chemin par image),
    wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
+/* Treuil (skill Logisticien, étape 2) : un puits au milieu de la mine (colonne x), de la surface jusqu'au haut de la
+   dernière area débloquée. Un seau monte et descend à speedFactor × la vitesse de montée du mineur ; tout le monde
+   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). */
+export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
+
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
@@ -219,7 +224,7 @@ export const SKILLS = {
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'build_time',  max:3, per:0.05, desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
-      { id:'tall_ladder', max:1, per:1,    desc:'Pose une échelle de 2 de haut au lieu de 1 (si la case du dessus est vide)' },
+      { id:'tall_ladder', max:1, per:1,    desc:'Échelle de 2 de haut (si la case du dessus est vide) + Treuil : à chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
       { id:'travel_rush', max:5, per:0.03, desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
@@ -242,7 +247,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'ladder','chest','miner','mimic','bug','goblin','torch','stun'];
+  'ladder','chest','miner','mimic','bug','goblin','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).

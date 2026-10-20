@@ -462,3 +462,21 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ sans skills, simulation 3 × 5 **identique au caractère près**. `--skills mixed` (3 × 5) :
   0 blocage, areas 4,0 (3,6 sans), profondeur 196,2 (185,8), étourdissements 9,4 (12,2).
   ⚠️ Onglet pas regardé dans un navigateur.
+
+### Treuil (Logisticien, étape 2) et échelle de 2 prise en compte par l'itinéraire
+- **Quoi** (demande du créateur) : l'étape 2 du Logisticien donne l'échelle de 2 ET le treuil. À chaque déblocage
+  d'area, le premier logisticien qui a le skill reçoit `winchJob` (`tryUnlock`) : il remonte, mode `winch`
+  (`decideWinch`) : va en x = `WINCH.x` (25), descend (par le treuil existant), creuse tout droit, pose `G.winch =
+  { x, bottom }` d'un coup en arrivant au haut de la nouvelle area. Jamais étourdi pendant le chantier, peut tomber
+  plus de 3 cases dans son puits (seulement en creusant tout droit : en marchant, la passerelle reste). Le puits tient
+  le mineur (`supported`, `isWinch`) ; seau dans les deux sens à 0,85 × vitesse de montée (`winchT`) ; itinéraires :
+  arêtes du treuil sans échelle (`baseWinchT`), nouvelle échelle à `baseLadderT` (build_time, ÷2 avec l'échelle de 2).
+  Affichage : corde, poulie, seau sous le mineur (`winch_rope`, `winch_top`, `bucket`), `G.winch` envoyé au navigateur.
+- **Fichiers** : `src/config.js` (`WINCH`, textures, texte du skill), `src/sim/{world,miner,path,actions,ai,session}.js`,
+  `src/shared/view.js`, `src/render/canvas.js`, `scripts/gen_textures.py` (+3 textures), GAME_DESIGN §3 Skills.
+- **Tests** : `tests/winch.test.js` (8). 40/40 avec skills, fall, view, skins ; 75/75 simulation.
+- **Vérification** : ✅ sans skills, simulation 3 × 5 **identique au caractère près**. `--skills logisticien` (3 × 5) :
+  0 blocage, areas 4,0, profondeur 207,0 (196,2 en mixed, 185,8 sans), allers-retours 31,4 (27,0). Seed 7919 : treuil
+  jusqu'à la couche 202, ≈ 915 à 975 s dans le seau par mineur. ⚠️ Pas regardé dans un navigateur.
+- **Points fragiles** : le seau (0,85×) est plus lent qu'une échelle déjà posée ; le gain vient des échelles évitées.
+  Un mob peut tomber dans le puits (il tient comme une échelle, les mobs ne le montent pas).

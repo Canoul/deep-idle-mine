@@ -1,8 +1,8 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS } from '../config.js';
-import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo } from './world.js';
+import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, buildT } from './miner.js';
+import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './miner.js';
 import { isWalker } from './mobs.js';
 import { log } from './log.js';
 
@@ -113,7 +113,7 @@ export function stepDir(G,m,dx,dy,opt){
   if(nx<0||nx>=W||ny<0) return false;
   /* trou connu trop profond : par-dessus avec une passerelle s'il peut (même si on lui demandait de ne pas en poser),
      sinon il refuse le pas (celui qui l'a demandé choisit autre chose) */
-  if(deepFall(G,m,dx,dy)){
+  if(!(m.winchJob && dx===0) && deepFall(G,m,dx,dy)){   // en chantier de treuil, il creuse tout droit, trou ou pas
     if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', buildT(m,CFG.bridgeTime), {x:nx,y:ny+1}); return true; }
     return false;
   }
@@ -126,7 +126,8 @@ export function stepDir(G,m,dx,dy,opt){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
     startAction(m,'mine', mineT(G,m,t), {x:nx,y:ny}); return true;
   }
-  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x]){ startAction(m,'ladder', buildT(m,CFG.ladderTime), {}); return true; }
-  startAction(m,'move', dy? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y});
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', buildT(m,CFG.ladderTime), {}); return true; }
+  const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau
+  startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y,winch:seau});
   return true;
 }

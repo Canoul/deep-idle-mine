@@ -1,6 +1,6 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH } from '../config.js';
 import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
@@ -118,6 +118,7 @@ function decideSurface(G,m){
   if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
   // repartir ne vaut le coup que s'il reste le temps d'aller au front, d'y travailler un peu et de revenir
   if(left<Math.max(CFG.endStayMin, 2*m.lastReturnDur+CFG.minWorkTime)){ m.status='Fin de session proche'; idle(m,1); return; }
+  if(m.winchJob){ m.mode='winch'; return decideWinch(G,m); }   // chantier du treuil : il repart d'en haut, au milieu
   m.mode='departure';
   decideDeparture(G,m);
 }
@@ -290,6 +291,35 @@ function shiftColumn(G,m,ok=null){
 /* tacle : une bestiole (ou un gobelin) sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
 export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y && canTackle(G,o,m)) || null;
 
+/* Chantier du treuil (logisticien) : depuis la surface, au milieu de la mine (WINCH.x), il descend (par le treuil déjà
+   posé s'il y en a un) et creuse tout droit jusqu'à la ligne visée, puis pose tout le treuil d'un coup. Il remonte
+   comme d'habitude si l'oxygène, les pods, les torches ou le temps l'exigent (le chantier reprend ensuite). */
+function decideWinch(G,m){
+  const job=m.winchJob, left=SESSION_LEN-G.t;
+  if(m.y===0){
+    m.status='Va installer le treuil';
+    if(m.x!==WINCH.x){ if(!stepDir(G,m,Math.sign(WINCH.x-m.x),0,{noBridge:true})) idle(m); return; }
+  } else {
+    let reason=null;
+    if(m.x!==WINCH.x) reason='treuil';                        // pas dans le puits : il repart d'en haut
+    else if(m.ox<=0) reason='oxygène';
+    else if(m.load>=m.carac.pods-2) reason='pods pleins';
+    else if(left<=m.y/m.carac.climbSpeed*1.25+12) reason='fin de session';
+    else if(m.torches<=0) reason='plus de torches';
+    if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; return decideReturn(G,m); }
+    if(m.y>=job.bottom){
+      G.winch={ x:WINCH.x, bottom:Math.max(G.winch?.bottom ?? 0, m.y) };
+      log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`);
+      m.winchJob=null; m.mode='work'; return decideWork(G,m);
+    }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
+    m.status='Creuse le puits du treuil';
+  }
+  if(stepDir(G,m,0,1)) return;
+  log(G, `🪣 ${m.name} ne peut pas creuser plus bas : treuil abandonné`);   // bloc incassable sous lui
+  m.winchJob=null; m.mode=m.y>0 ? 'work' : 'surface'; idle(m,0.5);
+}
+
 export function decide(G,m){
   // gravité : sans appui, il tombe d'une case. Au début de la chute, on note d'où il part et s'il connaissait le trou.
   if(!supported(G,m.x,m.y)){
@@ -299,7 +329,7 @@ export function decide(G,m){
   // atterrissage : une chute imprévue (vide pas encore découvert) d'au moins CFG.stunFall cases l'étourdit
   if(m.fall){
     const n=m.y-m.fall.y0, blind=m.fall.blind; m.fall=null;
-    if(blind && n>=CFG.stunFall){
+    if(blind && n>=CFG.stunFall && !m.winchJob){          // en chantier de treuil : jamais étourdi
       G.stats.stuns=(G.stats.stuns||0)+1; m.stats.stuns++;
       log(G, `💫 ${m.name} tombe de ${n} blocs sans s'y attendre : étourdi ${CFG.stunTime} s`);
       m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {}); return;
@@ -325,6 +355,12 @@ export function decide(G,m){
       fight(G,m,th); return;
     }
   }
+  /* chantier du treuil : il arrête ce qu'il fait et remonte (le chantier commence toujours d'en haut) */
+  if(m.winchJob && (m.mode==='work' || m.mode==='departure')){
+    if(m.y>0){ m.mode='return'; m.reason='treuil'; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : treuil à installer`); }
+    else m.mode='winch';
+  }
+  if(m.mode==='winch')     return decideWinch(G,m);
   if(m.mode==='surface')   return decideSurface(G,m);
   if(m.mode==='departure') return decideDeparture(G,m);
   if(m.mode==='return')    return decideReturn(G,m);

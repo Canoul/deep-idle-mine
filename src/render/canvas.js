@@ -87,6 +87,7 @@ export function createRenderer(cv){
           if(y===1&&t!==1){ ctx.fillStyle='#4caf50'; ctx.fillRect(px,py,TILE,3); }
         }
         if(G.ladder[y][x]&&t===0) blit('ladder',px,py);
+        if(t===0 && G.winch && x===G.winch.x && y>=1 && y<=G.winch.bottom) blit('winch_rope',px,py);   // puits du treuil
         if(y>1){
           const al = 0.72*(1-Math.min(1,lightShown(G,x,y)));
           if(al>0.005){ ctx.fillStyle='rgba(0,0,0,'+al.toFixed(2)+')'; ctx.fillRect(px,py,TILE,TILE); }
@@ -98,6 +99,7 @@ export function createRenderer(cv){
     ctx.strokeStyle='rgba(255,215,64,.9)'; ctx.lineWidth=1;
     for(const o of fm.pings){ if(G.tiles[o.y]&&G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
     blit('chest',CHEST_X*TILE,sy(0));
+    if(G.winch) blit('winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil en surface
     for(const T of G.torches){
       const px=T.x*TILE, py=sy(T.y);
       const g=ctx.createRadialGradient(px+8,py+8,2,px+8,py+8,TILE*3); g.addColorStop(0,'rgba(255,200,90,.35)'); g.addColorStop(1,'rgba(255,200,90,0)');
@@ -125,7 +127,9 @@ export function createRenderer(cv){
     const shift=new Map();
     for(const g of groups.values()) g.forEach((m,i)=>shift.set(m,(i-(g.length-1)/2)*5));
     const order=G.miners.filter(m=>m!==fm).concat([fm]);
-    for(const m of order){ const [mx,my]=pos.get(m); drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
+    for(const m of order){ const [mx,my]=pos.get(m);
+      if(m.action?.data?.winch) blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // dans le seau du treuil
+      drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
   }
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */

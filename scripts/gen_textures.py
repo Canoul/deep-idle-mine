@@ -342,6 +342,29 @@ def main():
     rect(torch, 7, 2, 2, 3, hexc('#ffd23f'))
     tex['torch'] = torch
 
+    # treuil (skill Logisticien) : corde au milieu du puits, poulie en bois en surface, seau en bois
+    rope = blank()
+    rect(rope, 7, 0, 2, 16, hexc('#b08850'))
+    for y in range(0, 16, 4):
+        rect(rope, 7, y, 1, 2, hexc('#7a5a30'))
+    tex['winch_rope'] = rope
+    top = blank()
+    rect(top, 1, 2, 2, 14, hexc('#7a5230'))       # montants
+    rect(top, 13, 2, 2, 14, hexc('#7a5230'))
+    rect(top, 1, 2, 14, 2, hexc('#9a6b36'))       # traverse
+    rect(top, 5, 4, 6, 6, hexc('#5c3a1a'))        # poulie
+    rect(top, 6, 5, 4, 4, hexc('#8d939c'))
+    rect(top, 7, 10, 2, 6, hexc('#b08850'))       # corde
+    tex['winch_top'] = top
+    bucket = blank()
+    rect(bucket, 7, 0, 2, 5, hexc('#b08850'))     # corde
+    rect(bucket, 3, 5, 10, 1, hexc('#5c3a1a'))    # anse
+    rect(bucket, 2, 6, 12, 9, hexc('#9a6b36'))    # seau
+    rect(bucket, 2, 8, 12, 1, hexc('#5a6069'))    # cerclages
+    rect(bucket, 2, 12, 12, 1, hexc('#5a6069'))
+    rect(bucket, 3, 6, 2, 9, hexc('#b8854a'))
+    tex['bucket'] = bucket
+
     # étourdi (chute imprévue) : étoiles jaunes qui tournent au-dessus de la tête du mineur (haut de la case)
     stun = blank()
     for x, y in [(2, 3), (7, 1), (12, 3)]:
