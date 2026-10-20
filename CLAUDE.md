@@ -72,6 +72,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - `node --test tests/<sujet>.test.js` : les tests d'un seul sujet (c'est ce qu'on lance après une modification). `npm test` : toute la suite, longue (plusieurs minutes), seulement si le créateur le demande.
 - `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
 - `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
+- `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min. Voir GAME_DESIGN « Valeur des stats ».
 - `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point de chaque stat), 5 sessions, ~6 min. Unité : 1 = une seconde de travail du mineur de base.
 - `npm run textures` : régénère `textures/` (Python).
 
@@ -88,7 +89,7 @@ src/render/             canvas (lit l'état, ne le modifie jamais), textures
 src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), account (connexion, mon compte), style.css
 src/main.js             lobby → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
-scripts/                simulate.js, weights.js, gen_textures.py
+scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
                         game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions)
 docs/                   documentation technique (comptes.md)

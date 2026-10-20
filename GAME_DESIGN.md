@@ -119,6 +119,27 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Treasure TX 2 *(provisoire)*).
 - Inventaire plein : remontée **automatique**, dépôt dans le coffre, puis retour au front.
 
+### Valeur des stats : unité x *(méthode ferme, chiffres provisoires)*
+Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail du mineur**. Une session vaut 3 600 x.
+- Chaque stat gouverne un temps de la session (T_stat) : la vitesse de minage gouverne le temps de minage, les pods le temps des allers-retours qu'ils déclenchent, etc.
+- **Un bonus b sur une stat de base B fait gagner T_stat × b / (B + b) x par session** (rendements décroissants : doubler une stat divise son temps par 2, pas plus). Pour un petit bonus, 1 point ≈ T_stat / B.
+- Les ressources se convertissent par le rendement du mineur de base : 522 points de valeur par session, soit **1 charbon ≈ 7 x**, 1 fer ≈ 14 x, 1 or ≈ 28 x, 1 diamant ≈ 55 x.
+- Les valeurs dépendent du niveau du mineur (ex. : quand les pods augmentent, l'oxygène redevient limitant et prend de la valeur) : à recalculer par palier. Outil : `node scripts/stat-values.js`.
+
+Mineur de base, 1 mineur, 5 sessions :
+
+| Stat | Base | T_stat (s/session) | 1 point = | +10 % = |
+|---|---|---|---|---|
+| Vitesse de minage | 1 | 1 301 | 1 301 x (+0,1 = 118 x) | 118 x |
+| Vitesse (marche) | 3 | 718 | 239 x (+0,1 = 24 x) | 65 x |
+| Vitesse de montée | 2,25 | 555 | 247 x (+0,1 = 25 x) | 50 x |
+| Pods | 200 | 1 036 | 5,2 x | 94 x |
+| Oxygène | 300 | 109 | 0,4 x | 10 x |
+| Dégâts | 5 | 202 | 40 x | 18 x |
+| Rayon des torches | 5 | 136 | 27 x | 12 x |
+| Torches (nombre) | 20 | 16 | 0,8 x | 1 x |
+| Découverte, vision, boussole, passerelles | – | effet indirect | à mesurer (`npm run weights`) | – |
+
 ## 4. Outils
 
 | Outil | Effet |

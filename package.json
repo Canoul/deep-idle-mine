@@ -11,6 +11,7 @@
     "test:anticheat": "node --test \"tests/anticheat/*.test.js\"",
     "simulate": "node scripts/simulate.js",
     "weights": "node scripts/weights.js",
+    "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py"
   },
   "engines": { "node": ">=20" }
