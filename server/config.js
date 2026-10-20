@@ -46,3 +46,9 @@ export const GAME_SERVER = {
 
 /* Hachage des mots de passe et codes de secours (scrypt, intégré à Node). ~50 ms par vérification. */
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
+
+/* Lobby (server/lobby) : en mémoire, éphémère (un redémarrage du serveur le vide ; comptes et sessions restent).
+   idle : un membre que le serveur n'a pas vu depuis ce temps (page fermée) quitte le lobby ;
+   invitesPerHour : invitations envoyées par compte et par heure (anti spam) ;
+   maxPending : invitations en attente par lobby. */
+export const LOBBY_SERVER = { idle: 3 * MIN, invitesPerHour: 60, maxPending: 10 };

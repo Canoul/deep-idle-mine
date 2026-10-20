@@ -217,3 +217,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .fopt[disabled]{opacity:.4;cursor:not-allowed}
 .fqty{display:flex;gap:6px}
 .fqty input{flex:1;min-width:0}
+
+/* lobby partagé : champ d'invitation dans une place libre ; onglet Social */
+.pslot[data-free]{cursor:pointer}.pslot[data-free]:hover{border-color:var(--acc);color:var(--txt)}
+.pslot.inviting{gap:6px}.pslot.inviting input{flex:1;min-width:0}
+.pslots .span3{grid-column:1/-1;margin:0}
+.invRow{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#181410;margin-bottom:8px}
+.invRow .grow{flex:1;min-width:0}
+.invRow .av{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2c2520;border:1px solid var(--line)}
+#nav [data-tab="social"] .dot{background:var(--bad);box-shadow:0 0 6px var(--bad)}

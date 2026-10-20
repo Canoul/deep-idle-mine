@@ -28,6 +28,7 @@
     <div class="lobbyActions">
       <button class="on big" id="launchBtn">▶ Lancer la session</button>
       <button id="inviteBtn">✉ Inviter des joueurs</button>
+      <button id="leaveLobbyBtn" hidden>Quitter le lobby</button>
     </div>
     <div class="invite" id="inviteBox" hidden></div>
     <p class="mut" id="lobbyInfo"></p>
@@ -87,6 +88,12 @@
 </div>
 <!-- bilan de fin de session : ne couvre que l'onglet Mine (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
+</section>
+<section class="view" data-view="social" hidden>
+  <div class="lobbyWrap">
+    <h1>👥 Social</h1>
+    <div class="card"><h2>Invitations reçues</h2><div id="socialInvites"></div></div>
+  </div>
 </section>
 <section class="view" data-view="inventaire" hidden>
   <div class="invWrap">

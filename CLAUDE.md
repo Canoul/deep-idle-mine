@@ -84,12 +84,13 @@ src/meta/               progression hors session, logique pure (inventory : gril
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
+src/ui/                 nav (onglets), lobby (places, inviter, lancer, préférences, dev), social (invitations reçues), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
 src/main.js             lobby → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
-                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions)
+                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions),
+                        lobby/ (lobby partagé en mémoire : invitations, membres, hôte, lancement à plusieurs)
 docs/                   documentation technique (comptes.md), journal de debug des sessions Claude (debug.md)
 textures/               PNG 16×16
 ```
@@ -134,4 +135,4 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : l'UI de craft, le lobby / multijoueur en réseau (les 3 mineurs tournent localement ; les comptes existent, pas encore le lobby), la sauvegarde de l'inventaire côté serveur, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : l'UI de craft, le multijoueur en temps réel au-delà du lobby (le lobby partagé et les invitations existent : `server/lobby/` ; chaque navigateur rejoue la même session), la sauvegarde de l'inventaire côté serveur, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.

@@ -104,6 +104,22 @@ d'une session terminée (après l'avoir rejouée). L'ancienne sauvegarde dans le
 | `POST /api/game/finish` | `{}` | `{ session }` ; 409 `too_early` + `Retry-After` |
 | `POST /api/game/ack` | `{ id }` | 204 (bilan vu) |
 
+### Lobby partagé (`server/lobby/`)
+
+En mémoire (éphémère). « Lancer » passe par le lobby : seul l'hôte lance, avec exactement les membres présents.
+
+| Route | Corps | Réponse |
+|---|---|---|
+| `GET /api/lobby` | | `{ lobby, invites, inSession }` (relu toutes les 2 s ; le joueur est « vu ») |
+| `POST /api/lobby/invite` | `{ to }` (pseudo ou ID) | `{ lobby, invites }` ; 404 `not_found`, 400 `self`, 409 `full` / `already_member`, 429 |
+| `POST /api/lobby/accept` | `{ invite }` | `{ lobby, invites }` ; 404 `no_invite`, 409 `full` / `session_running` |
+| `POST /api/lobby/decline` | `{ invite }` | `{ lobby, invites }` |
+| `POST /api/lobby/leave` | `{}` | `{ lobby, invites }` (l'hôte parti : le plus ancien prend la main) |
+| `POST /api/game/start` | comme plus haut | 201 `{ session }` (avec tous les membres) ; 403 `not_host`, 409 `member_busy` |
+
+`lobby` = `{ id, maxPlayers, isHost, members:[{ id, displayId, name, host, me }], pending:[{ id, name }] }` ;
+`invites` = invitations reçues `[{ id, from, host, players, at }]`.
+
 ## Évolutions prévues par l'architecture
 
 - **Stockage** : `store.js` a une petite interface asynchrone. Passer à SQLite (intégré à Node 22+) ou
