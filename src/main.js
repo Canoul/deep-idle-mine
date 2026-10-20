@@ -16,6 +16,7 @@ import { setupLobby } from './ui/lobby.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
+import { setupFurnace } from './ui/furnace.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, ApiError } from './net/api.js';
 
@@ -48,6 +49,15 @@ async function openTreasure(item){
     showLoot(item, r.loot);
   } catch(e){ lootError(e.message); }
 }
+
+/* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
+const furnace = setupFurnace({
+  onOp: async op => {
+    const r = await gameApi.furnace({ ...op, opId: newOpId() });
+    setInventory(r.inventory);
+    furnace.set(r.furnaces);
+  },
+});
 
 /* ---------- navigation ---------- */
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
@@ -157,6 +167,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [] };
+  furnace.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
@@ -166,6 +177,7 @@ function setInventory(inv, bag){
 async function refresh(){
   const st = await gameApi.state();
   setInventory(st.inventory);
+  furnace.set(st.furnaces);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
   else showLobby();

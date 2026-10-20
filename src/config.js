@@ -53,7 +53,7 @@ export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
 export const BLOCKS = {
   1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240'},
   2:{name:'Pierre',  type:'terrain', tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3'},
-  3:{name:'Charbon', type:'ore',     tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', val:1},
+  3:{name:'Charbon', type:'ore',     tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', val:1, family:'combustible'},
   4:{name:'Fer',     type:'ore',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', val:2},
   5:{name:'Or',      type:'ore',     tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', val:4},
   6:{name:'Diamant', type:'ore',     tex:'diamond', w:5, hard:5.0, color:'#7d828c', dot:'#4de8f0', val:8},
@@ -169,18 +169,39 @@ export const MOBS = {
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
+  'ingot_iron','ingot_gold','ingot_diamond',
   'ladder','chest','miner','mimic','bug','goblin','torch'];
+
+/* ---- Hors session : four (onglet Four) ----
+   Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
+   Chaque lingot consomme orePerIngot minerais + fuelPerIngot combustibles, en time secondes (temps réel, même
+   page fermée : le serveur calcule l'avancée depuis l'heure de départ). Tout minerai de la famille ore a une recette.
+   max : nombre de fours au maximum ; startOwned : fours possédés au départ (les autres sont sous cadenas).
+   tiers : fours plus puissants à venir (speed divise le temps de fonte). */
+export const FURNACE = {
+  max:3, startOwned:1, orePerIngot:10, fuelPerIngot:10,
+  tiers: [ { name:'Four en pierre', speed:1 } ],
+  recipes: {
+    Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
+    Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
+    Diamant: { out:'Lingot de diamant', time:180, tex:'ingot_diamond' },   // provisoire
+  },
+  opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
 
 /* ---- Hors session : inventaire global ----
    Catalogue des objets qu'on peut posséder, indexé par leur nom (celui que la simulation met dans les coffres).
-   cat   : catégorie d'objet (terrain, ore, treasure, blueprint, gem, mob, stuff)
+   cat   : famille d'objet (terrain, ore, combustible, ingot, treasure, mob, stuff…). Pour un bloc, c'est sa
+           `family` si elle existe, sinon son type dans la mine (le charbon est un minerai dans la mine, mais un
+           combustible dans l'inventaire).
    tex   : texture de l'icône (textures/)
    stack : true = les exemplaires s'empilent dans un seul slot, sans maximum ;
            false = chaque exemplaire prend son propre slot (stuff : chaque pièce aura ses propres stats)
    Les blocs qui se ramassent sont ajoutés automatiquement. Un objet absent du catalogue s'empile par défaut. */
 export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
-    .map(b => [b.name, { cat:b.type, tex:b.tex, w:b.w, stack:true }])),
+    .map(b => [b.name, { cat:b.family ?? b.type, tex:b.tex, w:b.w, stack:true }])),
+  ...Object.fromEntries(Object.values(FURNACE.recipes).map(r => [r.out, { cat:'ingot', tex:r.tex, w:1, stack:true }])),
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },

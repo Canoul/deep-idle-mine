@@ -1,4 +1,4 @@
-/* Stockage du jeu : inventaires, préférences et sessions de jeu, rangés par ID de compte.
+/* Stockage du jeu : inventaires, fours, préférences et sessions de jeu, rangés par ID de compte.
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
    fichier JSON (data/game.json) écrit de façon atomique sinon. Passer à une vraie base = réécrire ce fichier.
 
@@ -10,12 +10,20 @@ import path from 'node:path';
 export function createMemoryGameStore(initial = {}){
   const inventories = new Map(Object.entries(initial.inventories ?? {}));
   const prefs = new Map(Object.entries(initial.prefs ?? {}));
+  const furnaces = new Map(Object.entries(initial.furnaces ?? {}));
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const copy = o => o && structuredClone(o);
 
   const store = {
     async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
     async putInventory(accountId, inv){ inventories.set(accountId, copy(inv)); await store.changed(); },
+
+    /* fours : toujours écrits AVEC l'inventaire, en une seule écriture (des objets passent de l'un à l'autre :
+       un arrêt entre deux écritures dupliquerait ou perdrait des objets) */
+    async getFurnaces(accountId){ return copy(furnaces.get(accountId)) ?? null; },
+    async putInventoryAndFurnaces(accountId, inv, f){
+      inventories.set(accountId, copy(inv)); furnaces.set(accountId, copy(f)); await store.changed();
+    },
 
     async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
     async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed(); },
@@ -32,7 +40,8 @@ export function createMemoryGameStore(initial = {}){
 
     async changed(){},
     async close(){},
-    snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), prefs: Object.fromEntries(prefs),
+    snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
+                         prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions) }; },
   };
   return store;

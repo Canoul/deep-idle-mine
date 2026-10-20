@@ -7,7 +7,7 @@ export const TABS = [
   { id:'inventaire', label:'Inventaire', icon:'🎒', ready:true  },
   { id:'stuff',      label:'Stuff',      icon:'🛡',  ready:false },
   { id:'craft',      label:'Craft',      icon:'🔨', ready:false },
-  { id:'four',       label:'Four',       icon:'🔥', ready:false },
+  { id:'four',       label:'Four',       icon:'🔥', ready:true  },
   { id:'talents',    label:'Talents',    icon:'⭐', ready:false },
   { id:'social',     label:'Social',     icon:'👥', ready:false },
 ];

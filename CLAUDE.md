@@ -80,11 +80,11 @@ index.html              page du jeu
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
-src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX)
+src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours)
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), account (connexion, mon compte), style.css
+src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
 src/main.js             lobby → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, gen_textures.py

@@ -49,4 +49,5 @@ export const gameApi = {
   focus:  (focus, tick) => request('POST', '/api/game/focus', { focus, tick }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
+  furnace: op          => request('POST', '/api/game/furnace', op),   // { action, furnace, slot, item, qty, opId }
 };

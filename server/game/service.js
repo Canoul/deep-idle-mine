@@ -10,12 +10,13 @@
      réglages dev, fin quand le navigateur le dit.
    Testable seul : on lui passe un stockage, une horloge et une fonction de rejeu. */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
+import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 
@@ -25,6 +26,11 @@ export class GameError extends Error {
 const fail = (code, status, message, extra) => { throw new GameError(code, status, message, extra); };
 
 const ACTIVE = ['running', 'settling'];
+const FURNACE_ERRORS = {
+  bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
+  bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
+  slot_busy: 'La case contient déjà autre chose : vide-la d\'abord.', inventory_full: 'L\'inventaire ne peut pas recevoir ça.',
+};
 const isInt = v => Number.isSafeInteger(v);
 
 /* verrous par clé : deux actions sur le même compte (ou le même inventaire) ne s'entremêlent jamais,
@@ -54,6 +60,9 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     const raw = await store.getInventory(accountId);
     return raw ? deserialize(JSON.stringify(raw)) : createInventory();   // relu et revérifié à chaque fois
   }
+  const loadFurnaces = async accountId => sanitizeFurnaces(await store.getFurnaces(accountId));   // revérifié à chaque fois
+  /* ce que le navigateur voit des fours : avancés jusqu'à maintenant, heure du serveur (pour la barre de progression) */
+  const publicFurnaces = st => ({ list: st.list.map(f => advance(f, clock())), max: FURNACE.max, now: clock() });
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
 
   /* ce que le navigateur voit d'une session */
@@ -125,7 +134,8 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       if(active && isDue(active)) settle(active.id).catch(console.error);
       const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
-      return { inventory: { slots: (await loadInventory(me.id)).slots }, prefs: await loadPrefs(me.id),
+      return { inventory: { slots: (await loadInventory(me.id)).slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
+               prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },
 
@@ -223,6 +233,21 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, loot: res.loot, inventory: { slots: inv.slots } };
+      });
+    },
+
+    /* four : poser dans une case, la vider, récupérer les lingots. Inventaire et fours changent ensemble, sous le verrou
+       de l'inventaire ; opId rend la demande rejouable sans effet (double clic, requête renvoyée). */
+    async furnace(me, body = {}){
+      const { opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const op = { action: body.action, furnace: body.furnace, slot: body.slot, item: body.item, qty: body.qty, opId };
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id), st = await loadFurnaces(me.id);
+        const r = furnaceOp(st, inv, op, clock());
+        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'slot_busy' ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
+        if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
+        return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(st) };
       });
     },
 

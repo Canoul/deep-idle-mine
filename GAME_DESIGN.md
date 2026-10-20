@@ -45,6 +45,11 @@ Chaque bloc appartient à une catégorie :
 | `treasure` | treasure | entité enfouie dans la mine, voir ci-dessous |
 | `special` | barrière | bloc de jeu sans rôle de ressource |
 
+**Familles d'objets (inventaire).** Une fois ramassé, un bloc devient un objet d'une **famille**, qui décide de son usage hors session. C'est en général sa catégorie, sauf exception :
+- **charbon** : minerai dans la mine (il compte pour le déblocage, l'IA le vise, le gobelin le vole), mais **combustible** dans l'inventaire ;
+- **ore** (fer, or, diamant) : se fondent au four ;
+- **ingot** : les lingots sortis du four.
+
 ### Compositions des areas
 
 | Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Vide |
@@ -217,7 +222,8 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Talents, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
-- Stuff, Craft, Four, Talents, Social : à concevoir (page d'attente pour l'instant).
+- **Four** : fondre les minerais en lingots (voir ci-dessous).
+- Stuff, Craft, Talents, Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
 
 ### Inventaire global
@@ -229,6 +235,19 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
+
+### Four (onglet Four)
+- **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.
+- Un four a **3 cases** :
+  - **minerai** : seulement un objet de la famille **ore** ; une seule sorte à la fois ;
+  - **combustible** : seulement un objet de la famille **combustible** (le charbon) ;
+  - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
+- Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre** ou bouton **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
+- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**, diamant 3 min *(provisoire, non décidé)*.
+- La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
+- Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).
+- **Le serveur fait foi** : chaque action est faite par lui, inventaire et four changent ensemble ; une demande renvoyée (double clic) ne s'applique qu'une fois.
+- Plus tard : un système d'**alliages**.
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.

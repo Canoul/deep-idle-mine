@@ -1,7 +1,7 @@
 /* Gobelin : bestiole voleuse des areas profondes (tacle, vol de minerais, butin, apparition). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBS, ITEMS, AREA_Y0, AREA_H, TREASURE } from '../src/config.js';
+import { MOBS, ITEMS, BLOCKS, AREA_Y0, AREA_H, TREASURE } from '../src/config.js';
 import { tackler } from '../src/sim/ai.js';
 import { killMob } from '../src/sim/actions.js';
 import { tick } from '../src/sim/session.js';
@@ -9,8 +9,10 @@ import { worldFrom, run } from './helpers.js';
 
 const STEAL_TICKS = Math.round(MOBS.goblinStealEvery / 0.1);
 const corridor = () => worldFrom(['', 'd'.repeat(50), '#@'+' '.repeat(20)+'#', '#'.repeat(50)]);
+/* minerai de la mine (ce que vole le gobelin) : blocs de type ore, charbon compris */
+const isMineOre = k => Object.values(BLOCKS).some(b => b.type==='ore' && b.name===k);
 const load = inv => Object.entries(inv).reduce((s,[k,n]) => s + ITEMS[k].w*n, 0);
-const ores = inv => Object.entries(inv).filter(([k]) => ITEMS[k].cat==='ore').reduce((s,[,n]) => s+n, 0);
+const ores = inv => Object.entries(inv).filter(([k]) => isMineOre(k)).reduce((s,[,n]) => s+n, 0);
 
 function tackled(inv){
   const G=corridor(), m=G.miners[0];

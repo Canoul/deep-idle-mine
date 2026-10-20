@@ -1,0 +1,174 @@
+/* Four : familles d'objets, fonte en temps réel, actions du joueur (poser, retirer, récupérer), relecture. */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { FURNACE, ITEMS, BLOCKS } from '../src/config.js';
+import { createInventory, addAll, countOf } from '../src/meta/inventory.js';
+import { createFurnaces, furnaceOp, advance, progress, canRun, accepts, sanitizeFurnaces } from '../src/meta/furnace.js';
+
+const MIN = 60_000, T0 = 1_000_000;
+let n = 0;
+const id = () => 'op-test-' + (++n);
+const setup = (bag = { Fer:100, Or:40, Charbon:200, Pierre:5 }) => {
+  const inv = createInventory(); addAll(inv, bag);
+  return { inv, st: createFurnaces() };
+};
+const op = (st, inv, o, now = T0) => furnaceOp(st, inv, { furnace:0, opId:id(), ...o }, now);
+
+test('familles : charbon = combustible (mais minerai dans la mine), fer/or = ore, lingots = ingot', () => {
+  assert.equal(ITEMS.Charbon.cat, 'combustible');
+  assert.equal(Object.values(BLOCKS).find(b => b.name === 'Charbon').type, 'ore', 'la mine ne change pas');
+  assert.equal(ITEMS.Fer.cat, 'ore'); assert.equal(ITEMS.Or.cat, 'ore');
+  assert.equal(ITEMS['Lingot de fer'].cat, 'ingot');
+  for(const [k, d] of Object.entries(ITEMS)) if(d.cat === 'ore') assert.ok(FURNACE.recipes[k], `${k} doit avoir une recette`);
+});
+
+test('cases : minerai seulement dans « ore », combustible seulement dans « fuel »', () => {
+  assert.ok(accepts('ore', 'Fer')); assert.ok(accepts('ore', 'Or'));
+  assert.ok(!accepts('ore', 'Charbon')); assert.ok(!accepts('ore', 'Pierre'));
+  assert.ok(accepts('fuel', 'Charbon')); assert.ok(!accepts('fuel', 'Fer'));
+  const { inv, st } = setup();
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Charbon', qty:10 }).error, 'bad_item');
+  assert.equal(op(st, inv, { action:'load', slot:'fuel', item:'Fer', qty:10 }).error, 'bad_item');
+  assert.equal(countOf(inv, 'Charbon'), 200);
+});
+
+test('un démarré au départ, 3 au maximum', () => {
+  assert.equal(createFurnaces().list.length, FURNACE.startOwned);
+  assert.equal(FURNACE.max, 3);
+  const { inv, st } = setup();
+  assert.equal(furnaceOp(st, inv, { action:'load', furnace:1, slot:'ore', item:'Fer', qty:10, opId:id() }, T0).error, 'bad_furnace');
+});
+
+test('fer : 10 minerais + 10 charbons = 1 lingot en 1 min, consommés à la fin du lingot', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:25 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:100 });
+  assert.equal(countOf(inv, 'Fer'), 75); assert.equal(countOf(inv, 'Charbon'), 100);
+  const f = st.list[0];
+  assert.equal(f.since, T0);
+  assert.equal(progress(f, T0 + 30_000), 0.5);
+  advance(f, T0 + MIN - 1);
+  assert.equal(f.out, null); assert.equal(f.ore.qty, 25);
+  advance(f, T0 + MIN);
+  assert.deepEqual(f.out, { item:'Lingot de fer', qty:1 });
+  assert.equal(f.ore.qty, 15); assert.equal(f.fuel.qty, 90);
+  advance(f, T0 + 10 * MIN);           // page fermée longtemps : il s'arrête faute de minerai
+  assert.deepEqual(f.out, { item:'Lingot de fer', qty:2 });
+  assert.equal(f.ore.qty, 5); assert.equal(f.fuel.qty, 80); assert.equal(f.since, null);
+});
+
+test('or : 2 min par lingot ; s\'arrête faute de combustible', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Or', qty:40 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:25 });
+  advance(st.list[0], T0 + 2 * MIN - 1);
+  assert.equal(st.list[0].out, null);
+  advance(st.list[0], T0 + 60 * MIN);
+  assert.deepEqual(st.list[0].out, { item:'Lingot d\'or', qty:2 });
+  assert.equal(st.list[0].fuel.qty, 5); assert.equal(st.list[0].ore.qty, 20);
+  assert.ok(!canRun(st.list[0]));
+});
+
+test('rajouter du combustible relance un four arrêté, à partir de maintenant', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:20 });
+  assert.equal(st.list[0].since, null, 'pas de combustible : à l\'arrêt');
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:10 }, T0 + 5 * MIN);
+  assert.equal(st.list[0].since, T0 + 5 * MIN);
+});
+
+test('retirer pendant la fonte : tout revient, le lingot en cours est annulé', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:30 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:30 });
+  assert.equal(op(st, inv, { action:'unload', slot:'ore' }, T0 + 90_000).ok, true);   // 1 lingot fini, le 2e à moitié
+  assert.equal(countOf(inv, 'Fer'), 70 + 20);
+  assert.equal(st.list[0].since, null);
+  assert.deepEqual(st.list[0].out, { item:'Lingot de fer', qty:1 });
+  op(st, inv, { action:'unload', slot:'fuel' }, T0 + 90_000);
+  assert.equal(countOf(inv, 'Charbon'), 170 + 20);
+});
+
+test('récupérer les lingots : ils vont dans l\'inventaire, le four repart', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:30 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:30 });
+  op(st, inv, { action:'collect' }, T0 + 2 * MIN);
+  assert.equal(countOf(inv, 'Lingot de fer'), 2);
+  assert.equal(st.list[0].out, null);
+  assert.equal(st.list[0].since, T0 + 2 * MIN, 'le 3e lingot continue');
+});
+
+test('sortie occupée par un autre lingot : la fonte attend qu\'on récupère', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:10 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:50 });
+  advance(st.list[0], T0 + MIN);
+  op(st, inv, { action:'load', slot:'ore', item:'Or', qty:10 }, T0 + MIN);
+  assert.equal(st.list[0].since, null, 'lingots de fer dans la sortie');
+  op(st, inv, { action:'collect' }, T0 + 2 * MIN);
+  assert.equal(st.list[0].since, T0 + 2 * MIN);
+});
+
+test('une case ne contient qu\'une sorte d\'objet', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:10 });
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Or', qty:10 }).error, 'slot_busy');
+  assert.equal(countOf(inv, 'Or'), 40);
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:5 });
+  assert.equal(st.list[0].ore.qty, 15);
+});
+
+test('quantités invalides ou pas assez : refusées, rien ne bouge', () => {
+  const { inv, st } = setup();
+  for(const qty of [0, -5, 1.5, Infinity, NaN, '10', 1e20, null])
+    assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Fer', qty }).error, 'bad_qty', String(qty));
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:101 }).error, 'not_enough');
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Inconnu', qty:1 }).error, 'bad_item');
+  assert.equal(op(st, inv, { action:'load', slot:'out', item:'Fer', qty:1 }).error, 'bad_slot');
+  assert.equal(op(st, inv, { action:'détruire' }).error, 'bad_request');
+  assert.equal(countOf(inv, 'Fer'), 100); assert.equal(st.list[0].ore, null);
+});
+
+test('demande rejouée (même opId) : appliquée une seule fois', () => {
+  const { inv, st } = setup();
+  const o = { action:'load', furnace:0, slot:'ore', item:'Fer', qty:10, opId:'double-clic-1' };
+  assert.equal(furnaceOp(st, inv, o, T0).repeated, false);
+  assert.equal(furnaceOp(st, inv, o, T0).repeated, true);
+  assert.equal(countOf(inv, 'Fer'), 90); assert.equal(st.list[0].ore.qty, 10);
+});
+
+test('relecture : état trafiqué nettoyé (cases invalides, trop de fours, mauvais objets)', () => {
+  const st = sanitizeFurnaces({ list:[
+    { ore:{ item:'Fer', qty:1e400 }, fuel:{ item:'Fer', qty:10 }, out:{ item:'Diamant', qty:5 }, since:'hier' },
+    { ore:{ item:'Or', qty:20 }, fuel:{ item:'Charbon', qty:20 }, out:null, since:5 },
+    {}, {}, {},
+  ], ops:['a', 3, 'b'] });
+  assert.equal(st.list.length, FURNACE.max);
+  assert.deepEqual(st.list[0], { tier:0, ore:null, fuel:null, out:null, since:null });
+  assert.deepEqual(st.list[1].ore, { item:'Or', qty:20 }); assert.equal(st.list[1].since, 5);
+  assert.deepEqual(st.ops, ['a', 'b']);
+  assert.equal(sanitizeFurnaces(null).list.length, FURNACE.startOwned);
+});
+
+test('conservation : sur 300 suites d\'actions au hasard, rien n\'est créé ni perdu', () => {
+  let seed = 7; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for(let t = 0; t < 300; t++){
+    const { inv, st } = setup({ Fer:200, Or:100, Charbon:300 });
+    let now = T0;
+    for(let k = 0; k < 20; k++){
+      now += Math.floor(r() * 3 * MIN);
+      const a = ['load', 'load', 'unload', 'collect'][Math.floor(r() * 4)];
+      const slot = r() < 0.5 ? 'ore' : 'fuel';
+      const item = slot === 'fuel' ? 'Charbon' : (r() < 0.5 ? 'Fer' : 'Or');
+      op(st, inv, { action:a, slot, item, qty: 1 + Math.floor(r() * 60) }, now);
+    }
+    advance(st.list[0], now + 1e9);
+    const f = st.list[0], inF = name => (f.ore?.item === name ? f.ore.qty : 0) + (f.fuel?.item === name ? f.fuel.qty : 0);
+    const ing = name => countOf(inv, name) + (f.out?.item === name ? f.out.qty : 0);
+    const fe = ing('Lingot de fer'), au = ing('Lingot d\'or');
+    assert.equal(countOf(inv, 'Fer') + inF('Fer') + 10 * fe, 200);
+    assert.equal(countOf(inv, 'Or') + inF('Or') + 10 * au, 100);
+    assert.equal(countOf(inv, 'Charbon') + inF('Charbon') + 10 * (fe + au), 300);
+  }
+});
