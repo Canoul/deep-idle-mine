@@ -16,6 +16,15 @@ export function createApp({ store, root, config = SERVER, service, game } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde, lobby, social…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}) };
+  let proxyChecked = !config.logProxyCheck;
+
+  /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */
+  function logProxyCheck(req, ip){
+    if(proxyChecked) return;
+    proxyChecked = true;
+    console.log(`Contrôle proxy : adresse retenue ${ip} · X-Forwarded-For « ${req.headers['x-forwarded-for'] ?? ''} » `+
+                `· relais de confiance ${config.trustProxy}`);
+  }
 
   async function handleApi(req, res, pathname){
     const route = routes[`${req.method} ${pathname}`];
@@ -30,8 +39,10 @@ export function createApp({ store, root, config = SERVER, service, game } = {}){
     if(token && !auth) cookies.push(sessionCookie(config.cookie, '', 0));                      // jeton périmé : on l'efface
     if(auth?.renewed) cookies.push(sessionCookie(config.cookie, token, auth.renewed));          // connexion prolongée
 
+    const ip = clientIp(req, config.trustProxy);
+    logProxyCheck(req, ip);
     const ctx = {
-      req, ip: clientIp(req, config.trustProxy), me: auth?.account ?? null, body: {},
+      req, ip, me: auth?.account ?? null, body: {},
       login: r => { cookies.length = 0; cookies.push(sessionCookie(config.cookie, r.token, r.maxAge)); },
       logout: async () => { await accounts.logout(token); cookies.length = 0; cookies.push(sessionCookie(config.cookie, '', 0)); },
     };

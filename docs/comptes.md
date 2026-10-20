@@ -78,8 +78,12 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
   par adresse et par heure. Pseudo inconnu et mauvais mot de passe : même message, même temps de réponse.
 - Changer de mot de passe ou le récupérer **déconnecte les autres appareils**.
 - Le serveur ne sert que `index.html`, `src/`, `textures/`, `prototype/` : jamais `data/` ni son propre code.
-- En ligne : servir en **https** et lancer avec `DIM_SECURE_COOKIE=1` (et `DIM_TRUST_PROXY=1` derrière un
-  hébergeur qui fait proxy).
+- En ligne : servir en **https** avec le cookie `Secure` (`DIM_SECURE_COOKIE=1`) et, derrière un hébergeur qui
+  fait proxy, `DIM_TRUST_PROXY=N` = nombre de relais de confiance. L'adresse du joueur est lue **depuis la droite**
+  de `X-Forwarded-For` (la N-ième) : le début de l'en-tête peut être écrit par le joueur pour changer d'adresse et
+  contourner les limites de tentatives, il n'est jamais lu. **Sur Render, les deux sont automatiques** (variable
+  `RENDER` posée par l'hébergeur : cookie `Secure`, 1 relais). Au premier appel à l'API après chaque démarrage, le
+  journal affiche une ligne « Contrôle proxy » (adresse retenue + en-tête reçu) : l'adresse retenue doit être la tienne.
 
 ## Lancer
 

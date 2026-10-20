@@ -7,14 +7,31 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 
 const MIN = 60e3, HOUR = 60*MIN, DAY = 24*HOUR;
 
+/* Render (hébergeur) définit RENDER=true : on y est en https derrière un proxy, sans rien avoir à régler */
+export const ON_RENDER = !!process.env.RENDER;
+
+/* Nombre de relais (proxys) de confiance devant le serveur, de 0 à 10. Chacun ajoute à DROITE de X-Forwarded-For
+   l'adresse qu'il voit : l'adresse du joueur est donc la N-ième en partant de la droite. Les entrées plus à gauche
+   peuvent avoir été écrites par le joueur lui-même (falsifiables) : on ne les lit jamais.
+   DIM_TRUST_PROXY=N pour forcer ; par défaut 1 sur Render, 0 ailleurs (adresse de la connexion). */
+export function proxyHops(env = process.env){
+  const v = env.DIM_TRUST_PROXY;
+  if(v !== undefined && v !== '') return /^\d+$/.test(v) ? Math.min(10, +v) : 0;
+  return env.RENDER ? 1 : 0;
+}
+
 export const SERVER = {
   port: +(process.env.PORT || 8000),
   /* dossier des données (comptes, connexions) : jamais servi au navigateur, ignoré par git */
   dataDir: process.env.DIM_DATA_DIR || path.join(ROOT, 'data'),
-  /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne) */
-  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE === '1' },
-  /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For */
-  trustProxy: process.env.DIM_TRUST_PROXY === '1',
+  /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne ; automatique sur Render,
+     DIM_SECURE_COOKIE=0 pour l'enlever, =1 pour le forcer ailleurs) */
+  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
+  /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For (voir proxyHops) */
+  trustProxy: proxyHops(),
+  /* au premier appel à l'API, on écrit dans le journal l'adresse retenue et l'en-tête reçu : pour vérifier en
+     ligne que le réglage des relais est bon (l'adresse affichée doit être la tienne) */
+  logProxyCheck: proxyHops() > 0,
   maxBodyBytes: 16 * 1024,
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
   publicPaths: ['/index.html', '/src/', '/textures/', '/prototype/'],
