@@ -67,7 +67,10 @@
   <button id="leaveBtn" title="Tu ne recevras rien de cette session">⏏ Quitter la session</button>
 </header>
 <main>
-  <canvas id="cv"></canvas>
+  <div id="cvWrap">
+    <canvas id="cv" title="Molette, glisser ou flèches ↑ ↓ : se déplacer dans la mine"></canvas>
+    <button id="followBtn" hidden>⌖ Suivre</button>
+  </div>
   <aside>
     <div class="card"><h2>Équipe <span class="mut" style="text-transform:none;letter-spacing:0">(clic = suivre)</span></h2><div id="teamBody"></div></div>
     <div class="card" id="focusAreaCard" hidden><h2>Focus area</h2><div id="focusAreaBody"></div></div>

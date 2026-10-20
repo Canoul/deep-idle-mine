@@ -2,11 +2,14 @@
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS, SHARE } from '../config.js';
 import { areaOf, unlockNeed } from '../sim/world.js';
 import { curLum } from '../sim/miner.js';
+import { followedMiner } from '../render/camera.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const chips = obj => { const k=Object.keys(obj||{}); return k.length ? k.map(n=>`<span class="pill">${obj[n]} ${esc(n)}</span>`).join('') : '<span class="mut">vide</span>'; };
+/* ne remplace le contenu que s'il a changé (moins de travail, et on ne coupe pas un appui en cours) */
+const setHtml = (el, h) => { if(el._html !== h){ el.innerHTML = h; el._html = h; } };
 const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';
 
 /* couleur et nom de chaque entrée de composition (les noms viennent des blocs ; « air » = poches de vide) */
@@ -16,19 +19,19 @@ const compName = n => n==='air' ? 'Vide' : BLOCKS[IDS[n]].name;
 function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+a+')':(m.y===0?' (surface)':' (couche de terre)')); }
 
 export function updateHUD(G, ui){
-  const m=G.miners[Math.min(ui.focus, G.miners.length-1)];
+  const m=followedMiner(G.miners, ui.follow);
   $('timer').textContent=fmt(G.t)+' / '+fmt(SESSION_LEN);
   $('timeBar').style.width=(G.t/SESSION_LEN*100)+'%';
 
   // équipe
   const team=$('teamBody');
   team.parentElement.hidden = G.miners.length<2;
-  if(G.miners.length>1) team.innerHTML=G.miners.map((t,i)=>`
-    <div class="mrow${i===ui.focus?' on':''}" data-i="${i}" title="Suivre ${esc(t.name)}">
+  if(G.miners.length>1) setHtml(team, G.miners.map(t=>`
+    <div class="mrow${t===m?' on':''}" data-id="${t.id}" title="Suivre ${esc(t.name)}">
       <span class="mname">${esc(t.name)}</span>
       <span class="mst">${esc(t.status)}</span>
       <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}</span>
-    </div>`).join('');
+    </div>`).join(''));
 
   // mineur suivi
   $('minerTitle').innerHTML = G.miners.length>1 ? sw(m.color)+esc(m.name)+' (suivi)' : 'Mineur';

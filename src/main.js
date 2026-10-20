@@ -13,7 +13,7 @@ import { tickAt } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
-import { setupRunControls, renderSpeeds } from './ui/controls.js';
+import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { renderLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
@@ -27,7 +27,7 @@ import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js'
 import { gameApi, partyApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
-const ui = { speed:1, paused:false, focus:0, inv:{ slots:[] }, fresh:new Set(), tab:'mine' };
+const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'mine' };
 const acct = { account:null, offline:false };          // compte connecté (offline : pas de serveur de jeu)
 let info = { dev:false, speed:GAME.speed, speeds:[GAME.speed], maxPlayers:GAME.maxPlayers };
 let rec = null;            // session en cours (enregistrement du serveur)
@@ -136,7 +136,8 @@ addEventListener('hashchange', e => {
 });
 
 /* ---------- session ---------- */
-setupRunControls(ui, { onLeave: leave, onClock: setClock });
+setupRunControls(ui, { onLeave: leave, onClock: setClock, onFollow: id => { ui.follow = id; renderer.follow(); } });
+setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'mine');
 
 /* focus : le serveur l'applique tout de suite dans la partie (et l'enregistre avec son tick) */
 const focusPanel = setupFocusPanel({
@@ -165,7 +166,7 @@ function enterSession(session){
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
-  ui.focus = 0; ui.followSet = false;
+  ui.follow = null; ui.followSet = false; renderer.follow();
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
@@ -188,7 +189,7 @@ async function pollView(){
     if(r.view){
       applyView(G, r.view); lastView = performance.now();
       if(!ui.followSet && G.miners.length){                  // une fois : suivre son propre mineur
-        ui.focus = Math.max(0, G.miners.findIndex(m => m.account === acct.account?.id)); ui.followSet = true;
+        ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true;
       }
     }
     if(!r.view || G.over) return ended();
@@ -294,11 +295,12 @@ function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   smooth(dtr);
   const shown = G?.ready ? G : null;
-  if(shown && ui.tab==='mine') renderer.draw(shown, ui.focus);
+  if(shown && ui.tab==='mine') renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(shown && ui.tab==='mine'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);
+      $('followBtn').hidden = !renderer.free;               // caméra déplacée par le joueur : bouton pour revenir
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }

@@ -185,6 +185,11 @@ export const XP = {
   maxLevel: 200,
 };
 
+/* caméra de la session (affichage) : top = ligne la plus haute affichée (le ciel), margin = lignes affichées sous le
+   fond de la mine connue, ease = vitesse de glissade vers le mineur suivi (part du chemin par image),
+   wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
+export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
+
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',

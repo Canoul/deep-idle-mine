@@ -6,6 +6,7 @@ import { lightR } from '../sim/miner.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
 import { SKIN, armorLayers, pickaxeOf } from '../skins.js';
+import { createCamera, followedMiner } from './camera.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -14,7 +15,7 @@ export function createRenderer(cv){
   cv.width=W*TILE; cv.height=VIEW_ROWS*TILE;
   ctx.imageSmoothingEnabled=false;
   const TEX=loadTextures();
-  let camY=-3;
+  const cam=createCamera(VIEW_ROWS);
 
   /* dessine une texture ; repli sur une couleur unie tant qu'elle n'est pas chargée */
   function blit(name,px,py,fallback){
@@ -59,15 +60,15 @@ export function createRenderer(cv){
     }
   }
 
-  /* focus : index du mineur suivi par la caméra */
+  /* followId : id du mineur suivi par la caméra (sauf si le joueur l'a déplacée : défilement libre) */
   let curG=null, frameNow=0;   // partie et heure de l'image en cours (pour les glissades)
-  function draw(G, focus=0){
+  function draw(G, followId){
     curG=G; frameNow=performance.now();
-    const fm=G.miners[Math.min(focus, G.miners.length-1)];
+    const fm=followedMiner(G.miners, followId), mr=maxRow(G);
     const [, fy]=drawPos(fm);
-    const tgt=Math.max(-3, fy-VIEW_ROWS/2+2); camY+=(tgt-camY)*0.15;
+    const camY=cam.update(fy, mr+1);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
-    const y0=Math.floor(camY), offY=-(camY-y0)*TILE, mr=maxRow(G);
+    const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
     for(let y=y0;y<=y0+VIEW_ROWS+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
@@ -126,5 +127,9 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m); drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
   }
 
-  return { draw };
+  /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
+  const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
+  const panPixels = px => pan(-px / (cv.clientHeight / VIEW_ROWS || TILE));
+
+  return { draw, pan, panPixels, follow: () => cam.follow(), get free(){ return cam.free; } };
 }

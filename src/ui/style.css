@@ -13,7 +13,11 @@ button{cursor:pointer}button:hover{border-color:var(--acc)}
 button.on{background:var(--acc);color:#1a1208;border-color:var(--acc);font-weight:600}
 main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;padding:12px}
 @media(max-width:900px){main{grid-template-columns:1fr}}
-#cv{width:100%;height:auto;display:block;background:#000;border:1px solid var(--line);border-radius:8px;image-rendering:pixelated}
+#cv{width:100%;height:auto;display:block;background:#000;border:1px solid var(--line);border-radius:8px;image-rendering:pixelated;
+  touch-action:none;cursor:grab}
+#cv.dragging{cursor:grabbing}
+#cvWrap{position:relative;min-width:0}
+#followBtn{position:absolute;top:8px;right:8px;background:var(--acc);color:#1a1208;border-color:var(--acc);font-weight:600}
 aside{display:flex;flex-direction:column;gap:10px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .card h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
