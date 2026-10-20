@@ -1,9 +1,12 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS } from '../config.js';
-import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved } from './world.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP } from '../config.js';
+import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT } from './miner.js';
 import { log } from './log.js';
+
+/* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
+function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
 
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }
 
@@ -13,7 +16,7 @@ export function mineBlock(G,m,x,y){
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
-  if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); }
+  if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
 }
 
@@ -28,7 +31,7 @@ function openTreasure(G,m,x,y){
 }
 
 export function killMob(G,m,o){
-  o.hp=0; G.stats.kills++; m.stats.kills++;
+  o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(o.type==='mimic'){
     G.tiles[o.y][o.x]=0; updateLight(G); const b=BLOCKS[o.ore];
     collect(m, b.name, b.w, MOBS.mimicLoot); oreMinedIn(G,o.y,o.ore);

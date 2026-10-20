@@ -145,6 +145,15 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 | Dégâts | Dégâts par coup contre les mobs | 5 *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
 
+### Niveau et XP
+Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
+- **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5** (mob de base, sans XP de minerai en plus).
+- **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents à la fin, comme le coffre (arrondi vers le bas). **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
+- **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
+- **Récompense** : **1 point de talent par niveau**, à dépenser plus tard dans l'onglet Talents (pas encore conçu).
+- Affichage : carte « Mineur » du lobby (niveau, barre d'XP, points de talent) ; XP de la session pendant la partie ; XP gagnée et montée de niveau au bilan.
+- Repères (simulation, mineur de base) : **≈ 860 XP par session en solo** (60 % minerais, 40 % bestioles) ; **≈ 740 par joueur à 3** (≈ 2220 au total) : les bestioles apparaissent au même rythme quelle que soit la taille de l'équipe, donc à 3 on se les partage. À surveiller : le jeu à 3 rapporte un peu moins d'XP par tête que le solo.
+
 ### Oxygène
 - 1 seconde dans la mine = 1 d'oxygène consommé.
 - En surface : +30 par seconde.

@@ -169,6 +169,20 @@ export const MOBS = {
   goblinChitin: 1,                               // chitine
 };
 
+/* Niveau du mineur (GAME_DESIGN §3, « Niveau et XP »). L'XP de la session va dans un pot commun, partagé à parts égales
+   entre les joueurs présents à la fin (comme le coffre) et versé par le serveur.
+   ore : XP par bloc de minerai miné (clé de composition) ; mob : XP par mob vaincu (type du mob ; mimic = mob de base).
+   curve : XP pour passer du niveau 1 au 2 = first, puis ×factor à chaque niveau (1000, 1500, 2250…).
+   talentPerLevel : points de talent gagnés à chaque niveau (dépensés plus tard dans l'onglet Talents).
+   maxLevel : garde-fou de calcul. Valeurs provisoires. */
+export const XP = {
+  ore: { coal:1, iron:2, gold:4, diamond:7 },
+  mob: { bestiole:5, gobelin:10, mimic:5 },
+  curve: { first:1000, factor:1.5 },
+  talentPerLevel: 1,
+  maxLevel: 200,
+};
+
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',

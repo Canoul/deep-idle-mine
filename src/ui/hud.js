@@ -47,6 +47,9 @@ export function updateHUD(G, ui){
   $('chestByBox').innerHTML = G.miners.length>1
     ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
     : '';
+  // XP de la session : pot commun, partagé à parts égales à la fin
+  { const xp=G.stats.xp||0, n=G.miners.length;
+    $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }
   $('log').innerHTML=G.log.slice(0,16).map(l=>`<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join('');
 
   // area du mineur suivi
@@ -82,7 +85,8 @@ export function showSettling(){
 
 /* Bilan d'une session, d'après le résultat du SERVEUR (celui qui fait foi).
    rec : la session publique ({ result, players, … }) ; me : ID du compte du joueur. */
-export function showEnd(rec, me, onBack, onInventory){
+/* levelUp : texte de montée de niveau (ou null), d'après la progression relue au serveur */
+export function showEnd(rec, me, onBack, onInventory, levelUp=null){
   const s=rec.result, shares=s.shares, n=shares.filter(p=>!p.left).length;
   const nameOf = acc => rec.players.find(p=>p.account===acc)?.name;
   const who = p => `${sw(p.color)}${esc(p.miner)}${p.account ? ' — '+esc(nameOf(p.account) ?? '') : ''}${p.account===me?' (toi)':''}`;
@@ -96,6 +100,11 @@ export function showEnd(rec, me, onBack, onInventory){
   const by = miners.length>1
     ? '<p>Contributions :</p>'+miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
     : '';
+  const xpRow = mine && s.xp!=null
+    ? `<div class="row"><span>XP gagnée</span><b>${mine.left ? 0 : '+'+mine.xp}</b></div>`+
+      (shares.length>1 ? `<p class="mut small">XP de la session : ${s.xp}, partagée à parts égales entre les ${n} présent${n>1?'s':''}.</p>` : '')+
+      (levelUp ? `<p class="lvlUp">⭐ ${esc(levelUp)}</p>` : '')
+    : '';
   const lost = s.lost?.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
   $('endBox').innerHTML =
     '<h3>Session terminée</h3>'+
@@ -107,7 +116,7 @@ export function showEnd(rec, me, onBack, onInventory){
     (s.stolen ? `<div class="row"><span>Minerais volés par les gobelins</span><b>${s.stolen}</b></div>` : '')+
     `<div class="row"><span>Treasures ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
-    by+split+lost+
+    xpRow+by+split+lost+
     '<p class="mut small">Résultat vérifié par le serveur.</p>'+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';
   $('end').hidden=false;

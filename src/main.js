@@ -15,6 +15,7 @@ import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
+import { renderLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
@@ -240,10 +241,11 @@ function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false;
+  const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   const done = () => gameApi.ack(ended.id).catch(() => {});
   showEnd(ended, acct.account?.id,
     () => { done(); $('end').hidden = true; showLobby(); },
-    () => { done(); $('end').hidden = true; showLobby(); nav.show('inventaire'); });
+    () => { done(); $('end').hidden = true; showLobby(); nav.show('inventaire'); }, up);
 }
 
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
@@ -256,9 +258,14 @@ function setInventory(inv, bag){
 }
 
 /* état complet depuis le serveur : inventaire, préférences, session en cours, résultat pas encore vu */
+/* niveau du mineur : relu au serveur avec l'état ; montée de niveau annoncée au bilan */
+let progress = null;
+function setProgress(p){ const up = levelUpText(progress, p); progress = p ?? null; renderLevel($('levelBody'), progress); return up; }
+
 async function refresh(){
   const st = await gameApi.state();
   setInventory(st.inventory);
+  if(!st.ended || st.session) setProgress(st.progress);
   furnace.set(st.furnaces);
   stuff.set(st.stuff);
   lobby.update({ prefs: st.prefs });

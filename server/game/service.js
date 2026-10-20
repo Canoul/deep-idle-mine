@@ -19,6 +19,7 @@ import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS }
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
+import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { craft } from '../../src/meta/craft.js';
@@ -83,6 +84,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* stuff : relu avec l'inventaire (une pièce présente des deux côtés est retirée du stuff ; les uid restent uniques) */
   const loadStuff = async (accountId, inv) => sanitizeStuff(await store.getStuff(accountId), inv);
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
+  /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
+  const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
+  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp) });
 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
@@ -171,6 +175,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const inv = await loadInventory(share.account);
           if(creditSession(inv, rec.id, share.bag)) await store.putInventory(share.account, JSON.parse(serialize(inv)));
         });
+        /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) */
+        await withLock('xp:' + share.account, async () => {
+          const pr = await loadProgress(share.account);
+          if(creditXp(pr, rec.id, share.xp ?? 0)) await store.putProgress(share.account, pr);
+        });
       }
       rec = await store.getGameSession(id);
       rec.status = 'done'; rec.result = summary; rec.endedAt = clock();
@@ -201,6 +210,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const inv = await loadInventory(me.id);
       return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
                stuff: (await loadStuff(me.id, inv)).worn,
+               progress: publicProgress(await loadProgress(me.id)),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },

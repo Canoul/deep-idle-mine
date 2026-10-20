@@ -9,6 +9,7 @@ import { decide, tackler } from './ai.js';
 import { updateMobs } from './mobs.js';
 import { log } from './log.js';
 import { shareChest } from '../meta/share.js';
+import { xpShare } from '../meta/level.js';
 
 /* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x}
    opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre */
@@ -21,7 +22,7 @@ export function newSession(seed, opts={}){
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
-    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0},
+    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
   };
@@ -104,14 +105,16 @@ export function endSession(G){
   G.over=true;
   G.summary = {
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
-    kills:G.stats.kills, stolen:G.stats.stolen, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
+    kills:G.stats.kills, stolen:G.stats.stolen, xp:G.stats.xp, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
     miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };
   const present = G.roster.filter(m => m.left==null);
   const bags = shareChest(G.chest, present.length, G.seed);
+  /* XP : pot commun partagé à parts égales entre les présents (arrondi vers le bas) ; rien pour qui est parti */
+  const xp = xpShare(G.stats.xp, present.length);
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
-    left: m.left!=null, bag: m.left!=null ? {} : bags[present.indexOf(m)] }));
+    left: m.left!=null, bag: m.left!=null ? {} : bags[present.indexOf(m)], xp: m.left!=null ? 0 : xp }));
 }
 
 /* simule une session complète d'un coup (Node, tests) */

@@ -270,3 +270,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 #spick{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:10vh 12px 12px;z-index:9}
 #spick .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:20px 24px;max-width:420px;width:92%}
 #spick h3{margin:0 0 12px;color:var(--acc)}
+
+/* niveau du mineur */
+.lvl{color:var(--acc);font-size:15px}
+.lvlUp{color:var(--acc);font-weight:700;margin:8px 0}
