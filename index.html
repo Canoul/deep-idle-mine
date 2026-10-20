@@ -105,6 +105,22 @@
   <!-- treasure ouvert : le butin obtenu -->
   <div id="loot" hidden><div class="box"></div></div>
 </section>
+<section class="view" data-view="stuff" hidden>
+  <div class="furnWrap">
+    <div class="invHead"><h1>🛡 Stuff</h1><span class="mut small">Clique une case pour équiper une pièce de ton inventaire.</span></div>
+    <div id="stuffGrid" class="stuffGrid"></div>
+    <p class="mut small">Les effets des pièces sur le mineur arrivent bientôt.</p>
+  </div>
+  <!-- choix de la pièce à équiper dans une case -->
+  <div id="spick" hidden><div class="box"></div></div>
+</section>
+<section class="view" data-view="craft" hidden>
+  <div class="furnWrap">
+    <div class="invHead"><h1>🔨 Craft</h1><span class="mut small">Clique une recette pour la voir.</span></div>
+    <div id="craftList" class="craftList"></div>
+    <div id="craftInfo" class="craftInfo"></div>
+  </div>
+</section>
 <section class="view" data-view="four" hidden>
   <div class="furnWrap">
     <div class="invHead"><h1>🔥 Four</h1><span class="mut small">10 minerais + 10 charbons = 1 lingot</span></div>

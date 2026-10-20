@@ -1,4 +1,4 @@
-/* Stockage du jeu : inventaires, fours, préférences et sessions de jeu, rangés par ID de compte.
+/* Stockage du jeu : inventaires, fours, stuff, préférences et sessions de jeu, rangés par ID de compte.
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
@@ -11,6 +11,7 @@ export function createMemoryGameStore(initial = {}){
   const inventories = new Map(Object.entries(initial.inventories ?? {}));
   const prefs = new Map(Object.entries(initial.prefs ?? {}));
   const furnaces = new Map(Object.entries(initial.furnaces ?? {}));
+  const stuff = new Map(Object.entries(initial.stuff ?? {}));
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const copy = o => o && structuredClone(o);
 
@@ -24,6 +25,13 @@ export function createMemoryGameStore(initial = {}){
     async putInventoryAndFurnaces(accountId, inv, f){
       inventories.set(accountId, copy(inv)); furnaces.set(accountId, copy(f));
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'furnace', key: accountId, value: f }]);
+    },
+
+    /* stuff (pièces portées) : même principe que les fours, une pièce passe de l'inventaire au stuff et inversement */
+    async getStuff(accountId){ return copy(stuff.get(accountId)) ?? null; },
+    async putInventoryAndStuff(accountId, inv, st){
+      inventories.set(accountId, copy(inv)); stuff.set(accountId, copy(st));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'stuff', key: accountId, value: st }]);
     },
 
     async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
@@ -43,6 +51,7 @@ export function createMemoryGameStore(initial = {}){
     async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
+                         stuff: Object.fromEntries(stuff),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions) }; },
   };
@@ -74,8 +83,8 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'prefs', 'game_session']);
-  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, prefs: rows.prefs,
+  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'game_session']);
+  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, stuff: rows.stuff, prefs: rows.prefs,
                                         sessions: rows.game_session });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();

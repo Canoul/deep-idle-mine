@@ -49,7 +49,9 @@ export const gameApi = {
   focus:  (focus, tick) => request('POST', '/api/game/focus', { focus, tick }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
-  furnace: op          => request('POST', '/api/game/furnace', op),   // { action, furnace, slot, item, qty, opId }
+  furnace: op          => request('POST', '/api/game/furnace', op),
+  craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
+  stuff:  op           => request('POST', '/api/game/stuff', op),        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */

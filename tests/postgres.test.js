@@ -119,3 +119,14 @@ test('une écriture de plusieurs lignes qui échoue est retentée en entier (jam
   await game.close();
   assert.ok(pool.rows.has('inventory/A1') && pool.rows.has('furnace/A1'));
 });
+
+test('stuff : inventaire et stuff écrits ensemble, en une seule requête, et relus au redémarrage', async () => {
+  const pool = fakePool();
+  const game = await createPgGameStore(await openDatabase('', { pool, log: quiet }));
+  const before = pool.log.length;
+  await game.putInventoryAndStuff('A1', { slots: [] }, { worn: { pioche: { item: 'Pioche en pierre', uid: 3 } }, ops: [] });
+  await game.close();
+  assert.deepEqual(pool.log.slice(before), ['INSERT']);
+  const again = await createPgGameStore(await openDatabase('', { pool, log: quiet }));
+  assert.deepEqual((await again.getStuff('A1')).worn.pioche, { item: 'Pioche en pierre', uid: 3 });
+});

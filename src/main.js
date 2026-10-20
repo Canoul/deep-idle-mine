@@ -21,6 +21,8 @@ import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
+import { setupCraft } from './ui/craft.js';
+import { setupStuff } from './ui/stuff.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, ApiError } from './net/api.js';
 
@@ -58,6 +60,14 @@ async function openTreasure(item){
 }
 
 /* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
+/* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
+const craft = setupCraft({
+  onCraft: async item => { setInventory((await gameApi.craft(item, newOpId())).inventory); },
+});
+const stuff = setupStuff({
+  onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
+});
+
 const furnace = setupFurnace({
   onOp: async op => {
     const r = await gameApi.furnace({ ...op, opId: newOpId() });
@@ -238,7 +248,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [] };
-  furnace.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
@@ -249,6 +259,7 @@ async function refresh(){
   const st = await gameApi.state();
   setInventory(st.inventory);
   furnace.set(st.furnaces);
+  stuff.set(st.stuff);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
   else showLobby();

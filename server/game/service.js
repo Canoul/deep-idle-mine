@@ -20,6 +20,8 @@ import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
+import { craft } from '../../src/meta/craft.js';
+import { sanitizeStuff, stuffOp } from '../../src/meta/stuff.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 
@@ -29,6 +31,10 @@ export class GameError extends Error {
 const fail = (code, status, message, extra) => { throw new GameError(code, status, message, extra); };
 
 const ACTIVE = ['running', 'settling'];
+const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore débloquée.',
+                       not_enough: 'Il te manque des ingrédients.' };
+const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
+                       wrong_slot: 'Cette pièce ne va pas dans cette case.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -69,6 +75,8 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
   const loadFurnaces = async accountId => sanitizeFurnaces(await store.getFurnaces(accountId));   // revérifié à chaque fois
   /* ce que le navigateur voit des fours : avancés jusqu'à maintenant, heure du serveur (pour la barre de progression) */
   const publicFurnaces = st => ({ list: st.list.map(f => advance(f, clock())), max: FURNACE.max, now: clock() });
+  /* stuff : relu avec l'inventaire (une pièce présente des deux côtés est retirée du stuff ; les uid restent uniques) */
+  const loadStuff = async (accountId, inv) => sanitizeStuff(await store.getStuff(accountId), inv);
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
 
   /* ce que le navigateur voit d'une session */
@@ -140,7 +148,9 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       if(active && isDue(active)) settle(active.id).catch(console.error);
       const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
-      return { inventory: { slots: (await loadInventory(me.id)).slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
+      const inv = await loadInventory(me.id);
+      return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
+               stuff: (await loadStuff(me.id, inv)).worn,
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },
@@ -267,6 +277,35 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'slot_busy' ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
         return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(st) };
+      });
+    },
+
+    /* craft : le serveur vérifie la recette et les ingrédients, retire et donne en une fois (opId : une seule fois) */
+    async craft(me, body = {}){
+      const { item, opId } = body;
+      if(typeof item !== 'string') fail('bad_item', 400, 'Objet inconnu.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
+        const r = craft(inv, item, opId);
+        if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { item, inventory: { slots: inv.slots } };
+      });
+    },
+
+    /* stuff : équiper une pièce de l'inventaire dans une case, ou la retirer. Inventaire et stuff changent ensemble. */
+    async stuff(me, body = {}){
+      const { opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const op = { action: body.action, slot: body.slot, uid: body.uid, opId };
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id), st = await loadStuff(me.id, inv);
+        const r = stuffOp(inv, st, op);
+        if(r.error) fail(r.error, r.error === 'not_owned' ? 409 : 400, STUFF_ERRORS[r.error] ?? 'Demande invalide.');
+        if(!r.repeated) await store.putInventoryAndStuff(me.id, JSON.parse(serialize(inv)), st);
+        return { inventory: { slots: inv.slots }, stuff: st.worn };
       });
     },
 

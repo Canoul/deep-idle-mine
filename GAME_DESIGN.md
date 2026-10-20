@@ -263,7 +263,9 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inv
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
-- Stuff, Craft, Talents, Social : à concevoir (page d'attente pour l'instant).
+- **Craft** : fabriquer des objets (voir ci-dessous).
+- **Stuff** : équiper les pièces du mineur (voir ci-dessous).
+- Talents, Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
 
 ### Inventaire global
@@ -275,6 +277,20 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
+
+### Craft (onglet Craft)
+- Les **recettes** sont dans un fichier à part : `src/recipes.js` (ingrédients, quantité obtenue, déblocage).
+- L'onglet montre une **icône par recette disponible**. Un clic montre la recette : chaque ingrédient en **x / besoin** (x = ce que le joueur a dans son inventaire ; rouge s'il en manque, vert sinon).
+- Le bouton **Craft** est grisé tant qu'il manque un ingrédient. Sinon, un clic retire les ingrédients et met l'objet dans l'inventaire (tout ou rien, fait par le serveur ; un double clic ne fabrique qu'une fois).
+- Recettes **débloquées de base** pour l'instant ; plus tard, d'autres seront débloquées par les blueprints (champ `unlock`).
+- Recette actuelle : **Pioche en pierre = 30 lingots de fer** *(provisoire)*, soit 300 fer + 300 charbon et 30 min de four.
+
+### Stuff (onglet Stuff)
+- **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
+- Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
+- Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
+- **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session pour le rejeu du serveur).
+- Pièces existantes : **Pioche en pierre** (case pioche).
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

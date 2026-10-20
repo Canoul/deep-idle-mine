@@ -19,7 +19,9 @@ export const CREDIT_MEMORY = 200;
 /* opened : dernières ouvertures de Treasure TX { id, item, loot } (anti-duplication : une requête renvoyée
    retrouve son butin au lieu d'ouvrir un second treasure) */
 export const OPEN_MEMORY = 50;
-export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[] }; }
+/* crafted : ids des dernières demandes de craft (une demande renvoyée ne fabrique pas un second objet) */
+export const CRAFT_MEMORY = 50;
+export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[] }; }
 
 /* une quantité acceptable : entier positif « sûr » (pas d'Infinity, NaN, décimale ni nombre trop grand) */
 const validQty = q => Number.isSafeInteger(q) && q > 0;
@@ -48,6 +50,24 @@ export function addItem(inv, item, qty){
     touched.push(i);
   }
   return touched;
+}
+
+/* sort une pièce de stuff (par son uid) de l'inventaire ; renvoie { item, uid } ou null */
+export function takePiece(inv, uid){
+  const i = inv.slots.findIndex(s => s && !isStackable(s.item) && s.uid === uid);
+  if(i < 0) return null;
+  const { item } = inv.slots[i];
+  inv.slots[i] = null;
+  while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
+  return { item, uid };
+}
+
+/* remet une pièce de stuff existante (elle garde son uid : ce n'est pas un nouvel objet) ; renvoie son slot */
+export function putPiece(inv, piece){
+  const i = freeSlot(inv);
+  inv.slots[i] = { item:piece.item, qty:1, uid:piece.uid };
+  if(inv.nextUid <= piece.uid) inv.nextUid = piece.uid + 1;
+  return i;
 }
 
 /* verse un sac { nom: quantité } (coffre de fin de session) ; renvoie les slots touchés */
@@ -92,7 +112,7 @@ export function creditSession(inv, sessionId, bag){
 }
 
 /* ---- sauvegarde ---- */
-export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened });
+export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted });
 
 const validBag = b => b && typeof b === 'object' && !Array.isArray(b) && Object.values(b).every(validQty);
 
@@ -116,6 +136,7 @@ export function deserialize(json){
     ? d.opened.filter(o => o && typeof o.id === 'string' && typeof o.item === 'string' && validBag(o.loot))
         .map(o => ({ id:o.id, item:o.item, loot:{ ...o.loot } })).slice(-OPEN_MEMORY)
     : [];
+  inv.crafted = Array.isArray(d.crafted) ? d.crafted.filter(x => typeof x === 'string').slice(-CRAFT_MEMORY) : [];
   return inv;
 }
 

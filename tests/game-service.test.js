@@ -328,3 +328,22 @@ test('four : demandes simultanées (deux onglets) sans duplication', async () =>
   assert.deepEqual(st.inventory.slots, [{ item:'Fer', qty:5 }]);
   assert.deepEqual(st.furnaces.list[0].ore, { item:'Fer', qty:10 });
 });
+
+/* ---------- craft et stuff ---------- */
+
+test('craft puis équiper : le serveur fait foi, rien n\'est dupliqué', async () => {
+  const { game, store } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Lingot de fer', qty:35 }], nextUid:1, credited:[] });
+  await assert.rejects(game.craft(ME, { item:'Pioche en pierre' }), { code:'bad_request' });
+  let r = await game.craft(ME, { item:'Pioche en pierre', opId:'op-craft-srv' });
+  r = await game.craft(ME, { item:'Pioche en pierre', opId:'op-craft-srv' });     // double clic
+  const pick = r.inventory.slots.find(s => s?.item === 'Pioche en pierre');
+  assert.deepEqual(r.inventory.slots.filter(Boolean).map(s => [s.item, s.qty]), [['Lingot de fer', 5], ['Pioche en pierre', 1]]);
+  await assert.rejects(game.craft(ME, { item:'Pioche en pierre', opId:'op-craft-2' }), { code:'not_enough' });
+  const e = await game.stuff(ME, { action:'equip', slot:'pioche', uid:pick.uid, opId:'op-equip-srv' });
+  assert.deepEqual(e.stuff.pioche, { item:'Pioche en pierre', uid:pick.uid });
+  assert.equal(e.inventory.slots.filter(Boolean).some(s => s.item === 'Pioche en pierre'), false);
+  const st = await game.state(ME);
+  assert.deepEqual(st.stuff.pioche, { item:'Pioche en pierre', uid:pick.uid });
+  await assert.rejects(game.stuff(ME, { action:'equip', slot:'pioche', uid:pick.uid, opId:'op-equip-2' }), { code:'not_owned' });
+});

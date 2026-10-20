@@ -82,13 +82,14 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ```
 index.html              page du jeu
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
+src/recipes.js          recettes de craft (fichier séparé, demandé par le créateur)
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
-src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours)
+src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; craft : recettes ; stuff : pièces portées)
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
+src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), craft, stuff, account (connexion, mon compte), style.css
 src/main.js             lobby (rafraîchi : groupe, invitations) → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks) ; à plusieurs, relit la session (départs, fin)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
@@ -139,4 +140,4 @@ Serveur : Node ≥ 20, modules intégrés (http, crypto, fs) ; seule exception a
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : l'UI de craft, la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : les effets du stuff sur le mineur (plan à valider : stats par mineur), la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.

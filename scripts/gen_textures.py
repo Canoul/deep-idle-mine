@@ -250,6 +250,17 @@ def main():
         rect(ing, 2, 11, 12, 1, hexc(dark))
         tex[name] = ing
 
+    # pioche en pierre (stuff) : manche en bois en diagonale, tête de pierre grise en arc
+    pick = blank()
+    for i in range(10):
+        rect(pick, 3 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
+    for x, y in [(4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(pick, x, y, 2, 2, hexc('#8d939c'))
+    rect(pick, 5, 2, 4, 1, hexc('#c3c8cf'))
+    rect(pick, 3, 4, 2, 2, hexc('#5f646c'))
+    rect(pick, 13, 9, 2, 2, hexc('#5f646c'))
+    tex['pickaxe_stone'] = pick
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

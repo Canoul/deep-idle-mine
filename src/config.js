@@ -172,7 +172,7 @@ export const MOBS = {
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
-  'ingot_iron','ingot_gold',
+  'ingot_iron','ingot_gold','pickaxe_stone',
   'ladder','chest','miner','mimic','bug','goblin','torch'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -188,6 +188,25 @@ export const FURNACE = {
   recipes: {
     Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
     Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
+  },
+  opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
+
+/* ---- Hors session : stuff (onglet Stuff) ----
+   slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
+   items : les pièces d'équipement (famille stuff, ne s'empilent pas) et la case où elles vont.
+   Équiper une pièce la sort de l'inventaire ; la retirer l'y remet. Les effets sur le mineur viendront plus tard.
+   Les recettes de fabrication sont dans src/recipes.js. */
+export const STUFF = {
+  slots: [
+    { id:'casque',   label:'Casque',   icon:'⛑' },  { id:'torse',    label:'Torse',    icon:'🦺' },
+    { id:'jambes',   label:'Jambes',   icon:'👖' }, { id:'pieds',    label:'Pieds',    icon:'🥾' },
+    { id:'gants',    label:'Gants',    icon:'🧤' }, { id:'ceinture', label:'Ceinture', icon:'🎗' },
+    { id:'pioche',   label:'Pioche',   icon:'⛏' },  { id:'epee',     label:'Épée',     icon:'🗡' },
+    { id:'cape',     label:'Cape',     icon:'🧣' }, { id:'boussole', label:'Boussole', icon:'🧭' },
+  ],
+  items: {
+    'Pioche en pierre': { slot:'pioche', tex:'pickaxe_stone' },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -211,6 +230,7 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
+  ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, w:0, stack:false }])),
 };
 
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;

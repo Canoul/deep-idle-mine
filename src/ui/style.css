@@ -238,3 +238,29 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .fopt[disabled]{opacity:.4;cursor:not-allowed}
 .fqty{display:flex;gap:6px}
 .fqty input{flex:1;min-width:0}
+
+/* ---- onglets Craft et Stuff ---- */
+.craftList{display:grid;grid-template-columns:repeat(auto-fill,64px);gap:8px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.craftItem{padding:0}
+.craftItem.ready{border-color:var(--ok)}
+.craftInfo{margin-top:12px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.craftInfo:empty{display:none}
+.craftInfo h3{margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.craftInfo img,.stuffSlot img,#spick img{width:24px;height:24px;image-rendering:pixelated}
+.craftNeeds{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.craftNeed{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#16120f}
+.craftNeed b{color:var(--bad);font-variant-numeric:tabular-nums}
+.craftNeed.ok b{color:var(--ok)}
+.okmsg{color:var(--ok)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.stuffGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.stuffSlot{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--panel)}
+.stuffSlot .slot{width:56px}
+.stuffSlot.full .slot{border-color:var(--acc)}
+.stuffSlot .sico{font-size:22px;opacity:.35}
+.stuffSlot .slbl{font-weight:600;font-size:13px}
+.stuffSlot .sname{font-size:11px;text-align:center}
+.view[data-view="stuff"]{position:relative}
+#spick{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:10vh 12px 12px;z-index:9}
+#spick .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:20px 24px;max-width:420px;width:92%}
+#spick h3{margin:0 0 12px;color:var(--acc)}
