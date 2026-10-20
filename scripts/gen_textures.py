@@ -307,6 +307,14 @@ def main():
     rect(torch, 7, 2, 2, 3, hexc('#ffd23f'))
     tex['torch'] = torch
 
+    # étourdi (chute imprévue) : étoiles jaunes qui tournent au-dessus de la tête du mineur (haut de la case)
+    stun = blank()
+    for x, y in [(2, 3), (7, 1), (12, 3)]:
+        rect(stun, x, y, 3, 1, hexc('#ffd23f'))
+        rect(stun, x + 1, y - 1, 1, 3, hexc('#ffd23f'))
+        rect(stun, x + 1, y, 1, 1, hexc('#fff3b0'))
+    tex['stun'] = stun
+
     # ---- skins des mineurs (src/skins.js) : un corps commun + calques d'équipement, regard vers la droite ----
     sk_body = blank()
     rect(sk_body, 5, 2, 6, 2, hexc('#5a3a22'))       # cheveux

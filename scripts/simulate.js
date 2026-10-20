@@ -32,7 +32,7 @@ for(const seed of seeds){
     det.onTick(G,i);
   } });
   rows.push({
-    seed, areas: G.unlockedAreas, depth: G.stats.maxDepth, trips: G.stats.trips, falls: G.stats.falls,
+    seed, areas: G.unlockedAreas, depth: G.stats.maxDepth, trips: G.stats.trips, falls: G.stats.falls, stuns: G.stats.stuns,
     mined: G.stats.mined, kills: G.stats.kills, treasures: G.stats.treasures,
     treasuresHidden: G.areas.filter(a=>a.treasure).length,
     ore: G.areas.map(a=>a.oreMined+'/'+a.oreTotal), chest: G.chest,
@@ -45,7 +45,7 @@ for(const seed of seeds){
 if(json){ console.log(JSON.stringify(rows, null, 1)); process.exit(0); }
 
 for(const r of rows){
-  console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | minerai ${r.ore.join(' ')}` +
+  console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | étourdi ${r.stuns}× | minerai ${r.ore.join(' ')}` +
     (r.stuck.length ? `  ⚠ BLOQUÉ ${JSON.stringify(r.stuck[0])}` : ''));
   if(focus) console.log(`    coffre ${JSON.stringify(r.chest)} | focus en fin ${r.focusLeft}${r.focusDropped ? ' (abandonné en cours de route)' : ''}`);
   if(miners>1) for(const m of r.miners)
@@ -53,5 +53,5 @@ for(const r of rows){
 }
 const avg = k => (rows.reduce((s,r)=>s+r[k],0)/rows.length).toFixed(1);
 const stuck = rows.filter(r=>r.stuck.length).length;
-console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
+console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')}, étourdissements ${avg('stuns')} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
 process.exitCode = stuck ? 1 : 0;

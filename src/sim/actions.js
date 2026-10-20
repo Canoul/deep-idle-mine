@@ -1,6 +1,6 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP } from '../config.js';
-import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey } from './world.js';
+import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT } from './miner.js';
 import { log } from './log.js';
@@ -69,15 +69,33 @@ export function finishAction(G,m,a){
       }
       log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++;
       m.inv={}; m.load=0; break; }
+    case 'stun': break;   // étourdi : il ne fait rien pendant toute l'action
     case 'attack': {
       const o=a.data.mob; if(o.hp>0){ o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o); } break; }
   }
 }
 
+/* chute que provoquerait un pas (dx,dy) : en marchant dans un trou, ou en creusant le bloc sous ses pieds.
+   null si le pas ne fait pas tomber. */
+export function stepFall(G,m,dx,dy){
+  const nx=m.x+dx, ny=m.y+dy;
+  if(dy===0 && isAir(G,nx,ny) && !supported(G,nx,ny)) return fallInfo(G,nx,ny);
+  if(dx===0 && dy===1 && !isAir(G,nx,ny) && !G.ladder[m.y][m.x]){ const f=fallInfo(G,nx,ny); return {...f, n:f.n+1}; }
+  return null;
+}
+/* le mineur ne se jette jamais en connaissance de cause dans un trou de plus de CFG.maxFall cases */
+export const deepFall = (G,m,dx,dy) => { const f=stepFall(G,m,dx,dy); return !!f && f.known && f.n>CFG.maxFall; };
+
 /* Un pas dans une direction : pose une passerelle, mine, pose une échelle ou se déplace, selon la case visée. */
 export function stepDir(G,m,dx,dy,opt){
   const nx=m.x+dx, ny=m.y+dy;
   if(nx<0||nx>=W||ny<0) return false;
+  /* trou connu trop profond : par-dessus avec une passerelle s'il peut (même si on lui demandait de ne pas en poser),
+     sinon il refuse le pas (celui qui l'a demandé choisit autre chose) */
+  if(deepFall(G,m,dx,dy)){
+    if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true; }
+    return false;
+  }
   // trou à traverser horizontalement : une passerelle (1 s) vaut mieux que tomber puis poser des échelles (2 s chacune)
   // règle : on ne pose une passerelle que s'il tient lui-même (sol ou échelle), jamais dans le vide
   if(dy===0 && m.bridges>0 && !(opt&&opt.noBridge) && supported(G,m.x,m.y) && isAir(G,nx,ny) && !supported(G,nx,ny)){

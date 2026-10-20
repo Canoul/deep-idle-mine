@@ -20,7 +20,8 @@ export function createMiner(id, opts={}){
     torches:carac.torches, bridges:carac.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
     prefs: { ...PREFS, focus:{}, ...(opts.prefs||{}) },   // focus : minerais visés (src/sim/focus.js)
     focusNotice:null,               // dernier focus abandonné faute de minerai ({t, msg}), affiché au joueur
-    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0 },
+    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0, stuns:0 },
+    fall:null,                      // chute en cours : { y0 : ligne de départ, blind : trou pas découvert }
   };
 }
 

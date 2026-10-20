@@ -27,6 +27,14 @@ export const supported = (G,x,y) =>
   !(y+1<=maxRow(G) && isAir(G,x,y+1) && !G.ladder[y+1][x] && !(y>0 && G.ladder[y][x]));
 /* case où l'on finit en tombant depuis (x,y) ; n = nombre de cases de chute */
 export function landing(G,x,y){ let n=0; while(!supported(G,x,y)){ y++; n++; } return {y,n}; }
+/* chute depuis (x,y) : landing + known = le mineur connaît ce trou (toutes les cases traversées et le sol d'arrivée
+   sont découvertes). Une chute dans du vide pas encore découvert est une chute imprévue. */
+export function fallInfo(G,x,y){
+  const l=landing(G,x,y);
+  let known=true;
+  for(let yy=y+1; yy<=Math.min(l.y+1, maxRow(G)); yy++) if(!G.seen[yy][x]){ known=false; break; }
+  return {...l, known};
+}
 export const rowDone = (G,y) => { for(let x=0;x<W;x++) if(!isAir(G,x,y)) return false; return true; };
 
 /* filons / poches : `count` cases de `id` en groupes d'un seul tenant de 1 à `maxSize` cases, sur des cases libres */

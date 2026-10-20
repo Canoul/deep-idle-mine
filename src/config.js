@@ -18,6 +18,9 @@ export const CFG = {
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   attackInterval:0.8, torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
+  maxFall:3,              // chute la plus haute (cases) que le mineur accepte de faire en connaissance de cause
+  stunFall:3,             // chute IMPRÉVUE (cases non découvertes) à partir de laquelle il est étourdi…
+  stunTime:5,             // … pendant ce temps (s) : il ne peut plus rien faire (ni bouger, ni miner, ni frapper)
   darkSlow:0.65,          // multiplicateur de vitesse sans lumière
   oxygenOutSlow:1,        // multiplicateur de temps disponible à 0 d'oxygène (1 = aucun ralentissement : il remonte sans oxygène)
   mobChaseRange:14,       // distance (Manhattan) à partir de laquelle une bestiole poursuit le mineur
@@ -194,7 +197,7 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
-  'ladder','chest','miner','mimic','bug','goblin','torch'];
+  'ladder','chest','miner','mimic','bug','goblin','torch','stun'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).

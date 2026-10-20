@@ -1,9 +1,9 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X } from '../config.js';
-import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
+import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
-import { stepDir } from './actions.js';
+import { stepDir, deepFall } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
 import { log } from './log.js';
 import { isWalker } from './mobs.js';
@@ -83,7 +83,8 @@ function explore(G,m,k){
 /* va vers un minerai : le mine s'il est adjacent, sinon suit l'itinéraire jusqu'à sa case voisine bn */
 function goOre(G,m,o,r,bn){
   const dx=o.x-m.x, dy=o.y-m.y;
-  if(Math.abs(dx)+Math.abs(dy)===1){ if(!stepDir(G,m,dx,dy)) idle(m,0.3); return; }
+  // voisin : il le mine d'ici… sauf si ça le ferait tomber dans un trou connu trop profond (il passe par la case bn)
+  if(Math.abs(dx)+Math.abs(dy)===1 && !deepFall(G,m,dx,dy)){ if(!stepDir(G,m,dx,dy)) idle(m,0.3); return; }
   const s=firstStep(r,bn);
   if(s && (s.dx||s.dy) && stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return;
   idle(m,0.3);
@@ -174,8 +175,11 @@ function decideWork(G,m){
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
   const r=search(G,m,m.x,m.y,true,null,CFG.planMaxCost); let bestN=-1;
+  /* case voisine d'où miner o au plus court. Pas celle du dessus si miner o le ferait tomber dans un trou connu de plus
+     de CFG.maxFall cases (le pas serait refusé : il resterait planté devant, à recommencer) */
   const nbrBest = o => { let bd=Infinity, bn=-1;
     for(const [dx,dy] of DIRS){ const nx=o.x+dx, ny=o.y+dy; if(nx<0||nx>=W||ny<1||ny>maxRow(G)) continue;
+      if(dy===-1 && deepFall(G,{...m,x:nx,y:ny},0,1)) continue;
       const n=ny*W+nx; if(r.dist[n]<bd){ bd=r.dist[n]; bn=n; } }
     return {bd,bn}; };
   // engagement : on garde la cible tant qu'elle existe et reste atteignable (évite les va-et-vient entre deux choix)
@@ -219,7 +223,14 @@ function digDown(G,m){
   if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; return; }
   // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
   if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
-  m.digCol=m.x; m.status='Creuse vers le bas'; if(!stepDir(G,m,0,1)) idle(m);
+  m.digCol=m.x; m.status='Creuse vers le bas';
+  if(stepDir(G,m,0,1)) return;
+  /* un trou connu de plus de CFG.maxFall cases sous ses pieds : il ne s'y jette pas, il creuse ailleurs */
+  if(deepFall(G,m,0,1)){
+    if(shiftColumn(G,m,(x,y)=>!deepFall(G,{...m,x,y},0,1))) return;
+    return explore(G,m,Math.max(0,areaOf(m.y)));
+  }
+  idle(m);
 }
 
 /* focus : l'area juste en dessous est hors du focus d'area, ou épuisée pour ses minerais visés → renvoie l'area où
@@ -245,10 +256,11 @@ function changeArea(G,m,goal){
   idle(m,0.3);
 }
 
-/* se décaler sur la même ligne vers une colonne libre (au moins CFG.shaftGap colonnes des puits des autres) */
-function shiftColumn(G,m){
+/* se décaler sur la même ligne vers une colonne libre (au moins CFG.shaftGap colonnes des puits des autres) ;
+   ok(x,y) : condition en plus sur la case d'arrivée */
+function shiftColumn(G,m,ok=null){
   const cols=others(G,m).flatMap(o=>[o.digCol, o.y>m.y ? o.x : null]).filter(c=>c!=null);
-  const r=search(G,m,m.x,m.y,true,(x,y)=>y===m.y && cols.every(c=>Math.abs(c-x)>=CFG.shaftGap),CFG.planMaxCost);
+  const r=search(G,m,m.x,m.y,true,(x,y)=>y===m.y && x!==m.x && cols.every(c=>Math.abs(c-x)>=CFG.shaftGap) && (!ok || ok(x,y)),CFG.planMaxCost);
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)) return false;
   m.status='Se décale (puits occupé)';
@@ -259,8 +271,20 @@ function shiftColumn(G,m){
 export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y) || null;
 
 export function decide(G,m){
-  // gravité : sans appui, il tombe d'une case
-  if(!supported(G,m.x,m.y)){ m.status='Tombe'; G.stats.falls++; m.stats.falls++; startAction(m,'move', 1/CFG.fallSpeed, {x:m.x,y:m.y+1,down:true,fall:true,fx:m.x,fy:m.y}); return; }
+  // gravité : sans appui, il tombe d'une case. Au début de la chute, on note d'où il part et s'il connaissait le trou.
+  if(!supported(G,m.x,m.y)){
+    if(!m.fall) m.fall={ y0:m.y, blind:!fallInfo(G,m.x,m.y).known };
+    m.status='Tombe'; G.stats.falls++; m.stats.falls++; startAction(m,'move', 1/CFG.fallSpeed, {x:m.x,y:m.y+1,down:true,fall:true,fx:m.x,fy:m.y}); return;
+  }
+  // atterrissage : une chute imprévue (vide pas encore découvert) d'au moins CFG.stunFall cases l'étourdit
+  if(m.fall){
+    const n=m.y-m.fall.y0, blind=m.fall.blind; m.fall=null;
+    if(blind && n>=CFG.stunFall){
+      G.stats.stuns=(G.stats.stuns||0)+1; m.stats.stuns++;
+      log(G, `💫 ${m.name} tombe de ${n} blocs sans s'y attendre : étourdi ${CFG.stunTime} s`);
+      m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {}); return;
+    }
+  }
   // taclé : il ne peut plus bouger, il doit tuer la bestiole (même si « combat » est sur non, même en retour)
   { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); m.status='Taclé ! ('+tk.type+')'; return; } }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
