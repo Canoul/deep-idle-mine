@@ -6,7 +6,7 @@
    À partir de lui, buildSession construit exactement la même partie des deux côtés : le navigateur l'affiche,
    le serveur la rejoue (replayRecord) pour calculer le partage du coffre. C'est le résultat du serveur qui fait foi. */
 import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
-import { newSession, tick, leaveSession, endSession } from '../sim/session.js';
+import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 
 /* ---------- préférences ---------- */
@@ -105,7 +105,7 @@ export function replayRecord(record, { maxTicks = Infinity } = {}){
 /* ---------- temps réel ---------- */
 
 /* ticks écoulés après elapsedMs de temps réel à la vitesse speed (jamais plus que la session entière) */
-export const TOTAL_TICKS = Math.round(SESSION_LEN / DT);
+export const TOTAL_TICKS = SESSION_TICKS;   // la session se termine exactement à ce tick (src/sim/session.js)
 export function tickAt(elapsedMs, speed = GAME.speed){
   return Math.max(0, Math.min(TOTAL_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
 }

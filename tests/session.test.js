@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runSession, newSession, tick } from '../src/sim/session.js';
 import { stuckDetector } from '../src/sim/diagnostics.js';
+import { SESSION_LEN } from '../src/config.js';
 
 const BUG_SEEDS = [
   65361775,   // va-et-vient au retour (plan dépendant de la lumière de la case)
@@ -27,4 +28,20 @@ test('simulation déterministe : même seed → même partie', () => {
   for(let i=0;i<3000;i++){ tick(a); tick(b); }
   const snap=G=>JSON.stringify({m:G.miners.map(m=>[m.x,m.y,m.load,m.status]), s:G.stats, c:G.chest, n:G.mobs.length});
   assert.equal(snap(a), snap(b));
+});
+
+/* Bug : la session ne se terminait jamais en jeu normal. Le navigateur s'arrête au dernier tick (tickAt plafonne à
+   TOTAL_TICKS), mais 36 000 additions de 0,1 donnaient G.t = 3599,9999999978 < 3600 : pas de fin, pas de résultat. */
+test('fin de session : exactement au dernier tick, même sans jamais le dépasser (comme le navigateur)', async () => {
+  const { buildSession, tickAt, realDurationMs, TOTAL_TICKS } = await import('../src/shared/game.js');
+  const { SESSION_TICKS } = await import('../src/sim/session.js');
+  assert.equal(TOTAL_TICKS, SESSION_TICKS);
+  const G = buildSession({ id:'fin', seed:3, players:[{ account:'AAAA1111', name:'Zoe' }], bots:0, prefs:{}, leaves:[] });
+  const target = tickAt(realDurationMs() * 10);          // bien après l'heure de fin : plafonné au dernier tick
+  assert.equal(target, TOTAL_TICKS);
+  while(G.ticks < target && !G.over) tick(G);
+  assert.equal(G.over, true, 'la session est finie au dernier tick');
+  assert.equal(G.ticks, TOTAL_TICKS);
+  assert.equal(G.t, SESSION_LEN, 'le temps affiché tombe pile sur 60:00');
+  assert.ok(G.summary, 'le bilan existe');
 });

@@ -64,9 +64,13 @@ function stepMiner(G,m){
   }
 }
 
+/* nombre de ticks d'une session : la fin se juge au compteur de ticks, jamais au temps flottant
+   (36 000 additions de 0,1 donnent 3599,9999999978 : la session ne se terminait jamais au dernier tick) */
+export const SESSION_TICKS = Math.round(SESSION_LEN/DT);
+
 export function tick(G){
   if(G.over) return;
-  G.t+=DT; G.ticks++;
+  G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners) stepMiner(G,m);
   updateMobs(G);
   for(const m of G.miners){
@@ -74,7 +78,7 @@ export function tick(G){
     if(m.action && m.action.type!=='attack' && !m.action.data.fall && tackler(G,m)){ m.action=null; m.stats.tackled++; }
     revealAround(G,m);
   }
-  if(G.t>=SESSION_LEN) endSession(G);
+  if(G.ticks>=SESSION_TICKS) endSession(G);
 }
 
 /* Un joueur quitte la session : son mineur disparaît de la mine, ce qu'il portait est perdu, et il ne recevra
