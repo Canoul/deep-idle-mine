@@ -169,8 +169,15 @@ export const ACCOUNT = {
    speed : vitesse du jeu normal (multiplicateur de ticks) ; une session dure SESSION_LEN / speed en temps réel
            (x2 : 30 min). Le serveur refuse une fin de session avant ce temps.
    devSpeeds : vitesses proposées en mode développeur (serveur lancé avec npm run dev), où la fin est libre.
-   maxPlayers : places dans le lobby (jeu prévu à 3). */
-export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
+   maxPlayers : places dans le lobby (jeu prévu à 3).
+   leaveNotice : un joueur qui quitte en jeu normal part après ce délai réel (s), pour que les navigateurs des autres
+                 joueurs l'apprennent avant d'y arriver et retirent son mineur au même moment que le serveur. */
+export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3, leaveNotice:15 };
+
+/* ---- Groupes (lobby à plusieurs) ----
+   codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
+   poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
+export const PARTY = { codeLength:6, poll:2500 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

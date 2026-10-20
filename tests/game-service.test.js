@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GAME, TREASURE } from '../src/config.js';
 const T1 = TREASURE.tiers[0].item;   // Treasure T1 : un exemplaire pour chacun
-import { realDurationMs } from '../src/shared/game.js';
+import { realDurationMs, TOTAL_TICKS } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 
@@ -112,7 +112,66 @@ test('quitter : le moment du départ est calculé par le serveur (ticks à vites
   const { session } = await game.start(ME, {});
   advance(10_000);                                   // 10 s réelles à x2 = 20 s de jeu = 200 ticks
   await game.leave(ME, { tick: 999999 });
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 200);
+  /* + préavis de GAME.leaveNotice s réelles (15 s à x2 = 300 ticks) pour que les autres navigateurs l'apprennent */
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 200 + GAME.leaveNotice * GAME.speed * 10);
+});
+
+test('quitter juste avant la fin : le départ a lieu au plus tard au dernier tick (jamais après la fin)', async () => {
+  const { game, advance, store } = setup();
+  const { session } = await game.start(ME, {});
+  advance(realDurationMs() - 2000);
+  await game.leave(ME, {});
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, TOTAL_TICKS - 1);
+});
+
+/* ---------- à plusieurs (groupe lancé par son chef) ---------- */
+const THIRD = { id:'CCCC3333', name:'Max', guest:false };
+const team = [{ account:ME.id, name:'Zoe' }, { account:OTHER.id, name:'Invité BBBB' }, { account:THIRD.id, name:'Max' }];
+
+test('groupe : une session pour tous, chacun avec ses préférences, le chef en premier (Rouge)', async () => {
+  const { game } = setup();
+  await game.setPrefs(OTHER, { priority:'descendre', fightMobs:false });
+  const { session } = await game.start(ME, {}, team);
+  assert.deepEqual(session.players.map(p => p.account), [ME.id, OTHER.id, THIRD.id]);
+  assert.deepEqual(session.prefs[OTHER.id], { priority:'descendre', fightMobs:false });
+  for(const who of [ME, OTHER, THIRD]) assert.equal((await game.state(who)).session.id, session.id, 'chacun la voit');
+  assert.equal(await game.activeSessionId(THIRD.id), session.id);
+});
+
+test('groupe : refusé si un membre est déjà en session ; personne n\'est engagé', async () => {
+  const { game, store } = setup();
+  await game.start(THIRD, {});
+  await assert.rejects(game.start(ME, {}, team), e => e.code === 'member_in_session' && /Max/.test(e.message));
+  assert.equal((await store.sessionsOf(ME.id)).length, 0);
+  assert.equal((await store.sessionsOf(OTHER.id)).length, 0);
+});
+
+test('groupe : équipe invalide refusée (doublon, trop de joueurs, lanceur pas en tête)', async () => {
+  const { game } = setup();
+  await assert.rejects(game.start(ME, {}, [team[0], team[0]]), { code:'bad_request' });
+  await assert.rejects(game.start(ME, {}, [...team, { account:'DDDD4444', name:'X' }]), { code:'bad_request' });
+  await assert.rejects(game.start(ME, {}, [team[1], team[0]]), { code:'bad_request' });
+});
+
+test('groupe : deux chefs qui lancent en même temps avec un joueur commun → une seule session pour lui', async () => {
+  const { game, store } = setup();
+  const r = await Promise.allSettled([game.start(ME, {}, [team[0], team[2]]), game.start(OTHER, {}, [team[1], team[2]])]);
+  assert.equal(r.filter(x => x.status === 'fulfilled').length, 1);
+  assert.equal((await store.sessionsOf(THIRD.id)).length, 1);
+});
+
+test('groupe : un joueur part, les autres continuent et reçoivent leur part ; lui rien', async () => {
+  const { game, advance } = setup();
+  const { session } = await game.start(ME, {}, team.slice(0, 2));
+  advance(60_000);
+  await game.leave(OTHER, {});
+  assert.equal((await game.state(ME)).session.leaves.length, 1, 'les autres voient le départ (et son tick)');
+  assert.equal((await game.state(OTHER)).session, null);
+  advance(realDurationMs());
+  await game.settleDue();
+  assert.equal((await game.state(ME)).inventory.slots[0].qty, 9, 'seul présent : tout le coffre');
+  assert.deepEqual((await game.state(OTHER)).inventory.slots, []);
+  assert.equal((await game.state(ME)).ended.id, session.id);
 });
 
 test('quitter après la fin : refusé (la part est acquise)', async () => {

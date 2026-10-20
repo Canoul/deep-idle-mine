@@ -65,3 +65,13 @@ export const GAME_SERVER = {
 
 /* Hachage des mots de passe et codes de secours (scrypt, intégré à Node). ~50 ms par vérification. */
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
+
+/* Groupes (server/party/) : salle d'attente en mémoire avant une session commune. */
+export const PARTY_SERVER = {
+  awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
+  memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà
+  inviteTtl: HOUR,                  // invitation par ID valable ce temps
+  maxPendingInvites: 10,            // invitations en attente par groupe
+  invitesPerHour: { max: 30, window: HOUR },        // invitations envoyées par compte (anti spam)
+  joinFailures:   { max: 20, window: 15 * MIN },    // codes faux tapés par compte (anti devinette)
+};

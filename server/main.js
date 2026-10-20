@@ -12,6 +12,7 @@ import { createFileGameStore, createPgGameStore } from './game/store.js';
 import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
 import { createReplayer } from './game/replay.js';
+import { createPartyService } from './party/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -20,7 +21,8 @@ const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDi
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
 const game = createGameService({ store: gameStore, replay: createReplayer() });
-const server = http.createServer(createApp({ store, service, game, root: ROOT }));
+const party = createPartyService({ game, getAccount: id => store.getAccount(id) });
+const server = http.createServer(createApp({ store, service, game, party, root: ROOT }));
 
 /* sessions de jeu : reprise d'un rejeu interrompu, puis versement des sessions arrivées à leur fin (même joueur absent) */
 game.recover().catch(console.error);

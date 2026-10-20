@@ -10,12 +10,14 @@ import { serveStatic } from './http/static.js';
 import { createAccountService, AccountError } from './accounts/service.js';
 import { accountRoutes } from './accounts/routes.js';
 import { gameRoutes } from './game/routes.js';
+import { partyRoutes } from './party/routes.js';
 
-/* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent */
-export function createApp({ store, root, config = SERVER, service, game } = {}){
+/* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
+   party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ». */
+export function createApp({ store, root, config = SERVER, service, game, party } = {}){
   const accounts = service ?? createAccountService({ store });
-  /* les futures routes (sauvegarde, lobby, social…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}) };
+  /* les futures routes (sauvegarde, social…) s'ajoutent ici, chacune dans son module */
+  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}) };
   let proxyChecked = !config.logProxyCheck;
 
   /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */

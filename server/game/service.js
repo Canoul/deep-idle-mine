@@ -8,6 +8,9 @@
      (creditSession) : un rejeu relancé après un arrêt brutal ne duplique rien.
    - Mode normal : vitesse fixe (GAME.speed), la fin est refusée avant l'heure. Mode dev : vitesses libres,
      réglages dev, fin quand le navigateur le dit.
+   - À plusieurs : le chef d'un groupe (server/party/) lance la session pour tous les membres. Chaque navigateur
+     construit la même partie ; un départ est annoncé GAME.leaveNotice secondes à l'avance pour que tous retirent
+     le mineur au même tick que le serveur.
    Testable seul : on lui passe un stockage, une horloge et une fonction de rejeu. */
 import crypto from 'node:crypto';
 import { GAME, PREFS } from '../../src/config.js';
@@ -29,14 +32,17 @@ const isInt = v => Number.isSafeInteger(v);
    même avec des requêtes simultanées (double clic, deux onglets) */
 function createLocks(){
   const tails = new Map();
-  return function withLock(key, fn){
+  function withLock(key, fn){
     const prev = tails.get(key) ?? Promise.resolve();
     const run = prev.catch(() => {}).then(fn);
     const tail = run.catch(() => {});
     tails.set(key, tail);
     tail.then(() => { if(tails.get(key) === tail) tails.delete(key); });
     return run;
-  };
+  }
+  /* plusieurs verrous, toujours pris dans le même ordre (pas d'interblocage entre deux lancements) */
+  withLock.many = (keys, fn) => [...new Set(keys)].sort().reduceRight((inner, key) => () => withLock(key, inner), fn)();
+  return withLock;
 }
 
 export function createGameService({ store, replay, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
@@ -131,19 +137,30 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       return { prefs: p };
     },
 
-    async start(me, body = {}){
-      return withLock('acct:' + me.id, async () => {
+    /* lance une session. members : joueurs d'un groupe [{account, name}], celui qui lance en premier (mineur Rouge) ;
+       absent = seul. Refusé si un des joueurs a déjà une session en cours. */
+    async start(me, body = {}, members = null){
+      const players = (members?.length ? members : [{ account: me.id, name: displayName(me) }])
+        .map(p => ({ account: String(p.account), name: String(p.name ?? '') }));
+      if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
+      if(new Set(players.map(p => p.account)).size !== players.length || players.length > GAME.maxPlayers)
+        fail('bad_request', 400, 'Équipe invalide.');
+      return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        for(const p of players.slice(1))
+          if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
         const lim = startLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
+        const prefs = {};
+        for(const p of players) prefs[p.account] = await loadPrefs(p.account);
         const rec = {
           id: crypto.randomUUID(),
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
-          players: [{ account: me.id, name: displayName(me) }],
-          bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - 1, body.bots)) : 0,
-          prefs: { [me.id]: await loadPrefs(me.id) },
+          players,
+          bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
+          prefs,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], status: 'running', result: null, seen: [],
@@ -160,8 +177,10 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         if(!rec) fail('no_session', 404, 'Aucune session en cours.');
         if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
         const now = clock();
-        const tick = dev ? (isInt(body.tick) ? Math.max(0, Math.min(TOTAL_TICKS, body.tick)) : 0)
-                         : tickAt(now - rec.startedAt, rec.speed);
+        /* jeu normal : départ dans GAME.leaveNotice s (les autres navigateurs l'apprennent avant d'y arriver), et au
+           plus tard au dernier tick (un départ doit toujours avoir lieu avant la fin) */
+        const tick = dev ? (isInt(body.tick) ? Math.max(0, Math.min(TOTAL_TICKS - 1, body.tick)) : 0)
+                         : Math.min(TOTAL_TICKS - 1, tickAt(now - rec.startedAt + GAME.leaveNotice * 1000, rec.speed));
         rec.leaves.push({ account: me.id, tick, at: now });
         if(rec.players.every(p => hasLeft(rec, p.account))){
           /* plus aucun joueur : personne ne reçoit rien, pas besoin de rejouer */
@@ -202,5 +221,7 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     },
     settleDue,
     settle,         // pour les tests
+    /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
+    activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
   };
 }
