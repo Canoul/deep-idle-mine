@@ -252,6 +252,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .craftNeed b{color:var(--bad);font-variant-numeric:tabular-nums}
 .craftNeed.ok b{color:var(--ok)}
 .okmsg{color:var(--ok)}
+.stuffStats{color:var(--o2);font-weight:600}
 button:disabled{opacity:.45;cursor:not-allowed}
 .stuffGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .stuffSlot{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--panel)}

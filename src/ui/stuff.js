@@ -2,11 +2,12 @@
    qui y vont (et « Retirer » si la case est occupée). Ne modifie rien lui-même : chaque action est demandée au
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
-import { piecesFor } from '../meta/stuff.js';
+import { piecesFor, statsText } from '../meta/stuff.js';
 import { icon } from './craft.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const statLine = item => statsText(item) ? `<br><small class="stuffStats">${esc(statsText(item))}</small>` : '';
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
 export function setupStuff({ onOp }){
@@ -15,7 +16,8 @@ export function setupStuff({ onOp }){
   function render(){
     $('stuffGrid').innerHTML = STUFF.slots.map(s => {
       const p = worn[s.id];
-      return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}" title="${esc(p ? p.item : s.label)}">`+
+      const tip = p ? [p.item, statsText(p.item)].filter(Boolean).join(' — ') : s.label;
+      return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}" title="${esc(tip)}">`+
              `<span class="slot">${p ? icon(p.item) : `<span class="sico">${s.icon}</span>`}</span>`+
              `<span class="slbl">${esc(s.label)}</span><span class="sname mut">${p ? esc(p.item) : 'vide'}</span></button>`;
     }).join('');
@@ -26,9 +28,9 @@ export function setupStuff({ onOp }){
     const s = STUFF.slots.find(x => x.id === open), cur = worn[open], list = piecesFor(inv, open);
     $('spick').querySelector('.box').innerHTML =
       `<h3>${s.icon} ${esc(s.label)}</h3>`+
-      (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : <b>${esc(cur.item)}</b></span><button id="spickOff">Retirer</button></div>` : '')+
+      (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : <b>${esc(cur.item)}</b>${statLine(cur.item)}</span><button id="spickOff">Retirer</button></div>` : '')+
       (list.length
-        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${esc(p.item)}</span><b>Équiper</b></button>`).join('')}</div>`
+        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${esc(p.item)}${statLine(p.item)}</span><b>Équiper</b></button>`).join('')}</div>`
         : `<p class="mut">Aucune pièce « ${esc(s.label.toLowerCase())} » dans ton inventaire.${open === 'pioche' ? ' Fabrique-en une dans l\'onglet Craft.' : ''}</p>`)+
       `<p class="err" id="spickErr" hidden></p><p style="text-align:right"><button id="spickClose">Fermer</button></p>`;
     $('spick').hidden = false;

@@ -283,14 +283,22 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - L'onglet montre une **icône par recette disponible**. Un clic montre la recette : chaque ingrédient en **x / besoin** (x = ce que le joueur a dans son inventaire ; rouge s'il en manque, vert sinon).
 - Le bouton **Craft** est grisé tant qu'il manque un ingrédient. Sinon, un clic retire les ingrédients et met l'objet dans l'inventaire (tout ou rien, fait par le serveur ; un double clic ne fabrique qu'une fois).
 - Recettes **débloquées de base** pour l'instant ; plus tard, d'autres seront débloquées par les blueprints (champ `unlock`).
-- Recette actuelle : **Pioche en pierre = 30 lingots de fer** *(provisoire)*, soit 300 fer + 300 charbon et 30 min de four.
+- Recettes actuelles *(provisoires)* :
+
+  | Objet | Recette | Bonus |
+  |---|---|---|
+  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | — |
+  | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
+  | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +25 |
+  | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
+  | Bottes en chitine | 4 lingots de fer + 70 chitine | Vitesse (marche) +0,5 |
 
 ### Stuff (onglet Stuff)
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session pour le rejeu du serveur).
-- Pièces existantes : **Pioche en pierre** (case pioche).
+- Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire, mais ne s'appliquent pas encore en session (voir le point précédent).
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

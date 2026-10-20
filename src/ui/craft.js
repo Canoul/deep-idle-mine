@@ -3,6 +3,7 @@
    demandée au serveur (onCraft), qui renvoie l'inventaire à jour. */
 import { itemDef } from '../meta/inventory.js';
 import { craftable, needs, canCraft, recipeOf } from '../meta/craft.js';
+import { statsText } from '../meta/stuff.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -23,6 +24,7 @@ export function setupCraft({ onCraft }){
     const r = recipeOf(sel), ok = canCraft(inv, sel);
     $('craftInfo').innerHTML =
       `<h3>${icon(sel)} ${esc(sel)}${r.qty > 1 ? ` <span class="mut">× ${r.qty}</span>` : ''}</h3>`+
+      (statsText(sel) ? `<p class="stuffStats">${esc(statsText(sel))}</p>` : '')+
       `<div class="craftNeeds">${needs(inv, sel).map(n =>
         `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}<span>${esc(n.item)}</span><b>${num(n.have)}/${num(n.need)}</b></div>`).join('')}</div>`+
       `<p><button class="on" id="craftBtn"${ok && !busy ? '' : ' disabled'}>🔨 Craft</button>`+

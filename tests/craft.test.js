@@ -47,3 +47,21 @@ test('demande rejouée : une seule pioche ; recette inconnue refusée', () => {
   for(const bad of ['Inconnu', '__proto__', 'constructor', 42, null]) assert.equal(craft(inv, bad, 'op-' + bad).error, 'unknown');
   assert.equal(recipeOf('toString'), null);
 });
+
+test('pièces en chitine : recettes (lingots de fer + chitine), débloquées de base, une par case', () => {
+  const expect = {
+    'Casque en chitine':   [{ 'Lingot de fer':5, Chitine:70 }, 'casque'],
+    'Plastron en chitine': [{ 'Lingot de fer':8, Chitine:30 }, 'torse'],
+    'Jambes en chitine':   [{ 'Lingot de fer':7, Chitine:30 }, 'jambes'],
+    'Bottes en chitine':   [{ 'Lingot de fer':4, Chitine:70 }, 'pieds'],
+  };
+  for(const [name, [cost, slot]] of Object.entries(expect)){
+    assert.deepEqual(RECIPES[name].cost, cost, name);
+    assert.ok(craftable().includes(name), name);
+    assert.equal(ITEMS[name].cat, 'stuff'); assert.equal(ITEMS[name].slot, slot);
+  }
+  const inv = invWith({ 'Lingot de fer':5, Chitine:70 });
+  assert.equal(craft(inv, 'Casque en chitine', 'op-chitin-1').ok, true);
+  assert.equal(countOf(inv, 'Casque en chitine'), 1);
+  assert.equal(countOf(inv, 'Chitine'), 0); assert.equal(countOf(inv, 'Lingot de fer'), 0);
+});

@@ -261,6 +261,46 @@ def main():
     rect(pick, 13, 9, 2, 2, hexc('#5f646c'))
     tex['pickaxe_stone'] = pick
 
+    # pièces en chitine (stuff) : plaques rouge sombre de carapace, reflets clairs, joints foncés
+    chit, chit_hi, chit_lo = hexc('#a8343a'), hexc('#d65a5a'), hexc('#5e1a1e')
+    helmet = blank()
+    rect(helmet, 3, 3, 10, 7, chit)
+    rect(helmet, 4, 2, 8, 1, chit)
+    rect(helmet, 3, 10, 3, 3, chit)
+    rect(helmet, 10, 10, 3, 3, chit)
+    rect(helmet, 5, 4, 4, 1, chit_hi)
+    rect(helmet, 3, 7, 10, 1, chit_lo)
+    tex['helmet_chitin'] = helmet
+
+    chest = blank()
+    rect(chest, 2, 2, 12, 4, chit)
+    rect(chest, 4, 6, 8, 8, chit)
+    rect(chest, 6, 2, 4, 2, (0, 0, 0, 0))
+    for y in (7, 10):
+        rect(chest, 4, y, 8, 1, chit_lo)
+    rect(chest, 3, 3, 2, 1, chit_hi)
+    rect(chest, 5, 8, 2, 1, chit_hi)
+    tex['chest_chitin'] = chest
+
+    legs = blank()
+    rect(legs, 4, 2, 8, 3, chit)
+    rect(legs, 4, 5, 3, 9, chit)
+    rect(legs, 9, 5, 3, 9, chit)
+    rect(legs, 4, 4, 8, 1, chit_lo)
+    rect(legs, 4, 9, 3, 1, chit_lo)
+    rect(legs, 9, 9, 3, 1, chit_lo)
+    rect(legs, 5, 6, 1, 2, chit_hi)
+    rect(legs, 10, 6, 1, 2, chit_hi)
+    tex['legs_chitin'] = legs
+
+    boots = blank()
+    for x0 in (2, 9):
+        rect(boots, x0, 5, 4, 6, chit)
+        rect(boots, x0, 11, 6 if x0 == 2 else 5, 3, chit)
+        rect(boots, x0, 13, 6 if x0 == 2 else 5, 1, chit_lo)
+        rect(boots, x0 + 1, 6, 1, 2, chit_hi)
+    tex['boots_chitin'] = boots
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

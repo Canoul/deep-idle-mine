@@ -3,6 +3,7 @@
 import { INVENTORY } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
+import { statsText } from '../meta/stuff.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -42,6 +43,7 @@ function infoHtml(s, pinned=false){
   if(d) bits.push(CAT_LABEL[d.cat] || d.cat);
   if(d?.w) bits.push(`poids ${d.w}`);
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
+  if(statsText(s.item)) bits.push(`<span class="stuffStats">${esc(statsText(s.item))}</span>`);
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>` : '';
   return bits.join(' <span class="mut">·</span> ') + open;
 }

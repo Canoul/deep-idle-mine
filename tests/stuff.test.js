@@ -64,3 +64,20 @@ test('relecture : pièce portée ET dans l\'inventaire (duplication) → retiré
   assert.deepEqual(st2.worn.pioche, { item:PICK, uid:500 });
   assert.ok(inv.nextUid > 500, 'les prochains uid ne réutilisent pas celui de la pièce portée');
 });
+
+test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de stats du mineur connues', async () => {
+  const { STATS, ITEMS, TEXTURES } = await import('../src/config.js');
+  const { statsText } = await import('../src/meta/stuff.js');
+  const { existsSync } = await import('node:fs');
+  assert.equal(statsText('Casque en chitine'), 'Oxygène +30');
+  assert.equal(statsText('Plastron en chitine'), 'Pods +25');
+  assert.equal(statsText('Jambes en chitine'), 'Vitesse (échelle) +0,4');
+  assert.equal(statsText('Bottes en chitine'), 'Vitesse (marche) +0,5');
+  assert.equal(statsText(PICK), '');
+  for(const [name, d] of Object.entries(STUFF.items)){
+    for(const k of Object.keys(d.stats || {})){ assert.ok(k in STATS, `${name} : stat ${k} inconnue`); assert.ok(STUFF.statLabels[k], k); }
+    assert.ok(TEXTURES.includes(ITEMS[name].tex) && existsSync(new URL(`../textures/${d.tex}.png`, import.meta.url)), d.tex);
+  }
+  const inv = createInventory(); addItem(inv, 'Bottes en chitine', 1);
+  assert.equal(piecesFor(inv, 'pieds').length, 1);
+});

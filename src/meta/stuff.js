@@ -11,6 +11,10 @@ export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
 export const slotOf = item => ITEMS[item]?.cat === 'stuff' ? ITEMS[item].slot ?? null : null;
 
+/* bonus d'une pièce en texte lisible : « Oxygène +30 · Pods +25 » (vide si aucun) */
+export const statsText = item => Object.entries(ITEMS[item]?.stats || {})
+  .map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${String(v).replace('.', ',')}`).join(' · ');
+
 export function createStuff(){ return { worn: Object.fromEntries(SLOT_IDS.map(s => [s, null])), ops: [] }; }
 
 /* pièces de l'inventaire qui vont dans cette case */
