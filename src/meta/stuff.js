@@ -6,6 +6,7 @@
    son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée. */
 import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
+import { withSkillStats } from './skills.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
@@ -45,10 +46,14 @@ export function statsOf(items){
 }
 /* caractéristiques en session (src/sim/miner.js, m.carac) : { stat: total } */
 export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(items)).map(([k, s]) => [k, s.total]));
-/* stats du mineur avec le stuff porté, pour l'onglet Stuff : [{ key, label, base, bonus, total }] */
-export function minerStats(worn){
+/* stats du mineur avec le stuff porté et les skills, pour l'onglet Stuff : [{ key, label, base, bonus, skill, total }]
+   bonus = apport du stuff, skill = apport des skills (multiplicateurs, src/meta/skills.js), total = ce qu'il a en session */
+export function minerStats(worn, effects = {}){
   const s = statsOf(Object.values(worn || {}).filter(Boolean).map(p => p.item));
-  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key] }));
+  const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
+  const all = withSkillStats(withStuff, effects);
+  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key],
+    skill:r2(all[key] - withStuff[key]), total:r2(all[key]) }));
 }
 
 /* bulle d'info d'une pièce de stuff : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */

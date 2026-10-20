@@ -104,6 +104,7 @@ const research = setupResearch({
 const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
+  onChange: s => stuff.setSkills(s),   // l'onglet Stuff affiche aussi les bonus des skills
 });
 
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile

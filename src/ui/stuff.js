@@ -3,6 +3,7 @@
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
 import { piecesFor, statsText, minerStats } from '../meta/stuff.js';
+import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 
@@ -12,7 +13,7 @@ const statLine = item => statsText(item) ? `<br><small class="stuffStats">${esc(
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
 export function setupStuff({ onOp }){
-  let inv = { slots:[] }, worn = {}, busy = false, open = null;
+  let inv = { slots:[] }, worn = {}, effects = {}, busy = false, open = null;
 
   function render(){
     $('stuffGrid').innerHTML = STUFF.slots.map(s => {
@@ -25,12 +26,14 @@ export function setupStuff({ onOp }){
     if(open) renderPicker();
   }
 
-  /* stats du mineur : base + bonus des pièces portées (le bonus en vert) */
+  /* stats du mineur : base + bonus des pièces portées (en vert) + bonus des skills (en bleu) */
   function renderStats(){
     const fr = v => String(v).replace('.', ',');
-    $('stuffStatsBody').innerHTML = minerStats(worn).map(s =>
+    $('stuffStatsBody').innerHTML = minerStats(worn, effects).map(s =>
       `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}</b>`+
-      (s.bonus ? ` <small class="mut">(${fr(s.base)} <span class="stuffStats">+${fr(s.bonus)}</span>)</small>` : '')+
+      (s.bonus || s.skill ? ` <small class="mut">(${fr(s.base)}`+
+        (s.bonus ? ` <span class="stuffStats" title="stuff">+${fr(s.bonus)}</span>` : '')+
+        (s.skill ? ` <span class="skillStats" title="skills">+${fr(s.skill)}</span>` : '')+`)</small>` : '')+
       `</span></div>`).join('');
   }
 
@@ -65,6 +68,8 @@ export function setupStuff({ onOp }){
   return {
     setInventory(v){ inv = v; render(); },
     set(w){ if(w){ worn = w; render(); } },
+    /* skills du joueur (onglet Skills) : leurs bonus de stats s'affichent aussi ici */
+    setSkills(s){ effects = skillEffects(sanitizeSkills(s)); renderStats(); },
     worn: () => worn,                 // pièces portées (l'inventaire dit ce qu'une pièce remplacerait)
   };
 }

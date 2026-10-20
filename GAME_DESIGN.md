@@ -357,7 +357,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
-- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vision, boussole, torches, passerelles) : base + bonus des pièces portées, le bonus en vert.
+- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, découverte, vision, boussole, torches, passerelles) : base + bonus des pièces portées (en vert) + bonus des skills (en bleu, ex. vitesse de minage, dégâts). Le total est exactement ce que le mineur a en session.
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

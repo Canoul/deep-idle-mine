@@ -9,7 +9,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Étape précédente au max d\'abord', no_points:'Plus de points', maxed:'Rang max' };
 
 /* onOp({ action:'learn', node } | { action:'reset' }) → promesse ; inSession() : une session est en cours */
-export function setupSkills({ onOp, inSession }){
+export function setupSkills({ onOp, inSession, onChange = () => {} }){
   let st = { tree:null, ranks:{}, points:0, spent:0 }, busy = false, msg = '';
 
   function render(){
@@ -38,7 +38,7 @@ export function setupSkills({ onOp, inSession }){
   async function send(op){
     if(busy) return;
     busy = true; msg = ''; render();
-    try { st = (await onOp(op)).skills; }
+    try { st = (await onOp(op)).skills; onChange(st); }
     catch(e){ msg = e.message; }
     finally { busy = false; render(); }
   }
@@ -50,5 +50,5 @@ export function setupSkills({ onOp, inSession }){
   };
 
   render();
-  return { set(s){ if(s){ st = s; render(); } }, refresh: render };
+  return { set(s){ if(s){ st = s; render(); onChange(st); } }, refresh: render };
 }

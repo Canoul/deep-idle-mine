@@ -63,6 +63,16 @@ export function sanitizeSkills(raw, points = Infinity){
   return st;
 }
 
+/* skills qui multiplient une stat du mineur (le reste agit pendant la partie : oxygène, vitesse après un minerai…) */
+export const SKILL_STATS = { mineSpeed:'mine_speed', damage:'damage' };
+/* applique ces multiplicateurs à des caractéristiques { stat: valeur } (déjà avec le stuff) ; renvoie une copie.
+   Même calcul en session (src/shared/game.js) et dans l'onglet Stuff. */
+export function withSkillStats(carac, effects){
+  const out = { ...carac };
+  for(const [stat, node] of Object.entries(SKILL_STATS)) if(effects?.[node]) out[stat] = carac[stat] * (1 + effects[node]);
+  return out;
+}
+
 /* rangs seuls (ce qu'on fige dans l'enregistrement d'une session) */
 export const skillRanks = st => ({ tree:st.tree, ranks:{ ...st.ranks } });
 

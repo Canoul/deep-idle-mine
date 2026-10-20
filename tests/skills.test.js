@@ -134,3 +134,15 @@ test('échelles au retour : on laisse le logisticien les poser (au plus 4 s), pu
   run(G, Math.round(SKILLS.ladderYieldMax / 0.1) + 30);
   assert.ok(G.ladder[4][5] || a.y < 4, 'après l\'attente, elle pose l\'échelle elle-même');
 });
+test('onglet Stuff : les stats montrent aussi les bonus des skills, comme en session', async () => {
+  const { minerStats } = await import('../src/meta/stuff.js');
+  const { skillEffects, sanitizeSkills } = await import('../src/meta/skills.js');
+  const { buildSession } = await import('../src/shared/game.js');
+  const skills = { tree:'mineur', ranks:{ mine_speed:3 } };
+  const worn = { pioche:{ item:'Pioche en pierre', uid:1 } };
+  const row = minerStats(worn, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'mineSpeed');
+  assert.deepEqual([row.base, row.bonus, row.skill, row.total], [1, 0.1, 0.07, 1.17]);   // (1 + 0,1) × 1,06 = 1,166
+  const G = buildSession({ id:'S', seed:1, players:[{ account:'A', name:'Ana' }], looks:{ A:{ pioche:'Pioche en pierre' } }, skills:{ A:skills } });
+  assert.equal(Math.round(G.miners[0].carac.mineSpeed * 100) / 100, row.total, 'même valeur qu\'en session');
+  assert.equal(minerStats(worn).find(s => s.key === 'mineSpeed').skill, 0, 'sans skills : rien');
+});

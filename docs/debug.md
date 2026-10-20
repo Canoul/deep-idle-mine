@@ -480,3 +480,16 @@ Règles (voir CLAUDE.md) :
   jusqu'à la couche 202, ≈ 915 à 975 s dans le seau par mineur. ⚠️ Pas regardé dans un navigateur.
 - **Points fragiles** : le seau (0,85×) est plus lent qu'une échelle déjà posée ; le gain vient des échelles évitées.
   Un mob peut tomber dans le puits (il tient comme une échelle, les mobs ne le montent pas).
+
+### Onglet Stuff : les stats montrent aussi les bonus des skills (signalé par le créateur)
+- **Symptôme** : points mis dans « vitesse de minage », la carte « Stats du mineur » ne bougeait pas. Les skills
+  étaient bien appliqués en session, mais l'onglet Stuff ne les affichait pas.
+- **Quoi** : un seul calcul pour la session et l'affichage : `withSkillStats` (src/meta/skills.js, stats multipliées
+  par les skills : `SKILL_STATS`). `minerStats(worn, effects)` renvoie aussi `skill` ; l'onglet affiche base + stuff
+  (vert) + skills (bleu). L'onglet Skills prévient l'onglet Stuff à chaque changement (`onChange` → `setSkills`).
+- **Fichiers** : `src/meta/{skills,stuff}.js`, `src/shared/game.js`, `src/ui/{stuff,skills}.js`, `src/main.js`,
+  `src/ui/style.css`, `index.html`, GAME_DESIGN §6 Stuff.
+- **Tests** : 1 test dans `tests/skills.test.js` (même valeur que dans la partie), `stuff.test.js` adapté ; 44/44.
+- **Vérification** : ✅ chaîne réelle vérifiée par script : 3 rangs de vitesse de minage appris par le serveur → figés
+  dans l'enregistrement de la session → partie du serveur (`createLiveGame`) : vitesse de minage 1,06, le mineur mine
+  normalement. ⚠️ Pas regardé dans un navigateur.

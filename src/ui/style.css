@@ -272,6 +272,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .skRank{font-variant-numeric:tabular-nums;min-width:28px}
 .skPlus{width:26px;height:26px;padding:0;font-weight:700}
 .skLink{width:2px;height:12px;background:var(--line);margin:0 auto}
+.skillStats{color:#6fb3ff}
 .rsTabs{margin-bottom:10px}
 .rsBody{margin-top:0}
 .rsRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
