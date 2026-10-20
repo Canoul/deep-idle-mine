@@ -19,11 +19,12 @@ test('familles : charbon = combustible (mais minerai dans la mine), fer/or = ore
   assert.equal(Object.values(BLOCKS).find(b => b.name === 'Charbon').type, 'ore', 'la mine ne change pas');
   assert.equal(ITEMS.Fer.cat, 'ore'); assert.equal(ITEMS.Or.cat, 'ore');
   assert.equal(ITEMS['Lingot de fer'].cat, 'ingot');
-  for(const [k, d] of Object.entries(ITEMS)) if(d.cat === 'ore') assert.ok(FURNACE.recipes[k], `${k} doit avoir une recette`);
+  assert.ok(!FURNACE.recipes.Diamant, 'pas de recette pour le diamant (pour l\'instant)');
 });
 
 test('cases : minerai seulement dans « ore », combustible seulement dans « fuel »', () => {
   assert.ok(accepts('ore', 'Fer')); assert.ok(accepts('ore', 'Or'));
+  assert.ok(!accepts('ore', 'Diamant'), 'minerai sans recette : refusé');
   assert.ok(!accepts('ore', 'Charbon')); assert.ok(!accepts('ore', 'Pierre'));
   assert.ok(accepts('fuel', 'Charbon')); assert.ok(!accepts('fuel', 'Fer'));
   const { inv, st } = setup();

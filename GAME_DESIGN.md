@@ -47,7 +47,7 @@ Chaque bloc appartient à une catégorie :
 
 **Familles d'objets (inventaire).** Une fois ramassé, un bloc devient un objet d'une **famille**, qui décide de son usage hors session. C'est en général sa catégorie, sauf exception :
 - **charbon** : minerai dans la mine (il compte pour le déblocage, l'IA le vise, le gobelin le vole), mais **combustible** dans l'inventaire ;
-- **ore** (fer, or, diamant) : se fondent au four ;
+- **ore** (fer, or, diamant) : minerais ; ceux qui ont une recette se fondent au four (fer, or ; pas le diamant pour l'instant) ;
 - **ingot** : les lingots sortis du four.
 
 ### Compositions des areas
@@ -254,7 +254,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   - **combustible** : seulement un objet de la famille **combustible** (le charbon) ;
   - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
 - Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre** ou bouton **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
-- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**, diamant 3 min *(provisoire, non décidé)*.
+- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**. Le **diamant ne se fond pas** (pas de recette).
 - La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
 - Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).
 - **Le serveur fait foi** : chaque action est faite par lui, inventaire et four changent ensemble ; une demande renvoyée (double clic) ne s'applique qu'une fois.

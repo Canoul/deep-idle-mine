@@ -79,7 +79,7 @@ Règles (voir CLAUDE.md) :
 ### Onglet Four — commit `75a75d5`, fusionné dans `main` par `28524ee`
 - **Quoi** : fondre les minerais en lingots, hors session. Un four au départ (3 max, les fours 2 et 3 sous cadenas).
   Chaque four a 3 cases : minerai (famille `ore`), combustible (famille `combustible` = le charbon) et sortie.
-  1 lingot = 10 minerais + 10 charbons. Fer 1 min, or 2 min, diamant 3 min (provisoire). La fonte avance en temps
+  1 lingot = 10 minerais + 10 charbons. Fer 1 min, or 2 min (le diamant ne fond pas : recette retirée, commit suivant). La fonte avance en temps
   réel, même page fermée : `advance(f, now)` calcule tout depuis `since`. Les matières ne sont consommées qu'à la fin
   d'un lingot, donc retirer une case rend tout. Si la sortie contient un autre lingot, la fonte attend.
 - **Familles d'objets** : `ITEMS[x].cat` = `family` du bloc si elle existe, sinon son type. Le charbon est

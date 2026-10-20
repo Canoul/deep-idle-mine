@@ -169,13 +169,14 @@ export const MOBS = {
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
-  'ingot_iron','ingot_gold','ingot_diamond',
+  'ingot_iron','ingot_gold',
   'ladder','chest','miner','mimic','bug','goblin','torch'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
    Chaque lingot consomme orePerIngot minerais + fuelPerIngot combustibles, en time secondes (temps réel, même
-   page fermée : le serveur calcule l'avancée depuis l'heure de départ). Tout minerai de la famille ore a une recette.
+   page fermée : le serveur calcule l'avancée depuis l'heure de départ). Un minerai (famille ore) sans recette ne va pas
+   dans le four (le diamant, pour l'instant).
    max : nombre de fours au maximum ; startOwned : fours possédés au départ (les autres sont sous cadenas).
    tiers : fours plus puissants à venir (speed divise le temps de fonte). */
 export const FURNACE = {
@@ -184,7 +185,6 @@ export const FURNACE = {
   recipes: {
     Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
     Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
-    Diamant: { out:'Lingot de diamant', time:180, tex:'ingot_diamond' },   // provisoire
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

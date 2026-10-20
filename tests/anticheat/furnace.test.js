@@ -34,7 +34,7 @@ test('four : matière conservée sur 500 suites d\'actions au hasard (quantités
       furnaceOp(st, inv, { action, furnace: Math.floor(r() * 4) - (r() < 0.1 ? 5 : 0), slot, item, qty, opId }, now);
     }
     for(const f of st.list) advance(f, now + 1e12);
-    const ingots = { Fer: total(inv, st, 'Lingot de fer'), Or: total(inv, st, 'Lingot d\'or'), Diamant: total(inv, st, 'Lingot de diamant') };
+    const ingots = { Fer: total(inv, st, 'Lingot de fer'), Or: total(inv, st, 'Lingot d\'or'), Diamant: 0 };   // le diamant ne fond pas
     for(const ore of ['Fer', 'Or', 'Diamant'])
       assert.equal(total(inv, st, ore) + FURNACE.orePerIngot * ingots[ore], START[ore], `${ore} (essai ${t})`);
     const all = ingots.Fer + ingots.Or + ingots.Diamant;
