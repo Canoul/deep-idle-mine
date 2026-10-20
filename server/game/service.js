@@ -1,19 +1,20 @@
 /* Sessions de jeu côté serveur : c'est le serveur qui fait foi (anti-triche).
 
-   - Le serveur crée la session (seed, joueurs, préférences, heure de départ) ; le navigateur ne fait que l'afficher.
-   - Le navigateur ne peut que dire « je lance », « je quitte », « c'est fini » et lire l'état. Il n'écrit jamais
-     dans un inventaire.
-   - Fin de session : le serveur rejoue lui-même la partie depuis son enregistrement (replay, dans un thread à part),
-     partage le coffre entre les joueurs présents et verse les parts. Chaque versement est idempotent
-     (creditSession) : un rejeu relancé après un arrêt brutal ne duplique rien.
-   - Mode normal : vitesse fixe (GAME.speed), la fin est refusée avant l'heure. Mode dev : vitesses libres,
-     réglages dev, fin quand le navigateur le dit.
-   - À plusieurs : le chef d'un groupe (server/party/) lance la session pour tous les membres. Chaque navigateur
-     construit la même partie ; un départ est annoncé GAME.leaveNotice secondes à l'avance pour que tous retirent
-     le mineur au même tick que le serveur.
-   Testable seul : on lui passe un stockage, une horloge et une fonction de rejeu. */
+   - Le serveur crée la session (seed, joueurs, préférences, heure de départ) et la FAIT TOURNER lui-même, en direct
+     (server/game/live.js) : c'est la seule copie de la partie. Les navigateurs ne font que l'afficher.
+   - Le navigateur ne peut que dire « je lance », « je quitte », « focus », et lire l'état. Il n'écrit jamais dans un
+     inventaire et ne calcule aucun résultat : il n'y a rien à vérifier.
+   - Un choix (quitter, focus) s'applique tout de suite dans la partie ; il est enregistré avec son tick, ce qui
+     permet de reconstruire la partie à l'identique après un redémarrage du serveur.
+   - Fin de session (dernier tick) : le coffre est partagé entre les joueurs présents et versé aussitôt. Chaque
+     versement est idempotent (creditSession) : rien n'est versé deux fois.
+   - Mode normal : la partie suit le temps réel (GAME.speed). Mode dev : vitesse et pause réglables (horloge de la
+     session, côté serveur), fin libre.
+   - À plusieurs : le chef d'un groupe (server/party/) lance la session pour tous les membres.
+   Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
 import { GAME, PREFS, FOCUS, FURNACE } from '../../src/config.js';
+import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
@@ -24,6 +25,7 @@ import { craft } from '../../src/meta/craft.js';
 import { sanitizeStuff, stuffOp } from '../../src/meta/stuff.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
+import { createLiveRunner } from './live.js';
 
 export class GameError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -59,11 +61,13 @@ function createLocks(){
   return withLock;
 }
 
-export function createGameService({ store, replay, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
+export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
                                     config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
                                     random = () => crypto.randomInt(2**48) / 2**48 }){
   const withLock = createLocks();
-  const settling = new Set();
+  const settling = new Map();      // id → promesse du versement en cours
+  /* les parties en direct ; à la fin de l'une d'elles, son coffre est partagé et versé */
+  const live = liveRunner({ onEnd: (id, summary) => { settleWith(id, summary).catch(console.error); } });
   const startLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);
 
   /* ---------- lecture ---------- */
@@ -84,6 +88,7 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     if(!rec) return null;
     return { id: rec.id, seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, overrides: rec.overrides,
              dev: rec.dev, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
+             tick: live.tickOf(rec.id), clock: rec.dev ? rec.clock : null,
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
              result: rec.status === 'done' ? rec.result : null };
@@ -96,29 +101,50 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     return (await store.sessionsOf(accountId)).find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId)) ?? null;
   }
 
+  /* ---------- parties en direct ---------- */
+
+  /* tick que la partie doit avoir atteint maintenant : temps réel (jeu normal), horloge de la session (dev) */
+  function targetTick(rec){
+    if(!rec.dev) return tickAt(clock() - rec.startedAt, rec.speed);
+    const c = rec.clock;
+    const t = c.paused ? c.tick : c.tick + Math.floor((clock() - c.at) / 1000 * c.speed / DT + 1e-9);
+    return Math.min(TOTAL_TICKS, t);
+  }
+  /* la partie tourne (après un redémarrage du serveur : reconstruite depuis la seed et les choix enregistrés).
+     Jamais pour une partie qui vient de se terminer et dont le coffre est en cours de partage : false. */
+  function ensureLive(rec){
+    if(settling.has(rec.id)) return false;
+    if(!live.has(rec.id)) live.open(rec);
+    return true;
+  }
+  /* la partie rattrape le temps écoulé ; renvoie son tick (null si elle vient de se terminer) */
+  async function catchUp(rec){
+    if(!ensureLive(rec)) return null;
+    await live.advance(rec.id, targetTick(rec));
+    return live.has(rec.id) ? live.tickOf(rec.id) : null;
+  }
+
+  /* fait avancer toutes les sessions en cours (appelé en continu par le serveur, toutes les pumpEvery ms) */
+  const pumping = new Set();
+  async function pump(){
+    await Promise.all((await store.sessionsWithStatus('running')).map(async rec => {
+      if(pumping.has(rec.id)) return;
+      pumping.add(rec.id);
+      try { await catchUp(rec); }
+      catch(e){ console.error(`Session ${rec.id} :`, e.message); live.close(rec.id); }   // relancée au prochain passage
+      finally { pumping.delete(rec.id); }
+    }));
+    await Promise.all(settling.values());
+  }
+
   /* ---------- fin de session ---------- */
 
-  /* Rejoue la session, partage le coffre, verse les parts. Sans effet si elle n'est pas « running ».
-   Renvoie une promesse (les routes ne l'attendent pas : le rejeu prend jusqu'à une minute). */
-  function settle(id){
-    if(settling.has(id)) return Promise.resolve();
-    settling.add(id);
-    return (async () => {
+  /* Partage le coffre de la partie terminée et verse les parts. Sans effet si la session n'est pas « running ». */
+  function settleWith(id, summary){
+    if(settling.has(id)) return settling.get(id);
+    const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
-      rec.status = 'settling';
-      await store.putGameSession(rec);
-
-      let summary;
-      try { summary = await replay(rec); }
-      catch(e){
-        console.error(`Rejeu de la session ${id} impossible :`, e.message);
-        rec = await store.getGameSession(id);
-        rec.status = 'running'; rec.failures = (rec.failures || 0) + 1;
-        await store.putGameSession(rec);
-        return;
-      }
-
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;
@@ -130,12 +156,17 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       rec = await store.getGameSession(id);
       rec.status = 'done'; rec.result = summary; rec.endedAt = clock();
       await store.putGameSession(rec);
-    })().finally(() => settling.delete(id));
+    }).finally(() => settling.delete(id));
+    settling.set(id, p);
+    return p;
   }
 
-  /* toutes les sessions arrivées à leur fin (joueurs absents compris) */
-  async function settleDue(){
-    for(const rec of await store.sessionsWithStatus('running')) if(isDue(rec)) await settle(rec.id);
+  /* termine une session tout de suite (dev, ou session dont l'heure est passée) ; sans effet sinon */
+  async function settle(id){
+    const rec = await store.getGameSession(id);
+    if(!rec || rec.status !== 'running' || (!rec.dev && clock() < rec.finishAt)) return;
+    if(ensureLive(rec)){ if(rec.dev) await live.finish(id); else await live.advance(id, TOTAL_TICKS); }
+    await settling.get(id);
   }
 
   return {
@@ -146,7 +177,6 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     async state(me){
       const list = await store.sessionsOf(me.id);
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
-      if(active && isDue(active)) settle(active.id).catch(console.error);
       const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
       const inv = await loadInventory(me.id);
       return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(await loadFurnaces(me.id)),
@@ -173,6 +203,8 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
+        if(live.size >= config.maxLive)
+          fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
         const lim = startLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
@@ -188,66 +220,88 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
+          clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
+        await store.putGameSession(rec);
+        ensureLive(rec);
+        return { session: publicSession(rec) };
+      });
+    },
+
+    /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite. */
+    async leave(me){
+      return withLock('acct:' + me.id, async () => {
+        const rec0 = await activeOf(me.id);
+        if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
+        return withLock('sess:' + rec0.id, async () => {
+          const rec = await store.getGameSession(rec0.id);
+          if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+          const now = clock();
+          if(rec.players.every(p => p.account === me.id || hasLeft(rec, p.account))){
+            /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
+            live.close(rec.id);
+            rec.leaves.push({ account: me.id, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
+            rec.status = 'done'; rec.endedAt = now;
+            rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
+          } else {
+            if(await catchUp(rec) === null) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+            rec.leaves.push({ account: me.id, tick: await live.leave(rec.id, me.id), at: now });
+          }
+          await store.putGameSession(rec);
+          return { left: true };
+        });
+      });
+    },
+
+    /* focus (minerai, area) changé pendant la session : appliqué tout de suite dans la partie, enregistré avec son
+       tick (GAME_DESIGN §3). Aucune ressource en jeu : on vérifie la forme et le nombre de changements. */
+    async focus(me, body = {}){
+      const f = body.focus;
+      if(!f || typeof f !== 'object' || Array.isArray(f)) fail('bad_request', 400, 'Focus invalide.');
+      return withLock('acct:' + me.id, async () => {
+        const rec0 = await activeOf(me.id);
+        if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
+        return withLock('sess:' + rec0.id, async () => {
+          const rec = await store.getGameSession(rec0.id);
+          if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
+          rec.focus ??= [];
+          if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
+            fail('too_many', 429, 'Trop de changements de focus dans cette session.');
+          const focus = sanitizeFocus(f);
+          if(await catchUp(rec) === null) fail('session_over', 409, 'La session est terminée.');
+          const ev = { account: me.id, tick: await live.focus(rec.id, me.id, focus), focus };
+          rec.focus.push(ev);
+          await store.putGameSession(rec);
+          return { event: ev };
+        });
+      });
+    },
+
+    /* mode dev : vitesse et pause de la session (l'horloge est sur le serveur, la partie aussi) */
+    async devClock(me, body = {}){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      const rec0 = await activeOf(me.id);
+      if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
+      return withLock('sess:' + rec0.id, async () => {
+        const rec = await store.getGameSession(rec0.id);
+        const c = { ...rec.clock, tick: targetTick(rec), at: clock() };
+        if(GAME.devSpeeds.includes(body.speed)) c.speed = body.speed;
+        if(typeof body.paused === 'boolean') c.paused = body.paused;
+        rec.clock = c;
         await store.putGameSession(rec);
         return { session: publicSession(rec) };
       });
     },
 
-    /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6) */
-    async leave(me, body = {}){
-      return withLock('acct:' + me.id, async () => {
-        const rec = await activeOf(me.id);
-        if(!rec) fail('no_session', 404, 'Aucune session en cours.');
-        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
-        const now = clock();
-        /* jeu normal : départ dans GAME.leaveNotice s (les autres navigateurs l'apprennent avant d'y arriver), et au
-           plus tard au dernier tick (un départ doit toujours avoir lieu avant la fin) */
-        const tick = dev ? (isInt(body.tick) ? Math.max(0, Math.min(TOTAL_TICKS - 1, body.tick)) : 0)
-                         : Math.min(TOTAL_TICKS - 1, tickAt(now - rec.startedAt + GAME.leaveNotice * 1000, rec.speed));
-        rec.leaves.push({ account: me.id, tick, at: now });
-        if(rec.players.every(p => hasLeft(rec, p.account))){
-          /* plus aucun joueur : personne ne reçoit rien, pas besoin de rejouer */
-          rec.status = 'done'; rec.endedAt = now;
-          rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
-        }
-        await store.putGameSession(rec);
-        return { left: true };
-      });
-    },
-
-    /* focus minerai changé pendant la session : enregistré avec son tick, rejoué tel quel (GAME_DESIGN §3).
-       Jeu normal : le tick vient de l'horloge du serveur (+ FOCUS.delayTicks) ; dev : celui du navigateur.
-       Les ticks restent croissants (rejeu dans l'ordre). Aucune ressource en jeu : on vérifie la forme et le nombre. */
-    async focus(me, body = {}){
-      return withLock('acct:' + me.id, async () => {
-        const rec = await activeOf(me.id);
-        if(!rec) fail('no_session', 404, 'Aucune session en cours.');
-        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
-        const f = body.focus;
-        if(!f || typeof f !== 'object' || Array.isArray(f)) fail('bad_request', 400, 'Focus invalide.');
-        rec.focus ??= [];
-        if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
-          fail('too_many', 429, 'Trop de changements de focus dans cette session.');
-        const now = clock();
-        let tick = dev ? (isInt(body.tick) ? body.tick : 0) : tickAt(now - rec.startedAt, rec.speed) + FOCUS.delayTicks;
-        tick = Math.max(tick, rec.focus.at(-1)?.tick ?? 0, 0);
-        if(tick > TOTAL_TICKS) fail('session_over', 409, 'La session est terminée.');
-        const ev = { account: me.id, tick, focus: sanitizeFocus(f) };
-        rec.focus.push(ev);
-        await store.putGameSession(rec);
-        return { event: ev };
-      });
-    },
-
-    /* le navigateur signale la fin : en mode normal, refusé avant l'heure */
+    /* « c'est fini » : en mode normal, refusé avant l'heure (la partie se termine d'elle-même au dernier tick) ;
+       en mode dev, la partie est jouée jusqu'au bout tout de suite (fin libre) */
     async finish(me){
       const rec = await activeOf(me.id);
       if(!rec) fail('no_session', 404, 'Aucune session en cours.');
       if(rec.status === 'running' && !rec.dev && clock() < rec.finishAt)
         fail('too_early', 409, 'La session n\'est pas encore terminée.', { retryAfter: Math.ceil((rec.finishAt - clock()) / 1000) });
-      settle(rec.id).catch(console.error);
-      return { session: publicSession({ ...rec, status: 'settling' }) };
+      await settle(rec.id);
+      return { session: publicSession(await store.getGameSession(rec.id)) };
     },
 
     /* ouvrir un Treasure TX de son inventaire : le serveur tire le butin. opId (choisi par le navigateur) rend la
@@ -319,15 +373,19 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       });
     },
 
-    /* démarrage du serveur : un rejeu interrompu (arrêt brutal) est relancé ; ménage des vieilles sessions */
+    /* démarrage du serveur : les sessions en cours repartent (reconstruites, puis rattrapent le temps écoulé) ;
+       ménage des vieilles sessions */
     async recover(){
       for(const rec of await store.sessionsWithStatus('settling')){ rec.status = 'running'; await store.putGameSession(rec); }
+      for(const rec of await store.sessionsWithStatus('running'))
+        if(rec.dev && !rec.clock){ rec.clock = { tick: 0, at: clock(), speed: GAME.devSpeeds[0], paused: true }; await store.putGameSession(rec); }
       for(const rec of await store.sessionsWithStatus('done'))
         if(rec.endedAt && clock() - rec.endedAt > config.keepEnded) await store.deleteGameSession(rec.id);
-      await settleDue();
+      await pump();
     },
-    settleDue,
+    pump,
     settle,         // pour les tests
+    close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
   };

@@ -258,9 +258,8 @@ export const ACCOUNT = {
            (x2 : 30 min). Le serveur refuse une fin de session avant ce temps.
    devSpeeds : vitesses proposées en mode développeur (serveur lancé avec npm run dev), où la fin est libre.
    maxPlayers : places dans le lobby (jeu prévu à 3).
-   leaveNotice : un joueur qui quitte en jeu normal part après ce délai réel (s), pour que les navigateurs des autres
-                 joueurs l'apprennent avant d'y arriver et retirent son mineur au même moment que le serveur. */
-export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3, leaveNotice:15 };
+   La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
+export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
 /* ---- Groupes (lobby à plusieurs) ----
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
@@ -281,12 +280,10 @@ export const PREF_OPTIONS = {
    minLeft  : sous cette part du nombre initial d'un minerai dans une area, l'area est « épuisée » pour ce minerai :
               le mineur part vers l'area débloquée la plus proche qui en a encore ; s'il n'y en a plus, le focus saute.
    valFactor: poids d'un minerai visé = valFactor × le plus gros poids de minerai (provisoire).
-   delayTicks : en jeu normal, un changement prend effet ce nombre de ticks après sa réception (laisse au navigateur
-                le temps de l'appliquer au même tick que le serveur).
    maxChanges : changements max par joueur et par session (protège l'enregistrement).
    Focus d'area (même enregistrement, clé « area ») : le mineur travaille dans cette area, sans descendre plus bas ni
    viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
-export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, delayTicks:20, maxChanges:500, maxArea:99 };
+export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
 
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */

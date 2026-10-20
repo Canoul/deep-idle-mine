@@ -11,7 +11,6 @@ import { GAME_SERVER } from './config.js';
 import { createFileGameStore, createPgGameStore } from './game/store.js';
 import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
-import { createReplayer } from './game/replay.js';
 import { createPartyService } from './party/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
@@ -20,14 +19,15 @@ const db = process.env.DATABASE_URL ? await openDatabase(process.env.DATABASE_UR
 const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDir);
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
-const game = createGameService({ store: gameStore, replay: createReplayer() });
+const game = createGameService({ store: gameStore });
 const party = createPartyService({ game, getAccount: id => store.getAccount(id) });
 const server = http.createServer(createApp({ store, service, game, party, root: ROOT }));
 
-/* sessions de jeu : reprise d'un rejeu interrompu, puis versement des sessions arrivées à leur fin (même joueur absent) */
-game.recover().catch(console.error);
-const settle = setInterval(() => game.settleDue().catch(console.error), GAME_SERVER.settleEvery);
-settle.unref();
+/* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
+   chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
+await game.recover().catch(console.error);
+const pump = setInterval(() => game.pump().catch(console.error), GAME_SERVER.pumpEvery);
+pump.unref();
 
 /* ménage des connexions expirées, au démarrage puis toutes les heures */
 await service.purgeExpired();
@@ -43,6 +43,7 @@ server.listen(port, () => {
 /* arrêt propre : on attend la fin de la dernière écriture avant de quitter */
 for(const sig of ['SIGINT', 'SIGTERM']) process.on(sig, async () => {
   server.close();
+  game.close();
   await store.close();
   await gameStore.close();
   await db?.close();

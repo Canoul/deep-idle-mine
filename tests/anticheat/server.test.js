@@ -6,30 +6,27 @@ import { realDurationMs } from '../../src/shared/game.js';
 import { GAME } from '../../src/config.js';
 import { createMemoryGameStore } from '../../server/game/store.js';
 import { createGameService } from '../../server/game/service.js';
+import { fakeLive } from '../helpers.js';
 
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 const OTHER = { id:'BBBB2222', name:'Max', guest:false };
 const flush = async () => { for(let i=0; i<5; i++) await new Promise(r => setTimeout(r, 0)); };
 
-function setup(replayImpl){
+/* summaryImpl : résumé de fin de la partie (par défaut : 10 or pour chaque joueur) */
+function setup(summaryImpl){
   let now = 1_000_000;
   const store = createMemoryGameStore();
-  const calls = [];
-  const replay = async rec => {
-    calls.push(rec.id);
-    await new Promise(r => setTimeout(r, 5));            // un vrai rejeu prend du temps : laisse les requêtes s'entremêler
-    return replayImpl ? replayImpl(rec) : { shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Or:10 } })) };
-  };
-  const game = createGameService({ store, replay, clock: () => now, dev:false, config:{ startsPerHour:1000, keepEnded:1e12 } });
-  return { game, store, calls, advance: ms => { now += ms; } };
+  const live = fakeLive(rec => summaryImpl ? summaryImpl(rec) : { shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Or:10 } })) });
+  const game = createGameService({ store, liveRunner: live, clock: () => now, dev:false, config:{ startsPerHour:1000, keepEnded:1e12, maxLive:2 } });
+  return { game, store, calls: live.ended, advance: ms => { now += ms; } };
 }
 const gold = async (game, who = ME) => (await game.state(who)).inventory.slots.find(s => s?.item === 'Or')?.qty ?? 0;
 
-test('fin signalée plusieurs fois en même temps (onglets, double clic) : un seul rejeu, un seul versement', async () => {
+test('fin signalée plusieurs fois en même temps (onglets, double clic) : une seule fin, un seul versement', async () => {
   const { game, calls, advance } = setup();
   await game.start(ME, {});
   advance(realDurationMs());
-  await Promise.all([game.finish(ME), game.finish(ME), game.finish(ME), game.settleDue(), game.state(ME)]);
+  await Promise.all([game.finish(ME), game.finish(ME), game.finish(ME), game.pump(), game.state(ME)]);
   await flush();
   assert.equal(calls.length, 1);
   assert.equal(await gold(game), 10);
@@ -48,12 +45,25 @@ test('fin rejouée après coup (requête renvoyée) : rien de plus', async () =>
   assert.equal(await gold(game), 10, '…la part n\'est versée qu\'une fois (creditSession)');
 });
 
-test('impossible de lancer une 2e session pendant que la 1re est en cours de rejeu', async () => {
+test('impossible de lancer une 2e session pendant que la 1re tourne', async () => {
   const { game, advance } = setup();
   await game.start(ME, {});
-  advance(realDurationMs());
-  await game.finish(ME);
+  advance(realDurationMs() / 2);
   await assert.rejects(game.start(ME, {}), { code:'session_running' });
+});
+
+test('serveur plein (maxLive) : lancement refusé, sans rien engager', async () => {
+  const { game, store } = setup();
+  const THIRD = { id:'CCCC3333', name:'Lou', guest:false };
+  await game.start(ME, {}); await game.start(OTHER, {});
+  await assert.rejects(game.start(THIRD, {}), { code:'server_busy', status:503 });
+  assert.equal((await store.sessionsOf(THIRD.id)).length, 0);
+});
+
+test('horloge dev (vitesse, pause) refusée en jeu normal', async () => {
+  const { game } = setup();
+  await game.start(ME, {});
+  await assert.rejects(game.devClock(ME, { speed:300 }), { code:'forbidden' });
 });
 
 test('quitter puis tenter d\'obtenir quand même sa part : rien', async () => {
@@ -62,29 +72,29 @@ test('quitter puis tenter d\'obtenir quand même sa part : rien', async () => {
   advance(1000);
   await game.leave(ME, {});
   advance(realDurationMs());
-  await game.settleDue(); await flush();
+  await game.pump(); await flush();
   await assert.rejects(game.finish(ME), { code:'no_session' });
   assert.equal(await gold(game), 0);
 });
 
-test('un résultat de rejeu qui verserait à un compte hors de la session est ignoré', async () => {
+test('un résumé de fin qui verserait à un compte hors de la session est ignoré', async () => {
   const { game, advance } = setup(() => ({ shares:[
     { account:ME.id, left:false, bag:{ Or:10 } },
     { account:OTHER.id, left:false, bag:{ Or:999 } },               // pas dans la session
   ] }));
   await game.start(ME, {});
   advance(realDurationMs());
-  await game.settleDue(); await flush();
+  await game.pump(); await flush();
   assert.equal(await gold(game), 10);
   assert.equal(await gold(game, OTHER), 0);
 });
 
-test('un résultat de rejeu avec des quantités aberrantes ne crée rien d\'invalide', async () => {
+test('un résumé de fin avec des quantités aberrantes ne crée rien d\'invalide', async () => {
   const { game, advance } = setup(rec => ({ shares:[{ account:rec.players[0].account, left:false,
     bag:{ Or:Infinity, Fer:-5, Terre:1.5, Charbon:'9', Diamant:2 } }] }));
   await game.start(ME, {});
   advance(realDurationMs());
-  await game.settleDue(); await flush();
+  await game.pump(); await flush();
   assert.deepEqual((await game.state(ME)).inventory.slots, [{ item:'Diamant', qty:2 }]);
 });
 
@@ -110,13 +120,12 @@ test('mode normal : le navigateur ne choisit ni la seed, ni la vitesse, ni l\'he
   assert.equal(rec.bots, 0);
   advance(1000);
   await game.leave(ME, { tick:0 });
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 20 + GAME.leaveNotice * 20,
-               '1 s réelle à x2 = 20 ticks (+ préavis de départ), pas 0');
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 20, '1 s réelle à x2 = 20 ticks, pas 0');
 });
 
 test('lancements en rafale limités par heure', async () => {
   let now = 0;
-  const game = createGameService({ store:createMemoryGameStore(), replay:async () => ({ shares:[] }), clock:() => now, dev:false,
+  const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(() => ({ shares:[] })), clock:() => now, dev:false,
                                    config:{ startsPerHour:3, keepEnded:1e12 } });
   for(let i=0; i<3; i++){ await game.start(ME, {}); await game.leave(ME, {}); }
   await assert.rejects(game.start(ME, {}), { code:'rate_limited' });

@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createMemoryGameStore } from '../../server/game/store.js';
+import { fakeLive } from '../helpers.js';
 import { createGameService } from '../../server/game/service.js';
 import { createInventory, addItem, serialize } from '../../src/meta/inventory.js';
 
@@ -15,7 +16,7 @@ async function setup(t1 = 1){
   const inv = createInventory();
   if(t1) addItem(inv, 'Treasure T1', t1);
   await store.putInventory(ME.id, JSON.parse(serialize(inv)));
-  const game = createGameService({ store, replay:async () => ({ shares:[] }), clock:() => 0, dev:false,
+  const game = createGameService({ store, liveRunner:fakeLive(() => ({ shares:[] })), clock:() => 0, dev:false,
                                    config:{ startsPerHour:1000, keepEnded:1e12 }, random:() => 0.5 });
   return { game, store };
 }
