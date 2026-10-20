@@ -310,10 +310,11 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
-- **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session, lu par la partie du serveur).
-- Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire, mais ne s'appliquent pas encore en session (voir le point précédent).
+- **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
+- Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
+- Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
-- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vision, boussole, torches, passerelles) : base + bonus des pièces portées, le bonus en vert. Tant que les bonus ne s'appliquent pas en session, une ligne le rappelle.
+- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vision, boussole, torches, passerelles) : base + bonus des pièces portées, le bonus en vert.
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

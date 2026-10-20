@@ -141,4 +141,4 @@ Serveur : Node ≥ 20, modules intégrés (http, crypto, fs) ; seule exception a
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : les effets du stuff sur le mineur (plan à valider : stats par mineur), la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.

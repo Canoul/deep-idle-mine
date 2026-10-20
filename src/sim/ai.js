@@ -114,7 +114,7 @@ function decideSurface(G,m){
   const left=SESSION_LEN-G.t;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
   if(m.load>0){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
-  if(m.ox<STATS.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
+  if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
   // repartir ne vaut le coup que s'il reste le temps d'aller au front, d'y travailler un peu et de revenir
   if(left<Math.max(CFG.endStayMin, 2*m.lastReturnDur+CFG.minWorkTime)){ m.status='Fin de session proche'; idle(m,1); return; }
   m.mode='departure';
@@ -149,7 +149,7 @@ function decideWork(G,m){
   if(m.y>0){
     let reason=null;
     if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
-    else if(m.load>=STATS.pods-2) reason='pods pleins';
+    else if(m.load>=m.carac.pods-2) reason='pods pleins';
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }

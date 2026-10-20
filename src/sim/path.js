@@ -36,8 +36,8 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   for(const o of G.miners) if(o!==m && o.y>0) for(let k=-1;k<=1;k++) if(o.y+k>=1 && o.y+k<H) busy[o.y+k]=1;
   const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x, nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
-  const mv=baseMoveT(), cl=baseClimbT(), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed;
-  const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(t); mineCache.set(t,v); } return v; };
+  const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed;
+  const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(m,t); mineCache.set(t,v); } return v; };
   const start=sy*W+sx; dist[start]=0; push(0,start);
   while(hd.length){
     pop(); const d=popD, n=popN; if(d>dist[n]) continue;
@@ -100,7 +100,7 @@ export function planDown(G,m,avoid=null){
   }
   const gain=(best/W|0)-m.y;
   // nouveau puits : mine ~1 s + chute par case + échelle à poser au retour ; existant : trajet aller + retour
-  const fresh=gain*(1+1/CFG.fallSpeed+CFG.futureTravelWeight*(CFG.ladderTime*CFG.ladderPlanWeight+baseClimbT()));
+  const fresh=gain*(1+1/CFG.fallSpeed+CFG.futureTravelWeight*(CFG.ladderTime*CFG.ladderPlanWeight+baseClimbT(m)));
   if(gain<3 || r.dist[best]*(1+CFG.futureTravelWeight) >= fresh) return null;
   return firstStep(r,best);
 }

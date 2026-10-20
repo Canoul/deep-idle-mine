@@ -170,15 +170,11 @@ test('oxygène : la remontée à 0 d\'oxygène n\'est pas plus lente qu\'avec de
 });
 
 test('vitesse de montée : stat indépendante de la vitesse de marche', async () => {
-  const { STATS } = await import('../src/config.js');
-  const { baseMoveT, baseClimbT } = await import('../src/sim/miner.js');
-  const s={...STATS};
-  try {
-    STATS.speed=3; STATS.climbSpeed=2;
-    assert.equal(baseMoveT(), 1/3); assert.equal(baseClimbT(), 1/2);
-    STATS.speed=6;                           // marcher plus vite ne change pas la montée
-    assert.equal(baseClimbT(), 1/2);
-    STATS.climbSpeed=4;                      // monter plus vite ne change pas la marche
-    assert.equal(baseMoveT(), 1/6); assert.equal(baseClimbT(), 1/4);
-  } finally { Object.assign(STATS,s); }
+  const { baseMoveT, baseClimbT, createMiner } = await import('../src/sim/miner.js');
+  const m = createMiner(0, { carac:{ speed:3, climbSpeed:2 } });
+  assert.equal(baseMoveT(m), 1/3); assert.equal(baseClimbT(m), 1/2);
+  m.carac.speed=6;                           // marcher plus vite ne change pas la montée
+  assert.equal(baseClimbT(m), 1/2);
+  m.carac.climbSpeed=4;                      // monter plus vite ne change pas la marche
+  assert.equal(baseMoveT(m), 1/6); assert.equal(baseClimbT(m), 1/4);
 });

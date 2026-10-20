@@ -70,7 +70,7 @@ export function finishAction(G,m,a){
       log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++;
       m.inv={}; m.load=0; break; }
     case 'attack': {
-      const o=a.data.mob; if(o.hp>0){ o.hp-=STATS.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o); } break; }
+      const o=a.data.mob; if(o.hp>0){ o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o); } break; }
   }
 }
 

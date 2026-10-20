@@ -216,7 +216,7 @@ export const FURNACE = {
 /* ---- Hors session : stuff (onglet Stuff) ----
    slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
    items : les pièces d'équipement (famille stuff, ne s'empilent pas) et la case où elles vont.
-   Équiper une pièce la sort de l'inventaire ; la retirer l'y remet. Les effets sur le mineur viendront plus tard.
+   Équiper une pièce la sort de l'inventaire ; la retirer l'y remet. Ses effets s'appliquent aux sessions lancées ensuite.
    Les recettes de fabrication sont dans src/recipes.js. */
 export const STUFF = {
   slots: [
@@ -226,7 +226,8 @@ export const STUFF = {
     { id:'pioche',   label:'Pioche',   icon:'⛏' },  { id:'epee',     label:'Épée',     icon:'🗡' },
     { id:'cape',     label:'Cape',     icon:'🧣' }, { id:'boussole', label:'Boussole', icon:'🧭' },
   ],
-  /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur). Affichés, pas encore appliqués en session. */
+  /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur) ; set : valeur qui REMPLACE la base (ex. l'épée
+     remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.1 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
@@ -261,7 +262,7 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
-  ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, w:0, stack:false }])),
+  ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
 
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;

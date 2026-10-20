@@ -42,7 +42,7 @@ export function newSession(seed, opts={}){
 
 /* zone de découverte : discoverMax × luminosité (au moins 1 bloc dès qu'il y a de la lumière), autour du mineur */
 function revealAround(G,m){
-  const lum=curLum(G,m), R=lum>0 ? Math.max(1,STATS.discoverMax*lum) : 0, r=Math.ceil(R);
+  const lum=curLum(G,m), R=lum>0 ? Math.max(1,m.carac.discoverMax*lum) : 0, r=Math.ceil(R);
   for(let dy=-r;dy<=r;dy++){ const y=m.y+dy; if(y<1||y>maxRow(G)) continue;
     for(let dx=-r;dx<=r;dx++){ const x=m.x+dx; if(x<0||x>=W) continue;
       if(dx*dx+dy*dy<=R*R) G.seen[y][x]=1; } }
@@ -51,8 +51,8 @@ function revealAround(G,m){
 /* fait avancer un mineur de DT secondes : enchaîne ses actions dans le budget de temps disponible */
 function stepMiner(G,m){
   if(m.y===0){
-    m.ox=Math.min(STATS.oxygenMax, m.ox+CFG.refillRate*DT);
-    m.torches=STATS.torches; m.bridges=STATS.bridges;
+    m.ox=Math.min(m.carac.oxygenMax, m.ox+CFG.refillRate*DT);
+    m.torches=m.carac.torches; m.bridges=m.carac.bridges;
   } else {
     m.ox=Math.max(0,m.ox-DT);
   }

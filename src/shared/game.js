@@ -9,7 +9,7 @@
 import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
-import { sanitizeLook } from '../meta/stuff.js';
+import { sanitizeLook, equippedStats } from '../meta/stuff.js';
 
 /* ---------- préférences ---------- */
 
@@ -51,16 +51,18 @@ export function applyOverrides(overrides){
 /* ---------- construction et rejeu d'une session ---------- */
 
 /* mineurs de la session : un par joueur, puis les mineurs de test (mode dev) ; seul = le mineur solo habituel */
-/* chaque mineur porte le pseudo de son joueur (record.players[i].name) et l'apparence de son équipement au lancement
-   (record.looks[compte]) ; les mineurs de test (dev) s'appellent « Mineur test 1 », … */
+/* chaque mineur porte le pseudo de son joueur (record.players[i].name), l'équipement porté au lancement
+   (record.looks[compte] : son apparence ET ses caractéristiques, base + bonus des pièces) ; les mineurs de test (dev) s'appellent « Mineur test 1 », … */
 export function minerSpecs(record){
   const players = record.players || [], n = players.length + (record.bots|0);
   const prefsOf = i => i < players.length ? sanitizePrefs(record.prefs?.[players[i].account]) : { ...PREFS };
   const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
                                          : 'Mineur test ' + (i - players.length + 1);
   const lookOf = i => i < players.length ? sanitizeLook(record.looks?.[players[i].account]) : {};
-  if(n <= 1) return [{ name: players.length ? nameOf(0) : undefined, prefs: prefsOf(0), look: lookOf(0) }];
-  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, name: nameOf(i), prefs: prefsOf(i), look: lookOf(i) }));
+  /* caractéristiques : base + stuff porté au lancement (le même que l'apparence : record.looks, revérifié) */
+  const caracOf = i => equippedStats(Object.values(lookOf(i)));
+  if(n <= 1) return [{ name: players.length ? nameOf(0) : undefined, prefs: prefsOf(0), look: lookOf(0), carac: caracOf(0) }];
+  return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i) }));
 }
 
 export function buildSession(record){

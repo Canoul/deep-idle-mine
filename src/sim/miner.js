@@ -2,17 +2,22 @@
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X } from '../config.js';
 import { lumAt } from './light.js';
 
+/* opts.carac : caractéristiques de CE mineur (stats de base + bonus de son stuff, voir equippedStats dans
+   src/meta/stuff.js), calculées au lancement ; absentes = les STATS de base. Copiées à la création : un réglage dev
+   (valeurs globales STATS) appliqué pendant la construction de la partie est donc pris en compte. */
 export function createMiner(id, opts={}){
+  const carac = { ...STATS, ...(opts.carac||{}) };
   return {
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
-    look: opts.look || {},          // équipement visible (src/skins.js) : purement visuel
+    look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
-    x: opts.x ?? SPAWN_X, y:0, ox:STATS.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
+    carac,                          // caractéristiques du mineur (oxygène max, vitesses, pods, dégâts…)
+    x: opts.x ?? SPAWN_X, y:0, ox:carac.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
     action:null, exploring:false, exploreArea:null, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),
     digCol:null, galleryRow:null,   // réservations visibles des autres mineurs (puits creusé, ligne de galerie)
     homeX: opts.home ?? null,       // en équipe : colonne de départ après le coffre et centre de son secteur
     returnStart:0, lastReturnDur:0, // durée de son dernier retour (sert à juger s'il vaut la peine de repartir)
-    torches:STATS.torches, bridges:STATS.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
+    torches:carac.torches, bridges:carac.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
     prefs: { ...PREFS, focus:{}, ...(opts.prefs||{}) },   // focus : minerais visés (src/sim/focus.js)
     focusNotice:null,               // dernier focus abandonné faute de minerai ({t, msg}), affiché au joueur
     stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0 },
@@ -23,17 +28,17 @@ export function createMiner(id, opts={}){
 export const curLum = (G,m) => lumAt(G, m.x, m.y);
 export const lit    = (G,m) => curLum(G,m) >= CFG.darkLum;
 export const dk     = (G,m) => lit(G,m) ? 1 : CFG.darkSlow;
-export const moveT  = (G,m) => 1/(STATS.speed*dk(G,m));
-export const climbT = (G,m) => 1/(STATS.climbSpeed*dk(G,m));
-export const mineT  = (G,m,t) => BLOCKS[t].hard/(STATS.mineSpeed*dk(G,m));
-export const lightR = (G,m) => 2.2+(STATS.light-2.2)*curLum(G,m);
-export const compassR = (G,m) => Math.floor(STATS.compass*(lit(G,m) ? 1 : 0.5));
+export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m));
+export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m));
+export const mineT  = (G,m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*dk(G,m));
+export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
+export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
 
 /* durées de BASE (sans malus d'obscurité), pour planifier : un plan ne doit pas dépendre de la lumière
    de la case où se trouve le mineur, sinon le meilleur chemin change d'une case à l'autre (va-et-vient). */
-export const baseMoveT  = () => 1/STATS.speed;
-export const baseClimbT = () => 1/STATS.climbSpeed;
-export const baseMineT  = t => BLOCKS[t].hard/STATS.mineSpeed;
+export const baseMoveT  = m => 1/m.carac.speed;
+export const baseClimbT = m => 1/m.carac.climbSpeed;
+export const baseMineT  = (m,t) => BLOCKS[t].hard/m.carac.mineSpeed;
 
 /* ---- actions ---- */
 export function startAction(m,type,dur,data){ m.action={type, dur:Math.max(0.05,dur), t:0, data:data||{}}; }

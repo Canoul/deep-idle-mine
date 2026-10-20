@@ -21,19 +21,34 @@ export function sanitizeLook(look){
 }
 export const lookOf = st => Object.fromEntries(Object.entries(st.worn).filter(([, p]) => p).map(([slot, p]) => [slot, p.item]));
 
-/* bonus d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] */
-export const statLines = item => Object.entries(ITEMS[item]?.stats || {})
-  .map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${String(v).replace('.', ',')}`);
+const num = v => String(v).replace('.', ',');
+/* effets d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) :
+   'Dégâts 11 (au lieu de 5)' */
+export const statLines = item => [
+  ...Object.entries(ITEMS[item]?.set || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)} (au lieu de ${num(STATS[k])})`),
+  ...Object.entries(ITEMS[item]?.stats || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}`),
+];
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');
-/* stats du mineur avec le stuff porté : [{ key, label, base, bonus, total }] (base = STATS, bonus = somme des pièces).
-   Arrondi au centième : 2,25 + 0,4 donne 2,65 et pas 2,6500000000000004. */
+const r2 = v => Math.round(v * 100) / 100;   // 2,25 + 0,4 donne 2,65 et pas 2,6500000000000004
+/* Caractéristiques du mineur avec ces pièces (noms d'objets) : pour chaque stat, la base (STATS, ou la valeur `set`
+   d'une pièce qui la remplace : l'épée remplace les mains nues) + la somme des bonus (`stats`). C'est ce que le
+   mineur a EN SESSION (figé au lancement, src/shared/game.js) et ce qu'affiche l'onglet Stuff.
+   Renvoie { stat: { base, bonus, total } }. Lu au moment de l'appel : un réglage dev des STATS est pris en compte. */
+export function statsOf(items){
+  const base = { ...STATS }, bonus = {};
+  for(const item of items || []){
+    for(const [k, v] of Object.entries(ITEMS[item]?.set || {})) base[k] = v;
+    for(const [k, v] of Object.entries(ITEMS[item]?.stats || {})) bonus[k] = (bonus[k] || 0) + v;
+  }
+  return Object.fromEntries(Object.keys(STATS).map(k => [k, { base:base[k], bonus:r2(bonus[k] || 0), total:r2(base[k] + (bonus[k] || 0)) }]));
+}
+/* caractéristiques en session (src/sim/miner.js, m.carac) : { stat: total } */
+export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(items)).map(([k, s]) => [k, s.total]));
+/* stats du mineur avec le stuff porté, pour l'onglet Stuff : [{ key, label, base, bonus, total }] */
 export function minerStats(worn){
-  const bonus = {};
-  for(const p of Object.values(worn || {})) if(p) for(const [k, v] of Object.entries(ITEMS[p.item]?.stats || {})) bonus[k] = (bonus[k] || 0) + v;
-  const r = v => Math.round(v * 100) / 100;
-  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, base:STATS[key],
-                                        bonus:r(bonus[key] || 0), total:r(STATS[key] + (bonus[key] || 0)) }));
+  const s = statsOf(Object.values(worn || {}).filter(Boolean).map(p => p.item));
+  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key] }));
 }
 
 /* bulle d'info d'une pièce de stuff : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
