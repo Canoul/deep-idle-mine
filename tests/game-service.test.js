@@ -7,11 +7,13 @@ import { realDurationMs, tickAt } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 
+/* un Treasure TX (les treasures sont en tiers : T1, T2…) ; il ne se partage pas, chacun reçoit le sien */
+const TX = TREASURE.tiers[0].item;
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 const OTHER = { id:'BBBB2222', name:null, guest:true };
 
 /* rejeu factice : le coffre est fixé par le test ; on partage comme le vrai (un sac par joueur présent) */
-function fakeReplay(chestOf = () => ({ Charbon:9, [TREASURE.item]:1 })){
+function fakeReplay(chestOf = () => ({ Charbon:9, [TX]:1 })){
   const calls = [];
   const replay = async rec => {
     calls.push(rec.id);
@@ -20,7 +22,7 @@ function fakeReplay(chestOf = () => ({ Charbon:9, [TREASURE.item]:1 })){
     return { id:rec.id, chest, shares: rec.players.map(p => {
       const left = !present.includes(p);
       const bag = {};
-      if(!left) for(const k in chest) bag[k] = k === TREASURE.item ? chest[k] : Math.floor(chest[k] / n);
+      if(!left) for(const k in chest) bag[k] = k === TX ? chest[k] : Math.floor(chest[k] / n);
       return { account:p.account, left, bag };
     }) };
   };
@@ -79,7 +81,7 @@ test('fin à l\'heure : rejeu, part versée dans l\'inventaire, résultat montr�
   assert.equal(st.session, null);
   assert.equal(st.ended.id, session.id);
   assert.equal(st.ended.status, 'done');
-  assert.deepEqual(st.inventory.slots, [{ item:'Charbon', qty:9 }, { item:TREASURE.item, qty:1 }]);
+  assert.deepEqual(st.inventory.slots, [{ item:'Charbon', qty:9 }, { item:TX, qty:1 }]);
   assert.deepEqual(replay.calls, [session.id]);
   await game.ack(ME, session.id);
   assert.equal((await game.state(ME)).ended, null);
