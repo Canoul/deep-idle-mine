@@ -33,7 +33,7 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ⚠️ **non lancée** (le commit le dit : Node absent).
 - **À vérifier** : `node --test tests/loot.test.js`, `npm run test:anticheat` (ça touche l'inventaire).
 
-### Focus minerai (pendant la session) — non commité
+### Focus minerai (pendant la session) — commit `59e0737`
 - **Quoi** : panneau « Focus minerai » dans l'onglet Mine, pendant la session. Modes Aucun / Cibler / Uniquement par
   minerai. Il ne propose que les minerais des areas débloquées. Règles complètes dans GAME_DESIGN §3 « Focus minerai ».
   - Cibler : poids = `FOCUS.valFactor` × la plus grosse valeur de minerai (2 × 8 = 16).
