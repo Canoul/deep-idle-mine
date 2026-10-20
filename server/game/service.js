@@ -145,15 +145,9 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       return { prefs: p };
     },
 
-    /* group : les joueurs du lobby (server/lobby), hôte compris, dans l'ordre d'arrivée ; absent = seul.
-       Aucun d'eux ne doit déjà jouer une session. */
-    async start(me, body = {}, group = null){
+    async start(me, body = {}){
       return withLock('acct:' + me.id, async () => {
-        const players = (group ?? [me]).slice(0, GAME.maxPlayers).map(a => ({ account: a.id, name: displayName(a) }));
-        if(!players.some(p => p.account === me.id)) fail('bad_request', 400, 'Tu dois faire partie de la session.');
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
-        for(const p of players) if(p.account !== me.id && await activeOf(p.account))
-          fail('member_busy', 409, `${p.name} est déjà dans une session.`);
         const lim = startLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
@@ -161,9 +155,9 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         const rec = {
           id: crypto.randomUUID(),
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
-          players,
-          bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
-          prefs: Object.fromEntries(await Promise.all(players.map(async p => [p.account, await loadPrefs(p.account)]))),
+          players: [{ account: me.id, name: displayName(me) }],
+          bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - 1, body.bots)) : 0,
+          prefs: { [me.id]: await loadPrefs(me.id) },
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
@@ -275,8 +269,6 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
       await settleDue();
     },
     settleDue,
-    settle,
-    /* ce compte joue-t-il une session en ce moment ? (le lobby s'en sert pour faire suivre les membres) */
-    hasActive: async accountId => !!(await activeOf(accountId)),         // pour les tests
+    settle,         // pour les tests
   };
 }

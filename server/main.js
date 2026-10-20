@@ -11,15 +11,13 @@ import { GAME_SERVER } from './config.js';
 import { createFileGameStore } from './game/store.js';
 import { createGameService } from './game/service.js';
 import { createReplayer } from './game/replay.js';
-import { createLobbyService } from './lobby/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
 const store = await createFileStore(SERVER.dataDir);
 const service = createAccountService({ store });
 const gameStore = await createFileGameStore(SERVER.dataDir);
 const game = createGameService({ store: gameStore, replay: createReplayer() });
-const lobby = createLobbyService({ accounts: store, game });
-const server = http.createServer(createApp({ store, service, game, lobby, root: ROOT }));
+const server = http.createServer(createApp({ store, service, game, root: ROOT }));
 
 /* sessions de jeu : reprise d'un rejeu interrompu, puis versement des sessions arrivées à leur fin (même joueur absent) */
 game.recover().catch(console.error);

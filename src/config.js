@@ -236,8 +236,6 @@ export const ACCOUNT = {
    devSpeeds : vitesses proposées en mode développeur (serveur lancé avec npm run dev), où la fin est libre.
    maxPlayers : places dans le lobby (jeu prévu à 3). */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
-/* lobby partagé : le navigateur relit le lobby et ses invitations toutes les pollMs (ms) */
-export const LOBBY = { pollMs:2000 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

@@ -51,12 +51,3 @@ export const gameApi = {
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
   furnace: op          => request('POST', '/api/game/furnace', op),   // { action, furnace, slot, item, qty, opId }
 };
-
-/* Lobby partagé : relu régulièrement ; inviter par pseudo ou ID, accepter / refuser une invitation, quitter. */
-export const lobbyApi = {
-  get:     ()     => request('GET', '/api/lobby'),
-  invite:  to     => request('POST', '/api/lobby/invite', { to }),
-  accept:  invite => request('POST', '/api/lobby/accept', { invite }),
-  decline: invite => request('POST', '/api/lobby/decline', { invite }),
-  leave:   ()     => request('POST', '/api/lobby/leave', {}),
-};

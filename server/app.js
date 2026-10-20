@@ -10,14 +10,12 @@ import { serveStatic } from './http/static.js';
 import { createAccountService, AccountError } from './accounts/service.js';
 import { accountRoutes } from './accounts/routes.js';
 import { gameRoutes } from './game/routes.js';
-import { lobbyRoutes } from './lobby/routes.js';
 
-/* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
-   lobby : lobby partagé (server/lobby/service.js) ; il remplace la route « lancer » du jeu (il sait qui joue). */
-export function createApp({ store, root, config = SERVER, service, game, lobby } = {}){
+/* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent */
+export function createApp({ store, root, config = SERVER, service, game } = {}){
   const accounts = service ?? createAccountService({ store });
-  /* les futures routes (sauvegarde, social…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(lobby ? lobbyRoutes(lobby) : {}) };
+  /* les futures routes (sauvegarde, lobby, social…) s'ajoutent ici, chacune dans son module */
+  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}) };
 
   async function handleApi(req, res, pathname){
     const route = routes[`${req.method} ${pathname}`];

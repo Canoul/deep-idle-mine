@@ -211,10 +211,9 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 
 ### Lancer une session (onglet Mine)
 Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Mine**, qui affiche un **lobby** :
-- **3 places** (le jeu est prévu à 3) : les membres du lobby, puis les invitations en attente, puis des places libres ;
+- **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres ;
 - **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
-- **Inviter un joueur** : **clic sur une place libre**, puis son **pseudo ou son ID de compte** (un invité sans pseudo s'invite par son ID). Il reçoit l'invitation dans l'onglet **Social** (pastille rouge sur l'onglet) ; **Rejoindre** le fait entrer dans le lobby de l'hôte, **Refuser** la supprime. Une invitation reste valable **jusqu'au lancement** du lobby ; on ne peut pas la rejoindre s'il est complet ;
-- **Lobby partagé** : tous les membres voient les mêmes places (synchronisées toutes les 2 s *(valeur de config)*). **Seul l'hôte** (👑, celui qui a invité) lance la session, avec tous les membres présents ; chaque membre y entre automatiquement. Rejoindre un lobby fait quitter le sien. **L'hôte part** (bouton « Quitter le lobby », ou page fermée depuis 3 min *(provisoire)*) : le **plus ancien membre** devient hôte ; le dernier parti dissout le lobby et ses invitations. Le lobby n'est pas sauvegardé : un redémarrage du serveur le vide ;
+- **Inviter des joueurs** : visible, pas encore actif (affiche l'ID de compte à donner à un ami). Le vrai multijoueur réseau est l'étape suivante ;
 - **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs ; voir §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
 Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
@@ -233,8 +232,7 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inv
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
-- **Social** : les invitations reçues (Rejoindre / Refuser) ; amis et le reste à concevoir.
-- Stuff, Craft, Talents : à concevoir (page d'attente pour l'instant).
+- Stuff, Craft, Talents, Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
 
 ### Inventaire global

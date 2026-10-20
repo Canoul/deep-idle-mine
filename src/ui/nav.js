@@ -9,7 +9,7 @@ export const TABS = [
   { id:'craft',      label:'Craft',      icon:'🔨', ready:false },
   { id:'four',       label:'Four',       icon:'🔥', ready:true  },
   { id:'talents',    label:'Talents',    icon:'⭐', ready:false },
-  { id:'social',     label:'Social',     icon:'👥', ready:true  },
+  { id:'social',     label:'Social',     icon:'👥', ready:false },
 ];
 
 const KEY = 'deepIdleMine.tab';

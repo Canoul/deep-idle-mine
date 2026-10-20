@@ -6,20 +6,19 @@
    - jeu normal : la partie suit le temps réel à la vitesse du serveur (×2) ; page fermée, elle continue, et au retour
      le navigateur rattrape le temps écoulé ;
    - mode développeur : vitesses libres et pause ; le navigateur dit au serveur quand c'est fini. */
-import { DT, GAME, LOBBY } from './config.js';
+import { DT, GAME } from './config.js';
 import { tick } from './sim/session.js';
 import { buildSession, applyDueEvents, applyOverrides, tickAt } from './shared/game.js';
 import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
-import { setupSocial } from './ui/social.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, lobbyApi, ApiError } from './net/api.js';
+import { gameApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, focus:0, inv:{ slots:[] }, fresh:new Set(), tab:'mine' };
@@ -80,11 +79,6 @@ const accountUI = createAccountUI($('account'), acct, {
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
-  onInvite: async to => {
-    lobby.error('');
-    try { return await lobbyApi.invite(to); } catch(e){ lobby.error(e.message); throw e; }
-  },
-  onLeaveLobby: async () => applyLobby(await lobbyApi.leave()),
   onLaunch: async opts => {
     lobby.error('');
     try { enterSession((await gameApi.start(opts)).session); }
@@ -94,32 +88,6 @@ const lobby = setupLobby({
     }
   },
 });
-
-/* ---------- lobby partagé et onglet Social ----------
-   Le navigateur relit le lobby toutes les LOBBY.pollMs : membres, invitations reçues (pastille rouge sur Social),
-   et session lancée par l'hôte (chaque membre y entre tout seul). */
-const social = setupSocial({
-  onAccept: async id => { applyLobby(await lobbyApi.accept(id)); nav.show('mine'); },
-  onDecline: async id => applyLobby(await lobbyApi.decline(id)),
-});
-let refreshing = false;
-function applyLobby(r){
-  if(!r) return r;
-  lobby.update({ lobby: r.lobby });
-  social.update(r.invites);
-  nav.badge('social', r.invites.length > 0);
-  if(r.inSession && !G && !waiting && !refreshing){        // l'hôte a lancé : on rejoint la session
-    refreshing = true;
-    refresh().catch(console.warn).finally(() => { refreshing = false; });
-  }
-  return r;
-}
-async function pollLobby(){
-  if(acct.account && !acct.offline){
-    try { applyLobby(await lobbyApi.get()); } catch(e){ if(!(e instanceof ApiError)) console.warn(e); }
-  }
-  setTimeout(pollLobby, LOBBY.pollMs);
-}
 
 function showLobby(){
   rec = null; G = null; waiting = false;
@@ -225,8 +193,6 @@ else {
   try { info = await gameApi.info(); await refresh(); }
   catch(e){ acct.offline = true; showLobby(); }
 }
-
-pollLobby();
 
 /* ---------- boucle ---------- */
 const FRAME_BUDGET_MS = 25;   // temps de calcul max par image : le rattrapage d'une longue absence se fait en accéléré
