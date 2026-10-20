@@ -16,6 +16,12 @@ const same = (M, G) => {
   assert.deepEqual(M.chest, G.chest); assert.deepEqual(M.log, G.log);
   assert.deepEqual(M.miners.map(m => [m.name, m.x, m.y, m.load, m.status]), G.miners.map(m => [m.name, m.x, m.y, m.load, m.status]));
   assert.deepEqual(M.mobs.map(o => [o.id, o.x, o.y, o.hp]), G.mobs.map(o => [o.id, o.x, o.y, o.hp]));
+  /* tout ce que le rendu (src/render/canvas.js) et le HUD lisent sur un mineur */
+  for(const [a, b] of M.miners.map((m, i) => [m, G.miners[i]])){
+    assert.deepEqual(a.pings, b.pings.map(({ x, y, t }) => ({ x, y, t })), 'boussole (pings)');
+    for(const k of ['x','y','face','color','name','status','ox','load','inv','torches','bridges','prefs','stats','account','id'])
+      assert.ok(k in a, `mineur : champ ${k} manquant`);
+  }
 };
 
 test('trois navigateurs (rapide, lent, arrivé en route) : copies identiques à la partie du serveur', () => {

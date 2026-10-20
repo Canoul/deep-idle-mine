@@ -21,6 +21,7 @@ function minerView(m){
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, face: m.face,
     status: m.status, mode: m.mode, reason: m.reason, ox: m.ox, load: m.load, inv: m.inv,
     torches: m.torches, bridges: m.bridges, prefs: m.prefs, focusNotice: m.focusNotice ?? null, stats: m.stats,
+    pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall } } : null,
   };
 }
