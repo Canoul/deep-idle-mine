@@ -18,9 +18,10 @@ Règles (voir CLAUDE.md) :
 - **Fichiers** : `src/sim/mobs.js`, `src/sim/actions.js`, `src/sim/ai.js`, `src/sim/miner.js`, `src/sim/session.js`,
   `src/config.js` (`MOBS.goblin*`), `src/ui/hud.js`, `src/render/canvas.js`, texture `goblin.png`.
 - **Tests** : `tests/goblin.test.js`, `tests/anticheat/duplication.test.js`.
-- **Vérification** : ⚠️ inconnue (le message de commit ne le dit pas, et Node est absent de la machine ce jour-là).
-- **À vérifier** : `node --test tests/goblin.test.js`. Simulation 5 sessions : regarder si `volés` est non nul en area 3+
-  et si le mineur ne reste pas bloqué en tacle.
+- **Vérification** : ✅ vérifié par la session du four, avec le Node intégré à VS Code (v24) :
+  `ELECTRON_RUN_AS_NODE=1 /snap/code/current/usr/share/code/code`. `tests/goblin.test.js` et la suite anti-triche
+  passent. Simulation 3 mineurs × 5 sessions : `volés` vaut de 0 à 6 par mineur, 0 session bloquée, 4 areas en moyenne.
+- **Équilibrage** : le vol pèse peu (environ 1 % du minerai). Pistes : plus de PV, ou une part plus grande des apparitions.
 
 ### Ouverture des Treasure T1 depuis l'inventaire — commit `e12c591`
 - **Quoi** : un Treasure T1 s'ouvre dans l'onglet Inventaire, et le serveur tire le butin. Toujours : Blueprint parts
@@ -30,8 +31,10 @@ Règles (voir CLAUDE.md) :
   `server/game/service.js` (`open`), `server/game/routes.js` (`POST /api/game/open`), `src/net/api.js`, `src/main.js`,
   `src/ui/inventory.js`, `src/ui/style.css`, `index.html`, nouvelles textures (blueprint, bp_parts, gemmes).
 - **Tests** : `tests/loot.test.js`, `tests/anticheat/open.test.js`.
-- **Vérification** : ⚠️ **non lancée** (le commit le dit : Node absent).
-- **À vérifier** : `node --test tests/loot.test.js`, `npm run test:anticheat` (ça touche l'inventaire).
+- **Vérification** : ✅ `tests/loot.test.js` et `tests/anticheat/` (dont `open.test.js`) passent (session du four).
+- ❌ **Cassé connu** : le test « fin à l'heure : rejeu, part versée… » de `tests/game-service.test.js` échoue depuis
+  ce commit. Il utilise `TREASURE.item`, qui n'existe plus (les treasures sont en tiers `TREASURE.tiers`). Le test
+  est à corriger, le code du jeu n'est pas en cause.
 
 ### Focus minerai (pendant la session) — commit `59e0737`
 - **Quoi** : panneau « Focus minerai » dans l'onglet Mine, pendant la session. Modes Aucun / Cibler / Uniquement par
@@ -54,7 +57,9 @@ Règles (voir CLAUDE.md) :
   `src/net/api.js`, `src/main.js`, `index.html`, `src/ui/style.css`, `src/config.js` (`FOCUS`), `GAME_DESIGN.md`,
   `scripts/simulate.js` (option `--focus coal:only`).
 - **Tests** : `tests/focus.test.js` (nouveau) et 4 tests ajoutés à la fin de `tests/game-service.test.js`.
-- **Vérification** : ⚠️ **rien n'a tourné** (Node absent). Code relu seulement.
+- **Vérification** : ⚠️ **partielle** : `tests/focus.test.js` et les 4 tests focus de `tests/game-service.test.js`
+  passent (session du four, après la fusion). Simulation sans focus identique à avant (point 2 ✅). Pas encore
+  lancés : `game-replay`, `session`, ni les simulations avec `--focus` (point 3).
 - **À vérifier** :
   1. `node --test tests/focus.test.js tests/game-service.test.js tests/game-replay.test.js tests/session.test.js`
   2. `npm run simulate -- --count 5` : les chiffres doivent être **identiques à avant** (sans focus, rien ne doit
@@ -69,3 +74,25 @@ Règles (voir CLAUDE.md) :
   - En jeu normal, si le réseau a plus d'environ 1 s de retard, le navigateur applique le focus après le tick
     enregistré. La partie affichée peut alors différer un peu du rejeu du serveur (c'est le serveur qui fait foi).
   - Pas de test dans `tests/anticheat/` : le focus ne crée ni ne déplace aucune ressource.
+
+### Onglet Four — commit `75a75d5`, fusionné dans `main` par `28524ee`
+- **Quoi** : fondre les minerais en lingots, hors session. Un four au départ (3 max, les fours 2 et 3 sous cadenas).
+  Chaque four a 3 cases : minerai (famille `ore`), combustible (famille `combustible` = le charbon) et sortie.
+  1 lingot = 10 minerais + 10 charbons. Fer 1 min, or 2 min, diamant 3 min (provisoire). La fonte avance en temps
+  réel, même page fermée : `advance(f, now)` calcule tout depuis `since`. Les matières ne sont consommées qu'à la fin
+  d'un lingot, donc retirer une case rend tout. Si la sortie contient un autre lingot, la fonte attend.
+- **Familles d'objets** : `ITEMS[x].cat` = `family` du bloc si elle existe, sinon son type. Le charbon est
+  `combustible` dans l'inventaire mais reste `ore` dans la mine (déblocage, IA, focus inchangés). Le gobelin lit
+  maintenant le type de bloc (`ORE_W` dans `mobs.js`) : il vole toujours le charbon.
+- **Serveur** : `POST /api/game/furnace` `{action: load|unload|collect, furnace, slot, item, qty, opId}`. Il prend
+  le verrou de l'inventaire, écrit inventaire + fours en une seule fois (`store.putInventoryAndFurnaces`) et
+  n'applique qu'une fois une demande rejouée (`opId`). `state()` renvoie `furnaces: {list, max, now}`.
+- **Fichiers** : `src/meta/furnace.js` et `src/ui/furnace.js` (nouveaux), `src/config.js` (`FURNACE`, `family`,
+  lingots), `server/game/{service,routes,store}.js`, `src/net/api.js`, `src/main.js`, `src/ui/{nav,inventory}.js`,
+  `src/ui/style.css`, `index.html`, `src/sim/mobs.js`, textures `ingot_*`, `GAME_DESIGN.md` §6 « Four ».
+- **Tests** : `tests/furnace.test.js`, `tests/anticheat/furnace.test.js`, 3 tests « four » dans `tests/game-service.test.js`.
+- **Vérification** : ✅ après la fusion, 101/102 sur furnace, goblin, focus, inventory, nav, game-service, game-http,
+  loot et treasure (le seul échec est « fin à l'heure », ❌ ci-dessus). Anti-triche 34/34. API testée de bout en bout
+  sur un vrai serveur (poser, rejouer, refus, retirer). Simulation 3 mineurs × 5 sessions après la fusion (four + focus) : areas 4,0 · profondeur 196,2 ·
+  allers-retours 26,8 · 0 bloquée. **Identique à avant le focus et le four**, au chiffre près.
+- **Pas vérifié** : ⚠️ l'onglet n'a pas été regardé dans un navigateur (les modules se chargent sans erreur).
