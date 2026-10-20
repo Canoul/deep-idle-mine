@@ -54,3 +54,17 @@ au redémarrage (même seed + choix enregistrés) puis reprend ; les joueurs con
   visite, ~1 min), elle est reconstruite et rattrape le temps écoulé, ce qui peut prendre plusieurs minutes sur
   0,1 CPU (la partie affiche « connexion… » en attendant). Elle se termine et se partage normalement ensuite.
 - Neon gratuit : 1 Go de données, se met en veille après 5 min sans requête (réveil en ~1 s, invisible).
+
+## Nom de domaine : https://deepmineidle.fr/
+
+- Les liens d'invitation pointent toujours vers `SITE.url` (`src/config.js`), même si la page a été ouverte par
+  l'ancienne adresse Render. En local (localhost, 192.168.x…), ils gardent l'adresse de la page, pour tester.
+- Rien d'autre à changer dans le code : le serveur ne contient pas l'adresse du site et ne vérifie pas d'où viennent
+  les requêtes. Le cookie de connexion suit le domaine utilisé : un joueur connecté sur l'ancienne adresse devra se
+  reconnecter sur la nouvelle (un **invité** n'a que son cookie : il doit sécuriser son compte avant de changer
+  d'adresse, sinon il ne le retrouvera pas).
+- **À vérifier si le domaine passe par Cloudflare (nuage orange, « proxied »)** : il y a alors un relais de plus
+  devant le serveur. L'adresse lue dans `X-Forwarded-For` ne serait plus celle du joueur (limites de tentatives
+  faussées). Regarder la ligne `Contrôle proxy : adresse retenue …` du journal au premier appel : si ce n'est pas ton
+  adresse, mettre `DIM_TRUST_PROXY=2` dans les variables d'environnement de Render. Domaine branché directement sur
+  Render (DNS seul) : rien à faire.

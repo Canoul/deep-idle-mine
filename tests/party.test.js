@@ -44,7 +44,10 @@ test('code de groupe : tapé sans soin, il est reconnu ; sinon null', () => {
 });
 
 test('lien d\'invitation : construit depuis l\'adresse de la page, relu depuis #rejoindre=…', () => {
-  assert.equal(joinLink('https://dim.onrender.com/#mine', 'K7Q4P2'), 'https://dim.onrender.com/#rejoindre=K7Q4P2');
+  assert.equal(joinLink('https://deepmineidle.fr/#mine', 'K7Q4P2'), 'https://deepmineidle.fr/#rejoindre=K7Q4P2');
+  assert.equal(joinLink('https://dim.onrender.com/#mine', 'K7Q4P2'), 'https://deepmineidle.fr/#rejoindre=K7Q4P2', 'ancienne adresse : lien vers le nouveau domaine');
+  assert.equal(joinLink('http://localhost:8000/#mine', 'K7Q4P2'), 'http://localhost:8000/#rejoindre=K7Q4P2', 'en local : l\'adresse de la page');
+  assert.equal(joinLink('http://192.168.1.20:8000/', 'K7Q4P2'), 'http://192.168.1.20:8000/#rejoindre=K7Q4P2');
   assert.equal(joinCodeFromHash('#rejoindre=K7Q4P2'), 'K7Q4P2');
   assert.equal(joinCodeFromHash('https://dim.onrender.com/#rejoindre=k7q-4p2'), 'K7Q4P2');
   assert.equal(joinCodeFromHash('#mine'), null);

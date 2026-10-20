@@ -493,3 +493,12 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ chaîne réelle vérifiée par script : 3 rangs de vitesse de minage appris par le serveur → figés
   dans l'enregistrement de la session → partie du serveur (`createLiveGame`) : vitesse de minage 1,06, le mineur mine
   normalement. ⚠️ Pas regardé dans un navigateur.
+
+### Nom de domaine : https://deepmineidle.fr/ (liens d'invitation)
+- **Quoi** : `SITE.url` en config ; `joinLink` construit le lien d'invitation sur cette adresse, quelle que soit
+  l'adresse de la page (ex. ancienne adresse Render), sauf en local (localhost, 127.x, 192.168.x, 10.x : adresse de la
+  page). Le serveur ne contenait aucune adresse du site (rien d'autre à changer). `docs/deploiement.md` : section nom
+  de domaine (reconnexion, invités, relais Cloudflare → `DIM_TRUST_PROXY=2`).
+- **Fichiers** : `src/config.js`, `src/shared/party.js`, `tests/party.test.js`, GAME_DESIGN §6, `docs/deploiement.md`.
+- **Tests** : party, lobby, nav 25/25.
+- **Vérification** : ✅ tests. ⚠️ Pas vérifié en ligne (domaine, cookie, proxy).

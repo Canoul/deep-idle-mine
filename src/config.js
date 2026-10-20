@@ -359,6 +359,11 @@ export const ACCOUNT = {
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
+/* adresse officielle du jeu : les liens d'invitation y renvoient toujours (même si la page a été ouverte par une
+   autre adresse, ex. l'ancienne adresse Render). Sauf en local (localhost, réseau de la maison) : l'adresse de la page,
+   pour tester. */
+export const SITE = { url:'https://deepmineidle.fr/' };
+
 /* ---- Groupes (lobby à plusieurs) ----
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
