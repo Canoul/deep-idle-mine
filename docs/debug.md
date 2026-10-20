@@ -428,3 +428,12 @@ Règles (voir CLAUDE.md) :
   450 − 100 × recherches + parts rendues, blueprints = 1 + recherches − recyclages), `game-service` (+1), `nav` adapté.
   81/81 liés, anti-triche complète 50/50.
 - **Vérification** : ✅ tests. ⚠️ Onglet pas regardé dans un navigateur.
+
+### Inventaire : bouton « Équiper » sur une pièce de stuff sélectionnée
+- **Quoi** (demande du créateur) : une pièce de stuff sélectionnée dans l'Inventaire a un bouton « Équiper » (avec sa
+  case et la pièce qu'elle remplace). Même demande au serveur que l'onglet Stuff (`POST /api/game/stuff`, `equip`) :
+  rien de nouveau côté serveur ni anti-triche. `renderInventory` prend maintenant ses actions dans un objet
+  (`onOpen`, `onLearn`, `onEquip`, `worn`).
+- **Fichiers** : `src/ui/inventory.js` (`equipHtml`), `src/ui/stuff.js` (`worn()`), `src/main.js`, GAME_DESIGN §6.
+- **Tests** : 1 test dans `tests/stuff.test.js` ; stuff + inventory 23/23.
+- **Vérification** : ✅ tests, modules chargés. ⚠️ Pas regardé dans un navigateur.

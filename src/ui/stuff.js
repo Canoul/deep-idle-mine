@@ -65,5 +65,6 @@ export function setupStuff({ onOp }){
   return {
     setInventory(v){ inv = v; render(); },
     set(w){ if(w){ worn = w; render(); } },
+    worn: () => worn,                 // pièces portées (l'inventaire dit ce qu'une pièce remplacerait)
   };
 }

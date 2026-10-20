@@ -296,6 +296,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
 - Un blueprint sélectionné peut s'**utiliser** : il débloque sa recette (voir Craft).
+- Une pièce de stuff sélectionnée peut s'**équiper** directement (bouton **Équiper**, avec sa case et la pièce qu'elle remplace) : même effet que depuis l'onglet Stuff, la pièce remplacée revient dans l'inventaire.
 
 ### Craft (onglet Craft)
 - Les **recettes** sont dans un fichier à part : `src/recipes.js` (ingrédients, quantité obtenue, déblocage).

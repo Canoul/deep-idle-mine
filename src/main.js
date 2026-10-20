@@ -43,7 +43,7 @@ const renderer = createRenderer($('cv'));
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, openTreasure, useBlueprint);
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, worn:() => stuff.worn() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -64,6 +64,16 @@ async function useBlueprint(item){
     const r = await gameApi.learn(item, newOpId());
     setInventory(r.inventory);
     $('invInfo').innerHTML = `<span class="okmsg">✔ Recette débloquée : ${r.recipe.replace(/[&<>]/g, '')}. Elle est dans l'onglet Craft.</span>`;
+  } catch(e){ lootError(e.message); }
+}
+
+/* équiper depuis l'inventaire : même demande que l'onglet Stuff (l'ancienne pièce de la case revient dans l'inventaire) */
+async function equipFromInventory(slot, uid){
+  try {
+    const item = ui.inv.slots.find(s => s?.uid === uid)?.item ?? 'La pièce';
+    const r = await gameApi.stuff({ action:'equip', slot, uid, opId: newOpId() });
+    setInventory(r.inventory); stuff.set(r.stuff);
+    $('invInfo').innerHTML = `<span class="okmsg">✔ ${item.replace(/[&<>]/g, '')} équipé (onglet Stuff pour voir les stats du mineur).</span>`;
   } catch(e){ lootError(e.message); }
 }
 

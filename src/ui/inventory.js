@@ -1,10 +1,11 @@
 /* Onglet Inventaire : affiche la grille de slots. Lit l'inventaire, ne le modifie jamais : ouvrir un treasure
-   (onOpen) ou utiliser un blueprint (onLearn) est demandé au serveur, qui renvoie le nouvel inventaire. */
-import { INVENTORY } from '../config.js';
+   (onOpen), utiliser un blueprint (onLearn) ou équiper une pièce (onEquip) est demandé au serveur, qui renvoie le
+   nouvel inventaire. */
+import { INVENTORY, STUFF } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
 import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
-import { statsText } from '../meta/stuff.js';
+import { statsText, slotOf } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 
 const $ = id => document.getElementById(id);
@@ -47,7 +48,16 @@ function blueprintHtml(inv, s){
   return ` <button class="on invLearn" data-item="${esc(s.item)}" title="Le blueprint est consommé, la recette reste débloquée pour toujours">Utiliser</button>`;
 }
 
-function infoHtml(s, pinned=false, inv=null){
+/* pièce de stuff : bouton « Équiper » (dans sa case ; la pièce qui y est revient dans l'inventaire) */
+export function equipHtml(s, worn){
+  const slot = slotOf(s.item);
+  if(!slot || s.uid == null) return '';
+  const label = STUFF.slots.find(x => x.id === slot)?.label ?? slot, cur = worn?.[slot]?.item;
+  return ` <button class="on invEquip" data-uid="${s.uid}" data-slot="${slot}">Équiper</button>`+
+         ` <span class="mut small">case ${esc(label.toLowerCase())}${cur ? ` · remplace ${esc(cur)}` : ''}</span>`;
+}
+
+function infoHtml(s, pinned=false, inv=null, worn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const bits = [ `<b>${esc(s.item)}</b>`, `× ${fullQty(s.qty)}` ];
@@ -57,13 +67,14 @@ function infoHtml(s, pinned=false, inv=null){
   if(statsText(s.item)) bits.push(`<span class="stuffStats">${esc(statsText(s.item))}</span>`);
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>` : '';
   const learn = pinned && inv ? blueprintHtml(inv, s) : '';
-  return bits.join(' <span class="mut">·</span> ') + open + learn;
+  const equip = pinned && worn ? equipHtml(s, worn) : '';
+  return bits.join(' <span class="mut">·</span> ') + open + learn + equip;
 }
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
-   onOpen(item) : le joueur demande à ouvrir un treasure (le bouton apparaît sur un treasure sélectionné) ;
-   onLearn(item) : le joueur utilise un blueprint (bouton sur un blueprint sélectionné) */
-export function renderInventory(inv, fresh=new Set(), onOpen=null, onLearn=null){
+   actions : sur l'objet sélectionné (chacune a son bouton) : onOpen(item) ouvrir un treasure, onLearn(item) utiliser
+   un blueprint, onEquip(slot, uid) équiper une pièce de stuff ; worn() : pièces portées (pour dire ce qui est remplacé) */
+export function renderInventory(inv, fresh=new Set(), actions={}){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
   grid.style.setProperty('--cols', INVENTORY.cols);
   let h = '';
@@ -83,15 +94,15 @@ export function renderInventory(inv, fresh=new Set(), onOpen=null, onLearn=null)
     const s = inv.slots[+c.dataset.i] || null;
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
-    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv);
+    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.());
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen, .invLearn');
+    const b = e.target.closest('.invOpen, .invLearn, .invEquip');
     if(!b) return;
-    const h = b.classList.contains('invOpen') ? onOpen : onLearn;
-    if(!h) return;
     b.disabled = true;               // un clic = une demande
-    h(b.dataset.item);
+    if(b.classList.contains('invOpen')) actions.onOpen?.(b.dataset.item);
+    else if(b.classList.contains('invLearn')) actions.onLearn?.(b.dataset.item);
+    else actions.onEquip?.(b.dataset.slot, +b.dataset.uid);
   };
 }
 

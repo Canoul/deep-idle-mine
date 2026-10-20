@@ -102,3 +102,13 @@ test('stats du mineur : base + bonus des pièces portées, arrondies ; sans stuf
   assert.equal(get(worn, 'pods').bonus, 0);
   for(const s of minerStats(worn)) assert.ok(s.key in STATS && s.label, s.key);
 });
+
+test('inventaire : bouton « Équiper » sur une pièce de stuff, avec la pièce qu\'elle remplace', async () => {
+  globalThis.document ??= { getElementById: () => null };       // le module d'interface ne touche pas au DOM au chargement
+  const { equipHtml } = await import('../src/ui/inventory.js');
+  const h = equipHtml({ item:'Casque en fer', qty:1, uid:7 }, { casque:{ item:'Casque en chitine', uid:3 } });
+  assert.match(h, /data-uid="7"/); assert.match(h, /data-slot="casque"/);
+  assert.match(h, /remplace Casque en chitine/);
+  assert.doesNotMatch(equipHtml({ item:'Épée en fer', qty:1, uid:8 }, {}), /remplace/);
+  assert.equal(equipHtml({ item:'Charbon', qty:50 }, {}), '', 'pas un objet de stuff : pas de bouton');
+});
