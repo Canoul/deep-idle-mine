@@ -22,6 +22,10 @@ export function proxyHops(env = process.env){
 
 export const SERVER = {
   port: +(process.env.PORT || 8000),
+  /* adresse d'écoute. Sur un serveur loué (VPS), DIM_HOST=127.0.0.1 : seul le proxy https (Caddy), sur la même
+     machine, peut joindre le jeu. Sinon on pourrait contourner le proxy et écrire soi-même X-Forwarded-For.
+     Par défaut : toutes les interfaces (local, Render). */
+  host: process.env.DIM_HOST || undefined,
   /* dossier des données (comptes, connexions) : jamais servi au navigateur, ignoré par git */
   dataDir: process.env.DIM_DATA_DIR || path.join(ROOT, 'data'),
   /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne ; automatique sur Render,

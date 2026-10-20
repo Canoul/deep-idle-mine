@@ -1,0 +1,7 @@
+# Modèle : install.sh remplace __SITE__ par l'adresse du site et l'installe dans /etc/caddy/Caddyfile.
+# Caddy obtient et renouvelle tout seul le certificat https, et redirige http vers https.
+__SITE__ {
+	encode zstd gzip
+	# Caddy remplace tout X-Forwarded-For envoyé par le joueur par sa vraie adresse (DIM_TRUST_PROXY=1)
+	reverse_proxy 127.0.0.1:8000
+}

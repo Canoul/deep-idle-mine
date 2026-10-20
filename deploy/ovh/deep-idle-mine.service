@@ -1,0 +1,32 @@
+# Service du jeu (installé par deploy/ovh/install.sh dans /etc/systemd/system/).
+# Journal : sudo journalctl -u deep-idle-mine -f    ·    Redémarrer : sudo systemctl restart deep-idle-mine
+[Unit]
+Description=Deep Idle Mine (serveur du jeu)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=dim
+Group=dim
+WorkingDirectory=/opt/deep-idle-mine
+EnvironmentFile=/etc/deep-idle-mine.env
+ExecStart=/usr/bin/node server/main.js
+Restart=always
+RestartSec=3
+# arrêt propre : le serveur finit d'écrire dans la base avant de quitter
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# le jeu ne peut écrire que dans son dossier de données
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/deep-idle-mine
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

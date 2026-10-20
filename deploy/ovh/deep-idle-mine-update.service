@@ -1,0 +1,9 @@
+# Mise à jour depuis GitHub (déclenchée par deep-idle-mine-update.timer).
+[Unit]
+Description=Deep Idle Mine : mise à jour depuis GitHub
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/deep-idle-mine-update

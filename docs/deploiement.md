@@ -1,5 +1,8 @@
 # Mise en ligne (Render + Neon)
 
+> **Hébergement actuel : VPS OVHcloud**, voir `docs/deploiement-ovh.md`. Cette page décrit l'ancien
+> hébergement sur Render, gardé pour référence et pour un éventuel retour (jamais les deux allumés en même temps).
+
 Le jeu tourne sur **Render** (serveur Node, offre gratuite) et garde ses données dans **Neon** (PostgreSQL
 gratuit et permanent). Render efface les fichiers du serveur à chaque redéploiement, redémarrage ou mise en
 veille : sans base de données, comptes et inventaires disparaîtraient.

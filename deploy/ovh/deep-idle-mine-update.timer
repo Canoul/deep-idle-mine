@@ -1,0 +1,10 @@
+# Regarde toutes les 2 min si la branche main a changé sur GitHub ; si oui, met à jour et redémarre le jeu.
+[Unit]
+Description=Deep Idle Mine : vérifier les mises à jour toutes les 2 min
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+
+[Install]
+WantedBy=timers.target
