@@ -8,6 +8,7 @@ export const TABS = [
   { id:'stuff',      label:'Stuff',      icon:'🛡',  ready:true  },
   { id:'craft',      label:'Craft',      icon:'🔨', ready:true  },
   { id:'four',       label:'Four',       icon:'🔥', ready:true  },
+  { id:'recherche',  label:'Recherche',  icon:'🔬', ready:true  },   // table de recherche (blueprints)
   { id:'talents',    label:'Talents',    icon:'⭐', ready:false },
   { id:'social',     label:'Social',     icon:'👥', ready:false },
 ];

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab } from '../src/ui/nav.js';
 
 test('les 7 onglets sont dans l\'ordre voulu, Mine en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Talents','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Recherche','Talents','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 

@@ -7,7 +7,7 @@
    - un objet non empilable (stuff) prend un slot par exemplaire : { item, qty:1, uid } ;
    - capacité illimitée pour l'instant.
    Un slot vidé (objet consommé) devient null : le trou est réutilisé par le prochain nouvel objet. */
-import { ITEMS, INVENTORY } from '../config.js';
+import { ITEMS, INVENTORY, RESEARCH } from '../config.js';
 import { RECIPES } from '../recipes.js';
 
 export const SAVE_VERSION = 1;
@@ -24,7 +24,8 @@ export const OPEN_MEMORY = 50;
    second objet, ne consomme pas un second blueprint) */
 export const CRAFT_MEMORY = 50;
 /* unlocked : recettes débloquées par un blueprint (src/meta/craft.js), pour toujours */
-export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[], unlocked:[] }; }
+/* research : dernières recherches / recyclages de la table de recherche (src/meta/research.js) */
+export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[], unlocked:[], research:[] }; }
 
 /* une quantité acceptable : entier positif « sûr » (pas d'Infinity, NaN, décimale ni nombre trop grand) */
 const validQty = q => Number.isSafeInteger(q) && q > 0;
@@ -115,7 +116,7 @@ export function creditSession(inv, sessionId, bag){
 }
 
 /* ---- sauvegarde ---- */
-export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted, unlocked:inv.unlocked });
+export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted, unlocked:inv.unlocked, research:inv.research });
 
 const validBag = b => b && typeof b === 'object' && !Array.isArray(b) && Object.values(b).every(validQty);
 
@@ -143,6 +144,9 @@ export function deserialize(json){
   /* recettes débloquées : seulement des recettes à blueprint existantes, chacune une fois */
   inv.unlocked = Array.isArray(d.unlocked)
     ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && Object.hasOwn(RECIPES, n) && RECIPES[n].unlock))] : [];
+  inv.research = Array.isArray(d.research) ? d.research.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string'
+      && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
+    .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
   return inv;
 }
 

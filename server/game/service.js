@@ -23,6 +23,7 @@ import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { craft, learn } from '../../src/meta/craft.js';
+import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf } from '../../src/meta/stuff.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
@@ -38,6 +39,9 @@ const CRAFT_ERRORS = { unknown: 'Recette inconnue.', locked: 'Recette pas encore
                        not_enough: 'Il te manque des ingrédients.' };
 const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.', known: 'Tu connais déjà cette recette : ton blueprint est gardé.',
                        not_owned: 'Tu n\'as pas ce blueprint.' };
+const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+                          not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
+                          not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
 const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
@@ -400,6 +404,21 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, inventory: publicInventory(inv) };
+      });
+    },
+
+    /* table de recherche : { action:'research', tier } ou { action:'recycle', item }. Le serveur tire le hasard
+       (imprévisible) ; opId : une demande renvoyée rend le même résultat sans rien refaire. */
+    async research(me, body = {}){
+      const { action, opId } = body;
+      if(action !== 'research' && action !== 'recycle') fail('bad_request', 400, 'Demande invalide.');
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        const r = action === 'research' ? research(inv, body.tier, opId, random) : recycle(inv, body.item, opId, random);
+        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { action, item: r.item, parts: r.parts, inventory: publicInventory(inv) };
       });
     },
 

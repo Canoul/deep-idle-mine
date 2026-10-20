@@ -142,6 +142,17 @@ export const LOOT = {
   },
 };
 
+/* ---- Hors session : table de recherche (onglet du même nom, src/meta/research.js) ----
+   tiers : recherche d'un blueprint du tier : cost Blueprint parts (tout ou rien), un blueprint tiré parmi ceux de la
+           table de butin `from` dont la recette n'est pas encore apprise. Un seul tier pour l'instant.
+   recycle : un blueprint détruit rend entre min et max Blueprint parts. Valeurs provisoires. */
+export const RESEARCH = {
+  parts: 'Blueprint parts',
+  tiers: [ { tier:1, label:'Tier 1', from:'Treasure T1', cost:100 } ],
+  recycle: { min:30, max:60 },
+  opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
+
 /* partage du coffre commun en fin de session (src/meta/share.js) : parts égales entre les joueurs,
    reste tiré au hasard depuis la seed ; les objets de copyToAll ne se partagent pas, chacun reçoit la quantité entière */
 export const SHARE = { copyToAll:TREASURE.tiers.map(t => t.item) };   // tous les Treasure TX

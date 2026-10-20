@@ -413,3 +413,18 @@ Règles (voir CLAUDE.md) :
 - **Points d'équilibrage à surveiller** : une pièce en fer coûte 4 à 20 Tainted iron = 20 à 100 lingots de fer +
   80 à 400 chitine (+ 200 à 1 000 charbons) ; la ceinture (+1 découverte, +50 % de la base) est probablement la pièce
   la plus forte, à mesurer avec `npm run weights`. Les blueprints sortent à 1 % chacun par Treasure T1 : très rares.
+
+### Onglet « Table de recherche » : rechercher un blueprint (100 parts), recycler un blueprint (30 à 60 parts)
+- **Quoi** (demande du créateur) : nouvel onglet Recherche, deux sous-onglets. **Recherche** : tier (seulement 1),
+  case de parts (0 ou 100, un clic), « Rechercher » → un blueprint du Treasure T1 dont la recette n'est pas apprise
+  (décisions du créateur : les 9 BP du T1, un BP en stock peut ressortir ; Four en fer BP et Boussole en or BP
+  toujours possibles). Les BP possibles ne sont pas listés (seulement leur nombre : recettes secrètes).
+  **Recycle** : un blueprint (case + choix) → détruit, rend 30 à 60 parts. Hasard du serveur (`random`).
+  Mémoire `inv.research` (opId → même résultat, même après relecture ; même opId pour une autre action : refusé).
+- **Fichiers** : `src/meta/research.js`, `src/ui/research.js` (nouveaux) ; `src/config.js` (`RESEARCH`),
+  `src/meta/inventory.js` (`research`), `server/game/{service,routes}.js` (`POST /api/game/research`),
+  `src/net/api.js`, `src/main.js`, `src/ui/nav.js`, `index.html`, `src/ui/style.css`, GAME_DESIGN §6, CLAUDE.md.
+- **Tests** : `tests/research.test.js` (7), `tests/anticheat/research.test.js` (400 suites au hasard : parts =
+  450 − 100 × recherches + parts rendues, blueprints = 1 + recherches − recyclages), `game-service` (+1), `nav` adapté.
+  81/81 liés, anti-triche complète 50/50.
+- **Vérification** : ✅ tests. ⚠️ Onglet pas regardé dans un navigateur.

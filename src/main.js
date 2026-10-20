@@ -20,6 +20,7 @@ import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
+import { setupResearch } from './ui/research.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupTooltips } from './ui/tooltip.js';
@@ -81,6 +82,11 @@ const furnace = setupFurnace({
     setInventory(r.inventory);
     furnace.set(r.furnaces);
   },
+});
+
+/* table de recherche : le serveur tire le blueprint (ou les parts) et renvoie l'inventaire */
+const research = setupResearch({
+  onOp: async op => { const r = await gameApi.research({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
 });
 
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
@@ -261,7 +267,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
-  furnace.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);

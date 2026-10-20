@@ -276,10 +276,11 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Talents, Social**.
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Talents, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
+- **Recherche** (table de recherche) : dépenser les Blueprint parts, recycler des blueprints (voir ci-dessous).
 - **Craft** : fabriquer des objets (voir ci-dessous).
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
 - Talents, Social : à concevoir (page d'attente pour l'instant).
@@ -357,6 +358,16 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Produit | Ingrédients | Combustible | Durée |
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
+
+### Table de recherche (onglet Recherche)
+Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
+- **Recherche** : on choisit le **tier** (seulement le tier 1 pour l'instant), on pose les parts dans la case (c'est **0 ou 100**, un clic pose ou retire), puis **Rechercher** : les 100 parts sont dépensées et un **blueprint du tier 1** arrive dans l'inventaire.
+  - Blueprints du tier 1 = ceux qu'on peut trouver dans un Treasure T1 (les 9).
+  - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise** : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; ceux qui ne débloquent encore rien (Four en fer BP, Boussole en or BP) restent toujours possibles.
+  - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
+- **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend **30 à 60 Blueprint parts** *(provisoire)*.
+- C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
+- Repère : recherche puis recyclage = 100 parts contre 30 à 60 : on perd toujours au change (pas de boucle infinie).
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.

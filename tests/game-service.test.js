@@ -347,6 +347,25 @@ test('blueprint par le serveur : consommé une fois, recette débloquée et renv
   assert.ok(!st.inventory.slots.some(s => s?.item === 'Épée en fer BP' || s?.item === 'Tainted iron'));
 });
 
+test('table de recherche par le serveur : 100 parts → un blueprint ; recycler → 30 à 60 parts ; demandes rejouées', async () => {
+  const { game, store } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Blueprint parts', qty:150 }], nextUid:1, credited:[] });
+  const o = { action:'research', tier:1, opId:'op-research-1' };
+  const a = await game.research(ME, o), b = await game.research(ME, o);
+  assert.equal(b.item, a.item, 'double clic : même blueprint');
+  const has = (r, item) => r.inventory.slots.find(s => s?.item === item)?.qty ?? 0;
+  assert.equal(has(b, 'Blueprint parts'), 50); assert.equal(has(b, a.item), 1);
+  await assert.rejects(game.research(ME, { action:'research', tier:1, opId:'op-research-2' }), { code:'not_enough' });
+  await assert.rejects(game.research(ME, { action:'research', tier:7, opId:'op-research-3' }), { code:'bad_tier' });
+  await assert.rejects(game.research(ME, { action:'voler', opId:'op-research-4' }), { code:'bad_request' });
+  const c = await game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-1' });
+  assert.ok(c.parts >= 30 && c.parts <= 60);
+  assert.equal(has(c, 'Blueprint parts'), 50 + c.parts); assert.equal(has(c, a.item), 0);
+  await assert.rejects(game.research(ME, { action:'recycle', item:a.item, opId:'op-recycle-2' }), { code:'not_owned' });
+  const st = await game.state(ME);
+  assert.equal(st.inventory.slots.find(s => s?.item === 'Blueprint parts').qty, 50 + c.parts, 'enregistré');
+});
+
 test('four : refus lisibles, rien ne bouge ; demande rejouée appliquée une fois', async () => {
   const { game, store } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }], nextUid:1, credited:[] });
