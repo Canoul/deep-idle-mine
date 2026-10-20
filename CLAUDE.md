@@ -90,7 +90,7 @@ tests/                  un fichier de test par sujet + helpers (mines dessinées
 scripts/                simulate.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
                         game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions)
-docs/                   documentation technique (comptes.md)
+docs/                   documentation technique (comptes.md), journal de debug des sessions Claude (debug.md)
 textures/               PNG 16×16
 ```
 
@@ -124,6 +124,11 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 - **Structure du dossier optimisée et segmentée** : organise les dossiers et fichiers de façon claire (ex. `src/` pour le code, `tests/` pour les tests, `docs/` pour la doc, `scripts/` pour les outils de simulation). Range chaque chose à sa place et garde la racine propre.
 - **Un fichier par module** : crée un fichier distinct pour chaque module (monde, IA, simulation, rendu, UI, config…) au lieu d'un seul gros fichier. Le prototype monolithique n'est qu'une référence, pas un modèle de structure.
 - **Textures** : toutes les textures vivent dans `textures/` (PNG 16×16) et sont chargées par le code, jamais dessinées en dur. Toute nouvelle texture s'ajoute dans ce dossier (générées par `scripts/gen_textures.py` tant qu'on n'a pas de vrais assets).
+- **Journal de debug (`docs/debug.md`)** : lis-le en début de session, surtout avant des tests ou des simulations.
+  À chaque modification du code, ajoute-y une entrée à la date du jour : quoi, fichiers, tests, **état de
+  vérification** (✅ vérifié avec les chiffres / ⚠️ non vérifié / ❌ cassé connu), ce qu'il reste à vérifier, points
+  fragiles. Quand tu vérifies ou corriges une entrée existante, mets à jour son état. Fais-le sans attendre qu'on te
+  le demande, dans le même commit que la modification.
 - Petits commits, un sujet par commit.
 - Réponds en français.
 
