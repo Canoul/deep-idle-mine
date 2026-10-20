@@ -63,7 +63,8 @@ function createLocks(){
 
 export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
                                     config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
-                                    random = () => crypto.randomInt(2**48) / 2**48 }){
+                                    /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
+                                    random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
   const withLock = createLocks();
   const settling = new Map();      // id → promesse du versement en cours
   /* les parties en direct ; à la fin de l'une d'elles, son coffre est partagé et versé */

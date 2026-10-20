@@ -396,3 +396,12 @@ test('places : deux sessions à l\'heure = serveur plein ; une session dépassé
   advance(realDurationMs() + 1000);
   await game.start(P(3), {});
 });
+
+test('ouvrir un Treasure T1 avec le vrai hasard du serveur (pas de hasard fourni par le test)', async () => {
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner: fakeLive(fakeSummary()) });
+  await store.putInventory(ME.id, { slots:[{ item:T1, qty:2 }], nextUid:1, credited:[] });
+  const r = await game.open(ME, { item:T1, opId:'op-vrai-hasard' });
+  assert.ok(r.loot['Charbon'] > 0, 'un butin a été tiré');
+  assert.equal(r.inventory.slots.find(s => s?.item === T1).qty, 1);
+});
