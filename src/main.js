@@ -21,6 +21,7 @@ import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
+import { setupTooltips } from './ui/tooltip.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, ApiError } from './net/api.js';
 
@@ -71,6 +72,8 @@ const furnace = setupFurnace({
     furnace.set(r.furnaces);
   },
 });
+
+setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
 
 /* ---------- navigation ---------- */
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné

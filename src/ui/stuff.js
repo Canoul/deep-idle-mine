@@ -2,7 +2,8 @@
    qui y vont (et « Retirer » si la case est occupée). Ne modifie rien lui-même : chaque action est demandée au
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
-import { piecesFor, statsText } from '../meta/stuff.js';
+import { piecesFor, statsText, minerStats } from '../meta/stuff.js';
+import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 
 const $ = id => document.getElementById(id);
@@ -16,12 +17,21 @@ export function setupStuff({ onOp }){
   function render(){
     $('stuffGrid').innerHTML = STUFF.slots.map(s => {
       const p = worn[s.id];
-      const tip = p ? [p.item, statsText(p.item)].filter(Boolean).join(' — ') : s.label;
-      return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}" title="${esc(tip)}">`+
+      return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item) : ` title="${esc(s.label)}"`}>`+
              `<span class="slot">${p ? icon(p.item) : `<span class="sico">${s.icon}</span>`}</span>`+
              `<span class="slbl">${esc(s.label)}</span><span class="sname mut">${p ? esc(p.item) : 'vide'}</span></button>`;
     }).join('');
+    renderStats();
     if(open) renderPicker();
+  }
+
+  /* stats du mineur : base + bonus des pièces portées (le bonus en vert) */
+  function renderStats(){
+    const fr = v => String(v).replace('.', ',');
+    $('stuffStatsBody').innerHTML = minerStats(worn).map(s =>
+      `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}</b>`+
+      (s.bonus ? ` <small class="mut">(${fr(s.base)} <span class="stuffStats">+${fr(s.bonus)}</span>)</small>` : '')+
+      `</span></div>`).join('');
   }
 
   function renderPicker(){

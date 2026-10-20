@@ -4,6 +4,7 @@
 import { itemDef } from '../meta/inventory.js';
 import { craftable, needs, canCraft, recipeOf } from '../meta/craft.js';
 import { statsText } from '../meta/stuff.js';
+import { tipAttr } from './tooltip.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -18,7 +19,7 @@ export function setupCraft({ onCraft }){
     const list = craftable();
     if(!sel || !list.includes(sel)) sel = list[0] ?? null;
     $('craftList').innerHTML = list.map(n =>
-      `<button class="slot craftItem${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}" title="${esc(n)}">${icon(n)}</button>`).join('')
+      `<button class="slot craftItem${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')
       || '<p class="mut">Aucune recette pour l\'instant.</p>';
     if(!sel){ $('craftInfo').innerHTML = ''; return; }
     const r = recipeOf(sel), ok = canCraft(inv, sel);

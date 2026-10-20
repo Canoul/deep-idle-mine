@@ -4,6 +4,7 @@ import { INVENTORY } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
 import { statsText } from '../meta/stuff.js';
+import { tipAttr } from './tooltip.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -33,7 +34,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : '';
-  return `<div class="slot${fresh.has(i)?' fresh':''}" data-i="${i}" title="${esc(s.item)} × ${fullQty(s.qty)}">${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${s.item} × ${fullQty(s.qty)}`)}>${iconHtml(s.item)}${q}</div>`;
 }
 
 function infoHtml(s, pinned=false){

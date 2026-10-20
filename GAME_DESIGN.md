@@ -289,7 +289,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Bonus |
   |---|---|---|
-  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | — |
+  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,1 |
   | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
   | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +25 |
   | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
@@ -301,6 +301,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Pas encore d'effet** sur le mineur en session : les stats des pièces viendront à l'étape suivante (stats par mineur, stuff figé au lancement de la session, lu par la partie du serveur).
 - Pièces existantes : **Pioche en pierre** (case pioche) ; **Casque, Plastron, Jambes et Bottes en chitine** (cases casque, torse, jambes, pieds). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire, mais ne s'appliquent pas encore en session (voir le point précédent).
+- **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
+- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vision, boussole, torches, passerelles) : base + bonus des pièces portées, le bonus en vert. Tant que les bonus ne s'appliquent pas en session, une ligne le rappelle.
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.

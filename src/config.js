@@ -207,13 +207,17 @@ export const STUFF = {
   ],
   /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur). Affichés, pas encore appliqués en session. */
   items: {
-    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone' },
+    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.1 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
     'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
   },
-  statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)' },
+  statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
+                mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole',
+                torches:'Torches', bridges:'Passerelles' },
+  /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','light','compass','torches','bridges'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 

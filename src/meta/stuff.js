@@ -4,16 +4,34 @@
    État d'un joueur : { worn: { case: { item, uid } | null }, ops:[opId…] }.
    Équiper sort la pièce de l'inventaire (et y remet celle qu'elle remplace) ; retirer l'y remet. Une pièce garde
    son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée. */
-import { STUFF, ITEMS } from '../config.js';
+import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
 export const slotOf = item => ITEMS[item]?.cat === 'stuff' ? ITEMS[item].slot ?? null : null;
 
-/* bonus d'une pièce en texte lisible : « Oxygène +30 · Pods +25 » (vide si aucun) */
-export const statsText = item => Object.entries(ITEMS[item]?.stats || {})
-  .map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${String(v).replace('.', ',')}`).join(' · ');
+/* bonus d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] */
+export const statLines = item => Object.entries(ITEMS[item]?.stats || {})
+  .map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${String(v).replace('.', ',')}`);
+/* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
+export const statsText = item => statLines(item).join(' · ');
+/* stats du mineur avec le stuff porté : [{ key, label, base, bonus, total }] (base = STATS, bonus = somme des pièces).
+   Arrondi au centième : 2,25 + 0,4 donne 2,65 et pas 2,6500000000000004. */
+export function minerStats(worn){
+  const bonus = {};
+  for(const p of Object.values(worn || {})) if(p) for(const [k, v] of Object.entries(ITEMS[p.item]?.stats || {})) bonus[k] = (bonus[k] || 0) + v;
+  const r = v => Math.round(v * 100) / 100;
+  return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, base:STATS[key],
+                                        bonus:r(bonus[key] || 0), total:r(STATS[key] + (bonus[key] || 0)) }));
+}
+
+/* bulle d'info d'une pièce de stuff : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
+export function stuffTip(item){
+  if(ITEMS[item]?.cat !== 'stuff') return null;
+  const lines = statLines(item);
+  return [item, ...(lines.length ? lines : ['Aucun effet'])].join('\n');
+}
 
 export function createStuff(){ return { worn: Object.fromEntries(SLOT_IDS.map(s => [s, null])), ops: [] }; }
 
