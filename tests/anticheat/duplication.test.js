@@ -168,3 +168,26 @@ test('sauvegarde : quantités trafiquées rejetées (Infinity, négatif, décima
   assert.equal(countOf(back, 'Pioche test'), 1, 'une pièce de stuff vaut toujours 1');
   assert.equal(countOf(back, 'Pierre'), 12);
 });
+
+/* ---------- vol du gobelin ---------- */
+
+test('gobelin : le vol ne crée jamais de matière, ni quantité négative, sur 200 inventaires aléatoires', async () => {
+  const { worldFrom, run } = await import('../helpers.js');
+  const r = mulberry32(77);
+  for(let t=0; t<200; t++){
+    const G = worldFrom(['', 'd'.repeat(50), '#@'+' '.repeat(20)+'#', '#'.repeat(50)]), m = G.miners[0];
+    const inv = randomChest(r); for(const k in inv) inv[k] = inv[k] % 20; for(const k in inv) if(!inv[k]) delete inv[k];
+    m.inv = { ...inv }; m.load = Object.entries(inv).reduce((s,[k,n]) => s + ITEMS[k].w*n, 0); m.ox = 300;
+    G.mobs.push({ id:99, type:'gobelin', x:m.x, y:m.y, hp:1e9, maxhp:1e9, cd:5 });
+    run(G, 1 + Math.floor(r() * 400));
+    let lost = 0;
+    for(const k of NAMES){
+      const after = m.inv[k] || 0;
+      assert.ok(Number.isInteger(after) && after >= 0 && after <= (inv[k] || 0), `${k} : ${inv[k]} → ${after}`);
+      if(ITEMS[k].cat !== 'ore') assert.equal(after, inv[k] || 0, `${k} n'est pas un minerai : jamais volé`);
+      lost += (inv[k] || 0) - after;
+    }
+    assert.equal(lost, m.stats.stolen, 'chaque unité disparue est un vol compté');
+    assert.equal(m.load, Object.entries(m.inv).reduce((s,[k,n]) => s + ITEMS[k].w*n, 0));
+  }
+});

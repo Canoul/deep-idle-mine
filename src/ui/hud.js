@@ -104,6 +104,7 @@ export function showEnd(rec, me, onBack, onInventory){
     `<div class="row"><span>Areas débloquées</span><b>${s.areasUnlocked}</b></div>`+
     `<div class="row"><span>Blocs minés</span><b>${s.mined}</b></div>`+
     `<div class="row"><span>Mobs vaincus</span><b>${s.kills}</b></div>`+
+    (s.stolen ? `<div class="row"><span>Minerais volés par les gobelins</span><b>${s.stolen}</b></div>` : '')+
     `<div class="row"><span>Treasures ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
     by+split+lost+

@@ -6,6 +6,7 @@ import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
 import { log } from './log.js';
+import { isWalker } from './mobs.js';
 
 /* boussole : minerais sur la ligne du mineur uniquement */
 export function compassScan(G,m,R){
@@ -101,7 +102,7 @@ function nearestThreat(G,m){
 
 function fight(G,m,o){
   const dx=o.x-m.x, dy=o.y-m.y;
-  m.status='Combat ('+(o.type==='mimic'?'mimic':'bestiole')+')';
+  m.status='Combat ('+o.type+')';
   if(Math.abs(dx)+Math.abs(dy)<=1){ startAction(m,'attack', CFG.attackInterval/dk(G,m), {mob:o}); return; }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(!ok) idle(m,0.3);
@@ -213,14 +214,14 @@ function shiftColumn(G,m){
   return stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge});
 }
 
-/* tacle : une bestiole sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
-export const tackler = (G,m) => G.mobs.find(o=>o.type==='bestiole' && o.hp>0 && o.x===m.x && o.y===m.y) || null;
+/* tacle : une bestiole (ou un gobelin) sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
+export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y) || null;
 
 export function decide(G,m){
   // gravité : sans appui, il tombe d'une case
   if(!supported(G,m.x,m.y)){ m.status='Tombe'; G.stats.falls++; m.stats.falls++; startAction(m,'move', 1/CFG.fallSpeed, {x:m.x,y:m.y+1,down:true,fall:true,fx:m.x,fy:m.y}); return; }
   // taclé : il ne peut plus bouger, il doit tuer la bestiole (même si « combat » est sur non, même en retour)
-  { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); m.status='Taclé ! (bestiole)'; return; } }
+  { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); m.status='Taclé ! ('+tk.type+')'; return; } }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
   if(m.y>0){

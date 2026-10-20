@@ -151,6 +151,10 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 - Types prévus :
   - **Bestioles** : apparaissent dans les tunnels (posées au sol) et se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien.
     - **Tacle** : la bestiole va jusque sur la case du mineur. Tant qu'elle est sur lui, **il ne peut plus bouger** (son action en cours est interrompue, sauf une chute) et il la combat obligatoirement, même si l'option « combat les mobs » est désactivée et même s'il remonte. C'est le mécanisme principal de ralentissement. Elles laissent de la **chitine** (1 à 2, poids 1) *(provisoire : ressource du prototype, sans usage tant que le craft n'est pas défini)*.
+  - **Gobelins** : bestioles voleuses des areas profondes. Même physique et même **tacle** que les bestioles, un peu plus résistants (30 PV en area 3, contre 20 *(provisoire)*). Ils remplacent une partie des apparitions de bestioles (même minuterie, même plafond de mobs) : à partir de l'**area 3**, **25 %** des apparitions sont des gobelins *(provisoire)*.
+    - **Vol** : toutes les **2 secondes** de tacle, le gobelin vole **un minerai** (bloc de type ore : charbon, fer, or, diamant) tiré au hasard dans l'inventaire du mineur taclé, chaque unité ayant la même chance. Le minerai volé est **perdu** (il ne revient pas quand on tue le gobelin). Il ne vole ni terre, ni pierre, ni butin de mob, ni Treasure TX. Rien à voler : rien ne se passe.
+    - **Butin** : **peau de gobelin** (1 à 2, poids 1) et **chitine** (1) *(provisoire : sans usage tant que le craft n'est pas défini)*.
+    - Intention : un mineur qui tue vite perd peu ; c'est une raison concrète d'améliorer ses dégâts pour les areas profondes.
   - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à proximité. Les vaincre rapporte des minerais. Comme les bestioles, un mimic dévoilé ne déclenche le combat que s'il est dans le champ de vision du mineur.
 
 ## 6. Hors session

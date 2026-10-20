@@ -1,5 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS } from '../config.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT } from './miner.js';
@@ -33,6 +33,10 @@ export function killMob(G,m,o){
     G.tiles[o.y][o.x]=0; updateLight(G); const b=BLOCKS[o.ore];
     collect(m, b.name, b.w, MOBS.mimicLoot); oreMinedIn(G,o.y);
     log(G, `🗡 ${m.name} : mimic vaincu (+${MOBS.mimicLoot} ${b.name})`);
+  } else if(o.type==='gobelin'){
+    const n=MOBS.goblinLoot(G.rng);
+    collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.goblinChitin);
+    log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${MOBS.goblinChitin} chitine)`);
   } else {
     const n=MOBS.bugLoot(G.rng); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);

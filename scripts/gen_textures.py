@@ -187,6 +187,24 @@ def main():
     rect(bug, 10, 7, 1, 2, hexc('#000000'))
     tex['bug'] = bug
 
+    # gobelin : tête verte, grandes oreilles pointues, yeux jaunes, sourire
+    goblin = blank()
+    green, dark = hexc('#4f9d3a'), hexc('#2f6b22')
+    rect(goblin, 4, 4, 8, 9, green)
+    rect(goblin, 1, 5, 3, 2, green)
+    rect(goblin, 0, 4, 1, 1, green)
+    rect(goblin, 12, 5, 3, 2, green)
+    rect(goblin, 15, 4, 1, 1, green)
+    rect(goblin, 5, 6, 2, 2, hexc('#ffd23f'))
+    rect(goblin, 9, 6, 2, 2, hexc('#ffd23f'))
+    rect(goblin, 6, 7, 1, 1, hexc('#000000'))
+    rect(goblin, 9, 7, 1, 1, hexc('#000000'))
+    rect(goblin, 5, 10, 6, 1, dark)
+    rect(goblin, 6, 11, 1, 1, hexc('#ffffff'))
+    rect(goblin, 9, 11, 1, 1, hexc('#ffffff'))
+    rect(goblin, 5, 13, 6, 3, hexc('#7a5230'))  # tunique
+    tex['goblin'] = goblin
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

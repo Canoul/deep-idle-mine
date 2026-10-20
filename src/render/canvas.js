@@ -94,7 +94,7 @@ export function createRenderer(cv){
         // visible si un mineur la voit, OU si elle est dans une galerie éclairée (affichage seulement)
         const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
-        blit('bug',px,py,'#d14b4b');
+        if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a'); else blit('bug',px,py,'#d14b4b');
       }
       if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
     }

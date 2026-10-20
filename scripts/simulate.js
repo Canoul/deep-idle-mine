@@ -38,7 +38,7 @@ for(const r of rows){
   console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | minerai ${r.ore.join(' ')}` +
     (r.stuck.length ? `  ⚠ BLOQUÉ ${JSON.stringify(r.stuck[0])}` : ''));
   if(miners>1) for(const m of r.miners)
-    console.log(`    ${m.name.padEnd(9)} minés ${String(m.mined).padStart(4)} (minerai ${String(m.ore).padStart(3)}) | allers-retours ${String(m.trips).padStart(2)} | prof ${String(m.maxDepth).padStart(3)} | mobs ${String(m.kills).padStart(3)} | tacles ${m.tackled}`);
+    console.log(`    ${m.name.padEnd(9)} minés ${String(m.mined).padStart(4)} (minerai ${String(m.ore).padStart(3)}) | allers-retours ${String(m.trips).padStart(2)} | prof ${String(m.maxDepth).padStart(3)} | mobs ${String(m.kills).padStart(3)} | tacles ${m.tackled} | volés ${m.stolen}`);
 }
 const avg = k => (rows.reduce((s,r)=>s+r[k],0)/rows.length).toFixed(1);
 const stuck = rows.filter(r=>r.stuck.length).length;

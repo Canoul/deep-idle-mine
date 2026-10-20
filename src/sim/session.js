@@ -21,7 +21,7 @@ export function newSession(seed, opts={}){
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
-    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0},
+    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
   };
@@ -100,7 +100,7 @@ export function endSession(G){
   G.over=true;
   G.summary = {
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
-    kills:G.stats.kills, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
+    kills:G.stats.kills, stolen:G.stats.stolen, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
     miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };

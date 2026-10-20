@@ -122,11 +122,21 @@ export const MOBS = {
   bugSpawnMin: 5, bugSpawnMax: 10, // distance d'apparition autour du mineur
   bugLoot: rng => 1 + Math.floor(rng()*2),   // chitine
   bugItem: 'Chitine',              // objet laissé par une bestiole
+  /* gobelin : une bestiole voleuse (même physique, même tacle). Il remplace une partie des apparitions de
+     bestioles (même minuterie, même plafond) dans les areas >= goblinMinArea. Tant qu'il tacle un mineur,
+     il lui vole un minerai (bloc de type ore) toutes les goblinStealEvery secondes : le minerai est perdu. */
+  goblinMinArea: 3,
+  goblinChance: 0.25,              // part des apparitions qui sont des gobelins (dans les areas concernées)
+  goblinHp:   k => 12 + 6*k,       // 30 PV en area 3 (bestiole : 20)
+  goblinStealEvery: 2,             // secondes de tacle entre deux vols
+  goblinItem: 'Peau de gobelin',
+  goblinLoot:  rng => 1 + Math.floor(rng()*2),   // peau de gobelin
+  goblinChitin: 1,                               // chitine
 };
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
-  'ladder','chest','miner','mimic','bug','torch'];
+  'ladder','chest','miner','mimic','bug','goblin','torch'];
 
 /* ---- Hors session : inventaire global ----
    Catalogue des objets qu'on peut posséder, indexé par leur nom (celui que la simulation met dans les coffres).
@@ -140,6 +150,7 @@ export const ITEMS = {
     .map(b => [b.name, { cat:b.type, tex:b.tex, w:b.w, stack:true }])),
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
+  [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },
 };
 
 /* grille d'inventaire : colonnes fixes (un objet garde sa place à l'écran), au moins minSlots affichés ;
