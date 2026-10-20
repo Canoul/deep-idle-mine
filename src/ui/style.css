@@ -214,6 +214,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .furnList{display:flex;flex-direction:column;gap:12px}
 .furn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
 .furn h3{margin:0 0 10px;font-size:15px}
+.fhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.fhead h3{margin:0;flex:1}
+.fmode button{padding:3px 10px;font-size:12px}
+.fhelp{width:26px;height:26px;padding:0;border-radius:50%;font-weight:700}
+.frecipes{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.frec{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.fout,.fparts{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fout b{flex:1}
+.fparts{margin-top:4px;font-size:13px}
+.fparts img{width:18px !important;height:18px !important}
 .furn.locked{opacity:.55}
 .furn.locked h3{margin:0}
 .fgrid{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:14px;max-width:420px}

@@ -42,6 +42,8 @@ const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
   slot_busy: 'La case contient déjà autre chose : vide-la d\'abord.', inventory_full: 'L\'inventaire ne peut pas recevoir ça.',
+  bad_mode: 'Mode de four inconnu.', not_empty: 'Vide les cases d\'ingrédients avant de changer de mode.',
+  no_recipe: 'Aucun alliage avec ces deux ingrédients.',
 };
 const isInt = v => Number.isSafeInteger(v);
 
@@ -372,11 +374,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async furnace(me, body = {}){
       const { opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
-      const op = { action: body.action, furnace: body.furnace, slot: body.slot, item: body.item, qty: body.qty, opId };
+      const op = { action: body.action, furnace: body.furnace, slot: body.slot, item: body.item, qty: body.qty, mode: body.mode, opId };
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id), st = await loadFurnaces(me.id);
         const r = furnaceOp(st, inv, op, clock());
-        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'slot_busy' ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
+        if(r.error) fail(r.error, ['not_enough', 'slot_busy', 'not_empty', 'no_recipe'].includes(r.error) ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
         return { inventory: { slots: inv.slots }, furnaces: publicFurnaces(st) };
       });

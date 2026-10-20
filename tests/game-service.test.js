@@ -311,6 +311,24 @@ test('four : poser, fondre en temps réel (page fermée), récupérer — le ser
   assert.equal(r.furnaces.list[0].ore.qty, 10);
 });
 
+test('four : mode Alliage par le serveur (Tainted iron en 3 min), changement refusé si des ingrédients restent', async () => {
+  const { game, store, advance } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Lingot de fer', qty:5 }, { item:'Chitine', qty:20 }, { item:'Charbon', qty:50 }, { item:'Fer', qty:10 }], nextUid:1, credited:[] });
+  await game.furnace(ME, { action:'load', furnace:0, slot:'ore', item:'Fer', qty:10, opId:'op-alloy-1' });
+  await assert.rejects(game.furnace(ME, { action:'mode', furnace:0, mode:'alloy', opId:'op-alloy-2' }), { code:'not_empty' });
+  await game.furnace(ME, { action:'unload', furnace:0, slot:'ore', opId:'op-alloy-3' });
+  let r = await game.furnace(ME, { action:'mode', furnace:0, mode:'alloy', opId:'op-alloy-4' });
+  assert.equal(r.furnaces.list[0].mode, 'alloy');
+  await game.furnace(ME, { action:'load', furnace:0, slot:'a', item:'Lingot de fer', qty:5, opId:'op-alloy-5' });
+  await game.furnace(ME, { action:'load', furnace:0, slot:'b', item:'Chitine', qty:20, opId:'op-alloy-6' });
+  await game.furnace(ME, { action:'load', furnace:0, slot:'fuel', item:'Charbon', qty:50, opId:'op-alloy-7' });
+  advance(180_000);
+  r = await game.furnace(ME, { action:'collect', furnace:0, opId:'op-alloy-8' });
+  const has = item => r.inventory.slots.find(s => s?.item === item)?.qty ?? 0;
+  assert.deepEqual([has('Tainted iron'), has('Fer'), has('Lingot de fer'), has('Chitine'), has('Charbon')], [1, 10, 0, 0, 0]);
+  assert.equal((await game.state(ME)).furnaces.list[0].mode, 'alloy', 'le mode est enregistré');
+});
+
 test('four : refus lisibles, rien ne bouge ; demande rejouée appliquée une fois', async () => {
   const { game, store } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }], nextUid:1, credited:[] });

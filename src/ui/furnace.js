@@ -4,14 +4,21 @@
    (même règle que le serveur, src/meta/furnace.js) pour faire avancer la barre : affichage seulement. */
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
-import { advance, progress, ingotMs, accepts, recipeOf } from '../meta/furnace.js';
+import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyOf, alloysWith, INPUTS } from '../meta/furnace.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const icon = item => { const d = itemDef(item); return d?.tex ? `<img src="textures/${d.tex}.png" alt="">` : ''; };
 const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
-const LABEL = { ore:'Minerai', fuel:'Combustible', out:'Sortie' };
+const LABEL = { ore:'Minerai', a:'Ingrédient 1', b:'Ingrédient 2', fuel:'Combustible', out:'Sortie' };
+const MODE_LABEL = { smelt:'Fondre', alloy:'Alliage' };
+const modeOf = f => f.mode === 'alloy' ? 'alloy' : 'smelt';
+const x = (item, n) => `${icon(item)}<span>${esc(item)} ×${num(n)}</span>`;
+/* recettes d'un mode, pour la fenêtre « ? » : [{ out, parts:[[objet, quantité]…], time }] */
+const recipesOf = mode => mode === 'smelt'
+  ? Object.entries(FURNACE.recipes).map(([ore, r]) => ({ out:r.out, parts:[[ore, FURNACE.orePerIngot], ['Charbon', FURNACE.fuelPerIngot]], time:r.time }))
+  : FURNACE.alloys.map(r => ({ out:r.out, parts:[...Object.entries(r.in), ['Charbon', r.fuel]], time:r.time }));
 
 /* onOp({ action, furnace, slot, item, qty }) → promesse (rejetée avec un message lisible) */
 export function setupFurnace({ onOp }){
@@ -28,16 +35,27 @@ export function setupFurnace({ onOp }){
   }
 
   function statusText(f){
-    const r = f.ore && recipeOf(f.ore.item);
+    const r = activeRecipe(f);
     if(f.since !== null) {
-      const left = ingotMs(f) - (now() - f.since);
-      const n = Math.min(Math.floor(f.ore.qty / FURNACE.orePerIngot), Math.floor(f.fuel.qty / FURNACE.fuelPerIngot));
-      return `🔥 ${esc(r.out)} : ${mmss(left)} · encore ${n} lingot${n > 1 ? 's' : ''} possible${n > 1 ? 's' : ''}`;
+      const left = ingotMs(f) - (now() - f.since), n = batches(f);
+      return `🔥 ${esc(r.out)} : ${mmss(left)} · encore ${n} possible${n > 1 ? 's' : ''}`;
     }
+    if(modeOf(f) === 'alloy') return alloyStatus(f, r);
     if(!f.ore) return 'Pose des minerais pour commencer.';
     if(f.ore.qty < FURNACE.orePerIngot) return `Il faut ${FURNACE.orePerIngot} ${esc(f.ore.item)} pour un lingot.`;
     if(!f.fuel || f.fuel.qty < FURNACE.fuelPerIngot) return `Il faut ${FURNACE.fuelPerIngot} combustibles pour un lingot.`;
     if(f.out && f.out.item !== r.out) return 'Sortie occupée : récupère les lingots pour continuer.';
+    return 'À l\'arrêt.';
+  }
+  function alloyStatus(f, r){
+    if(!f.a && !f.b) return 'Pose les deux ingrédients d\'un alliage (bouton ? pour les recettes).';
+    if(!r){
+      const one = (f.a || f.b).item, names = [...new Set(alloysWith(one).flatMap(a => Object.keys(a.in)).filter(i => i !== one))];
+      return `Ajoute l'autre ingrédient : ${esc(names.join(' ou '))}.`;
+    }
+    for(const [slot, n] of Object.entries(r.need)) if(!f[slot] || f[slot].qty < n)
+      return slot === 'fuel' ? `Il faut ${n} combustibles pour un ${esc(r.out)}.` : `Il faut ${n} ${esc(f[slot]?.item ?? '')} pour un ${esc(r.out)}.`;
+    if(f.out && f.out.item !== r.out) return 'Sortie occupée : récupère-la pour continuer.';
     return 'À l\'arrêt.';
   }
 
@@ -47,8 +65,11 @@ export function setupFurnace({ onOp }){
     for(let i = 0; i < state.max; i++){
       const f = list[i];
       if(!f){ h += `<div class="furn locked"><h3>🔒 Four ${i + 1}</h3><p class="mut small">À débloquer (bientôt).</p></div>`; continue; }
-      h += `<div class="furn" data-f="${i}"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}</span></h3>`+
-           `<div class="fgrid"><div class="fin">${slotHtml(i, 'ore', f.ore)}${slotHtml(i, 'fuel', f.fuel)}</div>`+
+      const mode = modeOf(f);
+      h += `<div class="furn" data-f="${i}"><div class="fhead"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}</span></h3>`+
+           `<div class="seg fmode">${Object.keys(MODE_LABEL).map(m => `<button data-f="${i}" data-mode="${m}"${m === mode ? ' class="on"' : ''}>${MODE_LABEL[m]}</button>`).join('')}</div>`+
+           `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">?</button></div>`+
+           `<div class="fgrid"><div class="fin">${INPUTS[mode].map(s => slotHtml(i, s, f[s])).join('')}${slotHtml(i, 'fuel', f.fuel)}</div>`+
            `<div class="farrow"><div class="bar"><i style="width:${(progress(f, now()) * 100).toFixed(1)}%"></i></div><span>➜</span></div>`+
            `${slotHtml(i, 'out', f.out)}</div><p class="fstat small">${statusText(f)}</p></div>`;
     }
@@ -56,7 +77,7 @@ export function setupFurnace({ onOp }){
     shown = sig(list);
   }
   /* ce qui change l'affichage hors barre : contenu des cases et marche/arrêt */
-  const sig = list => JSON.stringify(list.map(f => [f.ore, f.fuel, f.out, f.since]));
+  const sig = list => JSON.stringify(list.map(f => [f.mode, f.ore, f.a, f.b, f.fuel, f.out, f.since]));
 
   /* rafraîchissement léger : la barre et le texte avancent ; tout est redessiné si un lingot vient de finir */
   function refresh(){
@@ -82,15 +103,20 @@ export function setupFurnace({ onOp }){
 
   /* ---- fenêtre de choix : objet, quantité (saisie libre ou Max), ou retirer le contenu ---- */
   function openPicker(i, slot){
-    const f = view()[i], cur = f[slot];
-    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item)).map(s => s.item))];
+    const f = view()[i], cur = f[slot], mode = modeOf(f);
+    const other = slot === 'a' ? f.b : slot === 'b' ? f.a : null;   // alliage : l'autre ingrédient déjà posé
+    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode) && (!other || alloyOf(s.item, other.item))).map(s => s.item))];
     let pick = cur?.item ?? items[0] ?? null;
     const box = $('fpick').querySelector('.box');
+    const info = it => {
+      if(slot === 'ore'){ const r = recipeOf(it); return `${FURNACE.orePerIngot} → 1 ${esc(r.out)} · ${mmss(r.time * 1000)}`; }
+      if(slot === 'fuel') return 'combustible';
+      return alloysWith(it).map(r => `${r.in[it]} → 1 ${esc(r.out)}`).join(' · ');
+    };
     const opts = items.map(it => {
-      const r = recipeOf(it), lock = cur && cur.item !== it;
-      const info = slot === 'ore' ? `${FURNACE.orePerIngot} → 1 ${esc(r.out)} · ${mmss(r.time * 1000)}` : 'combustible';
+      const lock = cur && cur.item !== it;
       return `<button class="fopt${it === pick ? ' on' : ''}" data-item="${esc(it)}"${lock ? ' disabled title="Vide la case d\'abord"' : ''}>`+
-             `${icon(it)}<span>${esc(it)}<small class="mut">${info}</small></span><b>${num(countOf(inv, it))}</b></button>`;
+             `${icon(it)}<span>${esc(it)}<small class="mut">${info(it)}</small></span><b>${num(countOf(inv, it))}</b></button>`;
     }).join('');
     box.innerHTML = `<h3>Four ${i + 1} · case ${LABEL[slot].toLowerCase()}</h3>`+
       (cur ? `<div class="fcur">${icon(cur.item)}<span>Dedans : <b>${esc(cur.item)} × ${num(cur.qty)}</b></span>`+
@@ -98,7 +124,7 @@ export function setupFurnace({ onOp }){
       (items.length ? `<div class="fopts">${opts}</div>`+
          `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité">`+
          `<button id="fpickMax">Max</button><button class="on" id="fpickOk">Poser</button></div>`
-       : `<p class="mut">${slot === 'ore' ? 'Aucun minerai à fondre dans ton inventaire.' : 'Aucun combustible dans ton inventaire (charbon).'}</p>`)+
+       : `<p class="mut">${slot === 'ore' ? 'Aucun minerai à fondre dans ton inventaire.' : slot === 'fuel' ? 'Aucun combustible dans ton inventaire (charbon).' : 'Aucun ingrédient d\'alliage dans ton inventaire (bouton ? pour les recettes).'}</p>`)+
       `<p class="err" id="fpickErr" hidden></p><p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
 
@@ -124,7 +150,22 @@ export function setupFurnace({ onOp }){
   }
   function closePicker(){ $('fpick').hidden = true; }
 
+  /* fenêtre « ? » : les recettes du mode du four */
+  function openHelp(mode){
+    const box = $('fpick').querySelector('.box');
+    box.innerHTML = `<h3>Recettes · ${MODE_LABEL[mode]}</h3><div class="frecipes">`+
+      recipesOf(mode).map(r => `<div class="frec"><div class="fout">${icon(r.out)}<b>${esc(r.out)}</b><span class="mut small">${mmss(r.time * 1000)}</span></div>`+
+        `<div class="fparts">${r.parts.map(([it, n]) => x(it, n)).join('<span class="mut">+</span>')}</div></div>`).join('')+
+      `</div><p class="mut small">Les ingrédients ne sont consommés qu'à la fin de chaque produit.${mode === 'alloy' ? ' Les deux ingrédients se posent dans n\'importe quel ordre.' : ''}</p>`+
+      `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
+    $('fpick').hidden = false;
+    $('fpickClose').onclick = closePicker;
+  }
+
   $('furnList').onclick = e => {
+    const m = e.target.closest('[data-mode]');
+    if(m){ const i = +m.dataset.f; if(modeOf(view()[i]) !== m.dataset.mode) send({ action:'mode', furnace:i, mode:m.dataset.mode }); return; }
+    const h = e.target.closest('[data-help]'); if(h) return openHelp(h.dataset.help);
     const c = e.target.closest('.fslot'); if(!c) return;
     const i = +c.dataset.f, slot = c.dataset.slot;
     if(slot === 'out'){ if(view()[i]?.out) send({ action:'collect', furnace:i }); return; }

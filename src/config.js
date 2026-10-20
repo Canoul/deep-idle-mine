@@ -196,7 +196,7 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
-  'ingot_iron','ingot_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
+  'ingot_iron','ingot_gold','ingot_tainted','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'ladder','chest','miner','mimic','bug','goblin','torch','stun'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -205,7 +205,9 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
    page fermée : le serveur calcule l'avancée depuis l'heure de départ). Un minerai (famille ore) sans recette ne va pas
    dans le four (le diamant, pour l'instant).
    max : nombre de fours au maximum ; startOwned : fours possédés au départ (les autres sont sous cadenas).
-   tiers : fours plus puissants à venir (speed divise le temps de fonte). */
+   tiers : fours plus puissants à venir (speed divise le temps de fonte).
+   Deux modes par four (bouton Fondre / Alliage) : recipes = la fonte (mode Fondre), alloys = les alliages (mode
+   Alliage : deux ingrédients en `in` + `fuel` combustibles par produit, en time secondes). */
 export const FURNACE = {
   max:3, startOwned:1, orePerIngot:10, fuelPerIngot:10,
   tiers: [ { name:'Four en pierre', speed:1 } ],
@@ -213,6 +215,9 @@ export const FURNACE = {
     Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
     Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
   },
+  alloys: [
+    { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':20 }, fuel:50, time:180, tex:'ingot_tainted' },
+  ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -258,7 +263,7 @@ export const STUFF = {
 export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
     .map(b => [b.name, { cat:b.family ?? b.type, tex:b.tex, w:b.w, stack:true }])),
-  ...Object.fromEntries(Object.values(FURNACE.recipes).map(r => [r.out, { cat:'ingot', tex:r.tex, w:1, stack:true }])),
+  ...Object.fromEntries([...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => [r.out, { cat:'ingot', tex:r.tex, w:1, stack:true }])),
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },

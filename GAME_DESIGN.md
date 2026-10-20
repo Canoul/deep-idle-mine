@@ -331,7 +331,16 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
 - Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).
 - **Le serveur fait foi** : chaque action est faite par lui, inventaire et four changent ensemble ; une demande renvoyée (double clic) ne s'applique qu'une fois.
-- Plus tard : un système d'**alliages**.
+- **Deux modes par four** (bouton **Fondre / Alliage** en haut de chaque four) :
+  - **Fondre** : ce qui précède (case minerai + combustible) ;
+  - **Alliage** : deux cases d'**ingrédients** (dans n'importe quel ordre, ils doivent former une recette) + combustible + sortie.
+  - Changer de mode : seulement quand les cases d'ingrédients sont vides (le combustible et la sortie restent en place).
+  - Un bouton **?** montre les recettes du mode choisi (ingrédients, combustible, durée).
+- **Recettes d'alliage** *(valeurs provisoires ; d'autres viendront)* :
+
+  | Produit | Ingrédients | Combustible | Durée |
+  |---|---|---|---|
+  | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.

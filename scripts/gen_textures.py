@@ -241,7 +241,8 @@ def main():
 
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
-                                    ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a')]:
+                                    ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
+                                    ('ingot_tainted', '#8b6f8f', '#c2a6c4', '#4f3a52')]:   # alliage fer + chitine
         ing = blank()
         for i, yy in enumerate(range(6, 12)):
             rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))

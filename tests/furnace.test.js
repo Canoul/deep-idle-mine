@@ -146,7 +146,7 @@ test('relecture : état trafiqué nettoyé (cases invalides, trop de fours, mauv
     {}, {}, {},
   ], ops:['a', 3, 'b'] });
   assert.equal(st.list.length, FURNACE.max);
-  assert.deepEqual(st.list[0], { tier:0, ore:null, fuel:null, out:null, since:null });
+  assert.deepEqual(st.list[0], { tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
   assert.deepEqual(st.list[1].ore, { item:'Or', qty:20 }); assert.equal(st.list[1].since, 5);
   assert.deepEqual(st.ops, ['a', 'b']);
   assert.equal(sanitizeFurnaces(null).list.length, FURNACE.startOwned);
@@ -172,4 +172,79 @@ test('conservation : sur 300 suites d\'actions au hasard, rien n\'est créé ni 
     assert.equal(countOf(inv, 'Or') + inF('Or') + 10 * au, 100);
     assert.equal(countOf(inv, 'Charbon') + inF('Charbon') + 10 * (fe + au), 300);
   }
+});
+
+/* ---------- mode Alliage ---------- */
+
+const TAINTED = FURNACE.alloys.find(r => r.out === 'Tainted iron');
+const alloySetup = () => setup({ 'Lingot de fer':20, Chitine:100, Charbon:300, Fer:50 });
+
+test('alliage : la recette du créateur (Tainted iron = 5 lingots de fer + 20 chitine + 50 charbons, 3 min)', () => {
+  assert.deepEqual(TAINTED.in, { 'Lingot de fer':5, 'Chitine':20 });
+  assert.equal(TAINTED.fuel, 50); assert.equal(TAINTED.time, 180);
+  assert.equal(ITEMS['Tainted iron'].cat, 'ingot');
+});
+
+test('alliage : changer de mode, poser les deux ingrédients et le charbon, 1 Tainted iron en 3 min', () => {
+  const { inv, st } = alloySetup(), f = st.list[0];
+  assert.equal(f.mode, 'smelt');
+  assert.ok(op(st, inv, { action:'mode', mode:'alloy' }).ok);
+  assert.equal(f.mode, 'alloy');
+  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Lingot de fer', qty:10 }).ok);
+  assert.ok(op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:30 }).ok);
+  assert.ok(op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:120 }).ok);
+  assert.ok(canRun(f));
+  advance(f, T0 + 3*MIN - 1);
+  assert.equal(f.out, null, 'pas fini avant 3 min');
+  assert.ok(progress(f, T0 + 1.5*MIN) > 0.49);
+  advance(f, T0 + 3*MIN);
+  assert.deepEqual(f.out, { item:'Tainted iron', qty:1 });
+  assert.deepEqual([f.a.qty, f.b.qty, f.fuel.qty], [5, 10, 70]);
+  advance(f, T0 + 60*MIN);                         // la chitine (10) limite : plus que 0 de plus
+  assert.deepEqual(f.out, { item:'Tainted iron', qty:1 });
+  assert.equal(f.since, null);
+  assert.ok(op(st, inv, { action:'collect' }, T0 + 60*MIN).ok);
+  assert.equal(countOf(inv, 'Tainted iron'), 1);
+});
+
+test('alliage : ingrédients dans n\'importe quel ordre ; mauvaises cases et mélanges refusés', () => {
+  const { inv, st } = alloySetup(), f = st.list[0];
+  assert.equal(op(st, inv, { action:'load', slot:'a', item:'Chitine', qty:20 }).error, 'bad_slot', 'pas de case a en mode Fondre');
+  op(st, inv, { action:'mode', mode:'alloy' });
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:10 }).error, 'bad_slot', 'pas de case minerai en Alliage');
+  assert.equal(op(st, inv, { action:'load', slot:'a', item:'Fer', qty:10 }).error, 'bad_item', 'le fer brut n\'entre dans aucun alliage');
+  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Chitine', qty:20 }).ok);
+  assert.equal(op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:20 }).error, 'no_recipe', 'deux fois le même ingrédient');
+  assert.ok(op(st, inv, { action:'load', slot:'b', item:'Lingot de fer', qty:5 }).ok);
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:50 });
+  advance(f, T0 + 3*MIN);
+  assert.deepEqual(f.out, { item:'Tainted iron', qty:1 });
+  assert.equal(f.a, null); assert.equal(f.b, null); assert.equal(f.fuel, null);
+});
+
+test('alliage : changer de mode seulement cases d\'ingrédients vides ; le combustible et la sortie restent', () => {
+  const { inv, st } = alloySetup(), f = st.list[0];
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:10 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:60 });
+  assert.equal(op(st, inv, { action:'mode', mode:'alloy' }).error, 'not_empty');
+  advance(f, T0 + MIN);                            // 1 lingot de fer sort
+  assert.deepEqual(f.out, { item:'Lingot de fer', qty:1 });
+  assert.ok(op(st, inv, { action:'mode', mode:'alloy' }, T0 + MIN).ok);
+  assert.equal(f.mode, 'alloy'); assert.equal(f.fuel.qty, 50); assert.deepEqual(f.out, { item:'Lingot de fer', qty:1 });
+  assert.equal(op(st, inv, { action:'mode', mode:'fusion' }).error, 'bad_mode');
+  /* sortie occupée par des lingots de fer : l'alliage attend qu'on les récupère */
+  op(st, inv, { action:'load', slot:'a', item:'Lingot de fer', qty:5 }, T0 + MIN);
+  op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:20 }, T0 + MIN);
+  assert.equal(canRun(f), false);
+  assert.ok(op(st, inv, { action:'collect' }, T0 + MIN).ok);
+  assert.ok(canRun(f));
+});
+
+test('relecture : un four enregistré avant les modes reste un four Fondre (rien de perdu)', () => {
+  const st = sanitizeFurnaces({ list:[{ tier:0, ore:{ item:'Fer', qty:30 }, fuel:{ item:'Charbon', qty:30 }, out:null, since:7 }] });
+  assert.equal(st.list[0].mode, 'smelt');
+  assert.deepEqual(st.list[0].ore, { item:'Fer', qty:30 }); assert.equal(st.list[0].since, 7);
+  const al = sanitizeFurnaces({ list:[{ mode:'alloy', a:{ item:'Lingot de fer', qty:5 }, b:{ item:'Chitine', qty:20 }, ore:{ item:'Fer', qty:9 } }] });
+  assert.deepEqual(al.list[0].a, { item:'Lingot de fer', qty:5 });
+  assert.equal(al.list[0].ore, null, 'pas de case minerai en Alliage');
 });
