@@ -39,3 +39,7 @@ test('valeurs inconnues ignorées', () => {
   assert.equal(pickTab('#nimportequoi', 'pasunonglet'), 'mine');
   assert.equal(pickTab('#seed=12', 'four'), 'four');
 });
+
+test('lien d\'invitation à un groupe (#rejoindre=…) : ouvre Mine, où est le lobby', () => {
+  assert.equal(pickTab('#rejoindre=K7Q4P2', 'inventaire'), 'mine');
+});

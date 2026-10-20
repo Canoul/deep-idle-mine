@@ -102,8 +102,8 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 - **Descente** : le mineur creuse le bloc sous lui et se laisse tomber. **Il ne pose pas d'échelle en descendant.**
 - **Échelles posées seulement au retour** : quand il doit remonter, il pose une échelle (2 s) sur chaque case où il en a besoin. Le chemin de retour est choisi au plus court en temps ; les échelles posées restent et servent aux trajets suivants. Un chemin de retour existe donc toujours (il peut toujours poser une échelle et creuser au-dessus de lui).
 - Pour choisir où creuser, l'IA compte d'avance ce coût de retour : une case creusée vers le bas = une échelle à poser plus tard.
-- **Vitesse sur échelle : ×0,75** de la vitesse de marche, dans les deux sens. Conséquence voulue : pour remonter, l'IA choisit un chemin au **temps** le plus court et préfère marcher horizontalement vers une échelle existante plutôt que de remonter tout droit en posant de nouvelles échelles.
-- **Creuser vers le bas ou vers le haut coûte plus cher qu'horizontalement** : chaque case verticale impose une échelle (2 s de pose) et se parcourt plus lentement (×0,75), à l'aller comme au retour. L'IA compte ce coût (pose + trajets futurs) quand elle choisit un minerai : elle préfère donc les galeries.
+- **Vitesse de montée** : stat à part (2,25 blocs/s *(provisoire)*, soit ×0,75 de la marche), utilisée sur échelle dans les deux sens. Elle s'améliore indépendamment de la vitesse de marche. Conséquence voulue : pour remonter, l'IA choisit un chemin au **temps** le plus court et préfère marcher horizontalement vers une échelle existante plutôt que de remonter tout droit en posant de nouvelles échelles.
+- **Creuser vers le bas ou vers le haut coûte plus cher qu'horizontalement** : chaque case verticale impose une échelle (2 s de pose) et se parcourt plus lentement (vitesse de montée), à l'aller comme au retour. L'IA compte ce coût (pose + trajets futurs) quand elle choisit un minerai : elle préfère donc les galeries.
 - **Passerelle** : un bloc que le mineur pose (1 s *(provisoire)*) pour **combler un trou** et le traverser horizontalement. C'est plus rentable qu'une chute suivie d'échelles pour remonter. **Il ne peut la poser que s'il tient lui-même** (sur un bloc ou sur une échelle), jamais dans le vide ; depuis une échelle, il peut en poser à gauche ou à droite. Plus généralement, le mineur ne peut agir que depuis une case où il tient : l'IA ne prévoit jamais de s'arrêter dans le vide. Le mineur en porte 10 *(provisoire)*, rechargées en surface ; la passerelle est cassable et ne rapporte rien. *(À définir : faut-il un coût en ressource ?)*
 - **Montée** : uniquement par échelle. Pour creuser vers le haut, il pose une échelle avant de miner le bloc du dessus.
 - Les « fondations » (boucher un trou) sont prévues mais pas encore implémentées.
@@ -139,7 +139,8 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 | Stat | Rôle | Valeur de base |
 |---|---|---|
 | Oxygène | Temps passé sous terre | 300 *(ferme, soit 5 min)* |
-| Vitesse | Déplacement | 3 blocs/s *(provisoire)* |
+| Vitesse | Déplacement horizontal (marche) | 3 blocs/s *(provisoire)* |
+| Vitesse de montée | Déplacement sur échelle (montée et descente) | 2,25 blocs/s *(provisoire)* |
 | Vitesse de minage | Divise le temps de minage | 1 *(provisoire)* |
 | Dégâts | Dégâts par coup contre les mobs | 5 *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
@@ -153,6 +154,27 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 ### Pods (inventaire)
 - Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Treasure TX 2 *(provisoire)*).
 - Inventaire plein : remontée **automatique**, dépôt dans le coffre, puis retour au front.
+
+### Valeur des stats : unité x *(méthode ferme, chiffres provisoires)*
+Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail du mineur**. Une session vaut 3 600 x.
+- Chaque stat gouverne un temps de la session (T_stat) : la vitesse de minage gouverne le temps de minage, les pods le temps des allers-retours qu'ils déclenchent, etc.
+- **Un bonus b sur une stat de base B fait gagner T_stat × b / (B + b) x par session** (rendements décroissants : doubler une stat divise son temps par 2, pas plus). Pour un petit bonus, 1 point ≈ T_stat / B.
+- Les ressources se convertissent par le rendement du mineur de base : 522 points de valeur par session, soit **1 charbon ≈ 7 x**, 1 fer ≈ 14 x, 1 or ≈ 28 x, 1 diamant ≈ 55 x.
+- Les valeurs dépendent du niveau du mineur (ex. : quand les pods augmentent, l'oxygène redevient limitant et prend de la valeur) : à recalculer par palier. Outil : `node scripts/stat-values.js`.
+
+Mineur de base, 1 mineur, 5 sessions :
+
+| Stat | Base | T_stat (s/session) | 1 point = | +10 % = |
+|---|---|---|---|---|
+| Vitesse de minage | 1 | 1 301 | 1 301 x (+0,1 = 118 x) | 118 x |
+| Vitesse (marche) | 3 | 718 | 239 x (+0,1 = 24 x) | 65 x |
+| Vitesse de montée | 2,25 | 555 | 247 x (+0,1 = 25 x) | 50 x |
+| Pods | 200 | 1 036 | 5,2 x | 94 x |
+| Oxygène | 300 | 109 | 0,4 x | 10 x |
+| Dégâts | 5 | 202 | 40 x | 18 x |
+| Rayon des torches | 5 | 136 | 27 x | 12 x |
+| Torches (nombre) | 20 | 16 | 0,8 x | 1 x |
+| Découverte, vision, boussole, passerelles | – | effet indirect | à mesurer (`npm run weights`) | – |
 
 ## 4. Outils
 
@@ -213,10 +235,19 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Mine**, qui affiche un **lobby** :
 - **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres ;
 - **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
-- **Inviter des joueurs** : visible, pas encore actif (affiche l'ID de compte à donner à un ami). Le vrai multijoueur réseau est l'étape suivante ;
+- **Groupe** : on se réunit avant de lancer (voir « Jouer à plusieurs » ci-dessous) ; seul, on joue seul ;
 - **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs ; voir §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
 Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+
+### Jouer à plusieurs (groupe)
+- **Inviter des joueurs** ouvre un panneau avec le **code du groupe** (6 caractères, ex. `K7Q4P2`) et un **lien** à envoyer (`…/#rejoindre=K7Q4P2`) : l'ami clique, se connecte (invité ou compte) et prend une place. On peut aussi taper un code dans « Tu as un code de groupe ? ».
+- **Inviter par ID** : on tape l'ID de compte d'un ami (`7K3Q-9XHP`) ; il voit l'invitation en haut de son lobby (**Rejoindre** / **Refuser**). Inviter ne fait pas entrer : seul celui qui accepte joue. Une invitation dure 1 h.
+- Places : le **chef** (celui qui a créé le groupe, ★) puis les membres, les invités en attente, les places libres (3 au total). Un membre absent (onglet fermé) est marqué « absent », puis retiré après 5 min sans nouvelles.
+- **Seul le chef lance** (« Lancer à N ») ; les autres voient « En attente du chef… ». La session est créée pour tous les membres présents dans le groupe ; le chef est le mineur Rouge, puis Bleu, Vert dans l'ordre d'arrivée. Chacun garde ses propres préférences.
+- Le chef peut **retirer** un membre ou annuler une invitation (×). **Quitter le groupe** = on se retrouve seul. Si le chef part, le membre suivant devient chef.
+- Pendant la session, chaque navigateur affiche la même mine (même partie, calculée à l'identique). Un joueur qui quitte part **15 s plus tard** (préavis, `GAME.leaveNotice`) : son mineur disparaît au même moment chez tous et dans le rejeu du serveur. Partir dans les toutes dernières secondes ne rapporte rien non plus (le départ a lieu au plus tard au dernier tick).
+- Les groupes sont une salle d'attente : un redémarrage du serveur les vide (chacun se retrouve seul), sans rien perdre d'autre.
 
 **Le serveur fait foi** (anti-triche) :
 - c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) ; le navigateur ne fait que l'afficher ;
@@ -262,7 +293,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 - Au lancement, écran de connexion : **se connecter** (pseudo + mot de passe), **créer un compte**, ou **jouer en invité** (1 clic).
 - Un **invité** n'a ni pseudo ni mot de passe : son compte n'existe que dans ce navigateur. Il peut le **sécuriser** à tout moment (pseudo + mot de passe) sans rien perdre.
-- Chaque compte a un **ID de compte** public et définitif (ex. `7K3Q-9XHP`), qui servira à ajouter un ami ou à l'inviter dans un lobby. C'est à cet ID qu'est rattaché tout ce que possède le joueur.
+- Chaque compte a un **ID de compte** public et définitif (ex. `7K3Q-9XHP`), qui sert à inviter un ami dans son groupe (et servira à ajouter un ami). C'est à cet ID qu'est rattaché tout ce que possède le joueur.
 - **Pseudo** unique (sans tenir compte des majuscules ni des accents), 3 à 16 caractères *(valeurs de config)*.
 - Mot de passe oublié : un **code de secours** est donné à la création (montré une seule fois) ; avec pseudo + code, on choisit un nouveau mot de passe.
 - Le compte est visible en bas de la barre de navigation (pseudo + ID, ou « Invité · à sécuriser ») ; un clic ouvre « Mon compte ».

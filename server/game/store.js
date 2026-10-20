@@ -1,6 +1,6 @@
 /* Stockage du jeu : inventaires, fours, préférences et sessions de jeu, rangés par ID de compte.
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
-   fichier JSON (data/game.json) écrit de façon atomique sinon. Passer à une vraie base = réécrire ce fichier.
+   fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
    Session de jeu : { id, seed, players:[{account, name}], bots, prefs, overrides, dev, speed, startedAt, finishAt,
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt } */
@@ -16,29 +16,31 @@ export function createMemoryGameStore(initial = {}){
 
   const store = {
     async getInventory(accountId){ return copy(inventories.get(accountId)) ?? null; },
-    async putInventory(accountId, inv){ inventories.set(accountId, copy(inv)); await store.changed(); },
+    async putInventory(accountId, inv){ inventories.set(accountId, copy(inv)); await store.changed([{ ns: 'inventory', key: accountId, value: inv }]); },
 
     /* fours : toujours écrits AVEC l'inventaire, en une seule écriture (des objets passent de l'un à l'autre :
        un arrêt entre deux écritures dupliquerait ou perdrait des objets) */
     async getFurnaces(accountId){ return copy(furnaces.get(accountId)) ?? null; },
     async putInventoryAndFurnaces(accountId, inv, f){
-      inventories.set(accountId, copy(inv)); furnaces.set(accountId, copy(f)); await store.changed();
+      inventories.set(accountId, copy(inv)); furnaces.set(accountId, copy(f));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'furnace', key: accountId, value: f }]);
     },
 
     async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
-    async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed(); },
+    async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed([{ ns: 'prefs', key: accountId, value: p }]); },
 
     async getGameSession(id){ return copy(sessions.get(id)) ?? null; },
-    async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed(); },
+    async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed([{ ns: 'game_session', key: rec.id, value: rec }]); },
     /* sessions où ce compte joue, les plus récentes d'abord */
     async sessionsOf(accountId){
       return [...sessions.values()].filter(s => s.players.some(p => p.account === accountId))
         .sort((a, b) => b.startedAt - a.startedAt).map(copy);
     },
     async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
-    async deleteGameSession(id){ if(sessions.delete(id)) await store.changed(); },
+    async deleteGameSession(id){ if(sessions.delete(id)) await store.changed([{ ns: 'game_session', key: id, value: null }]); },
 
-    async changed(){},
+    /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
+    async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          prefs: Object.fromEntries(prefs),
@@ -67,5 +69,16 @@ export async function createFileGameStore(dir){
   };
   store.close = () => writing;
   store.file = file;
+  return store;
+}
+
+/* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
+export async function createPgGameStore(db){
+  const rows = await db.load(['inventory', 'furnace', 'prefs', 'game_session']);
+  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, prefs: rows.prefs,
+                                        sessions: rows.game_session });
+  store.changed = changes => db.write(changes);
+  store.close = () => db.flush();
+  store.file = 'PostgreSQL';
   return store;
 }

@@ -1,6 +1,7 @@
 /* Stockage des comptes et des connexions.
-   Interface volontairement petite et asynchrone : on pourra passer à une vraie base (SQLite intégré à Node,
-   PostgreSQL…) en réécrivant seulement ce fichier.
+   Interface volontairement petite et asynchrone. Les données sont gardées en mémoire (un seul serveur) et chaque
+   modification est enregistrée : dans un fichier JSON (data/accounts.json, en local) ou dans PostgreSQL (en ligne,
+   server/db/postgres.js), une ligne par compte et par connexion.
 
    Compte : { id, name, nameKey, guest, passHash, recoveryHash, createdAt, lastLoginAt }
    Connexion (session) : indexée par l'empreinte du jeton → { accountId, createdAt, expiresAt, lastSeenAt } */
@@ -33,7 +34,7 @@ export function createMemoryStore(initial = {}){
       checkFree(acc);
       accounts.set(acc.id, copy(acc));
       if(acc.nameKey) byName.set(acc.nameKey, acc.id);
-      await store.changed();
+      await store.changed([{ ns: 'account', key: acc.id, value: acc }]);
     },
     async updateAccount(acc){
       const old = accounts.get(acc.id);
@@ -42,31 +43,43 @@ export function createMemoryStore(initial = {}){
       if(old.nameKey && old.nameKey !== acc.nameKey) byName.delete(old.nameKey);
       accounts.set(acc.id, copy(acc));
       if(acc.nameKey) byName.set(acc.nameKey, acc.id);
-      await store.changed();
+      await store.changed([{ ns: 'account', key: acc.id, value: acc }]);
     },
     async countAccounts(){ return accounts.size; },
 
     async getSession(hash){ return copy(sessions.get(hash)) ?? null; },
-    async putSession(hash, s){ sessions.set(hash, copy(s)); await store.changed(); },
-    async deleteSession(hash){ if(sessions.delete(hash)) await store.changed(); },
+    async putSession(hash, s){ sessions.set(hash, copy(s)); await store.changed([{ ns: 'session', key: hash, value: s }]); },
+    async deleteSession(hash){ if(sessions.delete(hash)) await store.changed([{ ns: 'session', key: hash, value: null }]); },
     async deleteSessionsOf(accountId){
-      let n = 0;
-      for(const [h, s] of sessions) if(s.accountId === accountId){ sessions.delete(h); n++; }
-      if(n) await store.changed();
-      return n;
+      const gone = [];
+      for(const [h, s] of sessions) if(s.accountId === accountId){ sessions.delete(h); gone.push({ ns: 'session', key: h, value: null }); }
+      if(gone.length) await store.changed(gone);
+      return gone.length;
     },
     async purgeExpired(now){
-      let n = 0;
-      for(const [h, s] of sessions) if(s.expiresAt <= now){ sessions.delete(h); n++; }
-      if(n) await store.changed();
-      return n;
+      const gone = [];
+      for(const [h, s] of sessions) if(s.expiresAt <= now){ sessions.delete(h); gone.push({ ns: 'session', key: h, value: null }); }
+      if(gone.length) await store.changed(gone);
+      return gone.length;
     },
 
-    /* appelé après chaque modification (le stockage fichier s'en sert pour écrire sur disque) */
-    async changed(){},
+    /* appelé après chaque modification avec la liste des changements [{ ns, key, value (null = supprimé) }] :
+       le stockage fichier réécrit tout le fichier, PostgreSQL n'écrit que ces lignes */
+    async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, accounts: Object.fromEntries(accounts), sessions: Object.fromEntries(sessions) }; },
   };
+  return store;
+}
+
+/* Stockage dans PostgreSQL (en ligne : rien n'est perdu au redéploiement ni à la mise en veille).
+   db : base ouverte par server/db/postgres.js, partagée avec le stockage du jeu. */
+export async function createPgStore(db){
+  const rows = await db.load(['account', 'session']);
+  const store = createMemoryStore({ accounts: rows.account, sessions: rows.session });
+  store.changed = changes => db.write(changes);
+  store.close = () => db.flush();
+  store.file = 'PostgreSQL';
   return store;
 }
 

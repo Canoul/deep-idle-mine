@@ -22,14 +22,21 @@
 <!-- lobby : avant de lancer une session -->
 <div id="lobby" class="lobbyWrap" hidden>
   <h1>⛏ Mine</h1>
+  <div class="card invitesCard" id="invitesCard" hidden>
+    <h2>Invitations</h2>
+    <div id="invitesList"></div>
+  </div>
   <div class="card">
     <h2>Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
       <button class="on big" id="launchBtn">▶ Lancer la session</button>
       <button id="inviteBtn">✉ Inviter des joueurs</button>
+      <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
     </div>
     <div class="invite" id="inviteBox" hidden></div>
+    <form class="joinRow" id="joinForm"><div class="irow" id="joinRow"><span>Tu as un code de groupe ?</span>
+      <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
     <p class="mut" id="lobbyInfo"></p>
     <p class="err" id="lobbyErr" hidden></p>
   </div>

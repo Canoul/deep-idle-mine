@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { realDurationMs } from '../../src/shared/game.js';
+import { GAME } from '../../src/config.js';
 import { createMemoryGameStore } from '../../server/game/store.js';
 import { createGameService } from '../../server/game/service.js';
 
@@ -109,7 +110,8 @@ test('mode normal : le navigateur ne choisit ni la seed, ni la vitesse, ni l\'he
   assert.equal(rec.bots, 0);
   advance(1000);
   await game.leave(ME, { tick:0 });
-  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 20, '1 s réelle à x2 = 20 ticks, pas 0');
+  assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 20 + GAME.leaveNotice * 20,
+               '1 s réelle à x2 = 20 ticks (+ préavis de départ), pas 0');
 });
 
 test('lancements en rafale limités par heure', async () => {

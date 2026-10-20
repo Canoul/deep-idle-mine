@@ -5,10 +5,14 @@
    l'enregistrement du serveur (src/shared/game.js) et l'affiche :
    - jeu normal : la partie suit le temps réel à la vitesse du serveur (×2) ; page fermée, elle continue, et au retour
      le navigateur rattrape le temps écoulé ;
-   - mode développeur : vitesses libres et pause ; le navigateur dit au serveur quand c'est fini. */
-import { DT, GAME } from './config.js';
+   - mode développeur : vitesses libres et pause ; le navigateur dit au serveur quand c'est fini.
+   À plusieurs : le lobby se rafraîchit régulièrement (groupe, invitations) ; quand le chef lance, chaque navigateur
+   reçoit la même session et la construit lui-même. Pendant la session, il relit régulièrement l'enregistrement du
+   serveur pour apprendre les départs (annoncés à l'avance) et la fin. */
+import { DT, GAME, PARTY } from './config.js';
 import { tick } from './sim/session.js';
 import { buildSession, applyDueEvents, applyOverrides, tickAt } from './shared/game.js';
+import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, renderSpeeds } from './ui/controls.js';
@@ -18,7 +22,7 @@ import { renderInventory as drawInventory, showLoot, lootError } from './ui/inve
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, focus:0, inv:{ slots:[] }, fresh:new Set(), tab:'mine' };
@@ -28,6 +32,9 @@ let rec = null;            // session en cours (enregistrement du serveur)
 let G = null;              // partie affichée, construite depuis rec
 let clockOffset = 0;       // heure du serveur − heure locale (ms)
 let waiting = false;       // fin de session signalée, résultat du serveur attendu
+let hold = false;          // retour sur l'onglet : on attend les nouvelles du serveur (départs) avant d'avancer
+let catchUp = 0;           // partie reconstruite (départ appris trop tard) : rattraper jusqu'à ce tick
+let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
 const renderer = createRenderer($('cv'));
 
@@ -78,6 +85,7 @@ const accountUI = createAccountUI($('account'), acct, {
 
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
+  party: partyApi,
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onLaunch: async opts => {
     lobby.error('');
@@ -90,10 +98,32 @@ const lobby = setupLobby({
 });
 
 function showLobby(){
-  rec = null; G = null; waiting = false;
+  rec = null; G = null; waiting = false; hold = false;
   $('run').hidden = true; $('lobby').hidden = false;
   lobby.update({ account:acct.account, offline:acct.offline, info });
+  pollLobby();
 }
+
+/* lobby : groupe, invitations ; le chef a lancé → on passe à la session. Sert aussi de signe de vie au groupe. */
+let lobbyTimer = null;
+async function pollLobby(){
+  clearTimeout(lobbyTimer);
+  if(acct.offline || !acct.account || G || waiting || !$('end').hidden) return;
+  try {
+    if(pendingJoin){ const code = pendingJoin; pendingJoin = null; nav.show('mine'); await lobby.join(code); }
+    const st = await partyApi.state();
+    if(st.session) return refresh();
+    lobby.update({ party:st.party, invites:st.invites });
+  } catch(e){ console.warn(e); }
+  lobbyTimer = setTimeout(pollLobby, PARTY.poll);
+}
+/* lien d'invitation ouvert alors que la page l'est déjà (la barre a déjà remplacé l'adresse : on lit newURL) */
+addEventListener('hashchange', e => {
+  const code = joinCodeFromHash(e.newURL);
+  if(!code) return;
+  if(G){ alert('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
+  pendingJoin = code; pollLobby();
+});
 
 /* ---------- session ---------- */
 setupRunControls(ui, { onLeave: leave });
@@ -110,16 +140,57 @@ const focusPanel = setupFocusPanel({
 });
 
 function enterSession(session){
-  rec = session; waiting = false;
+  clearTimeout(lobbyTimer);
+  rec = session; waiting = false; hold = false; catchUp = 0;
   clockOffset = session.now - Date.now();
   applyOverrides(session.overrides);       // réglages dev de cette session (aucun en jeu normal)
   G = buildSession(session);
   window.G = G;                             // pour le débogage depuis la console (F12)
-  ui.focus = 0; ui.paused = false; ui.speed = info.dev ? (ui.speed || 1) : session.speed;
+  /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
+  ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
+  ui.focus = Math.max(0, G.miners.findIndex(m => m.account === acct.account?.id));
+  ui.paused = false; ui.speed = info.dev ? (ui.speed || 1) : session.speed;
   renderSpeeds(ui, info);
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('lobby').hidden = true; $('run').hidden = false;
+  if(session.players.length > 1) pollSession();
 }
+
+/* à plusieurs : relit la session sur le serveur (départs des autres, fin décidée par un autre en mode dev) */
+let sessionTimer = null;
+async function pollSession(){
+  clearTimeout(sessionTimer);
+  if(!G || !rec || waiting) return;
+  try {
+    const st = await gameApi.state();
+    if(!G || waiting) return;
+    if(st.session?.id === rec.id) syncLeaves(st.session.leaves);
+    else if(st.ended?.id === rec.id) return showResult(st);
+    else if(!st.session) return showLobby();          // on en est sorti (quittée depuis un autre onglet)
+  } catch(e){ console.warn(e); }
+  hold = false;
+  sessionTimer = setTimeout(pollSession, PARTY.poll);
+}
+
+/* nouveaux départs. S'il y en a un dont le moment est déjà passé ici (onglet en arrière-plan, mode dev),
+   la partie affichée n'est plus celle du serveur : on la reconstruit et on rattrape (même résultat que le serveur). */
+function syncLeaves(leaves){
+  const known = new Set(rec.leaves.map(l => l.account));
+  const fresh = (leaves ?? []).filter(l => !known.has(l.account));
+  if(!fresh.length) return;
+  rec = { ...rec, leaves };
+  if(fresh.some(l => l.tick < G.ticks)){
+    const reached = G.ticks;
+    G = buildSession(rec); window.G = G;
+    catchUp = reached;
+  }
+}
+
+/* onglet remis au premier plan : la partie a pris du retard, on attend les nouvelles du serveur avant de rattraper */
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && G && rec?.players.length > 1 && !waiting){ hold = true; pollSession(); }
+  if(document.visibilityState === 'visible' && !G) pollLobby();
+});
 
 async function leave(){
   if(!G || G.over) return;
@@ -131,7 +202,7 @@ async function leave(){
 
 /* la partie affichée est finie : on prévient le serveur et on attend son résultat (c'est lui qui fait foi) */
 async function finish(){
-  waiting = true;
+  waiting = true; clearTimeout(sessionTimer);
   showSettling();
   try { await gameApi.finish(); }
   catch(e){
@@ -199,15 +270,17 @@ const FRAME_BUDGET_MS = 25;   // temps de calcul max par image : le rattrapage d
 let last = performance.now(), acc = 0, lastHud = 0;
 function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
-  if(G && !G.over && !waiting){
+  if(G && !G.over && !waiting && !hold){
     const t0 = performance.now();
-    /* jusqu'où avancer : jeu normal → le temps réel écoulé (heure du serveur) ; dev → la vitesse choisie */
+    /* jusqu'où avancer : jeu normal → le temps réel écoulé (heure du serveur) ; dev → la vitesse choisie ;
+       partie reconstruite → au moins jusqu'où elle en était */
     let target;
     if(info.dev){ if(!ui.paused) acc += dtr * ui.speed; target = G.ticks + Math.floor(acc / DT); }
     else target = tickAt(serverNow() - rec.startedAt, rec.speed);
+    if(catchUp > G.ticks) target = Math.max(target, catchUp); else catchUp = 0;
     while(G.ticks < target && !G.over && performance.now() - t0 < FRAME_BUDGET_MS){
       applyDueEvents(G, rec); tick(G);
-      if(info.dev) acc -= DT;
+      if(info.dev && !catchUp) acc -= DT;
     }
     if(info.dev && acc > 5) acc = 5;      // en retard de plus de 5 s de jeu : on n'accumule pas sans fin
     if(G.over) finish();
@@ -217,8 +290,8 @@ function frame(now){
     if(G && ui.tab==='mine'){
       updateHUD(G, ui);
       focusPanel.update(G, acct.account?.id);
-      const behind = !info.dev && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
-      $('realLeft').textContent = info.dev ? '' : behind ? 'rattrapage…' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
+      const behind = catchUp > G.ticks || (!info.dev && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed));
+      $('realLeft').textContent = behind ? 'rattrapage…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateNavSession(G, waiting);
     lastHud = now;

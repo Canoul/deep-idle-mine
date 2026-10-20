@@ -7,14 +7,31 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 
 const MIN = 60e3, HOUR = 60*MIN, DAY = 24*HOUR;
 
+/* Render (hébergeur) définit RENDER=true : on y est en https derrière un proxy, sans rien avoir à régler */
+export const ON_RENDER = !!process.env.RENDER;
+
+/* Nombre de relais (proxys) de confiance devant le serveur, de 0 à 10. Chacun ajoute à DROITE de X-Forwarded-For
+   l'adresse qu'il voit : l'adresse du joueur est donc la N-ième en partant de la droite. Les entrées plus à gauche
+   peuvent avoir été écrites par le joueur lui-même (falsifiables) : on ne les lit jamais.
+   DIM_TRUST_PROXY=N pour forcer ; par défaut 1 sur Render, 0 ailleurs (adresse de la connexion). */
+export function proxyHops(env = process.env){
+  const v = env.DIM_TRUST_PROXY;
+  if(v !== undefined && v !== '') return /^\d+$/.test(v) ? Math.min(10, +v) : 0;
+  return env.RENDER ? 1 : 0;
+}
+
 export const SERVER = {
   port: +(process.env.PORT || 8000),
   /* dossier des données (comptes, connexions) : jamais servi au navigateur, ignoré par git */
   dataDir: process.env.DIM_DATA_DIR || path.join(ROOT, 'data'),
-  /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne) */
-  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE === '1' },
-  /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For */
-  trustProxy: process.env.DIM_TRUST_PROXY === '1',
+  /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne ; automatique sur Render,
+     DIM_SECURE_COOKIE=0 pour l'enlever, =1 pour le forcer ailleurs) */
+  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
+  /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For (voir proxyHops) */
+  trustProxy: proxyHops(),
+  /* au premier appel à l'API, on écrit dans le journal l'adresse retenue et l'en-tête reçu : pour vérifier en
+     ligne que le réglage des relais est bon (l'adresse affichée doit être la tienne) */
+  logProxyCheck: proxyHops() > 0,
   maxBodyBytes: 16 * 1024,
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
   publicPaths: ['/index.html', '/src/', '/textures/', '/prototype/'],
@@ -35,10 +52,12 @@ export const LIMITS = {
 
 /* Sessions de jeu. dev : mode développeur (npm run dev ou DIM_DEV=1) : toutes les vitesses, panneau dev, fin de
    session libre. Jamais en ligne. replayWorkers : rejeux de fin de session en parallèle (un thread chacun). */
+/* Sur l'offre gratuite de Render (0,1 CPU), un rejeu à 3 joueurs prend ~11 min (~67 s sur un cœur entier) :
+   un seul rejeu à la fois et un délai large. DIM_REPLAY_WORKERS / DIM_REPLAY_TIMEOUT_MIN pour changer. */
 export const GAME_SERVER = {
   dev: process.env.DIM_DEV === '1',
-  replayWorkers: Math.max(1, +(process.env.DIM_REPLAY_WORKERS || 2)),
-  replayTimeout: 10 * MIN,          // un rejeu plus long est abandonné (puis retenté)
+  replayWorkers: Math.max(1, +(process.env.DIM_REPLAY_WORKERS || (ON_RENDER ? 1 : 2))),
+  replayTimeout: Math.max(1, +(process.env.DIM_REPLAY_TIMEOUT_MIN || (ON_RENDER ? 40 : 10))) * MIN,   // un rejeu plus long est abandonné (puis retenté)
   settleEvery: MIN,                 // vérification des sessions arrivées à leur fin (joueur absent)
   keepEnded: 30 * DAY,              // sessions terminées gardées ce temps, puis supprimées
   startsPerHour: 30,                // sessions lancées par compte et par heure (anti spam)
@@ -46,3 +65,13 @@ export const GAME_SERVER = {
 
 /* Hachage des mots de passe et codes de secours (scrypt, intégré à Node). ~50 ms par vérification. */
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
+
+/* Groupes (server/party/) : salle d'attente en mémoire avant une session commune. */
+export const PARTY_SERVER = {
+  awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
+  memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà
+  inviteTtl: HOUR,                  // invitation par ID valable ce temps
+  maxPendingInvites: 10,            // invitations en attente par groupe
+  invitesPerHour: { max: 30, window: HOUR },        // invitations envoyées par compte (anti spam)
+  joinFailures:   { max: 20, window: 15 * MIN },    // codes faux tapés par compte (anti devinette)
+};

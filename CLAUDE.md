@@ -63,7 +63,9 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ## État actuel
 
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-- **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Serveur Node sans dépendance. Détails : `docs/comptes.md`.
+- **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
+- **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune ; chaque navigateur calcule la même partie, le serveur la rejoue et partage le coffre (GAME_DESIGN §6 « Jouer à plusieurs »).
+- **En ligne** sur Render + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
@@ -72,6 +74,8 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - `node --test tests/<sujet>.test.js` : les tests d'un seul sujet (c'est ce qu'on lance après une modification). `npm test` : toute la suite, longue (plusieurs minutes), seulement si le créateur le demande.
 - `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
 - `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
+- `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min. Voir GAME_DESIGN « Valeur des stats ».
+- `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point de chaque stat), 5 sessions, ~6 min. Unité : 1 = une seconde de travail du mineur de base.
 - `npm run textures` : régénère `textures/` (Python).
 
 ### Structure
@@ -81,23 +85,24 @@ src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours)
-src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks)
+src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (places, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
-src/main.js             lobby → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks)
+src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), account (connexion, mon compte), style.css
+src/main.js             lobby (rafraîchi : groupe, invitations) → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks) ; à plusieurs, relit la session (départs, fin)
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
-scripts/                simulate.js, gen_textures.py
+scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
-                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions)
-docs/                   documentation technique (comptes.md), journal de debug des sessions Claude (debug.md)
+                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions),
+                        party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), db/ (postgres : stockage en ligne)
+docs/                   documentation technique (comptes.md, deploiement.md : Render + Neon), journal de debug des sessions Claude (debug.md)
 textures/               PNG 16×16
 ```
 
 ## Stack
 
 HTML/JS vanilla, sans dépendance pour l'instant. Pas de framework ni de bundler sans me demander.
-Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serveur importe les règles partagées depuis `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
+Serveur : Node ≥ 20, modules intégrés (http, crypto, fs) ; seule exception accordée : `pg` (PostgreSQL en ligne), chargée à la demande. Le serveur importe les règles partagées depuis `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
 
 ## Principes d'architecture à ne pas casser
 
@@ -134,4 +139,4 @@ Serveur : Node ≥ 20, modules intégrés uniquement (http, crypto, fs). Le serv
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : l'UI de craft, le lobby / multijoueur en réseau (les 3 mineurs tournent localement ; les comptes existent, pas encore le lobby), la sauvegarde de l'inventaire côté serveur, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : l'UI de craft, la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.

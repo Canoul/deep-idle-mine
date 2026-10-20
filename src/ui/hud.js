@@ -25,7 +25,7 @@ export function updateHUD(G, ui){
   team.parentElement.hidden = G.miners.length<2;
   if(G.miners.length>1) team.innerHTML=G.miners.map((t,i)=>`
     <div class="mrow${i===ui.focus?' on':''}" data-i="${i}" title="Suivre ${esc(t.name)}">
-      <span class="mname">${sw(t.color)}${esc(t.name)}</span>
+      <span class="mname">${sw(t.color)}${esc(t.name)}${ui.names?.[t.account] ? ` <span class="mut">${esc(ui.names[t.account])}</span>` : ''}</span>
       <span class="mst">${esc(t.status)}</span>
       <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}</span>
     </div>`).join('');

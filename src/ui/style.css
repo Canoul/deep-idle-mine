@@ -149,12 +149,13 @@ details summary{cursor:pointer;color:var(--mut)}
 .lobbyWrap{max-width:720px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:12px}
 .lobbyWrap h1{font-size:20px;margin:0 0 4px}
 .pslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+@media(max-width:600px){.pslots{grid-template-columns:1fr}}
 .pslot{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#181410;min-width:0}
 .pslot .av{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:#2c2520;border:1px solid var(--line)}
 .pslot.me{border-color:var(--acc)}
 .pslot.me .av{background:var(--acc);color:#1a1208;border-color:var(--acc)}
 .pslot.free{border-style:dashed;color:var(--mut)}
-.pslot>span:last-child{display:flex;flex-direction:column;min-width:0}
+.pslot>span:nth-child(2){display:flex;flex-direction:column;min-width:0;padding-right:14px}
 .pslot b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pslot small{color:var(--mut);font-size:12px}
 .lobbyActions{display:flex;flex-wrap:wrap;gap:8px}
@@ -162,6 +163,23 @@ button.big{padding:8px 18px;font-size:15px}
 button:disabled{opacity:.5;cursor:not-allowed}
 .invite{margin-top:10px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px;font-size:13px}
 .invite .code{font-family:ui-monospace,Consolas,monospace;color:var(--acc);margin-left:4px}
+.invite .code[data-copy]{cursor:copy;padding:1px 6px;border:1px dashed transparent;border-radius:6px}
+.invite .code.copied,.invite button.copied{border-color:var(--ok)}
+.invite p{margin:6px 0}
+.irow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0}
+.irow>span:first-child{color:var(--mut);font-size:13px}
+.irow input{width:9.5em;font-family:ui-monospace,Consolas,monospace;text-transform:uppercase}
+.invite .irow .code{font-size:18px;letter-spacing:.08em}
+.joinRow{margin-top:10px}
+.joinRow .irow[hidden]{display:none}
+.pslot{position:relative}
+.pslot .x{position:absolute;top:4px;right:4px;padding:0 6px;line-height:18px;font-size:14px;background:transparent;border-color:transparent;color:var(--mut)}
+.pslot .x:hover{color:var(--bad);border-color:var(--bad)}
+.pslot.away{opacity:.6}
+.pslot.invited{color:var(--txt)}
+.invitesCard{border-color:var(--acc)}
+.invitation{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:4px 0}
+.invitation button{margin-left:4px}
 .err{color:var(--bad)}
 .small{font-size:12px}
 .prefs{display:flex;flex-direction:column;gap:8px}

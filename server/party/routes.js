@@ -1,0 +1,21 @@
+/* Routes HTTP des groupes (/api/party/…). Toutes exigent un compte connecté.
+   « Lancer la session » reste POST /api/game/start : quand un service de groupes existe, il passe par lui
+   (seul = session solo, en groupe = le chef lance pour tous). */
+import { PartyError } from './service.js';
+
+const needMe = ctx => { if(!ctx.me) throw new PartyError('not_authenticated', 401, 'Connecte-toi pour jouer.'); };
+const obj = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+const str = v => typeof v === 'string' ? v : '';
+
+export function partyRoutes(party){
+  return {
+    'GET /api/party':          async ctx => { needMe(ctx); return party.state(ctx.me); },
+    'POST /api/party/create':  async ctx => { needMe(ctx); return party.create(ctx.me); },
+    'POST /api/party/join':    async ctx => { needMe(ctx); return party.join(ctx.me, str(ctx.body.code)); },
+    'POST /api/party/invite':  async ctx => { needMe(ctx); return party.invite(ctx.me, str(ctx.body.id)); },
+    'POST /api/party/decline': async ctx => { needMe(ctx); return party.decline(ctx.me, str(ctx.body.code)); },
+    'POST /api/party/leave':   async ctx => { needMe(ctx); return party.leave(ctx.me); },
+    'POST /api/party/kick':    async ctx => { needMe(ctx); return party.kick(ctx.me, str(ctx.body.id)); },
+    'POST /api/game/start':    async ctx => { needMe(ctx); return [201, await party.launch(ctx.me, obj(ctx.body))]; },
+  };
+}

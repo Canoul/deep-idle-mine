@@ -1,23 +1,28 @@
 #!/usr/bin/env node
 /* Serveur du jeu : sert le jeu, gère les comptes et les sessions de jeu (le serveur fait foi). Aucune dépendance.
    Usage : npm start (jeu normal, vitesse x2)  ·  npm run dev (mode développeur)  puis ouvrir http://localhost:8000
-   Données : data/accounts.json et data/game.json (ignorés par git). */
+   Données : data/accounts.json et data/game.json (ignorés par git) ; en ligne, PostgreSQL si DATABASE_URL est défini. */
 import http from 'node:http';
 import { SERVER, ROOT } from './config.js';
-import { createFileStore } from './accounts/store.js';
+import { createFileStore, createPgStore } from './accounts/store.js';
 import { createAccountService } from './accounts/service.js';
 import { createApp } from './app.js';
 import { GAME_SERVER } from './config.js';
-import { createFileGameStore } from './game/store.js';
+import { createFileGameStore, createPgGameStore } from './game/store.js';
+import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
 import { createReplayer } from './game/replay.js';
+import { createPartyService } from './party/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
-const store = await createFileStore(SERVER.dataDir);
+/* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
+const db = process.env.DATABASE_URL ? await openDatabase(process.env.DATABASE_URL) : null;
+const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDir);
 const service = createAccountService({ store });
-const gameStore = await createFileGameStore(SERVER.dataDir);
+const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
 const game = createGameService({ store: gameStore, replay: createReplayer() });
-const server = http.createServer(createApp({ store, service, game, root: ROOT }));
+const party = createPartyService({ game, getAccount: id => store.getAccount(id) });
+const server = http.createServer(createApp({ store, service, game, party, root: ROOT }));
 
 /* sessions de jeu : reprise d'un rejeu interrompu, puis versement des sessions arrivées à leur fin (même joueur absent) */
 game.recover().catch(console.error);
@@ -40,5 +45,6 @@ for(const sig of ['SIGINT', 'SIGTERM']) process.on(sig, async () => {
   server.close();
   await store.close();
   await gameStore.close();
+  await db?.close();
   process.exit(0);
 });
