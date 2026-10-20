@@ -98,7 +98,7 @@ Règles (voir CLAUDE.md) :
   allers-retours 26,8 · 0 bloquée. **Identique à avant le focus et le four**, au chiffre près.
 - **Pas vérifié** : ⚠️ l'onglet n'a pas été regardé dans un navigateur (les modules se chargent sans erreur).
 
-### Lobby partagé et invitations (onglet Mine + onglet Social) — non commité
+### Lobby partagé et invitations (onglet Mine + onglet Social) — commit `ae9ba67`
 - **Quoi** : vérifié d'abord que la création de compte marche et s'enregistre (`data/accounts.json`, pseudo unique
   sans casse ni accents, reconnexion après redémarrage). Puis lobby partagé : clic sur une place libre, saisie d'un
   pseudo ou d'un ID, invitation dans l'onglet Social (pastille rouge), Rejoindre / Refuser. Lobby synchronisé toutes
