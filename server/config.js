@@ -58,7 +58,7 @@ export const LIMITS = {
    refuse d'en lancer une nouvelle) ; DIM_MAX_LIVE pour changer. pumpEvery : rythme auquel les parties avancent. */
 export const GAME_SERVER = {
   dev: process.env.DIM_DEV === '1',
-  maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 2 : 12))),
+  maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 5 : 12))),
   pumpEvery: 200,                   // ms
   maxStep: 200,                     // ticks calculés d'un bloc : entre deux blocs, les demandes d'affichage passent
   /* budget de calcul : ticks par seconde, toutes sessions confondues (sans limite en local). Sur Render gratuit,

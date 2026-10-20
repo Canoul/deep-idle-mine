@@ -301,3 +301,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/skins.test.js` (textures présentes, calques, pseudos, look transmis, figé au lancement).
 - **Vérification** : ✅ 153/153 (skins, view, share, team, game-service, game-replay, live, party, stuff, session,
   anti-triche). Vu dans Firefox (invisible) : armure de chitine rouge, pioche en pierre grise en train de miner, pseudo lisible.
+
+### Serveur : 5 sessions en même temps sur Render (au lieu de 2)
+- **Quoi** : `GAME_SERVER.maxLive` passe de 2 à 5 sur Render (12 en local, inchangé). `DIM_MAX_LIVE` le change toujours.
+- **Fichiers** : `server/config.js`, GAME_DESIGN §6.
+- **Tests** : `tests/game-service.test.js`, `tests/anticheat/server.test.js` (45/45, ils fixent leur propre maxLive).
+- **Vérification** : ✅ tests liés. ⚠️ Pas mesuré sur Render.
+- **Point fragile** : le budget de calcul (`tickBudget` = 45 ticks/s sur Render, toutes sessions confondues) n'a pas
+  changé. Une session à x2 en demande 20 : au-delà de 2 sessions à 3 mineurs, les parties prennent du retard sur le
+  temps réel (affiché « connexion… ») sur l'offre gratuite. Il faut une offre Render plus puissante (et monter
+  `DIM_TICK_BUDGET`) pour que 5 sessions tournent à l'heure.

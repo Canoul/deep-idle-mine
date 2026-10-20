@@ -264,7 +264,7 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 - **vitesse du jeu normal : ×2** *(valeur de config)* : une session de 60 min de jeu dure **30 min en temps réel**. Pas de pause : elle avance au rythme du temps réel, **même page fermée** ; en revenant, on voit directement où en est la partie ;
 - la session se termine d'elle-même au dernier tick : le serveur partage aussitôt le coffre et verse les parts dans les inventaires. Un joueur absent à la fin reçoit quand même sa part ;
 - après un redémarrage du serveur, une session en cours est reconstruite à l'identique (même seed + choix enregistrés avec leur tick), puis reprend ;
-- le nombre de sessions en même temps est limité par la puissance du serveur *(valeur de config, 2 sur l'offre gratuite de Render)* : au-delà, « serveur plein, réessaie dans quelques minutes » ;
+- le nombre de sessions en même temps est limité par la puissance du serveur *(valeur de config, 5 sur Render)* : au-delà, « serveur plein, réessaie dans quelques minutes » ;
 - **l'inventaire est stocké sur le serveur** ; le navigateur le lit, il ne peut pas l'écrire ;
 - une seule session en cours par joueur.
 
