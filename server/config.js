@@ -61,6 +61,10 @@ export const GAME_SERVER = {
   maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 2 : 12))),
   pumpEvery: 200,                   // ms
   maxStep: 200,                     // ticks calculés d'un bloc : entre deux blocs, les demandes d'affichage passent
+  /* budget de calcul : ticks par seconde, toutes sessions confondues (sans limite en local). Sur Render gratuit,
+     ~54 ticks/s occupent tout le processeur (3 mineurs) ; une session à l'heure en demande 20 (x2). 45 laisse au
+     serveur de quoi répondre aux joueurs. DIM_TICK_BUDGET pour changer. */
+  tickBudget: +(process.env.DIM_TICK_BUDGET || (ON_RENDER ? 45 : Infinity)),
   keepEnded: 30 * DAY,              // sessions terminées gardées ce temps, puis supprimées
   startsPerHour: 30,                // sessions lancées par compte et par heure (anti spam)
 };

@@ -25,7 +25,7 @@ const server = http.createServer(createApp({ store, service, game, party, root: 
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
-await game.recover().catch(console.error);
+game.recover().catch(console.error);       // sans attendre : le serveur répond tout de suite, les sessions rattrapent ensuite
 const pump = setInterval(() => game.pump().catch(console.error), GAME_SERVER.pumpEvery);
 pump.unref();
 

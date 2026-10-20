@@ -352,3 +352,47 @@ test('craft puis équiper : le serveur fait foi, rien n\'est dupliqué', async (
   assert.deepEqual(st.stuff.pioche, { item:'Pioche en pierre', uid:pick.uid });
   await assert.rejects(game.stuff(ME, { action:'equip', slot:'pioche', uid:pick.uid, opId:'op-equip-2' }), { code:'not_owned' });
 });
+
+/* ---------- budget de calcul (serveur faible, ex. Render gratuit) ---------- */
+
+function budgetSetup(tickBudget){
+  let now = 1_000_000;
+  const store = createMemoryGameStore();
+  const live = fakeLive(fakeSummary());
+  const game = createGameService({ store, liveRunner: live, clock: () => now, randomSeed: () => 4242,
+    config:{ startsPerHour:1000, keepEnded:1e12, maxLive:2, tickBudget, pumpEvery:200, maxStep:200 } });
+  return { game, store, advance: ms => { now += ms; } };
+}
+const P = n => ({ id:'P'+String(n).padStart(7, '0'), name:'J'+n, guest:false });
+
+test('budget : au plus tickBudget ticks/s au total, les sessions à l\'heure d\'abord, une session dépassée à la fois', async () => {
+  const { game, store, advance } = budgetSetup(100);             // 100 ticks/s = 20 par passage (200 ms)
+  const old1 = (await game.start(P(1), {})).session, old2 = (await game.start(P(2), {})).session;
+  advance(realDurationMs() + 60_000);                             // ces deux-là sont dépassées (serveur arrêté)
+  const fresh = (await game.start(P(3), {})).session;             // les dépassées ne prennent pas de place
+  advance(500);                                                   // la nouvelle a 10 ticks de retard
+  await game.pump();
+  const st = async s => (await store.getGameSession(s.id)).status;
+  /* nouvelle session servie en premier (10 ticks), puis 10 ticks pour la plus ancienne dépassée, rien pour l'autre */
+  assert.equal(await st(old1), 'running'); assert.equal(await st(old2), 'running');
+  assert.equal((await game.state(P(3))).session.tick, 10, 'la session à l\'heure a son compte');
+  assert.equal((await game.state(P(1))).session.tick, 10, 'la plus ancienne dépassée : le reste du budget');
+  assert.equal((await game.state(P(2))).session.tick, 0, 'l\'autre attend son tour');
+});
+
+test('budget : les sessions dépassées finissent quand même, et rien n\'est versé deux fois', async () => {
+  const { game, advance } = budgetSetup(1e6);
+  await game.start(P(1), {}); await game.start(P(2), {});
+  advance(realDurationMs() + 60_000);
+  for(let i = 0; i < 6; i++) await game.pump();
+  assert.equal((await game.state(P(1))).inventory.slots[0].qty, 9);
+  assert.equal((await game.state(P(2))).inventory.slots[0].qty, 9);
+});
+
+test('places : deux sessions à l\'heure = serveur plein ; une session dépassée ne compte pas', async () => {
+  const { game, advance } = budgetSetup(1e6);
+  await game.start(P(1), {}); await game.start(P(2), {});
+  await assert.rejects(game.start(P(3), {}), { code:'server_busy' });
+  advance(realDurationMs() + 1000);
+  await game.start(P(3), {});
+});

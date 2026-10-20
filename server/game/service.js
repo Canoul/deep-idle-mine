@@ -117,27 +117,41 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(!live.has(rec.id)) live.open(rec);
     return true;
   }
-  /* la partie rattrape le temps écoulé, par blocs de maxStep ticks (les demandes d'affichage passent entre deux) ;
-     renvoie son tick (null si elle vient de se terminer) */
-  const maxStep = config.maxStep ?? 200;
-  async function catchUp(rec){
-    if(!ensureLive(rec)) return null;
-    const target = targetTick(rec);
-    while(live.has(rec.id) && live.tickOf(rec.id) < target)
-      await live.advance(rec.id, Math.min(target, live.tickOf(rec.id) + maxStep));
-    return live.has(rec.id) ? live.tickOf(rec.id) : null;
-  }
+  /* session dont l'heure de fin est passée (elle n'a pas pu suivre : serveur arrêté, endormi ou trop chargé) */
+  const overdue = rec => !rec.dev && clock() >= rec.finishAt;
 
-  /* fait avancer toutes les sessions en cours (appelé en continu par le serveur, toutes les pumpEvery ms) */
+  /* Fait avancer les sessions en cours (appelé en continu par le serveur, toutes les pumpEvery ms).
+     Budget de calcul : au plus tickBudget ticks par seconde, toutes sessions confondues. Les parties tournent dans
+     des fils d'exécution qui partagent le processeur du serveur : sans limite, une session en rattrapage (après un
+     redémarrage) prendrait tout le processeur et le serveur ne répondrait plus aux joueurs. Priorité aux sessions à
+     l'heure (joueurs devant leur écran), la moins en retard d'abord ; puis UNE session dépassée à la fois, la plus
+     ancienne. Chaque partie avance par blocs de maxStep ticks : les demandes d'affichage passent entre deux. */
+  const maxStep = config.maxStep ?? 200;
+  const perPump = (config.tickBudget ?? Infinity) * (config.pumpEvery ?? 200) / 1000;
   const pumping = new Set();
   async function pump(){
-    await Promise.all((await store.sessionsWithStatus('running')).map(async rec => {
-      if(pumping.has(rec.id)) return;
+    const running = (await store.sessionsWithStatus('running')).filter(r => !settling.has(r.id));
+    const lag = r => targetTick(r) - (live.tickOf(r.id) ?? 0);
+    const onTime = running.filter(r => !overdue(r)).sort((a, b) => lag(a) - lag(b));
+    const late = running.filter(overdue).sort((a, b) => a.finishAt - b.finishAt);
+    let left = perPump;
+    const jobs = [];
+    for(const rec of [...onTime, ...late.slice(0, 1)]){
+      if(left < 1) break;
+      if(pumping.has(rec.id) || !ensureLive(rec)) continue;
+      const tick = live.tickOf(rec.id), target = targetTick(rec);
+      if(tick >= target) continue;
+      const share = Math.min(target - tick, Math.floor(left));
+      left -= share;
       pumping.add(rec.id);
-      try { await catchUp(rec); }
-      catch(e){ console.error(`Session ${rec.id} :`, e.message); live.close(rec.id); }   // relancée au prochain passage
-      finally { pumping.delete(rec.id); }
-    }));
+      jobs.push((async () => {
+        const end = tick + share;
+        while(live.has(rec.id) && live.tickOf(rec.id) < end)
+          await live.advance(rec.id, Math.min(end, live.tickOf(rec.id) + maxStep));
+      })().catch(e => { console.error(`Session ${rec.id} :`, e.message); live.close(rec.id); })   // relancée au prochain passage
+        .finally(() => pumping.delete(rec.id)));
+    }
+    await Promise.all(jobs);
     await Promise.all(settling.values());
   }
 
@@ -169,7 +183,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   async function settle(id){
     const rec = await store.getGameSession(id);
     if(!rec || rec.status !== 'running' || (!rec.dev && clock() < rec.finishAt)) return;
-    if(ensureLive(rec)){ if(rec.dev) await live.finish(id); else await live.advance(id, TOTAL_TICKS); }
+    if(rec.dev){ if(ensureLive(rec)) await live.finish(id); }
+    else await pump();                                 // jeu normal : la partie finit à son rythme (budget de calcul)
     await settling.get(id);
   }
 
@@ -207,7 +222,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
-        if(live.size >= config.maxLive)
+        /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
+        if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
           fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
         const lim = startLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
