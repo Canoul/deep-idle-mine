@@ -160,8 +160,9 @@ function decideWork(G,m){
   dropDepleted(G,m);
   const goal=focusGoal(G,m);
   // en route vers une cible de l'area visée, il peut déborder sur l'area voisine (chemin par la ligne du dessus) :
-  // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière)
-  const onTheWay = goal!==null && goal===focusArea(G,m) && m.target && areaOf(m.target.y)===goal;
+  // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière). Vaut pour le focus
+  // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai)
+  const onTheWay = goal!==null && m.target && areaOf(m.target.y)===goal;
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
@@ -184,8 +185,11 @@ function decideWork(G,m){
     return {bd,bn}; };
   // engagement : on garde la cible tant qu'elle existe et reste atteignable (évite les va-et-vient entre deux choix)
   // … sauf si un autre mineur (plus petit numéro) la vise aussi
-  // focus d'area : seules les cibles de cette area comptent (sinon il en sortirait, puis y reviendrait : oscillation)
-  const A=focusArea(G,m), inFocus = y => A===null || areaOf(y)===A;
+  // focus d'area : seules les cibles de cette area comptent (sinon il en sortirait, puis y reviendrait : oscillation).
+  // focus minerai : pas de cible dans une area épuisée pour ses minerais visés (il y monterait, le focus le renverrait
+  // aussitôt dans la sienne, et il recommencerait : va-et-vient sur l'échelle à la frontière, seed 770973224)
+  const A=focusArea(G,m), act=activeOres(m.prefs.focus);
+  const inFocus = y => A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act);
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
     if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }

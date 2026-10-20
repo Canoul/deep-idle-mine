@@ -269,3 +269,25 @@ test('FOCUS : valeurs de config cohérentes', () => {
   assert.ok(FOCUS.minLeft > 0 && FOCUS.minLeft < 1);
   assert.ok(FOCUS.valFactor > 1);
 });
+
+/* ---------- frontière entre deux areas (seed 770973224) ---------- */
+
+test('focus minerai : pas de va-et-vient sur l\'échelle à la frontière de deux areas (seed 770973224)', () => {
+  /* area 0 : lignes 2 à 51 (pas d'or), area 1 : lignes 52+ (de l'or). Le mineur est en area 1 sur l'échelle (5,52),
+     un charbon juste au-dessus en area 0. Avant : il visait ce charbon, montait en area 0, le focus or l'y renvoyait
+     en area 1 (effaçant sa cible), il revoyait le charbon… en boucle. */
+  const rows = Array.from({ length:60 }, (_, y) => y === 0 ? '' : '##### ####');
+  const G = worldFrom(rows), m = G.miners[0];
+  for(let y = 1; y <= 56; y++){ G.tiles[y][5] = 0; G.ladder[y][5] = 1; }
+  G.tiles[51][4] = IDS.coal;
+  m.x = 5; m.y = 52;
+  G.areas[0].ores = { coal:{ total:100, left:100 } };
+  G.areas[1] = { k:1, comp:{}, counts:{}, oreTotal:1e9, oreMined:0, ores:{ coal:{ total:10, left:10 }, gold:{ total:10, left:10 } }, chestChance:0, treasure:null };
+  G.unlockedAreas = 2;
+  setFocus(G, m, { gold:'target' });
+  let minY = m.y;
+  for(let i = 0; i < 300; i++){ tick(G); minY = Math.min(minY, m.y); }
+  assert.ok(minY >= areaTop(1), `il est remonté en area 0 (ligne ${minY})`);
+  assert.equal(G.tiles[51][4], IDS.coal, 'le charbon de l\'area 0 n\'est pas visé');
+  assert.ok(m.stats.mined >= 5, `il ne travaille pas (${m.stats.mined} blocs minés en 30 s)`);
+});
