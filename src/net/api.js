@@ -46,6 +46,7 @@ export const gameApi = {
   start:  (opts = {})  => request('POST', '/api/game/start', opts),
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
+  focus:  (focus, tick) => request('POST', '/api/game/focus', { focus, tick }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
 };

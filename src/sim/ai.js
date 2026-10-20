@@ -1,12 +1,13 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X } from '../config.js';
-import { DIRS, isOre, isTarget, typeOf, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
+import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
 import { log } from './log.js';
 import { isWalker } from './mobs.js';
+import { targetVal, dropDepleted, focusGoal, activeOres, areaGood } from './focus.js';
 
 /* boussole : minerais sur la ligne du mineur uniquement */
 export function compassScan(G,m,R){
@@ -48,10 +49,11 @@ const torchByOther = (G,m) => others(G,m).some(o=>o.action && o.action.type==='t
 /* éloignement relatif hors de son secteur (0 dans le secteur ; 1 = une demi-largeur de secteur en dehors…) */
 const outOfSector = (m,x) => m.homeX==null ? 0 : Math.max(0, Math.abs(x-m.homeX)-CFG.sectorHalf)/CFG.sectorHalf;
 
-/* Fond de l'area verrouillé : creuser des galeries horizontales (une ligne sur 3) pour trouver les minerais manquants. */
-function explore(G,m){
-  const k=G.unlockedAreas-1, base=areaTop(k)-1;   // couches base+1 … base+AREA_H
-  m.exploring=true;  // évite l'oscillation « descend / change de galerie » ; levé au déblocage de l'area suivante
+/* Fond de l'area verrouillé (ou area du dessous épuisée pour le focus) : creuser des galeries horizontales
+   (une ligne sur 3) dans l'area k pour trouver les minerais manquants. */
+function explore(G,m,k){
+  const base=areaTop(k)-1;   // couches base+1 … base+AREA_H
+  m.exploring=true; m.exploreArea=k;  // évite l'oscillation « descend / change de galerie » ; levé au déblocage de l'area suivante
   const primary=[], secondary=[];
   for(let r=1;r<=AREA_H;r++){ const y=base+r; if(rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
   let pool = primary.length ? primary : secondary;
@@ -153,6 +155,10 @@ function decideWork(G,m){
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',1,{}); return; }
   }
+  /* focus minerai : abandonne les minerais épuisés partout, change d'area si la sienne est épuisée */
+  dropDepleted(G,m);
+  const goal=focusGoal(G,m);
+  if(goal!==null) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
   /* l'IA ne vise que les minerais découverts (révélés) ou signalés par la boussole (sa ligne),
@@ -173,35 +179,60 @@ function decideWork(G,m){
   // … sauf si un autre mineur (plus petit numéro) la vise aussi
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(m,t)!==null && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre
     if(veinTaken(G,m,o.x,o.y)) continue;    // filon réservé : un autre vise un minerai tout près
+    const val=targetVal(m,o.t);
+    if(val===null) continue;                // focus « only » : les autres minerais sont ignorés
     const {bd,bn}=nbrBest(o);
     if(bn<0) continue;
     const travel=Math.abs(o.x-m.x)*moveT(G,m)+Math.abs(o.y-m.y)*climbT(G,m);
     // un filon où travaille déjà un autre mineur, ou hors de son secteur, est moins attirant : on se répartit la mine
-    const s=BLOCKS[o.t].val/(bd+mineT(G,m,o.t)+CFG.futureTravelWeight*travel+1)
+    const s=val/(bd+mineT(G,m,o.t)+CFG.futureTravelWeight*travel+1)
       /(1+CFG.crowdPenalty*crowdAt(G,m,o.x,o.y))/(1+CFG.sectorPenalty*outOfSector(m,o.x))
       /(1+CFG.rowCrowdPenalty*rowCrowd(G,m,o.y));   // cible sur la ligne d'un autre mineur (±1) : moins intéressante
     if(s>bs){ bs=s; best=o; bestN=bn; }
   }
   // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
-  const down = !m.exploring && tileAt(G,m.x,m.y+1) !== BARRIER;
+  // … et ne passe pas dans une area épuisée pour son focus : il explore la sienne en galeries
+  const stopK=focusStop(G,m);
+  const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
-  if(down){
-    // ne pas descendre là où un autre travaille déjà, ni loin de son secteur
-    const pd=planDown(G,m,(x,y)=>crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1);
-    if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; return; }
-    // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
-    if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
-    m.digCol=m.x; m.status='Creuse vers le bas'; if(!stepDir(G,m,0,1)) idle(m); return;
-  }
-  explore(G,m);
+  if(down) return digDown(G,m);
+  explore(G,m, stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1));
+}
+
+function digDown(G,m){
+  // ne pas descendre là où un autre travaille déjà, ni loin de son secteur
+  const pd=planDown(G,m,(x,y)=>crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1);
+  if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; return; }
+  // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
+  if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
+  m.digCol=m.x; m.status='Creuse vers le bas'; if(!stepDir(G,m,0,1)) idle(m);
+}
+
+/* focus : l'area juste en dessous est épuisée pour ses minerais visés → renvoie l'area où rester (sinon null) */
+function focusStop(G,m){
+  const act=activeOres(m.prefs.focus);
+  if(!act.length) return null;
+  const cur=Math.max(0,areaOf(m.y)), below=areaOf(m.y+1);
+  return below>cur && below<G.unlockedAreas && !areaGood(G,below,act) ? cur : null;
+}
+
+/* focus : son area est épuisée pour ses minerais visés → il rejoint l'area goal (descend, ou remonte au plus court) */
+function changeArea(G,m,goal){
+  m.exploring=false; m.target=null; m.galleryRow=null;
+  const label=`Change d'area → area ${goal} (focus)`;
+  if(goal>areaOf(m.y)){ digDown(G,m); m.status=label; return; }
+  m.status=label;
+  const r=search(G,m,m.x,m.y,true,(x,y)=>areaOf(y)===goal,Infinity,1), s=r && firstStep(r,r.n);
+  if(s && (s.dx||s.dy) && stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return;
+  idle(m,0.3);
 }
 
 /* se décaler sur la même ligne vers une colonne libre (au moins CFG.shaftGap colonnes des puits des autres) */

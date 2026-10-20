@@ -111,6 +111,16 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - La **boussole** aide l'IA à choisir : s'il vaut mieux aller sur les côtés vers un minerai plutôt que descendre.
 - Quand le fond de l'area est verrouillé, il explore en **galeries** horizontales pour trouver les minerais manquants.
 
+### Focus minerai
+Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
+- Trois modes par minerai : **Aucun** (normal), **Cibler** (le minerai pèse plus lourd que le plus gros minerai : 2 × la valeur du diamant *(provisoire)*), **Uniquement** (l'IA ne vise que les minerais « Uniquement » et ignore les autres).
+- **« Uniquement » écrase « Cibler »** : dès qu'un minerai est en « Uniquement », les minerais en « Cibler » sont ignorés aussi.
+- **Seuls les blocs de type ore sont concernés** : les treasures découverts restent visés. D'autres cibles (coffres, pierres précieuses…) pourront s'ajouter plus tard.
+- Le jeu connaît, pour chaque area, le **nombre initial et le restant** de chaque minerai.
+- **Area épuisée** : s'il reste moins de **20 %** *(provisoire)* du nombre initial d'un minerai visé dans l'area du mineur, il part vers **l'area débloquée la plus proche** qui en a encore (au-dessus ou en dessous ; à égalité, celle du dessous). Il ne descend pas non plus dans une area épuisée : il explore la sienne en galeries.
+- **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
+- Le serveur **enregistre chaque changement avec son tick** (comme un départ) et le rejoue : la partie affichée et la partie du serveur restent identiques. Un changement prend effet ~1 s de jeu après le clic *(valeur de config)*.
+
 ### Caractéristiques
 | Stat | Rôle | Valeur de base |
 |---|---|---|
@@ -192,7 +202,7 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 - **Inviter des joueurs** : visible, pas encore actif (affiche l'ID de compte à donner à un ami). Le vrai multijoueur réseau est l'étape suivante ;
 - **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs ; voir §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
-Pendant la session, l'onglet Mine montre la mine ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
 
 **Le serveur fait foi** (anti-triche) :
 - c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) ; le navigateur ne fait que l'afficher ;

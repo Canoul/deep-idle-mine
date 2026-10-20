@@ -84,7 +84,19 @@ export function genArea(G,k){
     const c=oreCells[i], x=c%W, ry=(c/W)|0, y=areaTop(k)+ry, hp=MOBS.mimicHp(k);
     G.mobs.push({id:G.mobId++, type:'mimic', x, y, hp, maxhp:hp, revealed:false, ore:grid[c]});
   }
-  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, chestChance:areaDef(k).chestChance||0, treasure};
+  /* ores : pour chaque minerai de l'area, le nombre initial et ce qu'il en reste dans la roche (focus minerai) */
+  const ores = {};
+  for(const n in counts) if(isOre(IDS[n])) ores[n] = { total:counts[n], left:counts[n] };
+  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, ores, chestChance:areaDef(k).chestChance||0, treasure};
+}
+
+/* clé de composition d'un bloc (IDS) : 3 → 'coal' */
+export const oreKey = t => Object.keys(IDS).find(n => IDS[n]===t);
+
+/* un bloc de minerai t vient de quitter la roche de l'area k (miné, ou mimic vaincu) */
+export function oreRemoved(G,k,t){
+  const o = G.areas[k]?.ores[oreKey(t)];
+  if(o && o.left>0) o.left--;
 }
 
 /* Treasure : un tirage par area (chestChance) ; s'il sort, le treasure remplace un bloc de terrain au hasard.

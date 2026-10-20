@@ -8,11 +8,12 @@
    - mode développeur : vitesses libres et pause ; le navigateur dit au serveur quand c'est fini. */
 import { DT, GAME } from './config.js';
 import { tick } from './sim/session.js';
-import { buildSession, applyDueLeaves, applyOverrides, tickAt } from './shared/game.js';
+import { buildSession, applyDueEvents, applyOverrides, tickAt } from './shared/game.js';
 import { createRenderer } from './render/canvas.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
+import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
@@ -86,6 +87,17 @@ function showLobby(){
 
 /* ---------- session ---------- */
 setupRunControls(ui, { onLeave: leave });
+
+/* focus minerai : le serveur enregistre le changement et son tick ; la partie l'applique à ce tick (applyDueEvents) */
+const focusPanel = setupFocusPanel({
+  onChange: async focus => {
+    try {
+      const { event } = await gameApi.focus(focus, info.dev ? G?.ticks : undefined);
+      if(rec) (rec.focus ??= []).push(event);
+      return event;
+    } catch(e){ alert(e.message); throw e; }
+  },
+});
 
 function enterSession(session){
   rec = session; waiting = false;
@@ -182,7 +194,7 @@ function frame(now){
     if(info.dev){ if(!ui.paused) acc += dtr * ui.speed; target = G.ticks + Math.floor(acc / DT); }
     else target = tickAt(serverNow() - rec.startedAt, rec.speed);
     while(G.ticks < target && !G.over && performance.now() - t0 < FRAME_BUDGET_MS){
-      applyDueLeaves(G, rec); tick(G);
+      applyDueEvents(G, rec); tick(G);
       if(info.dev) acc -= DT;
     }
     if(info.dev && acc > 5) acc = 5;      // en retard de plus de 5 s de jeu : on n'accumule pas sans fin
@@ -192,6 +204,7 @@ function frame(now){
   if(now - lastHud > 120){
     if(G && ui.tab==='mine'){
       updateHUD(G, ui);
+      focusPanel.update(G, acct.account?.id);
       const behind = !info.dev && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = info.dev ? '' : behind ? 'rattrapage…' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }

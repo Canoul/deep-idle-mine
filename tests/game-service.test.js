@@ -2,8 +2,8 @@
    Horloge simulée et rejeu factice (le vrai rejeu est testé dans game-replay.test.js). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GAME, TREASURE } from '../src/config.js';
-import { realDurationMs } from '../src/shared/game.js';
+import { GAME, TREASURE, FOCUS } from '../src/config.js';
+import { realDurationMs, tickAt } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 
@@ -187,4 +187,44 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
   await assert.rejects(game.leave(OTHER, {}), { code:'no_session' });
   await game.ack(OTHER, session.id);   // sans effet
   assert.equal((await game.state(ME)).session.id, session.id);
+});
+
+/* ---------- focus minerai (changé pendant la session) ---------- */
+
+test('focus : enregistré avec le tick du serveur (+ délai), nettoyé, visible dans la session', async () => {
+  const { game, advance } = setup();
+  const { session } = await game.start(ME, {});
+  advance(10_000);
+  const { event } = await game.focus(ME, { focus:{ coal:'only', stone:'target', iron:'boom' }, tick:5 });
+  assert.equal(event.tick, tickAt(10_000, GAME.speed) + FOCUS.delayTicks, 'le tick du navigateur est ignoré en jeu normal');
+  assert.deepEqual(event.focus, { coal:'only' });
+  const st = await game.state(ME);
+  assert.deepEqual(st.session.focus, [{ account:ME.id, tick:event.tick, focus:{ coal:'only' } }]);
+  assert.equal(st.session.id, session.id);
+});
+
+test('focus : ticks toujours croissants ; dev = tick du navigateur', async () => {
+  const { game } = setup({ dev:true });
+  await game.start(ME, {});
+  assert.equal((await game.focus(ME, { focus:{}, tick:300 })).event.tick, 300);
+  assert.equal((await game.focus(ME, { focus:{}, tick:100 })).event.tick, 300, 'jamais avant le précédent');
+  assert.equal((await game.focus(ME, { focus:{}, tick:-5 })).event.tick, 300);
+});
+
+test('focus : refusé sans session, après la fin, mal formé, ou trop souvent', async () => {
+  const { game, advance } = setup();
+  await assert.rejects(game.focus(ME, { focus:{} }), { code:'no_session' });
+  await game.start(ME, {});
+  for(const bad of [undefined, null, 'coal', ['only'], 3]) await assert.rejects(game.focus(ME, { focus:bad }), { code:'bad_request' });
+  for(let i=0;i<FOCUS.maxChanges;i++) await game.focus(ME, { focus:{ coal:'target' } });
+  await assert.rejects(game.focus(ME, { focus:{} }), { code:'too_many' });
+  advance(realDurationMs(GAME.speed));
+  await assert.rejects(game.focus(OTHER, { focus:{} }), { code:'no_session' });
+});
+
+test('focus : refusé quand la session est finie', async () => {
+  const { game, advance } = setup();
+  await game.start(ME, {});
+  advance(realDurationMs(GAME.speed));
+  await assert.rejects(game.focus(ME, { focus:{} }), { code:'session_over' });
 });

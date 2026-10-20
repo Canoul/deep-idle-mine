@@ -7,12 +7,13 @@ export function createMiner(id, opts={}){
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
     x: opts.x ?? SPAWN_X, y:0, ox:STATS.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
-    action:null, exploring:false, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),
+    action:null, exploring:false, exploreArea:null, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),
     digCol:null, galleryRow:null,   // réservations visibles des autres mineurs (puits creusé, ligne de galerie)
     homeX: opts.home ?? null,       // en équipe : colonne de départ après le coffre et centre de son secteur
     returnStart:0, lastReturnDur:0, // durée de son dernier retour (sert à juger s'il vaut la peine de repartir)
     torches:STATS.torches, bridges:STATS.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
-    prefs: { ...PREFS, ...(opts.prefs||{}) },
+    prefs: { ...PREFS, focus:{}, ...(opts.prefs||{}) },   // focus : minerais visés (src/sim/focus.js)
+    focusNotice:null,               // dernier focus abandonné faute de minerai ({t, msg}), affiché au joueur
     stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0 },
   };
 }

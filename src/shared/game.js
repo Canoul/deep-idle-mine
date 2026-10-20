@@ -1,11 +1,13 @@
 /* Règles partagées entre le jeu (navigateur) et le serveur pour les sessions de jeu. Logique pure.
 
    Une session est décrite par un « enregistrement » créé par le serveur :
-     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, overrides, leaves:[{account, tick}] }
+     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, overrides, leaves:[{account, tick}],
+       focus:[{account, tick, focus}] }   (focus : changements de focus minerai faits pendant la session)
    À partir de lui, buildSession construit exactement la même partie des deux côtés : le navigateur l'affiche,
    le serveur la rejoue (replayRecord) pour calculer le partage du coffre. C'est le résultat du serveur qui fait foi. */
 import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession } from '../sim/session.js';
+import { setFocus } from '../sim/focus.js';
 
 /* ---------- préférences ---------- */
 
@@ -70,12 +72,29 @@ export function applyDueLeaves(G, record){
   return n;
 }
 
+/* changements de focus minerai dont le moment est venu, dans l'ordre de l'enregistrement (le serveur garantit des
+   ticks croissants) ; G.focusDone retient ceux déjà appliqués. Renvoie le nombre appliqué. */
+export function applyDueFocus(G, record){
+  const list = record.focus || [];
+  let n = 0;
+  G.focusDone ??= 0;
+  while(G.focusDone < list.length && list[G.focusDone].tick <= G.ticks){
+    const e = list[G.focusDone++];
+    const m = G.miners.find(x => x.account !== null && x.account === e.account);
+    if(m){ setFocus(G, m, e.focus); n++; }
+  }
+  return n;
+}
+
+/* tout ce qui arrive en cours de partie (départs, focus) : appelé avant chaque tick, des deux côtés */
+export function applyDueEvents(G, record){ applyDueLeaves(G, record); applyDueFocus(G, record); }
+
 /* Rejoue une session entière (serveur). maxTicks : réservé aux tests (session raccourcie). */
 export function replayRecord(record, { maxTicks = Infinity } = {}){
   applyOverrides(record.overrides);
   try {
     const G = buildSession(record);
-    while(!G.over && G.ticks < maxTicks){ applyDueLeaves(G, record); tick(G); }
+    while(!G.over && G.ticks < maxTicks){ applyDueEvents(G, record); tick(G); }
     if(!G.over) endSession(G);
     return G.summary;
   } finally {

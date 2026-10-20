@@ -223,6 +223,18 @@ export const PREF_OPTIONS = {
   fightMobs: { label:'Face aux mobs',   options:[[true,'Combattre'], [false,'Ignorer']] },
 };
 
+/* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre
+   chaque changement avec son tick et le rejoue (comme un départ).
+   modes : none (rien), target (poids augmenté), only (seuls les minerais « only » comptent ; écrase les « target »).
+   Ne concerne que les blocs de type ore (les treasures restent visés).
+   minLeft  : sous cette part du nombre initial d'un minerai dans une area, l'area est « épuisée » pour ce minerai :
+              le mineur part vers l'area débloquée la plus proche qui en a encore ; s'il n'y en a plus, le focus saute.
+   valFactor: poids d'un minerai visé = valFactor × le plus gros poids de minerai (provisoire).
+   delayTicks : en jeu normal, un changement prend effet ce nombre de ticks après sa réception (laisse au navigateur
+                le temps de l'appliquer au même tick que le serveur).
+   maxChanges : changements max par joueur et par session (protège l'enregistrement). */
+export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, delayTicks:20, maxChanges:500 };
+
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
 export const DEV_TUNABLES = [

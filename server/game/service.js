@@ -10,8 +10,9 @@
      réglages dev, fin quand le navigateur le dit.
    Testable seul : on lui passe un stockage, une horloge et une fonction de rejeu. */
 import crypto from 'node:crypto';
-import { GAME, PREFS } from '../../src/config.js';
+import { GAME, PREFS, FOCUS } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
+import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
@@ -60,7 +61,8 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
     if(!rec) return null;
     return { id: rec.id, seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, overrides: rec.overrides,
              dev: rec.dev, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
-             leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })), status: rec.status,
+             leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
+             focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
              result: rec.status === 'done' ? rec.result : null };
   }
   const isDue = rec => rec.status === 'running' && !rec.dev && clock() >= rec.finishAt;
@@ -148,7 +150,7 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
           prefs: { [me.id]: await loadPrefs(me.id) },
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
-          leaves: [], status: 'running', result: null, seen: [],
+          leaves: [], focus: [], status: 'running', result: null, seen: [],
         };
         await store.putGameSession(rec);
         return { session: publicSession(rec) };
@@ -172,6 +174,30 @@ export function createGameService({ store, replay, clock = Date.now, dev = GAME_
         }
         await store.putGameSession(rec);
         return { left: true };
+      });
+    },
+
+    /* focus minerai changé pendant la session : enregistré avec son tick, rejoué tel quel (GAME_DESIGN §3).
+       Jeu normal : le tick vient de l'horloge du serveur (+ FOCUS.delayTicks) ; dev : celui du navigateur.
+       Les ticks restent croissants (rejeu dans l'ordre). Aucune ressource en jeu : on vérifie la forme et le nombre. */
+    async focus(me, body = {}){
+      return withLock('acct:' + me.id, async () => {
+        const rec = await activeOf(me.id);
+        if(!rec) fail('no_session', 404, 'Aucune session en cours.');
+        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
+        const f = body.focus;
+        if(!f || typeof f !== 'object' || Array.isArray(f)) fail('bad_request', 400, 'Focus invalide.');
+        rec.focus ??= [];
+        if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
+          fail('too_many', 429, 'Trop de changements de focus dans cette session.');
+        const now = clock();
+        let tick = dev ? (isInt(body.tick) ? body.tick : 0) : tickAt(now - rec.startedAt, rec.speed) + FOCUS.delayTicks;
+        tick = Math.max(tick, rec.focus.at(-1)?.tick ?? 0, 0);
+        if(tick > TOTAL_TICKS) fail('session_over', 409, 'La session est terminée.');
+        const ev = { account: me.id, tick, focus: sanitizeFocus(f) };
+        rec.focus.push(ev);
+        await store.putGameSession(rec);
+        return { event: ev };
       });
     },
 
