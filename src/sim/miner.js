@@ -22,7 +22,7 @@ export const curLum = (G,m) => lumAt(G, m.x, m.y);
 export const lit    = (G,m) => curLum(G,m) >= CFG.darkLum;
 export const dk     = (G,m) => lit(G,m) ? 1 : CFG.darkSlow;
 export const moveT  = (G,m) => 1/(STATS.speed*dk(G,m));
-export const climbT = (G,m) => 1/(STATS.speed*dk(G,m)*CFG.climbFactor);
+export const climbT = (G,m) => 1/(STATS.climbSpeed*dk(G,m));
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(STATS.mineSpeed*dk(G,m));
 export const lightR = (G,m) => 2.2+(STATS.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(STATS.compass*(lit(G,m) ? 1 : 0.5));
@@ -30,7 +30,7 @@ export const compassR = (G,m) => Math.floor(STATS.compass*(lit(G,m) ? 1 : 0.5));
 /* durées de BASE (sans malus d'obscurité), pour planifier : un plan ne doit pas dépendre de la lumière
    de la case où se trouve le mineur, sinon le meilleur chemin change d'une case à l'autre (va-et-vient). */
 export const baseMoveT  = () => 1/STATS.speed;
-export const baseClimbT = () => 1/(STATS.speed*CFG.climbFactor);
+export const baseClimbT = () => 1/STATS.climbSpeed;
 export const baseMineT  = t => BLOCKS[t].hard/STATS.mineSpeed;
 
 /* ---- actions ---- */

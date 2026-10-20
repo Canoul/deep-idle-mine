@@ -8,11 +8,14 @@ export const TOP_DIRT_ROWS = 1, AREA_Y0 = 1 + TOP_DIRT_ROWS;
 export const SPAWN_X = 25, CHEST_X = 22;
 
 /* stats du mineur (de base, avant équipement) */
-export const STATS = { oxygenMax:300, speed:3, mineSpeed:1, damage:5, pods:200, light:6, compass:8,
+/* speed = marche (horizontal), climbSpeed = sur échelle, montée comme descente (blocs/s) ; deux stats indépendantes */
+export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, pods:200, light:6, compass:8,
   torches:20, torchRadius:5, discoverMax:2, bridges:10 };
 
 export const CFG = {
-  ladderTime:2, refillRate:30, unlockRatio:0.4, climbFactor:0.75, oreReach:12, bridgeTime:1,
+  ladderTime:2, refillRate:30, unlockRatio:0.4,
+  climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
+  oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   attackInterval:0.8, torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
   darkSlow:0.65,          // multiplicateur de vitesse sans lumière
