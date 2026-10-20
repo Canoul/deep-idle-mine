@@ -7,7 +7,7 @@ import { stepDir } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR } from './miner.js';
 import { log } from './log.js';
 import { isWalker } from './mobs.js';
-import { targetVal, dropDepleted, focusGoal, activeOres, areaGood } from './focus.js';
+import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
 
 /* boussole : minerais sur la ligne du mineur uniquement */
 export function compassScan(G,m,R){
@@ -158,7 +158,10 @@ function decideWork(G,m){
   /* focus minerai : abandonne les minerais épuisés partout, change d'area si la sienne est épuisée */
   dropDepleted(G,m);
   const goal=focusGoal(G,m);
-  if(goal!==null) return changeArea(G,m,goal);
+  // en route vers une cible de l'area visée, il peut déborder sur l'area voisine (chemin par la ligne du dessus) :
+  // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière)
+  const onTheWay = goal!==null && goal===focusArea(G,m) && m.target && areaOf(m.target.y)===goal;
+  if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
   /* l'IA ne vise que les minerais découverts (révélés) ou signalés par la boussole (sa ligne),
@@ -177,11 +180,14 @@ function decideWork(G,m){
     return {bd,bn}; };
   // engagement : on garde la cible tant qu'elle existe et reste atteignable (évite les va-et-vient entre deux choix)
   // … sauf si un autre mineur (plus petit numéro) la vise aussi
+  // focus d'area : seules les cibles de cette area comptent (sinon il en sortirait, puis y reviendrait : oscillation)
+  const A=focusArea(G,m), inFocus = y => A===null || areaOf(y)===A;
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(m,t)!==null && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
+    if(!inFocus(o.y)) continue;
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre
@@ -216,15 +222,19 @@ function digDown(G,m){
   m.digCol=m.x; m.status='Creuse vers le bas'; if(!stepDir(G,m,0,1)) idle(m);
 }
 
-/* focus : l'area juste en dessous est épuisée pour ses minerais visés → renvoie l'area où rester (sinon null) */
+/* focus : l'area juste en dessous est hors du focus d'area, ou épuisée pour ses minerais visés → renvoie l'area où
+   rester (sinon null) */
 function focusStop(G,m){
+  const A=focusArea(G,m);
+  if(A!==null) return areaOf(m.y+1)>A ? A : null;
   const act=activeOres(m.prefs.focus);
   if(!act.length) return null;
   const cur=Math.max(0,areaOf(m.y)), below=areaOf(m.y+1);
   return below>cur && below<G.unlockedAreas && !areaGood(G,below,act) ? cur : null;
 }
 
-/* focus : son area est épuisée pour ses minerais visés → il rejoint l'area goal (descend, ou remonte au plus court) */
+/* focus : il n'est pas dans l'area visée, ou la sienne est épuisée pour ses minerais visés → il rejoint l'area goal
+   (descend, ou remonte au plus court) */
 function changeArea(G,m,goal){
   m.exploring=false; m.target=null; m.galleryRow=null;
   const label=`Change d'area → area ${goal} (focus)`;

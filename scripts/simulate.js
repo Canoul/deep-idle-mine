@@ -8,6 +8,7 @@
      node scripts/simulate.js --json              → sortie JSON (pour comparer deux versions)
      node scripts/simulate.js --focus iron:only   → focus minerai de tous les mineurs dès le départ
                                                     (clé:mode séparés par des virgules ; modes target / only)
+     node scripts/simulate.js --focus area:0      → focus d'area (combinable : area:1,coal:only)
    Affiche : areas débloquées, profondeur max, coffre, allers-retours, coffres au trésor ouverts / enfouis
    (dans les areas générées), et un détecteur de blocage. */
 import { runSession } from '../src/sim/session.js';
@@ -20,7 +21,8 @@ const miners = +opt('miners', 1);
 const count  = +opt('count', 8);
 const seeds  = opt('seeds', null) ? String(opt('seeds')).split(',').map(Number) : Array.from({length:count},(_,i)=>(i+1)*7919);
 const json   = args.includes('--json');
-const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))) : null;
+const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))
+  .map(([k, v]) => [k, k === 'area' ? +v : v])) : null;
 
 const t0 = Date.now(), rows = [];
 for(const seed of seeds){

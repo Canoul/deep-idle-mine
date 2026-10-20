@@ -6,7 +6,7 @@ import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaOf, areaTop, tryUnlock } from '../src/sim/world.js';
 import { mineBlock } from '../src/sim/actions.js';
-import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
+import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
 import { buildSession, applyDueEvents, replayRecord } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
 
@@ -160,6 +160,79 @@ test('son area est épuisée : il remonte vers l\'area du dessus et y reste', ()
   }
   assert.ok(reached, 'il remonte dans l\'area 0');
   // il peut tomber dans une poche de vide juste sous l'area 0, mais il remonte aussitôt : il n'y travaille pas
+  assert.ok(below < after*0.1, `il reste dans l'area 0 (${below} ticks sur ${after} dans l'area 1)`);
+});
+
+/* ---------- focus d'area ---------- */
+
+test('focus d\'area : un numéro d\'area valide est gardé, le reste est ignoré', () => {
+  assert.deepEqual(sanitizeFocus({ area:2, coal:'only' }), { area:2, coal:'only' });
+  for(const area of [-1, 1.5, '1', null, NaN, Infinity, FOCUS.maxArea+1, { k:1 }, [1]])
+    assert.deepEqual(sanitizeFocus({ area }), {}, String(area));
+  assert.deepEqual(activeOres({ area:1, iron:'target' }), ['iron'], 'l\'area n\'est pas un minerai');
+});
+
+test('focus d\'area : une area pas encore débloquée ne compte pas (toujours plus profond)', () => {
+  const G = newSession(2), m = G.miners[0];
+  setFocus(G, m, { area:1 });
+  assert.equal(G.unlockedAreas, 1);
+  assert.equal(focusArea(G, m), null);
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  assert.equal(focusArea(G, m), 1);
+});
+
+test('focus d\'area : il l\'emporte sur le focus minerai pour choisir l\'area', () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  m.y = areaTop(1)+4;
+  setFocus(G, m, { area:0, coal:'only' });
+  G.areas[0].ores.coal.left = G.areas[0].ores.coal.total;
+  assert.equal(focusGoal(G, m), 0, 'il rejoint l\'area 0');
+  m.y = areaTop(0)+2;
+  assert.equal(focusGoal(G, m), null, 'déjà dans l\'area 0 : il y reste');
+});
+
+test('focus d\'area : le focus minerai ne cherche que dans l\'area visée', () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  setFocus(G, m, { area:1, coal:'only' });
+  G.areas[1].ores = { coal:{ total:10, left:0 }, iron:{ total:100, left:100 } };   // plus de charbon dans l'area 1…
+  G.areas[0].ores.coal.left = G.areas[0].ores.coal.total;         // … mais plein dans l'area 0
+  dropDepleted(G, m);
+  assert.deepEqual(m.prefs.focus, { area:1 }, 'le focus charbon saute, le focus d\'area reste');
+  assert.match(m.focusNotice.msg, /area 1/);
+});
+
+test('focus d\'area : son area vidée (< 20 % de ses minerais), il repasse en « Plus profond » et le joueur est prévenu', () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  setFocus(G, m, { area:0, coal:'target' });
+  G.areas[0].ores = { coal:{ total:100, left:20 } };
+  G.areas[1].ores = { coal:{ total:100, left:100 } };            // du charbon ailleurs : le focus charbon garde un sens
+  dropDepleted(G, m);
+  assert.deepEqual(m.prefs.focus, { area:0, coal:'target' }, '20 % restants : rien ne saute');
+  G.areas[0].ores.coal.left = 19;
+  dropDepleted(G, m);
+  assert.deepEqual(m.prefs.focus, { coal:'target' }, 'le focus area saute, le focus minerai reste (charbon en area 1)');
+  assert.equal(m.focusNotice.kind, 'area');
+  assert.match(m.focusNotice.msg, /area 0/);
+  assert.equal(focusGoal(G, m) === 0, false);
+});
+
+test('focus d\'area 0 avec l\'area 1 débloquée : il remonte dans l\'area 0 et n\'en sort plus', () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  const y = areaTop(1)+4; m.x = 25; m.y = y; m.mode = 'work';
+  G.tiles[y][25] = 0; G.tiles[y+1][25] = IDS.stone; G.mobs = [];
+  setFocus(G, m, { area:0 });
+  let reached = false, after = 0, below = 0;
+  for(let i=0;i<3000;i++){
+    tick(G);
+    if(m.mode!=='work') continue;
+    if(areaOf(m.y)===0) reached = true;
+    if(reached){ after++; if(areaOf(m.y)===1) below++; }
+  }
+  assert.ok(reached, 'il remonte dans l\'area 0');
   assert.ok(below < after*0.1, `il reste dans l'area 0 (${below} ticks sur ${after} dans l'area 1)`);
 });
 

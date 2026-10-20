@@ -255,8 +255,10 @@ export const PREF_OPTIONS = {
    valFactor: poids d'un minerai visé = valFactor × le plus gros poids de minerai (provisoire).
    delayTicks : en jeu normal, un changement prend effet ce nombre de ticks après sa réception (laisse au navigateur
                 le temps de l'appliquer au même tick que le serveur).
-   maxChanges : changements max par joueur et par session (protège l'enregistrement). */
-export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, delayTicks:20, maxChanges:500 };
+   maxChanges : changements max par joueur et par session (protège l'enregistrement).
+   Focus d'area (même enregistrement, clé « area ») : le mineur travaille dans cette area, sans descendre plus bas ni
+   viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
+export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, delayTicks:20, maxChanges:500, maxArea:99 };
 
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */

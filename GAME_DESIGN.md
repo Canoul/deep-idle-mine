@@ -126,6 +126,15 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choi
 - **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
 - Le serveur **enregistre chaque changement avec son tick** (comme un départ) et le rejoue : la partie affichée et la partie du serveur restent identiques. Un changement prend effet ~1 s de jeu après le clic *(valeur de config)*.
 
+### Focus area
+Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir **où** travaille le mineur du joueur :
+- **Plus profond** *(option de base)* : comportement normal, il descend jusqu'à l'area débloquée la plus profonde.
+- **Une area précise** (0, 1, 2…) : seules les **areas débloquées** sont proposées (la liste grandit avec les déblocages). Le mineur rejoint cette area (il descend ou remonte), y reste, ne descend pas plus bas et **ne vise que les cibles de cette area** (minerais et treasures).
+- **Area vidée** *(décision ferme)* : s'il reste moins de **20 %** *(même seuil que le focus minerai, provisoire)* de tous les minerais de l'area choisie, le focus area **saute** : retour à « Plus profond », avec un message dans le panneau. Le mineur ne perd pas la fin de session à creuser des galeries vides (en simulation, 3 mineurs vident l'area 0 en ~25 min).
+- **Avec le focus minerai** *(décision ferme)* : le focus area décide **où** va le mineur, le focus minerai décide **ce qu'il vise** dans cette area. Si l'area choisie passe sous le seuil pour un minerai visé, ce focus minerai saute (message dans le panneau), le focus area reste.
+- Choisir une area plus haute empêche de débloquer les suivantes (rien n'est miné dans la dernière) : c'est un arbitrage du joueur.
+- Même enregistrement que le focus minerai (clé `area`) : changement enregistré avec son tick par le serveur, puis rejoué.
+
 ### Caractéristiques
 | Stat | Rôle | Valeur de base |
 |---|---|---|
