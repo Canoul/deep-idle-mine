@@ -14,5 +14,10 @@
     "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
 }

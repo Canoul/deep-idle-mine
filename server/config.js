@@ -52,10 +52,12 @@ export const LIMITS = {
 
 /* Sessions de jeu. dev : mode développeur (npm run dev ou DIM_DEV=1) : toutes les vitesses, panneau dev, fin de
    session libre. Jamais en ligne. replayWorkers : rejeux de fin de session en parallèle (un thread chacun). */
+/* Sur l'offre gratuite de Render (0,1 CPU), un rejeu à 3 joueurs prend ~11 min (~67 s sur un cœur entier) :
+   un seul rejeu à la fois et un délai large. DIM_REPLAY_WORKERS / DIM_REPLAY_TIMEOUT_MIN pour changer. */
 export const GAME_SERVER = {
   dev: process.env.DIM_DEV === '1',
-  replayWorkers: Math.max(1, +(process.env.DIM_REPLAY_WORKERS || 2)),
-  replayTimeout: 10 * MIN,          // un rejeu plus long est abandonné (puis retenté)
+  replayWorkers: Math.max(1, +(process.env.DIM_REPLAY_WORKERS || (ON_RENDER ? 1 : 2))),
+  replayTimeout: Math.max(1, +(process.env.DIM_REPLAY_TIMEOUT_MIN || (ON_RENDER ? 40 : 10))) * MIN,   // un rejeu plus long est abandonné (puis retenté)
   settleEvery: MIN,                 // vérification des sessions arrivées à leur fin (joueur absent)
   keepEnded: 30 * DAY,              // sessions terminées gardées ce temps, puis supprimées
   startsPerHour: 30,                // sessions lancées par compte et par heure (anti spam)

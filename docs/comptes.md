@@ -89,6 +89,10 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
 
 - `npm start` → http://localhost:8000. Les comptes vont dans `data/accounts.json` (ignoré par git).
   `DIM_DATA_DIR=…` pour un autre dossier, `PORT=…` pour un autre port.
+- **En ligne : PostgreSQL** (`DATABASE_URL=postgres://…`) au lieu des fichiers, qui seraient effacés à chaque
+  redéploiement. Une seule table `dim_data (ns, key, value jsonb)`, une ligne par compte, connexion, inventaire,
+  préférences et session de jeu (`server/db/postgres.js`). Le serveur garde tout en mémoire et écrit chaque
+  modification (en file, retentée en cas d'échec). Mise en ligne pas à pas : `docs/deploiement.md`.
 - Sans serveur de jeu (page servie par un simple serveur de fichiers), le jeu démarre **hors ligne**,
   sans compte, comme avant.
 
