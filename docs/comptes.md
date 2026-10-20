@@ -112,11 +112,26 @@ d'une session terminée (après l'avoir rejouée). L'ancienne sauvegarde dans le
 | `POST /api/game/finish` | `{}` | `{ session }` ; 409 `too_early` + `Retry-After` |
 | `POST /api/game/ack` | `{ id }` | 204 (bilan vu) |
 
+## Groupes (`server/party/`)
+
+Salle d'attente en mémoire avant une session commune (règles : GAME_DESIGN §6 « Jouer à plusieurs »).
+`POST /api/game/start` passe par le service des groupes : seul = session solo, en groupe = seul le chef lance,
+pour tous les membres (403 `not_leader` sinon). L'équipe vient toujours du serveur, jamais du navigateur.
+
+| Route | Corps | Réponse |
+|---|---|---|
+| `GET /api/party` | | `{ party, invites, session }` (appelé toutes les 2,5 s par le lobby : signe de vie) |
+| `POST /api/party/create` | `{}` | `{ party }` (garde son groupe s'il existe) |
+| `POST /api/party/join` | `{ code }` | `{ party }` ; 404 `party_not_found`, 409 `party_full`, 429 après 20 codes faux / 15 min |
+| `POST /api/party/invite` | `{ id }` (ID de compte) | `{ party }` ; 404 `account_not_found`, 30 invitations / h, 10 en attente / groupe |
+| `POST /api/party/decline` | `{ code }` | `{ ok }` |
+| `POST /api/party/leave` | `{}` | `{ party: null }` |
+| `POST /api/party/kick` | `{ id }` | `{ party }` (chef seulement) |
+
 ## Évolutions prévues par l'architecture
 
-- **Stockage** : `store.js` a une petite interface asynchrone. Passer à SQLite (intégré à Node 22+) ou
-  PostgreSQL = réécrire ce seul fichier.
-- **Nouvelles routes** (sauvegarde, amis, lobby) : un module `server/<sujet>/routes.js` ajouté dans
+- **Stockage** : fait (PostgreSQL via `DATABASE_URL`, `server/db/postgres.js`).
+- **Nouvelles routes** (amis, social) : un module `server/<sujet>/routes.js` ajouté dans
   `server/app.js` ; chaque route reçoit déjà le compte connecté (`ctx.me`).
 - **Ménage** des comptes invités jamais revenus (connexion expirée = compte inaccessible) : à ajouter
   quand le volume le justifiera.
