@@ -188,3 +188,43 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
   await game.ack(OTHER, session.id);   // sans effet
   assert.equal((await game.state(ME)).session.id, session.id);
 });
+
+/* ---------- four ---------- */
+
+test('four : poser, fondre en temps réel (page fermée), récupérer — le serveur fait foi', async () => {
+  const { game, store, advance } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }, { item:'Charbon', qty:50 }], nextUid:1, credited:[] });
+  let r = await game.furnace(ME, { action:'load', furnace:0, slot:'ore', item:'Fer', qty:30, opId:'op-load-ore' });
+  r = await game.furnace(ME, { action:'load', furnace:0, slot:'fuel', item:'Charbon', qty:50, opId:'op-load-fuel' });
+  assert.deepEqual(r.inventory.slots, []);
+  assert.equal(r.furnaces.list.length, 1); assert.equal(r.furnaces.max, 3);
+  advance(150_000);                                                // 2 lingots et demi
+  const st = await game.state(ME);
+  assert.deepEqual(st.furnaces.list[0].out, { item:'Lingot de fer', qty:2 });
+  r = await game.furnace(ME, { action:'collect', furnace:0, opId:'op-collect-1' });
+  assert.deepEqual(r.inventory.slots, [{ item:'Lingot de fer', qty:2 }]);
+  assert.equal(r.furnaces.list[0].ore.qty, 10);
+});
+
+test('four : refus lisibles, rien ne bouge ; demande rejouée appliquée une fois', async () => {
+  const { game, store } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }], nextUid:1, credited:[] });
+  await assert.rejects(game.furnace(ME, { action:'load', furnace:0, slot:'ore', item:'Fer', qty:31, opId:'op-trop-1' }), { code:'not_enough' });
+  await assert.rejects(game.furnace(ME, { action:'load', furnace:2, slot:'ore', item:'Fer', qty:1, opId:'op-cadenas' }), { code:'bad_furnace' });
+  await assert.rejects(game.furnace(ME, { action:'load', furnace:0, slot:'ore', item:'Fer', qty:1 }), { code:'bad_request' });
+  const o = { action:'load', furnace:0, slot:'ore', item:'Fer', qty:10, opId:'op-double-clic' };
+  await game.furnace(ME, o); const r = await game.furnace(ME, o);
+  assert.deepEqual(r.inventory.slots, [{ item:'Fer', qty:20 }]);
+  assert.deepEqual(r.furnaces.list[0].ore, { item:'Fer', qty:10 });
+});
+
+test('four : demandes simultanées (deux onglets) sans duplication', async () => {
+  const { game, store } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:15 }], nextUid:1, credited:[] });
+  const res = await Promise.allSettled([1, 2, 3].map(i =>
+    game.furnace(ME, { action:'load', furnace:0, slot:'ore', item:'Fer', qty:10, opId:'op-onglet-' + i })));
+  assert.equal(res.filter(x => x.status === 'fulfilled').length, 1);
+  const st = await game.state(ME);
+  assert.deepEqual(st.inventory.slots, [{ item:'Fer', qty:5 }]);
+  assert.deepEqual(st.furnaces.list[0].ore, { item:'Fer', qty:10 });
+});

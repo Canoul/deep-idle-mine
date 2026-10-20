@@ -239,6 +239,18 @@ def main():
     rect(goblin, 5, 13, 6, 3, hexc('#7a5230'))  # tunique
     tex['goblin'] = goblin
 
+    # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
+    for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
+                                    ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
+                                    ('ingot_diamond', '#5fe3ec', '#d6fbff', '#2a9aa6')]:
+        ing = blank()
+        for i, yy in enumerate(range(6, 12)):
+            rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))
+        rect(ing, 4, 6, 8, 1, hexc(light))
+        rect(ing, 5, 7, 3, 1, hexc(light))
+        rect(ing, 2, 11, 12, 1, hexc(dark))
+        tex[name] = ing
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

@@ -8,7 +8,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', treasure:'Treasure', blueprint:'Blueprint', gem:'Gemme',
-                           mob:'Butin de mob', stuff:'Équipement' };
+                           mob:'Butin de mob', stuff:'Équipement',
+                           combustible:'Combustible', ingot:'Lingot' };
 /* objets rares du butin : mis en avant dans la fenêtre d'ouverture */
 const RARE = new Set(['blueprint', 'gem']);
 const isRare = item => RARE.has(itemDef(item)?.cat) && item !== 'Blueprint parts';

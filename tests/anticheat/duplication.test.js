@@ -3,7 +3,7 @@
    partage du coffre, fin et départ de session, versement dans l'inventaire, sauvegarde. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ITEMS, SHARE, INVENTORY, TREASURE } from '../../src/config.js';
+import { ITEMS, SHARE, INVENTORY, TREASURE, BLOCKS } from '../../src/config.js';
 import { mulberry32 } from '../../src/core/rng.js';
 import { shareChest } from '../../src/meta/share.js';
 import { newSession, endSession, leaveSession, tick } from '../../src/sim/session.js';
@@ -171,6 +171,8 @@ test('sauvegarde : quantités trafiquées rejetées (Infinity, négatif, décima
 
 /* ---------- vol du gobelin ---------- */
 
+const isMineOre = k => Object.values(BLOCKS).some(b => b.type==='ore' && b.name===k);
+
 test('gobelin : le vol ne crée jamais de matière, ni quantité négative, sur 200 inventaires aléatoires', async () => {
   const { worldFrom, run } = await import('../helpers.js');
   const r = mulberry32(77);
@@ -184,7 +186,7 @@ test('gobelin : le vol ne crée jamais de matière, ni quantité négative, sur 
     for(const k of NAMES){
       const after = m.inv[k] || 0;
       assert.ok(Number.isInteger(after) && after >= 0 && after <= (inv[k] || 0), `${k} : ${inv[k]} → ${after}`);
-      if(ITEMS[k].cat !== 'ore') assert.equal(after, inv[k] || 0, `${k} n'est pas un minerai : jamais volé`);
+      if(!isMineOre(k)) assert.equal(after, inv[k] || 0, `${k} n'est pas un minerai : jamais volé`);
       lost += (inv[k] || 0) - after;
     }
     assert.equal(lost, m.stats.stolen, 'chaque unité disparue est un vol compté');

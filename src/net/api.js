@@ -48,4 +48,5 @@ export const gameApi = {
   finish: ()           => request('POST', '/api/game/finish', {}),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
+  furnace: op          => request('POST', '/api/game/furnace', op),   // { action, furnace, slot, item, qty, opId }
 };

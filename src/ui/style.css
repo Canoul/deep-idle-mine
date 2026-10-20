@@ -176,3 +176,37 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .bar>i.indet{width:35%;animation:indet 1.2s ease-in-out infinite}
 @keyframes indet{0%{margin-left:-35%}100%{margin-left:100%}}
 @media(max-width:600px){.slots{grid-template-columns:1fr}}
+
+/* ---- onglet Four ---- */
+.furnWrap{max-width:760px;margin:0 auto;padding:20px 16px}
+.furnList{display:flex;flex-direction:column;gap:12px}
+.furn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.furn h3{margin:0 0 10px;font-size:15px}
+.furn.locked{opacity:.55}
+.furn.locked h3{margin:0}
+.fgrid{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:14px;max-width:420px}
+.fin{display:flex;flex-direction:column;gap:8px}
+.fslot{width:64px}
+.fslot.empty{cursor:pointer;border-style:dashed}
+.fslot.empty:hover{border-color:var(--acc)}
+.fslot.out{border-color:#6b5a2e}
+.fhint{font-size:10px;color:var(--mut);text-align:center;line-height:1.1;padding:2px}
+.farrow{display:flex;align-items:center;gap:6px}
+.farrow .bar{flex:1;height:10px}
+.farrow .bar i{background:linear-gradient(90deg,#ff9f1c,#ffd23f);transition:width .25s linear}
+.farrow span{color:var(--mut);font-size:18px}
+.fstat{margin:10px 0 0;color:var(--txt)}
+.view[data-view="four"]{position:relative}
+#fpick{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:10vh 12px 12px;z-index:9}
+#fpick .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:20px 24px;max-width:420px;width:92%}
+#fpick h3{margin:0 0 12px;color:var(--acc)}
+#fpick img{width:24px;height:24px;image-rendering:pixelated}
+.fcur{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:6px 8px;border-radius:6px;background:#16120f}
+.fcur span{flex:1}
+.fopts{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.fopt{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;text-align:left;padding:6px 8px}
+.fopt small{display:block;font-size:11px}
+.fopt b{font-variant-numeric:tabular-nums}
+.fopt[disabled]{opacity:.4;cursor:not-allowed}
+.fqty{display:flex;gap:6px}
+.fqty input{flex:1;min-width:0}

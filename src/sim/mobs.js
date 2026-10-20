@@ -1,12 +1,15 @@
 /* Mobs : bestioles et gobelins (se déplacent, taclent ; le gobelin vole des minerais)
    et mimics (immobiles, faux minerais, générés avec l'area). */
-import { W, DT, CFG, MOBS, ITEMS } from '../config.js';
+import { W, DT, CFG, MOBS, BLOCKS } from '../config.js';
 import { maxRow, isAir, supported, areaOf } from './world.js';
 import { log } from './log.js';
 
 /* mobs qui marchent et taclent (même physique que le mineur) */
 export const WALKERS = new Set(['bestiole', 'gobelin']);
 export const isWalker = o => WALKERS.has(o.type);
+
+/* ce que vole un gobelin : les minerais de la mine (blocs de type ore, charbon compris), avec leur poids */
+const ORE_W = new Map(Object.values(BLOCKS).filter(b=>b.type==='ore').map(b=>[b.name, b.w]));
 
 const manhattan = (a,b) => Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 
@@ -53,12 +56,12 @@ function goblinSteal(G,o){
   o.steal=(o.steal||0)+DT;
   if(o.steal < MOBS.goblinStealEvery-1e-9) return;
   o.steal-=MOBS.goblinStealEvery;
-  const ores=Object.keys(m.inv).filter(k=>ITEMS[k]?.cat==='ore' && m.inv[k]>0);
+  const ores=Object.keys(m.inv).filter(k=>ORE_W.has(k) && m.inv[k]>0);
   const total=ores.reduce((s,k)=>s+m.inv[k],0);
   if(!total) return;
   let r=Math.floor(G.rng()*total), name=ores[0];
   for(const k of ores){ if(r<m.inv[k]){ name=k; break; } r-=m.inv[k]; }
-  m.inv[name]--; m.load-=ITEMS[name].w;
+  m.inv[name]--; m.load-=ORE_W.get(name);
   if(!m.inv[name]) delete m.inv[name];
   G.stats.stolen++; m.stats.stolen++;
   log(G, `👺 Un gobelin vole 1 ${name} à ${m.name}`);
