@@ -117,10 +117,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(!live.has(rec.id)) live.open(rec);
     return true;
   }
-  /* la partie rattrape le temps écoulé ; renvoie son tick (null si elle vient de se terminer) */
+  /* la partie rattrape le temps écoulé, par blocs de maxStep ticks (les demandes d'affichage passent entre deux) ;
+     renvoie son tick (null si elle vient de se terminer) */
+  const maxStep = config.maxStep ?? 200;
   async function catchUp(rec){
     if(!ensureLive(rec)) return null;
-    await live.advance(rec.id, targetTick(rec));
+    const target = targetTick(rec);
+    while(live.has(rec.id) && live.tickOf(rec.id) < target)
+      await live.advance(rec.id, Math.min(target, live.tickOf(rec.id) + maxStep));
     return live.has(rec.id) ? live.tickOf(rec.id) : null;
   }
 
@@ -244,7 +248,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
             rec.status = 'done'; rec.endedAt = now;
             rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
           } else {
-            if(await catchUp(rec) === null) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+            if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
             rec.leaves.push({ account: me.id, tick: await live.leave(rec.id, me.id), at: now });
           }
           await store.putGameSession(rec);
@@ -268,13 +272,25 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
           const focus = sanitizeFocus(f);
-          if(await catchUp(rec) === null) fail('session_over', 409, 'La session est terminée.');
+          if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
           const ev = { account: me.id, tick: await live.focus(rec.id, me.id, focus), focus };
           rec.focus.push(ev);
           await store.putGameSession(rec);
           return { event: ev };
         });
       });
+    },
+
+    /* la partie, pour l'afficher : depuis le tick since que le navigateur a déjà (absent : la carte entière).
+       Répond tout de suite avec l'état actuel (c'est pump qui fait avancer la partie). Lecture seule.
+       Partie terminée : view null (le résultat arrive). */
+    async view(me, since){
+      const rec = await activeOf(me.id);
+      if(!rec) fail('no_session', 404, 'Aucune session en cours.');
+      const s = Number.isSafeInteger(since) && since >= 0 ? since : null;
+      const ok = rec.status === 'running' && ensureLive(rec);
+      return { view: ok ? await live.view(rec.id, s) : null, status: ok ? 'running' : 'settling',
+               clock: rec.dev ? rec.clock : null, now: clock() };
     },
 
     /* mode dev : vitesse et pause de la session (l'horloge est sur le serveur, la partie aussi) */
@@ -284,7 +300,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
       return withLock('sess:' + rec0.id, async () => {
         const rec = await store.getGameSession(rec0.id);
-        const c = { ...rec.clock, tick: targetTick(rec), at: clock() };
+        /* l'horloge repart d'où la partie en est vraiment (si elle n'arrive pas à suivre la vitesse demandée) */
+        const c = { ...rec.clock, tick: Math.min(targetTick(rec), live.tickOf(rec.id) ?? Infinity), at: clock() };
         if(GAME.devSpeeds.includes(body.speed)) c.speed = body.speed;
         if(typeof body.paused === 'boolean') c.paused = body.paused;
         rec.clock = c;

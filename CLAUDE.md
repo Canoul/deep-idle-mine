@@ -64,7 +64,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
 - **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
-- **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune ; chaque navigateur calcule la même partie, le serveur la rejoue et partage le coffre (GAME_DESIGN §6 « Jouer à plusieurs »).
+- **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent (GAME_DESIGN §6).
 - **En ligne** sur Render + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
@@ -86,15 +86,15 @@ src/recipes.js          recettes de craft (fichier séparé, demandé par le cr�
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; craft : recettes ; stuff : pièces portées)
-src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire / rejouer une session depuis l'enregistrement du serveur, préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
+src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire une session depuis l'enregistrement du serveur ; view : diffusion de la partie vers les navigateurs ; préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
 src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), craft, stuff, account (connexion, mon compte), style.css
-src/main.js             lobby (rafraîchi : groupe, invitations) → session du serveur → boucle de frames (suit le temps réel ; dev : multiplicateur de ticks) ; à plusieurs, relit la session (départs, fin)
+src/main.js             lobby (rafraîchi : groupe, invitations) → session : reçoit la partie du serveur (/api/game/view) et l'affiche (aucune simulation dans le navigateur) → bilan
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
-                        game/ (service : sessions qui font foi ; replay + replay-worker : rejeu dans un thread ; routes ; store : inventaires, préférences, sessions),
+                        game/ (service : sessions qui font foi ; live + live-game + live-worker : la partie de chaque session, en direct, dans son fil d'exécution ; routes ; store),
                         party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), db/ (postgres : stockage en ligne)
 docs/                   documentation technique (comptes.md, deploiement.md : Render + Neon), journal de debug des sessions Claude (debug.md)
 textures/               PNG 16×16

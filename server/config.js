@@ -60,6 +60,7 @@ export const GAME_SERVER = {
   dev: process.env.DIM_DEV === '1',
   maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 2 : 12))),
   pumpEvery: 200,                   // ms
+  maxStep: 200,                     // ticks calculés d'un bloc : entre deux blocs, les demandes d'affichage passent
   keepEnded: 30 * DAY,              // sessions terminées gardées ce temps, puis supprimées
   startsPerHour: 30,                // sessions lancées par compte et par heure (anti spam)
 };

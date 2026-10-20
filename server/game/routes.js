@@ -13,6 +13,10 @@ export function gameRoutes(game){
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },
     'POST /api/game/start':  async ctx => { needMe(ctx); return [201, await game.start(ctx.me, obj(ctx.body))]; },
     'POST /api/game/leave':  async ctx => { needMe(ctx); return game.leave(ctx.me, obj(ctx.body)); },
+    'GET /api/game/view':    async ctx => { needMe(ctx);
+      const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');
+      return game.view(ctx.me, since === null || since === '' ? null : Number(since)); },
+    'POST /api/game/clock':  async ctx => { needMe(ctx); return game.devClock(ctx.me, obj(ctx.body)); },
     'POST /api/game/focus':  async ctx => { needMe(ctx); return game.focus(ctx.me, obj(ctx.body)); },
     'POST /api/game/finish': async ctx => { needMe(ctx); return game.finish(ctx.me); },
     'POST /api/game/open':   async ctx => { needMe(ctx); return game.open(ctx.me, obj(ctx.body)); },

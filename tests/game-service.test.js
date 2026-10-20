@@ -108,9 +108,11 @@ test('quitter : le départ a lieu tout de suite, au tick de la partie du serveur
   const { game, advance, store } = setup();
   const { session } = await game.start(ME, {}, team.slice(0, 2));
   advance(10_000);                                   // 10 s réelles à x2 = 20 s de jeu = 200 ticks
+  await game.pump();                                 // le serveur fait avancer la partie
   await game.leave(ME, { tick: 999999 });
   assert.equal((await store.getGameSession(session.id)).leaves[0].tick, 200);
   advance(realDurationMs() - 12_000);                // juste avant la fin
+  await game.pump();
   await game.leave(OTHER, {});
   assert.equal((await store.getGameSession(session.id)).leaves[1].tick, TOTAL_TICKS - 40);
 });
@@ -244,6 +246,7 @@ test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé
   const { game, advance } = setup();
   const { session } = await game.start(ME, {});
   advance(10_000);
+  await game.pump();
   const { event } = await game.focus(ME, { focus:{ coal:'only', stone:'target', iron:'boom' }, tick:5 });
   assert.equal(event.tick, tickAt(10_000, GAME.speed), 'le tick du navigateur est ignoré');
   assert.deepEqual(event.focus, { coal:'only' });
@@ -257,9 +260,11 @@ test('mode dev : vitesse et pause sur le serveur ; la partie suit cette horloge'
   await game.start(ME, {});
   await game.devClock(ME, { speed:20 });
   advance(1000);                                     // 1 s à x20 = 20 s de jeu = 200 ticks
+  await game.pump();
   assert.equal((await game.focus(ME, { focus:{} })).event.tick, 200);
   await game.devClock(ME, { paused:true });
   advance(60_000);
+  await game.pump();
   assert.equal((await game.focus(ME, { focus:{} })).event.tick, 200, 'en pause : la partie n\'avance pas');
   await game.devClock(ME, { paused:false, speed:7 });
   assert.equal((await game.state(ME)).session.clock.speed, 20, 'vitesse hors liste ignorée');

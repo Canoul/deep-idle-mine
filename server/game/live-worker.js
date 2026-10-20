@@ -10,6 +10,7 @@ const OPS = {
   leave:   account => game.leave(account),
   focus:   (account, focus) => game.focus(account, focus),
   finish:  () => game.finish(),
+  view:    since => game.view(since),
 };
 
 parentPort.on('message', ({ id, op, args }) => {

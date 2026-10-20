@@ -5,7 +5,7 @@
    - createLiveRunner() : un fil d'exécution (worker_threads, intégré à Node) par partie (en jeu) ;
    - createInlineRunner() : dans le fil principal (tests, et petit outil de diagnostic).
    Interface : open(record) · has(id) · advance(id, tick) · leave(id, compte) → tick · focus(id, compte, focus) → tick
-               finish(id) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
+               finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
 import { Worker } from 'node:worker_threads';
 import { createLiveGame } from './live-game.js';
 
@@ -43,6 +43,7 @@ function createRunner(spawn, onEnd){
     leave:   (id, account) => get(id).queue('leave', account),
     focus:   (id, account, focus) => get(id).queue('focus', account, focus),
     finish:  id => get(id).queue('finish'),
+    view:    (id, since) => get(id).queue('view', since),
     closeAll(){ for(const id of [...games.keys()]) close(id); },
   };
 }
@@ -74,7 +75,8 @@ export function createLiveRunner({ onEnd = () => {} } = {}){
 export function createInlineRunner({ onEnd = () => {} } = {}){
   return createRunner(record => {
     const game = createLiveGame(record);
-    const ops = { advance: t => game.advance(t), leave: a => game.leave(a), focus: (a, f) => game.focus(a, f), finish: () => game.finish() };
+    const ops = { advance: t => game.advance(t), leave: a => game.leave(a), focus: (a, f) => game.focus(a, f), finish: () => game.finish(),
+                  view: since => game.view(since) };
     return {
       tick: 0,
       call: async (op, ...args) => ({ value: ops[op](...args),

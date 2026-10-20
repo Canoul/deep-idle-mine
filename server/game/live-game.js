@@ -6,12 +6,14 @@
    Les réglages dev (valeurs globales STATS/CFG) ne sont appliqués que pendant les calculs de cette partie. */
 import { buildSession, applyOverrides, applyDueEvents } from '../../src/shared/game.js';
 import { tick, endSession } from '../../src/sim/session.js';
+import { createViewer } from '../../src/shared/view.js';
 
 export function createLiveGame(record){
   const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])] };
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => buildSession(rec));
   const step = target => { while(!G.over && G.ticks < target){ applyDueEvents(G, rec); tick(G); } };
+  const viewer = createViewer(G);   // ce que reçoivent les navigateurs (src/shared/view.js)
   /* un choix prend effet maintenant (avant le prochain tick) ; renvoie le tick à enregistrer */
   const now = (list, ev) => { list.push({ ...ev, tick: G.ticks }); withOverrides(() => applyDueEvents(G, rec)); return G.ticks; };
 
@@ -23,6 +25,8 @@ export function createLiveGame(record){
     advance(target){ withOverrides(() => step(target)); },
     leave(account){ return now(rec.leaves, { account }); },
     focus(account, focus){ return now(rec.focus, { account, focus }); },
+    /* l'affichage pour un navigateur qui a déjà la partie au tick since */
+    view(since){ return viewer(since); },
     /* fin immédiate (mode dev : « fin libre ») : la partie est jouée jusqu'au bout */
     finish(){ withOverrides(() => { step(Infinity); if(!G.over) endSession(G); }); },
   };
