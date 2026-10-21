@@ -159,6 +159,8 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 | Vitesse de montée | Déplacement sur échelle (montée et descente) | 2,25 blocs/s *(provisoire)* |
 | Vitesse de minage | Divise le temps de minage | 1 *(provisoire)* |
 | Dégâts | Dégâts par coup contre les mobs | 5 *(provisoire)* |
+| Vitesse d'attaque | Coups par seconde contre un mob (1,25 = un coup toutes les 0,8 s ; ralentie dans le noir comme le reste) | 1,25 coups/s *(provisoire)* |
+| Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
 
 ### Niveau et XP
@@ -204,23 +206,27 @@ Trois arbres, chacun une suite de 3 étapes ; une étape exige la précédente *
 ### Valeur des stats : unité x *(méthode ferme, chiffres provisoires)*
 Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail du mineur**. Une session vaut 3 600 x.
 - Chaque stat gouverne un temps de la session (T_stat) : la vitesse de minage gouverne le temps de minage, les pods le temps des allers-retours qu'ils déclenchent, etc.
-- **Un bonus b sur une stat de base B fait gagner T_stat × b / (B + b) x par session** (rendements décroissants : doubler une stat divise son temps par 2, pas plus). Pour un petit bonus, 1 point ≈ T_stat / B.
+- **Un bonus b sur une stat de base B fait gagner T_stat × b / (B + b) x par session** (rendements décroissants : doubler une stat divise son temps par 2, pas plus). C'est l'**utilité réelle** (elle baisse quand la stat monte) ; le **prix** d'un point, lui, est linéaire et figé (catalogue ci-dessous).
 - Les ressources se convertissent par le rendement du mineur de base : 522 points de valeur par session, soit **1 charbon ≈ 7 x**, 1 fer ≈ 14 x, 1 or ≈ 28 x, 1 diamant ≈ 55 x.
 - Les valeurs dépendent du niveau du mineur (ex. : quand les pods augmentent, l'oxygène redevient limitant et prend de la valeur) : à recalculer par palier. Outil : `node scripts/stat-values.js`.
 
-Mineur de base, 1 mineur, 5 sessions :
+**Catalogue de prix** (figé le 20/10, mineur de base) : le **prix d'un point** est linéaire (comme le gold d'un item de LoL : +0,1 coûte toujours le dixième de +1), pris à T_stat / B.
 
-| Stat | Base | T_stat (s/session) | 1 point = | +10 % = |
-|---|---|---|---|---|
-| Vitesse de minage | 1 | 1 301 | 1 301 x (+0,1 = 118 x) | 118 x |
-| Vitesse (marche) | 3 | 718 | 239 x (+0,1 = 24 x) | 65 x |
-| Vitesse de montée | 2,25 | 555 | 247 x (+0,1 = 25 x) | 50 x |
-| Pods | 200 | 1 036 | 5,2 x | 94 x |
-| Oxygène | 300 | 109 | 0,4 x | 10 x |
-| Dégâts | 5 | 202 | 40 x | 18 x |
-| Rayon des torches | 5 | 136 | 27 x | 12 x |
-| Torches (nombre) | 20 | 16 | 0,8 x | 1 x |
-| Découverte, vision, boussole, passerelles | – | effet indirect | à mesurer (`npm run weights`) | – |
+| Stat | Base | Prix d'un point | Exemple |
+|---|---|---|---|
+| Vitesse de minage | 1 | 1 300 x | +0,2 = 260 x (Pioche en fer) |
+| Vitesse (marche) | 3 | 240 x | +0,6 = 144 x (Bottes en fer) |
+| Vitesse de montée | 2,25 | 250 x | +0,6 = 150 x (Jambes en fer) |
+| Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
+| Oxygène | 300 | 4 x *(prix « comme frein »)* | +38 = 152 x (Casque en fer) |
+| Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) |
+| Vitesse d'attaque | 1,25 | **157 x** (196 s de combat / 1,25) | +1,9 = 298 x (Gants tactique) |
+| Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +8,3 % = 299 x (Gants d'ouvrier) |
+| Rayon des torches | 5 | 27 x | – |
+| Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
+| Vision, boussole, passerelles, torches | – | ≈ 0 (effet indirect ou trop faible) | – |
+
+*Fortune : valeur calculée sans le coût en pods des doublons (un minerai en plus pèse dans le sac).* *Vitesse d'attaque : le temps de combat n'est que de ≈ 196 s par session, donc le gain réel plafonne bien en dessous du prix linéaire.* Les T_stat se remesurent avec `node scripts/stat-values.js` (≈ 1 min).
 
 ## 4. Outils
 
@@ -367,15 +373,25 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Découverte +1 |
 
+  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
+
+  | Objet | Recette | Effet |
+  |---|---|---|
+  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +1,9 (≈ 300 x) |
+  | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +8,3 % (≈ 300 x) |
+  | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
+
+  **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. *(À définir : d'où il vient, aucun mob ni butin n'en donne encore.)*
+
 ### Stuff (onglet Stuff)
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
-- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
+- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
-- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
+- **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Four (onglet Four)
 - **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.
@@ -401,13 +417,19 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
-- **Recherche** : on choisit le **tier** (seulement le tier 1 pour l'instant), on pose les parts dans la case (c'est **0 ou 100**, un clic pose ou retire), puis **Rechercher** : les 100 parts sont dépensées et un **blueprint du tier 1** arrive dans l'inventaire.
-  - Blueprints du tier 1 = ceux qu'on peut trouver dans un Treasure T1 (les 9).
+- **Recherche** : on choisit le **tier**, on pose les parts dans la case (c'est **0 ou le prix du tier**, un clic pose ou retire), puis **Rechercher** : les parts sont dépensées et un **blueprint du tier** arrive dans l'inventaire.
+
+  | Tier | Prix | Blueprints possibles | Recycler un blueprint du tier |
+  |---|---|---|---|
+  | 1 | 100 parts | ceux d'un Treasure T1 (les 9) | 30 à 60 parts |
+  | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui) | 40 à 70 parts |
+
+  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes du tier d'avant** *(décision ferme)* : l'option « Tier 2 » est grisée (🔒) avec le nombre de recettes qui manquent, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien (Four en fer BP, Boussole en or BP) ne comptent pas : le tier 1 est « fini » avec ses 7 recettes.
   - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise** : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; ceux qui ne débloquent encore rien (Four en fer BP, Boussole en or BP) restent toujours possibles.
   - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
-- **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend **30 à 60 Blueprint parts** *(provisoire)*.
+- **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 30 à 60 (tier 1), 40 à 70 (tier 2) *(provisoire)*.
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
-- Repère : recherche puis recyclage = 100 parts contre 30 à 60 : on perd toujours au change (pas de boucle infinie).
+- Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
