@@ -1070,3 +1070,30 @@ Règles (voir CLAUDE.md) :
   tests camera + nav verts.
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 224 tests du sujet verts (postgres sauté sans base).
   ⚠️ À surveiller au premier démarrage en ligne : chargement du ns `social` dans PostgreSQL (`createPgGameStore`).
+
+### Revue de sécurité (Jules) — branche `jules/securite`
+- **Vérifié, rien à corriger** : historique git (150 commits) sans secret (seulement des exemples `postgres://…` et des
+  mots de passe de test) ; scrypt + sel + `timingSafeEqual`, jeton 256 bits haché, cookie HttpOnly / SameSite=Strict /
+  Secure en ligne (`DIM_SECURE_COOKIE=1` posé par `install.sh`), sessions coupées au changement / à la récupération du
+  mot de passe, purge horaire ; JSON obligatoire (CSRF) ; corps ≤ 16 Ko ; erreurs 500 sans détail ; X-Forwarded-For
+  lu par la droite ; toutes les routes sauf `info` exigent `ctx.me` ; contrôles d'appartenance (kick, invite, join,
+  ack) ; mode dev seulement par variable serveur ; requêtes SQL paramétrées ; `publicAccount` sans empreintes ; pas
+  d'IP ni d'e-mail stockés ; pseudos limités à lettres / chiffres / - / _ et textes échappés ; `npm audit` : 0 ;
+  OVH : 127.0.0.1 + Caddy, env 600, systemd durci, ufw, fail2ban, unattended-upgrades.
+- **Corrigé** :
+  - `server/config.js` `securityHeaders` (CSP `script-src 'self'`, styles et polices Google, `frame-ancestors 'none'`,
+    nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP) posés par `server/app.js` sur toutes les
+    réponses ; HSTS (`hsts`) seulement si le cookie est `Secure`. Aucun script en ligne ni `eval` dans le jeu : rien
+    à adapter. ✅ 0 violation dans la console sur les 12 onglets, une session, le wiki ; polices chargées.
+  - `/prototype/` retiré de `publicPaths` (inutile en ligne, et la CSP le casserait).
+  - `server/accounts/ratelimit.js` : grand ménage des clés sans coup récent quand la taille double (mémoire bornée,
+    sans parcours à chaque tentative).
+  - `.gitignore` : `.env`, `*.env`, `.env.*`.
+  - `tests/anticheat/skills.test.js` : la règle vérifiée était « le nœud d'avant dans la liste » (avant les arbres en
+    étages, 2113f71) ; maintenant « au moins un nœud de l'étage d'avant au max », comme le serveur. Pas une faille.
+- **Tests** : nouveau `tests/security.test.js` (en-têtes sur page / fichier / API / erreurs, HSTS, chemins non servis,
+  limiteur) ; anticheat 67/67 ; account-*, game-http, social, wiki, blocked-names, boot-check, instant-server verts.
+- ⚠️ **Hors code, non vérifiable d'ici** : protection de `main` et 2FA sur GitHub (dépôt public, mise à jour auto
+  depuis `main`) ; sauvegardes Neon ; `sslmode=require` dans `DATABASE_URL`. E-mails de Geoffrey publics (commits,
+  `.mailmap`) : impossible à retirer sans réécrire `main`.
+

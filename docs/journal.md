@@ -18,6 +18,20 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Revue de sécurité
+- **Pour le joueur** : rien de visible. Le jeu est mieux protégé contre les sites malveillants (il ne peut plus être
+  affiché dans un cadre d'un autre site, seuls nos propres scripts peuvent tourner sur la page).
+- **Bilan** : pas de faille trouvée dans les comptes, les mots de passe, les droits, la base ou l'économie ; aucun
+  secret dans le dépôt ni dans son historique. Corrigé : en-têtes de sécurité, ancien prototype plus servi en ligne,
+  fichiers `.env` ignorés par git, limiteur de tentatives à mémoire bornée, un test anti-triche des skills qui était
+  resté sur l'ancienne règle des arbres.
+- **Décisions** : mémo `docs/securite.md` (ce qui est protégé, règles à garder, à faire hors code).
+- **À suivre (hors code)** : protéger la branche `main` sur GitHub et activer la double authentification ; le dépôt
+  est public ; les adresses e-mail de Geoffrey sont visibles dans les commits (voir le mémo).
+- **État** : 🧪 sur la branche `jules/securite` (pas en ligne)
+
+---
+
 ## 21/10/2026 — Jules — Onglet Social, noms des onglets visibles, nouveau nom « Deep Mine Idle »
 - **Pour le joueur** :
   - **onglet Social** (fait par Geoffrey, fusionné et mis au style pixel par Jules) : ajouter un ami par pseudo (ou
