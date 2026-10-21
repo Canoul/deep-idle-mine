@@ -1,7 +1,7 @@
 /* Lobby de l'onglet Mine : les places de la prochaine session (le groupe), Lancer, Inviter (code, lien, ID),
    invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs de test et réglages.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
-import { GAME, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, SESSION_LEN } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN } from '../config.js';
 import { joinLink } from '../shared/party.js';
 
 const $ = id => document.getElementById(id);
@@ -110,7 +110,18 @@ export function setupLobby(h){
     const p = st.prefs ?? {};
     $('prefsBox').innerHTML = Object.entries(PREF_OPTIONS).map(([k, def]) =>
       `<div class="pref"><span>${esc(def.label)}</span><div class="seg">${def.options.map(([v, label], i) =>
-        `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}">${esc(label)}</button>`).join('')}</div></div>`).join('');
+        `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}">${esc(label)}</button>`).join('')}</div></div>`).join('')
+      + (p.helpAllies ? helpList(p.helpIgnore ?? []) : '');
+  }
+
+  /* « Aider allié » : chaque type de mob, avec son dessin, ignoré oui / non (ignoré = il ne va pas aider contre lui) */
+  function helpList(ignored){
+    return `<div class="helpMobs"><div class="mut">Ignorer ces mobs quand un allié est pris en chasse ?</div>${
+      Object.entries(MOB_INFO).map(([t, d]) => {
+        const off = ignored.includes(t);
+        return `<div class="pref"><span class="mobName"><span class="mobIco">${d.under ? `<img src="textures/${d.under}.png" alt="">` : ''}<img src="textures/${d.tex}.png" alt=""></span>${esc(d.name)}</span>
+          <div class="seg"><button data-ign="${t}" data-v="1" class="${off ? 'on' : ''}">Ignoré</button><button data-ign="${t}" data-v="0" class="${off ? '' : 'on'}">Aider</button></div></div>`;
+      }).join('')}</div>`;
   }
 
   function error(msg){ $('lobbyErr').hidden = !msg; $('lobbyErr').textContent = msg || ''; }
@@ -132,6 +143,13 @@ export function setupLobby(h){
   }
 
   $('prefsBox').onclick = e => {
+    const ig = e.target.closest('button[data-ign]');
+    if(ig && !st.offline){
+      const t = ig.dataset.ign, cur = new Set(st.prefs?.helpIgnore ?? []);
+      if(ig.dataset.v === '1') cur.add(t); else cur.delete(t);
+      st.prefs = { ...st.prefs, helpIgnore: [...cur] };
+      renderPrefs(); h.onPrefs(st.prefs); return;
+    }
     const b = e.target.closest('button[data-k]'); if(!b || st.offline) return;
     const k = b.dataset.k, v = PREF_OPTIONS[k].options[+b.dataset.i][0];
     st.prefs = { ...st.prefs, [k]: v };

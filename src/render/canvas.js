@@ -116,7 +116,16 @@ export function createRenderer(cv){
         // visible si un mineur la voit, OU si elle est dans une galerie éclairée (affichage seulement)
         const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
-        if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a'); else blit('bug',px,py,'#d14b4b');
+        if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
+        else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
+        else blit('bug',px,py,'#d14b4b');
+        // occultiste qui canalise : rayon de lumière noire jusqu'au mineur étourdi
+        const tg=o.channel!=null && G.miners.find(m=>m.id===o.channel);
+        if(tg){ const [tx,ty]=drawPos(tg), a=0.55+0.25*Math.sin(frameNow/120);
+          ctx.save(); ctx.lineCap='round';
+          ctx.strokeStyle=`rgba(150,70,220,${a})`; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(px+8,py+7); ctx.lineTo(tx*TILE+8,sy(ty)+7); ctx.stroke();
+          ctx.strokeStyle='rgba(10,0,20,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(px+8,py+7); ctx.lineTo(tx*TILE+8,sy(ty)+7); ctx.stroke();
+          ctx.restore(); }
       }
       if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
     }

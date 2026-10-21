@@ -1,7 +1,7 @@
-/* Gobelin : bestiole voleuse des areas profondes (tacle, vol de minerais, butin, apparition). */
+/* Gobelin : mob voleur (tacle, vol de minerais, butin) et apparitions des mobs (table par area, PV, mimics). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MOBS, ITEMS, BLOCKS, AREA_Y0, AREA_H, TREASURE } from '../src/config.js';
+import { MOBS, ITEMS, BLOCKS, IDS, AREA_Y0, AREA_H, TREASURE } from '../src/config.js';
 import { tackler } from '../src/sim/ai.js';
 import { killMob } from '../src/sim/actions.js';
 import { tick } from '../src/sim/session.js';
@@ -18,6 +18,7 @@ function tackled(inv){
   const G=corridor(), m=G.miners[0];
   m.inv={...inv}; m.load=load(inv); m.ox=300;
   G.mobs.push({id:99, type:'gobelin', x:m.x, y:m.y, hp:1e9, maxhp:1e9, cd:5});
+  run(G, 1);   // le tacle se décide au tick des mobs
   return { G, m };
 }
 
@@ -31,7 +32,7 @@ test('gobelin : il tacle comme une bestiole', () => {
 test('gobelin : un minerai volé toutes les 2 s de tacle, jamais autre chose', () => {
   const T1=TREASURE.tiers[0].item;
   const { G, m } = tackled({ Charbon:3, Fer:2, Pierre:5, Chitine:1, [T1]:1 });
-  run(G, STEAL_TICKS-1);
+  run(G, STEAL_TICKS-2);   // + le tick de tacle de tackled()
   assert.equal(ores(m.inv), 5, 'rien avant 2 s');
   run(G, 1);
   assert.equal(ores(m.inv), 4, 'un minerai à 2 s');
@@ -70,21 +71,45 @@ test('gobelin vaincu : peau de gobelin et chitine', () => {
   assert.equal(ITEMS[MOBS.goblinItem].cat, 'mob');
 });
 
-/* apparition : on force le tirage (rng = 0 : le gobelin est tiré s'il est permis) dans une galerie à la profondeur voulue */
-function spawnAt(row){
+/* apparition : on force les tirages (G.rng renvoie seq dans l'ordre : délai, type, case) dans une galerie de la ligne
+   voulue, sans minerai autour */
+function spawnAt(row, seq, line){
   const rows=['', 'd'.repeat(50)];
-  for(let y=2; y<=row+1; y++) rows.push(y===row ? '#@'+' '.repeat(20)+'#' : '#'.repeat(50));
+  for(let y=2; y<=row+1; y++) rows.push(y===row ? (line ?? '#@'+' '.repeat(20)+'#') : '#'.repeat(50));
   const G=worldFrom(rows), m=G.miners[0];
   m.action={type:'wait',dur:1e9,t:0,data:{}};
-  G.rng=()=>0; G.spawnTimer=0;
+  let i=0; G.rng=()=>seq[i++] ?? 0; G.spawnTimer=0;
   tick(G);
-  return G.mobs.filter(o=>o.type!=='mimic');
+  return G.mobs;
 }
+const rowOf = k => AREA_Y0 + k*AREA_H + 5;
 
-test('apparition : jamais de gobelin avant l\'area 3, possible à partir de l\'area 3', () => {
-  const before=spawnAt(AREA_Y0 + (MOBS.goblinMinArea-1)*AREA_H + 5);
-  assert.equal(before.length, 1); assert.equal(before[0].type, 'bestiole');
-  const after=spawnAt(AREA_Y0 + MOBS.goblinMinArea*AREA_H + 5);
-  assert.equal(after.length, 1); assert.equal(after[0].type, 'gobelin');
-  assert.equal(after[0].hp, MOBS.goblinHp(0));
+test('apparition : type tiré selon l\'area du mineur (table MOBS.spawnTable), PV selon l\'area où il naît', () => {
+  const cases = [   // [area, tirage du type, type attendu, PV attendus]
+    [0, 0.1,  'bestiole',   50],
+    [1, 0.1,  'bestiole',   57],     // 50 × 1,15 = 57,4999… (arrondi)
+    [1, 0.7,  'gobelin',    100],    // gobelin dès l'area 1 : 100 × 1,15^(1−1)
+    [3, 0.3,  'gobelin',    132],    // 100 × 1,15²
+    [4, 0.1,  'gobelin',    152],
+    [4, 0.75, 'occultiste', 100],    // occultiste dès l'area 4
+    [5, 0.75, 'occultiste', 115],
+  ];
+  for(const [k, r, type, hp] of cases){
+    const mobs = spawnAt(rowOf(k), [0, r, 0]);
+    assert.equal(mobs.length, 1, `area ${k}, tirage ${r}`);
+    assert.equal(mobs[0].type, type, `area ${k}, tirage ${r}`);
+    assert.equal(mobs[0].hp, hp, `PV area ${k}`); assert.equal(mobs[0].maxhp, hp);
+  }
+  assert.deepEqual(Object.values(MOBS.spawnTable).map(t => Math.round(Object.values(t).reduce((a, b) => a + b, 0) * 100)),
+    [100, 100, 100, 100, 100, 100], 'chaque ligne de la table fait 100 %');
+});
+
+test('apparition : mimic = un minerai de la roche proche devient un mimic caché (aucun sans minerai)', () => {
+  assert.equal(spawnAt(rowOf(0), [0, 0.9, 0]).length, 0, 'pas de minerai : pas de mimic');
+  const line = '#@' + ' '.repeat(5) + 'c' + ' '.repeat(14) + '#';   // un charbon à 6 cases
+  const mobs = spawnAt(rowOf(2), [0, 0.9, 0], line);
+  assert.equal(mobs.length, 1); const o = mobs[0];
+  assert.equal(o.type, 'mimic'); assert.equal(o.revealed, false);
+  assert.equal(o.hp, Math.round(50 * 1.15 ** 2));
+  assert.equal(o.ore, IDS.coal); assert.equal(o.x, 7, 'à la place du charbon (la roche ne change pas)');
 });

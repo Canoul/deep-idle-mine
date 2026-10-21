@@ -53,7 +53,12 @@ export const TEAM = [
 export const DEFAULT_MINERS = 3;
 
 /* préférences de l'IA par défaut (chaque mineur en reçoit une copie) */
-export const PREFS = { priority:'minerais', fightMobs:true };
+/* helpAllies : aide ses alliés pris en chasse par un mob (option « Aider allié ») ; helpIgnore : types de mob pour
+   lesquels il ne va pas aider (liste de clés de MOBS.hpBase) */
+export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
+/* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
+   avant son arrivée et il traverse la mine pour rien (allers-retours mesurés en simulation). Provisoire. */
+export const HELP = { range:20 };
 
 /* Catégories de blocs : chaque bloc a un `type`.
    - terrain  : roche de remplissage (terre, pierre…)
@@ -185,30 +190,47 @@ export const SHARE = { copyToAll:TREASURE.tiers.map(t => t.item) };   // tous le
 /* génération : minerais en filons et vide en poches, de 1 à N cases d'un seul tenant */
 export const GEN = { veinMax:4, airPocketMax:4 };
 
-/* mobs */
+/* mobs (GAME_DESIGN §4). k = numéro de l'area où le mob NAÎT (pas la dernière area débloquée).
+   Valeurs provisoires. */
 export const MOBS = {
-  mimicCount: k => 2 + k,          // mimics par area
-  mimicHp:    k => 25 + 10*k,
+  /* table d'apparition : à chaque apparition, le type est tiré selon l'area du mineur visé (la dernière ligne vaut
+     pour les areas plus profondes). mimic = un minerai de la roche proche devient un mimic caché ; les autres naissent
+     dans une galerie. */
+  spawnTable: [
+    { bestiole:0.8, mimic:0.2 },
+    { bestiole:0.6, gobelin:0.2, mimic:0.2 },
+    { bestiole:0.4, gobelin:0.4, mimic:0.2 },
+    { bestiole:0.2, gobelin:0.6, mimic:0.2 },
+    { gobelin:0.7, occultiste:0.1, mimic:0.2 },
+    { gobelin:0.5, occultiste:0.3, mimic:0.2 },
+  ],
+  /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:100 },
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4 },
+  hpGrowth: 1.15,
+  /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
+  spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
+  firstSpawn: 25,
+  walkerCap:  k => 2 + k,          // mobs qui marchent vivants en même temps (bestioles, gobelins, occultistes ; pas les mimics)
+  spawnMin: 5, spawnMax: 10,       // distance d'apparition autour du mineur visé (Manhattan)
   mimicLoot:  3,                   // minerais rapportés par un mimic vaincu
   mimicRevealDist: 2.3,
-  bugHp:      k => 8 + 4*k,
-  bugCap:     k => 2 + k,          // bestioles vivantes max
-  bugSpawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
-  bugFirstSpawn: 25,
-  bugSpawnMin: 5, bugSpawnMax: 10, // distance d'apparition autour du mineur
   bugLoot: rng => 1 + Math.floor(rng()*2),   // chitine
   bugItem: 'Chitine',              // objet laissé par une bestiole
-  /* gobelin : une bestiole voleuse (même physique, même tacle). Il remplace une partie des apparitions de
-     bestioles (même minuterie, même plafond) dans les areas >= goblinMinArea. Tant qu'il tacle un mineur,
-     il lui vole un minerai (bloc de type ore) toutes les goblinStealEvery secondes : le minerai est perdu. */
-  goblinMinArea: 3,
-  goblinChance: 0.25,              // part des apparitions qui sont des gobelins (dans les areas concernées)
-  goblinHp:   k => 12 + 6*k,       // 30 PV en area 3 (bestiole : 20)
+  /* gobelin : tant qu'il tacle un mineur, il lui vole un minerai (bloc de type ore) toutes les goblinStealEvery
+     secondes : le minerai est perdu. */
   goblinStealEvery: 2,             // secondes de tacle entre deux vols
   goblinItem: 'Peau de gobelin',
   goblinLoot:  rng => 1 + Math.floor(rng()*2),   // peau de gobelin
   goblinChitin: 1,                               // chitine
+  /* occultiste : sort prêt toutes les cooldown s (la première fois cooldown s après son apparition). Il se téléporte à
+     tpDist cases (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint sans miner, puis canalise :
+     la cible est étourdie tant que dure la canalisation (channel s). Provoqué (skill Barbare), il ne lance plus son sort
+     et sa canalisation en cours s'arrête. */
+  occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
 };
+/* PV d'un mob de ce type né dans l'area k */
+export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth ** Math.max(0, k - MOBS.minArea[type]));
 
 /* Niveau du mineur (GAME_DESIGN §3, « Niveau et XP »). L'XP de la session va dans un pot commun, partagé à parts égales
    entre les joueurs présents à la fin (comme le coffre) et versé par le serveur.
@@ -218,7 +240,7 @@ export const MOBS = {
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7 },
-  mob: { bestiole:5, gobelin:10, mimic:5 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -276,7 +298,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth',
-  'ladder','chest','miner','mimic','bug','goblin','torch','stun','winch_rope','winch_top','bucket'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -381,7 +403,7 @@ export const STUFF = {
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
-    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:150 } },
+    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
   },
@@ -414,7 +436,7 @@ export const ITEMS = {
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
-  'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },   // matériau de la Cape de Naingui (d'où il vient : à définir)
+  'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -463,6 +485,14 @@ export const PARTY = { codeLength:6, poll:2500 };
 export const PREF_OPTIONS = {
   priority:  { label:'Priorité',        options:[['minerais','Minerais'], ['descendre','Descendre']] },
   fightMobs: { label:'Face aux mobs',   options:[[true,'Combattre'], [false,'Ignorer']] },
+  helpAllies:{ label:'Aider allié',     options:[[false,'Non'], [true,'Oui']] },
+};
+/* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */
+export const MOB_INFO = {
+  bestiole:   { name:'Bestiole',   tex:'bug' },
+  gobelin:    { name:'Gobelin',    tex:'goblin' },
+  mimic:      { name:'Mimic',      tex:'mimic', under:'iron' },   // le mimic se dessine par-dessus un minerai
+  occultiste: { name:'Occultiste', tex:'occultist' },
 };
 
 /* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre

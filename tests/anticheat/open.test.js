@@ -24,7 +24,7 @@ const qty = async (game, item, who = ME) => (await game.state(who)).inventory.sl
 
 test('objet inconnu, objet qui ne s\'ouvre pas, ou identifiant de demande invalide : refusé', async () => {
   const { game } = await setup();
-  for(const item of [undefined, null, 3, '', 'Charbon', 'Treasure T2', '__proto__', 'constructor', { a:1 }, ['Treasure T1']])
+  for(const item of [undefined, null, 3, '', 'Charbon', 'Chitine', '__proto__', 'constructor', { a:1 }, ['Treasure T1']])
     await assert.rejects(game.open(ME, { item, opId:'op-00000001' }), { code:'bad_item' }, String(item));
   for(const opId of [undefined, 42, '', 'court', 'x'.repeat(65), '../../etc', 'a b c d e f', { id:1 }])
     await assert.rejects(game.open(ME, { item:'Treasure T1', opId }), { code:'bad_request' }, String(opId));

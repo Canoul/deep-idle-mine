@@ -1,12 +1,13 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP } from '../config.js';
 import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT } from './miner.js';
 import { log } from './log.js';
-import { isWalker, canTackle } from './mobs.js';
+import { tackler, channeler, revealMimic } from './mobs.js';
+export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
@@ -15,7 +16,7 @@ export function compassScan(G,m,R){
   for(let y=Math.max(1,m.y-rows); y<=Math.min(maxRow(G),m.y+rows); y++){
     for(let x=Math.max(0,m.x-R); x<=Math.min(W-1,m.x+R); x++){
       const t=G.tiles[y][x];
-      if(isOre(t)) out.push({x,y,t,seen:G.seen[y][x]===1});
+      if(isOre(t) && !G.mimicCells.has(y*W+x)) out.push({x,y,t,seen:G.seen[y][x]===1});   // mimic dévoilé : plus un minerai
     }
   }
   m.pings=out; return out;
@@ -95,7 +96,7 @@ function nearestThreat(G,m){
   for(const o of G.mobs){
     if(o.hp<=0 || m.ignored.has(o.id)) continue;
     const d=Math.hypot(o.x-m.x,o.y-m.y);
-    if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist){ o.revealed=true; log(G,'⚠ Un mimic se dévoile !'); }
+    if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist) revealMimic(G,o);
     if(o.type==='mimic' && !o.revealed) continue;
     if(d>R) continue;   // un mob (bestiole ou mimic dévoilé) ne déclenche le combat que dans le champ de vision
     if(d<bd){bd=d;best=o;}
@@ -188,7 +189,7 @@ function decideWork(G,m){
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x)) known.set(y*W+x,{x,y,t});
+    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -288,8 +289,7 @@ function shiftColumn(G,m,ok=null){
   return stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge});
 }
 
-/* tacle : une bestiole (ou un gobelin) sur la case du mineur l'immobilise jusqu'à ce qu'elle soit tuée */
-export const tackler = (G,m) => G.mobs.find(o=>isWalker(o) && o.hp>0 && o.x===m.x && o.y===m.y && canTackle(G,o,m)) || null;
+/* tacle : src/sim/mobs.js (tackler, réexporté plus haut) */
 
 /* Chantier du treuil (logisticien) : depuis la surface, au milieu de la mine (WINCH.x), il descend (par le treuil déjà
    posé s'il y en a un) et creuse tout droit jusqu'à la ligne visée, puis pose tout le treuil d'un coup. Il remonte
@@ -301,7 +301,17 @@ function decideWinch(G,m){
     if(m.x!==WINCH.x){ if(!stepDir(G,m,Math.sign(WINCH.x-m.x),0,{noBridge:true})) idle(m); return; }
   } else {
     let reason=null;
-    if(m.x!==WINCH.x) reason='treuil';                        // pas dans le puits : il repart d'en haut
+    if(m.x===WINCH.x) m.winchDepth=Math.max(m.winchDepth ?? 0, m.y);
+    else {
+      /* sorti du puits (combat, tacle) : il y retourne par le chemin le plus court s'il est proche, à une hauteur déjà
+         creusée ; sinon il repart d'en haut (avec des mobs résistants, repartir d'en haut à chaque combat tournait en rond) */
+      const top=m.winchDepth ?? 0;
+      const r=top>0 && search(G,m,m.x,m.y,true,(x,y)=>x===WINCH.x && y>=1 && y<=top,CFG.planMaxCost);
+      const st=r && firstStep(r,r.n);
+      if(st && (st.dx||st.dy)){ m.status='Retourne au puits du treuil'; if(!stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})) idle(m,0.3); return; }
+      reason='treuil';                                           // pas dans le puits : il repart d'en haut
+    }
+    if(reason){ /* déjà décidé */ }
     else if(m.ox<=0) reason='oxygène';
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
     else if(left<=m.y/m.carac.climbSpeed*1.25+12) reason='fin de session';
@@ -310,7 +320,7 @@ function decideWinch(G,m){
     if(m.y>=job.bottom){
       G.winch={ x:WINCH.x, bottom:Math.max(G.winch?.bottom ?? 0, m.y) };
       log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`);
-      m.winchJob=null; m.mode='work'; return decideWork(G,m);
+      m.winchJob=null; m.winchDepth=null; m.mode='work'; return decideWork(G,m);
     }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
     m.status='Creuse le puits du treuil';
@@ -318,6 +328,29 @@ function decideWinch(G,m){
   if(stepDir(G,m,0,1)) return;
   log(G, `🪣 ${m.name} ne peut pas creuser plus bas : treuil abandonné`);   // bloc incassable sous lui
   m.winchJob=null; m.mode=m.y>0 ? 'work' : 'surface'; idle(m,0.5);
+}
+
+/* Aider allié (préférence helpAllies) : dès qu'un mob a pris un AUTRE mineur en chasse (état « combat » de la session,
+   o.chase), il va tout de suite le combattre, sauf les types de mob qu'il ignore (prefs.helpIgnore). Pas en retour vers
+   la surface. Le mob mort, il reprend sa décision normale (sa priorité), sans revenir où il était. */
+function helpAlly(G,m){
+  // pas pendant un retour, ni pendant le chantier du treuil (il devrait ensuite le reprendre depuis la surface : boucle)
+  if(!m.prefs.helpAllies || !G.combat || m.mode==='return' || m.mode==='winch' || m.winchJob) return false;
+  const ign=m.prefs.helpIgnore||[];
+  let best=null, bd=Infinity;
+  for(const o of G.mobs){
+    if(o.hp<=0 || o.chase==null || o.chase===m.id || ign.includes(o.type) || m.ignored.has(o.id)) continue;
+    const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y); if(d<=HELP.range && d<bd){ bd=d; best=o; }
+  }
+  if(!best) return false;
+  const ally=G.miners.find(a=>a.id===best.chase);
+  if(bd<=1){ if(m.foe!==best.id){ m.foe=best.id; m.foeHit=G.t; } fight(G,m,best); m.status='Aide '+(ally?.name ?? 'un allié')+' ('+best.type+')'; return true; }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-best.x)+Math.abs(y-best.y)<=1 && !(x===best.x && y===best.y && !isAir(G,x,y)));
+  const s=r && firstStep(r,r.n);
+  if(!s || !(s.dx||s.dy)){ m.ignored.add(best.id); m.foe=null; return false; }   // inatteignable : il le laisse
+  m.status='Va aider '+(ally?.name ?? 'un allié')+' ('+best.type+')';
+  if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return true;
+  idle(m,0.3); return true;
 }
 
 export function decide(G,m){
@@ -335,7 +368,9 @@ export function decide(G,m){
       m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {}); return;
     }
   }
-  // taclé : il ne peut plus bouger, il doit tuer la bestiole (même si « combat » est sur non, même en retour)
+  // canalisation d'un occultiste sur lui : étourdi tant qu'elle dure (il ne peut ni bouger, ni miner, ni frapper)
+  { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true}); return; } }
+  // taclé : il ne peut plus bouger, il doit tuer le mob (même si « combat » est sur non, même en retour)
   { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); m.status='Taclé ! ('+tk.type+')'; return; } }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
@@ -354,6 +389,7 @@ export function decide(G,m){
       if(m.foe!==th.id){ m.foe=th.id; m.foeHit=G.t; }
       fight(G,m,th); return;
     }
+    if(helpAlly(G,m)) return;
   }
   /* chantier du treuil : il arrête ce qu'il fait et remonte (le chantier commence toujours d'en haut) */
   if(m.winchJob && (m.mode==='work' || m.mode==='departure')){

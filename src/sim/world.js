@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, MOBS, GEN, TREASURE, TREASURE_BLOCK, WINCH } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 
@@ -88,13 +88,7 @@ export function genArea(G,k){
     G.ladder.push(new Uint8Array(W));
     G.seen.push(new Uint8Array(W));
   }
-  // mimics : de faux minerais (même tirage que la génération, donc déterministes)
-  shuffle(oreCells, r);
-  const nMim = Math.min(MOBS.mimicCount(k), oreCells.length);
-  for(let i=0;i<nMim;i++){
-    const c=oreCells[i], x=c%W, ry=(c/W)|0, y=areaTop(k)+ry, hp=MOBS.mimicHp(k);
-    G.mobs.push({id:G.mobId++, type:'mimic', x, y, hp, maxhp:hp, revealed:false, ore:grid[c]});
-  }
+  // les mimics ne sont plus placés ici : ils naissent pendant la partie (un minerai de la roche devient un mimic, src/sim/mobs.js)
   /* ores : pour chaque minerai de l'area, le nombre initial et ce qu'il en reste dans la roche (focus minerai) */
   const ores = {};
   for(const n in counts) if(isOre(IDS[n])) ores[n] = { total:counts[n], left:counts[n] };

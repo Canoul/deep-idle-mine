@@ -74,6 +74,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
 - **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent (GAME_DESIGN §6).
 - **En ligne** sur un VPS OVHcloud (Caddy https + service systemd, mise à jour auto depuis `main` toutes les 2 min) + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement-ovh.md` et `deploy/ovh/`. Ancien hébergement Render : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
+- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (formules du créateur, k = area où naît le mob), table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic) et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler

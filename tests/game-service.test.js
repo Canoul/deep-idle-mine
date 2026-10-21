@@ -41,7 +41,7 @@ test('lancer : la session est créée par le serveur (seed, joueur, préférence
   const { session } = await game.start(ME, {});
   assert.equal(session.seed, 4242);
   assert.deepEqual(session.players, [{ account:ME.id, name:'Zoe' }]);
-  assert.deepEqual(session.prefs[ME.id], { priority:'descendre', fightMobs:false });
+  assert.deepEqual(session.prefs[ME.id], { priority:'descendre', fightMobs:false, helpAllies:false, helpIgnore:[] });
   assert.equal(session.speed, GAME.speed);
   assert.equal(session.finishAt - session.startedAt, realDurationMs(GAME.speed));
   assert.equal(session.status, 'running');
@@ -126,7 +126,7 @@ test('groupe : une session pour tous, chacun avec ses préférences, le chef en 
   await game.setPrefs(OTHER, { priority:'descendre', fightMobs:false });
   const { session } = await game.start(ME, {}, team);
   assert.deepEqual(session.players.map(p => p.account), [ME.id, OTHER.id, THIRD.id]);
-  assert.deepEqual(session.prefs[OTHER.id], { priority:'descendre', fightMobs:false });
+  assert.deepEqual(session.prefs[OTHER.id], { priority:'descendre', fightMobs:false, helpAllies:false, helpIgnore:[] });
   for(const who of [ME, OTHER, THIRD]) assert.equal((await game.state(who)).session.id, session.id, 'chacun la voit');
   assert.equal(await game.activeSessionId(THIRD.id), session.id);
 });
@@ -199,8 +199,10 @@ test('redémarrage du serveur : les sessions en cours repartent et se terminent 
 
 test('préférences : seules les valeurs permises sont gardées', async () => {
   const { game } = setup();
-  const { prefs } = await game.setPrefs(ME, { priority:'tout casser', fightMobs:'oui', extra:1 });
-  assert.deepEqual(prefs, { priority:'minerais', fightMobs:true });
+  const { prefs } = await game.setPrefs(ME, { priority:'tout casser', fightMobs:'oui', extra:1, helpAllies:'oui', helpIgnore:'gobelin' });
+  assert.deepEqual(prefs, { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] });
+  const two = await game.setPrefs(ME, { helpAllies:true, helpIgnore:['gobelin', 'gobelin', 'dragon', '__proto__', 7, 'mimic'] });
+  assert.deepEqual(two.prefs, { priority:'minerais', fightMobs:true, helpAllies:true, helpIgnore:['gobelin', 'mimic'] }, 'types connus, sans doublon');
 });
 
 test('mode normal : seed, mineurs de test et réglages dev du navigateur ignorés', async () => {

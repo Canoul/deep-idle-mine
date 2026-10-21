@@ -3,7 +3,7 @@ import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './miner.js';
-import { isWalker } from './mobs.js';
+import { provoke, revealMimic } from './mobs.js';
 import { log } from './log.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
@@ -39,7 +39,7 @@ function fortuneExtra(G,m){
 
 export function mineBlock(G,m,x,y){
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
-  if(mim){ if(!mim.revealed){ mim.revealed=true; log(G,'⚠ Un mimic se cachait dans la roche !'); } return; }
+  if(mim){ revealMimic(G,mim,'⚠ Un mimic se cachait dans la roche !'); return; }   // un mimic se combat, il ne se mine pas
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   const shiny=shinyOf(G,t);
@@ -69,13 +69,17 @@ function openTreasure(G,m,x,y){
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(o.type==='mimic'){
-    G.tiles[o.y][o.x]=0; updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
+    G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
     collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
     log(G, `🗡 ${m.name} : mimic vaincu (+${n} ${b.name})`);
   } else if(o.type==='gobelin'){
     const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
     collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
+  } else if(o.type==='occultiste'){
+    const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng));
+    collect(m,it,ITEMS[it].w ?? 1,n);
+    log(G, `🗡 ${m.name} : occultiste vaincu (+${n} ${it.toLowerCase()})`);
   } else {
     const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
@@ -112,7 +116,7 @@ export function finishAction(G,m,a){
     case 'stun': break;   // étourdi : il ne fait rien pendant toute l'action
     case 'attack': {
       const o=a.data.mob; if(o.hp>0){
-        if(m.skill.taunt && isWalker(o)) o.taunt=m.id;   // provocation : il ne vise plus que ce mineur
+        if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
         o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o);
       } break; }
   }

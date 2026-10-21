@@ -49,7 +49,7 @@ test('parcours : invité, préférences, lancement, fin refusée avant l\'heure,
   const info = (await b('GET', '/api/game/info')).data;
   assert.deepEqual([info.dev, info.speed], [false, 2]);
 
-  assert.deepEqual((await b('POST', '/api/game/prefs', { priority:'descendre' })).data.prefs, { priority:'descendre', fightMobs:true });
+  assert.deepEqual((await b('POST', '/api/game/prefs', { priority:'descendre' })).data.prefs, { priority:'descendre', fightMobs:true, helpAllies:false, helpIgnore:[] });
   const start = await b('POST', '/api/game/start', {});
   assert.equal(start.status, 201);
   assert.equal(start.data.session.prefs[start.data.session.players[0].account].priority, 'descendre');

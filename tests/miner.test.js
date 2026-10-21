@@ -68,7 +68,8 @@ test('tacle : immobilisé tant que la bestiole n\'est pas morte, même avec « c
   const m=G.miners[0]; m.prefs.fightMobs=false; m.ox=300;
   G.mobs.push({id:99,type:'bestiole',x:m.x,y:m.y,hp:30,maxhp:30,cd:5});
   const x0=m.x, y0=m.y;
-  for(let i=0;i<200 && tackler(G,m);i++){ run(G,1); assert.deepEqual([m.x,m.y],[x0,y0]); }
+  run(G,1); assert.ok(tackler(G,m), 'taclé');
+  for(let i=0;i<400 && tackler(G,m);i++){ run(G,1); assert.deepEqual([m.x,m.y],[x0,y0]); }
   assert.equal(tackler(G,m), null, 'il a fini par la tuer');
   assert.equal(G.mobs.filter(o=>o.id===99).length, 0);
 });

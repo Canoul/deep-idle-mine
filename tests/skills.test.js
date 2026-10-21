@@ -8,6 +8,7 @@ import { worldFrom, run } from './helpers.js';
 import { moveT } from '../src/sim/miner.js';
 import { stepDir, finishAction, killMob } from '../src/sim/actions.js';
 import { tackler } from '../src/sim/ai.js';
+import { updateMobs } from '../src/sim/mobs.js';
 import { mulberry32 } from '../src/core/rng.js';
 
 let n = 0; const id = () => 'op-sk-' + (++n);
@@ -127,13 +128,14 @@ test('Barbare : provocation, le mob lâche l\'autre mineur et ne peut plus tacle
   const G = worldFrom(['', '   @@   '], { miners:2 }), [a, b] = G.miners;
   a.x = 3; b.x = 4; a.y = b.y = 1;
   a.skill.taunt = 1; b.prefs.fightMobs = false;
-  const bug = { id:7, type:'bestiole', x:4, y:1, hp:1e9, maxhp:1e9, cd:5 };
+  const bug = { id:7, type:'bestiole', x:4, y:1, hp:1e9, maxhp:1e9, cd:5, grab:b.id };
   G.mobs.push(bug);
   assert.equal(tackler(G, b), bug, 'Bob est taclé');
   finishAction(G, a, { type:'attack', data:{ mob:bug } });
   assert.equal(bug.taunt, a.id);
+  updateMobs(G);
   assert.equal(tackler(G, b), null, 'Bob est libéré : il repart travailler');
-  bug.x = 3; assert.equal(tackler(G, a), bug, 'il ne peut tacler que le barbare');
+  assert.equal(tackler(G, a), bug, 'il ne peut tacler que le barbare (à 1 case de lui)');
   run(G, 30);
   assert.ok(!/Taclé/.test(b.status), `Bob : ${b.status}`);
 });

@@ -165,7 +165,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
-- **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5** (mob de base, sans XP de minerai en plus).
+- **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
 - **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents à la fin, comme le coffre (arrondi vers le bas). **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
 - **Récompense** : **1 point de skill par niveau**, à dépenser dans l'onglet Skills (ci-dessous).
@@ -179,7 +179,7 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
 |---|---|---|---|
 | **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend 1 % de l'oxygène max | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
 | **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | **deux cases côte à côte** : 0/1 **Échelle de 2** (échelle de 2 de haut au lieu de 1, si la case du dessus est vide) · 0/1 **Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
-| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
+| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; un occultiste provoqué ne lance plus son sort | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
 
 - **Affichage** *(décision ferme)* : dans l'onglet Skills, chaque arbre est dessiné comme un **arbre de compétences de RPG** : une case ronde (icône, rang « 0/3 », nom) par skill, reliée par des **lignes** aux cases de l'étage d'avant. La ligne s'allume (dorée) quand la case du dessus est au max ; une case qu'on peut apprendre brille et porte un « + » (clic = un rang) ; une case verrouillée est grisée. Survoler (ou toucher) une case affiche sa description, son rang et ce qui la bloque.
 - Noms des cases : Mineur = Pioche aiguisée, Second souffle, Ruée ; Logisticien = Bâtisseur, Échelle de 2, Treuil, Navette ; Barbare = Force brute, Provocation, Pillage.
@@ -222,7 +222,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
 | Oxygène | 300 | 4 x *(prix « comme frein »)* | +38 = 152 x (Casque en fer) |
 | Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) ; 8 = 120 x (Épée en pierre) |
-| Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +150 % = 294 x (Gants tactique) |
+| Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
 | Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
@@ -261,14 +261,35 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 - Le but du combat est de **ralentir la progression**, pas de tuer le joueur.
 - Combat automatique ; les dégâts sont une simple stat.
 - **Engagement** : une fois le combat déclenché, le mineur poursuit le mob même s'il sort de son champ de vision. Il abandonne si le mob s'éloigne de plus de 10 blocs, et l'ignore s'il ne l'a pas touché depuis 15 s (mob inatteignable) *(provisoire)*.
-- Types prévus :
-  - **Bestioles** : apparaissent dans les tunnels (posées au sol) et se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien.
-    - **Tacle** : la bestiole va jusque sur la case du mineur. Tant qu'elle est sur lui, **il ne peut plus bouger** (son action en cours est interrompue, sauf une chute) et il la combat obligatoirement, même si l'option « combat les mobs » est désactivée et même s'il remonte. C'est le mécanisme principal de ralentissement. Elles laissent de la **chitine** (1 à 2, poids 1) *(provisoire : ressource du prototype, sans usage tant que le craft n'est pas défini)*.
-  - **Gobelins** : bestioles voleuses des areas profondes. Même physique et même **tacle** que les bestioles, un peu plus résistants (30 PV en area 3, contre 20 *(provisoire)*). Ils remplacent une partie des apparitions de bestioles (même minuterie, même plafond de mobs) : à partir de l'**area 3**, **25 %** des apparitions sont des gobelins *(provisoire)*.
-    - **Vol** : toutes les **2 secondes** de tacle, le gobelin vole **un minerai** (bloc de type ore : charbon, fer, or, diamant) tiré au hasard dans l'inventaire du mineur taclé, chaque unité ayant la même chance. Le minerai volé est **perdu** (il ne revient pas quand on tue le gobelin). Il ne vole ni terre, ni pierre, ni butin de mob, ni Treasure TX. Rien à voler : rien ne se passe.
-    - **Butin** : **peau de gobelin** (1 à 2, poids 1) et **chitine** (1) *(provisoire : sans usage tant que le craft n'est pas défini)*.
+- **Tacle (tous les mobs)** *(décision ferme, 21/10)* : un mob à **1 case ou moins** (Manhattan, pas en diagonale) du mineur qu'il vise l'immobilise : son action en cours est interrompue (sauf une chute) et il doit combattre le mob, même réglé sur « Ignorer les mobs » et même s'il remonte. **Un mob ne tacle qu'un seul mineur** ; il le garde tant qu'il reste à côté. Un mob qui marche s'arrête à côté de sa cible (il ne monte plus sur sa case).
+- **PV des mobs** *(décision du créateur, 21/10 ; k = area où le mob naît)* :
+  | Mob | PV | Première area |
+  |---|---|---|
+  | Bestiole | 50 × 1,15^k | 0 |
+  | Mimic | 50 × 1,15^k | 0 |
+  | Gobelin | 100 × 1,15^(k − 1) | 1 |
+  | Occultiste | 100 × 1,15^(k − 4) | 4 |
+  Repères (mineur de base : 5 dégâts, un coup toutes les 0,8 s) : bestiole 10 coups en area 0, 16 en area 3 ; gobelin 20 coups en area 1, 35 en area 5 ; occultiste 20 à 23 coups ; mimic 10 à 21 coups.
+- **Apparitions** *(décision du créateur, 21/10)* : une tentative toutes les (40 à 70 s) ÷ (1 + 0,15 × dernière area débloquée), première à 25 s, autour des mineurs sous terre chacun son tour. Le type est tiré selon l'**area du mineur visé** :
+  | Area | Bestiole | Gobelin | Occultiste | Mimic |
+  |---|---|---|---|---|
+  | 0 | 80 % | – | – | 20 % |
+  | 1 | 60 % | 20 % | – | 20 % |
+  | 2 | 40 % | 40 % | – | 20 % |
+  | 3 | 20 % | 60 % | – | 20 % |
+  | 4 | – | 70 % | 10 % | 20 % |
+  | 5 | – | 50 % | 30 % | 20 % |
+  Les mobs qui marchent naissent au sol dans une galerie déjà découverte, à 5 à 10 cases du mineur visé, dans une area où leur type peut naître ; au plus 2 + (dernière area débloquée) en vie en même temps (les mimics ne comptent pas). Les **mimics** naissent autrement : **un minerai de la roche** à 5 à 10 cases du mineur devient un mimic caché (pas un minerai visé ou en train d'être miné). Ils ne sont plus placés à la génération des areas.
+- Types :
+  - **Bestioles** : se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien. Butin : **chitine** (1 à 2, poids 1).
+  - **Gobelins** : même physique et même tacle que les bestioles.
+    - **Vol** : toutes les **2 secondes** de tacle, le gobelin vole **un minerai** (bloc de type ore : charbon, fer, or, diamant) tiré au hasard dans l'inventaire du mineur taclé, chaque unité ayant la même chance. Le minerai volé est **perdu**. Il ne vole ni terre, ni pierre, ni butin de mob, ni shiny, ni Treasure TX.
+    - **Butin** : **peau de gobelin** (1 à 2, poids 1) et **chitine** (1).
     - Intention : un mineur qui tue vite perd peu ; c'est une raison concrète d'améliorer ses dégâts pour les areas profondes.
-  - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à proximité. Les vaincre rapporte des minerais. Comme les bestioles, un mimic dévoilé ne déclenche le combat que s'il est dans le champ de vision du mineur.
+  - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à 2,3 cases ou quand le mineur essaie de les miner. **Un mimic se combat, il ne se mine pas** : dévoilé, sa case n'est plus un minerai pour l'IA (ni cible, ni bloc à creuser). Il **tacle** le mineur à côté de lui. Butin : 3 minerais du type imité (ni shiny ni Fortune).
+  - **Occultiste** *(21/10)* : mage noir humain terré sous terre, à partir de l'**area 4**. Même physique et même tacle que les bestioles. **Sort** : prêt toutes les **15 s** (la première fois 15 s après son apparition). Quand il est prêt, l'occultiste **se téléporte à 3 cases** (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint depuis la cible sans miner (à défaut à 4, puis à 2 ; jamais au contact : il ne lance pas son sort au corps à corps), puis **canalise** un rayon de lumière noire : la cible est **étourdie 5 s** (elle ne fait plus rien, même pas frapper). Pendant la canalisation, il ne bouge pas et ne tacle pas. **Provoqué** (Barbare), il arrête tout de suite sa canalisation (la cible est libérée) et ne lance plus jamais son sort. Butin : **Tissu sombre** (1 à 3). XP 15 *(provisoire)*.
+- **État « combat » de la session** : il est actif dès qu'un mob a pris un mineur en chasse (il le poursuit à 14 cases ou moins, le tacle, ou canalise sur lui).
+- **Aider allié** *(préférence du lobby, 21/10)* : un mineur réglé sur « Aider allié : Oui » part **tout de suite** vers le mob qui a pris un **autre** mineur en chasse (le plus proche), en creusant s'il le faut, et le combat, **s'il est à 20 cases ou moins** *(provisoire, `HELP.range` ; sans limite, il traversait la mine pour des combats finis avant son arrivée)*. Jamais pendant le chantier du treuil. Le joueur peut **ignorer des types de mob** (liste avec leur dessin, ignoré oui / non) : il n'ira pas aider contre eux. Pas pendant un retour vers la surface. Le mob mort, le mineur reprend sa décision normale selon sa priorité (il ne revient pas où il était). Un mob inatteignable est laissé.
 
 ## 6. Hors session
 
@@ -291,7 +312,7 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 - **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres ;
 - **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
 - **Groupe** : on se réunit avant de lancer (voir « Jouer à plusieurs » ci-dessous) ; seul, on joue seul ;
-- **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs ; voir §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
+- **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs, aider allié oui/non avec la liste des mobs ignorés ; voir §5 et §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
 Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
 - **Caméra** : elle suit le mineur du joueur. Un appui sur un mineur de l'équipe la fait suivre celui-ci. Le joueur peut **se déplacer dans la mine** (molette, glisser à la souris ou au doigt, flèches ↑ ↓, PageUp / PageDown) : la caméra ne suit plus personne jusqu'à ce qu'il appuie sur **Suivre** (ou Début). Elle va du ciel au fond de la mine connue.
@@ -388,11 +409,11 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +150 % (≈ 294 x) |
+  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +20 % (≈ 39 x) |
   | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +5 % (≈ 180 x) |
   | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
 
-  **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. *(À définir : d'où il vient, aucun mob ni butin n'en donne encore.)*
+  **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
 ### Stuff (onglet Stuff)
 - **10 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole.
@@ -482,9 +503,8 @@ Chaque joueur se spécialise :
 Le comportement du mineur est configurable. Exemples prévus :
 - préfère miner dans un endroit navigable ?
 - préfère fuir un mob plutôt que de se battre ?
-- se déplace vers un mob déclenché par un allié ?
 
-Déjà en jeu, dans « Critères / préférences » du lobby : priorité `minerais` ou `descendre`, combattre les mobs oui/non (`PREF_OPTIONS` en config). Les autres arriveront une par une, chacune avec ses tests de blocage.
+Déjà en jeu, dans « Critères / préférences » du lobby : priorité `minerais` ou `descendre`, combattre les mobs oui/non, aider allié oui/non + mobs ignorés (`PREF_OPTIONS`, `PREFS.helpIgnore` en config). Les autres arriveront une par une, chacune avec ses tests de blocage.
 
 ### Questions ouvertes (gravité)
 - ~~Une chute fait-elle perdre du temps ?~~ Réglé : chute imprévue de 3 cases ou plus = étourdi 5 s (§3, Chutes).

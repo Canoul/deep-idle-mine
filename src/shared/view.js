@@ -27,7 +27,9 @@ function minerView(m){
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
   };
 }
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore });
+/* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
+const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore,
+  channel: o.channel ? o.channel.target : null, grab: o.grab ?? null });
 
 /* ---------- serveur ---------- */
 

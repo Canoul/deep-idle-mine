@@ -585,3 +585,53 @@ Règles (voir CLAUDE.md) :
   Valeur de la Boussole en or mesurée avant (≈ +300 x, 8 sessions solo). ✅ Chromium headless : fiche « Four en fer ·
   Utiliser · ouvre le four 2 » → « ✔ Four 2 débloqué », onglet Four (four 2 « Four en fer (vitesse ×1,25) »), Stuff
   (boussole équipée, « Lignes boussole 1 (0 +1) »). ⚠️ Cadre jaune de la boussole sur 3 lignes pas regardé en session.
+### Mobs : PV ×5 à ×10, table d'apparition par area, tacle à 1 case, mimics créés en jeu, Occultiste, « Aider allié »
+- **Quoi** (décisions du créateur) :
+  - PV = base × 1,15^(k − première area du mob), **k = area où naît le mob** (avant : dernière area débloquée).
+    Bestiole 50, mimic 50, gobelin 100 (dès l'area 1), occultiste 100 (dès l'area 4). `MOBS.hpBase/minArea/hpGrowth`,
+    `mobHp(type, k)` en config.
+  - Type tiré dans `MOBS.spawnTable` selon l'area du mineur visé (0 : 80 % bestiole / 20 % mimic … 5 : 50 % gobelin /
+    30 % occultiste / 20 % mimic). Rythme et plafond inchangés (`spawnDelay`, `walkerCap`, mimics hors plafond).
+  - **Mimics** : plus placés à la génération ; une apparition « mimic » change un minerai de la roche à 5-10 cases en
+    mimic caché (pas un minerai visé ou en train d'être miné). Dévoilé : `G.mimicCells`, plus une cible ni un bloc à
+    creuser (`path.js` `brk`, `compassScan`, cibles connues). Il se combat, ne se mine pas, et tacle à côté.
+  - **Tacle** : tous les mobs, à 1 case ou moins (Manhattan) de leur cible, un seul mineur par mob (`o.grab`, gardé tant
+    qu'il reste à côté). Les mobs qui marchent s'arrêtent à côté. `tackler` déplacé dans `mobs.js` (réexporté par ai.js).
+  - **Occultiste** : sort toutes les 15 s (`MOBS.occult`) → téléportation à 3 cases (case vide, où l'on tient, rejointe
+    depuis la cible sans miner ; sinon 4, puis 2) puis canalisation 5 s = cible étourdie (action `stun` `hex`, même un coup
+    est interrompu). Provoqué : canalisation coupée tout de suite, plus jamais de sort. Butin 1-3 Tissu sombre, XP 15
+    (provisoire). Texture `occultist.png` ; rayon noir dessiné (`mobView.channel`).
+  - **Provocation** : vaut pour tous les mobs (`provoke`), plus seulement ceux qui marchent.
+  - **Aider allié** : `PREFS.helpAllies` + `helpIgnore` (types connus, sans doublon : `sanitizePrefs`), lobby avec la liste
+    des mobs et leur dessin. `G.combat` (état « combattrigger ») = un mob a pris un mineur en chasse (`o.chase`). Le
+    mineur va vers le mob le plus proche qui chasse un autre mineur, sauf types ignorés, pas en retour, pas pendant le
+    chantier du treuil, **à 20 cases au plus** (`HELP.range`, ajout provisoire à faire valider, voir mesures).
+  - Gants tactique : vitesse d'attaque +20 % (au lieu de +150 %).
+- **Corrections trouvées en simulation** :
+  - Aider allié pendant le chantier du treuil → le logisticien repartait de la surface à chaque fois : boucle.
+  - Sans portée, l'aide faisait traverser la mine pour des combats déjà finis (détecteur : 2 sessions sur 5).
+  - Chantier du treuil : un combat qui le sortait du puits le renvoyait à la surface recommencer ; avec des mobs 5-10×
+    plus résistants ça tournait en rond. Il retourne maintenant au puits par le plus court s'il est proche
+    (`m.winchDepth`), sinon comme avant.
+- **Provocation vérifiée** (demande du créateur) : 5 sessions × 3 mineurs, 135 provocations, **0 tacle** d'un mob
+  provoqué sur un autre mineur que le barbare. Mais avant « Aider allié », le barbare ne libérait un allié que 4 fois en
+  5 sessions (il ne va pas vers les alliés).
+- **Fichiers** : `src/config.js` (MOBS, mobHp, PREFS, HELP, MOB_INFO, PREF_OPTIONS, XP, Gants tactique, textures),
+  `src/sim/{mobs,ai,actions,session,path,world}.js`, `src/shared/{game,view}.js`, `src/render/canvas.js`,
+  `src/ui/{lobby}.js`, `src/ui/style.css`, `scripts/gen_textures.py` + `textures/occultist.png`, GAME_DESIGN §3, §5, §6, §7,
+  CLAUDE.md.
+- **Tests** : `tests/mobs.test.js` (14 : PV, tacle à 1 case, un mineur par mob, mimic, occultiste ×4, aide ×4, treuil),
+  `goblin.test.js` (apparitions réécrites : table, PV par area, mimic), miner, skills, game-service, game-http
+  (préférences), tier2. `npm test` 417/417. Anti-triche 53/54 : **skills 500 suites échoue déjà sur `main` avant ce
+  travail** (« étape sans la précédente », depuis la refonte de l'arbre `2113f71`) ; `open.test` corrigé (le Treasure T2
+  s'ouvre depuis ce matin).
+- **Mesures** (3 mineurs × 5 seeds, 0 blocage) :
+  - sans aide : areas 3,4 (4,0 avant), profondeur 183 (190), 69 mobs tués, **139 minerais volés** par session.
+  - aide (portée 20) + skills mixtes : areas 3,4, profondeur 180, ≈ 122 volés.
+  - aide sans portée : profondeur 158 (la portée a été ajoutée pour ça).
+  - sessions boostées (minage ×7) jusqu'à l'area 5 : occultistes apparus, sort lancé, Tissu sombre au coffre, 0 blocage.
+- **Vérification visuelle** : ✅ Chromium headless : scène de test (occultiste + rayon noir, mimic dévoilé, gobelin qui
+  tacle) ; lobby (« Aider allié : Oui » → liste des 4 mobs avec dessin, Gobelin ignoré, relu après rechargement).
+  ⚠️ Pas vu en vraie session en ligne ; étoiles d'étourdissement cachées par le pseudo (déjà le cas pour les chutes).
+- **Points d'équilibrage à surveiller** : les gobelins (100 à 175 PV) restent longtemps sur un mineur de base et volent
+  1 minerai / 2 s : ≈ 45 minerais volés par mineur et par session. XP des mobs inchangée malgré des PV ×5-10.

@@ -239,6 +239,23 @@ def main():
     rect(goblin, 5, 13, 6, 3, hexc('#7a5230'))  # tunique
     tex['goblin'] = goblin
 
+    # occultiste : mage noir humain, capuche et robe sombres, visage pâle dans l'ombre, yeux violets, orbe de lumière noire
+    occ = blank()
+    robe, robe_d, edge = hexc('#4b2d6b'), hexc('#2a1840'), hexc('#a070d8')
+    rect(occ, 5, 1, 6, 2, robe)            # pointe de la capuche
+    rect(occ, 4, 3, 8, 6, robe)            # capuche
+    rect(occ, 6, 5, 4, 3, hexc('#c9b8a6'))  # visage pâle
+    rect(occ, 6, 5, 4, 1, robe_d)          # ombre de la capuche sur le front
+    rect(occ, 6, 6, 1, 1, hexc('#e0b0ff'))  # yeux violets
+    rect(occ, 9, 6, 1, 1, hexc('#e0b0ff'))
+    rect(occ, 3, 9, 10, 7, robe)           # robe
+    rect(occ, 7, 9, 2, 7, robe_d)          # pli central
+    rect(occ, 3, 15, 10, 1, edge)          # ourlet
+    rect(occ, 4, 9, 8, 1, edge)            # col
+    rect(occ, 0, 10, 3, 3, hexc('#140a1f'))  # orbe noire dans la main
+    rect(occ, 1, 11, 1, 1, hexc('#e0b0ff'))
+    tex['occultist'] = occ
+
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),

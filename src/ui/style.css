@@ -191,6 +191,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .seg button{border:0;border-radius:0;background:transparent;padding:5px 12px}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--acc);color:#1a1208}
+.helpMobs{margin:4px 0 2px 12px;padding-left:10px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:6px;font-size:13px}
+.mobName{display:inline-flex;align-items:center;gap:8px}
+.mobIco{position:relative;width:24px;height:24px;display:inline-block}
+.mobIco img{position:absolute;inset:0;width:24px;height:24px;image-rendering:pixelated}
 .devCard{border-style:dashed}
 .devCard .dev{grid-template-columns:1fr 110px}
 .devCard .dev input,.devCard .dev select{width:110px}

@@ -5,8 +5,8 @@ import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
 import { createMiner, curLum } from './miner.js';
 import { finishAction } from './actions.js';
-import { decide, tackler } from './ai.js';
-import { updateMobs } from './mobs.js';
+import { decide } from './ai.js';
+import { updateMobs, tackler, channeler } from './mobs.js';
 import { log } from './log.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare } from '../meta/level.js';
@@ -21,7 +21,7 @@ export function newSession(seed, opts={}){
     seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, winch:null, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
-    spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
+    spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
@@ -75,8 +75,12 @@ export function tick(G){
   for(const m of G.miners) stepMiner(G,m);
   updateMobs(G);
   for(const m of G.miners){
-    // une bestiole vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe déjà)
+    // un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe déjà)
     if(m.action && m.action.type!=='attack' && m.action.type!=='stun' && !m.action.data.fall && tackler(G,m)){ m.action=null; m.stats.tackled++; }
+    // un occultiste canalise sur lui : tout s'arrête (même un coup), sauf une chute ; il est étourdi pendant la canalisation
+    if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) m.action=null;
+    // canalisation arrêtée avant la fin (occultiste provoqué ou tué) : il est libéré tout de suite
+    if(m.action?.data.hex && !channeler(G,m)) m.action=null;
     revealAround(G,m);
   }
   if(G.ticks>=SESSION_TICKS) endSession(G);

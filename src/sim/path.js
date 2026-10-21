@@ -38,6 +38,8 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
   const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed, maxFall=CFG.maxFall,
         wt=baseWinchT(m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)
+  /* bloc qu'on peut creuser : ni barrière, ni incassable, ni mimic dévoilé (un mimic se combat, il ne se mine pas) */
+  const mim=G.mimicCells, brk=(x,y,t)=>t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x));
   const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(m,t); mineCache.set(t,v); } return v; };
   const start=sy*W+sx; dist[start]=0; push(0,start);
   while(hd.length){
@@ -49,7 +51,7 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
       const nx=x+dx; if(nx<0||nx>=W) continue;
       if(!isAir(G,nx,y)){                         // galerie : miner horizontalement (build uniquement)
         const t=tileAt(G,nx,y);
-        if(build && t && t!==BARRIER && !BLOCKS[t].unbreakable){
+        if(build && t && brk(nx,y,t)){
           const l=landing(G,nx,y); if(l.n<=maxFall) relax(n,d,nx,l.y,mineT(t)+moveT()+l.n*fall);
         }
         continue;
@@ -60,14 +62,14 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
     if(y>=1){                                       // monter (build=false : uniquement par les échelles existantes ou le treuil)
       const w=isWinch(G,x,y), t=tileAt(G,x,y-1), has=y>0&&(G.ladder[y][x]||w), lad=has ? 0 : ladT*lw, up=w ? wt : climbT();
       if(t===0){ if(build||has) relax(n,d,x,y-1,lad+up); }
-      else if(build && t!==BARRIER && !BLOCKS[t].unbreakable) relax(n,d,x,y-1,mineT(t)+lad+up);
+      else if(build && brk(x,y-1,t)) relax(n,d,x,y-1,mineT(t)+lad+up);
     }
     if(isAir(G,x,y+1)){                             // descendre (par l'échelle, ou se laisser tomber)
       const w=isWinch(G,x,y)||isWinch(G,x,y+1), l=landing(G,x,y+1), lad=G.ladder[y][x]||G.ladder[y+1][x]||w;
       if(l.n+(lad?0:1)<=maxFall) relax(n,d,x,l.y,(w ? wt : lad ? climbT() : fall)+l.n*fall);
     } else if(build){                               // creuser vers le bas : miner + chute ; l'échelle ne se pose qu'au retour,
       const t=tileAt(G,x,y+1);                      // on compte donc d'avance ce « voyage futur » (pose + montée)
-      if(t!==BARRIER && !BLOCKS[t].unbreakable){
+      if(brk(x,y+1,t)){
         const l=landing(G,x,y+1);
         if(1+l.n<=maxFall) relax(n,d,x,l.y,mineT(t)+(1+l.n)*fall+CFG.futureTravelWeight*(ladT*lw+climbT()));
       }

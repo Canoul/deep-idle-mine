@@ -6,7 +6,7 @@
    (looks : équipement visible de chaque joueur au lancement ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { sanitizeLook, equippedStats } from '../meta/stuff.js';
@@ -16,12 +16,15 @@ import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js'
 
 /* ne garde que les préférences connues avec une valeur permise ; le reste prend la valeur par défaut */
 export function sanitizePrefs(input){
-  const out = { ...PREFS };
+  const out = { ...PREFS, helpIgnore:[] };
   if(!input || typeof input !== 'object') return out;
   for(const k in PREF_OPTIONS){
     const allowed = PREF_OPTIONS[k].options.map(o => o[0]);
     if(Object.hasOwn(input, k) && allowed.includes(input[k])) out[k] = input[k];
   }
+  /* mobs ignorés par « Aider allié » : types connus seulement, sans doublon */
+  out.helpIgnore = Array.isArray(input.helpIgnore)
+    ? [...new Set(input.helpIgnore.filter(t => typeof t === 'string' && Object.hasOwn(MOBS.hpBase, t)))] : [];
   return out;
 }
 
