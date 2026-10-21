@@ -9,8 +9,9 @@
      Si le chef part, le membre suivant devient chef ; un groupe vide disparaît.
    - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
      est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
-   Les groupes vivent en mémoire : c'est une salle d'attente de quelques minutes, un redémarrage la vide
-   (chacun se retrouve seul dans son lobby). Rien de ce qui a de la valeur n'y passe.
+   Les groupes vivent en mémoire et sont recopiés dans le stockage (store, s'il est donné) à chaque vrai changement :
+   un redémarrage du serveur (mise à jour automatique toutes les 2 min) les retrouve (load). Les signes de vie ne sont
+   pas enregistrés (ils changent sans arrêt) : au redémarrage, tout le monde repart avec un délai neuf.
    Testable seul : on lui passe le service de jeu, la recherche de compte et une horloge. */
 import crypto from 'node:crypto';
 import { GAME, PARTY } from '../../src/config.js';
@@ -25,7 +26,7 @@ export class PartyError extends Error {
 const fail = (code, status, message, extra) => { throw new PartyError(code, status, message, extra); };
 
 /* game : service des sessions ; getAccount(id) : compte ou null (pour inviter par ID) */
-export function createPartyService({ game, getAccount, clock = Date.now, config = PARTY_SERVER,
+export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
   const limit = {
@@ -66,6 +67,8 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
       if(p.launching) continue;
       for(const m of [...p.members]){
         if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
+        /* … ou fin RÉELLE de sa dernière session (en retard sur l'heure prévue, ou fin libre en dev) */
+        if(now - (await game.lastEndedAt?.(m.account) ?? 0) <= config.memberTimeout) continue;
         if(await game.activeSessionId(m.account)) m.seenAt = now;
         else if(parties.get(p.code) === p && !p.launching) removeMember(p, m.account);
       }
@@ -96,8 +99,40 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
   }
   const noChange = p => { if(p.launching) fail('launching', 409, 'La session est en train d\'être lancée.'); };
 
+  /* ---------- stockage ---------- */
+
+  /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
+  const saved = p => ({ code: p.code, leader: p.leader, createdAt: p.createdAt,
+                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null })),
+                        invites: [...p.invites.values()] });
+  const written = new Map();                 // code → JSON déjà enregistré
+  /* enregistre les groupes qui ont vraiment changé, efface ceux qui ont disparu */
+  async function save(){
+    if(!store) return;
+    for(const p of parties.values()){
+      const json = JSON.stringify(saved(p));
+      if(written.get(p.code) !== json){ written.set(p.code, json); await store.putParty(p.code, JSON.parse(json)); }
+    }
+    for(const code of [...written.keys()]) if(!parties.has(code)){ written.delete(code); await store.deleteParty(code); }
+  }
+  /* démarrage du serveur : on retrouve les groupes enregistrés (chacun repart avec un délai d'absence neuf) */
+  async function load(){
+    if(!store) return;
+    for(const s of await store.getParties()){
+      if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
+      const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
+                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined })),
+                  invites: new Map((s.invites || []).map(i => [i.account, i])) };
+      if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
+      parties.set(p.code, p);
+      written.set(p.code, JSON.stringify(saved(p)));
+    }
+  }
+  /* chaque action enregistre ensuite ce qui a changé (même si elle échoue à mi-chemin) */
+  const saving = fn => async (...args) => { try { return await fn(...args); } finally { await save(); } };
+
   /* ---------- actions ---------- */
-  return {
+  const actions = {
     /* état vu par le joueur (appelé régulièrement par son lobby : sert aussi de signe de vie) */
     async state(me){
       touch(me);
@@ -213,8 +248,13 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
       } finally { p.launching = false; }
     },
 
+  };
+  for(const k of Object.keys(actions)) actions[k] = saving(actions[k]);
+  return {
+    ...actions,
+    load,
     /* pour les tests et le journal */
     count: () => parties.size,
-    _sweep: sweep,
+    _sweep: saving(sweep),
   };
 }

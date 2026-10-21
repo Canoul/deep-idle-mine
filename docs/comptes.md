@@ -114,11 +114,13 @@ d'une session terminée (après l'avoir rejouée). L'ancienne sauvegarde dans le
 
 ## Groupes (`server/party/`)
 
-Salle d'attente en mémoire avant une session commune (règles : GAME_DESIGN §6 « Jouer à plusieurs »).
+Salle d'attente avant une session commune (règles : GAME_DESIGN §6 « Jouer à plusieurs »). En mémoire, recopiée dans le
+stockage (`ns = party`, une ligne par groupe) à chaque vrai changement, sans les signes de vie : `party.load()` la retrouve au démarrage.
 `POST /api/game/start` passe par le service des groupes : seul = session solo, en groupe = seul le chef lance,
 pour tous les membres (403 `not_leader` sinon). L'équipe vient toujours du serveur, jamais du navigateur.
 Le groupe **n'est pas dissous** au lancement (on enchaîne les sessions) ; chaque membre a une grâce jusqu'à la fin prévue
-de la session (`graceUntil`), puis le délai d'absence normal. `party.members[].playing` : membre encore en session.
+de la session (`graceUntil`), puis le délai d'absence normal, compté au plus tôt depuis la fin réelle de sa dernière
+session (`game.lastEndedAt`). `party.members[].playing` : membre encore en session.
 
 | Route | Corps | Réponse |
 |---|---|---|

@@ -308,7 +308,8 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
   - Pendant la session, personne n'est retiré pour absence (le navigateur ne parle plus au groupe pendant la partie) : le délai de 5 min repart de la fin de la session. Le bilan compte comme une présence.
   - Un membre encore dans la session (le chef a quitté tôt, par exemple) est affiché « en session » ; le chef voit « ⏳ Le groupe finit sa session… » et ne peut pas relancer avant la fin.
   - Si le chef relance pendant qu'un membre lit encore son bilan, ce membre passe directement à la nouvelle session (son mineur y joue déjà).
-- Les groupes sont une salle d'attente : un redémarrage du serveur les vide (chacun se retrouve seul), sans rien perdre d'autre.
+- **Les groupes survivent à un redémarrage du serveur** (la mise à jour automatique le redémarre à chaque nouvelle version) : ils sont enregistrés comme le reste (code, chef, membres, invitations) et retrouvés au démarrage.
+- Absence : un membre silencieux est retiré au bout de 5 min, comptées depuis la **fin réelle** de sa dernière session (une session peut finir après l'heure prévue si le serveur a dû rattraper du retard, ou à tout moment en mode dev) : celui qui revient le premier du bilan ne fait jamais sortir les autres.
 
 **Le serveur fait foi** (anti-triche) :
 - c'est lui qui crée la session (seed, joueurs, préférences, heure de départ) et qui **fait tourner la partie** : une seule copie, sur le serveur. Le navigateur la reçoit et l'**affiche** ; il ne calcule rien. Il envoie seulement les choix du joueur (lancer, quitter, focus), appliqués tout de suite. Comme le navigateur ne produit aucun résultat, il n'y a rien à vérifier : ni rejeu, ni contrôle de vraisemblance ;

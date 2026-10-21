@@ -2,6 +2,7 @@
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
+   Groupe (lobby) : { code, leader, members:[{account, name, graceUntil}], invites:[…], createdAt } (sans les signes de vie).
    Session de jeu : { id, seed, players:[{account, name}], bots, prefs, overrides, dev, speed, startedAt, finishAt,
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt } */
 import fs from 'node:fs/promises';
@@ -15,6 +16,7 @@ export function createMemoryGameStore(initial = {}){
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
+  const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -56,13 +58,18 @@ export function createMemoryGameStore(initial = {}){
     async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
     async deleteGameSession(id){ if(sessions.delete(id)) await store.changed([{ ns: 'game_session', key: id, value: null }]); },
 
+    /* groupes : gardés pour survivre à un redémarrage du serveur (mise à jour automatique) */
+    async getParties(){ return [...parties.values()].map(copy); },
+    async putParty(code, p){ parties.set(code, copy(p)); await store.changed([{ ns: 'party', key: code, value: p }]); },
+    async deleteParty(code){ if(parties.delete(code)) await store.changed([{ ns: 'party', key: code, value: null }]); },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
                          prefs: Object.fromEntries(prefs),
-                         sessions: Object.fromEntries(sessions) }; },
+                         sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties) }; },
   };
   return store;
 }
@@ -92,10 +99,10 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session']);
+  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills,
-                                        sessions: rows.game_session });
+                                        sessions: rows.game_session, parties: rows.party });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

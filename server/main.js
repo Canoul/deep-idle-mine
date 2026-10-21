@@ -20,7 +20,8 @@ const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDi
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
 const game = createGameService({ store: gameStore });
-const party = createPartyService({ game, getAccount: id => store.getAccount(id) });
+const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
+await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 const server = http.createServer(createApp({ store, service, game, party, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;

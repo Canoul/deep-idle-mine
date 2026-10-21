@@ -212,6 +212,70 @@ test('enchaîner : après la fin, un membre silencieux est retiré au bout de me
   assert.deepEqual((await party.state(A)).party.members.map(m => m.account), [A.id]);
 });
 
+test('enchaîner : session finie en retard (serveur lent ou redémarré) : personne n\'est retiré juste après la fin', async () => {
+  const { party, game, advance } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.launch(A, {});
+  advance(realDurationMs() + 2 * PARTY_SERVER.memberTimeout);    // la partie rattrape son retard : elle finit bien après l'heure
+  await game.pump();
+  const st = await party.state(A);                               // A revient le premier ; B n'a pas encore rechargé son lobby
+  assert.deepEqual(st.party.members.map(m => m.account), [A.id, B.id], 'B a memberTimeout après la VRAIE fin pour revenir');
+  advance(PARTY_SERVER.memberTimeout + 1000);
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.account), [A.id], 'puis il est retiré s\'il ne revient pas');
+});
+
+test('enchaîner (mode dev, fin libre) : session de plus de memberTimeout, personne n\'est retiré juste après la fin', async () => {
+  let now = 5_000_000;
+  const clock = () => now;
+  const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7, dev:true });
+  const party = createPartyService({ game, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.launch(A, {});
+  now += 3 * PARTY_SERVER.memberTimeout;                         // on joue un moment
+  await game.finish(A);                                          // fin libre (dev)
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.account), [A.id, B.id]);
+});
+
+test('redémarrage du serveur : les groupes sont gardés (code, chef, membres, invitations) et on relance sans se réinviter', async () => {
+  let now = 5_000_000;
+  const clock = () => now;
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
+  const party = createPartyService({ game, store, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.invite(A, 'CCCC3333');
+  await party.launch(A, {});
+  now += realDurationMs(); await game.pump();
+  /* redémarrage : nouveaux services sur le même stockage */
+  const store2 = createMemoryGameStore(store.snapshot());
+  const game2 = createGameService({ store:store2, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 8 });
+  const party2 = createPartyService({ game:game2, store:store2, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'H3XM9T' });
+  await party2.load();
+  const st = await party2.state(B);
+  assert.equal(st.party.code, 'K7Q4P2');
+  assert.equal(st.party.leader, A.id);
+  assert.deepEqual(st.party.members.map(m => m.account), [A.id, B.id]);
+  assert.deepEqual(st.party.invited.map(i => i.account), [C.id]);
+  assert.deepEqual((await party2.launch(A, {})).session.players.map(p => p.account), [A.id, B.id], 'relancé sans réinviter');
+  /* un groupe quitté ou dissous ne revient pas */
+  await party2.leave(B); await party2.leave(A);
+  const party3 = createPartyService({ game:game2, store:createMemoryGameStore(store2.snapshot()), clock, getAccount:async id => ACCOUNTS[id] ?? null });
+  await party3.load();
+  assert.equal(party3.count(), 0);
+});
+
+test('stockage des groupes : on n\'écrit que les vrais changements (pas à chaque signe de vie)', async () => {
+  let now = 5_000_000, writes = 0;
+  const clock = () => now;
+  const store = createMemoryGameStore();
+  const changed = store.changed; store.changed = async c => { if(c.some(x => x.ns === 'party')) writes++; return changed(c); };
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
+  const party = createPartyService({ game, store, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  const before = writes;
+  for(let k = 0; k < 20; k++){ now += 2500; await party.state(A); await party.state(B); }
+  assert.equal(writes, before, 'les signes de vie ne réécrivent rien');
+});
+
 test('lancement refusé (un membre déjà en session) : le groupe reste, personne n\'est engagé', async () => {
   const { party, game } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');

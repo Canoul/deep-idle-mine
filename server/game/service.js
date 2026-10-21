@@ -502,5 +502,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
+    /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
+    lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
+      .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),
   };
 }
