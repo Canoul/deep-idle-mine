@@ -113,7 +113,7 @@ Modèle d'entrée :
 
 ## 21/10/2026 — Geoffrey — Lobby et Session : deux onglets séparés
 - **Pour le joueur** : l'onglet « Mine » est remplacé par deux onglets.
-  - **🏠 Lobby** : le groupe, les invitations, les préférences, **où miner** (Mine ; la **Mine instanciée** est
+  - **🏠 Lobby** : le groupe, les invitations, les préférences, **où miner** (Mine ; la **Mine instantanée** est
     affichée grisée « bientôt ») et le bouton Lancer. Pendant une session, il reste consultable en **lecture
     seule**, avec un bandeau « ⛏ En session dans la mine · temps restant · Voir la session ».
   - **⛏ Session** : la mine en direct, puis le bilan. Sans session : « Tu n'es pas en session ».
@@ -121,7 +121,7 @@ Modèle d'entrée :
     le bilan ramène au Lobby. Le minuteur de session de la barre de gauche ouvre Session d'un clic.
 - **Décisions** : lobby en lecture seule pendant la session ; bascule automatique au lancement ; bilan dans Session ;
   choix « Mine / MI » visible dès maintenant, MI grisée.
-- **À suivre** : la Mine instanciée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
+- **À suivre** : la Mine instantanée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
   conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
 - **État** : ✅ en ligne le 21/10
 
