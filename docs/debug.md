@@ -1098,3 +1098,18 @@ Règles (voir CLAUDE.md) :
   `.mailmap`) : impossible à retirer sans réécrire `main`.
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 105 tests du sujet + anticheat 67/67 verts.
   À surveiller : en ligne, l'en-tête HSTS n'apparaît que si `DIM_SECURE_COOKIE=1` (posé par `install.sh`).
+
+### Session : colonnes jusqu'en bas, lignes visibles adaptées (Jules) — branche `jules/colonnes-session`, ✅ en ligne le 22/10
+- **Bug** : la surface n'était plus visible. Cause : l'agrandissement du 21/10 (`CAMERA.minShown`) rognait le haut et
+  le bas du canvas en CSS ; la caméra croyait montrer 34 lignes, et en haut de la mine c'est le ciel qui était coupé.
+- **Correction** : plus de rognage. Le nombre de lignes dessinées s'adapte : `renderer.setRows(n)`
+  (`src/render/canvas.js` : `cv.height`, boucle de dessin, `panPixels`) et `camera.setRows(n)`
+  (`src/render/camera.js`) ; `fitMine` (`src/ui/fit.js`) remplit la largeur et prend `floor(hauteur / case)` lignes
+  entre `CAMERA.minRows` (20) et `CAMERA.maxRows` (48), en se calant sur la hauteur sous 20. Sans hauteur imposée
+  (téléphone), le nombre de lignes ne change pas. `fitCanvas` ne sert plus qu'à la mine instantanée.
+- **Colonnes** : `#run` va jusqu'en bas (`bottom:0`) ; la mine, la jauge et les colonnes gardent une marge du bas
+  égale à la barre d'action ; `clearDock` (fit.js) l'enlève à une colonne quand la barre (centrée) ne passe pas sous
+  elle. Sous 1100 px (session qui défile), marges à 0.
+- **Tests** : camera (nouveau test setRows), nav : verts. ✅ Captures : 1918×904 (24 lignes, ciel visible, colonnes
+  jusqu'en bas), 1440×900 (40 lignes, ×1 exact, colonnes au-dessus de la barre), 390×844 sans débordement.
+

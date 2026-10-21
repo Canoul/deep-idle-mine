@@ -221,7 +221,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #end .share.me{background:var(--sel);box-shadow:inset 0 0 0 var(--u) var(--acc)}
 #noSession{padding:16vh calc(6*var(--u)) 0}
 #noSession button{margin-top:calc(4*var(--u))}
-#run,#miRun{position:fixed;top:var(--top-h);bottom:var(--dock-h);left:0;right:0;z-index:2;display:flex;flex-direction:column}
+#run,#miRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
+/* la mine et la jauge restent au-dessus de la barre d'action ; les colonnes aussi par défaut, mais descendent jusqu'en
+   bas de l'écran quand la barre (centrée) ne passe pas dessous (src/ui/fit.js, clearDock) */
+#cvWrap,#cvMiWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
 #run>header,#miRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
@@ -480,6 +483,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
   .runR .card{flex:1 1 calc(130*var(--u))}
   #run{position:static;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
+  #cvWrap,#cvMiWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}

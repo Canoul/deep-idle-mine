@@ -21,11 +21,11 @@ import { setupInstantLobby } from './ui/instant-lobby.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { tickAt } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
-import { createRenderer } from './render/canvas.js';
+import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
 import { setupOrbs } from './ui/orbs.js';
-import { fitCanvas } from './ui/fit.js';
+import { fitCanvas, fitMine, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
@@ -486,7 +486,10 @@ function frame(now){
     }
     updateNavSession(shown, waiting, mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi);
-    if(ui.tab==='session') mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitCanvas($('cv'), $('cvWrap'), CAMERA.minShown);   // la mine remplit la place libre
+    if(ui.tab==='session'){
+      mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
+    }
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()));                  // portrait : le mineur avec son stuff
     navSession.classList.toggle('live', !!rec);
