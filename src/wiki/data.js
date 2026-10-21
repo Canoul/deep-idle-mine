@@ -182,7 +182,7 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
-  bridges:    'Passerelles qu\'il emporte pour traverser les trous.',
+  bridges:    'Passerelles pour traverser les trous (illimitées).',
 };
 const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', discoverMax:' blocs',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };

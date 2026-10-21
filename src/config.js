@@ -13,7 +13,8 @@ export const SPAWN_X = 25, CHEST_X = 22;
    fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, bridges:10 };
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2,
+  bridges:Infinity };   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
 
 export const CFG = {
   ladderTime:2, refillRate:30, unlockRatio:0.4,
@@ -181,12 +182,12 @@ export const LOOT = {
 export const CRUSHER = {
   inSlots:8, outSlots:8, cols:4, batch:100, time:60,
   loot: {
-    'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.001) },
-                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.0001 }] } ] },
-    'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.0015) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.00015 }] } ] },
-    'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.0012) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.0002 }] } ] },
+    'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.002) },
+                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.001 }] } ] },
+    'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.003) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.001 }] } ] },
+    'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.004) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.0015 }] } ] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -410,20 +411,20 @@ export const STUFF = {
   /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur) ; set : valeur qui REMPLACE la base (ex. l'épée
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
   items: {
-    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.1 } },
+    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
     'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
-    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.2 } },
+    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
     'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:33 } },
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
-    'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
+    'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
@@ -436,7 +437,7 @@ export const STUFF = {
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune' },
   statUnits: { attackSpeed:' %', fortune:' %' },       // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','compassRows','torches','bridges'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -558,6 +559,6 @@ export const DEV_TUNABLES = [
   ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
   ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (%)',10,10000], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50], ['STATS','compassRows','Lignes boussole (±)',0,5],
-  ['STATS','torches','Torches',0,1000], ['STATS','bridges','Passerelles',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
+  ['STATS','torches','Torches',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],
 ];

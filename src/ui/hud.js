@@ -44,7 +44,7 @@ export function updateHUD(G, ui){
   $('mPods').textContent=Math.round(m.load)+' / '+pods;
   $('podBar').style.width=Math.min(100,m.load/pods*100)+'%';
   $('podBar').style.background=m.load>=pods*0.9?'var(--bad)':'var(--ok)';
-  $('mTorch').textContent=m.torches+' en réserve · luminosité '+Math.round(curLum(G,m)*100)+'% · '+m.bridges+' passerelles';
+  $('mTorch').textContent=m.torches+' en réserve · luminosité '+Math.round(curLum(G,m)*100)+'% · '+(Number.isFinite(m.bridges) ? m.bridges+' passerelles' : 'passerelles illimitées');   // Infinity arrive en null (JSON)
   $('mInv').innerHTML=chips(m.inv);
 
   // coffre commun + contributions

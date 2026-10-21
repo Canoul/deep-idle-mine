@@ -28,11 +28,11 @@ test('famille Bloc : terre, pierre, pierre dure ; seuls eux se concassent', () =
 test('tables : les chances demandées par le créateur', () => {
   const ch = (b, item) => CRUSHER.loot[b].oneOf.flatMap(f => f.items).find(i => i.item === item)?.chance;
   for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']){
-    assert.equal(ch('Terre', g), 0.001); assert.equal(ch('Pierre', g), 0.0015); assert.equal(ch('Pierre dure', g), 0.0012);
+    assert.equal(ch('Terre', g), 0.002); assert.equal(ch('Pierre', g), 0.003); assert.equal(ch('Pierre dure', g), 0.004);
   }
-  assert.equal(ch('Terre', 'Treasure T1'), 0.0001);
-  assert.equal(ch('Pierre', 'Treasure T2'), 0.00015);
-  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.0002);
+  assert.equal(ch('Terre', 'Treasure T1'), 0.001);
+  assert.equal(ch('Pierre', 'Treasure T2'), 0.001);
+  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.0015);
 });
 
 test('poser : bloc seulement, une sorte par case, quantités invalides refusées, rien ne bouge en cas de refus', () => {
@@ -102,8 +102,8 @@ test('fréquence du butin proche des chances (200 000 lots de terre, hasard dét
   advance(c, N * MIN, rng);
   for(const s of c.out) if(s) got[s.item] = s.qty;
   assert.equal(c.crushed, N);
-  for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 120 && got[g] < 290, `${g} : ${got[g]} (attendu ~200)`);
-  assert.ok(got['Treasure T1'] > 5 && got['Treasure T1'] < 45, `Treasure T1 : ${got['Treasure T1']} (attendu ~20)`);
+  for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 320 && got[g] < 480, `${g} : ${got[g]} (attendu ~400)`);
+  assert.ok(got['Treasure T1'] > 140 && got['Treasure T1'] < 260, `Treasure T1 : ${got['Treasure T1']} (attendu ~200)`);
 });
 
 test('retirer, récupérer une case, tout récupérer ; opId rejoué sans effet', () => {

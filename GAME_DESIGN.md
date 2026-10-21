@@ -121,7 +121,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 - Pour choisir où creuser, l'IA compte d'avance ce coût de retour : une case creusée vers le bas = une échelle à poser plus tard.
 - **Vitesse de montée** : stat à part (2,25 blocs/s *(provisoire)*, soit ×0,75 de la marche), utilisée sur échelle dans les deux sens. Elle s'améliore indépendamment de la vitesse de marche. Conséquence voulue : pour remonter, l'IA choisit un chemin au **temps** le plus court et préfère marcher horizontalement vers une échelle existante plutôt que de remonter tout droit en posant de nouvelles échelles.
 - **Creuser vers le bas ou vers le haut coûte plus cher qu'horizontalement** : chaque case verticale impose une échelle (2 s de pose) et se parcourt plus lentement (vitesse de montée), à l'aller comme au retour. L'IA compte ce coût (pose + trajets futurs) quand elle choisit un minerai : elle préfère donc les galeries.
-- **Passerelle** : un bloc que le mineur pose (1 s *(provisoire)*) pour **combler un trou** et le traverser horizontalement. C'est plus rentable qu'une chute suivie d'échelles pour remonter. **Il ne peut la poser que s'il tient lui-même** (sur un bloc ou sur une échelle), jamais dans le vide ; depuis une échelle, il peut en poser à gauche ou à droite. Plus généralement, le mineur ne peut agir que depuis une case où il tient : l'IA ne prévoit jamais de s'arrêter dans le vide. Le mineur en porte 10 *(provisoire)*, rechargées en surface ; la passerelle est cassable et ne rapporte rien. *(À définir : faut-il un coût en ressource ?)*
+- **Passerelle** : un bloc que le mineur pose (1 s *(provisoire)*) pour **combler un trou** et le traverser horizontalement. C'est plus rentable qu'une chute suivie d'échelles pour remonter. **Il ne peut la poser que s'il tient lui-même** (sur un bloc ou sur une échelle), jamais dans le vide ; depuis une échelle, il peut en poser à gauche ou à droite. Plus généralement, le mineur ne peut agir que depuis une case où il tient : l'IA ne prévoit jamais de s'arrêter dans le vide. Les passerelles sont **illimitées** (décision du 21/10) ; la passerelle est cassable et ne rapporte rien. *(À définir : faut-il un coût en ressource ?)*
 - **Montée** : uniquement par échelle. Pour creuser vers le haut, il pose une échelle avant de miner le bloc du dessus.
 - Les « fondations » (boucher un trou) sont prévues mais pas encore implémentées.
 
@@ -217,7 +217,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 
 | Stat | Base | Prix d'un point | Exemple |
 |---|---|---|---|
-| Vitesse de minage | 1 | 1 300 x | +0,2 = 260 x (Pioche en fer) |
+| Vitesse de minage | 1 | 1 300 x | +0,4 = 520 x (Pioche en fer) |
 | Vitesse (marche) | 3 | 240 x | +0,6 = 144 x (Bottes en fer) |
 | Vitesse de montée | 2,25 | 250 x | +0,6 = 150 x (Jambes en fer) |
 | Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
@@ -226,8 +226,8 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
-| Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
-| Vision, boussole, passerelles, torches | – | ≈ 0 (effet indirect ou trop faible) | – |
+| Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Cape de Naingui |
+| Vision, boussole, torches (passerelles : illimitées) | – | ≈ 0 (effet indirect ou trop faible) | – |
 
 *Fortune : valeur calculée sans le coût en pods des doublons (un minerai en plus pèse dans le sac).* *Vitesse d'attaque : le temps de combat n'est que de ≈ 196 s par session, donc le gain réel plafonne bien en dessous du prix linéaire.* Les T_stat se remesurent avec `node scripts/stat-values.js` (≈ 1 min).
 
@@ -398,7 +398,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Bonus |
   |---|---|---|
-  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,1 |
+  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,2 *(×2 le 21/10)* |
   | Épée en pierre | 15 lingots de fer | Dégâts 8 (remplace les mains nues : 5 ; +3, moitié de l'épée en fer, ≈ 120 x) |
   | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
   | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +25 |
@@ -409,13 +409,13 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,2 |
+  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,4 *(×2 le 21/10)* |
   | Épée en fer | 10 Tainted iron | Dégâts 11 (remplace les mains nues : 5) |
   | Casque en fer | 5 Tainted iron | Oxygène +38 |
   | Plastron en fer | 8 Tainted iron | Pods +33 |
   | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +0,6 |
   | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
-  | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Découverte +1 |
+  | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
 
@@ -436,7 +436,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
-- **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
+- **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Four (onglet Four)
@@ -471,12 +471,14 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | 100 blocs | Chaque gemme inférieure (rubis, saphir, jade) | Treasure |
   |---|---|---|
-  | Terre | 0,1 % | T1 : 0,01 % |
-  | Pierre | 0,15 % | T2 : 0,015 % |
-  | Pierre dure | 0,12 % | T2 : 0,02 % |
+  | Terre | 0,2 % | T1 : 0,1 % |
+  | Pierre | 0,3 % | T2 : 0,1 % |
+  | Pierre dure | 0,4 % | T2 : 0,15 % |
+
+  *(Taux relevés le 21/10 par le créateur : ×2 à ×3 sur les gemmes, ×7 à ×10 sur les treasures.)*
 - Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
 - **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.
-- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec ces chances : ≈ 1 gemme toutes les 60 sessions par joueur (≈ 20 en solo), un treasure toutes les ≈ 2 000 sessions. À rééquilibrer si le concasseur doit servir.
+- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 21/10 (relevées) : ≈ 1 gemme toutes les 30 sessions par joueur (≈ 10 en solo), un treasure toutes les ≈ 250 sessions (≈ 80 en solo). Avant : 1 gemme / 60 sessions, 1 treasure / 2 000.
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :

@@ -724,3 +724,15 @@ Règles (voir CLAUDE.md) :
   `concasseur` supprimée.
 - **Note** : `deploy/ovh/update.sh` redémarre le serveur à chaque changement de `main`, même doc seule. D'après
   l'équipe, ça ne casse pas les parties en cours : laissé tel quel. ⚠️ Pas vérifié par Claude.
+
+### Équilibrage du 21/10 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : concasseur (terre gemmes 0,2 % / T1 0,1 % ; pierre 0,3 % / T2 0,1 % ; pierre dure 0,4 % / T2 0,15 %) ;
+  pioches ×2 (pierre +0,2, fer +0,4) ; Ceinture en peau de gobelin `torches:+10` (au lieu de `discoverMax:+1`) ;
+  passerelles illimitées : `STATS.bridges = Infinity` (la décrémentation laisse Infinity ; JSON → `null`, le HUD
+  affiche « passerelles illimitées ») ; stat retirée de `shownStats`, du réglage dev et de `scripts/weights.js`.
+- **Fichiers** : `src/config.js`, `src/ui/hud.js`, `scripts/weights.js`, `src/wiki/data.js`, GAME_DESIGN (§2, §3, §6).
+- **Tests** : crusher, blueprint, stuff mis aux nouvelles valeurs ; fall (+1 : passerelles illimitées) ; tier2, view,
+  wiki, craft, anticheat open/crusher : 89/89 + fall 12/12.
+- **Vérification** : ✅ simulation 3 × 5 : areas 3,4, profondeur 182,2 (avant 183,2), allers-retours 26,6, 0 blocage.
+- **Points fragiles** : un réglage dev qui remettrait `bridges` fini n'existe plus ; si un coût est ajouté un jour,
+  remettre la stat dans `shownStats`.

@@ -102,6 +102,21 @@ test('marcher vers un trou connu trop profond : passerelle (ou refus sans passer
   assert.equal(stepDir(G, m, 1, 0), false);
 });
 
+test('passerelles illimitées : le mineur en a une infinité, en poser n\'en retire pas, l\'affichage reçoit null', async () => {
+  const { STATS } = await import('../src/config.js');
+  const G = worldFrom(['', '    @     ', '##########', '##########', '##########', '##########', '##########']);
+  const m = G.miners[0];
+  assert.equal(STATS.bridges, Infinity);
+  assert.equal(m.bridges, Infinity);
+  for(let y = 1; y <= 5; y++) G.tiles[y][5] = 0;
+  G.tiles[1][4] = 0; G.tiles[2][4] = 1;
+  m.x = 4; m.y = 1;
+  assert.equal(stepDir(G, m, 1, 0, { noBridge:true }), true);
+  run(G, 2);
+  assert.equal(m.bridges, Infinity);
+  assert.equal(JSON.parse(JSON.stringify({ b:m.bridges })).b, null);   // le HUD affiche « passerelles illimitées »
+});
+
 test('étourdi : un tacle ne l\'interrompt pas', () => {
   const G = worldFrom(pit(4)), m = G.miners[0];
   hide(G, 5, 2, 5);

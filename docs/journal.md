@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Geoffrey — Retours lobby, IA, donjon, ténacité, équilibrage
+- **Pour le joueur** :
+  - concasseur plus généreux (gemmes ×2 à ×3, treasures ×7 à ×10) ;
+  - pioches deux fois plus efficaces (pierre +0,2, fer +0,4 de vitesse de minage) ;
+  - Ceinture en peau de gobelin : +10 torches (au lieu de Découverte +1) ;
+  - passerelles illimitées.
+- **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
+  la ceinture garde son nom.
+- **À suivre** : —
+- **État** : 🧪 sur la branche `geoffrey/retours-21-10` (pas en ligne)
+
+---
+
 ## 21/10/2026 — Jules — Organisation du dépôt et méthode de travail
 - **Pour le joueur** : rien ne change.
 - **Décisions** :
