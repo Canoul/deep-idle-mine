@@ -23,6 +23,7 @@ import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
+import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupTooltips } from './ui/tooltip.js';
@@ -121,12 +122,14 @@ applyRarityColors();   // couleurs des raretés (config)
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
 
 /* ---------- navigation ---------- */
+const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
   ui.tab = id;
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
+  if(id==='historique') historyTab?.refresh();
 });
 
 /* ---------- compte ---------- */

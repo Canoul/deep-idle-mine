@@ -42,6 +42,7 @@ export const accountApi = {
 export const gameApi = {
   info:   ()           => request('GET', '/api/game/info'),
   state:  ()           => request('GET', '/api/game/state'),
+  history: ()          => request('GET', '/api/game/history'),   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
   start:  (opts = {})  => request('POST', '/api/game/start', opts),
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),

@@ -345,7 +345,7 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Skills, Social**.
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Skills, Historique, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
@@ -353,6 +353,7 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inv
 - **Craft** : fabriquer des objets (voir ci-dessous).
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
 - **Skills** : dépenser les points gagnés aux niveaux (voir §3, Skills).
+- **Historique** : les sessions terminées du joueur (gardées 30 jours), la plus récente en haut : date, durée, joueurs, **seed**, areas débloquées, profondeur, XP reçue et **sa part du butin** (« rien reçu » s'il est parti avant la fin).
 - Social : à concevoir (page d'attente pour l'instant).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
 

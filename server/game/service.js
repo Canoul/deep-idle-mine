@@ -477,6 +477,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       });
     },
 
+    /* historique : ses sessions terminées (gardées config.keepEnded), les plus récentes d'abord, avec la seed et SA part */
+    async history(me){
+      const list = (await store.sessionsOf(me.id)).filter(s => s.status === 'done' && s.result).slice(0, 50);
+      return { sessions: list.map(s => {
+        const r = s.result, mine = (r.shares || []).find(x => x.account === me.id) ?? null;
+        return { id: s.id, seed: s.seed, dev: !!s.dev, startedAt: s.startedAt, endedAt: s.endedAt ?? null,
+                 players: s.players.map(p => p.name || 'Joueur'), areas: r.areasUnlocked ?? null, depth: r.maxDepth ?? null,
+                 left: !!mine?.left || hasLeft(s, me.id), bag: mine?.bag ?? {}, xp: mine?.xp ?? 0 };
+      }) };
+    },
+
     /* le joueur a vu le résultat : on ne le lui remontre plus */
     async ack(me, id){
       if(typeof id !== 'string') fail('bad_request', 400, 'Session manquante.');

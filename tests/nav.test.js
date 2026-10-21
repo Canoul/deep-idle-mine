@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab } from '../src/ui/nav.js';
 
 test('les 7 onglets sont dans l\'ordre voulu, Mine en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Recherche','Skills','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Recherche','Skills','Historique','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 
@@ -42,4 +42,14 @@ test('valeurs inconnues ignorées', () => {
 
 test('lien d\'invitation à un groupe (#rejoindre=…) : ouvre Mine, où est le lobby', () => {
   assert.equal(pickTab('#rejoindre=K7Q4P2', 'inventaire'), 'mine');
+});
+
+test('onglet Historique : présent ; carte d\'une session = seed, date, part (ou « rien reçu » si parti)', async () => {
+  const { TABS } = await import('../src/ui/nav.js');
+  assert.ok(TABS.some(t => t.id === 'historique' && t.ready));
+  const { sessionCard } = await import('../src/ui/history.js');
+  const base = { seed:4242, startedAt:Date.UTC(2026, 9, 21, 12, 0), endedAt:Date.UTC(2026, 9, 21, 12, 30), players:['Zoe', 'Max'], areas:2, depth:120, xp:7 };
+  const h = sessionCard({ ...base, left:false, bag:{ Charbon:12, Fer:3 } });
+  assert.match(h, /4242/); assert.match(h, /30 min/); assert.match(h, /Zoe, Max/); assert.match(h, /12/); assert.match(h, /Charbon/);
+  assert.match(sessionCard({ ...base, left:true, bag:{} }), /rien reçu/);
 });

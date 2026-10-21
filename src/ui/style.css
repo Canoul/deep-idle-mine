@@ -345,3 +345,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .navWiki{display:block;margin:auto 0 8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;color:var(--mut);text-decoration:none;font-size:13px}
 .navWiki:hover{color:var(--txt);border-color:var(--acc)}
 @media(max-width:700px){.navWiki{margin:0;white-space:nowrap;flex:none}}
+
+/* onglet Historique */
+.histList{display:flex;flex-direction:column;gap:10px}
+.hCard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.hTop{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;margin-bottom:2px}
+.hSeed{margin-left:auto;font-variant-numeric:tabular-nums;font-size:12px;color:var(--mut);user-select:all}
+.hLoot{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:13px}
+.hItem{display:inline-flex;align-items:center;gap:4px}
+.hItem img{width:20px;height:20px;image-rendering:pixelated}

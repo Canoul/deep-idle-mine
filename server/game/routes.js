@@ -10,6 +10,7 @@ export function gameRoutes(game){
   return {
     'GET /api/game/info':    async () => game.info(),
     'GET /api/game/state':   async ctx => { needMe(ctx); return game.state(ctx.me); },
+    'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },
     'POST /api/game/start':  async ctx => { needMe(ctx); return [201, await game.start(ctx.me, obj(ctx.body))]; },
     'POST /api/game/leave':  async ctx => { needMe(ctx); return game.leave(ctx.me, obj(ctx.body)); },

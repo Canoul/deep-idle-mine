@@ -483,3 +483,28 @@ test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé e
   r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
   assert.deepEqual([r.skills.tree, r.skills.spent], [null, 0]);
 });
+
+test('historique : sessions terminées du joueur, plus récentes d\'abord, avec la seed et SA part (rien s\'il est parti)', async () => {
+  const { createMemoryGameStore } = await import('../server/game/store.js');
+  const { createGameService } = await import('../server/game/service.js');
+  const { fakeLive } = await import('./helpers.js');
+  const { realDurationMs } = await import('../src/shared/game.js');
+  let now = 1_000_000;
+  const sum = rec => ({ id:rec.id, areasUnlocked:2, maxDepth:120,
+    shares: rec.players.map((p, i) => ({ account:p.account, left:false, bag:{ Charbon:10 + i }, xp:5 })) });
+  const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(sum), clock:() => now, randomSeed:() => 4242 });
+  const A = { id:'AAAA1111', name:'Zoe' };
+  assert.deepEqual((await game.history(A)).sessions, []);
+  await game.start(A, {});
+  assert.deepEqual((await game.history(A)).sessions, [], 'une session en cours n\'y est pas');
+  now += realDurationMs() + 1000; await game.pump();
+  const [s] = (await game.history(A)).sessions;
+  assert.equal(s.seed, 4242);
+  assert.deepEqual(s.bag, { Charbon:10 });
+  assert.deepEqual([s.areas, s.depth, s.xp, s.left, s.players], [2, 120, 5, false, ['Zoe']]);
+  await game.ack(A, s.id);
+  await game.start(A, {}); now += realDurationMs() + 1000; await game.pump();
+  const list = (await game.history(A)).sessions;
+  assert.equal(list.length, 2);
+  assert.ok(list[0].startedAt > list[1].startedAt, 'la plus récente en haut');
+});
