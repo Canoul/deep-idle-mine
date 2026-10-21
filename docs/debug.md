@@ -903,7 +903,8 @@ Règles (voir CLAUDE.md) :
 - **Quoi** :
   - `src/config.js` : `UPGRADE` (qualités, découverte R6/R7, liste des stats, prix en x, pas d'arrondi, paliers,
     opMemory), `STATS` + `mineSpeedPct, damagePct, crit, oneTap, piercing, looting` (0), `GEAR_RNG.salt`, libellés et
-    unités, `shownStats`, matériaux `Plume d'ange` / `Pierre de pleine lune` (textures `angel_feather`, `moon_stone`).
+    unités, `shownStats`, matériaux `Plume d'ange` / `Pierre de pleine lune` (textures `angel_feather`, `moon_stone`) — **ancien** : la
+    Pierre est remplacée par le `Cristal de pleine lune` (voir le correctif plus bas).
   - `src/meta/piece.js` (nouveau, pur) : `itemValue`, `linePoints`, `rollQuality`, `rollIdentity`, `pieceBonus`
     (lignes + multiplicateur du palier, `set` = base + apport × mult), `pieceName`, `pieceColor`, `sanitizePiece`
     (anti-triche : nombre de lignes, stats de la liste, % dans la fourchette de la qualité, une Découverte au plus en
@@ -948,4 +949,13 @@ Règles (voir CLAUDE.md) :
   min/max d'une qualité** peut sortir des pièces existantes de la fourchette → elles redeviennent non identifiées :
   prévoir une migration si on le fait un jour.
   `give-admin.js` écrit dans le stockage : serveur arrêté en local, redémarré en ligne (sinon écrasé).
+
+### Amélioration : Cristal de pleine lune au lieu de la « Pierre de pleine lune » (Geoffrey) — branche `geoffrey/fix-pierre-pleine-lune`
+- **Quoi** : `UPGRADE.levels[].cost` demandait `Pierre de pleine lune`, objet sans aucune source (malentendu : c'est le
+  butin du minotaure, `DUNGEON.loot` = `Cristal de pleine lune`) → amélioration impossible en ligne. Coûts passés au
+  Cristal ; objet `Pierre de pleine lune` et texture `moon_stone` retirés (`src/config.js`, `scripts/gen_textures.py`,
+  `textures/moon_stone.png`) ; `scripts/give-admin.js`, tests, GAME_DESIGN, état du projet suivent.
+- **Effet de bord** : une Pierre déjà présente dans un inventaire (seulement via give-admin, jamais distribuée en
+  ligne) reste un objet empilable inconnu du catalogue, sans usage.
+- **Tests** : `amelioration`, `anticheat/upgrade`, `wiki`, `dungeon`, `inventory`.
 

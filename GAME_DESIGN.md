@@ -496,12 +496,12 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus 
 
 | Niveau | Stats | Réussite | Coût |
 |---|---|---|---|
-| +1 | +3 % | 100 % | 3 Plumes d'ange, 3 Pierres de pleine lune |
+| +1 | +3 % | 100 % | 3 Plumes d'ange, 3 Cristaux de pleine lune |
 | +2 | +5 % | 95 % | 5 + 5 |
 | +3 | +7 % | 90 % | 7 + 7 |
 
 Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Pierre de pleine lune** : nouveau matériau, **sans source en jeu pour l'instant** (à décider). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 15 cristaux pour monter une pièce à +3. Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
 
 ### Four (onglet Four)
 - **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.

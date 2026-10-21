@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Geoffrey — Amélioration : le Cristal de pleine lune du minotaure remplace la « Pierre »
+- **Pour le joueur** : l'amélioration coûte des Plumes d'ange (mine instantanée) et des **Cristaux de pleine lune**
+  (minotaure du donjon). Avant ce correctif, elle demandait une « Pierre de pleine lune » que rien ne donnait : on ne
+  pouvait rien améliorer.
+- **Décisions** : la Pierre de pleine lune n'existe plus (c'était un malentendu : c'est le cristal du minotaure).
+- **À suivre** : 15 cristaux pour un +3, avec un donjon dans 20 % des parties et 1 à 3 cristaux par minotaure : c'est
+  lent, à surveiller.
+- **État** : ✅ en ligne le 21/10
+
+---
+
 ## 21/10/2026 — Geoffrey — Onglet Amélioration : identification R1 à R7 et amélioration +1 à +3
 - **Pour le joueur** : nouvel onglet 💎 **Amélioration**.
   - **Identification** : on pose une pièce de stuff et on sacrifie un deuxième exemplaire du même objet. La pièce
@@ -33,8 +44,8 @@ Modèle d'entrée :
   10 % = la valeur d'une pioche en pierre. Pas d'ID dérivé « 113:4 » : chaque pièce garde sa qualité, ses lignes et
   son niveau sur elle-même (deux R4 n'ont pas les mêmes stats).
 - **À suivre** :
-  - décider d'où viennent les Pierres de pleine lune (aucune source en jeu pour l'instant) ; les Plumes d'ange se
-    ramassent dans la mine instantanée (c'est le même objet) ;
+  - ~~décider d'où viennent les Pierres de pleine lune~~ → Cristal de pleine lune du minotaure (correctif plus haut) ;
+    les Plumes d'ange se ramassent dans la mine instantanée (c'est le même objet) ;
   - les paliers +4 à +15 ;
   - la chance d'avoir « +1 Découverte » en R6/R7 (25 % par ligne, provisoire) ;
   - le prix du butin des mobs (provisoire) ;

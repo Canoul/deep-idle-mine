@@ -13,7 +13,7 @@ import { mineBlock, hitDamage, mineDuration } from '../src/sim/actions.js';
 import { mineT } from '../src/sim/miner.js';
 import { worldFrom } from './helpers.js';
 
-const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Pierre de pleine lune';
+const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de pleine lune';
 let n = 0; const id = () => 'op-amelio-' + (++n);
 const fixed = v => () => v;                                   // « hasard » fixe pour les tests
 const seq = vs => { let i = 0; return () => vs[i++ % vs.length]; };
