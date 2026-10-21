@@ -251,6 +251,24 @@ def main():
         rect(ing, 2, 11, 12, 1, hexc(dark))
         tex[name] = ing
 
+    # shiny (lingot déjà cuit tombé à la mine) : le lingot plus clair, une étincelle à 4 branches et deux éclats
+    for name, base, light, dark in [('shiny_iron', '#dfe3ea', '#ffffff', '#9aa0aa'),
+                                    ('shiny_gold', '#ffd447', '#fffbe0', '#c9961f')]:
+        sh = blank()
+        for i, yy in enumerate(range(7, 13)):
+            rect(sh, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))
+        rect(sh, 4, 7, 8, 1, hexc(light))
+        rect(sh, 5, 8, 3, 1, hexc(light))
+        rect(sh, 2, 12, 12, 1, hexc(dark))
+        rect(sh, 9, 9, 1, 1, hexc('#ffffff'))                       # éclat sur le lingot
+        spark, glow = hexc('#ffffff'), hexc('#fff3a8')
+        rect(sh, 12, 1, 1, 7, glow); rect(sh, 9, 4, 7, 1, glow)     # étincelle : branches
+        rect(sh, 12, 2, 1, 5, spark); rect(sh, 10, 4, 5, 1, spark)
+        rect(sh, 11, 3, 3, 3, spark)                                # cœur
+        rect(sh, 3, 3, 1, 1, glow); rect(sh, 2, 4, 3, 1, glow); rect(sh, 3, 5, 1, 1, glow)   # petit éclat à gauche
+        rect(sh, 3, 4, 1, 1, spark)
+        tex[name] = sh
+
     # pioche en pierre (stuff) : manche en bois en diagonale, tête de pierre grise en arc
     pick = blank()
     for i in range(10):

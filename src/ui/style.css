@@ -314,3 +314,8 @@ button:disabled{opacity:.45;cursor:not-allowed}
 /* niveau du mineur */
 .lvl{color:var(--acc);font-size:15px}
 .lvlUp{color:var(--acc);font-weight:700;margin:8px 0}
+
+/* shiny : lingot déjà cuit tombé à la mine (1 %) ; il scintille partout où son icône apparaît */
+img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
+@keyframes shinyGlint{0%,100%{filter:brightness(1) drop-shadow(0 0 1px rgba(255,240,170,.35))}50%{filter:brightness(1.35) drop-shadow(0 0 4px rgba(255,240,170,.9))}}
+@media(prefers-reduced-motion:reduce){img[src*="textures/shiny_"]{animation:none;filter:drop-shadow(0 0 3px rgba(255,240,170,.7))}}

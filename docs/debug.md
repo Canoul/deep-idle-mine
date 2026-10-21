@@ -510,3 +510,20 @@ Règles (voir CLAUDE.md) :
 - **Fichiers** : `src/meta/stuff.js`, `src/ui/stuff.js`, `index.html`, GAME_DESIGN §3 Skills et §6 Stuff.
 - **Tests** : skills, stuff, carac 27/27 (dont (1 + 0,2) × 1,06 = 1,27 avec la pioche en fer).
 - **Vérification** : ✅ tests ; calcul de la partie inchangé. ⚠️ Pas regardé dans un navigateur.
+
+## 21/10/2026
+
+### Shiny : 1 % des fers et ors minés tombent déjà cuits (« Shiny iron », « Shiny gold »)
+- **Quoi** : `SHINY` en config (chance 0,01, minerai → shiny, poids 1). `mineBlock` tire avec `G.shinyRng` (hasard
+  « live » à part, dérivé de la seed : ne décale ni les mobs ni le reste) ; le shiny remplace le minerai, le bloc compte
+  toujours (déblocage, XP, skills). Journal « ✨ … », `G.stats.shiny` et `m.stats.shiny`. Objets famille ingot
+  (`shiny:true`). Textures `shiny_iron`, `shiny_gold` (lingot + étincelle) ; scintillement CSS sur toute icône
+  `textures/shiny_*` (inventaire, craft, four, butin), coupé si « réduire les animations ».
+- **Fichiers** : `src/config.js`, `src/sim/{actions,session}.js`, `src/ui/style.css`, `scripts/gen_textures.py`,
+  `textures/shiny_*.png`, GAME_DESIGN §2 (familles d'objets).
+- **Tests** : `tests/shiny.test.js` (6), `tests/anticheat/shiny.test.js` (2) ; goblin, blocks, session, inventory,
+  furnace, share, view, game-replay : 80/80.
+- **Vérification** : ✅ simulation 3 × 5 : 0 blocage, areas 4,0, profondeur 190,0, allers-retours 27,0. Seeds 7919 et
+  15838 : 6 et 7 shiny au coffre. Taux mesuré ≈ 1 % sur 20 000 fers. ⚠️ Scintillement pas regardé dans un navigateur.
+- **Points fragiles** : aucun usage hors session pour l'instant (ni recette, ni four). Le gobelin ne vole pas les shiny
+  (ce ne sont pas des minerais).

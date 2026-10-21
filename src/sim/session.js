@@ -1,6 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM, SHINY } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
 import { createMiner, curLum } from './miner.js';
@@ -18,11 +18,11 @@ export function newSession(seed, opts={}){
   const n = opts.miners ?? 1;
   const specs = Array.isArray(n) ? n : (n>1 ? TEAM.slice(0,n) : [{}]);
   const G = {
-    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b),
+    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, winch:null, treasures:new Map(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.bugFirstSpawn, spawnTurn:0,
-    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0},
+    stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
   };

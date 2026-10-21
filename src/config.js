@@ -245,7 +245,7 @@ export const SKILLS = {
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
-  'ingot_iron','ingot_gold','ingot_tainted','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
+  'ingot_iron','ingot_gold','ingot_tainted','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'ladder','chest','miner','mimic','bug','goblin','torch','stun','winch_rope','winch_top','bucket'];
 
@@ -269,6 +269,21 @@ export const FURNACE = {
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':20 }, fuel:50, time:180, tex:'ingot_tainted' },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
+
+/* ---- Shiny ----
+   Quand le mineur mine un bloc de minerai qui a une recette de four (FURNACE.recipes : fer, or), il a `chance` d'obtenir
+   à la place un « shiny » : l'objet déjà cuit (un lingot qui scintille), 1 pour 1. Le bloc compte toujours comme un
+   minerai miné (déblocage, XP, skills). Pas pour le butin des mimics. Tirage avec un hasard « live » à part
+   (G.shinyRng, tiré de la seed) : il ne décale ni les mobs ni le reste de la partie. Valeurs provisoires. */
+export const SHINY = {
+  chance: 0.01,
+  items: {                                  // minerai (nom du bloc) → shiny
+    Fer: { item:'Shiny iron', tex:'shiny_iron' },
+    Or:  { item:'Shiny gold', tex:'shiny_gold' },
+  },
+  w: 1,                                     // poids dans les pods (comme un lingot)
+  salt: 0x5a1e7a11,                         // pour dériver G.shinyRng de la seed
 };
 
 /* ---- Hors session : stuff (onglet Stuff) ----
@@ -322,6 +337,7 @@ export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
     .map(b => [b.name, { cat:b.family ?? b.type, tex:b.tex, w:b.w, stack:true }])),
   ...Object.fromEntries([...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => [r.out, { cat:'ingot', tex:r.tex, w:1, stack:true }])),
+  ...Object.fromEntries(Object.values(SHINY.items).map(s => [s.item, { cat:'ingot', tex:s.tex, w:SHINY.w, stack:true, shiny:true }])),
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },

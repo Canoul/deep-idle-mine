@@ -1,5 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY } from '../config.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './miner.js';
@@ -24,12 +24,22 @@ function lootOf(G,m,n){
 
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }
 
+/* shiny : un minerai qui a une recette de four tombe parfois déjà cuit (SHINY) ; renvoie le shiny ou null */
+export function shinyOf(G,t){
+  const s=Object.hasOwn(SHINY.items, BLOCKS[t].name) ? SHINY.items[BLOCKS[t].name] : null;
+  return s && G.shinyRng() < SHINY.chance ? s.item : null;
+}
+
 export function mineBlock(G,m,x,y){
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
   if(mim){ if(!mim.revealed){ mim.revealed=true; log(G,'⚠ Un mimic se cachait dans la roche !'); } return; }
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
-  if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
+  const shiny=shinyOf(G,t);
+  if(shiny){
+    collect(m, shiny, ITEMS[shiny].w, 1); G.stats.shiny++; m.stats.shiny=(m.stats.shiny||0)+1;
+    log(G, `✨ ${m.name} trouve un ${shiny} !`);
+  } else if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
 }

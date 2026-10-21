@@ -50,6 +50,8 @@ Chaque bloc appartient à une catégorie :
 - **ore** (fer, or, diamant) : minerais ; ceux qui ont une recette se fondent au four (fer, or ; pas le diamant pour l'instant) ;
 - **ingot** : les lingots sortis du four.
 
+**Shiny.** Quand un mineur mine un bloc de **fer** ou d'**or** (les minerais qui se fondent au four), il a **1 %** de chance *(provisoire)* d'obtenir à la place un **shiny** : « Shiny iron », « Shiny gold ». C'est l'objet **déjà cuit** (famille ingot, poids 1 dans les pods), dont l'icône porte une étincelle et **scintille**. Un bloc donne le minerai **ou** le shiny, jamais les deux ; il compte toujours comme minerai miné (déblocage, XP, skills). Pas de shiny pour le charbon, le diamant ni le butin des mimics. Le journal de la session l'annonce (« ✨ … trouve un Shiny iron ! »). Un shiny ne repasse pas au four. Ordre de grandeur : ~6 à 7 shiny par session à 3. **Usage hors session : à décider.**
+
 ### Compositions des areas
 
 | Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Vide |
