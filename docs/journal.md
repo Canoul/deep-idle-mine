@@ -27,7 +27,7 @@ Modèle d'entrée :
   de récent ; nos fichiers ne sont pas dans les listes anti-pubs EasyList / EasyPrivacy. Sans son message d'erreur,
   impossible de savoir ce qui bloque chez lui : ce cadre nous le donnera.
 - **À suivre** : une fois en ligne, demander au joueur Opera GX une capture du cadre, puis corriger la vraie cause.
-- **État** : 🧪 sur la branche `jules/fix-opera-gx` (pas en ligne)
+- **État** : ✅ en ligne le 21/10
 
 ---
 
