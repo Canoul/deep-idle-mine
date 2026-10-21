@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Session : colonnes jusqu'en bas, surface de nouveau visible
+- **Pour le joueur** : pendant une session, les panneaux de gauche et de droite descendent jusqu'en bas de l'écran
+  quand la barre d'action ne passe pas dessous (grands écrans) ; la mine montre de nouveau la surface et le ciel en
+  début de session (bug de l'agrandissement de la veille : le haut de la vue était rogné). La mine remplit toujours
+  la largeur, et montre plus ou moins de lignes selon la hauteur de l'écran.
+- **État** : 🧪 sur la branche `jules/colonnes-session` (pas en ligne)
+
+---
+
 ## 22/10/2026 — Jules — Revue de sécurité
 - **Pour le joueur** : rien de visible. Le jeu est mieux protégé contre les sites malveillants (il ne peut plus être
   affiché dans un cadre d'un autre site, seuls nos propres scripts peuvent tourner sur la page).

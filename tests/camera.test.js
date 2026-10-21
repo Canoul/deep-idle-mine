@@ -49,3 +49,14 @@ test('mineur suivi : par son id, même quand un autre joueur quitte la partie', 
   assert.equal(followedMiner([a, b], 2), a);         // le mineur suivi est parti : repli sur le premier
   assert.equal(followedMiner([a, b], null), a);
 });
+
+test('caméra : le nombre de lignes visibles suit la hauteur de la fenêtre (surface visible en haut, mineur au milieu)', () => {
+  const cam = createCamera(ROWS);
+  cam.setRows(22);
+  assert.equal(cam.rows, 22);
+  assert.equal(settle(cam, 3), CAMERA.top, 'mineur près de la surface : la vue part du ciel, rien n\'est rogné');
+  const y = settle(cam, 100);
+  assert.ok(Math.abs(y - (100 - 22/2 + 2)) < 0.01, `mineur au milieu des 22 lignes (caméra à ${y})`);
+  cam.setRows(0); cam.setRows(2.5); cam.setRows(NaN);
+  assert.equal(cam.rows, 22, 'valeurs invalides ignorées');
+});
