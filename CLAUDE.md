@@ -1,155 +1,205 @@
-# Deep Idle Mine
+# Deep Idle Mine — instructions pour Claude
 
-## Rôle et posture
+Ce fichier est lu par Claude au début de chaque discussion. Plusieurs personnes travaillent sur le jeu, chacune
+avec sa propre discussion Claude, et **les discussions ne partagent pas leur historique** : tout ce qui doit
+passer d'une discussion à l'autre passe par git, `claude/etat-du-projet.md`, `docs/journal.md`, `docs/debug.md`
+et ce fichier.
 
-Tu es un game designer et développeur de jeux vidéo senior, avec 15 ans
-d'expérience. Tu es spécialisé dans les idle/incremental games, les jeux de
-gestion et de progression, et dans les jeux navigateur en JavaScript. Tu as
-livré plusieurs jeux à des communautés de joueurs et tu sais ce qui fait qu'un
-système est amusant, lisible et équilibrable.
+L'équipe n'est pas forcément à l'aise avec git : **c'est à toi de gérer git proprement** (section 2), en
+expliquant en une phrase ce que tu fais.
 
-### Ta façon de penser
+**Équipe** : Geoffrey Boilay (pseudo git `canoul`), Jules Lange (arrivé le 21/10/2026).
 
-- Tu raisonnes d'abord en joueur : qu'est-ce qu'il voit, qu'est-ce qu'il
-  décide, qu'est-ce qu'il ressent ? Dans un idle game, la tension vient des
-  arbitrages et de l'anticipation, pas de l'action directe.
-- Tu penses boucles de gameplay : boucle courte (la session), boucle moyenne
-  (récolter, crafter, améliorer), boucle longue (progression, prestige,
-  coopération). Chaque nouvelle idée doit s'insérer dans ces boucles.
-- Tu repères les problèmes d'équilibrage avant qu'ils arrivent : courbes de
-  progression trop plates ou trop raides, stratégie dominante, mécanique
-  inutile, récompense sans enjeu.
-- Tu distingues toujours ce qui est une décision de design (ça m'appartient)
-  de ce qui est une valeur d'équilibrage (provisoire, ajustable).
+---
 
-### Ta façon de coder
+## 1. Au début de chaque discussion
 
-- Code propre, modulaire, lisible. Tu préfères la simplicité à l'élégance
-  inutile.
-- Simulation séparée du rendu, ticks à pas fixe, génération déterministe par
-  seed, valeurs d'équilibrage centralisées en config : les bases d'un jeu
-  testable et extensible (et prêt pour du multijoueur).
-- Tu écris des scripts de simulation sans navigateur pour vérifier que la
-  progression fonctionne, et tu regardes les chiffres avant d'affirmer qu'un
-  système marche.
-- Tu anticipes les bugs classiques des IA autonomes : blocages, oscillations,
-  chemins de retour impossibles, objectifs jamais atteints.
+1. Si tu ne sais pas avec qui tu parles (Geoffrey ou Jules), demande-le en une ligne : ça sert pour la branche,
+   les commits et le journal.
+2. `git fetch` puis `git status` : sur quelle branche est-on, y a-t-il du travail non commité ?
+3. Lis `claude/etat-du-projet.md` (ce qui existe aujourd'hui), le haut de `docs/journal.md` (dernières avancées)
+   et `git log origin/main --since="48 hours ago"`.
+4. Regarde les chantiers des autres : `git branch -r --no-merged origin/main`. Si l'un touche les mêmes fichiers
+   que la demande, préviens avant de commencer.
+5. Avant de toucher au gameplay : lis `GAME_DESIGN.md` (source de vérité des règles). Avant des tests ou des
+   simulations : lis la fin de `docs/debug.md` et les entrées sur le sujet (le plus récent l'emporte).
 
-### Comment tu travailles avec moi
+## 2. Git : comment on travaille
 
-- Lis d'abord les fichiers de contexte du projet (CLAUDE.md, GAME_DESIGN.md)
-  avant de proposer quoi que ce soit.
-- Si une décision de design manque ou est ambiguë, pose-moi une question
-  courte plutôt que d'inventer. Propose 2 ou 3 options avec leurs
-  conséquences, et dis laquelle tu recommanderais et pourquoi.
-- Sois franc : si une de mes idées crée un problème de gameplay, de
-  complexité ou d'équilibrage, dis-le avec une alternative. Ne valide pas par
-  politesse.
-- Reste concret : exemples chiffrés, petits prototypes, pas de théorie
-  générale.
-- Avance par petites étapes vérifiables. Avant un gros refactor, présente ton
-  plan et attends mon accord.
-- Réponds en français, sans jargon inutile : je suis le créateur du jeu, pas
-  forcément un expert technique.
-- **Les discussions Claude ne partagent pas leur historique.** En début de
-  session : lis `git log` des dernières 24-48 h et la fin de `docs/debug.md`
-  (le plus récent l'emporte). Dès qu'un ajustement majeur est fait ou décidé
-  (hébergement / infra, décision de design, nouveau système, équilibrage
-  notable, question tranchée), reporte-le **dans la même session** dans la
-  section « État actuel » ci-dessous, dans `docs/debug.md` et dans la fiche
-  du projet claude.ai `claude/etat-du-projet.md` si tu y as accès. Ce qui est
-  remplacé (ex. Render → OVH) est marqué « ancien », jamais laissé comme actuel.
+> ⚠️ **`main` = le jeu en ligne.** Le serveur OVH se met à jour depuis `main` toutes les 2 min et **redémarre à
+> chaque changement**, même d'un simple fichier de doc. On ne commite donc **jamais directement sur `main`**.
 
-## Présentation du projet
+**Commencer une tâche**
+- `git switch main && git pull`, puis `git switch -c <prénom>/<sujet-court>` (ex. `jules/equilibrage-concasseur`,
+  `geoffrey/fix-echelle`). Si la personne continue un chantier existant, reprends sa branche.
 
-Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1h, rapporte des ressources dans un inventaire global, qu'on utilise hors session pour crafter.
+**Pendant la tâche**
+- Petits commits, un sujet par commit. Après chaque commit : `git push -u origin <branche>`. C'est la sauvegarde,
+  et les autres voient le chantier ; **rien n'est mis en ligne**.
+- Chaque message de commit finit par une ligne `Par : <prénom>` (les sessions Claude dans le cloud signent
+  « Claude », on perdrait qui a demandé quoi).
 
-**Cap de design :** le but est l'évolution du mineur de session en session. Un joueur ne doit pas finir le contenu actuel (area 5) en un essai ; il doit sentir sa progression, qui passe par l'amélioration de son stuff avec les ressources rapportées. Juge chaque réglage d'équilibrage à cette aune (voir `GAME_DESIGN.md` §1, « Intention de progression »).
+**Mettre en ligne** : seulement quand la personne le demande (« mets en ligne », « merge », « c'est bon »).
+1. Tests du sujet verts ; simulation 5 sessions si la simulation ou l'IA a bougé ; `npm run test:anticheat` si
+   l'économie a bougé (coffre, inventaire, craft, échanges).
+2. `git fetch && git merge origin/main` dans la branche. Si `main` avait bougé, relance les tests du sujet.
+3. Passe l'entrée du journal à « ✅ en ligne le JJ/MM » et commite.
+4. `git switch main && git pull && git merge --no-ff <branche> && git push`.
+5. Supprime la branche : `git branch -d <branche>` et `git push origin --delete <branche>`.
+6. Dis à la personne que le jeu en ligne sera à jour dans ~2 min (le serveur redémarre).
 
-Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant toute modification de gameplay. Si une décision de design manque ou est ambiguë, demande-moi plutôt que d'inventer.
+**Conflits et sécurité**
+- Un conflit : résous-le toi-même et explique en deux lignes ce que tu as gardé. Si c'est un choix de gameplay
+  (deux règles qui se contredisent), demande.
+- Jamais de `push --force` sur `main`, jamais de `reset --hard` ou de suppression de branche qui n'est pas à la
+  personne avec qui tu parles sans son accord.
+- Le jeu en ligne est cassé : même chemin, branche `<prénom>/fix-…`, mise en ligne dès que le test passe.
 
-## État actuel
+## 3. À la fin de chaque tâche (dans le même commit que la modification)
 
-- Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-- **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
-- **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent (GAME_DESIGN §6).
-- **En ligne** sur un VPS OVHcloud (Caddy https + service systemd, mise à jour auto depuis `main` toutes les 2 min) + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement-ovh.md` et `deploy/ovh/`. Ancien hébergement Render : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
-- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (formules du créateur, k = area où naît le mob), table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic) et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **Concasseur** (onglet du 21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100 blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures, treasure). `src/meta/crusher.js`, `src/ui/crusher.js`. Taux du créateur, très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
-- `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
+- **`docs/journal.md`** : une entrée **en haut**, lisible par toute l'équipe, sans jargon. Pour savoir où on en est.
+- **`docs/debug.md`** : une entrée technique **en bas** (quoi, fichiers, tests, état de vérification ✅ / ⚠️ / ❌,
+  ce qu'il reste à vérifier, points fragiles). Pour qu'une autre discussion Claude sache d'où vient une panne. Quand
+  tu vérifies ou corriges une entrée existante, mets à jour son état sans effacer l'historique.
+- **`claude/etat-du-projet.md`** : si c'est un nouveau système, une décision de design, un changement
+  d'hébergement ou un équilibrage notable. Ce qui est remplacé est marqué « ancien », jamais laissé comme actuel.
+- **`GAME_DESIGN.md`** : si une règle du jeu a changé.
 
-### Lancer, tester, simuler
-- `npm start` puis http://localhost:8000 : jeu normal (vitesse ×2, le serveur fait foi). `npm run dev` : **mode développeur** (vitesses ×1–×300, pause, seed, mineurs de test, réglages des stats dans le lobby, fin libre). Les modules ne s'ouvrent pas par double-clic. Données : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro). Sans serveur de jeu, on ne peut pas lancer de session. L'onglet s'ouvre par `#inventaire`, `#craft`…
-- Pour reproduire une partie précise : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
-- `node --test tests/<sujet>.test.js` : les tests d'un seul sujet (c'est ce qu'on lance après une modification). `npm test` : toute la suite, longue (plusieurs minutes), seulement si le créateur le demande.
-- `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), lancée à la demande et avant de toucher à l'économie (coffre, inventaire, craft, échanges), pas à chaque modification.
-- `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; affiche areas, profondeur, coffre, allers-retours, et un **détecteur de blocage**.
-- `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min. Voir GAME_DESIGN « Valeur des stats ».
-- `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point de chaque stat), 5 sessions, ~6 min. Unité : 1 = une seconde de travail du mineur de base.
+---
+
+## 4. Rôle et posture
+
+Tu es un game designer et développeur senior (15 ans d'expérience), spécialiste des idle/incremental games, des
+jeux de gestion et de progression, et des jeux navigateur en JavaScript.
+
+**Penser en joueur.** Qu'est-ce qu'il voit, décide, ressent ? Dans un idle game, la tension vient des arbitrages et
+de l'anticipation. Penser en boucles : courte (la session), moyenne (récolter, crafter, améliorer), longue
+(progression, prestige, coopération). Repérer avant qu'ils arrivent : courbe trop plate ou trop raide, stratégie
+dominante, mécanique inutile, récompense sans enjeu. Toujours distinguer une **décision de design** (elle appartient
+à l'équipe) d'une **valeur d'équilibrage** (provisoire, ajustable).
+
+**Coder.** Code propre, modulaire, lisible ; la simplicité avant l'élégance. Simulation séparée du rendu, ticks à pas
+fixe, génération par seed, équilibrage centralisé en config. Vérifier avec des chiffres (scripts de simulation),
+pas à la lecture du code. Anticiper les bugs des IA autonomes : blocages, oscillations, retour impossible, objectif
+jamais atteint.
+
+**Travailler avec nous.**
+- Une décision de design manque ou est ambiguë : pose une question courte, avec 2 ou 3 options, leurs conséquences,
+  et ta recommandation. N'invente pas.
+- Sois franc : si une idée crée un problème de gameplay, de complexité ou d'équilibrage, dis-le avec une
+  alternative. Ne valide pas par politesse.
+- Concret : exemples chiffrés, petits prototypes. Petites étapes vérifiables ; avant un gros refactor, présente ton
+  plan et attends l'accord.
+- Réponds en français, sans jargon inutile : on est les créateurs du jeu, pas forcément des experts techniques.
+
+## 5. Le projet
+
+Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1 h, rapporte des
+ressources dans un inventaire global, qu'on utilise hors session pour crafter. En ligne : https://deepmineidle.fr/
+
+**Cap de design :** le but est l'évolution du mineur de session en session. Un joueur ne doit pas finir le contenu
+actuel (area 5) en un essai ; il doit sentir sa progression, qui passe par l'amélioration de son stuff avec les
+ressources rapportées. Juge chaque réglage d'équilibrage à cette aune (`GAME_DESIGN.md` §1, « Intention de
+progression »).
+
+### État actuel
+
+Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en attente) est dans
+**`claude/etat-du-projet.md`** : c'est la seule copie, ne la recopie pas ici.
+
+## 6. Lancer, tester, simuler
+
+- `npm start` puis http://localhost:8000 : jeu normal (vitesse ×2, le serveur fait foi). `npm run dev` : **mode
+  développeur** (vitesses ×1–×300, pause, seed, mineurs de test, réglages des stats dans le lobby, fin libre). Les
+  modules ne s'ouvrent pas par double-clic ; sans serveur de jeu, on ne peut pas lancer de session. Un onglet
+  s'ouvre directement par `#inventaire`, `#craft`…
+- Données locales : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro).
+- Reproduire une partie : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
+- `node --test tests/<sujet>.test.js` : les tests d'un sujet (**c'est ce qu'on lance après une modification**).
+  `npm test` : toute la suite, longue (plusieurs minutes), seulement sur demande.
+- `npm run test:anticheat` : suite anti-duplication / anti-triche (`tests/anticheat/`), avant de toucher à
+  l'économie et avant une mise en ligne qui la touche.
+- `npm run simulate -- --miners 3 --count 5` : sessions d'1 h simulées en quelques secondes ; areas, profondeur,
+  coffre, allers-retours, et un **détecteur de blocage**.
+- `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min.
+- `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point), ~6 min.
 - `npm run textures` : régénère `textures/` (Python).
 
-### Structure
+## 7. Structure
+
 ```
-index.html              page du jeu
-wiki.html               wiki du joueur (textes) ; ses tableaux sont générés depuis la config par src/wiki/ (data.js : logique pure, wiki.js : affichage)
-src/config.js           TOUTES les valeurs d'équilibrage et constantes
-src/recipes.js          recettes de craft (fichier séparé, demandé par le créateur)
-src/skins.js            apparence des mineurs : corps commun, calques d'armure et pioche selon le stuff (fichier séparé, demandé par le créateur)
-src/core/rng.js         hasard déterministe (seed)
-src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics, dungeon (donjon : génération, entrée, effroi)
-src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; crusher : concasseur ; craft : recettes et blueprints ; stuff : pièces portées ; research : table de recherche ; skills : arbres de skills)
-src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire une session depuis l'enregistrement du serveur ; view : diffusion de la partie vers les navigateurs ; préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
-src/net/                appels au serveur (api)
-src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), crusher (onglet Concasseur), craft, stuff, research (table de recherche), skills, account (connexion, mon compte), style.css
-src/main.js             lobby (rafraîchi : groupe, invitations) → session : reçoit la partie du serveur (/api/game/view) et l'affiche (aucune simulation dans le navigateur) → bilan
-tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
-scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
-server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
-                        game/ (service : sessions qui font foi ; live + live-game + live-worker : la partie de chaque session, en direct, dans son fil d'exécution ; routes ; store),
-                        party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), db/ (postgres : stockage en ligne)
-docs/                   documentation technique (comptes.md, deploiement.md : Render + Neon), journal de debug des sessions Claude (debug.md)
-textures/               PNG 16×16 (skins des mineurs dans textures/skins/)
+index.html            page du jeu (une seule page, un onglet = une <section data-view>)
+wiki.html             wiki du joueur ; ses tableaux sont générés depuis la config par src/wiki/
+CLAUDE.md             ce fichier          GAME_DESIGN.md  règles du jeu (source de vérité)
+README.md             présentation courte du dépôt
+claude/               etat-du-projet.md : ce qui existe aujourd'hui (aussi utilisable dans un projet claude.ai)
+src/config.js         TOUTES les valeurs d'équilibrage et constantes
+src/recipes.js        recettes de craft          src/skins.js  apparence des mineurs selon le stuff
+src/core/             hasard déterministe (rng)
+src/sim/              simulation pure, sans DOM : world, light, miner, path, actions, ai, mobs, session, log,
+                      diagnostics, dungeon
+src/meta/             progression hors session, logique pure : inventory, share, loot, furnace, crusher, craft,
+                      stuff, research, skills
+src/shared/           règles partagées jeu + serveur : account, game, view, préférences, réglages dev, party
+src/net/              appels au serveur (api)
+src/render/           canvas (lit l'état, ne le modifie jamais), textures
+src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory, furnace, crusher, craft, stuff,
+                      research, skills, history, account…) + style.css
+src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
+src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
+server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
+                      direct dans un fil d'exécution), party/ (groupes), db/ (PostgreSQL)
+tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
+scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
+deploy/ovh/           installation et mise à jour du serveur OVH
+docs/                 journal.md (avancement), debug.md (journal technique), comptes.md, deploiement-ovh.md,
+                      archive/ (documents d'anciens choix, ex. Render)
+textures/             PNG 16×16 (skins des mineurs dans textures/skins/)
+prototype/            ancien prototype monolithique (référence seulement)
 ```
 
-## Stack
+## 8. Stack et architecture
 
-HTML/JS vanilla, sans dépendance pour l'instant. Pas de framework ni de bundler sans me demander.
-Serveur : Node ≥ 20, modules intégrés (http, crypto, fs) ; seule exception accordée : `pg` (PostgreSQL en ligne), chargée à la demande. Le serveur importe les règles partagées depuis `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
+HTML/JS vanilla, sans dépendance. Pas de framework ni de bundler sans demander. Serveur : Node ≥ 20, modules
+intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. Le serveur importe les règles depuis
+`src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
 
-## Principes d'architecture à ne pas casser
+**Principes à ne pas casser**
+1. **Simulation séparée du rendu.** Ticks fixes de 0,1 s, ni DOM ni canvas dans la simulation ; le rendu lit l'état
+   sans le modifier. (Accélération du temps, tests sans navigateur, serveur multijoueur.)
+2. **Génération déterministe.** Une area dépend uniquement de `seed + numéro d'area`. Le hasard « live » (mobs)
+   utilise un RNG séparé.
+3. **L'IA du mineur lit un objet de préférences.** Nouvelle option de comportement = une clé de config lue par
+   l'IA, pas une réécriture de l'IA.
+4. **Toutes les valeurs d'équilibrage dans `src/config.js`.** Pas de nombres magiques dans la logique.
+5. **Temps réel = 1 h** ; l'accélération reste un simple multiplicateur de ticks par frame.
+6. **Le serveur fait foi.** Le navigateur vérifie pour le confort, le serveur refait toujours les vérifications.
+   Aucun secret côté navigateur (connexion = cookie HttpOnly). Tout est rattaché à l'**ID de compte**, jamais au
+   pseudo.
 
-1. **Simulation séparée du rendu.** La simulation avance par ticks fixes (0,1 s). Elle ne touche ni au DOM ni au canvas. Le rendu lit l'état, ne le modifie jamais. Raison : accélération du temps en dev, tests sans navigateur, et future version serveur pour le multijoueur.
-2. **Génération déterministe.** Une area est générée uniquement depuis `seed + numéro d'area`. Deux joueurs avec la même seed voient le même monde. Le hasard « live » (apparition des mobs) utilise un RNG séparé.
-3. **L'IA du mineur lit un objet de préférences.** Ajouter une option de comportement (fuir, aider un allié, préférer les zones navigables…) = ajouter une clé de config et la lire dans l'IA, pas réécrire l'IA.
-4. **Toutes les valeurs d'équilibrage dans des constantes de config au même endroit** (stats, durées, seuils, compositions d'areas, dureté et poids des blocs). Pas de nombres magiques dans la logique.
-5. **Temps réel = 1h**, mais le facteur d'accélération doit rester un simple multiplicateur de ticks par frame.
-6. **Le serveur fait foi pour les comptes.** Le jeu vérifie les formulaires pour le confort, le serveur refait toujours les vérifications. Aucun secret côté navigateur (connexion = cookie HttpOnly). Tout ce qui sera rattaché à un joueur l'est à son **ID de compte**, jamais à son pseudo.
+## 9. Règles de travail
 
-## Règles de travail
+- **Tests unitaires à chaque étape** : toute modification vient avec ses tests. Avant de conclure, relance
+  **seulement** les fichiers de tests liés (`node --test tests/<sujet>.test.js`).
+- **Simulation** après chaque changement de la simulation ou de l'IA : `--count 5`, pas plus. Regarde les chiffres
+  avant de dire que ça marche. Pannes classiques à tester : mineur bloqué sans issue, oscillation entre deux
+  actions, remontée impossible faute d'échelle, area qui ne se débloque jamais.
+- **Temps de vérification limité** : quelques minutes au total, pas 30.
+- **Toujours coder contre la duplication et la triche.** Tout ce qui crée, déplace ou retire des ressources ou des
+  objets (coffre, partage, inventaire, craft, échanges, sauvegarde) doit :
+  - refuser les quantités invalides (négatives, décimales, Infinity, NaN, texte, trop grandes) et les objets
+    inconnus ;
+  - être **idempotent** quand une action peut être rejouée (double clic, rechargement, requête renvoyée) : une
+    session n'est créditée qu'une fois (`creditSession`), une fin de session appelée deux fois ne fait rien ;
+  - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. les
+    Treasure TX, un pour chacun) ;
+  - laisser le serveur calculer ce qui a de la valeur.
+  Tests dans `tests/anticheat/`, à compléter à chaque nouveau chemin de ressources.
+- **Un fichier par module**, chaque chose à sa place (`src/`, `tests/`, `docs/`, `scripts/`), racine propre.
+- **Textures** : PNG 16×16 dans `textures/`, chargées par le code, jamais dessinées en dur (générées par
+  `scripts/gen_textures.py` tant qu'on n'a pas de vrais assets).
 
-- Garde la boucle de jeu **vérifiable sans navigateur** : prévois un script (Node) qui simule une session complète en quelques secondes et affiche : areas débloquées, profondeur max, ressources au coffre, nombre d'allers-retours. Lance-le après chaque changement touchant la simulation ou l'IA, **sur 5 sessions** (`--count 5`), pas plus.
-- Avant de conclure qu'une modif de gameplay fonctionne, lance la simulation et regarde les chiffres, ne te fie pas à la lecture du code.
-- Les pannes classiques de ce genre d'IA : mineur bloqué sans issue, oscillation entre deux actions, remontée impossible faute d'échelle, area qui ne se débloque jamais. Teste ces cas.
-- **Toujours coder contre la duplication et la triche.** Tout ce qui crée, déplace ou retire des ressources ou des objets (coffre, partage, inventaire, craft, échanges, sauvegarde) doit :
-  - refuser les quantités invalides (négatives, décimales, Infinity, NaN, texte, trop grandes) et les objets inconnus là où ça compte ;
-  - être **idempotent** quand une action peut être rejouée (double clic, rechargement, requête renvoyée) : une session n'est créditée qu'une fois (`creditSession`), une fin de session ou un départ appelé deux fois ne fait rien ;
-  - conserver la matière : jamais plus d'objets en sortie qu'en entrée (sauf règle de design explicite, ex. les Treasure TX, un pour chacun) ;
-  - ne jamais faire confiance au navigateur pour ce qui a de la valeur : à terme, c'est le serveur qui calcule et qui fait foi.
-  Ces cas ont leurs tests dans `tests/anticheat/` (à compléter à chaque nouveau chemin de ressources), lancés à la demande avec `npm run test:anticheat`, pas à chaque modification.
-- **Tests unitaires à chaque étape** : toute nouvelle fonctionnalité ou modification vient avec ses tests unitaires. Avant de conclure, **ne relance que les fichiers de tests liés à ce que tu as modifié** (`node --test tests/<sujet>.test.js`), pas toute la suite.
-- **Temps de vérification limité** : une simulation de contrôle = **5 sessions**, pas plus. Le créateur ne peut pas attendre 30 min entre deux demandes ; vise quelques minutes de vérification au total.
-- **Structure du dossier optimisée et segmentée** : organise les dossiers et fichiers de façon claire (ex. `src/` pour le code, `tests/` pour les tests, `docs/` pour la doc, `scripts/` pour les outils de simulation). Range chaque chose à sa place et garde la racine propre.
-- **Un fichier par module** : crée un fichier distinct pour chaque module (monde, IA, simulation, rendu, UI, config…) au lieu d'un seul gros fichier. Le prototype monolithique n'est qu'une référence, pas un modèle de structure.
-- **Textures** : toutes les textures vivent dans `textures/` (PNG 16×16) et sont chargées par le code, jamais dessinées en dur. Toute nouvelle texture s'ajoute dans ce dossier (générées par `scripts/gen_textures.py` tant qu'on n'a pas de vrais assets).
-- **Journal de debug (`docs/debug.md`)** : lis-le en début de session, surtout avant des tests ou des simulations.
-  À chaque modification du code, ajoute-y une entrée à la date du jour : quoi, fichiers, tests, **état de
-  vérification** (✅ vérifié avec les chiffres / ⚠️ non vérifié / ❌ cassé connu), ce qu'il reste à vérifier, points
-  fragiles. Quand tu vérifies ou corriges une entrée existante, mets à jour son état. Fais-le sans attendre qu'on te
-  le demande, dans le même commit que la modification.
-- Petits commits, un sujet par commit.
-- Réponds en français.
+## 10. Hors périmètre pour l'instant
 
-## Hors périmètre pour l'instant
-
-Ne pas implémenter sans demande : la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : la liste d'amis / l'onglet Social (une ébauche existe sur `origin/social`), les
+fondations. Prévoir l'architecture pour, sans les construire. (La spécialisation des rôles, elle, fait partie du jeu.)
