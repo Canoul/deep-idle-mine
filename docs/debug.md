@@ -791,3 +791,24 @@ Règles (voir CLAUDE.md) :
   des vols ignorés (ex. 48 volés / 8 résistés) ; étourdissements 11,0 → 11,6, areas 3,6 → 3,4, profondeur 186 → 182,4
   (l'occultiste n'est plus neutralisé par la provocation), 0 blocage.
 - **Points fragiles** : un sort ignoré coûte quand même le cooldown de l'occultiste (choix : « sort perdu »).
+
+### IA : travailler dans la dernière area, focus minerai vers la plus profonde (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Constat** (avant) : priorité « Minerais » (défaut) → en redescendant, le mineur visait tout filon à portée de
+  boussole dans les areas du dessus. Mesures (3 mineurs, `arrive.mjs` : déblocage → 1re entrée) : seed 31676 area 4
+  débloquée à 2985 s, jamais visitée ; seed 15838 area 3 débloquée à 2050 s, Rouge y entre à 3397 s.
+- **Quoi** : `workArea(G,m)` (src/sim/focus.js) = focus d'area, sinon la plus profonde des areas débloquées qui a encore
+  un minerai visé, sinon la dernière débloquée. `focusGoal` (focus minerai) renvoie `workArea` (avant : la plus proche).
+  `decideWork` : `inFocus(y,x,t)` accepte une cible de l'area de travail, ou d'une area au-dessus si elle est à
+  ≤ `CFG.transitReach` (1) du mineur ; sans focus, un coffre au trésor (non-ore) reste visé partout. Rien au-dessous.
+  Décision du créateur : « il prend ceux collés à son chemin ».
+- **Détecteur de blocage** (src/sim/diagnostics.js) : une descente de ≥ 3 couches compte comme progrès même si le
+  mineur vient de passer en retour (faux positif seed 7919 : 90 s de descente sans miner puis « fin de session »).
+- **Tests** : focus 25/25 (plus profonde, `workArea`, passage : charbon collé pris, or à 3 cases laissé, il atteint
+  l'area 1) ; team, diagnostics, winch, fall, mobs, goblin, dungeon, miner, treasure, session, skills, world : 126/126.
+- **Vérification** : ✅ simulation 3 × 5 : areas 3,4 → **4,0**, profondeur 182,2 → **225,8**, allers-retours 26,6 → 24,2,
+  0 blocage ; minerai total en baisse (seed 31676 : 1 119 → 976) mais plus profond. Arrivée dans l'area 4 : 1 à 7 min
+  après son déblocage (vers 37 min). ✅ `--focus coal:only` (7919, 31676) : profondeur 201 → 225, charbon −10 à −20 %,
+  0 blocage.
+- **Points fragiles / à surveiller** : ⚠️ équilibrage : l'area 4 est atteinte à chaque session avec 3 mineurs de base
+  (≈ 150 / 500 minerais, 200 pour débloquer l'area 5, la dernière) → le cap « ne pas finir en un essai » est plus
+  proche. Un mineur qui redescend alors qu'il reste peu de temps fait un aller-retour presque à vide (déjà là avant).

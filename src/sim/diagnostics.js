@@ -18,7 +18,8 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         if(h.length<W || found.some(f=>f.miner===m.name)) continue;
         const a=h[0], b=h[h.length-1];
         const climbing  = b.mode==='return' && b.y<=a.y-STUCK_MIN_PROGRESS;
-        const descending = b.mode!=='return' && b.y>=a.y+STUCK_MIN_PROGRESS;
+        // descendu vers le front, même s'il vient de passer en retour (longue descente sans miner, puis fin de session)
+        const descending = b.y>=a.y+STUCK_MIN_PROGRESS;
         const waiting = b.status==='Attend le barbare devant le donjon';   // attente voulue (donjon), pas un blocage
         if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });

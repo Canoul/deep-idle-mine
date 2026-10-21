@@ -35,6 +35,7 @@ export const CFG = {
   shaftGap:3,             // écart minimal entre les puits de deux mineurs
   crowdRadius:4,          // en dessous de cette distance (Manhattan) d'un autre mineur, une zone est « occupée »
   crowdPenalty:2,         // un minerai proche d'un autre mineur (ou de sa cible) vaut 1/(1 + crowdPenalty × nb) de son prix
+  transitReach:1,         // au-dessus de son area de travail (la plus profonde), il ne prend que les minerais à ≤ transitReach cases de lui (21/10)
   sectorHalf:8,           // en équipe : demi-largeur du secteur de préférence de chaque mineur (autour de sa colonne home)
   sectorPenalty:1,        // un minerai hors secteur vaut 1/(1 + sectorPenalty × éloignement relatif) de son prix
   rowCrowdCost:0.5,       // surcoût (s) par case d'un chemin sur la ligne d'un autre mineur (ou juste au-dessus / en dessous)

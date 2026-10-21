@@ -8,7 +8,7 @@ import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, 
 import { log } from './log.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
-import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
+import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood, workArea } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
@@ -208,14 +208,23 @@ function decideWork(G,m){
   // focus d'area : seules les cibles de cette area comptent (sinon il en sortirait, puis y reviendrait : oscillation).
   // focus minerai : pas de cible dans une area épuisée pour ses minerais visés (il y monterait, le focus le renverrait
   // aussitôt dans la sienne, et il recommencerait : va-et-vient sur l'échelle à la frontière, seed 770973224)
-  const A=focusArea(G,m), act=activeOres(m.prefs.focus);
-  const inFocus = y => A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act);
+  // area de travail (la plus profonde permise, workArea) : au-dessus, il ne fait que passer et ne prend que les minerais
+  // collés à lui (CFG.transitReach) ; sans ça, il minait chaque filon des areas du dessus et n'atteignait jamais la
+  // dernière area (seed 31676 : area 4 débloquée à 50 min, jamais visitée)
+  const A=focusArea(G,m), act=activeOres(m.prefs.focus), D=workArea(G,m);
+  // sans aucun focus, un coffre au trésor découvert reste une cible partout (rare et précieux)
+  const inFocus = (y,x,t) => { const k=areaOf(y);
+    if(A!==null) return k===A;
+    if(k===D) return true;
+    if(k>D) return false;
+    if(!act.length && !isOre(t)) return true;
+    return Math.abs(x-m.x)+Math.abs(y-m.y)<=CFG.transitReach && (!act.length || areaGood(G,k,act)); };
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y,tg.x,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
-    if(!inFocus(o.y)) continue;
+    if(!inFocus(o.y,o.x,o.t)) continue;
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre

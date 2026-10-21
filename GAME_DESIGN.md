@@ -128,6 +128,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 ### Autonomie (IA)
 Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et les **préférences** (voir §7).
 - Par défaut il creuse vers le bas.
+- **Il travaille dans la dernière area débloquée** *(décision du 21/10)* : les areas du dessus ne sont qu'un passage. En les traversant, il ne prend que les minerais **collés à lui** (à 1 case, *provisoire*) et continue de descendre ; les coffres au trésor découverts restent visés partout (sans focus). Avant, il minait chaque filon repéré en chemin et n'atteignait souvent jamais la dernière area (seed 31676 : area 4 débloquée à 50 min, jamais visitée).
 - **Après un retour en surface, il repart de zéro** : il n'est pas obligé de retourner là où il s'était arrêté. Un minerai connu mais lointain (plus de 12 blocs *(provisoire)*) n'est pas plus attirant que creuser du neuf.
 - **Réutiliser l'existant** : pour descendre ou changer de galerie, l'IA compare le temps d'un trajet par les échelles et galeries déjà posées au temps d'un nouveau puits (mine + échelle à chaque case), et prend le moins cher.
 - La **boussole** aide l'IA à choisir : s'il vaut mieux aller sur les côtés vers un minerai plutôt que descendre.
@@ -139,7 +140,7 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choi
 - **« Uniquement » écrase « Cibler »** : dès qu'un minerai est en « Uniquement », les minerais en « Cibler » sont ignorés aussi.
 - **Seuls les blocs de type ore sont concernés** : les treasures découverts restent visés. D'autres cibles (coffres, pierres précieuses…) pourront s'ajouter plus tard.
 - Le jeu connaît, pour chaque area, le **nombre initial et le restant** de chaque minerai.
-- **Area épuisée** : s'il reste moins de **20 %** *(provisoire)* du nombre initial d'un minerai visé dans l'area du mineur, il part vers **l'area débloquée la plus proche** qui en a encore (au-dessus ou en dessous ; à égalité, celle du dessous). Il ne descend pas non plus dans une area épuisée : il explore la sienne en galeries.
+- **Où il cherche** *(changé le 21/10)* : sans focus area, il cherche ses minerais visés dans **l'area débloquée la plus profonde qui en a encore** (au moins 20 % *(provisoire)* du nombre initial). Il y descend même si son area en a encore ; au-dessus, il ne prend que les minerais visés collés à lui. Si les areas du dessous sont épuisées pour ce minerai, il remonte vers la plus profonde qui en a. Il ne descend pas dans une area épuisée : il explore la sienne en galeries. *(Avant le 21/10 : l'area la plus proche.)*
 - **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
 - Le changement est envoyé au serveur, qui l'**applique tout de suite** dans la partie (il n'y en a qu'une, sur le serveur) : tous les joueurs le voient en même temps. Il est enregistré avec son tick (comme un départ).
 

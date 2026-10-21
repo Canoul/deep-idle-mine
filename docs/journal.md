@@ -28,9 +28,13 @@ Modèle d'entrée :
   - nouvelle stat **Ténacité** : chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste) ;
     Force brute (Barbare) donne +5 % de dégâts **et** +5 % de ténacité par rang ;
   - Provocation : frapper un occultiste qui canalise l'interrompt, mais il peut relancer son sort (sur le barbare).
+  - IA : le mineur travaille dans la **dernière area débloquée** ; en traversant celles du dessus, il ne prend que
+    les minerais collés à lui. Focus minerai : il cherche dans l'area la plus profonde qui en a encore.
+    En simulation (3 mineurs de base) : profondeur 182 → 226, l'area 4 est atteinte à chaque session.
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
-- **À suivre** : —
+- **À suivre** : ⚠️ avec l'IA qui descend mieux, 3 mineurs de base minent ≈ 150 / 500 minerais de l'area 4 (il en faut
+  200 pour débloquer l'area 5, la dernière) : le contenu risque d'être fini trop vite. À surveiller.
 - **État** : 🧪 sur la branche `geoffrey/retours-21-10` (pas en ligne)
 
 ---

@@ -6,7 +6,7 @@ import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaOf, areaTop, tryUnlock } from '../src/sim/world.js';
 import { mineBlock } from '../src/sim/actions.js';
-import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
+import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, focusOptions, setFocus, FOCUS_VAL, workArea } from '../src/sim/focus.js';
 import { buildSession, applyDueEvents, replayRecord } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
 
@@ -88,16 +88,42 @@ test('épuisée = moins de 20 % du nombre initial (ou minerai absent de l\'area)
   set(0, 'iron', 0, 0); assert.equal(depleted(G, 0, 'iron'), true);
 });
 
-test('area épuisée : il vise l\'area débloquée la plus proche qui en a encore (à égalité, celle du dessous)', () => {
+test('focus minerai : il cherche dans l\'area débloquée la PLUS PROFONDE qui en a encore (21/10)', () => {
   const { G, m, set } = threeAreas();
   setFocus(G, m, { coal:'target' });
   m.y = areaTop(1) + 5;
   set(1, 'coal', 10); set(0, 'coal', 50); set(2, 'coal', 50);
-  assert.equal(focusGoal(G, m), 2, 'égalité : en dessous');
-  set(2, 'coal', 5);
-  assert.equal(focusGoal(G, m), 0, 'remonte si c\'est la seule');
+  assert.equal(focusGoal(G, m), 2, 'la plus profonde');
   set(1, 'coal', 60);
-  assert.equal(focusGoal(G, m), null, 'son area a encore assez : il reste');
+  assert.equal(focusGoal(G, m), 2, 'même si la sienne en a encore : il descend');
+  set(2, 'coal', 5);
+  assert.equal(focusGoal(G, m), null, 'la plus profonde est épuisée : la sienne est la bonne, il reste');
+  set(1, 'coal', 10);
+  assert.equal(focusGoal(G, m), 0, 'remonte si c\'est la seule');
+});
+
+test('area de travail : focus d\'area, sinon la plus profonde qui a le minerai visé, sinon la dernière débloquée', () => {
+  const { G, m, set } = threeAreas();
+  assert.equal(workArea(G, m), 2, 'sans focus : la dernière débloquée');
+  setFocus(G, m, { coal:'target' }); set(1, 'coal', 60); set(2, 'coal', 5);
+  assert.equal(workArea(G, m), 1);
+  setFocus(G, m, { coal:'target', area:0 });
+  assert.equal(workArea(G, m), 0, 'le focus d\'area l\'emporte');
+});
+
+test('sans focus : au-dessus de la dernière area, il ne prend que les minerais collés à lui et descend', () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));          // area 1 débloquée : l'area 0 n'est plus qu'un passage
+  G.mobs = [];
+  const y = areaTop(0)+10; m.x = 25; m.y = y; m.mode = 'work';
+  for(let x=20;x<=30;x++){ G.tiles[y][x] = 0; G.tiles[y+1][x] = IDS.stone; G.seen[y][x] = G.seen[y+1][x] = 1; }
+  G.tiles[y][26] = IDS.coal;                                      // charbon collé à lui
+  G.tiles[y][22] = IDS.gold;                                      // or à 3 cases, sur sa ligne
+  let reached = false;
+  for(let i=0;i<3000 && !reached;i++){ tick(G); if(m.mode==='work' && areaOf(m.y)===1) reached = true; }
+  assert.equal(G.tiles[y][26], 0, 'le charbon collé à lui est pris au passage');
+  assert.equal(G.tiles[y][22], IDS.gold, 'l\'or à 3 cases est laissé');
+  assert.ok(reached, 'il descend dans la dernière area');
 });
 
 test('épuisé partout : le focus saute et le joueur est prévenu', () => {
