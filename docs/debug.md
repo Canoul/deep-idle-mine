@@ -756,3 +756,7 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ simulation 3 × 5 : areas 3,4, profondeur 182,2 (avant 183,2), allers-retours 26,6, 0 blocage.
 - **Points fragiles** : un réglage dev qui remettrait `bridges` fini n'existe plus ; si un coût est ajouté un jour,
   remettre la stat dans `shownStats`.
+- **Fusion de main (Jules, 21/10)** : ménage des textes intégré (conflits HUD / test de l'épée réglés). Deux tests
+  attendaient encore les anciennes pioches : `tests/skills.test.js` (Stuff × skills : 1,27 → pierre, 1,48 → fer) et
+  `tests/research.test.js` (Pioche en fer BP : +0,4). blueprint, wiki, world, research, lobby, stuff, crusher, skills,
+  fall : 90/90 ✅. ⚠️ `npm run test:anticheat` pas relancé (le concasseur a bougé) : à faire avant la mise en ligne.
