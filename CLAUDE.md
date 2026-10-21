@@ -155,7 +155,7 @@ server/               serveur Node : app (routeur), http/, accounts/, game/ (ses
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
 deploy/ovh/           installation et mise à jour du serveur OVH
-docs/                 journal.md (avancement), debug.md (journal technique), comptes.md, deploiement-ovh.md,
+docs/                 journal.md (avancement), debug.md (journal technique), securite.md, comptes.md, deploiement-ovh.md,
                       archive/ (documents d'anciens choix, ex. Render)
 textures/             PNG 16×16 (skins des mineurs dans textures/skins/)
 prototype/            ancien prototype monolithique (référence seulement)

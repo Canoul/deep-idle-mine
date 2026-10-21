@@ -3,3 +3,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 data/
+# réglages locaux (adresse de la base, secrets) : jamais dans git
+.env
+*.env
+.env.*

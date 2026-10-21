@@ -66,6 +66,8 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
   }
 
   return async function handler(req, res){
+    for(const [k, v] of Object.entries(config.securityHeaders ?? {})) res.setHeader(k, v);
+    if(config.cookie?.secure && config.hsts) res.setHeader('Strict-Transport-Security', config.hsts);
     const pathname = req.url.split('?')[0];
     try {
       if(pathname === '/api' || pathname.startsWith('/api/')) return await handleApi(req, res, pathname);
