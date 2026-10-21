@@ -28,3 +28,11 @@ test('Lancer : seul ou chef → oui (« Lancer à 2 ») ; membre → attend le c
   assert.equal(launchState({ account:me, party:null, offline:true }).can, false);
   assert.equal(launchState({ account:me, party:null, busy:true }).label, '… Lancement');
 });
+
+test('lancer : un membre encore dans la session précédente → le chef attend la fin', () => {
+  const account = { id:'AAAA1111' };
+  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', playing:true }] };
+  assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Le groupe finit sa session…' });
+  party.members[1].playing = false;
+  assert.equal(launchState({ account, party }).can, true);
+});

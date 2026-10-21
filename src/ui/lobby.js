@@ -31,6 +31,7 @@ export function launchState({ account, party, offline, busy }){
   if(busy || party?.launching) return { can:false, label:'… Lancement' };
   const leader = !party || party.leader === account.id;
   if(!leader) return { can:false, label:'En attente du chef…' };
+  if(party?.members.some(m => m.playing)) return { can:false, label:'⏳ Le groupe finit sa session…' };
   const n = party?.members.length ?? 1;
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
@@ -49,7 +50,7 @@ export function setupLobby(h){
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const tags = [s.me && 'Toi', s.leader && 'chef', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      const tags = [s.me && 'Toi', s.leader && 'chef', s.playing && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
              `<span><b>${esc(s.name)}</b><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;

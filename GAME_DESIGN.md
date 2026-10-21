@@ -303,6 +303,10 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 - **Apparence des mineurs** : chaque mineur porte le **pseudo** de son joueur, affiché en petit au-dessus de sa tête (en doré pour celui que la caméra suit). Tous ont le **même corps** ; ce qui les distingue, c'est leur **stuff équipé**, dessiné sur eux (ex. chitine = armure rouge sur les parties équipées). Quand il mine ou frappe, le mineur sort sa **pioche** : en bois (marron) par défaut, en pierre (grise) s'il a la pioche en pierre. L'équipement visible est celui porté **au lancement** de la session. Les skins sont décrits dans `src/skins.js`, les textures dans `textures/skins/`.
 - Le chef peut **retirer** un membre ou annuler une invitation (×). **Quitter le groupe** = on se retrouve seul. Si le chef part, le membre suivant devient chef.
 - Pendant la session, tout le monde voit **la même partie** : il n'y en a qu'une, elle tourne sur le serveur. Un joueur qui quitte part **tout de suite** : son mineur disparaît de la partie, chez tous. Partir dans les toutes dernières secondes ne rapporte rien non plus.
+- **Le groupe reste après la session** *(décision du créateur, 21/10/2026)* : à la fin, chacun revient au lobby **dans le même groupe**, et le chef peut relancer tout de suite, sans réinviter. Un joueur qui ne veut pas enchaîner **quitte le groupe** (bouton « Quitter le groupe »).
+  - Pendant la session, personne n'est retiré pour absence (le navigateur ne parle plus au groupe pendant la partie) : le délai de 5 min repart de la fin de la session. Le bilan compte comme une présence.
+  - Un membre encore dans la session (le chef a quitté tôt, par exemple) est affiché « en session » ; le chef voit « ⏳ Le groupe finit sa session… » et ne peut pas relancer avant la fin.
+  - Si le chef relance pendant qu'un membre lit encore son bilan, ce membre passe directement à la nouvelle session (son mineur y joue déjà).
 - Les groupes sont une salle d'attente : un redémarrage du serveur les vide (chacun se retrouve seul), sans rien perdre d'autre.
 
 **Le serveur fait foi** (anti-triche) :

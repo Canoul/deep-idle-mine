@@ -542,3 +542,23 @@ Règles (voir CLAUDE.md) :
   gris, fiche « Shiny iron · Inhabituel » en vert), craft (coches ✔), four. ⚠️ Pas regardé : onglets Stuff et Recherche,
   pastilles en session, mobile.
 - **Points fragiles** : « Boussole en or » n'existe pas encore comme objet (sa rareté est prête).
+
+### Le groupe reste après la session (enchaîner sans se réinviter)
+- **Quoi** : `launch` ne dissout plus le groupe (solo ou à plusieurs). Ménage (`sweep`, devenu asynchrone) : un membre
+  silencieux n'est retiré qu'après `max(seenAt, graceUntil) + memberTimeout`, `graceUntil` = fin prévue de la session
+  posée au lancement ; un membre encore en session (pause dev) compte comme vu. `state` renvoie `members[].playing`
+  (encore en session) ; lobby : « en session », et le chef voit « ⏳ Le groupe finit sa session… » (pas de relance).
+  Navigateur : le lobby continue d'interroger le groupe pendant le bilan (signe de vie) ; si le chef relance pendant
+  le bilan, le bilan est acquitté et on passe à la session.
+- **Bug évité** (trouvé par les tests) : sans `graceUntil`, sur un serveur calme personne ne fait le ménage pendant la
+  session, et tous les membres étaient retirés d'un coup à la fin (30 min sans signe de vie).
+- **Fichiers** : `server/party/service.js`, `src/main.js`, `src/ui/lobby.js`, GAME_DESIGN §6, `docs/comptes.md`.
+- **Tests** : `tests/party.test.js` (5 nouveaux, 1 adapté), `tests/lobby.test.js` (+1) ; party, lobby, game-service 61/61 ;
+  anticheat/party 6/6.
+- **Vérification** : ✅ deux Chromium headless, serveur dev local : groupe à 2, lancement, fin, bilan (les deux restent
+  « présents » pendant le bilan), retour au lobby avec le même groupe (A « ▶ Lancer à 2 », B « En attente du chef… »),
+  relance → les deux dans la nouvelle session. ⚠️ Pas vérifié : relance pendant qu'un membre lit son bilan (testé
+  seulement par la logique).
+- **À regarder** : dans ce test headless, après une fin forcée par l'API (`/api/game/finish`), l'affichage de la session
+  restait figé jusqu'au rechargement — **même chose avec le code d'avant**, pas lié à ce changement. À vérifier avec le
+  vrai bouton de fin / la fin normale.

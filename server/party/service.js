@@ -3,9 +3,12 @@
    - Un groupe a un chef, jusqu'à GAME.maxPlayers membres et un code (ex. K7Q4P2) : le code ou le lien
      #rejoindre=K7Q4P2 permettent d'entrer ; on peut aussi inviter un ami par son ID de compte (il accepte ou refuse
      depuis son lobby).
-   - Seul le chef lance : le serveur crée alors la session de jeu pour tous les membres (server/game/service.js)
-     et le groupe disparaît. Si le chef part, le membre suivant devient chef ; un groupe vide disparaît.
-   - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré.
+   - Seul le chef lance : le serveur crée alors la session de jeu pour tous les membres (server/game/service.js).
+     Le groupe RESTE après le lancement (décision du créateur, 21/10/2026) : à la fin de la session, chacun revient
+     dans le même groupe et le chef peut relancer sans réinviter. Qui ne veut pas enchaîner quitte le groupe.
+     Si le chef part, le membre suivant devient chef ; un groupe vide disparaît.
+   - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
+     est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
    Les groupes vivent en mémoire : c'est une salle d'attente de quelques minutes, un redémarrage la vide
    (chacun se retrouve seul dans son lobby). Rien de ce qui a de la valeur n'y passe.
    Testable seul : on lui passe le service de jeu, la recherche de compte et une horloge. */
@@ -37,12 +40,13 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId){
+  function publicParty(p, meId, playing = new Set()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId,
-                                            away: now - m.seenAt > config.awayAfter })),
+                                            playing: playing.has(m.account),
+                                            away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
   }
 
@@ -53,14 +57,26 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
     if(!p.members.length){ parties.delete(p.code); return; }
     if(p.leader === accountId) p.leader = p.members[0].account;          // le suivant devient chef
   }
-  /* membres partis sans prévenir, invitations périmées, groupes vides */
-  function sweep(){
+  /* membres partis sans prévenir, invitations périmées, groupes vides. Pendant une session, le navigateur ne parle plus
+     au groupe : chaque membre lancé a une grâce jusqu'à la fin prévue de la session (graceUntil), et un membre encore
+     en session (pause du mode dev…) compte comme vu maintenant. Le délai repart donc de la fin de la session. */
+  async function sweep(){
     const now = clock();
     for(const p of [...parties.values()]){
       if(p.launching) continue;
-      for(const m of [...p.members]) if(now - m.seenAt > config.memberTimeout) removeMember(p, m.account);
+      for(const m of [...p.members]){
+        if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
+        if(await game.activeSessionId(m.account)) m.seenAt = now;
+        else if(parties.get(p.code) === p && !p.launching) removeMember(p, m.account);
+      }
       for(const [id, inv] of p.invites) if(now - inv.at > config.inviteTtl) p.invites.delete(id);
     }
+  }
+
+  /* session lancée : personne n'est retiré du groupe avant sa fin prévue */
+  function grace(p, r){
+    const end = r?.session?.finishAt;
+    if(Number.isFinite(end)) for(const m of p.members) m.graceUntil = end;
   }
 
   /* signe de vie de celui qui appelle (avant le ménage : on ne se retire pas soi-même) */
@@ -85,10 +101,13 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
     /* état vu par le joueur (appelé régulièrement par son lobby : sert aussi de signe de vie) */
     async state(me){
       touch(me);
-      sweep();
+      await sweep();
       const p = partyOf(me.id);
+      /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session » */
+      const playing = new Set();
+      if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account)) playing.add(m.account);
       return {
-        party: p ? publicParty(p, me.id) : null,
+        party: p ? publicParty(p, me.id, playing) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
@@ -98,19 +117,19 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
 
     /* créer son groupe (pour avoir un code à partager). Déjà dans un groupe : on le garde. */
     async create(me){
-      touch(me); sweep();
+      touch(me); await sweep();
       await notInSession(me);
       return { party: publicParty(partyOf(me.id) ?? create(me), me.id) };
     },
 
     /* entrer avec un code (ou en acceptant une invitation : même code). On quitte son groupe précédent. */
     async join(me, input){
-      touch(me); sweep();
+      touch(me); await sweep();
       const code = parsePartyCode(input);
       const lim = limit.join.check(me.id);
       if(!lim.ok) fail('rate_limited', 429, 'Trop de codes faux. Réessaie dans quelques minutes.', { retryAfter: lim.retryAfter });
       const p = code && parties.get(code);
-      if(!p){ limit.join.hit(me.id); fail('party_not_found', 404, 'Aucun groupe avec ce code (il a peut-être déjà lancé sa session).'); }
+      if(!p){ limit.join.hit(me.id); fail('party_not_found', 404, 'Aucun groupe avec ce code (il a peut-être été dissous).'); }
       await notInSession(me);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
@@ -124,7 +143,7 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
 
     /* inviter un ami par son ID de compte (tout membre peut inviter ; sans groupe, on en crée un) */
     async invite(me, input){
-      touch(me); sweep();
+      touch(me); await sweep();
       const id = parseAccountId(input);
       if(!id) fail('invalid_id', 400, 'ID de compte invalide (ex. 7K3Q-9XHP).');
       if(id === me.id) fail('invalid_id', 400, 'C\'est ton propre ID.');
@@ -171,14 +190,16 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
       return { party: publicParty(p, me.id) };
     },
 
-    /* « Lancer la session » : seul = session solo ; en groupe, seul le chef lance, pour tous les membres */
+    /* « Lancer la session » : seul = session solo ; en groupe, seul le chef lance, pour tous les membres.
+       Le groupe reste (on enchaîne les sessions sans se réinviter). Un membre encore dans la session précédente :
+       lancement refusé par le service de jeu (member_in_session), le groupe ne bouge pas. */
     async launch(me, body = {}){
-      touch(me); sweep();
+      touch(me); await sweep();
       const p = partyOf(me.id);
       if(!p || p.members.length === 1){
         if(p) noChange(p);
         const r = await game.start(me, body);
-        if(p) parties.delete(p.code);                  // groupe resté à un joueur : il a servi
+        if(p) grace(p, r);
         return r;
       }
       if(p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la session.');
@@ -187,7 +208,7 @@ export function createPartyService({ game, getAccount, clock = Date.now, config 
       try {
         const members = [memberOf(p, me.id), ...p.members.filter(m => m.account !== me.id)];
         const r = await game.start(me, body, members.map(m => ({ account: m.account, name: m.name })));
-        parties.delete(p.code);
+        grace(p, r);
         return r;
       } finally { p.launching = false; }
     },

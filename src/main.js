@@ -150,15 +150,16 @@ function showLobby(){
   pollLobby();
 }
 
-/* lobby : groupe, invitations ; le chef a lancé → on passe à la session. Sert aussi de signe de vie au groupe. */
-let lobbyTimer = null;
+/* lobby : groupe, invitations ; le chef a lancé → on passe à la session. Sert aussi de signe de vie au groupe,
+   y compris pendant le bilan (le groupe reste après une session : le chef peut relancer pendant qu'on le lit). */
+let lobbyTimer = null, endAck = null;
 async function pollLobby(){
   clearTimeout(lobbyTimer);
-  if(acct.offline || !acct.account || G || waiting || !$('end').hidden) return;
+  if(acct.offline || !acct.account || G || waiting) return;
   try {
     if(pendingJoin){ const code = pendingJoin; pendingJoin = null; nav.show('mine'); await lobby.join(code); }
     const st = await partyApi.state();
-    if(st.session) return refresh();
+    if(st.session){ endAck?.(); return refresh(); }      // relancé pendant le bilan : il est lu, on y va
     lobby.update({ party:st.party, invites:st.invites });
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, PARTY.poll);
@@ -280,10 +281,11 @@ function showResult(st){
   rec = null; G = null; waiting = false;
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
-  const done = () => gameApi.ack(ended.id).catch(() => {});
+  const done = endAck = () => { endAck = null; gameApi.ack(ended.id).catch(() => {}); };
   showEnd(ended, acct.account?.id,
     () => { done(); $('end').hidden = true; showLobby(); },
     () => { done(); $('end').hidden = true; showLobby(); nav.show('inventaire'); }, up);
+  pollLobby();                               // signe de vie au groupe pendant le bilan
 }
 
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
