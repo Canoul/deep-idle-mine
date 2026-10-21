@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ---
 
-## 21/10/2026 — Geoffrey — Mine instantanée (en cours : règles, Plume d'ange, simulation)
+## 21/10/2026 — Geoffrey — Mine instantanée (MI)
 - **Pour le joueur** : rien encore en jeu. Les règles de la **mine instantanée** sont écrites (GAME_DESIGN §6) :
   toutes les 2 h pile (heure de Paris), tous les inscrits dans une mine 50×50 remplie de minerais, chacun pour soi,
   5 min de jeu (2 min 30 réelles). 1 % de tas de **Plumes d'ange** (nouvel objet rare, 1 à 5 par tas, au premier qui
@@ -39,7 +39,13 @@ Modèle d'entrée :
   s'inscrire fait quitter son groupe, refusé en session ; lancer une session normale désinscrit. 21 inscrits → 2 mines
   (11 + 10). Le butin de chacun arrive dans son inventaire à la fin, une seule fois ; pas d'XP ; Quitter = rien. Si le
   serveur redémarre pendant la mine, elle reprend à l'identique.
-- **À suivre** : interface et rappels (4), branchés sur le nouveau choix « Où miner » du Lobby.
+- **Interface (étape 4)** : dans le **Lobby**, « Où miner » → **Mine instantanée** affiche le compte à rebours, le
+  nombre d'inscrits et **S'inscrire / Se désinscrire** (à la place de l'équipe et de Lancer). Rappels en bas à
+  droite, depuis n'importe quel onglet : 30 min, 15 min, 5 min, puis 30 s avec **Rejoindre / Décliner** (pas pendant
+  une session normale). À l'ouverture, tout le monde bascule sur **Session** : toute la mine à l'écran, chrono, ton
+  butin, classement, journal, **Quitter la mine** ; puis un bilan. Essayé dans Chrome à deux joueurs (mode dev,
+  bouton « Ouvrir maintenant ») : butin bien versé, rien pour celui qui quitte, aucune erreur.
+- **À suivre** : l'usage de la Plume d'ange (idée de Geoffrey) ; surveiller l'or rapporté par la MI une fois en ligne.
 - **État** : 🧪 sur la branche `geoffrey/mine-instantanee` (pas en ligne)
 
 ## 21/10/2026 — Geoffrey — Lobby et Session : deux onglets séparés

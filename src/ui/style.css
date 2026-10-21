@@ -378,3 +378,19 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .hItem img{width:20px;height:20px;image-rendering:pixelated}
 .rsInfo{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px;display:flex;flex-direction:column;gap:3px}
 .pslot small.spec{color:var(--acc)}
+
+/* ---- Mine instantanée (src/ui/instant-lobby.js, src/ui/instant-hud.js, src/render/instant.js) ---- */
+#cvMi{width:100%;max-height:calc(100vh - 120px);object-fit:contain;display:block;background:#000;border:1px solid var(--line);
+  border-radius:8px;image-rendering:pixelated}
+#cvMiWrap{position:relative;min-width:0}
+.miCount{display:flex;flex-direction:column;align-items:center;gap:2px;margin:4px 0 10px}
+.miCount b{font-size:26px;font-variant-numeric:tabular-nums;color:var(--acc)}
+.miLog{font-size:12px;max-height:190px;overflow:auto;color:var(--mut)}
+#miRank .row{padding:2px 6px;border-radius:6px}
+#miRank .row.me{background:#2a221d;border:1px solid var(--acc)}
+.miNotice{position:fixed;right:16px;bottom:16px;z-index:20;max-width:min(360px,calc(100vw - 32px));display:flex;gap:12px;
+  align-items:center;background:var(--panel);border:1px solid var(--acc);border-radius:10px;padding:12px 14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.miNotice .miNoticeBtns{display:flex;gap:6px;flex-shrink:0}
+.miNotice .x{flex-shrink:0}
+.miFeather{width:14px;height:14px;vertical-align:-2px;image-rendering:pixelated}

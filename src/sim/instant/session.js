@@ -81,7 +81,7 @@ function pickFeathers(G, m){
   if(!n) return;
   G.feathers.delete(k);
   collect(m, MI.featherItem, n); m.stats.feathers += n; G.stats.feathers += n;
-  log(G, `🪶 ${m.name} ramasse ${n} ${MI.featherItem}${n>1?'s':''} !`);
+  log(G, `${m.name} ramasse ${n} ${n>1 ? MI.featherItem.replace('Plume', 'Plumes') : MI.featherItem} !`);
 }
 
 function mineCell(G, m, x, y){

@@ -273,6 +273,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const modeDef = MINE_MODES.find(m => m.id === mode);
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
+      if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))

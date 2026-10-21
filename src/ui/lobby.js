@@ -1,4 +1,4 @@
-/* Onglet Lobby : où miner (Mine, bientôt Mine instanciée), les places de la prochaine session (le groupe), Lancer,
+/* Onglet Lobby : où miner (Mine, ou Mine instantanée : sa carte d'inscription, src/ui/instant-lobby.js), les places de la prochaine session (le groupe), Lancer,
    Inviter (code, lien, ID), invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
@@ -50,7 +50,7 @@ export function mineModes(cur, locked = false){
   return MINE_MODES.map(m => ({ id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, disabled: locked || !m.ready }));
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
@@ -65,6 +65,9 @@ export function setupLobby(h){
     $('lobby').classList.toggle('locked', locked);
     $('lobbySession').hidden = !locked;
     $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
+    /* Mine instantanée : pas d'équipe ni de Lancer (elle s'ouvre à heure fixe), sa carte d'inscription à la place */
+    const mi = MINE_MODES.find(m => m.id === st.mode)?.scheduled;
+    $('miCard').hidden = !mi; $('teamCard').hidden = !!mi; $('prefsCard').hidden = !!mi;
     $('mineModes').innerHTML = mineModes(st.mode, locked).map(m =>
       `<button data-mode="${m.id}" class="${m.on ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : ''}>${esc(m.label)}${m.soon ? ' <small>(bientôt)</small>' : ''}</button>`).join('');
     $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
@@ -94,7 +97,7 @@ export function setupLobby(h){
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !dev || locked || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent
+    $('devCard').hidden = !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -187,6 +190,7 @@ export function setupLobby(h){
     const b = e.target.closest('button[data-mode]');
     if(!b || b.disabled) return;
     st.mode = b.dataset.mode; render();
+    h.onMode?.(st.mode);
   };
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 

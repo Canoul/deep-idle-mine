@@ -845,3 +845,31 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `GAME_SERVER.pumpEvery` (200 ms) fait aussi tourner `instant.tick()` ; un joueur inscrit
   puis en session au moment de l'ouverture est écarté **et désinscrit** (pas reporté à la mine suivante).
 
+### Mine instantanée, étape 4 : interface (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Fusion de `main`** (Lobby / Session séparés, `mode` des sessions) : une MI est une session **`mode: 'mi'`** (plus de
+  champ `kind`). `MINE_MODES` : la MI est `ready` (choisissable) et `scheduled` : `game.start` la refuse
+  (`mode_scheduled`, 400). Test `game-service` (type de mine) et `lobby` (« Où miner ») adaptés.
+- **Fichiers** :
+  - `src/render/miner-sprite.js` : dessin du mineur sorti de `canvas.js` (rendu de la mine normale inchangé),
+    partagé avec `src/render/instant.js` (toute la mine, 50 × 51 + une bande de ciel pour les pseudos ; fissure
+    sur les blocs en cours de minage ; ton mineur entouré).
+  - `src/ui/instant-lobby.js` : carte MI du lobby (`countdownText`, `crossedNotice` : rappels seulement quand le
+    moment passe pendant que la page est ouverte, le plus proche si plusieurs) ; `#miNotice` ; bouton dev « Ouvrir
+    maintenant » (`POST /api/instant/dev-open`). `window.MI._notice(30)` dans la console pour voir un rappel.
+  - `src/ui/instant-hud.js` : panneaux pendant la mine, classement, bilan (`showInstantEnd`). Icône de plume en
+    texture (l'emoji 🪶 s'affichait en carré vide).
+  - `src/main.js` : `enterSession` / `pollView` / `frame` / `showResult` aiguillent selon `mode` ; `updateNavSession`
+    et `showSettling` prennent la durée / le texte de la MI ; lancer une session normale relit l'état MI.
+  - `index.html` (`#miCard`, `#teamCard`, `#prefsCard`, `#miRun`, `#miNotice`), `style.css`, `src/net/api.js`
+    (`instantApi`), `src/ui/lobby.js` (cartes selon le mode, `onMode`), `wiki.html`, `GAME_DESIGN.md`.
+- **Tests** : `tests/instant-ui.test.js` (4) ; avec `instant-*`, `anticheat/instant`, `game-service`, `live`,
+  `game-http`, `game-replay`, `party`, `lobby`, `nav`, `view`, `camera`, `skins`, `rarity`, `wiki` : 160 verts.
+- **Vérification** : ✅ Chrome headless piloté par CDP, serveur dev sur le port 8123 (dossier `F:\idledollexminer-mi`,
+  données à part) : 2 invités inscrits, ouverture dev, mine affichée, B quitte, fin : bilan de A = son inventaire
+  (23 charbons, 35 fers, 44 ors, 2 shiny, 11 plumes), B : rien ; rappel 30 s depuis l'onglet Inventaire →
+  Rejoindre → inscrit, lobby sur la carte MI. 0 erreur JS. ⚠️ Pas vu sur mobile ; rappels « au vrai moment »
+  vérifiés seulement par les tests (`crossedNotice`), pas en attendant une vraie heure pile.
+- **Points fragiles** : l'envoi MI contient toute la carte à chaque fois (~3 Ko, toutes les 250 ms par joueur) : à
+  revoir si une MI à 20 pèse trop sur le serveur. Conflit attendu avec `geoffrey/nom-mine-instantanee` (même ligne
+  de `MINE_MODES` dans `src/config.js`).
+

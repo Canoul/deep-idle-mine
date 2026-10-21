@@ -36,7 +36,12 @@
     <h2>Où miner</h2>
     <div class="seg mineModes" id="mineModes"></div>
   </div>
-  <div class="card">
+  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
+  <div class="card miCard" id="miCard" hidden>
+    <h2>🌀 Mine instantanée</h2>
+    <div id="miCardBody"></div>
+  </div>
+  <div class="card" id="teamCard">
     <h2 id="teamTitle">Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
@@ -50,7 +55,7 @@
     <p class="mut" id="lobbyInfo"></p>
     <p class="err" id="lobbyErr" hidden></p>
   </div>
-  <div class="card">
+  <div class="card" id="prefsCard">
     <h2>Critères / préférences</h2>
     <div class="prefs" id="prefsBox"></div>
     <p class="mut small">Appliquées à ton mineur pour toute la session.</p>
@@ -112,6 +117,23 @@
       <div class="mut" style="margin-top:6px;font-size:12px">Versé dans l'inventaire à la fin de la session.</div>
     </div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
+  </aside>
+</main>
+</div>
+<!-- mine instantanée en cours (src/render/instant.js, src/ui/instant-hud.js) : toute la mine à l'écran -->
+<div id="miRun" hidden>
+<header>
+  <div class="timer" id="miTimer">00:00 / 05:00</div>
+  <div class="grow"><div class="bar"><i id="miTimeBar"></i></div></div>
+  <span class="mut" id="miLeft"></span>
+  <button id="miLeaveBtn" title="Tu ne recevras rien de cette mine">⏏ Quitter la mine</button>
+</header>
+<main>
+  <div id="cvMiWrap"><canvas id="cvMi"></canvas></div>
+  <aside>
+    <div class="card"><h2>Ton butin</h2><div id="miMine"></div><p class="mut small">Versé dans ton inventaire à la fin. Quitter = rien.</p></div>
+    <div class="card"><h2>Classement</h2><div id="miRank"></div><p class="mut small" id="miFeathersLeft"></p></div>
+    <div class="card"><h2>Journal</h2><div id="miLog" class="miLog"></div></div>
   </aside>
 </main>
 </div>
@@ -188,6 +210,8 @@
 </div>
 </div>
 <div id="account" hidden><div class="box"></div></div>
+<!-- rappels de la mine instantanée (src/ui/instant-lobby.js), visibles depuis tous les onglets -->
+<div id="miNotice" class="miNotice" role="status" hidden></div>
 <script type="module" src="src/main.js"></script>
 </body>
 </html>

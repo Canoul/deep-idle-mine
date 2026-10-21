@@ -540,10 +540,11 @@ export const SITE = { url:'https://deepmineidle.fr/' };
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
 export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : rafraîchissement du lobby (plus lent pendant une session)
 
-/* Types de mine qu'on choisit dans le lobby avant de lancer (ready:false = annoncé, pas encore jouable). */
+/* Types de mine qu'on choisit dans le lobby (ready:false = annoncé, pas encore jouable ; scheduled = ne se lance pas
+   avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */
 export const MINE_MODES = [
-  { id:'mine', label:'Mine',             icon:'⛏', ready:true  },
-  { id:'mi',   label:'Mine instanciée',  icon:'🌀', ready:false },   // MI : feature à venir
+  { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
+  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
 ];
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
