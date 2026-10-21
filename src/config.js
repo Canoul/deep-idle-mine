@@ -239,21 +239,25 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
    Un nœud : id, max (rangs), per (valeur par rang ; 1 = interrupteur), desc (texte, {v} = valeur au rang actuel).
    Les effets sont figés au lancement de la session (comme le stuff). Valeurs provisoires. */
 export const SKILLS = {
+  /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
+     Un nœud de l'étage r > 1 exige qu'AU MOINS UN nœud de l'étage r−1 de son arbre soit au rang max (les lignes de
+     l'arbre relient chaque nœud à ceux de l'étage d'avant). name/icon : affichage de l'onglet Skills. */
   trees: [
     { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
-      { id:'mine_speed',  max:3, per:0.02, desc:'Vitesse de minage +{v}' },
-      { id:'ore_oxygen',  max:1, per:0.01, desc:'Miner un minerai rend {v} de l\'oxygène max' },
-      { id:'ore_rush',    max:5, per:0.03, desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
+      { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
+      { id:'ore_oxygen',  row:2, max:1, per:0.01, icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend {v} de l\'oxygène max' },
+      { id:'ore_rush',    row:3, max:5, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
-      { id:'build_time',  max:3, per:0.05, desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
-      { id:'tall_ladder', max:1, per:1,    desc:'Échelle de 2 de haut (si la case du dessus est vide) + Treuil : à chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
-      { id:'travel_rush', max:5, per:0.03, desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+      { id:'build_time',  row:1, max:3, per:0.05, icon:'🔨', name:'Bâtisseur',       desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
+      { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
+      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
+      { id:'travel_rush', row:3, max:5, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      max:3, per:0.05, desc:'Dégâts infligés +{v}' },
-      { id:'taunt',       max:1, per:1,    desc:'Provocation : le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui' },
-      { id:'loot',        max:5, per:0.03, desc:'Butin des mobs +{v}' },
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}' },
+      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui' },
+      { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
     ]},
   ],
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai

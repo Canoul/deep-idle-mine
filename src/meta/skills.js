@@ -4,11 +4,13 @@
    État d'un joueur : { tree: null | id d'arbre, ranks: { id de nœud: rang }, ops:[opId…] }.
    - points disponibles = points de skill du niveau (levelOf) − rangs dépensés ;
    - le premier point dépensé choisit l'arbre ; les autres arbres sont bloqués jusqu'au reset ;
-   - une étape exige l'étape précédente de son arbre au rang max ;
+   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
 import { SKILLS } from '../config.js';
 
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
+/* nœuds de l'étage d'avant (ceux qui débloquent ce nœud) ; vide pour l'étage 1 */
+export const parentsOf = id => { const n = NODES[id]; return SKILLS.trees.find(t => t.id === n.tree).nodes.filter(p => p.row === n.row - 1); };
 /* nœud par son id (null si inconnu : jamais un nom hérité comme « __proto__ ») */
 const nodeOf = id => typeof id === 'string' && Object.hasOwn(NODES, id) ? NODES[id] : null;
 const treeOf = id => SKILLS.trees.find(t => t.id === id) ?? null;
@@ -23,8 +25,8 @@ export function blockedReason(st, id, points){
   if(!n) return 'unknown';
   if(st.tree && st.tree !== n.tree) return 'other_tree';
   if(rankOf(st, id) >= n.max) return 'maxed';
-  const prev = treeOf(n.tree).nodes[n.index - 1];
-  if(prev && rankOf(st, prev.id) < prev.max) return 'needs_previous';
+  const parents = parentsOf(id);
+  if(parents.length && !parents.some(p => rankOf(st, p.id) >= p.max)) return 'needs_previous';
   if(spentPoints(st) >= points) return 'no_points';
   return null;
 }
@@ -46,17 +48,16 @@ export function skillOp(st, op, points){
   return { ok:true, repeated:false };
 }
 
-/* Relecture (stockage, enregistrement d'une session) : revérifiée à chaque fois. On rejoue les rangs dans l'ordre de
-   l'arbre : rang hors bornes, étape sans la précédente au max, autre arbre ou plus de points que le niveau → ignoré. */
+/* Relecture (stockage, enregistrement d'une session) : revérifiée à chaque fois. On rejoue les rangs étage par étage :
+   rang hors bornes, nœud sans un nœud de l'étage d'avant au max, autre arbre ou plus de points que le niveau → ignoré. */
 export function sanitizeSkills(raw, points = Infinity){
   const st = createSkills();
   const tree = treeOf(raw?.tree);
   if(tree && raw.ranks && typeof raw.ranks === 'object'){
-    for(const n of tree.nodes){
+    for(const n of [...tree.nodes].sort((a, b) => a.row - b.row)){
       const want = raw.ranks[n.id];
-      if(!Number.isSafeInteger(want) || want <= 0) break;
+      if(!Number.isSafeInteger(want) || want <= 0) continue;
       for(let k = 0; k < Math.min(want, n.max); k++){ if(blockedReason(st, n.id, points)) break; st.ranks[n.id] = rankOf(st, n.id) + 1; st.tree = tree.id; }
-      if(rankOf(st, n.id) < n.max) break;          // étape pas au max : les suivantes ne comptent pas
     }
   }
   st.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-SKILLS.opMemory) : [];

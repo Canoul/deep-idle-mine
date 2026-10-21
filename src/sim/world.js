@@ -133,7 +133,7 @@ export function tryUnlock(G){
   for(const m of G.miners){ m.exploring=false; m.skipRows.clear(); }
   log(G, `🔓 Area ${k+1} débloquée !`);
   /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle area */
-  const lg=G.miners.find(m=>m.skill?.tall_ladder);
+  const lg=G.miners.find(m=>m.skill?.winch);
   if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
   return true;
 }

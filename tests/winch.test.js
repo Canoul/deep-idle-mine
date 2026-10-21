@@ -67,7 +67,7 @@ test('échelle de 2 de haut : l\'itinéraire compte moitié moins d\'échelles �
 
 test('chantier : le logisticien creuse au milieu depuis la surface et pose tout le treuil d\'un coup, sans être étourdi', () => {
   const G = worldFrom(['', ...Array.from({ length:20 }, () => '#'.repeat(W))]), m = G.miners[0];
-  m.x = X; m.y = 0; m.skill.tall_ladder = 1; m.skillTree = 'logisticien';
+  m.x = X; m.y = 0; m.skill.winch = 1; m.skillTree = 'logisticien';
   for(let y = 6; y <= 10; y++){ G.tiles[y][X] = 0; G.seen[y][X] = 0; }   // poche cachée de 5 cases sur le chemin
   m.winchJob = { bottom:14 };
   m.mode = 'surface';
@@ -82,7 +82,7 @@ test('déblocage d\'une area : seul le premier logisticien qui a le skill part i
   const { newSession } = await import('../src/sim/session.js');
   const { tryUnlock, areaTop } = await import('../src/sim/world.js');
   const G = newSession(3, { miners:3 });
-  G.miners[1].skill.tall_ladder = 1; G.miners[2].skill.tall_ladder = 1;
+  G.miners[1].skill.winch = 1; G.miners[2].skill.winch = 1;
   G.areas[0].oreMined = G.areas[0].oreTotal;
   assert.ok(tryUnlock(G));
   assert.equal(G.miners[0].winchJob, null);

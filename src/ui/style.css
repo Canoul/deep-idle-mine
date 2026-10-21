@@ -264,13 +264,24 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .skTree h3{margin:0 0 10px;font-size:15px}
 .skTree.chosen{border-color:var(--acc)}
 .skTree.locked{opacity:.45}
-.skNode{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px}
-.skNode.some{border-color:#6b5a3a}
-.skNode.max{border-color:var(--ok)}
-.skNode.off{opacity:.6}
-.skRank{font-variant-numeric:tabular-nums;min-width:28px}
-.skPlus{width:26px;height:26px;padding:0;font-weight:700}
-.skLink{width:2px;height:12px;background:var(--line);margin:0 auto}
+.skGraph{position:relative;margin:4px 0 0}
+.skLinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.skLinks line{stroke:#4a4036;stroke-width:4;stroke-linecap:round}
+.skLinks line.on{stroke:#d9a441;filter:drop-shadow(0 0 3px rgba(255,190,80,.6))}
+.skNode{position:absolute;transform:translate(-50%,-29px);width:112px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;user-select:none}
+.skOrb{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:radial-gradient(circle at 35% 30%,#3a3128,#16120f 70%);border:3px solid #4a4036;box-shadow:0 2px 6px rgba(0,0,0,.6)}
+.skName{font-size:12px;line-height:1.15;color:var(--mut,#a99);background:var(--panel);padding:1px 5px;border-radius:6px;position:relative}
+.skRank{position:absolute;top:40px;left:50%;transform:translateX(4px);font-size:11px;font-variant-numeric:tabular-nums;background:#0e0b09;border:1px solid #4a4036;border-radius:8px;padding:0 5px}
+.skPlus{position:absolute;top:-4px;left:50%;transform:translateX(14px);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:14px;background:var(--acc);color:#1a1208;box-shadow:0 0 6px var(--acc)}
+.skNode.off .skOrb{filter:grayscale(1) brightness(.6)}
+.skNode.off .skName{opacity:.6}
+.skNode.some .skOrb{border-color:#8a6d3a}
+.skNode.can{cursor:pointer}
+.skNode.can .skOrb{border-color:var(--acc);box-shadow:0 0 10px rgba(255,190,80,.45)}
+.skNode.can:hover .skOrb,.skNode.can:focus-visible .skOrb{transform:scale(1.06)}
+.skNode.max .skOrb{border-color:#e8b84a;box-shadow:0 0 12px rgba(232,184,74,.7),inset 0 0 8px rgba(232,184,74,.35)}
+.skNode.max .skRank{border-color:#e8b84a;color:#e8b84a}
+.skNode.max .skName{color:inherit}
 .skillStats{color:#6fb3ff}
 .rsTabs{margin-bottom:10px}
 .rsBody{margin-top:0}
