@@ -45,7 +45,7 @@
   <div class="card">
     <h2>Critères / préférences</h2>
     <div class="prefs" id="prefsBox"></div>
-    <p class="mut small">Appliquées à ton mineur pour toute la session. Bientôt : fuir les mobs, préférer les zones navigables, aider un allié.</p>
+    <p class="mut small">Appliquées à ton mineur pour toute la session.</p>
   </div>
   <div class="card devCard" id="devCard" hidden>
     <h2>Mode développeur</h2>
@@ -117,7 +117,7 @@
     <div id="stuffGrid" class="stuffGrid"></div>
     <div class="card stuffStatsCard"><h2>Stats du mineur</h2>
       <div id="stuffLevelBody" class="stuffLevel"></div><div id="stuffStatsBody"></div>
-      <p class="mut small">(Base + bonus des pièces portées, en <span class="stuffStats">vert</span>) × multiplicateur des skills, en <span class="skillStats">bleu</span>. Appliqués aux sessions lancées ensuite (un changement en cours de session compte pour la suivante).</p></div>
+      <p class="mut small">En <span class="stuffStats">vert</span> : bonus du stuff. En <span class="skillStats">bleu</span> : bonus des skills. Pris en compte à la prochaine session.</p></div>
   </div>
   <!-- choix de la pièce à équiper dans une case -->
   <div id="spick" hidden><div class="box"></div></div>
@@ -141,12 +141,12 @@
     <div class="invHead"><h1>⭐ Skills</h1><span class="mut small">Choisis un arbre : chaque étape demande la précédente au rang max.</span></div>
     <div id="skillHead" class="skHead"></div>
     <div id="skillTrees" class="skTrees"></div>
-    <p class="mut small">Les skills s'appliquent aux sessions lancées ensuite (figés au lancement, comme le stuff). Les valeurs sont provisoires.</p>
+    <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
   </div>
 </section>
 <section class="view" data-view="historique" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>📜 Historique</h1><span class="mut small">Tes sessions terminées (30 derniers jours) : seed et ce que tu as reçu.</span></div>
+    <div class="invHead"><h1>📜 Historique</h1><span class="mut small">Tes sessions des 30 derniers jours.</span></div>
     <div id="histBody" class="histList"></div>
   </div>
 </section>
