@@ -1,15 +1,16 @@
 /* Règles partagées entre le jeu (navigateur) et le serveur pour les sessions de jeu. Logique pure.
 
    Une session est décrite par un « enregistrement » créé par le serveur :
-     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, looks:{<compte>: {case: objet}}, overrides,
+     { id, seed, players:[{account, name}], bots, prefs:{<compte>: prefs}, looks:{<compte>: {case: objet}}, gear:{<compte>: {case: pièce}}, overrides,
        leaves:[{account, tick}], focus:[{account, tick, focus}] }
-   (looks : équipement visible de chaque joueur au lancement ; focus : changements faits pendant la session)
+   (looks : équipement visible de chaque joueur au lancement ; gear : les mêmes pièces avec leur qualité et leur
+   niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
 import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
-import { sanitizeLook, equippedStats } from '../meta/stuff.js';
+import { sanitizeLook, sanitizeGear, equippedStats } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
 
 /* ---------- préférences ---------- */
@@ -63,10 +64,13 @@ export function minerSpecs(record){
   const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
                                          : 'Mineur test ' + (i - players.length + 1);
   const lookOf = i => i < players.length ? sanitizeLook(record.looks?.[players[i].account]) : {};
-  /* caractéristiques : base + stuff porté au lancement (le même que l'apparence : record.looks, revérifié) */
+  /* caractéristiques : base + stuff porté au lancement : les pièces avec leur qualité et leur niveau (record.gear,
+     revérifié) ; une session plus ancienne n'a que les noms (record.looks) */
+  const gearOf = i => i < players.length && record.gear?.[players[i].account]
+    ? Object.values(sanitizeGear(record.gear[players[i].account])) : Object.values(lookOf(i));
   /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats */
   const skillsOf = i => skillEffects(sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null));
-  const caracOf = i => withSkillStats(equippedStats(Object.values(lookOf(i))), skillsOf(i));
+  const caracOf = i => withSkillStats(equippedStats(gearOf(i)), skillsOf(i));
   const treeOf = i => sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null).tree;
   const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i) });
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];

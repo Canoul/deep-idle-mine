@@ -58,6 +58,7 @@ export const gameApi = {
   research: op         => request('POST', '/api/game/research', op),
   skills: op           => request('POST', '/api/game/skills', op),            // { action:'learn', node } | { action:'reset' }          // { action:'research', tier } | { action:'recycle', item }
   stuff:  op           => request('POST', '/api/game/stuff', op),
+  upgrade: op          => request('POST', '/api/game/upgrade', op),           // { action:'identify', uid, sacrifice, opId } | { action:'upgrade', uid, opId }
   /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }

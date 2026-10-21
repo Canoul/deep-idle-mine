@@ -2,6 +2,7 @@
    reprises de RARITY en config. */
 import { RARITY } from '../config.js';
 import { rarityOf, rarityDef } from '../meta/rarity.js';
+import { pieceName, pieceColor } from '../meta/piece.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -10,6 +11,13 @@ export const rcls = item => ` r-${rarityOf(item)}`;
 
 /* nom de l'objet dans la couleur de sa rareté ; text : texte affiché (par défaut le nom) */
 export const rname = (item, text = item, tag = 'span') => `<${tag} class="rn r-${rarityOf(item)}">${esc(text)}</${tag}>`;
+
+/* nom d'une pièce de stuff (« Excellent : Pioche en pierre +2 ») : dans la couleur de sa qualité si elle est identifiée
+   (elle passe avant la couleur de la rareté du type ; le contour de la case, lui, garde la rareté du type) */
+export function pname(p, tag = 'span'){
+  const c = pieceColor(p);
+  return c ? `<${tag} class="rn rq" style="color:${c}">${esc(pieceName(p))}</${tag}>` : rname(p.item, pieceName(p), tag);
+}
 
 /* libellé de la rareté, dans sa couleur (« Inhabituel ») */
 export const rlabel = item => `<span class="rn r-${rarityOf(item)}">${esc(rarityDef(item).label)}</span>`;

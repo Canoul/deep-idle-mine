@@ -46,6 +46,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
+- **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
+  pièce + un exemplaire sacrifié → qualité R1 Utile à R7 Légendaire, 1 à 4 lignes de stats valant 10 à 55 % de la
+  valeur de l'objet en x, définitive) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
+  Plumes d'ange + Pierres de pleine lune, un échec ne coûte que les matériaux) ; Enchantement plus tard. Nouvelles
+  stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte
+  `q`, `lines`, `plus` (pas d'ID dérivé type 113:4 : les lignes sont tirées, chaque pièce est unique). Plumes
+  d'ange : celles de la mine instantanée ; Pierre de pleine lune : **pas encore de source** en jeu
+  (`scripts/give-admin.js` pour tester).
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
