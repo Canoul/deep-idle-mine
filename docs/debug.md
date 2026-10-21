@@ -1071,7 +1071,7 @@ Règles (voir CLAUDE.md) :
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 224 tests du sujet verts (postgres sauté sans base).
   ⚠️ À surveiller au premier démarrage en ligne : chargement du ns `social` dans PostgreSQL (`createPgGameStore`).
 
-### Revue de sécurité (Jules) — branche `jules/securite`
+### Revue de sécurité (Jules) — branche `jules/securite`, ✅ en ligne le 22/10
 - **Vérifié, rien à corriger** : historique git (150 commits) sans secret (seulement des exemples `postgres://…` et des
   mots de passe de test) ; scrypt + sel + `timingSafeEqual`, jeton 256 bits haché, cookie HttpOnly / SameSite=Strict /
   Secure en ligne (`DIM_SECURE_COOKIE=1` posé par `install.sh`), sessions coupées au changement / à la récupération du
@@ -1096,4 +1096,5 @@ Règles (voir CLAUDE.md) :
 - ⚠️ **Hors code, non vérifiable d'ici** : protection de `main` et 2FA sur GitHub (dépôt public, mise à jour auto
   depuis `main`) ; sauvegardes Neon ; `sslmode=require` dans `DATABASE_URL`. E-mails de Geoffrey publics (commits,
   `.mailmap`) : impossible à retirer sans réécrire `main`.
-
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 105 tests du sujet + anticheat 67/67 verts.
+  À surveiller : en ligne, l'en-tête HSTS n'apparaît que si `DIM_SECURE_COOKIE=1` (posé par `install.sh`).

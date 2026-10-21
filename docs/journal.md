@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Décisions** : mémo `docs/securite.md` (ce qui est protégé, règles à garder, à faire hors code).
 - **À suivre (hors code)** : protéger la branche `main` sur GitHub et activer la double authentification ; le dépôt
   est public ; les adresses e-mail de Geoffrey sont visibles dans les commits (voir le mémo).
-- **État** : 🧪 sur la branche `jules/securite` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ---
 
