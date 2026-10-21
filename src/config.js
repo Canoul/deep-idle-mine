@@ -9,7 +9,9 @@ export const SPAWN_X = 25, CHEST_X = 22;
 
 /* stats du mineur (de base, avant équipement) */
 /* speed = marche (horizontal), climbSpeed = sur échelle, montée comme descente (blocs/s) ; deux stats indépendantes */
-export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, pods:200, light:6, compass:8,
+/* attackSpeed = coups par seconde contre un mob (1,25 = un coup toutes les 0,8 s) ;
+   fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
+export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:1.25, fortune:0, pods:200, light:6, compass:8,
   torches:20, torchRadius:5, discoverMax:2, bridges:10 };
 
 export const CFG = {
@@ -18,7 +20,7 @@ export const CFG = {
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   torchTime:1,            // s pour poser une torche
-  attackInterval:0.8, torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
+  torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
   maxFall:3,              // chute la plus haute (cases) que le mineur accepte de faire en connaissance de cause
   stunFall:3,             // chute IMPRÉVUE (cases non découvertes) à partir de laquelle il est étourdi…
   stunTime:5,             // … pendant ce temps (s) : il ne peut plus rien faire (ni bouger, ni miner, ni frapper)
@@ -115,6 +117,11 @@ export const TREASURE = {
    always : toujours obtenu, quantité tirée entre min et max (inclus) ;
    oneOf  : un seul tirage par famille → au plus un objet de la famille, chaque objet avec sa chance (0 à 1).
    Un Treasure TX sans table ne s'ouvre pas encore. Valeurs provisoires. */
+const gems = chance => [
+  { item:'Rubis inférieur',  chance, tex:'gem_ruby' },
+  { item:'Jade inférieur',   chance, tex:'gem_jade' },
+  { item:'Saphir inférieur', chance, tex:'gem_sapphire' },
+];
 export const LOOT = {
   'Treasure T1': {
     always: [
@@ -134,23 +141,38 @@ export const LOOT = {
         { item:'Boussole en or BP',            chance:0.01 },
         { item:'Ceinture en peau de gobelin BP', chance:0.01 },
       ]},
-      { family:'gem', items:[
-        { item:'Rubis inférieur',  chance:0.01, tex:'gem_ruby' },
-        { item:'Jade inférieur',   chance:0.01, tex:'gem_jade' },
-        { item:'Saphir inférieur', chance:0.01, tex:'gem_sapphire' },
+      { family:'gem', items:gems(0.01) },
+    ],
+  },
+  /* Treasure T2 (areas 3 et au-delà) : mêmes principes que le T1 */
+  'Treasure T2': {
+    always: [
+      { item:'Or',              min:20, max:40 },
+      { item:'Peau de gobelin', min:3,  max:10 },
+      { item:'Blueprint parts', min:8,  max:18 },
+    ],
+    oneOf: [
+      { family:'blueprint', tex:'blueprint', items:[
+        { item:'Gants tactique BP',     chance:0.02 },
+        { item:'Gants d\'ouvrier BP',   chance:0.02 },
+        { item:'Cape de Naingui BP',    chance:0.02 },
       ]},
+      { family:'gem', items:gems(0.015) },
     ],
   },
 };
 
 /* ---- Hors session : table de recherche (onglet du même nom, src/meta/research.js) ----
    tiers : recherche d'un blueprint du tier : cost Blueprint parts (tout ou rien), un blueprint tiré parmi ceux de la
-           table de butin `from` dont la recette n'est pas encore apprise. Un seul tier pour l'instant.
-   recycle : un blueprint détruit rend entre min et max Blueprint parts. Valeurs provisoires. */
+           table de butin `from` dont la recette n'est pas encore apprise. Un tier n'est ouvert que quand le joueur a
+           appris TOUTES les recettes du tier d'avant (les blueprints qui ne débloquent encore rien ne comptent pas).
+   recycle (par tier) : un blueprint de ce tier détruit rend entre min et max Blueprint parts. Valeurs provisoires. */
 export const RESEARCH = {
   parts: 'Blueprint parts',
-  tiers: [ { tier:1, label:'Tier 1', from:'Treasure T1', cost:100 } ],
-  recycle: { min:30, max:60 },
+  tiers: [
+    { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:30, max:60 } },
+    { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
+  ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -247,6 +269,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
+  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth',
   'ladder','chest','miner','mimic','bug','goblin','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -307,6 +330,12 @@ export const RARITY = {
   },
 };
 
+/* ---- Fortune ----
+   Stat du mineur (STATS.fortune, en %) : à chaque minerai miné, chance de gagner un second exemplaire de l'objet obtenu
+   (le minerai, ou son shiny). Le doublon ne compte pas pour le déblocage de l'area. Hasard « live » à part
+   (G.fortuneRng, tiré de la seed) : il ne décale ni les mobs, ni le shiny, ni le reste de la partie. */
+export const FORTUNE = { salt: 0x0f07c0de };
+
 /* ---- Hors session : stuff (onglet Stuff) ----
    slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
    items : les pièces d'équipement (famille stuff, ne s'empilent pas) et la case où elles vont.
@@ -336,12 +365,18 @@ export const STUFF = {
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
+    /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
+    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:1.9 } },
+    'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:8.3 } },
+    'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole',
-                torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte' },
+                torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
+                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune' },
+  statUnits: { fortune:' %' },       // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','discoverMax','light','compass','torches','bridges'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','torches','bridges'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -363,6 +398,7 @@ export const ITEMS = {
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
+  'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },   // matériau de la Cape de Naingui (d'où il vient : à définir)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -429,7 +465,7 @@ export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2,
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
 export const DEV_TUNABLES = [
   ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
-  ['STATS','damage','Dégâts',0,1e4], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
+  ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (coups/s)',0.1,100], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50],
   ['STATS','torches','Torches',0,1000], ['STATS','bridges','Passerelles',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],

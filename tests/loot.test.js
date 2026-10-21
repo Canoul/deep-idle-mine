@@ -66,11 +66,11 @@ test('ouvrir : retire un Treasure T1 et verse le butin', () => {
 
 test('ouvrir sans Treasure, ou un objet qui ne s\'ouvre pas : rien ne se passe', () => {
   const inv = createInventory();
-  addItem(inv, 'Treasure T2', 1);
-  assert.equal(canOpen('Treasure T2'), false);
+  addItem(inv, 'Treasure T3', 1);       // un tier sans table de butin
+  assert.equal(canOpen('Treasure T3'), false);
   assert.equal(openTreasure(inv, 'Treasure T1', 'op-00001', mulberry32(1)), null);
-  assert.equal(openTreasure(inv, 'Treasure T2', 'op-00002', mulberry32(1)), null);
-  assert.equal(countOf(inv, 'Treasure T2'), 1);
+  assert.equal(openTreasure(inv, 'Treasure T3', 'op-00002', mulberry32(1)), null);
+  assert.equal(countOf(inv, 'Treasure T3'), 1);
   assert.equal(inv.opened.length, 0);
 });
 

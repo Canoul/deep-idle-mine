@@ -30,16 +30,28 @@ export function shinyOf(G,t){
   return s && G.shinyRng() < SHINY.chance ? s.item : null;
 }
 
+/* fortune : combien d'exemplaires EN PLUS d'un minerai miné (m.carac.fortune, en %) ; 0 le plus souvent */
+function fortuneExtra(G,m){
+  const f=m.carac.fortune||0; if(f<=0) return 0;
+  const sure=Math.floor(f/100);
+  return sure + (G.fortuneRng()*100 < f-sure*100 ? 1 : 0);
+}
+
 export function mineBlock(G,m,x,y){
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
   if(mim){ if(!mim.revealed){ mim.revealed=true; log(G,'⚠ Un mimic se cachait dans la roche !'); } return; }
   const t=G.tiles[y][x]; if(!t) return;
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   const shiny=shinyOf(G,t);
+  let got=null;
   if(shiny){
-    collect(m, shiny, ITEMS[shiny].w, 1); G.stats.shiny++; m.stats.shiny=(m.stats.shiny||0)+1;
+    got=shiny; collect(m, shiny, ITEMS[shiny].w, 1); G.stats.shiny++; m.stats.shiny=(m.stats.shiny||0)+1;
     log(G, `✨ ${m.name} trouve un ${shiny} !`);
-  } else if(!BLOCKS[t].noDrop) collect(m, BLOCKS[t].name, BLOCKS[t].w, 1);
+  } else if(!BLOCKS[t].noDrop){ got=BLOCKS[t].name; collect(m, got, BLOCKS[t].w, 1); }
+  if(got && isOre(t)){   // fortune : le minerai obtenu est dupliqué
+    const extra=fortuneExtra(G,m);
+    if(extra){ collect(m, got, ITEMS[got].w, extra); m.stats.fortune=(m.stats.fortune||0)+extra; }
+  }
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
 }

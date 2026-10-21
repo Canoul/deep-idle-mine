@@ -354,6 +354,41 @@ def main():
     rect(belt, 7, 6, 2, 4, hexc('#4f7d32'))
     tex['belt_goblin'] = belt
 
+    # gants tactique (stuff) : gris acier, doigts tendus, manchette rouge
+    def glove(base, light, dark, cuff):
+        g = blank()
+        rect(g, 4, 6, 8, 7, hexc(base))                   # paume
+        for x, y, h in [(4, 3, 4), (6, 2, 5), (8, 2, 5), (10, 3, 4)]:
+            rect(g, x, y, 2, h, hexc(base))               # doigts
+        rect(g, 2, 7, 3, 4, hexc(base))                   # pouce
+        rect(g, 6, 2, 2, 1, hexc(light)); rect(g, 8, 2, 2, 1, hexc(light)); rect(g, 5, 7, 6, 1, hexc(light))
+        rect(g, 4, 12, 8, 1, hexc(dark))
+        rect(g, 3, 13, 10, 2, hexc(cuff))                 # manchette
+        return g
+    tex['gloves_tactical'] = glove('#3b3f46', '#6a707a', '#22252a', '#e63946')
+    # gants d'ouvrier (stuff) : cuir brun, manchette dorée
+    tex['gloves_worker'] = glove('#a9773a', '#d7a45a', '#6b4a22', '#ffd23f')
+
+    # cape de Naingui (stuff) : tissu sombre qui s'évase, fermoir doré
+    cape = blank()
+    for i in range(12):
+        rect(cape, 5 - i // 3, 3 + i, 6 + 2 * (i // 3), 1, hexc('#4a2a6b'))
+    for i in range(12):
+        rect(cape, 5 - i // 3, 3 + i, 1, 1, hexc('#6a3d92'))
+    rect(cape, 5, 14, 6, 1, hexc('#2b1b3d'))
+    rect(cape, 6, 2, 4, 2, hexc('#6a3d92'))
+    rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
+    tex['cape_naingui'] = cape
+
+    # tissu sombre (matériau) : étoffe pliée, violet très sombre
+    cloth = blank()
+    rect(cloth, 2, 4, 12, 9, hexc('#2b1b3d'))
+    rect(cloth, 2, 4, 12, 2, hexc('#4a2a6b'))
+    rect(cloth, 2, 8, 12, 1, hexc('#3a2455'))
+    rect(cloth, 2, 11, 12, 2, hexc('#1c1228'))
+    rect(cloth, 4, 6, 3, 1, hexc('#6a3d92'))
+    tex['dark_cloth'] = cloth
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

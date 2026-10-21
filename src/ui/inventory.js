@@ -14,7 +14,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 
 export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', treasure:'Treasure', blueprint:'Blueprint', gem:'Gemme',
                            mob:'Butin de mob', stuff:'Équipement',
-                           combustible:'Combustible', ingot:'Lingot' };
+                           combustible:'Combustible', ingot:'Lingot', material:'Matériau' };
 /* objets rares du butin : mis en avant dans la fenêtre d'ouverture */
 const RARE = new Set(['blueprint', 'gem']);
 const isRare = item => RARE.has(itemDef(item)?.cat) && item !== 'Blueprint parts';

@@ -23,4 +23,9 @@ export const RECIPES = {
   'Jambes en fer':       { cost: { 'Tainted iron': 7 },                  qty: 1, unlock: 'Jambes en fer BP' },
   'Bottes en fer':       { cost: { 'Tainted iron': 4, 'Peau de gobelin': 5, 'Lingot d\'or': 1 }, qty: 1, unlock: 'Bottes en fer BP' },
   'Ceinture en peau de gobelin': { cost: { 'Peau de gobelin': 20, 'Lingot d\'or': 20 }, qty: 1, unlock: 'Ceinture en peau de gobelin BP' },
+
+  /* débloquées par un blueprint (Treasure T2) */
+  'Gants tactique':      { cost: { 'Shiny iron': 20, 'Tainted iron': 20, 'Jade inférieur': 1 },   qty: 1, unlock: 'Gants tactique BP' },
+  'Gants d\'ouvrier':    { cost: { 'Shiny gold': 20, 'Tainted iron': 20 },                        qty: 1, unlock: 'Gants d\'ouvrier BP' },
+  'Cape de Naingui':     { cost: { 'Tissu sombre': 20, 'Rubis inférieur': 1, 'Saphir inférieur': 1 }, qty: 1, unlock: 'Cape de Naingui BP' },
 };

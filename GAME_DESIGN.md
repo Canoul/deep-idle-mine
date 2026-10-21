@@ -80,7 +80,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | 3 à 5 | **Treasure T2** |
 
   Au-delà de l'area 5, le dernier tier s'applique (T2) *(provisoire, en attendant un T3)*. Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
-- **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas encore (T2 pour l'instant).
+- **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas (T1 et T2 en ont une).
 - **Contenu du Treasure T1** *(valeurs provisoires)* :
 
   | Objet | Quantité | Chance |
@@ -92,6 +92,16 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1 % chacune (3 % au total) |
 
   *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints : débloquer une recette (§6, Craft). Usage des gemmes : défini plus tard.
+- **Contenu du Treasure T2** *(valeurs provisoires, mêmes principes que le T1)* :
+
+  | Objet | Quantité | Chance |
+  |---|---|---|
+  | Or (minerai) | 20 à 40 | 100 % |
+  | Peau de gobelin | 3 à 10 | 100 % |
+  | Blueprint parts | 8 à 18 | 100 % |
+  | **Un blueprint** parmi : Gants tactique, Gants d'ouvrier, Cape de Naingui | 1 | 2 % chacun (6 % au total) |
+  | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1,5 % chacune (4,5 % au total) |
+
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).

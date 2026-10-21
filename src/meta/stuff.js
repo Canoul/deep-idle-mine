@@ -23,11 +23,12 @@ export function sanitizeLook(look){
 export const lookOf = st => Object.fromEntries(Object.entries(st.worn).filter(([, p]) => p).map(([slot, p]) => [slot, p.item]));
 
 const num = v => String(v).replace('.', ',');
+const unitOf = k => STUFF.statUnits?.[k] ?? '';
 /* effets d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) :
    'Dégâts 11 (au lieu de 5)' */
 export const statLines = item => [
-  ...Object.entries(ITEMS[item]?.set || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)} (au lieu de ${num(STATS[k])})`),
-  ...Object.entries(ITEMS[item]?.stats || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}`),
+  ...Object.entries(ITEMS[item]?.set || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)}${unitOf(k)} (au lieu de ${num(STATS[k])}${unitOf(k)})`),
+  ...Object.entries(ITEMS[item]?.stats || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}${unitOf(k)}`),
 ];
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');

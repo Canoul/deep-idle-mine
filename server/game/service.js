@@ -43,7 +43,7 @@ const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.'
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
                        maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
                        no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.' };
-const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
@@ -441,7 +441,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         const r = action === 'research' ? research(inv, body.tier, opId, random) : recycle(inv, body.item, opId, random);
-        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
+        if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { action, item: r.item, parts: r.parts, inventory: publicInventory(inv) };
       });

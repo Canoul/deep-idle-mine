@@ -30,13 +30,13 @@ export function setupStuff({ onOp }){
   /* stats du mineur : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu) */
   function renderStats(){
     const fr = v => String(v).replace('.', ',');
-    $('stuffStatsBody').innerHTML = minerStats(worn, effects).map(s =>
-      `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}</b>`+
+    $('stuffStatsBody').innerHTML = minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
+      `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
       (s.bonus || s.mult !== 1 ? ` <small class="mut">(`+
-        (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}</span>` : fr(s.base))+
+        (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
         (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
         `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
-      `</span></div>`).join('');
+      `</span></div>`); }).join('');
   }
 
   function renderPicker(){

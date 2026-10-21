@@ -13,11 +13,11 @@ let n = 0; const id = () => 'op-rs-' + (++n);
 const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
-test('config : tier 1 = 100 parts, blueprints du Treasure T1 ; recycle 30 à 60 ; onglet présent', () => {
-  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100]]);
+test('config : tier 1 = 100 parts (recycle 30 à 60), tier 2 = 150 parts (recycle 40 à 70) ; onglet présent', () => {
+  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150]]);
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 9);
-  assert.deepEqual(RESEARCH.recycle, { min:30, max:60 });
+  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:30, max:60 }, { min:40, max:70 }]);
   assert.ok(TABS.some(t => t.id === 'recherche' && t.ready));
 });
 
@@ -36,7 +36,7 @@ test('recherche : pas assez de parts → rien ne bouge ; tier inconnu refusé', 
   const inv = invWith({ [PARTS]:99 });
   assert.equal(research(inv, 1, id(), fixed(0)).error, 'not_enough');
   assert.equal(countOf(inv, PARTS), 99);
-  for(const t of [0, 2, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
+  for(const t of [0, 3, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
   assert.equal(canResearch(inv, 1), false);
 });
 
