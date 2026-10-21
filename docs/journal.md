@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Jules — Ménage des textes du jeu
+- **Pour le joueur** : des textes plus courts et plus propres. L'épée affiche « Dégâts 8 » (plus « au lieu de 5 ») ;
+  plus de phrases techniques (« Résultat vérifié par le serveur », « luminosité 80 % », « 50×50 = 2500 blocs »,
+  « npm start » quand le serveur ne répond pas) ; plus de « Bientôt : aider un allié » alors que l'option existe ;
+  plus de « Les valeurs sont provisoires » dans Skills ; l'objectif de la mine tient en une ligne
+  (« 🔒 Area 2 : minerais de l'area 1 — 12 / 160 ») ; explications raccourcies (Stuff, lobby, Historique, Concasseur).
+- **À suivre** : le journal de session (« Session démarrée (seed …) ») et le wiki n'ont pas été retouchés, à part
+  les effets des épées dans le wiki.
+- **Décisions** : le bilan à plusieurs ne précise plus que les Treasure sont « un pour chacun » (pas utile).
+- **État** : ✅ en ligne le 21/10
+
+---
+
 ## 21/10/2026 — Jules — Organisation du dépôt et méthode de travail
 - **Pour le joueur** : rien ne change.
 - **Décisions** :

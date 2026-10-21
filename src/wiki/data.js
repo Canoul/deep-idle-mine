@@ -72,12 +72,12 @@ const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
 const statName = k => STUFF.statLabels[k] ?? k;
 const unit = k => STUFF.statUnits?.[k] ?? '';
 
-/* bonus d'une pièce de stuff, en texte : « Pods +25 », « Dégâts 11 (au lieu de 5) » */
+/* bonus d'une pièce de stuff, en texte : « Pods +25 », « Dégâts 11 » */
 export function statsOf(item){
   const d = ITEMS[item];
   if(!d || d.cat !== 'stuff') return [];
   return [
-    ...Object.entries(d.set || {}).map(([k, v]) => `${statName(k)} ${fmt(v)}${unit(k)} (au lieu de ${fmt(STATS[k])}${unit(k)})`),
+    ...Object.entries(d.set || {}).map(([k, v]) => `${statName(k)} ${fmt(v)}${unit(k)}`),
     ...Object.entries(d.stats || {}).map(([k, v]) => `${statName(k)} +${fmt(v)}${unit(k)}`),
   ];
 }

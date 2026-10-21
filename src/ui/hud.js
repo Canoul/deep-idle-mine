@@ -1,8 +1,7 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS, SHARE } from '../config.js';
+import { SESSION_LEN, STATS, BLOCKS, IDS } from '../config.js';
 import { areaOf, unlockNeed } from '../sim/world.js';
 import { rname } from './rarity.js';
-import { curLum } from '../sim/miner.js';
 import { followedMiner } from '../render/camera.js';
 
 const $ = id => document.getElementById(id);
@@ -44,7 +43,7 @@ export function updateHUD(G, ui){
   $('mPods').textContent=Math.round(m.load)+' / '+pods;
   $('podBar').style.width=Math.min(100,m.load/pods*100)+'%';
   $('podBar').style.background=m.load>=pods*0.9?'var(--bad)':'var(--ok)';
-  $('mTorch').textContent=m.torches+' en réserve · luminosité '+Math.round(curLum(G,m)*100)+'% · '+m.bridges+' passerelles';
+  $('mTorch').textContent=m.torches+' en réserve · '+m.bridges+' passerelles';
   $('mInv').innerHTML=chips(m.inv);
 
   // coffre commun + contributions
@@ -61,7 +60,7 @@ export function updateHUD(G, ui){
   const ai=areaOf(m.y), box=$('areaBody');
   if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
   const a=G.areas[ai];
-  let h=`<div class="row"><b>Area ${ai}</b><span class="mut">${W}×${AREA_H} = ${W*AREA_H} blocs</span></div>`;
+  let h=`<div class="row"><b>Area ${ai}</b></div>`;
   for(const n in a.comp)
     h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
@@ -95,7 +94,7 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
   const mine = shares.find(p=>p.account===me);
   const split = shares.length>1
     ? `<p>Coffre commun : ${chips(s.chest)}</p>`+
-      `<p>Partagé à parts égales entre les ${n} présent${n>1?'s':''} à la fin <span class="mut">(reste tiré au hasard ; ${esc(SHARE.copyToAll.join(', '))} : un pour chacun)</span> :</p>`+
+      `<p>Partagé à parts égales entre les ${n} présent${n>1?'s':''} à la fin :</p>`+
       shares.map(p=>`<div class="row share${p.account===me?' me':''}"><span>${who(p)}</span><span>${p.left?'<span class="mut">a quitté la session : rien</span>':chips(p.bag)}</span></div>`).join('')
     : `<p>Versé dans ton inventaire :</p><div>${chips(mine?.bag)}</div>`;
   const miners = s.miners || [];
@@ -119,7 +118,6 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
     `<div class="row"><span>Treasures ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
     xpRow+by+split+lost+
-    '<p class="mut small">Résultat vérifié par le serveur.</p>'+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';
   $('end').hidden=false;
   $('endBack').onclick=onBack;
@@ -142,8 +140,7 @@ function renderLog(list){
 export function objectiveHtml(G){
   const f=G.unlockedAreas-1, a=G.areas[f];
   if(!a) return '';
-  const need=unlockNeed(a), pct=Math.round(CFG.unlockRatio*100);
-  return `<div class="row" style="margin-top:8px"><span>Objectif : ${pct}% des minerais de l'area ${f}</span><span>${a.oreMined} / ${need}</span></div>`+
-    `<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:var(--acc)"></i></div>`+
-    `<div class="mut" style="margin-top:4px">🔒 L'area ${f+1} s'ouvre à ${need} minerais minés dans l'area ${f}</div>`;
+  const need=unlockNeed(a);
+  return `<div class="row" style="margin-top:8px"><span>🔒 Area ${f+1} : minerais de l'area ${f}</span><span>${a.oreMined} / ${need}</span></div>`+
+    `<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:var(--acc)"></i></div>`;
 }
