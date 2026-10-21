@@ -13,6 +13,7 @@ import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
 import { createPartyService } from './party/service.js';
 import { createInstantService } from './instant/service.js';
+import { createSocialService } from './social/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -27,7 +28,9 @@ await party.load();                        // groupes d'avant le redémarrage (m
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });
 await instant.load();
 game.onStart(accounts => instant.drop(accounts));
-const server = http.createServer(createApp({ store, service, game, party, instant, root: ROOT }));
+/* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
+const social = createSocialService({ store: gameStore, accounts: store, party, game });
+const server = http.createServer(createApp({ store, service, game, party, instant, social, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */

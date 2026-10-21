@@ -511,4 +511,36 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .pslots{grid-template-columns:repeat(3,minmax(0,1fr))}
   .fgrid{grid-template-columns:calc(36*var(--u)) 1fr calc(36*var(--u))}
 }
+
+/* ---------- onglet Social (src/ui/social.js) ---------- */
+#socialBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
+#socialBody .invHead{margin-bottom:0}
+.sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}
+.sadd input{flex:1;min-width:calc(70*var(--u))}
+.frow{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) var(--u);box-shadow:0 calc(-1*var(--u)) 0 var(--sep)}
+.frow:first-child{box-shadow:none}
+.fname{flex:1;display:flex;flex-direction:column;min-width:0}
+.fname b{font:400 var(--fs-l)/1.1 var(--f-title);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
+.fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
+.fbtns .x{min-width:calc(15*var(--u));padding:0}
+/* présence : carré pixel (gris hors ligne, vert en ligne, braise en session) */
+.fdot{width:calc(5*var(--u));height:calc(5*var(--u));flex:none;background:#5a4f46;box-shadow:0 0 0 var(--u) #000}
+.fdot.on{background:var(--ok)}
+.fdot.play{background:var(--acc)}
+
+/* ---------- notifications en pop-up (demande d'ami, invitation de groupe), sous la barre du haut ---------- */
+#notifs{position:fixed;top:calc(var(--top-h) + 6*var(--u));left:calc(6*var(--u));z-index:55;display:flex;flex-direction:column;gap:calc(4*var(--u));
+  max-width:min(calc(180*var(--u)),calc(100vw - 12*var(--u)));pointer-events:none}
+.notif{pointer-events:auto;border:calc(6*var(--u)) solid transparent;padding:calc(2*var(--u)) calc(3*var(--u));
+  border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:nin .3s steps(3)}
+.notif.busy{opacity:.6}
+.ntext{display:flex;gap:calc(3*var(--u));align-items:flex-start}
+.nico{color:var(--acc)}
+.nico .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.nbtns{display:flex;gap:calc(2*var(--u));justify-content:flex-end;margin-top:calc(3*var(--u))}
+.nbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
+.notif .err{margin:calc(2*var(--u)) 0 0}
+@keyframes nin{from{transform:translateX(calc(-12*var(--u)));opacity:0}to{transform:none;opacity:1}}
+@media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

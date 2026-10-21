@@ -190,6 +190,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       await notInSession(me);
       const friend = await getAccount(id);
       if(!friend) fail('account_not_found', 404, 'Aucun joueur avec cet ID.');
+      if(await game.activeSessionId(id)) fail('friend_in_session', 409, `${displayName(friend)} est en session : invite-le à la fin.`);
       const p = partyOf(me.id) ?? create(me);
       noChange(p);
       if(memberOf(p, id)) fail('already_member', 409, `${displayName(friend)} est déjà dans ton groupe.`);
@@ -198,6 +199,24 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         fail('too_many_invites', 409, 'Trop d\'invitations en attente pour ce groupe.');
       limit.invite.hit(me.id);
       p.invites.set(id, { account: id, name: displayName(friend), from: displayName(me), at: clock() });
+      return { party: publicParty(p, me.id) };
+    },
+
+    /* rejoindre le lobby d'un ami (onglet Social ; le service des amis a vérifié l'amitié). L'ami n'a pas encore de
+       groupe : on lui en crée un, dont il est le chef, et on y entre. Refusé s'il est en session. */
+    async joinFriend(me, friend){
+      touch(me); await sweep();
+      if(friend.id === me.id) fail('invalid_id', 400, 'C\'est toi.');
+      await notInSession(me);
+      if(await game.activeSessionId(friend.id)) fail('friend_in_session', 409, `${displayName(friend)} est en session.`);
+      const p = partyOf(friend.id) ?? create(friend);
+      if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
+      noChange(p);
+      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
+      const old = partyOf(me.id);
+      if(old){ noChange(old); removeMember(old, me.id); }
+      p.members.push({ account: me.id, name: displayName(me), seenAt: clock() });
+      p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
 
@@ -256,6 +275,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   return {
     ...actions,
     load,
+    /* pour l'onglet Social : groupe d'un joueur (taille, places) et invitations qu'il a reçues, sans ménage ni signe de vie */
+    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers } : null; },
+    invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from,
+                                                              members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* pour les tests et le journal */
     count: () => parties.size,
     _sweep: saving(sweep),

@@ -150,7 +150,8 @@ src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory
 src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
 src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
-                      direct dans un fil d'exécution), party/ (groupes), db/ (PostgreSQL)
+                      direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
+                      instantanée), db/ (PostgreSQL)
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
 deploy/ovh/           installation et mise à jour du serveur OVH
@@ -203,5 +204,5 @@ intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. 
 
 ## 10. Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : la liste d'amis / l'onglet Social (une ébauche existe sur `origin/social`), les
-fondations. Prévoir l'architecture pour, sans les construire. (La spécialisation des rôles, elle, fait partie du jeu.)
+Ne pas implémenter sans demande : les fondations. Prévoir l'architecture pour, sans les construire. (La
+spécialisation des rôles et l'onglet Social, eux, font partie du jeu.)

@@ -16,7 +16,7 @@ export const TABS = [
   { id:'recherche',  label:'Recherche',  icon:'book',      ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'sparkle',   ready:true  },   // arbres de skills (points gagnés aux niveaux)
   { id:'historique', label:'Historique', icon:'hourglass', ready:true  },   // sessions passées : seed et butin
-  { id:'social',     label:'Social',     icon:'group',     ready:false },
+  { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
 ];
 
 /* touche du clavier de chaque onglet, dans l'ordre de la barre (les onglets en attente n'en ont pas) */

@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer } from './render/instant.js';
@@ -26,6 +26,7 @@ import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas } from './ui/fit.js';
+import { pxi } from './ui/pxicons.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
@@ -42,8 +43,10 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
+import { setupSocial } from './ui/social.js';
+import { setupNotify } from './ui/notify.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -178,7 +181,7 @@ function updateOrbs(shown, mi){
 
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); },
+  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); },
   confirmLeave: () => confirm([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
@@ -245,6 +248,50 @@ async function pollLobby(){
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
 }
+/* ---------- amis (onglet Social) et pop-ups ----------
+   La liste d'amis est redemandée régulièrement dans tous les onglets, même caché ou en session : c'est aussi le signe
+   de vie qui fait apparaître le joueur « en ligne » chez ses amis. Elle apporte les demandes d'ami et les invitations de
+   groupe, affichées en pop-up en haut à gauche. */
+const notify = setupNotify($('notifs'));
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let socialTimer = null;
+function setSocial(st){
+  if(!st?.friends) return st;
+  social.set(st);
+  nav.badge('social', st.incoming.length > 0);
+  notify.sync([
+    ...st.partyInvites.map(i => ({ key: 'p:' + i.code, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
+      actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
+                { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
+    ...st.incoming.map(r => ({ key: 'f:' + r.id, icon: pxi('person'), text: `<b>${esc(r.name)}</b> vous a envoyé une demande d'ami`,
+      actions: [{ label: 'Accepter', primary: true, run: async () => setSocial(await socialApi.accept(r.id)) },
+                { label: 'Refuser', run: async () => setSocial(await socialApi.refuse(r.id)) }] })),
+  ]);
+  return st;
+}
+async function pollSocial(){
+  clearTimeout(socialTimer);
+  if(acct.offline || !acct.account){ notify.sync([]); return; }
+  try { setSocial(await socialApi.state()); } catch(e){ console.warn(e); }
+  socialTimer = setTimeout(pollSocial, document.hidden ? SOCIAL.hiddenPoll : SOCIAL.poll);
+}
+/* entrer dans un groupe (invitation acceptée, ami rejoint) : on va à l'onglet Lobby */
+async function joinParty(fn){
+  if(G) throw new Error('Tu es dans une session : termine-la ou quitte-la d\'abord.');
+  const r = await fn();
+  lobby.update({ party: r.party });
+  nav.show('lobby'); pollLobby(); pollSocial();
+  return r;
+}
+const social = setupSocial({
+  request: async name => setSocial(await socialApi.request(name)),
+  accept:  async id => setSocial(await socialApi.accept(id)),
+  refuse:  async id => setSocial(await socialApi.refuse(id)),
+  remove:  async id => setSocial(await socialApi.remove(id)),
+  invite:  async id => { setSocial(await socialApi.invite(id)); pollLobby(); },
+  join:    id => joinParty(() => socialApi.join(id)),
+});
+
 /* lien d'invitation ouvert alors que la page l'est déjà (la barre a déjà remplacé l'adresse : on lit newURL) */
 addEventListener('hashchange', e => {
   const code = joinCodeFromHash(e.newURL);
@@ -323,6 +370,7 @@ async function pollView(){
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && G && !waiting) pollView();
   if(document.visibilityState === 'visible' && !G) pollLobby();
+  if(document.visibilityState === 'visible') pollSocial();
 });
 
 /* entre deux envois, les actions en cours avancent à l'écran (affichage seulement : le prochain envoi fait foi) */
@@ -417,6 +465,7 @@ else {
   catch(e){ acct.offline = true; showNoSession(); }
 }
 startInstant();
+pollSocial();
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
