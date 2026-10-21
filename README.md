@@ -27,6 +27,7 @@ npm run dev      # mode développeur (vitesse ×300, seed, mineurs de test…)
 
 | Fichier | Contenu |
 |---|---|
+| [`claude/etat-du-projet.md`](claude/etat-du-projet.md) | **Ce qui existe aujourd'hui** dans le jeu |
 | [`docs/journal.md`](docs/journal.md) | **Où en est le jeu** : qui a fait quoi, ce qui est en ligne |
 | [`GAME_DESIGN.md`](GAME_DESIGN.md) | Les règles du jeu (source de vérité) |
 | [`CLAUDE.md`](CLAUDE.md) | Les consignes pour Claude (méthode, architecture, tests) |

@@ -25,13 +25,15 @@ Modèle d'entrée :
     tâche a sa branche `prénom/sujet`, gérée par Claude, et passe en ligne quand on dit « mets en ligne » ;
   - ce journal, en plus du journal technique `docs/debug.md` ;
   - CLAUDE.md réorganisé : début de discussion, git, fin de tâche, puis le projet ;
+  - l'état du projet vit dans `claude/etat-du-projet.md` (une seule copie, aussi pour les projets claude.ai) ;
+  - la spécialisation des rôles fait partie du jeu (retirée du « hors périmètre ») ;
   - on garde une seule page avec des onglets (`#mine`, `#inventaire`…) : des pages séparées couperaient
     l'affichage de la session à chaque changement d'onglet.
 - **Ménage** : fichier parasite `deep-idle-mine` supprimé, doc Render rangée dans `docs/archive/`, `README.md`,
   identités git de Geoffrey regroupées (`canoul` = Geoffrey Boilay), fins de ligne fixées (LF).
-- **À suivre** : supprimer la branche distante `concasseur` (déjà fusionnée) ; décider du sort de la branche
-  `social` ; éviter le redémarrage du serveur quand seuls des fichiers de doc changent (`deploy/ovh/update.sh`).
-- **État** : 🧪 sur la branche `jules/organisation-repo` (pas en ligne)
+- **À suivre** : décider du sort de la branche `social`.
+- **Branches** : `concasseur` (déjà fusionnée) supprimée sur GitHub.
+- **État** : ✅ en ligne le 21/10
 
 ---
 

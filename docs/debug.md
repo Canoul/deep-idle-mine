@@ -719,6 +719,8 @@ Règles (voir CLAUDE.md) :
 - **Tests** : aucun à lancer (documentation et réglages git). `git ls-files --eol` : tous les fichiers texte déjà en
   LF, le `.gitattributes` ne change aucun fichier.
 - **Vérification** : ✅ `git shortlog -sn` regroupe bien Geoffrey (48 commits) ; liens du README vérifiés.
-- **Point fragile** : `deploy/ovh/update.sh` redémarre le serveur à chaque changement de `main`, même doc seule.
-  À améliorer (ne redémarrer que si autre chose que `*.md` / `docs/` change) ; demande de relancer `install.sh`
-  sur le VPS, car le script est copié dans `/usr/local/sbin`.
+- **Suite** : « État actuel » déplacé de CLAUDE.md vers `claude/etat-du-projet.md` (une seule copie, lue en début
+  de discussion) ; spécialisation des rôles retirée du « hors périmètre » (décision de l'équipe) ; branche distante
+  `concasseur` supprimée.
+- **Note** : `deploy/ovh/update.sh` redémarre le serveur à chaque changement de `main`, même doc seule. D'après
+  l'équipe, ça ne casse pas les parties en cours : laissé tel quel. ⚠️ Pas vérifié par Claude.

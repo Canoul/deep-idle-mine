@@ -2,7 +2,8 @@
 
 Ce fichier est lu par Claude au début de chaque discussion. Plusieurs personnes travaillent sur le jeu, chacune
 avec sa propre discussion Claude, et **les discussions ne partagent pas leur historique** : tout ce qui doit
-passer d'une discussion à l'autre passe par git, `docs/journal.md`, `docs/debug.md` et ce fichier.
+passer d'une discussion à l'autre passe par git, `claude/etat-du-projet.md`, `docs/journal.md`, `docs/debug.md`
+et ce fichier.
 
 L'équipe n'est pas forcément à l'aise avec git : **c'est à toi de gérer git proprement** (section 2), en
 expliquant en une phrase ce que tu fais.
@@ -16,7 +17,8 @@ expliquant en une phrase ce que tu fais.
 1. Si tu ne sais pas avec qui tu parles (Geoffrey ou Jules), demande-le en une ligne : ça sert pour la branche,
    les commits et le journal.
 2. `git fetch` puis `git status` : sur quelle branche est-on, y a-t-il du travail non commité ?
-3. Lis le haut de `docs/journal.md` (dernières avancées) et `git log origin/main --since="48 hours ago"`.
+3. Lis `claude/etat-du-projet.md` (ce qui existe aujourd'hui), le haut de `docs/journal.md` (dernières avancées)
+   et `git log origin/main --since="48 hours ago"`.
 4. Regarde les chantiers des autres : `git branch -r --no-merged origin/main`. Si l'un touche les mêmes fichiers
    que la demande, préviens avant de commencer.
 5. Avant de toucher au gameplay : lis `GAME_DESIGN.md` (source de vérité des règles). Avant des tests ou des
@@ -59,10 +61,9 @@ expliquant en une phrase ce que tu fais.
 - **`docs/debug.md`** : une entrée technique **en bas** (quoi, fichiers, tests, état de vérification ✅ / ⚠️ / ❌,
   ce qu'il reste à vérifier, points fragiles). Pour qu'une autre discussion Claude sache d'où vient une panne. Quand
   tu vérifies ou corriges une entrée existante, mets à jour son état sans effacer l'historique.
-- **Ce fichier, section 5 « État actuel »** : si c'est un nouveau système, une décision de design, un changement
+- **`claude/etat-du-projet.md`** : si c'est un nouveau système, une décision de design, un changement
   d'hébergement ou un équilibrage notable. Ce qui est remplacé est marqué « ancien », jamais laissé comme actuel.
 - **`GAME_DESIGN.md`** : si une règle du jeu a changé.
-- Fiche `claude/etat-du-projet.md` du projet claude.ai : même mise à jour que « État actuel », si tu y as accès.
 
 ---
 
@@ -103,30 +104,8 @@ progression »).
 
 ### État actuel
 
-- Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-  Une seule page (`index.html`) avec des onglets (`#mine`, `#inventaire`…) : la session continue de tourner quand
-  on change d'onglet. Chaque onglet a son module dans `src/ui/`.
-- **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public
-  (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
-- **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session
-  commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent
-  (GAME_DESIGN §6).
-- **Hébergement** : VPS OVHcloud (Caddy https + service systemd, mise à jour auto depuis `main` toutes les 2 min,
-  redémarrage à chaque changement) + Neon (PostgreSQL via `DATABASE_URL`), domaine deepmineidle.fr :
-  `docs/deploiement-ovh.md` et `deploy/ovh/`. Ancien hébergement Render : `docs/archive/deploiement-render.md`.
-  Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini.
-- **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
-  téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
-  table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
-  et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **Donjon** (area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
-  option « Fuir ».
-- **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
-  blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
-  treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
-- Branche `origin/social` (onglet Social) : en attente, hors périmètre pour l'instant (section 10).
-- `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence (le code modulaire en mode
-  1 mineur reproduit exactement ses résultats, vérifié seed par seed au découpage).
+Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en attente) est dans
+**`claude/etat-du-projet.md`** : c'est la seule copie, ne la recopie pas ici.
 
 ## 6. Lancer, tester, simuler
 
@@ -153,6 +132,7 @@ index.html            page du jeu (une seule page, un onglet = une <section data
 wiki.html             wiki du joueur ; ses tableaux sont générés depuis la config par src/wiki/
 CLAUDE.md             ce fichier          GAME_DESIGN.md  règles du jeu (source de vérité)
 README.md             présentation courte du dépôt
+claude/               etat-du-projet.md : ce qui existe aujourd'hui (aussi utilisable dans un projet claude.ai)
 src/config.js         TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js        recettes de craft          src/skins.js  apparence des mineurs selon le stuff
 src/core/             hasard déterministe (rng)
@@ -221,5 +201,5 @@ intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. 
 
 ## 10. Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : la liste d'amis / l'onglet Social (une ébauche existe sur `origin/social`), la
-spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : la liste d'amis / l'onglet Social (une ébauche existe sur `origin/social`), les
+fondations. Prévoir l'architecture pour, sans les construire. (La spécialisation des rôles, elle, fait partie du jeu.)
