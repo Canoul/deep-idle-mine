@@ -221,7 +221,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Vitesse de montée | 2,25 | 250 x | +0,6 = 150 x (Jambes en fer) |
 | Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
 | Oxygène | 300 | 4 x *(prix « comme frein »)* | +38 = 152 x (Casque en fer) |
-| Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) |
+| Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) ; 8 = 120 x (Épée en pierre) |
 | Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +150 % = 294 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
@@ -362,6 +362,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Objet | Recette | Bonus |
   |---|---|---|
   | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,1 |
+  | Épée en pierre | 15 lingots de fer | Dégâts 8 (remplace les mains nues : 5 ; +3, moitié de l'épée en fer, ≈ 120 x) |
   | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
   | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +25 |
   | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
@@ -395,7 +396,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
-- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épée en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
+- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 

@@ -28,6 +28,7 @@ export const SKIN = {
   },
   /* arme sortie pour frapper un mob : l'épée équipée, sinon la pioche (mains nues + pioche) */
   sword: {
+    'Épée en pierre':   'skins/sword_stone',
     'Épée en fer':      'skins/sword_iron',
   },
 };

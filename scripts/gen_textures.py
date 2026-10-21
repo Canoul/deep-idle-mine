@@ -344,6 +344,17 @@ def main():
     rect(sword, 2, 12, 2, 2, hexc('#8a5a2b'))      # poignée
     rect(sword, 1, 14, 2, 1, hexc('#ffd23f'))      # pommeau
     tex['sword_iron'] = sword
+    # épée en pierre (stuff) : même forme, lame en pierre grise, garde en bois, sans pommeau doré
+    sword_st = blank()
+    for i in range(9):
+        rect(sword_st, 5 + i, 9 - i, 2, 2, hexc('#8d939c'))
+    for i in range(8):
+        rect(sword_st, 6 + i, 9 - i, 1, 1, hexc('#b3b8bf'))
+    rect(sword_st, 3, 9, 5, 2, hexc('#6b4f3a'))
+    rect(sword_st, 4, 8, 2, 4, hexc('#6b4f3a'))
+    rect(sword_st, 2, 12, 2, 2, hexc('#8a5a2b'))
+    rect(sword_st, 1, 14, 2, 1, hexc('#5f646c'))
+    tex['sword_stone'] = sword_st
 
     # ceinture en peau de gobelin (stuff) : bande de cuir vert, boucle dorée
     belt = blank()
@@ -483,6 +494,12 @@ def main():
     rect(sk_sword, 3, 10, 5, 2, hexc('#6b4f3a'))
     rect(sk_sword, 2, 12, 2, 3, hexc('#8a5a2b'))
     tex['skins/sword_iron'] = sk_sword
+    sk_sword_st = blank()
+    for i in range(9):
+        rect(sk_sword_st, 5 + i, 10 - i, 2, 2, hexc('#8d939c'))
+    rect(sk_sword_st, 3, 10, 5, 2, hexc('#6b4f3a'))
+    rect(sk_sword_st, 2, 12, 2, 3, hexc('#8a5a2b'))
+    tex['skins/sword_stone'] = sk_sword_st
 
     # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
     for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),

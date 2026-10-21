@@ -101,3 +101,16 @@ test('apparence : armure en fer, ceinture, pioche en fer, épée sortie seulemen
   assert.equal(toolOf({}, 'attack'), 'skins/pick_wood');
   for(const t of SKIN_TEXTURES) assert.ok(existsSync(`textures/${t}.png`), t);
 });
+test('épée en pierre : recette de base (15 lingots de fer), dégâts 8 au lieu de 5 (+3, moitié de l\'épée en fer), visible en main', async () => {
+  const { RECIPES } = await import('../src/recipes.js');
+  const { ITEMS } = await import('../src/config.js');
+  const { statsOf, statLines } = await import('../src/meta/stuff.js');
+  const { craftable } = await import('../src/meta/craft.js');
+  assert.deepEqual(RECIPES['Épée en pierre'], { cost:{ 'Lingot de fer':15 }, qty:1, unlock:null });
+  assert.ok(craftable({ unlocked:[] }).includes('Épée en pierre'));
+  assert.equal(ITEMS['Épée en pierre'].slot, 'epee');
+  assert.equal(statsOf(['Épée en pierre']).damage.total, 8);
+  assert.equal(statsOf(['Épée en fer']).damage.total - 5, 2 * (statsOf(['Épée en pierre']).damage.total - 5));
+  assert.deepEqual(statLines('Épée en pierre'), ['Dégâts 8 (au lieu de 5)']);
+  assert.equal(toolOf({ epee:'Épée en pierre' }, 'attack'), 'skins/sword_stone');
+});
