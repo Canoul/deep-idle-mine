@@ -192,3 +192,37 @@ test('MI : celui qui reste jusqu\'au bout garde son sac', () => {
   assert.ok(s1.left && Object.keys(s1.bag).length === 0);
   assert.equal(G.ticks, INSTANT_TICKS);
 });
+
+/* ramassage opportuniste : galerie vide en surface (ligne 0), tas posé à d pas du mineur */
+function heapAt(d){
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  m.x = 10; m.y = 0;
+  G.feathers.clear(); G.feathers.set(0*G.w + 10 + d, 3);
+  return { G, m };
+}
+
+test('MI plumes : un tas accessible à featherReach pas ou moins passe avant le minage ; au-delà, non', () => {
+  const near = heapAt(MI.featherReach);
+  plan(near.G, near.m);
+  assert.deepEqual(near.m.goal, { x:10 + MI.featherReach, y:0 });
+  assert.equal(near.m.target, null);
+  assert.equal(near.m.path.length, MI.featherReach);
+  const far = heapAt(MI.featherReach + 1);
+  plan(far.G, far.m);
+  assert.equal(far.m.goal, null);
+  assert.ok(far.m.target);
+});
+
+test('MI plumes : il va chercher le tas et le ramasse ; pris par un autre en chemin → il reprend son travail', () => {
+  const { G, m } = heapAt(2);
+  for(let i = 0; i < 20 && !m.inv[MI.featherItem]; i++) tickInstant(G);
+  assert.equal(m.inv[MI.featherItem], 3);
+  const r = heapAt(3);
+  tickInstant(r.G);
+  assert.ok(r.m.goal);
+  r.G.feathers.clear();                       // un autre l'a pris
+  for(let i = 0; i < 30; i++) tickInstant(r.G);
+  assert.equal(r.m.goal, null);
+  assert.ok(r.m.stats.mined >= 1 || r.m.action?.type === 'mine');
+});

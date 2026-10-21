@@ -2,7 +2,8 @@
    minage) : il vise le bloc le plus proche en temps de trajet, plus une pénalité près des autres mineurs et de leurs
    cibles (MI.crowdRadius / crowdWeight), et sur un bloc qu'un autre mine déjà (MI.takenPenalty). Après
    MI.interruptMax blocs perdus d'affilée, il évite pendant MI.fleeTime s les blocs à moins de MI.fleeDist cases de
-   l'endroit (m.flee, posé par la session). Les tas de plumes n'entrent pas dans le choix. */
+   l'endroit (m.flee, posé par la session). Ramassage opportuniste : un tas de plumes accessible à au plus
+   MI.featherReach pas passe avant tout (m.goal) ; si un autre le prend avant lui, il reprend son travail. */
 import { INSTANT_MINE as MI, BLOCKS } from '../../config.js';
 
 /* durées (pas de lumière ni d'oxygène ici) ; Ruée (skill ore_rush) comme dans la mine normale */
@@ -16,17 +17,20 @@ const minedByOther = (G,m,x,y) => G.miners.some(o => o !== m && o.action?.type =
 export function decide(G, m){
   const tg = m.target;
   if(tg && !solid(G, tg.x, tg.y)){ m.target = null; m.path = []; }           // miné par un autre en chemin
-  if(m.target && m.path.length){                                                // avance d'une case
+  if(m.goal && !G.feathers.has(m.goal.y*G.w + m.goal.x)){ m.goal = null; m.path = []; }   // tas pris par un autre
+  if((m.target || m.goal) && m.path.length){                                    // avance d'une case
     const [x, y] = m.path.shift();
     if(x !== m.x) m.face = x > m.x ? 1 : -1;
     m.action = { type:'move', dur:Math.max(0.05, miMoveT(G, m)), t:0, data:{ x, y } };
-    m.status = 'Se déplace';
+    m.status = m.goal ? 'Va chercher des plumes' : 'Se déplace';
     return;
   }
+  m.goal = null;
   /* arrivé : si un autre mine déjà ce bloc, il compare encore une fois (la pénalité peut le faire changer d'avis) */
   if(m.target && minedByOther(G, m, m.target.x, m.target.y) && !m.recheck){ m.recheck = true; m.target = null; }
   if(!m.target) plan(G, m);
   m.recheck = false;
+  if(m.goal) return decide(G, m);
   if(!m.target){ m.action = { type:'wait', dur:0.5, t:0, data:{} }; m.status = 'Plus rien à miner'; return; }
   if(m.path.length) return decide(G, m);
   const { x, y } = m.target, t = G.tiles[y][x];
@@ -52,7 +56,8 @@ function crowd(G, m, x, y){
 }
 
 /* parcours en largeur dans les cases vides depuis le mineur ; chaque bloc plein au bord est un candidat, coté
-   trajet + foule ; on garde le moins cher (hors zone fuie si possible) et le chemin pour y aller */
+   trajet + foule ; on garde le moins cher (hors zone fuie si possible) et le chemin pour y aller.
+   Le premier tas de plumes atteint à au plus MI.featherReach pas l'emporte (m.goal, chemin jusqu'au tas). */
 export function plan(G, m){
   const { w, h } = G, N = w*(h+1), step = 1/m.carac.speed;
   const dist = new Int32Array(N).fill(-1), prev = new Int32Array(N).fill(-1), done = new Uint8Array(N);
@@ -66,7 +71,12 @@ export function plan(G, m){
       const x = cx+dx, y = cy+dy;
       if(x<0 || x>=w || y<0 || y>h) continue;
       const k = y*w + x;
-      if(G.tiles[y][x] === 0){ if(dist[k] < 0){ dist[k] = dist[c]+1; prev[k] = c; queue.push(k); } continue; }
+      if(G.tiles[y][x] === 0){
+        if(dist[k] >= 0) continue;
+        dist[k] = dist[c]+1; prev[k] = c; queue.push(k);
+        if(dist[k] <= MI.featherReach && G.feathers.has(k)){ m.goal = { x, y }; m.target = null; m.path = pathTo(k, start, prev, w); return; }
+        continue;
+      }
       if(done[k]) continue;
       done[k] = 1;
       const cost = dist[c]*step + crowd(G, m, x, y) + G.rng()*0.01;   // un soupçon de hasard départage les égalités
@@ -78,8 +88,12 @@ export function plan(G, m){
   }
   const pick = best ?? bestFled;
   if(!pick){ m.target = null; m.path = []; return; }
+  m.target = { x:pick.x, y:pick.y }; m.path = pathTo(pick.from, start, prev, w);
+}
+
+/* cases à traverser, de la case après le départ jusqu'à `end` comprise */
+function pathTo(end, start, prev, w){
   const path = [];
-  for(let c = pick.from; c !== start; c = prev[c]) path.push([c % w, Math.floor(c / w)]);
-  path.reverse();
-  m.target = { x:pick.x, y:pick.y }; m.path = path;
+  for(let c = end; c !== start; c = prev[c]) path.push([c % w, Math.floor(c / w)]);
+  return path.reverse();
 }

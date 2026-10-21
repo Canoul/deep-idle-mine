@@ -39,6 +39,7 @@ function createInstantMiner(id, s, x){
     carac:{ ...STATS, ...(s.carac||{}) }, skill:{ ...(s.skills||{}) }, skillTree:s.skillTree ?? null,
     x, y:0, face:1, action:null, status:'Départ', inv:{}, rushUntil:-1,
     target:null, path:[],               // bloc visé et cases vides à traverser pour l'atteindre
+    goal:null,                          // tas de plumes visé (ramassage opportuniste, MI.featherReach)
     interrupts:0, flee:null,            // blocs perdus d'affilée ; zone à fuir { x, y, until }
     stats:{ mined:0, lost:0, feathers:0, shiny:0, fortune:0, idle:0 },
   };

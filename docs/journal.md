@@ -32,8 +32,9 @@ Modèle d'entrée :
   0 bloc disputé, chacun entre 93 et 110 blocs ; butin moyen par mineur ≈ 40 fers, 39 ors, 20 charbons, 2,3 plumes.
   Seul : 4 % de la mine, et quasiment jamais de plume. Sans la pénalité « éviter les autres », 500 blocs disputés et
   15 % de butin en moins : elle sert. Pioche +30 % de vitesse → +30 % de blocs (le stuff compte).
-- **À suivre** : les plumes atteintes mais pas ramassées (question posée à Geoffrey) ; serveur (3), interface et
-  rappels (4).
+- **Plumes** (décision de Geoffrey) : le mineur va chercher un tas accessible à 3 pas ou moins (avant, seul, il
+  passait à côté de tous). Résultat : ~4 plumes par MI seul, ~3 chacun à 20, presque plus de tas laissé par terre.
+- **À suivre** : serveur (3), interface et rappels (4).
 - **État** : 🧪 sur la branche `geoffrey/mine-instantanee` (pas en ligne)
 
 ## 21/10/2026 — Jules — Ménage des textes du jeu

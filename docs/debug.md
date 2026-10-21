@@ -781,4 +781,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/instant-mine.test.js` (13) ; `shiny`, `session`, `rarity` : 30/30. `npm run simulate -- --miners
   3 --count 2` : 0 bloquée (mine normale inchangée).
 - **Vérification** : ✅ simulation. ⚠️ Pas encore de serveur ni d'affichage.
+- **Suite (même jour)** : ramassage opportuniste des plumes (option b de Geoffrey) : `MI.featherReach` = 3 ; dans
+  `plan`, le premier tas atteint par le parcours à ≤ 3 pas devient `m.goal` (chemin jusqu'au tas, `target` = null) ;
+  `decide` abandonne `goal` si le tas a disparu (pris par un autre). Mesuré (5 seeds) : seul 0 → 19 plumes, tas
+  atteints laissés 5 → 1 ; à 3 : 17 → 46, laissés 14 → 0 ; à 20 : 233 → 314. Blocs par mineur inchangés.
+  Tests : 2 de plus (15/15).
 

@@ -501,16 +501,19 @@ export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
    Toutes les everyHours heures pile, heure de Paris (0 h, 2 h, 4 h…), une mine commune s'ouvre aux inscrits du lobby
    MI, chacun pour soi, pendant duration secondes de jeu (à la vitesse GAME.speed : 2 min 30 réelles à x2).
    Mine : w × h blocs, tous des minerais (comp, en %) sauf feather % de cases vides portant un tas de plumes d'ange
-   (featherMin à featherMax plumes, ramassées par le premier mineur qui passe sur la case). Entièrement éclairée,
+   (featherMin à featherMax plumes, ramassées par le premier mineur qui arrive sur la case). Entièrement éclairée,
    sans oxygène, pods, mobs, torches ni échelles : le mineur se déplace librement dans les galeries creusées.
    Les mineurs apparaissent sur la ligne de surface (au-dessus de la mine), espacés régulièrement.
    maxPerMine : au-delà, les inscrits sont répartis en plusieurs mines de tailles égales (21 → 11 + 10).
-   IA (src/sim/instant/) : chaque bloc vaut pareil ; elle vise le bloc le moins cher en temps (trajet + minage), plus :
+   IA (src/sim/instant/) : chaque bloc vaut pareil ; elle vise le bloc le plus proche en temps de trajet (le temps de
+   minage n'entre pas en compte), plus :
      crowdRadius / crowdWeight : s de pénalité par autre mineur à moins de crowdRadius cases (Manhattan) du bloc,
                                  décroissante avec la distance ; vaut aussi pour la cible des autres ;
      takenPenalty : s de pénalité si un autre mineur mine déjà ce bloc ;
      interruptMax : blocs perdus d'affilée (un autre a fini le même bloc avant lui) avant de changer de zone ;
-     fleeDist / fleeTime : il vise alors des blocs à au moins fleeDist cases de là pendant fleeTime s de jeu.
+     fleeDist / fleeTime : il vise alors des blocs à au moins fleeDist cases de là pendant fleeTime s de jeu ;
+     featherReach : un tas de plumes accessible à au plus featherReach pas (par les galeries) passe avant tout : il va
+                    le chercher (ramassage opportuniste, décision du 21/10/2026 ; le premier arrivé le prend).
    notify : rappels (s avant l'ouverture) ; inviteAt : le dernier rappel propose Rejoindre / Décliner.
    Ni XP, ni partage : le butin de chacun va dans son inventaire à la fin ; Quitter = rien. */
 export const INSTANT_MINE = {
@@ -522,6 +525,7 @@ export const INSTANT_MINE = {
   maxPerMine: 20,
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
+  featherReach: 3,
   notify: [30*60, 15*60, 5*60, 30], inviteAt: 30,
   featherItem: 'Plume d\'ange', featherTex: 'angel_feather', heapTex: 'angel_feathers',
 };
