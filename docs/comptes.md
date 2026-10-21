@@ -77,7 +77,7 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
 - **Force brute / spam** : 10 échecs par pseudo et 30 par adresse en 15 min ; 10 créations de compte
   par adresse et par heure. Pseudo inconnu et mauvais mot de passe : même message, même temps de réponse.
 - Changer de mot de passe ou le récupérer **déconnecte les autres appareils**.
-- Le serveur ne sert que `index.html`, `src/`, `textures/`, `prototype/` : jamais `data/` ni son propre code.
+- Le serveur ne sert que `index.html`, `wiki.html`, `src/`, `textures/`, `prototype/` : jamais `data/` ni son propre code.
 - En ligne : servir en **https** avec le cookie `Secure` (`DIM_SECURE_COOKIE=1`) et, derrière un hébergeur qui
   fait proxy, `DIM_TRUST_PROXY=N` = nombre de relais de confiance. L'adresse du joueur est lue **depuis la droite**
   de `X-Forwarded-For` (la N-ième) : le début de l'en-tête peut être écrit par le joueur pour changer d'adresse et
@@ -92,7 +92,7 @@ Codes d'erreur : `invalid_name`, `invalid_password`, `name_taken`, `bad_credenti
 - **En ligne : PostgreSQL** (`DATABASE_URL=postgres://…`) au lieu des fichiers, qui seraient effacés à chaque
   redéploiement. Une seule table `dim_data (ns, key, value jsonb)`, une ligne par compte, connexion, inventaire,
   préférences et session de jeu (`server/db/postgres.js`). Le serveur garde tout en mémoire et écrit chaque
-  modification (en file, retentée en cas d'échec). Mise en ligne pas à pas : `docs/deploiement.md`.
+  modification (en file, retentée en cas d'échec). Mise en ligne pas à pas : `docs/deploiement-ovh.md` (ancien hébergement Render : `docs/archive/deploiement-render.md`).
 - Sans serveur de jeu (page servie par un simple serveur de fichiers), le jeu démarre **hors ligne**,
   sans compte, comme avant.
 

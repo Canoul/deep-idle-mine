@@ -1,0 +1,4 @@
+# Fins de ligne : toujours LF dans le dépôt et sur le disque, même sous Windows
+# (les scripts de deploy/ tournent sous Linux et cassent avec des CRLF).
+* text=auto eol=lf
+*.png binary
