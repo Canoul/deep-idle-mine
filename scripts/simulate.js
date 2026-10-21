@@ -52,6 +52,7 @@ for(const seed of seeds){
     focusLeft: G.miners.map(m=>JSON.stringify(m.prefs.focus)).join(' '), focusDropped: G.miners.some(m=>m.focusNotice),
     miners: G.miners.map(m=>({ name:m.name, ...m.stats, chest:G.chestBy[m.id]||{} })),
     stuck: det.result(),
+    dungeons: G.dungeons.filter(d=>d.k<G.unlockedAreas).map(d=>`area ${d.k} ${d.cleared ? 'vaincu' : d.found ? 'découvert' : 'pas vu'}`),
   });
 }
 
@@ -60,6 +61,7 @@ if(json){ console.log(JSON.stringify(rows, null, 1)); process.exit(0); }
 for(const r of rows){
   console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | étourdi ${r.stuns}× | minerai ${r.ore.join(' ')}` +
     (r.stuck.length ? `  ⚠ BLOQUÉ ${JSON.stringify(r.stuck[0])}` : ''));
+  if(r.dungeons.length) console.log(`    donjon ${r.dungeons.join(' | ')}`);
   if(focus) console.log(`    coffre ${JSON.stringify(r.chest)} | focus en fin ${r.focusLeft}${r.focusDropped ? ' (abandonné en cours de route)' : ''}`);
   if(miners>1) for(const m of r.miners)
     console.log(`    ${m.name.padEnd(9)} minés ${String(m.mined).padStart(4)} (minerai ${String(m.ore).padStart(3)}) | allers-retours ${String(m.trips).padStart(2)} | prof ${String(m.maxDepth).padStart(3)} | mobs ${String(m.kills).padStart(3)} | tacles ${m.tackled} | volés ${m.stolen}`);

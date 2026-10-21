@@ -24,6 +24,7 @@ Modèle d'entrée :
   - pioches deux fois plus efficaces (pierre +0,2, fer +0,4 de vitesse de minage) ;
   - Ceinture en peau de gobelin : +10 torches (au lieu de Découverte +1) ;
   - passerelles illimitées.
+  - le donjon peut aussi apparaître en area 4 (20 %, tiré à part de l'area 5 : une partie peut en avoir deux).
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
 - **À suivre** : —

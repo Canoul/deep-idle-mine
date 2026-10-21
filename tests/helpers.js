@@ -9,7 +9,7 @@ const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal
 
 export function worldFrom(rows, opts={}){
   const G = newSession(opts.seed ?? 1, { miners: opts.miners ?? 1 });
-  G.tiles=[]; G.ladder=[]; G.seen=[]; G.mobs=[]; G.treasures=new Map(); G.torches=[]; G.light=new Map();
+  G.tiles=[]; G.ladder=[]; G.seen=[]; G.mobs=[]; G.dungeons=[]; G.treasures=new Map(); G.torches=[]; G.light=new Map();
   let at=null;
   rows.forEach((line,y)=>{
     const t=new Uint8Array(W).fill(y===0?0:IDS.stone), l=new Uint8Array(W);

@@ -526,7 +526,7 @@ export const PREF_OPTIONS = {
      le tacle pendant ce temps, il s'enfuit d'un coup à la surface.
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
-  areas: [5], chance: 0.2, size: 10, margin: 2, winchGap: 5, holeRows: 3,
+  areas: [4, 5], chance: 0.2, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // area 4 ajoutée le 21/10 (Geoffrey) : tirage indépendant par area
   boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,

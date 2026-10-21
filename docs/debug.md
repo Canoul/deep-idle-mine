@@ -736,3 +736,16 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ simulation 3 × 5 : areas 3,4, profondeur 182,2 (avant 183,2), allers-retours 26,6, 0 blocage.
 - **Points fragiles** : un réglage dev qui remettrait `bridges` fini n'existe plus ; si un coût est ajouté un jour,
   remettre la stat dans `shownStats`.
+
+### Donjon aussi en area 4 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : `DUNGEON.areas = [4, 5]` ; tirage par area (`hash(seed, k+1) ^ salt`), donc indépendant (≈ 4 % des seeds
+  en ont deux). Rien d'autre à changer : `planDungeon`/`registerDungeon` travaillaient déjà par area.
+- **Piège corrigé au passage** : `tests/helpers.js` `worldFrom` vide aussi `G.dungeons` (la seed 1 a maintenant un
+  donjon en area 4 : les mondes dessinés en texte gardaient sa fiche alors que ses cases avaient disparu).
+- **Outil** : `scripts/simulate.js` affiche une ligne « donjon area k pas vu / découvert / vaincu » (areas débloquées).
+- **Tests** : `tests/dungeon.test.js` 12/12 (taux ≈ 20 % en area 4 et en area 5, ≈ 4 % les deux, aucune autre area).
+- **Vérification** : ✅ simulation 3 × 5 (seeds standard, aucune n'a de donjon en area 4) : identique, 0 blocage.
+  ✅ seeds 3, 16, 20 (donjon en area 4) sans skills et `--skills barbare` : 0 blocage ; le donjon n'est pas vu dans ces
+  sessions (seed 16 : area 4 atteinte mais pas la salle). ⚠️ Pas encore vu un donjon d'area 4 découvert en simulation.
+- **Hors sujet, déjà là avant** : seed 16 `--skills mixed` → blocage « Retour (treuil) » (Bleu, t 3225 s, x 25 y 16) :
+  voir l'entrée treuil.
