@@ -1,7 +1,7 @@
 /* Lobby de l'onglet Mine : les places de la prochaine session (le groupe), Lancer, Inviter (code, lien, ID),
    invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs de test et réglages.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS } from '../config.js';
 import { joinLink } from '../shared/party.js';
 
 const $ = id => document.getElementById(id);
@@ -13,16 +13,22 @@ const realLen = speed => { const m = Math.round(SESSION_LEN / speed / 60); retur
 
 /* Places du lobby, depuis l'état du serveur (logique pure, testée) :
    membres du groupe (chef en premier), invitations en attente, puis places libres ; sans groupe : soi + places libres. */
-export function lobbySlots(account, party, max = GAME.maxPlayers){
+export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null){
   const slots = [];
   if(party){
     for(const m of party.members) slots.push({ kind:'member', ...m });
     for(const i of party.invited) if(slots.length < max) slots.push({ kind:'invited', ...i });
   } else if(account){
-    slots.push({ kind:'member', account:account.id, displayId:account.displayId, name:account.displayName, me:true, leader:false });
+    slots.push({ kind:'member', account:account.id, displayId:account.displayId, name:account.displayName, me:true, leader:false, tree:myTree });
   }
   while(slots.length < max) slots.push({ kind:'free' });
   return slots.slice(0, Math.max(max, party?.members.length ?? 0));
+}
+
+/* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien », ou « Sans spécialisation » */
+export function specLabel(tree){
+  const t = SKILLS.trees.find(x => x.id === tree);
+  return t ? `${t.icon} ${t.label}` : 'Sans spécialisation';
 }
 
 /* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef */
@@ -44,7 +50,7 @@ export function setupLobby(h){
   function render(){
     const { account, offline, info, party } = st;
     const lead = party && party.leader === account?.id;
-    $('lobbySlots').innerHTML = lobbySlots(account, party).map(s => {
+    $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
@@ -52,7 +58,7 @@ export function setupLobby(h){
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const tags = [s.me && 'Toi', s.leader && 'chef', s.playing && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
-             `<span><b>${esc(s.name)}</b><small>${esc(tags)}</small></span>`+
+             `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
 

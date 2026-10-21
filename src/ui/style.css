@@ -354,3 +354,5 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .hLoot{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:13px}
 .hItem{display:inline-flex;align-items:center;gap:4px}
 .hItem img{width:20px;height:20px;image-rendering:pixelated}
+.rsInfo{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.pslot small.spec{color:var(--acc)}

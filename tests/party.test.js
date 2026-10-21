@@ -340,3 +340,17 @@ test('HTTP : Zoé crée, Max rejoint par le code, Zoé lance, les deux sont dans
 });
 
 test('réglages : maxPlayers vient de la config du jeu', () => assert.equal(GAME.maxPlayers, 3));
+
+test('lobby : chaque membre du groupe montre sa spécialisation (arbre de skills choisi)', async () => {
+  const { party, game } = setup();
+  const T = { [A.id]:'logisticien', [B.id]:null, [C.id]:'barbare' };
+  game.skillTreeOf = async id => T[id];
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  const st = await party.state(B);
+  assert.deepEqual(st.party.members.map(m => [m.account, m.tree]), [[A.id, 'logisticien'], [B.id, null], [C.id, 'barbare']]);
+});
+
+test('spécialisation : lue par le service de jeu depuis les skills du compte', async () => {
+  const { game } = setup();
+  assert.equal(await game.skillTreeOf(A.id), null);
+});

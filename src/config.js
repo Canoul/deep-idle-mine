@@ -268,7 +268,7 @@ export const SKILLS = {
   trees: [
     { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
       { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
-      { id:'ore_oxygen',  row:2, max:1, per:0.01, icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend {v} de l\'oxygène max' },
+      { id:'ore_oxygen',  row:2, max:1, per:1,    icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend 1 d\'oxygène' },
       { id:'ore_rush',    row:3, max:5, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[

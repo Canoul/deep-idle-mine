@@ -36,3 +36,13 @@ test('lancer : un membre encore dans la session précédente → le chef attend 
   party.members[1].playing = false;
   assert.equal(launchState({ account, party }).can, true);
 });
+
+test('lobby : spécialisation de chaque joueur (arbre de skills), « Sans spécialisation » sinon', async () => {
+  const { specLabel, lobbySlots } = await import('../src/ui/lobby.js');
+  assert.equal(specLabel('logisticien'), '🪜 Logisticien');
+  assert.equal(specLabel('mineur'), '⛏ Mineur');
+  assert.equal(specLabel('barbare'), '🪓 Barbare');
+  assert.equal(specLabel(null), 'Sans spécialisation');
+  const solo = lobbySlots({ id:'A', displayId:'A', displayName:'Zoe' }, null, 3, 'barbare');
+  assert.equal(solo[0].tree, 'barbare');
+});

@@ -41,12 +41,12 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Set()){
+  function publicParty(p, meId, playing = new Set(), trees = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId,
-                                            playing: playing.has(m.account),
+                                            playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
   }
@@ -141,8 +141,11 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session » */
       const playing = new Set();
       if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account)) playing.add(m.account);
+      /* spécialisation de chacun (arbre de skills choisi) */
+      const trees = new Map();
+      if(p) for(const m of p.members) trees.set(m.account, await game.skillTreeOf?.(m.account) ?? null);
       return {
-        party: p ? publicParty(p, me.id, playing) : null,
+        party: p ? publicParty(p, me.id, playing, trees) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),

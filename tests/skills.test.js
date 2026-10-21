@@ -99,13 +99,14 @@ test('en session : minage +2 % et dégâts +5 % par rang, figés depuis l\'enreg
   assert.equal(a.skillTree, 'mineur'); assert.equal(b.skillTree, 'barbare');
 });
 
-test('Mineur : un minerai rend 1 % d\'oxygène max et donne +3 %/rang de marche pendant 3 s (pas de cumul)', () => {
+test('Mineur : un minerai rend 1 d\'oxygène (tout court) et donne +3 %/rang de marche pendant 3 s (pas de cumul)', () => {
   const G = worldFrom(['', '##########', '@c########']), m = G.miners[0];
-  m.skill.ore_oxygen = 0.01; m.skill.ore_rush = 0.15;
+  m.skill.ore_oxygen = skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1 } })).ore_oxygen; m.skill.ore_rush = 0.15;
   m.ox = 100;
   const t0 = moveT(G, m);
   finishAction(G, m, { type:'mine', data:{ x:1, y:2 } });
-  assert.equal(m.ox, 100 + 0.01 * m.carac.oxygenMax);
+  assert.equal(m.ox, 101, '+1 d\'oxygène, quel que soit l\'oxygène max');
+  assert.equal(nodeText('ore_oxygen', 1), 'Miner un minerai rend 1 d\'oxygène');
   assert.ok(Math.abs(moveT(G, m) - t0 / 1.15) < 1e-9);
   G.t += SKILLS.rushTime + 0.01;
   assert.equal(moveT(G, m), t0, 'bonus fini après 3 s');

@@ -7,6 +7,9 @@
 import { RESEARCH } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
+import { tipAttr } from './tooltip.js';
+import { recipeOfBlueprint } from '../meta/craft.js';
+import { statLines } from '../meta/stuff.js';
 import { PARTS, tierOf, researchPool, isBlueprint, tierOfBlueprint, tierUnlocked, recipesLeft } from '../meta/research.js';
 
 const $ = id => document.getElementById(id);
@@ -18,7 +21,7 @@ const icon = item => { const d = itemDef(item); return d?.tex ? `<img src="textu
 /* onOp({ action:'research', tier } | { action:'recycle', item }) → promesse du résultat ({ item, parts }) */
 export function setupResearch({ onOp }){
   let inv = { slots:[], unlocked:[] }, tab = 'research', tier = RESEARCH.tiers[0].tier;
-  let partsIn = false, bpIn = null, picking = false, busy = false, msg = null;
+  let partsIn = false, bpIn = null, picking = false, busy = false, msg = null, found = null;   // found : dernier BP obtenu
 
   const blueprints = () => [...new Set(inv.slots.filter(s => s && isBlueprint(s.item)).map(s => s.item))];
 
@@ -33,7 +36,9 @@ export function setupResearch({ onOp }){
            `<span class="mut small">${left} blueprint${left > 1 ? 's' : ''} du ${esc(def.label)} encore à découvrir</span></div>`+
            `<div class="rsBench"><div class="slot rsSlot${partsIn ? '' : ' empty'}" id="rsParts" title="Clique pour poser ou retirer ${def.cost} ${esc(PARTS)}">`+
              `${partsIn ? icon(PARTS) + `<span class="q">${def.cost}</span>` : `<span class="fhint">${def.cost} parts</span>`}</div>`+
-           `<span class="rsArrow">➜</span><div class="slot rsSlot empty"><span class="fhint">?</span></div></div>`+
+           `<span class="rsArrow">➜</span>`+
+           (found ? `<div class="slot rsSlot${rcls(found)}"${tipAttr(found)}>${icon(found)}</div>` : `<div class="slot rsSlot empty"><span class="fhint">?</span></div>`)+`</div>`+
+           (found ? bpInfoHtml(found) : '')+
            `<p class="mut small">${icon(PARTS)} ${esc(PARTS)} : ${num(have)} / ${def.cost}${have < def.cost ? ' <span class="err">(pas assez)</span>' : ''}</p>`+
            lockedBy.map(t => { const p = tierOf(t.tier - 1), n = recipesLeft(inv, p.tier).length;
              return `<p class="mut small">🔒 ${esc(t.label)} : apprends encore ${n} recette${n > 1 ? 's' : ''} du ${esc(p.label)} pour l'ouvrir.</p>`; }).join('')+
@@ -70,6 +75,7 @@ export function setupResearch({ onOp }){
       msg = { ok:true, html: tab === 'research'
         ? `✔ Nouveau blueprint : ${icon(r.item)} ${rname(r.item, r.item, 'b')}. Il est dans ton inventaire (sélectionne-le, puis « Utiliser »).`
         : `✔ ${rname(r.item)} recyclé : +${r.parts} ${esc(PARTS)}.` };
+      if(tab === 'research') found = r.item;            // le blueprint obtenu s'affiche dans la case de résultat
       partsIn = false; bpIn = null;
     } catch(e){ msg = { ok:false, html:esc(e.message) }; }
     finally { busy = false; render(); }
@@ -77,13 +83,22 @@ export function setupResearch({ onOp }){
 
   $('rsTabs').onclick = e => { const b = e.target.closest('[data-rs]'); if(b){ tab = b.dataset.rs; msg = null; picking = false; render(); } };
   $('rsBody').onclick = e => {
-    if(e.target.closest('#rsParts')){ partsIn = !partsIn && countOf(inv, PARTS) >= tierOf(tier).cost; msg = null; return render(); }
+    if(e.target.closest('#rsParts')){ partsIn = !partsIn && countOf(inv, PARTS) >= tierOf(tier).cost; msg = null; found = null; return render(); }
     if(e.target.closest('#rsBp')){ picking = !picking; msg = null; return render(); }
     const b = e.target.closest('[data-bp]'); if(b){ bpIn = b.dataset.bp; picking = false; return render(); }
     if(e.target.closest('#rsGo')) go();
   };
-  $('rsBody').onchange = e => { if(e.target.id === 'rsTier'){ tier = +e.target.value; partsIn = false; render(); } };
+  $('rsBody').onchange = e => { if(e.target.id === 'rsTier'){ tier = +e.target.value; partsIn = false; found = null; render(); } };
 
   render();
   return { setInventory(v){ inv = v; render(); } };
+}
+
+/* description d'un blueprint, sous la table : ce qu'il débloque et ce que fait l'objet, puis comment s'en servir */
+export function bpInfoHtml(bp){
+  const r = recipeOfBlueprint(bp), lines = r ? statLines(r) : [];
+  return `<div class="rsInfo"><b>${rname(bp)}</b>`+
+    (r ? `<div>Débloque la recette : <b>${rname(r)}</b>${lines.length ? ' — ' + lines.map(esc).join(' · ') : ''}</div>`
+       : '<div class="mut">Ne débloque encore aucune recette (garde-le, ou recycle-le).</div>')+
+    `<div class="mut small">Il est dans ton inventaire : sélectionne-le puis « Utiliser » pour apprendre la recette.</div></div>`;
 }

@@ -43,8 +43,10 @@ export function createRenderer(cv){
     for(const l of armorLayers(m.look)) blit(l,bx,py);
     const a=m.action;
     if(a&&(a.type==='mine'||a.type==='attack')){
-      /* la pioche, tenue à la main, se balance : rotation autour de la main */
-      const swing=Math.sin(a.t*18)*0.7, i=TEX[toolOf(m.look, a.type)];
+      /* l'outil tenu à la main, animé à l'horloge de la page (fluide entre deux envois du serveur) : la pioche se
+         balance ; pour frapper un mob, l'épée (ou la pioche sans épée) donne un coup de taille, de haut en bas */
+      const ph=frameNow/1000 + (m.id||0)*0.37, i=TEX[toolOf(m.look, a.type)];
+      const swing = a.type==='attack' ? -1.25 + 2.1*Math.pow((ph*2.2)%1, 0.45) : Math.sin(ph*18)*0.7;
       if(i && i.complete && i.naturalWidth){
         ctx.save(); ctx.translate(bx+11,py+10); ctx.rotate(swing-0.35);
         ctx.drawImage(i,-3,-12,13,13); ctx.restore();

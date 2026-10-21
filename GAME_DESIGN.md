@@ -177,7 +177,7 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
 
 | Arbre | Étape 1 | Étape 2 | Étape 3 |
 |---|---|---|---|
-| **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend 1 % de l'oxygène max | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
+| **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend **1 d'oxygène** (tout court, pas un % de l'oxygène max) | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
 | **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | **deux cases côte à côte** : 0/1 **Échelle de 2** (échelle de 2 de haut au lieu de 1, si la case du dessus est vide) · 0/1 **Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
 | **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; un occultiste provoqué ne lance plus son sort | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
 
@@ -310,12 +310,13 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 
 ### Lancer une session (onglet Mine)
 Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Mine**, qui affiche un **lobby** :
-- **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres ;
+- **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres. Chaque joueur affiche sa **spécialisation** : l'arbre de skills choisi (⛏ Mineur, 🪜 Logisticien, 🪓 Barbare) ou « Sans spécialisation » ;
 - **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
 - **Groupe** : on se réunit avant de lancer (voir « Jouer à plusieurs » ci-dessous) ; seul, on joue seul ;
 - **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs, aider allié oui/non avec la liste des mobs ignorés ; voir §5 et §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
 Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+- **Combat** : le mineur se tourne vers le mob et frappe avec l'arme qu'il a en main (l'épée équipée, sinon la pioche), en coups de taille animés.
 - **Caméra** : elle suit le mineur du joueur. Un appui sur un mineur de l'équipe la fait suivre celui-ci. Le joueur peut **se déplacer dans la mine** (molette, glisser à la souris ou au doigt, flèches ↑ ↓, PageUp / PageDown) : la caméra ne suit plus personne jusqu'à ce qu'il appuie sur **Suivre** (ou Début). Elle va du ciel au fond de la mine connue.
 
 ### Jouer à plusieurs (groupe)
@@ -453,7 +454,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
-- **Recherche** : on choisit le **tier**, on pose les parts dans la case (c'est **0 ou le prix du tier**, un clic pose ou retire), puis **Rechercher** : les parts sont dépensées et un **blueprint du tier** arrive dans l'inventaire.
+- **Recherche** : on choisit le **tier**, on pose les parts dans la case (c'est **0 ou le prix du tier**, un clic pose ou retire), puis **Rechercher** : les parts sont dépensées et un **blueprint du tier** arrive dans l'inventaire. Le blueprint obtenu s'affiche dans la **case de résultat** de la table (à droite de la flèche), avec dessous sa **description** : la recette qu'il débloque et les effets de l'objet.
 
   | Tier | Prix | Blueprints possibles | Recycler un blueprint du tier |
   |---|---|---|---|

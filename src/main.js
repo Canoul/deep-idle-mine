@@ -115,7 +115,7 @@ const research = setupResearch({
 const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
-  onChange: s => stuff.setSkills(s),   // l'onglet Stuff affiche aussi les bonus des skills
+  onChange: s => { stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby : sa spécialisation
 });
 
 applyRarityColors();   // couleurs des raretés (config)

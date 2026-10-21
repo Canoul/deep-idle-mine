@@ -83,3 +83,9 @@ test('recycle : demande rejouée → même nombre de parts, un seul blueprint d�
   assert.equal(countOf(inv, 'Casque en fer BP'), 1); assert.equal(countOf(inv, PARTS), a.parts);
   assert.equal(research(inv, 1, o, fixed(0)).error, 'bad_request', 'même opId pour une autre action : refusé');
 });
+test('table de recherche : description du blueprint obtenu (recette débloquée et ses effets)', async () => {
+  const { bpInfoHtml } = await import('../src/ui/research.js');
+  const h = bpInfoHtml('Pioche en fer BP');
+  assert.match(h, /Débloque la recette/); assert.match(h, /Pioche en fer/); assert.match(h, /Vitesse de minage \+0,2/);
+  assert.match(bpInfoHtml('Inconnu BP'), /aucune recette/);
+});

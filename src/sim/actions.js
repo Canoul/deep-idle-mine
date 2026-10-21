@@ -9,10 +9,10 @@ import { log } from './log.js';
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
 
-/* skills Mineur après un minerai : un peu d'oxygène (ore_oxygen), bonus de marche pendant SKILLS.rushTime (ore_rush,
+/* skills Mineur après un minerai : +1 d'oxygène (ore_oxygen), bonus de marche pendant SKILLS.rushTime (ore_rush,
    remis à zéro à chaque minerai : ne se cumule pas) */
 function oreSkills(G,m){
-  if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen*m.carac.oxygenMax);
+  if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen);   // +1 d'oxygène par minerai
   if(m.skill.ore_rush) m.rushUntil=G.t+SKILLS.rushTime;
 }
 /* skill Barbare loot : butin d'un mob +loot (×), la part décimale tirée au hasard (G.rng : hasard « live ») */
