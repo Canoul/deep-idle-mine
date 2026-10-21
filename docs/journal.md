@@ -26,7 +26,8 @@ Modèle d'entrée :
   (« 🔒 Area 2 : minerais de l'area 1 — 12 / 160 ») ; explications raccourcies (Stuff, lobby, Historique, Concasseur).
 - **À suivre** : le journal de session (« Session démarrée (seed …) ») et le wiki n'ont pas été retouchés, à part
   les effets des épées dans le wiki.
-- **État** : 🧪 sur la branche `jules/nettoyage-textes` (pas en ligne)
+- **Décisions** : le bilan à plusieurs ne précise plus que les Treasure sont « un pour chacun » (pas utile).
+- **État** : ✅ en ligne le 21/10
 
 ---
 
