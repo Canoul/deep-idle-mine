@@ -1,4 +1,6 @@
-/* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire. */
+/* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
+   Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
+   dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH } from '../config.js';
 import { lumAt } from './light.js';
 

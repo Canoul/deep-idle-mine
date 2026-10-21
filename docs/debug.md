@@ -795,7 +795,7 @@ Règles (voir CLAUDE.md) :
   account-http relancés (lisent `index.html`) : 25/25.
 - **Vérification** : ✅ Chromium headless (playwright-cli, serveur local) : chargement normal sans cadre (11 onglets) ;
   `nav.js` bloqué → « Fichier(s) bloqué(s) : /src/ui/nav.js (Failed to fetch) » ; `throw` ajouté à `tooltip.js` →
-  « Uncaught Error: test plantage — /src/ui/tooltip.js:42:7 ». ⚠️ Pas testé dans Opera GX.
+  « Uncaught Error: test plantage — /src/ui/tooltip.js:42:7 ». ✅ Opera GX (OPR/137, Chrome 153) : le cadre a affiché « /src/sim/miner.js (Failed to fetch) » chez le joueur → cause trouvée, voir l'entrée suivante.
 - **Points fragiles** : la lecture des imports est une expression régulière (imports statiques seulement ; un
   `import(...)` dynamique ne serait pas suivi). Un nouveau fichier chargé hors de `main.js` n'est pas couvert.
 
@@ -959,3 +959,21 @@ Règles (voir CLAUDE.md) :
   ligne) reste un objet empilable inconnu du catalogue, sans usage.
 - **Tests** : `amelioration`, `anticheat/upgrade`, `wiki`, `dungeon`, `inventory`.
 
+---
+
+## 21/10/2026 — Jules — Opera GX : `src/sim/miner.js` bloqué par la liste anti-minage, renommé `mineur.js`
+- **Cause** : capture du cadre de `boot-check.js` chez un joueur Opera GX (OPR/137) : « /src/sim/miner.js (Failed to
+  fetch) ». La liste NoCoin (protection anti-minage de cryptomonnaie, active par défaut avec le bloqueur d'Opera ;
+  aussi dans uBlock / Brave selon les réglages) contient la règle générique `/miner.js`. Un module bloqué → tout le
+  graphe d'imports échoue → `main.js` ne tourne pas (lobby vide). Les 184 URL du jeu testées contre NoCoin : seule
+  `miner.js` était visée.
+- **Correction** : `git mv src/sim/miner.js src/sim/mineur.js` (commentaire en tête : ne pas le renommer), imports
+  mis à jour (`render/canvas`, `sim/{actions,ai,path,session}`, commentaire de `meta/stuff`, 5 tests), CLAUDE.md §7.
+  `tests/miner.test.js` garde son nom (pas servi au navigateur).
+- **Garde-fou** : `tests/blocked-names.test.js` : règles génériques de chemin de NoCoin (relevées le 21/10) contre
+  tous les fichiers servis (`index.html`, `wiki.html`, `src/`, `textures/`). À compléter si un autre bloqueur pose
+  problème. ⚠️ Éviter aussi `deepMiner.*`, `miner.*`, `xmr.js`, `coinhive*`…
+- **Tests** : blocked-names, boot-check, miner, carac, skills, tier2, winch : 71/71. Simulation 5 sessions × 3
+  mineurs : ✅ 0 bloquée, areas 3,4, profondeur 183, 26 allers-retours (534 s : lente, sans lien avec ce renommage).
+- **Vérification** : ✅ Chromium headless, serveur local, toute requête `/miner.js` refusée comme Opera : 11 onglets,
+  pas de cadre, `mineur.js` chargé. ⚠️ À reconfirmer par le joueur Opera GX après la mise en ligne.

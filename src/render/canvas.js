@@ -2,7 +2,7 @@
 import { W, CFG, BLOCKS, BRIDGE, CHEST_X } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
-import { lightR } from '../sim/miner.js';
+import { lightR } from '../sim/mineur.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
 import { createMinerSprite } from './miner-sprite.js';

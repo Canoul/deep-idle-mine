@@ -2,7 +2,7 @@
 import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON } from '../config.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './miner.js';
+import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './mineur.js';
 import { provoke, revealMimic } from './mobs.js';
 import { log } from './log.js';
 import { noEntry } from './dungeon.js';

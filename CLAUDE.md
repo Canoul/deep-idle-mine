@@ -136,7 +136,7 @@ claude/               etat-du-projet.md : ce qui existe aujourd'hui (aussi utili
 src/config.js         TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js        recettes de craft          src/skins.js  apparence des mineurs selon le stuff
 src/core/             hasard déterministe (rng)
-src/sim/              simulation pure, sans DOM : world, light, miner, path, actions, ai, mobs, session, log,
+src/sim/              simulation pure, sans DOM : world, light, mineur, path, actions, ai, mobs, session, log,
                       diagnostics, dungeon
 src/meta/             progression hors session, logique pure : inventory, share, loot, furnace, crusher, craft,
                       stuff, research, skills

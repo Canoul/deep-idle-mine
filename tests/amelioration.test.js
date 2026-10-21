@@ -10,7 +10,7 @@ import { itemValue, linePoints, lineValue, rollQuality, rollIdentity, pieceBonus
 import { identify, upgrade, identifyError, sacrificesFor, nextLevel } from '../src/meta/upgrade.js';
 import { minerSpecs } from '../src/shared/game.js';
 import { mineBlock, hitDamage, mineDuration } from '../src/sim/actions.js';
-import { mineT } from '../src/sim/miner.js';
+import { mineT } from '../src/sim/mineur.js';
 import { worldFrom } from './helpers.js';
 
 const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de pleine lune';

@@ -7,7 +7,7 @@ import { worldFrom, run } from './helpers.js';
 import { supported, isWinch } from '../src/sim/world.js';
 import { search } from '../src/sim/path.js';
 import { stepDir, finishAction } from '../src/sim/actions.js';
-import { winchT, climbT, baseLadderT } from '../src/sim/miner.js';
+import { winchT, climbT, baseLadderT } from '../src/sim/mineur.js';
 import { createViewer, emptyView, applyView } from '../src/shared/view.js';
 
 const X = WINCH.x;
