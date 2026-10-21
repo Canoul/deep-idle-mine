@@ -1,0 +1,52 @@
+# Journal d'avancement
+
+Où en est le jeu, qui a fait quoi, ce qui est en ligne. Écrit par Claude à la fin de chaque tâche, **le plus récent
+en haut**, en langage simple. Le détail technique (fichiers, tests, chiffres) est dans `docs/debug.md`.
+
+**Chantiers en cours** (pas encore en ligne) : ce sont les branches git. Demande à Claude « qu'est-ce qui est en
+cours ? » ou lance `git branch -r --no-merged origin/main`.
+
+Modèle d'entrée :
+
+```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+---
+
+## 21/10/2026 — Jules — Organisation du dépôt et méthode de travail
+- **Pour le joueur** : rien ne change.
+- **Décisions** :
+  - on ne travaille plus directement sur `main` (le jeu en ligne se met à jour tout seul depuis `main`) : chaque
+    tâche a sa branche `prénom/sujet`, gérée par Claude, et passe en ligne quand on dit « mets en ligne » ;
+  - ce journal, en plus du journal technique `docs/debug.md` ;
+  - CLAUDE.md réorganisé : début de discussion, git, fin de tâche, puis le projet ;
+  - on garde une seule page avec des onglets (`#mine`, `#inventaire`…) : des pages séparées couperaient
+    l'affichage de la session à chaque changement d'onglet.
+- **Ménage** : fichier parasite `deep-idle-mine` supprimé, doc Render rangée dans `docs/archive/`, `README.md`,
+  identités git de Geoffrey regroupées (`canoul` = Geoffrey Boilay), fins de ligne fixées (LF).
+- **À suivre** : supprimer la branche distante `concasseur` (déjà fusionnée) ; décider du sort de la branche
+  `social` ; éviter le redémarrage du serveur quand seuls des fichiers de doc changent (`deploy/ovh/update.sh`).
+- **État** : 🧪 sur la branche `jules/organisation-repo` (pas en ligne)
+
+---
+
+## Avant le journal (18/10 → 21/10/2026)
+
+Résumé reconstitué depuis git (commits de Geoffrey et de sessions Claude signées « Claude », dont on ne connaît
+pas le demandeur) ; le détail est dans `docs/debug.md` et `git log`.
+
+- **18–19/10** : version modulaire du prototype, catégories de blocs, areas de 50 blocs de haut, coffres
+  au trésor, oxygène, inventaire en grille, barre d'onglets, comptes joueur (invité, pseudo + mot de passe, code de
+  secours, ID), serveur qui fait foi, partage du coffre, lobby.
+- **20/10** : gobelin, ouverture des Treasure T1, Four, focus minerai et focus area, stockage PostgreSQL
+  (Neon), groupes de 3 et sessions communes, partie qui tourne sur le serveur, craft et stuff (pioche en pierre,
+  pièces en fer, épée, ceinture), table de recherche, skills (Mineur, Logisticien, Barbare), treuil, skins des
+  mineurs, caméra libre, hébergement OVH et domaine deepmineidle.fr.
+- **21/10** : Shiny, rareté des objets, tier 2 (gants, cape, Treasure T2), four en fer, boussole en or,
+  refonte des mobs (occultiste, mimics, « Aider allié »), wiki du joueur, partage anti-boosting, onglet Historique,
+  donjon et minotaure (area 5), onglet Concasseur.

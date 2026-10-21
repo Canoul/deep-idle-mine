@@ -1,7 +1,8 @@
 # Journal de debug
 
 Ce que chaque session Claude a modifié, et **ce qui a été vérifié ou non**. À lire avant de lancer des tests ou des
-simulations : si quelque chose casse, on sait d'où ça peut venir.
+simulations : si quelque chose casse, on sait d'où ça peut venir. (Le résumé lisible par toute l'équipe, lui, est
+dans `docs/journal.md`.)
 
 Règles (voir CLAUDE.md) :
 - une entrée par modification, ajoutée **à la fin du jour concerné**, la plus récente en bas ;
@@ -683,7 +684,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : l'attente devant l'entrée peut être longue (le barbare finit d'abord son aller-retour) ; un
   mineur sans barbare qui se retrouve dans le donjon après ses 15 s d'effroi et qui se fait tacler doit vaincre seul
   1000 PV (règle du tacle) ; l'effroi ne se déclenche que par accident (entrée dans le noir avant d'avoir vu le mur).
-### 21/10/2026 — Onglet Concasseur
+### Onglet Concasseur
 - **Quoi** : nouvel onglet entre Four et Recherche. 8 cases d'entrée (2×4) pour les objets de la nouvelle famille
   **bloc** (Terre, Pierre, Pierre dure : `family:'bloc'` dans BLOCKS, rien ne change dans la mine), 8 cases de sortie.
   Un cycle de 60 s concasse 100 blocs de la première case qui en a ≥ 100 (index 0 → 7). Butin = tables `CRUSHER.loot`
@@ -707,3 +708,17 @@ Règles (voir CLAUDE.md) :
   console. ⚠️ Pas testé en ligne (PostgreSQL : nouveau ns `crusher`, chargé par `createPgGameStore`).
 - **Point d'équilibrage** : ≈ 530 terre + 760 pierre par session à 3 (≈ 4 lots par joueur) → ≈ 1 gemme / 60 sessions
   par joueur, 1 treasure / ≈ 2 000 sessions. Signalé au créateur.
+
+### Organisation du dépôt et méthode git (Jules) — branche `jules/organisation-repo`
+- **Quoi** : CLAUDE.md réorganisé (début de discussion, git par branches `prénom/sujet`, fin de tâche, puis le
+  projet) ; nouveau `docs/journal.md` (avancement, le plus récent en haut) ; `README.md` ; `.gitattributes`
+  (LF partout, PNG binaires) ; `.mailmap` (`canoul` et l'adresse opensee = Geoffrey Boilay) ; fichier parasite
+  `deep-idle-mine` (contenait `/root/deep-idle-mine`) supprimé ; `docs/deploiement.md` → `docs/archive/
+  deploiement-render.md` (références mises à jour dans `docs/comptes.md`) ; titre de l'entrée Concasseur aligné.
+- **Code** : aucun changement de code du jeu ni du serveur.
+- **Tests** : aucun à lancer (documentation et réglages git). `git ls-files --eol` : tous les fichiers texte déjà en
+  LF, le `.gitattributes` ne change aucun fichier.
+- **Vérification** : ✅ `git shortlog -sn` regroupe bien Geoffrey (48 commits) ; liens du README vérifiés.
+- **Point fragile** : `deploy/ovh/update.sh` redémarre le serveur à chaque changement de `main`, même doc seule.
+  À améliorer (ne redémarrer que si autre chose que `*.md` / `docs/` change) ; demande de relancer `install.sh`
+  sur le VPS, car le script est copié dans `/usr/local/sbin`.
