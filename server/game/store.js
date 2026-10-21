@@ -1,4 +1,4 @@
-/* Stockage du jeu : inventaires, fours, stuff, préférences, progression (XP), skills et sessions de jeu, rangés par ID de compte.
+/* Stockage du jeu : inventaires, fours, concasseur, stuff, préférences, progression (XP), skills et sessions de jeu, rangés par ID de compte.
    Même principe que server/accounts/store.js : petite interface asynchrone, en mémoire pour les tests,
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
@@ -12,6 +12,7 @@ export function createMemoryGameStore(initial = {}){
   const inventories = new Map(Object.entries(initial.inventories ?? {}));
   const prefs = new Map(Object.entries(initial.prefs ?? {}));
   const furnaces = new Map(Object.entries(initial.furnaces ?? {}));
+  const crushers = new Map(Object.entries(initial.crushers ?? {}));   // concasseur (src/meta/crusher.js)
   const stuff = new Map(Object.entries(initial.stuff ?? {}));
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
@@ -29,6 +30,13 @@ export function createMemoryGameStore(initial = {}){
     async putInventoryAndFurnaces(accountId, inv, f){
       inventories.set(accountId, copy(inv)); furnaces.set(accountId, copy(f));
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'furnace', key: accountId, value: f }]);
+    },
+
+    /* concasseur : même principe que les fours (des blocs y entrent, du butin en sort) */
+    async getCrusher(accountId){ return copy(crushers.get(accountId)) ?? null; },
+    async putInventoryAndCrusher(accountId, inv, c){
+      inventories.set(accountId, copy(inv)); crushers.set(accountId, copy(c));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'crusher', key: accountId, value: c }]);
     },
 
     /* stuff (pièces portées) : même principe que les fours, une pièce passe de l'inventaire au stuff et inversement */
@@ -67,6 +75,7 @@ export function createMemoryGameStore(initial = {}){
     async changed(changes){},
     async close(){},
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
+                         crushers: Object.fromEntries(crushers),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties) }; },
@@ -99,8 +108,8 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party']);
-  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, stuff: rows.stuff, prefs: rows.prefs,
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party']);
+  const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills,
                                         sessions: rows.game_session, parties: rows.party });
   store.changed = changes => db.write(changes);

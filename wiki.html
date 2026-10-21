@@ -113,6 +113,7 @@
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure, <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff. Les nouveaux objets brillent d'un halo blanc.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>10 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session.</p></div>
     <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
+    <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) : chaque minute, il en concasse 100, <b>même page fermée</b>. La plupart du temps il ne sort rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b>.</p></div>
     <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide.</p></div>
     <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
     <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session).</p></div>
@@ -157,6 +158,9 @@
   <p>Mode <b>Fondre</b> : <span id="w-smelt-rule"></span> Mode <b>Alliage</b> : deux ingrédients + du charbon. Les ingrédients ne sont consommés qu'à la fin de chaque produit : si tu retires une case, tu récupères tout.</p>
   <div id="w-furnace"></div>
   <div id="w-furnace-tiers"></div>
+  <h2>Le concasseur</h2>
+  <p><span id="w-crusher-rule"></span> Les blocs ne sont consommés qu'à la fin du cycle, et au plus une gemme sort par cycle.</p>
+  <div id="w-crusher"></div>
   <h2>Les recettes de craft</h2>
   <p>Les recettes « de base » sont dispo dès le départ. Les autres sont <b>secrètes</b> : il faut <b>utiliser leur blueprint</b> (BP) depuis l'inventaire pour les débloquer, pour toujours.</p>
   <div id="w-recipes"></div>

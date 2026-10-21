@@ -48,7 +48,8 @@ Chaque bloc appartient à une catégorie :
 **Familles d'objets (inventaire).** Une fois ramassé, un bloc devient un objet d'une **famille**, qui décide de son usage hors session. C'est en général sa catégorie, sauf exception :
 - **charbon** : minerai dans la mine (il compte pour le déblocage, l'IA le vise, le gobelin le vole), mais **combustible** dans l'inventaire ;
 - **ore** (fer, or, diamant) : minerais ; ceux qui ont une recette se fondent au four (fer, or ; pas le diamant pour l'instant) ;
-- **ingot** : les lingots sortis du four.
+- **ingot** : les lingots sortis du four ;
+- **bloc** (terre, pierre, pierre dure) : se concassent au concasseur (voir §6, Concasseur) *(famille créée le 21/10/2026)*.
 
 **Shiny.** Quand un mineur mine un bloc de **fer** ou d'**or** (les minerais qui se fondent au four), il a **1 %** de chance *(provisoire)* d'obtenir à la place un **shiny** : « Shiny iron », « Shiny gold ». C'est l'objet **déjà cuit** (famille ingot, poids 1 dans les pods), dont l'icône porte une étincelle et **scintille**. Un bloc donne le minerai **ou** le shiny, jamais les deux ; il compte toujours comme minerai miné (déblocage, XP, skills). Pas de shiny pour le charbon, le diamant ni le butin des mimics. Le journal de la session l'annonce (« ✨ … trouve un Shiny iron ! »). Un shiny ne repasse pas au four. Ordre de grandeur : ~6 à 7 shiny par session à 3. **Usage hors session : à décider.**
 
@@ -346,10 +347,11 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Recherche, Skills, Historique, Social**.
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Concasseur, Recherche, Skills, Historique, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
+- **Concasseur** : concasser les blocs pour un peu de butin (voir ci-dessous).
 - **Recherche** (table de recherche) : dépenser les Blueprint parts, recycler des blueprints (voir ci-dessous).
 - **Craft** : fabriquer des objets (voir ci-dessous).
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
@@ -451,6 +453,21 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
   | **Tainted gold** | 5 lingots d'or + 20 chitine | 50 charbons | 3 min |
+
+### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
+- **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
+- **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
+- Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
+- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) :
+
+  | 100 blocs | Chaque gemme inférieure (rubis, saphir, jade) | Treasure |
+  |---|---|---|
+  | Terre | 0,1 % | T1 : 0,01 % |
+  | Pierre | 0,15 % | T2 : 0,015 % |
+  | Pierre dure | 0,12 % | T2 : 0,02 % |
+- Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
+- **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.
+- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec ces chances : ≈ 1 gemme toutes les 60 sessions par joueur (≈ 20 en solo), un treasure toutes les ≈ 2 000 sessions. À rééquilibrer si le concasseur doit servir.
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :

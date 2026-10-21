@@ -22,6 +22,8 @@ export function gameRoutes(game){
     'POST /api/game/finish': async ctx => { needMe(ctx); return game.finish(ctx.me); },
     'POST /api/game/open':   async ctx => { needMe(ctx); return game.open(ctx.me, obj(ctx.body)); },
     'POST /api/game/furnace': async ctx => { needMe(ctx); return game.furnace(ctx.me, obj(ctx.body)); },
+    'GET /api/game/crusher':  async ctx => { needMe(ctx); return game.crusherState(ctx.me); },
+    'POST /api/game/crusher': async ctx => { needMe(ctx); return game.crusher(ctx.me, obj(ctx.body)); },
     'POST /api/game/craft':  async ctx => { needMe(ctx); return game.craft(ctx.me, obj(ctx.body)); },
     'POST /api/game/learn':  async ctx => { needMe(ctx); return game.learn(ctx.me, obj(ctx.body)); },
     'POST /api/game/research': async ctx => { needMe(ctx); return game.research(ctx.me, obj(ctx.body)); },

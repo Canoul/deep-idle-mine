@@ -23,6 +23,7 @@ import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
+import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf } from '../../src/meta/stuff.js';
@@ -57,6 +58,11 @@ const FURNACE_ERRORS = {
   bad_mode: 'Mode de four inconnu.', not_empty: 'Vide les cases d\'ingrédients avant de changer de mode.',
   no_recipe: 'Aucun alliage avec ces deux ingrédients.',
   already_unlocked: 'Ce four est déjà débloqué.', locked_before: 'Débloque d\'abord le four d\'avant.',
+};
+const CRUSHER_ERRORS = {
+  bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.', bad_item: 'Seuls les blocs (terre, pierre, pierre dure) se concassent.',
+  not_enough: 'Tu n\'en as pas assez.', slot_busy: 'La case contient déjà un autre bloc : vide-la d\'abord.',
+  inventory_full: 'L\'inventaire ne peut pas recevoir ça.',
 };
 const isInt = v => Number.isSafeInteger(v);
 
@@ -96,6 +102,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const loadFurnaces = async accountId => sanitizeFurnaces(await store.getFurnaces(accountId));   // revérifié à chaque fois
   /* ce que le navigateur voit des fours : avancés jusqu'à maintenant, heure du serveur (pour la barre de progression) */
   const publicFurnaces = st => ({ list: st.list.map(f => advance(f, clock())), max: FURNACE.max, now: clock() });
+  /* concasseur : relu, avancé jusqu'à maintenant avec le hasard du serveur, et ENREGISTRÉ s'il a concassé (un cycle
+     n'est tiré qu'une fois). Toujours sous le verrou de l'inventaire (le butin et les blocs y passent). */
+  const withCrusher = (accountId, fn) => withLock('inv:' + accountId, async () => {
+    const inv = await loadInventory(accountId), c = sanitizeCrusher(await store.getCrusher(accountId));
+    if(advanceCrusher(c, clock(), random) > 0) await store.putInventoryAndCrusher(accountId, JSON.parse(serialize(inv)), c);
+    return fn(inv, c);
+  });
   /* stuff : relu avec l'inventaire (une pièce présente des deux côtés est retirée du stuff ; les uid restent uniques) */
   const loadStuff = async (accountId, inv) => sanitizeStuff(await store.getStuff(accountId), inv);
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
@@ -227,7 +240,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
       const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
       const inv = await loadInventory(me.id);
-      return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)),
+      const crusher = await withCrusher(me.id, (_, c) => publicCrusher(c, clock()));
+      return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: publicProgress(await loadProgress(me.id)),
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
@@ -400,6 +414,24 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, ['not_enough', 'slot_busy', 'not_empty', 'no_recipe', 'already_unlocked', 'locked_before'].includes(r.error) ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
         return { inventory: publicInventory(inv), furnaces: publicFurnaces(st) };
+      });
+    },
+
+    /* concasseur : état à jour (le navigateur le redemande à la fin de chaque cycle) */
+    async crusherState(me){
+      return withCrusher(me.id, (inv, c) => ({ inventory: publicInventory(inv), crusher: publicCrusher(c, clock()) }));
+    },
+    /* concasseur : poser des blocs, vider une case, récupérer le butin. Inventaire et concasseur changent ensemble ;
+       opId rend la demande rejouable sans effet. */
+    async crusher(me, body = {}){
+      const { opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const op = { action: body.action, slot: body.slot, item: body.item, qty: body.qty, opId };
+      return withCrusher(me.id, async (inv, c) => {
+        const r = crusherOp(c, inv, op, clock());
+        if(r.error) fail(r.error, ['not_enough', 'slot_busy'].includes(r.error) ? 409 : 400, CRUSHER_ERRORS[r.error] ?? 'Demande invalide.');
+        if(!r.repeated) await store.putInventoryAndCrusher(me.id, JSON.parse(serialize(inv)), c);
+        return { inventory: publicInventory(inv), crusher: publicCrusher(c, clock()) };
       });
     },
 

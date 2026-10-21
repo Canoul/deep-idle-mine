@@ -69,8 +69,9 @@ export const HELP = { range:20 };
 export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
 
 export const BLOCKS = {
-  1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240'},
-  2:{name:'Pierre',  type:'terrain', tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3'},
+  /* family 'bloc' : dans l'inventaire, objets de type Bloc (ils se concassent : onglet Concasseur, CRUSHER) */
+  1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240', family:'bloc'},
+  2:{name:'Pierre',  type:'terrain', tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3', family:'bloc'},
   3:{name:'Charbon', type:'ore',     tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', val:1, family:'combustible'},
   4:{name:'Fer',     type:'ore',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', val:2},
   5:{name:'Or',      type:'ore',     tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', val:4},
@@ -80,7 +81,7 @@ export const BLOCKS = {
   /* passerelle : posée par le mineur pour combler un trou ; cassable, ne rapporte rien */
   8:{name:'Passerelle', type:'build', tex:'bridge', w:0, hard:0.4, color:'#9a6b36', dot:'#5c3a1a', noDrop:true},
   /* pierre dure : roche des areas profondes, deux fois plus longue à miner que la pierre (provisoire) */
-  9:{name:'Pierre dure', type:'terrain', tex:'hardstone', w:3, hard:2.4, color:'#575c66', dot:'#6c727d'},
+  9:{name:'Pierre dure', type:'terrain', tex:'hardstone', w:3, hard:2.4, color:'#575c66', dot:'#6c727d', family:'bloc'},
   /* treasure : entité enfouie dans la mine ; ouverte, elle donne un objet Treasure TX (TREASURE).
      val = attrait pour l'IA une fois découverte */
   10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
@@ -167,6 +168,25 @@ export const LOOT = {
       { family:'gem', items:gems(0.015) },
     ],
   },
+};
+
+/* ---- Hors session : concasseur (onglet Concasseur, src/meta/crusher.js) ----
+   8 cases d'entrée (2 rangées de 4) pour les objets de type Bloc, 8 cases de sortie pour le butin.
+   Toutes les `time` secondes (temps réel, même page fermée), il concasse `batch` blocs d'une case d'entrée : la
+   première qui en a au moins `batch`, de haut en bas puis de gauche à droite. Les blocs sont consommés, le butin
+   est tiré par le serveur (même format que LOOT : un tirage par famille, au plus un objet chacune).
+   loot : table par bloc (seuls ces blocs vont dans le concasseur). Valeurs provisoires. */
+export const CRUSHER = {
+  inSlots:8, outSlots:8, cols:4, batch:100, time:60,
+  loot: {
+    'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.001) },
+                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.0001 }] } ] },
+    'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.0015) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.00015 }] } ] },
+    'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.0012) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.0002 }] } ] },
+  },
+  opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
 /* ---- Hors session : table de recherche (onglet du même nom, src/meta/research.js) ----

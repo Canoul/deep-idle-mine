@@ -21,6 +21,7 @@ import { setupFocusPanel } from './ui/focus.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
+import { setupCrusher } from './ui/crusher.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
 import { setupHistory } from './ui/history.js';
@@ -104,6 +105,12 @@ const furnace = setupFurnace({
     setInventory(r.inventory);
     furnace.set(r.furnaces);
   },
+});
+
+/* concasseur : le serveur concasse et tire le butin ; l'onglet redemande l'état à la fin de chaque cycle */
+const crusher = setupCrusher({
+  onOp: async op => { const r = await gameApi.crusher({ ...op, opId: newOpId() }); setInventory(r.inventory); crusher.set(r.crusher); },
+  onSync: async () => { const r = await gameApi.crusherState(); setInventory(r.inventory); crusher.set(r.crusher); },
 });
 
 /* table de recherche : le serveur tire le blueprint (ou les parts) et renvoie l'inventaire */
@@ -303,7 +310,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
-  furnace.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
@@ -323,6 +330,7 @@ async function refresh(){
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
   furnace.set(st.furnaces);
+  crusher.set(st.crusher);
   stuff.set(st.stuff);
   skills.set(st.skills);
   lobby.update({ prefs: st.prefs });

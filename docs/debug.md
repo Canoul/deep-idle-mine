@@ -651,3 +651,28 @@ Règles (voir CLAUDE.md) :
   treasures, niveaux, page servie) ; nav, game-http, account-http : 27/27.
 - **Vérification** : ✅ Chromium headless : aucune erreur, toutes les sections remplies, recherche « gants » → 8 lignes,
   pas de défilement horizontal sur mobile (390 px). ⚠️ Textes à faire relire par le créateur.
+
+### 21/10/2026 — Onglet Concasseur
+- **Quoi** : nouvel onglet entre Four et Recherche. 8 cases d'entrée (2×4) pour les objets de la nouvelle famille
+  **bloc** (Terre, Pierre, Pierre dure : `family:'bloc'` dans BLOCKS, rien ne change dans la mine), 8 cases de sortie.
+  Un cycle de 60 s concasse 100 blocs de la première case qui en a ≥ 100 (index 0 → 7). Butin = tables `CRUSHER.loot`
+  (format LOOT, tiré par `rollLoot`) : gemmes inférieures 0,1 / 0,15 / 0,12 % chacune, treasure T1 0,01 % (terre),
+  T2 0,015 % (pierre) / 0,02 % (pierre dure). « Dernières trouvailles » (10) et total de lots affichés.
+- **Hasard / anti-triche** : `advance(c, now, rng)` reçoit le hasard ; le serveur avance sous le verrou de
+  l'inventaire et **enregistre dès qu'un cycle est fait** (`withCrusher` dans service.js, aussi dans `state()`), donc un
+  cycle n'est tiré qu'une fois. Le navigateur n'avance jamais : il redemande `GET /api/game/crusher` quand la barre est
+  pleine (au plus toutes les 3 s, onglet visible). Sortie pleine : le lot n'est pas consommé (jamais atteint en
+  pratique : 5 objets de sortie possibles, 8 cases).
+- **Fichiers** : `src/config.js` (CRUSHER, family bloc), `src/meta/crusher.js`, `src/ui/crusher.js`, `src/ui/nav.js`,
+  `src/ui/style.css`, `src/ui/inventory.js` (libellé Bloc), `src/main.js`, `src/net/api.js`, `index.html`,
+  `server/game/{service,store,routes}.js`, `server/db/postgres.js` (ns `crusher`), `src/wiki/{data,wiki}.js`,
+  `wiki.html`, GAME_DESIGN §2 et §6, CLAUDE.md.
+- **Tests** : `tests/crusher.test.js` (13 : famille, tables, poser, ordre des cases, cycle hors ligne, butin, fréquence
+  sur 200 000 lots, retirer/récupérer/opId, retrait en cours de cycle, sortie pleine, relecture trafiquée, serveur ×2),
+  `tests/anticheat/crusher.test.js` (500 suites au hasard : blocs consommés = lots × 100, butin ≤ 2 par lot).
+  furnace, postgres, game-service, inventory, wiki, nav (onglet ajouté), blocks : tous verts.
+- **Vérification** : ✅ Chromium headless (serveur dev, compte invité avec blocs) : poser 300 pierre dure, tout
+  récupérer, fenêtre « ? », cycle fini → état redemandé, mobile 390 px, wiki (tableau + sources des gemmes), 0 erreur
+  console. ⚠️ Pas testé en ligne (PostgreSQL : nouveau ns `crusher`, chargé par `createPgGameStore`).
+- **Point d'équilibrage** : ≈ 530 terre + 760 pierre par session à 3 (≈ 4 lots par joueur) → ≈ 1 gemme / 60 sessions
+  par joueur, 1 treasure / ≈ 2 000 sessions. Signalé au créateur.

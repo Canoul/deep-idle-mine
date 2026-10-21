@@ -8,6 +8,7 @@ export const TABS = [
   { id:'stuff',      label:'Stuff',      icon:'🛡',  ready:true  },
   { id:'craft',      label:'Craft',      icon:'🔨', ready:true  },
   { id:'four',       label:'Four',       icon:'🔥', ready:true  },
+  { id:'concasseur', label:'Concasseur', icon:'🪨', ready:true  },   // blocs concassés → gemmes, treasures
   { id:'recherche',  label:'Recherche',  icon:'🔬', ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'⭐', ready:true  },   // arbres de skills (points gagnés aux niveaux)
   { id:'historique', label:'Historique', icon:'📜', ready:true  },   // sessions passées : seed et butin
