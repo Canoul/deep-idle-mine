@@ -1099,7 +1099,7 @@ Règles (voir CLAUDE.md) :
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 105 tests du sujet + anticheat 67/67 verts.
   À surveiller : en ligne, l'en-tête HSTS n'apparaît que si `DIM_SECURE_COOKIE=1` (posé par `install.sh`).
 
-### Session : colonnes jusqu'en bas, lignes visibles adaptées (Jules) — branche `jules/colonnes-session`
+### Session : colonnes jusqu'en bas, lignes visibles adaptées (Jules) — branche `jules/colonnes-session`, ✅ en ligne le 22/10
 - **Bug** : la surface n'était plus visible. Cause : l'agrandissement du 21/10 (`CAMERA.minShown`) rognait le haut et
   le bas du canvas en CSS ; la caméra croyait montrer 34 lignes, et en haut de la mine c'est le ciel qui était coupé.
 - **Correction** : plus de rognage. Le nombre de lignes dessinées s'adapte : `renderer.setRows(n)`

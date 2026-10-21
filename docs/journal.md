@@ -23,7 +23,7 @@ Modèle d'entrée :
   quand la barre d'action ne passe pas dessous (grands écrans) ; la mine montre de nouveau la surface et le ciel en
   début de session (bug de l'agrandissement de la veille : le haut de la vue était rogné). La mine remplit toujours
   la largeur, et montre plus ou moins de lignes selon la hauteur de l'écran.
-- **État** : 🧪 sur la branche `jules/colonnes-session` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ---
 
