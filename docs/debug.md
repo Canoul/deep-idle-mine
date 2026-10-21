@@ -773,6 +773,32 @@ Règles (voir CLAUDE.md) :
   passer de `/` à `/#onglet` ne recharge pas la page (même document), et un onglet en arrière-plan ne tourne pas sans
   `Emulation.setFocusEmulationEnabled`.
 
+---
+
+## 21/10/2026 — Jules — Démarrage raté : cadre d'erreur sur la page (`src/boot-check.js`)
+- **Symptôme** : sur Opera GX (un joueur), page servie mais JavaScript du jeu jamais lancé : barre de gauche sans
+  onglets, « Mineur » vide, « Où miner » = « . ». Reproduit à l'identique en local en bloquant un module
+  (`page.route('**/src/ui/nav.js', abort)`) : un seul module du graphe qui échoue → `main.js` ne s'exécute pas.
+- **Écarté** : aucun test du navigateur dans le code ; JS utilisé ≤ Chrome 98 (`structuredClone`, `Object.hasOwn`,
+  `.at`) ; les 169 URL du jeu (fichiers + `/api/…`) testées contre les règles réseau EasyList + EasyPrivacy
+  (téléchargées le 21/10, analyseur maison vérifié sur des cas connus) : aucune bloquée. Opera GX n'est pas installé
+  sur le poste de Jules : cause réelle pas encore connue (pistes : extension, bloqueur avec d'autres listes, VPN,
+  coupure pendant un redémarrage du serveur).
+- **Ajout** : `src/boot-check.js`, script **classique** chargé avant `src/main.js` dans `index.html` (+ `<noscript>`).
+  Écoute `error` (en capture, pour voir l'échec de chargement du `<script type=module>`) et `unhandledrejection`
+  tant que `DIM_BOOT.started` n'est pas vrai (`main.js` le met après le bloc de démarrage ; ⚠️ pendant l'écran de
+  connexion il n'est pas encore vrai). Échec d'un module → relit les imports depuis `main.js` (`findMissing`, fetch
+  `no-store`) et liste les fichiers qui ne répondent pas. Erreur de code → message + fichier:ligne:colonne. Ignore
+  les images (textures). Affiche toujours le `userAgent` (Opera : `OPR/<version>`).
+- **Tests** : `tests/boot-check.test.js` (imports sur plusieurs lignes, ré-exports, `import './x.js'` ; parcours
+  complet depuis `main.js` sans fichier manquant, chaque fichier lu une fois ; fichier bloqué nommé) ; nav et
+  account-http relancés (lisent `index.html`) : 25/25.
+- **Vérification** : ✅ Chromium headless (playwright-cli, serveur local) : chargement normal sans cadre (11 onglets) ;
+  `nav.js` bloqué → « Fichier(s) bloqué(s) : /src/ui/nav.js (Failed to fetch) » ; `throw` ajouté à `tooltip.js` →
+  « Uncaught Error: test plantage — /src/ui/tooltip.js:42:7 ». ⚠️ Pas testé dans Opera GX.
+- **Points fragiles** : la lecture des imports est une expression régulière (imports statiques seulement ; un
+  `import(...)` dynamique ne serait pas suivi). Un nouveau fichier chargé hors de `main.js` n'est pas couvert.
+
 ### Mine instantanée, étape 1 : règles et contenu (Geoffrey) — branche `geoffrey/mine-instantanee`
 - **Quoi** : `GAME_DESIGN.md` §6 « Mine instantanée (MI) » ; `src/config.js` `INSTANT_MINE` (horaire, durée 300 s de
   jeu, 50×50, composition, plumes, 20/mine, poids de l'IA de dispersion, rappels) ; objet `Plume d'ange` (ITEMS,

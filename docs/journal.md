@@ -46,7 +46,20 @@ Modèle d'entrée :
   butin, classement, journal, **Quitter la mine** ; puis un bilan. Essayé dans Chrome à deux joueurs (mode dev,
   bouton « Ouvrir maintenant ») : butin bien versé, rien pour celui qui quitte, aucune erreur.
 - **À suivre** : l'usage de la Plume d'ange (idée de Geoffrey) ; surveiller l'or rapporté par la MI une fois en ligne.
-- **État** : 🧪 sur la branche `geoffrey/mine-instantanee` (pas en ligne)
+- **État** : ✅ en ligne le 21/10
+
+## 21/10/2026 — Jules — Message d'erreur quand le jeu ne démarre pas (Opera GX)
+- **Pour le joueur** : si le jeu ne démarre pas (page avec le menu de gauche vide), un cadre rouge s'affiche en
+  haut et dit pourquoi : quel fichier est bloqué (bloqueur de pubs, extension…) ou quelle erreur l'a fait planter,
+  avec le navigateur utilisé. Il suffit d'en faire une capture pour l'équipe. Si JavaScript est coupé, un message le
+  dit aussi. Quand tout va bien, rien ne change.
+- **Pourquoi** : un joueur sur Opera GX voit le lobby vide. Le jeu ne vérifie pas le navigateur et n'utilise rien
+  de récent ; nos fichiers ne sont pas dans les listes anti-pubs EasyList / EasyPrivacy. Sans son message d'erreur,
+  impossible de savoir ce qui bloque chez lui : ce cadre nous le donnera.
+- **À suivre** : une fois en ligne, demander au joueur Opera GX une capture du cadre, puis corriger la vraie cause.
+- **État** : ✅ en ligne le 21/10
+
+---
 
 ## 21/10/2026 — Geoffrey — Lobby et Session : deux onglets séparés
 - **Pour le joueur** : l'onglet « Mine » est remplacé par deux onglets.

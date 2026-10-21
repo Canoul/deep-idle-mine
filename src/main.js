@@ -390,6 +390,7 @@ else {
   catch(e){ acct.offline = true; showNoSession(); }
 }
 startInstant();
+if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
 let last = performance.now(), lastHud = 0;
