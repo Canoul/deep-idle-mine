@@ -494,6 +494,29 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
 - Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
 
+### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
+Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.
+- **Quand** : toutes les **2 h pile, heure de Paris** (0 h, 2 h, 4 h… ; heure d'été comprise). Dure **5 min de jeu** (2 min 30 réelles à ×2).
+- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée** (pas de torche). Pas d'oxygène, pas de pods, pas de mobs, pas d'échelle : le mineur **se déplace librement** dans les galeries qu'il a creusées (haut, bas, côtés, sans gravité).
+- **Départ** : les mineurs apparaissent sur la ligne de surface, au-dessus de la mine, **espacés régulièrement**.
+- **Tas de plumes d'ange** : une case **vide** portant un tas de plumes. Le **premier mineur qui passe sur la case** le ramasse (le tas disparaît) et gagne **1 à 5 Plumes d'ange** (rareté **rare**). L'IA ne les cherche pas : on tombe dessus en creusant.
+- **Chacun son butin** : ce qu'un mineur mine est à lui, **pas de partage, pas d'XP**. Si deux mineurs minent le même bloc, **celui qui finit en premier** gagne le minerai ; l'autre perd son travail sur ce bloc.
+- **Le stuff compte** : vitesse de minage, vitesse de marche, **Fortune** et **shiny** s'appliquent comme en session. Les spécialisations restent choisies mais n'ont pas d'effet particulier ici.
+- **IA du mineur** : tous les blocs valent pareil (aucune priorité de minerai) ; il creuse dans tous les sens, vers le bloc le moins coûteux en temps, en **évitant les zones où il y a déjà d'autres mineurs** (pénalité par mineur proche et par bloc déjà visé par un autre). S'il perd **3 blocs d'affilée** (un autre les a finis avant lui), il **change de zone** (il ne suit pas indéfiniment un mineur plus rapide).
+- **Plusieurs mines** : au plus **20 joueurs par mine** ; au-delà, les inscrits sont répartis en mines de tailles égales (21 inscrits → 11 + 10). Un inscrit seul joue seul.
+
+**Lobby MI** (onglet Mine, sous-onglet **Mine instantanée**, à côté du sous-onglet **Mine**) :
+- On peut s'y inscrire **quand on veut** ; un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
+- S'inscrire **fait quitter le groupe** de la session normale. On ne peut **pas s'inscrire pendant une session** (il faut d'abord la quitter). **Lancer une session normale désinscrit** du MI.
+- À l'heure dite, les inscrits partent tous dans la mine ; personne ne la rejoint après le début.
+- **Fermer l'onglet ne change rien** (la partie tourne sur le serveur, le butin arrive à la fin). **Seul le bouton Quitter fait tout perdre** : quitter avant la fin = rien.
+
+**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; jamais pendant une session normale) :
+- « La mine instantanée commence dans 30 min », puis 15 min, puis 5 min : simple information.
+- « La mine instantanée commence dans 30 secondes » : information **et invitation**, boutons **Rejoindre** / **Décliner** (pour un joueur déjà inscrit : information seule).
+
+**Le serveur fait foi** : il ouvre la mine à l'heure, répartit les inscrits, fait tourner la partie et verse à chacun son butin **une seule fois** à la fin.
+
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 - Au lancement, écran de connexion : **se connecter** (pseudo + mot de passe), **créer un compte**, ou **jouer en invité** (1 clic).

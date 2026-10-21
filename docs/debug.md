@@ -744,3 +744,16 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `blueprint`, `wiki`, `world` (attendus mis à jour : « Dégâts 11 », « Area 2 »), `research`, `lobby`,
   `stuff`, `crusher`, `skills` : 78/78 verts. `node --check` sur les modules modifiés.
 - **Vérification** : ⚠️ pas regardé dans le navigateur (textes seulement, aucun changement de mise en page attendu).
+
+### Mine instantanée, étape 1 : règles et contenu (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Quoi** : `GAME_DESIGN.md` §6 « Mine instantanée (MI) » ; `src/config.js` `INSTANT_MINE` (horaire, durée 300 s de
+  jeu, 50×50, composition, plumes, 20/mine, poids de l'IA de dispersion, rappels) ; objet `Plume d'ange` (ITEMS,
+  `RARITY` rare) ; textures `angel_feather` (objet) et `angel_feathers` (tas, transparent, dessiné par-dessus le
+  tunnel) dans `scripts/gen_textures.py`.
+- **Choix technique** : le tas de plumes n'est **pas** un bloc de `BLOCKS` (case vide + surcouche, comme échelles et
+  torches) : rien ne change pour la mine normale (ITEMS, wiki, mobs parcourent `BLOCKS`).
+- **Travail dans un worktree** `F:\idledollexminer-mi` : une autre discussion travaillait en même temps dans
+  `F:\idledollexminer` (branche `geoffrey/retours-21-10`, modifications non commitées).
+- **Tests** : `tests/instant-mine.test.js` (nouveau), `rarity` (plume ajoutée aux rares), `inventory`, `wiki` : 26/26.
+- **Vérification** : ✅ textures regardées agrandies. Rien en jeu pour l'instant.
+
