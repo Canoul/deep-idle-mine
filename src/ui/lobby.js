@@ -31,18 +31,25 @@ export function specLabel(tree){
   return t ? `${t.icon} ${t.label}` : 'Sans spécialisation';
 }
 
-/* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef */
+/* Ce que fait le bouton principal : seul ou chef = Lancer (si tous les autres membres sont prêts) ; membre = se dire
+   prêt / ne plus l'être (action:'ready', ready = la valeur à envoyer) */
 export function launchState({ account, party, offline, busy }){
   if(offline || !account) return { can:false, label:'▶ Lancer la session' };
   if(busy || party?.launching) return { can:false, label:'… Lancement' };
   const leader = !party || party.leader === account.id;
-  if(!leader) return { can:false, label:'En attente du chef…' };
+  if(!leader){
+    const me = party.members.find(m => m.account === account.id);
+    return me?.ready ? { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false }
+                     : { can:true, label:'✋ Je suis prêt', action:'ready', ready:true };
+  }
   if(party?.members.some(m => m.playing)) return { can:false, label:'⏳ Le groupe finit sa session…' };
+  const waiting = party?.members.filter(m => m.account !== party.leader && !m.ready) ?? [];
+  if(waiting.length) return { can:false, label:`⏳ Pas prêt : ${waiting.map(m => m.name).join(', ')}` };
   const n = party?.members.length ?? 1;
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+/* h : { onLaunch(opts), onPrefs(prefs), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), promote(id) } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false };
@@ -56,10 +63,12 @@ export function setupLobby(h){
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const tags = [s.me && 'Toi', s.leader && 'chef', s.playing && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      const ready = party && !s.leader && !s.playing ? (s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
+      const tags = [s.me && 'Toi', s.leader && 'chef', ready, s.playing && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
-             (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
+             (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
+                              `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
 
     const ls = launchState(st);
@@ -170,6 +179,8 @@ export function setupLobby(h){
   };
   $('inviteBox').onclick = e => { const c = e.target.closest('[data-copy]'); if(c) copy(c.dataset.copy, c); };
   $('lobbySlots').onclick = e => {
+    const p = e.target.closest('[data-promote]');
+    if(p){ if(confirm("Lui donner ta place de chef ? C'est lui qui lancera les sessions.")) act(() => h.party.promote(p.dataset.promote)); return; }
     const b = e.target.closest('[data-kick]'); if(!b) return;
     act(() => h.party.kick(b.dataset.kick));
   };
@@ -200,6 +211,8 @@ export function setupLobby(h){
 
   $('launchBtn').onclick = async () => {
     if(st.busy) return;
+    const ls = launchState(st);
+    if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
     try { await h.onLaunch(st.info?.dev ? devOptions() : {}); }
     finally { st.busy = false; render(); }

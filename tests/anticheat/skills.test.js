@@ -13,8 +13,9 @@ const valid = st => {
   if(trees.size > 1) return 'deux arbres';
   for(const [k, r] of Object.entries(st.ranks)){
     const n = NODES[k]; if(r > n.max) return 'rang > max';
-    const prev = SKILLS.trees.find(t => t.id === n.tree).nodes[n.index - 1];
-    if(prev && (st.ranks[prev.id] ?? 0) < prev.max) return 'étape sans la précédente';
+    /* étages : un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 soit au rang max (côte à côte possible) */
+    const prev = SKILLS.trees.find(t => t.id === n.tree).nodes.filter(p => p.row === n.row - 1);
+    if(r > 0 && prev.length && !prev.some(p => (st.ranks[p.id] ?? 0) >= p.max)) return 'étape sans la précédente';
   }
   return null;
 };

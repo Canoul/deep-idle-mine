@@ -833,3 +833,20 @@ Règles (voir CLAUDE.md) :
   areas 4,6, profondeur 237,6, 0 blocage (avant correction du détecteur : 2 faux blocages). Ancien blocage seed 16
   mixed « Retour (treuil) » : disparu.
 - **Points fragiles** : ⚠️ avec un arbre par mineur, l'area 5 (la dernière) est débloquée dans 3 sessions sur 5.
+
+### Lobby : « Prêt » et passage de chef (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : `server/party/service.js` : `m.ready` (enregistré, relu au démarrage) ; `ready(me, bool)` (valeur
+  strictement booléenne, sinon `bad_request` ; refusé en session ou pendant un lancement) ; `promote(me, id)` (chef
+  seulement, membre du groupe, pas soi ; nouveau et ancien chef « pas prêt ») ; `launch` en groupe : `not_ready` (409,
+  noms des membres) si un non-chef n'est pas prêt ; après lancement et à chaque `join`, tout le monde « pas prêt ».
+  Routes `POST /api/party/ready` `{ ready }` et `/api/party/promote` `{ id }` ; `partyApi.ready/promote`.
+  `src/ui/lobby.js` : `launchState` → membre : bouton « ✋ Je suis prêt » / « ✔ Prêt (annuler) » (`action:'ready'`) ;
+  chef : « ⏳ Pas prêt : … » ; places « ✔ prêt / pas prêt » ; bouton ★ (Nommer chef, confirmation) à côté du ×.
+- **Tests** : party 29/29 (+4 : prêt avant de lancer, remis à zéro au lancement et à l'arrivée, valeurs invalides,
+  passage de chef, redémarrage ; tests existants : `ready` avant chaque lancement en groupe ; « membre encore en
+  session » → maintenant `not_ready`, il ne peut pas se dire prêt depuis sa session), lobby 5/5.
+  Anti-triche 58/58 : `anticheat/party` (prêt avant de lancer) ; `anticheat/skills` : son contrôle « étape sans la
+  précédente » ne connaissait pas les étages (Échelle de 2 / Treuil côte à côte) → échouait déjà avant cette branche ;
+  aligné sur la règle (au moins un nœud de l'étage d'avant au max).
+- **Vérification** : ⚠️ pas regardé dans le navigateur (deux comptes) : bouton, libellés, ★ à vérifier en vrai.
+- **Points fragiles** : l'état « prêt » d'un membre ne se voit chez le chef qu'au prochain rafraîchissement du lobby.

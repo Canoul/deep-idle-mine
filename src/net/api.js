@@ -72,4 +72,6 @@ export const partyApi = {
   decline: code => request('POST', '/api/party/decline', { code }),
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
+  ready:   ready => request('POST', '/api/party/ready', { ready }),
+  promote: id   => request('POST', '/api/party/promote', { id }),
 };

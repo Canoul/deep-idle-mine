@@ -178,6 +178,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .pslot{position:relative}
 .pslot .x{position:absolute;top:4px;right:4px;padding:0 6px;line-height:18px;font-size:14px;background:transparent;border-color:transparent;color:var(--mut)}
 .pslot .x:hover{color:var(--bad);border-color:var(--bad)}
+.pslot .x.promote{right:28px}
+.pslot .x.promote:hover{color:var(--acc);border-color:var(--acc)}
 .pslot.away{opacity:.6}
 .pslot.invited{color:var(--txt)}
 .invitesCard{border-color:var(--acc)}

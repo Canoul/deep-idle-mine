@@ -35,6 +35,9 @@ Modèle d'entrée :
     un trou sans échelle près de la surface et creusait un nouveau puits au lieu de prendre le treuil. Corrigé : quand le
     treuil existe, il prend directement la descente existante. Le treuil reste plus lent qu'une échelle déjà posée
     (règle actuelle) : un mineur qui a ses échelles jusqu'à son chantier peut encore les préférer.
+  - Lobby : bouton « ✋ Je suis prêt » pour les membres ; le chef ne lance que si tout le monde est prêt, et tout le
+    monde repasse « pas prêt » à chaque lancement (pas de relance sans l'accord des autres) ; le chef peut donner sa
+    place (★).
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
 - **À suivre** : ⚠️ avec l'IA qui descend mieux, 3 mineurs de base minent ≈ 150 / 500 minerais de l'area 4 (il en faut

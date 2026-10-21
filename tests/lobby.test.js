@@ -18,12 +18,14 @@ test('en groupe : membres, puis invités en attente, puis places libres (3 place
   assert.deepEqual(lobbySlots(me, party([M('AAAA1111', 'Zoe')])).map(s => s.kind), ['member', 'free', 'free']);
 });
 
-test('Lancer : seul ou chef → oui (« Lancer à 2 ») ; membre → attend le chef ; hors ligne → non', () => {
+test('Lancer : seul ou chef → oui (« Lancer à 2 ») si les autres sont prêts ; membre → se dire prêt ; hors ligne → non', () => {
   assert.deepEqual(launchState({ account:me, party:null }), { can:true, label:'▶ Lancer la session' });
-  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
+  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true })]);
   assert.deepEqual(launchState({ account:me, party:p }), { can:true, label:'▶ Lancer à 2' });
-  assert.equal(launchState({ account:{ id:'BBBB2222' }, party:p }).label, 'En attente du chef…');
-  assert.equal(launchState({ account:{ id:'BBBB2222' }, party:p }).can, false);
+  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false });
+  const q = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max'), M('CCCC3333', 'Lou', { ready:true })]);
+  assert.deepEqual(launchState({ account:me, party:q }), { can:false, label:'⏳ Pas prêt : Max' }, 'le chef attend Max');
+  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:q }), { can:true, label:'✋ Je suis prêt', action:'ready', ready:true });
   assert.equal(launchState({ account:me, party:{ ...p, launching:true } }).can, false);
   assert.equal(launchState({ account:me, party:null, offline:true }).can, false);
   assert.equal(launchState({ account:me, party:null, busy:true }).label, '… Lancement');
@@ -31,7 +33,7 @@ test('Lancer : seul ou chef → oui (« Lancer à 2 ») ; membre → attend le c
 
 test('lancer : un membre encore dans la session précédente → le chef attend la fin', () => {
   const account = { id:'AAAA1111' };
-  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', playing:true }] };
+  const party = { leader:'AAAA1111', members:[{ account:'AAAA1111', me:true }, { account:'BBBB2222', playing:true, ready:true }] };
   assert.deepEqual(launchState({ account, party }), { can:false, label:'⏳ Le groupe finit sa session…' });
   party.members[1].playing = false;
   assert.equal(launchState({ account, party }).can, true);
