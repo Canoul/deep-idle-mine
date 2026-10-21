@@ -86,7 +86,7 @@ async function equipFromInventory(slot, uid){
     const item = ui.inv.slots.find(s => s?.uid === uid)?.item ?? 'La pièce';
     const r = await gameApi.stuff({ action:'equip', slot, uid, opId: newOpId() });
     setInventory(r.inventory); stuff.set(r.stuff);
-    $('invInfo').innerHTML = `<span class="okmsg">✔ ${item.replace(/[&<>]/g, '')} équipé (onglet Stuff pour voir les stats du mineur).</span>`;
+    $('invInfo').innerHTML = `<span class="okmsg">✔ ${item.replace(/[&<>]/g, '')} équipé.</span>`;
   } catch(e){ lootError(e.message); }
 }
 

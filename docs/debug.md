@@ -725,6 +725,26 @@ Règles (voir CLAUDE.md) :
 - **Note** : `deploy/ovh/update.sh` redémarre le serveur à chaque changement de `main`, même doc seule. D'après
   l'équipe, ça ne casse pas les parties en cours : laissé tel quel. ⚠️ Pas vérifié par Claude.
 
+### Ménage des textes affichés au joueur (Jules) — branche `jules/nettoyage-textes`
+- **Quoi** : textes de développeur ou redondants retirés de l'interface. Aucune règle du jeu ne change.
+  - `src/meta/stuff.js` `statLines` et `src/wiki/data.js` `statsOf` : une stat `set` (épées) s'affiche « Dégâts 8 »,
+    sans « (au lieu de 5) ».
+  - `src/ui/hud.js` : luminosité retirée de la ligne Torches ; taille de l'area (« 50×50 = 2500 blocs ») retirée ;
+    `objectiveHtml` sur une ligne (« 🔒 Area N+1 : minerais de l'area N » + compteur + barre), plus de « X % » ni de
+    ligne « s'ouvre à » ; bilan : plus de « (reste tiré au hasard ; Treasure… : un pour chacun) » ni de « Résultat
+    vérifié par le serveur ». Imports inutiles retirés (`W`, `AREA_H`, `CFG`, `SHARE`, `curLum`).
+  - `src/ui/lobby.js` : infos de session raccourcies (plus de « vitesse ×2 », « Seul, tu gardes tout le coffre ») ;
+    serveur injoignable → « Serveur injoignable. Réessaie dans un instant. » (avant : « lance npm start »).
+  - `index.html` : « Bientôt : fuir les mobs… aider un allié » retiré (les options existent) ; légende de Stuff
+    raccourcie ; « Les valeurs sont provisoires » retiré de Skills ; sous-titre de l'Historique raccourci.
+  - `src/ui/skills.js`, `src/main.js` (équiper), `src/ui/research.js` (message après recherche, l'aide reste sous la
+    table), `src/ui/crusher.js` (aucune trouvaille) : phrases raccourcies.
+- **Pas touché** : messages du journal de session (`src/sim/`, pour ne pas toucher à la simulation), wiki (hors
+  effets des épées), seed dans le bilan et l'Historique (utile pour signaler un bug).
+- **Tests** : `blueprint`, `wiki`, `world` (attendus mis à jour : « Dégâts 11 », « Area 2 »), `research`, `lobby`,
+  `stuff`, `crusher`, `skills` : 78/78 verts. `node --check` sur les modules modifiés.
+- **Vérification** : ⚠️ pas regardé dans le navigateur (textes seulement, aucun changement de mise en page attendu).
+
 ### Équilibrage du 21/10 (Geoffrey) — branche `geoffrey/retours-21-10`
 - **Quoi** : concasseur (terre gemmes 0,2 % / T1 0,1 % ; pierre 0,3 % / T2 0,1 % ; pierre dure 0,4 % / T2 0,15 %) ;
   pioches ×2 (pierre +0,2, fer +0,4) ; Ceinture en peau de gobelin `torches:+10` (au lieu de `discoverMax:+1`) ;

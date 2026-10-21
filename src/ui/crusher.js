@@ -42,7 +42,7 @@ export function setupCrusher({ onOp, onSync }){
   }
 
   function findsHtml(){
-    if(!st.finds.length) return '<p class="mut small">Rien trouvé pour l\'instant. La plupart des concassages ne donnent rien : les trouvailles sont rares.</p>';
+    if(!st.finds.length) return '<p class="mut small">Rien trouvé pour l\'instant.</p>';
     return '<ul class="cfinds">' + st.finds.slice().reverse().map(f => {
       const d = new Date(f.at), at = `${d.toLocaleDateString('fr-FR')} ${d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}`;
       return `<li><span class="mut small">${at}</span> ${BATCH} ${esc(f.from)} → ${Object.entries(f.loot).map(([i, q]) => `${icon(i)}${rname(i, q > 1 ? `${i} ×${q}` : i, 'b')}`).join(', ')}</li>`;

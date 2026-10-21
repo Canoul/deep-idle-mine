@@ -71,11 +71,10 @@ export function setupLobby(h){
 
     const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
-      : (n > 1 ? `Session commune à <b>${n}</b> : même mine pour tous, coffre partagé à parts égales entre les présents à la fin. ` : '')+
+      : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
-             : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b> en temps réel (vitesse ×${info?.speed ?? GAME.speed}). `+
-               'Elle continue même si tu fermes la page.'+(n > 1 ? '' : ' Seul, tu gardes tout le coffre.'));
-    if(offline) error('Serveur de jeu injoignable : lance le jeu avec « npm start » (ou « npm run dev »).');
+             : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
+    if(offline) error('Serveur injoignable. Réessaie dans un instant.');
     $('devCard').hidden = !dev || (party && !lead);        // seuls les réglages de celui qui lance comptent
     renderInvite();
     renderInvites();
