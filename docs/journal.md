@@ -31,6 +31,32 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Geoffrey — Onglet Amélioration : identification R1 à R7 et amélioration +1 à +3
+- **Pour le joueur** : nouvel onglet 💎 **Amélioration**.
+  - **Identification** : on pose une pièce de stuff et on sacrifie un deuxième exemplaire du même objet. La pièce
+    reçoit une qualité, de R1 « Utile » (30 %) à R7 « Légendaire » (1 %), et 1 à 4 lignes de stats en plus. Son nom
+    prend la couleur de la qualité (« Excellent : Pioche en pierre »), la case garde la couleur de rareté du type.
+  - **Amélioration** : +1, +2, +3 (+3 %, +5 %, +7 % sur toutes les stats de la pièce), avec des Plumes d'ange et des
+    Pierres de pleine lune ; ça peut rater (95 % puis 90 %), on ne perd alors que les matériaux.
+  - Nouvelles stats possibles : vitesse de minage en %, dégâts en %, critique (coup double), coup unique (bloc cassé
+    d'un coup), perçage (casse aussi le bloc derrière), butin des mobs.
+- **Décisions** : la valeur d'une ligne se calcule sur la valeur de l'objet lui-même (une pièce de haut niveau donne
+  de plus gros bonus) ; la fourchette vaut pour chaque ligne ; l'identification est définitive ; toutes les stats qui
+  ont une valeur en x peuvent tomber, sur n'importe quelle pièce ; +1 à +3 seulement pour l'instant ; critique :
+  10 % = la valeur d'une pioche en pierre. Pas d'ID dérivé « 113:4 » : chaque pièce garde sa qualité, ses lignes et
+  son niveau sur elle-même (deux R4 n'ont pas les mêmes stats).
+- **À suivre** :
+  - décider d'où viennent les Plumes d'ange et les Pierres de pleine lune (aucune source en jeu pour l'instant) ;
+  - les paliers +4 à +15 ;
+  - la chance d'avoir « +1 Découverte » en R6/R7 (25 % par ligne, provisoire) ;
+  - le prix du butin des mobs (provisoire) ;
+  - regarder l'onglet dans le navigateur (pas encore vérifié à l'écran).
+- **Tester** : `node scripts/give-admin.js --name <pseudo>` donne une pioche en pierre de chaque qualité et
+  50 matériaux. Serveur arrêté en local, ou redémarré après en ligne.
+- **État** : 🧪 sur la branche `geoffrey/amelioration` (pas en ligne)
+
+---
+
 ## 21/10/2026 — Jules — Organisation du dépôt et méthode de travail
 - **Pour le joueur** : rien ne change.
 - **Décisions** :

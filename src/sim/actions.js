@@ -16,9 +16,10 @@ function oreSkills(G,m){
   if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen);   // +1 d'oxygène par minerai
   if(m.skill.ore_rush) m.rushUntil=G.t+SKILLS.rushTime;
 }
-/* skill Barbare loot : butin d'un mob +loot (×), la part décimale tirée au hasard (G.rng : hasard « live ») */
+/* skill Barbare loot et stat looting (butin des mobs, en %) : butin d'un mob ×(1 + loot + looting/100), la part
+   décimale tirée au hasard (G.rng : hasard « live ») */
 function lootOf(G,m,n){
-  const b=m.skill.loot; if(!b) return n;
+  const b=(m.skill.loot||0)+(m.carac.looting||0)/100; if(!b) return n;
   const v=n*(1+b), base=Math.floor(v);
   return base + (G.rng() < v-base ? 1 : 0);
 }
@@ -38,10 +39,37 @@ function fortuneExtra(G,m){
   return sure + (G.fortuneRng()*100 < f-sure*100 ? 1 : 0);
 }
 
+/* stats d'amélioration en % (critique, coup unique, perçage) : vrai avec cette chance ; G.gearRng n'est tiré que si
+   la stat est au-dessus de 0 (sans elles, la partie est identique) */
+const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
+/* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
+export const hitDamage = (G,m) => m.carac.damage*(1+(m.carac.damagePct||0)/100)*(gearChance(G,m.carac.crit||0) ? 2 : 1);
+/* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
+export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
+
+/* perçage : chance de casser aussi le bloc juste derrière (dans la direction du coup), s'il se casse (pas une barrière,
+   pas un mur de donjon, pas un mimic) ; il est miné comme les autres (butin, fortune, déblocage), sans perçage en chaîne */
+function pierce(G,m,x,y){
+  const dx=Math.sign(x-m.x), dy=Math.sign(y-m.y), bx=x+dx, by=y+dy;
+  if((!dx && !dy) || bx<0 || bx>=W || by<1 || by>=G.tiles.length) return;
+  const t=G.tiles[by][bx]; if(!t || BLOCKS[t].unbreakable) return;
+  if(G.mobs.some(o=>o.type==='mimic'&&o.hp>0&&o.x===bx&&o.y===by)) return;
+  if(!gearChance(G,m.carac.piercing||0)) return;
+  breakBlock(G,m,bx,by);
+  m.stats.pierced=(m.stats.pierced||0)+1;
+}
+
 export function mineBlock(G,m,x,y){
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
   if(mim){ revealMimic(G,mim,'⚠ Un mimic se cachait dans la roche !'); return; }   // un mimic se combat, il ne se mine pas
-  const t=G.tiles[y][x]; if(!t) return;
+  if(!G.tiles[y][x]) return;
+  breakBlock(G,m,x,y);
+  pierce(G,m,x,y);
+}
+
+/* un bloc cassé par le mineur : il disparaît, son butin va dans le sac (shiny, fortune), minerai compté pour l'area */
+function breakBlock(G,m,x,y){
+  const t=G.tiles[y][x];
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   const shiny=shinyOf(G,t);
   let got=null;
@@ -123,7 +151,7 @@ export function finishAction(G,m,a){
     case 'attack': {
       const o=a.data.mob; if(o.hp>0){
         if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-        o.hp-=m.carac.damage; m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o);
+        o.hp-=hitDamage(G,m); m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o);
       } break; }
   }
 }
@@ -157,7 +185,7 @@ export function stepDir(G,m,dx,dy,opt){
   }
   if(!isAir(G,nx,ny)){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
-    startAction(m,'mine', mineT(G,m,t), {x:nx,y:ny}); return true;
+    startAction(m,'mine', mineDuration(G,m,t), {x:nx,y:ny}); return true;
   }
   if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', buildT(m,CFG.ladderTime), {}); return true; }
   const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau

@@ -27,6 +27,7 @@ import { setupSkills } from './ui/skills.js';
 import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
+import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, ApiError } from './net/api.js';
@@ -91,6 +92,11 @@ async function equipFromInventory(slot, uid){
 }
 
 /* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
+/* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce et l'inventaire à jour */
+const upgradeUI = setupUpgrade({
+  onOp: async op => { const r = await gameApi.upgrade({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
+});
+
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
 const craft = setupCraft({
   onCraft: async item => { setInventory((await gameApi.craft(item, newOpId())).inventory); },
@@ -310,7 +316,7 @@ function showResult(st){
 /* inventaire envoyé par le serveur ; bag : objets qui viennent d'arriver (mis en évidence) */
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
-  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv);
+  furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);

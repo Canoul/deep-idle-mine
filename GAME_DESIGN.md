@@ -164,6 +164,17 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 | Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
 
+**Stats d'amélioration** *(21/10/2026, onglet Amélioration ; 0 de base, elles ne viennent que des lignes tirées à l'identification)* :
+
+| Stat | Rôle |
+|---|---|
+| Vitesse de minage % | Bonus en % : **vitesse de minage = (base + bonus fixes) × (1 + bonus en %)**. Différente de la vitesse de minage « fixe » (+0,1 de la pioche) |
+| Dégâts % | Même calcul pour les dégâts : (base ou épée + bonus fixes) × (1 + bonus en %) |
+| Critique | Chance qu'un coup contre un mob fasse **le double** de dégâts |
+| Coup unique | Chance de casser un bloc **instantanément** |
+| Perçage | Chance de casser aussi **le bloc juste derrière** celui miné (dans la direction du coup) ; il rapporte son butin comme un bloc miné (fortune, shiny, déblocage), jamais une barrière, un mur de donjon ni un mimic, jamais en chaîne |
+| Butin des mobs | Butin des mobs en plus, en % : s'ajoute au skill Pillage (même calcul) |
+
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
 - **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
@@ -228,6 +239,19 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Rayon des torches | 5 | 27 x | – |
 | Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
 | Vision, boussole, passerelles, torches | – | ≈ 0 (effet indirect ou trop faible) | – |
+
+**Stats d'amélioration** *(21/10/2026)* :
+
+| Stat | Prix d'un point | D'où vient le prix |
+|---|---|---|
+| Vitesse de minage % | 13 x par % | 1 % de la vitesse de base (1 300 / 100) ; mesuré : ≈ 11 x à +50 % (rendements décroissants) |
+| Dégâts % | 2 x par % | 1 % des 5 dégâts de base (40 × 5 / 100) |
+| Critique | 13 x par % | décision du créateur : 130 x (une pioche en pierre) = 10 % |
+| Coup unique | 13 x par % | mesuré (24 sessions solo) : ≈ 17 x par % à +50 %, autant que la vitesse de minage % à petite dose |
+| Perçage | 7 x par % | mesuré : ≈ 6,8 x par % à +50 % (les blocs percés sont surtout de la pierre, qui remplit le sac) |
+| Butin des mobs | 2 x par % *(provisoire)* | mesuré : +50 % donne +61 % de butin de mobs, mais rien sur les minerais ; le butin des mobs n'a pas encore de valeur en x |
+
+*Mesures bruitées : d'une seed à l'autre, la même partie diverge de ± 25 % ; d'où un gros bonus (+50 %) et 24 sessions.*
 
 *Fortune : valeur calculée sans le coût en pods des doublons (un minerai en plus pèse dans le sac).* *Vitesse d'attaque : le temps de combat n'est que de ≈ 196 s par session, donc le gain réel plafonne bien en dessous du prix linéaire.* Les T_stat se remesurent avec `node scripts/stat-values.js` (≈ 1 min).
 
@@ -356,11 +380,12 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Concasseur, Recherche, Skills, Historique, Social**.
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social**.
 - **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
 - **Concasseur** : concasser les blocs pour un peu de butin (voir ci-dessous).
+- **Amélioration** : identifier et améliorer les pièces de stuff (voir ci-dessous).
 - **Recherche** (table de recherche) : dépenser les Blueprint parts, recycler des blueprints (voir ci-dessous).
 - **Craft** : fabriquer des objets (voir ci-dessous).
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
@@ -438,6 +463,39 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
+
+### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
+Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus tard). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
+
+**Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous), puis des **lignes de stats** en plus de ses stats de base. **Définitif** : une pièce identifiée ne se ré-identifie pas.
+
+| Qualité | Titre | Couleur du nom | Chance | Chaque ligne vaut | Lignes |
+|---|---|---|---|---|---|
+| R1 | Utile | #FFFFFF | 30 % | 10 à 30 % de la valeur de l'objet | 1 |
+| R2 | Bon | #00FF00 | 24 % | 20 à 40 % | 1 |
+| R3 | Haute qualité | #0080FF | 24 % | 30 à 60 % | 1 |
+| R4 | Excellent | #FF00FF | 14 % | 25 à 40 % | 2 |
+| R5 | Antique | #FFA500 | 4 % | 35 à 50 % | 2 |
+| R6 | Mystérieux | #FF0000 | 3 % | 30 à 50 % | 3 |
+| R7 | Légendaire | #FFFF00 | 1 % | 35 à 55 % | 4 |
+
+- Une ligne garde **le % tiré**, pas sa valeur : si on rééquilibre un prix ou un objet, les pièces déjà identifiées suivent.
+- **Valeur de l'objet** = ses stats en unité x (catalogue de prix §3) : pioche en pierre 0,1 × 1 300 = **130 x**, pioche en fer 260 x, épée en fer (11 − 5) × 40 = 240 x.
+- **Une ligne** : une stat tirée au hasard (deux lignes peuvent tomber sur la même) parmi celles qui ont une valeur en x : vitesse de minage (fixe et %), dégâts (fixes et %), vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène. Valeur = valeur de l'objet × % tiré ÷ prix de la stat, arrondie (au moins un pas). Ex. R4 sur pioche en pierre, ligne à 32 % : 41,6 x = +0,032 de vitesse de minage, **ou** +1,2 % de fortune, **ou** +7 pods.
+- **Jamais de Découverte**, sauf en **R6 et R7** : chaque ligne a 25 % de chance *(provisoire)* d'être « +1 Découverte », une au plus par objet.
+- **Nom** : « Excellent : Pioche en pierre » dans la couleur de la qualité, qui passe avant la couleur de rareté du type. **Le contour de la case garde la rareté du type** (commun, inhabituel…).
+- Une R7 (4 lignes de 35 à 55 %) ajoute jusqu'à **+220 % de la valeur de l'objet** : une pioche en pierre R7 peut valoir plus qu'une pioche en fer brute. Assumé (1 % de chance), à surveiller.
+
+**Amélioration** : +1 à **+3** pour l'instant (la suite viendra). Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
+
+| Niveau | Stats | Réussite | Coût |
+|---|---|---|---|
+| +1 | +3 % | 100 % | 3 Plumes d'ange, 3 Pierres de pleine lune |
+| +2 | +5 % | 95 % | 5 + 5 |
+| +3 | +7 % | 90 % | 7 + 7 |
+
+Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
+- **Plume d'ange** et **Pierre de pleine lune** : nouveaux matériaux, **sans source en jeu pour l'instant** (à décider). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
 
 ### Four (onglet Four)
 - **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.

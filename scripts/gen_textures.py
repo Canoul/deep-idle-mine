@@ -492,6 +492,27 @@ def main():
     rect(cloth, 4, 6, 3, 1, hexc('#6a3d92'))
     tex['dark_cloth'] = cloth
 
+    # plume d'ange (matériau de l'amélioration) : plume blanche en diagonale, tige dorée, reflet bleuté
+    feather = blank()
+    f_white, f_blue, f_gold = hexc('#fbfbff'), hexc('#c9d6ee'), hexc('#e8c35a')
+    for i in range(10):                                            # barbes de part et d'autre de la tige
+        x, y = 3 + i, 12 - i
+        rect(feather, x - 2, y - 1, 2, 2, f_white); rect(feather, x + 1, y, 1, 2, f_blue)
+    for i in range(12):
+        rect(feather, 2 + i, 13 - i, 1, 1, f_gold)                 # tige
+    rect(feather, 12, 1, 2, 2, f_white)
+    tex['angel_feather'] = feather
+
+    # pierre de pleine lune (matériau de l'amélioration) : galet gris-bleu poli, disque de lune pâle au centre
+    mst = blank()
+    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (5, 6)], start=4):
+        rect(mst, x0, yy, w, 1, hexc('#5d6b8a'))
+    rect(mst, 3, 5, 4, 2, hexc('#8593b3'))                          # reflet
+    rect(mst, 7, 6, 4, 4, hexc('#e9efff')); rect(mst, 8, 5, 2, 6, hexc('#e9efff')); rect(mst, 6, 7, 6, 2, hexc('#e9efff'))
+    rect(mst, 9, 7, 1, 1, hexc('#b8c4e0'))                          # cratère
+    rect(mst, 3, 12, 10, 1, hexc('#3c4660'))                        # ombre
+    tex['moon_stone'] = mst
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))
