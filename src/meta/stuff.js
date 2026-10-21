@@ -45,7 +45,7 @@ export function statsOf(items){
   }
   return Object.fromEntries(Object.keys(STATS).map(k => [k, { base:base[k], bonus:r2(bonus[k] || 0), total:r2(base[k] + (bonus[k] || 0)) }]));
 }
-/* caractéristiques en session (src/sim/miner.js, m.carac) : { stat: total } */
+/* caractéristiques en session (src/sim/mineur.js, m.carac) : { stat: total } */
 export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(items)).map(([k, s]) => [k, s.total]));
 /* stats du mineur avec le stuff porté et les skills, pour l'onglet Stuff : [{ key, label, base, bonus, mult, skill, total }]
    bonus = apport du stuff (ajouté), mult = multiplicateur des skills (1 = aucun), total = (base + bonus) × mult : ce qu'il a

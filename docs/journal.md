@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
+- **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.
+  C'est corrigé. La cause : la protection « anti-minage de cryptomonnaie » d'Opera bloque tout fichier nommé
+  `miner.js` (le nom typique des scripts qui minent du Bitcoin en cachette), et notre fichier du mineur s'appelait
+  justement comme ça. Il s'appelle maintenant `mineur.js`.
+- **Décisions** : un test vérifie désormais qu'aucun fichier du jeu ne porte un nom visé par cette liste.
+- **À suivre** : faire confirmer au joueur Opera GX que tout marche (Ctrl+F5).
+- **État** : ✅ en ligne le 21/10
+
+---
+
 ## 21/10/2026 — Geoffrey — Mine instantanée (MI)
 - **Pour le joueur** : rien encore en jeu. Les règles de la **mine instantanée** sont écrites (GAME_DESIGN §6) :
   toutes les 2 h pile (heure de Paris), tous les inscrits dans une mine 50×50 remplie de minerais, chacun pour soi,

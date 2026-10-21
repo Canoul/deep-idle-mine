@@ -5,7 +5,7 @@ import { STATS } from '../src/config.js';
 import { statsOf, equippedStats } from '../src/meta/stuff.js';
 import { buildSession, applyOverrides } from '../src/shared/game.js';
 import { tick } from '../src/sim/session.js';
-import { mineT, baseMineT } from '../src/sim/miner.js';
+import { mineT, baseMineT } from '../src/sim/mineur.js';
 import { createViewer, emptyView, applyView } from '../src/shared/view.js';
 
 const rec = looks => ({ id:'S', seed:4242, players:[{ account:'A', name:'Ana' }, { account:'B', name:'Bob' }], looks });

@@ -3,7 +3,7 @@
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
-import { createMiner, curLum } from './miner.js';
+import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
 import { updateMobs, tackler, channeler } from './mobs.js';
