@@ -977,3 +977,39 @@ Règles (voir CLAUDE.md) :
   mineurs : ✅ 0 bloquée, areas 3,4, profondeur 183, 26 allers-retours (534 s : lente, sans lien avec ce renommage).
 - **Vérification** : ✅ Chromium headless, serveur local, toute requête `/miner.js` refusée comme Opera : 11 onglets,
   pas de cadre, `mineur.js` chargé. ⚠️ À reconfirmer par le joueur Opera GX après la mise en ligne.
+
+### Direction artistique « Forge noire » en pixel art (Jules) — branche `jules/da-pixel-forge`
+- **Quoi** : interface réécrite d'après la maquette `design/poc/4-pixel-forge.html` (branche `jules/poc-design`).
+  Aucune règle du jeu, simulation ou route serveur ne change ; les identifiants lus par `src/ui/*.js` sont gardés.
+- **Fichiers** :
+  - `scripts/gen_ui.py` → `textures/ui/` (mur, panneau 18×18 tranche 6, bouton 15×15 tranche 3, case 18×18
+    tranche 3, barre 9×9, plaque de titre) ; `scripts/build_pxicons.py` → `src/ui/pxicons.js` (29 icônes du Kenney
+    1-Bit Pack, CC0, planche dans `scripts/assets/`) ; commande `npm run textures:ui`.
+  - `src/ui/style.css` réécrit : unité `--u` (taille d'un pixel d'art : 2 px, 3 px à partir de 1800×1000), tout en
+    multiples de `--u`, cadres en `border-image`. Pas de `zoom` CSS : il décalerait la bulle d'info (`tooltip.js`)
+    et le glisser de la caméra (coordonnées écran).
+  - `index.html` : barre du haut (`.topbar` : compte, nom, `.navSession`, wiki) ; `#nav` devient la barre d'action
+    en bas avec les orbes `#orbL` / `#orbR` ; lobby en deux colonnes (`.lobbyCols`) ; session en grille
+    `.runGrid` (`.runL`, `#cvWrap`, `#depthRail`, `.runR`), `#run` et `#miRun` en `position:fixed` sous la barre ;
+    émojis des titres → `<i data-pxi>` (remplis par `fillIcons` de `nav.js`).
+  - `src/ui/nav.js` : icônes pixel (`TABS[].icon` = nom d'icône), touches `TAB_KEYS`, `fillIcons`.
+  - Nouveaux : `src/ui/orbs.js` (orbes dessinés pixel par pixel), `src/ui/fit.js` (taille de la mine : la plus grande
+    dans sa boîte, ×1 / ×2 exact si on perd ≤ 20 %), `src/render/portrait.js` (sprite du mineur + stuff hors mine).
+  - `src/main.js` : orbes (O₂ / pods du mineur suivi pendant une session, sinon temps / XP), `fitCanvas` à chaque
+    rafraîchissement du HUD, portrait de la barre du haut ; `src/ui/hud.js` : jauge de profondeur (`updateRail`,
+    repères recréés seulement si l'équipe change) ; `stuff.js` : mineur au centre (`.stuffHero`, dernier enfant de
+    `#stuffGrid` : le CSS place les cases 1-5 à gauche, 6-10 à droite) ; `skills.js` : icônes pixel ;
+    `lobby.js` : sprites de l'équipe (toi avec ton stuff, option `look`), l'icône du bouton Lancer remplace le « ▶ »
+    du texte ; `account.js` : portrait dans `.av`.
+- **Tests** : nav, lobby, stuff, skills, blocked-names, boot-check, instant-mine, skins, research, blueprint,
+  treasure, loot, tier2, account-http : 134/134 ✅. Les règles exigées par `nav.test.js` (`#end{position:absolute`,
+  `.view[data-view="session"]{position:relative`) sont gardées.
+- **Vérification** : ✅ partie complète en local (`npm run dev`, invité, 2 mineurs de test, ×300 jusqu'au bilan),
+  captures des 11 onglets à 1440×900, lobby / session / stuff / inventaire à 1920×1080, 1280×720 et 390×844 sans
+  défilement horizontal, 0 erreur console. Mine à ×1 exact à 1440×900.
+  ⚠️ Pas vérifié : mine instantanée en cours (`#miRun`), fenêtres du four / concasseur / stuff avec de vrais objets,
+  Safari / Firefox, le compte connecté (pseudo + mot de passe), un groupe à plusieurs vrais joueurs.
+- **Points fragiles** : les boutons « conteneurs » (`.stuffSlot`, `.fopt`, cases de la barre d'action, `.navAccount`)
+  annulent le `border-image` des boutons ; un nouveau bouton conteneur devra faire pareil. Polices Jersey chargées
+  depuis Google Fonts (sans internet : police système). Le wiki garde son ancien style (`src/wiki/wiki.css`).
+

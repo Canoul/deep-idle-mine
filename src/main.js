@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer } from './render/instant.js';
@@ -22,6 +22,10 @@ import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { tickAt } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer } from './render/canvas.js';
+import { followedMiner } from './render/camera.js';
+import { drawPortrait, lookOf } from './render/portrait.js';
+import { setupOrbs } from './ui/orbs.js';
+import { fitCanvas } from './ui/fit.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
@@ -156,6 +160,22 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='historique') historyTab?.refresh();
 });
 
+/* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
+const orbs = setupOrbs($('orbL'), $('orbR'));
+function updateOrbs(shown, mi){
+  const m = shown && !mi && !shown.over ? followedMiner(shown.miners, ui.follow) : null;
+  if(m){
+    const oxMax = m.carac?.oxygenMax ?? STATS.oxygenMax, pods = m.carac?.pods ?? STATS.pods;
+    orbs.set(0, m.ox / oxMax * 100, 'o2', `${Math.round(m.ox)}/${oxMax}`, 'Oxygène');
+    orbs.set(1, m.load / pods * 100, m.load >= pods * 0.9 ? 'full' : 'pods', `${Math.round(m.load)}/${pods}`, 'Pods');
+    return;
+  }
+  const len = mi ? INSTANT_MINE.duration : SESSION_LEN;
+  orbs.set(0, shown ? shown.t / len * 100 : 0, shown ? 'time' : 'off', shown ? fmt(shown.t) : '—', 'Session');
+  const p = progress, pct = p?.need ? p.into / p.need * 100 : 100;
+  orbs.set(1, p ? pct : 0, p ? 'xp' : 'off', p ? `Niv. ${p.level}` : '—', p?.need ? `${Math.floor(pct)} % XP` : 'XP');
+}
+
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
   onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); },
@@ -168,6 +188,7 @@ const accountUI = createAccountUI($('account'), acct, {
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
   party: partyApi,
+  look: () => lookOf(stuff.worn()),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
@@ -415,6 +436,10 @@ function frame(now){
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateNavSession(shown, waiting, mi ? INSTANT_MINE.duration : SESSION_LEN);
+    updateOrbs(shown, mi);
+    if(ui.tab==='session') mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitCanvas($('cv'), $('cvWrap'));   // la mine se cale sur la place libre
+    const face = $('navAccount').querySelector('canvas');
+    if(face) drawPortrait(face, lookOf(stuff.worn()));                  // portrait : le mineur avec son stuff
     navSession.classList.toggle('live', !!rec);
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`

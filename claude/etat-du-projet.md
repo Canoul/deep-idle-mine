@@ -80,6 +80,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
+- **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art, sur la branche `jules/da-pixel-forge`
+  (pas encore en ligne) : barre d'action en bas avec orbes, session en 3 colonnes avec jauge de profondeur, cadres
+  et icônes pixel (`textures/ui/`, `src/ui/pxicons.js`). Maquettes de départ : branche `jules/poc-design`.
 - Branche `origin/social` (onglet Social, liste d'amis) : en attente, hors périmètre pour l'instant.
 - Fondations : pas encore.
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.

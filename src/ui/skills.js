@@ -3,7 +3,13 @@
    un rang au serveur (onOp), qui vérifie points, étape précédente au max et arbre choisi. Reset : gratuit, hors session.
    Ne modifie rien lui-même : affiche ce que renvoie le serveur. */
 import { SKILLS } from '../config.js';
+import { pxi } from './pxicons.js';
 import { blockedReason, rankOf, nodeText, parentsOf } from '../meta/skills.js';
+
+/* icônes pixel (src/ui/pxicons.js) ; sans correspondance, l'émoji de la config */
+const TREE_PX = { mineur:'pickaxe', logisticien:'ladder', barbare:'sword' };
+const NODE_PX = { mine_speed:'pickaxe', ore_oxygen:'bubbles', ore_rush:'feather', build_time:'hammer', tall_ladder:'ladder', winch:'key',
+                  travel_rush:'arrow', damage:'sword', taunt:'skull', loot:'chest' };
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -45,10 +51,10 @@ export function setupSkills({ onOp, inSession, onChange = () => {} }){
       const tip = [n.name, nodeText(n.id, r), `Rang ${r} / ${n.max}`,
                    can ? 'Clic : apprendre un rang (1 point)' : why && why !== 'maxed' ? '🔒 ' + (WHY[why] ?? '') : ''].filter(Boolean).join('\n');
       return `<div class="skNode ${state}" style="left:${pos[n.id].x}%;top:${pos[n.id].y}px"${can ? ` data-node="${n.id}" role="button" tabindex="0"` : ''} data-tip="${esc(tip)}">`+
-             `<span class="skOrb">${n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
+             `<span class="skOrb">${NODE_PX[n.id] ? pxi(NODE_PX[n.id]) : n.icon}</span><b class="skRank">${r}/${n.max}</b>${can ? '<i class="skPlus">+</i>' : ''}`+
              `<span class="skName">${esc(n.name)}</span></div>`;
     }).join('');
-    return `<div class="skTree${locked ? ' locked' : ''}${chosen ? ' chosen' : ''}"><h3>${t.icon} ${esc(t.label)}`+
+    return `<div class="skTree${locked ? ' locked' : ''}${chosen ? ' chosen' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
       `${chosen ? ' <span class="mut small">· choisi</span>' : locked ? ' <span class="mut small">· 🔒 bloqué</span>' : ''}</h3>`+
       `<div class="skGraph" style="height:${h}px"><svg class="skLinks" viewBox="0 0 100 ${h}" preserveAspectRatio="none">${links}</svg>${nodes}</div></div>`;
   }

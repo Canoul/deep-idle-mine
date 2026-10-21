@@ -7,9 +7,13 @@ import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 import { rcls, pname } from './rarity.js';
+import { pxi } from './pxicons.js';
+import { drawPortrait, lookOf } from '../render/portrait.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* icône pixel d'une case vide (les autres cases restent sans icône) */
+const SLOT_ICON = { casque:'helmet', torse:'shield', pioche:'pickaxe', epee:'sword', boussole:'target' };
 const statLine = p => statsText(p) ? `<br><small class="stuffStats">${esc(statsText(p))}</small>` : '';
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
@@ -20,9 +24,11 @@ export function setupStuff({ onOp }){
     $('stuffGrid').innerHTML = STUFF.slots.map(s => {
       const p = worn[s.id];
       return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
-             `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${s.icon}</span>`}</span>`+
+             `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
              `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</button>`;
     }).join('');
+    $('stuffGrid').insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
+    drawPortrait($('stuffGrid').querySelector('.stuffHero canvas'), lookOf(worn));
     renderStats();
     if(open) renderPicker();
   }
