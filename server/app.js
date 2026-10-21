@@ -11,13 +11,16 @@ import { createAccountService, AccountError } from './accounts/service.js';
 import { accountRoutes } from './accounts/routes.js';
 import { gameRoutes } from './game/routes.js';
 import { partyRoutes } from './party/routes.js';
+import { instantRoutes } from './instant/routes.js';
 
 /* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
-   party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ». */
-export function createApp({ store, root, config = SERVER, service, game, party } = {}){
+   party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
+   instant : inscriptions à la mine instantanée (server/instant/service.js). */
+export function createApp({ store, root, config = SERVER, service, game, party, instant } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde, social…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}) };
+  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
+                   ...(instant ? instantRoutes(instant) : {}) };
   let proxyChecked = !config.logProxyCheck;
 
   /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */
