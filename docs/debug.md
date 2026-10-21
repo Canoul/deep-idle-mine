@@ -651,3 +651,28 @@ Règles (voir CLAUDE.md) :
   treasures, niveaux, page servie) ; nav, game-http, account-http : 27/27.
 - **Vérification** : ✅ Chromium headless : aucune erreur, toutes les sections remplies, recherche « gants » → 8 lignes,
   pas de défilement horizontal sur mobile (390 px). ⚠️ Textes à faire relire par le créateur.
+
+### 21/10/2026 — Onglet Social (amis, présence, pop-ups)
+- **Quoi** : onglet Social (n'était qu'une page d'attente). Ajouter un ami par pseudo (ou ID : les invités n'ont pas
+  de pseudo) → demande à accepter / refuser ; demandes croisées = amis tout de suite ; retirer / annuler. Liste des
+  amis avec statut (hors ligne / en ligne / en session mine / dans le lobby n/3) et boutons Inviter / Rejoindre.
+  Pop-ups en haut à gauche (`#notifs`, `src/ui/notify.js`) : « xxx vous a invité dans son lobby » (Rejoindre /
+  Décliner) et « xxx vous a envoyé une demande d'ami » (Accepter / Refuser).
+- **Présence** : `GET /api/social` appelé toutes les 4 s (20 s onglet caché) dans tous les onglets, même en session ;
+  toute demande au service social = signe de vie ; en ligne si < 45 s (`SOCIAL_SERVER.onlineFor`). En mémoire.
+- **Groupes** : `party.joinFriend` (rejoindre le groupe d'un ami, créé avec lui comme chef s'il n'en a pas) ;
+  `party.invite` refuse maintenant un joueur en session (`friend_in_session`), y compris l'invitation par ID du lobby.
+  `party.groupOf` / `party.invitesOf` pour l'onglet.
+- **Stockage** : ns `social` par compte `{ friends, incoming, outgoing }`, relu par `sanitizeSocial` ; une demande
+  écrit les deux comptes en une fois (`putSocial(entries)`) ; écritures du service en file (double clic = une demande).
+- **Fichiers** : `server/social/{service,routes}.js`, `server/{app,main,config}.js`, `server/party/service.js`,
+  `server/game/store.js`, `server/db/postgres.js`, `src/config.js` (SOCIAL), `src/net/api.js`, `src/main.js`,
+  `src/ui/{social,notify,nav}.js`, `src/ui/style.css`, `index.html`, GAME_DESIGN §6, CLAUDE.md.
+- **Tests** : `tests/social.test.js` (13 : pseudo / ID, croisées, refuser / annuler / retirer, statuts, inviter,
+  invitation refusée en session côté groupes, rejoindre + complet + en session, limites, relecture trafiquée, écriture
+  des deux comptes ensemble, double clic, HTTP). party, game-service, nav, postgres, game-http, account-http, anticheat
+  party + server : verts.
+- **Vérification** : ✅ Chromium headless à 3 joueurs (Zoe, Max, Lou) : demande → pop-up + pastille chez Max,
+  acceptée depuis la pop-up ; Lou accepte depuis l'onglet ; Lou rejoint le lobby de Zoe (créé, Zoe chef) ; Zoe invite
+  Max (sur l'onglet Inventaire) → pop-up → Rejoindre → lobby 3/3 ; mobile 390 px ; 0 erreur console. Statut « en
+  session » vérifié par les tests seulement. ⚠️ Pas testé en ligne (PostgreSQL : nouveau ns `social`).

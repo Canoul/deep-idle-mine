@@ -75,6 +75,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent (GAME_DESIGN §6).
 - **En ligne** sur un VPS OVHcloud (Caddy https + service systemd, mise à jour auto depuis `main` toutes les 2 min) + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement-ovh.md` et `deploy/ovh/`. Ancien hébergement Render : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (formules du créateur, k = area où naît le mob), table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic) et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
+- **Social** (onglet du 21/10, GAME_DESIGN §6) : amis par pseudo (ou ID pour un invité) avec demande à accepter, présence (en ligne / hors ligne / en session / lobby x/3), Inviter / Rejoindre, pop-ups en haut à gauche (invitation de groupe, demande d'ami). `server/social/`, `src/ui/social.js`, `src/ui/notify.js`. Un joueur en session ne peut plus être invité (aussi par ID).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
@@ -106,7 +107,7 @@ tests/                  un fichier de test par sujet + helpers (mines dessinées
 scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
 server/                 serveur du jeu (npm start / npm run dev) : app (routeur), http/ (JSON, cookies, fichiers), accounts/ (service, routes, store, secrets, ratelimit),
                         game/ (service : sessions qui font foi ; live + live-game + live-worker : la partie de chaque session, en direct, dans son fil d'exécution ; routes ; store),
-                        party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), db/ (postgres : stockage en ligne)
+                        party/ (service + routes : groupes en mémoire, code, invitations, lancement par le chef), social/ (amis, présence, rejoindre un ami), db/ (postgres : stockage en ligne)
 docs/                   documentation technique (comptes.md, deploiement.md : Render + Neon), journal de debug des sessions Claude (debug.md)
 textures/               PNG 16×16 (skins des mineurs dans textures/skins/)
 ```
@@ -151,4 +152,4 @@ Serveur : Node ≥ 20, modules intégrés (http, crypto, fs) ; seule exception a
 
 ## Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : la liste d'amis / l'onglet Social, la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.
+Ne pas implémenter sans demande : la spécialisation des rôles, les fondations. Prévoir l'architecture pour, sans les construire.

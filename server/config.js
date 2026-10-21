@@ -77,6 +77,15 @@ export const GAME_SERVER = {
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
 
 /* Groupes (server/party/) : salle d'attente en mémoire avant une session commune. */
+/* Amis (onglet Social, server/social/service.js) */
+export const SOCIAL_SERVER = {
+  onlineFor: 45e3,                  // en ligne : a donné signe de vie (onglet ouvert, même caché) depuis ce temps
+  maxFriends: 100,                  // amis par compte
+  maxOutgoing: 20,                  // demandes d'ami envoyées en attente
+  maxIncoming: 50,                  // demandes reçues gardées (les plus anciennes tombent)
+  requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
+};
+
 export const PARTY_SERVER = {
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà

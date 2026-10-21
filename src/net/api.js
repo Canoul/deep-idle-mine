@@ -61,6 +61,17 @@ export const gameApi = {
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 
+/* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
+export const socialApi = {
+  state:   ()   => request('GET', '/api/social'),
+  request: name => request('POST', '/api/social/request', { name }),   // pseudo (ou ID de compte)
+  accept:  id   => request('POST', '/api/social/accept', { id }),
+  refuse:  id   => request('POST', '/api/social/refuse', { id }),
+  remove:  id   => request('POST', '/api/social/remove', { id }),     // retirer un ami ou annuler une demande
+  invite:  id   => request('POST', '/api/social/invite', { id }),
+  join:    id   => request('POST', '/api/social/join', { id }),
+};
+
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
 export const partyApi = {
   state:   ()   => request('GET', '/api/party'),

@@ -479,6 +479,9 @@ export const SITE = { url:'https://deepmineidle.fr/' };
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
 export const PARTY = { codeLength:6, poll:2500 };
+/* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
+   `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
+export const SOCIAL = { poll:4000, hiddenPoll:20000 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

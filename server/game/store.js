@@ -16,7 +16,8 @@ export function createMemoryGameStore(initial = {}){
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
-  const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
+  const parties = new Map(Object.entries(initial.parties ?? {}));
+  const socials = new Map(Object.entries(initial.socials ?? {}));     // amis et demandes (server/social/service.js)     // groupes (server/party/service.js), par code
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -58,6 +59,13 @@ export function createMemoryGameStore(initial = {}){
     async sessionsWithStatus(status){ return [...sessions.values()].filter(s => s.status === status).map(copy); },
     async deleteGameSession(id){ if(sessions.delete(id)) await store.changed([{ ns: 'game_session', key: id, value: null }]); },
 
+    /* amis : une demande touche deux comptes, écrits en une seule fois ; entries = [[accountId, social]…] */
+    async getSocial(accountId){ return copy(socials.get(accountId)) ?? null; },
+    async putSocial(entries){
+      for(const [id, s] of entries) socials.set(id, copy(s));
+      await store.changed(entries.map(([id, s]) => ({ ns: 'social', key: id, value: s })));
+    },
+
     /* groupes : gardés pour survivre à un redémarrage du serveur (mise à jour automatique) */
     async getParties(){ return [...parties.values()].map(copy); },
     async putParty(code, p){ parties.set(code, copy(p)); await store.changed([{ ns: 'party', key: code, value: p }]); },
@@ -69,7 +77,8 @@ export function createMemoryGameStore(initial = {}){
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
                          prefs: Object.fromEntries(prefs),
-                         sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties) }; },
+                         sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
+                         socials: Object.fromEntries(socials) }; },
   };
   return store;
 }
@@ -99,10 +108,10 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party']);
+  const rows = await db.load(['inventory', 'furnace', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party', 'social']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills,
-                                        sessions: rows.game_session, parties: rows.party });
+                                        sessions: rows.game_session, parties: rows.party, socials: rows.social });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

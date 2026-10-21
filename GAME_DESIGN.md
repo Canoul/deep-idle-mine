@@ -355,8 +355,18 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inv
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
 - **Skills** : dépenser les points gagnés aux niveaux (voir §3, Skills).
 - **Historique** : les sessions terminées du joueur (gardées 30 jours), la plus récente en haut : date, durée, joueurs, **seed**, areas débloquées, profondeur, XP reçue et **sa part du butin** (« rien reçu » s'il est parti avant la fin).
-- Social : à concevoir (page d'attente pour l'instant).
+- **Social** : les amis, ce qu'ils font, les inviter ou les rejoindre (voir ci-dessous).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
+
+### Social (onglet Social) *(demande du créateur, 21/10/2026)*
+- **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
+- L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne.
+- Pour chaque ami **en ligne** (en ligne ou dans le lobby) : **Inviter** (invitation dans son groupe, comme l'invitation par ID du lobby) et **Rejoindre** (entrer dans son groupe ; s'il n'en a pas, un groupe est créé avec lui comme chef). Rejoindre est grisé si son groupe est complet ; les deux sont grisés si l'ami est déjà dans ton groupe, ou si toi-même es en session.
+- **Un joueur en session ne peut pas être invité**, ni depuis l'onglet Social ni par ID depuis le lobby (le serveur refuse), ni rejoint.
+- **Notifications en pop-up, en haut à gauche** de l'écran, sur n'importe quel onglet :
+  - invitation de groupe : « **xxx vous a invité dans son lobby** », boutons **Rejoindre** (emmène au lobby, onglet Mine) et **Décliner** ;
+  - demande d'ami : « **xxx vous a envoyé une demande d'ami** », boutons **Accepter** et **Refuser**. La demande est aussi listée dans l'onglet Social (« Demandes d'ami reçues »), avec une pastille sur l'onglet.
+- Limites *(config serveur)* : 100 amis, 20 demandes envoyées en attente, 30 demandes par heure.
 
 ### Inventaire global
 Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (ex. « Charbon × 100 »).

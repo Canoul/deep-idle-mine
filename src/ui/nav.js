@@ -11,7 +11,7 @@ export const TABS = [
   { id:'recherche',  label:'Recherche',  icon:'🔬', ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'⭐', ready:true  },   // arbres de skills (points gagnés aux niveaux)
   { id:'historique', label:'Historique', icon:'📜', ready:true  },   // sessions passées : seed et butin
-  { id:'social',     label:'Social',     icon:'👥', ready:false },
+  { id:'social',     label:'Social',     icon:'👥', ready:true  },   // amis : présence, inviter, rejoindre
 ];
 
 const KEY = 'deepIdleMine.tab';

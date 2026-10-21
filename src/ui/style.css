@@ -356,3 +356,34 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .hItem img{width:20px;height:20px;image-rendering:pixelated}
 .rsInfo{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px;display:flex;flex-direction:column;gap:3px}
 .pslot small.spec{color:var(--acc)}
+
+/* ---- onglet Social ---- */
+#socialBody{display:flex;flex-direction:column;gap:12px}
+#socialBody .invHead{margin-bottom:0}
+.sadd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sadd span{font-weight:600}
+.sadd input{flex:1;min-width:140px}
+.frow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--line)}
+.frow:first-child{border-top:0}
+.fname{flex:1;display:flex;flex-direction:column;min-width:0}
+.fname b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fname small{font-size:12px}
+.fbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.fbtns button{padding:4px 10px;font-size:13px}
+.fbtns button[disabled]{opacity:.4;cursor:not-allowed}
+.fbtns .x{padding:4px 8px}
+.fdot{width:10px;height:10px;border-radius:50%;flex:none;background:#5a4f46}
+.fdot.on{background:var(--ok);box-shadow:0 0 6px rgba(111,207,127,.6)}
+.fdot.play{background:var(--acc);box-shadow:0 0 6px rgba(255,184,77,.6)}
+@media(max-width:520px){.frow{flex-wrap:wrap}.fbtns{width:100%}}
+
+/* ---- notifications en pop-up (haut à gauche) ---- */
+#notifs{position:fixed;top:12px;left:12px;z-index:50;display:flex;flex-direction:column;gap:8px;max-width:min(340px,calc(100vw - 24px));pointer-events:none}
+.notif{pointer-events:auto;background:var(--panel);border:1px solid var(--acc);border-radius:10px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,.55);animation:nin .25s ease-out}
+.notif.busy{opacity:.6}
+.ntext{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.35}
+.nico{font-size:18px;line-height:1}
+.nbtns{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.nbtns button{padding:4px 12px;font-size:13px}
+.notif .err{margin:6px 0 0}
+@keyframes nin{from{transform:translateX(-16px);opacity:0}to{transform:none;opacity:1}}
