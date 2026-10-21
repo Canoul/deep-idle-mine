@@ -84,8 +84,10 @@ export const BLOCKS = {
   /* treasure : entité enfouie dans la mine ; ouverte, elle donne un objet Treasure TX (TREASURE).
      val = attrait pour l'IA une fois découverte */
   10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
+  /* mur de donjon (DUNGEON) : brique de pierre violet sombre, incassable */
+  11:{name:'Brique de donjon', type:'special', tex:'dungeon_brick', w:0, hard:Infinity, color:'#3a2a4a', dot:'#55406b', unbreakable:true, noDrop:true},
 };
-export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10;
+export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9 };
 
@@ -185,7 +187,7 @@ export const RESEARCH = {
 
 /* partage du coffre commun en fin de session (src/meta/share.js) : parts égales entre les joueurs,
    reste tiré au hasard depuis la seed ; les objets de copyToAll ne se partagent pas, chacun reçoit la quantité entière */
-export const SHARE = { copyToAll:TREASURE.tiers.map(t => t.item) };   // tous les Treasure TX
+export const SHARE = { copyToAll:[...TREASURE.tiers.map(t => t.item), 'Cristal de pleine lune'] };   // Treasure TX et butin du donjon (DUNGEON.loot)
 
 /* génération : minerais en filons et vide en poches, de 1 à N cases d'un seul tenant */
 export const GEN = { veinMax:4, airPocketMax:4 };
@@ -240,7 +242,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7 },
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, minotaure:100 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -297,7 +299,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth',
+  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -362,6 +364,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
+    'Cristal de pleine lune':'rare',
   },
 };
 
@@ -436,7 +439,8 @@ export const ITEMS = {
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
-  'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
+  'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
+  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -484,9 +488,30 @@ export const PARTY = { codeLength:6, poll:2500 };
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
 export const PREF_OPTIONS = {
   priority:  { label:'Priorité',        options:[['minerais','Minerais'], ['descendre','Descendre']] },
-  fightMobs: { label:'Face aux mobs',   options:[[true,'Combattre'], [false,'Ignorer']] },
+  fightMobs: { label:'Face aux mobs',   options:[[true,'Combattre'], [false,'Ignorer'], ['flee','Fuir']] },   // Fuir = Ignorer + n'entre jamais dans un donjon
   helpAllies:{ label:'Aider allié',     options:[[false,'Non'], [true,'Oui']] },
 };
+/* ---- Donjon (src/sim/dungeon.js) — décisions du créateur, 21/10 ; valeurs provisoires ----
+   Généré dans les areas `areas` avec la probabilité `chance` (tirage à part de la seed : le reste de l'area ne change
+   pas). Carré de size × size : murs en briques incassables (DUNGEON_WALL), intérieur vide, UNE entrée dans le mur de
+   gauche ou de droite, sur l'une des holeRows lignes du bas de l'intérieur (on y entre en marchant, chute de 2 au plus).
+   Placement : à margin cases au moins des bords de la mine et des limites de l'area (l'entrée ne donne jamais sur un
+   bord), et jamais sur la colonne du treuil ± winchGap.
+   Dedans : un boss (minotaure, enfermé dans sa salle, il ne fait que tacler). Découvrir un bloc de la structure
+   déclenche le donjon :
+   - un barbare dans la partie : tous se rassemblent devant l'entrée ; le barbare entre le premier, puis les autres
+     (sauf ceux réglés sur « Fuir », qui reprennent leur travail) ;
+   - pas de barbare : personne n'y entre ; un mineur qui s'y retrouve quand même est effrayé scaredTime s : si le boss
+     le tacle pendant ce temps, il s'enfuit d'un coup à la surface.
+   Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
+export const DUNGEON = {
+  areas: [5], chance: 0.2, size: 10, margin: 2, winchGap: 5, holeRows: 3,
+  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
+  loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
+  scaredTime: 15,
+  salt: 0x0d06e0,
+};
+
 /* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */
 export const MOB_INFO = {
   bestiole:   { name:'Bestiole',   tex:'bug' },

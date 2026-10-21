@@ -95,7 +95,7 @@ src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js          recettes de craft (fichier séparé, demandé par le créateur)
 src/skins.js            apparence des mineurs : corps commun, calques d'armure et pioche selon le stuff (fichier séparé, demandé par le créateur)
 src/core/rng.js         hasard déterministe (seed)
-src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics
+src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics, dungeon (donjon : génération, entrée, effroi)
 src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; craft : recettes et blueprints ; stuff : pièces portées ; research : table de recherche ; skills : arbres de skills)
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire une session depuis l'enregistrement du serveur ; view : diffusion de la partie vers les navigateurs ; préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
 src/net/                appels au serveur (api)

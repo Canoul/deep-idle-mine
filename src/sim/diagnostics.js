@@ -19,12 +19,13 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         const a=h[0], b=h[h.length-1];
         const climbing  = b.mode==='return' && b.y<=a.y-STUCK_MIN_PROGRESS;
         const descending = b.mode!=='return' && b.y>=a.y+STUCK_MIN_PROGRESS;
-        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending)
+        const waiting = b.status==='Attend le barbare devant le donjon';   // attente voulue (donjon), pas un blocage
+        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });
       }
       function push(m){
         let h=hist.get(m.id); if(!h) hist.set(m.id, h=[]);
-        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode });
+        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status });
         if(h.length>W) h.shift();
         return h;
       }

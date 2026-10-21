@@ -7,6 +7,7 @@
 import { W, CFG, CHEST_X, BLOCKS, BARRIER } from '../config.js';
 import { isAir, tileAt, landing, isWinch } from './world.js';
 import { baseMoveT, baseClimbT, baseMineT, baseWinchT, baseLadderT } from './miner.js';
+import { forbidMask } from './dungeon.js';
 
 /* build=false : uniquement l'existant (pas de minage, pas de nouvelle échelle).
    lw : poids de planification d'une NOUVELLE échelle (>1 pousse à réutiliser l'existant ; 1 = temps réel). */
@@ -34,7 +35,9 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
      coûte plus cher, pour que chacun travaille sur ses propres lignes */
   const busy=new Uint8Array(H+2);
   for(const o of G.miners) if(o!==m && o.y>0) for(let k=-1;k<=1;k++) if(o.y+k>=1 && o.y+k<H) busy[o.y+k]=1;
-  const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x, nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
+  /* cases de donjon où ce mineur n'a pas le droit d'entrer (src/sim/dungeon.js) */
+  const ban=forbidMask(G,m);
+  const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x; if(ban && ban[n]) return; const nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
   const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed, maxFall=CFG.maxFall,
         wt=baseWinchT(m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)

@@ -9,6 +9,7 @@ import { log } from './log.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
+import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
 export function compassScan(G,m,R){
@@ -67,7 +68,7 @@ function explore(G,m,k){
   m.galleryRow=target;
   m.status = target===m.y ? 'Creuse une galerie' : 'Change de galerie';
   /* Objectif : se tenir SUR la ligne de la galerie, à côté d'un bloc à creuser, par un itinéraire où il tient toujours. */
-  const solidAt=(x,y)=> x>=0 && x<W && !isAir(G,x,y) && tileAt(G,x,y)!==BARRIER;
+  const solidAt=(x,y)=> x>=0 && x<W && !isAir(G,x,y) && tileAt(G,x,y)!==BARRIER && !BLOCKS[tileAt(G,x,y)].unbreakable;
   const r=search(G,m,m.x,m.y,true,(x,y)=>y===target && (solidAt(x-1,y)||solidAt(x+1,y)),2*CFG.planMaxCost);
   if(!r){ m.skipRows.add(target); idle(m,0.2); return; }   // galerie inatteignable : on en prendra une autre
   if(r.n===r.start){                                       // déjà en place : on creuse, en gardant la direction si possible
@@ -94,7 +95,7 @@ function goOre(G,m,o,r,bn){
 function nearestThreat(G,m){
   const R=lightR(G,m); let best=null,bd=1e9;
   for(const o of G.mobs){
-    if(o.hp<=0 || m.ignored.has(o.id)) continue;
+    if(o.hp<=0 || m.ignored.has(o.id) || o.dungeon!=null) continue;   // boss de donjon : voir dungeonGoal
     const d=Math.hypot(o.x-m.x,o.y-m.y);
     if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist) revealMimic(G,o);
     if(o.type==='mimic' && !o.revealed) continue;
@@ -174,6 +175,7 @@ function decideWork(G,m){
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
   }
+  if(dungeonGoal(G,m)) return;
   /* focus minerai : abandonne les minerais épuisés partout, change d'area si la sienne est épuisée */
   dropDepleted(G,m);
   const goal=focusGoal(G,m);
@@ -247,6 +249,12 @@ function digDown(G,m){
   if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
   m.digCol=m.x; m.status='Creuse vers le bas';
   if(stepDir(G,m,0,1)) return;
+  /* bloc incassable sous ses pieds (mur de donjon) : il se décale vers une colonne où l'on peut creuser */
+  const under=tileAt(G,m.x,m.y+1);
+  if(under && under!==BARRIER && BLOCKS[under].unbreakable){
+    if(shiftColumn(G,m,(x,y)=>{ const t=tileAt(G,x,y+1); return !t || !BLOCKS[t].unbreakable; })) return;
+    return explore(G,m,Math.max(0,areaOf(m.y)));
+  }
   /* un trou connu de plus de CFG.maxFall cases sous ses pieds : il ne s'y jette pas, il creuse ailleurs */
   if(deepFall(G,m,0,1)){
     if(shiftColumn(G,m,(x,y)=>!deepFall(G,{...m,x,y},0,1))) return;
@@ -290,6 +298,42 @@ function shiftColumn(G,m,ok=null){
 }
 
 /* tacle : src/sim/mobs.js (tackler, réexporté plus haut) */
+
+/* ---- Donjon (src/sim/dungeon.js) : une fois découvert, et tant que son boss vit ----
+   - dedans sans en avoir le droit (effrayé, ou avant le barbare) : il ressort ;
+   - un barbare dans la partie : le barbare va combattre le boss ; les autres se rassemblent devant l'entrée et
+     attendent ; quand le barbare est entré, ils entrent combattre aussi, sauf « Fuir » (ils reprennent leur travail) ;
+   - pas de barbare : rien (il mine comme d'habitude, sans jamais y entrer).
+   Renvoie true s'il a choisi une action. */
+function dungeonGoal(G,m){
+  if(m.y<=0 || m.mode==='winch' || m.winchJob) return false;
+  for(const d of G.dungeons){
+    if(!active(G,d)) continue;
+    const inside=isIn(d,m), may=mayEnter(G,m,d);
+    if(inside && !may) return goTo(G,m,(x,y)=>!inRoom(d,x,y), m.scaredUntil>G.t ? 'Effrayé ! Sort du donjon' : 'Sort du donjon');
+    if(!hasBarbarian(G)) continue;
+    const boss=bossOf(G,d);
+    if(may){
+      if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
+      if(goTo(G,m,(x,y)=>inRoom(d,x,y) && Math.abs(x-boss.x)+Math.abs(y-boss.y)<=1, isBarbarian(m) ? 'Entre dans le donjon' : 'Rejoint le barbare dans le donjon')) return true;
+      continue;
+    }
+    if(d.barbIn) continue;                         // « Fuir » : il ne rentre pas, il reprend son travail
+    const f=front(d), near=(x,y)=>!inRoom(d,x,y) && Math.abs(x-d.hx)+Math.abs(y-d.hy)<=2;
+    if(near(m.x,m.y)){ m.target=null; m.status='Attend le barbare devant le donjon'; idle(m,0.5); return true; }
+    if(goTo(G,m,(x,y)=>(x===f.x && y===f.y) || near(x,y), 'Rejoint l\'entrée du donjon')) return true;
+  }
+  return false;
+}
+/* va vers la case la plus proche qui remplit goal (en creusant si besoin) ; false si aucune n'est atteignable */
+function goTo(G,m,goal,status){
+  const r=search(G,m,m.x,m.y,true,goal,Infinity), s=r && firstStep(r,r.n);   // tout le monde se rejoint, même de loin
+  if(!s) return false;
+  m.target=null; m.exploring=false; m.status=status;
+  if(!(s.dx||s.dy)){ idle(m,0.3); return true; }
+  if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return true;
+  idle(m,0.3); return true;
+}
 
 /* Chantier du treuil (logisticien) : depuis la surface, au milieu de la mine (WINCH.x), il descend (par le treuil déjà
    posé s'il y en a un) et creuse tout droit jusqu'à la ligne visée, puis pose tout le treuil d'un coup. Il remonte
@@ -342,7 +386,7 @@ function helpAlly(G,m){
   const ign=m.prefs.helpIgnore||[];
   let best=null, bd=Infinity;
   for(const o of G.mobs){
-    if(o.hp<=0 || o.chase==null || o.chase===m.id || ign.includes(o.type) || m.ignored.has(o.id)) continue;
+    if(o.hp<=0 || o.chase==null || o.chase===m.id || ign.includes(o.type) || m.ignored.has(o.id) || o.dungeon!=null) continue;
     const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y); if(d<=HELP.range && d<bd){ bd=d; best=o; }
   }
   if(!best) return false;
@@ -381,14 +425,14 @@ export function decide(G,m){
     /* engagement : une fois déclenché, le combat continue même si le mob sort du champ de vision.
        On lâche s'il s'éloigne trop ; on l'ignore si aucun coup n'a porté depuis foeGiveUp secondes. */
     let th=null;
-    const foe=m.foe && G.mobs.find(o=>o.id===m.foe && o.hp>0);
+    const foe=m.foe && G.mobs.find(o=>o.id===m.foe && o.hp>0 && o.dungeon==null);   // le boss : voir dungeonGoal
     if(foe && G.t-m.foeHit>CFG.foeGiveUp){ m.ignored.add(foe.id); m.foe=null; }
     else if(foe && Math.hypot(foe.x-m.x,foe.y-m.y)<=CFG.foeLeash) th=foe;
     else m.foe=null;
     if(!th) th=nearestThreat(G,m);
     // en retour, il ne se bat que contre un mimic qui lui bloque le passage (sinon il le « mine » à l'infini)
     const blocking = th && th.type==='mimic' && Math.abs(th.x-m.x)+Math.abs(th.y-m.y)<=1;
-    if(th && ((m.prefs.fightMobs && m.mode!=='return') || blocking)){
+    if(th && ((m.prefs.fightMobs===true && m.mode!=='return') || blocking)){   // Ignorer ou Fuir : il n'engage pas
       if(m.foe!==th.id){ m.foe=th.id; m.foeHit=G.t; }
       fight(G,m,th); return;
     }

@@ -4,6 +4,7 @@
 import { W, DT, CFG, MOBS, BLOCKS, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
 import { log } from './log.js';
+import { dungeonAt, inRoom, interior } from './dungeon.js';
 
 /* mobs qui marchent (même physique que le mineur) */
 export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste']);
@@ -65,9 +66,29 @@ function chaseOf(G,o){
   return p && manhattan(p,o)<=CFG.mobChaseRange ? p.id : null;
 }
 
+/* ---- boss de donjon (minotaure) : enfermé dans sa salle, il ne vise que les mineurs qui y sont (intérieur ou entrée),
+   marche vers eux sans jamais sortir et les tacle à 1 case. Rien d'autre. */
+function updateBoss(G,o){
+  const d=G.dungeons.find(x=>x.id===o.dungeon);
+  const inside=m => m.y>0 && d && inRoom(d,m.x,m.y);
+  const prey=()=>{ const t=tauntedBy(G,o); if(t && inside(t)) return t;
+    let best=null, bd=Infinity; for(const m of G.miners){ if(!inside(m)) continue; const k=manhattan(m,o); if(k<bd){ bd=k; best=m; } } return best; };
+  const held=byId(G,o.grab);
+  if(!(held && inside(held) && manhattan(held,o)<=1 && canTackle(G,o,held))){
+    const p=prey(); o.grab = p && manhattan(p,o)<=1 && canTackle(G,o,p) ? p.id : null;
+  }
+  const p=prey(); o.chase = o.grab ?? p?.id ?? null;
+  o.cd=(o.cd||0)-DT;
+  if(o.cd>0 || o.grab!=null || !p) return;
+  o.cd=CFG.mobStep;
+  const dx=Math.sign(p.x-o.x);
+  if(dx && interior(d,o.x+dx,o.y) && isAir(G,o.x+dx,o.y)) o.x+=dx;   // il marche sur le sol de sa salle, sans en sortir
+}
+
 export function updateMobs(G){
   for(const o of G.mobs){
     if(o.hp<=0) continue;
+    if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type==='mimic'){
       if(!o.revealed && G.miners.some(m=>m.y>0 && Math.hypot(o.x-m.x,o.y-m.y)<=MOBS.mimicRevealDist)) revealMimic(G,o);
       updateGrab(G,o); o.chase=chaseOf(G,o); continue;
@@ -191,7 +212,7 @@ function spawnMobs(G){
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
     if(areaOf(y)<MOBS.minArea[type]) continue;
-    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&supported(G,x,y)) cand.push([x,y]); }
+    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&supported(G,x,y)&&!dungeonAt(G,x,y)) cand.push([x,y]); }   // jamais dans un donjon
   }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];

@@ -651,3 +651,35 @@ Règles (voir CLAUDE.md) :
   treasures, niveaux, page servie) ; nav, game-http, account-http : 27/27.
 - **Vérification** : ✅ Chromium headless : aucune erreur, toutes les sections remplies, recherche « gants » → 8 lignes,
   pas de défilement horizontal sur mobile (390 px). ⚠️ Textes à faire relire par le créateur.
+
+### Donjon (area 5, 20 %), minotaure, Cristal de pleine lune, option « Fuir »
+- **Quoi** (décisions du créateur, questions posées) : `DUNGEON` en config, `src/sim/dungeon.js`. Génération en area 5
+  seulement, tirage à part (`hash(seed, k+1) ^ salt`) : le reste de l'area est identique. Carré 10×10 de `DUNGEON_WALL`
+  (bloc 11, incassable), intérieur vide, une entrée côté gauche ou droit sur les 3 lignes du bas de l'intérieur ;
+  x0 ∈ [2, 10] ∪ [31, 38] (marge 2, jamais x 20..30 = treuil ± 5), y à 2 cases des limites d'area. Comptes de l'area
+  recalculés (déblocage, focus). Minotaure : mob `o.dungeon`, 1000 PV, enfermé (`updateBoss` : ne vise que les mineurs
+  dans la salle, marche sur son sol, tacle à 1 case), 100 XP, butin 1-3 cristaux (rare, `SHARE.copyToAll`).
+  Déclencheur = un bloc du carré découvert (`updateDungeons`, après la découverte de chaque tick). Entrée interdite
+  (`noEntry` dans `stepDir`, `forbidMask` dans `search`) sans barbare, ou avant que le barbare soit entré, ou pour
+  « Fuir » ; jamais pour celui qui est déjà dedans (il doit pouvoir sortir). IA (`dungeonGoal` dans `decideWork`,
+  après les raisons de remonter) : sortir si dedans sans droit ; avec barbare : barbare → combat le boss, autres →
+  attendent à ≤ 2 cases de l'entrée puis entrent après lui, Fuir reprend son travail. Effroi sans barbare : 15 s,
+  taclé pendant ce temps → téléporté au coffre avec son sac. Option `fightMobs: 'flee'` (Fuir = Ignorer + jamais de
+  donjon) : le combat spontané ne se fait plus que si `fightMobs === true`.
+- **Corrections au passage** : un bloc incassable sous les pieds (mur) faisait piétiner `digDown` → il se décale ou
+  explore ; `explore` ne vise plus une galerie le long d'un mur ; `rowDone` ignore les blocs incassables (et une ligne
+  absente). Détecteur de blocage : l'attente voulue devant un donjon n'est pas un blocage.
+- **Fichiers** : `src/config.js`, `src/sim/{dungeon,world,mobs,ai,actions,path,session,diagnostics}.js`,
+  `src/render/canvas.js`, `scripts/gen_textures.py` (+3 : dungeon_brick, minotaur, moon_crystal), wiki (section Le donjon,
+  source du cristal), GAME_DESIGN §5, CLAUDE.md.
+- **Tests** : `tests/dungeon.test.js` (12) ; rarity (cristal rare) ; mobs, goblin, fall, focus, winch, team, world,
+  blocks, miner, light, treasure, share, lobby, view, skills 153/153 ; game-replay, game-service, live, view, session,
+  wiki, anticheat duplication/xp/server 99/99 ; diagnostics 4/4.
+- **Vérification** : ✅ simulation 3 × 5 identique au code d'avant (areas 3,4, profondeur 183,2, 0 blocage : les sessions
+  normales n'atteignent pas l'area 5). ✅ sessions complètes jusqu'à l'area 5 (mineurs renforcés, seeds 8, 13, 14) :
+  avec barbare, découvert → barbare entré (≈ 3 à 5 min plus tard : il était en train de remonter) → minotaure vaincu,
+  1 à 3 cristaux au coffre ; sans barbare, personne n'entre, 0 blocage. ⚠️ Pas regardé en vrai dans le navigateur
+  (aperçu reconstitué depuis la carte générée et les textures).
+- **Points fragiles** : l'attente devant l'entrée peut être longue (le barbare finit d'abord son aller-retour) ; un
+  mineur sans barbare qui se retrouve dans le donjon après ses 15 s d'effroi et qui se fait tacler doit vaincre seul
+  1000 PV (règle du tacle) ; l'effroi ne se déclenche que par accident (entrée dans le noir avant d'avoir vu le mur).

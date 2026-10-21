@@ -1,10 +1,11 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON } from '../config.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './miner.js';
 import { provoke, revealMimic } from './mobs.js';
 import { log } from './log.js';
+import { noEntry } from './dungeon.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -76,6 +77,11 @@ export function killMob(G,m,o){
     const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
     collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
+  } else if(o.dungeon!=null){
+    /* boss de donjon : 1 à 3 Cristaux de pleine lune (Pillage compris) ; chaque joueur en recevra la quantité entière */
+    const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
+    collect(m,L.item,ITEMS[L.item].w ?? 1,n);
+    log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item})`);
   } else if(o.type==='occultiste'){
     const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);
@@ -137,6 +143,7 @@ export const deepFall = (G,m,dx,dy) => { const f=stepFall(G,m,dx,dy); return !!f
 export function stepDir(G,m,dx,dy,opt){
   const nx=m.x+dx, ny=m.y+dy;
   if(nx<0||nx>=W||ny<0) return false;
+  if(noEntry(G,m,nx,ny)) return false;   // donjon où il n'a pas le droit d'entrer
   /* trou connu trop profond : par-dessus avec une passerelle s'il peut (même si on lui demandait de ne pas en poser),
      sinon il refuse le pas (celui qui l'a demandé choisit autre chose) */
   if(!(m.winchJob && dx===0) && deepFall(G,m,dx,dy)){   // en chantier de treuil, il creuse tout droit, trou ou pas

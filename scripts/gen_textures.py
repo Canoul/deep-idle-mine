@@ -256,6 +256,52 @@ def main():
     rect(occ, 1, 11, 1, 1, hexc('#e0b0ff'))
     tex['occultist'] = occ
 
+    # brique de donjon : pierre taillée violet sombre, joints noirs, briques décalées une rangée sur deux
+    brick = noisy(hexc('#3d2c50'), 77, 0.10)
+    mortar = hexc('#1a1224')
+    for yy in (0, 4, 8, 12):
+        rect(brick, 0, yy, 16, 1, mortar)
+    for i, yy in enumerate((1, 5, 9, 13)):
+        off = 0 if i % 2 == 0 else 4
+        for xx in range(off, 16, 8):
+            rect(brick, xx, yy, 1, 3, mortar)
+        for xx in range(off + 1, 16, 8):
+            rect(brick, xx, yy, 6, 1, hexc('#5a4473'))        # arête claire en haut de chaque brique
+    tex['dungeon_brick'] = brick
+
+    # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots
+    mino = blank()
+    fur, fur_d, skin, skin_d, horn = hexc('#6b4226'), hexc('#4a2c18'), hexc('#a8714a'), hexc('#7d4f31'), hexc('#efe3c4')
+    rect(mino, 2, 0, 2, 1, horn); rect(mino, 1, 1, 2, 2, horn)      # corne gauche
+    rect(mino, 12, 0, 2, 1, horn); rect(mino, 13, 1, 2, 2, horn)    # corne droite
+    rect(mino, 4, 1, 8, 5, fur)                                     # tête de taureau
+    rect(mino, 3, 2, 1, 2, fur_d); rect(mino, 12, 2, 1, 2, fur_d)   # oreilles
+    rect(mino, 5, 3, 1, 1, hexc('#ff3b2f')); rect(mino, 10, 3, 1, 1, hexc('#ff3b2f'))   # yeux rouges
+    rect(mino, 6, 4, 4, 2, hexc('#8a5a3a'))                         # museau
+    rect(mino, 6, 5, 1, 1, fur_d); rect(mino, 9, 5, 1, 1, fur_d)    # naseaux
+    rect(mino, 7, 6, 2, 1, hexc('#c9c9c9'))                         # anneau
+    rect(mino, 3, 6, 10, 4, skin)                                   # torse large
+    rect(mino, 4, 7, 3, 1, skin_d); rect(mino, 9, 7, 3, 1, skin_d)  # pectoraux
+    rect(mino, 7, 8, 2, 2, skin_d)                                  # abdos
+    rect(mino, 1, 6, 2, 5, skin); rect(mino, 13, 6, 2, 5, skin)     # bras
+    rect(mino, 1, 10, 2, 1, skin_d); rect(mino, 13, 10, 2, 1, skin_d)   # poings
+    rect(mino, 4, 10, 8, 2, hexc('#3b2b1e'))                        # pagne
+    rect(mino, 4, 12, 3, 3, fur); rect(mino, 9, 12, 3, 3, fur)      # pattes arrière poilues
+    rect(mino, 4, 15, 3, 1, hexc('#222222')); rect(mino, 9, 15, 3, 1, hexc('#222222'))   # sabots
+    tex['minotaur'] = mino
+
+    # cristal de pleine lune : cristal pâle bleu-blanc, croissant de lune argenté, halo
+    cry = blank()
+    halo, pale, mid, deep = hexc('#cfe6ff', 90), hexc('#f2f8ff'), hexc('#a9cfff'), hexc('#6f8fd6')
+    for yy, (x0, w) in enumerate([(7, 2), (6, 4), (5, 6), (5, 6), (4, 8), (4, 8), (5, 6), (5, 6), (6, 4), (7, 2)], start=3):
+        rect(cry, x0, yy, w, 1, mid)
+        rect(cry, x0, yy, max(1, w // 2), 1, pale)                 # face éclairée
+    rect(cry, 8, 4, 1, 8, deep)                                     # arête
+    rect(cry, 2, 1, 3, 1, halo); rect(cry, 1, 2, 1, 3, halo)        # croissant de lune
+    rect(cry, 2, 2, 2, 1, hexc('#e8eef8')); rect(cry, 2, 3, 1, 2, hexc('#e8eef8'))
+    rect(cry, 12, 12, 1, 1, pale); rect(cry, 13, 2, 1, 1, pale)     # éclats
+    tex['moon_crystal'] = cry
+
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),

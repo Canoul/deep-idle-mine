@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, SHINY,
-         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP } from '../config.js';
+         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -97,6 +97,7 @@ export function sourcesOf(item){
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
+  if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   for(const [tr, l] of Object.entries(LOOT)){
     const a = l.always.find(x => x.item === item);
     if(a) out.push(`${tr} : ${a.min} à ${a.max}, toujours`);
@@ -217,3 +218,8 @@ export function fmt(n){
   const [i, d] = String(Math.round(n * 100) / 100).split('.');
   return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : '');
 }
+
+/* ---------- donjon ---------- */
+export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
+  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
+  hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });

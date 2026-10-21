@@ -69,6 +69,23 @@ function mobs(){
     `<p class="small mut">Le % = la chance qu'une apparition près de ton mineur soit ce mob, selon l'area où il se trouve. Les PV dépendent de l'area où le mob apparaît. Le rythme et le maximum dépendent de l'area la plus profonde ouverte (les mimics ne comptent pas dans le maximum). Première apparition après ${R.first} s de session. Avec les dégâts de base (${STATS.damage}), une bestiole de l'area 0 tombe en ${D.hitsToKill(D.MOB_INFO.bestiole?.hp0 ?? 0)} coups.</p>`;
 }
 
+/* ---------- donjon ---------- */
+function dungeon(){
+  const g = D.dungeonInfo(), pct = Math.round(g.chance * 100), areas = g.areas.join(', ');
+  $('w-dungeon').innerHTML = `
+  <p>Dans l'area ${esc(areas)}, il y a <b>${pct} % de chance</b> qu'un donjon soit caché dans la roche : un carré de ${g.size} × ${g.size} en <b>briques violettes</b> qu'aucune pioche ne peut casser, avec <b>une seule entrée</b> sur un côté. Dedans, un monstre l'attend.</p>
+  <div class="mobs">
+    <div class="mob"><h3><img src="textures/${esc(g.boss.tex)}.png" alt="">${esc(g.boss.name)}</h3>
+      <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle et ne fait rien de spécial : il <b>tacle</b> qui s'approche.</p>
+      <p><b>PV :</b> ${f(g.boss.hp)} (${f(g.hits)} coups avec les dégâts de base, environ ${Math.round(g.fightSec / 60)} min seul) · <b>${g.bossXp} XP</b></p>
+      <p><b>Butin :</b> ${g.loot.min} à ${g.loot.max} ${item(g.loot.item)}. Il n'est <b>pas partagé</b> : comme un treasure, <b>chaque joueur en reçoit autant</b> (s'il est encore là à la fin).</p></div>
+    <div class="mob"><h3>🏰 Quand un mineur le découvre</h3>
+      <p><b>Avec un barbare dans le groupe</b> (un joueur qui a choisi l'arbre Barbare) : tous les mineurs le rejoignent et creusent autour du donjon jusqu'à trouver l'entrée, puis <b>attendent devant</b>. Le <b>barbare entre le premier</b> ; ensuite les autres viennent l'aider (sauf ceux réglés sur <b>Fuir</b>, qui retournent miner).</p>
+      <p><b>Sans barbare</b> : personne n'y entre, chacun mine comme d'habitude. Un mineur qui s'y retrouve par accident est <b>effrayé ${g.scared} s</b> : si le minotaure l'attaque pendant ce temps, il <b>s'enfuit d'un coup à la surface</b> (il garde son sac).</p></div>
+  </div>
+  <p class="tip">💡 Les murs ne bloquent pas que les mineurs : le treuil ne passe jamais par un donjon, et aucun autre monstre n'apparaît dedans.</p>`;
+}
+
 /* ---------- objets ---------- */
 function rarity(){
   $('w-rarity').innerHTML = `<div class="rarities">${RARITY.tiers.map(t => `<span class="pill rn r-${t.id}" style="border-color:${t.color}">${esc(t.label)}</span>`).join('')}</div>`;
@@ -155,6 +172,6 @@ function toc(){
   document.querySelectorAll('main section').forEach(s => obs.observe(s));
 }
 
-for(const fn of [areas, blocks, mobs, rarity, items, craft, stats, treasures, level, toc]){
+for(const fn of [areas, blocks, mobs, dungeon, rarity, items, craft, stats, treasures, level, toc]){
   try { fn(); } catch(e){ console.error(fn.name, e); }
 }

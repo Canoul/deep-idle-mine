@@ -2,6 +2,7 @@
 import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
+import { planDungeon, carve, registerDungeon } from './dungeon.js';
 
 export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 
@@ -38,7 +39,8 @@ export function fallInfo(G,x,y){
   for(let yy=y+1; yy<=Math.min(l.y+1, maxRow(G)); yy++) if(!G.seen[yy][x]){ known=false; break; }
   return {...l, known};
 }
-export const rowDone = (G,y) => { for(let x=0;x<W;x++) if(!isAir(G,x,y)) return false; return true; };
+/* ligne finie : plus rien à creuser (les blocs incassables, ex. murs de donjon, ne comptent pas) */
+export const rowDone = (G,y) => { const row=G.tiles[y]; if(!row) return false; for(let x=0;x<W;x++) if(row[x]!==0 && !BLOCKS[row[x]]?.unbreakable) return false; return true; };
 
 /* filons / poches : `count` cases de `id` en groupes d'un seul tenant de 1 à `maxSize` cases, sur des cases libres */
 const FREE = 255;   // case pas encore attribuée pendant la génération (0 = air est une vraie valeur)
@@ -82,12 +84,22 @@ export function genArea(G,k){
   for(const n in counts) if(typeOf(IDS[n])==='terrain') for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;
   for(let i=0;i<N;i++) if(grid[i]===FREE) grid[i]=filler[fi++];
+  /* donjon (DUNGEON) : tirage à part, posé par-dessus ; les blocs qu'il remplace sortent des comptes de l'area */
+  const dp = planDungeon(G.seed, k);
+  if(dp){
+    carve(dp, (x, ry, id) => { const i=ry*W+x, old=grid[i]; if(old===id) return;
+      const key=Object.keys(IDS).find(n=>IDS[n]===old); if(key && counts[key]) counts[key]--;
+      if(id===0) counts.air=(counts.air||0)+1;
+      grid[i]=id; });
+    oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
+  }
   const treasure = placeTreasure(G, k, grid, counts, r);
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
     G.seen.push(new Uint8Array(W));
   }
+  if(dp) registerDungeon(G, k, dp, areaTop(k)+dp.ry0);
   // les mimics ne sont plus placés ici : ils naissent pendant la partie (un minerai de la roche devient un mimic, src/sim/mobs.js)
   /* ores : pour chaque minerai de l'area, le nombre initial et ce qu'il en reste dans la roche (focus minerai) */
   const ores = {};
