@@ -31,7 +31,7 @@ Modèle d'entrée :
 - **Décisions** : l'onglet Social fait partie du jeu (retiré du « hors périmètre ») ; nom du jeu : Deep Mine Idle
   (les noms techniques du serveur, `deep-idle-mine`, ne changent pas).
 - **À suivre** : tester le Social à deux vrais joueurs en ligne.
-- **État** : 🧪 sur la branche `jules/social` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ---
 
