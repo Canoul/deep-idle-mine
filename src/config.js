@@ -281,7 +281,8 @@ export const XP = {
    l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). */
 export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
 
-export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
+export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
+  minShown:0.65 };   // part de la hauteur de la vue gardée au moins : la mine remplit la largeur, le haut et le bas peuvent être rognés
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres

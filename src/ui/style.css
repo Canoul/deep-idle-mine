@@ -235,6 +235,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .runL .card,.runR .card,.runGrid.mi .card{font-size:var(--fs-s)}
 .runL .card>h2,.runR .card>h2,.runGrid.mi .card>h2{font-size:var(--fs)}
 #cvWrap,#cvMiWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
+/* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
+#cvWrap{overflow:hidden}
+#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#followBtn{z-index:1}
 #cv,#cvMi{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 #cv{touch-action:none;cursor:grab}
 #cv.dragging{cursor:grabbing}
@@ -500,6 +504,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .runGrid{display:flex;flex-direction:column;padding:calc(3*var(--u))}
   .rail{display:none}
   #cvWrap{min-height:0;order:-1}
+  #cv{position:static;transform:none}
   .runL,.runR{overflow:visible}
   .runGrid.mi{display:flex}
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}

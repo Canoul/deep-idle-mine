@@ -26,6 +26,8 @@ Modèle d'entrée :
   - la barre d'action affiche **le nom de chaque onglet en permanence** (plus seulement au survol) ; touche « = »
     pour le 12e onglet (Social) ;
   - le jeu s'appelle **Deep Mine Idle** (titre de la page, logo, écran de connexion, wiki).
+  - **la mine est plus grande** pendant la session : elle remplit toute la largeur entre les panneaux (le haut et
+    le bas de la vue peuvent être un peu rognés ; la caméra garde ton mineur au milieu).
 - **Décisions** : l'onglet Social fait partie du jeu (retiré du « hors périmètre ») ; nom du jeu : Deep Mine Idle
   (les noms techniques du serveur, `deep-idle-mine`, ne changent pas).
 - **À suivre** : tester le Social à deux vrais joueurs en ligne.

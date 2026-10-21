@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer } from './render/instant.js';
@@ -486,7 +486,7 @@ function frame(now){
     }
     updateNavSession(shown, waiting, mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi);
-    if(ui.tab==='session') mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitCanvas($('cv'), $('cvWrap'));   // la mine se cale sur la place libre
+    if(ui.tab==='session') mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitCanvas($('cv'), $('cvWrap'), CAMERA.minShown);   // la mine remplit la place libre
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()));                  // portrait : le mineur avec son stuff
     navSession.classList.toggle('live', !!rec);
