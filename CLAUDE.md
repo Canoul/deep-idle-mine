@@ -51,6 +51,14 @@ système est amusant, lisible et équilibrable.
   plan et attends mon accord.
 - Réponds en français, sans jargon inutile : je suis le créateur du jeu, pas
   forcément un expert technique.
+- **Les discussions Claude ne partagent pas leur historique.** En début de
+  session : lis `git log` des dernières 24-48 h et la fin de `docs/debug.md`
+  (le plus récent l'emporte). Dès qu'un ajustement majeur est fait ou décidé
+  (hébergement / infra, décision de design, nouveau système, équilibrage
+  notable, question tranchée), reporte-le **dans la même session** dans la
+  section « État actuel » ci-dessous, dans `docs/debug.md` et dans la fiche
+  du projet claude.ai `claude/etat-du-projet.md` si tu y as accès. Ce qui est
+  remplacé (ex. Render → OVH) est marqué « ancien », jamais laissé comme actuel.
 
 ## Présentation du projet
 
