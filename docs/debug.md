@@ -978,7 +978,7 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ Chromium headless, serveur local, toute requête `/miner.js` refusée comme Opera : 11 onglets,
   pas de cadre, `mineur.js` chargé. ⚠️ À reconfirmer par le joueur Opera GX après la mise en ligne.
 
-### Direction artistique « Forge noire » en pixel art (Jules) — branche `jules/da-pixel-forge`
+### Direction artistique « Forge noire » en pixel art (Jules) — branche `jules/da-pixel-forge`, ✅ en ligne le 21/10
 - **Quoi** : interface réécrite d'après la maquette `design/poc/4-pixel-forge.html` (branche `jules/poc-design`).
   Aucune règle du jeu, simulation ou route serveur ne change ; les identifiants lus par `src/ui/*.js` sont gardés.
 - **Fichiers** :
@@ -1012,4 +1012,5 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : les boutons « conteneurs » (`.stuffSlot`, `.fopt`, cases de la barre d'action, `.navAccount`)
   annulent le `border-image` des boutons ; un nouveau bouton conteneur devra faire pareil. Polices Jersey chargées
   depuis Google Fonts (sans internet : police système). Le wiki garde son ancien style (`src/wiki/wiki.css`).
-
+- **Mise en ligne (21/10)** : testé en local par Jules (« tout est bon ») ; `main` n'avait pas bougé ; tests de
+  l'interface 134/134 relancés avant la fusion.

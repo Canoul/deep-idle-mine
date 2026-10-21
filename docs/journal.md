@@ -34,7 +34,7 @@ Modèle d'entrée :
   session (pas de gros plan).
 - **À suivre** : le wiki (`wiki.html`) garde l'ancien look ; la mine instantanée a été vérifiée seulement à
   l'affichage du lobby ; retours des joueurs sur la taille de l'interface.
-- **État** : 🧪 sur la branche `jules/da-pixel-forge` (pas en ligne)
+- **État** : ✅ en ligne le 21/10
 
 ## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
 - **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.
