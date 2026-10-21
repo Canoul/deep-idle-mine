@@ -90,7 +90,7 @@ export function finishAction(G,m,a){
       m.x=a.data.x; m.y=a.data.y;
       if(m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;
       if(m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
-      { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea){ m.lastArea=ai; log(G, `⬇ ${m.name} entre dans l'area ${ai}`); } }
+      { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea) m.lastArea=ai; }   // pas de ligne au journal (trop fréquent)
       break;
     case 'mine': mineBlock(G,m,a.data.x,a.data.y); break;
     case 'ladder':

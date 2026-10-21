@@ -55,7 +55,7 @@ export function updateHUD(G, ui){
   // XP de la session : pot commun, partagé à parts égales à la fin
   { const xp=G.stats.xp||0, n=G.miners.length;
     $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }
-  $('log').innerHTML=G.log.slice(0,16).map(l=>`<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join('');
+  renderLog(G.log);
 
   // area du mineur suivi
   const ai=areaOf(m.y), box=$('areaBody');
@@ -127,4 +127,15 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
   $('end').hidden=false;
   $('endBack').onclick=onBack;
   $('endInv').onclick=onInventory;
+}
+
+/* journal : tout le journal de la session, le plus récent en haut, dans une boîte qui défile. Redessiné seulement
+   quand il change ; si le joueur a fait défiler pour relire, il reste sur les mêmes lignes quand de nouvelles arrivent. */
+let logHead = null, logLen = -1;
+function renderLog(list){
+  if(list[0] === logHead && list.length === logLen) return;
+  logHead = list[0]; logLen = list.length;
+  const box = $('log'), before = box.scrollHeight, top = box.scrollTop;
+  box.innerHTML = list.map(l=>`<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join('');
+  if(top > 0) box.scrollTop = top + (box.scrollHeight - before);
 }

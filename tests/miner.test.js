@@ -178,3 +178,17 @@ test('vitesse de montée : stat indépendante de la vitesse de marche', async ()
   m.carac.climbSpeed=4;                      // monter plus vite ne change pas la marche
   assert.equal(baseMoveT(m), 1/6); assert.equal(baseClimbT(m), 1/4);
 });
+
+test('journal : entrer dans une area n\'écrit rien ; il garde toute une session (400 lignes)', async () => {
+  const { finishAction } = await import('../src/sim/actions.js');
+  const { log, LOG_MAX } = await import('../src/sim/log.js');
+  const G=worldFrom(['', 'd'.repeat(50), '#@ #', '####']), m=G.miners[0];
+  G.log.length=0; m.lastArea=-1;
+  finishAction(G, m, { type:'move', data:{ x:m.x, y:m.y } });
+  assert.equal(m.lastArea, 0);
+  assert.equal(G.log.length, 0, 'pas de ligne « entre dans l\'area »');
+  assert.ok(LOG_MAX >= 300);
+  for(let i=0;i<LOG_MAX+10;i++) log(G, 'ligne '+i);
+  assert.equal(G.log.length, LOG_MAX);
+  assert.equal(G.log[0].msg, 'ligne '+(LOG_MAX+9), 'la plus récente en haut');
+});
