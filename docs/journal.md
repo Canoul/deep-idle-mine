@@ -30,7 +30,7 @@ Modèle d'entrée :
   choix « Mine / MI » visible dès maintenant, MI grisée.
 - **À suivre** : la Mine instanciée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
   conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
-- **État** : 🧪 sur la branche `geoffrey/lobby-session` (pas en ligne)
+- **État** : ✅ en ligne le 21/10
 
 ---
 
