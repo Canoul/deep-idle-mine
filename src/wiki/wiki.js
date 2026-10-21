@@ -1,5 +1,5 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
-import { RARITY, ITEMS, STATS, FURNACE, AREAS } from '../config.js';
+import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import * as D from './data.js';
 
@@ -124,6 +124,9 @@ function craft(){
     const key = Object.keys(FURNACE.unlockItems).find(k => FURNACE.unlockItems[k].tier === i);
     return tr([`<b>${esc(t.name)}</b>`, num(`×${f(t.speed)}`), key ? `Four n° ${FURNACE.unlockItems[key].slot + 1} : fabriquer un ${item(key)} et l'« Utiliser » dans l'inventaire` : 'Le four de départ']);
   }).concat(tr(['<span class="mut">Four n° 3</span>', num(none), '<span class="mut">Fermé pour l\'instant</span>'])));
+  $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
+  $('w-crusher').innerHTML = table(['Lot', 'Butin (chance par lot)'], D.crusherRows().map(r =>
+    tr([item(r.block, CRUSHER.batch), r.items.map(i => `${item(i.item)} ${String(Math.round(i.chance * 1e6) / 1e4).replace('.', ',')} %`).join('<br>')])));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));

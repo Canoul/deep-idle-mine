@@ -1,6 +1,6 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
-import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, SHINY,
+import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
          STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
@@ -64,9 +64,9 @@ export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.sp
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
 /* ---------- objets ---------- */
-export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
+export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
   mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau' };
-export const CAT_ORDER = ['ore', 'combustible', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'blueprint', 'stuff', 'furnace'];
+export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'blueprint', 'stuff', 'furnace'];
 const pct = c => Math.round(c * 1000) / 10;
 const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
 const statName = k => STUFF.statLabels[k] ?? k;
@@ -103,6 +103,7 @@ export function sourcesOf(item){
     if(a) out.push(`${tr} : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`${tr} : ${fmt(pct(i.chance))} % de chance`); }
   }
+  for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
   for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
   if(Object.hasOwn(RECIPES, item)) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
   if(!out.length) out.push('Pas encore obtenable');
@@ -124,7 +125,7 @@ export function usesOf(item){
   for(const a of FURNACE.alloys) if(Object.hasOwn(a.in, item)) out.push(`Alliage → ${a.out}`);
   const crafts = Object.entries(RECIPES).filter(([, r]) => Object.hasOwn(r.cost, item)).map(([n]) => n);
   if(crafts.length) out.push(`Ingrédient : ${crafts.join(', ')}`);
-  if(d?.cat === 'terrain') out.push('Aucun pour l\'instant (il prend de la place dans le sac)');
+  if(d?.cat === 'bloc') out.push(`Se concasse par ${CRUSHER.batch} (onglet Concasseur) : gemmes inférieures, treasure`);
   if(d?.cat === 'ore' && !Object.hasOwn(FURNACE.recipes, item) && !crafts.length) out.push('Aucun pour l\'instant');
   if(d?.cat === 'gem' && !crafts.length) out.push('Aucun pour l\'instant');
   if(!out.length) out.push('Aucun pour l\'instant');
@@ -161,6 +162,8 @@ export const furnaceRows = () => [
   ...Object.entries(FURNACE.recipes).map(([ore, r]) => ({ mode:'Fondre', out: r.out, inputs: { [ore]: FURNACE.orePerIngot }, fuel: FURNACE.fuelPerIngot, time: r.time })),
   ...FURNACE.alloys.map(a => ({ mode:'Alliage', out: a.out, inputs: a.in, fuel: a.fuel, time: a.time })),
 ];
+/* concasseur : une ligne par bloc (chances pour un lot de CRUSHER.batch blocs) */
+export const crusherRows = () => Object.entries(CRUSHER.loot).map(([block, l]) => ({ block, items: l.oneOf.flatMap(f => f.items) }));
 export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier) }));
 
 /* ---------- stats ---------- */

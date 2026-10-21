@@ -75,6 +75,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 - **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session commune. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent (GAME_DESIGN §6).
 - **En ligne** sur un VPS OVHcloud (Caddy https + service systemd, mise à jour auto depuis `main` toutes les 2 min) + Neon (PostgreSQL via `DATABASE_URL`) : `docs/deploiement-ovh.md` et `deploy/ovh/`. Ancien hébergement Render : `docs/deploiement.md`. Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini (en local, le serveur reste sans dépendance installée).
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+, téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (formules du créateur, k = area où naît le mob), table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic) et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
+- **Concasseur** (onglet du 21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100 blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures, treasure). `src/meta/crusher.js`, `src/ui/crusher.js`. Taux du créateur, très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence. Le code modulaire en mode 1 mineur reproduit exactement ses résultats (vérifié seed par seed au moment du découpage).
 
 ### Lancer, tester, simuler
@@ -96,11 +97,11 @@ src/recipes.js          recettes de craft (fichier séparé, demandé par le cr�
 src/skins.js            apparence des mineurs : corps commun, calques d'armure et pioche selon le stuff (fichier séparé, demandé par le créateur)
 src/core/rng.js         hasard déterministe (seed)
 src/sim/                simulation pure (aucun accès au DOM) : world, light, miner, path, actions, ai, mobs, session, log, diagnostics, dungeon (donjon : génération, entrée, effroi)
-src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; craft : recettes et blueprints ; stuff : pièces portées ; research : table de recherche ; skills : arbres de skills)
+src/meta/               progression hors session, logique pure (inventory : grille de slots, piles ; share : partage du coffre ; loot : ouverture des Treasure TX ; furnace : fours ; crusher : concasseur ; craft : recettes et blueprints ; stuff : pièces portées ; research : table de recherche ; skills : arbres de skills)
 src/shared/             règles partagées jeu + serveur, logique pure (account : pseudo, mot de passe, ID ; game : construire une session depuis l'enregistrement du serveur ; view : diffusion de la partie vers les navigateurs ; préférences, réglages dev, temps réel → ticks ; party : code de groupe, lien d'invitation)
 src/net/                appels au serveur (api)
 src/render/             canvas (lit l'état, ne le modifie jamais), textures
-src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), craft, stuff, research (table de recherche), skills, account (connexion, mon compte), style.css
+src/ui/                 nav (onglets), lobby (groupe, inviter, invitations, lancer, préférences, dev), hud, controls, inventory (grille), furnace (onglet Four), crusher (onglet Concasseur), craft, stuff, research (table de recherche), skills, account (connexion, mon compte), style.css
 src/main.js             lobby (rafraîchi : groupe, invitations) → session : reçoit la partie du serveur (/api/game/view) et l'affiche (aucune simulation dans le navigateur) → bilan
 tests/                  un fichier de test par sujet + helpers (mines dessinées en texte)
 scripts/                simulate.js, weights.js, stat-values.js, gen_textures.py
