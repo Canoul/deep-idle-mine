@@ -3,7 +3,7 @@
 
      node scripts/give-admin.js --name admin                         → en local (data/)
      $env:DATABASE_URL="postgres://…"; node scripts/give-admin.js --name admin   → base en ligne
-     options : --item "Pioche en pierre" (pièce donnée) · --mats 50 (Plumes d'ange et Pierres de pleine lune)
+     options : --item "Pioche en pierre" (pièce donnée) · --mats 50 (Plumes d'ange et Cristaux de pleine lune)
 
    Les lignes de stats sont tirées comme au jeu (src/meta/piece.js), seule la qualité est imposée.
    Le serveur garde tout en mémoire : ARRÊTE-LE avant (en local), ou REDÉMARRE-LE après (en ligne), sinon il réécrit
@@ -45,7 +45,7 @@ try {
       const p = sanitizePiece(inv.slots[i]);
       console.log(`+ ${pieceName(p)} : ${statLines(p).join(' · ')}`);
     }
-    if(mats) addAll(inv, { 'Plume d\'ange': mats, 'Pierre de pleine lune': mats });
+    if(mats) addAll(inv, { 'Plume d\'ange': mats, 'Cristal de pleine lune': mats });
     await game.putInventory(acc.id, JSON.parse(serialize(inv)));
     await game.close();
     console.log(`Inventaire de « ${acc.name} » mis à jour (${db ? 'base en ligne : redémarre le serveur' : game.file}) · +${mats} de chaque matériau.`);

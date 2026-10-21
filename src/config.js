@@ -324,7 +324,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers','moon_stone',
+  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -462,7 +462,8 @@ export const STUFF = {
    un rééquilibrage des prix s'applique aux pièces déjà tirées.
    discover : en R6 et R7, chaque ligne a `chance` d'être « +1 Découverte » (une au plus par objet).
    Amélioration (+1 à +levels.length) : `pct` = bonus TOTAL du palier sur toutes les stats de l'objet (base et lignes) ;
-   réussite = chance ; un échec ne coûte que les matériaux. Toutes les valeurs sont provisoires (équilibrage). */
+   réussite = chance ; un échec ne coûte que les matériaux. Matériaux : Plume d'ange (mine instantanée) et Cristal de
+   pleine lune (minotaure du donjon, DUNGEON.loot). Toutes les valeurs sont provisoires (équilibrage). */
 export const UPGRADE = {
   qualities: [
     { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:10, max:30, lines:1 },
@@ -487,9 +488,9 @@ export const UPGRADE = {
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
   levels: [
-    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':3, 'Pierre de pleine lune':3 } },
-    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':5, 'Pierre de pleine lune':5 } },
-    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':7, 'Pierre de pleine lune':7 } },
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':3, 'Cristal de pleine lune':3 } },
+    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':5, 'Cristal de pleine lune':5 } },
+    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':7, 'Cristal de pleine lune':7 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -514,8 +515,6 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
-  /* matériau de l'amélioration (UPGRADE.levels, avec la Plume d'ange de la mine instantanée) : pas encore de source en jeu */
-  'Pierre de pleine lune':  { cat:'material', tex:'moon_stone',    w:1, stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>

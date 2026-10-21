@@ -8,7 +8,7 @@ import { createInventory, addItem, addAll, serialize } from '../../src/meta/inve
 import { fakeLive } from '../helpers.js';
 
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
-const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Pierre de pleine lune';
+const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de pleine lune';
 
 async function setup(random = () => 0.5){
   const store = createMemoryGameStore();

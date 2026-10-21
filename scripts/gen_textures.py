@@ -530,15 +530,6 @@ def main():
     tex['dark_cloth'] = cloth
 
 
-    # pierre de pleine lune (matériau de l'amélioration) : galet gris-bleu poli, disque de lune pâle au centre
-    mst = blank()
-    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (5, 6)], start=4):
-        rect(mst, x0, yy, w, 1, hexc('#5d6b8a'))
-    rect(mst, 3, 5, 4, 2, hexc('#8593b3'))                          # reflet
-    rect(mst, 7, 6, 4, 4, hexc('#e9efff')); rect(mst, 8, 5, 2, 6, hexc('#e9efff')); rect(mst, 6, 7, 6, 2, hexc('#e9efff'))
-    rect(mst, 9, 7, 1, 1, hexc('#b8c4e0'))                          # cratère
-    rect(mst, 3, 12, 10, 1, hexc('#3c4660'))                        # ombre
-    tex['moon_stone'] = mst
 
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
