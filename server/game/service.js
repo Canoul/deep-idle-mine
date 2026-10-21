@@ -29,7 +29,8 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
-import { sanitizeStuff, stuffOp, lookOf } from '../../src/meta/stuff.js';
+import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
+import { identify, upgrade } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
@@ -55,6 +56,10 @@ const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: '
 const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
                        wrong_slot: 'Cette pièce ne va pas dans cette case.' };
+const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire (retire-la d\'abord si elle est équipée).',
+                         same_piece: 'Il faut un deuxième exemplaire à sacrifier.', already_identified: 'Cette pièce est déjà identifiée.',
+                         not_same_item: 'Le sacrifice doit être le même objet.', maxed: 'Cette pièce est déjà au niveau maximum.',
+                         not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -285,12 +290,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
-        const prefs = {}, looks = {}, skills = {};
+        const prefs = {}, looks = {}, gear = {}, skills = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
           skills[p.account] = skillRanks(await loadSkills(p.account));   // figés pour toute la session
-          /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) */
-          looks[p.account] = lookOf(await loadStuff(p.account, await loadInventory(p.account)));
+          /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) ; ses caractéristiques :
+             les mêmes pièces, avec leur qualité et leur niveau (gear) */
+          const st = await loadStuff(p.account, await loadInventory(p.account));
+          looks[p.account] = lookOf(st);
+          gear[p.account] = gearOf(st);
         }
         const rec = {
           id: crypto.randomUUID(),
@@ -298,7 +306,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
-          prefs, looks, skills,
+          prefs, looks, gear, skills,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
@@ -540,6 +548,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
 
     /* stuff : équiper une pièce de l'inventaire dans une case, ou la retirer. Inventaire et stuff changent ensemble. */
+    /* amélioration : { action:'identify', uid, sacrifice } ou { action:'upgrade', uid }, opId. Le serveur tire le hasard ;
+       une demande renvoyée retrouve son résultat (rien n'est tiré ni consommé deux fois). */
+    async upgrade(me, body = {}){
+      const { action, opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
+      if(!isInt(body.uid) || (action === 'identify' && !isInt(body.sacrifice))) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
+        const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random)
+                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random) : { error: 'bad_request' };
+        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
+        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { piece: r.piece, success: r.success ?? true, inventory: publicInventory(inv) };
+      });
+    },
+
     async stuff(me, body = {}){
       const { opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');

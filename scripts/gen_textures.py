@@ -529,6 +529,8 @@ def main():
     rect(cloth, 4, 6, 3, 1, hexc('#6a3d92'))
     tex['dark_cloth'] = cloth
 
+
+
     torch = blank()
     rect(torch, 7, 6, 2, 8, hexc('#7a5230'))
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))

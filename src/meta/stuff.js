@@ -1,12 +1,14 @@
 /* Stuff (onglet Stuff) : les pièces d'équipement portées par le mineur, une par case. Logique pure, partagée par
    le jeu et le serveur (qui fait foi).
 
-   État d'un joueur : { worn: { case: { item, uid } | null }, ops:[opId…] }.
+   État d'un joueur : { worn: { case: pièce | null }, ops:[opId…] } ; une pièce : { item, uid, q?, lines?, plus? }
+   (qualité, lignes et niveau d'amélioration : src/meta/piece.js).
    Équiper sort la pièce de l'inventaire (et y remet celle qu'elle remplace) ; retirer l'y remet. Une pièce garde
    son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée. */
 import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS } from './skills.js';
+import { pieceBonus, pieceName, sanitizePiece } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
@@ -21,27 +23,40 @@ export function sanitizeLook(look){
   return out;
 }
 export const lookOf = st => Object.fromEntries(Object.entries(st.worn).filter(([, p]) => p).map(([slot, p]) => [slot, p.item]));
+/* pièces portées pour les caractéristiques en session (qualité, lignes, niveau) : { case: pièce }.
+   sanitizeGear : revérifiée (case connue, pièce qui va dans cette case, piece.js) ; gearOf : depuis le stuff d'un joueur. */
+export function sanitizeGear(gear){
+  const out = {};
+  if(!gear || typeof gear !== 'object') return out;
+  for(const slot of SLOT_IDS){ const p = sanitizePiece(gear[slot]); if(p && slotOf(p.item) === slot) out[slot] = p; }
+  return out;
+}
+export const gearOf = st => sanitizeGear(st.worn);
 
 const num = v => String(v).replace('.', ',');
 const unitOf = k => STUFF.statUnits?.[k] ?? '';
-/* effets d'une pièce, un par ligne : ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) :
-   'Dégâts 11' */
-export const statLines = item => [
-  ...Object.entries(ITEMS[item]?.set || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)}${unitOf(k)}`),
-  ...Object.entries(ITEMS[item]?.stats || {}).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}${unitOf(k)}`),
-];
+/* effets d'une pièce (un nom d'objet, ou une pièce avec sa qualité et son niveau), un par ligne :
+   ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) : 'Dégâts 11' */
+export function statLines(entry){
+  const b = pieceBonus(entry);
+  return [
+    ...Object.entries(b.set).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)}${unitOf(k)}`),
+    ...Object.entries(b.stats).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}${unitOf(k)}`),
+  ];
+}
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');
 const r2 = v => Math.round(v * 100) / 100;   // 2,25 + 0,4 donne 2,65 et pas 2,6500000000000004
-/* Caractéristiques du mineur avec ces pièces (noms d'objets) : pour chaque stat, la base (STATS, ou la valeur `set`
+/* Caractéristiques du mineur avec ces pièces (noms d'objets, ou pièces avec leur qualité et leur niveau) : pour chaque stat, la base (STATS, ou la valeur `set`
    d'une pièce qui la remplace : l'épée remplace les mains nues) + la somme des bonus (`stats`). C'est ce que le
    mineur a EN SESSION (figé au lancement, src/shared/game.js) et ce qu'affiche l'onglet Stuff.
    Renvoie { stat: { base, bonus, total } }. Lu au moment de l'appel : un réglage dev des STATS est pris en compte. */
 export function statsOf(items){
   const base = { ...STATS }, bonus = {};
-  for(const item of items || []){
-    for(const [k, v] of Object.entries(ITEMS[item]?.set || {})) base[k] = v;
-    for(const [k, v] of Object.entries(ITEMS[item]?.stats || {})) bonus[k] = (bonus[k] || 0) + v;
+  for(const entry of items || []){
+    const b = pieceBonus(entry);
+    for(const [k, v] of Object.entries(b.set)) base[k] = v;
+    for(const [k, v] of Object.entries(b.stats)) bonus[k] = (bonus[k] || 0) + v;
   }
   return Object.fromEntries(Object.keys(STATS).map(k => [k, { base:base[k], bonus:r2(bonus[k] || 0), total:r2(base[k] + (bonus[k] || 0)) }]));
 }
@@ -51,7 +66,7 @@ export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(
    bonus = apport du stuff (ajouté), mult = multiplicateur des skills (1 = aucun), total = (base + bonus) × mult : ce qu'il a
    en session ; skill = ce que le multiplicateur ajoute (total − (base + bonus)) */
 export function minerStats(worn, effects = {}){
-  const s = statsOf(Object.values(worn || {}).filter(Boolean).map(p => p.item));
+  const s = statsOf(Object.values(worn || {}).filter(Boolean));
   const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
   const all = withSkillStats(withStuff, effects);
   const multOf = key => Object.hasOwn(SKILL_STATS, key) ? 1 + (effects[SKILL_STATS[key]] || 0) : 1;
@@ -59,11 +74,12 @@ export function minerStats(worn, effects = {}){
     mult:r2(multOf(key)), skill:r2(all[key] - withStuff[key]), total:r2(all[key]) }));
 }
 
-/* bulle d'info d'une pièce de stuff : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
-export function stuffTip(item){
+/* bulle d'info d'une pièce de stuff (nom d'objet ou pièce) : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
+export function stuffTip(entry){
+  const item = typeof entry === 'string' ? entry : entry?.item;
   if(ITEMS[item]?.cat !== 'stuff') return null;
-  const lines = statLines(item);
-  return [item, ...(lines.length ? lines : ['Aucun effet'])].join('\n');
+  const lines = statLines(entry);
+  return [pieceName(entry), ...(lines.length ? lines : ['Aucun effet'])].join('\n');
 }
 
 export function createStuff(){ return { worn: Object.fromEntries(SLOT_IDS.map(s => [s, null])), ops: [] }; }
@@ -99,9 +115,10 @@ export function sanitizeStuff(raw, inv){
   const worn = raw && typeof raw.worn === 'object' && raw.worn ? raw.worn : {};
   for(const slot of SLOT_IDS){
     const p = worn[slot];
-    if(!p || typeof p.item !== 'string' || slotOf(p.item) !== slot || !Number.isSafeInteger(p.uid) || seen.has(p.uid)) continue;
-    seen.add(p.uid);
-    st.worn[slot] = { item:p.item, uid:p.uid };
+    const piece = sanitizePiece(p);                   // qualité, lignes et niveau revérifiés
+    if(!piece || slotOf(piece.item) !== slot || seen.has(piece.uid)) continue;
+    seen.add(piece.uid);
+    st.worn[slot] = piece;
     if(inv.nextUid <= p.uid) inv.nextUid = p.uid + 1;
   }
   st.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-STUFF.opMemory) : [];

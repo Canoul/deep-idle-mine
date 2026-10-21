@@ -899,6 +899,65 @@ Règles (voir CLAUDE.md) :
   revoir si une MI à 20 pèse trop sur le serveur. Conflit attendu avec `geoffrey/nom-mine-instantanee` (même ligne
   de `MINE_MODES` dans `src/config.js`).
 
+### Onglet Amélioration : identification R1-R7, amélioration +1 à +3, nouvelles stats (Geoffrey) — branche `geoffrey/amelioration`
+- **Quoi** :
+  - `src/config.js` : `UPGRADE` (qualités, découverte R6/R7, liste des stats, prix en x, pas d'arrondi, paliers,
+    opMemory), `STATS` + `mineSpeedPct, damagePct, crit, oneTap, piercing, looting` (0), `GEAR_RNG.salt`, libellés et
+    unités, `shownStats`, matériaux `Plume d'ange` / `Pierre de pleine lune` (textures `angel_feather`, `moon_stone`) — **ancien** : la
+    Pierre est remplacée par le `Cristal de pleine lune` (voir le correctif plus bas).
+  - `src/meta/piece.js` (nouveau, pur) : `itemValue`, `linePoints`, `rollQuality`, `rollIdentity`, `pieceBonus`
+    (lignes + multiplicateur du palier, `set` = base + apport × mult), `pieceName`, `pieceColor`, `sanitizePiece`
+    (anti-triche : nombre de lignes, stats de la liste, % dans la fourchette de la qualité, une Découverte au plus en
+    R6/R7, plus 0..3 ; sinon la pièce redevient non identifiée). Une ligne enregistre son **%** (`{ stat, pct }`,
+    Découverte : `{ stat }`), pas sa valeur : `lineValue` la recalcule depuis la config.
+  - `src/meta/upgrade.js` (nouveau, pur) : `identify`, `upgrade`, `inv.upgrades` (opId rejoué → même résultat, rien
+    de tiré ni consommé deux fois). Seulement des pièces de l'inventaire (pas portées).
+  - `src/meta/inventory.js` : `takePiece`/`putPiece` gardent q/lines/plus ; `deserialize` passe chaque pièce dans
+    `sanitizePiece` (avant : `{...s}` gardait n'importe quel champ) ; champ `upgrades`.
+  - `src/meta/stuff.js` : `statLines`, `statsOf`, `stuffTip` acceptent un nom ou une pièce ; `sanitizeStuff` garde
+    les pièces revérifiées ; `sanitizeGear`, `gearOf`.
+  - Session : `record.gear[compte]` (pièces portées au lancement, `server/game/service.js` start) ; `minerSpecs`
+    (`src/shared/game.js`) calcule `carac` depuis `gear` (revérifié), sinon depuis `looks` (anciennes sessions).
+  - Simulation : `mineRate` = mineSpeed × (1 + %) dans `mineT`/`baseMineT` (`src/sim/miner.js`) ;
+    `src/sim/actions.js` : `hitDamage` (dégâts % + critique), `mineDuration` (coup unique), `pierce` (bloc derrière,
+    via `breakBlock` extrait de `mineBlock`), `lootOf` + `carac.looting`. `G.gearRng` (session.js) tiré seulement si
+    la stat > 0.
+  - Serveur : `POST /api/game/upgrade` (`{ action:'identify', uid, sacrifice }` | `{ action:'upgrade', uid }`, opId),
+    hasard `random` du service (crypto), verrou `inv:`.
+  - UI : `src/ui/upgrade.js` (nouveau), onglet `amelioration` (nav, index.html, main.js, style.css) ; `pname`
+    (rarity.js), `tipAttr(item, title, piece)` + `data-color` (tooltip.js) ; inventaire (« +N » dans la case,
+    « non identifiée ») et stuff affichent la pièce.
+  - Wiki : aides des nouvelles stats (`src/wiki/data.js`).
+  - `scripts/give-admin.js` : une pièce de chaque qualité + matériaux (fichiers locaux ou `DATABASE_URL`).
+- **Tests** : `tests/amelioration.test.js` (21) et `tests/anticheat/upgrade.test.js` (4) nouveaux ; `tests/nav.test.js`
+  (onglet ajouté). Sujets touchés : 318/319 verts (session, mobs, level, focus, shiny, dungeon, game-service,
+  game-http, game-replay, carac, wiki, goblin, skills, tier2, blueprint, iron-furnace, live, view, stuff, inventory,
+  craft, anticheat). ❌ `tests/anticheat/skills.test.js` (« étape sans la précédente ») échoue **aussi sur `main`
+  sans ce changement** (vérifié par `git stash`) : pas lié, à regarder à part.
+- **Simulation** : `--miners 3 --count 5` : 0 blocage, areas 3,4, profondeur 183. Sans les nouvelles stats, sorties
+  identiques avant/après au caractère près (seeds 7919, 15838, solo). Stress (perçage 60 %, coup unique 30 %, crit 50 %,
+  minage +50 %, butin +100 %, 3 mineurs × 5) : 0 blocage, mais étourdissements 8,6 → 25,2 par session ⚠️ (le perçage
+  vers le bas creuse sous le mineur : chutes imprévues). Négligeable aux valeurs réelles (quelques %), à surveiller.
+- **Prix mesurés** (script jetable, 24 seeds solo, +50 %, bruit ± 25 % par seed) : minage % ≈ 11 x/% (13 calculé),
+  coup unique ≈ 17 x/% → gardé 13, perçage ≈ 6,8 → 7, butin des mobs : 0 sur les minerais (+61 % de butin de mobs),
+  laissé à 2 (provisoire, pas de valeur en x pour le butin de mobs).
+- **Vérification** : ✅ routes testées en vrai (serveur dev local, compte de test, `give-admin.js`, amélioration +1,
+  identification refusée sur une pièce déjà identifiée). ⚠️ onglet pas regardé dans le navigateur (pas d'outil
+  navigateur dans la session) : modules chargés sans erreur (`node -e import`), `node --check src/main.js`.
+- **Points fragiles** : une pièce trafiquée perd son identification à la relecture (voulu). Changer les prix ou la
+  valeur d'un objet change les stats des pièces déjà tirées (voulu : la ligne garde son %) ; **changer les fourchettes
+  min/max d'une qualité** peut sortir des pièces existantes de la fourchette → elles redeviennent non identifiées :
+  prévoir une migration si on le fait un jour.
+  `give-admin.js` écrit dans le stockage : serveur arrêté en local, redémarré en ligne (sinon écrasé).
+
+### Amélioration : Cristal de pleine lune au lieu de la « Pierre de pleine lune » (Geoffrey) — branche `geoffrey/fix-pierre-pleine-lune`
+- **Quoi** : `UPGRADE.levels[].cost` demandait `Pierre de pleine lune`, objet sans aucune source (malentendu : c'est le
+  butin du minotaure, `DUNGEON.loot` = `Cristal de pleine lune`) → amélioration impossible en ligne. Coûts passés au
+  Cristal ; objet `Pierre de pleine lune` et texture `moon_stone` retirés (`src/config.js`, `scripts/gen_textures.py`,
+  `textures/moon_stone.png`) ; `scripts/give-admin.js`, tests, GAME_DESIGN, état du projet suivent.
+- **Effet de bord** : une Pierre déjà présente dans un inventaire (seulement via give-admin, jamais distribuée en
+  ligne) reste un objet empilable inconnu du catalogue, sans usage.
+- **Tests** : `amelioration`, `anticheat/upgrade`, `wiki`, `dungeon`, `inventory`.
 
 ---
 

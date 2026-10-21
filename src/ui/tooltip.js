@@ -3,13 +3,15 @@
    Toucher ailleurs, faire défiler ou quitter l'élément la ferme. */
 import { stuffTip } from '../meta/stuff.js';
 import { rarityOf } from '../meta/rarity.js';
+import { pieceColor } from '../meta/piece.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
-/* attribut à mettre sur l'icône d'un objet : bulle pour le stuff, title natif sinon */
-export function tipAttr(item, title = item){
-  const t = stuffTip(item);
-  return t ? ` data-tip="${esc(t)}" data-rarity="${rarityOf(item)}"` : ` title="${esc(title)}"`;
+/* attribut à mettre sur l'icône d'un objet : bulle pour le stuff, title natif sinon. piece : la pièce elle-même
+   (qualité, lignes, niveau), sinon les effets de l'objet de base ; titre dans la couleur de la qualité si identifiée */
+export function tipAttr(item, title = item, piece = null){
+  const t = stuffTip(piece ?? item), c = pieceColor(piece);
+  return t ? ` data-tip="${esc(t)}" data-rarity="${rarityOf(item)}"${c ? ` data-color="${c}"` : ''}` : ` title="${esc(title)}"`;
 }
 
 export function setupTooltips(){
@@ -23,7 +25,8 @@ export function setupTooltips(){
     cur = el;
     const [title, ...lines] = el.dataset.tip.split('\n');
     const rar = el.dataset.rarity;
-    tip.innerHTML = `<b${rar ? ` class="rn r-${esc(rar)}"` : ''}>${esc(title)}</b>` + lines.map(l => `<div>${esc(l)}</div>`).join('');
+    const col = /^#[0-9a-f]{6}$/i.test(el.dataset.color ?? '') ? ` style="color:${el.dataset.color}"` : '';
+    tip.innerHTML = `<b${rar ? ` class="rn r-${esc(rar)}"` : ''}${col}>${esc(title)}</b>` + lines.map(l => `<div>${esc(l)}</div>`).join('');
     tip.hidden = false;
     const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';

@@ -394,3 +394,16 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .miNotice .miNoticeBtns{display:flex;gap:6px;flex-shrink:0}
 .miNotice .x{flex-shrink:0}
 .miFeather{width:14px;height:14px;vertical-align:-2px;image-rendering:pixelated}
+
+/* onglet Amélioration */
+.upPair{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0}
+.upPair>div{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:96px;text-align:center}
+.upBox{width:56px;height:56px;cursor:pointer}
+.upBox img{width:40px;height:40px;image-rendering:pixelated}
+.upLbl{font-size:12px;max-width:160px}
+.upPlus{font-size:20px;opacity:.7}
+.upInfo{flex-direction:column;align-items:flex-start!important;text-align:left!important;font-size:13px}
+.upRules{margin-top:14px;font-size:13px}
+.upTable{border-collapse:collapse;margin-top:6px}
+.upTable th,.upTable td{border-bottom:1px solid var(--line);padding:3px 8px;text-align:left}
+.rq{text-shadow:0 0 2px #000,0 0 1px #000}

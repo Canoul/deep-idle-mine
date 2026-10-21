@@ -12,8 +12,13 @@ export const SPAWN_X = 25, CHEST_X = 22;
 /* attackSpeed = vitesse d'attaque contre un mob, en % (100 = un coup toutes les CFG.attackInterval s ; 200 = deux fois plus vite) ;
    fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
+/* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
+   mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
+   crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
+   piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, bridges:10 };
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2, bridges:10,
+  mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
 export const CFG = {
   ladderTime:2, refillRate:30, unlockRatio:0.4,
@@ -394,6 +399,9 @@ export const RARITY = {
    (le minerai, ou son shiny). Le doublon ne compte pas pour le déblocage de l'area. Hasard « live » à part
    (G.fortuneRng, tiré de la seed) : il ne décale ni les mobs, ni le shiny, ni le reste de la partie. */
 export const FORTUNE = { salt: 0x0f07c0de };
+/* hasard « live » des stats d'amélioration (critique, coup unique, perçage) : G.gearRng, tiré de la seed, à part.
+   Il n'est tiré que si la stat est au-dessus de 0 : sans ces stats, une partie est identique à avant. */
+export const GEAR_RNG = { salt: 0x6ea7c0de };
 
 /* ---- Hors session : stuff (onglet Stuff) ----
    slots : les cases d'équipement du mineur, dans l'ordre d'affichage (id, libellé, icône d'une case vide).
@@ -434,10 +442,56 @@ export const STUFF = {
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
-                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune' },
-  statUnits: { attackSpeed:' %', fortune:' %' },       // unité affichée après la valeur d'une stat
+                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune',
+                mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
+                piercing:'Perçage', looting:'Butin des mobs' },
+  statUnits: { attackSpeed:' %', fortune:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','compassRows','torches','bridges'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
+               'discoverMax','light','compass','compassRows','torches','bridges'],
+  opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
+};
+
+/* ---- Hors session : amélioration (onglet Amélioration, src/meta/upgrade.js) ----
+   Identification : une pièce de stuff pas encore identifiée + un autre exemplaire du même objet (sacrifié, peu importe
+   sa qualité) → le serveur tire une qualité (chance) puis `lines` lignes de stats. Définitive.
+   Une ligne : une stat tirée dans `pool` (deux lignes peuvent tomber sur la même), et un % tiré entre min et max ;
+   sa valeur en x = valeur de l'objet en x (somme de ses stats × prices) × % ; en points = valeur en x ÷ prix de la stat,
+   arrondie au pas de la stat (steps), au moins un pas. Ex. R4 sur pioche en pierre (0,1 × 1300 = 130 x), ligne à 32 % :
+   41,6 x → +0,032 de vitesse de minage, ou +1,2 % de fortune, ou +7 pods. La pièce garde le % (32), pas la valeur :
+   un rééquilibrage des prix s'applique aux pièces déjà tirées.
+   discover : en R6 et R7, chaque ligne a `chance` d'être « +1 Découverte » (une au plus par objet).
+   Amélioration (+1 à +levels.length) : `pct` = bonus TOTAL du palier sur toutes les stats de l'objet (base et lignes) ;
+   réussite = chance ; un échec ne coûte que les matériaux. Matériaux : Plume d'ange (mine instantanée) et Cristal de
+   pleine lune (minotaure du donjon, DUNGEON.loot). Toutes les valeurs sont provisoires (équilibrage). */
+export const UPGRADE = {
+  qualities: [
+    { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:10, max:30, lines:1 },
+    { q:2, label:'Bon',            color:'#00FF00', chance:0.24, min:20, max:40, lines:1 },
+    { q:3, label:'Haute qualité',  color:'#0080FF', chance:0.24, min:30, max:60, lines:1 },
+    { q:4, label:'Excellent',      color:'#FF00FF', chance:0.14, min:25, max:40, lines:2 },
+    { q:5, label:'Antique',        color:'#FFA500', chance:0.04, min:35, max:50, lines:2 },
+    { q:6, label:'Mystérieux',     color:'#FF0000', chance:0.03, min:30, max:50, lines:3 },
+    { q:7, label:'Légendaire',     color:'#FFFF00', chance:0.01, min:35, max:55, lines:4 },
+  ],
+  discover: { qualities:[6, 7], chance:0.25, value:1 },
+  /* stats qui peuvent tomber sur une ligne (toutes celles qui ont une valeur en x ; pas la Découverte, à part) */
+  pool: ['mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
+         'speed','climbSpeed','pods','oxygenMax'],
+  /* prix d'un point en x (catalogue de GAME_DESIGN §3, mineur de base) ; crit : 130 x = 10 % (décision du créateur) ;
+     mineSpeedPct = 1 % de 1 vitesse de minage (1300 / 100), damagePct = 1 % de 5 dégâts (40 × 5 / 100) ;
+     oneTap, piercing, looting : mesurés par simulation le 21/10 (GAME_DESIGN §3) : coup unique ≈ minage en % (13),
+     perçage ≈ 7 (les blocs en plus remplissent le sac), butin des mobs : provisoire (le butin des mobs n'a pas encore de valeur en x) */
+  prices: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
+            discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:2 },
+  /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
+  steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
+           discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
+  levels: [
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':3, 'Cristal de pleine lune':3 } },
+    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':5, 'Cristal de pleine lune':5 } },
+    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':7, 'Cristal de pleine lune':7 } },
+  ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
