@@ -60,17 +60,14 @@ export function updateHUD(G, ui){
   // area du mineur suivi
   const ai=areaOf(m.y), box=$('areaBody');
   if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
-  const a=G.areas[ai], need=unlockNeed(a);
-  const done = ai < G.unlockedAreas-1 || a.oreMined>=need;
+  const a=G.areas[ai];
   let h=`<div class="row"><b>Area ${ai}</b><span class="mut">${W}×${AREA_H} = ${W*AREA_H} blocs</span></div>`;
   for(const n in a.comp)
     h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
   if(a.chestChance>0)
     h+=`<div class="row" style="margin-top:6px"><span>💰 Treasure ${a.treasure&&a.treasure.opened?esc(a.treasure.item.replace('Treasure ','')):''}</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
-  h+=`<div class="row" style="margin-top:8px"><span>Objectif : ${Math.round(CFG.unlockRatio*100)}% des minerais</span><span>${a.oreMined} / ${need}</span></div>`;
-  h+=`<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:${done?'var(--ok)':'var(--acc)'}"></i></div>`;
-  h+=`<div class="mut" style="margin-top:4px">${done?'✔ Area suivante débloquée':'🔒 Accès à l\'area '+(ai+1)+' verrouillé'}</div>`;
+  h+=objectiveHtml(G);
   box.innerHTML=h;
 }
 
@@ -138,4 +135,15 @@ function renderLog(list){
   const box = $('log'), before = box.scrollHeight, top = box.scrollTop;
   box.innerHTML = list.map(l=>`<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join('');
   if(top > 0) box.scrollTop = top + (box.scrollHeight - before);
+}
+
+/* objectif de la mine : la DERNIÈRE area ouverte (la seule qui compte pour ouvrir la suivante), où que soit le mineur
+   suivi. Seuls les minerais minés dans cette area-là comptent. */
+export function objectiveHtml(G){
+  const f=G.unlockedAreas-1, a=G.areas[f];
+  if(!a) return '';
+  const need=unlockNeed(a), pct=Math.round(CFG.unlockRatio*100);
+  return `<div class="row" style="margin-top:8px"><span>Objectif : ${pct}% des minerais de l'area ${f}</span><span>${a.oreMined} / ${need}</span></div>`+
+    `<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:var(--acc)"></i></div>`+
+    `<div class="mut" style="margin-top:4px">🔒 L'area ${f+1} s'ouvre à ${need} minerais minés dans l'area ${f}</div>`;
 }

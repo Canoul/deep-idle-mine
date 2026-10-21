@@ -115,3 +115,30 @@ test('gravité : règles d\'appui', () => {
   assert.equal(supported(G,3,1), false, 'vide dessous, sans échelle : il tombe');
   assert.deepEqual(landing(G,3,1), {y:3, n:2}, 'il tombe de 2 cases jusqu\'au sol');
 });
+
+test('quota : seuls les minerais minés DANS la dernière area ouverte comptent pour ouvrir la suivante', async () => {
+  const { newSession } = await import('../src/sim/session.js');
+  const { mineBlock } = await import('../src/sim/actions.js');
+  const { unlockNeed, areaTop } = await import('../src/sim/world.js');
+  const G = newSession(5), m = G.miners[0];
+  G.shinyRng = () => 0.99;
+  const dig = (y) => { G.tiles[y][0] = IDS.coal; mineBlock(G, m, 0, y); };
+  G.areas[0].oreMined = unlockNeed(G.areas[0]) - 1;
+  dig(areaTop(0) + 3);
+  assert.equal(G.unlockedAreas, 2, 'area 1 ouverte au seuil de l\'area 0');
+  for(let i = 0; i < 50; i++) dig(areaTop(0) + 5);               // on continue de miner dans l'area 0
+  assert.equal(G.areas[1].oreMined, 0, 'les minerais de l\'area 0 ne comptent pas pour l\'area 1');
+  assert.equal(G.unlockedAreas, 2);
+  G.areas[1].oreMined = unlockNeed(G.areas[1]) - 1;
+  dig(areaTop(1) + 2);
+  assert.equal(G.unlockedAreas, 3, 'un minerai de l\'area 1 ouvre l\'area 2');
+});
+
+test('panneau de la mine : l\'objectif suit la dernière area ouverte, pas l\'area où se trouve le mineur', async () => {
+  const { objectiveHtml } = await import('../src/ui/hud.js');
+  const G = { unlockedAreas:2, areas:[{ oreMined:250, oreTotal:250 }, { oreMined:12, oreTotal:400 }] };
+  const h = objectiveHtml(G);
+  assert.match(h, /minerais de l'area 1/);
+  assert.match(h, /12 \/ 160/);
+  assert.match(h, /area 2 s'ouvre/);
+});
