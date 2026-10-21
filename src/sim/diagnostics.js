@@ -21,12 +21,14 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         // descendu vers le front, même s'il vient de passer en retour (longue descente sans miner, puis fin de session)
         const descending = b.y>=a.y+STUCK_MIN_PROGRESS;
         const waiting = b.status==='Attend le barbare devant le donjon';   // attente voulue (donjon), pas un blocage
-        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting)
+        // combat : un mob tué pendant la période, ou plus de la moitié du temps à frapper (boss de 1000 PV, ~2 min)
+        const fighting = a.kills!==b.kills || h.filter(s=>s.attack).length > h.length/2;
+        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting && !fighting)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });
       }
       function push(m){
         let h=hist.get(m.id); if(!h) hist.set(m.id, h=[]);
-        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status });
+        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, kills:m.stats.kills, attack:m.action?.type==='attack', mode:m.mode, status:m.status });
         if(h.length>W) h.shift();
         return h;
       }

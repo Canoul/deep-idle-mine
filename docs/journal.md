@@ -31,6 +31,10 @@ Modèle d'entrée :
   - IA : le mineur travaille dans la **dernière area débloquée** ; en traversant celles du dessus, il ne prend que
     les minerais collés à lui. Focus minerai : il cherche dans l'area la plus profonde qui en a encore.
     En simulation (3 mineurs de base) : profondeur 182 → 226, l'area 4 est atteinte à chaque session.
+  - Treuil (seed 1250570735) : en repartant du coffre, un mineur allait d'abord à « sa » colonne, tombait parfois dans
+    un trou sans échelle près de la surface et creusait un nouveau puits au lieu de prendre le treuil. Corrigé : quand le
+    treuil existe, il prend directement la descente existante. Le treuil reste plus lent qu'une échelle déjà posée
+    (règle actuelle) : un mineur qui a ses échelles jusqu'à son chantier peut encore les préférer.
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
 - **À suivre** : ⚠️ avec l'IA qui descend mieux, 3 mineurs de base minent ≈ 150 / 500 minerais de l'area 4 (il en faut

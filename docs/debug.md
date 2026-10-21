@@ -812,3 +812,24 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles / à surveiller** : ⚠️ équilibrage : l'area 4 est atteinte à chaque session avec 3 mineurs de base
   (≈ 150 / 500 minerais, 200 pour débloquer l'area 5, la dernière) → le cap « ne pas finir en un essai » est plus
   proche. Un mineur qui redescend alors qu'il reste peu de temps fait un aller-retour presque à vide (déjà là avant).
+
+### Treuil pas pris à la redescente (seed 1250570735, Geoffrey) — branche `geoffrey/retours-21-10`
+- **Cause** (`--skills mixed`, `winch.mjs` : chaque descente, temps dans le seau) : Rouge (secteur x 8) faisait 4
+  descentes sur 7 en « 17 s jusqu'à y 6, Creuse vers le bas ». `decideDeparture` le faisait marcher jusqu'à sa colonne
+  `homeX` ; il y tombait dans un trou (y 1-7) sans échelle, sans lien avec son puits (x 6) ni le treuil (on ne monte que
+  par une échelle) → `planDown` ne trouvait plus rien → puits neuf depuis la surface. Autre facteur, pas un bug : le
+  seau (0,85 × montée) est plus lent qu'une échelle posée, l'IA prend alors ses échelles.
+- **Quoi** : `decideDeparture` : si `G.winch` existe et que `planDown` (même filtre que `digDown`, extrait en
+  `downAvoid`) trouve une descente par l'existant, il part tout de suite en « Descend par l'existant ». Sans treuil :
+  inchangé (essai sans condition : test team « même case » 5,3 % > 5 %, profondeur 225,8 → 222,0 ; l'ancien départ ne
+  faisait que 2 puits neufs près de la surface en 3 sessions sans skills).
+- **Détecteur de blocage** : un mob tué pendant la fenêtre, ou plus de la moitié du temps à frapper, n'est pas un blocage
+  (faux positifs : barbare contre le minotaure ~2 min, seeds 16 et 23757 ; gobelins en série, seed 15838).
+- **Tests** : winch (+1 : seed 1250570735 mixed, aucun puits neuf à y ≤ 10 après la pose du treuil sur 20 min, les
+  non-logisticiens passent > 30 s dans le seau), diagnostics (+3 : boss, mob tué, descente puis retour), team, focus :
+  47/47.
+- **Vérification** : ✅ `winch.mjs` seed 1250570735 : plus aucune descente « jusqu'à y 6 » ; la plupart des descentes par
+  le seau. ✅ simulation 3 × 5 sans skills : identique au commit précédent (225,8, 0 blocage). ✅ `--skills mixed` 3 × 5 :
+  areas 4,6, profondeur 237,6, 0 blocage (avant correction du détecteur : 2 faux blocages). Ancien blocage seed 16
+  mixed « Retour (treuil) » : disparu.
+- **Points fragiles** : ⚠️ avec un arbre par mineur, l'area 5 (la dernière) est débloquée dans 3 sessions sur 5.
