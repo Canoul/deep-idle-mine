@@ -6,6 +6,7 @@
    Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : seulement leur nombre. */
 import { RESEARCH } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
+import { rcls, rname } from './rarity.js';
 import { PARTS, tierOf, researchPool, isBlueprint } from '../meta/research.js';
 
 const $ = id => document.getElementById(id);
@@ -38,13 +39,13 @@ export function setupResearch({ onOp }){
     const list = blueprints();
     if(bpIn && !countOf(inv, bpIn)) bpIn = null;
     const pick = picking ? `<div class="rsPick">${list.length ? list.map(b =>
-        `<button class="fopt" data-bp="${esc(b)}">${icon(b)}<span>${esc(b)}</span><b>${num(countOf(inv, b))}</b></button>`).join('')
+        `<button class="fopt" data-bp="${esc(b)}">${icon(b)}${rname(b)}<b>${num(countOf(inv, b))}</b></button>`).join('')
         : '<p class="mut">Aucun blueprint dans ton inventaire.</p>'}</div>` : '';
-    return `<div class="rsBench"><div class="slot rsSlot${bpIn ? '' : ' empty'}" id="rsBp" title="Clique pour choisir le blueprint à recycler">`+
+    return `<div class="rsBench"><div class="slot rsSlot${bpIn ? rcls(bpIn) : ' empty'}" id="rsBp" title="Clique pour choisir le blueprint à recycler">`+
              `${bpIn ? icon(bpIn) : '<span class="fhint">BP</span>'}</div>`+
            `<span class="rsArrow">➜</span><div class="slot rsSlot empty">${icon(PARTS)}</div></div>`+
            pick+
-           `<p class="mut small">${bpIn ? esc(bpIn) + ' : ' : ''}rend ${RESEARCH.recycle.min} à ${RESEARCH.recycle.max} ${esc(PARTS)}. Le blueprint est détruit.</p>`+
+           `<p class="mut small">${bpIn ? rname(bpIn) + ' : ' : ''}rend ${RESEARCH.recycle.min} à ${RESEARCH.recycle.max} ${esc(PARTS)}. Le blueprint est détruit.</p>`+
            `<p><button class="on" id="rsGo"${bpIn && !busy ? '' : ' disabled'}>♻ Recycler</button></p>`;
   }
 
@@ -62,8 +63,8 @@ export function setupResearch({ onOp }){
     try {
       const r = await onOp(op);
       msg = { ok:true, html: tab === 'research'
-        ? `✔ Nouveau blueprint : ${icon(r.item)} <b>${esc(r.item)}</b>. Il est dans ton inventaire (sélectionne-le, puis « Utiliser »).`
-        : `✔ ${esc(r.item)} recyclé : +${r.parts} ${esc(PARTS)}.` };
+        ? `✔ Nouveau blueprint : ${icon(r.item)} ${rname(r.item, r.item, 'b')}. Il est dans ton inventaire (sélectionne-le, puis « Utiliser »).`
+        : `✔ ${rname(r.item)} recyclé : +${r.parts} ${esc(PARTS)}.` };
       partsIn = false; bpIn = null;
     } catch(e){ msg = { ok:false, html:esc(e.message) }; }
     finally { busy = false; render(); }

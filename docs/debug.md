@@ -527,3 +527,18 @@ Règles (voir CLAUDE.md) :
   15838 : 6 et 7 shiny au coffre. Taux mesuré ≈ 1 % sur 20 000 fers. ⚠️ Scintillement pas regardé dans un navigateur.
 - **Points fragiles** : aucun usage hors session pour l'instant (ni recette, ni four). Le gobelin ne vole pas les shiny
   (ce ne sont pas des minerais).
+
+### Rareté des objets (commun → légendaire) : contour de case et couleur du nom
+- **Quoi** : `RARITY` en config (5 raretés, couleurs, liste des inhabituels) ; `SHINY.rarity` pour tous les shiny.
+  `src/meta/rarity.js` (`rarityOf`, `rarityDef` : commun par défaut, valeur inconnue → commun). `src/ui/rarity.js`
+  (`rcls` classe de case, `rname` nom coloré échappé, `rlabel`, `applyRarityColors` : couleurs CSS tirées de la config).
+  Appliqué : inventaire (cases, fiche + libellé, fenêtre de butin), craft, four (cases pleines, choix, recettes), stuff,
+  recherche, pastilles du coffre en session, bulle du stuff. Survol / sélection d'une case = contour extérieur orange
+  (le bord garde la rareté) ; objet arrivé = halo blanc ; recette prête = ✔ (le vert est pris).
+- **Fichiers** : `src/config.js`, `src/meta/rarity.js`, `src/ui/{rarity,inventory,craft,furnace,stuff,research,hud,tooltip}.js`,
+  `src/main.js`, `src/ui/style.css`, GAME_DESIGN (Inventaire global).
+- **Tests** : `tests/rarity.test.js` (5) ; inventory, craft, stuff, research, furnace, nav, loot, blueprint, shiny : 88/88.
+- **Vérification** : ✅ regardé dans Chromium headless (serveur local, inventaire de test) : inventaire (contours vert /
+  gris, fiche « Shiny iron · Inhabituel » en vert), craft (coches ✔), four. ⚠️ Pas regardé : onglets Stuff et Recherche,
+  pastilles en session, mobile.
+- **Points fragiles** : « Boussole en or » n'existe pas encore comme objet (sa rareté est prête).

@@ -1,13 +1,14 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, IDS, SHARE } from '../config.js';
 import { areaOf, unlockNeed } from '../sim/world.js';
+import { rname } from './rarity.js';
 import { curLum } from '../sim/miner.js';
 import { followedMiner } from '../render/camera.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const chips = obj => { const k=Object.keys(obj||{}); return k.length ? k.map(n=>`<span class="pill">${obj[n]} ${esc(n)}</span>`).join('') : '<span class="mut">vide</span>'; };
+const chips = obj => { const k=Object.keys(obj||{}); return k.length ? k.map(n=>`<span class="pill">${obj[n]} ${rname(n)}</span>`).join('') : '<span class="mut">vide</span>'; };
 /* ne remplace le contenu que s'il a changé (moins de travail, et on ne coupe pas un appui en cours) */
 const setHtml = (el, h) => { if(el._html !== h){ el.innerHTML = h; el._html = h; } };
 const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';

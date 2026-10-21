@@ -6,6 +6,7 @@ import { piecesFor, statsText, minerStats } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
+import { rcls, rname } from './rarity.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -19,8 +20,8 @@ export function setupStuff({ onOp }){
     $('stuffGrid').innerHTML = STUFF.slots.map(s => {
       const p = worn[s.id];
       return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item) : ` title="${esc(s.label)}"`}>`+
-             `<span class="slot">${p ? icon(p.item) : `<span class="sico">${s.icon}</span>`}</span>`+
-             `<span class="slbl">${esc(s.label)}</span><span class="sname mut">${p ? esc(p.item) : 'vide'}</span></button>`;
+             `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${s.icon}</span>`}</span>`+
+             `<span class="slbl">${esc(s.label)}</span>${p ? rname(p.item).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</button>`;
     }).join('');
     renderStats();
     if(open) renderPicker();
@@ -42,9 +43,9 @@ export function setupStuff({ onOp }){
     const s = STUFF.slots.find(x => x.id === open), cur = worn[open], list = piecesFor(inv, open);
     $('spick').querySelector('.box').innerHTML =
       `<h3>${s.icon} ${esc(s.label)}</h3>`+
-      (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : <b>${esc(cur.item)}</b>${statLine(cur.item)}</span><button id="spickOff">Retirer</button></div>` : '')+
+      (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : ${rname(cur.item, cur.item, 'b')}${statLine(cur.item)}</span><button id="spickOff">Retirer</button></div>` : '')+
       (list.length
-        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${esc(p.item)}${statLine(p.item)}</span><b>Équiper</b></button>`).join('')}</div>`
+        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${rname(p.item)}${statLine(p.item)}</span><b>Équiper</b></button>`).join('')}</div>`
         : `<p class="mut">Aucune pièce « ${esc(s.label.toLowerCase())} » dans ton inventaire.${open === 'pioche' ? ' Fabrique-en une dans l\'onglet Craft.' : ''}</p>`)+
       `<p class="err" id="spickErr" hidden></p><p style="text-align:right"><button id="spickClose">Fermer</button></p>`;
     $('spick').hidden = false;

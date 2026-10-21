@@ -5,6 +5,7 @@ import { itemDef } from '../meta/inventory.js';
 import { craftable, needs, canCraft, recipeOf } from '../meta/craft.js';
 import { statsText } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
+import { rcls, rname } from './rarity.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -20,15 +21,15 @@ export function setupCraft({ onCraft }){
     const list = craftable(inv);
     if(!sel || !list.includes(sel)) sel = list[0] ?? null;
     $('craftList').innerHTML = list.map(n =>
-      `<button class="slot craftItem${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')
+      `<button class="slot craftItem${rcls(n)}${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')
       || '<p class="mut">Aucune recette pour l\'instant.</p>';
     if(!sel){ $('craftInfo').innerHTML = ''; return; }
     const r = recipeOf(sel), ok = canCraft(inv, sel);
     $('craftInfo').innerHTML =
-      `<h3>${icon(sel)} ${esc(sel)}${r.qty > 1 ? ` <span class="mut">× ${r.qty}</span>` : ''}</h3>`+
+      `<h3>${icon(sel)} ${rname(sel)}${r.qty > 1 ? ` <span class="mut">× ${r.qty}</span>` : ''}</h3>`+
       (statsText(sel) ? `<p class="stuffStats">${esc(statsText(sel))}</p>` : '')+
       `<div class="craftNeeds">${needs(inv, sel).map(n =>
-        `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}<span>${esc(n.item)}</span><b>${num(n.have)}/${num(n.need)}</b></div>`).join('')}</div>`+
+        `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}${rname(n.item)}<b>${num(n.have)}/${num(n.need)}</b></div>`).join('')}</div>`+
       `<p><button class="on" id="craftBtn"${ok && !busy ? '' : ' disabled'}>🔨 Craft</button>`+
       `${msg ? ` <span class="${msg.startsWith('✔') ? 'okmsg' : 'err'}">${esc(msg)}</span>` : ''}</p>`;
     $('craftBtn').onclick = async () => {

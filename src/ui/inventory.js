@@ -7,6 +7,7 @@ import { canOpen } from '../meta/loot.js';
 import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
 import { statsText, slotOf } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
+import { rcls, rname, rlabel } from './rarity.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -36,7 +37,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : '';
-  return `<div class="slot${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${s.item} × ${fullQty(s.qty)}`)}>${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${s.item} × ${fullQty(s.qty)}`)}>${iconHtml(s.item)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
@@ -60,8 +61,9 @@ export function equipHtml(s, worn){
 function infoHtml(s, pinned=false, inv=null, worn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
-  const bits = [ `<b>${esc(s.item)}</b>`, `× ${fullQty(s.qty)}` ];
+  const bits = [ rname(s.item, s.item, 'b'), `× ${fullQty(s.qty)}` ];
   if(d) bits.push(CAT_LABEL[d.cat] || d.cat);
+  bits.push(rlabel(s.item));
   if(d?.w) bits.push(`poids ${d.w}`);
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(statsText(s.item)) bits.push(`<span class="stuffStats">${esc(statsText(s.item))}</span>`);
@@ -109,10 +111,10 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
 /* fenêtre « treasure ouvert » : le butin, objets rares en tête */
 export function showLoot(item, loot, onClose){
   const names = Object.keys(loot).sort((a, b) => isRare(b) - isRare(a));
-  const rows = names.map(n => `<div class="lootRow${isRare(n)?' rare':''}">${iconHtml(n)}<span>${esc(n)}</span>`+
+  const rows = names.map(n => `<div class="lootRow${isRare(n)?' rare':''}">${iconHtml(n)}${rname(n)}`+
                               `<b>× ${fullQty(loot[n])}</b></div>`).join('');
   const box = $('loot');
-  box.querySelector('.box').innerHTML = `<h3>${iconHtml(item)} ${esc(item)} ouvert !</h3>`+
+  box.querySelector('.box').innerHTML = `<h3>${iconHtml(item)} ${rname(item)} ouvert !</h3>`+
     (names.some(isRare) ? '<div class="lootRare">✨ Objet rare !</div>' : '') +
     `<div class="lootList">${rows}</div><p style="text-align:right"><button class="on" id="lootOk">OK</button></p>`;
   box.hidden = false;

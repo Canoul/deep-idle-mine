@@ -7,6 +7,7 @@
    - à plusieurs : tout le monde voit la même partie, puisqu'il n'y en a qu'une ;
    - fin : le serveur termine la partie au dernier tick, partage le coffre et verse les parts ; le navigateur affiche
      le bilan. */
+import { applyRarityColors } from './ui/rarity.js';
 import { GAME, PARTY } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { tickAt } from './shared/game.js';
@@ -107,6 +108,7 @@ const skills = setupSkills({
   onChange: s => stuff.setSkills(s),   // l'onglet Stuff affiche aussi les bonus des skills
 });
 
+applyRarityColors();   // couleurs des raretés (config)
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
 
 /* ---------- navigation ---------- */

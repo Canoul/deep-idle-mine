@@ -4,6 +4,7 @@
    (même règle que le serveur, src/meta/furnace.js) pour faire avancer la barre : affichage seulement. */
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
+import { rcls, rname } from './rarity.js';
 import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyOf, alloysWith, INPUTS } from '../meta/furnace.js';
 
 const $ = id => document.getElementById(id);
@@ -14,7 +15,7 @@ const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math
 const LABEL = { ore:'Minerai', a:'Ingrédient 1', b:'Ingrédient 2', fuel:'Combustible', out:'Sortie' };
 const MODE_LABEL = { smelt:'Fondre', alloy:'Alliage' };
 const modeOf = f => f.mode === 'alloy' ? 'alloy' : 'smelt';
-const x = (item, n) => `${icon(item)}<span>${esc(item)} ×${num(n)}</span>`;
+const x = (item, n) => `${icon(item)}${rname(item, `${item} ×${num(n)}`)}`;
 /* recettes d'un mode, pour la fenêtre « ? » : [{ out, parts:[[objet, quantité]…], time }] */
 const recipesOf = mode => mode === 'smelt'
   ? Object.entries(FURNACE.recipes).map(([ore, r]) => ({ out:r.out, parts:[[ore, FURNACE.orePerIngot], ['Charbon', FURNACE.fuelPerIngot]], time:r.time }))
@@ -30,7 +31,7 @@ export function setupFurnace({ onOp }){
   function slotHtml(i, slot, c, locked){
     const q = c ? `<span class="q">${num(c.qty)}</span>` : '';
     const hint = c ? `${esc(c.item)} × ${num(c.qty)}` : LABEL[slot];
-    return `<div class="slot fslot ${slot}${c ? '' : ' empty'}" data-f="${i}" data-slot="${slot}" title="${esc(hint)}"${locked ? ' aria-disabled="true"' : ''}>`+
+    return `<div class="slot fslot ${slot}${c ? rcls(c.item) : ' empty'}" data-f="${i}" data-slot="${slot}" title="${esc(hint)}"${locked ? ' aria-disabled="true"' : ''}>`+
            `${c ? icon(c.item) : `<span class="fhint">${LABEL[slot]}</span>`}${q}</div>`;
   }
 
@@ -116,10 +117,10 @@ export function setupFurnace({ onOp }){
     const opts = items.map(it => {
       const lock = cur && cur.item !== it;
       return `<button class="fopt${it === pick ? ' on' : ''}" data-item="${esc(it)}"${lock ? ' disabled title="Vide la case d\'abord"' : ''}>`+
-             `${icon(it)}<span>${esc(it)}<small class="mut">${info(it)}</small></span><b>${num(countOf(inv, it))}</b></button>`;
+             `${icon(it)}<span>${rname(it)}<small class="mut">${info(it)}</small></span><b>${num(countOf(inv, it))}</b></button>`;
     }).join('');
     box.innerHTML = `<h3>Four ${i + 1} · case ${LABEL[slot].toLowerCase()}</h3>`+
-      (cur ? `<div class="fcur">${icon(cur.item)}<span>Dedans : <b>${esc(cur.item)} × ${num(cur.qty)}</b></span>`+
+      (cur ? `<div class="fcur">${icon(cur.item)}<span>Dedans : ${rname(cur.item, `${cur.item} × ${num(cur.qty)}`, 'b')}</span>`+
              `<button id="fpickOut">Tout retirer</button></div>` : '')+
       (items.length ? `<div class="fopts">${opts}</div>`+
          `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité">`+
@@ -154,7 +155,7 @@ export function setupFurnace({ onOp }){
   function openHelp(mode){
     const box = $('fpick').querySelector('.box');
     box.innerHTML = `<h3>Recettes · ${MODE_LABEL[mode]}</h3><div class="frecipes">`+
-      recipesOf(mode).map(r => `<div class="frec"><div class="fout">${icon(r.out)}<b>${esc(r.out)}</b><span class="mut small">${mmss(r.time * 1000)}</span></div>`+
+      recipesOf(mode).map(r => `<div class="frec"><div class="fout">${icon(r.out)}${rname(r.out, r.out, 'b')}<span class="mut small">${mmss(r.time * 1000)}</span></div>`+
         `<div class="fparts">${r.parts.map(([it, n]) => x(it, n)).join('<span class="mut">+</span>')}</div></div>`).join('')+
       `</div><p class="mut small">Les ingrédients ne sont consommés qu'à la fin de chaque produit.${mode === 'alloy' ? ' Les deux ingrédients se posent dans n\'importe quel ordre.' : ''}</p>`+
       `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;

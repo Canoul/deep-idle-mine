@@ -283,7 +283,28 @@ export const SHINY = {
     Or:  { item:'Shiny gold', tex:'shiny_gold' },
   },
   w: 1,                                     // poids dans les pods (comme un lingot)
+  rarity: 'inhabituel',                     // rareté de tous les shiny (RARITY)
   salt: 0x5a1e7a11,                         // pour dériver G.shinyRng de la seed
+};
+
+/* ---- Rareté des objets (src/meta/rarity.js) ----
+   tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
+   items : rareté des objets qui ne sont pas « commun » (les autres le sont par défaut). Les shiny prennent
+   SHINY.rarity. Un nom absent du catalogue (ex. une pièce pas encore créée) peut quand même avoir sa rareté ici. */
+export const RARITY = {
+  tiers: [
+    { id:'commun',     label:'Commun',     color:'#9d9d9d' },
+    { id:'inhabituel', label:'Inhabituel', color:'#3ddc5a' },
+    { id:'rare',       label:'Rare',       color:'#3d8bff' },
+    { id:'epique',     label:'Épique',     color:'#b06bff' },
+    { id:'legendaire', label:'Légendaire', color:'#ff8c1a' },
+  ],
+  default: 'commun',
+  items: {
+    'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
+    'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
+    'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
+  },
 };
 
 /* ---- Hors session : stuff (onglet Stuff) ----
@@ -337,7 +358,7 @@ export const ITEMS = {
   ...Object.fromEntries(Object.values(BLOCKS).filter(b => !b.noDrop && !b.unbreakable)
     .map(b => [b.name, { cat:b.family ?? b.type, tex:b.tex, w:b.w, stack:true }])),
   ...Object.fromEntries([...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => [r.out, { cat:'ingot', tex:r.tex, w:1, stack:true }])),
-  ...Object.fromEntries(Object.values(SHINY.items).map(s => [s.item, { cat:'ingot', tex:s.tex, w:SHINY.w, stack:true, shiny:true }])),
+  ...Object.fromEntries(Object.values(SHINY.items).map(s => [s.item, { cat:'ingot', tex:s.tex, w:SHINY.w, stack:true, shiny:true, rarity:SHINY.rarity }])),
   ...Object.fromEntries(TREASURE.tiers.map(t => [t.item, { cat:'treasure', tex:t.tex, w:TREASURE.itemWeight, stack:true }])),
   [MOBS.bugItem]:    { cat:'mob',      tex:'bug',      w:1, stack:true },
   [MOBS.goblinItem]: { cat:'mob',      tex:'goblin',   w:1, stack:true },

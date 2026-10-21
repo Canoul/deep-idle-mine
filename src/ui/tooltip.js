@@ -2,13 +2,14 @@
    au survol de la souris, ou quand on le touche sur un écran tactile (le title natif n'y existe pas).
    Toucher ailleurs, faire défiler ou quitter l'élément la ferme. */
 import { stuffTip } from '../meta/stuff.js';
+import { rarityOf } from '../meta/rarity.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* attribut à mettre sur l'icône d'un objet : bulle pour le stuff, title natif sinon */
 export function tipAttr(item, title = item){
   const t = stuffTip(item);
-  return t ? ` data-tip="${esc(t)}"` : ` title="${esc(title)}"`;
+  return t ? ` data-tip="${esc(t)}" data-rarity="${rarityOf(item)}"` : ` title="${esc(title)}"`;
 }
 
 export function setupTooltips(){
@@ -21,7 +22,8 @@ export function setupTooltips(){
     if(el === cur && !tip.hidden) return;
     cur = el;
     const [title, ...lines] = el.dataset.tip.split('\n');
-    tip.innerHTML = `<b>${esc(title)}</b>` + lines.map(l => `<div>${esc(l)}</div>`).join('');
+    const rar = el.dataset.rarity;
+    tip.innerHTML = `<b${rar ? ` class="rn r-${esc(rar)}"` : ''}>${esc(title)}</b>` + lines.map(l => `<div>${esc(l)}</div>`).join('');
     tip.hidden = false;
     const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
