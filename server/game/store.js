@@ -3,8 +3,10 @@
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
    Groupe (lobby) : { code, leader, members:[{account, name, graceUntil}], invites:[…], createdAt } (sans les signes de vie).
-   Session de jeu : { id, seed, players:[{account, name}], bots, prefs, overrides, dev, speed, startedAt, finishAt,
-                      leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt } */
+   Session de jeu : { id, kind ('instant' = mine instantanée, sinon session normale), seed, players:[{account, name}],
+                      bots, prefs, overrides, dev, speed, startedAt, finishAt,
+                      leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt }
+   Inscription à la mine instantanée (server/instant/) : { account, name, at }, par compte. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -18,6 +20,7 @@ export function createMemoryGameStore(initial = {}){
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
+  const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -71,6 +74,11 @@ export function createMemoryGameStore(initial = {}){
     async putParty(code, p){ parties.set(code, copy(p)); await store.changed([{ ns: 'party', key: code, value: p }]); },
     async deleteParty(code){ if(parties.delete(code)) await store.changed([{ ns: 'party', key: code, value: null }]); },
 
+    /* inscriptions à la mine instantanée : gardées pour survivre à un redémarrage du serveur */
+    async getInstantSignups(){ return [...signups.values()].map(copy); },
+    async putInstantSignup(account, v){ signups.set(account, copy(v)); await store.changed([{ ns: 'mi_signup', key: account, value: v }]); },
+    async deleteInstantSignup(account){ if(signups.delete(account)) await store.changed([{ ns: 'mi_signup', key: account, value: null }]); },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
@@ -78,7 +86,8 @@ export function createMemoryGameStore(initial = {}){
                          crushers: Object.fromEntries(crushers),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
                          prefs: Object.fromEntries(prefs),
-                         sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties) }; },
+                         sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
+                         signups: Object.fromEntries(signups) }; },
   };
   return store;
 }
@@ -108,10 +117,10 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party', 'mi_signup']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills,
-                                        sessions: rows.game_session, parties: rows.party });
+                                        sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

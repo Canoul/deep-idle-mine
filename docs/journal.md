@@ -34,7 +34,12 @@ Modèle d'entrée :
   15 % de butin en moins : elle sert. Pioche +30 % de vitesse → +30 % de blocs (le stuff compte).
 - **Plumes** (décision de Geoffrey) : le mineur va chercher un tas accessible à 3 pas ou moins (avant, seul, il
   passait à côté de tous). Résultat : ~4 plumes par MI seul, ~3 chacun à 20, presque plus de tas laissé par terre.
-- **À suivre** : serveur (3), interface et rappels (4).
+- **Serveur (étape 3)** : la mine s'ouvre toute seule toutes les 2 h pile (heure de Paris, heures d'été et d'hiver
+  comprises ; la nuit où 2 h existe deux fois, une seule mine). Inscriptions gardées même si le serveur redémarre ;
+  s'inscrire fait quitter son groupe, refusé en session ; lancer une session normale désinscrit. 21 inscrits → 2 mines
+  (11 + 10). Le butin de chacun arrive dans son inventaire à la fin, une seule fois ; pas d'XP ; Quitter = rien. Si le
+  serveur redémarre pendant la mine, elle reprend à l'identique.
+- **À suivre** : interface et rappels (4), branchés sur le nouveau choix « Où miner » du Lobby.
 - **État** : 🧪 sur la branche `geoffrey/mine-instantanee` (pas en ligne)
 
 ## 21/10/2026 — Jules — Ménage des textes du jeu
