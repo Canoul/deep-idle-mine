@@ -39,6 +39,7 @@ button{display:inline-flex;align-items:center;justify-content:center;gap:calc(3*
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/btn_n.png) 3 fill / calc(3*var(--u)) stretch}
 button:hover{border-image-source:url(../../textures/ui/btn_h.png)}
 button.on{border-image-source:url(../../textures/ui/btn_on.png);color:#2a1206;text-shadow:none}
+button.on .mut,button.on small,button.on .rn{color:#4a1e08}   /* texte secondaire lisible sur la braise */
 button:active:not(:disabled){transform:translateY(var(--u))}
 button:disabled{filter:grayscale(1) brightness(.6);cursor:not-allowed}
 button .pi{width:calc(8*var(--u));height:calc(8*var(--u))}
