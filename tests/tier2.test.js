@@ -15,6 +15,7 @@ import { mineBlock } from '../src/sim/actions.js';
 import { decide } from '../src/sim/ai.js';
 import { dk } from '../src/sim/miner.js';
 import { newSession } from '../src/sim/session.js';
+import { rarityOf } from '../src/meta/rarity.js';
 import { worldFrom } from './helpers.js';
 
 const invWith = bag => { const inv = createInventory(); addAll(inv, bag); return inv; };
@@ -87,8 +88,8 @@ test('Treasure T2 : s\'ouvre depuis l\'inventaire, comme le T1 (une fois par dem
 /* ---------- objets, recettes, blueprints ---------- */
 
 test('3 objets de stuff : cases, stats et recettes demandées', () => {
-  assert.deepEqual(ITEMS['Gants tactique'].stats, { attackSpeed:1.9 });   assert.equal(ITEMS['Gants tactique'].slot, 'gants');
-  assert.deepEqual(ITEMS['Gants d\'ouvrier'].stats, { fortune:8.3 });     assert.equal(ITEMS['Gants d\'ouvrier'].slot, 'gants');
+  assert.deepEqual(ITEMS['Gants tactique'].stats, { attackSpeed:150 });   assert.equal(ITEMS['Gants tactique'].slot, 'gants');
+  assert.deepEqual(ITEMS['Gants d\'ouvrier'].stats, { fortune:5 });     assert.equal(ITEMS['Gants d\'ouvrier'].slot, 'gants');
   assert.deepEqual(ITEMS['Cape de Naingui'].stats, { discoverMax:1 });    assert.equal(ITEMS['Cape de Naingui'].slot, 'cape');
   assert.deepEqual(RECIPES['Gants tactique'].cost, { 'Shiny iron':20, 'Tainted iron':20, 'Jade inférieur':1 });
   assert.deepEqual(RECIPES['Gants d\'ouvrier'].cost, { 'Shiny gold':20, 'Tainted iron':20 });
@@ -131,22 +132,24 @@ test('Tissu sombre : nouvel objet du catalogue (icône qui existe, empilable) ; 
   }
 });
 
-test('valeur en x : les deux gants valent ≈ 300 x (prix d\'un point : attaque 196 s / 1,25 ; fortune 36 x par %)', () => {
-  const ATTACK_PER_POINT = 196 / STATS.attackSpeed, FORTUNE_PER_PCT = 3600 / 100;
-  const tactical = ITEMS['Gants tactique'].stats.attackSpeed * ATTACK_PER_POINT;
+test('valeur en x : Gants tactique ≈ 300 x (attaque : 196 s de combat / 100 % = 1,96 x par %), Gants d\'ouvrier 180 x (fortune : 36 x par %)', () => {
+  const ATTACK_PER_PCT = 196 / STATS.attackSpeed, FORTUNE_PER_PCT = 3600 / 100;
+  const tactical = ITEMS['Gants tactique'].stats.attackSpeed * ATTACK_PER_PCT;
   const worker = ITEMS['Gants d\'ouvrier'].stats.fortune * FORTUNE_PER_PCT;
   assert.ok(Math.abs(tactical - 300) <= 9, `tactique ${tactical}`);
-  assert.ok(Math.abs(worker - 300) <= 9, `ouvrier ${worker}`);
+  assert.equal(worker, 180);
 });
 
 test('stats du mineur : vitesse d\'attaque et fortune, affichées avec leur unité', () => {
-  assert.equal(STATS.attackSpeed, 1.25); assert.equal(STATS.fortune, 0);
-  assert.deepEqual(statLines('Gants tactique'), ['Vitesse d\'attaque +1,9']);
-  assert.deepEqual(statLines('Gants d\'ouvrier'), ['Fortune +8,3 %']);
+  assert.equal(STATS.attackSpeed, 100); assert.equal(STATS.fortune, 0);
+  assert.deepEqual(statLines('Gants tactique'), ['Vitesse d\'attaque +150 %']);
+  assert.deepEqual(statLines('Gants d\'ouvrier'), ['Fortune +5 %']);
   assert.deepEqual(statLines('Cape de Naingui'), ['Découverte +1']);
+  for(const [item, tier] of [['Gants tactique','inhabituel'], ['Gants tactique BP','inhabituel'], ['Gants d\'ouvrier','inhabituel'], ['Gants d\'ouvrier BP','inhabituel'], ['Cape de Naingui','rare'], ['Cape de Naingui BP','rare']])
+    assert.equal(rarityOf(item), tier, item);
   const s = statsOf(['Gants tactique', 'Cape de Naingui']);
-  assert.equal(s.attackSpeed.total, 3.15); assert.equal(s.discoverMax.total, STATS.discoverMax + 1); assert.equal(s.fortune.total, 0);
-  assert.equal(statsOf(['Gants d\'ouvrier']).fortune.total, 8.3);
+  assert.equal(s.attackSpeed.total, 250); assert.equal(s.discoverMax.total, STATS.discoverMax + 1); assert.equal(s.fortune.total, 0);
+  assert.equal(statsOf(['Gants d\'ouvrier']).fortune.total, 5);
   assert.ok(STUFF.shownStats.includes('attackSpeed') && STUFF.shownStats.includes('fortune'));
 });
 
@@ -159,12 +162,12 @@ const fight = attackSpeed => {
   decide(G, m);
   return { action:m.action, slow:dk(G, m) };        // slow : 1 avec de la lumière, CFG.darkSlow sans (cette mine est sombre)
 };
-test('vitesse d\'attaque : de base un coup toutes les 0,8 s ; ×2 → deux fois plus vite (avant malus d\'obscurité)', () => {
-  const base = fight(), fast = fight(2.5), gloves = fight(3.15);
+test('vitesse d\'attaque en % : 100 % = un coup toutes les 0,8 s ; 200 % = deux fois plus vite (avant malus d\'obscurité)', () => {
+  const base = fight(), fast = fight(200), gloves = fight(250);
   assert.equal(base.action.type, 'attack');
   assert.ok(Math.abs(base.action.dur * base.slow - 0.8) < 1e-9);
   assert.ok(Math.abs(fast.action.dur * fast.slow - 0.4) < 1e-9);
-  assert.ok(Math.abs(gloves.action.dur * gloves.slow - 1 / 3.15) < 1e-9);
+  assert.ok(Math.abs(gloves.action.dur * gloves.slow - 0.8 / 2.5) < 1e-9);
 });
 
 /* ---------- fortune ---------- */
@@ -211,9 +214,9 @@ test('fortune : hasard dérivé de la seed (même seed = mêmes tirages), distin
   assert.notDeepEqual(seqOf(newSession(123)), seqOf(c));
   assert.notEqual(newSession(123).fortuneRng(), newSession(123).shinyRng());
 });
-test('fortune en session : un mineur avec les Gants d\'ouvrier a 8,3 % ; sans, 0', () => {
-  const { carac } = (() => { const G = newSession(1, { miners:[{ carac:{ ...STATS, fortune:8.3 } }, {}] }); return { carac:G.miners.map(m => m.carac.fortune) }; })();
-  assert.deepEqual(carac, [8.3, 0]);
+test('fortune en session : un mineur avec les Gants d\'ouvrier a 5 % ; sans, 0', () => {
+  const { carac } = (() => { const G = newSession(1, { miners:[{ carac:{ ...STATS, fortune:5 } }, {}] }); return { carac:G.miners.map(m => m.carac.fortune) }; })();
+  assert.deepEqual(carac, [5, 0]);
 });
 
 /* ---------- table de recherche, tier 2 ---------- */

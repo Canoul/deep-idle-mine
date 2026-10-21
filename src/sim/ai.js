@@ -106,7 +106,7 @@ function nearestThreat(G,m){
 function fight(G,m,o){
   const dx=o.x-m.x, dy=o.y-m.y;
   m.status='Combat ('+o.type+')';
-  if(Math.abs(dx)+Math.abs(dy)<=1){ startAction(m,'attack', 1/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
+  if(Math.abs(dx)+Math.abs(dy)<=1){ startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(!ok) idle(m,0.3);
 }

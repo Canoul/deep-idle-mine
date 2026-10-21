@@ -9,9 +9,9 @@ export const SPAWN_X = 25, CHEST_X = 22;
 
 /* stats du mineur (de base, avant équipement) */
 /* speed = marche (horizontal), climbSpeed = sur échelle, montée comme descente (blocs/s) ; deux stats indépendantes */
-/* attackSpeed = coups par seconde contre un mob (1,25 = un coup toutes les 0,8 s) ;
+/* attackSpeed = vitesse d'attaque contre un mob, en % (100 = un coup toutes les CFG.attackInterval s ; 200 = deux fois plus vite) ;
    fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
-export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:1.25, fortune:0, pods:200, light:6, compass:8,
+export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
   torches:20, torchRadius:5, discoverMax:2, bridges:10 };
 
 export const CFG = {
@@ -20,6 +20,7 @@ export const CFG = {
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   torchTime:1,            // s pour poser une torche
+  attackInterval:0.8,     // s entre deux coups à 100 % de vitesse d'attaque
   torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
   maxFall:3,              // chute la plus haute (cases) que le mineur accepte de faire en connaissance de cause
   stunFall:3,             // chute IMPRÉVUE (cases non découvertes) à partir de laquelle il est étourdi…
@@ -327,6 +328,8 @@ export const RARITY = {
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
+    'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
+    'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
   },
 };
 
@@ -366,15 +369,15 @@ export const STUFF = {
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
-    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:1.9 } },
-    'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:8.3 } },
+    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:150 } },
+    'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole',
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune' },
-  statUnits: { fortune:' %' },       // unité affichée après la valeur d'une stat
+  statUnits: { attackSpeed:' %', fortune:' %' },       // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','torches','bridges'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
@@ -465,7 +468,7 @@ export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2,
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
 export const DEV_TUNABLES = [
   ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
-  ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (coups/s)',0.1,100], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
+  ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (%)',10,10000], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50],
   ['STATS','torches','Torches',0,1000], ['STATS','bridges','Passerelles',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],

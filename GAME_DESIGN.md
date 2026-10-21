@@ -159,7 +159,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 | Vitesse de montée | Déplacement sur échelle (montée et descente) | 2,25 blocs/s *(provisoire)* |
 | Vitesse de minage | Divise le temps de minage | 1 *(provisoire)* |
 | Dégâts | Dégâts par coup contre les mobs | 5 *(provisoire)* |
-| Vitesse d'attaque | Coups par seconde contre un mob (1,25 = un coup toutes les 0,8 s ; ralentie dans le noir comme le reste) | 1,25 coups/s *(provisoire)* |
+| Vitesse d'attaque | Rythme des coups contre un mob, **en %** (100 % = un coup toutes les 0,8 s, 200 % = deux fois plus vite ; ralentie dans le noir comme le reste) | 100 % *(provisoire)* |
 | Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
 
@@ -220,8 +220,8 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
 | Oxygène | 300 | 4 x *(prix « comme frein »)* | +38 = 152 x (Casque en fer) |
 | Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) |
-| Vitesse d'attaque | 1,25 | **157 x** (196 s de combat / 1,25) | +1,9 = 298 x (Gants tactique) |
-| Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +8,3 % = 299 x (Gants d'ouvrier) |
+| Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +150 % = 294 x (Gants tactique) |
+| Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
 | Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
 | Vision, boussole, passerelles, torches | – | ≈ 0 (effet indirect ou trop faible) | – |
@@ -340,7 +340,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).
 - Partout où l'objet apparaît (inventaire, craft, four, stuff, recherche, coffre en session, bulles), le **contour de sa case** et la **couleur de son nom** suivent sa rareté. La fiche d'un objet de l'inventaire affiche aussi le libellé de la rareté.
-- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), tous les **shiny**.
+- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. **Rare** : Cape de Naingui (et son BP).
 - Le vert étant pris par la rareté : un objet tout juste arrivé brille d'un halo blanc, et une recette qu'on peut fabriquer porte une coche ✔.
 
 ### Craft (onglet Craft)
@@ -377,8 +377,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +1,9 (≈ 300 x) |
-  | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +8,3 % (≈ 300 x) |
+  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +150 % (≈ 294 x) |
+  | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +5 % (≈ 180 x) |
   | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
 
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. *(À définir : d'où il vient, aucun mob ni butin n'en donne encore.)*
