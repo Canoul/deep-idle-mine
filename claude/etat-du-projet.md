@@ -1,4 +1,4 @@
-# État du projet — Deep Idle Mine
+# État du projet — Deep Mine Idle
 
 Photo de ce qui existe **aujourd'hui** dans le jeu et autour. Claude la lit en début de discussion et la met à
 jour dès qu'un ajustement majeur est fait ou décidé (nouveau système, décision de design, équilibrage notable,
@@ -13,6 +13,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## Le jeu
 
+- **Nom du jeu : Deep Mine Idle** (anciennement « Deep Idle Mine » ; les noms techniques du serveur gardent
+  `deep-idle-mine`).
 - Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1 h, rapporte
   des ressources dans un inventaire global, qu'on utilise hors session pour crafter. En ligne :
   https://deepmineidle.fr/
@@ -30,6 +32,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## Systèmes en place
 
+- **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
+  présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
+  à gauche (GAME_DESIGN §6). Serveur : `server/social/`, stockage `social` dans PostgreSQL.
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
   d'action en bas (touches 1-9, 0, -) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
@@ -84,6 +89,5 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
-- Branche `origin/social` (onglet Social, liste d'amis) : en attente, hors périmètre pour l'instant.
 - Fondations : pas encore.
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.

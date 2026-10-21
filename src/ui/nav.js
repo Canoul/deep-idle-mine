@@ -1,4 +1,4 @@
-/* Barre d'action (onglets), toujours visible en bas de l'écran ; touches 1 à 9, 0 et - pour changer d'onglet.
+/* Barre d'action (onglets, avec leur nom), toujours visible en bas de l'écran ; touches 1 à 9, 0, - et = pour changer d'onglet.
    Changer d'onglet ne met jamais la session en pause : la mine continue de tourner en arrière-plan. */
 import { pxi } from './pxicons.js';
 
@@ -16,11 +16,11 @@ export const TABS = [
   { id:'recherche',  label:'Recherche',  icon:'book',      ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'sparkle',   ready:true  },   // arbres de skills (points gagnés aux niveaux)
   { id:'historique', label:'Historique', icon:'hourglass', ready:true  },   // sessions passées : seed et butin
-  { id:'social',     label:'Social',     icon:'group',     ready:false },
+  { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
 ];
 
 /* touche du clavier de chaque onglet, dans l'ordre de la barre (les onglets en attente n'en ont pas) */
-export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-'];
+export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','='];
 
 /* icônes pixel posées dans la page : <i data-pxi="nom"></i> */
 export function fillIcons(root = document){

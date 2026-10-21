@@ -281,7 +281,8 @@ export const XP = {
    l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). */
 export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
 
-export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
+export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
+  minShown:0.65 };   // part de la hauteur de la vue gardée au moins : la mine remplit la largeur, le haut et le bas peuvent être rognés
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
@@ -539,7 +540,7 @@ export const ACCOUNT = {
   recoveryLength: 16,               // caractères du code de secours (affiché en 4 groupes de 4)
   /* pseudos interdits (comparés sans majuscules ni accents) */
   reservedNames: ['admin', 'administrateur', 'moderateur', 'modo', 'support', 'staff', 'systeme', 'system',
-                  'invite', 'guest', 'anonyme', 'deepidlemine', 'serveur', 'server', 'root'],
+                  'invite', 'guest', 'anonyme', 'deepidlemine', 'deepmineidle', 'serveur', 'server', 'root'],
 };
 
 /* ---- Sessions de jeu (décidées et vérifiées par le serveur) ----
@@ -600,6 +601,9 @@ export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
 ];
+/* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
+   `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
+export const SOCIAL = { poll:4000, hiddenPoll:20000 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

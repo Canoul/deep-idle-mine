@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deep Idle Mine</title>
+<title>Deep Mine Idle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Jersey+15&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 <!-- barre du haut : compte, nom du jeu, session en cours (visible depuis tous les onglets), wiki -->
 <header class="topbar">
   <button class="navAccount" id="navAccount" hidden></button>
-  <div class="brand"><i data-pxi="pickaxe"></i>Deep Idle Mine</div>
+  <div class="brand"><i data-pxi="pickaxe"></i>Deep Mine Idle</div>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
     <i data-pxi="hourglass"></i><span id="navTimer">—</span>
     <div class="bar"><i id="navBar"></i></div>
@@ -206,6 +206,18 @@
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
   </div>
 </section>
+<section class="view" data-view="social" hidden>
+  <div class="furnWrap" id="socialBody">
+    <div class="invHead"><h1><i data-pxi="group"></i>Social</h1><span class="mut small" id="socialCount"></span></div>
+    <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
+      <button class="on">Ajouter</button></form>
+    <p id="socialMsg" hidden></p>
+    <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
+    <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
+    <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
+    <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+  </div>
+</section>
 <section class="view" data-view="historique" hidden>
   <div class="furnWrap">
     <div class="invHead"><h1><i data-pxi="hourglass"></i>Historique</h1><span class="mut small">Tes sessions des 30 derniers jours.</span></div>
@@ -232,7 +244,7 @@
   <div id="fpick" hidden><div class="box"></div></div>
 </section>
 </div>
-<!-- barre d'action (onglets, touches 1 à 9, 0 et -) entre deux orbes : temps de session et XP, ou oxygène et pods du
+<!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du
      mineur suivi pendant une session (src/ui/orbs.js) -->
 <nav id="nav" class="dock">
   <div class="orb" id="orbL"><canvas width="36" height="36"></canvas><div class="v"></div></div>
@@ -240,6 +252,7 @@
   <div class="orb" id="orbR"><canvas width="36" height="36"></canvas><div class="v"></div></div>
 </nav>
 </div>
+<div id="notifs" aria-live="polite"></div>
 <div id="account" hidden><div class="box"></div></div>
 <!-- rappels de la mine instantanée (src/ui/instant-lobby.js), visibles depuis tous les onglets -->
 <div id="miNotice" class="miNotice" role="status" hidden></div>

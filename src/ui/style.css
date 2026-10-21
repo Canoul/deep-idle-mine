@@ -1,4 +1,4 @@
-/* Deep Idle Mine : direction artistique « Forge noire » en pixel art (maquette design/poc/4-pixel-forge.html).
+/* Deep Mine Idle : direction artistique « Forge noire » en pixel art (maquette design/poc/4-pixel-forge.html).
    Unité : --u = taille d'un pixel d'art à l'écran (2 px, 3 px sur grand écran) ; tout est un multiple de --u.
    Cadres, boutons, cases et barres : PNG de textures/ui/ (scripts/gen_ui.py) en border-image, jamais de flou ni de
    dégradé lisse ; les ombres sont des décalages francs. Icônes : src/ui/pxicons.js. */
@@ -8,7 +8,7 @@
   --ok:#58d26a; --bad:#ff5a4a; --o2:#7cc6f2; --shadow:#2a1206; --sep:#2a231e; --chip:#1d1612; --sel:#24160d; --line:#3a302a;
   --f-body:'Jersey 10',system-ui,sans-serif; --f-title:'Jersey 15','Jersey 10',system-ui,sans-serif;
   --fs:17px; --fs-s:15px; --fs-l:21px; --fs-xl:27px; --fs-h1:42px;
-  --top-h:calc(30*var(--u)); --dock-h:calc(52*var(--u));
+  --top-h:calc(30*var(--u)); --dock-h:calc(58*var(--u));
 }
 @media (min-width:1800px) and (min-height:1000px){
   :root{--u:3px;--fs:22px;--fs-s:19px;--fs-l:26px;--fs-xl:32px;--fs-h1:60px}
@@ -127,17 +127,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .dock{position:fixed;left:50%;bottom:calc(2*var(--u));transform:translateX(-50%);z-index:40;display:flex;align-items:flex-end;gap:calc(6*var(--u))}
 .dock ul{list-style:none;margin:0 0 calc(3*var(--u));padding:calc(2*var(--u));display:flex;gap:var(--u);
   border:calc(6*var(--u)) solid transparent;border-image:url(../../textures/ui/panel.png) 6 fill / calc(6*var(--u)) stretch}
-.dock ul button{position:relative;width:calc(30*var(--u));height:calc(30*var(--u));min-height:0;padding:0;color:#c9b49a;text-shadow:none;
+.dock ul button{position:relative;flex-direction:column;gap:var(--u);min-width:calc(30*var(--u));height:calc(36*var(--u));min-height:0;padding:0 calc(2*var(--u));color:#c9b49a;text-shadow:none;
   border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
 .dock ul button:hover{color:var(--acc-lt);border-image-source:url(../../textures/ui/slot_n.png)}
 .dock ul button.on{color:var(--acc-lt);border-image-source:url(../../textures/ui/slot_sel.png)}
 .dock ul button.later{opacity:.4}
 .dock ul button .pi{width:calc(16*var(--u));height:calc(16*var(--u))}
 .dock ul button kbd{position:absolute;left:var(--u);top:0;font:400 var(--fs-s)/1 var(--f-body);color:var(--mut)}
-.dock ul button .lbl{position:absolute;left:50%;bottom:calc(100% + 9*var(--u));transform:translateX(-50%);padding:var(--u) calc(3*var(--u));
-  background:var(--void);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000;color:var(--txt);white-space:nowrap;
-  opacity:0;pointer-events:none}
-.dock ul button:hover .lbl,.dock ul button:focus-visible .lbl{opacity:1}
+.dock ul button .lbl{font:400 var(--fs-s)/1 var(--f-body);color:var(--mut);white-space:nowrap}
+.dock ul button:hover .lbl,.dock ul button.on .lbl{color:var(--acc-lt)}
 .dock .dot{position:absolute;right:var(--u);top:var(--u);width:calc(3*var(--u));height:calc(3*var(--u));background:var(--acc);box-shadow:0 0 0 var(--u) #000}
 .orb{position:relative;width:calc(36*var(--u));height:calc(36*var(--u))}
 .orb canvas{display:block;width:100%;height:100%}
@@ -237,6 +235,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .runL .card,.runR .card,.runGrid.mi .card{font-size:var(--fs-s)}
 .runL .card>h2,.runR .card>h2,.runGrid.mi .card>h2{font-size:var(--fs)}
 #cvWrap,#cvMiWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
+/* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
+#cvWrap{overflow:hidden}
+#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#followBtn{z-index:1}
 #cv,#cvMi{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 #cv{touch-action:none;cursor:grab}
 #cv.dragging{cursor:grabbing}
@@ -473,6 +475,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 
 /* ---------- écrans moyens : la session passe en une colonne qui défile (mine en haut) ---------- */
 @media (max-width:1100px){
+  .orb{display:none}
   .runGrid{grid-template-columns:calc(130*var(--u)) minmax(0,1fr) calc(22*var(--u))}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
   .runR .card{flex:1 1 calc(130*var(--u))}
@@ -488,19 +491,20 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 }
 /* ---------- téléphone ---------- */
 @media (max-width:700px){
-  :root{--fs:16px;--fs-s:14px;--fs-l:19px;--fs-xl:24px;--fs-h1:36px;--dock-h:calc(46*var(--u))}
+  :root{--fs:16px;--fs-s:14px;--fs-l:19px;--fs-xl:24px;--fs-h1:36px}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
   .brand,.navWiki span,.navAccount .who small{display:none}
   .navSession .bar{width:calc(30*var(--u))}
   .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:center}
   .orb{display:none}
   .dock ul{overflow-x:auto;max-width:100%}
-  .dock ul button{width:calc(24*var(--u));height:calc(24*var(--u));flex:none}
+  .dock ul button{flex:none}
   .dock ul button kbd{display:none}
   .invWrap,.furnWrap,.lobbyWrap{padding:calc(9*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
   .runGrid{display:flex;flex-direction:column;padding:calc(3*var(--u))}
   .rail{display:none}
   #cvWrap{min-height:0;order:-1}
+  #cv{position:static;transform:none}
   .runL,.runR{overflow:visible}
   .runGrid.mi{display:flex}
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}
@@ -511,4 +515,36 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .pslots{grid-template-columns:repeat(3,minmax(0,1fr))}
   .fgrid{grid-template-columns:calc(36*var(--u)) 1fr calc(36*var(--u))}
 }
+
+/* ---------- onglet Social (src/ui/social.js) ---------- */
+#socialBody{display:flex;flex-direction:column;gap:calc(15*var(--u))}
+#socialBody .invHead{margin-bottom:0}
+.sadd{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap}
+.sadd input{flex:1;min-width:calc(70*var(--u))}
+.frow{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) var(--u);box-shadow:0 calc(-1*var(--u)) 0 var(--sep)}
+.frow:first-child{box-shadow:none}
+.fname{flex:1;display:flex;flex-direction:column;min-width:0}
+.fname b{font:400 var(--fs-l)/1.1 var(--f-title);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
+.fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
+.fbtns .x{min-width:calc(15*var(--u));padding:0}
+/* présence : carré pixel (gris hors ligne, vert en ligne, braise en session) */
+.fdot{width:calc(5*var(--u));height:calc(5*var(--u));flex:none;background:#5a4f46;box-shadow:0 0 0 var(--u) #000}
+.fdot.on{background:var(--ok)}
+.fdot.play{background:var(--acc)}
+
+/* ---------- notifications en pop-up (demande d'ami, invitation de groupe), sous la barre du haut ---------- */
+#notifs{position:fixed;top:calc(var(--top-h) + 6*var(--u));left:calc(6*var(--u));z-index:55;display:flex;flex-direction:column;gap:calc(4*var(--u));
+  max-width:min(calc(180*var(--u)),calc(100vw - 12*var(--u)));pointer-events:none}
+.notif{pointer-events:auto;border:calc(6*var(--u)) solid transparent;padding:calc(2*var(--u)) calc(3*var(--u));
+  border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:nin .3s steps(3)}
+.notif.busy{opacity:.6}
+.ntext{display:flex;gap:calc(3*var(--u));align-items:flex-start}
+.nico{color:var(--acc)}
+.nico .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.nbtns{display:flex;gap:calc(2*var(--u));justify-content:flex-end;margin-top:calc(3*var(--u))}
+.nbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
+.notif .err{margin:calc(2*var(--u)) 0 0}
+@keyframes nin{from{transform:translateX(calc(-12*var(--u)));opacity:0}to{transform:none;opacity:1}}
+@media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

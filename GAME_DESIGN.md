@@ -1,4 +1,4 @@
-# Deep Idle Mine — Game Design
+# Deep Mine Idle — Game Design
 
 Source de vérité des règles du jeu. Les valeurs marquées *(provisoire)* sont des estimations du prototype, à équilibrer. Les autres sont des décisions fermes.
 
@@ -385,9 +385,9 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social**.
+Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et =). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
 - **Lobby** : le groupe, les préférences, le type de mine, Lancer (lecture seule pendant une session). Onglet ouvert par défaut ; un lien d'invitation y mène.
-- **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le mini-minuteur de la barre y mène aussi d'un clic.
+- **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le minuteur de la barre du haut y mène aussi d'un clic.
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
 - **Concasseur** : concasser les blocs pour un peu de butin (voir ci-dessous).
@@ -397,8 +397,18 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Lobby, Se
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
 - **Skills** : dépenser les points gagnés aux niveaux (voir §3, Skills).
 - **Historique** : les sessions terminées du joueur (gardées 30 jours), la plus récente en haut : date, durée, joueurs, **seed**, areas débloquées, profondeur, XP reçue et **sa part du butin** (« rien reçu » s'il est parti avant la fin).
-- Social : à concevoir (page d'attente pour l'instant).
-- Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
+- **Social** : les amis, ce qu'ils font, les inviter ou les rejoindre (voir ci-dessous).
+- Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; le minuteur de session reste visible dans la barre du haut.
+
+### Social (onglet Social) *(demande du créateur, 21/10/2026)*
+- **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
+- L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne.
+- Pour chaque ami **en ligne** (en ligne ou dans le lobby) : **Inviter** (invitation dans son groupe, comme l'invitation par ID du lobby) et **Rejoindre** (entrer dans son groupe ; s'il n'en a pas, un groupe est créé avec lui comme chef). Rejoindre est grisé si son groupe est complet ; les deux sont grisés si l'ami est déjà dans ton groupe, ou si toi-même es en session.
+- **Un joueur en session ne peut pas être invité**, ni depuis l'onglet Social ni par ID depuis le lobby (le serveur refuse), ni rejoint.
+- **Notifications en pop-up, en haut à gauche** de l'écran, sur n'importe quel onglet :
+  - invitation de groupe : « **xxx vous a invité dans son lobby** », boutons **Rejoindre** (emmène à l'onglet Lobby) et **Décliner** ;
+  - demande d'ami : « **xxx vous a envoyé une demande d'ami** », boutons **Accepter** et **Refuser**. La demande est aussi listée dans l'onglet Social (« Demandes d'ami reçues »), avec une pastille sur l'onglet.
+- Limites *(config serveur)* : 100 amis, 20 demandes envoyées en attente, 30 demandes par heure.
 
 ### Inventaire global
 Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (ex. « Charbon × 100 »).
