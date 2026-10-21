@@ -25,6 +25,9 @@ Modèle d'entrée :
   - Ceinture en peau de gobelin : +10 torches (au lieu de Découverte +1) ;
   - passerelles illimitées.
   - le donjon peut aussi apparaître en area 4 (20 %, tiré à part de l'area 5 : une partie peut en avoir deux).
+  - nouvelle stat **Ténacité** : chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste) ;
+    Force brute (Barbare) donne +5 % de dégâts **et** +5 % de ténacité par rang ;
+  - Provocation : frapper un occultiste qui canalise l'interrompt, mais il peut relancer son sort (sur le barbare).
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
 - **À suivre** : —

@@ -773,3 +773,21 @@ Règles (voir CLAUDE.md) :
   sessions (seed 16 : area 4 atteinte mais pas la salle). ⚠️ Pas encore vu un donjon d'area 4 découvert en simulation.
 - **Hors sujet, déjà là avant** : seed 16 `--skills mixed` → blocage « Retour (treuil) » (Bleu, t 3225 s, x 25 y 16) :
   voir l'entrée treuil.
+
+### Ténacité, Force brute, provocation (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : `STATS.tenacity = 0` (%) ; nœud Barbare `damage` : `adds:{ tenacity:5 }` (nouveau champ de nœud : points
+  ajoutés par rang, appliqués par `withSkillStats` après les multiplicateurs ; `{tenacity}` dans `desc`, rendu par
+  `nodeText`). `resists(G,m)` (src/sim/mobs.js) : un tirage `G.rng` par sort, **aucun tirage si ténacité 0** (parties
+  sans ténacité : hasard identique). Vol du gobelin : le vol est sauté. Occultiste : il se téléporte, pose son
+  cooldown, mais ne canalise pas. Provocation : `provoke` interrompt la canalisation à **chaque** coup (même déjà
+  provoqué) et ne bloque plus le sort (`o.taunt` retiré des conditions de `occult`). Stats `resisted` (mineur, partie).
+  Onglet Stuff : « Ténacité » affichée, apport des skills en « +x % » bleu. Wiki : texte de la stat, source Force brute.
+  `scripts/simulate.js` : `giveTree` passe par `withSkillStats` (avant : calcul à la main, sans ténacité) ; « résisté ».
+- **Fichiers** : `src/config.js`, `src/meta/skills.js`, `src/sim/mobs.js`, `src/ui/stuff.js`, `src/wiki/data.js`,
+  `scripts/simulate.js`, GAME_DESIGN §3 et §5.
+- **Tests** : mobs (provocation réécrite + 3 : interruption à chaque coup, ténacité 100 %, proportion 15 % et aucun
+  tirage à 0), skills (+1 : texte, `withSkillStats`, onglet Stuff, session) ; stuff, wiki : 46/46.
+- **Vérification** : ✅ simulation 3 × 5 sans skills : identique (182,2, 0 blocage). ✅ `--skills barbare` 3 × 5 : ≈ 15 %
+  des vols ignorés (ex. 48 volés / 8 résistés) ; étourdissements 11,0 → 11,6, areas 3,6 → 3,4, profondeur 186 → 182,4
+  (l'occultiste n'est plus neutralisé par la provocation), 0 blocage.
+- **Points fragiles** : un sort ignoré coûte quand même le cooldown de l'occultiste (choix : « sort perdu »).

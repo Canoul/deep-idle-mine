@@ -18,14 +18,23 @@ const manhattan = (a,b) => Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 const byId = (G,id) => id==null ? null : G.miners.find(m=>m.id===id) ?? null;
 
 /* provocation (skill Barbare « taunt ») : un mob frappé par un barbare ne vise plus que lui, jusqu'à sa mort (ou au
-   départ du barbare). o.taunt = id du mineur. Un occultiste provoqué arrête sa canalisation et ne lance plus son sort. */
+   départ du barbare). o.taunt = id du mineur. Chaque coup d'un barbare provocateur interrompt la canalisation en cours
+   d'un occultiste ; l'occultiste peut ensuite en relancer une (sur le barbare, sa seule cible) : 21/10, Geoffrey. */
 export const tauntedBy = (G,o) => byId(G, o.taunt);
 /* ce mob peut-il tacler ce mineur ? (pas s'il est provoqué par un autre) */
 export const canTackle = (G,o,m) => { const t=tauntedBy(G,o); return !t || t===m; };
 export function provoke(G,o,m){
-  if(o.taunt===m.id) return;
+  if(o.channel){ endChannel(G,o); log(G, `😤 ${m.name} interrompt la canalisation de l'occultiste`); }
   o.taunt=m.id;
-  if(o.channel) endChannel(G,o);
+}
+
+/* ténacité : le mineur ignore-t-il ce sort ? un tirage par sort (hasard « live ») ; sans ténacité, aucun tirage
+   (les parties sans ténacité gardent exactement le même hasard) */
+export function resists(G,m){
+  const t=m.carac?.tenacity || 0;
+  if(t<=0 || !(G.rng()*100 < t)) return false;
+  m.stats.resisted=(m.stats.resisted||0)+1; G.stats.resisted=(G.stats.resisted||0)+1;
+  return true;
 }
 
 /* tacle : le mob qui immobilise ce mineur (o.grab = id du mineur), ou null */
@@ -129,6 +138,7 @@ function goblinSteal(G,o){
   const ores=Object.keys(m.inv).filter(k=>ORE_W.has(k) && m.inv[k]>0);
   const total=ores.reduce((s,k)=>s+m.inv[k],0);
   if(!total) return;
+  if(resists(G,m)){ log(G, `💪 ${m.name} résiste au vol du gobelin`); return; }
   let r=Math.floor(G.rng()*total), name=ores[0];
   for(const k of ores){ if(r<m.inv[k]){ name=k; break; } r-=m.inv[k]; }
   m.inv[name]--; m.load-=ORE_W.get(name);
@@ -147,15 +157,17 @@ function occult(G,o){
   if(o.channel){
     const t=byId(G,o.channel.target);
     o.channel.left-=DT;
-    if(o.taunt!=null || !t || t.y<=0 || o.channel.left<=1e-9) endChannel(G,o);
+    if(!t || t.y<=0 || o.channel.left<=1e-9) endChannel(G,o);
     return !!o.channel;
   }
-  if(o.taunt!=null || o.cast>0) return false;
+  if(o.cast>0) return false;
   const p=preyOf(G,o);
   if(!p || manhattan(p,o)>CFG.mobChaseRange) return false;
   const spot=tpSpot(G,p); if(!spot) return false;   // pas de case possible : il réessaie au tick suivant
   o.x=spot.x; o.y=spot.y; o.fall=0; o.grab=null; o.cd=CFG.mobStep;
-  o.channel={ target:p.id, left:C.channel }; o.cast=C.cooldown;
+  o.cast=C.cooldown;
+  if(resists(G,p)){ log(G, `💪 ${p.name} résiste à la canalisation de l'occultiste`); return false; }   // téléporté, sort perdu
+  o.channel={ target:p.id, left:C.channel };
   p.stats.hexed=(p.stats.hexed||0)+1; G.stats.hexed=(G.stats.hexed||0)+1;
   log(G, `🌑 Un occultiste se téléporte et canalise sur ${p.name} (étourdi ${C.channel} s)`);
   return true;

@@ -183,14 +183,16 @@ const STAT_HELP = {
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
   bridges:    'Passerelles pour traverser les trous (illimitées).',
+  tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste (un tirage à chaque sort).",
 };
-const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', discoverMax:' blocs',
+const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', discoverMax:' blocs',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };
 export function statRows(){
   const skillBoost = {};
   for(const t of SKILLS.trees) for(const n of t.nodes){
     const key = { mine_speed:'mineSpeed', damage:'damage', ore_rush:'speed', travel_rush:'speed' }[n.id];
     if(key) (skillBoost[key] ||= []).push(`${n.name} (${t.label})`);
+    for(const k of Object.keys(n.adds || {})) (skillBoost[k] ||= []).push(`${n.name} (${t.label})`);
   }
   const keys = [...STUFF.shownStats, ...Object.keys(STATS).filter(k => !STUFF.shownStats.includes(k))];
   return keys.map(k => ({ key: k, label: STUFF.statLabels[k] ?? (k === 'torchRadius' ? 'Rayon des torches' : k), base: STATS[k],

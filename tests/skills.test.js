@@ -181,3 +181,20 @@ test('onglet Stuff : les stats montrent aussi les bonus des skills, comme en ses
   assert.equal(Math.round(G.miners[0].carac.mineSpeed * 100) / 100, row.total, 'même valeur qu\'en session');
   assert.equal(minerStats(worn).find(s => s.key === 'mineSpeed').skill, 0, 'sans skills : rien');
 });
+
+test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {
+  const { withSkillStats } = await import('../src/meta/skills.js');
+  const { minerStats } = await import('../src/meta/stuff.js');
+  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %');
+  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %');
+  const st = learnAll(createSkills(), ['damage', 'damage']);
+  const eff = skillEffects(st);
+  const c = withSkillStats({ ...STATS }, eff);
+  assert.equal(c.tenacity, 10); assert.equal(c.damage, STATS.damage * 1.1);
+  assert.equal(withSkillStats({ ...STATS }, skillEffects(createSkills())).tenacity, 0, 'sans skill : 0');
+  const ten = minerStats({}, eff).find(s => s.key === 'tenacity');
+  assert.deepEqual([ten.total, ten.skill, ten.mult, ten.label], [10, 10, 1, 'Ténacité']);
+  /* en session : la carac du mineur porte la ténacité */
+  const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], skills:{ A:{ tree:st.tree, ranks:{ ...st.ranks } } } });
+  assert.equal(G.miners[0].carac.tenacity, 10);
+});

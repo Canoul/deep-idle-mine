@@ -36,7 +36,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (areas 4 et 5, 20 % chacune) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
-- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil), Barbare (provocation) ;
+- **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste),
+  un tirage par sort ; vient de Force brute (Barbare, +5 % par rang).
+- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil), Barbare (provocation : interrompt la
+  canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du

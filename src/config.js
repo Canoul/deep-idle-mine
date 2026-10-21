@@ -12,8 +12,10 @@ export const SPAWN_X = 25, CHEST_X = 22;
 /* attackSpeed = vitesse d'attaque contre un mob, en % (100 = un coup toutes les CFG.attackInterval s ; 200 = deux fois plus vite) ;
    fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
+/* tenacity = chance, en %, d'ignorer un sort de mob qui le vise (vol du gobelin, canalisation de l'occultiste) : un tirage
+   par sort (décision du 21/10, Geoffrey) ; 0 de base */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2,
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0,
   bridges:Infinity };   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
 
 export const CFG = {
@@ -248,8 +250,8 @@ export const MOBS = {
   goblinChitin: 1,                               // chitine
   /* occultiste : sort prêt toutes les cooldown s (la première fois cooldown s après son apparition). Il se téléporte à
      tpDist cases (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint sans miner, puis canalise :
-     la cible est étourdie tant que dure la canalisation (channel s). Provoqué (skill Barbare), il ne lance plus son sort
-     et sa canalisation en cours s'arrête. */
+     la cible est étourdie tant que dure la canalisation (channel s). Un coup d'un barbare qui a la Provocation interrompt
+     sa canalisation en cours, mais ne l'empêche pas d'en relancer une (21/10). La ténacité de la cible peut l'ignorer. */
   occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
 };
 /* PV d'un mob de ce type né dans l'area k */
@@ -283,6 +285,7 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
    (jusqu'au reset, gratuit, hors session). Chaque étape exige l'étape précédente au rang max.
    Un nœud : id, max (rangs), per (valeur par rang ; 1 = interrupteur), desc (texte, {v} = valeur au rang actuel).
+   adds (facultatif) : { stat: points par rang } ajoutés aux STATS du mineur (ex. ténacité en %) ; {stat} dans desc.
    Les effets sont figés au lancement de la session (comme le stuff). Valeurs provisoires. */
 export const SKILLS = {
   /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
@@ -301,8 +304,8 @@ export const SKILLS = {
       { id:'travel_rush', row:3, max:5, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}' },
-      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui' },
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },
+      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
     ]},
   ],
@@ -434,10 +437,10 @@ export const STUFF = {
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
-                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune' },
-  statUnits: { attackSpeed:' %', fortune:' %' },       // unité affichée après la valeur d'une stat
+                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité' },
+  statUnits: { attackSpeed:' %', fortune:' %', tenacity:' %' },       // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','discoverMax','light','compass','compassRows','torches'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','damage','attackSpeed','fortune','tenacity','discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
