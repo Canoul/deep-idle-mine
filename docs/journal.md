@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ---
 
-## 21/10/2026 — Geoffrey — Mine instantanée (en cours : règles, Plume d'ange)
+## 21/10/2026 — Geoffrey — Mine instantanée (en cours : règles, Plume d'ange, simulation)
 - **Pour le joueur** : rien encore en jeu. Les règles de la **mine instantanée** sont écrites (GAME_DESIGN §6) :
   toutes les 2 h pile (heure de Paris), tous les inscrits dans une mine 50×50 remplie de minerais, chacun pour soi,
   5 min de jeu (2 min 30 réelles). 1 % de tas de **Plumes d'ange** (nouvel objet rare, 1 à 5 par tas, au premier qui
@@ -27,7 +27,13 @@ Modèle d'entrée :
   les galeries (pas d'échelle ni de gravité) ; départ espacé en surface ; pas d'XP ; stats de minage, de marche,
   Fortune et shiny comptent ; 20 joueurs max par mine, répartis à parts égales au-delà ; fermer l'onglet ne fait rien
   perdre, seul « Quitter » fait tout perdre. La plume n'a pas encore d'usage (idée de Geoffrey à venir).
-- **À suivre** : simulation et IA (étape 2), serveur (3), interface et rappels (4).
+- **Simulation (étape 2)** : la mine instantanée tourne (sans serveur ni affichage pour l'instant). Chiffres avec le
+  stuff de base (`npm run simulate:mi`) : ~100 blocs par mineur en 5 min ; à 20 mineurs, 80 % de la mine vidée,
+  0 bloc disputé, chacun entre 93 et 110 blocs ; butin moyen par mineur ≈ 40 fers, 39 ors, 20 charbons, 2,3 plumes.
+  Seul : 4 % de la mine, et quasiment jamais de plume. Sans la pénalité « éviter les autres », 500 blocs disputés et
+  15 % de butin en moins : elle sert. Pioche +30 % de vitesse → +30 % de blocs (le stuff compte).
+- **À suivre** : les plumes atteintes mais pas ramassées (question posée à Geoffrey) ; serveur (3), interface et
+  rappels (4).
 - **État** : 🧪 sur la branche `geoffrey/mine-instantanee` (pas en ligne)
 
 ## 21/10/2026 — Jules — Ménage des textes du jeu
