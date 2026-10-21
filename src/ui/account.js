@@ -38,7 +38,7 @@ const newPassFields = () =>
 
 const VIEWS = {
   login: () => `
-    <h3>⛏ Deep Idle Mine</h3>
+    <h3>⛏ Deep Mine Idle</h3>
     <p class="mut">Connecte-toi pour retrouver ta mine.</p>
     <form data-mode="login">
       ${pseudoField()}

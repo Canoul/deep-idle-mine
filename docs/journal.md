@@ -18,6 +18,21 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Jules — Onglet Social, noms des onglets visibles, nouveau nom « Deep Mine Idle »
+- **Pour le joueur** :
+  - **onglet Social** (fait par Geoffrey, fusionné et mis au style pixel par Jules) : ajouter un ami par pseudo (ou
+    par ID pour un invité), accepter / refuser, voir si ses amis sont en ligne, en session ou dans un lobby, les
+    inviter ou les rejoindre ; demandes d'ami et invitations arrivent en **pop-up** en haut à gauche ;
+  - la barre d'action affiche **le nom de chaque onglet en permanence** (plus seulement au survol) ; touche « = »
+    pour le 12e onglet (Social) ;
+  - le jeu s'appelle **Deep Mine Idle** (titre de la page, logo, écran de connexion, wiki).
+- **Décisions** : l'onglet Social fait partie du jeu (retiré du « hors périmètre ») ; nom du jeu : Deep Mine Idle
+  (les noms techniques du serveur, `deep-idle-mine`, ne changent pas).
+- **À suivre** : tester le Social à deux vrais joueurs en ligne.
+- **État** : 🧪 sur la branche `jules/social` (pas en ligne)
+
+---
+
 ## 21/10/2026 — Jules — Nouvelle direction artistique : la Forge noire en pixel art
 - **Pour le joueur** : tout le jeu passe en pixel art « Forge noire » (brique brune, fer riveté, braise), choisie
   parmi les maquettes de `design/poc/` (branche `jules/poc-design`).

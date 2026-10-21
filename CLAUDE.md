@@ -1,4 +1,4 @@
-# Deep Idle Mine — instructions pour Claude
+# Deep Mine Idle — instructions pour Claude
 
 Ce fichier est lu par Claude au début de chaque discussion. Plusieurs personnes travaillent sur le jeu, chacune
 avec sa propre discussion Claude, et **les discussions ne partagent pas leur historique** : tout ce qui doit

@@ -44,7 +44,7 @@ const purge = setInterval(() => service.purgeExpired().catch(console.error), 360
 purge.unref();
 
 server.listen(port, SERVER.host, () => {
-  console.log(`Deep Idle Mine : http://localhost:${port}  (Ctrl+C pour arrêter)`);
+  console.log(`Deep Mine Idle : http://localhost:${port}  (Ctrl+C pour arrêter)`);
   console.log(`Comptes : ${store.file} · Jeu : ${gameStore.file}`);
   if(GAME_SERVER.dev) console.log('MODE DÉVELOPPEUR : toutes les vitesses, panneau dev, fin de session libre. Jamais en ligne.');
 });

@@ -1,4 +1,4 @@
-# État du projet — Deep Idle Mine
+# État du projet — Deep Mine Idle
 
 Photo de ce qui existe **aujourd'hui** dans le jeu et autour. Claude la lit en début de discussion et la met à
 jour dès qu'un ajustement majeur est fait ou décidé (nouveau système, décision de design, équilibrage notable,
@@ -13,6 +13,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## Le jeu
 
+- **Nom du jeu : Deep Mine Idle** (anciennement « Deep Idle Mine » ; les noms techniques du serveur gardent
+  `deep-idle-mine`).
 - Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1 h, rapporte
   des ressources dans un inventaire global, qu'on utilise hors session pour crafter. En ligne :
   https://deepmineidle.fr/

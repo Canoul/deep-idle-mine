@@ -1,4 +1,4 @@
-# Deep Idle Mine — Game Design
+# Deep Mine Idle — Game Design
 
 Source de vérité des règles du jeu. Les valeurs marquées *(provisoire)* sont des estimations du prototype, à équilibrer. Les autres sont des décisions fermes.
 

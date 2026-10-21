@@ -539,7 +539,7 @@ export const ACCOUNT = {
   recoveryLength: 16,               // caractères du code de secours (affiché en 4 groupes de 4)
   /* pseudos interdits (comparés sans majuscules ni accents) */
   reservedNames: ['admin', 'administrateur', 'moderateur', 'modo', 'support', 'staff', 'systeme', 'system',
-                  'invite', 'guest', 'anonyme', 'deepidlemine', 'serveur', 'server', 'root'],
+                  'invite', 'guest', 'anonyme', 'deepidlemine', 'deepmineidle', 'serveur', 'server', 'root'],
 };
 
 /* ---- Sessions de jeu (décidées et vérifiées par le serveur) ----

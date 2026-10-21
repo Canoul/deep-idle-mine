@@ -1038,3 +1038,28 @@ Règles (voir CLAUDE.md) :
   acceptée depuis la pop-up ; Lou accepte depuis l'onglet ; Lou rejoint le lobby de Zoe (créé, Zoe chef) ; Zoe invite
   Max (sur l'onglet Inventaire) → pop-up → Rejoindre → lobby 3/3 ; mobile 390 px ; 0 erreur console. Statut « en
   session » vérifié par les tests seulement. ⚠️ Pas testé en ligne (PostgreSQL : nouveau ns `social`).
+
+### Fusion de l'onglet Social (Geoffrey) + noms des onglets + nom du jeu (Jules) — branche `jules/social`
+- **Fusion** de `origin/social` (1 commit signé « Claude », 21/10 15h20, base d'avant la mine instantanée et la refonte
+  pixel ; 39 commits de retard). 11 conflits résolus en gardant les deux côtés : `server/app.js`, `server/main.js`
+  (services `instant` et `social` côte à côte), `server/game/store.js` (Maps `signups` et `socials`, `db.load` avec
+  `mi_signup` et `social`, `crushers` gardé), `server/db/postgres.js` (commentaire), `src/net/api.js` (`instantApi`
+  et `socialApi`), `src/config.js` (`PARTY.pollInSession`, `MINE_MODES`, `SOCIAL`), `src/main.js` (imports,
+  `startInstant()` et `pollSocial()`), `src/ui/nav.js` (Social `ready:true`), `src/ui/style.css` (Forge noire gardée,
+  styles Social et pop-ups réécrits en pixel), `CLAUDE.md`, `docs/debug.md` (les deux entrées gardées).
+- **Adaptations** : `nav.show('mine')` → `'lobby'` (l'onglet Mine n'existe plus) ; icônes pixel dans les pop-ups
+  (`notify.js`) et les boutons Inviter / Rejoindre (`social.js`) ; titre de l'onglet en `data-pxi` ; GAME_DESIGN :
+  barre d'action en bas (oubli de la refonte), renvois vers l'onglet Lobby.
+- **Noms des onglets** toujours visibles sous l'icône (`.dock ul button .lbl` n'est plus une bulle) ; `--dock-h`
+  58u ; orbes masqués sous 1100 px de large ; `TAB_KEYS` + « = » (12 onglets prêts).
+- **Nom du jeu** : « Deep Mine Idle » dans `index.html`, `account.js`, `wiki.html`, le message du serveur, les titres
+  de README / CLAUDE / GAME_DESIGN / état du projet ; `deepmineidle` ajouté aux pseudos réservés. Inchangés exprès :
+  services systemd, dossiers et scripts de `deploy/ovh/` (`deep-idle-mine`), `package.json`, clés localStorage
+  (`deepIdleMine.*` : les changer effacerait l'onglet mémorisé des joueurs), le prototype.
+- **Tests** : social, nav, lobby, party, game-service, postgres (1 sauté sans base), game-http, instant-*, live,
+  account-*, wiki, boot-check, blocked-names : tout vert. ✅ Test à deux joueurs en local (2 navigateurs) : demande
+  d'ami par ID → pop-up chez l'autre → accepter → « En ligne » → Inviter → pop-up → Rejoindre → lobby à 2 avec le
+  bon chef ; captures 1440, 1280, 390 sans débordement.
+- ⚠️ **Pas vérifié** : le Social avec PostgreSQL (en ligne, nouveau ns `social`), un ami en session (boutons grisés),
+  la présence « hors ligne » après 45 s, deux comptes avec pseudo.
+

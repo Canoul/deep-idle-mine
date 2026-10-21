@@ -1,4 +1,4 @@
-# ⛏ Deep Idle Mine
+# ⛏ Deep Mine Idle
 
 Idle game navigateur : un mineur autonome explore une mine 2D en blocs pendant des sessions de 1 h, rapporte des
 ressources, et on s'en sert entre les sessions pour crafter et améliorer son stuff. Jusqu'à 3 joueurs par session.

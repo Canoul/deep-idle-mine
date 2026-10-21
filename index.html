@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deep Idle Mine</title>
+<title>Deep Mine Idle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Jersey+15&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 <!-- barre du haut : compte, nom du jeu, session en cours (visible depuis tous les onglets), wiki -->
 <header class="topbar">
   <button class="navAccount" id="navAccount" hidden></button>
-  <div class="brand"><i data-pxi="pickaxe"></i>Deep Idle Mine</div>
+  <div class="brand"><i data-pxi="pickaxe"></i>Deep Mine Idle</div>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
     <i data-pxi="hourglass"></i><span id="navTimer">—</span>
     <div class="bar"><i id="navBar"></i></div>
@@ -244,7 +244,7 @@
   <div id="fpick" hidden><div class="box"></div></div>
 </section>
 </div>
-<!-- barre d'action (onglets, touches 1 à 9, 0 et -) entre deux orbes : temps de session et XP, ou oxygène et pods du
+<!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du
      mineur suivi pendant une session (src/ui/orbs.js) -->
 <nav id="nav" class="dock">
   <div class="orb" id="orbL"><canvas width="36" height="36"></canvas><div class="v"></div></div>
