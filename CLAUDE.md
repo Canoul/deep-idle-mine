@@ -124,6 +124,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min.
 - `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point), ~6 min.
 - `npm run textures` : régénère `textures/` (Python).
+- `npm run textures:ui` : régénère les éléments d'interface pixel art (`textures/ui/`) et les icônes
+  (`src/ui/pxicons.js`) (Python).
 
 ## 7. Structure
 
@@ -144,7 +146,7 @@ src/shared/           règles partagées jeu + serveur : account, game, view, pr
 src/net/              appels au serveur (api)
 src/render/           canvas (lit l'état, ne le modifie jamais), textures
 src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory, furnace, crusher, craft, stuff,
-                      research, skills, history, account…) + style.css
+                      research, skills, history, account, orbs…) + style.css (pixel art « Forge noire ») + pxicons.js
 src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
 src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en

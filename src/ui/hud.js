@@ -1,6 +1,6 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
 import { SESSION_LEN, STATS, BLOCKS, IDS } from '../config.js';
-import { areaOf, unlockNeed } from '../sim/world.js';
+import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
 
@@ -55,6 +55,7 @@ export function updateHUD(G, ui){
   { const xp=G.stats.xp||0, n=G.miners.length;
     $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }
   renderLog(G.log);
+  updateRail(G, m);
 
   // area du mineur suivi
   const ai=areaOf(m.y), box=$('areaBody');
@@ -70,7 +71,24 @@ export function updateHUD(G, ui){
   box.innerHTML=h;
 }
 
-/* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
+/* jauge de profondeur (à droite de la mine) : de la surface (en haut) au fond de la mine ouverte (en bas), un repère par
+   mineur à sa couleur ; le mineur suivi est entouré. Les repères ne sont recréés que si l'équipe change. */
+function updateRail(G, fm){
+  const box = $('railMarks');
+  if(!box) return;
+  const key = G.miners.map(t => t.id).join(','), bottom = Math.max(1, maxRow(G));
+  if(box._key !== key){
+    box.innerHTML = G.miners.map(t => `<span class="mk" data-id="${t.id}" style="--c:${t.color}" title="${esc(t.name)}">${esc(t.name?.[0]?.toUpperCase() ?? '?')}</span>`).join('');
+    box._key = key;
+  }
+  for(const el of box.children){
+    const t = G.miners.find(x => x.id === +el.dataset.id);
+    if(!t) continue;
+    el.style.top = Math.max(0, Math.min(100, t.y / bottom * 100)) + '%';
+    el.classList.toggle('on', t === fm);
+  }
+}
+
 /* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
 /* len : durée de la partie en s de jeu (mine instantanée : INSTANT_MINE.duration) */
 export function updateNavSession(G, waiting=false, len=SESSION_LEN){

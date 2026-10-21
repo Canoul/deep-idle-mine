@@ -18,6 +18,24 @@ Modèle d'entrée :
 
 ---
 
+## 21/10/2026 — Jules — Nouvelle direction artistique : la Forge noire en pixel art
+- **Pour le joueur** : tout le jeu passe en pixel art « Forge noire » (brique brune, fer riveté, braise), choisie
+  parmi les maquettes de `design/poc/` (branche `jules/poc-design`).
+  - Les onglets sont dans une **barre d'action en bas** (touches 1 à 9, 0 et -), entre deux **orbes** : temps de
+    session et XP, ou oxygène et pods de ton mineur pendant une session. Le menu de gauche disparaît.
+  - En haut : ton mineur (avec son stuff), le temps de la session en cours, le wiki.
+  - **Session** : panneaux à gauche et à droite, la mine entière au centre (on voit toute sa largeur, moins
+    zoomée qu'en plein écran), et une **jauge de profondeur** avec un repère par mineur. L'écran de session tient
+    exactement dans la fenêtre.
+  - **Stuff** : ton mineur au centre, équipé, entouré de ses 10 cases. **Lobby** : les sprites de l'équipe.
+  - Cadres, boutons, cases et icônes en vrais pixels ; s'adapte à l'écran (plus grand au-delà de 1800×1000) et au
+    téléphone.
+- **Décisions** : direction artistique Forge noire en pixel art (Jules) ; la mine se voit en entier pendant la
+  session (pas de gros plan).
+- **À suivre** : le wiki (`wiki.html`) garde l'ancien look ; la mine instantanée a été vérifiée seulement à
+  l'affichage du lobby ; retours des joueurs sur la taille de l'interface.
+- **État** : ✅ en ligne le 21/10
+
 ## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
 - **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.
   C'est corrigé. La cause : la protection « anti-minage de cryptomonnaie » d'Opera bloque tout fichier nommé

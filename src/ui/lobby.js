@@ -5,6 +5,8 @@
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES } from '../config.js';
 import { joinLink } from '../shared/party.js';
+import { pxi } from './pxicons.js';
+import { drawPortrait } from '../render/portrait.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -72,18 +74,20 @@ export function setupLobby(h){
       `<button data-mode="${m.id}" class="${m.on ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : ''}>${esc(m.label)}${m.soon ? ' <small>(bientôt)</small>' : ''}</button>`).join('');
     $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
       if(s.kind === 'free')
-        return `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
+        return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
-        return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
+        return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const tags = [s.me && 'Toi', s.leader && 'chef', (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
-      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
+      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16"${s.me ? ' data-me' : ''}></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
+    /* sprite de chaque joueur : toi avec ton stuff, les autres en tenue de base */
+    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.hasAttribute('data-me') ? h.look?.() ?? {} : {}));
 
     const ls = launchState(st);
-    $('launchBtn').disabled = !ls.can; $('launchBtn').textContent = ls.label;
+    $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     $('inviteBtn').disabled = offline || !account || locked;
     $('inviteBtn').classList.toggle('on', st.inviteOpen);
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
