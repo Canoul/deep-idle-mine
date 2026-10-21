@@ -25,6 +25,10 @@ export const RECIPES = {
   'Bottes en fer':       { cost: { 'Tainted iron': 4, 'Peau de gobelin': 5, 'Lingot d\'or': 1 }, qty: 1, unlock: 'Bottes en fer BP' },
   'Ceinture en peau de gobelin': { cost: { 'Peau de gobelin': 20, 'Lingot d\'or': 20 }, qty: 1, unlock: 'Ceinture en peau de gobelin BP' },
 
+  /* débloquées par un blueprint (Treasure T1) : le four se pose avec « Utiliser » (2e four), la boussole s'équipe */
+  'Four en fer':         { cost: { 'Charbon': 1000, 'Tainted iron': 20, 'Shiny iron': 5 },     qty: 1, unlock: 'Four en fer BP' },
+  'Boussole en or':      { cost: { 'Tainted gold': 20, 'Shiny gold': 5 },                      qty: 1, unlock: 'Boussole en or BP' },
+
   /* débloquées par un blueprint (Treasure T2) */
   'Gants tactique':      { cost: { 'Shiny iron': 20, 'Tainted iron': 20, 'Jade inférieur': 1 },   qty: 1, unlock: 'Gants tactique BP' },
   'Gants d\'ouvrier':    { cost: { 'Shiny gold': 20, 'Tainted iron': 20 },                        qty: 1, unlock: 'Gants d\'ouvrier BP' },

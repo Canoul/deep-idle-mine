@@ -55,7 +55,7 @@ test('blueprints : 300 suites d\'apprentissages et de crafts au hasard, jamais u
     const bpsLeft = BPS.reduce((s, b) => s + countOf(inv, b), 0);
     assert.equal(bpsLeft + learned, 5, 'chaque blueprint est soit gardé, soit transformé en UNE recette');
     assert.equal(inv.unlocked.length, learned);
-    assert.ok(learned <= 3, 'au plus 3 recettes (le Four en fer BP ne débloque rien)');
+    assert.ok(learned <= 4, 'au plus 4 recettes (une par sorte de blueprint)');
     const made = { 'Pioche en fer':20, 'Épée en fer':10, 'Casque en fer':5 };
     const spent = Object.entries(made).reduce((s, [it, c]) => s + countOf(inv, it) * c, 0);
     assert.equal(countOf(inv, 'Tainted iron') + spent, 60, 'matière conservée');

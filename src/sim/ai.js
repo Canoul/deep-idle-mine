@@ -9,10 +9,10 @@ import { log } from './log.js';
 import { isWalker, canTackle } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
 
-/* boussole : minerais sur la ligne du mineur uniquement */
+/* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
 export function compassScan(G,m,R){
-  const out=[], y=m.y;
-  if(y>=1 && y<=maxRow(G)){
+  const out=[], rows=m.carac.compassRows||0;
+  for(let y=Math.max(1,m.y-rows); y<=Math.min(maxRow(G),m.y+rows); y++){
     for(let x=Math.max(0,m.x-R); x<=Math.min(W-1,m.x+R); x++){
       const t=G.tiles[y][x];
       if(isOre(t)) out.push({x,y,t,seen:G.seen[y][x]===1});

@@ -230,7 +230,7 @@ test('recherche T2 : verrouillée tant qu\'une recette du tier 1 manque ; les BP
   const inv = invWith({ [PARTS]:1000 });
   assert.equal(tierUnlocked(inv, 1), true);
   assert.equal(tierUnlocked(inv, 2), false);
-  assert.equal(recipesLeft(inv, 1).length, 7, '7 recettes du tier 1 (le Four et la Boussole n\'en ont pas encore)');
+  assert.equal(recipesLeft(inv, 1).length, 9, '9 recettes du tier 1 (Four en fer et Boussole en or compris)');
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'tier_locked');
   assert.equal(countOf(inv, PARTS), 1000, 'rien n\'est dépensé');
   assert.equal(canResearch(inv, 2), false);
@@ -256,10 +256,12 @@ test('recherche T2 : ouverte quand les 7 recettes du tier 1 sont apprises (150 p
 });
 test('recherche T2 : le tier 1 ne donne jamais de BP du T2, et inversement', () => {
   const inv = learnedT1(); addAll(inv, { [PARTS]:100000 });
+  const fresh = invWith({ [PARTS]:100000 });                    // tier 1 rien appris (tout appris : plus rien à tirer)
   for(let k = 0; k < 100; k++){
     assert.ok(T2BP.includes(research(inv, 2, id(), Math.random).item));
-    assert.ok(T1BP.includes(research(inv, 1, id(), Math.random).item));
+    assert.ok(T1BP.includes(research(fresh, 1, id(), Math.random).item));
   }
+  assert.equal(research(inv, 1, id(), Math.random).error, 'nothing_left', 'tier 1 entièrement appris');
 });
 test('recherche T2 : tout appris → nothing_left', () => {
   const inv = learnedT1(); addAll(inv, { [PARTS]:1000, 'Gants tactique BP':1, 'Gants d\'ouvrier BP':1, 'Cape de Naingui BP':1 });

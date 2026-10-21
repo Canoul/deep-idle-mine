@@ -65,9 +65,14 @@ export function setupFurnace({ onOp }){
     let h = '';
     for(let i = 0; i < state.max; i++){
       const f = list[i];
-      if(!f){ h += `<div class="furn locked"><h3>🔒 Four ${i + 1}</h3><p class="mut small">À débloquer (bientôt).</p></div>`; continue; }
+      if(!f){
+        const key = Object.keys(FURNACE.unlockItems).find(k => FURNACE.unlockItems[k].slot === i);
+        h += `<div class="furn locked"><h3>🔒 Four ${i + 1}</h3><p class="mut small">${key
+          ? `À débloquer avec un ${rname(key)} (à fabriquer dans l'onglet Craft, puis « Utiliser » dans l'inventaire).` : 'À débloquer (bientôt).'}</p></div>`;
+        continue;
+      }
       const mode = modeOf(f);
-      h += `<div class="furn" data-f="${i}"><div class="fhead"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}</span></h3>`+
+      h += `<div class="furn" data-f="${i}"><div class="fhead"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}${FURNACE.tiers[f.tier].speed !== 1 ? ` (vitesse ×${String(FURNACE.tiers[f.tier].speed).replace('.', ',')})` : ''}</span></h3>`+
            `<div class="seg fmode">${Object.keys(MODE_LABEL).map(m => `<button data-f="${i}" data-mode="${m}"${m === mode ? ' class="on"' : ''}>${MODE_LABEL[m]}</button>`).join('')}</div>`+
            `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">?</button></div>`+
            `<div class="fgrid"><div class="fin">${INPUTS[mode].map(s => slotHtml(i, s, f[s])).join('')}${slotHtml(i, 'fuel', f.fuel)}</div>`+
@@ -183,5 +188,7 @@ export function setupFurnace({ onOp }){
       render();
     },
     setInventory(v){ inv = v; },
+    /* fours possédés (pour l'inventaire : un Four en fer peut-il ouvrir le suivant ?) */
+    state: () => state,
   };
 }

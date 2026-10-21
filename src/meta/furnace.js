@@ -104,22 +104,47 @@ export function progress(f, now){
   return f.since === null || !dur ? 0 : Math.min(1, Math.max(0, (now - f.since) / dur));
 }
 
+/* ---------- débloquer un four avec un objet (Four en fer…) ----------
+   L'objet (FURNACE.unlockItems) ouvre le four n° slot, s'il est le prochain four fermé. Renvoie null si c'est possible,
+   sinon le code d'erreur (bad_item : pas un objet de four ; already_unlocked ; locked_before : un four d'avant est fermé). */
+export const unlockOf = item => typeof item === 'string' && Object.hasOwn(FURNACE.unlockItems, item) ? FURNACE.unlockItems[item] : null;
+export function unlockError(state, item){
+  const d = unlockOf(item);
+  if(!d) return 'bad_item';
+  if(state.list.length > d.slot) return 'already_unlocked';
+  if(state.list.length < d.slot) return 'locked_before';
+  return null;
+}
+function unlockFurnace(state, inv, item){
+  const e = unlockError(state, item);
+  if(e) return { error:e };
+  if(!removeItem(inv, item, 1)) return { error:'not_enough' };
+  state.list.push({ ...newFurnace(), tier:unlockOf(item).tier });
+  return { ok:true };
+}
+
 /* ---------- actions du joueur ----------
-   op = { action:'load'|'unload'|'collect'|'mode', furnace, slot, item, qty, mode, opId }.
+   op = { action:'load'|'unload'|'collect'|'mode'|'unlock', furnace, slot, item, qty, mode, opId }.
+   unlock : consomme un objet de four (item) et ouvre le four suivant (pas de numéro de four à donner).
    Modifie inv et state ensemble (tout ou rien). Renvoie { ok:true, repeated } ou { error } (code d'erreur). */
 export function furnaceOp(state, inv, op, now){
   if(state.ops.includes(op.opId)) return { ok:true, repeated:true };
-  const f = Number.isSafeInteger(op.furnace) ? state.list[op.furnace] : null;
-  if(!f) return { error:'bad_furnace' };
-  advance(f, now);
   let r;
-  if(op.action === 'load') r = load(f, inv, op);
-  else if(op.action === 'unload') r = unload(f, inv, op.slot);
-  else if(op.action === 'collect') r = unload(f, inv, 'out');
-  else if(op.action === 'mode') r = setMode(f, op.mode);
-  else r = { error:'bad_request' };
-  if(r.error) return r;
-  kick(f, now);
+  if(op.action === 'unlock'){
+    r = unlockFurnace(state, inv, op.item);
+    if(r.error) return r;
+  } else {
+    const f = Number.isSafeInteger(op.furnace) ? state.list[op.furnace] : null;
+    if(!f) return { error:'bad_furnace' };
+    advance(f, now);
+    if(op.action === 'load') r = load(f, inv, op);
+    else if(op.action === 'unload') r = unload(f, inv, op.slot);
+    else if(op.action === 'collect') r = unload(f, inv, 'out');
+    else if(op.action === 'mode') r = setMode(f, op.mode);
+    else r = { error:'bad_request' };
+    if(r.error) return r;
+    kick(f, now);
+  }
   state.ops.push(op.opId);
   if(state.ops.length > FURNACE.opMemory) state.ops.splice(0, state.ops.length - FURNACE.opMemory);
   return { ok:true, repeated:false };

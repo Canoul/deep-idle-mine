@@ -562,3 +562,26 @@ Règles (voir CLAUDE.md) :
 - **À regarder** : dans ce test headless, après une fin forcée par l'API (`/api/game/finish`), l'affichage de la session
   restait figé jusqu'au rechargement — **même chose avec le code d'avant**, pas lié à ce changement. À vérifier avec le
   vrai bouton de fin / la fin normale.
+
+### Four en fer (ouvre le 2e four, ×1,25), Boussole en or (+1 ligne), Tainted gold
+- **Quoi** : alliage **Tainted gold** (5 lingots d'or + 20 chitine + 50 charbon, 3 min). Recettes **Four en fer**
+  (1 000 charbon + 20 Tainted iron + 5 Shiny iron, BP Four en fer) et **Boussole en or** (20 Tainted gold + 5 Shiny
+  gold, BP Boussole en or) ; tous deux inhabituels avec leur BP. Four en fer : objet famille `furnace`
+  (`FURNACE.unlockItems`), action de four `unlock` (consomme l'objet, ouvre le four n° 2 au tier « Four en fer »,
+  speed 1,25 ; refus `already_unlocked` / `locked_before` / `not_enough` / `bad_item` sans rien consommer ; opId :
+  une seule fois ; inventaire et fours écrits ensemble). Bouton « Utiliser » dans la fiche de l'inventaire ; onglet
+  Four : vitesse affichée, four 2 fermé dit comment l'ouvrir. Boussole en or : stuff case boussole, stat
+  `compassRows` +1 (0 de base), lue par `compassScan` (lignes y−rows à y+rows).
+- **Conséquence** : le tier 1 compte maintenant **9 recettes** (avant 7) pour ouvrir la recherche tier 2, et une fois
+  tout appris, la recherche tier 1 n'a plus rien à donner (`nothing_left`). Tests adaptés (blueprint, game-service,
+  research, tier2, anticheat/craft) : ils prenaient le Four en fer BP comme « BP qui ne débloque rien ».
+- **Fichiers** : `src/config.js`, `src/recipes.js`, `src/meta/furnace.js`, `src/sim/ai.js`, `src/ui/{inventory,furnace}.js`,
+  `src/main.js`, `server/game/service.js`, `scripts/gen_textures.py` (+3 textures), GAME_DESIGN (Boussole, Craft,
+  Four, Recherche, Rareté).
+- **Tests** : `tests/iron-furnace-gold-compass.test.js` (7), anticheat/furnace +1 (300 suites d'unlock trafiquées) ;
+  rarity, furnace, craft, stuff, research, inventory, blueprint, loot, carac, skills, skins, game-service, game-http,
+  tier2 : tous verts ; anticheat craft/furnace/research 7/7.
+- **Vérification** : ✅ simulation 3 × 5 identique (areas 4,0, profondeur 190,0, allers-retours 27,0, 0 blocage).
+  Valeur de la Boussole en or mesurée avant (≈ +300 x, 8 sessions solo). ✅ Chromium headless : fiche « Four en fer ·
+  Utiliser · ouvre le four 2 » → « ✔ Four 2 débloqué », onglet Four (four 2 « Four en fer (vitesse ×1,25) »), Stuff
+  (boussole équipée, « Lignes boussole 1 (0 +1) »). ⚠️ Cadre jaune de la boussole sur 3 lignes pas regardé en session.

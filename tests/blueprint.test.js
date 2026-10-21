@@ -62,15 +62,13 @@ test('utiliser un blueprint : consommé, recette débloquée pour toujours, puis
 });
 
 test('blueprint : refus sans le consommer (déjà connu, ne débloque rien, pas possédé) ; demande rejouée = une fois', () => {
-  const inv = invWith({ 'Casque en fer BP':2, 'Four en fer BP':1 });
+  const inv = invWith({ 'Casque en fer BP':2 });
   const o = id();
   assert.ok(learn(inv, 'Casque en fer BP', o).ok);
   assert.ok(learn(inv, 'Casque en fer BP', o).repeated, 'double clic');
   assert.equal(countOf(inv, 'Casque en fer BP'), 1, 'un seul consommé');
   assert.equal(learn(inv, 'Casque en fer BP', id()).error, 'known');
   assert.equal(countOf(inv, 'Casque en fer BP'), 1, 'le second est gardé');
-  assert.equal(learn(inv, 'Four en fer BP', id()).error, 'no_use');
-  assert.equal(countOf(inv, 'Four en fer BP'), 1);
   assert.equal(learn(inv, 'Épée en fer BP', id()).error, 'not_owned');
   assert.equal(learn(inv, 'Charbon', id()).error, 'no_use');
   assert.equal(learn(inv, 42, id()).error, 'no_use');

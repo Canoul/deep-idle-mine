@@ -242,7 +242,8 @@ def main():
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
-                                    ('ingot_tainted', '#8b6f8f', '#c2a6c4', '#4f3a52')]:   # alliage fer + chitine
+                                    ('ingot_tainted', '#8b6f8f', '#c2a6c4', '#4f3a52'),    # alliage fer + chitine
+                                    ('ingot_tainted_gold', '#b9924a', '#e6c98a', '#6e5226')]:   # alliage or + chitine
         ing = blank()
         for i, yy in enumerate(range(6, 12)):
             rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))
@@ -250,6 +251,34 @@ def main():
         rect(ing, 5, 7, 3, 1, hexc(light))
         rect(ing, 2, 11, 12, 1, hexc(dark))
         tex[name] = ing
+
+    # four en fer (objet) : bloc de fer riveté, bouche de feu orange en bas
+    fur = blank()
+    rect(fur, 2, 2, 12, 13, hexc('#9aa0aa'))
+    rect(fur, 2, 2, 12, 1, hexc('#d4d8de')); rect(fur, 2, 14, 12, 1, hexc('#5c6068'))
+    rect(fur, 2, 2, 1, 13, hexc('#c0c5cc')); rect(fur, 13, 2, 1, 13, hexc('#6c7078'))
+    for x, y in [(3, 3), (12, 3), (3, 13), (12, 13)]:
+        rect(fur, x, y, 1, 1, hexc('#4a4e55'))                       # rivets
+    rect(fur, 5, 5, 6, 2, hexc('#4a4e55'))                           # grille
+    rect(fur, 4, 9, 8, 5, hexc('#2a1a12'))                           # bouche
+    rect(fur, 5, 11, 6, 3, hexc('#ff7a1a')); rect(fur, 6, 10, 4, 2, hexc('#ffb02e')); rect(fur, 7, 12, 2, 1, hexc('#fff1a8'))
+    tex['furnace_iron'] = fur
+
+    # boussole en or : boîtier doré rond, cadran clair, aiguille rouge et blanche
+    cmp = blank()
+    for y in range(S):
+        for x in range(S):
+            d = (x - 7.5) ** 2 + (y - 8.5) ** 2
+            if d <= 42: cmp[y * S + x] = hexc('#c9961f')
+            if d <= 33: cmp[y * S + x] = hexc('#ffd447')
+            if d <= 22: cmp[y * S + x] = hexc('#f6f0dc')
+    rect(cmp, 7, 1, 2, 2, hexc('#ffd447'))                            # anneau
+    for i in range(4):
+        rect(cmp, 10 - i, 5 + i, 1, 1, hexc('#d63b2f'))               # aiguille nord-est (rouge)
+        rect(cmp, 7 - i, 9 + i, 1, 1, hexc('#8a8f98'))                # aiguille sud-ouest
+    rect(cmp, 7, 8, 2, 2, hexc('#4a3a1a'))                            # pivot
+    rect(cmp, 5, 4, 2, 1, hexc('#ffffff'))                            # reflet
+    tex['compass_gold'] = cmp
 
     # shiny (lingot déjà cuit tombé à la mine) : le lingot plus clair, une étincelle à 4 branches et deux éclats
     for name, base, light, dark in [('shiny_iron', '#dfe3ea', '#ffffff', '#9aa0aa'),

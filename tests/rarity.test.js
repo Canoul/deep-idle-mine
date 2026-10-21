@@ -6,7 +6,7 @@ import { rarityOf, rarityDef } from '../src/meta/rarity.js';
 import { rcls, rname, rlabel } from '../src/ui/rarity.js';
 
 const UNCOMMON = ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur', 'Boussole en or', 'Boussole en or BP',
-  'Ceinture en peau de gobelin', 'Ceinture en peau de gobelin BP', ...Object.values(SHINY.items).map(s => s.item)];
+  'Ceinture en peau de gobelin', 'Ceinture en peau de gobelin BP', 'Four en fer', 'Four en fer BP', ...Object.values(SHINY.items).map(s => s.item)];
 
 test('rareté : les 5 raretés dans l\'ordre, chacune avec sa couleur', () => {
   assert.deepEqual(RARITY.tiers.map(t => t.id), ['commun', 'inhabituel', 'rare', 'epique', 'legendaire']);

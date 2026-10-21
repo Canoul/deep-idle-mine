@@ -74,3 +74,22 @@ test('alliage : matière conservée sur 300 suites d\'actions au hasard (modes, 
     assert.equal(tot(inv, st, 'Charbon') + 50 * made + 10 * smelted, BAG.Charbon);
   }
 });
+
+test('four : débloquer avec un Four en fer — 300 suites trafiquées (rejouées, objets bidon) : jamais plus d\'un four gagné par objet consommé', () => {
+  const r = mulberry32(77);
+  const ITEMS_TRY = ['Four en fer', 'Four en fer', 'Four en fer BP', 'Fer', '', null, 7, { a:1 }, '__proto__'];
+  for(let t = 0; t < 300; t++){
+    const start = 1 + Math.floor(r() * 3);
+    const inv = createInventory(); addAll(inv, { 'Four en fer':start });
+    const st = createFurnaces(); const ids = [];
+    for(let k = 0; k < 12; k++){
+      const opId = ids.length && r() < 0.4 ? ids[Math.floor(r() * ids.length)] : `u${t}-${k}`;
+      ids.push(opId);
+      furnaceOp(st, inv, { action:'unlock', item:ITEMS_TRY[Math.floor(r() * ITEMS_TRY.length)], opId }, 1e6);
+      assert.equal(countOf(inv, 'Four en fer') + (st.list.length - 1), start, 'objet consommé = four gagné');
+      assert.ok(st.list.length <= 2, 'le 3e four reste fermé');
+    }
+    const back = sanitizeFurnaces(JSON.parse(JSON.stringify(st)));
+    assert.equal(back.list.length, st.list.length);
+  }
+});

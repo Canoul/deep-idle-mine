@@ -242,6 +242,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 
 ### Boussole
 Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où se trouve le mineur** (aucune info sur les lignes au-dessus ou en dessous).
+- **Boussole en or** (case boussole) : la boussole voit aussi **1 ligne au-dessus et 1 ligne en dessous** (stat « Lignes boussole », 0 de base). Mesuré (21/10/2026, 8 sessions solo, mêmes seeds) : **≈ +300 x** par session, meilleure sur 7 seeds sur 8 ; 2 lignes n'apportent presque rien de plus (+330 x). Plus de portée, au contraire, est légèrement négatif (≈ −200 x à 12 ou 16 : le mineur part trop loin en galerie). Sans boussole : ≈ −1 400 x.
 
 ### Luminosité, torches et découverte
 - La **luminosité** est une valeur de 0 à 1 à la position du mineur. En surface (le jour) elle vaut 1 ; sous terre elle vient uniquement des torches posées.
@@ -346,7 +347,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).
 - Partout où l'objet apparaît (inventaire, craft, four, stuff, recherche, coffre en session, bulles), le **contour de sa case** et la **couleur de son nom** suivent sa rareté. La fiche d'un objet de l'inventaire affiche aussi le libellé de la rareté.
-- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. **Rare** : Cape de Naingui (et son BP).
+- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. **Rare** : Cape de Naingui (et son BP).
 - Le vert étant pris par la rareté : un objet tout juste arrivé brille d'un halo blanc, et une recette qu'on peut fabriquer porte une coche ✔.
 
 ### Craft (onglet Craft)
@@ -356,7 +357,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Certaines recettes sont **débloquées de base** ; les autres par un **blueprint** (champ `unlock`) *(décision ferme)* :
   - elles sont **secrètes** : l'onglet Craft ne les montre pas tant que le blueprint n'a pas été utilisé ;
   - dans l'Inventaire, un blueprint sélectionné a un bouton **Utiliser** : le blueprint est **consommé**, la recette est **débloquée pour toujours** sur le compte (fait par le serveur, en une fois ; un double clic n'en consomme qu'un) ;
-  - recette déjà débloquée : le bouton n'apparaît pas, le blueprint est gardé. Un blueprint qui ne débloque encore rien (Four en fer BP, Boussole en or BP) l'indique.
+  - recette déjà débloquée : le bouton n'apparaît pas, le blueprint est gardé. Un blueprint qui ne débloque encore rien l'indique (aucun pour l'instant : le Four en fer BP et la Boussole en or BP ont leur recette depuis le 21/10/2026).
 - Recettes actuelles *(provisoires)* :
 
   | Objet | Recette | Bonus |
@@ -379,6 +380,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +0,6 |
   | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Découverte +1 |
+  | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
+  | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
 
   Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
 
@@ -401,7 +404,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Four (onglet Four)
-- **Un four au départ**, jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas** ; leur déblocage (coût) sera défini avec le craft. Des **fours plus puissants** (plus rapides) pourront être conçus.
+- **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.
+- **Four 2 : Four en fer** *(décision du créateur, 21/10/2026)*. L'objet « Four en fer » se fabrique (onglet Craft, recette débloquée par le Four en fer BP) ; dans l'inventaire, son bouton **Utiliser** le consomme et ouvre le four 2, un **Four en fer** qui fond **×1,25 plus vite** (lingot de fer en 48 s). Un seul Four en fer sert : une fois le four 2 ouvert, le bouton dit « four déjà débloqué ». Le **four 3 reste fermé** pour l'instant. Fait par le serveur, en une fois (un double clic ne consomme qu'un objet).
 - Un four a **3 cases** :
   - **minerai** : seulement un objet de la famille **ore** ; une seule sorte à la fois ;
   - **combustible** : seulement un objet de la famille **combustible** (le charbon) ;
@@ -421,6 +425,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Produit | Ingrédients | Combustible | Durée |
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
+  | **Tainted gold** | 5 lingots d'or + 20 chitine | 50 charbons | 3 min |
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
@@ -431,8 +436,8 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
   | 1 | 100 parts | ceux d'un Treasure T1 (les 9) | 30 à 60 parts |
   | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui) | 40 à 70 parts |
 
-  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes du tier d'avant** *(décision ferme)* : l'option « Tier 2 » est grisée (🔒) avec le nombre de recettes qui manquent, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien (Four en fer BP, Boussole en or BP) ne comptent pas : le tier 1 est « fini » avec ses 7 recettes.
-  - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise** : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; ceux qui ne débloquent encore rien (Four en fer BP, Boussole en or BP) restent toujours possibles.
+  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes du tier d'avant** *(décision ferme)* : l'option « Tier 2 » est grisée (🔒) avec le nombre de recettes qui manquent, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026).
+  - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise** : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; un blueprint qui ne débloquerait rien resterait toujours possible. Tier entièrement appris : plus rien à tirer.
   - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
 - **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 30 à 60 (tier 1), 40 à 70 (tier 2) *(provisoire)*.
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.

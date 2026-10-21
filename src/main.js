@@ -45,7 +45,7 @@ const renderer = createRenderer($('cv'));
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, worn:() => stuff.worn() });
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, worn:() => stuff.worn(), furnaces:() => furnace.state() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -66,6 +66,15 @@ async function useBlueprint(item){
     const r = await gameApi.learn(item, newOpId());
     setInventory(r.inventory);
     $('invInfo').innerHTML = `<span class="okmsg">✔ Recette débloquée : ${r.recipe.replace(/[&<>]/g, '')}. Elle est dans l'onglet Craft.</span>`;
+  } catch(e){ lootError(e.message); }
+}
+
+/* utiliser un objet de four (Four en fer) : le serveur le consomme et ouvre le four suivant (onglet Four) */
+async function unlockFurnace(item){
+  try {
+    const r = await gameApi.furnace({ action:'unlock', item, opId: newOpId() });
+    furnace.set(r.furnaces); setInventory(r.inventory);
+    $('invInfo').innerHTML = `<span class="okmsg">✔ Four ${r.furnaces.list.length} débloqué : il t'attend dans l'onglet Four.</span>`;
   } catch(e){ lootError(e.message); }
 }
 

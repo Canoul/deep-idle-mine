@@ -46,7 +46,7 @@ test('recherche : jamais un blueprint déjà appris ; un BP en stock ou qui ne d
   const pool = researchPool(inv, 1);
   assert.ok(!pool.includes('Pioche en fer BP'), 'appris : exclu');
   assert.ok(pool.includes('Épée en fer BP'), 'en stock mais pas appris : possible');
-  assert.ok(pool.includes('Four en fer BP') && pool.includes('Boussole en or BP'), 'ne débloquent rien : toujours possibles');
+  assert.ok(pool.includes('Four en fer BP') && pool.includes('Boussole en or BP'), 'pas appris : possibles');
   assert.equal(pool.length, 8);
   addAll(inv, { [PARTS]:10000 });
   for(let k = 0; k < 200; k++){ const r = research(inv, 1, id(), Math.random); assert.notEqual(r.item, 'Pioche en fer BP'); }

@@ -339,7 +339,7 @@ test('blueprint par le serveur : consommé une fois, recette débloquée et renv
   r = await game.learn(ME, o);                                            // double clic : rien de plus
   assert.deepEqual(r.inventory.unlocked, ['Épée en fer']);
   await assert.rejects(game.learn(ME, { item:'Épée en fer BP', opId:'op-learn-again' }), { code:'known' });
-  await assert.rejects(game.learn(ME, { item:'Four en fer BP', opId:'op-learn-four' }), { code:'no_use' });
+  await assert.rejects(game.learn(ME, { item:'Charbon', opId:'op-learn-coal' }), { code:'no_use' });
   r = await game.craft(ME, { item:'Épée en fer', opId:'op-sword-1' });
   assert.ok(r.inventory.slots.some(s => s?.item === 'Épée en fer'));
   const st = await game.state(ME);

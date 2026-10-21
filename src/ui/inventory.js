@@ -4,6 +4,7 @@
 import { INVENTORY, STUFF } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
+import { unlockOf, unlockError } from '../meta/furnace.js';
 import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
 import { statsText, slotOf } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
@@ -14,7 +15,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 
 export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', treasure:'Treasure', blueprint:'Blueprint', gem:'Gemme',
                            mob:'Butin de mob', stuff:'Équipement',
-                           combustible:'Combustible', ingot:'Lingot', material:'Matériau' };
+                           combustible:'Combustible', ingot:'Lingot', material:'Matériau', furnace:'Four' };
 /* objets rares du butin : mis en avant dans la fenêtre d'ouverture */
 const RARE = new Set(['blueprint', 'gem']);
 const isRare = item => RARE.has(itemDef(item)?.cat) && item !== 'Blueprint parts';
@@ -58,7 +59,18 @@ export function equipHtml(s, worn){
          ` <span class="mut small">case ${esc(label.toLowerCase())}${cur ? ` · remplace ${esc(cur)}` : ''}</span>`;
 }
 
-function infoHtml(s, pinned=false, inv=null, worn=null){
+/* objet de four (Four en fer) : bouton « Utiliser » qui ouvre le four suivant, ou pourquoi on ne peut pas */
+const UNLOCK_WHY = { already_unlocked:'four déjà débloqué', locked_before:'débloque d\'abord le four d\'avant' };
+function unlockHtml(s, furn){
+  const d = unlockOf(s.item);
+  if(!d || !furn) return '';
+  const e = unlockError(furn, s.item);
+  if(e) return ` <span class="mut">· ${esc(UNLOCK_WHY[e] ?? 'inutilisable')}</span>`;
+  return ` <button class="on invUnlock" data-item="${esc(s.item)}" title="L'objet est consommé : le four ${d.slot + 1} s'ouvre pour toujours">Utiliser</button>`+
+         ` <span class="mut small">ouvre le four ${d.slot + 1}</span>`;
+}
+
+function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const bits = [ rname(s.item, s.item, 'b'), `× ${fullQty(s.qty)}` ];
@@ -70,7 +82,8 @@ function infoHtml(s, pinned=false, inv=null, worn=null){
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>` : '';
   const learn = pinned && inv ? blueprintHtml(inv, s) : '';
   const equip = pinned && worn ? equipHtml(s, worn) : '';
-  return bits.join(' <span class="mut">·</span> ') + open + learn + equip;
+  const unlock = pinned ? unlockHtml(s, furn) : '';
+  return bits.join(' <span class="mut">·</span> ') + open + learn + equip + unlock;
 }
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
@@ -96,14 +109,15 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     const s = inv.slots[+c.dataset.i] || null;
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
-    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.());
+    $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.());
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen, .invLearn, .invEquip');
+    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock');
     if(!b) return;
     b.disabled = true;               // un clic = une demande
     if(b.classList.contains('invOpen')) actions.onOpen?.(b.dataset.item);
     else if(b.classList.contains('invLearn')) actions.onLearn?.(b.dataset.item);
+    else if(b.classList.contains('invUnlock')) actions.onUnlock?.(b.dataset.item);
     else actions.onEquip?.(b.dataset.slot, +b.dataset.uid);
   };
 }
