@@ -2,7 +2,7 @@
    l'afficher). Elle avance jusqu'au tick demandé ; les choix des joueurs (quitter, focus) s'appliquent au tick où
    ils arrivent. Chaque choix est noté avec ce tick dans l'enregistrement de la session : rejouer la seed et les
    choix enregistrés reconstruit exactement la même partie (seulement après un redémarrage du serveur).
-   Mine instantanée (record.kind === 'instant', src/sim/instant/) : même interface ; seuls les départs comptent
+   Mine instantanée (record.mode === 'mi', src/sim/instant/) : même interface ; seuls les départs comptent
    (pas de focus).
 
    Les réglages dev (valeurs globales STATS/CFG) ne sont appliqués que pendant les calculs de cette partie. */
@@ -21,7 +21,7 @@ const KINDS = {
 
 export function createLiveGame(record){
   const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])] };
-  const K = KINDS[rec.kind === 'instant' ? 'instant' : 'session'];
+  const K = KINDS[rec.mode === 'mi' ? 'instant' : 'session'];
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => K.build(rec));
   const step = target => { while(!G.over && G.ticks < target){ K.events(G, rec); K.tick(G); } };

@@ -20,8 +20,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   en un essai ; la progression passe par l'amélioration du stuff avec les ressources rapportées
   (`GAME_DESIGN.md` §1, « Intention de progression »).
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-  Une seule page (`index.html`) avec des onglets (`#mine`, `#inventaire`…) : la session continue de tourner quand
-  on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+  Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#inventaire`…) : la session continue de
+  tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+- **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
+  « Mine / Mine instanciée », MI grisée « bientôt ») et reste visible en **lecture seule** pendant une session ;
+  l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
+  groupe bascule sur Session. Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
 

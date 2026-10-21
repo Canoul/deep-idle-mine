@@ -105,7 +105,7 @@ test('MI ouverture : rien avant l\'heure ; à l\'heure, une mine (session « ins
   const opened = await instant.tick();
   assert.equal(opened.length, 1);
   const s = opened[0];
-  assert.equal(s.kind, 'instant'); assert.equal(s.id, `mi-${SLOT}-1`);
+  assert.equal(s.mode, 'mi'); assert.equal(s.id, `mi-${SLOT}-1`);
   assert.deepEqual(s.players.map(p => p.account), [ME.id, OTHER.id]);
   assert.equal(s.startedAt, SLOT); assert.equal(s.finishAt - s.startedAt, instantDurationMs(2));
   assert.equal(s.finishAt - s.startedAt, 150e3, '5 min de jeu = 2 min 30 réelles');
@@ -137,7 +137,7 @@ test('MI ouverture : 21 inscrits → 2 mines (11 + 10) ; un inscrit déjà en se
   c.t.now = SLOT;
   const o = await c.instant.tick();
   assert.deepEqual(o.map(s => s.players.map(p => p.account)), [[OTHER.id]]);
-  assert.equal((await c.game.state(ME)).session.kind, 'session', 'sa session normale continue');
+  assert.equal((await c.game.state(ME)).session.mode, 'mine', 'sa session normale continue');
 });
 
 test('MI partie complète : butin de chacun versé une fois, sans XP ; celui qui quitte ne reçoit rien', async () => {
@@ -145,12 +145,12 @@ test('MI partie complète : butin de chacun versé une fois, sans XP ; celui qui
   await instant.join(ME); await instant.join(OTHER);
   t.now = SLOT; const [s] = await instant.tick();
   t.now = SLOT + 30e3; await game.pump();
-  assert.equal((await game.view(ME)).view.kind, 'instant');
+  assert.equal((await game.view(ME)).view.mode, 'mi');
   await game.leave(OTHER);
   t.now = s.finishAt + 1; await game.pump();
   const st = await game.state(ME);
   assert.equal(st.session, null);
-  assert.equal(st.ended.id, s.id); assert.equal(st.ended.kind, 'instant');
+  assert.equal(st.ended.id, s.id); assert.equal(st.ended.mode, 'mi');
   const res = st.ended.result, mine = res.shares.find(x => x.account === ME.id), his = res.shares.find(x => x.account === OTHER.id);
   assert.ok(mine.stats.mined > 50, `miné ${mine.stats.mined}`);
   assert.deepEqual(his.bag, {}); assert.equal(his.left, true);
@@ -162,7 +162,7 @@ test('MI partie complète : butin de chacun versé une fois, sans XP ; celui qui
   await game.settle(s.id); await game.pump();
   const I2 = await inv(store, ME.id);
   for(const [k, n] of Object.entries(mine.bag)) assert.equal(countOf(I2, k), n, k);
-  assert.equal((await game.history(ME)).sessions[0].kind, 'instant');
+  assert.equal((await game.history(ME)).sessions[0].mode, 'mi');
 });
 
 test('MI : redémarrage pendant la mine → même partie reconstruite, pas de seconde mine, versement unique', async () => {

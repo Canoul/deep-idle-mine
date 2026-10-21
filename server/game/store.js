@@ -3,7 +3,7 @@
    fichier JSON (data/game.json) écrit de façon atomique en local, PostgreSQL en ligne (une ligne par objet).
 
    Groupe (lobby) : { code, leader, members:[{account, name, graceUntil}], invites:[…], createdAt } (sans les signes de vie).
-   Session de jeu : { id, kind ('instant' = mine instantanée, sinon session normale), seed, players:[{account, name}],
+   Session de jeu : { id, mode ('mine' | 'mi' = mine instantanée), seed, players:[{account, name}],
                       bots, prefs, overrides, dev, speed, startedAt, finishAt,
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt }
    Inscription à la mine instantanée (server/instant/) : { account, name, at }, par compte. */

@@ -18,7 +18,7 @@ function minerView(m){
 export function createInstantViewer(G){
   return function view(){
     return {
-      kind: 'instant', tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
+      mode: 'mi', tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')),
       feathers: [...G.feathers], miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
     };
@@ -28,7 +28,7 @@ export function createInstantViewer(G){
 /* navigateur : une copie d'affichage de la partie, que le rendu lit comme une vraie */
 export function applyInstantView(v){
   return {
-    kind: 'instant', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
+    mode: 'mi', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))),
     feathers: new Map(v.feathers), miners: v.miners, stats: v.stats, log: v.log,
   };

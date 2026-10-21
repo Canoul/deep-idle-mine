@@ -22,7 +22,7 @@ export function newInstant(seed, opts={}){
   const world = genInstantMine(seed);
   const cols = spawnColumns(specs.length, world.w);
   const G = {
-    kind:'instant', seed, t:0, ticks:0, over:false, ...world,
+    mode:'mi', seed, t:0, ticks:0, over:false, ...world,
     rng:mulberry32(seed^0x3c6ef372), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
     log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0 }, summary:null,
     miners: specs.map((s,i) => createInstantMiner(i, s, cols[i])),
@@ -123,7 +123,7 @@ export function endInstant(G){
   if(G.summary) return;
   G.over = true;
   G.summary = {
-    kind:'instant', id:G.id, seed:G.seed, mined:G.stats.mined, contested:G.stats.contested, feathers:G.stats.feathers,
+    mode:'mi', id:G.id, seed:G.seed, mined:G.stats.mined, contested:G.stats.contested, feathers:G.stats.feathers,
     total:G.w*G.h,
     shares: G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account, left:m.left != null,
       bag: m.left != null ? {} : { ...m.inv }, stats:{ ...m.stats } })),
