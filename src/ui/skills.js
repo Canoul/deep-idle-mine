@@ -19,7 +19,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {} }){
     $('skillHead').innerHTML =
       `<span class="pill">${free} point${free > 1 ? 's' : ''} à dépenser</span> <span class="mut small">${st.spent} / ${st.points} utilisés · 1 point par niveau</span>`+
       ` <button id="skillReset"${st.spent && !session && !busy ? '' : ' disabled'} title="${session ? 'Impossible pendant une session' : 'Gratuit : tous les points sont rendus'}">↺ Reset</button>`+
-      (session ? ' <span class="mut small">(reset possible après la session ; les skills de la session en cours sont figés)</span>' : '')+
+      (session ? ' <span class="mut small">(reset possible après la session)</span>' : '')+
       (msg ? ` <span class="err">${esc(msg)}</span>` : '');
     $('skillTrees').innerHTML = SKILLS.trees.map(t => treeHtml(t)).join('');
   }

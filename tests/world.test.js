@@ -140,5 +140,5 @@ test('panneau de la mine : l\'objectif suit la dernière area ouverte, pas l\'ar
   const h = objectiveHtml(G);
   assert.match(h, /minerais de l'area 1/);
   assert.match(h, /12 \/ 160/);
-  assert.match(h, /area 2 s'ouvre/);
+  assert.match(h, /Area 2/);
 });

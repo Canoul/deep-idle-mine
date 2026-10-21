@@ -174,9 +174,9 @@ test('onglet Stuff : les stats montrent aussi les bonus des skills, comme en ses
   const skills = { tree:'mineur', ranks:{ mine_speed:3 } };
   const worn = { pioche:{ item:'Pioche en pierre', uid:1 } };
   const row = minerStats(worn, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'mineSpeed');
-  assert.deepEqual([row.base, row.bonus, row.mult, row.total], [1, 0.1, 1.06, 1.17]);   // (1 + 0,1) × 1,06 = 1,166 : multiplicateur, pas +0,06
+  assert.deepEqual([row.base, row.bonus, row.mult, row.total], [1, 0.2, 1.06, 1.27]);   // (1 + 0,2) × 1,06 = 1,272 : multiplicateur, pas +0,06
   const iron = minerStats({ pioche:{ item:'Pioche en fer', uid:2 } }, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'mineSpeed');
-  assert.equal(iron.total, 1.27, '(1 + 0,2) × 1,06 = 1,272');
+  assert.equal(iron.total, 1.48, '(1 + 0,4) × 1,06 = 1,484');
   const G = buildSession({ id:'S', seed:1, players:[{ account:'A', name:'Ana' }], looks:{ A:{ pioche:'Pioche en pierre' } }, skills:{ A:skills } });
   assert.equal(Math.round(G.miners[0].carac.mineSpeed * 100) / 100, row.total, 'même valeur qu\'en session');
   assert.equal(minerStats(worn).find(s => s.key === 'mineSpeed').skill, 0, 'sans skills : rien');

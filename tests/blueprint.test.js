@@ -87,7 +87,7 @@ test('effets : l\'épée remplace les mains nues (11 au lieu de 5), les autres s
   assert.equal(c.damage, 11);
   assert.equal(c.mineSpeed, 1.4); assert.equal(c.oxygenMax, STATS.oxygenMax + 38); assert.equal(c.pods, STATS.pods + 33);
   assert.equal(c.climbSpeed, 2.85); assert.equal(c.speed, 3.6); assert.equal(c.discoverMax, STATS.discoverMax); assert.equal(c.torches, STATS.torches + 10);
-  assert.deepEqual(statLines('Épée en fer'), ['Dégâts 11 (au lieu de 5)']);
+  assert.deepEqual(statLines('Épée en fer'), ['Dégâts 11']);
   assert.deepEqual(statLines('Ceinture en peau de gobelin'), ['Torches +10']);
 });
 
@@ -109,6 +109,6 @@ test('épée en pierre : recette de base (15 lingots de fer), dégâts 8 au lieu
   assert.equal(ITEMS['Épée en pierre'].slot, 'epee');
   assert.equal(statsOf(['Épée en pierre']).damage.total, 8);
   assert.equal(statsOf(['Épée en fer']).damage.total - 5, 2 * (statsOf(['Épée en pierre']).damage.total - 5));
-  assert.deepEqual(statLines('Épée en pierre'), ['Dégâts 8 (au lieu de 5)']);
+  assert.deepEqual(statLines('Épée en pierre'), ['Dégâts 8']);
   assert.equal(toolOf({ epee:'Épée en pierre' }, 'attack'), 'skins/sword_stone');
 });

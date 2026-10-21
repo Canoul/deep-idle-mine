@@ -73,7 +73,7 @@ export function setupResearch({ onOp }){
     try {
       const r = await onOp(op);
       msg = { ok:true, html: tab === 'research'
-        ? `✔ Nouveau blueprint : ${icon(r.item)} ${rname(r.item, r.item, 'b')}. Il est dans ton inventaire (sélectionne-le, puis « Utiliser »).`
+        ? `✔ Nouveau blueprint : ${icon(r.item)} ${rname(r.item, r.item, 'b')}`
         : `✔ ${rname(r.item)} recyclé : +${r.parts} ${esc(PARTS)}.` };
       if(tab === 'research') found = r.item;            // le blueprint obtenu s'affiche dans la case de résultat
       partsIn = false; bpIn = null;
