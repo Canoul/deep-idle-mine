@@ -635,3 +635,19 @@ Règles (voir CLAUDE.md) :
   ⚠️ Pas vu en vraie session en ligne ; étoiles d'étourdissement cachées par le pseudo (déjà le cas pour les chutes).
 - **Points d'équilibrage à surveiller** : les gobelins (100 à 175 PV) restent longtemps sur un mineur de base et volent
   1 minerai / 2 s : ≈ 45 minerais volés par mineur et par session. XP des mobs inchangée malgré des PV ×5-10.
+
+### Wiki du joueur (wiki.html, lien « 📖 Wiki du jeu » dans la barre du jeu)
+- **Quoi** : page `wiki.html` servie par le jeu (`/wiki.html` ajouté à `publicPaths`). Textes écrits pour un joueur lambda
+  (le jeu en bref, comment ça marche, les onglets, conseils). **Tous les chiffres sont générés depuis la config**
+  (`src/wiki/data.js`, logique pure) : areas (%, minerais, seuil, treasure), blocs (dureté, temps, poids, XP), mobs (PV,
+  apparitions, butin par area), objets (rareté, usages, sources, stats, recette ; recherche par texte), four (fonte,
+  alliages, fours), recettes, recherche, stats (explication + ce qui les améliore), treasures (contenu), XP, niveaux,
+  skills ; mobs suivant la nouvelle table d'apparition (occultiste compris, Tissu sombre = son butin). Un changement
+  d'équilibrage se voit donc dans le wiki sans rien réécrire ; seuls les textes en prose
+  (wiki.html) sont à relire quand une règle change.
+- **Fichiers** : `wiki.html`, `src/wiki/{data,wiki}.js`, `src/wiki/wiki.css`, `server/config.js`, `index.html` + `src/ui/style.css`
+  (lien), CLAUDE.md (structure).
+- **Tests** : `tests/wiki.test.js` (6 : chaque objet listé avec usage et source, sources/usages, areas, mobs, stats,
+  treasures, niveaux, page servie) ; nav, game-http, account-http : 27/27.
+- **Vérification** : ✅ Chromium headless : aucune erreur, toutes les sections remplies, recherche « gants » → 8 lignes,
+  pas de défilement horizontal sur mobile (390 px). ⚠️ Textes à faire relire par le créateur.

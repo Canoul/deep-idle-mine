@@ -340,3 +340,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .slot.r-rare{border-color:var(--r-rare)}           .rn.r-rare{color:var(--r-rare)}
 .slot.r-epique{border-color:var(--r-epique)}       .rn.r-epique{color:var(--r-epique)}
 .slot.r-legendaire{border-color:var(--r-legendaire)} .rn.r-legendaire{color:var(--r-legendaire)}
+
+/* lien vers le wiki du joueur (wiki.html), dans la barre de navigation */
+.navWiki{display:block;margin:auto 0 8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;color:var(--mut);text-decoration:none;font-size:13px}
+.navWiki:hover{color:var(--txt);border-color:var(--acc)}
+@media(max-width:700px){.navWiki{margin:0;white-space:nowrap;flex:none}}

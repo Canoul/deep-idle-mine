@@ -1,0 +1,71 @@
+/* Wiki du joueur : les données affichées viennent bien de la config, et rien n'est oublié. */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { ITEMS, AREAS, CFG, LOOT, STATS, MOBS, mobHp } from '../src/config.js';
+import { RECIPES } from '../src/recipes.js';
+import { SERVER, ROOT } from '../server/config.js';
+import { resolvePublic } from '../server/http/static.js';
+import * as D from '../src/wiki/data.js';
+
+test('wiki : chaque objet du jeu est listé une fois, avec un usage et une source', () => {
+  const all = D.itemGroups().flatMap(g => g.items);
+  assert.deepEqual(all.map(i => i.name).sort(), Object.keys(ITEMS).sort());
+  for(const i of all){
+    assert.ok(i.uses.length && i.sources.length, i.name);
+    assert.ok(i.rarity, i.name);
+  }
+});
+
+test('wiki : sources et usages tirés des recettes, du four, des treasures et des shiny', () => {
+  const by = Object.fromEntries(D.itemGroups().flatMap(g => g.items).map(i => [i.name, i]));
+  assert.ok(by['Shiny iron'].sources[0].startsWith('1 % de chance en minant du fer'));
+  assert.ok(by['Shiny gold'].sources[0].includes('de l\'or'));
+  assert.ok(by['Four en fer BP'].uses.some(u => u.includes('débloque la recette Four en fer')));
+  assert.ok(by['Four en fer'].uses.some(u => u.includes('ouvre le four 2')));
+  assert.ok(by['Chitine'].uses.some(u => u.includes('Tainted gold')));
+  assert.ok(by['Rubis inférieur'].sources.some(s => s === 'Treasure T2 : 1,5 % de chance'));
+  assert.deepEqual(by['Gants tactique'].stats, [`Vitesse d'attaque +${ITEMS['Gants tactique'].stats.attackSpeed} %`]);
+  assert.deepEqual(by['Épée en fer'].stats, ['Dégâts 11 (au lieu de 5)']);
+  assert.equal(by['Tissu sombre'].sources[0], 'Butin des occultistes (1 à 3)');
+  for(const [name, r] of Object.entries(RECIPES)) assert.deepEqual(by[name].recipe.cost, r.cost, name);
+});
+
+test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais', () => {
+  const rows = D.areaRows();
+  assert.equal(rows.length, AREAS.length);
+  assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 500]);
+  for(const r of rows) assert.equal(r.unlock, Math.ceil(CFG.unlockRatio * r.ores));
+  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T2']);
+});
+
+test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris', () => {
+  const rows = D.mobRows();
+  assert.equal(rows.length, MOBS.spawnTable.length);
+  for(const r of rows) for(const m of D.MOB_TYPES){
+    assert.equal(r.types[m].chance, MOBS.spawnTable[r.k][m] || 0);
+    assert.equal(r.types[m].hp, r.k >= MOBS.minArea[m] ? mobHp(m, r.k) : null);
+  }
+  assert.ok(D.MOB_TYPES.includes('occultiste'));
+  assert.deepEqual(D.MOB_INFO.occultiste.loot, [{ item:'Tissu sombre', min:1, max:3 }]);
+  assert.deepEqual(D.MOB_INFO.bestiole.loot, [{ item:'Chitine', min:1, max:2 }]);
+  for(const r of rows) assert.ok(r.spawn[0] < r.spawn[1]);
+});
+
+test('wiki : stats, treasures, niveaux, format français', () => {
+  const st = D.statRows();
+  assert.deepEqual(st.map(s => s.key).sort(), Object.keys(STATS).sort());
+  assert.ok(st.every(s => s.help), 'chaque stat a son explication');
+  assert.deepEqual(D.lootTables().map(t => t.name), Object.keys(LOOT));
+  assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.09');
+  assert.deepEqual(D.levelRows(4), [{ level:2, need:1000, total:1000 }, { level:3, need:1500, total:2500 }, { level:4, need:2250, total:4750 }]);
+  assert.equal(D.fmt(1234.5), '1 234,5');
+  assert.equal(D.fmt(2.25), '2,25');
+});
+
+test('wiki : la page est servie par le jeu (et seulement elle, pas un autre .html de la racine)', () => {
+  assert.ok(fs.existsSync(new URL('../wiki.html', import.meta.url)));
+  assert.ok(resolvePublic(ROOT, SERVER.publicPaths, '/wiki.html'));
+  assert.ok(resolvePublic(ROOT, SERVER.publicPaths, '/src/wiki/wiki.js'));
+  assert.equal(resolvePublic(ROOT, SERVER.publicPaths, '/GAME_DESIGN.md'), null);
+});

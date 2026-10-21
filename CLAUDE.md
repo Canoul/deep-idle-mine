@@ -90,6 +90,7 @@ Les règles du jeu sont dans `GAME_DESIGN.md` (source de vérité). Lis-le avant
 ### Structure
 ```
 index.html              page du jeu
+wiki.html               wiki du joueur (textes) ; ses tableaux sont générés depuis la config par src/wiki/ (data.js : logique pure, wiki.js : affichage)
 src/config.js           TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js          recettes de craft (fichier séparé, demandé par le créateur)
 src/skins.js            apparence des mineurs : corps commun, calques d'armure et pioche selon le stuff (fichier séparé, demandé par le créateur)

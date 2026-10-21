@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wiki · Deep Idle Mine</title>
+<link rel="stylesheet" href="src/wiki/wiki.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">⛏ Deep Idle Mine</a>
+  <span class="sub">Wiki du joueur</span>
+  <a class="play" href="index.html">▶ Jouer</a>
+</header>
+
+<div class="layout">
+<nav class="toc" id="toc">
+  <b>Sommaire</b>
+  <a href="#jeu">Le jeu en bref</a>
+  <a href="#mecaniques">Comment ça marche</a>
+  <a href="#onglets">Les onglets</a>
+  <a href="#areas">Les areas</a>
+  <a href="#blocs">Les blocs</a>
+  <a href="#mobs">Les mobs</a>
+  <a href="#objets">Les objets</a>
+  <a href="#craft">Craft et four</a>
+  <a href="#stats">Les stats</a>
+  <a href="#treasures">Les treasures</a>
+  <a href="#niveau">Niveau et skills</a>
+</nav>
+
+<main>
+
+<section id="jeu">
+  <h1>Le jeu en bref</h1>
+  <p class="lead">Tu ne joues pas le mineur : <b>tu le prépares</b>. Il descend tout seul dans la mine, creuse, ramène ce qu'il trouve…
+    et toi, entre deux descentes, tu l'équipes pour qu'il aille encore plus loin la fois d'après.</p>
+  <div class="cards">
+    <div class="card"><span class="ico">⛏</span><b>1. Tu lances une session</b><p>Seul ou avec 2 amis. Ton mineur creuse tout seul pendant une heure de jeu (<b>30 min en vrai</b>), même si tu fermes la page.</p></div>
+    <div class="card"><span class="ico">📦</span><b>2. Il ramène des ressources</b><p>Charbon, fer, or, butin de monstres, treasures… Tout ce qu'il dépose dans le coffre à la surface est pour toi à la fin.</p></div>
+    <div class="card"><span class="ico">🔨</span><b>3. Tu améliores ton stuff</b><p>Tu fonds tes minerais au four, tu fabriques de l'équipement, tu montes de niveau.</p></div>
+    <div class="card"><span class="ico">⬇</span><b>4. Tu vas plus profond</b><p>Mieux équipé, ton mineur va plus vite, plus loin, et trouve des choses plus rares. Et on recommence !</p></div>
+  </div>
+  <p class="tip">💡 <b>Le but n'est pas de tout finir d'un coup.</b> La première session s'arrête bien avant le fond : c'est normal. Chaque session prépare la suivante.</p>
+</section>
+
+<section id="mecaniques">
+  <h1>Comment ça marche</h1>
+
+  <h2>La mine</h2>
+  <p>La mine fait <b>50 blocs de large</b> et elle est découpée en étages de 50 blocs de haut qu'on appelle des <b>areas</b> (area 0, 1, 2…). Plus tu descends, plus c'est riche… et plus c'est dur.</p>
+  <ul>
+    <li>Au début, seule l'<b>area 0</b> est ouverte. En dessous, il y a une <b>barrière</b> qu'on ne peut pas casser.</li>
+    <li>Pour ouvrir l'area suivante, il faut miner <b>40 % des minerais</b> de l'area actuelle. La barrière disparaît alors toute seule.</li>
+    <li>La mine est générée au hasard à chaque session, avec des filons de minerais et des petites poches de vide (attention aux chutes !).</li>
+  </ul>
+
+  <h2>Ton mineur est autonome</h2>
+  <p>Tu ne le diriges pas : il décide tout seul où creuser, quand remonter et quand se battre. Tu peux quand même l'influencer :</p>
+  <ul>
+    <li><b>Avant la session</b> (lobby) : ses préférences, par exemple « priorité aux minerais » ou « descendre », « combattre » ou « ignorer » les mobs, « aider » ou non ses coéquipiers.</li>
+    <li><b>Pendant la session</b> : le <b>Focus minerai</b> (viser un minerai en particulier) et le <b>Focus area</b> (rester dans une area précise).</li>
+    <li><b>Entre deux sessions</b> : son équipement (onglet Stuff) et ses skills.</li>
+  </ul>
+
+  <h2>Pourquoi il remonte</h2>
+  <p>Ton mineur fait des allers-retours entre le fond et le coffre à la surface. Il remonte quand :</p>
+  <table class="simple">
+    <tr><th>Raison</th><th>Ce qui se passe</th></tr>
+    <tr><td>🫧 Plus d'oxygène</td><td>Il a <b>300 secondes</b> d'oxygène sous terre (5 minutes). À 0, il remonte respirer. Pas de panique : il ne meurt pas et ne ralentit pas.</td></tr>
+    <tr><td>🎒 Sac plein</td><td>Chaque bloc a un poids, son sac (les <b>pods</b>) en porte 200. Plein ? Il remonte vider dans le coffre.</td></tr>
+    <tr><td>🔥 Plus de torches</td><td>Il en porte 20. Sans torche, il ne voit plus rien : il remonte en chercher (gratuites à la surface).</td></tr>
+    <tr><td>⏱ Fin de session</td><td>Il ne repart pas s'il n'a plus le temps de faire un aller-retour utile.</td></tr>
+  </table>
+  <p>À la surface, il vide son sac dans le coffre, récupère son oxygène, ses torches et ses passerelles, puis redescend.</p>
+
+  <h2>Se déplacer sous terre</h2>
+  <ul>
+    <li><b>Il ne saute pas.</b> Pour descendre, il creuse sous ses pieds et se laisse tomber. Pour remonter, il pose des <b>échelles</b> (2 s chacune). Les échelles restent : elles servent aux trajets suivants, et aux autres joueurs.</li>
+    <li><b>Les chutes</b> : il ne saute jamais volontairement dans un trou de plus de 3 cases. Mais s'il tombe par surprise dans une poche de vide cachée (3 cases ou plus), il est <b>étourdi 5 secondes</b> (des étoiles tournent au-dessus de sa tête).</li>
+    <li><b>Les passerelles</b> : pour traverser un trou, il pose une passerelle (1 s). Il en porte 10.</li>
+    <li><b>Creuser en hauteur coûte cher</b> (une échelle par case) : ton mineur préfère donc creuser des <b>galeries horizontales</b>.</li>
+  </ul>
+
+  <h2>La lumière</h2>
+  <ul>
+    <li>Sous terre, il fait noir. Ton mineur pose une <b>torche</b> dès qu'il n'y voit plus assez. Les torches restent allumées pour toujours.</li>
+    <li>Il ne <b>découvre</b> (rend visibles) que les blocs autour de lui, à 2 blocs de distance, et seulement s'il y a de la lumière.</li>
+    <li>Dans le noir complet, il travaille plus lentement (environ un tiers de vitesse en moins).</li>
+  </ul>
+
+  <h2>La boussole</h2>
+  <p>C'est son radar à minerais : elle repère les minerais jusqu'à <b>8 blocs</b> à gauche et à droite, <b>sur sa ligne uniquement</b>, même cachés dans la roche. Les minerais repérés sont entourés d'un cadre jaune à l'écran. Avec la <b>Boussole en or</b>, elle voit aussi la ligne au-dessus et celle en dessous.</p>
+
+  <h2>Les shiny ✨</h2>
+  <p>Quand ton mineur mine un bloc de <b>fer</b> ou d'<b>or</b>, il a <b>1 % de chance</b> de trouver à la place un <b>shiny</b> : un lingot déjà cuit, qui brille. Pas besoin de four ! Ils servent dans des recettes avancées.</p>
+
+  <h2>Jouer à plusieurs</h2>
+  <ul>
+    <li>Jusqu'à <b>3 joueurs</b> dans la même mine, chacun avec son mineur. Échelles, torches et galeries sont partagées.</li>
+    <li>Invite tes amis avec le <b>code du groupe</b>, un <b>lien</b> ou leur <b>ID de compte</b>. Seul le chef ★ lance la session.</li>
+    <li>À la fin, le coffre est <b>partagé à parts égales</b> entre ceux qui sont encore là. Les Treasure TX ne se partagent pas : <b>chacun en reçoit un</b>.</li>
+    <li>Le groupe reste après la session : vous pouvez enchaîner sans vous réinviter. Si tu ne veux pas rejouer, quitte le groupe.</li>
+    <li>⚠️ <b>Quitter une session avant la fin = tu ne gagnes rien</b>, ta part va aux autres.</li>
+  </ul>
+</section>
+
+<section id="onglets">
+  <h1>Les onglets</h1>
+  <p>La barre à gauche du jeu donne accès à tout. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
+  <div class="tabs">
+    <div class="tabcard"><h3>⛏ Mine</h3><p>Le <b>lobby</b> : ton groupe, tes invitations, les préférences de ton mineur, et le bouton <b>Lancer</b>. Pendant une session, c'est ici que tu regardes la mine en direct : la carte, ton équipe, le coffre, les panneaux Focus et le journal.</p></div>
+    <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure, <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff. Les nouveaux objets brillent d'un halo blanc.</p></div>
+    <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>10 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session.</p></div>
+    <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
+    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide.</p></div>
+    <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
+    <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session).</p></div>
+    <div class="tabcard"><h3>👥 Social</h3><p>Bientôt : liste d'amis. Pour l'instant, on invite depuis l'onglet Mine.</p></div>
+  </div>
+</section>
+
+<section id="areas">
+  <h1>Les areas</h1>
+  <p>Chaque area a sa propre recette de blocs. Plus on descend, plus il y a de pierre dure (lente à miner)… et de minerais précieux. Les chiffres sont en <b>% des 2 500 blocs</b> de l'area. La dernière ligne se répète pour toutes les areas plus profondes.</p>
+  <div id="w-areas"></div>
+  <p class="tip">💡 <b>À miner</b> = le nombre de minerais (tous types confondus) à miner dans l'area pour faire sauter la barrière du fond et ouvrir la suivante. <b>Treasure</b> = la chance qu'un treasure soit caché dans l'area, et son niveau (T1 ou T2).</p>
+</section>
+
+<section id="blocs">
+  <h1>Les blocs</h1>
+  <p>Ce que ton mineur creuse. Plus un bloc est dur, plus il est long à miner. Le poids compte dans son sac (200 de base).</p>
+  <div id="w-blocks"></div>
+</section>
+
+<section id="mobs">
+  <h1>Les mobs</h1>
+  <p>Pas de panique : <b>ton mineur ne peut pas mourir</b>. Les mobs sont là pour le <b>ralentir</b>. Il se bat tout seul (sauf si tu choisis « Ignorer » dans le lobby, mais il ne pourra pas ignorer un mob qui le tacle). Plus tu descends, plus ils sont nombreux, variés et résistants.</p>
+  <div id="w-mobs-list"></div>
+  <h2>Qui apparaît où ?</h2>
+  <div id="w-mobs-table"></div>
+  <p class="tip">💡 Le <b>tacle</b> : un mob qui arrive <b>juste à côté</b> de ton mineur le bloque sur place jusqu'à ce qu'il l'ait tué (un mob ne tacle qu'un mineur à la fois). Meilleurs dégâts et vitesse d'attaque = moins de temps perdu.</p>
+  <p class="tip">🤝 <b>Aider allié</b> (option du lobby) : ton mineur file aider un coéquipier attaqué par un mob, s'il est à 20 cases ou moins. Tu peux choisir les mobs pour lesquels il ne se dérange pas.</p>
+</section>
+
+<section id="objets">
+  <h1>Les objets</h1>
+  <p>Tous les objets du jeu, avec leur <b>rareté</b>, à quoi ils servent et comment les obtenir. La couleur du nom et du contour de la case donne la rareté :</p>
+  <div id="w-rarity"></div>
+  <div class="filter"><input id="w-item-search" type="search" placeholder="🔎 Chercher un objet (ex. fer, gants, BP…)"></div>
+  <div id="w-items"></div>
+</section>
+
+<section id="craft">
+  <h1>Craft et four</h1>
+  <h2>Le four</h2>
+  <p>Mode <b>Fondre</b> : <span id="w-smelt-rule"></span> Mode <b>Alliage</b> : deux ingrédients + du charbon. Les ingrédients ne sont consommés qu'à la fin de chaque produit : si tu retires une case, tu récupères tout.</p>
+  <div id="w-furnace"></div>
+  <div id="w-furnace-tiers"></div>
+  <h2>Les recettes de craft</h2>
+  <p>Les recettes « de base » sont dispo dès le départ. Les autres sont <b>secrètes</b> : il faut <b>utiliser leur blueprint</b> (BP) depuis l'inventaire pour les débloquer, pour toujours.</p>
+  <div id="w-recipes"></div>
+  <h2>La table de recherche</h2>
+  <p>Tu n'as pas eu de chance avec les treasures ? Dépense tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard parmi ceux dont tu n'as pas encore la recette.</p>
+  <div id="w-research"></div>
+  <p class="tip">💡 Le tier 2 s'ouvre seulement quand tu as appris <b>toutes</b> les recettes du tier 1. Recycler un blueprint rend toujours moins de parts qu'il n'en a coûté.</p>
+</section>
+
+<section id="stats">
+  <h1>Les stats</h1>
+  <p>Les caractéristiques de ton mineur. La valeur de base, puis ce qui peut l'améliorer. Les bonus du stuff s'additionnent ; les skills multiplient le total (ex. +2 % de vitesse de minage = ×1,02).</p>
+  <div id="w-stats"></div>
+</section>
+
+<section id="treasures">
+  <h1>Les treasures</h1>
+  <p>Un <b>treasure</b> est un coffre enfoui dans la roche. Il y a <b>30 % de chance</b> qu'une area en cache un. Ton mineur le vise dès qu'il le voit. En le cassant, il obtient un objet <b>Treasure TX</b> (X = son niveau), que tu ouvres ensuite dans l'inventaire (bouton « Ouvrir »).</p>
+  <div id="w-treasure-tiers"></div>
+  <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> blueprint et <b>une</b> gemme par treasure.</p>
+  <div id="w-loot"></div>
+</section>
+
+<section id="niveau">
+  <h1>Niveau et skills</h1>
+  <h2>Gagner de l'XP</h2>
+  <p>Toute l'XP de la session va dans une cagnotte, partagée à parts égales entre les joueurs présents à la fin.</p>
+  <div id="w-xp"></div>
+  <h2>Les niveaux</h2>
+  <div id="w-levels"></div>
+  <h2>Les skills</h2>
+  <p>1 point par niveau. Choisis <b>un seul arbre</b> : dès que tu mets un point dans un arbre, les deux autres sont bloqués (jusqu'au reset, gratuit). Pour prendre une case, il faut avoir <b>maxé</b> au moins une case de l'étage du dessus.</p>
+  <div id="w-skills"></div>
+</section>
+
+<footer class="foot">Les chiffres de cette page viennent directement du jeu : ils sont toujours à jour. Valeurs encore en équilibrage, elles peuvent bouger.</footer>
+</main>
+</div>
+<script type="module" src="src/wiki/wiki.js"></script>
+</body>
+</html>

@@ -38,7 +38,7 @@ export const SERVER = {
   logProxyCheck: proxyHops() > 0,
   maxBodyBytes: 16 * 1024,
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
-  publicPaths: ['/index.html', '/src/', '/textures/', '/prototype/'],
+  publicPaths: ['/index.html', '/wiki.html', '/src/', '/textures/', '/prototype/'],
 };
 
 export const SESSIONS = {

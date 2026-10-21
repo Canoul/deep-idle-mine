@@ -1,0 +1,219 @@
+/* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
+   Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
+import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, SHINY,
+         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP } from '../config.js';
+import { RECIPES } from '../recipes.js';
+import { rarityOf } from '../meta/rarity.js';
+import { xpForLevel } from '../meta/level.js';
+
+export const CELLS = W * AREA_H;
+const blockByKey = key => BLOCKS[IDS[key]];
+export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'air'];
+const isOreKey = k => blockByKey(k)?.type === 'ore';
+
+/* ---------- areas ---------- */
+/* une ligne par area définie (la dernière vaut pour toutes les suivantes) */
+export function areaRows(){
+  return AREAS.map((a, k) => {
+    const counts = Object.fromEntries(Object.entries(a.comp).map(([n, p]) => [n, Math.round(p * CELLS / 100)]));
+    const ores = Object.keys(counts).filter(isOreKey).reduce((s, n) => s + counts[n], 0);
+    return { k, last: k === AREAS.length - 1, comp: a.comp, counts, ores, unlock: Math.ceil(CFG.unlockRatio * ores),
+             treasure: a.chestChance, tier: treasureTier(k) };
+  });
+}
+export const treasureTier = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
+
+/* ---------- blocs ---------- */
+const XP_BY_NAME = Object.fromEntries(Object.entries(XP.ore).map(([k, v]) => [blockByKey(k).name, v]));
+export function blockRows(){
+  return Object.values(BLOCKS).filter(b => b.type === 'terrain' || b.type === 'ore' || b.type === 'treasure')
+    .map(b => ({ name: b.name, tex: b.tex, type: b.type, hard: b.hard, time: b.hard / STATS.mineSpeed,
+                 w: b.noDrop ? null : b.w, xp: XP_BY_NAME[b.name] ?? 0,
+                 areas: AREAS.map((a, k) => k).filter(k => {
+                   const key = Object.keys(IDS).find(n => BLOCKS[IDS[n]] === b);
+                   return key ? (AREAS[k].comp[key] || 0) > 0 : b.type === 'treasure' && AREAS[k].chestChance > 0;
+                 }) }));
+}
+
+/* ---------- mobs ---------- */
+const range = (f, k) => { let lo = Infinity, hi = -Infinity; for(const v of [0, 0.999999]){ const x = f(() => v, k); lo = Math.min(lo, x); hi = Math.max(hi, x); } return [lo, hi]; };
+/* les types de mobs, dans l'ordre de la config */
+export const MOB_TYPES = Object.keys(MOBS.hpBase);
+/* une ligne par area de la table d'apparition (la dernière vaut pour les suivantes) : chance de chaque type, ses PV */
+export function mobRows(){
+  return MOBS.spawnTable.map((t, k) => ({
+    k, last: k === MOBS.spawnTable.length - 1, spawn: range(MOBS.spawnDelay, k), cap: MOBS.walkerCap(k),
+    types: Object.fromEntries(MOB_TYPES.map(m => [m, { chance: t[m] || 0, hp: k >= MOBS.minArea[m] ? mobHp(m, k) : null }])),
+  }));
+}
+/* fiche de chaque mob : nom, texture, butin [{ item, min, max }], XP, première area */
+export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
+  name: MOB_LOOK[m]?.name ?? m, tex: MOB_LOOK[m]?.tex, xp: XP.mob[m] ?? 0, minArea: MOBS.minArea[m],
+  hp0: mobHp(m, MOBS.minArea[m]),
+  loot: {
+    bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
+    gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
+    occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }],
+    mimic:      [],
+  }[m] ?? [],
+}]));
+function mm([min, max]){ return { min, max }; }
+export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
+  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, help: HELP.range };
+/* coups pour tuer un mob de pv points de vie, avec des dégâts d */
+export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
+
+/* ---------- objets ---------- */
+export const CAT_LABEL = { terrain:'Terrain', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
+  mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau' };
+export const CAT_ORDER = ['ore', 'combustible', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'blueprint', 'stuff', 'furnace'];
+const pct = c => Math.round(c * 1000) / 10;
+const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
+const statName = k => STUFF.statLabels[k] ?? k;
+const unit = k => STUFF.statUnits?.[k] ?? '';
+
+/* bonus d'une pièce de stuff, en texte : « Pods +25 », « Dégâts 11 (au lieu de 5) » */
+export function statsOf(item){
+  const d = ITEMS[item];
+  if(!d || d.cat !== 'stuff') return [];
+  return [
+    ...Object.entries(d.set || {}).map(([k, v]) => `${statName(k)} ${fmt(v)}${unit(k)} (au lieu de ${fmt(STATS[k])}${unit(k)})`),
+    ...Object.entries(d.stats || {}).map(([k, v]) => `${statName(k)} +${fmt(v)}${unit(k)}`),
+  ];
+}
+
+/* d'où vient un objet : liste de textes courts */
+export function sourcesOf(item){
+  const out = [];
+  const block = Object.values(BLOCKS).find(b => b.name === item && !b.noDrop && !b.unbreakable);
+  if(block){
+    const key = Object.keys(IDS).find(n => BLOCKS[IDS[n]] === block);
+    const areas = AREAS.map((a, k) => (a.comp[key] || 0) > 0 ? k : null).filter(k => k !== null);
+    if(areas.length) out.push(`Miné dans ${areasText(areas)}`);
+  }
+  for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
+  for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
+    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+  for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
+  for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
+  for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
+  for(const [tr, l] of Object.entries(LOOT)){
+    const a = l.always.find(x => x.item === item);
+    if(a) out.push(`${tr} : ${a.min} à ${a.max}, toujours`);
+    for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`${tr} : ${fmt(pct(i.chance))} % de chance`); }
+  }
+  for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
+  if(Object.hasOwn(RECIPES, item)) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
+  if(!out.length) out.push('Pas encore obtenable');
+  return out;
+}
+
+/* à quoi sert un objet : liste de textes courts */
+export function usesOf(item){
+  const d = ITEMS[item], out = [];
+  if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`);
+  if(d?.cat === 'treasure') out.push('S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
+  if(d?.cat === 'combustible') out.push('Combustible du four');
+  if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].out}`);
+  if(Object.hasOwn(FURNACE.unlockItems, item)) out.push(`« Utiliser » : ouvre le four ${FURNACE.unlockItems[item].slot + 1} (${FURNACE.tiers[FURNACE.unlockItems[item].tier].name}, vitesse ×${fmt(FURNACE.tiers[FURNACE.unlockItems[item].tier].speed)})`);
+  const bp = Object.entries(RECIPES).find(([, r]) => r.unlock === item);
+  if(bp) out.push(`« Utiliser » : débloque la recette ${bp[0]}`);
+  if(item === RESEARCH.parts) out.push('Table de recherche : obtenir un blueprint');
+  if(d?.cat === 'blueprint' && item !== RESEARCH.parts) out.push('Peut se recycler en Blueprint parts');
+  for(const a of FURNACE.alloys) if(Object.hasOwn(a.in, item)) out.push(`Alliage → ${a.out}`);
+  const crafts = Object.entries(RECIPES).filter(([, r]) => Object.hasOwn(r.cost, item)).map(([n]) => n);
+  if(crafts.length) out.push(`Ingrédient : ${crafts.join(', ')}`);
+  if(d?.cat === 'terrain') out.push('Aucun pour l\'instant (il prend de la place dans le sac)');
+  if(d?.cat === 'ore' && !Object.hasOwn(FURNACE.recipes, item) && !crafts.length) out.push('Aucun pour l\'instant');
+  if(d?.cat === 'gem' && !crafts.length) out.push('Aucun pour l\'instant');
+  if(!out.length) out.push('Aucun pour l\'instant');
+  return out;
+}
+
+export const blueprintsOfTier = t => {
+  const def = RESEARCH.tiers.find(x => x.tier === t);
+  return def ? (LOOT[def.from]?.oneOf.find(f => f.family === 'blueprint')?.items.map(i => i.item) ?? []) : [];
+};
+const tierAreas = t => { const i = TREASURE.tiers.indexOf(t), lo = i ? TREASURE.tiers[i - 1].maxArea + 1 : 0;
+  return i === TREASURE.tiers.length - 1 ? `${lo} et plus` : `${lo} à ${t.maxArea}`; };
+const areasText = ks => {
+  const last = AREAS.length - 1, list = ks.map(k => k === last ? `${k}+` : String(k));
+  return list.length === 1 ? `l'area ${list[0]}` : `les areas ${list.slice(0, -1).join(', ')} et ${list.at(-1)}`;
+};
+
+/* tous les objets, par catégorie : [{ cat, label, items:[{ name, tex, rarity, w, stack, stats, uses, sources, recipe }] }] */
+export function itemGroups(){
+  const names = Object.keys(ITEMS);
+  const cats = [...CAT_ORDER, ...new Set(names.map(n => ITEMS[n].cat).filter(c => !CAT_ORDER.includes(c)))];
+  return cats.map(cat => ({ cat, label: CAT_LABEL[cat] ?? cat,
+    items: names.filter(n => ITEMS[n].cat === cat)
+      .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'fr'))
+      .map(n => ({ name: n, tex: ITEMS[n].tex, rarity: rarityOf(n), w: ITEMS[n].w ?? null, stack: ITEMS[n].stack !== false,
+                   stats: statsOf(n), uses: usesOf(n), sources: sourcesOf(n), recipe: RECIPES[n] ?? null })),
+  })).filter(g => g.items.length);
+}
+const rank = n => RARITY.tiers.findIndex(t => t.id === rarityOf(n));
+
+/* ---------- craft, four, recherche ---------- */
+export const recipeRows = () => Object.entries(RECIPES).map(([name, r]) => ({ name, cost: r.cost, qty: r.qty, unlock: r.unlock, stats: statsOf(name), uses: ITEMS[name]?.cat === 'stuff' ? [] : usesOf(name).filter(u => u.startsWith('«')) }));
+export const furnaceRows = () => [
+  ...Object.entries(FURNACE.recipes).map(([ore, r]) => ({ mode:'Fondre', out: r.out, inputs: { [ore]: FURNACE.orePerIngot }, fuel: FURNACE.fuelPerIngot, time: r.time })),
+  ...FURNACE.alloys.map(a => ({ mode:'Alliage', out: a.out, inputs: a.in, fuel: a.fuel, time: a.time })),
+];
+export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier) }));
+
+/* ---------- stats ---------- */
+const STAT_HELP = {
+  oxygenMax:  'Combien de secondes il peut rester sous terre avant de remonter respirer.',
+  pods:       'Ce que son sac peut porter (chaque bloc a un poids). Sac plein = retour au coffre.',
+  speed:      'Vitesse de marche à l\'horizontale, en blocs par seconde.',
+  climbSpeed: 'Vitesse sur les échelles, pour monter comme pour descendre.',
+  mineSpeed:  'Vitesse de minage : temps pour casser un bloc = sa dureté ÷ cette valeur.',
+  damage:     'Dégâts de chaque coup contre un mob. L\'épée remplace la valeur des mains nues.',
+  attackSpeed:`Rythme des coups : à 100 %, un coup toutes les ${fmt(CFG.attackInterval)} s ; à 200 %, deux fois plus vite.`,
+  fortune:    'Chance de doubler un minerai miné (tu en gagnes 2 au lieu de 1).',
+  discoverMax:'Distance (en blocs) jusqu\'à laquelle il découvre les blocs autour de lui, s\'il y a de la lumière.',
+  light:      'Distance jusqu\'à laquelle il repère les mobs.',
+  compass:    'Portée de la boussole : elle repère les minerais à gauche et à droite, sur sa ligne.',
+  compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
+  torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
+  torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
+  bridges:    'Passerelles qu\'il emporte pour traverser les trous.',
+};
+const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', discoverMax:' blocs',
+  light:' blocs', compass:' blocs', torchRadius:' blocs' };
+export function statRows(){
+  const skillBoost = {};
+  for(const t of SKILLS.trees) for(const n of t.nodes){
+    const key = { mine_speed:'mineSpeed', damage:'damage', ore_rush:'speed', travel_rush:'speed' }[n.id];
+    if(key) (skillBoost[key] ||= []).push(`${n.name} (${t.label})`);
+  }
+  const keys = [...STUFF.shownStats, ...Object.keys(STATS).filter(k => !STUFF.shownStats.includes(k))];
+  return keys.map(k => ({ key: k, label: STUFF.statLabels[k] ?? (k === 'torchRadius' ? 'Rayon des torches' : k), base: STATS[k],
+    unit: STAT_UNIT[k] ?? '', help: STAT_HELP[k] ?? '',
+    items: Object.keys(STUFF.items).filter(n => Object.hasOwn(STUFF.items[n].stats || {}, k) || Object.hasOwn(STUFF.items[n].set || {}, k))
+      .map(n => ({ name: n, text: statsOf(n).find(s => s.startsWith(statName(k))) ?? '' })),
+    skills: skillBoost[k] ?? [] }));
+}
+
+/* ---------- treasures ---------- */
+export const treasureTierRows = () => TREASURE.tiers.map(t => ({ item: t.item, tex: t.tex, areas: tierAreas(t) }));
+export const lootTables = () => Object.entries(LOOT).map(([name, l]) => ({ name, tex: ITEMS[name]?.tex,
+  always: l.always, families: l.oneOf.map(f => ({ family: f.family, items: f.items, total: f.items.reduce((s, i) => s + i.chance, 0) })) }));
+
+/* ---------- XP, niveaux, skills ---------- */
+export const xpRows = () => [
+  ...Object.entries(XP.ore).map(([k, v]) => ({ what: blockByKey(k).name, tex: blockByKey(k).tex, xp: v, kind:'Minerai miné' })),
+  ...Object.entries(XP.mob).map(([k, v]) => ({ what: MOB_LOOK[k]?.name ?? k, tex: MOB_LOOK[k]?.tex, xp: v, kind:'Mob vaincu' })),
+];
+export const levelRows = (n = 10) => Array.from({ length: n - 1 }, (_, i) => ({ level: i + 2, need: xpForLevel(i + 2) - xpForLevel(i + 1), total: xpForLevel(i + 2) }));
+export const skillTrees = () => SKILLS.trees.map(t => ({ ...t, nodes: t.nodes.map(n => ({ ...n,
+  maxText: n.desc.replace('{v}', n.per === 1 ? '' : `${fmt(Math.round(n.per * n.max * 1000) / 10)} %`).replace(/\s+/g, ' ').trim(),
+  perText: n.per === 1 ? null : `${fmt(Math.round(n.per * 1000) / 10)} % par rang` })) }));
+
+/* ---------- format ---------- */
+export function fmt(n){
+  if(typeof n !== 'number' || !Number.isFinite(n)) return String(n);
+  const [i, d] = String(Math.round(n * 100) / 100).split('.');
+  return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : '');
+}
