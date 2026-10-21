@@ -19,17 +19,25 @@
   <button class="navAccount" id="navAccount" hidden></button>
 </nav>
 <div class="views" id="views">
-<section class="view" data-view="mine">
-<!-- lobby : avant de lancer une session -->
-<div id="lobby" class="lobbyWrap" hidden>
-  <h1>⛏ Mine</h1>
+<section class="view" data-view="lobby">
+<!-- lobby : préparer la prochaine session ; pendant une session, lecture seule (bandeau « en session ») -->
+<div id="lobby" class="lobbyWrap">
+  <h1>🏠 Lobby</h1>
+  <div class="inSession" id="lobbySession" hidden>
+    <span>⛏ <b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
+    <button class="on" id="lobbyToSession">Voir la session</button>
+  </div>
   <div class="card"><h2>Mineur</h2><div id="levelBody"></div></div>
   <div class="card invitesCard" id="invitesCard" hidden>
     <h2>Invitations</h2>
     <div id="invitesList"></div>
   </div>
   <div class="card">
-    <h2>Équipe de la prochaine session</h2>
+    <h2>Où miner</h2>
+    <div class="seg mineModes" id="mineModes"></div>
+  </div>
+  <div class="card">
+    <h2 id="teamTitle">Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
       <button class="on big" id="launchBtn">▶ Lancer la session</button>
@@ -55,6 +63,14 @@
     </div>
     <div class="dev" id="devStats"></div>
   </div>
+</div>
+</section>
+<section class="view" data-view="session" hidden>
+<!-- pas de session en cours -->
+<div id="noSession" class="soon">
+  <div class="big">⛏</div><h2>Tu n'es pas en session</h2>
+  <p class="mut">Les sessions se lancent depuis le lobby.</p>
+  <button class="on" id="toLobbyBtn">🏠 Aller au lobby</button>
 </div>
 <!-- session en cours -->
 <div id="run" hidden>
@@ -99,7 +115,7 @@
   </aside>
 </main>
 </div>
-<!-- bilan de fin de session : ne couvre que l'onglet Mine (les autres onglets et la navigation restent utilisables) -->
+<!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
 <section class="view" data-view="inventaire" hidden>
