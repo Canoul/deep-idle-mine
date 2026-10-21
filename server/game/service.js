@@ -13,7 +13,7 @@
    - À plusieurs : le chef d'un groupe (server/party/) lance la session pour tous les membres.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -123,7 +123,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
     if(!rec) return null;
-    return { id: rec.id, seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, looks: rec.looks ?? {}, overrides: rec.overrides,
+    return { id: rec.id, mode: rec.mode ?? 'mine', seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, looks: rec.looks ?? {}, overrides: rec.overrides,
              dev: rec.dev, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
              tick: live.tickOf(rec.id), clock: rec.dev ? rec.clock : null,
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
@@ -263,6 +263,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(players[0].account !== me.id) fail('bad_request', 400, 'Le joueur qui lance doit être le premier.');
       if(new Set(players.map(p => p.account)).size !== players.length || players.length > GAME.maxPlayers)
         fail('bad_request', 400, 'Équipe invalide.');
+      /* type de mine choisi dans le lobby (Mine par défaut) ; un type annoncé mais pas prêt (MI) est refusé */
+      const mode = body.mode ?? MINE_MODES[0].id;
+      const modeDef = MINE_MODES.find(m => m.id === mode);
+      if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
+      if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
@@ -283,6 +288,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         }
         const rec = {
           id: crypto.randomUUID(),
+          mode,
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,

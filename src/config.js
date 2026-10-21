@@ -502,7 +502,13 @@ export const SITE = { url:'https://deepmineidle.fr/' };
 /* ---- Groupes (lobby à plusieurs) ----
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
-export const PARTY = { codeLength:6, poll:2500 };
+export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : rafraîchissement du lobby (plus lent pendant une session)
+
+/* Types de mine qu'on choisit dans le lobby avant de lancer (ready:false = annoncé, pas encore jouable). */
+export const MINE_MODES = [
+  { id:'mine', label:'Mine',             icon:'⛏', ready:true  },
+  { id:'mi',   label:'Mine instanciée',  icon:'🌀', ready:false },   // MI : feature à venir
+];
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
