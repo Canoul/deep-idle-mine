@@ -64,6 +64,14 @@ export const gameApi = {
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 
+/* Mine instantanée : inscription pour la prochaine ouverture (pendant la mine, c'est gameApi : view, leave, state) */
+export const instantApi = {
+  state: () => request('GET', '/api/instant'),
+  join:  () => request('POST', '/api/instant/join', {}),
+  quit:  () => request('POST', '/api/instant/quit', {}),
+  devOpen: () => request('POST', '/api/instant/dev-open', {}),   // mode dev : ouvrir tout de suite
+};
+
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
 export const partyApi = {
   state:   ()   => request('GET', '/api/party'),

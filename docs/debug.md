@@ -745,6 +745,160 @@ Règles (voir CLAUDE.md) :
   `stuff`, `crusher`, `skills` : 78/78 verts. `node --check` sur les modules modifiés.
 - **Vérification** : ⚠️ pas regardé dans le navigateur (textes seulement, aucun changement de mise en page attendu).
 
+### Lobby et Session : deux onglets (Geoffrey) — branche `geoffrey/lobby-session`
+- **Quoi** : l'onglet `mine` devient `lobby` (🏠) + `session` (⛏). `#mine` → Session, `#rejoindre=…` → Lobby, onglet
+  par défaut Lobby. Lobby en lecture seule pendant une session (`launchState({session})` → « ⛏ Session en cours »,
+  inviter / rejoindre / quitter / retirer / préférences / type de mine / panneau dev désactivés). Bandeau
+  `#lobbySession` (temps restant mis à jour par la boucle d'affichage). Section Session : `#noSession`, `#run`, `#end`.
+  Choix « Où miner » (`MINE_MODES` dans config : `mine` prêt, `mi` pas prêt) envoyé au lancement (`mode`) ; le
+  serveur le vérifie (`bad_request` inconnu, `mode_not_ready` pas prêt), l'enregistre (`rec.mode`) et le renvoie dans
+  la session publique (`'mine'` par défaut pour les anciennes sessions).
+- **Rafraîchissement du lobby pendant la session** : `pollLobby` ne s'arrête plus quand une session tourne
+  (`PARTY.pollInSession` = 5 s au lieu de 2,5 s). Il ne relance `refresh()` que si le serveur annonce une session
+  **différente** de celle affichée (`st.session !== rec?.id`), puis bascule sur Session : c'est ce qui fait basculer
+  les membres du groupe. Ça touche `seenAt` pendant la partie (signe de vie), sans effet sur la grâce existante.
+  Un lien `#rejoindre` n'est traité qu'hors session.
+- **Fichiers** : `index.html`, `src/config.js` (MINE_MODES, PARTY.pollInSession), `src/ui/{nav,lobby,style.css}`,
+  `src/main.js` (`showLobby` → `showNoSession`), `server/game/service.js` (mode), `wiki.html`, GAME_DESIGN §3 et §6,
+  `claude/etat-du-projet.md`.
+- **Tests** : nav (onglets, `#mine`, défaut, sections Lobby / Session, bilan dans Session), lobby (Lancer pendant une
+  session, `mineModes`), game-service (mode : défaut, MI refusée, types invalides, rien créé), party : 82/82.
+- **Vérification** : ✅ Chrome headless piloté par CDP (deux joueurs, serveur dev, 2 contextes) : Lobby par défaut,
+  MI grisée, « pas en session », lancement → A et B (qui était sur Inventaire) basculent sur Session, lobby en
+  lecture seule avec bandeau et « en session » sur les places, le rafraîchissement lent ne renvoie pas sur Session,
+  bilan chez les deux dans Session, lobby de nouveau utilisable pendant le bilan, « Retour au lobby », `#mine` →
+  Session ; mobile 390 px ; 0 erreur console. ⚠️ Pas testé en ligne (PostgreSQL : `mode` est un champ de plus dans
+  l'enregistrement de session, sérialisé comme le reste).
+- **Points fragiles** : conflit attendu avec `origin/social` (`main.js`, `nav.js`). Piège pour les essais headless :
+  passer de `/` à `/#onglet` ne recharge pas la page (même document), et un onglet en arrière-plan ne tourne pas sans
+  `Emulation.setFocusEmulationEnabled`.
+
+---
+
+## 21/10/2026 — Jules — Démarrage raté : cadre d'erreur sur la page (`src/boot-check.js`)
+- **Symptôme** : sur Opera GX (un joueur), page servie mais JavaScript du jeu jamais lancé : barre de gauche sans
+  onglets, « Mineur » vide, « Où miner » = « . ». Reproduit à l'identique en local en bloquant un module
+  (`page.route('**/src/ui/nav.js', abort)`) : un seul module du graphe qui échoue → `main.js` ne s'exécute pas.
+- **Écarté** : aucun test du navigateur dans le code ; JS utilisé ≤ Chrome 98 (`structuredClone`, `Object.hasOwn`,
+  `.at`) ; les 169 URL du jeu (fichiers + `/api/…`) testées contre les règles réseau EasyList + EasyPrivacy
+  (téléchargées le 21/10, analyseur maison vérifié sur des cas connus) : aucune bloquée. Opera GX n'est pas installé
+  sur le poste de Jules : cause réelle pas encore connue (pistes : extension, bloqueur avec d'autres listes, VPN,
+  coupure pendant un redémarrage du serveur).
+- **Ajout** : `src/boot-check.js`, script **classique** chargé avant `src/main.js` dans `index.html` (+ `<noscript>`).
+  Écoute `error` (en capture, pour voir l'échec de chargement du `<script type=module>`) et `unhandledrejection`
+  tant que `DIM_BOOT.started` n'est pas vrai (`main.js` le met après le bloc de démarrage ; ⚠️ pendant l'écran de
+  connexion il n'est pas encore vrai). Échec d'un module → relit les imports depuis `main.js` (`findMissing`, fetch
+  `no-store`) et liste les fichiers qui ne répondent pas. Erreur de code → message + fichier:ligne:colonne. Ignore
+  les images (textures). Affiche toujours le `userAgent` (Opera : `OPR/<version>`).
+- **Tests** : `tests/boot-check.test.js` (imports sur plusieurs lignes, ré-exports, `import './x.js'` ; parcours
+  complet depuis `main.js` sans fichier manquant, chaque fichier lu une fois ; fichier bloqué nommé) ; nav et
+  account-http relancés (lisent `index.html`) : 25/25.
+- **Vérification** : ✅ Chromium headless (playwright-cli, serveur local) : chargement normal sans cadre (11 onglets) ;
+  `nav.js` bloqué → « Fichier(s) bloqué(s) : /src/ui/nav.js (Failed to fetch) » ; `throw` ajouté à `tooltip.js` →
+  « Uncaught Error: test plantage — /src/ui/tooltip.js:42:7 ». ⚠️ Pas testé dans Opera GX.
+- **Points fragiles** : la lecture des imports est une expression régulière (imports statiques seulement ; un
+  `import(...)` dynamique ne serait pas suivi). Un nouveau fichier chargé hors de `main.js` n'est pas couvert.
+
+### Mine instantanée, étape 1 : règles et contenu (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Quoi** : `GAME_DESIGN.md` §6 « Mine instantanée (MI) » ; `src/config.js` `INSTANT_MINE` (horaire, durée 300 s de
+  jeu, 50×50, composition, plumes, 20/mine, poids de l'IA de dispersion, rappels) ; objet `Plume d'ange` (ITEMS,
+  `RARITY` rare) ; textures `angel_feather` (objet) et `angel_feathers` (tas, transparent, dessiné par-dessus le
+  tunnel) dans `scripts/gen_textures.py`.
+- **Choix technique** : le tas de plumes n'est **pas** un bloc de `BLOCKS` (case vide + surcouche, comme échelles et
+  torches) : rien ne change pour la mine normale (ITEMS, wiki, mobs parcourent `BLOCKS`).
+- **Travail dans un worktree** `F:\idledollexminer-mi` : une autre discussion travaillait en même temps dans
+  `F:\idledollexminer` (branche `geoffrey/retours-21-10`, modifications non commitées).
+- **Tests** : `tests/instant-mine.test.js` (nouveau), `rarity` (plume ajoutée aux rares), `inventory`, `wiki` : 26/26.
+- **Vérification** : ✅ textures regardées agrandies. Rien en jeu pour l'instant.
+
+### Mine instantanée, étape 2 : simulation et IA (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Quoi** : `src/sim/instant/` (séparé de la mine normale) :
+  - `world.js` : `genInstantMine(seed)` (ligne 0 = surface vide, lignes 1-50 = mine ; composition **exacte** par
+    mélange : 500 charbons, 1 000 fers, 975 ors, 25 tas ; `G.feathers` Map case → plumes), `spawnColumns(n)`.
+  - `session.js` : `newInstant`, `tickInstant`, `leaveInstant`, `endInstant` (idempotents), `runInstant`,
+    `INSTANT_TICKS` (3 000). Déplacement libre 4 directions dans les cases vides. **Ordre des mineurs dans un tick :
+    celui dont l'action finit le plus tôt d'abord** (sinon le premier de la liste gagnait les blocs disputés finis
+    dans le même tick), égalités en ordre tournant. Bloc fini → les autres qui le minaient perdent leur action
+    (`stats.lost`, `interrupts++`) ; à `interruptMax` → `m.flee = {x, y, until}`. Shiny et Fortune par
+    `shinyOf` / `fortuneExtra` de `src/sim/actions.js` (`fortuneExtra` exportée, rien d'autre ne change) ; Ruée
+    (ore_rush) appliquée ; Pioche aiguisée passe par `carac.mineSpeed` comme en session.
+  - `ai.js` : `plan` = parcours en largeur dans les cases vides, chaque bloc plein au bord coté
+    `trajet + foule (+ takenPenalty) + hasard 0,01` ; **le temps de minage n'entre pas dans le choix** (tous les
+    blocs valent pareil, sinon il préfère le charbon) ; zone fuie exclue tant qu'il existe un autre candidat.
+- **Script** : `scripts/simulate-instant.js` (`npm run simulate:mi`, options `--miners`, `--count`, `--seeds`,
+  `--mine-speed`, `--no-crowd`). 20 mineurs × 5 min ≈ 0,2 s de calcul.
+- **Chiffres** (5 seeds) : 20 mineurs → 80 % vidée, 0 disputé, 93-110 blocs/mineur, 0 s inactif, 0 fuite ;
+  `--no-crowd` → ~500 disputés, 68 % vidée, ~16 fuites ; 1 mineur → 102-110 blocs, 4 %.
+- **Point de design ouvert** : un tas de plumes n'est ramassé que si le mineur **passe** sur la case (règle de
+  Geoffrey : n'influe pas sur le chemin). Mesuré : seul, 5 tas atteints par une galerie / 5 seeds, 0 ramassé ; à 3,
+  37 plumes laissées pour 17 ramassées.
+- **Tests** : `tests/instant-mine.test.js` (13) ; `shiny`, `session`, `rarity` : 30/30. `npm run simulate -- --miners
+  3 --count 2` : 0 bloquée (mine normale inchangée).
+- **Vérification** : ✅ simulation. ⚠️ Pas encore de serveur ni d'affichage.
+- **Suite (même jour)** : ramassage opportuniste des plumes (option b de Geoffrey) : `MI.featherReach` = 3 ; dans
+  `plan`, le premier tas atteint par le parcours à ≤ 3 pas devient `m.goal` (chemin jusqu'au tas, `target` = null) ;
+  `decide` abandonne `goal` si le tas a disparu (pris par un autre). Mesuré (5 seeds) : seul 0 → 19 plumes, tas
+  atteints laissés 5 → 1 ; à 3 : 17 → 46, laissés 14 → 0 ; à 20 : 233 → 314. Blocs par mineur inchangés.
+  Tests : 2 de plus (15/15).
+
+### Mine instantanée, étape 3 : serveur (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Principe** : une MI est une **session de sorte `kind: 'instant'`** du service de jeu (`server/game/service.js`) :
+  même partie en direct (fil d'exécution), même reprise après redémarrage, même `leave` (Quitter = rien), même
+  versement idempotent (`creditSession` par id de session) ; **pas d'XP** (`settleWith` saute `creditXp`), focus
+  refusé (400). `publicSession` et `history` renvoient `kind`.
+- **Fichiers** :
+  - `src/shared/instant.js` : `localHour`, `nextSlot` / `lastSlot` (heures pleines UTC dont l'heure de Paris est
+    paire ; **l'heure répétée du passage à l'heure d'hiver est écartée**, `isSlot`), `splitMines` (tailles égales),
+    `instantDurationMs`, `instantSpecs` (stuff + skills comme `minerSpecs`), `buildInstant`,
+    `applyDueInstantLeaves`.
+  - `src/shared/instant-view.js` : envoi = carte entière à chaque fois (~2,6 Ko), plumes, mineurs, journal ;
+    `applyInstantView` pour le navigateur (étape 4).
+  - `server/game/live-game.js` : table `KINDS` (session / instant) ; rien ne change pour les sessions.
+  - `server/game/service.js` : `openInstant(id, slot, joueurs)` (id fixe `mi-<heure>-<n>` : jamais deux fois ;
+    doublons et joueurs déjà en session écartés ; `startedAt = heure d'ouverture`, `finishAt` = +150 s ; pas de
+    limite `maxLive`) ; `onStart(fn)` : appelé après chaque session normale lancée.
+  - `server/instant/service.js` + `routes.js` : `GET /api/instant`, `POST /api/instant/join | quit | dev-open`.
+    Inscriptions en mémoire + stockage (`mi_signup`, mémoire / fichier / PostgreSQL). `tick()` (dans la boucle du
+    serveur, `server/main.js`) ouvre l'heure `lastSlot(now)` si elle n'a pas été traitée ; au démarrage, une heure
+    passée pendant l'arrêt avec des inscrits d'avant est rattrapée (`startedAt` = l'heure prévue).
+  - `server/game/store.js`, `server/db/postgres.js` (commentaire), `server/app.js`, `server/main.js`.
+- **Tests** : `tests/instant-server.test.js` (12, vraie simulation via `createInlineRunner`),
+  `tests/anticheat/instant.test.js` (5). `game-service`, `live`, `game-http`, `game-replay`, `party`, `postgres`,
+  `view` : 91 verts (1 ignoré : PostgreSQL absent). `npm run test:anticheat` : 62 verts, **1 rouge déjà rouge sur
+  `origin/main`** : `skills : 500 suites de demandes au hasard` (« étape sans la précédente ») — pas lié au MI, ⚠️ à
+  regarder par qui touche aux skills.
+- **Vérification** : ✅ tests. ⚠️ Pas encore lancé dans un vrai serveur (étape 4, avec l'interface).
+- **Points fragiles** : `GAME_SERVER.pumpEvery` (200 ms) fait aussi tourner `instant.tick()` ; un joueur inscrit
+  puis en session au moment de l'ouverture est écarté **et désinscrit** (pas reporté à la mine suivante).
+
+### Mine instantanée, étape 4 : interface (Geoffrey) — branche `geoffrey/mine-instantanee`
+- **Fusion de `main`** (Lobby / Session séparés, `mode` des sessions) : une MI est une session **`mode: 'mi'`** (plus de
+  champ `kind`). `MINE_MODES` : la MI est `ready` (choisissable) et `scheduled` : `game.start` la refuse
+  (`mode_scheduled`, 400). Test `game-service` (type de mine) et `lobby` (« Où miner ») adaptés.
+- **Fichiers** :
+  - `src/render/miner-sprite.js` : dessin du mineur sorti de `canvas.js` (rendu de la mine normale inchangé),
+    partagé avec `src/render/instant.js` (toute la mine, 50 × 51 + une bande de ciel pour les pseudos ; fissure
+    sur les blocs en cours de minage ; ton mineur entouré).
+  - `src/ui/instant-lobby.js` : carte MI du lobby (`countdownText`, `crossedNotice` : rappels seulement quand le
+    moment passe pendant que la page est ouverte, le plus proche si plusieurs) ; `#miNotice` ; bouton dev « Ouvrir
+    maintenant » (`POST /api/instant/dev-open`). `window.MI._notice(30)` dans la console pour voir un rappel.
+  - `src/ui/instant-hud.js` : panneaux pendant la mine, classement, bilan (`showInstantEnd`). Icône de plume en
+    texture (l'emoji 🪶 s'affichait en carré vide).
+  - `src/main.js` : `enterSession` / `pollView` / `frame` / `showResult` aiguillent selon `mode` ; `updateNavSession`
+    et `showSettling` prennent la durée / le texte de la MI ; lancer une session normale relit l'état MI.
+  - `index.html` (`#miCard`, `#teamCard`, `#prefsCard`, `#miRun`, `#miNotice`), `style.css`, `src/net/api.js`
+    (`instantApi`), `src/ui/lobby.js` (cartes selon le mode, `onMode`), `wiki.html`, `GAME_DESIGN.md`.
+- **Tests** : `tests/instant-ui.test.js` (4) ; avec `instant-*`, `anticheat/instant`, `game-service`, `live`,
+  `game-http`, `game-replay`, `party`, `lobby`, `nav`, `view`, `camera`, `skins`, `rarity`, `wiki` : 160 verts.
+- **Vérification** : ✅ Chrome headless piloté par CDP, serveur dev sur le port 8123 (dossier `F:\idledollexminer-mi`,
+  données à part) : 2 invités inscrits, ouverture dev, mine affichée, B quitte, fin : bilan de A = son inventaire
+  (23 charbons, 35 fers, 44 ors, 2 shiny, 11 plumes), B : rien ; rappel 30 s depuis l'onglet Inventaire →
+  Rejoindre → inscrit, lobby sur la carte MI. 0 erreur JS. ⚠️ Pas vu sur mobile ; rappels « au vrai moment »
+  vérifiés seulement par les tests (`crossedNotice`), pas en attendant une vraie heure pile.
+- **Points fragiles** : l'envoi MI contient toute la carte à chaque fois (~3 Ko, toutes les 250 ms par joueur) : à
+  revoir si une MI à 20 pèse trop sur le serveur. Conflit attendu avec `geoffrey/nom-mine-instantanee` (même ligne
+  de `MINE_MODES` dans `src/config.js`).
+
 ### Onglet Amélioration : identification R1-R7, amélioration +1 à +3, nouvelles stats (Geoffrey) — branche `geoffrey/amelioration`
 - **Quoi** :
   - `src/config.js` : `UPGRADE` (qualités, découverte R6/R7, liste des stats, prix en x, pas d'arrondi, paliers,

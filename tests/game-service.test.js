@@ -48,6 +48,20 @@ test('lancer : la session est créée par le serveur (seed, joueur, préférence
   assert.equal((await game.state(ME)).session.id, session.id);
 });
 
+test('type de mine : Mine par défaut ; Mine instantanée (à heure fixe) et type inconnu refusés au lancement, sans rien créer', async () => {
+  const { game } = setup();
+  await assert.rejects(game.start(ME, { mode:'mi' }), { code:'mode_scheduled', status:400 });   // MI : à heure fixe, sur inscription
+  for(const mode of ['volcan', 42, null, { id:'mine' }, ['mine']])
+    if(mode !== null) await assert.rejects(game.start(ME, { mode }), { code:'bad_request' }, String(mode));
+  assert.equal((await game.state(ME)).session, null, 'aucune session créée par un refus');
+  assert.equal((await game.start(ME, { mode:'mine' })).session.mode, 'mine');
+});
+
+test('type de mine absent (ancien navigateur) : Mine', async () => {
+  const { game } = setup();
+  assert.equal((await game.start(ME, {})).session.mode, 'mine');
+});
+
 test('une seule session à la fois par joueur', async () => {
   const { game } = setup();
   await game.start(ME, {});

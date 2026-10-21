@@ -1,7 +1,9 @@
-/* Lobby de l'onglet Mine : les places de la prochaine session (le groupe), Lancer, Inviter (code, lien, ID),
-   invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs de test et réglages.
+/* Onglet Lobby : où miner (Mine, ou Mine instantanée : sa carte d'inscription, src/ui/instant-lobby.js), les places de la prochaine session (le groupe), Lancer,
+   Inviter (code, lien, ID), invitations reçues, Critères / préférences, et (mode développeur seulement) seed, mineurs
+   de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
+   la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES } from '../config.js';
 import { joinLink } from '../shared/party.js';
 
 const $ = id => document.getElementById(id);
@@ -31,9 +33,10 @@ export function specLabel(tree){
   return t ? `${t.icon} ${t.label}` : 'Sans spécialisation';
 }
 
-/* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef */
-export function launchState({ account, party, offline, busy }){
+/* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef ; déjà en session = non */
+export function launchState({ account, party, offline, busy, session }){
   if(offline || !account) return { can:false, label:'▶ Lancer la session' };
+  if(session) return { can:false, label:'⛏ Session en cours' };
   if(busy || party?.launching) return { can:false, label:'… Lancement' };
   const leader = !party || party.leader === account.id;
   if(!leader) return { can:false, label:'En attente du chef…' };
@@ -42,21 +45,38 @@ export function launchState({ account, party, offline, busy }){
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+/* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session */
+export function mineModes(cur, locked = false){
+  return MINE_MODES.map(m => ({ id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, disabled: locked || !m.ready }));
+}
+
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
-  const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false };
+  /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
+  const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
+               session:null, mode:MINE_MODES[0].id };
 
   function render(){
     const { account, offline, info, party } = st;
-    const lead = party && party.leader === account?.id;
+    const locked = !!st.session;
+    if(locked) st.inviteOpen = false;
+    const lead = party && party.leader === account?.id && !locked;      // retirer / annuler : pas pendant une session
+    $('lobby').classList.toggle('locked', locked);
+    $('lobbySession').hidden = !locked;
+    $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
+    /* Mine instantanée : pas d'équipe ni de Lancer (elle s'ouvre à heure fixe), sa carte d'inscription à la place */
+    const mi = MINE_MODES.find(m => m.id === st.mode)?.scheduled;
+    $('miCard').hidden = !mi; $('teamCard').hidden = !!mi; $('prefsCard').hidden = !!mi;
+    $('mineModes').innerHTML = mineModes(st.mode, locked).map(m =>
+      `<button data-mode="${m.id}" class="${m.on ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : ''}>${esc(m.label)}${m.soon ? ' <small>(bientôt)</small>' : ''}</button>`).join('');
     $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const tags = [s.me && 'Toi', s.leader && 'chef', s.playing && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      const tags = [s.me && 'Toi', s.leader && 'chef', (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
@@ -64,18 +84,20 @@ export function setupLobby(h){
 
     const ls = launchState(st);
     $('launchBtn').disabled = !ls.can; $('launchBtn').textContent = ls.label;
-    $('inviteBtn').disabled = offline || !account;
+    $('inviteBtn').disabled = offline || !account || locked;
     $('inviteBtn').classList.toggle('on', st.inviteOpen);
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
-    $('joinRow').hidden = offline || !account || (party && party.members.length > 1);
+    $('partyLeaveBtn').disabled = locked;
+    $('joinRow').hidden = offline || !account || locked || (party && party.members.length > 1);
 
     const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
+      : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !dev || (party && !lead);        // seuls les réglages de celui qui lance comptent
+    $('devCard').hidden = !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -107,7 +129,7 @@ export function setupLobby(h){
     $('invitesCard').hidden = !list.length;
     $('invitesList').innerHTML = list.map(i =>
       `<div class="row invitation"><span><b>${esc(i.from)}</b> t'invite <span class="mut">(${esc(i.members.join(', '))})</span></span>
-        <span><button class="on" data-accept="${esc(i.code)}"${i.full ? ' disabled title="Groupe complet"' : ''}>Rejoindre</button>
+        <span><button class="on" data-accept="${esc(i.code)}"${i.full ? ' disabled title="Groupe complet"' : st.session ? ' disabled title="Termine ta session pour rejoindre"' : ''}>Rejoindre</button>
         <button data-decline="${esc(i.code)}">Refuser</button></span></div>`).join('');
   }
 
@@ -115,17 +137,18 @@ export function setupLobby(h){
     const p = st.prefs ?? {};
     $('prefsBox').innerHTML = Object.entries(PREF_OPTIONS).map(([k, def]) =>
       `<div class="pref"><span>${esc(def.label)}</span><div class="seg">${def.options.map(([v, label], i) =>
-        `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}">${esc(label)}</button>`).join('')}</div></div>`).join('')
+        `<button data-k="${k}" data-i="${i}" class="${p[k] === v ? 'on' : ''}"${st.session ? ' disabled' : ''}>${esc(label)}</button>`).join('')}</div></div>`).join('')
       + (p.helpAllies ? helpList(p.helpIgnore ?? []) : '');
   }
 
   /* « Aider allié » : chaque type de mob, avec son dessin, ignoré oui / non (ignoré = il ne va pas aider contre lui) */
   function helpList(ignored){
+    const dis = st.session ? ' disabled' : '';
     return `<div class="helpMobs"><div class="mut">Ignorer ces mobs quand un allié est pris en chasse ?</div>${
       Object.entries(MOB_INFO).map(([t, d]) => {
         const off = ignored.includes(t);
         return `<div class="pref"><span class="mobName"><span class="mobIco">${d.under ? `<img src="textures/${d.under}.png" alt="">` : ''}<img src="textures/${d.tex}.png" alt=""></span>${esc(d.name)}</span>
-          <div class="seg"><button data-ign="${t}" data-v="1" class="${off ? 'on' : ''}">Ignoré</button><button data-ign="${t}" data-v="0" class="${off ? '' : 'on'}">Aider</button></div></div>`;
+          <div class="seg"><button data-ign="${t}" data-v="1" class="${off ? 'on' : ''}"${dis}>Ignoré</button><button data-ign="${t}" data-v="0" class="${off ? '' : 'on'}"${dis}>Aider</button></div></div>`;
       }).join('')}</div>`;
   }
 
@@ -149,6 +172,7 @@ export function setupLobby(h){
 
   $('prefsBox').onclick = e => {
     const ig = e.target.closest('button[data-ign]');
+    if(st.session) return;                                            // préférences figées pendant la session
     if(ig && !st.offline){
       const t = ig.dataset.ign, cur = new Set(st.prefs?.helpIgnore ?? []);
       if(ig.dataset.v === '1') cur.add(t); else cur.delete(t);
@@ -161,6 +185,14 @@ export function setupLobby(h){
     renderPrefs();
     h.onPrefs(st.prefs);
   };
+
+  $('mineModes').onclick = e => {
+    const b = e.target.closest('button[data-mode]');
+    if(!b || b.disabled) return;
+    st.mode = b.dataset.mode; render();
+    h.onMode?.(st.mode);
+  };
+  $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('inviteBtn').onclick = () => {
     st.inviteOpen = !st.inviteOpen;
@@ -201,7 +233,7 @@ export function setupLobby(h){
   $('launchBtn').onclick = async () => {
     if(st.busy) return;
     st.busy = true; render();
-    try { await h.onLaunch(st.info?.dev ? devOptions() : {}); }
+    try { await h.onLaunch({ mode: st.mode, ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }
   };
 

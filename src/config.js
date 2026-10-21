@@ -324,7 +324,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','moon_stone',
+  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers','moon_stone',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -390,6 +390,7 @@ export const RARITY = {
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
     'Cristal de pleine lune':'rare',
+    'Plume d\'ange':'rare',
   },
 };
 
@@ -513,10 +514,10 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
-  /* matériaux de l'amélioration (UPGRADE.levels) : pas encore de source en jeu (compte admin seulement) */
-  'Plume d\'ange':          { cat:'material', tex:'angel_feather', w:1, stack:true },
+  /* matériau de l'amélioration (UPGRADE.levels, avec la Plume d'ange de la mine instantanée) : pas encore de source en jeu */
   'Pierre de pleine lune':  { cat:'material', tex:'moon_stone',    w:1, stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
+  'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -550,6 +551,40 @@ export const ACCOUNT = {
    La partie tourne sur le serveur (une seule copie) : un départ ou un focus s'applique tout de suite. */
 export const GAME = { speed:2, devSpeeds:[1,2,5,20,60,300], maxPlayers:3 };
 
+/* ---- Mine instantanée (MI, GAME_DESIGN §6 « Mine instantanée ») *(décisions du créateur, 21/10/2026 ; valeurs
+   provisoires)* ----
+   Toutes les everyHours heures pile, heure de Paris (0 h, 2 h, 4 h…), une mine commune s'ouvre aux inscrits du lobby
+   MI, chacun pour soi, pendant duration secondes de jeu (à la vitesse GAME.speed : 2 min 30 réelles à x2).
+   Mine : w × h blocs, tous des minerais (comp, en %) sauf feather % de cases vides portant un tas de plumes d'ange
+   (featherMin à featherMax plumes, ramassées par le premier mineur qui arrive sur la case). Entièrement éclairée,
+   sans oxygène, pods, mobs, torches ni échelles : le mineur se déplace librement dans les galeries creusées.
+   Les mineurs apparaissent sur la ligne de surface (au-dessus de la mine), espacés régulièrement.
+   maxPerMine : au-delà, les inscrits sont répartis en plusieurs mines de tailles égales (21 → 11 + 10).
+   IA (src/sim/instant/) : chaque bloc vaut pareil ; elle vise le bloc le plus proche en temps de trajet (le temps de
+   minage n'entre pas en compte), plus :
+     crowdRadius / crowdWeight : s de pénalité par autre mineur à moins de crowdRadius cases (Manhattan) du bloc,
+                                 décroissante avec la distance ; vaut aussi pour la cible des autres ;
+     takenPenalty : s de pénalité si un autre mineur mine déjà ce bloc ;
+     interruptMax : blocs perdus d'affilée (un autre a fini le même bloc avant lui) avant de changer de zone ;
+     fleeDist / fleeTime : il vise alors des blocs à au moins fleeDist cases de là pendant fleeTime s de jeu ;
+     featherReach : un tas de plumes accessible à au plus featherReach pas (par les galeries) passe avant tout : il va
+                    le chercher (ramassage opportuniste, décision du 21/10/2026 ; le premier arrivé le prend).
+   notify : rappels (s avant l'ouverture) ; inviteAt : le dernier rappel propose Rejoindre / Décliner.
+   Ni XP, ni partage : le butin de chacun va dans son inventaire à la fin ; Quitter = rien. */
+export const INSTANT_MINE = {
+  everyHours: 2, timeZone: 'Europe/Paris',
+  duration: 300,                       // s de jeu
+  w: 50, h: 50,
+  comp: { coal:20, iron:40, gold:39 }, feather: 1,
+  featherMin: 1, featherMax: 5,
+  maxPerMine: 20,
+  crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
+  interruptMax: 3, fleeDist: 8, fleeTime: 20,
+  featherReach: 3,
+  notify: [30*60, 15*60, 5*60, 30], inviteAt: 30,
+  featherItem: 'Plume d\'ange', featherTex: 'angel_feather', heapTex: 'angel_feathers',
+};
+
 /* adresse officielle du jeu : les liens d'invitation y renvoient toujours (même si la page a été ouverte par une
    autre adresse, ex. l'ancienne adresse Render). Sauf en local (localhost, réseau de la maison) : l'adresse de la page,
    pour tester. */
@@ -558,7 +593,14 @@ export const SITE = { url:'https://deepmineidle.fr/' };
 /* ---- Groupes (lobby à plusieurs) ----
    codeLength : caractères du code de groupe (alphabet des ID de compte, ex. K7Q4P2), aussi dans le lien d'invitation.
    poll : intervalle de rafraîchissement du lobby et de la session dans le navigateur (ms). */
-export const PARTY = { codeLength:6, poll:2500 };
+export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : rafraîchissement du lobby (plus lent pendant une session)
+
+/* Types de mine qu'on choisit dans le lobby (ready:false = annoncé, pas encore jouable ; scheduled = ne se lance pas
+   avec « Lancer » : s'ouvre à heure fixe pour les inscrits, voir INSTANT_MINE). */
+export const MINE_MODES = [
+  { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
+  { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+];
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

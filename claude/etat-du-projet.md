@@ -20,8 +20,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   en un essai ; la progression passe par l'amélioration du stuff avec les ressources rapportées
   (`GAME_DESIGN.md` §1, « Intention de progression »).
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-  Une seule page (`index.html`) avec des onglets (`#mine`, `#inventaire`…) : la session continue de tourner quand
-  on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+  Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#inventaire`…) : la session continue de
+  tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+- **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
+  « Mine / Mine instantanée ») et reste visible en **lecture seule** pendant une session ;
+  l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
+  groupe bascule sur Session. Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
 
@@ -46,11 +51,20 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   valeur de l'objet en x, définitive) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
   Plumes d'ange + Pierres de pleine lune, un échec ne coûte que les matériaux) ; Enchantement plus tard. Nouvelles
   stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte
-  `q`, `lines`, `plus` (pas d'ID dérivé type 113:4 : les lignes sont tirées, chaque pièce est unique). Les deux
-  matériaux n'ont **pas encore de source** en jeu (`scripts/give-admin.js` pour tester).
+  `q`, `lines`, `plus` (pas d'ID dérivé type 113:4 : les lignes sont tirées, chaque pièce est unique). Plumes
+  d'ange : celles de la mine instantanée ; Pierre de pleine lune : **pas encore de source** en jeu
+  (`scripts/give-admin.js` pour tester).
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
+- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en
+  config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
+  (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
+  **Plumes d'ange**, objet rare sans usage pour l'instant), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
+  IA à part (`src/sim/instant/`) : aucun minerai prioritaire, évite les autres mineurs, change de zone après 3 blocs
+  perdus, va chercher un tas de plumes à 3 pas ou moins. Côté serveur, c'est une session `mode: 'mi'` (même vie
+  qu'une session : partie en direct, Quitter = rien, versement unique), sans XP. Rappels à 30, 15, 5 min et 30 s.
+  Équilibrage à surveiller : ≈ 40 fers et 39 ors par joueur et par MI.
 
 ## Hébergement
 

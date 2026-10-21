@@ -302,6 +302,43 @@ def main():
     rect(cry, 12, 12, 1, 1, pale); rect(cry, 13, 2, 1, 1, pale)     # éclats
     tex['moon_crystal'] = cry
 
+    # plume d'ange (objet, mine instantanée) : plume blanche incurvée, rachis lavande, barbes fendues, tige dorée
+    fea = blank()
+    vane, vane_l, vane_d, quill, spark = hexc('#f4f1ff'), hexc('#ffffff'), hexc('#c9c3e6'), hexc('#e8c25a'), hexc('#fff6c8')
+    for yy, (x0, x1) in enumerate([(11, 12), (10, 13), (9, 13), (8, 13), (8, 12), (7, 12), (7, 11), (6, 11),
+                                   (6, 10), (5, 9), (5, 8), (5, 7)], start=1):
+        rect(fea, x0, yy, x1 - x0 + 1, 1, vane)
+        rect(fea, x0, yy, 1, 1, vane_l)                             # bord éclairé
+        rect(fea, x1, yy, 1, 1, vane_d)                             # bord ombré
+    for x, y in [(13, 5), (12, 8), (7, 10)]:                        # barbes fendues
+        rect(fea, x, y, 1, 1, (0, 0, 0, 0))
+    for i in range(11):                                             # rachis
+        rect(fea, 12 - i // 2 - (i + 1) // 4, 1 + i, 1, 1, vane_d)
+    rect(fea, 5, 13, 1, 1, quill); rect(fea, 4, 14, 1, 1, quill); rect(fea, 3, 15, 1, 1, quill)   # tige dorée
+    rect(fea, 14, 1, 1, 1, spark); rect(fea, 3, 6, 1, 1, spark)     # éclats
+    tex['angel_feather'] = fea
+
+    # tas de plumes d'ange (case vide de la mine instantanée, dessinée par-dessus le tunnel) : petit tas de plumes
+    # blanches nacrées, deux plumes dressées, éclats dorés
+    heap = blank()
+    glow = hexc('#ffe9a8', 70)
+    for yy, (x0, w) in enumerate([(4, 8), (3, 10), (2, 12), (1, 14), (1, 14)], start=10):
+        rect(heap, x0 - 1, yy, w + 2, 1, glow)                      # lueur autour du tas
+        rect(heap, x0, yy, w, 1, vane)
+        rect(heap, x0 + w - 2, yy, 2, 1, vane_d)
+    for x, y in [(3, 12), (6, 11), (9, 12), (12, 12), (5, 14), (10, 14)]:
+        rect(heap, x, y, 2, 1, vane_d)                              # plumes couchées (traits d'ombre)
+    rect(heap, 4, 10, 3, 1, vane_l); rect(heap, 3, 11, 2, 1, vane_l)
+    for i, (x, y) in enumerate([(5, 9), (5, 8), (4, 7), (4, 6), (3, 5)]):     # plume dressée à gauche
+        rect(heap, x, y, 2 if i < 4 else 1, 1, vane_l)
+    for i, (x, y) in enumerate([(10, 9), (10, 8), (11, 7), (11, 6), (12, 5)]):    # plume dressée à droite
+        rect(heap, x, y, 2 if i < 4 else 1, 1, vane)
+        rect(heap, x + 1, y, 1, 1, vane_d)
+    rect(heap, 7, 10, 2, 1, quill)                                  # tige dorée qui dépasse
+    for x, y in [(8, 4), (2, 3), (14, 6), (13, 2)]:
+        rect(heap, x, y, 1, 1, spark)                               # éclats dorés
+    tex['angel_feathers'] = heap
+
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
@@ -492,16 +529,6 @@ def main():
     rect(cloth, 4, 6, 3, 1, hexc('#6a3d92'))
     tex['dark_cloth'] = cloth
 
-    # plume d'ange (matériau de l'amélioration) : plume blanche en diagonale, tige dorée, reflet bleuté
-    feather = blank()
-    f_white, f_blue, f_gold = hexc('#fbfbff'), hexc('#c9d6ee'), hexc('#e8c35a')
-    for i in range(10):                                            # barbes de part et d'autre de la tige
-        x, y = 3 + i, 12 - i
-        rect(feather, x - 2, y - 1, 2, 2, f_white); rect(feather, x + 1, y, 1, 2, f_blue)
-    for i in range(12):
-        rect(feather, 2 + i, 13 - i, 1, 1, f_gold)                 # tige
-    rect(feather, 12, 1, 2, 2, f_white)
-    tex['angel_feather'] = feather
 
     # pierre de pleine lune (matériau de l'amélioration) : galet gris-bleu poli, disque de lune pâle au centre
     mst = blank()

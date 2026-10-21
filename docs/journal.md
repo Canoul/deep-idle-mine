@@ -18,19 +18,6 @@ Modèle d'entrée :
 
 ---
 
-## 21/10/2026 — Jules — Ménage des textes du jeu
-- **Pour le joueur** : des textes plus courts et plus propres. L'épée affiche « Dégâts 8 » (plus « au lieu de 5 ») ;
-  plus de phrases techniques (« Résultat vérifié par le serveur », « luminosité 80 % », « 50×50 = 2500 blocs »,
-  « npm start » quand le serveur ne répond pas) ; plus de « Bientôt : aider un allié » alors que l'option existe ;
-  plus de « Les valeurs sont provisoires » dans Skills ; l'objectif de la mine tient en une ligne
-  (« 🔒 Area 2 : minerais de l'area 1 — 12 / 160 ») ; explications raccourcies (Stuff, lobby, Historique, Concasseur).
-- **À suivre** : le journal de session (« Session démarrée (seed …) ») et le wiki n'ont pas été retouchés, à part
-  les effets des épées dans le wiki.
-- **Décisions** : le bilan à plusieurs ne précise plus que les Treasure sont « un pour chacun » (pas utile).
-- **État** : ✅ en ligne le 21/10
-
----
-
 ## 21/10/2026 — Geoffrey — Onglet Amélioration : identification R1 à R7 et amélioration +1 à +3
 - **Pour le joueur** : nouvel onglet 💎 **Amélioration**.
   - **Identification** : on pose une pièce de stuff et on sacrifie un deuxième exemplaire du même objet. La pièce
@@ -46,14 +33,88 @@ Modèle d'entrée :
   10 % = la valeur d'une pioche en pierre. Pas d'ID dérivé « 113:4 » : chaque pièce garde sa qualité, ses lignes et
   son niveau sur elle-même (deux R4 n'ont pas les mêmes stats).
 - **À suivre** :
-  - décider d'où viennent les Plumes d'ange et les Pierres de pleine lune (aucune source en jeu pour l'instant) ;
+  - décider d'où viennent les Pierres de pleine lune (aucune source en jeu pour l'instant) ; les Plumes d'ange se
+    ramassent dans la mine instantanée (c'est le même objet) ;
   - les paliers +4 à +15 ;
   - la chance d'avoir « +1 Découverte » en R6/R7 (25 % par ligne, provisoire) ;
   - le prix du butin des mobs (provisoire) ;
-  - regarder l'onglet dans le navigateur (pas encore vérifié à l'écran).
+  - regarder l'onglet dans le navigateur (pas encore vérifié à l'écran) ;
+  - un test anti-triche des skills échoue déjà sur `main` (sans rapport) : à regarder.
 - **Tester** : `node scripts/give-admin.js --name <pseudo>` donne une pioche en pierre de chaque qualité et
   50 matériaux. Serveur arrêté en local, ou redémarré après en ligne.
-- **État** : 🧪 sur la branche `geoffrey/amelioration` (pas en ligne)
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Mine instantanée (MI)
+- **Pour le joueur** : rien encore en jeu. Les règles de la **mine instantanée** sont écrites (GAME_DESIGN §6) :
+  toutes les 2 h pile (heure de Paris), tous les inscrits dans une mine 50×50 remplie de minerais, chacun pour soi,
+  5 min de jeu (2 min 30 réelles). 1 % de tas de **Plumes d'ange** (nouvel objet rare, 1 à 5 par tas, au premier qui
+  passe dessus). Lobby dans un sous-onglet de l'onglet Mine, rappels à 30, 15, 5 min et 30 s (avec Rejoindre).
+- **Décisions** : butin non réduit (le MI devient une très bonne source d'or, à surveiller) ; déplacement libre dans
+  les galeries (pas d'échelle ni de gravité) ; départ espacé en surface ; pas d'XP ; stats de minage, de marche,
+  Fortune et shiny comptent ; 20 joueurs max par mine, répartis à parts égales au-delà ; fermer l'onglet ne fait rien
+  perdre, seul « Quitter » fait tout perdre. La plume n'a pas encore d'usage (idée de Geoffrey à venir).
+- **Simulation (étape 2)** : la mine instantanée tourne (sans serveur ni affichage pour l'instant). Chiffres avec le
+  stuff de base (`npm run simulate:mi`) : ~100 blocs par mineur en 5 min ; à 20 mineurs, 80 % de la mine vidée,
+  0 bloc disputé, chacun entre 93 et 110 blocs ; butin moyen par mineur ≈ 40 fers, 39 ors, 20 charbons, 2,3 plumes.
+  Seul : 4 % de la mine, et quasiment jamais de plume. Sans la pénalité « éviter les autres », 500 blocs disputés et
+  15 % de butin en moins : elle sert. Pioche +30 % de vitesse → +30 % de blocs (le stuff compte).
+- **Plumes** (décision de Geoffrey) : le mineur va chercher un tas accessible à 3 pas ou moins (avant, seul, il
+  passait à côté de tous). Résultat : ~4 plumes par MI seul, ~3 chacun à 20, presque plus de tas laissé par terre.
+- **Serveur (étape 3)** : la mine s'ouvre toute seule toutes les 2 h pile (heure de Paris, heures d'été et d'hiver
+  comprises ; la nuit où 2 h existe deux fois, une seule mine). Inscriptions gardées même si le serveur redémarre ;
+  s'inscrire fait quitter son groupe, refusé en session ; lancer une session normale désinscrit. 21 inscrits → 2 mines
+  (11 + 10). Le butin de chacun arrive dans son inventaire à la fin, une seule fois ; pas d'XP ; Quitter = rien. Si le
+  serveur redémarre pendant la mine, elle reprend à l'identique.
+- **Interface (étape 4)** : dans le **Lobby**, « Où miner » → **Mine instantanée** affiche le compte à rebours, le
+  nombre d'inscrits et **S'inscrire / Se désinscrire** (à la place de l'équipe et de Lancer). Rappels en bas à
+  droite, depuis n'importe quel onglet : 30 min, 15 min, 5 min, puis 30 s avec **Rejoindre / Décliner** (pas pendant
+  une session normale). À l'ouverture, tout le monde bascule sur **Session** : toute la mine à l'écran, chrono, ton
+  butin, classement, journal, **Quitter la mine** ; puis un bilan. Essayé dans Chrome à deux joueurs (mode dev,
+  bouton « Ouvrir maintenant ») : butin bien versé, rien pour celui qui quitte, aucune erreur.
+- **À suivre** : l'usage de la Plume d'ange (idée de Geoffrey) ; surveiller l'or rapporté par la MI une fois en ligne.
+- **État** : ✅ en ligne le 21/10
+
+## 21/10/2026 — Jules — Message d'erreur quand le jeu ne démarre pas (Opera GX)
+- **Pour le joueur** : si le jeu ne démarre pas (page avec le menu de gauche vide), un cadre rouge s'affiche en
+  haut et dit pourquoi : quel fichier est bloqué (bloqueur de pubs, extension…) ou quelle erreur l'a fait planter,
+  avec le navigateur utilisé. Il suffit d'en faire une capture pour l'équipe. Si JavaScript est coupé, un message le
+  dit aussi. Quand tout va bien, rien ne change.
+- **Pourquoi** : un joueur sur Opera GX voit le lobby vide. Le jeu ne vérifie pas le navigateur et n'utilise rien
+  de récent ; nos fichiers ne sont pas dans les listes anti-pubs EasyList / EasyPrivacy. Sans son message d'erreur,
+  impossible de savoir ce qui bloque chez lui : ce cadre nous le donnera.
+- **À suivre** : une fois en ligne, demander au joueur Opera GX une capture du cadre, puis corriger la vraie cause.
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Lobby et Session : deux onglets séparés
+- **Pour le joueur** : l'onglet « Mine » est remplacé par deux onglets.
+  - **🏠 Lobby** : le groupe, les invitations, les préférences, **où miner** (Mine ; la **Mine instanciée** est
+    affichée grisée « bientôt ») et le bouton Lancer. Pendant une session, il reste consultable en **lecture
+    seule**, avec un bandeau « ⛏ En session dans la mine · temps restant · Voir la session ».
+  - **⛏ Session** : la mine en direct, puis le bilan. Sans session : « Tu n'es pas en session ».
+  - Au lancement, **tout le groupe bascule sur Session**, quel que soit l'onglet ouvert. « Retour au lobby » après
+    le bilan ramène au Lobby. Le minuteur de session de la barre de gauche ouvre Session d'un clic.
+- **Décisions** : lobby en lecture seule pendant la session ; bascule automatique au lancement ; bilan dans Session ;
+  choix « Mine / MI » visible dès maintenant, MI grisée.
+- **À suivre** : la Mine instanciée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
+  conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Jules — Ménage des textes du jeu
+- **Pour le joueur** : des textes plus courts et plus propres. L'épée affiche « Dégâts 8 » (plus « au lieu de 5 ») ;
+  plus de phrases techniques (« Résultat vérifié par le serveur », « luminosité 80 % », « 50×50 = 2500 blocs »,
+  « npm start » quand le serveur ne répond pas) ; plus de « Bientôt : aider un allié » alors que l'option existe ;
+  plus de « Les valeurs sont provisoires » dans Skills ; l'objectif de la mine tient en une ligne
+  (« 🔒 Area 2 : minerais de l'area 1 — 12 / 160 ») ; explications raccourcies (Stuff, lobby, Historique, Concasseur).
+- **À suivre** : le journal de session (« Session démarrée (seed …) ») et le wiki n'ont pas été retouchés, à part
+  les effets des épées dans le wiki.
+- **Décisions** : le bilan à plusieurs ne précise plus que les Treasure sont « un pour chacun » (pas utile).
+- **État** : ✅ en ligne le 21/10
 
 ---
 

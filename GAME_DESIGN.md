@@ -134,7 +134,7 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - Quand le fond de l'area est verrouillé, il explore en **galeries** horizontales pour trouver les minerais manquants.
 
 ### Focus minerai
-Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
+Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
 - Trois modes par minerai : **Aucun** (normal), **Cibler** (le minerai pèse plus lourd que le plus gros minerai : 2 × la valeur du diamant *(provisoire)*), **Uniquement** (l'IA ne vise que les minerais « Uniquement » et ignore les autres).
 - **« Uniquement » écrase « Cibler »** : dès qu'un minerai est en « Uniquement », les minerais en « Cibler » sont ignorés aussi.
 - **Seuls les blocs de type ore sont concernés** : les treasures découverts restent visés. D'autres cibles (coffres, pierres précieuses…) pourront s'ajouter plus tard.
@@ -144,7 +144,7 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Mine permet de choi
 - Le changement est envoyé au serveur, qui l'**applique tout de suite** dans la partie (il n'y en a qu'une, sur le serveur) : tous les joueurs le voient en même temps. Il est enregistré avec son tick (comme un départ).
 
 ### Focus area
-Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir **où** travaille le mineur du joueur :
+Pendant la session, un panneau **Focus area** de l'onglet Session permet de choisir **où** travaille le mineur du joueur :
 - **Plus profond** *(option de base)* : comportement normal, il descend jusqu'à l'area débloquée la plus profonde.
 - **Une area précise** (0, 1, 2…) : seules les **areas débloquées** sont proposées (la liste grandit avec les déblocages). Le mineur rejoint cette area (il descend ou remonte), y reste, ne descend pas plus bas et **ne vise que les cibles de cette area** (minerais et treasures).
 - **Area vidée** *(décision ferme)* : s'il reste moins de **20 %** *(même seuil que le focus minerai, provisoire)* de tous les minerais de l'area choisie, le focus area **saute** : retour à « Plus profond », avec un message dans le panneau. Le mineur ne perd pas la fin de session à creuser des galeries vides (en simulation, 3 mineurs vident l'area 0 en ~25 min).
@@ -342,14 +342,19 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.
 
-### Lancer une session (onglet Mine)
-Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Mine**, qui affiche un **lobby** :
+### Lancer une session (onglets Lobby et Session) *(séparés à la demande du créateur, 21/10/2026)*
+Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour en lancer une, le joueur doit être connecté (compte ou invité) et aller dans l'onglet **Lobby** :
+- **Où miner** : **Mine** (la mine normale) ou **Mine instantanée (MI)** : choisir MI remplace l'équipe, les préférences et « Lancer » par la carte d'inscription de la MI (voir « Mine instantanée » plus bas). Le type choisi est envoyé au serveur au lancement, qui refuse la MI (elle s'ouvre à heure fixe, sur inscription) ;
 - **3 places** (le jeu est prévu à 3) : le joueur, puis des places libres. Chaque joueur affiche sa **spécialisation** : l'arbre de skills choisi (⛏ Mineur, 🪜 Logisticien, 🪓 Barbare) ou « Sans spécialisation » ;
 - **Lancer la session** : si des places sont vides, la session est jouée **à ceux qui sont là** (seul = 1 mineur, il garde tout le coffre ; pas de mineur fantôme) ;
 - **Groupe** : on se réunit avant de lancer (voir « Jouer à plusieurs » ci-dessous) ; seul, on joue seul ;
 - **Critères / préférences** : les préférences de l'IA du mineur du joueur (priorité minerais/descendre, combattre/ignorer les mobs, aider allié oui/non avec la liste des mobs ignorés ; voir §5 et §7). Enregistrées avec le compte, **figées pour toute la session** une fois lancée.
 
-Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai** (§3) ; **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+**Au lancement, tout le groupe bascule sur l'onglet Session** (le chef tout de suite, les autres dans les secondes qui suivent, quel que soit l'onglet ouvert).
+
+**Onglet Session** : la mine en cours, le panneau **Focus minerai** (§3), puis le **bilan** à la fin (« Retour au lobby » ouvre le Lobby). Sans session : « Tu n'es pas en session » et un bouton vers le lobby. **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+
+**Le Lobby pendant une session : lecture seule.** Un bandeau « ⛏ En session dans la mine · temps restant · Voir la session » ; le groupe reste visible (chacun « en session »), mais on ne peut ni lancer, ni inviter, ni rejoindre, ni quitter le groupe, ni changer les préférences ou le type de mine. Dès la fin (pendant le bilan), il redevient utilisable.
 - **Combat** : le mineur se tourne vers le mob et frappe avec l'arme qu'il a en main (l'épée équipée, sinon la pioche), en coups de taille animés.
 - **Caméra** : elle suit le mineur du joueur. Un appui sur un mineur de l'équipe la fait suivre celui-ci. Le joueur peut **se déplacer dans la mine** (molette, glisser à la souris ou au doigt, flèches ↑ ↓, PageUp / PageDown) : la caméra ne suit plus personne jusqu'à ce qu'il appuie sur **Suivre** (ou Début). Elle va du ciel au fond de la mine connue.
 
@@ -380,8 +385,9 @@ Pendant la session, l'onglet Mine montre la mine et le panneau **Focus minerai**
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Mine, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social**.
-- **Mine** : le lobby, puis la session en cours (les mineurs, la carte, le coffre commun).
+Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social**.
+- **Lobby** : le groupe, les préférences, le type de mine, Lancer (lecture seule pendant une session). Onglet ouvert par défaut ; un lien d'invitation y mène.
+- **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le mini-minuteur de la barre y mène aussi d'un clic.
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
 - **Concasseur** : concasser les blocs pour un peu de butin (voir ci-dessous).
@@ -495,7 +501,7 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus 
 | +3 | +7 % | 90 % | 7 + 7 |
 
 Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** et **Pierre de pleine lune** : nouveaux matériaux, **sans source en jeu pour l'instant** (à décider). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Pierre de pleine lune** : nouveau matériau, **sans source en jeu pour l'instant** (à décider). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
 
 ### Four (onglet Four)
 - **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.
@@ -551,6 +557,31 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
 - **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 30 à 60 (tier 1), 40 à 70 (tier 2) *(provisoire)*.
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
 - Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
+
+### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
+Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.
+- **Quand** : toutes les **2 h pile, heure de Paris** (0 h, 2 h, 4 h… ; heure d'été comprise). Dure **5 min de jeu** (2 min 30 réelles à ×2).
+- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée** (pas de torche). Pas d'oxygène, pas de pods, pas de mobs, pas d'échelle : le mineur **se déplace librement** dans les galeries qu'il a creusées (haut, bas, côtés, sans gravité).
+- **Départ** : les mineurs apparaissent sur la ligne de surface, au-dessus de la mine, **espacés régulièrement**.
+- **Tas de plumes d'ange** : une case **vide** portant un tas de plumes. Le **premier mineur qui arrive sur la case** le ramasse (le tas disparaît) et gagne **1 à 5 Plumes d'ange** (rareté **rare**). L'IA ne les cherche pas au loin, mais **dès qu'un tas est accessible à 3 pas ou moins** par les galeries, le mineur va le prendre avant de reprendre son minage *(décision du 21/10 : sinon, mesuré, un mineur seul passait à côté de tous les tas)*. Plusieurs mineurs peuvent courir vers le même tas : le premier arrivé le prend.
+- **Chacun son butin** : ce qu'un mineur mine est à lui, **pas de partage, pas d'XP**. Si deux mineurs minent le même bloc, **celui qui finit en premier** gagne le minerai ; l'autre perd son travail sur ce bloc.
+- **Le stuff compte** : vitesse de minage, vitesse de marche, **Fortune** et **shiny** s'appliquent comme en session. Les spécialisations restent choisies mais n'ont pas d'effet particulier ici.
+- **IA du mineur** : tous les blocs valent pareil (aucune priorité de minerai) ; il creuse dans tous les sens, vers le bloc le moins coûteux en temps, en **évitant les zones où il y a déjà d'autres mineurs** (pénalité par mineur proche et par bloc déjà visé par un autre). S'il perd **3 blocs d'affilée** (un autre les a finis avant lui), il **change de zone** (il ne suit pas indéfiniment un mineur plus rapide).
+- **Plusieurs mines** : au plus **20 joueurs par mine** ; au-delà, les inscrits sont répartis en mines de tailles égales (21 inscrits → 11 + 10). Un inscrit seul joue seul.
+
+**Lobby MI** (onglet **Lobby**, « Où miner » → **Mine instantanée** ; un joueur inscrit retrouve son lobby sur ce choix) :
+- On peut s'y inscrire **quand on veut** ; un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
+- S'inscrire **fait quitter le groupe** de la session normale. On ne peut **pas s'inscrire pendant une session** (il faut d'abord la quitter). **Lancer une session normale désinscrit** du MI.
+- À l'heure dite, les inscrits partent tous dans la mine ; personne ne la rejoint après le début.
+- **Fermer l'onglet ne change rien** (la partie tourne sur le serveur, le butin arrive à la fin). **Seul le bouton Quitter fait tout perdre** : quitter avant la fin = rien.
+
+**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; jamais pendant une session normale) :
+- « La mine instantanée commence dans 30 min », puis 15 min, puis 5 min : simple information.
+- « La mine instantanée commence dans 30 secondes » : information **et invitation**, boutons **Rejoindre** / **Décliner** (pour un joueur déjà inscrit : information seule).
+
+**Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : **toute la mine à l'écran**, le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.
+
+**Le serveur fait foi** : il ouvre la mine à l'heure, répartit les inscrits, fait tourner la partie et verse à chacun son butin **une seule fois** à la fin.
 
 ### Comptes joueur
 Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.

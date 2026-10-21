@@ -32,8 +32,9 @@ export function shinyOf(G,t){
   return s && G.shinyRng() < SHINY.chance ? s.item : null;
 }
 
-/* fortune : combien d'exemplaires EN PLUS d'un minerai miné (m.carac.fortune, en %) ; 0 le plus souvent */
-function fortuneExtra(G,m){
+/* fortune : combien d'exemplaires EN PLUS d'un minerai miné (m.carac.fortune, en %) ; 0 le plus souvent
+   (aussi utilisée par la mine instantanée, src/sim/instant/) */
+export function fortuneExtra(G,m){
   const f=m.carac.fortune||0; if(f<=0) return 0;
   const sure=Math.floor(f/100);
   return sure + (G.fortuneRng()*100 < f-sure*100 ? 1 : 0);

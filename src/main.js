@@ -3,13 +3,22 @@
    Le SERVEUR fait foi et fait tourner LA partie : une seule copie, sur le serveur (server/game/live.js). Le navigateur
    ne calcule rien : il reçoit régulièrement la partie (src/shared/view.js) et l'affiche. Il envoie seulement les
    choix du joueur (lancer, quitter, focus ; en dev : vitesse et pause), que le serveur applique tout de suite.
+   - onglets : le Lobby prépare et lance (lecture seule pendant une session) ; l'onglet Session montre la partie, puis
+     le bilan (« Tu n'es pas en session » sinon). Au lancement, tout le groupe bascule sur l'onglet Session ;
    - jeu normal : la partie suit le temps réel à la vitesse du serveur (×2) ; page fermée, elle continue sur le serveur ;
    - à plusieurs : tout le monde voit la même partie, puisqu'il n'y en a qu'une ;
    - fin : le serveur termine la partie au dernier tick, partage le coffre et verse les parts ; le navigateur affiche
-     le bilan. */
+     le bilan ;
+   - mine instantanée (session mode 'mi') : inscription dans le Lobby, rappels depuis tous les onglets
+     (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
+     propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
+import { applyInstantView } from './shared/instant-view.js';
+import { createInstantRenderer } from './render/instant.js';
+import { setupInstantLobby } from './ui/instant-lobby.js';
+import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { tickAt } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer } from './render/canvas.js';
@@ -30,10 +39,10 @@ import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
-const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'mine' };
+const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
 const acct = { account:null, offline:false };          // compte connecté (offline : pas de serveur de jeu)
 let info = { dev:false, speed:GAME.speed, speeds:[GAME.speed], maxPlayers:GAME.maxPlayers };
 let rec = null;            // session en cours (enregistrement du serveur)
@@ -43,6 +52,8 @@ let waiting = false;       // partie finie, résultat du serveur attendu
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
 const renderer = createRenderer($('cv'));
+const miRenderer = createInstantRenderer($('cvMi'));
+const isMi = () => rec?.mode === 'mi';
 
 /* ancienne sauvegarde d'inventaire dans le navigateur : l'inventaire est maintenant sur le serveur */
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
@@ -147,7 +158,7 @@ nav = setupNav($('nav'), $('views'), id => {
 
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); },
+  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); },
   confirmLeave: () => confirm([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
@@ -158,9 +169,11 @@ const accountUI = createAccountUI($('account'), acct, {
 const lobby = setupLobby({
   party: partyApi,
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
+  onShowSession: () => nav.show('session'),
+  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
   onLaunch: async opts => {
     lobby.error('');
-    try { enterSession((await gameApi.start(opts)).session); }
+    try { enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh(); }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
       lobby.error(e.message);
@@ -168,38 +181,60 @@ const lobby = setupLobby({
   },
 });
 
-function showLobby(){
+/* mine instantanée : carte d'inscription du lobby et rappels (pas pendant une session normale : on ne peut pas la
+   rejoindre) ; inscrit, le lobby s'ouvre sur « Mine instantanée » */
+let miModeShown = false;
+const instantLobby = setupInstantLobby({
+  api: instantApi,
+  canNotify: () => !rec || isMi(),
+  locked: () => !!rec,
+  onJoined: () => { lobby.update({ mode:'mi' }); nav.show('lobby'); },
+  onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
+  onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
+});
+function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); }
+window.MI = instantLobby;                            // pour le débogage depuis la console (F12) : MI._notice(30)
+
+/* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
+function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer);
-  $('run').hidden = true; $('lobby').hidden = false;
-  lobby.update({ account:acct.account, offline:acct.offline, info });
+  $('run').hidden = true; $('miRun').hidden = true; $('noSession').hidden = false;
+  lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
 }
+$('toLobbyBtn').onclick = () => nav.show('lobby');
+$('miLeaveBtn').onclick = () => leave();
+const navSession = document.querySelector('.navSession');
+navSession.onclick = () => { if(rec) nav.show('session'); };
 
-/* lobby : groupe, invitations ; le chef a lancé → on passe à la session. Sert aussi de signe de vie au groupe,
+/* lobby : groupe, invitations ; le chef a lancé → tout le groupe passe à l'onglet Session. Continue pendant la session
+   (plus lentement) pour que le lobby, en lecture seule, montre le groupe ; sert aussi de signe de vie au groupe,
    y compris pendant le bilan (le groupe reste après une session : le chef peut relancer pendant qu'on le lit). */
 let lobbyTimer = null, endAck = null;
 async function pollLobby(){
   clearTimeout(lobbyTimer);
-  if(acct.offline || !acct.account || G || waiting) return;
+  if(acct.offline || !acct.account || waiting) return;
   try {
-    if(pendingJoin){ const code = pendingJoin; pendingJoin = null; nav.show('mine'); await lobby.join(code); }
+    if(pendingJoin && !rec){ const code = pendingJoin; pendingJoin = null; nav.show('lobby'); await lobby.join(code); }
     const st = await partyApi.state();
-    if(st.session){ endAck?.(); return refresh(); }      // relancé pendant le bilan : il est lu, on y va
+    if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
+      endAck?.(); await refresh(); return nav.show('session');
+    }
     lobby.update({ party:st.party, invites:st.invites });
   } catch(e){ console.warn(e); }
-  lobbyTimer = setTimeout(pollLobby, PARTY.poll);
+  lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
 }
 /* lien d'invitation ouvert alors que la page l'est déjà (la barre a déjà remplacé l'adresse : on lit newURL) */
 addEventListener('hashchange', e => {
   const code = joinCodeFromHash(e.newURL);
   if(!code) return;
-  if(G){ alert('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
+  if(rec){ alert('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
   pendingJoin = code; pollLobby();
 });
 
 /* ---------- session ---------- */
 setupRunControls(ui, { onLeave: leave, onClock: setClock, onFollow: id => { ui.follow = id; renderer.follow(); } });
-setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'mine');
+setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'session');
 
 /* focus : le serveur l'applique tout de suite dans la partie (et l'enregistre avec son tick) */
 const focusPanel = setupFocusPanel({
@@ -221,10 +256,10 @@ function applyClock(c){
 }
 
 function enterSession(session){
-  clearTimeout(lobbyTimer);
   rec = session; waiting = false;
   clockOffset = session.now - Date.now();
-  G = emptyView();
+  const mi = session.mode === 'mi';
+  G = mi ? { mode:'mi', ready:false, miners:[] } : emptyView();   // mine instantanée : remplacée en entier à chaque envoi
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
@@ -232,8 +267,10 @@ function enterSession(session){
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
-  $('end').hidden = true; $('lobby').hidden = true; $('run').hidden = false;
+  $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi; $('miRun').hidden = !mi;
+  lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   pollView();
+  pollLobby();                                   // le lobby continue de montrer le groupe
 }
 
 /* reçoit la partie du serveur : la première fois en entier, ensuite seulement ce qui a changé */
@@ -248,7 +285,8 @@ async function pollView(){
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
-    if(r.view){
+    if(r.view?.mode === 'mi'){ G = applyInstantView(r.view); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view){
       applyView(G, r.view); lastView = performance.now();
       if(!ui.followSet && G.miners.length){                  // une fois : suivre son propre mineur
         ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true;
@@ -276,16 +314,17 @@ function smooth(dtr){
 
 async function leave(){
   if(!G || G.over) return;
-  if(!confirm('Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
+  if(!confirm(isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+                     : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ alert(e.message); return; } }
-  showLobby();
+  showNoSession(); nav.show('lobby');
 }
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */
 function ended(){
   waiting = true; clearTimeout(viewTimer);
-  showSettling();
+  showSettling(isMi());
   pollResult();
 }
 
@@ -294,7 +333,7 @@ async function pollResult(){
   try {
     const st = await gameApi.state();
     if(st.ended){ return showResult(st); }
-    if(!st.session){ return showLobby(); }                    // plus rien à attendre (abandonnée)
+    if(!st.session){ return showNoSession(); }                // plus rien à attendre (abandonnée)
   } catch(e){ console.warn(e); }
   setTimeout(pollResult, 1000);
 }
@@ -304,12 +343,14 @@ function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false;
+  lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
   const done = endAck = () => { endAck = null; gameApi.ack(ended.id).catch(() => {}); };
-  showEnd(ended, acct.account?.id,
-    () => { done(); $('end').hidden = true; showLobby(); },
-    () => { done(); $('end').hidden = true; showLobby(); nav.show('inventaire'); }, up);
+  const back = () => { done(); $('end').hidden = true; showNoSession(); nav.show('lobby'); };
+  const toInv = () => { done(); $('end').hidden = true; showNoSession(); nav.show('inventaire'); };
+  if(ended.mode === 'mi') showInstantEnd(ended, acct.account?.id, back, toInv);
+  else showEnd(ended, acct.account?.id, back, toInv, up);
   pollLobby();                               // signe de vie au groupe pendant le bilan
 }
 
@@ -341,7 +382,7 @@ async function refresh(){
   skills.set(st.skills);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
-  else showLobby();
+  else showNoSession();
   if(st.ended && !st.session) showResult(st);
 }
 
@@ -349,28 +390,35 @@ async function refresh(){
 Object.assign(acct, await bootAccount(accountUI));
 renderNavAccount($('navAccount'), acct);
 $('navAccount').onclick = () => accountUI.openProfile();
-if(acct.offline) showLobby();
+if(acct.offline) showNoSession();
 else {
   try { info = await gameApi.info(); await refresh(); }
-  catch(e){ acct.offline = true; showLobby(); }
+  catch(e){ acct.offline = true; showNoSession(); }
 }
+startInstant();
+if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
 let last = performance.now(), lastHud = 0;
 function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   smooth(dtr);
-  const shown = G?.ready ? G : null;
-  if(shown && ui.tab==='mine') renderer.draw(shown, ui.follow);
+  const shown = G?.ready ? G : null, mi = shown?.mode === 'mi';
+  if(shown && ui.tab==='session') mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
-    if(shown && ui.tab==='mine'){
+    if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
+    else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);
       $('followBtn').hidden = !renderer.free;               // caméra déplacée par le joueur : bouton pour revenir
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
-    updateNavSession(shown, waiting);
+    updateNavSession(shown, waiting, mi ? INSTANT_MINE.duration : SESSION_LEN);
+    navSession.classList.toggle('live', !!rec);
+    if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
+      $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`
+        : `· fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     lastHud = now;
   }
   requestAnimationFrame(frame);
