@@ -90,13 +90,16 @@ test('mobs : bestiole 5, gobelin 10, mimic 5 (sans XP de minerai en plus)', () =
   assert.equal(G.stats.xp - b, XP.mob.mimic);
 });
 
-test('fin de session : le pot est partagé à parts égales entre les présents ; qui est parti n\'a rien', () => {
+test('fin de session : XP partagée par tranches entre les présents de chaque tranche ; qui est parti n\'a rien', () => {
   const G = newSession(5, { miners:3, accounts:['A','B','C'] });
-  G.stats.xp = 100;
+  G.stats.xp = 90;                       // gagnée à 3
   leaveSession(G, 'C');
+  G.stats.xp = 150;                      // + 60 gagnée à 2
   endSession(G);
-  assert.equal(G.summary.xp, 100);
-  assert.deepEqual(G.summary.shares.map(s => s.xp), [50, 50, 0]);
+  assert.equal(G.summary.xp, 150);
+  assert.deepEqual(G.summary.shares.map(s => s.xp), [30 + 30, 30 + 30, 0], 'le tiers de C est perdu');
+  const solo = newSession(5, { miners:3, accounts:['A','B','C'] }); solo.stats.xp = 100; endSession(solo);
+  assert.deepEqual(solo.summary.shares.map(s => s.xp), [33, 33, 33], 'sans départ : comme avant');
 });
 
 /* ---------- versement par le serveur ---------- */

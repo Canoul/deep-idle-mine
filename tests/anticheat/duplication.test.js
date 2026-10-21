@@ -73,13 +73,36 @@ test('quitter deux fois, ou après la fin, ne change rien', () => {
   assert.equal(G.summary.shares[1].bag.Charbon + G.summary.shares[2].bag.Charbon, 10);
 });
 
-test('un joueur parti ne touche rien, même s\'il avait beaucoup déposé', () => {
+test('un joueur parti ne touche rien, même s\'il avait beaucoup déposé ; sa part de la tranche est perdue (anti-boosting)', () => {
   const G = newSession(1, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
   G.chest = { Or:30 }; G.chestBy = { 0:{ Or:30 } };
   leaveSession(G, 'AAAA');
   endSession(G);
   assert.deepEqual(G.summary.shares[0].bag, {});
-  assert.equal(G.summary.shares[1].bag.Or + G.summary.shares[2].bag.Or, 30);
+  assert.equal(G.summary.shares[1].bag.Or + G.summary.shares[2].bag.Or, 20, 'B et C : leurs tiers ; le tiers de A n\'est versé à personne');
+});
+
+test('anti-boosting : 3 joueurs 50 min, 2 partent, le dernier seul 10 min → 1/3 des 50 min + tout des 10 min', () => {
+  const G = newSession(1, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
+  G.chest = { Charbon:300, Fer:90, 'Treasure T1':1 };          // déposé à 3
+  G.t = 3000; leaveSession(G, 'BBBB'); leaveSession(G, 'CCCC');
+  G.chest = { Charbon:340, Fer:100, 'Treasure T1':1 };          // + 40 charbons, 10 fers seul
+  G.t = 3600; endSession(G);
+  const [a, b, c] = G.summary.shares;
+  assert.deepEqual(a.bag, { Charbon:100 + 40, Fer:30 + 10, 'Treasure T1':1 });
+  assert.deepEqual([b.bag, c.bag], [{}, {}]);
+  assert.deepEqual(G.summary.segments, [{ until:3000, players:3 }, { until:3000, players:2 }, { until:3600, players:1 }]);
+  for(const k of ['Charbon', 'Fer']) assert.ok(a.bag[k] <= G.chest[k], 'jamais plus que le coffre');
+});
+
+test('anti-boosting : un départ au milieu, les autres restent → chaque tranche partagée entre ses présents', () => {
+  const G = newSession(1, { miners:3, accounts:['AAAA', 'BBBB', 'CCCC'] });
+  G.chest = { Charbon:60 };
+  leaveSession(G, 'CCCC');
+  G.chest = { Charbon:100 };
+  endSession(G);
+  const [a, b, c] = G.summary.shares.map(s => s.bag.Charbon ?? 0);
+  assert.deepEqual([a, b, c], [20 + 20, 20 + 20, 0]);
 });
 
 test('ce que porte un joueur qui part est perdu, pas versé au coffre', () => {

@@ -32,6 +32,7 @@ export function newSession(seed, opts={}){
   /* roster : tous les joueurs de la session, dans l'ordre, y compris ceux qui sont partis.
      G.miners ne contient que les mineurs encore présents : toute la simulation (IA, mobs, rendu) ne voit qu'eux. */
   G.roster = [...G.miners];
+  G.shareMarks = [];          // coupures du partage (un départ = une coupure), voir shareBySegments
   for(let y=1;y<=TOP_DIRT_ROWS;y++){   // couche(s) de terre sous la surface, visibles dès le départ
     G.tiles.push(new Uint8Array(W).fill(IDS.dirt)); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));
   }
@@ -93,6 +94,9 @@ export function leaveSession(G, who){
   if(G.over) return false;
   const m = typeof who==='object' ? who : G.miners.find(x => x.account!==null && x.account===who);
   if(!m || m.left!=null || !G.miners.includes(m)) return false;
+  /* anti-boosting : le butin déposé jusqu'ici se partage entre les joueurs présents jusqu'ici (lui compris : sa part
+     de cette tranche est perdue, elle ne revient pas aux autres) */
+  G.shareMarks.push({ t:G.t, chest:{ ...G.chest }, xp:G.stats.xp||0, present:G.roster.filter(x => x.left==null) });
   m.left = G.t; m.action = null; m.status = 'A quitté la session';
   G.miners = G.miners.filter(x => x!==m);
   log(G, `${m.name} a quitté la session`+(Object.keys(m.inv).length ? ' (ce qu\'il portait est perdu)' : ''));
@@ -114,11 +118,36 @@ export function endSession(G){
     miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };
   const present = G.roster.filter(m => m.left==null);
-  const bags = shareChest(G.chest, present.length, G.seed);
-  /* XP : pot commun partagé à parts égales entre les présents (arrondi vers le bas) ; rien pour qui est parti */
-  const xp = xpShare(G.stats.xp, present.length);
+  const { bags, xp, segments } = shareBySegments(G, present);
+  G.summary.segments = segments;
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
-    left: m.left!=null, bag: m.left!=null ? {} : bags[present.indexOf(m)], xp: m.left!=null ? 0 : xp }));
+    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m) }));
+}
+
+/* Partage par tranches (anti-boosting) : la session est coupée à chaque départ. Le butin déposé (et l'XP gagnée)
+   pendant une tranche est partagé à parts égales entre les joueurs présents PENDANT cette tranche ; la part d'un joueur
+   parti est perdue (quitter = 0). Ex. : 3 joueurs pendant 50 min, puis 1 seul pendant 10 min → le dernier reçoit 1/3
+   du butin des 50 premières minutes et tout celui des 10 dernières. Sans départ : une seule tranche, comme avant. */
+function shareBySegments(G, present){
+  const bags = new Map(present.map(m => [m, {}])), xp = new Map(present.map(m => [m, 0]));
+  const marks = [...G.shareMarks, { t:G.t, chest:G.chest, xp:G.stats.xp||0, present }];
+  let prevChest = {}, prevXp = 0;
+  const segments = [];
+  marks.forEach((mk, i) => {
+    const delta = {};
+    for(const k in mk.chest){ const q = mk.chest[k] - (prevChest[k] || 0); if(q > 0) delta[k] = q; }
+    const n = mk.present.length, dxp = Math.max(0, mk.xp - prevXp);
+    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(dxp, n);
+    mk.present.forEach((m, j) => {
+      if(!bags.has(m)) return;                                       // parti avant la fin : sa part est perdue
+      const b = bags.get(m);
+      for(const k in parts[j]) b[k] = (b[k] || 0) + parts[j][k];
+      xp.set(m, xp.get(m) + px);
+    });
+    segments.push({ until:mk.t, players:n });
+    prevChest = mk.chest; prevXp = mk.xp;
+  });
+  return { bags, xp, segments };
 }
 
 /* simule une session complète d'un coup (Node, tests) */

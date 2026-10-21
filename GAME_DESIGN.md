@@ -166,7 +166,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Mine permet de choisir
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
 - **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
-- **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents à la fin, comme le coffre (arrondi vers le bas). **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
+- **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents, comme le coffre (arrondi vers le bas), **par tranches** : l'XP gagnée avant un départ est divisée entre les présents d'alors, la part du partant est perdue. **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
 - **Récompense** : **1 point de skill par niveau**, à dépenser dans l'onglet Skills (ci-dessous).
 - Affichage : carte « Mineur » du lobby et carte « Stats du mineur » de l'onglet Stuff (niveau, barre d'XP avec **pourcentage** et **XP / XP requise** pour le niveau suivant, points de talent ; « Niveau max » au dernier niveau) ; XP de la session pendant la partie ; XP gagnée et montée de niveau au bilan.
@@ -302,7 +302,8 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 - **Treasure TX** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Treasure TX rapporté, quel que soit son tier (un treasure ouvert à 3 = 1 Treasure TX pour chacun) ;
 - **solo** : le joueur garde tout ;
 - ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
-- **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu, et le coffre est partagé entre les joueurs **présents à la fin** (sa part leur revient). Si tout le monde part, la session s'arrête et personne ne reçoit rien.
+- **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu. Si tout le monde part, la session s'arrête et personne ne reçoit rien.
+- **Partage par tranches (anti-boosting)** *(décision du créateur, 21/10/2026)* : chaque départ coupe la session en tranches. Le butin déposé pendant une tranche est partagé à parts égales entre les joueurs **présents pendant cette tranche** ; la part d'un joueur parti est **perdue** (elle ne revient pas aux autres). Ex. : 3 joueurs pendant 50 min, 2 partent, le dernier reste seul 10 min → il reçoit 1/3 du butin des 50 premières minutes + tout celui des 10 dernières ; les 2/3 restants des 50 min ne sont versés à personne. Sans départ, rien ne change (une seule tranche). Même règle pour l'XP.
 - **le partage est calculé par le serveur** (anti-triche) : voir « Lancer une session » ci-dessous.
 - Une **UI à part** (à concevoir) permet de crafter, de gérer les caractéristiques du mineur et son stuff.
 - Ce qui n'est pas encore défini : recettes, objets, coûts, arbre d'amélioration.
