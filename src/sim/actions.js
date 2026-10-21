@@ -98,9 +98,9 @@ export function finishAction(G,m,a){
       break;
     case 'mine': mineBlock(G,m,a.data.x,a.data.y); break;
     case 'ladder':
-      G.ladder[m.y][m.x]=1;
-      // skill tall_ladder : une échelle de 2 de haut si la case du dessus est vide
-      if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0) G.ladder[m.y-1][m.x]=1;
+      if(!isWinch(G,m.x,m.y)) G.ladder[m.y][m.x]=1;       // jamais d'échelle dans le puits du treuil
+      // skill tall_ladder : une échelle de 2 de haut si la case du dessus est vide (pas dans le puits du treuil)
+      if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0 && !isWinch(G,m.x,m.y-1)) G.ladder[m.y-1][m.x]=1;
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
     case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y}); updateLight(G); break;

@@ -319,7 +319,10 @@ function decideWinch(G,m){
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; return decideReturn(G,m); }
     if(m.y>=job.bottom){
       G.winch={ x:WINCH.x, bottom:Math.max(G.winch?.bottom ?? 0, m.y) };
-      log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`);
+      /* il retire les échelles du puits : le treuil prend toute la colonne, de la surface jusqu'en bas */
+      let removed=0;
+      for(let y=1;y<=G.winch.bottom;y++) if(G.ladder[y][WINCH.x]){ G.ladder[y][WINCH.x]=0; removed++; }
+      log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`+(removed ? ` (${removed} échelle${removed>1?'s':''} retirée${removed>1?'s':''})` : ''));
       m.winchJob=null; m.winchDepth=null; m.mode='work'; return decideWork(G,m);
     }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
