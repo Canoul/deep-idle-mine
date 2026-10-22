@@ -173,3 +173,34 @@ test('session complète : jamais bloqué, chute connue jamais au-delà de 3 case
   assert.ok(G.stats.trips >= 5, `${G.stats.trips} allers-retours`);
   assert.ok(m.x >= 0 && CHEST_X >= 0);
 });
+
+/* 22/10 (Geoffrey) : une chute qui finit sur une échelle se fait à la vitesse de l'échelle ; et l'itinéraire ne sort
+   plus du seau (ou d'une échelle) pour tomber à côté plus vite puis y revenir */
+import { climbT } from '../src/sim/mineur.js';
+import { firstStep } from '../src/sim/path.js';
+
+test('chute sur une échelle : chaque case de chute dure le temps d\'une case d\'échelle', () => {
+  const G = worldFrom(['', ...Array(12).fill('##########')]), m = G.miners[0];
+  for(let y = 1; y <= 10; y++) G.tiles[y][5] = 0;
+  for(let y = 5; y <= 10; y++) G.ladder[y][5] = 1;   // échelle sous un trou de 3
+  m.x = 5; m.y = 1;
+  run(G, 1);
+  assert.equal(m.action.data.fall, true);
+  assert.ok(Math.abs(m.action.dur - climbT(G, m)) < 1e-9, `durée ${m.action.dur}`);
+  const H = worldFrom(['', ...Array(12).fill('##########')]), h = H.miners[0];
+  for(let y = 1; y <= 4; y++) H.tiles[y][5] = 0;     // même trou, sol en pierre : vitesse de chute
+  h.x = 5; h.y = 1; run(H, 1);
+  assert.ok(Math.abs(h.action.dur - 1 / CFG.fallSpeed) < 1e-9);
+});
+
+test('treuil : pour descendre, il reste dans le seau au lieu de sauter dans le trou d\'à côté', () => {
+  const G = worldFrom(['', ...Array(14).fill('##########')]), m = G.miners[0];
+  for(let y = 1; y <= 12; y++) G.tiles[y][4] = 0;     // puits du treuil (colonne 4)
+  for(let y = 3; y <= 5; y++) G.tiles[y][5] = 0;      // trou de 3 juste à côté, qui rejoint le puits plus bas
+  G.tiles[6][5] = 2;
+  G.winch = { x:4, bottom:12 };
+  m.x = 4; m.y = 3;
+  const r = search(G, m, m.x, m.y, false, (x, y) => x === 4 && y === 8);
+  const s = firstStep(r, r.n);
+  assert.deepEqual([s.dx, s.dy], [0, 1], 'il descend dans le seau');
+});

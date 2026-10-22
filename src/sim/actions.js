@@ -16,12 +16,13 @@ function oreSkills(G,m){
   if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen);   // +1 d'oxygène par minerai
   if(m.skill.ore_rush) m.rushUntil=G.t+SKILLS.rushTime;
 }
-/* skill Barbare loot et stat looting (butin des mobs, en %) : butin d'un mob ×(1 + loot + looting/100), la part
-   décimale tirée au hasard (G.rng : hasard « live ») */
+/* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
+   (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
+   la partie entière est sûre (150 % → +1, et 50 % de chance de +2). Tirage G.rng (hasard « live ») */
 function lootOf(G,m,n){
-  const b=(m.skill.loot||0)+(m.carac.looting||0)/100; if(!b) return n;
-  const v=n*(1+b), base=Math.floor(v);
-  return base + (G.rng() < v-base ? 1 : 0);
+  const b=(m.skill.loot||0)+(m.carac.looting||0)/100; if(!(b>0)) return n;
+  const sure=Math.floor(b);
+  return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
 
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }

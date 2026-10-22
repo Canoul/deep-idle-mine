@@ -66,6 +66,13 @@ export function sanitizeSkills(raw, points = Infinity){
 
 /* skills qui multiplient une stat du mineur (le reste agit pendant la partie : oxygène, vitesse après un minerai…) */
 export const SKILL_STATS = { mineSpeed:'mine_speed', damage:'damage' };
+/* skills qui S'AJOUTENT à une stat affichée, en points (pas un multiplicateur) : Pillage +3 %/rang au butin des mobs.
+   Seulement pour l'affichage : la partie lit le skill directement (src/sim/actions.js lootOf). */
+export const SKILL_ADD = { looting:{ node:'loot', scale:100 } };
+/* skills qui changent le comportement pendant la partie (pas une stat) : affichés à part, sous les stats */
+export const behaviourSkills = effects => Object.values(NODES)
+  .filter(n => effects?.[n.id] && !Object.values(SKILL_STATS).includes(n.id) && !Object.values(SKILL_ADD).some(a => a.node === n.id))
+  .map(n => ({ id:n.id, icon:n.icon, name:n.name, text:nodeText(n.id, Math.round(effects[n.id] / n.per)) }));
 /* rang d'un nœud retrouvé depuis son effet (rang × per) */
 const rankFrom = (n, effects) => Math.round((effects?.[n.id] || 0) / n.per);
 /* applique ces multiplicateurs, puis les points ajoutés (adds des nœuds : ténacité…), à des caractéristiques

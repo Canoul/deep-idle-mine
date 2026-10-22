@@ -125,7 +125,11 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
       (shares.length>1 ? `<p class="mut small">XP de la session : ${s.xp}, partagée à parts égales entre les ${n} présent${n>1?'s':''}.</p>` : '')+
       (levelUp ? `<p class="lvlUp">⭐ ${esc(levelUp)}</p>` : '')
     : '';
-  const lost = s.lost?.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
+  /* sacs pas déposés à la fin : perdus. Le détail (lostBags) si le serveur l'a, sinon les noms seulement (anciens bilans) */
+  const bagText = items => Object.entries(items).map(([k,q])=>`${q} ${k}`).join(', ');
+  const lost = s.lostBags?.length
+    ? `<p class="mut">Pas déposé au coffre avant la fin, donc perdu :</p>`+s.lostBags.map(b=>`<div class="row"><span>${esc(b.name)}</span><span class="mut small">${esc(bagText(b.items))}</span></div>`).join('')
+    : s.lost?.length ? `<p class="mut">${esc(s.lost.join(', '))} portai${s.lost.length>1?'ent':'t'} encore des ressources : perdues.</p>` : '';
   $('endBox').innerHTML =
     '<h3>Session terminée</h3>'+
     `<div class="row"><span>Seed</span><b>${s.seed}</b></div>`+

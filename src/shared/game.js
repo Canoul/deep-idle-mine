@@ -126,6 +126,15 @@ export function replayRecord(record, { maxTicks = Infinity } = {}){
 /* ---------- temps réel ---------- */
 
 /* ticks écoulés après elapsedMs de temps réel à la vitesse speed (jamais plus que la session entière) */
+/* fin de session dans le navigateur : que faire du « résultat pas encore vu » renvoyé par le serveur, quand on attend
+   celui de la session waitingFor ? Un résultat plus ancien jamais vu (bilan quitté en relançant depuis le lobby) n'est
+   PAS celui de cette session : on le marque vu sans l'afficher, et on continue d'attendre (22/10 : bilan de la tour
+   montré à la fin d'une mine). 'show' | 'stale' | 'wait' */
+export function resultChoice(ended, waitingFor){
+  if(!ended) return 'wait';
+  return !waitingFor || ended.id === waitingFor ? 'show' : 'stale';
+}
+
 export const TOTAL_TICKS = SESSION_TICKS;   // la session se termine exactement à ce tick (src/sim/session.js)
 export function tickAt(elapsedMs, speed = GAME.speed){
   return Math.max(0, Math.min(TOTAL_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
