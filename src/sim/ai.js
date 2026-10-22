@@ -50,8 +50,10 @@ const veinTaken = (G,m,x,y) => others(G,m).some(o=>near(o.target,x,y));
 const torchByOther = (G,m) => others(G,m).some(o=>o.action && o.action.type==='torch' && Math.abs(o.x-m.x)+Math.abs(o.y-m.y)<=2);
 /* éloignement relatif hors de son secteur (0 dans le secteur ; 1 = une demi-largeur de secteur en dehors…) */
 const outOfSector = (m,x) => m.homeX==null ? 0 : Math.max(0, Math.abs(x-m.homeX)-CFG.sectorHalf)/CFG.sectorHalf;
-/* fond visé par « descendre par l'existant » : ni là où un autre travaille déjà, ni loin de son secteur */
-const downAvoid = (G,m) => (x,y) => crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1;
+/* fond visé par « descendre par l'existant » : pas là où un autre travaille déjà. Pas de limite de secteur : on se
+   répartit au fond, pas pendant la descente (seed 1924731460 : le mineur de droite recreusait un puits depuis la
+   surface pendant que les deux autres reprenaient le leur) */
+const downAvoid = (G,m) => (x,y) => crowdAt(G,m,x,y)>0;
 
 /* Fond de l'area verrouillé (ou area du dessous épuisée pour le focus) : creuser des galeries horizontales
    (une ligne sur 3) dans l'area k pour trouver les minerais manquants. */
@@ -129,12 +131,13 @@ function decideSurface(G,m){
 
 /* en équipe : chacun rejoint sa colonne de départ avant de redescendre (sinon tous repartent du coffre en file) */
 function decideDeparture(G,m){
-  // treuil posé et une descente par l'existant vaut le coup depuis le coffre : il la prend tout de suite, sans passer par
-  // sa colonne (seed 1250570735 : en rejoignant sa colonne, il tombait dans un trou sans échelle près de la surface et
-  // creusait un nouveau puits au lieu de prendre le treuil). Sans treuil, on garde la dispersion par colonne (sinon ils
-  // repartent en file par les mêmes échelles : test team, profondeur −4 en simulation).
+  // une descente par l'existant vaut le coup depuis le coffre (treuil ou puits déjà creusé) : il la prend tout de suite,
+  // sans passer par sa colonne (seed 1250570735 : en rejoignant sa colonne, il tombait dans un trou sans échelle et
+  // creusait un nouveau puits au lieu de prendre le treuil ; seed 1924731460 : le mineur de droite allait jusqu'à sa
+  // colonne recreuser un puits depuis la surface). On se répartit au fond (secteurs), pas pendant la descente.
+  // Sinon il rejoint sa colonne pour ouvrir son puits.
   const away = m.homeX!=null && m.x!==m.homeX;
-  if(away && G.winch && planDown(G,m,downAvoid(G,m))) m.status='Descend par l\'existant';
+  if(away && planDown(G,m,downAvoid(G,m))) m.status='Descend par l\'existant';
   else if(away){
     m.status='Rejoint son puits';
     if(stepDir(G,m,Math.sign(m.homeX-m.x),0,{noBridge:true})) return;

@@ -1084,3 +1084,22 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ⚠️ pas regardé dans le navigateur (deux comptes) : bouton, libellés, ★ à vérifier en vrai.
 - **Points fragiles** : l'état « prêt » d'un membre ne se voit chez le chef qu'au prochain rafraîchissement du lobby.
 
+### Descente commune en équipe (Geoffrey) — branche `geoffrey/descente-commune`
+- **Quoi** : retour de partie (seed 1924731460, 3 joueurs) : un joueur « mine de son côté » pendant que les autres
+  descendent ensemble. Cause : `downAvoid` refusait tout fond à plus de 16 colonnes de `homeX` (`outOfSector>1`), et
+  sans treuil `decideDeparture` renvoyait chacun à sa colonne. La place 3 (x=42) est loin du coffre (x=22) et des
+  puits des places 1–2 : en simulation, Vert allait en x=41 et recreusait 0→50 pendant que Rouge et Bleu reprenaient
+  le puits en x≈13. `src/sim/ai.js` : `downAvoid` = seulement `crowdAt>0` ; `decideDeparture` prend la descente
+  existante depuis le coffre dès que `planDown` la juge rentable, treuil ou pas (avant : treuil seulement). Le coût
+  (`planDown`) décide toujours entre puits neuf et existant ; le secteur reste une pénalité sur les minerais.
+- **Tests** : team 5/5 (+1 : seed 1924731460, aucun « Creuse vers le bas » à y ≤ 15 entre 300 s et 1200 s sans
+  treuil ; échoue sans le correctif : « Vert t351 x41 y1 »). « Ne se marchent pas dessus » : ne compte plus les mineurs
+  en descente par l'existant (`goingDown`) ou en chute (même case 6,5 % → la descente commune en fait 3,7 % ; au travail
+  2,8 % contre 2,1 % avant). winch, miner, focus, skills, dungeon : 76/76.
+- **Vérification** : ✅ simulation 3 × 5 : profondeur 225,8 → 228,4, allers-retours 24,2 → 24,0, 0 blocage.
+  Temps pour rejoindre le front (profondeur max − 10) après un départ du coffre, 6 seeds : 100 s → 96 s.
+  Variante intermédiaire (secteur retiré seulement, départ inchangé) : 224,6, et Vert allait à sa colonne avant de
+  revenir au puits commun (aller-retour en surface).
+- **Points fragiles** : ⚠️ gain modeste avec le stuff de base ; avec des mineurs de stuffs différents (cas réel) l'écart
+  peut être plus grand, à vérifier en vrai. Le cas « en file par les mêmes échelles » (ancien −4 de profondeur) n'est
+  pas revenu en simulation, à surveiller.

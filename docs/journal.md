@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
+- **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
+  (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite
+  (3ᵉ place, loin du coffre) n'est plus isolé au début de chaque descente ; on se répartit une fois au fond.
+- **Décisions** (Geoffrey) : option « C » : plus de limite de secteur pour descendre par l'existant.
+- **À suivre** : regarder une vraie partie à 3. Au tout premier départ, aucun puits n'existe : chacun creuse le sien
+  (ça ne change pas). Un mineur en priorité « Minerais » suit toujours les filons proches de la surface avant de
+  descendre.
+- **État** : 🧪 sur la branche `geoffrey/descente-commune` (pas en ligne)
+
 ## 21/10/2026 — Geoffrey — Retours lobby, IA, donjon, ténacité, équilibrage
 - **Pour le joueur** :
   - concasseur plus généreux (gemmes ×2 à ×3, treasures ×7 à ×10) ;

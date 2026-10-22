@@ -608,8 +608,8 @@ Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 - **Coordination des IA (réservation)** : chaque mineur reste indépendant, mais ne vise pas un minerai déjà visé ou en cours de minage par un autre, évite une ligne de galerie qu'un autre creuse, et ne creuse pas dans un puits qu'un autre creuse sous lui (il se décale d'au moins 3 colonnes). En cas de conflit, le plus petit numéro garde la cible.
 - **Répartition dans la mine** *(valeurs provisoires)* : pour ne pas se marcher dessus,
   - **filon réservé** : un minerai à moins de 4 blocs de la cible d'un autre est exclu ; un minerai proche d'un autre mineur vaut moins ;
-  - **secteur de préférence** : chacun a un tiers de la largeur (1er mineur à gauche, 2e au centre, 3e à droite) ; un minerai hors secteur vaut moins, et il ne « descend par l'existant » que dans son secteur. Préférence douce : il en sort si c'est plus rentable ;
-  - **départ de son puits** : après le coffre, chacun rejoint la colonne au centre de son secteur avant de redescendre ;
+  - **secteur de préférence** : chacun a un tiers de la largeur (1er mineur à gauche, 2e au centre, 3e à droite) ; un minerai hors secteur vaut moins. Préférence douce : il en sort si c'est plus rentable ;
+  - **descente commune** : après le coffre, s'il existe déjà un chemin vers le fond (puits creusé, treuil) qui vaut mieux qu'un puits neuf, il le prend, même hors de son secteur (on se répartit au fond, pas pendant la descente) ; sinon il rejoint la colonne au centre de son secteur pour ouvrir son puits ;
   - pas de torche en double quand deux mineurs arrivent ensemble dans le noir.
 - Les retours peuvent partager la même grande échelle (c'est le chemin le plus rapide) ; à l'écran, les mineurs sur la même case sont légèrement décalés.
 - **Fin de session** (aussi en solo) : un mineur ne repart de la surface que s'il reste le temps de l'aller, de 30 s de travail et du retour (estimés d'après la durée de son dernier retour).
