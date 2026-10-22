@@ -47,7 +47,12 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
   const html = fs.readFileSync(new URL('../wiki.html', import.meta.url), 'utf8');
   for(const id of ['mi', 'amelioration', 'concasseur', 'w-mi', 'w-qualities', 'w-upgrade', 'w-mi-notify', 'w-mi-lost'])
     assert.ok(html.includes(`id="${id}"`), id);
-  assert.ok(!html.includes('Bientôt : liste d\'amis') && !html.includes('La barre à gauche'));
+  assert.ok(!html.includes('Bientôt : liste d\'amis') && !html.includes('La barre à gauche') && !html.includes('viendra plus tard'));
+  for(const id of ['ange', 'w-judgment', 'w-tower', 'w-runes']) assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(by['Résidu angélique'].sources[0].startsWith('Miné à partir de l\'area 4'));
+  assert.ok(by['Coffre démoniaque R7'].uses[0].includes('Rune R7'));
+  assert.ok(!by.Rune.sources.includes('Pas encore obtenable'));
+  assert.equal(D.runeRows().length, 7);
 });
 
 test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais', () => {

@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, UPGRADE, INSTANT_MINE } from '../config.js';
+         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -31,6 +31,7 @@ export function blockRows(){
     .map(b => ({ name: b.name, tex: b.tex, type: b.type, hard: b.hard, time: b.hard / STATS.mineSpeed,
                  w: b.noDrop ? null : b.w, xp: XP_BY_NAME[b.name] ?? 0,
                  areas: AREAS.map((a, k) => k).filter(k => {
+                   if(b.family === 'residu') return k >= JUDGMENT.fromArea;
                    const key = Object.keys(IDS).find(n => BLOCKS[IDS[n]] === b);
                    return key ? (AREAS[k].comp[key] || 0) > 0 : b.type === 'treasure' && AREAS[k].chestChance > 0;
                  }) }));
@@ -98,6 +99,11 @@ export function sourcesOf(item){
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
+  const res = Object.values(JUDGMENT.sides).find(s => s.item === item);
+  if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area)`);
+  const chest = ITEMS[item]?.chest;
+  if(chest) out.push(`${TOWER.sides[chest.side].tower} : un coffre pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  if(item === RUNE.item) out.push('En ouvrant un coffre angélique ou démoniaque (rune de la même qualité que le coffre)');
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   for(const [tr, l] of Object.entries(LOOT)){
@@ -118,7 +124,10 @@ export function usesOf(item){
   if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
-  if(d?.cat === 'treasure') out.push('S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
+  if(d?.cat === 'treasure') out.push(d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
+  const side = Object.values(JUDGMENT.sides).find(s => s.item === item);
+  if(side) out.push(`Rapporté au coffre : remplit la jauge ${side.label === 'Ange' ? 'de l\'Ange' : 'du Démon'} du Jugement, commune à tous (${JUDGMENT.cap} pour ouvrir la tour)`);
+  if(item === RUNE.item) out.push('Enchantement (onglet Amélioration) : se pose sur une pièce de stuff, une rune par pièce, définitif');
   if(d?.cat === 'combustible') out.push('Combustible du four');
   if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].out}`);
   if(Object.hasOwn(FURNACE.unlockItems, item)) out.push(`« Utiliser » : ouvre le four ${FURNACE.unlockItems[item].slot + 1} (${FURNACE.tiers[FURNACE.unlockItems[item].tier].name}, vitesse ×${fmt(FURNACE.tiers[FURNACE.unlockItems[item].tier].speed)})`);
@@ -250,3 +259,10 @@ export const instantInfo = () => ({ every: INSTANT_MINE.everyHours, game: INSTAN
   w: INSTANT_MINE.w, h: INSTANT_MINE.h, comp: INSTANT_MINE.comp, feather: INSTANT_MINE.feather, fMin: INSTANT_MINE.featherMin,
   fMax: INSTANT_MINE.featherMax, item: INSTANT_MINE.featherItem, max: INSTANT_MINE.maxPerMine, reach: INSTANT_MINE.featherReach,
   lost: INSTANT_MINE.interruptMax, notify: INSTANT_MINE.notify });
+
+/* ---------- Ange contre Démon : jauges, tours, runes ---------- */
+export const judgmentInfo = () => ({ fromArea: JUDGMENT.fromArea, pct: JUDGMENT.pct, cap: JUDGMENT.cap, hours: JUDGMENT.openHours,
+  sides: JUDGMENT.sides, tower: TOWER, residues: Math.round(JUDGMENT.pct * CELLS / 100) });
+/* lignes d'une rune selon sa qualité : nombre, fourchette d'une ligne (% de la valeur de la pièce enchantée) */
+export const runeRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance, lines: q.lines,
+  min: q.min, max: q.max, total: q.lines * q.max, discover: UPGRADE.discover.qualities.includes(q.q) }));

@@ -106,10 +106,28 @@ function instant(){
   $('w-mi-lost').textContent = m.lost;
 }
 
+/* ---------- Ange contre Démon ---------- */
+function judgment(){
+  const g = D.judgmentInfo(), T = g.tower, B = T.boss, sec = s => s >= 60 ? `${s / 60} min` : `${s} s`;
+  const sides = Object.values(g.sides);
+  $('w-judgment').innerHTML = `<h2>Les résidus</h2><p>À partir de l'<b>area ${g.fromArea}</b>, ${f(g.pct)} % des blocs de chaque area sont du ${sides.map(s => item(s.item)).join(' et du ')} (soit ${g.residues} de chaque par area). Ils pèsent lourd dans le sac, mais une fois rapportés au coffre, ils remplissent la jauge de leur camp : <b>tous les joueurs du serveur remplissent les mêmes jauges</b>. Ils sont aussi partagés en fin de session comme les autres blocs. Quitter la session = ils ne comptent pas.</p>`+
+    table(['Jauge', '#Pour ouvrir la tour', 'Ensuite'], sides.map(s => tr([`<b>${esc(s.label)}</b>`, num(f(g.cap)), `La <b>${esc(s.tower)}</b> ouvre <b>${g.hours} h</b> ; la jauge repart de 0 et continue de se remplir`])));
+  $('w-tower').innerHTML = `<ul>
+    <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>
+    <li><b>La tour</b> : ${T.width} de large × ${T.height} de haut, pleine de briques à miner (<b>6 s</b> chacune), dont <b>${T.unbreakablePct} %</b> qu'on ne peut pas casser (un chemin jusqu'en haut existe toujours). Ni oxygène, ni sac, ni lumière, ni mobs, et les briques ne rapportent rien. La gravité compte : on pose des échelles (illimitées, partagées).</li>
+    <li><b>Le boss</b> (l'Ange ou le Démon) : <b>${f(B.hp)} PV</b>, sur le toit. Il vise le premier arrivé, frappe ${B.hitEvery === 1 ? 'chaque seconde' : `toutes les ${f(B.hitEvery)} s`} (toutes les ${f(B.rageEvery)} s sous ${Math.round(B.rageBelow * 100)} % de ses PV). Chaque coup a <b>${Math.round(B.knockChance * 100)} %</b> de chance (${Math.round(B.knockBarb * 100)} % contre un barbare) de <b>projeter</b> le mineur hors de la tour : il tombe en bas, étourdi 5 s, et doit tout remonter. On ne peut pas le provoquer.</li>
+    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>coffre</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
+  </ul>`;
+}
+
 /* ---------- amélioration ---------- */
 function upgrade(){
   $('w-qualities').innerHTML = table(['Qualité', 'Titre', '#Chance'], D.qualityRows().map(q =>
     tr([`<b>R${q.q}</b>`, `<b style="color:${esc(q.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(q.label)}</b>`, num(`${f(Math.round(q.chance * 1000) / 10)} %`)])));
+  $('w-runes').innerHTML = table(['Qualité de la rune', '#Lignes', '#Chaque ligne vaut', '#Total au mieux'], D.runeRows().map(r =>
+    tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
+        num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
+    `<p class="small mut">En % de la valeur de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>`;
   const total = D.upgradeTotal();
   $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>
     tr([`<b>+${r.level}</b>`, num(`+${r.pct} %`), num(`${Math.round(r.chance * 100)} %`), ings(r.cost)]))) +
@@ -209,6 +227,6 @@ function toc(){
   document.querySelectorAll('main section').forEach(s => obs.observe(s));
 }
 
-for(const fn of [areas, blocks, mobs, dungeon, instant, rarity, items, craft, upgrade, stats, treasures, level, toc]){
+for(const fn of [areas, blocks, mobs, dungeon, instant, judgment, rarity, items, craft, upgrade, stats, treasures, level, toc]){
   try { fn(); } catch(e){ console.error(fn.name, e); }
 }

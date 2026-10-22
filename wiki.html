@@ -24,6 +24,7 @@
   <a href="#mobs">Les mobs</a>
   <a href="#donjon">Le donjon</a>
   <a href="#mi">La mine instantanée</a>
+  <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
   <a href="#craft">Craft, four, concasseur</a>
   <a href="#amelioration">L'amélioration</a>
@@ -113,13 +114,13 @@
   <h1>Les onglets</h1>
   <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, - et =</b>). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, ou l'inscription à la <a href="#mi">Mine instantanée</a>) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule.</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule.</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure, <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff. Les nouveaux objets brillent d'un halo blanc.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>10 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session.</p></div>
     <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
     <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) : chaque minute, il en concasse 100, <b>même page fermée</b>. La plupart du temps il ne sort rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b>. Le bouton <b>?</b> donne les vraies chances (<a href="#concasseur">détail plus bas</a>).</p></div>
-    <div class="tabcard"><h3>💎 Amélioration</h3><p><b>Identifier</b> une pièce de stuff (elle reçoit une qualité, de R1 à R7) et l'<b>améliorer</b> de +1 à +3 avec des Plumes d'ange et des Cristaux de pleine lune. <a href="#amelioration">Détail plus bas</a>.</p></div>
+    <div class="tabcard"><h3>💎 Amélioration</h3><p><b>Identifier</b> une pièce de stuff (elle reçoit une qualité, de R1 à R7), l'<b>améliorer</b> de +1 à +3 avec des Plumes d'ange et des Cristaux de pleine lune, et l'<b>enchanter</b> avec une Rune. <a href="#amelioration">Détail plus bas</a>.</p></div>
     <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide.</p></div>
     <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
     <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session).</p></div>
@@ -178,6 +179,17 @@
   </ul>
 </section>
 
+<section id="ange">
+  <h1>Ange contre Démon</h1>
+  <p class="lead">Un effort commun à <b>tous les joueurs du serveur</b> : on remplit ensemble deux jauges, et chaque jauge pleine ouvre une tour où un boss garde des coffres.</p>
+  <div id="w-judgment"></div>
+  <h2>Le Jugement</h2>
+  <p>Dans le <b>Lobby</b>, « Où miner » → <b>⚖ Jugement</b> : les deux jauges face à face (l'Ange en blanc, le Démon en violet) et l'état de chaque tour (fermée, ou ouverte avec le temps restant). Quand une tour est ouverte et que tu ne l'as pas encore faite, un point s'allume sur l'onglet Lobby, et « Choisir la tour » la sélectionne.</p>
+  <h2>Les tours</h2>
+  <div id="w-tower"></div>
+  <p class="tip">💡 À plusieurs, c'est bien plus facile : un mineur projeté en bas doit remonter toute la tour, pendant que les autres continuent de frapper.</p>
+</section>
+
 <section id="objets">
   <h1>Les objets</h1>
   <p>Tous les objets du jeu, avec leur <b>rareté</b>, à quoi ils servent et comment les obtenir. La couleur du nom et du contour de la case donne la rareté :</p>
@@ -207,7 +219,7 @@
 
 <section id="amelioration">
   <h1>L'amélioration</h1>
-  <p>L'onglet <b>💎 Amélioration</b> a deux rubriques (l'<b>Enchantement</b> viendra plus tard). Seulement pour les pièces de ton inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. Le hasard est tiré par le serveur.</p>
+  <p>L'onglet <b>💎 Amélioration</b> a trois rubriques : Identification, Amélioration et Enchantement. Seulement pour les pièces de ton inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. Le hasard est tiré par le serveur.</p>
   <h2>Identification</h2>
   <p>Deux cases : à gauche la pièce à identifier, à droite <b>un autre exemplaire du même objet</b>, qui sera <b>sacrifié</b> (peu importe sa qualité ou son niveau). Clique une case, puis la pièce à y poser. Si ce ne sont pas les mêmes objets, le bouton reste grisé et dit pourquoi.</p>
   <p>La pièce reçoit une <b>qualité</b> : son nom prend le titre et la couleur de la qualité (« Excellent : Pioche en pierre »), la case garde la couleur de rareté de l'objet. <b>C'est définitif</b> : une pièce identifiée ne se ré-identifie pas.</p>
@@ -217,6 +229,10 @@
   <p>Chaque palier donne un bonus sur <b>toutes les stats</b> de la pièce. Ça peut rater : <b>un échec ne coûte que les matériaux</b>, la pièce ne perd rien. Une pièce peut être améliorée avant ou après son identification.</p>
   <div id="w-upgrade"></div>
   <p class="tip">💡 Les <b>Plumes d'ange</b> se ramassent dans la <a href="#mi">mine instantanée</a> ; les <b>Cristaux de pleine lune</b> sont le butin du minotaure du <a href="#donjon">donjon</a>.</p>
+  <h2>Enchantement</h2>
+  <p>Une pièce de stuff + une <b>Rune</b> (dans un coffre des <a href="#ange">tours</a>) : la rune disparaît et <b>ses lignes de stats s'ajoutent à la pièce</b>. <b>Une seule rune par pièce, c'est définitif.</b> L'écran montre ce que la rune donnera sur cette pièce avant de valider. Une pièce non identifiée peut être enchantée.</p>
+  <p>Chaque ligne d'une rune est une stat tirée au hasard (minage, dégâts, vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène…), qui vaut un <b>% de la valeur de la pièce</b> enchantée : une rune donne donc plus sur une pièce de haut niveau.</p>
+  <div id="w-runes"></div>
 </section>
 
 <section id="stats">
