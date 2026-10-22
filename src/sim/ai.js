@@ -361,6 +361,7 @@ function dungeonGoal(G,m){
     const inside=isIn(d,m), may=mayEnter(G,m,d);
     if(inside && !may) return goTo(G,m,(x,y)=>!inRoom(d,x,y), m.scaredUntil>G.t ? 'Effrayé ! Sort du donjon' : 'Sort du donjon');
     if(!hasBarbarian(G)) continue;
+    m.helping=true;   // il va au boss (ou attend le barbare devant l'entrée)
     const boss=bossOf(G,d);
     if(may){
       if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
@@ -440,6 +441,7 @@ function helpAlly(G,m){
   }
   if(!best) return false;
   const who=(G.miners.find(a=>a.id===best.chase)?.name ?? 'un allié')+' ('+best.type+')';
+  m.helping=true; m.helpFoe=best.id;
   return goFight(G,m,best,bd,'Aide '+who,'Va aider '+who);
 }
 
@@ -466,10 +468,12 @@ function trapGoal(G,m){
   }
   if(!best) return false;
   const t=G.traps[best.trap], who=G.miners.find(a=>a.id===t.by && a!==m)?.name;
+  m.helping=true; m.helpFoe=best.id;
   return goFight(G,m,best,bd,'Combat ('+best.type+', piège)', who ? 'À la rescousse de '+who : 'Va au piège');
 }
 
 export function decide(G,m){
+  m.helping=false;   // skill braum : remis à vrai par une aide (helpAlly, trapGoal, dungeonGoal) ou le combat qui suit
   // gravité : sans appui, il tombe d'une case. Au début de la chute, on note d'où il part et s'il connaissait le trou.
   if(!supported(G,m.x,m.y)){
     if(!m.fall) m.fall={ y0:m.y, blind:!fallInfo(G,m.x,m.y).known };
@@ -500,6 +504,7 @@ export function decide(G,m){
     if(foe && G.t-m.foeHit>CFG.foeGiveUp){ m.ignored.add(foe.id); m.foe=null; }
     else if(foe && Math.hypot(foe.x-m.x,foe.y-m.y)<=CFG.foeLeash) th=foe;
     else m.foe=null;
+    m.helping = !!th && th.id===m.helpFoe;   // il continue le combat commencé pour un allié
     if(!th) th=nearestThreat(G,m);
     // en retour, il ne se bat que contre un mimic qui lui bloque le passage (sinon il le « mine » à l'infini)
     const blocking = th && th.type==='mimic' && Math.abs(th.x-m.x)+Math.abs(th.y-m.y)<=1;
