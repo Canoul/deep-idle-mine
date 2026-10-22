@@ -112,7 +112,8 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 ### Déplacement
 - **Le mineur est soumis à la gravité** : s'il y a du vide sous lui, il tombe case par case (8 blocs/s *(provisoire)*) jusqu'à atterrir sur un bloc solide ou **sur une échelle**. Il ne tombe pas s'il est sur une case avec échelle, ni s'il est posé juste au-dessus d'une case avec échelle. *(À définir : dégâts ou ralentissement de chute, voir questions ouvertes.)*
 - **Chutes** *(décision ferme ; valeurs provisoires)* :
-  - le mineur **ne se jette jamais dans un trou de plus de 3 cases** qu'il connaît (cases découvertes) : l'IA ne prévoit aucune chute plus haute ; devant un tel trou, il pose une passerelle, passe ailleurs ou creuse un autre puits ;
+  - le mineur **ne se jette jamais dans un trou de plus de 3 cases** qu'il connaît (cases découvertes) : l'IA ne prévoit aucune chute plus haute ; devant un tel trou, il pose une passerelle, passe ailleurs ou creuse un autre puits. Vaut aussi quand il descend de son échelle dans le puits d'un autre mineur *(corrigé le 22/10/2026 : il s'y jetait)* ;
+  - une chute de **plus de 3 cases** l'étourdit **toujours**, même dans un trou connu : puisqu'il ne s'y jette jamais, c'est que son appui a disparu *(22/10/2026)*. Seule exception : le chantier du treuil (§ Treuil) ;
   - une chute **imprévue** (dans du vide pas encore découvert) de **3 cases ou plus** l'**étourdit 5 s** : il ne peut plus rien faire (ni bouger, ni miner, ni frapper), même taclé ; l'oxygène continue de baisser. Des étoiles tournent au-dessus de sa tête. Une chute connue de 3 cases ne l'étourdit pas.
   - Repère (simulation, 5 sessions) : ≈ 6 étourdissements par session en solo, ≈ 12 à 3 mineurs (≈ 30 à 60 s perdues).
 - Le mineur ne peut pas sauter. Actions possibles : **aller à gauche/droite, miner, poser une échelle**.
@@ -132,6 +133,7 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - **Réutiliser l'existant** : pour descendre ou changer de galerie, l'IA compare le temps d'un trajet par les échelles et galeries déjà posées au temps d'un nouveau puits (mine + échelle à chaque case), et prend le moins cher.
 - La **boussole** aide l'IA à choisir : s'il vaut mieux aller sur les côtés vers un minerai plutôt que descendre.
 - Quand le fond de l'area est verrouillé, il explore en **galeries** horizontales pour trouver les minerais manquants.
+- **Fin de session** *(22/10/2026, Geoffrey ; `CFG.endWorkShare`)* : quand il repart de la surface, il fixe pour ce trajet une **profondeur maximale** : celle où l'aller et le retour depuis la surface prennent au plus **la moitié du temps restant**. Il ne descend pas plus bas et n'y vise pas de minerai : il mine **plus haut** (filons, galeries) au lieu d'aller au front pour remonter aussitôt. La vitesse de trajet est mesurée sur sa dernière remontée (échelles, treuil, détours compris). Il ne repart plus s'il reste moins de 45 s ou si cette profondeur est de moins de 3 couches. *(Avant : il repartait s'il restait 2 × son dernier retour + 30 s, et descendait toujours jusqu'au front.)*
 
 ### Focus minerai
 Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.

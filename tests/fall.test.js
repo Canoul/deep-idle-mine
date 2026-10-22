@@ -50,6 +50,22 @@ test('chute de 3 cases dans un trou connu (découvert) : pas d\'étourdissement'
   assert.equal(m.stats.stuns, 0);
 });
 
+test('chute de plus de 3 cases dans un trou connu (jamais voulue : son appui a disparu) : étourdi aussi', () => {
+  const G = worldFrom(pit(8)), m = G.miners[0];       // trou découvert de 7 cases, il n'a rien sous lui
+  run(G, 10);
+  assert.equal(m.y, 8);
+  assert.equal(m.stats.stuns, 1);
+  assert.equal(m.status, 'Étourdi (chute)');
+});
+
+test('chantier du treuil : jamais étourdi, même en tombant de plus de 3 cases dans son puits', () => {
+  const G = worldFrom(pit(8)), m = G.miners[0];
+  m.winchJob = { bottom:20 };
+  run(G, 10);
+  assert.equal(m.y, 8);
+  assert.equal(m.stats.stuns, 0);
+});
+
 test('chute imprévue de plus de 3 cases : étourdi aussi', () => {
   const G = worldFrom(pit(8)), m = G.miners[0];
   hide(G, 5, 2, 9);
@@ -86,6 +102,18 @@ test('creuser sous ses pieds au-dessus d\'un trou connu trop profond : refusé',
   assert.equal(deepFall(G, m, 0, 1), false);
   assert.equal(stepDir(G, m, 0, 1), true);
   assert.equal(m.action.type, 'mine');
+});
+
+test('sur une échelle, descendre dans un trou connu trop profond (puits d\'un autre) : refusé', () => {
+  const G = worldFrom(pit(7)), m = G.miners[0];       // en (5,1), vide de 2 à 6 : un puits de 5 cases sous lui
+  G.ladder[1][5] = 1;                                  // il tient sur son échelle
+  assert.equal(deepFall(G, m, 0, 1), true);
+  assert.equal(stepDir(G, m, 0, 1), false);
+  G.ladder[4][5] = 1;                                  // une échelle plus bas : chute de 2 jusqu'à elle, permis
+  assert.equal(deepFall(G, m, 0, 1), false);
+  G.ladder[4][5] = 0; hide(G, 5, 2, 7);                // le même puits, pas découvert : il ne sait pas, il descend
+  assert.equal(deepFall(G, m, 0, 1), false);
+  assert.equal(stepDir(G, m, 0, 1), true);
 });
 
 test('marcher vers un trou connu trop profond : passerelle (ou refus sans passerelle)', () => {

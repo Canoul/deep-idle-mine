@@ -1390,13 +1390,54 @@ Règles (voir CLAUDE.md) :
   le premier échouait avant la correction). session, team : verts. Seed 23757 : 0 blocage (partie identique).
 - ⚠️ Inefficacité notée (pas corrigée) : redescente de 2 min 30 à 5 min de la fin, pour remonter aussitôt.
 
+### Fin de session : profondeur maximale par trajet (Geoffrey) — branche `geoffrey/fin-de-session-plus-haut`, en ligne le 22/10
+- **Demande** : en fin de session, le mineur doit miner plus haut au lieu d'aller au front (seed 23757 : le logisticien
+  repartait à 3295 s, descendait 150 cases par le treuil et remontait sans travailler).
+- **`src/sim/ai.js`** : `depthCap(G,m)` = couches telles que (descente + remontée × 1,25) × secondes par couche ≤
+  (1 − `CFG.endWorkShare`) × temps restant − 12 s ; secondes par couche = `m.secPerRow` mesuré à la dernière remontée
+  (`m.returnFromY`, ≥ 10 couches), sinon 1,25 / vitesse de montée. **`m.tripCap` fixé quand il décide de repartir**
+  (`decideSurface`, avant de rejoindre son puits : il peut tomber dans le treuil en chemin et passer en `work` sans
+  `decideDeparture`, ligne `departure && y>0`). `decideWork` : pas de cible ni de descente sous `tripCap` ;
+  `explore(G,m,k,cap)` ne prend que des galeries au-dessus. Départ refusé si temps restant < `endStayMin` ou
+  `depthCap` < 3 (avant : temps restant < 2 × dernier retour + `minWorkTime`, supprimé de la config).
+- **Erreurs en route** : cap recalculé à chaque décision → il remontait sans cesse de galerie en galerie (Rouge,
+  130 s « Change de galerie ») : fixé par trajet. Premier test mesurait l'action « mine » seule (les pas dans la
+  galerie ne comptaient pas) : mesure = tout sauf le trajet pur (retour, « Descend par l'existant », chute).
+- **Tests** : `tests/session.test.js` (+1 : départ tardif ≥ 1/3 du trajet à travailler ; échoue sans la correction :
+  Bleu 26 %). Suite complète + anticheat 669/669.
+- **Simulation avant / après** (6 seeds) : solo minerais 365 → 362, valeur 406 → 396, profondeur 120 → 119 ; à 3
+  (skills mixed) minerais 1074 → 1073, valeur 1470 → 1458, areas 4,00 → 3,83, 0 blocage des deux côtés.
 ## 22/10/2026 — Geoffrey — MI : galeries verticales, tas de plumes ignorés
 - **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
 - **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
 
 
-### Voir le stuff d'un ami (Jules) — branche `jules/voir-stuff-ami`
+### Chutes connues de plus de 3 cases sans étourdissement (Jules) — branche `jules/fix-chute`, ✅ en ligne le 22/10
+- **Symptôme** (retour joueur) : un mineur tombe de plus de 3 cases dans un trou déjà creusé par un autre et n'est pas
+  étourdi. Mesure (script de sonde, 8 parties à 3, skills mixed, seeds 1 à 8) : 8 chutes connues > 3 hors treuil
+  (6 « Creuse vers le bas », ex. seed 5 Vert 4 fois en (42, 10) ; 2 « Combat (bestiole) »).
+- **Cause** : `stepFall` (`src/sim/actions.js`) ne voyait que le pas de côté et le minage sous les pieds. Debout sur une
+  échelle, descendre (dy = 1) dans une case VIDE sans appui n'était pas vérifié : `deepFall` renvoyait faux, `digDown`
+  / `fight` faisaient le pas, il tombait dans le puits connu d'un autre. Le pathfinder (`path.js`) respectait déjà
+  `maxFall` ; c'est le pas direct de `digDown` (`stepDir(0,1)`) qui passait outre.
+- **Correction** : `stepFall` gère aussi `dx = 0, dy = 1` vers une case vide sans appui (`fallInfo` de la case du
+  dessous). `deepFall` refuse donc ce pas ; `digDown` se décale ou explore (code existant). Filet de sécurité
+  (`decide`, `src/sim/ai.js`) : à l'atterrissage, étourdi si chute imprévue ≥ `stunFall` **ou** chute de plus de
+  `maxFall`, même connue ; jamais en chantier de treuil (`winchJob`). GAME_DESIGN §3 « Chutes » mis à jour.
+- **Tests** : `tests/fall.test.js` +3 (sur une échelle au-dessus d'un puits connu de 5 : refusé ; échelle plus bas :
+  permis ; puits caché : permis ; chute connue de 7 sans appui : étourdi ; chantier du treuil : jamais étourdi). Les
+  deux premiers échouaient avant la correction. fall, winch, session, team, mobs, diagnostics, dungeon, focus, miner :
+  102/102 ✅.
+- **Mesures après** : mêmes 8 parties, chutes connues > 3 hors treuil : 0 ✅ (restent les chutes du logisticien dans
+  le puits du treuil, permises). `simulate --miners 3 --count 5 --skills mixed` : 0 blocage ✅, areas 4,0, profondeur
+  198,8, étourdissements 11,4 / session.
+- ⚠️ Pas traité ici : allers-retours colonne → treuil au départ du coffre (39 sur les 8 parties) ; corrigé par le commit
+  `7c36a32` de Geoffrey (branche `geoffrey/retours-21-10`, pas en ligne ; sonde : 0 sur les seeds 2 et 4).
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » (Geoffrey, `ai.js`) :
+  fusion automatique du code, conflit seulement dans le journal (les deux entrées gardées). Après fusion : tests de la
+  simulation 103/103 ✅, `simulate --count 5 --skills mixed` : 0 blocage, profondeur 199,8, étourdissements 11,4.
+### Voir le stuff d'un ami (Jules) — branche `jules/voir-stuff-ami`, ✅ en ligne le 22/10
 - **Serveur** : `game.profile(accountId)` (`server/game/service.js`) renvoie `{ stuff (worn), progress (publicProgress),
   skills (skillRanks) }`, lecture seule, sans verrou (comme `state`). `social.profile(me, id)` (`server/social/service.js`)
   passe par `friendOf` (refus `not_friend` 404 si pas ami, ID invalide ou soi-même), ajoute `id`, `displayId`, `name`.
@@ -1409,3 +1450,5 @@ Règles (voir CLAUDE.md) :
 - ✅ Chromium (mode dev, 2 comptes, pioche légendaire équipée) : fiche affichée à 1440×900 et 390×844, bulle d'info de
   la pièce, stats, niveau, « Fermer » et clic à côté ferment ; 0 erreur console. ⚠️ Spécialisation affichée pas vue à
   l'écran (le compte de test n'avait pas de point de skill ; `treeText` est simple).
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » et `jules/fix-chute` :
+  conflits seulement dans le journal et le debug (tout gardé).

@@ -23,7 +23,26 @@ Modèle d'entrée :
   spécialisation, les pièces qu'il porte (avec leur bulle d'info : qualité, amélioration, rune) et ses stats de mineur,
   exactement comme dans son propre onglet Stuff. Ça marche même si l'ami est hors ligne ou en session. On ne voit
   jamais son inventaire, et seulement pour un ami.
-- **État** : 🧪 sur la branche `jules/voir-stuff-ami` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Chutes : plus de saut dans le puits d'un autre, et toujours étourdi au-delà de 3 cases
+- **Pour le joueur** : un mineur debout sur son échelle se jetait parfois dans le puits déjà creusé par un autre (4 à
+  6 cases), sans être étourdi puisque le trou était « connu ». Il ne le fait plus : comme pour les autres trous, il
+  passe ailleurs ou creuse son propre puits. Et si un mineur tombe quand même de plus de 3 cases (son appui disparaît),
+  il est maintenant **étourdi 5 s**, même dans un trou déjà découvert. Le logisticien qui creuse le puits du treuil
+  reste exempté.
+- **Mesures** (8 parties à 3) : chutes connues de plus de 3 cases hors treuil 8 → 0. Simulation 5 sessions :
+  0 blocage, profondeur ≈ 199, ≈ 11 étourdissements par session (inchangé).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Fin de session : le mineur mine plus haut au lieu de descendre au front
+- **Pour le joueur** : quand un mineur repart de la surface peu avant la fin, il ne descend plus jusqu'au front pour
+  remonter aussitôt. Il se fixe une profondeur maximale (aller + retour = au plus la moitié du temps restant) et mine
+  au-dessus : filons, galeries.
+- **Mesures** (6 parties) : seul, 362 minerais contre 365 avant ; à 3, 1 073 contre 1 074 ; aucun blocage. Une partie
+  à 3 sur 6 ne débloque plus l'area 4 dans les dernières minutes (on ne fonce plus au front à la fin).
+- **Réglage** : la part du temps restant à garder pour miner (`endWorkShare`, 50 %) se change dans la config.
+
 
 ## 22/10/2026 — Geoffrey — Mine instantanée : galeries dans tous les sens, tas de plumes prioritaires
 - **Pour le joueur** : les mineurs ne creusent plus tous droit vers le bas : chacun suit un cap qu'il change de temps en temps. Un tas de plumes découvert à 8 cases ou moins passe avant tout, même enfermé dans la roche : le mineur le plus proche creuse vers lui.
