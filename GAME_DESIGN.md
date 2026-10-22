@@ -481,7 +481,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
-Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus tard). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
+Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
 
 **Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous), puis des **lignes de stats** en plus de ses stats de base. **Définitif** : une pièce identifiée ne se ré-identifie pas.
 - *(22/10/2026)* **On choisit soi-même quelle pièce va dans quelle case** : un clic sur une case la sélectionne (cadre doré), puis un clic sur une pièce de la liste (toutes les pièces de l'inventaire) la pose dedans ; re-cliquer sur la case sélectionnée la vide. Si les deux pièces **ne sont pas le même objet** (ou si la pièce de gauche est déjà identifiée), on ne peut **juste pas identifier** : le bouton reste grisé et la raison est affichée.
@@ -519,6 +519,10 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus 
 
 Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
 - **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 100 plumes et 15 cristaux pour monter une pièce à +3 (sans échec). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+
+**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce, définitif.** Une pièce non identifiée peut être enchantée ; identification et rune s'additionnent. Chaque ligne de rune vaut un **% de la valeur de la pièce enchantée** (même conversion que l'identification) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
+- **Coffres des tours** : *Coffre angélique R1 à R7* et *Coffre démoniaque R1 à R7* (un objet par qualité, empilables, contour selon la qualité : R1 commun → R5-R7 légendaire). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
+- Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % de la valeur de la pièce ».
 
 ### Four (onglet Four)
 - **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.

@@ -4,6 +4,7 @@
      node scripts/give-admin.js --name admin                         → en local (data/)
      $env:DATABASE_URL="postgres://…"; node scripts/give-admin.js --name admin   → base en ligne
      options : --item "Pioche en pierre" (pièce donnée) · --mats 50 (Plumes d'ange et Cristaux de pleine lune)
+               · --chests 1 (ce nombre de coffres de tour de chaque qualité, ange et démon : runes et Enchantement)
 
    Les lignes de stats sont tirées comme au jeu (src/meta/piece.js), seule la qualité est imposée.
    Le serveur garde tout en mémoire : ARRÊTE-LE avant (en local), ou REDÉMARRE-LE après (en ligne), sinon il réécrit
@@ -18,14 +19,15 @@ import { createInventory, deserialize, serialize, addItem, addAll } from '../src
 import { sanitizeStuff } from '../src/meta/stuff.js';
 import { rollIdentity, isStuff, pieceName, sanitizePiece } from '../src/meta/piece.js';
 import { statLines } from '../src/meta/stuff.js';
-import { UPGRADE } from '../src/config.js';
+import { UPGRADE, RUNE, chestItem } from '../src/config.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const name = arg('name', 'admin'), item = arg('item', 'Pioche en pierre'), mats = +arg('mats', 50);
+const name = arg('name', 'admin'), item = arg('item', 'Pioche en pierre'), mats = +arg('mats', 50), chests = +arg('chests', 0);
 const random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48;
 
 if(!isStuff(item)) { console.error(`« ${item} » n'est pas une pièce de stuff.`); process.exit(1); }
 if(!Number.isSafeInteger(mats) || mats < 0) { console.error('--mats : un entier positif.'); process.exit(1); }
+if(!Number.isSafeInteger(chests) || chests < 0) { console.error('--chests : un entier positif.'); process.exit(1); }
 
 const db = process.env.DATABASE_URL ? await openDatabase(process.env.DATABASE_URL, { retries: [1e3, 2e3] }) : null;
 const accounts = db ? await createPgStore(db) : await createFileStore(SERVER.dataDir);
@@ -46,8 +48,9 @@ try {
       console.log(`+ ${pieceName(p)} : ${statLines(p).join(' · ')}`);
     }
     if(mats) addAll(inv, { 'Plume d\'ange': mats, 'Cristal de pleine lune': mats });
+    if(chests) for(const side of Object.keys(RUNE.chests)) for(let q = 1; q <= 7; q++) addItem(inv, chestItem(side, q), chests);
     await game.putInventory(acc.id, JSON.parse(serialize(inv)));
     await game.close();
-    console.log(`Inventaire de « ${acc.name} » mis à jour (${db ? 'base en ligne : redémarre le serveur' : game.file}) · +${mats} de chaque matériau.`);
+    console.log(`Inventaire de « ${acc.name} » mis à jour (${db ? 'base en ligne : redémarre le serveur' : game.file}) · +${mats} de chaque matériau${chests ? ` · +${chests} coffre(s) de tour par qualité` : ''}.`);
   }
 } finally { await accounts.close?.(); if(db) await db.close(); }

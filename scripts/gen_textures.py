@@ -284,6 +284,30 @@ def main():
         for (x, y) in [(4, 6), (10, 11)]:
             rect(px, x, y, 1, 1, core)                                 # éclats les plus brillants
         return px
+    # coffres des tours : coffre bombé, bois clair et ferrures, avec l'emblème de son camp
+    def tower_chest(wood, wood_d, band, glow, emblem):
+        px = blank()
+        rect(px, 2, 4, 12, 3, wood); rect(px, 3, 3, 10, 1, wood)          # couvercle bombé
+        rect(px, 1, 7, 14, 7, wood_d)                                       # caisse
+        rect(px, 1, 7, 14, 1, band); rect(px, 1, 13, 14, 1, band)           # ferrures
+        rect(px, 3, 3, 1, 11, band); rect(px, 12, 3, 1, 11, band)
+        rect(px, 6, 8, 4, 4, glow)                                          # emblème lumineux
+        for (x, y) in emblem:
+            rect(px, x, y, 1, 1, hexc('#ffffff'))
+        rect(px, 4, 2, 8, 1, shade(glow, 0.8))                              # lueur sur le couvercle
+        return px
+    tex['chest_angel'] = tower_chest(hexc('#e9eef8'), hexc('#b8c6dd'), hexc('#ffd23f'), hexc('#8fd8ff'), [(7, 9), (8, 9), (7, 10), (8, 10)])
+    tex['chest_demon'] = tower_chest(hexc('#4b2d6b'), hexc('#2a1840'), hexc('#a01b1b'), hexc('#ff3b3b'), [(6, 8), (9, 8), (7, 10), (8, 10)])
+
+    # rune : pierre taillée en losange, glyphe lumineux
+    rune = blank()
+    for i, (x0, w) in enumerate([(7, 2), (6, 4), (5, 6), (4, 8), (3, 10), (2, 12), (2, 12), (3, 10), (4, 8), (5, 6), (6, 4), (7, 2)]):
+        rect(rune, x0, 2 + i, w, 1, hexc('#5a5f6e'))
+        rect(rune, x0, 2 + i, 1, 1, hexc('#8b91a3'))                      # arête claire
+    for (x, y) in [(7, 4), (8, 4), (7, 5), (7, 6), (8, 6), (9, 7), (7, 7), (7, 8), (6, 9), (7, 9), (8, 9), (7, 10)]:
+        rect(rune, x, y, 1, 1, hexc('#ffc27a'))                            # glyphe
+    tex['rune'] = rune
+
     tex['residue_angel'] = residue(4141, hexc('#8fd8ff'), hexc('#3d5a78'), hexc('#ffffff'))
     tex['residue_demon'] = residue(6666, hexc('#ff3b3b'), hexc('#6b2228'), hexc('#ffd0a0'))
 

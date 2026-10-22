@@ -1,10 +1,11 @@
 /* Onglet Amélioration : trois rubriques. Identification (une pièce + un exemplaire sacrifié → qualité R1 à R7 et
-   lignes de stats), Amélioration (+1 à +3, matériaux, peut rater), Enchantement (plus tard).
+   lignes de stats), Amélioration (+1 à +3, matériaux, peut rater), Enchantement (une pièce + une Rune : les lignes de
+   la rune s'ajoutent à la pièce, une rune par pièce, définitif).
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */
-import { UPGRADE } from '../config.js';
-import { isIdentified, pieceName } from '../meta/piece.js';
-import { statLines } from '../meta/stuff.js';
+import { UPGRADE, STUFF } from '../config.js';
+import { isIdentified, isStuff, isRune, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
+import { statLines, runeLines } from '../meta/stuff.js';
 import { sacrificesFor, nextLevel, upgradeNeeds } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
@@ -26,18 +27,20 @@ const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.ite
 const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}`+
   `<span>${pname(p)}<br><small class="stuffStats">${esc(statLines(p).join(' · ') || 'Aucun effet')}</small></span>${extra}</button>`;
 
-/* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid }) → promesse { piece, success } (rejetée avec un message lisible) */
+/* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) */
 export function setupUpgrade({ onOp }){
   let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, pick = 'target', busy = false, msg = '', ok = true;
-  const pieces = () => inv.slots.filter(s => s && s.uid != null);
-  const byUid = uid => pieces().find(s => s.uid === uid) ?? null;
+  let rune = null;                                 // Enchantement : uid de la rune posée
+  const pieces = () => inv.slots.filter(s => s && s.uid != null && isStuff(s.item));
+  const runes = () => inv.slots.filter(s => s && s.uid != null && isRune(s.item));
+  const byUid = uid => inv.slots.find(s => s && s.uid != null && s.uid === uid) ?? null;
 
   function render(){
     $('upTabs').innerHTML = RUBRICS.map(r => `<button data-rub="${r.id}" class="${r.id === tab ? 'on' : ''}">${r.label}</button>`).join('');
     const t = byUid(target), s = byUid(sacrifice);
     if(tab === 'identify') renderIdentify(t, s);
     else if(tab === 'upgrade') renderUpgrade(t);
-    else $('upBody').innerHTML = '<p class="mut">L\'enchantement arrive plus tard.</p>';
+    else renderEnchant(t, byUid(rune));
   }
   const message = () => msg ? `<p class="${ok ? 'okmsg' : 'err'}">${msg}</p>` : '';
 
@@ -104,6 +107,49 @@ export function setupUpgrade({ onOp }){
       r.success ? `✔ Réussi : ${pname(r.piece)}` : `✖ Raté : les matériaux sont perdus, ${pname(r.piece)} ne change pas.`);
   }
 
+  /* Enchantement : la pièce + une rune. Même principe de cases que l'identification. Aperçu : ce que la rune donnera
+     sur CETTE pièce (ses lignes valent un % de la valeur de la pièce, niveau compris). */
+  function renderEnchant(t, r){
+    if(t && !isStuff(t.item)) t = null;
+    if(r && !isRune(r.item)) r = null;
+    const why = t?.rune ? 'Cette pièce porte déjà une rune.' : '';
+    const can = t && r && !why && !busy;
+    const sel = c => pick === c ? ' sel' : '';
+    const label = k => STUFF.statLabels[k] ?? k, unit = k => STUFF.statUnits?.[k] ?? '';
+    const preview = t && r && !why ? r.lines.map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
+      : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
+    const list = pick === 'target' ? pieces() : runes();
+    $('upBody').innerHTML =
+      `<p class="mut small">Une rune (gagnée dans les coffres des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
+      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce, c'est définitif.</p>`+
+      `<div class="upPair"><div>${box(t, 'Pièce à enchanter', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
+      `<div>${box(r, 'Rune', 'upSacrifice' + sel('rune'))}</div>`+
+      `<button class="on" id="upGo"${can ? '' : ' disabled'}>✨ Enchanter</button></div>`+
+      (preview ? `<p class="okmsg small">Sur cette pièce : ${esc(preview)}</p>` : '')+
+      (why ? `<p class="err">${why}</p>` : '')+
+      message()+
+      `<h3>${pick === 'target' ? 'Choisis la pièce à enchanter' : 'Choisis la rune'}</h3>`+
+      (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
+          ? row(p, p.rune ? '<b>déjà enchantée</b>' : p.uid === t?.uid ? '<b>posée</b>' : '')
+          : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : ''}</button>`).join('')}</div>`
+        : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un coffre de tour (Inventaire).'}</p>`);
+    $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
+      const uid = +b.dataset.uid;
+      if(pick === 'target'){ target = uid; if(rune == null) pick = 'rune'; }
+      else { rune = uid; if(target == null) pick = 'target'; }
+      msg = ''; render();
+    });
+    const choose = (c, filled, clear) => () => { if(pick === c && filled) clear(); pick = c; msg = ''; render(); };
+    $('upBody').querySelector('.upTarget').onclick = choose('target', !!t, () => { target = null; });
+    $('upBody').querySelector('.upSacrifice').onclick = choose('rune', !!r, () => { rune = null; });
+    $('upGo').onclick = async () => {
+      if(busy || !can) return;
+      if(!confirm(`Poser ${pieceName(r)} sur ${pieceName(t)} ? La rune est consommée, c'est définitif.`)) return;
+      await send({ action:'enchant', uid:t.uid, rune:r.uid }, x => `✔ ${pname(x.piece)} : ${esc(statLines(x.piece).join(' · '))}`);
+      rune = null; target = null; pick = 'target'; render();
+    };
+  }
+
   async function send(op, text){
     busy = true; msg = ''; render();
     try { const r = await onOp(op); ok = r.success !== false; msg = text(r); }
@@ -111,7 +157,7 @@ export function setupUpgrade({ onOp }){
     finally { busy = false; render(); }
   }
 
-  $('upTabs').onclick = e => { const b = e.target.closest('[data-rub]'); if(b){ tab = b.dataset.rub; target = null; sacrifice = null; pick = 'target'; msg = ''; render(); } };
+  $('upTabs').onclick = e => { const b = e.target.closest('[data-rub]'); if(b){ tab = b.dataset.rub; target = null; sacrifice = null; rune = null; pick = 'target'; msg = ''; render(); } };
 
   return { setInventory(v){ inv = v; render(); } };
 }

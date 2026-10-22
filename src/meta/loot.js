@@ -1,9 +1,13 @@
-/* Ouverture d'un objet Treasure TX hors session : logique pure (le hasard est passé en paramètre).
+/* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
+   pure (le hasard est passé en paramètre).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT } from '../config.js';
-import { removeItem, addAll, OPEN_MEMORY } from './inventory.js';
+import { LOOT, ITEMS, RUNE } from '../config.js';
+import { removeItem, addAll, addItem, OPEN_MEMORY } from './inventory.js';
+import { rollRune } from './piece.js';
 
-export const canOpen = item => Object.hasOwn(LOOT, item);
+/* coffre de tour (RUNE) : { side, q } ou null */
+const chestOf = item => ITEMS[item]?.chest ?? null;
+export const canOpen = item => Object.hasOwn(LOOT, item) || !!chestOf(item);
 
 const between = (min, max, rng) => min + Math.floor(rng() * (max - min + 1));
 
@@ -29,8 +33,16 @@ export function openTreasure(inv, item, opId, rng){
   const prev = inv.opened.find(o => o.id === opId);
   if(prev) return prev.item === item ? { loot:{ ...prev.loot }, repeated:true } : null;
   if(!canOpen(item) || !removeItem(inv, item, 1)) return null;
-  const loot = rollLoot(LOOT[item], rng);
-  addAll(inv, loot);
+  let loot;
+  const chest = chestOf(item);
+  if(chest){                                 // coffre de tour : une rune de sa qualité, lignes tirées maintenant
+    const [i] = addItem(inv, RUNE.item, 1);
+    Object.assign(inv.slots[i], rollRune(chest.q, rng));
+    loot = { [RUNE.item]: 1 };
+  } else {
+    loot = rollLoot(LOOT[item], rng);
+    addAll(inv, loot);
+  }
   inv.opened.push({ id:opId, item, loot:{ ...loot } });
   if(inv.opened.length > OPEN_MEMORY) inv.opened.splice(0, inv.opened.length - OPEN_MEMORY);
   return { loot, repeated:false };
