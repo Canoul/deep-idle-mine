@@ -21,7 +21,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
 export const CFG = {
-  ladderTime:2, refillRate:30, unlockRatio:0.4,
+  ladderTime:2, refillRate:30, unlockRatio:0.6,
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,

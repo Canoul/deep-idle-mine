@@ -1543,3 +1543,18 @@ Règles (voir CLAUDE.md) :
   profondeur 229,6. Les chiffres « Plus profond » et résidus du 22/10 mesurés avec le seau ×2 sont à relire avec
   ça : « Plus profond » à 3 = 1 431 → 1 087 de valeur (−24 %) au seau 0,85.
 
+### Seuil d'ouverture 60 % (Geoffrey) — branche `geoffrey/quota-treuil`, ✅ en ligne le 22/10
+- **Contexte** : seed 1102884141, équipe de 3 sans nouveau stuff jusqu'à l'objectif « Area 6 ». La seed est ordinaire
+  (même résultat que 7919…31676) ; la cause est le seau ×2 (`314e651`) + « Plus profond » (`571a12b`). Mesure
+  `simulate --miners 3 --skills mixed`, 5 seeds dont 1102884141 : main de 16 h 44 (`4ce6819`) areas 4,0, prof 198 ;
+  main de 19 h areas 4,8, prof 262.
+- **Fusion** : le retour du treuil à 0,85 avait été mis en ligne entre-temps par Jules (`6322421`, entrée
+  précédente) ; conflits résolus en gardant ses textes pour le treuil, seul le seuil 60 % vient de cette branche.
+- **Quoi** : `CFG.unlockRatio` 0.4 → 0.6 (`src/config.js`).
+- **Tests** : `world.test.js` : objectif 12 / 240. `session.test.js` : sessions
+  solo de régression (seeds 65361775, 823773703, 63352, 7919) : ≥ 1 area ouverte (avant ≥ 2 ; à 60 % un mineur de
+  base solo n'ouvre que l'area 1). winch, wiki, focus, session, world, team, diagnostics, dungeon, fall : ✅ 107/107.
+- **Simulation** (5 seeds de référence, 0 blocage) : 3 mineurs skills mixed : areas 4,0, prof 212,8 ; 2 mineurs skills mixed : areas 3,0, prof 165,8 ; 1 mineur de base :
+  areas 1,0, prof 95,4 (area 1 : 159 à 235 / 240).
+- **Points fragiles** : solo débutant limité aux areas 0-1 ; le wiki (`src/wiki/data.js`) lit `CFG.unlockRatio`, le
+  texte de `wiki.html` est écrit à la main (mis à 60 %).
