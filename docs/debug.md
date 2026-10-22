@@ -1390,6 +1390,23 @@ Règles (voir CLAUDE.md) :
   le premier échouait avant la correction). session, team : verts. Seed 23757 : 0 blocage (partie identique).
 - ⚠️ Inefficacité notée (pas corrigée) : redescente de 2 min 30 à 5 min de la fin, pour remonter aussitôt.
 
+### Fin de session : profondeur maximale par trajet (Geoffrey) — branche `geoffrey/fin-de-session-plus-haut`, en ligne le 22/10
+- **Demande** : en fin de session, le mineur doit miner plus haut au lieu d'aller au front (seed 23757 : le logisticien
+  repartait à 3295 s, descendait 150 cases par le treuil et remontait sans travailler).
+- **`src/sim/ai.js`** : `depthCap(G,m)` = couches telles que (descente + remontée × 1,25) × secondes par couche ≤
+  (1 − `CFG.endWorkShare`) × temps restant − 12 s ; secondes par couche = `m.secPerRow` mesuré à la dernière remontée
+  (`m.returnFromY`, ≥ 10 couches), sinon 1,25 / vitesse de montée. **`m.tripCap` fixé quand il décide de repartir**
+  (`decideSurface`, avant de rejoindre son puits : il peut tomber dans le treuil en chemin et passer en `work` sans
+  `decideDeparture`, ligne `departure && y>0`). `decideWork` : pas de cible ni de descente sous `tripCap` ;
+  `explore(G,m,k,cap)` ne prend que des galeries au-dessus. Départ refusé si temps restant < `endStayMin` ou
+  `depthCap` < 3 (avant : temps restant < 2 × dernier retour + `minWorkTime`, supprimé de la config).
+- **Erreurs en route** : cap recalculé à chaque décision → il remontait sans cesse de galerie en galerie (Rouge,
+  130 s « Change de galerie ») : fixé par trajet. Premier test mesurait l'action « mine » seule (les pas dans la
+  galerie ne comptaient pas) : mesure = tout sauf le trajet pur (retour, « Descend par l'existant », chute).
+- **Tests** : `tests/session.test.js` (+1 : départ tardif ≥ 1/3 du trajet à travailler ; échoue sans la correction :
+  Bleu 26 %). Suite complète + anticheat 669/669.
+- **Simulation avant / après** (6 seeds) : solo minerais 365 → 362, valeur 406 → 396, profondeur 120 → 119 ; à 3
+  (skills mixed) minerais 1074 → 1073, valeur 1470 → 1458, areas 4,00 → 3,83, 0 blocage des deux côtés.
 ## 22/10/2026 — Geoffrey — MI : galeries verticales, tas de plumes ignorés
 - **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
