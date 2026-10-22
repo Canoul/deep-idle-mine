@@ -1472,7 +1472,7 @@ Règles (voir CLAUDE.md) :
   après 1 407 (+19 %), profondeur 214,4, 0 blocage (après correction du détecteur ; seed 39595 rejouée seule).
 - ⚠️ Gain d'équilibrage important pour un seul skill ; le solo sans skills ne change pas.
 
-### Focus area « Plus profond » ne visait pas l'area la plus profonde (Jules) — branche `jules/focus-plus-profond`
+### Focus area « Plus profond » ne visait pas l'area la plus profonde (Jules) — branche `jules/focus-plus-profond`, ✅ en ligne le 22/10
 - **Symptôme** (retour joueur) : « Plus profond » ne cible pas l'area la plus profonde. Mesure (sonde : part du temps
   en mode work hors de la dernière area débloquée, 50 premières minutes, seeds 7919…39595) : 29 % en solo, 55 % à 3.
 - **Cause** : sans focus d'area, `focusArea` = null → aucune contrainte ; `decideWork` prend tout filon connu à portée

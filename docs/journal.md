@@ -28,7 +28,7 @@ Modèle d'entrée :
   l'area, comme avant.
 - **À suivre** : si la perte de quantité gêne, on peut ajouter un bouton « Auto » (l'ancien comportement).
   L'attente du barbare devant le donjon peut aller jusqu'à 0 d'oxygène (déjà le cas avant, vu plus souvent ici).
-- **État** : 🧪 sur la branche `jules/focus-plus-profond` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Treuil : le seau va plus vite, les mineurs y restent
 - **Pour le joueur** : le seau du treuil monte et descend **2 fois plus vite qu'une échelle** (avant : un peu moins
