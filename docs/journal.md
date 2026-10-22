@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Décisions** : celles ci-dessus (Geoffrey). Choix de Claude : la découverte est commune à tous (comme la mine
   normale) ; un mineur ne va chercher qu'un tas déjà découvert ; zoom de 24 colonnes (réglable).
 - **Mesuré** : aucun effet sur le butin (simulation à 1, 3 et 20 mineurs : mêmes plumes et minerais qu'avant).
-- **État** : 🧪 sur la branche `geoffrey/mi-decouverte-camera` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
 - **Pour le joueur** :

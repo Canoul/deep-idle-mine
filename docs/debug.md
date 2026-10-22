@@ -1299,7 +1299,7 @@ Règles (voir CLAUDE.md) :
   résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
   wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
-### Mine instantanée : découverte et caméra (Geoffrey) — branche `geoffrey/mi-decouverte-camera`
+### Mine instantanée : découverte et caméra (Geoffrey) — branche `geoffrey/mi-decouverte-camera`, en ligne le 22/10
 - **Simulation** (`src/sim/instant/session.js`) : `G.seen` (surface à 1), `revealAround(G, m)` (rayon
   max(1, discoverMax), comme `revealAround` de la mine normale en pleine lumière) au départ, après chaque action
   (`finish`) et à chaque tick. `ai.js` : un tas de plumes n'est un but que s'il est découvert.
