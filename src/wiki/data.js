@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
+         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -246,6 +246,10 @@ export function fmt(n){
 export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
   bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
   hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });
+
+/* ---------- piège ---------- */
+export const trapInfo = () => ({ from: TRAP.fromArea, chance: TRAP.chance, tries: TRAP.tries, w: TRAP.w, h: TRAP.h, mobs: TRAP.mobs,
+  hpMul: TRAP.hpMul, speedMul: TRAP.speedMul, mean: TRAP.tries * TRAP.chance });
 
 /* ---------- amélioration ---------- */
 export const qualityRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance }));

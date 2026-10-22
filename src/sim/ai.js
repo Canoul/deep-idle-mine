@@ -59,12 +59,20 @@ function explore(G,m,k,cap=Infinity){
   const primary=[], secondary=[];
   for(let r=1;r<=AREA_H;r++){ const y=base+r; if(y>cap||rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
   let pool = primary.length ? primary : secondary;
-  if(!pool.length){ m.status='Plus rien à explorer'; idle(m,1); return; }
+  if(!pool.length){
+    /* fin de session : il reste des galeries, mais toutes trop profondes pour le temps qu'il reste. Il remonte déposer
+       au lieu d'attendre la fin sur place, le sac plein (seed 15838 : ~100 s immobile avec 45 de chargement) */
+    let deeper=false; for(let r=1;r<=AREA_H && !deeper;r++){ const y=base+r; deeper = y>cap && !rowDone(G,y) && !m.skipRows.has(y); }
+    if(deeper && m.y>0){ m.mode='return'; m.reason='fin de session'; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : fin de session`); return decideReturn(G,m); }
+    m.status='Plus rien à explorer'; idle(m,1); return;
+  }
   const free = pool.filter(y=>!rowTaken(G,m,y));     // lignes que personne d'autre ne creuse
   if(free.length) pool=free;
   const quiet = pool.filter(y=>!rowCrowd(G,m,y));    // … et où aucun autre mineur ne se trouve (±1 ligne)
   if(quiet.length) pool=quiet;
-  const target = pool.reduce((a,b)=>Math.abs(b-m.y)<Math.abs(a-m.y)?b:a);
+  /* engagement : il garde la galerie choisie tant qu'elle reste possible. La plus proche de SA ligne changeait à chaque
+     pas quand l'itinéraire passait par une autre ligne de galerie (153 → 152 → 153… : seed 23757, trou d'un piège vidé) */
+  const target = pool.includes(m.galleryRow) ? m.galleryRow : pool.reduce((a,b)=>Math.abs(b-m.y)<Math.abs(a-m.y)?b:a);
   m.galleryRow=target;
   m.status = target===m.y ? 'Creuse une galerie' : 'Change de galerie';
   /* Objectif : se tenir SUR la ligne de la galerie, à côté d'un bloc à creuser, par un itinéraire où il tient toujours. */
@@ -110,7 +118,11 @@ function fight(G,m,o){
   m.status='Combat ('+o.type+')';
   if(Math.abs(dx)+Math.abs(dy)<=1){ if(dx) m.face=Math.sign(dx); startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
-  if(!ok) idle(m,0.3);
+  if(ok) return;
+  /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : il le laisse tout de suite, sinon
+     il attendait foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838) */
+  if(o.trap!=null){ m.ignored.add(o.id); m.foe=null; }
+  idle(m,0.3);
 }
 
 /* Profondeur maximale (couche) où il peut encore aller travailler : aller et retour depuis la surface en au plus
@@ -195,14 +207,16 @@ function decideWork(G,m){
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
   }
+  if(trapGoal(G,m)) return;
   if(dungeonGoal(G,m)) return;
   /* focus minerai : abandonne les minerais épuisés partout, change d'area si la sienne est épuisée */
   dropDepleted(G,m);
   const goal=focusGoal(G,m);
   // en route vers une cible de l'area visée, il peut déborder sur l'area voisine (chemin par la ligne du dessus) :
   // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière). Vaut pour le focus
-  // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai)
-  const onTheWay = goal!==null && m.target && areaOf(m.target.y)===goal;
+  // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai), et pour la
+  // galerie qu'il va creuser (seed 23757 : galerie en haut de l'area 3, chemin par la dernière ligne de l'area 2)
+  const onTheWay = goal!==null && ((m.target && areaOf(m.target.y)===goal) || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
@@ -414,14 +428,34 @@ function helpAlly(G,m){
     const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y); if(d<=HELP.range && d<bd){ bd=d; best=o; }
   }
   if(!best) return false;
-  const ally=G.miners.find(a=>a.id===best.chase);
-  if(bd<=1){ if(m.foe!==best.id){ m.foe=best.id; m.foeHit=G.t; } fight(G,m,best); m.status='Aide '+(ally?.name ?? 'un allié')+' ('+best.type+')'; return true; }
-  const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-best.x)+Math.abs(y-best.y)<=1 && !(x===best.x && y===best.y && !isAir(G,x,y)));
+  const who=(G.miners.find(a=>a.id===best.chase)?.name ?? 'un allié')+' ('+best.type+')';
+  return goFight(G,m,best,bd,'Aide '+who,'Va aider '+who);
+}
+
+/* va frapper le mob o (à d cases, Manhattan) : il frappe s'il est au contact, sinon il fait un pas vers lui (en minant
+   s'il le faut). Inatteignable : il l'ignore désormais et renvoie false. */
+function goFight(G,m,o,d,fighting,going){
+  if(d<=1){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-o.x)+Math.abs(y-o.y)<=1 && !(x===o.x && y===o.y && !isAir(G,x,y)));
   const s=r && firstStep(r,r.n);
-  if(!s || !(s.dx||s.dy)){ m.ignored.add(best.id); m.foe=null; return false; }   // inatteignable : il le laisse
-  m.status='Va aider '+(ally?.name ?? 'un allié')+' ('+best.type+')';
+  if(!s || !(s.dx||s.dy)){ m.ignored.add(o.id); m.foe=null; return false; }   // inatteignable : il le laisse
+  m.status=going;
   if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return true;
   idle(m,0.3); return true;
+}
+
+/* Piège (TRAP) : un barbare va tuer les mobs sortis d'un piège, où qu'ils soient et quels que soient ses réglages
+   (Ignorer, Fuir, Aider allié), comme au donjon. Appelé depuis decideWork : les raisons de remonter passent avant. */
+function trapGoal(G,m){
+  if(!isBarbarian(m) || m.y<=0 || m.mode==='winch' || m.winchJob || !G.traps?.some(t=>t.sprung)) return false;
+  let best=null, bd=Infinity;
+  for(const o of G.mobs){
+    if(o.hp<=0 || o.trap==null || m.ignored.has(o.id)) continue;
+    const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y); if(d<bd){ bd=d; best=o; }
+  }
+  if(!best) return false;
+  const t=G.traps[best.trap], who=G.miners.find(a=>a.id===t.by && a!==m)?.name;
+  return goFight(G,m,best,bd,'Combat ('+best.type+', piège)', who ? 'À la rescousse de '+who : 'Va au piège');
 }
 
 export function decide(G,m){

@@ -49,7 +49,7 @@ test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à 
   for(let k=1;k<=6;k++) genArea(G,k);
   for(let k=0;k<=6;k++){
     const a=G.areas[k], comp=AREAS[Math.min(k,AREAS.length-1)].comp, c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
-    /* blocs posés par-dessus la composition : donjon (murs, intérieur vide), treasure, résidus (Jugement) */
+    /* blocs posés par-dessus la composition : donjon (murs, intérieur vide), piège (salle vide), treasure, résidus (Jugement) */
     const extra=(c[DUNGEON_WALL]||0)+(c[TREASURE_BLOCK]||0)+(c[IDS.residueAngel]||0)+(c[IDS.residueDemon]||0);
     const replaced=extra+(a.counts.air||0)-Math.round((comp.air||0)*W*AREA_H/100);
     let total=0;
@@ -61,7 +61,7 @@ test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à 
     }
     for(const key of ['residueAngel','residueDemon']) assert.equal(c[IDS[key]]||0, a.counts[key]||0, `area ${k} ${key} : posés ≠ comptés`);
     assert.equal(total+extra, W*AREA_H, `area ${k} : aucun autre bloc`);
-    for(const n in comp) if(typeOf(IDS[n])==='ore' && !G.dungeons.some(d=>d.k===k))
+    for(const n in comp) if(typeOf(IDS[n])==='ore' && !G.dungeons.some(d=>d.k===k) && !G.traps.some(t=>t.k===k))
       assert.equal(c[IDS[n]], Math.round(comp[n]*W*AREA_H/100), `area ${k} ${n} : minerais exacts`);
   }
 });

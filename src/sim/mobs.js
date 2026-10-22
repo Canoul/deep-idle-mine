@@ -40,9 +40,11 @@ export function revealMimic(G,o,msg){
   log(G, msg || '⚠ Un mimic se dévoile !');
 }
 
-/* mineur visé par un mob : celui qui l'a provoqué, sinon le plus proche sous terre (à égalité, le premier de la liste) */
+/* mineur visé par un mob : celui qui l'a provoqué, sinon celui qu'il chasse (mob de piège, o.hunt) s'il est sous terre,
+   sinon le plus proche sous terre (à égalité, le premier de la liste) */
 function preyOf(G,o){
   const t=tauntedBy(G,o); if(t) return t;
+  const h=byId(G,o.hunt); if(h && h.y>0) return h;
   let best=null, bd=Infinity;
   for(const m of G.miners){ if(m.y<=0) continue; const d=manhattan(m,o); if(d<bd){ bd=d; best=m; } }
   return best;
@@ -63,8 +65,12 @@ function chaseOf(G,o){
   if(o.grab!=null) return o.grab;
   if(!isWalker(o)) return null;
   const p=preyOf(G,o);
-  return p && manhattan(p,o)<=CFG.mobChaseRange ? p.id : null;
+  return p && inChase(o,p) ? p.id : null;
 }
+/* le mob poursuit-il ce mineur ? à mobChaseRange cases au plus, sans limite pour le mineur qu'il chasse (piège) */
+const inChase = (o,p) => p.id===o.hunt || manhattan(p,o)<=CFG.mobChaseRange;
+/* temps d'un pas : mobStep, divisé par la vitesse du mob (mobs de piège : TRAP.speedMul) */
+const stepOf = o => CFG.mobStep/(o.speed||1);
 
 /* ---- boss de donjon (minotaure) : enfermé dans sa salle, il ne vise que les mineurs qui y sont (intérieur ou entrée),
    marche vers eux sans jamais sortir et les tacle à 1 case. Rien d'autre. */
@@ -107,10 +113,10 @@ export function updateMobs(G){
     if(o.cd>0 || o.grab!=null) continue;           // il tacle : il ne bouge plus
     const m=preyOf(G,o); if(!m) continue;
     const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y), dist=manhattan(m,o);
-    o.cd=CFG.mobStep;
-    if(dist<=1||dist>CFG.mobChaseRange) continue;
-    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; o.cd=CFG.mobStep/CFG.climbFactor; }   // grimpe
-    else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; o.cd=CFG.mobStep/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
+    o.cd=stepOf(o);
+    if(dist<=1||!inChase(o,m)) continue;
+    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; o.cd=stepOf(o)/CFG.climbFactor; }   // grimpe
+    else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; o.cd=stepOf(o)/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
     else if(dx && isAir(G,o.x+dx,o.y)) o.x+=dx;                                        // marche (et tombera s'il n'y a pas de sol)
   }
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
@@ -152,9 +158,9 @@ function occult(G,o){
   }
   if(o.taunt!=null || o.cast>0) return false;
   const p=preyOf(G,o);
-  if(!p || manhattan(p,o)>CFG.mobChaseRange) return false;
+  if(!p || !inChase(o,p)) return false;
   const spot=tpSpot(G,p); if(!spot) return false;   // pas de case possible : il réessaie au tick suivant
-  o.x=spot.x; o.y=spot.y; o.fall=0; o.grab=null; o.cd=CFG.mobStep;
+  o.x=spot.x; o.y=spot.y; o.fall=0; o.grab=null; o.cd=stepOf(o);
   o.channel={ target:p.id, left:C.channel }; o.cast=C.cooldown;
   p.stats.hexed=(p.stats.hexed||0)+1; G.stats.hexed=(G.stats.hexed||0)+1;
   log(G, `🌑 Un occultiste se téléporte et canalise sur ${p.name} (étourdi ${C.channel} s)`);
@@ -188,7 +194,7 @@ function tpSpot(G,p){
    mineurs sous terre, chacun son tour. Le type est tiré dans MOBS.spawnTable selon l'area du mineur visé :
    - mimic : un minerai de la roche à spawnMin–spawnMax cases devient un mimic caché ;
    - les autres : posés au sol dans une galerie déjà découverte à spawnMin–spawnMax cases, dans une area où ce type
-     peut naître (MOBS.minArea), tant qu'il y a moins de walkerCap mobs qui marchent.
+     peut naître (MOBS.minArea), tant qu'il y a moins de walkerCap mobs qui marchent (hors mobs de piège).
    Les PV dépendent de l'area où le mob naît (mobHp). */
 const tableOf = k => MOBS.spawnTable[Math.max(0, Math.min(MOBS.spawnTable.length-1, k))];
 export function pickType(table, r){
@@ -207,7 +213,7 @@ function spawnMobs(G){
   if(m.y<=0) return;
   const type=pickType(tableOf(areaOf(m.y)), G.rng());
   if(type==='mimic') return spawnMimic(G,m);
-  const live=G.mobs.filter(o=>isWalker(o)&&o.hp>0).length;
+  const live=G.mobs.filter(o=>isWalker(o)&&o.hp>0&&o.trap==null).length;   // les mobs de piège ne comptent pas
   if(live>=MOBS.walkerCap(k)) return;
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){

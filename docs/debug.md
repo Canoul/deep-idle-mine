@@ -1623,3 +1623,41 @@ Règles (voir CLAUDE.md) :
 - **Pas vérifié** : ⚠️ rendu dans le navigateur (couleur du nom, contour Unique) pas regardé à l'œil.
 - **Points fragiles** : le nom interne (« … R5 ») reste celui qui circule (sacs, historique, routes) ; tout nouvel
   affichage d'un nom d'objet doit passer par `rname` / `itemName` pour montrer « Antique Trésor démoniaque ».
+
+### Piège (Geoffrey) — branche `geoffrey/piege`, ✅ en ligne le 22/10
+- **Quoi** : `src/sim/trap.js` (nouveau) : `planTraps(seed, k, dungeon)` (rng `hash(seed,k+1) ^ TRAP.salt`, 2 tirages,
+  30 essais de placement : marges, colonne du treuil ± 2, ni contre le donjon ni contre l'autre piège à 1 case près),
+  `carveTrap` (salle → air, case d'air de la paroi → terrain principal), `registerTrap` (G.traps, G.veil = cases de la
+  salle cachées), `updateTraps` (chaque tick : une case de paroi à 0 → `spring`), `spring` (tout `seen`, 5 mobs posés sur
+  le sol de la salle avec `trap`, `hunt` = mineur le plus proche du trou, `speed`). Les mobs n'existent dans `G.mobs`
+  qu'après le déclenchement (rien à cacher dans la vue, le rendu, l'IA). `world.js` : donjon et pièges partagent `put`
+  (comptes de l'area). `session.js` : `revealAround` saute `veiled`, `updateTraps` entre les mineurs et les mobs.
+  `mobs.js` : `preyOf` → `o.hunt` après la provocation ; `inChase` (pas de limite mobChaseRange pour la cible chassée) ;
+  `stepOf` (mobStep / speed) ; walkerCap sans les mobs de piège. `ai.js` : `goFight` (sorti de `helpAlly`), `trapGoal`
+  (barbare, dans `decideWork` avant `dungeonGoal`), `fight` : un mob de piège inapprochable est ignoré tout de suite.
+  `TRAP` en config ; wiki (donjon → « Les pièges », `trapInfo`).
+- **Tests** : `tests/trap.test.js` 12/12 (tirage, placement, génération et comptes, caché, déclenché, trou en hauteur,
+  mob inapprochable, mimic, vitesse et chasse sans limite, hors quota et minuteur, barbare Fuir sans Aider allié, sans
+  barbare). `world.test.js` : « minerais exacts » ne vaut plus pour une area avec piège (comme le donjon). Voisins :
+  world, mobs, goblin, dungeon, treasure, judgment, view, diagnostics, focus, winch, team, session, wiki : ✅.
+- **Vérification** : ✅ 5 sessions à 3 (seeds de référence) : ~3 pièges générés, ~2,8 ouverts, les 5 mobs toujours tués
+  (70–250 s par piège) ; profondeur 212,8 (215,4 après la correction ci-dessous, 0 blocage) contre 214,6 sans pièges, areas 4,0 partout. `--skills mixed` :
+  combat plus court (~110 s contre ~150 s). ❌→✅ seed 15838 : faux « BLOQUÉ » (Rouge au-dessus de la salle, mobs
+  coincés dessous, 15 s d'attente par mob) corrigé par l'abandon immédiat du mob inapprochable.
+- **Points fragiles** : les seeds de non-régression des areas ≥ 1 ne jouent plus exactement la même partie (cases de
+  salle vidées) ; un mineur qui tombe par le haut dans la salle se bat à 5 contre 1 ; ⚠️ pas regardé dans le
+  navigateur (coin noir, apparition des mobs).
+- **Mise à jour (fusion du seuil 60 %)** : simulation 3 × 5 avec pièges → 2 blocages (sans pièges : 0), corrigés dans
+  `src/sim/ai.js` (règles générales de l'IA, pas du piège) :
+  - seed 23757 (Rouge, area 3) : `explore` reprenait à chaque décision la galerie la plus proche de SA ligne → 153 ↔ 152
+    (le chemin de l'une passait par l'autre). Il garde maintenant `m.galleryRow` tant qu'elle est dans le pool. Puis le
+    chemin vers la ligne 153 passait par la ligne 151 (area 2) : `focusGoal` (« Plus profond ») le rappelait → `onTheWay`
+    vaut aussi pour la galerie (`m.exploring` et `galleryRow` dans l'area visée), comme pour une cible de minerai ;
+  - seed 15838 (Bleu, t 3425) : galeries restantes toutes sous `depthCap` → « Plus rien à explorer » ~100 s avec
+    45 de charge. S'il reste des lignes non finies plus bas que le plafond, il remonte (« fin de session »). Une area
+    vraiment finie garde l'ancien comportement.
+  - **Tests** : `team.test.js` +2 (seeds 23757 et 15838 à 3, aucun blocage) ; trap, world, mobs, dungeon, winch,
+    session, focus, diagnostics, team, wiki : 120/120 ✅.
+  - **Vérification** : ✅ 3 × 5 : areas 3,0, profondeur 192,0, 0 blocage (sans pièges : 3,6 / 199,8) ; `--skills
+    mixed` : 3,6 / 201,0, 0 blocage (sans pièges : 4,0 / 212,8). ⚠️ les deux corrections changent l'IA pour toutes
+    les parties (l'engagement sur la galerie surtout) : à surveiller.
