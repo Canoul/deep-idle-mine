@@ -37,6 +37,13 @@
     <h2>Où miner</h2>
     <div class="seg mineModes" id="mineModes"></div>
   </div>
+  <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
+  <div class="card" id="judgmentCard" hidden>
+    <h2><i data-pxi="radiance"></i>Ange contre Démon</h2>
+    <p class="mut small">L'effort de tous les mineurs : chaque résidu rapporté au coffre remplit la jauge de son camp.</p>
+    <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
+    <p class="mut small">Les résidus angéliques et démoniaques se trouvent dans la roche à partir de l'area 4. Une jauge pleine ouvre la tour de son camp pendant quelques heures : au sommet, un boss garde un coffre.</p>
+  </div>
   <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
   <div class="card miCard" id="miCard" hidden>
     <h2>Mine instantanée</h2>
@@ -221,13 +228,6 @@
     <div id="skillHead" class="skHead"></div>
     <div id="skillTrees" class="skTrees"></div>
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
-  </div>
-</section>
-<section class="view" data-view="jugement" hidden>
-  <div class="furnWrap">
-    <div class="invHead"><h1><i data-pxi="radiance"></i>Jugement</h1><span class="mut small">L'effort de tous les mineurs : chaque résidu rapporté au coffre remplit la jauge de son camp.</span></div>
-    <div class="card"><h2>Ange contre Démon</h2><div id="judgmentBody"><p class="mut small">Chargement…</p></div></div>
-    <p class="mut small">Les résidus angéliques et démoniaques se trouvent dans la roche à partir de l'area 4. Une jauge pleine ouvre la tour de son camp pendant quelques heures : au sommet, un boss garde un coffre.</p>
   </div>
 </section>
 <section class="view" data-view="social" hidden>

@@ -35,7 +35,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 (0,5 % chacun, poids 6). Rapportés au coffre, ils
-    remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans l'onglet **Jugement** (3e).
+    remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, 15 min de jeu : creuser une tour 15 × 30
     (stonebrick 6 s, 5 % indestructible) jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier

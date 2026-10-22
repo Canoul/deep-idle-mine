@@ -7,7 +7,6 @@ import { pxi } from './pxicons.js';
 export const TABS = [
   { id:'lobby',      label:'Lobby',      icon:'house',     ready:true  },   // groupe, préférences, lancer (lecture seule pendant une session)
   { id:'session',    label:'Session',    icon:'pickaxe',   ready:true  },   // la mine en cours, puis le bilan
-  { id:'jugement',   label:'Jugement',   icon:'radiance',  ready:true  },   // jauges Ange / Démon, tours ouvertes (src/ui/judgment.js)
   { id:'inventaire', label:'Inventaire', icon:'bag',       ready:true  },
   { id:'stuff',      label:'Stuff',      icon:'helmet',    ready:true  },
   { id:'craft',      label:'Craft',      icon:'hammer',    ready:true  },
@@ -35,6 +34,7 @@ const isTab = id => TABS.some(t => t.id === id);
 export function pickTab(hash, saved){
   const h = String(hash||'').replace(/^#/, '').toLowerCase();
   if(isTab(h)) return h;
+  if(h === 'jugement') return 'lobby';             // ancien onglet Jugement : dans le Lobby depuis le 22/10 (« Où miner »)
   if(h === 'mine') return 'session';                 // ancienne adresse de l'onglet Mine (lobby + session, séparés depuis)
   if(h.startsWith('rejoindre=')) return 'lobby';     // lien d'invitation à un groupe
   if(isTab(saved)) return saved;

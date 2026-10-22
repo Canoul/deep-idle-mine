@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Le Jugement passe dans le Lobby
+- **Pour le joueur** : plus d'onglet Jugement dans la barre. Dans le **Lobby**, « Où miner » propose **Mine, Mine
+  instantanée, ⚖ Jugement** : Jugement affiche les deux jauges et l'état des tours à la place de l'équipe. Quand une tour
+  est ouverte, « Choisir la tour » la sélectionne directement ; un point sur l'onglet Lobby et « ● tour ouverte » sur
+  le bouton le signalent. L'ancien lien `#jugement` mène au Lobby, sur les jauges. Social reprend la touche « = ».
+- **Décisions** : Jugement dans le Lobby (Geoffrey).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Identification : la qualité seule, plus de stats
 - **Pour le joueur** : identifier une pièce lui donne toujours une qualité (R1 Utile à R7 Légendaire : titre et couleur
   du nom), mais **plus aucune stat en plus**. Le tableau des qualités dans l'onglet ne montre plus que les chances.

@@ -1273,3 +1273,13 @@ Règles (voir CLAUDE.md) :
 
 - **Fusion avec Ange vs Démon (22/10)** : conflits `src/meta/piece.js` (gardé `rollLines` / `rollChestQuality` / `rollRune` de main ; `rollIdentity` = `{ q }` ; `sanitizePiece` : `sanitizeLines` d'abord, sinon qualité seule, rune revérifiée) et `tests/amelioration.test.js` (tests de main gardés, titre du test identifier « sans lignes »). amelioration, rarity, rune, anticheat rune + upgrade : 44/44 ✅.
 
+### Jugement dans le Lobby (Geoffrey) — branche `geoffrey/jugement-lobby`, en ligne le 22/10
+- `index.html` : section `data-view="jugement"` retirée ; carte `#judgmentCard` (même `#judgmentBody`) dans la colonne
+  gauche du Lobby. `src/ui/nav.js` : onglet retiré, `pickTab('#jugement')` → lobby. `src/ui/lobby.js` : `st.view`
+  ('jugement' ou null), bouton `data-view` inséré après les modes non-tour, `showJudgment()`, `pickMode(mode)` ;
+  cartes équipe / préférences / MI / dev cachées en vue Jugement. `src/ui/judgment.js` : « Choisir la tour »
+  (`onTower(side)`) au lieu de « Aller au Lobby ». `src/main.js` : `wantJudgment` (hash lu avant la navigation),
+  badge sur `lobby`, `judgmentPending` passé au lobby. Le serveur ne change pas (Jugement n'est pas un mode).
+- Tests : nav (ordre des onglets, #jugement), lobby, judgment : 25/25 ✅. Chromium 1440×900 et 390×844 : bouton,
+  carte, retour à Mine, lien #jugement ✅, aucune erreur. ⚠️ Pas vu à l'écran : une tour ouverte (« Choisir la tour »).
+
