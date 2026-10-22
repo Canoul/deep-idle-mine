@@ -6,12 +6,12 @@ import { INSTANT_MINE as MI, ITEMS, TEXTURES, IDS, BLOCKS } from '../src/config.
 import { rarityOf } from '../src/meta/rarity.js';
 import { genInstantMine, spawnColumns } from '../src/sim/instant/world.js';
 import { newInstant, tickInstant, runInstant, leaveInstant, endInstant, INSTANT_TICKS, instantItems } from '../src/sim/instant/session.js';
-import { plan } from '../src/sim/instant/ai.js';
+import { plan, miSupported } from '../src/sim/instant/ai.js';
 
 const players = n => Array.from({ length:n }, (_, i) => ({ name:'J'+i, account:'acc'+i }));
 const count = (W, id) => W.tiles.slice(1).reduce((a, r) => a + r.filter(v => v === id).length, 0);
 
-test('MI : composition = 100 %, que des minerais connus, plumes 1 à 5', () => {
+test('MI : composition = 100 %, que des minerais connus, plumes 1 à 2', () => {
   const total = Object.values(MI.comp).reduce((a, b) => a + b, 0) + MI.feather;
   assert.equal(total, 100);
   for(const k of Object.keys(MI.comp)) assert.ok(IDS[k] > 0, k);
@@ -30,14 +30,15 @@ test('MI : Plume d\'ange, objet rare qui s\'empile, textures de l\'objet et du t
 
 /* ---------- génération ---------- */
 
-test('MI génération : 50×50 sous une ligne de surface vide, composition exacte, plumes 1 à 5, même seed = même mine', () => {
+test('MI génération : 50×50 sous une ligne de surface vide, composition exacte, plumes 1 à 2, même seed = même mine', () => {
   const A = genInstantMine(42), B = genInstantMine(42), C = genInstantMine(43);
   assert.equal(A.tiles.length, MI.h + 1);
   assert.ok(A.tiles[0].every(v => v === 0));
   assert.equal(count(A, IDS.coal), 500); assert.equal(count(A, IDS.iron), 1000); assert.equal(count(A, IDS.gold), 975);
   assert.equal(A.feathers.size, 25);
   for(const [k, n] of A.feathers){
-    assert.ok(n >= 1 && n <= 5);
+    assert.ok(n >= MI.featherMin && n <= MI.featherMax);
+    assert.ok(n >= 1 && n <= 2, 'tas de 1 à 2 plumes (22/10)');
     const x = k % A.w, y = (k - x) / A.w;
     assert.ok(y >= 1 && A.tiles[y][x] === 0, 'un tas est une case vide');
   }
@@ -90,6 +91,48 @@ test('MI : 20 mineurs se dispersent (peu de blocs disputés, butins proches)', (
   assert.ok(G.stats.mined > 0.7 * 2500, `minés ${G.stats.mined}`);
   assert.ok(G.stats.contested < 50, `disputés ${G.stats.contested}`);
   assert.ok(Math.min(...per) > 0.8 * Math.max(...per), per.join(','));
+});
+
+/* ---------- gravité et échelles (22/10) ---------- */
+
+test('MI gravité : jamais en l\'air sans tomber, ne monte que par une échelle (20 mineurs)', () => {
+  let falls = 0, climbs = 0;
+  const G = runInstant(13, { miners:players(20), onTick(G){
+    for(const m of G.miners){
+      const a = m.action;
+      if(!a) continue;
+      if(!miSupported(G, m.x, m.y)) assert.ok(a.type === 'move', `${m.name} en l'air : ${a.type} (${m.x},${m.y})`);
+      if(a.type === 'move' && a.data.y === m.y + 1 && a.data.fall) falls++;
+      if(a.type === 'move' && a.data.y < m.y){ climbs++; assert.ok(G.ladder[m.y][m.x], `${m.name} monte sans échelle`); }
+    }
+  } });
+  assert.ok(falls > 0 && climbs > 0, `chutes ${falls}, montées ${climbs}`);
+  assert.ok(G.stats.ladders > 0);
+  assert.equal(G.summary.shares.reduce((a, s) => a + s.stats.ladders, 0), G.stats.ladders);
+});
+
+test('MI gravité : un mineur sans sol tombe jusqu\'au premier appui', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  for(let y = 1; y <= 6; y++) G.tiles[y][10] = 0;
+  G.tiles[7][10] = IDS.iron; G.feathers.clear();
+  m.x = 10; m.y = 0;
+  tickInstant(G);
+  assert.equal(m.status, 'Tombe');
+  for(let i = 0; i < 10; i++) tickInstant(G);
+  assert.equal(m.y, 6, 'posé sur le fer de la ligne 7');
+});
+
+test('MI échelles : seul au fond d\'une mine vide, il pose des échelles pour aller chercher le dernier bloc en haut', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  for(let y = 1; y <= G.h; y++) G.tiles[y].fill(0);
+  G.tiles[1][20] = IDS.gold; G.feathers.clear();
+  m.x = 5; m.y = G.h;
+  for(let i = 0; i < 2000 && G.tiles[1][20]; i++) tickInstant(G);
+  assert.equal(G.tiles[1][20], 0, 'bloc miné');
+  assert.equal(m.stats.mined, 1);
+  assert.ok(m.stats.ladders >= G.h - 2, `échelles posées : ${m.stats.ladders}`);
 });
 
 /* ---------- bloc disputé ---------- */

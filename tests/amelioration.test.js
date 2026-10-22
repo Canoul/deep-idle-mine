@@ -17,9 +17,9 @@ const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de 
 let n = 0; const id = () => 'op-amelio-' + (++n);
 const fixed = v => () => v;                                   // « hasard » fixe pour les tests
 const seq = vs => { let i = 0; return () => vs[i++ % vs.length]; };
-function setup(picks = 2, mats = 0){
+function setup(picks = 2, feathers = 0, stones = feathers){
   const inv = createInventory(); addItem(inv, PICK, picks);
-  if(mats) addAll(inv, { [FEATHER]:mats, [STONE]:mats });
+  if(feathers || stones) addAll(inv, { [FEATHER]:feathers, [STONE]:stones });
   return { inv, uids: inv.slots.filter(s => s?.item === PICK).map(s => s.uid) };
 }
 
@@ -72,7 +72,12 @@ test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus tot
   assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 26);   // 25 × 1,03 = 25,75 → 26
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.1 }, 'un simple nom d\'objet : comme avant');
   assert.equal(statsOf([p]).mineSpeed.total, 1.13);
-  assert.deepEqual(statLines(p), ['Vitesse de minage +0,13', 'Fortune +1,2 %']);
+  /* affichage : l'effet de l'objet, puis chaque ligne tirée à part, même sur la même stat (22/10) */
+  assert.deepEqual(statLines(p), ['Vitesse de minage +0,1', 'Vitesse de minage +0,03', 'Fortune +1,2 %']);
+  const twice = { item:PICK, uid:1, q:4, lines:[{ stat:'fortune', pct:33 }, { stat:'fortune', pct:25 }] };   // 42,9 x et 32,5 x
+  assert.deepEqual(statLines(twice), ['Vitesse de minage +0,1', 'Fortune +1,2 %', 'Fortune +0,9 %']);
+  assert.equal(pieceBonus(twice).stats.fortune, 2.1, 'en session : la somme');
+  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,107', 'Fortune +1,3 %', 'Fortune +1 %'], 'niveau compris');
 });
 
 test('nom affiché : « Excellent : Pioche en pierre +2 », couleur de la qualité ; non identifiée : le nom seul', () => {
@@ -129,18 +134,18 @@ test('identifier : une demande renvoyée ne tire pas une seconde fois et ne sacr
 /* ---------- améliorer ---------- */
 
 test('améliorer : coût du palier, +1 à +3, puis maximum', () => {
-  const { inv, uids:[a] } = setup(1, 15);
+  const { inv, uids:[a] } = setup(1, 100, 15);
   for(const lv of [1, 2, 3]){
     const r = upgrade(inv, { uid:a, opId:id() }, fixed(0));
     assert.equal(r.success, true); assert.equal(r.piece.plus, lv);
   }
-  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // 3 + 5 + 7
+  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // plumes 20 + 30 + 50, cristaux 3 + 5 + 7
   assert.equal(nextLevel(inv.slots.find(s => s?.uid === a)), null);
   assert.equal(upgrade(inv, { uid:a, opId:id() }, fixed(0)).error, 'maxed');
 });
 
 test('améliorer : un échec ne coûte que les matériaux ; sans matériaux, refusé sans rien consommer', () => {
-  const { inv, uids:[a] } = setup(1, 8);
+  const { inv, uids:[a] } = setup(1, 50, 8);
   upgrade(inv, { uid:a, opId:id() }, fixed(0));                       // +1 (100 %)
   const r = upgrade(inv, { uid:a, opId:id() }, fixed(0.97));          // +2 : 95 % → raté
   assert.equal(r.success, false); assert.equal(r.piece.plus, 1);
@@ -150,17 +155,17 @@ test('améliorer : un échec ne coûte que les matériaux ; sans matériaux, ref
 });
 
 test('améliorer : une demande renvoyée ne consomme pas deux fois et redonne le même résultat', () => {
-  const { inv, uids:[a] } = setup(1, 20), op = { uid:a, opId:id() };
+  const { inv, uids:[a] } = setup(1, 40, 20), op = { uid:a, opId:id() };
   upgrade(inv, op, fixed(0));
   const again = upgrade(inv, op, fixed(0));
   assert.equal(again.repeated, true); assert.equal(again.piece.plus, 1);
-  assert.equal(countOf(inv, FEATHER), 17);
+  assert.equal(countOf(inv, FEATHER), 20);
 });
 
 /* ---------- sauvegarde, stuff, session ---------- */
 
 test('sauvegarde : qualité, lignes et niveau gardés ; équiper puis retirer les garde aussi', () => {
-  const { inv, uids:[a, b] } = setup(2, 3);
+  const { inv, uids:[a, b] } = setup(2, 20, 3);
   identify(inv, { uid:a, sacrifice:b, opId:id() }, fixed(0.5));
   upgrade(inv, { uid:a, opId:id() }, fixed(0));
   const before = JSON.stringify(inv.slots.find(s => s?.uid === a));
@@ -264,9 +269,9 @@ test('sans les nouvelles stats, le hasard de la partie ne bouge pas (G.gearRng j
 test('identifier + améliorer + équiper : 300 suites au hasard, matière conservée, pièces uniques', () => {
   const r = mulberry32(17);
   for(let t = 0; t < 300; t++){
-    const inv = createInventory(); addItem(inv, PICK, 4); addAll(inv, { [FEATHER]:30, [STONE]:30 });
+    const inv = createInventory(); addItem(inv, PICK, 4); addAll(inv, { [FEATHER]:200, [STONE]:30 });
     let st = createStuff(); const ids = [];
-    let sacrificed = 0, spent = 0;
+    let sacrificed = 0, spent = 0, spentS = 0;
     for(let k = 0; k < 20; k++){
       const opId = ids.length && r() < 0.25 ? ids[Math.floor(r() * ids.length)] : `op-${t}-${k}`;
       ids.push(opId);
@@ -274,14 +279,14 @@ test('identifier + améliorer + équiper : 300 suites au hasard, matière conser
       const pick = () => r() < 0.85 && all.length ? all[Math.floor(r() * all.length)] : [999, -1, 1.5, '1', null][Math.floor(r() * 5)];
       const a = r();
       if(a < 0.4){ const res = identify(inv, { uid:pick(), sacrifice:pick(), opId }, r); if(res.ok && !res.repeated) sacrificed++; }
-      else if(a < 0.75){ const f = countOf(inv, FEATHER); const res = upgrade(inv, { uid:pick(), opId }, r); if(res.ok && !res.repeated) spent += f - countOf(inv, FEATHER); }
+      else if(a < 0.75){ const f = countOf(inv, FEATHER), c = countOf(inv, STONE); const res = upgrade(inv, { uid:pick(), opId }, r); if(res.ok && !res.repeated){ spent += f - countOf(inv, FEATHER); spentS += c - countOf(inv, STONE); } }
       else stuffOp(inv, st, { action: a < 0.9 ? 'equip' : 'unequip', slot:'pioche', uid:pick(), opId });
       if(r() < 0.2){ const inv2 = deserialize(serialize(inv)); st = sanitizeStuff(JSON.parse(JSON.stringify(st)), inv2); Object.assign(inv, inv2); }
     }
     const worn = Object.values(st.worn).filter(Boolean);
     assert.equal(countOf(inv, PICK) + worn.length + sacrificed, 4, `essai ${t} : pioches`);
-    assert.equal(countOf(inv, FEATHER) + spent, 30, `essai ${t} : plumes`);
-    assert.equal(countOf(inv, FEATHER), countOf(inv, STONE));
+    assert.equal(countOf(inv, FEATHER) + spent, 200, `essai ${t} : plumes`);
+    assert.equal(countOf(inv, STONE) + spentS, 30, `essai ${t} : cristaux`);
     const uids = [...inv.slots.filter(s => s?.uid != null).map(s => s.uid), ...worn.map(p => p.uid)];
     assert.equal(new Set(uids).size, uids.length);
   }
