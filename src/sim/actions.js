@@ -157,12 +157,13 @@ export function finishAction(G,m,a){
   }
 }
 
-/* chute que provoquerait un pas (dx,dy) : en marchant dans un trou, ou en creusant le bloc sous ses pieds.
-   null si le pas ne fait pas tomber. */
+/* chute que provoquerait un pas (dx,dy) : en marchant dans un trou, en creusant le bloc sous ses pieds, ou en
+   descendant de son échelle dans un trou (le puits d'un autre, sans échelle). null si le pas ne fait pas tomber. */
 export function stepFall(G,m,dx,dy){
   const nx=m.x+dx, ny=m.y+dy;
   if(dy===0 && isAir(G,nx,ny) && !supported(G,nx,ny)) return fallInfo(G,nx,ny);
   if(dx===0 && dy===1 && !isAir(G,nx,ny) && !G.ladder[m.y][m.x]){ const f=fallInfo(G,nx,ny); return {...f, n:f.n+1}; }
+  if(dx===0 && dy===1 && isAir(G,nx,ny) && !supported(G,nx,ny)) return fallInfo(G,nx,ny);
   return null;
 }
 /* le mineur ne se jette jamais en connaissance de cause dans un trou de plus de CFG.maxFall cases */
