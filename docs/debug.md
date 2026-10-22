@@ -1582,3 +1582,17 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : les seeds de non-régression des areas ≥ 1 ne jouent plus exactement la même partie (cases de
   salle vidées) ; un mineur qui tombe par le haut dans la salle se bat à 5 contre 1 ; ⚠️ pas regardé dans le
   navigateur (coin noir, apparition des mobs).
+- **Mise à jour (fusion du seuil 60 %)** : simulation 3 × 5 avec pièges → 2 blocages (sans pièges : 0), corrigés dans
+  `src/sim/ai.js` (règles générales de l'IA, pas du piège) :
+  - seed 23757 (Rouge, area 3) : `explore` reprenait à chaque décision la galerie la plus proche de SA ligne → 153 ↔ 152
+    (le chemin de l'une passait par l'autre). Il garde maintenant `m.galleryRow` tant qu'elle est dans le pool. Puis le
+    chemin vers la ligne 153 passait par la ligne 151 (area 2) : `focusGoal` (« Plus profond ») le rappelait → `onTheWay`
+    vaut aussi pour la galerie (`m.exploring` et `galleryRow` dans l'area visée), comme pour une cible de minerai ;
+  - seed 15838 (Bleu, t 3425) : galeries restantes toutes sous `depthCap` → « Plus rien à explorer » ~100 s avec
+    45 de charge. S'il reste des lignes non finies plus bas que le plafond, il remonte (« fin de session »). Une area
+    vraiment finie garde l'ancien comportement.
+  - **Tests** : `team.test.js` +2 (seeds 23757 et 15838 à 3, aucun blocage) ; trap, world, mobs, dungeon, winch,
+    session, focus, diagnostics, team, wiki : 120/120 ✅.
+  - **Vérification** : ✅ 3 × 5 : areas 3,0, profondeur 192,0, 0 blocage (sans pièges : 3,6 / 199,8) ; `--skills
+    mixed` : 3,6 / 201,0, 0 blocage (sans pièges : 4,0 / 212,8). ⚠️ les deux corrections changent l'IA pour toutes
+    les parties (l'engagement sur la galerie surtout) : à surveiller.

@@ -59,12 +59,20 @@ function explore(G,m,k,cap=Infinity){
   const primary=[], secondary=[];
   for(let r=1;r<=AREA_H;r++){ const y=base+r; if(y>cap||rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
   let pool = primary.length ? primary : secondary;
-  if(!pool.length){ m.status='Plus rien à explorer'; idle(m,1); return; }
+  if(!pool.length){
+    /* fin de session : il reste des galeries, mais toutes trop profondes pour le temps qu'il reste. Il remonte déposer
+       au lieu d'attendre la fin sur place, le sac plein (seed 15838 : ~100 s immobile avec 45 de chargement) */
+    let deeper=false; for(let r=1;r<=AREA_H && !deeper;r++){ const y=base+r; deeper = y>cap && !rowDone(G,y) && !m.skipRows.has(y); }
+    if(deeper && m.y>0){ m.mode='return'; m.reason='fin de session'; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : fin de session`); return decideReturn(G,m); }
+    m.status='Plus rien à explorer'; idle(m,1); return;
+  }
   const free = pool.filter(y=>!rowTaken(G,m,y));     // lignes que personne d'autre ne creuse
   if(free.length) pool=free;
   const quiet = pool.filter(y=>!rowCrowd(G,m,y));    // … et où aucun autre mineur ne se trouve (±1 ligne)
   if(quiet.length) pool=quiet;
-  const target = pool.reduce((a,b)=>Math.abs(b-m.y)<Math.abs(a-m.y)?b:a);
+  /* engagement : il garde la galerie choisie tant qu'elle reste possible. La plus proche de SA ligne changeait à chaque
+     pas quand l'itinéraire passait par une autre ligne de galerie (153 → 152 → 153… : seed 23757, trou d'un piège vidé) */
+  const target = pool.includes(m.galleryRow) ? m.galleryRow : pool.reduce((a,b)=>Math.abs(b-m.y)<Math.abs(a-m.y)?b:a);
   m.galleryRow=target;
   m.status = target===m.y ? 'Creuse une galerie' : 'Change de galerie';
   /* Objectif : se tenir SUR la ligne de la galerie, à côté d'un bloc à creuser, par un itinéraire où il tient toujours. */
@@ -206,8 +214,9 @@ function decideWork(G,m){
   const goal=focusGoal(G,m);
   // en route vers une cible de l'area visée, il peut déborder sur l'area voisine (chemin par la ligne du dessus) :
   // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière). Vaut pour le focus
-  // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai)
-  const onTheWay = goal!==null && m.target && areaOf(m.target.y)===goal;
+  // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai), et pour la
+  // galerie qu'il va creuser (seed 23757 : galerie en haut de l'area 3, chemin par la dernière ligne de l'area 2)
+  const onTheWay = goal!==null && ((m.target && areaOf(m.target.y)===goal) || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;

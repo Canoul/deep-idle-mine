@@ -56,3 +56,14 @@ test('session complète à 3 : aucun blocage, coffre commun = somme des contribu
   }
   assert.ok(G.unlockedAreas-1 >= 3, `areas débloquées : ${G.unlockedAreas-1}`);
 });
+
+/* seeds « bug » à 3 (22/10, pièges + seuil 60 %) : 23757 = boucle entre deux galeries (la plus proche changeait à chaque
+   pas, puis le focus « Plus profond » le rappelait quand le chemin passait par l'area du dessus) ; 15838 = fin de
+   session, galeries toutes trop profondes : il attendait sur place, le sac plein, au lieu de remonter */
+for(const seed of [23757, 15838]){
+  test(`session complète à 3, seed ${seed} : aucun blocage`, () => {
+    const det=stuckDetector();
+    runSession(seed, { miners:3, onTick:det.onTick });
+    assert.deepEqual(det.result(), []);
+  });
+}

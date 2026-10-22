@@ -26,8 +26,12 @@ Modèle d'entrée :
 - **Décisions** : 2 tirages de 25 % par area ; seul l'intérieur est caché (la paroi se découvre comme de la roche) ;
   barbare « comme au donjon » ; physique normale : les mobs ne grimpent pas, un trou en hauteur les laisse dans leur
   salle (le mineur choisit alors selon son réglage de combat).
-- **À suivre** : ~3 pièges ouverts par session à 3, chacun prend 1 à 4 min de combat ; profondeur moyenne presque
-  inchangée (215,4 contre 214,6 sans pièges), aucun blocage. À juger en jeu : trop facile ? trop long ?
+- **IA corrigée au passage** (deux défauts que les trous des pièges faisaient apparaître) : un mineur pouvait
+  tourner en rond entre deux galeries à la limite de deux areas ; en fin de session, s'il n'avait plus le temps
+  de creuser plus bas, il attendait sur place, le sac plein, au lieu de remonter déposer.
+- **À suivre** : ~3 pièges ouverts par session à 3, chacun prend 1 à 4 min de combat. Avec le seuil à 60 %, les
+  pièges coûtent ~0,5 area par session (sans skills 3,0 au lieu de 3,6 ; skills mélangés 3,6 au lieu de 4,0),
+  aucun blocage. À juger en jeu : trop dur ? trop long ?
 
 ## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture d'une area à 60 %
 - **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
