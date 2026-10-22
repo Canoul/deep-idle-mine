@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine instantanée : galeries dans tous les sens, tas de plumes prioritaires
+- **Pour le joueur** : les mineurs ne creusent plus tous droit vers le bas : chacun suit un cap qu'il change de temps en temps. Un tas de plumes découvert à 8 cases ou moins passe avant tout, même enfermé dans la roche : le mineur le plus proche creuse vers lui.
+- **Décisions** : la pénalité de proximité n'était pas la cause (testée à 0 : rien ne change). La cause : un bloc voisin ne coûte rien, la gravité et la montée coûteuse font le reste.
+- **À suivre** : régler `headingWeight` / `turnBlocks` si les galeries sont trop droites ou trop erratiques.
+- **État** : 🧪 sur la branche `geoffrey/mi-galeries` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — « Blocage au treuil » : fausse alerte du détecteur
 - **Pour le joueur** : rien ne change. Le logisticien n'était pas coincé : il redescendait au front par le treuil, y
   arrivait en fin de session et remontait aussitôt. C'est l'outil de test (détecteur de blocage des simulations) qui
