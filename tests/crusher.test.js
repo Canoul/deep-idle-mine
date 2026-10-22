@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { CRUSHER, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { createInventory, addAll, countOf, serialize } from '../src/meta/inventory.js';
-import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher, dropOdds, aboutTime } from '../src/meta/crusher.js';
+import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher, dropOdds } from '../src/meta/crusher.js';
 import { rollLoot } from '../src/meta/loot.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
@@ -29,11 +29,13 @@ test('famille Bloc : terre, pierre, pierre dure ; seuls eux se concassent', () =
 test('tables : les chances demandées par le créateur', () => {
   const ch = (b, item) => CRUSHER.loot[b].oneOf.flatMap(f => f.items).find(i => i.item === item)?.chance;
   for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']){
-    assert.equal(ch('Terre', g), 0.001); assert.equal(ch('Pierre', g), 0.0015); assert.equal(ch('Pierre dure', g), 0.0012);
+    assert.equal(ch('Terre', g), 0.002); assert.equal(ch('Pierre', g), 0.003); assert.equal(ch('Pierre dure', g), 0.004);
   }
-  assert.equal(ch('Terre', 'Treasure T1'), 0.0001);
-  assert.equal(ch('Pierre', 'Treasure T2'), 0.00015);
-  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.0002);
+  /* par lot de 100 blocs (22/10) : une gemme 0,6 / 0,9 / 1,2 %, treasure 0,5 / 0,3 / 0,5 % */
+  for(const [b, gem] of [['Terre', 0.006], ['Pierre', 0.009], ['Pierre dure', 0.012]]) assert.ok(Math.abs(dropOdds(b)[0].chance - gem) < 1e-12, b);
+  assert.equal(ch('Terre', 'Treasure T1'), 0.005);
+  assert.equal(ch('Pierre', 'Treasure T2'), 0.003);
+  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.005);
 });
 
 test('poser : bloc seulement, une sorte par case, quantités invalides refusées, rien ne bouge en cas de refus', () => {
@@ -103,21 +105,18 @@ test('fréquence du butin proche des chances (200 000 lots de terre, hasard dét
   advance(c, N * MIN, rng);
   for(const s of c.out) if(s) got[s.item] = s.qty;
   assert.equal(c.crushed, N);
-  for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 120 && got[g] < 290, `${g} : ${got[g]} (attendu ~200)`);
-  assert.ok(got['Treasure T1'] > 5 && got['Treasure T1'] < 45, `Treasure T1 : ${got['Treasure T1']} (attendu ~20)`);
+  for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 320 && got[g] < 480, `${g} : ${got[g]} (attendu ~400)`);
+  assert.ok(got['Treasure T1'] > 880 && got['Treasure T1'] < 1120, `Treasure T1 : ${got['Treasure T1']} (attendu ~1000)`);
 });
 
-test('aide « ? » : les chances affichées sont celles du tirage (gemmes additionnées, 1 lot sur N, temps moyen)', () => {
+test('aide « ? » : les chances affichées sont celles du tirage (gemmes additionnées) ; ni moyenne ni temps estimé', () => {
   const [gem, tre] = dropOdds('Terre');
   assert.equal(gem.family, 'gem');
-  assert.ok(Math.abs(gem.chance - 0.003) < 1e-12);                 // 3 gemmes à 0,1 % = 0,3 % d'en avoir une
-  assert.equal(Math.round(gem.every), 333);
-  assert.equal(aboutTime(gem.sec), '5 h 30');                         // 333 lots d'une minute
-  assert.equal(aboutTime(gem.items[0].sec), '16 h 40');
+  assert.ok(Math.abs(gem.chance - 0.006) < 1e-12);                 // 3 gemmes à 0,2 % = 0,6 % d'en avoir une
   assert.equal(tre.items[0].item, 'Treasure T1');
-  assert.equal(aboutTime(tre.sec), '7 jours');
+  assert.equal(tre.chance, 0.005);
+  for(const o of [gem, tre, ...gem.items]) assert.deepEqual(Object.keys(o).filter(k => k === 'every' || k === 'sec'), []);
   assert.deepEqual(dropOdds('Fer'), []);
-  assert.equal(aboutTime(90), '2 min'); assert.equal(aboutTime(Infinity), 'jamais');
   /* contrôle par le vrai tirage : 1 million de lots de pierre, toutes familles */
   for(const block of Object.keys(CRUSHER.loot)){
     const rng = mulberry32(7), N = 1_000_000, got = {};

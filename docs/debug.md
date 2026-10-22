@@ -1313,3 +1313,12 @@ Règles (voir CLAUDE.md) :
   maintenant ») : mine noire, découverte autour du mineur, caméra qui suit, aucune erreur ✅.
 - ⚠️ Pas de déplacement libre de la caméra en MI (molette) : elle suit toujours ton mineur.
 
+### Concasseur : chances du créateur, plus de moyenne ni de temps estimé (Geoffrey) — branche `geoffrey/concasseur-taux`, ✅ en ligne le 22/10
+- `CRUSHER.loot` (`src/config.js`) : gemmes 0,002 / 0,003 / 0,004 par gemme (= 0,6 / 0,9 / 1,2 % d'en avoir une), treasure
+  0,005 / 0,003 / 0,005. `dropOdds` ne renvoie plus que `chance` (plus de `every` ni `sec`) ; `aboutTime` supprimé.
+  Retirés : « 1 lot sur N · ≈ toutes les X » et la phrase sur les moyennes dans le « ? » (`src/ui/crusher.js`), colonnes
+  « En moyenne » / « Soit environ » et le paragraphe sur les moyennes du wiki (`src/wiki/wiki.js`, `wiki.html`).
+- Tests : crusher (chances, aide sans moyenne, fréquence sur 200 000 et 1 million de lots), wiki, anticheat : verts.
+  ✅ Chromium : « ? » et wiki affichés sans moyenne, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu la MI cachée / caméra : conflits seulement dans les 3 docs
+  (journal, debug, état du projet : tout gardé) ; 145 tests du sujet + anticheat 71/71 verts après fusion.

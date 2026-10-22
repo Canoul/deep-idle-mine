@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Concasseur : nouvelles chances, plus de moyennes
+- **Pour le joueur** : chances par lot de 100 blocs : **terre** gemme 0,6 % / treasure 0,5 % ; **pierre** 0,9 % / 0,3 % ;
+  **pierre dure** 1,2 % / 0,5 %. Dans l'aide « ? » et le wiki, on ne voit plus que la chance par lot : plus de
+  « 1 lot sur N », de moyenne ni de temps estimé.
+- **Décisions** : ces chances (Geoffrey, 22/10). « Une gemme » = chance d'en avoir une, partagée à parts égales entre
+  rubis, jade et saphir (choix de lecture de Claude : 0,6 % = 3 × 0,2 %).
+- **À suivre** : le treasure devient 25 à 50 fois plus fréquent (≈ 1 par 60 sessions et par joueur, avant ≈ 2 000).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Mine instantanée : mine cachée et caméra de près
 - **Pour le joueur** :
   - la mine instantanée est **cachée au départ**, comme la mine normale : chaque mineur découvre les cases autour de
