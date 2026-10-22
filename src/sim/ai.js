@@ -8,7 +8,7 @@ import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, 
 import { log } from './log.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
-import { targetVal, dropDepleted, focusGoal, focusArea, activeOres, areaGood } from './focus.js';
+import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
@@ -228,7 +228,8 @@ function decideWork(G,m){
   // focus d'area : seules les cibles de cette area comptent (sinon il en sortirait, puis y reviendrait : oscillation).
   // focus minerai : pas de cible dans une area épuisée pour ses minerais visés (il y monterait, le focus le renverrait
   // aussitôt dans la sienne, et il recommencerait : va-et-vient sur l'échelle à la frontière, seed 770973224)
-  const A=focusArea(G,m), act=activeOres(m.prefs.focus);
+  // « Plus profond » : pareil, avec l'area la plus profonde débloquée (workArea)
+  const A=workArea(G,m), act=activeOres(m.prefs.focus);
   /* fin de session : rien sous la profondeur maximale du trajet, fixée au départ de la surface (il mine plus haut) */
   const cap=m.tripCap ?? Infinity;
   const inFocus = y => y<=cap && (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act));
@@ -286,10 +287,10 @@ function digDown(G,m){
   idle(m);
 }
 
-/* focus : l'area juste en dessous est hors du focus d'area, ou épuisée pour ses minerais visés → renvoie l'area où
+/* focus : l'area juste en dessous est hors du focus d'area (ou de « Plus profond »), ou épuisée pour ses minerais visés → renvoie l'area où
    rester (sinon null) */
 function focusStop(G,m){
-  const A=focusArea(G,m);
+  const A=workArea(G,m);
   if(A!==null) return areaOf(m.y+1)>A ? A : null;
   const act=activeOres(m.prefs.focus);
   if(!act.length) return null;

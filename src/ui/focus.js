@@ -2,7 +2,7 @@
    débloquées, trois modes (Aucun / Cibler / Uniquement). Lit l'état, ne le modifie jamais : un clic demande le
    changement au serveur (h.onChange), qui l'enregistre ; la partie l'applique au tick indiqué. */
 import { FOCUS } from '../config.js';
-import { focusOptions, areaOreLeft } from '../sim/focus.js';
+import { focusOptions, areaOreLeft, activeOres } from '../sim/focus.js';
 import { areaOf } from '../sim/world.js';
 
 const $ = id => document.getElementById(id);
@@ -66,7 +66,9 @@ export function setupFocusPanel(h){
     }
     html += '</div>';
     const where = Math.max(0, areaOf(m.y));
-    html += `<div class="mut small">${cur === null ? 'Descend jusqu\'à l\'area la plus profonde.'
+    const deep = activeOres(focus).length ? 'Focus minerai : l\'area la plus proche qui en a encore.'
+      : 'Rejoint l\'area la plus profonde et la suit à chaque déblocage.';
+    html += `<div class="mut small">${cur === null ? deep
       : cur === where ? `Reste dans l'area ${cur}.` : `Rejoint l'area ${cur}.`}</div>`;
     if(st.pending) html += '<div class="mut small">Envoi…</div>';
     return html + noticeHtml(m, 'area');
