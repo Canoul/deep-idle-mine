@@ -498,9 +498,9 @@ export const UPGRADE = {
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
   levels: [
-    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':3, 'Cristal de pleine lune':3 } },
-    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':5, 'Cristal de pleine lune':5 } },
-    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':7, 'Cristal de pleine lune':7 } },
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey)
+    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
+    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -585,7 +585,7 @@ export const INSTANT_MINE = {
   duration: 300,                       // s de jeu
   w: 50, h: 50,
   comp: { coal:20, iron:40, gold:39 }, feather: 1,
-  featherMin: 1, featherMax: 5,
+  featherMin: 1, featherMax: 2,                       // 22/10 (Geoffrey) : 1-2 par tas (avant 1-5)
   maxPerMine: 20,
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
@@ -635,7 +635,7 @@ export const PREF_OPTIONS = {
      le tacle pendant ce temps, il s'enfuit d'un coup à la surface.
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
-  areas: [5], chance: 0.2, size: 10, margin: 2, winchGap: 5, holeRows: 3,
+  areas: [4, 5], chance: 1, size: 10, margin: 2, winchGap: 5, holeRows: 3,
   boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,

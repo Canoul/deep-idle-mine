@@ -38,11 +38,13 @@ test('MI classement : le plus de blocs, puis le plus de plumes', () => {
 test('MI affichage : la copie du navigateur = la partie ; un mineur en marche glisse entre deux cases', () => {
   const G = newInstant(3, { miners:[{ name:'A', account:'a' }, { name:'B', account:'b' }] });
   for(let i = 0; i < 200; i++) tickInstant(G);
+  G.ladder[5][7] = 1; G.ladder[12][30] = 1;                             // des échelles (gravité, 22/10)
   const v = JSON.parse(JSON.stringify(createInstantViewer(G)()));      // passe par le réseau (JSON)
   const M = applyInstantView(v);
   assert.equal(M.mode, 'mi'); assert.equal(M.ticks, 200);
   assert.deepEqual(M.tiles.map(r => [...r]), G.tiles.map(r => [...r]));
   assert.deepEqual([...M.feathers], [...G.feathers]);
+  assert.deepEqual(M.ladder.map(r => [...r]), G.ladder.map(r => [...r]), 'échelles');
   assert.equal(M.miners.length, 2);
   assert.ok(JSON.stringify(v).length < 8000, `envoi ${JSON.stringify(v).length} octets`);
   assert.deepEqual(instantPos({ x:2, y:3, action:{ type:'move', t:0.5, dur:1, data:{ x:3, y:3 } } }), [2.5, 3]);

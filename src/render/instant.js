@@ -39,6 +39,7 @@ export function createInstantRenderer(cv){
       if(y === 0){ blit('sky', px, py, '#6cc3ee'); continue; }
       if(t === 0) blit('tunnel', px, py, '#2a1f18');
       else blit(BLOCKS[t].tex, px, py, BLOCKS[t].color);
+      if(G.ladder?.[y]?.[x] && t === 0) blit('ladder', px, py);
       if(G.feathers.has(y * G.w + x)) blit(MI.heapTex, px, py, '#f4f1ff');
     }
     /* blocs en cours de minage : fissure qui grandit avec l'avancée */

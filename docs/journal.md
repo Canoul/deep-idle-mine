@@ -18,6 +18,23 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine instantanée avec gravité, plumes, Amélioration, donjons partout
+- **Pour le joueur** :
+  - **Mine instantanée** : les mineurs ne volent plus. Ils tombent quand il n'y a rien sous eux et posent des
+    **échelles** pour remonter (illimitées, chacun peut prendre celles des autres). Pas d'étourdissement en cas de chute.
+  - **Tas de plumes d'ange** : 1 à 2 plumes par tas (avant 1 à 5).
+  - **Amélioration** : coût en plumes relevé à **20 / 30 / 50** pour +1 / +2 / +3 (cristaux inchangés : 3 / 5 / 7).
+  - **Identification** : on clique sur une case, puis sur une pièce pour l'y poser (n'importe laquelle) ; si les deux
+    pièces ne sont pas le même objet, le bouton reste grisé avec la raison. Les lignes tirées s'affichent **une par
+    une** (« Fortune +1,2 % · Fortune +0,9 % ») au lieu d'être additionnées.
+  - **Donjon** : il y en a un en **area 4 et un en area 5 à chaque partie** (avant : area 5, 20 %).
+- **Décisions** : celles ci-dessus (Geoffrey, 22/10). Choix de Claude à valider : en mine instantanée, pas de limite
+  de chute ni d'étourdissement.
+- **À suivre** : avec 1-2 plumes par tas et 100 plumes pour une pièce à +3, il faut beaucoup de mines instantanées
+  (mesuré : ≈ 2 à 5 plumes par joueur et par mine, voir debug.md). La vitesse de minage en % des pièces améliorées compte
+  maintenant aussi en mine instantanée.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Jules — Session : colonnes jusqu'en bas, surface de nouveau visible
 - **Pour le joueur** : pendant une session, les panneaux de gauche et de droite descendent jusqu'en bas de l'écran
   quand la barre d'action ne passe pas dessous (grands écrans) ; la mine montre de nouveau la surface et le ciel en

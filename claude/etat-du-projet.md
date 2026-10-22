@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 21/10/2026.*
+*Dernière mise à jour : 22/10/2026.*
 
 ---
 
@@ -48,7 +48,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **Donjon** (area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
+- **Donjon** (**un en area 4 et un en area 5 à chaque partie**, décision du 22/10 ; ancien : area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil), Barbare (provocation) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
@@ -56,9 +56,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
-  pièce + un exemplaire sacrifié → qualité R1 Utile à R7 Légendaire, 1 à 4 lignes de stats valant 10 à 55 % de la
+  pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé → qualité R1 Utile à R7 Légendaire, 1 à 4 lignes de stats valant 10 à 55 % de la
   valeur de l'objet en x, définitive) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
-  Plumes d'ange + Cristaux de pleine lune, un échec ne coûte que les matériaux) ; Enchantement plus tard. Nouvelles
+  plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les matériaux) ; lignes tirées
+  affichées une par une, même sur la même stat (22/10) ; Enchantement plus tard. Nouvelles
   stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte
   `q`, `lines`, `plus` (pas d'ID dérivé type 113:4 : les lignes sont tirées, chaque pièce est unique). Plumes
   d'ange : mine instantanée ; Cristaux de pleine lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
@@ -68,9 +69,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
   (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
-  **Plumes d'ange**, objet rare sans usage pour l'instant), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
+  **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
   IA à part (`src/sim/instant/`) : aucun minerai prioritaire, évite les autres mineurs, change de zone après 3 blocs
-  perdus, va chercher un tas de plumes à 3 pas ou moins. Côté serveur, c'est une session `mode: 'mi'` (même vie
+  perdus, va chercher un tas de plumes à 3 pas ou moins. **Gravité et échelles** depuis le 22/10 (ancien : il
+  volait) : il tombe sans appui, pose des échelles illimitées et partagées pour remonter, sans limite de chute ni
+  étourdissement (choix de Claude à valider) ; ≈ 2 à 5 plumes par joueur et par MI (moins à 20). Côté serveur, c'est une session `mode: 'mi'` (même vie
   qu'une session : partie en direct, Quitter = rien, versement unique), sans XP. Rappels à 30, 15, 5 min et 30 s.
   Équilibrage à surveiller : ≈ 40 fers et 39 ors par joueur et par MI.
 

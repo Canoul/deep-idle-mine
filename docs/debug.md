@@ -1130,3 +1130,42 @@ Règles (voir CLAUDE.md) :
   Une session déjà lancée garde ses stats figées jusqu'à la fin.
 - **Tests** : `tests/amelioration.test.js` (nouveau test du barème, fixtures au barème 2) ; suite complète + anticheat
   620/620.
+
+### Mine instantanée : gravité et échelles ; plumes 1-2 ; coûts d'amélioration ; identification ; donjons 100 % (Geoffrey) — branche `geoffrey/retours-22-10`, ✅ en ligne le 22/10
+- **MI gravité** (`src/sim/instant/ai.js` réécrit, `session.js`) : `G.ladder[y][x]` (Uint8Array par ligne) ; `miSupported`
+  = même règle que `supported` de la mine normale (vide dessous sans échelle ni sur la case ni juste dessous ; le fond
+  ligne h porte). `decide` : sans appui → action `move` d'une case vers le bas (`data.fall`, 1/CFG.fallSpeed). `plan` :
+  Dijkstra au temps sur les cases où il tient (marcher + chute, monter = échelle à poser `CFG.ladderTime × (1 −
+  build_time)`, ×0,5 en planif si `tall_ladder`, + 1/climbSpeed ; descendre par l'échelle). Candidats = blocs pleins
+  touchant une case atteinte (4 directions, comme avant), coût = temps + foule. Tas de plumes : `hops` (cases
+  traversées, chute comprise) ≤ featherReach → `m.goal`. Chemin = suite de cases où il tient ; `step` fait une case à la
+  fois, la gravité fait la chute ; un chemin qui ne colle plus est replanifié. Action `ladder` (pose sur sa case, +1
+  au-dessus avec tall_ladder). `mineCell` : un mineur posé sur le bloc miné (sauf en marche) perd son action et tombe.
+  `miMineT` compte maintenant `mineSpeedPct` (stat d'amélioration, oubliée avant). Pas de limite de chute ni
+  d'étourdissement en MI (choix de Claude, à valider). Vue : `ladders` (liste de cases) dans `instant-view.js`, rendu
+  par la texture `ladder` (`src/render/instant.js`).
+- **Mesures** (5 seeds, 5 min) — avant / après : 1 mineur 107 / 107 blocs ; 3 : 105 / 108 ; 10 : 103 / 105 ; 20 : 100 / 95
+  (min 85), ≈ 10 échelles par mineur à 20 ; 0 inactivité, jamais en l'air hors chute, jamais de montée sans échelle.
+  Plumes par joueur et par mine (tas 1-2) : 4,8 seul, 3,5 à 3, 2,8 à 10, 1,9 à 20. Il faut 100 plumes pour +3.
+- **Plumes** : `INSTANT_MINE.featherMax` 5 → 2. **Coûts** : `UPGRADE.levels` plumes 20 / 30 / 50 (cristaux 3 / 5 / 7).
+- **Identification** (`src/ui/upgrade.js`) : état `pick` ('target' | 'sacrifice') ; clic sur une case = la choisir
+  (`.sel`), re-clic sur la case choisie remplie = la vider ; la liste montre toutes les pièces sauf celle de l'autre
+  case ; bouton grisé + raison si objets différents ou pièce déjà identifiée. Serveur inchangé (il refusait déjà :
+  `not_same_item`, `already_identified`).
+- **Lignes séparées** : `statLines` (`src/meta/stuff.js`) = effets de l'objet (`pieceBonus` sans lignes, × niveau), puis
+  chaque ligne (`lineValue × plusMult`, arrondie au pas). Les totaux de session (`statsOf`, `pieceBonus`) ne changent pas.
+- **Donjon** : `DUNGEON.areas` [4, 5], `chance` 1. Tests : `dungeon.test.js` (100 % en 4 et 5, plus de « seed sans
+  donjon »), `helpers.js` (`G.dungeons=[]` dans worldFrom).
+- **Tests** : instant-mine (+3 : jamais en l'air, chute, échelles jusqu'au dernier bloc), instant-ui (échelles dans la
+  vue), amelioration (lignes séparées, coûts), anticheat/upgrade (quantités) ; 167 tests des sujets + anticheat 67/67
+  verts. Simulation 3 mineurs × 5 : identique à main (base : l'area 4 est à peine atteinte), 0 blocage.
+- ⚠️ Mineurs forts (minage 3, 4 seeds) : le détecteur de blocage signale 2 fois le barbare « Entre dans le donjon » /
+  « Combat le minotaure » en area 4 (≈ 70 s de trajet + combat sans miner) : faux positif du détecteur (combat), pas
+  un blocage ; la branche `geoffrey/retours-21-10` touche déjà ce détecteur.
+- ✅ Chromium (1440 et 390) : identification (objets différents → grisé + raison, case choisie en doré, identification
+  réussie, lignes séparées dans la liste), coûts +1 affichés 20 plumes ; MI ouverte en dev, le mineur tombe et creuse.
+  ⚠️ Pas vu à l'écran : des échelles dans une MI à plusieurs (testé par la vue et la simulation seulement).
+- ⚠️ **Conflit attendu** avec `geoffrey/retours-21-10` (pas fusionnée) : `DUNGEON.areas` et `tests/dungeon.test.js`
+  (elle passait l'area 4 à 20 %) : garder [4, 5] et chance 1.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu 1c67b15 (barème d'identification) : seul conflit
+  `docs/debug.md` (deux entrées gardées) ; 168 tests du sujet + anticheat 67/67 verts après fusion.

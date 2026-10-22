@@ -1,4 +1,4 @@
-/* Donjon (area 5, 20 %) : génération, minotaure enfermé, déclencheur, barbare d'abord, Fuir, effroi, butin. */
+/* Donjon (areas 4 et 5, à chaque partie) : génération, minotaure enfermé, déclencheur, barbare d'abord, Fuir, effroi, butin. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { W, AREA_H, DUNGEON, DUNGEON_WALL, BLOCKS, IDS, XP, SHARE, ITEMS, WINCH, CHEST_X, PREF_OPTIONS } from '../src/config.js';
@@ -28,15 +28,17 @@ function scene({ miners=1, trees=[], prefs=[] }={}){
 
 /* ---------- génération ---------- */
 
-test('donjon : ~20 % des seeds, en area 5 seulement', () => {
-  let n=0; for(let s=1;s<=3000;s++) if(planDungeon(s,5)) n++;
-  assert.ok(n>3000*0.17 && n<3000*0.23, `taux ${n/3000}`);
-  for(let s=1;s<=300;s++) for(const k of [0,1,2,3,4,6,7]) assert.equal(planDungeon(s,k), null);
+test('donjon : à chaque partie en areas 4 et 5 (100 %), jamais ailleurs', () => {
+  assert.equal(DUNGEON.chance, 1);
+  for(let s=1;s<=300;s++){
+    for(const k of [4,5]) assert.ok(planDungeon(s,k), `seed ${s} area ${k}`);
+    for(const k of [0,1,2,3,6,7]) assert.equal(planDungeon(s,k), null);
+  }
 });
 
 test('donjon : carré 10×10 de briques incassables, intérieur vide, une seule entrée sur un côté, minotaure dedans', () => {
   for(const seed of [seedWith(), seedWith(true, 500), seedWith(true, 9000)]){
-    const G=upTo5(seed), d=G.dungeons[0], top=areaTop(5);
+    const G=upTo5(seed), d=G.dungeons.find(o=>o.k===5), top=areaTop(5);
     assert.ok(BLOCKS[DUNGEON_WALL].unbreakable);
     let holes=0;
     for(let y=d.y0;y<d.y0+S;y++) for(let x=d.x0;x<d.x0+S;x++){
@@ -62,10 +64,10 @@ test('donjon : carré 10×10 de briques incassables, intérieur vide, une seule 
   }
 });
 
-test('donjon : même seed, même donjon ; seed sans donjon : rien', () => {
+test('donjon : même seed, mêmes donjons (un en area 4, un en area 5)', () => {
   const s=seedWith();
   assert.deepEqual(upTo5(s).dungeons, upTo5(s).dungeons);
-  assert.deepEqual(upTo5(seedWith(false)).dungeons, []);
+  assert.deepEqual(upTo5(s).dungeons.map(d=>d.k).sort(), [4,5]);
 });
 
 /* ---------- déclencheur, entrée ---------- */

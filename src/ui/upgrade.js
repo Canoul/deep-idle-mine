@@ -28,45 +28,57 @@ const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">
 
 /* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid }) → promesse { piece, success } (rejetée avec un message lisible) */
 export function setupUpgrade({ onOp }){
-  let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, busy = false, msg = '', ok = true;
+  let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, pick = 'target', busy = false, msg = '', ok = true;
   const pieces = () => inv.slots.filter(s => s && s.uid != null);
   const byUid = uid => pieces().find(s => s.uid === uid) ?? null;
 
   function render(){
     $('upTabs').innerHTML = RUBRICS.map(r => `<button data-rub="${r.id}" class="${r.id === tab ? 'on' : ''}">${r.label}</button>`).join('');
     const t = byUid(target), s = byUid(sacrifice);
-    if(tab === 'identify') renderIdentify(t && !isIdentified(t) ? t : null, s);
+    if(tab === 'identify') renderIdentify(t, s);
     else if(tab === 'upgrade') renderUpgrade(t);
     else $('upBody').innerHTML = '<p class="mut">L\'enchantement arrive plus tard.</p>';
   }
   const message = () => msg ? `<p class="${ok ? 'okmsg' : 'err'}">${msg}</p>` : '';
 
+  /* Identification : deux cases. Un clic sur une case la choisit (cadre doré) ; un clic sur une pièce de la liste la
+     pose dans la case choisie. Un clic sur la case déjà choisie et remplie la vide. N'importe quelle pièce peut aller
+     dans n'importe quelle case : si ce n'est pas le même objet (ou si la pièce est déjà identifiée), on ne peut juste
+     pas identifier (bouton grisé, la raison est dite). Le serveur revérifie tout (src/meta/upgrade.js). */
   function renderIdentify(t, s){
-    if(s && (!t || s.item !== t.item || s.uid === t.uid)) s = null;
-    const list = t ? sacrificesFor(inv, t) : pieces().filter(p => !isIdentified(p) && sacrificesFor(inv, p).length);
+    if(t && s && t.uid === s.uid) s = null;
+    const why = !t || !s ? '' : isIdentified(t) ? 'Cette pièce est déjà identifiée.'
+      : s.item !== t.item ? 'Les deux pièces doivent être le même objet.' : '';
+    const can = t && s && !why && !busy;
+    const list = pieces().filter(p => p.uid !== (pick === 'target' ? s?.uid : t?.uid));
+    const sel = c => pick === c ? ' sel' : '';
     $('upBody').innerHTML =
-      `<p class="mut small">Pose la pièce à identifier, puis sacrifie un autre exemplaire du même objet (peu importe sa qualité). `+
-      `La pièce reçoit une qualité (R1 à R7) et des stats en plus. C'est définitif.</p>`+
-      `<div class="upPair"><div>${box(t, 'Pièce à identifier', 'upTarget')}</div><b class="upPlus">+</b>`+
-      `<div>${box(s, 'Sacrifice', 'upSacrifice')}</div>`+
-      `<button class="on" id="upGo"${t && s && !busy ? '' : ' disabled'}>🔍 Identifier</button></div>`+
+      `<p class="mut small">Clique sur une case, puis sur une pièce pour l'y poser. La pièce à identifier reçoit une qualité `+
+      `(R1 à R7) et des stats en plus, en sacrifiant un autre exemplaire du même objet (peu importe sa qualité). C'est définitif.</p>`+
+      `<div class="upPair"><div>${box(t, 'Pièce à identifier', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
+      `<div>${box(s, 'Sacrifice', 'upSacrifice' + sel('sacrifice'))}</div>`+
+      `<button class="on" id="upGo"${can ? '' : ' disabled'}>🔍 Identifier</button></div>`+
+      (why ? `<p class="err">${why}</p>` : '')+
       message()+
-      `<h3>${t ? 'Choisis le sacrifice' : 'Choisis la pièce à identifier'}</h3>`+
-      (list.length ? `<div class="fopts">${list.map(p => row(p)).join('')}</div>`
-        : `<p class="mut">${t ? 'Aucun autre exemplaire dans ton inventaire.' : 'Il te faut deux exemplaires d\'une même pièce (non identifiée), dans l\'inventaire.'}</p>`)+
+      `<h3>${pick === 'target' ? 'Choisis la pièce à identifier' : 'Choisis le sacrifice'}</h3>`+
+      (list.length ? `<div class="fopts">${list.map(p => row(p, p.uid === t?.uid || p.uid === s?.uid ? '<b>posée</b>' : '')).join('')}</div>`
+        : '<p class="mut">Aucune pièce de stuff dans ton inventaire.</p>')+
       qualityTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
-      if(t) sacrifice = +b.dataset.uid; else target = +b.dataset.uid;
+      const uid = +b.dataset.uid;
+      if(pick === 'target'){ target = uid; if(sacrifice === uid) sacrifice = null; if(sacrifice == null) pick = 'sacrifice'; }
+      else { sacrifice = uid; if(target === uid) target = null; if(target == null) pick = 'target'; }
       msg = ''; render();
     });
-    $('upBody').querySelector('.upTarget').onclick = () => { target = null; sacrifice = null; msg = ''; render(); };
-    $('upBody').querySelector('.upSacrifice').onclick = () => { sacrifice = null; msg = ''; render(); };
+    const choose = (c, filled, clear) => () => { if(pick === c && filled) clear(); pick = c; msg = ''; render(); };
+    $('upBody').querySelector('.upTarget').onclick = choose('target', !!t, () => { target = null; });
+    $('upBody').querySelector('.upSacrifice').onclick = choose('sacrifice', !!s, () => { sacrifice = null; });
     $('upGo').onclick = async () => {
-      if(busy || !t || !s) return;
+      if(busy || !can) return;
       if((isIdentified(s) || s.plus > 0) && !confirm(`Sacrifier ${pieceName(s)} ? Sa qualité et son niveau seront perdus.`)) return;
       await send({ action:'identify', uid:t.uid, sacrifice:s.uid }, r =>
         `✔ ${pname(r.piece)} : ${esc(statLines(r.piece).join(' · '))}`);
-      target = null; sacrifice = null; render();
+      target = null; sacrifice = null; pick = 'target'; render();
     };
   }
 
@@ -99,7 +111,7 @@ export function setupUpgrade({ onOp }){
     finally { busy = false; render(); }
   }
 
-  $('upTabs').onclick = e => { const b = e.target.closest('[data-rub]'); if(b){ tab = b.dataset.rub; target = null; sacrifice = null; msg = ''; render(); } };
+  $('upTabs').onclick = e => { const b = e.target.closest('[data-rub]'); if(b){ tab = b.dataset.rub; target = null; sacrifice = null; pick = 'target'; msg = ''; render(); } };
 
   return { setInventory(v){ inv = v; render(); } };
 }

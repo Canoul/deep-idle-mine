@@ -4,6 +4,13 @@
    pas de mobs. Le navigateur affiche, il ne calcule rien. */
 
 const enc36 = v => v.toString(36);
+/* échelles : liste des cases (y × w + x), peu nombreuses ; reconstruites en lignes côté navigateur (comme G.ladder) */
+const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((v, x) => { if(v) out.push(y*G.w + x); })); return out; };
+function ladderRows(v){
+  const rows = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
+  for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(rows[y]) rows[y][x] = 1; }
+  return rows;
+}
 
 function minerView(m){
   const a = m.action, d = a?.data || {};
@@ -20,7 +27,7 @@ export function createInstantViewer(G){
     return {
       mode: 'mi', tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')),
-      feathers: [...G.feathers], miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
+      feathers: [...G.feathers], ladders: ladderList(G), miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
     };
   };
 }
@@ -30,6 +37,6 @@ export function applyInstantView(v){
   return {
     mode: 'mi', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))),
-    feathers: new Map(v.feathers), miners: v.miners, stats: v.stats, log: v.log,
+    feathers: new Map(v.feathers), ladder: ladderRows(v), miners: v.miners, stats: v.stats, log: v.log,
   };
 }
