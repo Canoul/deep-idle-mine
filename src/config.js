@@ -632,6 +632,11 @@ export const INSTANT_MINE = {
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
   featherReach: 3,
+  /* découverte (22/10, Geoffrey) : la mine est cachée au départ (sauf la surface) ; chaque mineur découvre autour de lui
+     dans un rayon de sa stat discoverMax (tout est éclairé : le rayon entier, comme une case en pleine lumière) */
+  /* caméra (22/10, Geoffrey) : elle suit ton mineur ; camCols colonnes à l'écran (zoom), autant de lignes que la
+     hauteur le permet (au moins camMinRows) */
+  camCols: 24, camMinRows: 14, camEase: 0.2,
   notify: [30*60, 15*60, 5*60, 30], inviteAt: 30,
   featherItem: 'Plume d\'ange', featherTex: 'angel_feather', heapTex: 'angel_feathers',
 };

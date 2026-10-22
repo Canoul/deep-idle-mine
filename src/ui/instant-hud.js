@@ -29,7 +29,8 @@ export function updateInstantHUD(G, me, left){
   setHtml($('miRank'), instantRanking(G.miners).map((t, i) =>
     `<div class="row${t.account === me ? ' me' : ''}"><span>${i + 1}. ${esc(t.name)}${t.account === me ? ' (toi)' : ''}</span>`+
     `<span>${t.stats.mined} blocs${t.stats.feathers ? ` · ${FEATHER} ${t.stats.feathers}` : ''}</span></div>`).join(''));
-  $('miFeathersLeft').textContent = `${G.feathers.size} tas de plumes encore cachés`;
+  const heaps = G.heapsLeft ?? G.feathers.size;   // tous les tas restants (le navigateur ne reçoit que les tas découverts)
+  $('miFeathersLeft').textContent = `${heaps} tas de plumes restant${heaps > 1 ? 's' : ''} dans la mine`;
   setHtml($('miLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));
 }
 

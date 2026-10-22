@@ -1299,10 +1299,26 @@ Règles (voir CLAUDE.md) :
   résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
   wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
-### Concasseur : chances du créateur, plus de moyenne ni de temps estimé (Geoffrey) — branche `geoffrey/concasseur-taux`, 🧪 pas en ligne
+### Mine instantanée : découverte et caméra (Geoffrey) — branche `geoffrey/mi-decouverte-camera`, en ligne le 22/10
+- **Simulation** (`src/sim/instant/session.js`) : `G.seen` (surface à 1), `revealAround(G, m)` (rayon
+  max(1, discoverMax), comme `revealAround` de la mine normale en pleine lumière) au départ, après chaque action
+  (`finish`) et à chaque tick. `ai.js` : un tas de plumes n'est un but que s'il est découvert.
+- **Envoi** (`src/shared/instant-view.js`) : `seen` (lignes de 0/1) ; une case cachée part en 0 ; seulement les tas
+  découverts ; `heapsLeft` = vrai nombre de tas (HUD, `src/ui/instant-hud.js`).
+- **Rendu** (`src/render/instant.js`) : caméra qui suit le mineur du joueur (à défaut le premier), `miFrame` (cadrage pur,
+  testé), `setRows` ; config `INSTANT_MINE.camCols` 24, `camMinRows` 14, `camEase`. `src/ui/fit.js` : `fitInstant`
+  (largeur = camCols colonnes, lignes selon la hauteur) ; `fitCanvas` ne sert plus qu'aux tours.
+- **Tests** : instant-mine (découverte, tas caché), instant-ui (envoi, cadrage), instant-server, camera : 42/42 ✅.
+  Simulation MI à 1, 3, 20 mineurs : butin identique à avant ✅. Chromium 1440×900 et 390×844 en mode dev (« Ouvrir
+  maintenant ») : mine noire, découverte autour du mineur, caméra qui suit, aucune erreur ✅.
+- ⚠️ Pas de déplacement libre de la caméra en MI (molette) : elle suit toujours ton mineur.
+
+### Concasseur : chances du créateur, plus de moyenne ni de temps estimé (Geoffrey) — branche `geoffrey/concasseur-taux`, ✅ en ligne le 22/10
 - `CRUSHER.loot` (`src/config.js`) : gemmes 0,002 / 0,003 / 0,004 par gemme (= 0,6 / 0,9 / 1,2 % d'en avoir une), treasure
   0,005 / 0,003 / 0,005. `dropOdds` ne renvoie plus que `chance` (plus de `every` ni `sec`) ; `aboutTime` supprimé.
   Retirés : « 1 lot sur N · ≈ toutes les X » et la phrase sur les moyennes dans le « ? » (`src/ui/crusher.js`), colonnes
   « En moyenne » / « Soit environ » et le paragraphe sur les moyennes du wiki (`src/wiki/wiki.js`, `wiki.html`).
 - Tests : crusher (chances, aide sans moyenne, fréquence sur 200 000 et 1 million de lots), wiki, anticheat : verts.
   ✅ Chromium : « ? » et wiki affichés sans moyenne, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu la MI cachée / caméra : conflits seulement dans les 3 docs
+  (journal, debug, état du projet : tout gardé) ; 145 tests du sujet + anticheat 71/71 verts après fusion.
