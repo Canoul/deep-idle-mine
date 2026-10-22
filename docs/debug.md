@@ -1169,3 +1169,16 @@ Règles (voir CLAUDE.md) :
   (elle passait l'area 4 à 20 %) : garder [4, 5] et chance 1.
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu 1c67b15 (barème d'identification) : seul conflit
   `docs/debug.md` (deux entrées gardées) ; 168 tests du sujet + anticheat 67/67 verts après fusion.
+
+### Identification : nouveau tableau de conversion des stats (Geoffrey) — `main`, en ligne le 22/10
+- **Demande** (étape 1 du concept Ange vs Démon) : tableau « stat pour 100 x » du créateur, pour l'identification et les
+  futures runes : vitesse de minage +0,05, minage % +5, dégâts +2,5, dégâts % +20, vitesse d'attaque +20, critique +7,
+  fortune +2, coup unique +7, perçage +10, butin des mobs +10, marche +0,4, montée +0,3, pods +20, oxygène +25.
+- **Config** : `UPGRADE.prices` = conversion d'une ligne (x par point = 100 ÷ valeur pour 100 x) ; nouveau
+  `UPGRADE.worth` = l'ancien catalogue mesuré, qui sert seulement à la **valeur de l'objet** (`itemValue`). Choix de
+  Claude : sans cette séparation, la pioche en pierre serait passée de 130 à 200 x (prix de la vitesse de minage 1300 →
+  2000) et toutes ses lignes auraient grossi d'environ 54 %.
+- Les pièces gardent leur %, elles suivent le tableau sans migration.
+- **Tests** : `tests/amelioration.test.js` (valeurs attendues recalculées). Suite complète + anticheat : 622/623.
+  ⚠️ L'échec restant (« chaque area (0 à 6) : blocs posés = comptes de l'area ») existe **sans** ce changement : il
+  vient de `d40ce42` (donjons en areas 4 et 5 à 100 %), pas corrigé ici.

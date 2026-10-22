@@ -488,12 +488,16 @@ export const UPGRADE = {
   /* stats qui peuvent tomber sur une ligne (toutes celles qui ont une valeur en x ; pas la Découverte, à part) */
   pool: ['mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
          'speed','climbSpeed','pods','oxygenMax'],
-  /* prix d'un point en x (catalogue de GAME_DESIGN §3, mineur de base) ; crit : 130 x = 10 % (décision du créateur) ;
-     mineSpeedPct = 1 % de 1 vitesse de minage (1300 / 100), damagePct = 1 % de 5 dégâts (40 × 5 / 100) ;
-     oneTap, piercing, looting : mesurés par simulation le 21/10 (GAME_DESIGN §3) : coup unique ≈ minage en % (13),
-     perçage ≈ 7 (les blocs en plus remplissent le sac), butin des mobs : 10 x par % (22/10, décision du créateur : 100 x = +10 %) */
-  prices: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
-            discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:10 },
+  /* VALEUR d'un objet en x = somme de ses stats × worth (catalogue mesuré de GAME_DESIGN §3, mineur de base) :
+     pioche en pierre 0,1 × 1300 = 130 x, épée en fer (11 − 5) × 40 = 240 x. */
+  worth: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
+           discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:10 },
+  /* CONVERSION d'une ligne (identification, rune) : x par point de stat. Tableau du créateur du 22/10/2026, donné
+     « pour 100 x » : vitesse de minage +0,05, minage % +5, dégâts +2,5, dégâts % +20, vitesse d'attaque +20, critique +7,
+     fortune +2, coup unique +7, perçage +10, butin des mobs +10, marche +0,4, montée +0,3, pods +20, oxygène +25.
+     prix = 100 ÷ valeur pour 100 x. Les pièces gardent leur %, elles suivent donc ce tableau sans migration. */
+  prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
+            piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300 },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },

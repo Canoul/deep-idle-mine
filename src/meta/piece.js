@@ -22,13 +22,14 @@ const stepOf = k => UPGRADE.steps[k] ?? 0.01;
 const decimals = s => Math.max(0, -Math.floor(Math.log10(s) + 1e-9));
 export const roundStat = (k, v) => +(Math.round(v / stepOf(k)) * stepOf(k)).toFixed(decimals(stepOf(k)));
 
-/* valeur de l'objet en x : ses bonus (stats) et ce que ses valeurs `set` apportent en plus de la base (l'épée en fer :
-   11 dégâts au lieu de 5 → 6 × 40 = 240 x). Une stat sans prix ne compte pas. */
+/* valeur de l'objet en x (UPGRADE.worth, catalogue mesuré) : ses bonus (stats) et ce que ses valeurs `set` apportent en
+   plus de la base (l'épée en fer : 11 dégâts au lieu de 5 → 6 × 40 = 240 x). Une stat sans valeur ne compte pas.
+   À ne pas confondre avec UPGRADE.prices, qui convertit une ligne (un % de cette valeur) en points de stat. */
 export function itemValue(item){
   const d = ITEMS[item]; if(!d) return 0;
   let x = 0;
-  for(const [k, v] of Object.entries(d.stats || {})) x += v * (UPGRADE.prices[k] ?? 0);
-  for(const [k, v] of Object.entries(d.set || {})) x += (v - STATS[k]) * (UPGRADE.prices[k] ?? 0);
+  for(const [k, v] of Object.entries(d.stats || {})) x += v * (UPGRADE.worth[k] ?? 0);
+  for(const [k, v] of Object.entries(d.set || {})) x += (v - STATS[k]) * (UPGRADE.worth[k] ?? 0);
   return Math.max(0, x);
 }
 
