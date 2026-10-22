@@ -53,11 +53,11 @@ const outOfSector = (m,x) => m.homeX==null ? 0 : Math.max(0, Math.abs(x-m.homeX)
 
 /* Fond de l'area verrouillé (ou area du dessous épuisée pour le focus) : creuser des galeries horizontales
    (une ligne sur 3) dans l'area k pour trouver les minerais manquants. */
-function explore(G,m,k){
+function explore(G,m,k,cap=Infinity){
   const base=areaTop(k)-1;   // couches base+1 … base+AREA_H
   m.exploring=true; m.exploreArea=k;  // évite l'oscillation « descend / change de galerie » ; levé au déblocage de l'area suivante
   const primary=[], secondary=[];
-  for(let r=1;r<=AREA_H;r++){ const y=base+r; if(rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
+  for(let r=1;r<=AREA_H;r++){ const y=base+r; if(y>cap||rowDone(G,y)||m.skipRows.has(y)) continue; (r%3===0 && r<AREA_H ? primary : secondary).push(y); }
   let pool = primary.length ? primary : secondary;
   if(!pool.length){ m.status='Plus rien à explorer'; idle(m,1); return; }
   const free = pool.filter(y=>!rowTaken(G,m,y));     // lignes que personne d'autre ne creuse
@@ -113,15 +113,28 @@ function fight(G,m,o){
   if(!ok) idle(m,0.3);
 }
 
+/* Profondeur maximale (couche) où il peut encore aller travailler : aller et retour depuis la surface en au plus
+   (1 − CFG.endWorkShare) du temps restant, marge de 12 s. Calculée au départ de la surface (m.tripCap) : la remontée
+   à l'heure reste décidée comme avant (temps de retour estimé). Secondes par couche : mesurées à sa dernière remontée
+   (m.secPerRow), sinon estimées par la vitesse de montée (×1,25, comme le retour). Grande en début de session. */
+const secPerRow = m => m.secPerRow ?? 1.25/m.carac.climbSpeed;
+export function depthCap(G,m){
+  const left=SESSION_LEN-G.t, budget=left*(1-CFG.endWorkShare)-12;
+  return Math.max(0, Math.floor(budget/(2.25*secPerRow(m))));   // descente (×1) + remontée (×1,25)
+}
+
 function decideSurface(G,m){
   const left=SESSION_LEN-G.t;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
   if(m.load>0){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
   if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
-  // repartir ne vaut le coup que s'il reste le temps d'aller au front, d'y travailler un peu et de revenir
-  if(left<Math.max(CFG.endStayMin, 2*m.lastReturnDur+CFG.minWorkTime)){ m.status='Fin de session proche'; idle(m,1); return; }
+  // repartir ne vaut le coup que s'il reste un peu de temps ; près de la fin, il ira miner moins profond (depthCap)
+  if(left<CFG.endStayMin || depthCap(G,m)<3){ m.status='Fin de session proche'; idle(m,1); return; }
   if(m.winchJob){ m.mode='winch'; return decideWinch(G,m); }   // chantier du treuil : il repart d'en haut, au milieu
   m.mode='departure';
+  /* profondeur max de ce trajet, fixée quand il décide de repartir (sinon il remonterait sans cesse pour la suivre ;
+     et avant de rejoindre son puits : il peut tomber dans le treuil en chemin, et partir sans repasser ici) */
+  m.tripCap=depthCap(G,m);
   decideDeparture(G,m);
 }
 
@@ -149,7 +162,14 @@ function yieldLadder(G,m){
 }
 
 function decideReturn(G,m,rp){
-  if(m.y===0){ m.mode='surface'; m.lastReturnDur=G.t-m.returnStart; return decideSurface(G,m); }
+  if(m.y===0){
+    m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
+    /* vitesse de remontée mesurée (secondes par couche), pour la profondeur maximale de fin de session */
+    if(m.returnFromY>=10 && m.lastReturnDur>0) m.secPerRow=m.lastReturnDur/m.returnFromY;
+    m.returnFromY=null;
+    return decideSurface(G,m);
+  }
+  m.returnFromY ??= m.y;
   const p = rp || planReturn(G,m);
   m.status='Retour ('+m.reason+')';
   const dy = p && (p.dx||p.dy) ? p.dy : -1;
@@ -209,7 +229,9 @@ function decideWork(G,m){
   // focus minerai : pas de cible dans une area épuisée pour ses minerais visés (il y monterait, le focus le renverrait
   // aussitôt dans la sienne, et il recommencerait : va-et-vient sur l'échelle à la frontière, seed 770973224)
   const A=focusArea(G,m), act=activeOres(m.prefs.focus);
-  const inFocus = y => A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act);
+  /* fin de session : rien sous la profondeur maximale du trajet, fixée au départ de la surface (il mine plus haut) */
+  const cap=m.tripCap ?? Infinity;
+  const inFocus = y => y<=cap && (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act));
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
     if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
@@ -234,11 +256,12 @@ function decideWork(G,m){
   // descend tant que la case du dessous n'est pas une barrière, sauf en phase d'exploration (fond de l'area verrouillé)
   // … et ne passe pas dans une area épuisée pour son focus : il explore la sienne en galeries
   const stopK=focusStop(G,m);
-  const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER;
+  const down = !m.exploring && stopK===null && tileAt(G,m.x,m.y+1) !== BARRIER && m.y<cap;
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
   if(down) return digDown(G,m);
-  explore(G,m, stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1));
+  const k = stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1);
+  explore(G,m, Math.min(k, Math.max(0,areaOf(cap))), cap);   // fin de session : galeries au-dessus de la profondeur max
 }
 
 function digDown(G,m){

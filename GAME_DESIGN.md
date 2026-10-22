@@ -133,6 +133,7 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - **Réutiliser l'existant** : pour descendre ou changer de galerie, l'IA compare le temps d'un trajet par les échelles et galeries déjà posées au temps d'un nouveau puits (mine + échelle à chaque case), et prend le moins cher.
 - La **boussole** aide l'IA à choisir : s'il vaut mieux aller sur les côtés vers un minerai plutôt que descendre.
 - Quand le fond de l'area est verrouillé, il explore en **galeries** horizontales pour trouver les minerais manquants.
+- **Fin de session** *(22/10/2026, Geoffrey ; `CFG.endWorkShare`)* : quand il repart de la surface, il fixe pour ce trajet une **profondeur maximale** : celle où l'aller et le retour depuis la surface prennent au plus **la moitié du temps restant**. Il ne descend pas plus bas et n'y vise pas de minerai : il mine **plus haut** (filons, galeries) au lieu d'aller au front pour remonter aussitôt. La vitesse de trajet est mesurée sur sa dernière remontée (échelles, treuil, détours compris). Il ne repart plus s'il reste moins de 45 s ou si cette profondeur est de moins de 3 couches. *(Avant : il repartait s'il restait 2 × son dernier retour + 30 s, et descendait toujours jusqu'au front.)*
 
 ### Focus minerai
 Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
