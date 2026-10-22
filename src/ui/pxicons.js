@@ -29,7 +29,8 @@ const P = {
 "target": "M2 1h3v1h-3zM11 1h3v1h-3zM1 2h2v1h-2zM13 2h2v1h-2zM1 3h1v1h-1zM14 3h1v1h-1zM1 4h1v1h-1zM14 4h1v1h-1zM1 11h1v1h-1zM14 11h1v1h-1zM1 12h1v1h-1zM14 12h1v1h-1zM1 13h2v1h-2zM13 13h2v1h-2zM2 14h3v1h-3zM11 14h3v1h-3z",
 "feather": "M4 2h4v1h-4zM3 3h6v1h-6zM2 4h8v1h-8zM2 5h3v1h-3zM6 5h5v1h-5zM2 6h4v1h-4zM8 6h3v1h-3zM2 7h4v1h-4zM9 7h2v1h-2zM12 7h1v1h-1zM3 8h4v1h-4zM10 8h1v1h-1zM4 9h4v1h-4zM10 9h2v1h-2zM13 9h1v1h-1zM5 10h7v1h-7zM9 11h4v1h-4zM7 12h1v1h-1zM11 12h2v1h-2zM9 13h1v1h-1zM13 13h1v1h-1z",
 "trophy": "M4 2h8v1h-8zM4 3h8v1h-8zM1 4h14v1h-14zM1 5h1v1h-1zM4 5h8v1h-8zM14 5h1v1h-1zM1 6h1v1h-1zM4 6h8v1h-8zM14 6h1v1h-1zM1 7h1v1h-1zM4 7h8v1h-8zM14 7h1v1h-1zM1 8h1v1h-1zM4 8h8v1h-8zM14 8h1v1h-1zM2 9h12v1h-12zM5 10h6v1h-6zM7 11h2v1h-2zM5 12h6v1h-6zM4 13h8v1h-8z",
-"heart": "M4 4h2v1h-2zM10 4h2v1h-2zM3 5h4v1h-4zM9 5h4v1h-4zM3 6h10v1h-10zM3 7h10v1h-10zM4 8h8v1h-8zM5 9h6v1h-6zM6 10h4v1h-4zM7 11h2v1h-2z"
+"heart": "M4 4h2v1h-2zM10 4h2v1h-2zM3 5h4v1h-4zM9 5h4v1h-4zM3 6h10v1h-10zM3 7h10v1h-10zM4 8h8v1h-8zM5 9h6v1h-6zM6 10h4v1h-4zM7 11h2v1h-2z",
+"radiance": "M5 1h1v1h-1zM10 1h1v1h-1zM7 2h2v1h-2zM3 3h2v1h-2zM7 3h2v1h-2zM11 3h2v1h-2zM3 4h3v1h-3zM7 4h2v1h-2zM10 4h3v1h-3zM1 5h1v1h-1zM4 5h2v1h-2zM10 5h2v1h-2zM14 5h1v1h-1zM6 6h1v1h-1zM9 6h1v1h-1zM2 7h3v1h-3zM7 7h2v1h-2zM11 7h3v1h-3zM2 8h3v1h-3zM7 8h2v1h-2zM11 8h3v1h-3zM6 9h1v1h-1zM9 9h1v1h-1zM1 10h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM14 10h1v1h-1zM3 11h3v1h-3zM7 11h2v1h-2zM10 11h3v1h-3zM3 12h2v1h-2zM7 12h2v1h-2zM11 12h2v1h-2zM7 13h2v1h-2zM5 14h1v1h-1zM10 14h1v1h-1z"
 };
 
 export const pxi = (name, cls = '') => P[name]

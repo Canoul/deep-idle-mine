@@ -16,12 +16,15 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, chestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
+import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
+import { rollChestQuality } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
@@ -30,7 +33,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
-import { identify, upgrade } from '../../src/meta/upgrade.js';
+import { identify, upgrade, enchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
@@ -59,7 +62,9 @@ const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'e
 const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire (retire-la d\'abord si elle est équipée).',
                          same_piece: 'Il faut un deuxième exemplaire à sacrifier.', already_identified: 'Cette pièce est déjà identifiée.',
                          not_same_item: 'Le sacrifice doit être le même objet.', maxed: 'Cette pièce est déjà au niveau maximum.',
-                         not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.' };
+                         not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.',
+                         not_stuff: 'Seule une pièce de stuff peut être identifiée, améliorée ou enchantée.',
+                         not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -122,6 +127,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* stuff : relu avec l'inventaire (une pièce présente des deux côtés est retirée du stuff ; les uid restent uniques) */
   const loadStuff = async (accountId, inv) => sanitizeStuff(await store.getStuff(accountId), inv);
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
+  /* Jugement : jauges communes, relues et revérifiées, sous le verrou 'judgment' ; fn(j) renvoie true pour enregistrer.
+     Une tour dont la jauge est pleine s'ouvre à la lecture (refresh), et c'est enregistré. */
+  const withJudgment = fn => withLock('judgment', async () => {
+    const j = sanitizeJudgment(await store.getJudgment());
+    const opened = refreshJudgment(j, clock());
+    const r = await fn(j);
+    if(opened || r?.save) await store.putJudgment(j);
+    return r?.value ?? r;
+  });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp) });
@@ -210,15 +224,26 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
+      /* tour réussie : chaque joueur encore présent reçoit un coffre de la tour, qualité tirée par le serveur (RUNE) */
+      const side = towerSide(rec.mode);
+      if(side) for(const share of summary.shares || [])
+        share.bag = summary.success && share.account && !share.left && !hasLeft(rec, share.account)
+          ? { [chestItem(side, rollChestQuality(random))]: 1 } : {};
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
-          if(creditSession(inv, rec.id, share.bag)) await store.putInventory(share.account, JSON.parse(serialize(inv)));
+          if(!creditSession(inv, rec.id, share.bag)) return;
+          await store.putInventory(share.account, JSON.parse(serialize(inv)));
+          /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
+          await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
+          /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
+          if(side && summary.success)
+            await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account) }));
         });
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
-        if(rec.mode !== 'mi') await withLock('xp:' + share.account, async () => {
+        if(rec.mode !== 'mi' && !side) await withLock('xp:' + share.account, async () => {
           const pr = await loadProgress(share.account);
           if(creditXp(pr, rec.id, share.xp ?? 0)) await store.putProgress(share.account, pr);
         });
@@ -279,7 +304,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
+      const side = modeDef.tower ?? null;
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
+        /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture */
+        let opening = null;
+        if(side){
+          const t = await withJudgment(j => ({ value: { open: towerOpen(j, side, clock()), opening: j[side].opening,
+                                                         done: players.filter(p => hasDone(j, side, p.account)) } }));
+          if(!t.open) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
+          if(t.done.length) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
+          opening = t.opening;
+        }
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
@@ -308,7 +343,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
           prefs, looks, gear, skills,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
-          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
+          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
+          ...(side ? { opening } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
@@ -386,6 +422,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const rec = await store.getGameSession(rec0.id);
           if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
           if(rec.mode === 'mi') fail('bad_request', 400, 'Pas de focus dans la mine instantanée.');
+          if(isTowerMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une tour.');
           rec.focus ??= [];
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
@@ -447,6 +484,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);                     // une rune reçoit un uid neuf : jamais celui d'une pièce portée
         const res = openTreasure(inv, item, opId, random);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
@@ -553,12 +591,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async upgrade(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
-      if(!isInt(body.uid) || (action === 'identify' && !isInt(body.sacrifice))) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
+      if(!isInt(body.uid) || (action === 'identify' && !isInt(body.sacrifice)) || (action === 'enchant' && !isInt(body.rune)))
+        fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
         const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random)
-                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random) : { error: 'bad_request' };
+                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random)
+                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId }) : { error: 'bad_request' };
         if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { piece: r.piece, success: r.success ?? true, inventory: publicInventory(inv) };
@@ -579,6 +619,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
 
     /* historique : ses sessions terminées (gardées config.keepEnded), les plus récentes d'abord, avec la seed et SA part */
+    /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
+    async judgment(me){
+      return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+    },
+
     async history(me){
       const list = (await store.sessionsOf(me.id)).filter(s => s.status === 'done' && s.result).slice(0, 50);
       return { sessions: list.map(s => {

@@ -1,7 +1,7 @@
 /* Rareté des objets : commun par défaut, liste du créateur en inhabituel, shiny inhabituels. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RARITY, ITEMS, SHINY } from '../src/config.js';
+import { RARITY, ITEMS, SHINY, RUNE } from '../src/config.js';
 import { rarityOf, rarityDef } from '../src/meta/rarity.js';
 import { rcls, rname, rlabel } from '../src/ui/rarity.js';
 
@@ -17,10 +17,13 @@ test('rareté : les 5 raretés dans l\'ordre, chacune avec sa couleur', () => {
 
 test('rareté : la liste du créateur est inhabituelle, tout le reste du catalogue est commun', () => {
   for(const n of UNCOMMON) assert.equal(rarityOf(n), 'inhabituel', n);
-  const TIER2 = ['Gants tactique', 'Gants tactique BP', 'Gants d\'ouvrier', 'Gants d\'ouvrier BP'], RARE = ['Cape de Naingui', 'Cape de Naingui BP', 'Cristal de pleine lune', 'Plume d\'ange'];
+  const TIER2 = ['Gants tactique', 'Gants tactique BP', 'Gants d\'ouvrier', 'Gants d\'ouvrier BP'], RARE = ['Cape de Naingui', 'Cape de Naingui BP', 'Cristal de pleine lune', 'Plume d\'ange', 'Résidu angélique', 'Résidu démoniaque'];
   for(const n of TIER2) assert.equal(rarityOf(n), 'inhabituel', n);
   for(const n of RARE) assert.equal(rarityOf(n), 'rare', n);
-  for(const n of Object.keys(ITEMS)) if(!UNCOMMON.includes(n) && !TIER2.includes(n) && !RARE.includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* coffres des tours et runes (Ange vs Démon) : rareté selon la qualité du coffre (RUNE.rarity), rune épique */
+  const TOWER = Object.keys(ITEMS).filter(n => ITEMS[n].chest || ITEMS[n].cat === 'rune');
+  for(const n of TOWER) assert.equal(rarityOf(n), ITEMS[n].chest ? RUNE.rarity[ITEMS[n].chest.q] : 'epique', n);
+  for(const n of Object.keys(ITEMS)) if(!UNCOMMON.includes(n) && !TIER2.includes(n) && !RARE.includes(n) && !TOWER.includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

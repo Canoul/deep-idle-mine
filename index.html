@@ -154,6 +154,23 @@
   </aside>
 </main>
 </div>
+<div id="twRun" hidden>
+<header>
+  <div class="twTitle" id="twTitle"></div>
+  <div class="timer" id="twTimer">00:00 / 15:00</div>
+  <div class="grow"><div class="bar"><i id="twTimeBar"></i></div></div>
+  <span class="mut" id="twLeft"></span>
+  <button id="twLeaveBtn" title="Tu ne recevras pas de coffre"><i data-pxi="door"></i>Quitter la tour</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvTwWrap"><canvas id="cvTw"></canvas></div>
+  <aside>
+    <div class="card"><h2>Boss</h2><div id="twBoss"></div></div>
+    <div class="card"><h2>Équipe</h2><div id="twTeam"></div></div>
+    <div class="card"><h2>Journal</h2><div id="twLog" class="miLog"></div></div>
+  </aside>
+</main>
+</div>
 <!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
@@ -204,6 +221,13 @@
     <div id="skillHead" class="skHead"></div>
     <div id="skillTrees" class="skTrees"></div>
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
+  </div>
+</section>
+<section class="view" data-view="jugement" hidden>
+  <div class="furnWrap">
+    <div class="invHead"><h1><i data-pxi="radiance"></i>Jugement</h1><span class="mut small">L'effort de tous les mineurs : chaque résidu rapporté au coffre remplit la jauge de son camp.</span></div>
+    <div class="card"><h2>Ange contre Démon</h2><div id="judgmentBody"><p class="mut small">Chargement…</p></div></div>
+    <p class="mut small">Les résidus angéliques et démoniaques se trouvent dans la roche à partir de l'area 4. Une jauge pleine ouvre la tour de son camp pendant quelques heures : au sommet, un boss garde un coffre.</p>
   </div>
 </section>
 <section class="view" data-view="social" hidden>
