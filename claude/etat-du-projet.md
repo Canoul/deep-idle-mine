@@ -84,7 +84,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
-- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en
+- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 22/10 : cachée
+  au départ, découverte par la stat Découverte de chaque mineur, et caméra qui suit son mineur de près** (≈ 24
+  colonnes) ; ancien : toute la mine visible à l'écran) (`INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
   (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
   **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.

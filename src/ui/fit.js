@@ -38,7 +38,21 @@ export function fitMine(cv, box, renderer, { minRows, maxRows }, tile){
   setSize(cv, s);
 }
 
-/* Mine instantanée : tout le canvas, le plus grand possible dans sa boîte, proportions gardées. Sans hauteur imposée
+/* Mine instantanée (caméra qui suit le mineur) : la vue remplit la largeur de sa boîte (MI.camCols colonnes) et montre
+   autant de lignes que la hauteur en permet (renderer.setRows borne entre MI.camMinRows et la mine entière). Trop peu
+   de hauteur : la vue se cale sur la hauteur. Sans hauteur imposée (téléphone), le nombre de lignes ne change pas. */
+export function fitInstant(cv, box, renderer, tile){
+  const w = box.clientWidth, h = box.clientHeight > 60 ? box.clientHeight : 0;
+  if(!w || !cv.width) return;
+  let s = snap(w / cv.width);
+  if(h){
+    renderer.setRows(Math.floor(h / (tile * s)));
+    if(renderer.rows * tile * s > h) s = h / (renderer.rows * tile);
+  }
+  setSize(cv, s);
+}
+
+/* Tour : tout le canvas, le plus grand possible dans sa boîte, proportions gardées. Sans hauteur imposée
    (téléphone : la boîte suit le canvas), on se cale sur la largeur. */
 export function fitCanvas(cv, box){
   const w = box.clientWidth, h = box.clientHeight > 60 ? box.clientHeight : Infinity;
