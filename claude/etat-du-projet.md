@@ -37,14 +37,17 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 (0,5 % chacun, poids 6). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
-    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, 15 min de jeu : creuser une tour 15 × 30
-    (stonebrick 6 s, 5 % indestructible) jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier
+    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu** (22/10 après-midi ; 5 min
+    demandées, infaisables) : creuser une tour 15 × 30 (stonebrick 6 s) **en labyrinthe** (une ligne sur 2 = 11 blocs
+    indestructibles sur 15, un seul passage de 4 cases), **cachée au départ** (Découverte de chaque mineur), caméra
+    rapprochée qui suit son mineur, jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier
     arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
   - Victoire → chaque présent reçoit un **coffre R1 à R7** (chances de l'identification) ; une victoire par joueur et
     par ouverture ; un échec ne coûte rien. Coffre ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
-  - ⚠️ Mesures (stuff de base) : **0 résidu** en 8 sessions à 3 (personne n'entre en area 4) ; tour gagnée à 3 en
-    ≈ 7 min (5/5), **seul 1/5**. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
+  - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4) ; tour (10 tours, à
+    3) : stuff de base 0/10, petit stuff 3/10, minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min, le même seul 0/10.
+  - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
 - **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
   présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
@@ -62,7 +65,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **Donjon** (**un en area 4 et un en area 5 à chaque partie**, décision du 22/10 ; ancien : area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
+- **Donjon** (mine classique ; **un en area 4 et un en area 5 à chaque partie**, décision du 22/10 ; ancien : area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil), Barbare (provocation) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
