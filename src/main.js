@@ -214,13 +214,14 @@ const lobby = setupLobby({
   },
 });
 
-/* mine instantanée : carte d'inscription du lobby et rappels (pas pendant une session normale : on ne peut pas la
-   rejoindre) ; inscrit, le lobby s'ouvre sur « Mine instantanée » */
+/* mine instantanée : carte d'inscription du lobby et rappels, aussi pendant une session normale (on peut s'inscrire en
+   session dans les 30 dernières minutes, 22/10) ; pas pendant la mine instantanée elle-même. Inscrit, le lobby s'ouvre
+   sur « Mine instantanée » */
 let miModeShown = false;
 const instantLobby = setupInstantLobby({
   api: instantApi,
-  canNotify: () => !rec || isMi(),
-  locked: () => !!rec,
+  canNotify: () => !isMi(),
+  inSession: () => !!rec && !isMi(),
   onJoined: () => { lobby.update({ mode:'mi' }); nav.show('lobby'); },
   onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule

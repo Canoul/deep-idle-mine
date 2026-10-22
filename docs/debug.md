@@ -1358,3 +1358,20 @@ Règles (voir CLAUDE.md) :
   `anticheat/rune.test.js` (refus serveur, rune non consommée, acceptée à qualité égale) : verts.
   ✅ Chromium : R3 + rune R7 refusé, R6 + R3 accepté avec aperçu, 0 erreur console.
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` n'avait pas bougé ; tests du sujet et anticheat verts.
+
+### Mine instantanée : inscriptions 30 min avant, possibles en session (Geoffrey) — branche `geoffrey/mi-inscription-30min`, en ligne le 22/10
+- **Config** `INSTANT_MINE.signupBefore` (1 800 s). `src/shared/instant.js` : `signupOpensAt`, `signupOpen`.
+- **Serveur** (`server/instant/service.js`) : `join` refuse `signup_closed` hors fenêtre (sauf dev), n'exige plus
+  d'être hors session ; quitte le groupe seulement hors session ; `open` fait quitter leur groupe à ceux qui entrent
+  (`party.leave({ id })`, erreurs ignorées). `state` renvoie `signupAt` / `signupOpen`. `server/main.js` : plus de
+  `game.onStart(… instant.drop)` (lancer ne désinscrit plus ; `onStart` reste dans le service de jeu, inutilisé).
+  Un inscrit en session à l'heure est écarté par `openInstant` (déjà le cas) et son inscription effacée.
+- **Navigateur** : `src/ui/instant-lobby.js` (`canSignup`, `clockText`, bouton « 🔒 Inscriptions à … », avertissement en
+  session, rappel « inscriptions ouvertes », re-rendu à l'ouverture de la fenêtre) ; `src/ui/lobby.js` : le mode
+  `scheduled` (MI) reste cliquable en lecture seule ; `src/main.js` : `canNotify` = pas pendant la MI, `inSession`.
+- **Tests** : instant-server (fenêtre 11 h 29 / 11 h 30, inscription en session + mine ratée, lancer ne désinscrit plus,
+  groupe quitté à l'entrée, aucune session après la MI), instant-ui (`canSignup`, `clockText`), lobby, party,
+  anticheat/instant (pas de réinscription pendant la mine ; inscrit en mine pour la suivante = écarté) : ✅.
+  Chromium (dev) : session lancée, lobby → Mine instantanée → S'inscrire en session ✅, aucune erreur.
+  ⚠️ Bouton fermé « 🔒 Inscriptions à … » pas vu à l'écran (testé seulement par `canSignup`).
+

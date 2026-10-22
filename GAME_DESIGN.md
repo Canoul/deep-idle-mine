@@ -607,13 +607,16 @@ Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **ch
 - **Plusieurs mines** : au plus **20 joueurs par mine** ; au-delà, les inscrits sont répartis en mines de tailles égales (21 inscrits → 11 + 10). Un inscrit seul joue seul.
 
 **Lobby MI** (onglet **Lobby**, « Où miner » → **Mine instantanée** ; un joueur inscrit retrouve son lobby sur ce choix) :
-- On peut s'y inscrire **quand on veut** ; un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
-- S'inscrire **fait quitter le groupe** de la session normale. On ne peut **pas s'inscrire pendant une session** (il faut d'abord la quitter). **Lancer une session normale désinscrit** du MI.
-- À l'heure dite, les inscrits partent tous dans la mine ; personne ne la rejoint après le début.
+- Un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
+- **Inscriptions ouvertes seulement dans les 30 dernières minutes** *(décision du créateur, 22/10/2026 ; `INSTANT_MINE.signupBefore` ; avant : à toute heure)* : 11 h 29 fermé (bouton « 🔒 Inscriptions à 11 h 30 »), 11 h 30 ouvert, pour la mine de 12 h. Le serveur refuse aussi une inscription hors de cette fenêtre (mode dev : à toute heure).
+- **On peut s'inscrire pendant une session** (normale ou tour) *(22/10/2026 ; avant : refusé)* : « Mine instantanée » reste choisissable dans le lobby en lecture seule, et la carte prévient « si ta session n'est pas finie à l'heure, tu rates la mine ». **Encore en session à l'heure pile** : le joueur **rate la mine instantanée**, sa session continue, son inscription est effacée. Lancer une session normale **ne désinscrit plus**.
+- S'inscrire hors session **fait quitter le groupe** ; inscrit pendant une session, on reste dans son groupe et on le quitte **en entrant dans la mine**.
+- À l'heure dite, les inscrits (qui ne sont pas en session) partent tous dans la mine ; personne ne la rejoint après le début.
+- **Après la mine instantanée, le joueur n'est dans aucune session** (ni mine instantanée ni mine normale) : il revient au lobby, libre *(règle du créateur, 22/10/2026 ; testée)*.
 - **Fermer l'onglet ne change rien** (la partie tourne sur le serveur, le butin arrive à la fin). **Seul le bouton Quitter fait tout perdre** : quitter avant la fin = rien.
 
-**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; jamais pendant une session normale) :
-- « La mine instantanée commence dans 30 min », puis 15 min, puis 5 min : simple information.
+**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; **aussi pendant une session normale** depuis le 22/10, puisqu'on peut s'y inscrire ; jamais pendant la mine instantanée elle-même) :
+- « La mine instantanée commence dans 30 min » (« les inscriptions sont ouvertes »), puis 15 min, puis 5 min : simple information.
 - « La mine instantanée commence dans 30 secondes » : information **et invitation**, boutons **Rejoindre** / **Décliner** (pour un joueur déjà inscrit : information seule).
 
 **Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : la mine vue de près, **la caméra suit ton mineur** *(22/10/2026 ; avant : toute la mine à l'écran)*, environ 24 colonnes de large et autant de lignes que l'écran le permet (`INSTANT_MINE.camCols`), le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.

@@ -632,6 +632,9 @@ export const INSTANT_MINE = {
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
   featherReach: 3,
+  /* inscriptions (22/10, Geoffrey) : ouvertes seulement signupBefore s avant l'ouverture (11 h 30 pour 12 h), même en
+     session ; encore en session à l'heure = mine ratée, la session continue */
+  signupBefore: 30*60,
   /* découverte (22/10, Geoffrey) : la mine est cachée au départ (sauf la surface) ; chaque mineur découvre autour de lui
      dans un rayon de sa stat discoverMax (tout est éclairé : le rayon entier, comme une case en pleine lumière) */
   /* caméra (22/10, Geoffrey) : elle suit ton mineur ; camCols colonnes à l'écran (zoom), autant de lignes que la

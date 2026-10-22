@@ -28,6 +28,10 @@ export function nextSlot(t, { everyHours = MI.everyHours, timeZone = MI.timeZone
   for(let i = 0; i < 48; i++, s += HOUR) if(isSlot(s, everyHours, timeZone)) return s;
   throw new Error('aucune ouverture de mine instantanée trouvée');
 }
+/* inscriptions ouvertes à t pour l'ouverture nextAt : seulement dans les MI.signupBefore dernières secondes */
+export const signupOpensAt = nextAt => nextAt - MI.signupBefore * 1000;
+export const signupOpen = (t, nextAt = nextSlot(t)) => t >= signupOpensAt(nextAt) && t < nextAt;
+
 /* dernière ouverture au plus tard à t */
 export function lastSlot(t, { everyHours = MI.everyHours, timeZone = MI.timeZone } = {}){
   let s = Math.floor(t / HOUR) * HOUR;

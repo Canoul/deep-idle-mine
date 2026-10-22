@@ -24,10 +24,9 @@ const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(S
 const game = createGameService({ store: gameStore });
 const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
-/* mine instantanée : inscriptions retrouvées ; lancer une session normale désinscrit */
+/* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });
 await instant.load();
-game.onStart(accounts => instant.drop(accounts));
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
 const social = createSocialService({ store: gameStore, accounts: store, party, game });
 const server = http.createServer(createApp({ store, service, game, party, instant, social, root: ROOT }));

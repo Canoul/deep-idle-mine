@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine instantanée : inscriptions 30 min avant, même en session
+- **Pour le joueur** :
+  - on ne peut s'inscrire à la mine instantanée que **dans les 30 dernières minutes** : pour celle de 12 h, fermé à
+    11 h 29 (« 🔒 Inscriptions à 11 h 30 »), ouvert à 11 h 30 ;
+  - on peut maintenant **s'inscrire pendant une session** : « Mine instantanée » reste cliquable dans le lobby. Si la
+    session n'est pas finie à l'heure, on **rate la mine** et la session continue (la carte prévient) ;
+  - lancer une session normale ne désinscrit plus ; inscrit en session, on garde son groupe jusqu'à l'entrée dans la
+    mine ;
+  - les rappels (30, 15, 5 min, 30 s) arrivent aussi pendant une session normale ;
+  - après une mine instantanée, on n'est dans aucune session (vérifié par un test).
+- **Décisions** : celles ci-dessus (Geoffrey).
+- **État** : ✅ en ligne le 22/10
 ## 22/10/2026 — Geoffrey — Tours du Jugement : labyrinthe, brouillard, caméra, 10 minutes
 - **Pour le joueur** :
   - **Labyrinthe** : dans les tours, une ligne sur deux est un mur incassable percé d'un seul passage (4 cases), jamais
