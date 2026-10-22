@@ -5,7 +5,7 @@ import { SKILLS, STATS, CFG, IDS } from '../src/config.js';
 import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText } from '../src/meta/skills.js';
 import { buildSession } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
-import { moveT } from '../src/sim/mineur.js';
+import { moveT, climbT, winchT } from '../src/sim/mineur.js';
 import { stepDir, finishAction, killMob } from '../src/sim/actions.js';
 import { tackler } from '../src/sim/ai.js';
 import { updateMobs } from '../src/sim/mobs.js';
@@ -15,10 +15,10 @@ let n = 0; const id = () => 'op-sk-' + (++n);
 const learnAll = (st, nodes, points = 99) => { for(const x of nodes) assert.ok(skillOp(st, { action:'learn', node:x, opId:id() }, points).ok, x); return st; };
 const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n => Array(n.max).fill(n.id));
 
-test('arbres demandés : 3 étages (3 / 1 / 5 rangs) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
+test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + Braum 3 au 4e pour le Barbare) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), t.id === 'logisticien' ? [3, 1, 1, 5] : [3, 1, 5]);
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5], logisticien:[3, 1, 1, 5], barbare:[3, 1, 5, 3] }[t.id]);   // Barbare : Braum à l'étage 4
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
   assert.deepEqual(lg.map(n => [n.id, n.row]), [['build_time', 1], ['tall_ladder', 2], ['winch', 2], ['travel_rush', 3]]);
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
@@ -150,6 +150,22 @@ test('Barbare : butin des mobs +3 %/rang = 3 % de chance par rang pour 1 butin e
   const extra = perMob() - 1.5;   // butin en plus par mob tué : 0,15 en moyenne (1 chitine dans 15 % des cas)
   assert.ok(Math.abs(extra - 0.15) < 0.02, `en plus par mob ${extra}`);
   m.skill.loot = 1.5; assert.ok(Math.abs(perMob() - 1.5 - 1.5) < 0.03, '150 % : +1 sûr, et +1 encore une fois sur deux');
+});
+
+test('Barbare : Braum à l\'étage 4 (Pillage au max d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
+  const b = SKILLS.trees.find(t => t.id === 'barbare').nodes.find(n => n.id === 'braum');
+  assert.deepEqual([b.row, b.max, b.per], [4, 3, 0.1]);
+  assert.deepEqual(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:4, braum:3 } }, 99).ranks,
+    { damage:3, taunt:1, loot:4 }, 'Pillage pas au max : pas de Braum');
+  assert.equal(skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:5, braum:3 } }, 99)).braum, 0.3);
+  const G = worldFrom(['', '@']), m = G.miners[0];
+  m.skill.braum = 0.3;
+  const [w, c, s] = [moveT(G, m), climbT(G, m), winchT(G, m)];
+  m.helping = true;
+  assert.ok(Math.abs(moveT(G, m) - w / 1.3) < 1e-9, 'marche');
+  assert.ok(Math.abs(climbT(G, m) - c / 1.3) < 1e-9, 'échelle');
+  assert.ok(Math.abs(winchT(G, m) - s / 1.3) < 1e-9, 'seau');
+  m.skill.braum = 0; assert.equal(moveT(G, m), w, 'sans le skill : rien');
 });
 
 test('échelles au retour : on laisse le logisticien les poser (au plus 4 s), puis on la pose soi-même', () => {

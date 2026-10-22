@@ -163,6 +163,21 @@ test('Aider allié : il part tout de suite vers le mob qui a pris un allié en c
     run(G, 20); assert.ok(!/aide/i.test(alice.status), `ignoré : elle n'y va pas (${alice.status})`); }
 });
 
+test('Braum : le barbare marche plus vite quand il va aider, puis plus quand il reprend son travail', () => {
+  const G = corridor(2), [alice, bob] = G.miners;
+  alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;
+  alice.prefs = { ...alice.prefs, helpAllies: true, fightMobs: true }; alice.carac.light = 2; alice.skill.braum = 0.3;
+  const b = mob(G, { type: 'bestiole', x: 31, y: bob.y, hp: 50, maxhp: 50 });
+  let fast = false;
+  for(let i = 0; i < 400 && !fast; i++){ run(G, 1); fast = alice.helping && alice.action?.type === 'move' && /aide/i.test(alice.status); }
+  assert.ok(fast, 'en route pour aider : bonus actif');
+  assert.ok(Math.abs(alice.action.dur * alice.carac.speed * 1.3 - 1) < 1e-6, `durée d'un pas ${alice.action.dur}`);
+  run(G, 400);
+  assert.ok(b.hp <= 0, 'le mob est mort');
+  run(G, 20);
+  assert.equal(alice.helping, false, 'combat fini : plus de bonus');
+});
+
 test('Aider allié désactivé : comportement de base (il ne bouge pas pour un mob hors de vue)', () => {
   const G = corridor(2), [alice, bob] = G.miners;
   alice.x = 5; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); alice.carac.light = 2;

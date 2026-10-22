@@ -1851,3 +1851,21 @@ Règles (voir CLAUDE.md) :
 - **Fusion de main (descente commune, ténacité)** : `skills.js` garde `SKILL_ADD` / `behaviourSkills` à côté des `adds`
   de main (ténacité) ; `ui/stuff.js` : l'affichage « +skill » de main montre aussi Pillage (plus de ligne `add` en double).
   Après fusion : 291/291 sur les sujets, anti-triche 72/72, simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,6, 0 blocage.
+
+### Barbare : talent Braum (Geoffrey) — branche `geoffrey/braum`, ✅ en ligne le 22/10
+- **Quoi** : nœud `braum` (`SKILLS.trees` barbare, row 4, max 3, per 0.1 ; `src/config.js`). `m.helping` (remis à false au
+  début de `decide`) passe à vrai dans `helpAlly`, `trapGoal` (avec `m.helpFoe` = mob visé) et `dungeonGoal` (dès qu'il
+  y a un barbare et un donjon actif : y aller, attendre devant, combattre le boss) ; le combat qui continue par
+  `m.foe` garde le bonus si `th.id === m.helpFoe`. `helpBoost(m)` (`src/sim/mineur.js`) : ajouté à `walkBoost`
+  (additif avec Ruée / Navette), multiplie `climbT` et `winchT`. Les itinéraires (`path.js`, vitesses de base) ne
+  changent pas. Icône `shield` (`src/ui/skills.js`), wiki : Braum listé pour Vitesse et Vitesse sur échelle.
+- **Tests** : skills (étage 4, Pillage au max requis, ×1/1,3 marche/échelle/seau), mobs (Aider allié : bonus en route,
+  plus après le combat), trap (bonus pendant la rescousse). skills, mobs, trap, dungeon, wiki, winch, fall, team,
+  focus, diagnostics, lobby, game-service : ✅ 187/187.
+- **Simulation** `--miners 3 --count 5 --skills barbare` : 0 blocage ; profondeur 189,8 (main) → 191,4, areas 3,0 des
+  deux côtés. Effet faible : `simulate` laisse « Aider allié » à non, seuls donjon et pièges déclenchent.
+- **Points fragiles** : `m.helping` vaut aussi pour les non-barbares en route vers un donjon (sans effet : seul un
+  barbare peut avoir `braum`). ⚠️ Pas regardé dans un navigateur (onglet Skills avec 4 étages).
+- **Après fusion de main** (retours-22-10 : butin, chutes, skills de comportement) : 198/198 ✅ ; simulation 3 barbares
+  profondeur 192,4, 0 blocage. Braum apparaît tout seul dans « Skills en partie » (`behaviourSkills`, onglet Stuff).
+

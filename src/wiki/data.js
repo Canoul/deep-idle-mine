@@ -210,8 +210,8 @@ const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', att
 export function statRows(){
   const skillBoost = {};
   for(const t of SKILLS.trees) for(const n of t.nodes){
-    const key = { mine_speed:'mineSpeed', damage:'damage', ore_rush:'speed', travel_rush:'speed' }[n.id];
-    if(key) (skillBoost[key] ||= []).push(`${n.name} (${t.label})`);
+    const keys = { mine_speed:['mineSpeed'], damage:['damage'], ore_rush:['speed'], travel_rush:['speed'], braum:['speed', 'climbSpeed'] }[n.id] ?? [];
+    for(const key of keys) (skillBoost[key] ||= []).push(`${n.name} (${t.label})`);
     for(const k of Object.keys(n.adds || {})) (skillBoost[k] ||= []).push(`${n.name} (${t.label})`);
   }
   const keys = [...STUFF.shownStats, ...Object.keys(STATS).filter(k => !STUFF.shownStats.includes(k))];

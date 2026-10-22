@@ -19,6 +19,8 @@ export function createMiner(id, opts={}){
     winchJob: null,                 // chantier du treuil (logisticien) : { bottom : ligne à atteindre }
     rushUntil: -1,                  // fin du bonus de vitesse après un minerai (skill ore_rush)
     goingDown: false,               // redescend au front par l'existant (skill travel_rush)
+    helping: false,                 // va aider un allié ou se bat pour lui : tacle, donjon, piège (skill braum)
+    helpFoe: null,                  // mob qu'il est allé combattre pour un allié (le combat qui suit compte aussi)
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
@@ -42,13 +44,15 @@ export const lit    = (G,m) => curLum(G,m) >= CFG.darkLum;
 export const dk     = (G,m) => lit(G,m) ? 1 : CFG.darkSlow;
 /* bonus de marche des skills : après un minerai (Mineur), en trajet vers la surface ou vers le front (Logisticien) */
 export const travelling = m => m.mode==='return' || m.mode==='surface' || m.mode==='departure' || m.goingDown;
-export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0);
+/* bonus du Barbare (braum) quand il va aider un allié : marche et montée (échelle, seau) */
+export const helpBoost = m => m.helping ? m.skill.braum : 0;
+export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0) + helpBoost(m);
 export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
 /* temps d'une construction (échelle, passerelle, torche), réduit par le skill build_time */
 export const buildT = (m,t) => t*(1-m.skill.build_time);
-export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m));
+export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m)));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens) */
-export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*dk(G,m));
+export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*dk(G,m)*(1+helpBoost(m)));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m));

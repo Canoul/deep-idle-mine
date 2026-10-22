@@ -176,6 +176,14 @@ test('barbare : il vient tuer les mobs du piège, même réglé sur Fuir et sans
   assert.equal(G.mobs.filter(o => o.trap===t.id && o.hp>0).length, 0, 'tous les mobs du piège sont morts');
 });
 
+test('Braum : en route vers le piège, le barbare a son bonus de vitesse', () => {
+  const { G, bob } = rescue('barbare');
+  bob.skill.braum = 0.3;
+  let seen = false;
+  for(let i=0; i<60 && !seen; i++){ tick(G); seen = /rescousse|piège/i.test(bob.status) && bob.helping; }
+  assert.ok(seen, 'bonus actif pendant la rescousse');
+});
+
 test('sans barbare : personne ne vient (Fuir, sans Aider allié)', () => {
   const { G, bob } = rescue(null);
   for(let i=0; i<100; i++){ tick(G); assert.ok(!/rescousse|piège/i.test(bob.status), bob.status); }
