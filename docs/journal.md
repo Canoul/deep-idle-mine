@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Le lobby montre le skin des autres
+- **Pour le joueur** : dans le lobby, chaque membre du groupe apparaît avec son équipement (casque, armure, pioche…).
+  Avant, on ne voyait que son propre skin ; les autres étaient en tenue de base.
+- **À suivre** : regarder à deux comptes dans le navigateur. Quand un ami change de stuff, son skin change au
+  rafraîchissement suivant du lobby (quelques secondes).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
   (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite

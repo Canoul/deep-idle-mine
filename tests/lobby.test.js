@@ -49,6 +49,15 @@ test('lobby : spécialisation de chaque joueur (arbre de skills), « Sans spéci
   assert.equal(solo[0].tree, 'barbare');
 });
 
+test('lobby : skin de chaque joueur ; le sien en direct, celui des autres vient du serveur (revérifié)', async () => {
+  const { portraitLook } = await import('../src/ui/lobby.js');
+  const mine = { casque:'Casque en chitine' };
+  assert.deepEqual(portraitLook({ me:true, look:{} }, mine), mine, 'le sien : son stuff actuel');
+  assert.deepEqual(portraitLook({ me:false, look:{ pioche:'Pioche en pierre' } }, mine), { pioche:'Pioche en pierre' });
+  assert.deepEqual(portraitLook({ me:false, look:{ pioche:'Casque en chitine', bottes:'<img>' } }, mine), {}, 'pièce dans la mauvaise case, inconnue : ignorée');
+  assert.deepEqual(portraitLook({ me:false }, mine), {}, 'serveur ancien (pas de look) : tenue de base');
+});
+
 test('pendant une session : Lancer impossible (« Session en cours »), même pour le chef', () => {
   assert.deepEqual(launchState({ account:me, party:null, session:{ id:'s1' } }), { can:false, label:'⛏ Session en cours' });
   const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true })]);
