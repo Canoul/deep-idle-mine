@@ -42,13 +42,15 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     indestructibles sur 15, un seul passage de 4 cases), **cachée au départ** (Découverte de chaque mineur), caméra
     rapprochée qui suit son mineur, jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier
     arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
-  - Victoire → chaque présent reçoit un **coffre R1 à R7** (chances de l'identification) ; une victoire par joueur et
-    par ouverture ; un échec ne coûte rien. Coffre ouvert → une **Rune** de cette qualité (lignes tirées à
+  - Victoire → chaque présent reçoit un **trésor R1 à R7** (chances de l'identification) ; une victoire par joueur et
+    par ouverture ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
+    ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
+    couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4) ; tour (10 tours, à
     3) : stuff de base 0/10, petit stuff 3/10, minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min, le même seul 0/10.
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
-  - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
+  - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.

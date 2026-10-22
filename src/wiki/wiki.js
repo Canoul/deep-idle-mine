@@ -1,6 +1,7 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
 import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
+import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
 
 const $ = id => document.getElementById(id);
@@ -12,10 +13,10 @@ const tr = cells => `<tr>${cells.map(c => typeof c === 'object' && c !== null ? 
 const num = v => ({ n: v });
 const none = '<span class="none">–</span>';
 
-/* icône + nom d'un objet, dans la couleur de sa rareté */
+/* icône + nom d'un objet, dans la couleur de sa rareté (un trésor de tour : nom et couleur de sa qualité) */
 const icon = (tex, r = 'commun') => tex ? `<img class="ic r-${r}" src="textures/${esc(tex)}.png" alt="">` : '';
-export const item = (name, qty) => { const r = rarityOf(name), d = ITEMS[name];
-  return `<span class="it">${icon(d?.tex, r)}<span class="rn r-${r}">${qty != null ? `${f(qty)} × ` : ''}${esc(name)}</span></span>`; };
+export const item = (name, qty) => { const r = rarityOf(name), d = ITEMS[name], c = itemColor(name);
+  return `<span class="it">${icon(d?.tex, r)}<span class="rn r-${r}"${c ? ` style="color:${c}"` : ''}>${qty != null ? `${f(qty)} × ` : ''}${esc(itemName(name))}</span></span>`; };
 const ings = cost => `<div class="ings">${Object.entries(cost).map(([n, q]) => item(n, q)).join('')}</div>`;
 const pills = (list, cls = '') => list.map(t => `<span class="pill ${cls}">${esc(t)}</span>`).join(' ');
 const areaLabel = r => r.last ? `${r.k}+` : String(r.k);
@@ -115,7 +116,7 @@ function judgment(){
     <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>
     <li><b>La tour</b> : ${T.width} de large × ${T.height} de haut, pleine de briques à miner (<b>6 s</b> chacune) et construite en <b>labyrinthe</b> : une ligne sur ${T.mazeEvery} est un mur de briques incassables percé d'un seul passage de ${T.width - T.mazeHard} cases, jamais au-dessus du précédent (un chemin jusqu'en haut existe toujours). L'intérieur n'est pas découvert au départ : chaque mineur découvre autour de lui (sa Découverte, comme dans la mine). Ni oxygène, ni sac, ni mobs, et les briques ne rapportent rien. La gravité compte : on pose des échelles (illimitées, partagées).</li>
     <li><b>Le boss</b> (l'Ange ou le Démon) : <b>${f(B.hp)} PV</b>, sur le toit. Il vise le premier arrivé, frappe ${B.hitEvery === 1 ? 'chaque seconde' : `toutes les ${f(B.hitEvery)} s`} (toutes les ${f(B.rageEvery)} s sous ${Math.round(B.rageBelow * 100)} % de ses PV). Chaque coup a <b>${Math.round(B.knockChance * 100)} %</b> de chance (${Math.round(B.knockBarb * 100)} % contre un barbare) de <b>projeter</b> le mineur hors de la tour : il tombe en bas, étourdi 5 s, et doit tout remonter. On ne peut pas le provoquer.</li>
-    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>coffre</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
+    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>trésor</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a> de sa qualité. Son nom donne sa qualité, dans la couleur de la qualité (« Antique Trésor démoniaque ») ; il ne s'empile pas et sa case a le contour <b>Unique</b>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
   </ul>`;
 }
 

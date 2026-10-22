@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Trésors des tours (au lieu des coffres)
+- **Pour le joueur** : battre le boss d'une tour donne maintenant un **Trésor** angélique ou démoniaque. Son nom dit
+  sa qualité, écrit dans la couleur de la qualité : « **Antique** Trésor démoniaque » (R5), « **Mystérieux** Trésor
+  démoniaque » (R6)… Chaque trésor prend sa case (ne s'empile pas), avec un contour **Unique** orange foncé, une
+  nouvelle rareté. Ouvert, il donne toujours une rune de sa qualité.
+- **Pourquoi** : un joueur a cru recevoir une rune « Légendaire » parce que son coffre R6 avait le contour
+  Légendaire, et il a eu une rune Mystérieux. Avec les Trésors, ce qu'on lit est ce qu'on obtient.
+- **Décisions** : les noms de qualité restent ceux d'aujourd'hui (R5 = Antique) ; même règle pour l'Ange et le
+  Démon ; les anciens coffres déjà gagnés **restent tels quels** et s'ouvrent comme avant (Geoffrey).
+- **À suivre** : regarder l'inventaire dans le navigateur (couleurs, contour).
+- **État** : 🧪 sur la branche `geoffrey/tresor-tour` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Chercher un groupe (LFG)
 - **Pour le joueur** : dans le Lobby (mine classique), un bouton **« Chercher un groupe »**. On est mis en file avec
   un timer, on peut annuler. Dès qu'il y a de quoi faire un lobby de 3, il se forme **d'un coup** : 3 solos → chez le

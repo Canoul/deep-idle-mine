@@ -428,7 +428,7 @@ function smooth(dtr){
 
 async function leave(){
   if(!G || G.over) return;
-  if(!confirm(isTw() ? 'Quitter la tour ?\nTu ne recevras pas de coffre.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+  if(!confirm(isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
                      : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ alert(e.message); return; } }

@@ -119,14 +119,24 @@ export function pieceBonus(entry){
   return { stats, set };
 }
 
+/* trésor d'une tour (RUNE.treasures) : { side, q }, ou null pour tout autre objet */
+export const treasureOf = item => ITEMS[item]?.treasure ? ITEMS[item].chest : null;
+/* nom affiché d'un objet : « Antique Trésor démoniaque » pour un trésor (nom interne « Trésor démoniaque R5 »), le nom
+   tel quel sinon ; couleur du nom : celle de la qualité d'un trésor, null sinon (celle de la rareté) */
+export function itemName(item){
+  const t = treasureOf(item);
+  return t ? `${qualityDef(t.q).label} ${RUNE.treasures[t.side].name}` : item;
+}
+export const itemColor = item => { const t = treasureOf(item); return t ? qualityDef(t.q).color : null; };
+
 /* nom affiché : « Excellent : Pioche en pierre +2 » ; couleur : celle de la qualité (null = celle de la rareté du type) */
 export function pieceName(p){
   if(!p) return '';
-  if(typeof p === 'string') return p;
+  if(typeof p === 'string') return itemName(p);
   const d = qualityDef(p.q);
-  return (d ? `${d.label} : ` : '') + p.item + (p.plus > 0 ? ` +${p.plus}` : '');
+  return (d ? `${d.label} : ` : '') + itemName(p.item) + (p.plus > 0 ? ` +${p.plus}` : '');
 }
-export const pieceColor = p => qualityDef(p?.q)?.color ?? null;
+export const pieceColor = p => typeof p === 'string' ? itemColor(p) : qualityDef(p?.q)?.color ?? itemColor(p?.item);
 
 /* lignes plausibles pour cette qualité : le bon nombre, des stats connues, un % dans la fourchette, une Découverte au plus */
 function validLines(q, lines){
@@ -150,6 +160,7 @@ export function sanitizePiece(raw){
     const r = sanitizeLines(raw);
     return r ? { item: raw.item, uid: raw.uid, ...r } : null;
   }
+  if(treasureOf(raw.item)) return { item: raw.item, uid: raw.uid };   // un trésor : sa qualité est dans son nom
   if(!isStuff(raw.item)) return null;
   const p = { item: raw.item, uid: raw.uid };
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles

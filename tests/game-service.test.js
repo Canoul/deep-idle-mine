@@ -548,7 +548,7 @@ test('Jugement : les résidus versés remplissent les jauges (une fois), partis 
   assert.equal((await game.judgment(ME)).sides.angel.open, false, 'fermée au bout de 6 h');
 });
 
-test('Tour : fermée = refusée ; ouverte : réussite → un coffre de la tour par joueur présent, « déjà faite » ; échec = rien, on peut retenter', async () => {
+test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour par joueur présent, « déjà faite » ; échec = rien, on peut retenter', async () => {
   const { JUDGMENT, TOWER } = await import('../src/config.js');
   const A = JUDGMENT.sides.angel.item;
   let success = true;
@@ -567,16 +567,16 @@ test('Tour : fermée = refusée ; ouverte : réussite → un coffre de la tour p
   assert.equal(session.mode, 'tower_angel');
   assert.equal(session.finishAt - session.startedAt, TOWER.duration / GAME.speed * 1000, 'durée d\'une tour');
   advance(TOWER.duration / GAME.speed * 1000); await game.pump();
-  assert.ok(!(await game.state(ME)).inventory.slots.some(s => /^Coffre/.test(s?.item ?? '')));
+  assert.ok(!(await game.state(ME)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
   assert.equal((await game.judgment(ME)).sides.angel.done, false);
-  /* réussite à deux, l'autre part avant la fin : lui rien, moi un coffre ; je ne peux plus la refaire, lui si */
+  /* réussite à deux, l'autre part avant la fin : lui rien, moi un trésor ; je ne peux plus la refaire, lui si */
   success = true;
   await game.start(ME, { mode: 'tower_angel' }, team.slice(0, 2));
   advance(60_000); await game.leave(OTHER, {});
   advance(TOWER.duration / GAME.speed * 1000); await game.pump();
-  const mine = (await game.state(ME)).inventory.slots.filter(s => /^Coffre angélique R[1-7]$/.test(s?.item ?? ''));
+  const mine = (await game.state(ME)).inventory.slots.filter(s => /^Trésor angélique R[1-7]$/.test(s?.item ?? ''));
   assert.equal(mine.length, 1); assert.equal(mine[0].qty, 1);
-  assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Coffre/.test(s?.item ?? '')));
+  assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
   assert.equal((await game.judgment(ME)).sides.angel.done, true); assert.equal((await game.judgment(OTHER)).sides.angel.done, false);
   await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_done' });
   await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }, [{ account: OTHER.id, name: 'B' }, { account: ME.id, name: 'Zoe' }]), { code: 'tower_done' }, 'un membre qui l\'a faite bloque le groupe');

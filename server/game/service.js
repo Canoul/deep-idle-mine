@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, chestItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -228,11 +228,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
-      /* tour réussie : chaque joueur encore présent reçoit un coffre de la tour, qualité tirée par le serveur (RUNE) */
+      /* tour réussie : chaque joueur encore présent reçoit un trésor de la tour, qualité tirée par le serveur (RUNE) */
       const side = towerSide(rec.mode);
       if(side) for(const share of summary.shares || [])
         share.bag = summary.success && share.account && !share.left && !hasLeft(rec, share.account)
-          ? { [chestItem(side, rollChestQuality(random))]: 1 } : {};
+          ? { [treasureItem(side, rollChestQuality(random))]: 1 } : {};
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;

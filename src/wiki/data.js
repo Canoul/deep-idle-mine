@@ -102,8 +102,8 @@ export function sourcesOf(item){
   const res = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area)`);
   const chest = ITEMS[item]?.chest;
-  if(chest) out.push(`${TOWER.sides[chest.side].tower} : un coffre pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
-  if(item === RUNE.item) out.push('En ouvrant un coffre angélique ou démoniaque (rune de la même qualité que le coffre)');
+  if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   for(const [tr, l] of Object.entries(LOOT)){
@@ -161,7 +161,7 @@ export function itemGroups(){
   const names = Object.keys(ITEMS);
   const cats = [...CAT_ORDER, ...new Set(names.map(n => ITEMS[n].cat).filter(c => !CAT_ORDER.includes(c)))];
   return cats.map(cat => ({ cat, label: CAT_LABEL[cat] ?? cat,
-    items: names.filter(n => ITEMS[n].cat === cat)
+    items: names.filter(n => ITEMS[n].cat === cat && !(ITEMS[n].chest && !ITEMS[n].treasure))   // ancien coffre de tour : plus donné
       .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, 'fr'))
       .map(n => ({ name: n, tex: ITEMS[n].tex, rarity: rarityOf(n), w: ITEMS[n].w ?? null, stack: ITEMS[n].stack !== false,
                    stats: statsOf(n), uses: usesOf(n), sources: sourcesOf(n), recipe: RECIPES[n] ?? null })),

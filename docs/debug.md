@@ -1603,3 +1603,23 @@ Règles (voir CLAUDE.md) :
   du lobby (toutes les 2,5 s, ×2 en session) : un onglet en arrière-plan très ralenti par le navigateur peut sortir
   de la file après 30 s. Le groupe d'un membre peut changer pendant l'`await` de `pruneLfg` : `lfgValid` est relu
   juste avant de former le lobby.
+
+### Trésors des tours au lieu des coffres (Geoffrey) — branche `geoffrey/tresor-tour`
+- **Quoi** : le boss d'une tour donne `treasureItem(side, q)` (« Trésor démoniaque R5 ») au lieu de `chestItem`.
+  `src/config.js` : `RUNE.treasures`, `RUNE.treasureRarity = 'unique'`, `TREASURE_ITEMS` (`stack:false`,
+  `chest:{side,q}`, `treasure:true`) ; 6e rareté `unique` (`#c0480f`) dans `RARITY.tiers` (+ `style.css`, `wiki.css`).
+  Anciens `CHEST_ITEMS` gardés (empilables, ouvrables, plus donnés, cachés du wiki).
+- **Affichage** : `src/meta/piece.js` `treasureOf`, `itemName` (« Antique Trésor démoniaque »), `itemColor` (couleur
+  de la qualité) ; `pieceName` / `pieceColor` s'en servent ; `src/ui/rarity.js` `rname` : texte par défaut =
+  `itemName`, couleur de la qualité en style. Inventaire (bulle native), wiki (`item()`). Textes « coffre » des tours →
+  « trésor » (wiki, lobby, Jugement, Amélioration, fin de tour, Quitter). `scripts/give-admin.js --chests` donne des
+  trésors.
+- **Anti-duplication** : un trésor est une case avec `uid` ; `sanitizePiece` le garde (`{ item, uid }`, sans
+  qualité : elle est dans le nom). Sans ça, il disparaissait au rechargement de l'inventaire. uid en double refusé,
+  quantité > 1 ramenée à 1 (comme le stuff). Ouverture inchangée (`openTreasure` par nom, idempotente par opId).
+- **Tests** : `tests/rune.test.js` +2 (noms, couleurs, rareté, non empilable, relecture, ouverture, ancien coffre),
+  `rarity`, `wiki`, `game-service` (tour → trésor) adaptés. rune, rarity, wiki, inventory, game-service, lobby,
+  judgment : 99/99 ✅ ; `npm run test:anticheat` 72/72 ✅.
+- **Pas vérifié** : ⚠️ rendu dans le navigateur (couleur du nom, contour Unique) pas regardé à l'œil.
+- **Points fragiles** : le nom interne (« … R5 ») reste celui qui circule (sacs, historique, routes) ; tout nouvel
+  affichage d'un nom d'objet doit passer par `rname` / `itemName` pour montrer « Antique Trésor démoniaque ».

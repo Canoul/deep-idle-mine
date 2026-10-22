@@ -8,6 +8,7 @@ import { unlockOf, unlockError } from '../meta/furnace.js';
 import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
 import { statsText, slotOf } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
+import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname } from './rarity.js';
 
 const $ = id => document.getElementById(id);
@@ -38,7 +39,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
-  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${s.item} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
@@ -74,7 +75,7 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
   const piece = s.uid != null ? s : null;
-  const bits = [ piece ? pname(piece, 'b') : rname(s.item, s.item, 'b'), `× ${fullQty(s.qty)}` ];
+  const bits = [ piece ? pname(piece, 'b') : rname(s.item, undefined, 'b'), `× ${fullQty(s.qty)}` ];
   if(d) bits.push(CAT_LABEL[d.cat] || d.cat);
   bits.push(rlabel(s.item));
   if(d?.w) bits.push(`poids ${d.w}`);
