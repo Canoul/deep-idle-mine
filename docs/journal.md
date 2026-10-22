@@ -28,6 +28,19 @@ Modèle d'entrée :
   salle (le mineur choisit alors selon son réglage de combat).
 - **À suivre** : ~3 pièges ouverts par session à 3, chacun prend 1 à 4 min de combat ; profondeur moyenne presque
   inchangée (215,4 contre 214,6 sans pièges), aucun blocage. À juger en jeu : trop facile ? trop long ?
+
+## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture d'une area à 60 %
+- **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
+  suivante (40 % avant). (Le seau du treuil est revenu à 0,85 × en même temps, mis en ligne par Jules : entrée suivante.)
+- **Pourquoi** : depuis les mises en ligne de cet après‑midi (seau ×2 et focus « Plus profond »), une équipe de 3
+  atteignait l'area 5, la dernière, dès la première partie (vu en jeu sur la seed 1102884141, sans nouveau stuff).
+  Le cap du jeu, c'est de progresser de session en session grâce au stuff.
+- **Chiffres** (5 parties simulées, mineurs de base) : à 3 avec skills, la dernière area ouverte est la 4 à chaque
+  partie (avant ce changement : la 5 dans 4 parties sur 5), profondeur 262 → 213 ; à 2 avec skills, la 3 (profondeur ≈ 166) ; en solo, seule l'area 1
+  s'ouvre (avant : la 2), profondeur ≈ 95.
+- **Décisions** (Geoffrey) : seuil 60 % (valeur d'équilibrage). Le focus « Plus profond » de Jules est gardé.
+- **À suivre** : ⚠️ en solo, un débutant ne voit plus que les areas 0 et 1 à sa première partie : à surveiller (on
+  pourrait garder 40 % pour les premières areas et 60 % pour les profondes).
 - **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Treuil : retour à la vitesse d'avant

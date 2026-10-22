@@ -157,6 +157,6 @@ test('panneau de la mine : l\'objectif suit la dernière area ouverte, pas l\'ar
   const G = { unlockedAreas:2, areas:[{ oreMined:250, oreTotal:250 }, { oreMined:12, oreTotal:400 }] };
   const h = objectiveHtml(G);
   assert.match(h, /minerais de l'area 1/);
-  assert.match(h, /12 \/ 160/);
+  assert.match(h, /12 \/ 240/);   // 60 % de 400
   assert.match(h, /Area 2/);
 });

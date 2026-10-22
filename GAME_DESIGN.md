@@ -25,8 +25,8 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - Le monde est découpé en **areas** de 50 blocs de haut sur 50 de large (2500 blocs par area).
 - Chaque area a une **composition en pourcentages**, affichée dans un panneau quand le mineur y entre.
   - Exemple area 0 : 52% terre, 33% pierre, 10% charbon, 5% vide, soit 250 charbons sur 2500 blocs.
-- **Déblocage de l'area suivante** : miner un seuil de minerais de l'area courante, par défaut **40%** des minerais.
-  - Exemple area 0 : 40% de 250 charbons = 100 charbons.
+- **Déblocage de l'area suivante** : miner un seuil de minerais de l'area courante, par défaut **60%** des minerais (*valeur d'équilibrage* ; 40 % avant le 22/10/2026).
+  - Exemple area 0 : 60% de 250 charbons = 150 charbons.
   - Tant que le seuil n'est pas atteint, le fond de l'area est une **barrière infranchissable** : un bloc spécial « Barrière », incassable, qui délimite les deux areas. Pour l'IA c'est une case non franchissable, ignorée dans ses chemins. Quand l'area suivante se débloque, la barrière disparaît.
 - L'area suivante se trouve **en dessous** de l'actuelle : l'expérience voulue est le « going deep ».
 - Seules les areas débloquées ont besoin d'exister en mémoire ; la profondeur est quasi gratuite.

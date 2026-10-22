@@ -33,7 +33,7 @@ test('le puits du treuil tient le mineur à n\'importe quelle ligne (comme une �
   assert.ok(stepDir(G, m, 1, 0)); assert.equal(m.action.type, 'mine', 'il mine à droite depuis le seau');
 });
 
-test('monter / descendre dans le seau : pas d\'échelle à poser, 2 × la vitesse de montée', () => {
+test('monter / descendre dans le seau : pas d\'échelle à poser, 0,85 × la vitesse de montée', () => {
   const G = shaft(10), m = G.miners[0];
   m.x = X; m.y = 6;
   assert.ok(stepDir(G, m, 0, -1));
