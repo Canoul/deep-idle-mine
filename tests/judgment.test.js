@@ -1,7 +1,12 @@
 /* Jugement (concept Ange vs Démon) : jauges globales, ouverture des tours, « déjà fait » par ouverture. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { JUDGMENT } from '../src/config.js';
+import { JUDGMENT, IDS, BLOCKS, TREASURE_BLOCK } from '../src/config.js';
+import { isTarget } from '../src/sim/world.js';
+import { targetVal, setFocus } from '../src/sim/focus.js';
+import { decide } from '../src/sim/ai.js';
+import { updateLight } from '../src/sim/light.js';
+import { worldFrom } from './helpers.js';
 import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone } from '../src/meta/judgment.js';
 
 const H = 3600e3, CAP = JUDGMENT.cap, OPEN = JUDGMENT.openHours * H;
@@ -75,3 +80,41 @@ test('vue publique : compte, cap, ouvert, temps restant, déjà fait pour ce jou
   assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false });
   assert.equal(v.now, 1000);
 });
+
+/* ---------- résidus dans la mine : visés par l'IA comme un treasure (22/10/2026) ---------- */
+
+const RES = [IDS.residueAngel, IDS.residueDemon];
+/* galerie éclairée : mineur en (3,2), charbon en (1,2), un résidu au bout en (7,2) */
+function gallery(t){
+  const G = worldFrom(['', 'd'.repeat(50), '#c @   ##', '#########']);
+  G.tiles[2][7] = t;
+  G.torches.push({ x:3, y:2 }); updateLight(G);
+  return G;
+}
+
+test('résidus : cibles de l\'IA, au même poids que le treasure (même en focus « Uniquement »)', () => {
+  const m = { prefs:{ focus:{} } };
+  for(const t of RES){
+    assert.ok(isTarget(t));
+    assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val);
+  }
+  m.prefs.focus = { iron:'only' };
+  for(const t of RES) assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val, 'pas un minerai : jamais ignoré');
+});
+
+test('IA : un résidu découvert est visé, même face à un charbon plus proche', () => {
+  for(const t of RES){
+    const G = gallery(t), m = G.miners[0];
+    decide(G, m);
+    assert.deepEqual(m.target, { x:7, y:2 });
+    assert.equal(m.status, 'Va chercher un résidu');
+  }
+});
+
+test('IA : un résidu non découvert n\'attire pas le mineur', () => {
+  const G = gallery(IDS.residueAngel), m = G.miners[0];
+  G.seen[2][7] = 0;
+  decide(G, m);
+  assert.notDeepEqual(m.target, { x:7, y:2 });
+});
+

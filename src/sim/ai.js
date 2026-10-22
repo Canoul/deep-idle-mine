@@ -1,7 +1,7 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
 import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP } from '../config.js';
-import { DIRS, isOre, isTarget, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
+import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT } from './mineur.js';
@@ -23,7 +23,7 @@ export function compassScan(G,m,R){
   m.pings=out; return out;
 }
 
-const targetStatus = t => typeOf(t)==='treasure' ? 'Va ouvrir un treasure' : 'Suit un filon ('+BLOCKS[t].name+')';
+const targetStatus = t => typeOf(t)==='treasure' ? 'Va ouvrir un treasure' : isResidue(t) ? 'Va chercher un résidu' : 'Suit un filon ('+BLOCKS[t].name+')';
 
 /* ---- coordination entre mineurs : réservation des cibles ----
    Chacun reste indépendant, mais ne vise pas ce qu'un autre vise déjà (minerai, ligne de galerie, puits).

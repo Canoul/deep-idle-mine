@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Les mineurs vont chercher les résidus
+- **Pour le joueur** : un résidu angélique ou démoniaque découvert attire maintenant le mineur autant qu'un
+  treasure : il fait le détour pour le miner (avant : il ne les prenait qu'en passant). Statut « Va chercher un
+  résidu ».
+- **Effet mesuré** (5 parties à 3) : **2,6 fois plus de résidus** rapportés (4,2 → 10,8 par session), donc des
+  jauges du Jugement qui se remplissent plus vite ; valeur des minerais −3 %.
+- **Décisions** : poids du résidu = poids du treasure (Jules).
+- **État** : 🧪 sur la branche `jules/residus-poids` (pas en ligne)
+
 ## 22/10/2026 — Jules — Focus area : « Plus profond » vise vraiment l'area la plus profonde
 - **Pour le joueur** : avec « Plus profond » (choisi de base au début de la session), le mineur va travailler dans
   l'area la plus profonde ouverte et y redescend à chaque nouvelle area. Avant, il finissait les filons des areas du

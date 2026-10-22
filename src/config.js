@@ -76,6 +76,8 @@ export const HELP = { range:20 };
    - special  : bloc de jeu sans rôle de ressource (barrière) */
 export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
 
+/* attrait d'un treasure découvert pour l'IA (val), repris tel quel pour les résidus */
+const TREASURE_VAL = 12;
 export const BLOCKS = {
   /* family 'bloc' : dans l'inventaire, objets de type Bloc (ils se concassent : onglet Concasseur, CRUSHER) */
   1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240', family:'bloc'},
@@ -92,14 +94,15 @@ export const BLOCKS = {
   9:{name:'Pierre dure', type:'terrain', tex:'hardstone', w:3, hard:2.4, color:'#575c66', dot:'#6c727d', family:'bloc'},
   /* treasure : entité enfouie dans la mine ; ouverte, elle donne un objet Treasure TX (TREASURE).
      val = attrait pour l'IA une fois découverte */
-  10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
+  10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:TREASURE_VAL, noDrop:true},
   /* mur de donjon (DUNGEON) : brique de pierre violet sombre, incassable */
   11:{name:'Brique de donjon', type:'special', tex:'dungeon_brick', w:0, hard:Infinity, color:'#3a2a4a', dot:'#55406b', unbreakable:true, noDrop:true},
   /* résidus (concept Ange vs Démon, JUDGMENT) : pierre sombre aux fissures lumineuses, dès l'area 4. Bloc ordinaire
-     (terrain) : pas de Fortune, pas de shiny, pas visé par l'IA, ne compte pas pour le déblocage. Rapportés au coffre,
-     ils remplissent les jauges de l'onglet Jugement. */
-  12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu'},
-  13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu'},
+     (terrain) : pas de Fortune, pas de shiny, ne compte pas pour le déblocage. Visé par l'IA une fois découvert, au
+     même poids qu'un treasure (val, 22/10/2026 ; avant : jamais visé). Rapportés au coffre, ils remplissent les
+     jauges de l'onglet Jugement. */
+  12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu', val:TREASURE_VAL},
+  13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu', val:TREASURE_VAL},
   /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (6 s, ne rapporte rien) et sa version
      indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
   14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:6, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
