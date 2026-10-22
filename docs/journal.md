@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — « Blocage au treuil » : fausse alerte du détecteur
+- **Pour le joueur** : rien ne change. Le logisticien n'était pas coincé : il redescendait au front par le treuil, y
+  arrivait en fin de session et remontait aussitôt. C'est l'outil de test (détecteur de blocage des simulations) qui
+  se trompait quand un mineur passe de « descend » à « remonte » ; il est corrigé.
+- **À suivre** (pas un bug) : ce logisticien part pour 2 min 30 de descente à 5 min de la fin (deux combats en route),
+  pour remonter dès son arrivée. Une règle « ne pas redescendre si le temps restant ne permet pas de travailler »
+  ferait gagner un peu ; à décider.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Mine instantanée : inscriptions 30 min avant, même en session
 - **Pour le joueur** :
   - on ne peut s'inscrire à la mine instantanée que **dans les 30 dernières minutes** : pour celle de 12 h, fermé à

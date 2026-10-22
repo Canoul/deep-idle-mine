@@ -1375,3 +1375,17 @@ Règles (voir CLAUDE.md) :
   Chromium (dev) : session lancée, lobby → Mine instantanée → S'inscrire en session ✅, aucune erreur.
   ⚠️ Bouton fermé « 🔒 Inscriptions à … » pas vu à l'écran (testé seulement par `canSignup`).
 
+
+### Faux blocage « Retour (treuil) » (seed 23757) : détecteur corrigé (Geoffrey) — branche `geoffrey/fix-treuil-retour`, en ligne le 22/10
+- **Symptôme** : `simulate --miners 3 --count 6 --skills mixed`, seed 23757 : ⚠ BLOQUÉ Bleu (logisticien),
+  `{"t":3445,"x":32,"y":157,"mode":"return","status":"Retour (treuil)"}`.
+- **Cause** (trace tick par tick, `scratchpad/stuck.mjs`) : pas de blocage. De 3300 à 3443 s, il redescend au front par
+  le puits du treuil (y 9 → 158, deux combats de 15 et 28 s), puis passe en `return` (fin de session) et remonte sans
+  arrêt jusqu'à la surface (3548 s). Le détecteur (`src/sim/diagnostics.js`) n'exemptait une descente que si le mode
+  en FIN de fenêtre n'était pas `return`, et une montée que si y avait baissé sur TOUTE la fenêtre : la bascule
+  descente → retour ne passait ni l'un ni l'autre.
+- **Correction** : si le mineur passe en `return` pendant la fenêtre, la partie avant (descente ≥ 3 couches) et la
+  partie après (montée ≥ 3 couches) sont jugées séparément. Sans bascule : règle inchangée.
+- **Tests** : `tests/diagnostics.test.js` (+2 : descente puis bascule = pas bloqué ; immobile puis bascule = bloqué ;
+  le premier échouait avant la correction). session, team : verts. Seed 23757 : 0 blocage (partie identique).
+- ⚠️ Inefficacité notée (pas corrigée) : redescente de 2 min 30 à 5 min de la fin, pour remonter aussitôt.
