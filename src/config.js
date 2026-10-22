@@ -92,10 +92,21 @@ export const BLOCKS = {
   10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
   /* mur de donjon (DUNGEON) : brique de pierre violet sombre, incassable */
   11:{name:'Brique de donjon', type:'special', tex:'dungeon_brick', w:0, hard:Infinity, color:'#3a2a4a', dot:'#55406b', unbreakable:true, noDrop:true},
+  /* résidus (concept Ange vs Démon, JUDGMENT) : pierre sombre aux fissures lumineuses, dès l'area 4. Bloc ordinaire
+     (terrain) : pas de Fortune, pas de shiny, pas visé par l'IA, ne compte pas pour le déblocage. Rapportés au coffre,
+     ils remplissent les jauges de l'onglet Jugement. */
+  12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu'},
+  13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu'},
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (6 s, ne rapporte rien) et sa version
+     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:6, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:6, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
-export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9 };
+export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -326,6 +337,8 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'residue_angel','residue_demon','rune','chest_angel','chest_demon',
+  'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -370,6 +383,23 @@ export const SHINY = {
   salt: 0x5a1e7a11,                         // pour dériver G.shinyRng de la seed
 };
 
+/* ---- Coffres de tour et runes (concept Ange vs Démon, étape 3 ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Le boss d'une tour donne à chaque joueur un coffre de sa tour, de qualité R1 à R7 (chances UPGRADE.qualities), un
+   objet par qualité : « Coffre angélique R4 ». Ouvert depuis l'inventaire (comme un Treasure), il donne une Rune de la
+   même qualité, dont les lignes (stat et %) sont tirées à l'ouverture comme une identification. Rune ange = rune
+   démon. Enchantement (onglet Amélioration) : la rune est consommée, ses lignes s'ajoutent à une pièce de stuff, une
+   seule rune par pièce, définitif. */
+export const RUNE = {
+  item: 'Rune', tex: 'rune', chestWeight: 2,
+  chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
+  /* rareté (contour de case) d'un coffre selon sa qualité */
+  rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
+};
+/* nom de l'objet coffre d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) */
+export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
+const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
+  [1,2,3,4,5,6,7].map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
+
 /* ---- Rareté des objets (src/meta/rarity.js) ----
    tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
    items : rareté des objets qui ne sont pas « commun » (les autres le sont par défaut). Les shiny prennent
@@ -384,6 +414,8 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
+    'Résidu angélique':'rare', 'Résidu démoniaque':'rare', [RUNE.item]:'epique',
+    ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -531,6 +563,8 @@ export const ITEMS = {
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
+  ...CHEST_ITEMS,                                                                       // coffres des tours (RUNE)
+  [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -613,6 +647,9 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
+  { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
+  { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
@@ -644,6 +681,41 @@ export const DUNGEON = {
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,
   salt: 0x0d06e0,
+};
+
+/* ---- Jugement : concept Ange vs Démon (22/10/2026, décisions du créateur ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Résidus : dans chaque area à partir de fromArea, pct % des cases de chaque sorte (tirage à part de la seed, à la place
+   de terrain : le reste de l'area ne change pas). Jauges (serveur, ns judgment) : les résidus versés aux joueurs en fin
+   de session s'ajoutent à la jauge de leur sorte ; à cap, le donjon associé ouvre pendant openHours h (la jauge
+   repart de 0, le surplus est perdu ; elle continue de se remplir pendant l'ouverture). */
+export const JUDGMENT = {
+  fromArea: 4, pct: 0.5, cap: 250, openHours: 6, salt: 0x5e51d0e,
+  sides: {
+    angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },
+    demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
+  },
+  poll: 15000,          // ms : rafraîchissement de l'onglet Jugement
+};
+
+/* ---- Tours de l'Ange et du Démon (concept Ange vs Démon, étape 4 ; src/sim/tower/) ----
+   Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers. Une tour
+   pleine de stonebrick (dureté hard s, 5 % indestructible) : les mineurs partent du rez-de-chaussée et creusent vers
+   le toit, où le boss attend. Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
+   lumière, ni butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
+   Carte : marge de `margin` colonnes de chaque côté ; tour de `width` colonnes (murs compris) et `height` lignes
+   (toit compris) ; `sky` lignes de ciel au-dessus du toit ; sol plein en dessous. Portes : les doorH lignes du bas des
+   deux murs. Boss : bossW × bossH au milieu du toit, immobile, pas provocable ; il frappe sa cible (premier arrivé sur
+   le toit, encore dessus) toutes les hitEvery s (rageEvery sous rageBelow de ses PV) ; chaque coup a knockChance
+   (knockBarb pour un barbare) de la projeter de knock cases vers l'extérieur (elle tombe de la tour). */
+export const TOWER = {
+  duration: 900,                                  // s de jeu (15 min)
+  width: 15, height: 30, sky: 7, margin: 8, doorH: 2, unbreakablePct: 5,
+  boss: { hp: 1000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.10, knockBarb: 0.05, knock: 6 },
+  sides: {
+    angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇' },
+    demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈' },
+  },
+  salt: 0x70e7e5,
 };
 
 /* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */

@@ -37,6 +37,13 @@
     <h2>Où miner</h2>
     <div class="seg mineModes" id="mineModes"></div>
   </div>
+  <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
+  <div class="card" id="judgmentCard" hidden>
+    <h2><i data-pxi="radiance"></i>Ange contre Démon</h2>
+    <p class="mut small">L'effort de tous les mineurs : chaque résidu rapporté au coffre remplit la jauge de son camp.</p>
+    <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
+    <p class="mut small">Les résidus angéliques et démoniaques se trouvent dans la roche à partir de l'area 4. Une jauge pleine ouvre la tour de son camp pendant quelques heures : au sommet, un boss garde un coffre.</p>
+  </div>
   <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
   <div class="card miCard" id="miCard" hidden>
     <h2>Mine instantanée</h2>
@@ -151,6 +158,23 @@
     <div class="card"><h2>Ton butin</h2><div id="miMine"></div><p class="mut small">Versé dans ton inventaire à la fin. Quitter = rien.</p></div>
     <div class="card"><h2>Classement</h2><div id="miRank"></div><p class="mut small" id="miFeathersLeft"></p></div>
     <div class="card"><h2>Journal</h2><div id="miLog" class="miLog"></div></div>
+  </aside>
+</main>
+</div>
+<div id="twRun" hidden>
+<header>
+  <div class="twTitle" id="twTitle"></div>
+  <div class="timer" id="twTimer">00:00 / 15:00</div>
+  <div class="grow"><div class="bar"><i id="twTimeBar"></i></div></div>
+  <span class="mut" id="twLeft"></span>
+  <button id="twLeaveBtn" title="Tu ne recevras pas de coffre"><i data-pxi="door"></i>Quitter la tour</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvTwWrap"><canvas id="cvTw"></canvas></div>
+  <aside>
+    <div class="card"><h2>Boss</h2><div id="twBoss"></div></div>
+    <div class="card"><h2>Équipe</h2><div id="twTeam"></div></div>
+    <div class="card"><h2>Journal</h2><div id="twLog" class="miLog"></div></div>
   </aside>
 </main>
 </div>

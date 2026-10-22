@@ -1183,6 +1183,105 @@ Règles (voir CLAUDE.md) :
   ⚠️ L'échec restant (« chaque area (0 à 6) : blocs posés = comptes de l'area ») existe **sans** ce changement : il
   vient de `d40ce42` (donjons en areas 4 et 5 à 100 %), pas corrigé ici.
 
+### Ange vs Démon, étape 2 : résidus, jauges, onglet Jugement (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Spec** du concept complet (validée en discussion) : `docs/superpowers/specs/2026-10-22-ange-demon-design.md`.
+  Choix de Claude, non tranché par le créateur : projection du boss à **6 cases** (5 n'auraient jamais fait tomber).
+- **Blocs** 12 `Résidu angélique` et 13 `Résidu démoniaque` (terrain, famille `residu`, poids 6, dureté 2,4, rareté
+  rare). `placeResidues` (`src/sim/world.js`) : dès l'area 4, 0,5 % de chaque, tirage à part (`JUDGMENT.salt`), posés
+  en dernier à la place de terrain : le reste de la mine est inchangé. Textures `residue_angel` / `residue_demon`
+  (`scripts/gen_textures.py`). Icône `radiance` (Kenney 28,12) pour l'onglet.
+- **Jauges** : `src/meta/judgment.js` (pur) ; ns `judgment` clé `state` dans le stockage ; ajout dans `settleWith`
+  (`server/game/service.js`) seulement quand `creditSession` verse vraiment (une fois par session et par joueur) ;
+  `GET /api/game/judgment`. Une tour pleine s'ouvre à la lecture suivante (`refresh`).
+- **Onglet Jugement** (3e, après Session : les touches 3 à = se décalent, Social n'a plus de touche) :
+  `src/ui/judgment.js`, styles `.jg` / `.jtower`. ✅ Captures 1440×900 et 390×844 (jauges 37/250 et 182/250, tour de
+  l'Ange ouverte avec le temps restant). Bug trouvé à la capture : la jauge restait sur « Chargement… » (premier appel
+  avant la connexion) → appel aussi au démarrage et à l'ouverture de l'onglet.
+- **Test du créateur à faire** : le bouton « Aller au Lobby » d'une tour ouverte mène au Lobby, où la tour n'est pas
+  encore proposée (étape 4).
+- ⚠️ **Rythme** (simulation, 3 mineurs × 8 sessions, stuff de base) : **0 résidu**. Les mineurs s'arrêtent vers la
+  case 190, l'area 4 commence à 202 : ils la débloquent parfois en fin de session sans y entrer. Même en faisant viser
+  les résidus par l'IA (essai, pas gardé) : 0. Les jauges ne bougeront qu'avec des joueurs équipés qui minent en
+  area 4-5 (13 résidus de chaque par area). Signalé au créateur.
+- Le test « chaque area : blocs posés = comptes » échouait depuis `d40ce42` (murs de donjon pas comptés) : corrigé
+  (donjon, treasure et résidus comptés à part). Suite complète + anticheat 632/632.
+- Une session en cours déjà arrivée en area 4 au moment de la mise en ligne serait rejouée avec des résidus si le
+  serveur redémarre (la génération de l'area 4+ a changé) : rare (stuff de base), sans perte de butin déjà versé.
+
+### Ange vs Démon, étape 3 : coffres des tours, runes, Enchantement (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Config** `RUNE` + `chestItem(side, q)` : 14 objets `Coffre angélique R1` … `Coffre démoniaque R7` (cat treasure,
+  empilables, `chest:{ side, q }`, rareté selon q) et `Rune` (cat rune, non empilable). Textures `chest_angel`,
+  `chest_demon`, `rune`.
+- **`src/meta/piece.js`** : `rollLines` (extrait de `rollIdentity`), `rollChestQuality`, `rollRune(q)`, `isRune` ;
+  `sanitizePiece` accepte une Rune (toujours tirée, sans niveau) et `piece.rune` ({ q, lines, s }, revérifiée comme
+  une identification, barème compris) ; `pieceBonus` additionne les lignes de la rune.
+- **`src/meta/loot.js`** : un coffre de tour s'ouvre comme un Treasure et donne une Rune (lignes tirées à
+  l'ouverture). **`src/meta/upgrade.js`** : `enchant` / `enchantError` (`not_stuff`, `not_rune`,
+  `already_enchanted`) ; identification et amélioration refusent maintenant une rune (`not_stuff`).
+- **Serveur** : action `enchant` de `POST /api/game/upgrade` ; `open` relit maintenant le stuff porté avant
+  d'ouvrir (une rune reçoit un uid neuf : sans ça, elle pouvait prendre l'uid d'une pièce portée si le compteur de
+  la base était trop bas. Test anticheat qui échoue sans la correction).
+- **UI** : rubrique Enchantement (onglet Amélioration) : cases pièce + rune, aperçu de ce que la rune donnera sur
+  CETTE pièce, confirmation ; infobulle d'une rune en « % de la valeur de la pièce ». ✅ Testé dans Chromium
+  (1440×900) : 2 coffres ouverts par l'API, rune R4 posée sur une épée en fer (+3,1 % perçage, +0,15 marche), pièce
+  marquée « déjà enchantée », aucune erreur de page.
+- **Outil admin** : `node scripts/give-admin.js --name X --chests 1` donne un coffre de chaque qualité (ange et
+  démon) pour tester sans tour.
+- **Tests** : `tests/rune.test.js`, `tests/anticheat/rune.test.js`, rareté. Suite complète + anticheat 644/644.
+
+### Ange vs Démon, étape 4 : tours de l'Ange et du Démon (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Config** `TOWER` ; blocs 14-17 (stonebrick ange / démon et leurs versions indestructibles) ; modes de lancement
+  `tower_angel` / `tower_demon` dans `MINE_MODES` (champ `tower`).
+- **Simulation** `src/sim/tower/` : `world.js` (carte : ciel, tour 15 × 30, portes, 5 % indestructible avec chemin
+  garanti, toit sous le boss incassable), `session.js` (Dijkstra « en creusant » : à côté, monter en posant une
+  échelle dans la tour, descendre par une échelle, chutes ≤ CFG.maxFall ; boss, ordre d'arrivée, coups, rage,
+  projection de 6 cases, étourdissement à l'atterrissage, départs, fin). Déterministe (seed) : le serveur rejoue.
+- **Partagé** `src/shared/tower.js` (construction depuis l'enregistrement, départs), `src/shared/tower-view.js`
+  (envoi complet à chaque fois, comme la MI). `server/game/live-game.js` : 3e sorte de partie.
+- **Serveur** : `start` refuse `tower_closed` / `tower_done`, note `rec.opening` ; durée `TOWER.duration` ;
+  `settleWith` : réussite → un coffre par présent (qualité tirée par le serveur) puis `markDone` seulement si
+  l'ouverture n'a pas changé ; pas d'XP ; pas de focus.
+- **Navigateur** : bloc `#twRun` (chrono, Boss, Équipe, Journal, Quitter la tour), `src/render/tower.js`
+  (ciel teinté, briques, boss 24 × 40 px, barre de vie, marqueur de cible), `src/ui/tower-hud.js` (HUD et bilan),
+  Lobby (`mineModes` filtre les tours fermées, « Lancer la tour », texte d'explication, préférences cachées).
+- ✅ **Essai complet dans Chromium** (serveur de dev, jauge de l'Ange ouverte à la main) : la tour apparaît dans
+  « Où miner », lancement, partie affichée (creusement, échelles, boss), boss vaincu, bilan, **Coffre angélique R1**
+  dans l'inventaire, aucune erreur de page. Captures 1440×900.
+- **Équilibrage mesuré** (stuff de base) : à 3, ≈ 7 min, 5/5 ; seul, 1/5 (boss à 100-200 PV). Signalé au créateur.
+- **Tests** : `tests/tower.test.js` (carte, chemin garanti sur 200 seeds, IA à 3, solo fort / faible, boss, rage,
+  projection, barbare, départs, rejeu de la partie en direct), `tests/game-service.test.js` (circuit serveur :
+  fermée, échec, réussite à deux avec un départ, déjà faite, groupe bloqué, fermeture), `tests/lobby.test.js`.
+  `tests/helpers.js` : le faux gestionnaire finit une tour à `TOWER_TICKS`. Suite complète + anticheat : 655/655.
+
+### État du projet : Ange vs Démon, branche identification-sans-stats signalée (Geoffrey) — en ligne le 22/10
+- `claude/etat-du-projet.md` (dépôt et projet claude.ai) : section Ange contre Démon ; l'Amélioration décrit ce qui
+  est sur `main` (identification AVEC lignes) et signale la branche `geoffrey/identification-sans-stats` (pas
+  fusionnée, mêmes fichiers que les runes : `src/meta/piece.js`, `src/ui/upgrade.js`, `tests/amelioration.test.js`).
+  ⚠️ À sa fusion : garder `rollLines` / `rollRune` (les runes tirent toujours des lignes) et le barème `scale` 2.
+- Remarque de méthode : les commits `1c67b15` (nerf identification) et `fc86f1c` (tableau de stats) ont été faits
+  directement sur `main`, sans « Par : » ni entrée dans `docs/journal.md` (CLAUDE.md pas lu en début de discussion).
+  Rattrapé dans l'entrée du journal du 22/10 « Ange contre Démon ».
+
+### Identification : qualité seule, plus de lignes (Geoffrey) — branche `geoffrey/identification-sans-stats`, fusionnée et en ligne le 22/10
+- `rollIdentity` (`src/meta/piece.js`) renvoie `{ q }` (un seul tirage du hasard). `sanitizePiece` : qualité connue sans
+  lignes (`lines` absent ou `[]`) → `{ q }` ; sinon, anciennes lignes revérifiées comme avant (barème, `validLines`).
+  Les pièces identifiées avant le 22/10 **gardent** leurs lignes (confirmé par Geoffrey le 22/10 ; pour
+  les retirer un jour : ne garder que `q` dans `sanitizePiece`). Pièce `{ q }` : mêmes stats qu'une pièce non identifiée (testé).
+- UI (`src/ui/upgrade.js`) : texte sans « stats en plus », tableau des qualités = qualité + chance, message de réussite
+  = nom seul. `UPGRADE.qualities` garde min / max / lines (relecture des anciennes pièces).
+- Tests : amelioration (nouveau test « seulement la qualité ») + anticheat/upgrade : verts.
+
+- **Fusion avec Ange vs Démon (22/10)** : conflits `src/meta/piece.js` (gardé `rollLines` / `rollChestQuality` / `rollRune` de main ; `rollIdentity` = `{ q }` ; `sanitizePiece` : `sanitizeLines` d'abord, sinon qualité seule, rune revérifiée) et `tests/amelioration.test.js` (tests de main gardés, titre du test identifier « sans lignes »). amelioration, rarity, rune, anticheat rune + upgrade : 44/44 ✅.
+
+### Jugement dans le Lobby (Geoffrey) — branche `geoffrey/jugement-lobby`, en ligne le 22/10
+- `index.html` : section `data-view="jugement"` retirée ; carte `#judgmentCard` (même `#judgmentBody`) dans la colonne
+  gauche du Lobby. `src/ui/nav.js` : onglet retiré, `pickTab('#jugement')` → lobby. `src/ui/lobby.js` : `st.view`
+  ('jugement' ou null), bouton `data-view` inséré après les modes non-tour, `showJudgment()`, `pickMode(mode)` ;
+  cartes équipe / préférences / MI / dev cachées en vue Jugement. `src/ui/judgment.js` : « Choisir la tour »
+  (`onTower(side)`) au lieu de « Aller au Lobby ». `src/main.js` : `wantJudgment` (hash lu avant la navigation),
+  badge sur `lobby`, `judgmentPending` passé au lobby. Le serveur ne change pas (Jugement n'est pas un mode).
+- Tests : nav (ordre des onglets, #jugement), lobby, judgment : 25/25 ✅. Chromium 1440×900 et 390×844 : bouton,
+  carte, retour à Mine, lien #jugement ✅, aucune erreur. ⚠️ Pas vu à l'écran : une tour ouverte (« Choisir la tour »).
 ### Wiki à jour + vraies chances du concasseur (Geoffrey) — branche `geoffrey/wiki-nouveautes`
 - **Concasseur** : `src/meta/crusher.js` gagne `dropOdds(bloc)` (par famille : somme des chances, `every` = 1/chance
   lots, `sec` = temps moyen) et `aboutTime(s)`. Utilisés par la fenêtre « ? » (`src/ui/crusher.js`, styles `.fodds`)

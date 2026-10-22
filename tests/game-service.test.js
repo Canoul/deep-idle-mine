@@ -522,3 +522,65 @@ test('historique : sessions terminées du joueur, plus récentes d\'abord, avec 
   assert.equal(list.length, 2);
   assert.ok(list[0].startedAt > list[1].startedAt, 'la plus récente en haut');
 });
+
+test('Jugement : les résidus versés remplissent les jauges (une fois), partis = rien ; jauge pleine → tour ouverte 6 h', async () => {
+  const { JUDGMENT } = await import('../src/config.js');
+  const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
+  const { game, advance } = setup({ summary: fakeSummary(() => ({ [A]: 200, [D]: 6, Pierre: 10 })) });
+  const v0 = await game.judgment(ME);
+  assert.deepEqual([v0.sides.angel.count, v0.sides.angel.open], [0, false]);
+  /* à deux, un part : le partant ne verse rien, le présent verse sa part (ici tout le coffre) */
+  await game.start(ME, {}, team.slice(0, 2));
+  advance(60_000); await game.leave(OTHER, {});
+  advance(realDurationMs()); await game.pump();
+  let v = await game.judgment(ME);
+  assert.equal(v.sides.angel.count, 200); assert.equal(v.sides.demon.count, 6);
+  /* rejouer la fin (redémarrage) ne compte pas deux fois */
+  await game.recover(); await game.pump();
+  assert.equal((await game.judgment(ME)).sides.angel.count, 200);
+  /* une session de plus : 400 ≥ 250 → la tour de l'Ange ouvre, jauge à 0 (surplus perdu) */
+  await game.start(ME, {}); advance(realDurationMs()); await game.pump();
+  v = await game.judgment(OTHER);
+  assert.equal(v.sides.angel.open, true); assert.equal(v.sides.angel.count, 0);
+  assert.ok(v.sides.angel.openUntil > v.now && v.sides.angel.openUntil <= v.now + JUDGMENT.openHours * 3600e3);
+  assert.equal(v.sides.demon.open, false); assert.equal(v.sides.demon.count, 12);
+  advance(JUDGMENT.openHours * 3600e3);
+  assert.equal((await game.judgment(ME)).sides.angel.open, false, 'fermée au bout de 6 h');
+});
+
+test('Tour : fermée = refusée ; ouverte : réussite → un coffre de la tour par joueur présent, « déjà faite » ; échec = rien, on peut retenter', async () => {
+  const { JUDGMENT, TOWER } = await import('../src/config.js');
+  const A = JUDGMENT.sides.angel.item;
+  let success = true;
+  const towerSummary = rec => ({ id: rec.id, mode: 'tower', side: 'angel', success,
+    shares: rec.players.map(p => ({ account: p.account, left: rec.leaves.some(l => l.account === p.account), bag: {} })) });
+  const summary = rec => rec.mode === 'tower_angel' ? towerSummary(rec) : fakeSummary(() => ({ [A]: JUDGMENT.cap }))(rec);
+  const { game, advance } = setup({ summary });
+  await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_closed' });
+  /* une session normale qui rapporte 250 résidus angéliques ouvre la tour */
+  await game.start(ME, {}); advance(realDurationMs()); await game.pump();
+  assert.equal((await game.judgment(ME)).sides.angel.open, true);
+  await assert.rejects(game.start(ME, { mode: 'tower_demon' }), { code: 'tower_closed' }, 'l\'autre tour reste fermée');
+  /* échec : rien, l'essai n'est pas consommé */
+  success = false;
+  const { session } = await game.start(ME, { mode: 'tower_angel' }, team.slice(0, 2));
+  assert.equal(session.mode, 'tower_angel');
+  assert.equal(session.finishAt - session.startedAt, TOWER.duration / GAME.speed * 1000, 'durée d\'une tour');
+  advance(TOWER.duration / GAME.speed * 1000); await game.pump();
+  assert.ok(!(await game.state(ME)).inventory.slots.some(s => /^Coffre/.test(s?.item ?? '')));
+  assert.equal((await game.judgment(ME)).sides.angel.done, false);
+  /* réussite à deux, l'autre part avant la fin : lui rien, moi un coffre ; je ne peux plus la refaire, lui si */
+  success = true;
+  await game.start(ME, { mode: 'tower_angel' }, team.slice(0, 2));
+  advance(60_000); await game.leave(OTHER, {});
+  advance(TOWER.duration / GAME.speed * 1000); await game.pump();
+  const mine = (await game.state(ME)).inventory.slots.filter(s => /^Coffre angélique R[1-7]$/.test(s?.item ?? ''));
+  assert.equal(mine.length, 1); assert.equal(mine[0].qty, 1);
+  assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Coffre/.test(s?.item ?? '')));
+  assert.equal((await game.judgment(ME)).sides.angel.done, true); assert.equal((await game.judgment(OTHER)).sides.angel.done, false);
+  await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_done' });
+  await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }, [{ account: OTHER.id, name: 'B' }, { account: ME.id, name: 'Zoe' }]), { code: 'tower_done' }, 'un membre qui l\'a faite bloque le groupe');
+  /* la tour fermée (6 h plus tard) : refusée */
+  advance(JUDGMENT.openHours * 3600e3);
+  await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }), { code: 'tower_closed' });
+});

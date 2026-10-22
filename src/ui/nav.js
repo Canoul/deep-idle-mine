@@ -34,6 +34,7 @@ const isTab = id => TABS.some(t => t.id === id);
 export function pickTab(hash, saved){
   const h = String(hash||'').replace(/^#/, '').toLowerCase();
   if(isTab(h)) return h;
+  if(h === 'jugement') return 'lobby';             // ancien onglet Jugement : dans le Lobby depuis le 22/10 (« Où miner »)
   if(h === 'mine') return 'session';                 // ancienne adresse de l'onglet Mine (lobby + session, séparés depuis)
   if(h.startsWith('rejoindre=')) return 'lobby';     // lien d'invitation à un groupe
   if(isTab(saved)) return saved;

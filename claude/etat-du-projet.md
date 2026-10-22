@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 22/10/2026.*
+*Dernière mise à jour : 22/10/2026 (après-midi : Ange contre Démon en ligne, `main` = `f06fb6a`).*
 
 ---
 
@@ -22,21 +22,35 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   en un essai ; la progression passe par l'amélioration du stuff avec les ressources rapportées
   (`GAME_DESIGN.md` §1, « Intention de progression »).
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
-  Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#inventaire`…) : la session continue de
-  tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+  Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#jugement`, `#inventaire`…) : la session
+  continue de tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
 - **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
-  « Mine / Mine instantanée ») et reste visible en **lecture seule** pendant une session ;
+  « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
   groupe bascule sur Session. Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
 
+- **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
+  GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
+  - **Résidus** angélique / démoniaque dans la roche dès l'area 4 (0,5 % chacun, poids 6). Rapportés au coffre, ils
+    remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
+  - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
+    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, 15 min de jeu : creuser une tour 15 × 30
+    (stonebrick 6 s, 5 % indestructible) jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier
+    arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
+  - Victoire → chaque présent reçoit un **coffre R1 à R7** (chances de l'identification) ; une victoire par joueur et
+    par ouverture ; un échec ne coûte rien. Coffre ouvert → une **Rune** de cette qualité (lignes tirées à
+    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif.
+  - ⚠️ Mesures (stuff de base) : **0 résidu** en 8 sessions à 3 (personne n'entre en area 4) ; tour gagnée à 3 en
+    ≈ 7 min (5/5), **seul 1/5**. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
+  - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
 - **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
   présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
   à gauche (GAME_DESIGN §6). Serveur : `server/social/`, stockage `social` dans PostgreSQL.
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
-  d'action en bas (touches 1-9, 0, -) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
+  d'action en bas (touches 1-9, 0, -, =) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
   `src/ui/pxicons.js`, `npm run textures:ui`). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
 - **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public
@@ -56,13 +70,17 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
-  pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé → qualité R1 Utile à R7 Légendaire, 1 à 4 lignes de stats valant 10 à 55 % de la
-  valeur de l'objet en x, définitive) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
-  plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les matériaux) ; lignes tirées
-  affichées une par une, même sur la même stat (22/10) ; Enchantement plus tard. Nouvelles
-  stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte
-  `q`, `lines`, `plus` (pas d'ID dérivé type 113:4 : les lignes sont tirées, chaque pièce est unique). Plumes
-  d'ange : mine instantanée ; Cristaux de pleine lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
+  pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →
+  qualité R1 Utile à R7 Légendaire, définitive ; **depuis le 22/10, la qualité seule, sans aucune stat en plus**
+  (décision de Geoffrey ; ancien : des lignes de stats, que les pièces identifiées avant **gardent**, revérifiées au
+  barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
+  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10) ; la valeur
+  d'un objet reste celle du catalogue (`UPGRADE.worth`). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
+  réussite 100/95/90 %, plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les
+  matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
+  lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce
+  porte `q`, `lines` (anciennes seulement), `plus`, `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine
+  lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
@@ -92,6 +110,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - Geoffrey Boilay (`canoul`), Jules Lange (depuis le 21/10/2026). Chacun travaille avec sa propre discussion Claude.
 - Une branche git par tâche (`prénom/sujet`), mise en ligne quand on le demande : voir `CLAUDE.md` §2.
+- Branches distantes déjà fusionnées à supprimer sur GitHub (le proxy des sessions Claude refuse la suppression) :
+  `geoffrey/ange-demon`.
 
 ## En attente / hors périmètre
 

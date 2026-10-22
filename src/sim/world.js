@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
@@ -94,6 +94,7 @@ export function genArea(G,k){
     oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   }
   const treasure = placeTreasure(G, k, grid, counts, r);
+  placeResidues(G.seed, k, grid, counts);
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -127,6 +128,26 @@ function placeTreasure(G, k, grid, counts, r){
   const t={k, x:c%W, y:areaTop(k)+((c/W)|0), item:treasureItem(k), opened:false};
   G.treasures.set(t.y*W+t.x, t);
   return t;
+}
+
+/* Résidus angélique et démoniaque (JUDGMENT) : à partir de l'area fromArea, pct % des cases de l'area pour chacun, à la
+   place de blocs de terrain (jamais un minerai, un treasure, un mur de donjon ni une case vide). Tirage à part (seed +
+   salt + area) et posé en dernier : le reste de l'area ne change pas. Comptes exacts (comme les minerais). */
+export function placeResidues(seed, k, grid, counts){
+  if(k < JUDGMENT.fromArea) return;
+  const r = mulberry32(hash(seed ^ JUDGMENT.salt, k+1)), n = Math.round(grid.length*JUDGMENT.pct/100);
+  const residue = new Set(Object.values(JUDGMENT.sides).map(d => d.block));
+  const spots = [];
+  for(let i=0;i<grid.length;i++) if(typeOf(grid[i])==='terrain' && !residue.has(grid[i])) spots.push(i);
+  shuffle(spots, r);
+  let si = 0;
+  for(const d of Object.values(JUDGMENT.sides)){
+    const key = oreKey(d.block);
+    for(let j=0; j<n && si<spots.length; j++){
+      const c = spots[si++], old = oreKey(grid[c]);
+      counts[old]--; counts[key] = (counts[key]||0) + 1; grid[c] = d.block;
+    }
+  }
 }
 
 export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);
