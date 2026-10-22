@@ -47,21 +47,22 @@ test('qualité : les chances de la config (somme 100 %), sur 20 000 tirages', ()
   for(const d of UPGRADE.qualities) assert.ok(Math.abs(count[d.q] / 20000 - d.chance) < 0.012, `R${d.q} ${count[d.q] / 20000}`);
 });
 
-test('identification : le bon nombre de lignes, valeurs dans la fourchette, Découverte seulement en R6/R7 et une au plus', () => {
-  const r = mulberry32(11);
+test('identification (22/10) : seulement la qualité, aucune ligne de stats ; la pièce n\'apporte que ses stats de base', () => {
+  const r = mulberry32(11), seen = new Set();
   for(let i = 0; i < 3000; i++){
-    const { q, lines, s: scale } = rollIdentity(PICK, r), d = UPGRADE.qualities.find(x => x.q === q);
-    assert.equal(scale, UPGRADE.scale, 'une pièce tirée porte le barème actuel');
-    assert.equal(lines.length, d.lines);
-    const disc = lines.filter(l => l.stat === 'discoverMax');
-    assert.ok(disc.length <= 1 && (disc.length === 0 || q >= 6));
-    for(const l of lines.filter(l => l.stat !== 'discoverMax')){
-      assert.ok(UPGRADE.pool.includes(l.stat));
-      assert.ok(l.pct >= d.min && l.pct <= d.max, `${l.stat} ${l.pct} R${q}`);
-      assert.ok(lineValue(PICK, l) >= linePoints(PICK, l.stat, d.min) - 1e-9 && lineValue(PICK, l) <= linePoints(PICK, l.stat, d.max) + 1e-9);
-    }
-    assert.ok(sanitizePiece({ item:PICK, uid:1, q, lines, s: scale }).q === q, 'un tirage réel passe toujours la vérification');
+    const id = rollIdentity(PICK, r);
+    assert.deepEqual(Object.keys(id), ['q']);
+    assert.ok(UPGRADE.qualities.some(d => d.q === id.q));
+    seen.add(id.q);
+    const p = sanitizePiece({ item:PICK, uid:1, ...id });
+    assert.equal(p.q, id.q, 'un tirage réel passe toujours la vérification');
+    assert.equal(p.lines, undefined);
+    assert.deepEqual(pieceBonus(p), pieceBonus(PICK), 'mêmes stats qu\'une pièce non identifiée');
+    assert.deepEqual(statLines(p), statLines(PICK));
   }
+  assert.equal(seen.size, UPGRADE.qualities.length, 'toutes les qualités tombent');
+  assert.equal(sanitizePiece({ item:PICK, uid:1, q:9 }).q, undefined, 'qualité inconnue refusée');
+  assert.equal(sanitizePiece({ item:PICK, uid:1, q:4, lines:[] }).q, 4);
 });
 
 /* ---------- stats d'une pièce, nom ---------- */
@@ -92,13 +93,14 @@ test('nom affiché : « Excellent : Pioche en pierre +2 », couleur de la qualit
 
 /* ---------- identifier ---------- */
 
-test('identifier : le sacrifice disparaît, la pièce garde son uid et reçoit qualité et lignes', () => {
+test('identifier : le sacrifice disparaît, la pièce garde son uid et reçoit sa qualité (sans lignes)', () => {
   const { inv, uids:[a, b] } = setup(2);
   const r = identify(inv, { uid:a, sacrifice:b, opId:id() }, fixed(0.5));
   assert.equal(r.ok, true);
   assert.equal(countOf(inv, PICK), 1);
   const p = inv.slots.find(s => s?.uid === a);
-  assert.ok(p.q >= 1 && p.lines.length >= 1);
+  assert.ok(p.q >= 1 && p.q <= 7);
+  assert.equal(p.lines, undefined, 'plus de lignes (22/10)');
   assert.equal(inv.slots.some(s => s?.uid === b), false);
 });
 

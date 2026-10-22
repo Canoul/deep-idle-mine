@@ -71,18 +71,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
   pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →
-  qualité R1 Utile à R7 Légendaire, définitive, **et des lignes de stats** (sur `main`) : total max 25 / 30 / 35 /
-  40 / 50 / 75 / 100 % de la valeur de l'objet depuis le 22/10 (ancien : 30 à 220 % ; pièces existantes ramenées au
-  nouveau barème), conversion d'une ligne selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`,
-  22/10) ; la valeur d'un objet reste celle du catalogue (`UPGRADE.worth`). ⚠️ **Branche
-  `geoffrey/identification-sans-stats` (11 h 55) pas encore fusionnée** : l'identification n'y donne plus que la
-  qualité (les pièces déjà identifiées gardent leurs lignes). Elle touche les mêmes fichiers que les runes : à
-  fusionner en vérifiant que les runes gardent leurs lignes. **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
+  qualité R1 Utile à R7 Légendaire, définitive ; **depuis le 22/10, la qualité seule, sans aucune stat en plus**
+  (décision de Geoffrey ; ancien : des lignes de stats, que les pièces identifiées avant **gardent**, revérifiées au
+  barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
+  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10) ; la valeur
+  d'un objet reste celle du catalogue (`UPGRADE.worth`). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
   réussite 100/95/90 %, plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les
-  matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours. Stats : minage % et
-  dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte `q`, `lines`, `plus`,
-  `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine lune : minotaure du donjon
-  (`scripts/give-admin.js` pour tester).
+  matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
+  lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce
+  porte `q`, `lines` (anciennes seulement), `plus`, `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine
+  lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).

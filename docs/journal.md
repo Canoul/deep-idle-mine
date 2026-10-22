@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Identification : la qualité seule, plus de stats
+- **Pour le joueur** : identifier une pièce lui donne toujours une qualité (R1 Utile à R7 Légendaire : titre et couleur
+  du nom), mais **plus aucune stat en plus**. Le tableau des qualités dans l'onglet ne montre plus que les chances.
+- **Décisions** : celle-ci (Geoffrey, 22/10) ; les pièces identifiées avant **gardent** leurs lignes de stats (Geoffrey).
+- **État** : ✅ en ligne le 22/10 (les runes, elles, tirent toujours des lignes)
+
 ## 22/10/2026 — Geoffrey — Ange contre Démon : résidus, Jugement, tours, coffres, runes et Enchantement
 - **Pour le joueur** :
   - **Résidus** : à partir de l'area 4, des blocs de **Résidu angélique** (fissures bleu ciel) et **démoniaque**

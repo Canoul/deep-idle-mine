@@ -57,7 +57,7 @@ export function setupUpgrade({ onOp }){
     const sel = c => pick === c ? ' sel' : '';
     $('upBody').innerHTML =
       `<p class="mut small">Clique sur une case, puis sur une pièce pour l'y poser. La pièce à identifier reçoit une qualité `+
-      `(R1 à R7) et des stats en plus, en sacrifiant un autre exemplaire du même objet (peu importe sa qualité). C'est définitif.</p>`+
+      `(R1 à R7), en sacrifiant un autre exemplaire du même objet (peu importe sa qualité). C'est définitif.</p>`+
       `<div class="upPair"><div>${box(t, 'Pièce à identifier', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(s, 'Sacrifice', 'upSacrifice' + sel('sacrifice'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>🔍 Identifier</button></div>`+
@@ -80,7 +80,7 @@ export function setupUpgrade({ onOp }){
       if(busy || !can) return;
       if((isIdentified(s) || s.plus > 0) && !confirm(`Sacrifier ${pieceName(s)} ? Sa qualité et son niveau seront perdus.`)) return;
       await send({ action:'identify', uid:t.uid, sacrifice:s.uid }, r =>
-        `✔ ${pname(r.piece)} : ${esc(statLines(r.piece).join(' · '))}`);
+        `✔ ${pname(r.piece)}`);
       target = null; sacrifice = null; pick = 'target'; render();
     };
   }
@@ -164,9 +164,8 @@ export function setupUpgrade({ onOp }){
 
 /* rappel des règles, depuis la config */
 function qualityTable(){
-  return `<details class="upRules"><summary>Les qualités</summary><table class="upTable"><tr><th>Qualité</th><th>Chance</th><th>Stats par ligne</th><th>Lignes</th></tr>`+
-    UPGRADE.qualities.map(d => `<tr><td><span class="rn" style="color:${d.color}">R${d.q} ${esc(d.label)}</span></td><td>${pct(d.chance)}</td>`+
-      `<td>${d.min} à ${d.max} % de la valeur de l'objet</td><td>${d.lines}${UPGRADE.discover.qualities.includes(d.q) ? ' (dont peut-être +1 Découverte)' : ''}</td></tr>`).join('')+
+  return `<details class="upRules"><summary>Les qualités</summary><table class="upTable"><tr><th>Qualité</th><th>Chance</th></tr>`+
+    UPGRADE.qualities.map(d => `<tr><td><span class="rn" style="color:${d.color}">R${d.q} ${esc(d.label)}</span></td><td>${pct(d.chance)}</td></tr>`).join('')+
     `</table></details>`;
 }
 function levelTable(){

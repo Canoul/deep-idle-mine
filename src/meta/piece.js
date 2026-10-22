@@ -6,7 +6,10 @@
      l'identification (% de la valeur de cette pièce), niveau compris.
    Une Rune (RUNE.item) est elle-même une pièce : { item:'Rune', uid, q, lines, s }, jamais sans qualité, sans niveau.
    - sans q : pas encore identifiée (c'est le cas de toutes les pièces fabriquées) ;
-   - q (1 à 7) et lines [{ stat, pct }] : tirées par le serveur à l'identification, définitives. Une ligne garde son %
+   - q (1 à 7) : tirée par le serveur à l'identification, définitive. Depuis le 22/10/2026 (décision du créateur),
+     l'identification ne donne QUE la qualité : plus de lignes de stats (une pièce identifiée depuis : { q }, sans lines).
+   - lines [{ stat, pct }] : seulement sur les pièces identifiées AVANT le 22/10 (elles les gardent, revérifiées).
+     Une ligne garde son %
      tiré (de la valeur de l'objet), pas sa valeur : la valeur se recalcule depuis la config, donc un rééquilibrage
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
@@ -64,10 +67,10 @@ function rollLines(d, rnd){
   return lines;
 }
 
-/* identification : { q, lines, s } tirés pour cet objet */
+/* identification : { q } tirée pour cet objet. Seulement la qualité (22/10/2026) : plus de lignes de stats.
+   (Les lignes ne se tirent plus que pour les runes.) */
 export function rollIdentity(item, rnd){
-  const d = qualityDef(rollQuality(rnd));
-  return { q: d.q, lines: rollLines(d, rnd), s: UPGRADE.scale };
+  return { q: rollQuality(rnd) };
 }
 
 /* coffre de tour : sa qualité, avec les chances de l'identification (RUNE) */
@@ -151,6 +154,7 @@ export function sanitizePiece(raw){
   const p = { item: raw.item, uid: raw.uid };
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
   if(id) Object.assign(p, id);
+  else if(qualityDef(raw.q) && (raw.lines === undefined || (Array.isArray(raw.lines) && raw.lines.length === 0))) p.q = raw.q;   // identifiée depuis le 22/10 : qualité seule
   if(raw.rune && typeof raw.rune === 'object'){ const r = sanitizeLines(raw.rune); if(r) p.rune = r; }
   if(Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS) p.plus = raw.plus;
   return p;
