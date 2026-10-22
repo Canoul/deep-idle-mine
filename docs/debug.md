@@ -1169,3 +1169,13 @@ Règles (voir CLAUDE.md) :
   (elle passait l'area 4 à 20 %) : garder [4, 5] et chance 1.
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu 1c67b15 (barème d'identification) : seul conflit
   `docs/debug.md` (deux entrées gardées) ; 168 tests du sujet + anticheat 67/67 verts après fusion.
+
+### Identification : qualité seule, plus de lignes (Geoffrey) — branche `geoffrey/identification-sans-stats`, 🧪 pas en ligne
+- `rollIdentity` (`src/meta/piece.js`) renvoie `{ q }` (un seul tirage du hasard). `sanitizePiece` : qualité connue sans
+  lignes (`lines` absent ou `[]`) → `{ q }` ; sinon, anciennes lignes revérifiées comme avant (barème, `validLines`).
+  Les pièces identifiées avant le 22/10 **gardent** leurs lignes (choix prudent, à confirmer par Geoffrey ; pour les
+  retirer : ne garder que `q` dans `sanitizePiece`). Pièce `{ q }` : mêmes stats qu'une pièce non identifiée (testé).
+- UI (`src/ui/upgrade.js`) : texte sans « stats en plus », tableau des qualités = qualité + chance, message de réussite
+  = nom seul. `UPGRADE.qualities` garde min / max / lines (relecture des anciennes pièces).
+- Tests : amelioration (nouveau test « seulement la qualité ») + anticheat/upgrade : verts.
+

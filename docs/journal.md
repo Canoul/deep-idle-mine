@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Identification : la qualité seule, plus de stats
+- **Pour le joueur** : identifier une pièce lui donne toujours une qualité (R1 Utile à R7 Légendaire : titre et couleur
+  du nom), mais **plus aucune stat en plus**. Le tableau des qualités dans l'onglet ne montre plus que les chances.
+- **Décisions** : celle-ci (Geoffrey, 22/10). À confirmer : les pièces identifiées avant gardent leurs lignes de stats.
+- **État** : 🧪 sur la branche `geoffrey/identification-sans-stats` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Mine instantanée avec gravité, plumes, Amélioration, donjons partout
 - **Pour le joueur** :
   - **Mine instantanée** : les mineurs ne volent plus. Ils tombent quand il n'y a rien sous eux et posent des

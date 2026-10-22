@@ -3,7 +3,10 @@
 
    Une pièce : { item, uid, q?, lines?, s?, plus? }  (s = barème des fourchettes, UPGRADE.scale ; absent = 1)
    - sans q : pas encore identifiée (c'est le cas de toutes les pièces fabriquées) ;
-   - q (1 à 7) et lines [{ stat, pct }] : tirées par le serveur à l'identification, définitives. Une ligne garde son %
+   - q (1 à 7) : tirée par le serveur à l'identification, définitive. Depuis le 22/10/2026 (décision du créateur),
+     l'identification ne donne QUE la qualité : plus de lignes de stats (une pièce identifiée depuis : { q }, sans lines).
+   - lines [{ stat, pct }] : seulement sur les pièces identifiées AVANT le 22/10 (elles les gardent, revérifiées).
+     Une ligne garde son %
      tiré (de la valeur de l'objet), pas sa valeur : la valeur se recalcule depuis la config, donc un rééquilibrage
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
@@ -47,16 +50,9 @@ const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
 export const lineValue = (item, l) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct);
 
-/* identification : { q, lines } tirés pour cet objet */
+/* identification : { q } tirée pour cet objet. Seulement la qualité (22/10/2026) : plus de lignes de stats. */
 export function rollIdentity(item, rnd){
-  const d = qualityDef(rollQuality(rnd)), D = UPGRADE.discover, lines = [];
-  let discover = false;
-  for(let i = 0; i < d.lines; i++){
-    if(!discover && D.qualities.includes(d.q) && rnd() < D.chance){ discover = true; lines.push({ stat:'discoverMax' }); continue; }
-    const stat = UPGRADE.pool[Math.floor(rnd() * UPGRADE.pool.length)];
-    lines.push({ stat, pct: pct1(d.min + rnd() * (d.max - d.min)) });
-  }
-  return { q: d.q, lines, s: UPGRADE.scale };
+  return { q: rollQuality(rnd) };
 }
 
 /* ligne d'un ancien barème → même place dans la fourchette actuelle (arrondie au dixième, bornée) ; null si la ligne
@@ -126,7 +122,8 @@ export function sanitizePiece(raw){
   if(!raw || typeof raw.item !== 'string' || !isStuff(raw.item) || !Number.isSafeInteger(raw.uid)) return null;
   const p = { item: raw.item, uid: raw.uid };
   const lines = currentLines(raw);         // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
-  if(validLines(raw.q, lines)) { p.q = raw.q; p.lines = lines.map(l => l.stat === 'discoverMax' ? { stat: l.stat } : { stat: l.stat, pct: l.pct }); p.s = UPGRADE.scale; }
+  if(qualityDef(raw.q) && (raw.lines === undefined || (Array.isArray(raw.lines) && raw.lines.length === 0))) p.q = raw.q;   // identifiée depuis le 22/10 : qualité seule
+  else if(validLines(raw.q, lines)) { p.q = raw.q; p.lines = lines.map(l => l.stat === 'discoverMax' ? { stat: l.stat } : { stat: l.stat, pct: l.pct }); p.s = UPGRADE.scale; }
   if(Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS) p.plus = raw.plus;
   return p;
 }

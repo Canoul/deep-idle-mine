@@ -56,8 +56,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
-  pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé → qualité R1 Utile à R7 Légendaire, 1 à 4 lignes de stats valant 10 à 55 % de la
-  valeur de l'objet en x, définitive) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
+  pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé → qualité R1 Utile à R7 Légendaire, définitive ; **depuis le 22/10, la qualité
+  seule, sans aucune stat en plus** ; ancien : 1 à 4 lignes de stats, gardées par les pièces identifiées avant) ; **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats, réussite 100/95/90 %,
   plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les matériaux) ; lignes tirées
   affichées une par une, même sur la même stat (22/10) ; Enchantement plus tard. Nouvelles
   stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce porte
