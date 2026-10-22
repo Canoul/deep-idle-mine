@@ -18,6 +18,21 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture à 60 %, treuil à sa vitesse d'avant
+- **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
+  suivante (40 % avant). Le seau du treuil redescend à sa vitesse d'avant (0,85 × la vitesse de montée au lieu de 2 ×).
+- **Pourquoi** : depuis les mises en ligne de cet après‑midi (seau ×2 et focus « Plus profond »), une équipe de 3
+  atteignait l'area 5, la dernière, dès la première partie (vu en jeu sur la seed 1102884141, sans nouveau stuff).
+  Le cap du jeu, c'est de progresser de session en session grâce au stuff.
+- **Chiffres** (5 parties simulées, mineurs de base) : à 3 avec skills, la dernière area ouverte est la 4 à chaque
+  partie (avant ce changement : la 5 dans 4 parties sur 5), profondeur 262 → 213 ; à 2 avec skills, la 3 (profondeur ≈ 166) ; en solo, seule l'area 1
+  s'ouvre (avant : la 2), profondeur ≈ 95.
+- **Décisions** (Geoffrey) : seuil 60 %, treuil 0,85 ×. Le focus « Plus profond » de Jules est gardé.
+- **À suivre** : ⚠️ en solo, un débutant ne voit plus que les areas 0 et 1 à sa première partie : à surveiller (on
+  pourrait garder 40 % pour les premières areas et 60 % pour les profondes). Avec le seau lent, l'IA peut de nouveau
+  en sortir pour une échelle voisine (comportement d'avant).
+- **État** : 🧪 sur la branche `geoffrey/quota-treuil` (pas en ligne)
+
 ## 22/10/2026 — Jules — Chat de session
 - **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
   joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.

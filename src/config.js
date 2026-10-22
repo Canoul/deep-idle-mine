@@ -21,7 +21,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
 export const CFG = {
-  ladderTime:2, refillRate:30, unlockRatio:0.4,
+  ladderTime:2, refillRate:30, unlockRatio:0.6,
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
@@ -299,10 +299,9 @@ export const XP = {
    wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
 /* Treuil (skill Logisticien, étape 2) : un puits au milieu de la mine (colonne x), de la surface jusqu'au haut de la
    dernière area débloquée. Un seau monte et descend à speedFactor × la vitesse de montée du mineur ; tout le monde
-   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). Plus rapide qu'une
-   échelle (et presque qu'une chute) : sinon l'IA sortait du seau pour une colonne d'échelles ou un trou à côté
-   (0,85 avant le 22/10/2026). */
-export const WINCH = { x: Math.floor(W/2), speedFactor:2 };
+   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). 0,85 : plus lent
+   qu'une échelle déjà posée (2 × du 22/10/2026 à 18 h au soir même, retiré : la mine se finissait trop vite). */
+export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet

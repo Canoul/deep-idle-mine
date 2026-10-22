@@ -1529,3 +1529,19 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
   sessions confondues ; pas d'affichage MI / tour.
 
+### Seuil d'ouverture 60 % et treuil revenu à 0,85 × (Geoffrey) — branche `geoffrey/quota-treuil`, 🧪 pas en ligne
+- **Contexte** : seed 1102884141, équipe de 3 sans nouveau stuff jusqu'à l'objectif « Area 6 ». La seed est ordinaire
+  (même résultat que 7919…31676) ; la cause est le seau ×2 (`314e651`) + « Plus profond » (`571a12b`). Mesure
+  `simulate --miners 3 --skills mixed`, 5 seeds dont 1102884141 : main de 16 h 44 (`4ce6819`) areas 4,0, prof 198 ;
+  main de 19 h areas 4,8, prof 262.
+- **Quoi** : `CFG.unlockRatio` 0.4 → 0.6 ; `WINCH.speedFactor` 2 → 0.85 (`src/config.js`). L'IA n'avait pas d'adhérence
+  au seau : la vitesse seule la gardait dedans, donc on retrouve le comportement d'avant (elle peut prendre une
+  échelle ou un trou voisin plus rapide).
+- **Tests** : `winch.test.js` : valeurs 0,85 ; retirés les 2 tests « il reste dans le seau (colonne d'échelles / trou
+  profond à côté) », faux par construction à 0,85. `world.test.js` : objectif 12 / 240. `session.test.js` : sessions
+  solo de régression (seeds 65361775, 823773703, 63352, 7919) : ≥ 1 area ouverte (avant ≥ 2 ; à 60 % un mineur de
+  base solo n'ouvre que l'area 1). winch, wiki, focus, session, world, team, diagnostics, dungeon, fall : ✅ 107/107.
+- **Simulation** (5 seeds de référence, 0 blocage) : 3 mineurs skills mixed : areas 4,0, prof 212,8 ; 2 mineurs skills mixed : areas 3,0, prof 165,8 ; 1 mineur de base :
+  areas 1,0, prof 95,4 (area 1 : 159 à 235 / 240).
+- **Points fragiles** : solo débutant limité aux areas 0-1 ; le wiki (`src/wiki/data.js`) lit `CFG.unlockRatio`, le
+  texte de `wiki.html` est écrit à la main (mis à 60 %).
