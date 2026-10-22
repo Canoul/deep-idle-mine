@@ -1319,7 +1319,9 @@ Règles (voir CLAUDE.md) :
 - **Vérification « donjon »** : aucune référence croisée entre `src/sim/tower/` et `DUNGEON` / `src/sim/dungeon.js`.
   L'« erreur » de ce matin = test `world.test.js` pas à jour avec les donjons en areas 4 et 5 (corrigé dans l'étape
   2) ; `dungeon.test.js` et `world.test.js` verts ; l'IA gère plusieurs donjons (`dungeonGoal` boucle sur
-  `G.dungeons`). Spec : « donjon » remplacé par « tour » à deux endroits. Simulation 3 mineurs × 6 (skills mixed) :
-  voir ci-dessous.
+  `G.dungeons`). Spec : « donjon » remplacé par « tour » à deux endroits. Simulation 3 mineurs × 6 (skills mixed,
+  stuff de base) : areas 4,0 en moyenne, profondeur 200 : **l'area 4 (et donc ses donjons) n'est jamais atteinte**, les
+  donjons n'y sont pas testés en conditions réelles (seulement par `dungeon.test.js`). ⚠️ **1 blocage sans lien avec
+  les donjons** : seed 23757, Bleu (logisticien) « Retour (treuil) » à (32, 157), t = 3445 s. Pas corrigé ici.
 - **Tests** : `tests/tower.test.js` (labyrinthe, équipe équipée, solo très équipé, brouillard). Suite complète +
   anticheat : 659/659.
