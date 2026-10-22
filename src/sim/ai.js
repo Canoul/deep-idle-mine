@@ -429,10 +429,12 @@ export function decide(G,m){
     if(!m.fall) m.fall={ y0:m.y, blind:!fallInfo(G,m.x,m.y).known };
     m.status='Tombe'; G.stats.falls++; m.stats.falls++; startAction(m,'move', 1/CFG.fallSpeed, {x:m.x,y:m.y+1,down:true,fall:true,fx:m.x,fy:m.y}); return;
   }
-  // atterrissage : une chute imprévue (vide pas encore découvert) d'au moins CFG.stunFall cases l'étourdit
+  // atterrissage : une chute imprévue (vide pas encore découvert) d'au moins CFG.stunFall cases l'étourdit, et toute
+  // chute de plus de CFG.maxFall cases aussi, même dans un trou connu : il ne s'y jette jamais, c'est donc que son appui
+  // a disparu (ex. puits d'un autre mineur creusé sous lui)
   if(m.fall){
     const n=m.y-m.fall.y0, blind=m.fall.blind; m.fall=null;
-    if(blind && n>=CFG.stunFall && !m.winchJob){          // en chantier de treuil : jamais étourdi
+    if((blind || n>CFG.maxFall) && n>=CFG.stunFall && !m.winchJob){          // en chantier de treuil : jamais étourdi
       G.stats.stuns=(G.stats.stuns||0)+1; m.stats.stuns++;
       log(G, `💫 ${m.name} tombe de ${n} blocs sans s'y attendre : étourdi ${CFG.stunTime} s`);
       m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {}); return;

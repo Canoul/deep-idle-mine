@@ -1412,3 +1412,28 @@ Règles (voir CLAUDE.md) :
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
 - **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
 
+
+### Chutes connues de plus de 3 cases sans étourdissement (Jules) — branche `jules/fix-chute`, ✅ en ligne le 22/10
+- **Symptôme** (retour joueur) : un mineur tombe de plus de 3 cases dans un trou déjà creusé par un autre et n'est pas
+  étourdi. Mesure (script de sonde, 8 parties à 3, skills mixed, seeds 1 à 8) : 8 chutes connues > 3 hors treuil
+  (6 « Creuse vers le bas », ex. seed 5 Vert 4 fois en (42, 10) ; 2 « Combat (bestiole) »).
+- **Cause** : `stepFall` (`src/sim/actions.js`) ne voyait que le pas de côté et le minage sous les pieds. Debout sur une
+  échelle, descendre (dy = 1) dans une case VIDE sans appui n'était pas vérifié : `deepFall` renvoyait faux, `digDown`
+  / `fight` faisaient le pas, il tombait dans le puits connu d'un autre. Le pathfinder (`path.js`) respectait déjà
+  `maxFall` ; c'est le pas direct de `digDown` (`stepDir(0,1)`) qui passait outre.
+- **Correction** : `stepFall` gère aussi `dx = 0, dy = 1` vers une case vide sans appui (`fallInfo` de la case du
+  dessous). `deepFall` refuse donc ce pas ; `digDown` se décale ou explore (code existant). Filet de sécurité
+  (`decide`, `src/sim/ai.js`) : à l'atterrissage, étourdi si chute imprévue ≥ `stunFall` **ou** chute de plus de
+  `maxFall`, même connue ; jamais en chantier de treuil (`winchJob`). GAME_DESIGN §3 « Chutes » mis à jour.
+- **Tests** : `tests/fall.test.js` +3 (sur une échelle au-dessus d'un puits connu de 5 : refusé ; échelle plus bas :
+  permis ; puits caché : permis ; chute connue de 7 sans appui : étourdi ; chantier du treuil : jamais étourdi). Les
+  deux premiers échouaient avant la correction. fall, winch, session, team, mobs, diagnostics, dungeon, focus, miner :
+  102/102 ✅.
+- **Mesures après** : mêmes 8 parties, chutes connues > 3 hors treuil : 0 ✅ (restent les chutes du logisticien dans
+  le puits du treuil, permises). `simulate --miners 3 --count 5 --skills mixed` : 0 blocage ✅, areas 4,0, profondeur
+  198,8, étourdissements 11,4 / session.
+- ⚠️ Pas traité ici : allers-retours colonne → treuil au départ du coffre (39 sur les 8 parties) ; corrigé par le commit
+  `7c36a32` de Geoffrey (branche `geoffrey/retours-21-10`, pas en ligne ; sonde : 0 sur les seeds 2 et 4).
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » (Geoffrey, `ai.js`) :
+  fusion automatique du code, conflit seulement dans le journal (les deux entrées gardées). Après fusion : tests de la
+  simulation 103/103 ✅, `simulate --count 5 --skills mixed` : 0 blocage, profondeur 199,8, étourdissements 11,4.
