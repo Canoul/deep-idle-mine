@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Barbare : nouveau talent « Braum »
+- **Pour le joueur** : l'arbre Barbare a un **4e étage**, **Braum** (0/3, il faut Pillage au max). Quand le barbare
+  va aider un allié (mob qui le poursuit, boss d'un donjon découvert, mobs d'un piège), il marche et grimpe (échelle
+  et seau du treuil) **10 % plus vite par point**, soit +30 % à 3/3, jusqu'à la fin de ce combat.
+- **Décisions** (Geoffrey) : étage 4 sous Pillage ; +10 % par point ; actif pendant le trajet et le combat ; le seau
+  compte aussi ; pas de nouvelle stat.
+- **À suivre** : l'effet est faible sur une session entière (simulation, 3 barbares complets : profondeur 189,8 →
+  191,4, dans le bruit), car ces trajets sont courts et rares. Il se sentira surtout quand un piège ou un donjon est
+  loin du barbare.
+- **État** : 🧪 sur la branche `geoffrey/braum` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
   (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite

@@ -1810,3 +1810,19 @@ Règles (voir CLAUDE.md) :
   les mineurs en combat (`m.foe`) : au travail 0,9 % (main seul 0,5 %). Simulation 3 × 5 : areas 3,2 / profondeur 190,4
   (main seul : 3,0 / 192,0) ; `--skills mixed` : 3,6 / 201,4 (main : 3,6 / 201,0) ; 0 blocage. `npm test` : 673 + team
   7/7, anti-triche 72/72.
+
+### Barbare : talent Braum (Geoffrey) — branche `geoffrey/braum`, 🧪 pas en ligne
+- **Quoi** : nœud `braum` (`SKILLS.trees` barbare, row 4, max 3, per 0.1 ; `src/config.js`). `m.helping` (remis à false au
+  début de `decide`) passe à vrai dans `helpAlly`, `trapGoal` (avec `m.helpFoe` = mob visé) et `dungeonGoal` (dès qu'il
+  y a un barbare et un donjon actif : y aller, attendre devant, combattre le boss) ; le combat qui continue par
+  `m.foe` garde le bonus si `th.id === m.helpFoe`. `helpBoost(m)` (`src/sim/mineur.js`) : ajouté à `walkBoost`
+  (additif avec Ruée / Navette), multiplie `climbT` et `winchT`. Les itinéraires (`path.js`, vitesses de base) ne
+  changent pas. Icône `shield` (`src/ui/skills.js`), wiki : Braum listé pour Vitesse et Vitesse sur échelle.
+- **Tests** : skills (étage 4, Pillage au max requis, ×1/1,3 marche/échelle/seau), mobs (Aider allié : bonus en route,
+  plus après le combat), trap (bonus pendant la rescousse). skills, mobs, trap, dungeon, wiki, winch, fall, team,
+  focus, diagnostics, lobby, game-service : ✅ 187/187.
+- **Simulation** `--miners 3 --count 5 --skills barbare` : 0 blocage ; profondeur 189,8 (main) → 191,4, areas 3,0 des
+  deux côtés. Effet faible : `simulate` laisse « Aider allié » à non, seuls donjon et pièges déclenchent.
+- **Points fragiles** : `m.helping` vaut aussi pour les non-barbares en route vers un donjon (sans effet : seul un
+  barbare peut avoir `braum`). ⚠️ Pas regardé dans un navigateur (onglet Skills avec 4 étages).
+
