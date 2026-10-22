@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine instantanée : mine cachée et caméra de près
+- **Pour le joueur** :
+  - la mine instantanée est **cachée au départ**, comme la mine normale : chaque mineur découvre les cases autour de
+    lui selon sa stat **Découverte** (2 de base), et ce qu'il découvre, tout le monde le voit ;
+  - la **caméra suit ton mineur** de près (environ 24 colonnes au lieu de toute la mine) : on ne voit plus toute la
+    carte d'un coup ;
+  - le classement affiche « x tas de plumes restants dans la mine ».
+- **Décisions** : celles ci-dessus (Geoffrey). Choix de Claude : la découverte est commune à tous (comme la mine
+  normale) ; un mineur ne va chercher qu'un tas déjà découvert ; zoom de 24 colonnes (réglable).
+- **Mesuré** : aucun effet sur le butin (simulation à 1, 3 et 20 mineurs : mêmes plumes et minerais qu'avant).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
 - **Pour le joueur** :
   - **Concasseur, bouton « ? »** : pour chaque bloc, la chance d'avoir **une gemme** (les trois s'additionnent :

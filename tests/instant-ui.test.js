@@ -42,11 +42,23 @@ test('MI affichage : la copie du navigateur = la partie ; un mineur en marche gl
   const v = JSON.parse(JSON.stringify(createInstantViewer(G)()));      // passe par le réseau (JSON)
   const M = applyInstantView(v);
   assert.equal(M.mode, 'mi'); assert.equal(M.ticks, 200);
-  assert.deepEqual(M.tiles.map(r => [...r]), G.tiles.map(r => [...r]));
-  assert.deepEqual([...M.feathers], [...G.feathers]);
+  assert.deepEqual(M.seen.map(r => [...r]), G.seen.map(r => [...r]), 'cases découvertes');
+  /* découvert : la vraie case ; caché : rien n'est envoyé (0), le navigateur ne peut pas voir la mine cachée */
+  assert.deepEqual(M.tiles.map((r, y) => [...r]), G.tiles.map((r, y) => [...r].map((t, x) => G.seen[y][x] ? t : 0)));
+  assert.ok(G.seen.some(r => r.includes(0)), 'une partie de la mine reste cachée');
+  assert.deepEqual([...M.feathers], [...G.feathers].filter(([k]) => G.seen[Math.floor(k / G.w)][k % G.w]), 'seulement les tas découverts');
+  assert.equal(M.heapsLeft, G.feathers.size, 'mais le nombre de tas restants est le vrai');
   assert.deepEqual(M.ladder.map(r => [...r]), G.ladder.map(r => [...r]), 'échelles');
   assert.equal(M.miners.length, 2);
   assert.ok(JSON.stringify(v).length < 8000, `envoi ${JSON.stringify(v).length} octets`);
   assert.deepEqual(instantPos({ x:2, y:3, action:{ type:'move', t:0.5, dur:1, data:{ x:3, y:3 } } }), [2.5, 3]);
   assert.deepEqual(instantPos({ x:2, y:3, action:{ type:'mine', t:0.5, dur:1, data:{ x:2, y:4 } } }), [2, 3]);
+});
+
+test('MI caméra : cadrage centré sur le mineur, sans sortir de la mine ; vue plus grande que la mine = centrée', async () => {
+  const { miFrame } = await import('../src/render/instant.js');
+  assert.deepEqual(miFrame(25, 25, 24, 14, 50, 50), { x: 13.5, y: 18.5 });     // au milieu : centré
+  assert.deepEqual(miFrame(0, 0, 24, 14, 50, 50), { x: 0, y: -1 });            // coin haut-gauche : bande de ciel visible
+  assert.deepEqual(miFrame(49, 50, 24, 14, 50, 50), { x: 26, y: 37 });         // coin bas-droite : dernière colonne, dernière ligne
+  assert.deepEqual(miFrame(10, 10, 60, 14, 50, 50), { x: -5, y: 3.5 });       // plus large que la mine : centrée
 });

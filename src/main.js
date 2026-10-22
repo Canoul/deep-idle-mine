@@ -16,7 +16,7 @@ import { applyRarityColors } from './ui/rarity.js';
 import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
-import { createInstantRenderer } from './render/instant.js';
+import { createInstantRenderer, MI_TILE } from './render/instant.js';
 import { setupInstantLobby } from './ui/instant-lobby.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
@@ -29,7 +29,7 @@ import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
 import { setupOrbs } from './ui/orbs.js';
-import { fitCanvas, fitMine, clearDock } from './ui/fit.js';
+import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
@@ -513,7 +513,7 @@ function frame(now){
     updateNavSession(shown, waiting, tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw, tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
-      tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitCanvas($('cvMi'), $('cvMiWrap')) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');

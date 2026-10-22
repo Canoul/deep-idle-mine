@@ -269,3 +269,30 @@ test('MI plumes : il va chercher le tas et le ramasse ; pris par un autre en che
   assert.equal(r.m.goal, null);
   assert.ok(r.m.stats.mined >= 1 || r.m.action?.type === 'mine');
 });
+
+test('MI découverte : cachée au départ sauf la surface ; chaque mineur découvre dans son rayon (discoverMax)', () => {
+  const G = newInstant(9, { miners:[{ name:'A' }, { name:'B', carac:{ discoverMax:4 } }] });
+  const [a, b] = G.miners;
+  assert.ok(G.seen[0].every(v => v === 1), 'surface découverte');
+  const seenCount = () => G.seen.slice(1).reduce((n, r) => n + r.reduce((s, v) => s + v, 0), 0);
+  const near = (m, R) => { let n = 0; for(let y = 1; y <= G.h; y++) for(let x = 0; x < G.w; x++) if((x-m.x)**2 + (y-m.y)**2 <= R*R) n++; return n; };
+  assert.equal(seenCount(), near(a, 2) + near(b, 4), 'au départ : seulement le rayon de chacun');
+  assert.equal(G.seen[a.y + 3]?.[a.x], 0, 'à 3 cases de A (rayon 2) : caché');
+  assert.equal(G.seen[b.y + 4][b.x], 1, 'à 4 cases de B (rayon 4) : découvert');
+  const empty0 = G.tiles.map(r => [...r].map(t => t === 0));   // tas de plumes : cases vides dès le départ
+  for(let i = 0; i < 600; i++) tickInstant(G);
+  for(const m of G.miners) assert.equal(G.seen[m.y][m.x], 1);
+  let mined = 0;
+  for(let y = 1; y <= G.h; y++) for(let x = 0; x < G.w; x++) if(G.tiles[y][x] === 0 && !empty0[y][x]){ mined++; assert.equal(G.seen[y][x], 1, `case minée ${x},${y} découverte`); }
+  assert.ok(mined > 20, `${mined} blocs minés`);
+});
+
+test('MI plumes : un tas pas encore découvert n\'attire pas le mineur', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  m.x = 10; m.y = 0;
+  G.feathers.clear(); G.feathers.set(0*G.w + 10 + MI.featherReach, 3);
+  G.seen[0][10 + MI.featherReach] = 0;          // (la surface est découverte d'habitude : on la cache pour le test)
+  plan(G, m);
+  assert.equal(m.goal, null);
+});
