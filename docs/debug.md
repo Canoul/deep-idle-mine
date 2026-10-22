@@ -1452,3 +1452,23 @@ Règles (voir CLAUDE.md) :
   l'écran (le compte de test n'avait pas de point de skill ; `treeText` est simple).
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » et `jules/fix-chute` :
   conflits seulement dans le journal et le debug (tout gardé).
+
+### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`
+- **Symptôme** (retour joueur) : les mineurs sortent du treuil quand il y a une colonne d'échelles ou un trou profond
+  à côté.
+- **Cause** : pas un bug de l'IA, le coût était juste. Seau = `WINCH.speedFactor` 0,85 × `climbSpeed` = 1,9 case/s ;
+  échelle = 2,25 ; chute = 8 (≤ 3 cases). `search` (`src/sim/path.js`) prenait donc l'échelle d'à côté, ou un trou
+  avec des échelles espacées (chute de 2 + 1 case d'échelle ≈ 0,23 s/case contre 0,53 dans le seau).
+- **Correction** : `WINCH.speedFactor` 0,85 → 2 (`src/config.js`) : 0,22 s/case, sous l'échelle (0,44) et sous le
+  trou à échelles espacées. Pas d'« adhérence » au seau dans l'IA (choix de Jules : la vitesse seule).
+- **Détecteur de blocage** (`src/sim/diagnostics.js`) : avec le seau plus rapide, l'équipe atteint le minotaure ;
+  le combat dure > 90 s sans miner → faux blocage (seed 39595, Rouge, t = 3305). Nouveau : frapper (action `attack`)
+  au moins `STUCK_FIGHT_SHARE` (50 %) de la fenêtre = pas un blocage.
+- **Tests** : `tests/winch.test.js` +2 (descente / montée avec une colonne d'échelles collée au puits ; trou à échelles
+  espacées : le chemin reste en x = 25 ; les deux échouaient avant, chemin en x = 26), valeurs 0,85 → 2 ;
+  `tests/diagnostics.test.js` +2 (long combat : pas bloqué ; quelques coups puis immobile : bloqué). winch, fall,
+  team, session, diagnostics : ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` : avant minerai 1 186 / partie, profondeur 199,8, 0 blocage ;
+  après 1 407 (+19 %), profondeur 214,4, 0 blocage (après correction du détecteur ; seed 39595 rejouée seule).
+- ⚠️ Gain d'équilibrage important pour un seul skill ; le solo sans skills ne change pas.
+

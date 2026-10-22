@@ -69,7 +69,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **un en area 4 et un en area 5 à chaque partie**, décision du 22/10 ; ancien : area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
-- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil), Barbare (provocation) ;
+- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à **2 ×** la vitesse de montée
+  depuis le 22/10, ancien 0,85 ×), Barbare (provocation) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du

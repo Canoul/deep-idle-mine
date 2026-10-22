@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Treuil : le seau va plus vite, les mineurs y restent
+- **Pour le joueur** : le seau du treuil monte et descend **2 fois plus vite qu'une échelle** (avant : un peu moins
+  vite qu'une échelle). Les mineurs ne sortent plus du treuil pour descendre par une colonne d'échelles ou un trou
+  d'à côté, qui étaient plus rapides.
+- **Effet mesuré** (5 parties à 3, un logisticien) : minerai rapporté **+19 %** (1 186 → 1 407), profondeur 200 →
+  214. L'équipe atteint maintenant le donjon de l'area 4 avant la fin.
+- **Décisions** : vitesse ×2 (choix de Jules ; valeur provisoire). En dessous de ×2, un trou à côté reste plus rapide.
+- **À suivre** : +19 %, c'est un gros gain pour un seul skill : à surveiller avec la progression.
+- **État** : 🧪 sur la branche `jules/treuil-vitesse` (pas en ligne)
+
 ## 22/10/2026 — Jules — Voir le stuff de ses amis
 - **Pour le joueur** : dans l'onglet **Social**, chaque ami a un bouton **Stuff**. Il ouvre sa fiche : son niveau, sa
   spécialisation, les pièces qu'il porte (avec leur bulle d'info : qualité, amélioration, rune) et ses stats de mineur,
