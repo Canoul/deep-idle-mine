@@ -94,7 +94,7 @@ test('stats du mineur : base + bonus des pièces portées, arrondies ; sans stuf
   const { STATS } = await import('../src/config.js');
   const { minerStats } = await import('../src/meta/stuff.js');
   const get = (worn, key) => minerStats(worn).find(s => s.key === key);
-  assert.deepEqual(get({}, 'oxygenMax'), { key:'oxygenMax', label:'Oxygène', base:STATS.oxygenMax, bonus:0, mult:1, skill:0, total:STATS.oxygenMax });
+  assert.deepEqual(get({}, 'oxygenMax'), { key:'oxygenMax', label:'Oxygène', base:STATS.oxygenMax, bonus:0, mult:1, add:0, skill:0, total:STATS.oxygenMax });
   const worn = { casque:{ item:'Casque en chitine', uid:1 }, jambes:{ item:'Jambes en chitine', uid:2 }, pioche:{ item:PICK, uid:3 }, torse:null };
   assert.equal(get(worn, 'oxygenMax').total, STATS.oxygenMax + 30);
   assert.equal(get(worn, 'climbSpeed').total, Math.round((STATS.climbSpeed + 0.4) * 100) / 100);
