@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Focus area : « Plus profond » vise vraiment l'area la plus profonde
+- **Pour le joueur** : avec « Plus profond » (choisi de base au début de la session), le mineur va travailler dans
+  l'area la plus profonde ouverte et y redescend à chaque nouvelle area. Avant, il finissait les filons des areas du
+  haut et passait plus de la moitié de son temps au-dessus.
+- **Prix à payer** (5 parties) : environ **15 % de valeur rapportée en moins** (solo 414 → 352 ; à 3 : 1 762 →
+  1 502), mais à 3 l'**area 5** s'ouvre à chaque partie (avant : la 4), profondeur 214 → 265.
+- **Décisions** : c'est le comportement voulu pour le bouton (Jules). Avec un focus minerai, c'est lui qui choisit
+  l'area, comme avant.
+- **À suivre** : si la perte de quantité gêne, on peut ajouter un bouton « Auto » (l'ancien comportement).
+  L'attente du barbare devant le donjon peut aller jusqu'à 0 d'oxygène (déjà le cas avant, vu plus souvent ici).
+- **État** : 🧪 sur la branche `jules/focus-plus-profond` (pas en ligne)
+
 ## 22/10/2026 — Jules — Treuil : le seau va plus vite, les mineurs y restent
 - **Pour le joueur** : le seau du treuil monte et descend **2 fois plus vite qu'une échelle** (avant : un peu moins
   vite qu'une échelle). Les mineurs ne sortent plus du treuil pour descendre par une colonne d'échelles ou un trou
