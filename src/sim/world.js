@@ -33,6 +33,9 @@ export const supported = (G,x,y) =>
   !(y+1<=maxRow(G) && isAir(G,x,y+1) && !G.ladder[y+1][x] && !isWinch(G,x,y+1) && !(y>0 && (G.ladder[y][x] || isWinch(G,x,y))));
 /* case où l'on finit en tombant depuis (x,y) ; n = nombre de cases de chute */
 export function landing(G,x,y){ let n=0; while(!supported(G,x,y)){ y++; n++; } return {y,n}; }
+/* chute qui finit sur une échelle (l'appui d'arrivée est une échelle) : elle se fait à la vitesse de l'échelle, pas à
+   celle d'une chute (22/10, Geoffrey : l'IA sortait du treuil ou d'une échelle pour se laisser tomber à côté, plus vite) */
+export const ontoLadder = (G,x,ly) => !!G.ladder[ly+1]?.[x];
 /* chute depuis (x,y) : landing + known = le mineur connaît ce trou (toutes les cases traversées et le sol d'arrivée
    sont découvertes). Une chute dans du vide pas encore découvert est une chute imprévue. */
 export function fallInfo(G,x,y){

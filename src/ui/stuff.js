@@ -3,7 +3,7 @@
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
 import { piecesFor, statsText, minerStats } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects, behaviourSkills } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 import { rcls, pname } from './rarity.js';
@@ -32,7 +32,7 @@ export function renderSlots(el, worn, tag = 'button'){
    un skill qui ajoute des points (ténacité) s'affiche « +5 % » en bleu */
 export function statsHTML(worn, effects){
   const fr = v => String(v).replace('.', ',');
-  return minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
+  const rows = minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
     `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
     (s.bonus || s.mult !== 1 || s.skill ? ` <small class="mut">(`+
       (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
@@ -40,6 +40,10 @@ export function statsHTML(worn, effects){
       (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
       `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
     `</span></div>`); }).join('');
+  /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
+  const extra = behaviourSkills(effects);
+  return rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
+    extra.map(k => `<div class="row"><span>${k.icon} ${esc(k.name)}</span><span><small class="skillStats">${esc(k.text)}</small></span></div>`).join('') : '');
 }
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */

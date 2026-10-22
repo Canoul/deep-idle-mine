@@ -534,7 +534,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = furnaceOp(st, inv, op, clock());
         if(r.error) fail(r.error, ['not_enough', 'slot_busy', 'not_empty', 'no_recipe', 'already_unlocked', 'locked_before'].includes(r.error) ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
-        return { inventory: publicInventory(inv), furnaces: publicFurnaces(st) };
+        return { inventory: publicInventory(inv), furnaces: publicFurnaces(st), left: r.left ?? 0 };   // left : cases restées (« Tout retirer », inventaire plein)
       });
     },
 
@@ -692,6 +692,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
+    /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
+    lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
       .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),

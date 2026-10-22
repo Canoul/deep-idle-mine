@@ -57,3 +57,13 @@ test('au lancement, le serveur fige l\'équipement porté de chaque joueur (son 
   await game.stuff(ME, { action:'unequip', slot:'casque', opId:'op-skin-retire' });   // pendant la session : rien ne change
   assert.deepEqual((await store.getGameSession(session.id)).looks[ME.id], { casque:'Casque en chitine' });
 });
+
+test('lobby : le service de jeu donne l\'apparence d\'un joueur (équipement porté, noms seulement)', async () => {
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner: fakeLive(() => ({ shares:[] })) });
+  const ME = { id:'AAAA1111', name:'Zoe', guest:false };
+  assert.deepEqual(await game.lookFor(ME.id), {}, 'rien de porté : tenue de base');
+  await store.putInventory(ME.id, { slots:[{ item:'Casque en chitine', qty:1, uid:1 }], nextUid:2, credited:[] });
+  await game.stuff(ME, { action:'equip', slot:'casque', uid:1, opId:'op-skin-lobby' });
+  assert.deepEqual(await game.lookFor(ME.id), { casque:'Casque en chitine' });
+});

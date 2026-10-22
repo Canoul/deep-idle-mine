@@ -141,14 +141,15 @@ test('Barbare : provocation, le mob lâche l\'autre mineur et ne peut plus tacle
   assert.ok(!/Taclé/.test(b.status), `Bob : ${b.status}`);
 });
 
-test('Barbare : butin des mobs +3 %/rang (en moyenne)', () => {
+test('Barbare : butin des mobs +3 %/rang = 3 % de chance par rang pour 1 butin en plus (pas un multiplicateur)', () => {
   const G = worldFrom(['', '@']), m = G.miners[0];
   G.rng = mulberry32(5);
-  const killAll = k => { m.inv = {}; m.load = 0; for(let i = 0; i < 2000; i++){ const o = { id:i, type:'bestiole', x:0, y:1, hp:1, maxhp:1 }; G.mobs.push(o); killMob(G, m, o); } return m.inv.Chitine; };
-  const base = killAll(0);
+  const N = 20000, perMob = () => { m.inv = {}; m.load = 0; for(let i = 0; i < N; i++){ const o = { id:i, type:'bestiole', x:0, y:1, hp:1, maxhp:1 }; G.mobs.push(o); killMob(G, m, o); } return m.inv.Chitine / N; };
+  assert.ok(Math.abs(perMob() - 1.5) < 0.02, 'sans Pillage : 1 à 2 chitines (1,5 en moyenne)');
   m.skill.loot = 0.15;
-  const more = killAll(0);
-  assert.ok(more / base > 1.10 && more / base < 1.20, `rapport ${more / base}`);
+  const extra = perMob() - 1.5;   // butin en plus par mob tué : 0,15 en moyenne (1 chitine dans 15 % des cas)
+  assert.ok(Math.abs(extra - 0.15) < 0.02, `en plus par mob ${extra}`);
+  m.skill.loot = 1.5; assert.ok(Math.abs(perMob() - 1.5 - 1.5) < 0.03, '150 % : +1 sûr, et +1 encore une fois sur deux');
 });
 
 test('Barbare : Braum à l\'étage 4 (Pillage au max d\'abord), marche et montée +10 %/rang seulement quand il aide', () => {
@@ -196,6 +197,20 @@ test('onglet Stuff : les stats montrent aussi les bonus des skills, comme en ses
   const G = buildSession({ id:'S', seed:1, players:[{ account:'A', name:'Ana' }], looks:{ A:{ pioche:'Pioche en pierre' } }, skills:{ A:skills } });
   assert.equal(Math.round(G.miners[0].carac.mineSpeed * 100) / 100, row.total, 'même valeur qu\'en session');
   assert.equal(minerStats(worn).find(s => s.key === 'mineSpeed').skill, 0, 'sans skills : rien');
+});
+
+test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills de comportement sont listés à part', async () => {
+  const { minerStats } = await import('../src/meta/stuff.js');
+  const { behaviourSkills } = await import('../src/meta/skills.js');
+  const barb = skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3, taunt:1, loot:3 } }));
+  const row = minerStats({}, barb).find(s => s.key === 'looting');
+  assert.equal(row.add, 9); assert.equal(row.total, 9); assert.equal(row.mult, 1, 'pas un multiplicateur');
+  assert.deepEqual(behaviourSkills(barb).map(k => k.id), ['taunt'], 'Force brute et Pillage sont déjà dans les stats');
+  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, travel_rush:2 } }));
+  const list = behaviourSkills(log);
+  assert.deepEqual(list.map(k => k.id), ['build_time', 'tall_ladder', 'travel_rush']);
+  assert.match(list[0].text, /−15 %/); assert.match(list[2].text, /\+6 %/);
+  assert.deepEqual(behaviourSkills({}), [], 'aucun skill : rien');
 });
 
 test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {

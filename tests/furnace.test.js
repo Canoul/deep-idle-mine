@@ -248,3 +248,35 @@ test('relecture : un four enregistré avant les modes reste un four Fondre (rien
   assert.deepEqual(al.list[0].a, { item:'Lingot de fer', qty:5 });
   assert.equal(al.list[0].ore, null, 'pas de case minerai en Alliage');
 });
+
+/* « Tout retirer » (22/10) : un four, ou tous ; chaque case revient dans l'inventaire, rien ne se perd ni ne se double */
+test('Tout retirer : minerai, combustible et lingots finis reviennent dans l\'inventaire ; rejouer ne fait rien', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:30 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:30 });
+  const t = T0 + 10 * MIN, opId = id();   // assez pour au moins un lingot fini
+  const r = furnaceOp(st, inv, { action:'empty', furnace:0, opId }, t);
+  assert.equal(r.ok, true); assert.equal(r.left, undefined);
+  const f = st.list[0];
+  assert.ok(!f.ore && !f.fuel && !f.out, 'four vide');
+  const ingots = countOf(inv, 'Lingot de fer');
+  assert.ok(ingots >= 1, 'les lingots finis sont récupérés');
+  assert.equal(countOf(inv, 'Fer') + ingots * FURNACE.orePerIngot, 100, 'fer : rien de perdu');
+  assert.equal(countOf(inv, 'Charbon') + ingots * FURNACE.fuelPerIngot, 200, 'charbon : rien de perdu');
+  const again = furnaceOp(st, inv, { action:'empty', furnace:0, opId }, t);
+  assert.equal(again.repeated, true);
+  assert.equal(countOf(inv, 'Lingot de fer'), ingots, 'pas de doublon');
+});
+
+test('Tout retirer : une case qui ne rentre pas reste dans le four (les autres sortent), tous les fours d\'un coup', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:5 });
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:5 });
+  inv.slots.find(s => s?.item === 'Charbon').qty = Number.MAX_SAFE_INTEGER - 1;   // la pile de charbon déborderait
+  const r = op(st, inv, { action:'emptyAll' });
+  assert.equal(r.ok, true); assert.equal(r.left, 1);
+  assert.equal(st.list[0].ore, null, 'le fer est sorti');
+  assert.deepEqual(st.list[0].fuel, { item:'Charbon', qty:5 }, 'le charbon est resté, intact');
+  assert.equal(countOf(inv, 'Fer'), 100);
+  assert.equal(op(st, inv, { action:'empty', furnace:7 }).error, 'bad_furnace');
+});

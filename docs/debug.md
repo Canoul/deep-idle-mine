@@ -1811,7 +1811,48 @@ Règles (voir CLAUDE.md) :
   (main seul : 3,0 / 192,0) ; `--skills mixed` : 3,6 / 201,4 (main : 3,6 / 201,0) ; 0 blocage. `npm test` : 673 + team
   7/7, anti-triche 72/72.
 
-### Barbare : talent Braum (Geoffrey) — branche `geoffrey/braum`, 🧪 pas en ligne
+### Skin des autres dans le lobby (Geoffrey) — branche `geoffrey/skin-lobby`
+- **Quoi** : le lobby dessinait les autres membres en tenue de base (`drawPortrait(c, {})`, commentaire « les autres en
+  tenue de base ») : le serveur n'envoyait pas leur apparence. `server/game/service.js` : `lookFor(id)` = `lookOf` du
+  stuff porté (noms des pièces). `server/party/service.js` : `state()` remplit une `Map` `looks` (comme `trees`),
+  `publicParty` ajoute `look` à chaque membre (`{}` par défaut). `src/ui/lobby.js` : `portraitLook(slot, myLook)` →
+  le sien = `h.look()` (stuff local, à jour tout de suite), les autres = `sanitizeLook(slot.look)` ; canvas repérés
+  par `data-slot` (avant `data-me`).
+- **Tests** : skins (+1 : `lookFor` vide puis casque porté), party (+1 : chaque membre a son `look`), lobby (+1 :
+  `portraitLook`, pièces invalides ignorées, serveur sans `look`) ; lobby, skins, party, lfg, social : 80/80.
+- **Vérification** : ⚠️ pas regardé dans le navigateur à deux comptes.
+- **Points fragiles** : `state()` est appelé souvent par chaque lobby : `lookFor` relit inventaire + stuff de chaque
+  membre à chaque appel (comme `skillTreeOf` relit les skills). Avec PostgreSQL, 3 lectures de plus par appel ; à
+  mettre en cache si le serveur rame.
+
+### Retours du 22/10 : fours, butin, skills, chutes, bilan (Geoffrey) — branche `geoffrey/retours-22-10`, ✅ en ligne le 22/10
+- **Fours** : `src/meta/furnace.js` actions `empty` (un four) et `emptyAll` (tous) : chaque case (sortie comprise)
+  repasse par `unload` ; une case qui ne rentre pas reste (compte `left`, renvoyé par le serveur et affiché). UI : bouton
+  par four (`data-empty`), `#furnEmptyAll`, bouton `½` (floor(stock/2), au moins 1). `main.js` : onOp renvoie la réponse.
+- **Rareté** : résidus retirés de `RARITY.items` (communs).
+- **Butin** : `actions.js lootOf` : n + floor(b) + (rng < frac(b)) au lieu de n×(1+b). Test statistique sur 20 000 mobs.
+- **Stats** : `SKILL_ADD` (looting ← loot ×100, affichage seulement : la partie lit toujours `m.skill.loot`),
+  `behaviourSkills(effects)` (nœuds hors SKILL_STATS/SKILL_ADD, texte `nodeText`) ; `minerStats` → champ `add`.
+  Vérifié : tous les skills sont lus en jeu (mine_speed/damage via carac ; ore_oxygen, ore_rush, build_time,
+  tall_ladder, winch, travel_rush, taunt, loot dans sim/).
+- **Chutes** : `world.js ontoLadder` ; `ai.js` : une case de chute dure climbT si la chute finit sur une échelle ;
+  `path.js` : `drop` (même règle) et `side` (pas de côté depuis un seau ou une échelle : chute comptée au moins à la
+  vitesse du puits). Mesure (3 seeds, skills mixed, motif « puits → côté → chute → retour au puits ») : 227 → 14.
+- **Bilan** : `shared/game.js resultChoice(ended, waitingFor)` ; `main.js pollResult` attend le résultat de la session
+  jouée (`waitingFor = rec.id`) ; un ancien jamais vu est `ack` sans être affiché. Cause : bilan de tour pas fermé, mine
+  relancée depuis le lobby, `state()` renvoyait le plus récent « done » pendant le partage de la mine.
+  `session.js` : `summary.lostBags` (détail par mineur), affiché dans `hud.js`.
+- **Tests** : `bilan.test.js` (nouveau, 2), fall +2, skills +1 (et butin réécrit), furnace +2, anticheat/furnace
+  (empty/emptyAll dans les suites au hasard), rarity, stuff. 253/253 sur les sujets touchés ; anti-triche 72/72.
+- **Vérification** : ✅ simulation 3 × 5 : 3,0 areas, profondeur 186, 0 blocage (avant : 3,0 / 192) ; `--skills
+  mixed` : 3,6 / 201, 0 blocage (inchangé). ⚠️ pas regardé dans le navigateur (boutons des fours, liste des skills).
+- **Points fragiles** : `side` vaut pour toute chute depuis une échelle (pas seulement près du treuil) ; le bilan d'une
+  session jamais vue est marqué vu sans affichage quand une autre se termine.
+- **Fusion de main (descente commune, ténacité)** : `skills.js` garde `SKILL_ADD` / `behaviourSkills` à côté des `adds`
+  de main (ténacité) ; `ui/stuff.js` : l'affichage « +skill » de main montre aussi Pillage (plus de ligne `add` en double).
+  Après fusion : 291/291 sur les sujets, anti-triche 72/72, simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,6, 0 blocage.
+
+### Barbare : talent Braum (Geoffrey) — branche `geoffrey/braum`, ✅ en ligne le 22/10
 - **Quoi** : nœud `braum` (`SKILLS.trees` barbare, row 4, max 3, per 0.1 ; `src/config.js`). `m.helping` (remis à false au
   début de `decide`) passe à vrai dans `helpAlly`, `trapGoal` (avec `m.helpFoe` = mob visé) et `dungeonGoal` (dès qu'il
   y a un barbare et un donjon actif : y aller, attendre devant, combattre le boss) ; le combat qui continue par
@@ -1825,4 +1866,6 @@ Règles (voir CLAUDE.md) :
   deux côtés. Effet faible : `simulate` laisse « Aider allié » à non, seuls donjon et pièges déclenchent.
 - **Points fragiles** : `m.helping` vaut aussi pour les non-barbares en route vers un donjon (sans effet : seul un
   barbare peut avoir `braum`). ⚠️ Pas regardé dans un navigateur (onglet Skills avec 4 étages).
+- **Après fusion de main** (retours-22-10 : butin, chutes, skills de comportement) : 198/198 ✅ ; simulation 3 barbares
+  profondeur 192,4, 0 blocage. Braum apparaît tout seul dans « Skills en partie » (`behaviourSkills`, onglet Stuff).
 

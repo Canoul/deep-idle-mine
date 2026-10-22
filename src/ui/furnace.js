@@ -15,6 +15,7 @@ const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math
 const LABEL = { ore:'Minerai', a:'Ingrédient 1', b:'Ingrédient 2', fuel:'Combustible', out:'Sortie' };
 const MODE_LABEL = { smelt:'Fondre', alloy:'Alliage' };
 const modeOf = f => f.mode === 'alloy' ? 'alloy' : 'smelt';
+const FURN_SLOTS = ['ore', 'a', 'b', 'fuel', 'out'];   // toutes les cases d'un four (« Tout retirer »)
 const x = (item, n) => `${icon(item)}${rname(item, `${item} ×${num(n)}`)}`;
 /* recettes d'un mode, pour la fenêtre « ? » : [{ out, parts:[[objet, quantité]…], time }] */
 const recipesOf = mode => mode === 'smelt'
@@ -74,7 +75,8 @@ export function setupFurnace({ onOp }){
       const mode = modeOf(f);
       h += `<div class="furn" data-f="${i}"><div class="fhead"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}${FURNACE.tiers[f.tier].speed !== 1 ? ` (vitesse ×${String(FURNACE.tiers[f.tier].speed).replace('.', ',')})` : ''}</span></h3>`+
            `<div class="seg fmode">${Object.keys(MODE_LABEL).map(m => `<button data-f="${i}" data-mode="${m}"${m === mode ? ' class="on"' : ''}>${MODE_LABEL[m]}</button>`).join('')}</div>`+
-           `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">?</button></div>`+
+           `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">?</button>`+
+           `<button class="fempty" data-empty="${i}" title="Vide toutes les cases de ce four dans l'inventaire"${FURN_SLOTS.some(s => f[s]) ? '' : ' disabled'}>Tout retirer</button></div>`+
            `<div class="fgrid"><div class="fin">${INPUTS[mode].map(s => slotHtml(i, s, f[s])).join('')}${slotHtml(i, 'fuel', f.fuel)}</div>`+
            `<div class="farrow"><div class="bar"><i style="width:${(progress(f, now()) * 100).toFixed(1)}%"></i></div><span>➜</span></div>`+
            `${slotHtml(i, 'out', f.out)}</div><p class="fstat small">${statusText(f)}</p></div>`;
@@ -102,7 +104,10 @@ export function setupFurnace({ onOp }){
   async function send(op){
     if(busy) return;                       // une demande à la fois (le serveur protège de toute façon des doublons)
     busy = true; $('furnErr').hidden = true;
-    try { await onOp(op); closePicker(); }
+    try {
+      const r = await onOp(op); closePicker();
+      if(r?.left){ $('furnErr').textContent = `Inventaire plein : ${r.left} case${r.left > 1 ? 's sont restées' : ' est restée'} dans le four.`; $('furnErr').hidden = false; }
+    }
     catch(e){ const err = $('fpick').hidden ? $('furnErr') : $('fpickErr'); err.textContent = e.message; err.hidden = false; }
     finally { busy = false; }
   }
@@ -129,7 +134,7 @@ export function setupFurnace({ onOp }){
              `<button id="fpickOut">Tout retirer</button></div>` : '')+
       (items.length ? `<div class="fopts">${opts}</div>`+
          `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité">`+
-         `<button id="fpickMax">Max</button><button class="on" id="fpickOk">Poser</button></div>`
+         `<button id="fpickHalf" title="La moitié de ton stock">½</button><button id="fpickMax">Max</button><button class="on" id="fpickOk">Poser</button></div>`
        : `<p class="mut">${slot === 'ore' ? 'Aucun minerai à fondre dans ton inventaire.' : slot === 'fuel' ? 'Aucun combustible dans ton inventaire (charbon).' : 'Aucun ingrédient d\'alliage dans ton inventaire (bouton ? pour les recettes).'}</p>`)+
       `<p class="err" id="fpickErr" hidden></p><p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
@@ -142,6 +147,7 @@ export function setupFurnace({ onOp }){
     if(qty){
       qty.focus();
       $('fpickMax').onclick = () => { if(pick) qty.value = countOf(inv, pick); };
+      $('fpickHalf').onclick = () => { if(pick) qty.value = Math.max(1, Math.floor(countOf(inv, pick) / 2)); };   // moitié, arrondie en dessous (au moins 1)
       const ok = () => {
         const n = Number(qty.value);
         if(!pick) return;
@@ -172,12 +178,14 @@ export function setupFurnace({ onOp }){
     const m = e.target.closest('[data-mode]');
     if(m){ const i = +m.dataset.f; if(modeOf(view()[i]) !== m.dataset.mode) send({ action:'mode', furnace:i, mode:m.dataset.mode }); return; }
     const h = e.target.closest('[data-help]'); if(h) return openHelp(h.dataset.help);
+    const em = e.target.closest('[data-empty]'); if(em) return send({ action:'empty', furnace:+em.dataset.empty });
     const c = e.target.closest('.fslot'); if(!c) return;
     const i = +c.dataset.f, slot = c.dataset.slot;
     if(slot === 'out'){ if(view()[i]?.out) send({ action:'collect', furnace:i }); return; }
     openPicker(i, slot);
   };
   $('fpick').onclick = e => { if(e.target === $('fpick')) closePicker(); };
+  $('furnEmptyAll').onclick = () => { if(view().some(f => FURN_SLOTS.some(s => f[s]))) send({ action:'emptyAll' }); };
 
   return {
     /* fours envoyés par le serveur (avec son heure, pour caler la barre de progression) */

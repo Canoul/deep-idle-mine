@@ -133,6 +133,9 @@ export function furnaceOp(state, inv, op, now){
   if(op.action === 'unlock'){
     r = unlockFurnace(state, inv, op.item);
     if(r.error) return r;
+  } else if(op.action === 'emptyAll'){                // « Tout retirer » de tous les fours
+    r = { ok:true, left:0 };
+    for(const f of state.list){ advance(f, now); r.left += empty(f, inv); kick(f, now); }
   } else {
     const f = Number.isSafeInteger(op.furnace) ? state.list[op.furnace] : null;
     if(!f) return { error:'bad_furnace' };
@@ -140,6 +143,7 @@ export function furnaceOp(state, inv, op, now){
     if(op.action === 'load') r = load(f, inv, op);
     else if(op.action === 'unload') r = unload(f, inv, op.slot);
     else if(op.action === 'collect') r = unload(f, inv, 'out');
+    else if(op.action === 'empty') r = { ok:true, left:empty(f, inv) };
     else if(op.action === 'mode') r = setMode(f, op.mode);
     else r = { error:'bad_request' };
     if(r.error) return r;
@@ -147,7 +151,15 @@ export function furnaceOp(state, inv, op, now){
   }
   state.ops.push(op.opId);
   if(state.ops.length > FURNACE.opMemory) state.ops.splice(0, state.ops.length - FURNACE.opMemory);
-  return { ok:true, repeated:false };
+  return { ok:true, repeated:false, ...(r.left ? { left:r.left } : {}) };
+}
+
+/* « Tout retirer » d'un four : chaque case (ingrédients, combustible, produits) revient dans l'inventaire ; une case
+   qui n'y rentre pas (inventaire plein) reste dans le four, intacte. Renvoie le nombre de cases restées. */
+function empty(f, inv){
+  let left = 0;
+  for(const slot of ALL) if(f[slot] && unload(f, inv, slot).error) left++;
+  return left;
 }
 
 /* poser qty exemplaires d'item dans une case : une seule sorte d'objet par case ; en alliage, les deux ingrédients

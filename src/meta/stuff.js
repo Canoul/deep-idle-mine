@@ -7,7 +7,7 @@
    son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée. */
 import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
-import { withSkillStats, SKILL_STATS } from './skills.js';
+import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
@@ -86,8 +86,9 @@ export function minerStats(worn, effects = {}){
   const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
   const all = withSkillStats(withStuff, effects);
   const multOf = key => Object.hasOwn(SKILL_STATS, key) ? 1 + (effects[SKILL_STATS[key]] || 0) : 1;
+  const addOf = key => Object.hasOwn(SKILL_ADD, key) ? (effects[SKILL_ADD[key].node] || 0) * SKILL_ADD[key].scale : 0;
   return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key],
-    mult:r2(multOf(key)), skill:r2(all[key] - withStuff[key]), total:r2(all[key]) }));
+    mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key)), total:r2(all[key] + addOf(key)) }));
 }
 
 /* bulle d'info d'une pièce de stuff (nom d'objet ou pièce) : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */

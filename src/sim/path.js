@@ -5,7 +5,7 @@
    Chaque nœud est une case où le mineur TIENT : il ne peut rien faire dans le vide, toute arrivée
    sur une case sans appui continue donc en chute (landing). Jamais de chute de plus de CFG.maxFall cases. */
 import { W, CFG, CHEST_X, BLOCKS, BARRIER } from '../config.js';
-import { isAir, tileAt, landing, isWinch } from './world.js';
+import { isAir, tileAt, landing, isWinch, ontoLadder } from './world.js';
 import { baseMoveT, baseClimbT, baseMineT, baseWinchT, baseLadderT } from './mineur.js';
 import { forbidMask } from './dungeon.js';
 
@@ -40,6 +40,7 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x; if(ban && ban[n]) return; const nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
   const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed, maxFall=CFG.maxFall,
+        drop=(x,l,k=l.n)=>k*(ontoLadder(G,x,l.y) ? cl : fall),   // k cases de chute jusqu'à l (échelle à l'arrivée : vitesse d'échelle)
         wt=baseWinchT(m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)
   /* bloc qu'on peut creuser : ni barrière, ni incassable, ni mimic dévoilé (un mimic se combat, il ne se mine pas) */
   const mim=G.mimicCells, brk=(x,y,t)=>t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x));
@@ -50,16 +51,20 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
     if(d>maxCost) break;
     const x=n%W, y=(n/W)|0;
     if(goalFn && goalFn(x,y)) return {n,dist,par,typ,start,sx,sy};
+    /* sauter du seau ou d'une échelle dans le vide d'à côté : la chute compte à la vitesse du puits, pas plus vite.
+       Sinon l'itinéraire sortait du treuil, tombait de 3 et y revenait plus bas, en boucle (22/10, Geoffrey) */
+    const shaft = isWinch(G,x,y) ? wt : (y>0 && G.ladder[y][x]) ? cl : 0;
+    const side = (nx,l) => shaft ? l.n*Math.max(shaft, ontoLadder(G,nx,l.y) ? cl : fall) : drop(nx,l);
     for(const dx of [-1,1]){                       // marcher (et tomber si pas de sol)
       const nx=x+dx; if(nx<0||nx>=W) continue;
       if(!isAir(G,nx,y)){                         // galerie : miner horizontalement (build uniquement)
         const t=tileAt(G,nx,y);
         if(build && t && brk(nx,y,t)){
-          const l=landing(G,nx,y); if(l.n<=maxFall) relax(n,d,nx,l.y,mineT(t)+moveT()+l.n*fall);
+          const l=landing(G,nx,y); if(l.n<=maxFall) relax(n,d,nx,l.y,mineT(t)+moveT()+side(nx,l));
         }
         continue;
       }
-      const l=landing(G,nx,y); if(l.n<=maxFall) relax(n,d,nx,l.y,moveT()+l.n*fall);
+      const l=landing(G,nx,y); if(l.n<=maxFall) relax(n,d,nx,l.y,moveT()+side(nx,l));
       if(l.n>0 && m.bridges>0) relax(n,d,nx,y,moveT()+CFG.bridgeTime,1);   // combler le trou (typ 1 = passerelle)
     }
     if(y>=1){                                       // monter (build=false : uniquement par les échelles existantes ou le treuil)
@@ -69,12 +74,12 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
     }
     if(isAir(G,x,y+1)){                             // descendre (par l'échelle, ou se laisser tomber)
       const w=isWinch(G,x,y)||isWinch(G,x,y+1), l=landing(G,x,y+1), lad=G.ladder[y][x]||G.ladder[y+1][x]||w;
-      if(l.n+(lad?0:1)<=maxFall) relax(n,d,x,l.y,(w ? wt : lad ? climbT() : fall)+l.n*fall);
+      if(l.n+(lad?0:1)<=maxFall) relax(n,d,x,l.y,(w ? wt : lad ? climbT() : drop(x,l,1))+drop(x,l));
     } else if(build){                               // creuser vers le bas : miner + chute ; l'échelle ne se pose qu'au retour,
       const t=tileAt(G,x,y+1);                      // on compte donc d'avance ce « voyage futur » (pose + montée)
       if(brk(x,y+1,t)){
         const l=landing(G,x,y+1);
-        if(1+l.n<=maxFall) relax(n,d,x,l.y,mineT(t)+(1+l.n)*fall+CFG.futureTravelWeight*(ladT*lw+climbT()));
+        if(1+l.n<=maxFall) relax(n,d,x,l.y,mineT(t)+drop(x,l,1+l.n)+CFG.futureTravelWeight*(ladT*lw+climbT()));
       }
     }
   }
