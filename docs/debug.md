@@ -1454,6 +1454,8 @@ Règles (voir CLAUDE.md) :
   conflits seulement dans le journal et le debug (tout gardé).
 
 ### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`, ✅ en ligne le 22/10
+- ❌ **Retiré le 22/10** (décision Geoffrey et Jules : la vitesse ne change pas) : voir « Treuil : retour à 0,85 » plus bas.
+  Le correctif du détecteur (long combat) est gardé.
 - **Symptôme** (retour joueur) : les mineurs sortent du treuil quand il y a une colonne d'échelles ou un trou profond
   à côté.
 - **Cause** : pas un bug de l'IA, le coût était juste. Seau = `WINCH.speedFactor` 0,85 × `climbSpeed` = 1,9 case/s ;
@@ -1528,4 +1530,16 @@ Règles (voir CLAUDE.md) :
   playwright) : message affiché, `<b>` échappé, nom en vert pour soi.
 - **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
   sessions confondues ; pas d'affichage MI / tour.
+
+### Treuil : retour à 0,85 (Jules) — branche `jules/treuil-vitesse-retour`, ✅ en ligne le 22/10
+- **Quoi** : `WINCH.speedFactor` 2 → 0,85 (`src/config.js`). Le symptôme d'origine revient (l'IA peut quitter le seau
+  pour une colonne d'échelles ou un trou à échelles espacées : coût réel plus faible, voir l'entrée « Treuil : l'IA
+  sortait du seau »). Si l'équipe veut l'éviter sans toucher la vitesse : piste « adhérence » au seau dans `search`
+  (`src/sim/path.js`), non faite.
+- **Gardé** : détecteur de blocage (combat, étourdi, attente du barbare = occupé).
+- **Tests** : `tests/winch.test.js` : valeurs 0,85, les 2 tests « il reste dans le seau » retirés (plus vrais).
+  winch, fall, focus, diagnostics, judgment, team : 75/75 ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` (avec « Plus profond » et résidus) : 0 blocage, areas 4,0,
+  profondeur 229,6. Les chiffres « Plus profond » et résidus du 22/10 mesurés avec le seau ×2 sont à relire avec
+  ça : « Plus profond » à 3 = 1 431 → 1 087 de valeur (−24 %) au seau 0,85.
 

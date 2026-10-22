@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Treuil : retour à la vitesse d'avant
+- **Pour le joueur** : le seau du treuil reprend sa vitesse d'avant (0,85 × la vitesse sur échelle). Le seau à ×2,
+  en ligne quelques heures, est retiré. Les mineurs peuvent de nouveau sortir du seau pour une colonne d'échelles ou
+  un trou à côté.
+- **Décisions** : la vitesse du treuil ne change pas (Geoffrey et Jules).
+- **Conséquence** : sans le seau rapide, « Plus profond » coûte plus à 3 (≈ −24 % de valeur au lieu de −15 %) et
+  l'area 5 ne s'ouvre plus. Simulation (5 parties à 3) : 0 blocage, profondeur 230, areas 4.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Jules — Chat de session
 - **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
   joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.
