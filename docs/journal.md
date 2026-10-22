@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Téléphone : la mine ne rétrécit plus en boucle
+- **Pour le joueur** : sur téléphone, la mine de la session rapetissait d'une ligne à chaque instant puis se
+  remettait à grandir (au rechargement, en tournant le téléphone, en changeant d'onglet) : un effet « respiration »
+  qui donnait mal au cœur. Elle a maintenant une taille fixe : toute la largeur, 34 lignes de haut.
+- **À suivre** : la mine instantanée et la tour, sur téléphone, n'ont pas été vérifiées en vrai (pas de signalement).
+- **État** : 🧪 sur la branche `jules/fix-mine-mobile` (pas en ligne)
+
 ## 22/10/2026 — Jules — Chat de session
 - **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
   joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.

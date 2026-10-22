@@ -25,9 +25,12 @@ function setSize(cv, s){
 /* Mine de la session : elle remplit la largeur de sa boîte et montre autant de lignes que la hauteur en permet
    (entre minRows et maxRows), sans rien rogner : la caméra sait ce qui est visible (la surface en haut, le mineur
    suivi au milieu). Trop peu de hauteur pour minRows : la mine se cale sur la hauteur. Sans hauteur imposée
-   (téléphone), le nombre de lignes ne change pas. tile : taille d'une case dans le canvas (px). */
+   (téléphone : #cv est dans le flux, la boîte prend la hauteur du canvas), le nombre de lignes ne change pas : se
+   caler sur cette hauteur ferait perdre une ligne à chaque appel (arrondis), la mine rétrécirait en boucle.
+   tile : taille d'une case dans le canvas (px). */
 export function fitMine(cv, box, renderer, { minRows, maxRows }, tile){
-  const w = box.clientWidth, h = box.clientHeight > 60 ? box.clientHeight : 0;
+  const imposed = getComputedStyle(cv).position === 'absolute';
+  const w = box.clientWidth, h = imposed && box.clientHeight > 60 ? box.clientHeight : 0;
   if(!w || !cv.width) return;
   let s = snap(w / cv.width);
   if(h){
