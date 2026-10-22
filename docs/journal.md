@@ -23,7 +23,7 @@ Modèle d'entrée :
   Avant, on ne voyait que son propre skin ; les autres étaient en tenue de base.
 - **À suivre** : regarder à deux comptes dans le navigateur. Quand un ami change de stuff, son skin change au
   rafraîchissement suivant du lobby (quelques secondes).
-- **État** : 🧪 sur la branche `geoffrey/skin-lobby` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
