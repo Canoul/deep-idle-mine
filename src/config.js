@@ -12,12 +12,15 @@ export const SPAWN_X = 25, CHEST_X = 22;
 /* attackSpeed = vitesse d'attaque contre un mob, en % (100 = un coup toutes les CFG.attackInterval s ; 200 = deux fois plus vite) ;
    fortune = chance, en %, de DUPLIQUER le minerai obtenu en le minant (0 de base ; au-delà de 100 %, +1 sûr par tranche) */
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
+/* tenacity = chance, en %, d'ignorer un sort de mob qui le vise (vol du gobelin, canalisation de l'occultiste) : un tirage
+   par sort (décision du 21/10, Geoffrey) ; 0 de base */
 /* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
    mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, bridges:10,
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0,
+  bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
 export const CFG = {
@@ -273,8 +276,8 @@ export const MOBS = {
   goblinChitin: 1,                               // chitine
   /* occultiste : sort prêt toutes les cooldown s (la première fois cooldown s après son apparition). Il se téléporte à
      tpDist cases (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint sans miner, puis canalise :
-     la cible est étourdie tant que dure la canalisation (channel s). Provoqué (skill Barbare), il ne lance plus son sort
-     et sa canalisation en cours s'arrête. */
+     la cible est étourdie tant que dure la canalisation (channel s). Un coup d'un barbare qui a la Provocation interrompt
+     sa canalisation en cours, mais ne l'empêche pas d'en relancer une (21/10). La ténacité de la cible peut l'ignorer. */
   occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
 };
 /* PV d'un mob de ce type né dans l'area k */
@@ -310,6 +313,7 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
    (jusqu'au reset, gratuit, hors session). Chaque étape exige l'étape précédente au rang max.
    Un nœud : id, max (rangs), per (valeur par rang ; 1 = interrupteur), desc (texte, {v} = valeur au rang actuel).
+   adds (facultatif) : { stat: points par rang } ajoutés aux STATS du mineur (ex. ténacité en %) ; {stat} dans desc.
    Les effets sont figés au lancement de la session (comme le stuff). Valeurs provisoires. */
 export const SKILLS = {
   /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
@@ -328,8 +332,8 @@ export const SKILLS = {
       { id:'travel_rush', row:3, max:5, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}' },
-      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui' },
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },
+      { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
     ]},
   ],
@@ -477,20 +481,20 @@ export const STUFF = {
   /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur) ; set : valeur qui REMPLACE la base (ex. l'épée
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
   items: {
-    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.1 } },
+    'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
     'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
-    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.2 } },
+    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
     'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:33 } },
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
-    'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ discoverMax:1 } },
+    'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
@@ -500,13 +504,13 @@ export const STUFF = {
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
-                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune',
+                attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
                 piercing:'Perçage', looting:'Butin des mobs' },
-  statUnits: { attackSpeed:' %', fortune:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+  statUnits: { attackSpeed:' %', fortune:' %', tenacity:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
-               'discoverMax','light','compass','compassRows','torches','bridges'],
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','tenacity','oneTap','piercing','looting',
+               'discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -727,7 +731,7 @@ export const PREF_OPTIONS = {
      le tacle pendant ce temps, il s'enfuit d'un coup à la surface.
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
-  areas: [4, 5], chance: 1, size: 10, margin: 2, winchGap: 5, holeRows: 3,
+  areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
   boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,
@@ -818,6 +822,6 @@ export const DEV_TUNABLES = [
   ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
   ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (%)',10,10000], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50], ['STATS','compassRows','Lignes boussole (±)',0,5],
-  ['STATS','torches','Torches',0,1000], ['STATS','bridges','Passerelles',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
+  ['STATS','torches','Torches',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],
 ];

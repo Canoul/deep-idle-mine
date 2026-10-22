@@ -692,6 +692,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
+    /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
+    lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
       .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),

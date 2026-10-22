@@ -73,7 +73,7 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
   assert.equal(statsText('Plastron en chitine'), 'Pods +25');
   assert.equal(statsText('Jambes en chitine'), 'Vitesse (échelle) +0,4');
   assert.equal(statsText('Bottes en chitine'), 'Vitesse (marche) +0,5');
-  assert.equal(statsText(PICK), 'Vitesse de minage +0,1');
+  assert.equal(statsText(PICK), 'Vitesse de minage +0,2');
   for(const [name, d] of Object.entries(STUFF.items)){
     for(const k of Object.keys(d.stats || {})){ assert.ok(k in STATS, `${name} : stat ${k} inconnue`); assert.ok(STUFF.statLabels[k], k); }
     assert.ok(TEXTURES.includes(ITEMS[name].tex) && existsSync(new URL(`../textures/${d.tex}.png`, import.meta.url)), d.tex);
@@ -84,7 +84,7 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
 
 test('bulle d\'info du stuff : le nom, puis un effet par ligne ; rien pour un objet qui n\'est pas du stuff', async () => {
   const { stuffTip } = await import('../src/meta/stuff.js');
-  assert.equal(stuffTip(PICK), 'Pioche en pierre\nVitesse de minage +0,1');
+  assert.equal(stuffTip(PICK), 'Pioche en pierre\nVitesse de minage +0,2');
   assert.equal(stuffTip('Casque en chitine'), 'Casque en chitine\nOxygène +30');
   assert.equal(stuffTip('Charbon'), null);
   assert.equal(stuffTip('Objet inconnu'), null);
@@ -98,7 +98,7 @@ test('stats du mineur : base + bonus des pièces portées, arrondies ; sans stuf
   const worn = { casque:{ item:'Casque en chitine', uid:1 }, jambes:{ item:'Jambes en chitine', uid:2 }, pioche:{ item:PICK, uid:3 }, torse:null };
   assert.equal(get(worn, 'oxygenMax').total, STATS.oxygenMax + 30);
   assert.equal(get(worn, 'climbSpeed').total, Math.round((STATS.climbSpeed + 0.4) * 100) / 100);
-  assert.equal(get(worn, 'mineSpeed').bonus, 0.1);
+  assert.equal(get(worn, 'mineSpeed').bonus, 0.2);
   assert.equal(get(worn, 'pods').bonus, 0);
   for(const s of minerStats(worn)) assert.ok(s.key in STATS && s.label, s.key);
 });

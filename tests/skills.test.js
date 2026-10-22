@@ -175,9 +175,9 @@ test('onglet Stuff : les stats montrent aussi les bonus des skills, comme en ses
   const skills = { tree:'mineur', ranks:{ mine_speed:3 } };
   const worn = { pioche:{ item:'Pioche en pierre', uid:1 } };
   const row = minerStats(worn, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'mineSpeed');
-  assert.deepEqual([row.base, row.bonus, row.mult, row.total], [1, 0.1, 1.06, 1.17]);   // (1 + 0,1) × 1,06 = 1,166 : multiplicateur, pas +0,06
+  assert.deepEqual([row.base, row.bonus, row.mult, row.total], [1, 0.2, 1.06, 1.27]);   // (1 + 0,2) × 1,06 = 1,272 : multiplicateur, pas +0,06
   const iron = minerStats({ pioche:{ item:'Pioche en fer', uid:2 } }, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'mineSpeed');
-  assert.equal(iron.total, 1.27, '(1 + 0,2) × 1,06 = 1,272');
+  assert.equal(iron.total, 1.48, '(1 + 0,4) × 1,06 = 1,484');
   const G = buildSession({ id:'S', seed:1, players:[{ account:'A', name:'Ana' }], looks:{ A:{ pioche:'Pioche en pierre' } }, skills:{ A:skills } });
   assert.equal(Math.round(G.miners[0].carac.mineSpeed * 100) / 100, row.total, 'même valeur qu\'en session');
   assert.equal(minerStats(worn).find(s => s.key === 'mineSpeed').skill, 0, 'sans skills : rien');
@@ -195,4 +195,21 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
   assert.deepEqual(list.map(k => k.id), ['build_time', 'tall_ladder', 'travel_rush']);
   assert.match(list[0].text, /−15 %/); assert.match(list[2].text, /\+6 %/);
   assert.deepEqual(behaviourSkills({}), [], 'aucun skill : rien');
+});
+
+test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {
+  const { withSkillStats } = await import('../src/meta/skills.js');
+  const { minerStats } = await import('../src/meta/stuff.js');
+  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %');
+  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %');
+  const st = learnAll(createSkills(), ['damage', 'damage']);
+  const eff = skillEffects(st);
+  const c = withSkillStats({ ...STATS }, eff);
+  assert.equal(c.tenacity, 10); assert.equal(c.damage, STATS.damage * 1.1);
+  assert.equal(withSkillStats({ ...STATS }, skillEffects(createSkills())).tenacity, 0, 'sans skill : 0');
+  const ten = minerStats({}, eff).find(s => s.key === 'tenacity');
+  assert.deepEqual([ten.total, ten.skill, ten.mult, ten.label], [10, 10, 1, 'Ténacité']);
+  /* en session : la carac du mineur porte la ténacité */
+  const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], skills:{ A:{ tree:st.tree, ranks:{ ...st.ranks } } } });
+  assert.equal(G.miners[0].carac.tenacity, 10);
 });

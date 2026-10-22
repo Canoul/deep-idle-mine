@@ -22,6 +22,9 @@ const ACCOUNTS = Object.fromEntries([A, B, C, D].map(a => [a.id, a]));
 
 const fakeSummary = rec => ({ id:rec.id, shares: rec.players.map(p => ({ account:p.account, left:false, bag:{ Charbon:1 } })) });
 
+/* les membres (hors chef) se déclarent prêts : sans ça, le chef ne peut pas lancer (21/10) */
+const ready = async (party, ...who) => { for(const m of who) await party.ready(m, true); };
+
 function setup(){
   let now = 5_000_000;
   const clock = () => now;
@@ -144,6 +147,7 @@ test('le chef lance : une session pour tous (chef = Rouge), le groupe reste, cha
   const { party } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
   await assert.rejects(party.launch(B, {}), { code:'not_leader' });
+  await ready(party, B, C);
   const { session } = await party.launch(A, {});
   assert.deepEqual(session.players.map(p => p.account), [A.id, B.id, C.id]);
   assert.equal(party.count(), 1, 'le groupe survit au lancement');
@@ -166,6 +170,7 @@ test('seul (sans groupe ou groupe d\'un joueur) : session solo comme avant', asy
 test('enchaîner : pendant toute la session personne n\'est retiré ; à la fin, même groupe, le chef relance', async () => {
   const { party, game, advance } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await ready(party, B, C);
   const first = (await party.launch(A, {})).session;
   advance(realDurationMs() - 1000);                              // ~30 min sans un mot au groupe (ils jouent)
   await party._sweep();
@@ -175,6 +180,8 @@ test('enchaîner : pendant toute la session personne n\'est retiré ; à la fin,
   const st = await party.state(A);
   assert.deepEqual(st.party.members.map(m => m.account), [A.id, B.id, C.id], 'tout le monde est encore là');
   assert.equal(st.party.leader, A.id);
+  await assert.rejects(party.launch(A, {}), { code:'not_ready' }, "personne n'est prêt après la session");
+  await ready(party, B, C);
   const second = (await party.launch(A, {})).session;
   assert.notEqual(second.id, first.id);
   assert.deepEqual(second.players.map(p => p.account), [A.id, B.id, C.id], 'relancé sans réinviter');
@@ -183,28 +190,29 @@ test('enchaîner : pendant toute la session personne n\'est retiré ; à la fin,
 test('enchaîner : celui qui ne veut pas relancer quitte le groupe, la suivante se fait sans lui', async () => {
   const { party, game, advance } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
-  await party.launch(A, {});
+  await ready(party, B, C); await party.launch(A, {});
   advance(realDurationMs()); await game.pump();
-  await party.leave(B);
+  await party.leave(B); await ready(party, C);
   assert.deepEqual((await party.launch(A, {})).session.players.map(p => p.account), [A.id, C.id]);
 });
 
 test('enchaîner : un membre encore en session est affiché « en session » et bloque la relance', async () => {
   const { party, game } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
-  await party.launch(A, {});
+  await ready(party, B); await party.launch(A, {});
   await game.leave(A, {});                                       // A quitte tôt et revient au lobby ; B joue encore
   const st = await party.state(A);
   assert.equal(st.session, null);
   assert.deepEqual(st.party.members.map(m => [m.account, m.playing, m.away]), [[A.id, false, false], [B.id, true, false]]);
-  await assert.rejects(party.launch(A, {}), { code:'member_in_session' });
+  await assert.rejects(party.launch(A, {}), { code:'not_ready' });   // B, encore en session, ne peut pas se dire prêt
+  await assert.rejects(party.ready(B, true), { code:'session_running' });
   assert.equal((await party.state(A)).party.members.length, 2, 'le groupe ne bouge pas');
 });
 
 test('enchaîner : après la fin, un membre silencieux est retiré au bout de memberTimeout (comme avant)', async () => {
   const { party, game, advance } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
-  await party.launch(A, {});
+  await ready(party, B); await party.launch(A, {});
   advance(realDurationMs()); await game.pump();
   await party.state(B);                                          // B voit le bilan puis ferme l'onglet
   advance(PARTY_SERVER.memberTimeout / 2); await party.state(A);
@@ -215,7 +223,7 @@ test('enchaîner : après la fin, un membre silencieux est retiré au bout de me
 test('enchaîner : session finie en retard (serveur lent ou redémarré) : personne n\'est retiré juste après la fin', async () => {
   const { party, game, advance } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
-  await party.launch(A, {});
+  await ready(party, B); await party.launch(A, {});
   advance(realDurationMs() + 2 * PARTY_SERVER.memberTimeout);    // la partie rattrape son retard : elle finit bien après l'heure
   await game.pump();
   const st = await party.state(A);                               // A revient le premier ; B n'a pas encore rechargé son lobby
@@ -230,7 +238,7 @@ test('enchaîner (mode dev, fin libre) : session de plus de memberTimeout, perso
   const game = createGameService({ store:createMemoryGameStore(), liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7, dev:true });
   const party = createPartyService({ game, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
   await party.create(A); await party.join(B, 'K7Q4P2');
-  await party.launch(A, {});
+  await ready(party, B); await party.launch(A, {});
   now += 3 * PARTY_SERVER.memberTimeout;                         // on joue un moment
   await game.finish(A);                                          // fin libre (dev)
   assert.deepEqual((await party.state(A)).party.members.map(m => m.account), [A.id, B.id]);
@@ -243,13 +251,14 @@ test('redémarrage du serveur : les groupes sont gardés (code, chef, membres, i
   const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
   const party = createPartyService({ game, store, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
   await party.create(A); await party.join(B, 'K7Q4P2'); await party.invite(A, 'CCCC3333');
-  await party.launch(A, {});
+  await ready(party, B); await party.launch(A, {});
   now += realDurationMs(); await game.pump();
   /* redémarrage : nouveaux services sur le même stockage */
   const store2 = createMemoryGameStore(store.snapshot());
   const game2 = createGameService({ store:store2, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 8 });
   const party2 = createPartyService({ game:game2, store:store2, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'H3XM9T' });
   await party2.load();
+  await party2.ready(B, true);
   const st = await party2.state(B);
   assert.equal(st.party.code, 'K7Q4P2');
   assert.equal(st.party.leader, A.id);
@@ -279,6 +288,7 @@ test('stockage des groupes : on n\'écrit que les vrais changements (pas à chaq
 test('lancement refusé (un membre déjà en session) : le groupe reste, personne n\'est engagé', async () => {
   const { party, game } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
+  await ready(party, B);
   await game.start(B, {});                                      // B a lancé une session solo ailleurs (autre onglet)
   await assert.rejects(party.launch(A, {}), { code:'member_in_session' });
   assert.equal((await party.state(A)).party.members.length, 2);
@@ -292,6 +302,7 @@ test('pendant le lancement, personne n\'entre ni ne sort (l\'équipe lancée est
                  start:async (me, body, members) => { await gate; return { session:{ players:members } }; } };
   const party = createPartyService({ game, getAccount:async id => ACCOUNTS[id], newCode:() => 'K7Q4P2' });
   await party.create(A); await party.join(B, 'K7Q4P2');
+  await ready(party, B);
   const launching = party.launch(A, {});
   await new Promise(r => setTimeout(r, 0));
   await assert.rejects(party.join(C, 'K7Q4P2'), { code:'launching' });
@@ -330,6 +341,9 @@ test('HTTP : Zoé crée, Max rejoint par le code, Zoé lance, les deux sont dans
     assert.equal((await max('POST', '/api/game/start', {})).data.error.code, 'not_leader');
     const inv = await zoe('POST', '/api/party/invite', { id:maxAcc.displayId });
     assert.equal(inv.data.error.code, 'already_member');
+    assert.equal((await zoe('POST', '/api/game/start', {})).data.error.code, 'not_ready');
+    assert.equal((await max('POST', '/api/party/ready', { ready:'oui' })).status, 400, 'valeur invalide');
+    assert.equal((await max('POST', '/api/party/ready', { ready:true })).status, 200);
     const start = await zoe('POST', '/api/game/start', {});
     assert.equal(start.status, 201);
     assert.equal(start.data.session.players.length, 2);
@@ -350,7 +364,73 @@ test('lobby : chaque membre du groupe montre sa spécialisation (arbre de skills
   assert.deepEqual(st.party.members.map(m => [m.account, m.tree]), [[A.id, 'logisticien'], [B.id, null], [C.id, 'barbare']]);
 });
 
+test('lobby : chaque membre du groupe montre son skin (équipement porté)', async () => {
+  const { party, game } = setup();
+  const L = { [A.id]:{ casque:'Casque en chitine' }, [B.id]:{}, [C.id]:{ pioche:'Pioche en pierre' } };
+  game.lookFor = async id => L[id];
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  const st = await party.state(B);
+  assert.deepEqual(st.party.members.map(m => [m.account, m.look]), [[A.id, L[A.id]], [B.id, {}], [C.id, L[C.id]]]);
+});
+
 test('spécialisation : lue par le service de jeu depuis les skills du compte', async () => {
   const { game } = setup();
   assert.equal(await game.skillTreeOf(A.id), null);
+});
+
+/* ---------- prêt et chef (21/10) ---------- */
+
+test('prêt : le chef ne lance que si tous les autres sont prêts ; il n\'a pas à se dire prêt lui-même', async () => {
+  const { party } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await party.ready(B, true);
+  await assert.rejects(party.launch(A, {}), e => e.code === 'not_ready' && /Max/.test(e.message) && !/Zoe/.test(e.message));
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, true, false]);
+  await party.ready(C, true); await party.ready(B, false);
+  await assert.rejects(party.launch(A, {}), { code:'not_ready' }, 'B s\'est ravisé');
+  await party.ready(B, true);
+  assert.equal((await party.launch(A, {})).session.players.length, 3);
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, false, false], 'tout le monde repasse « pas prêt »');
+});
+
+test('prêt : quelqu\'un rejoint → tout le monde repasse « pas prêt » ; valeurs invalides et sans groupe refusées', async () => {
+  const { party } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.ready(B, true);
+  await party.join(C, 'K7Q4P2');
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, false, false]);
+  for(const v of ['true', 1, null, undefined, {}]) await assert.rejects(party.ready(B, v), { code:'bad_request' });
+  await assert.rejects(party.ready(D, true), { code:'no_party' });
+});
+
+test('chef : il peut donner sa place à un membre ; le nouveau chef lance, l\'ancien doit se dire prêt', async () => {
+  const { party } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await party.ready(B, true); await party.ready(C, true);
+  await assert.rejects(party.promote(B, C.id), { code:'not_leader' });
+  for(const bad of [A.id, D.id, 'n\'importe quoi', '']) await assert.rejects(party.promote(A, bad), { code:'invalid_id' });
+  const r = await party.promote(A, 'bbbb-2222');                    // ID tapé sans soin
+  assert.equal(r.party.leader, B.id);
+  assert.deepEqual(r.party.members.map(m => [m.account, m.leader, m.ready]), [[A.id, false, false], [B.id, true, false], [C.id, false, true]]);
+  await assert.rejects(party.launch(A, {}), { code:'not_leader' });
+  await assert.rejects(party.launch(B, {}), { code:'not_ready' }, 'A, devenu simple membre, n\'est pas prêt');
+  await assert.rejects(party.kick(A, C.id), { code:'not_leader' });
+  await party.ready(A, true);
+  assert.deepEqual((await party.launch(B, {})).session.players.map(p => p.account), [B.id, A.id, C.id], 'le chef lance (il est Rouge)');
+});
+
+test('prêt et chef : gardés au redémarrage du serveur', async () => {
+  let now = 5_000_000;
+  const clock = () => now;
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(fakeSummary), clock, randomSeed:() => 7 });
+  const party = createPartyService({ game, store, clock, getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await party.promote(A, B.id); await party.ready(C, true);
+  const store2 = createMemoryGameStore(store.snapshot());
+  const party2 = createPartyService({ game:createGameService({ store:store2, liveRunner:fakeLive(fakeSummary), clock }), store:store2, clock, getAccount:async id => ACCOUNTS[id] ?? null });
+  await party2.load();
+  const st = (await party2.state(B)).party;
+  assert.equal(st.leader, B.id);
+  assert.deepEqual(st.members.map(m => m.ready), [false, false, true]);
 });

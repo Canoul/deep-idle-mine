@@ -17,7 +17,7 @@ import { runSession } from '../src/sim/session.js';
 import { stuckDetector } from '../src/sim/diagnostics.js';
 import { setFocus } from '../src/sim/focus.js';
 import { SKILLS } from '../src/config.js';
-import { sanitizeSkills, skillEffects } from '../src/meta/skills.js';
+import { sanitizeSkills, skillEffects, withSkillStats } from '../src/meta/skills.js';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i=args.indexOf('--'+name); return i<0 ? def : (args[i+1] ?? true); };
@@ -31,7 +31,7 @@ function giveTree(m, tree){
   const t = SKILLS.trees.find(x => x.id === tree); if(!t) throw new Error('arbre inconnu : ' + tree);
   const st = sanitizeSkills({ tree, ranks:Object.fromEntries(t.nodes.map(n => [n.id, n.max])) });
   m.skill = { ...m.skill, ...skillEffects(st) }; m.skillTree = tree;
-  m.carac.mineSpeed *= 1 + m.skill.mine_speed; m.carac.damage *= 1 + m.skill.damage;
+  m.carac = withSkillStats(m.carac, m.skill);   // mêmes stats qu'en session (multiplicateurs, ténacité…)
 }
 const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))
   .map(([k, v]) => [k, k === 'area' ? +v : v])) : null;
@@ -52,6 +52,7 @@ for(const seed of seeds){
     focusLeft: G.miners.map(m=>JSON.stringify(m.prefs.focus)).join(' '), focusDropped: G.miners.some(m=>m.focusNotice),
     miners: G.miners.map(m=>({ name:m.name, ...m.stats, chest:G.chestBy[m.id]||{} })),
     stuck: det.result(),
+    dungeons: G.dungeons.filter(d=>d.k<G.unlockedAreas).map(d=>`area ${d.k} ${d.cleared ? 'vaincu' : d.found ? 'découvert' : 'pas vu'}`),
   });
 }
 
@@ -60,9 +61,10 @@ if(json){ console.log(JSON.stringify(rows, null, 1)); process.exit(0); }
 for(const r of rows){
   console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | étourdi ${r.stuns}× | minerai ${r.ore.join(' ')}` +
     (r.stuck.length ? `  ⚠ BLOQUÉ ${JSON.stringify(r.stuck[0])}` : ''));
+  if(r.dungeons.length) console.log(`    donjon ${r.dungeons.join(' | ')}`);
   if(focus) console.log(`    coffre ${JSON.stringify(r.chest)} | focus en fin ${r.focusLeft}${r.focusDropped ? ' (abandonné en cours de route)' : ''}`);
   if(miners>1) for(const m of r.miners)
-    console.log(`    ${m.name.padEnd(9)} minés ${String(m.mined).padStart(4)} (minerai ${String(m.ore).padStart(3)}) | allers-retours ${String(m.trips).padStart(2)} | prof ${String(m.maxDepth).padStart(3)} | mobs ${String(m.kills).padStart(3)} | tacles ${m.tackled} | volés ${m.stolen}`);
+    console.log(`    ${m.name.padEnd(9)} minés ${String(m.mined).padStart(4)} (minerai ${String(m.ore).padStart(3)}) | allers-retours ${String(m.trips).padStart(2)} | prof ${String(m.maxDepth).padStart(3)} | mobs ${String(m.kills).padStart(3)} | tacles ${m.tackled} | volés ${m.stolen}${m.resisted ? ` | résisté ${m.resisted}` : ''}`);
 }
 const avg = k => (rows.reduce((s,r)=>s+r[k],0)/rows.length).toFixed(1);
 const stuck = rows.filter(r=>r.stuck.length).length;

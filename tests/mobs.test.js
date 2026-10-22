@@ -82,17 +82,60 @@ test('occultiste : pas de case possible à 2-4 cases → pas de sort (jamais au 
   assert.equal(o.channel ?? null, null); assert.equal(o.grab, m.id, 'il tacle au contact');
 });
 
-test('occultiste provoqué : la canalisation s\'arrête tout de suite (la cible est libérée) et il ne relance plus son sort', () => {
+test('occultiste provoqué : le coup interrompt la canalisation (cible libérée), mais il relance son sort sur le barbare', () => {
   const G = corridor(2), [a, b] = G.miners; a.x = 10; b.x = 30; b.ox = a.ox = 300;
   const o = mob(G, { type: 'occultiste', x: 20, y: a.y, cast: 0.05, hp: 1e9, maxhp: 1e9 });
   run(G, 1);
   const target = G.miners.find(m => m.id === o.channel?.target); assert.ok(target);
-  const other = target === a ? b : a;
-  provoke(G, o, other);
+  const barb = target === a ? b : a;
+  provoke(G, o, barb);
   assert.equal(o.channel, null); assert.equal(channeler(G, target), null, 'libéré');
-  o.cast = 0; run(G, 300);
-  assert.equal(o.channel, null, 'plus jamais de sort');
-  assert.equal(target.stats.hexed, 1);
+  assert.ok(G.log.some(l => String(l.msg).includes('interrompt la canalisation')));
+  barb.x = o.x + 1;                           // il l'a frappé : il est au contact
+  o.cast = 0; run(G, 1);
+  assert.equal(o.channel?.target, barb.id, 'il relance, sur le barbare (sa seule cible)');
+  assert.equal(channeler(G, barb), o, 'en 1 contre 1, le barbare peut être étourdi');
+});
+
+test('provocation pendant une canalisation sur un autre : chaque coup l\'interrompt, même déjà provoqué', () => {
+  const G = corridor(2), [a, b] = G.miners; a.x = 10; b.x = 30; b.ox = a.ox = 300;
+  const o = mob(G, { type: 'occultiste', x: 20, y: a.y, cast: 0.05, hp: 1e9, maxhp: 1e9, taunt: b.id });
+  o.channel = { target: a.id, left: 5 };      // canalisation lancée avant la provocation
+  provoke(G, o, b);
+  assert.equal(o.channel, null);
+  assert.equal(o.taunt, b.id);
+});
+
+/* ---- ténacité (21/10) : chance d'ignorer un sort, un tirage par sort ---- */
+
+test('ténacité 100 % : le vol du gobelin et la canalisation de l\'occultiste sont ignorés', () => {
+  const G = corridor(), m = G.miners[0]; m.ox = 300; busy(m);
+  m.carac.tenacity = 100; m.inv = { Fer: 5 }; m.load = 5;
+  const g = mob(G, { type: 'gobelin', x: m.x + 1, y: m.y });
+  run(G, Math.round(MOBS.goblinStealEvery / 0.1) * 3 + 2);
+  assert.equal(tackler(G, m), g);
+  assert.equal(m.inv.Fer, 5, 'rien de volé'); assert.ok(m.stats.resisted >= 3);
+  assert.ok(G.log.some(l => String(l.msg).includes('résiste au vol')));
+
+  const H = corridor(), n = H.miners[0]; n.ox = 300; n.carac.tenacity = 100;
+  const o = mob(H, { type: 'occultiste', x: n.x + 8, y: n.y, cast: 0.05 });
+  run(H, 1);
+  assert.equal(o.channel ?? null, null, 'pas de canalisation'); assert.equal(dist(o, n), MOBS.occult.tpDist, 'il s\'est téléporté');
+  assert.ok(o.cast > MOBS.occult.cooldown - 0.5, 'sort perdu : il attend son prochain sort');
+  assert.notEqual(n.action?.type, 'stun');
+  assert.ok(H.log.some(l => String(l.msg).includes('résiste à la canalisation')));
+});
+
+test('ténacité : ~la bonne proportion de sorts ignorés ; sans ténacité, aucun tirage (même hasard qu\'avant)', async () => {
+  const { resists } = await import('../src/sim/mobs.js');
+  const G = corridor(), m = G.miners[0];
+  G.rng = mulberry32(5); m.carac.tenacity = 15;
+  let n = 0; for(let i = 0; i < 20000; i++) if(resists(G, m)) n++;
+  assert.ok(n > 2700 && n < 3300, `15 % attendu : ${n / 200} %`);
+  m.carac.tenacity = 0; G.rng = mulberry32(7);
+  const before = mulberry32(7)();
+  assert.equal(resists(G, m), false);
+  assert.equal(G.rng(), before, 'aucun nombre tiré');
 });
 
 test('occultiste vaincu : 1 à 3 Tissu sombre', () => {

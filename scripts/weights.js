@@ -18,7 +18,7 @@ const opt = (name, def) => { const i=args.indexOf('--'+name); return i<0 ? def :
 const count = +opt('count', 5), bump = +opt('bump', 0.2), miners = +opt('miners', 1);
 const seeds = Array.from({length:count}, (_,i)=>(i+1)*7919);
 /* stats mesurées par défaut (les stats entières sont arrondies, au moins +1) */
-const DEFAULT = ['oxygenMax','speed','climbSpeed','mineSpeed','pods','damage','discoverMax','light','compass','torchRadius','torches','bridges'];
+const DEFAULT = ['oxygenMax','speed','climbSpeed','mineSpeed','pods','damage','discoverMax','light','compass','torchRadius','torches'];   // passerelles illimitées : pas de poids
 const INTEGER = new Set(['discoverMax','torchRadius','compass','torches','bridges']);
 const VAL = Object.fromEntries(Object.values(BLOCKS).filter(b=>b.type==='ore' && b.val).map(b=>[b.name, b.val]));
 

@@ -1662,7 +1662,170 @@ Règles (voir CLAUDE.md) :
     mixed` : 3,6 / 201,0, 0 blocage (sans pièges : 4,0 / 212,8). ⚠️ les deux corrections changent l'IA pour toutes
     les parties (l'engagement sur la galerie surtout) : à surveiller.
 
-### Retours du 22/10 : fours, butin, skills, chutes, bilan (Geoffrey) — branche `geoffrey/retours-22-10`
+### Équilibrage du 21/10 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : chances du concasseur remplacées à la fusion par celles de main (décision du 22/10) ; pioches ×2,
+  ceinture +10 torches, passerelles illimitées gardées.
+- **Quoi** : concasseur (terre gemmes 0,2 % / T1 0,1 % ; pierre 0,3 % / T2 0,1 % ; pierre dure 0,4 % / T2 0,15 %) ;
+  pioches ×2 (pierre +0,2, fer +0,4) ; Ceinture en peau de gobelin `torches:+10` (au lieu de `discoverMax:+1`) ;
+  passerelles illimitées : `STATS.bridges = Infinity` (la décrémentation laisse Infinity ; JSON → `null`, le HUD
+  affiche « passerelles illimitées ») ; stat retirée de `shownStats`, du réglage dev et de `scripts/weights.js`.
+- **Fichiers** : `src/config.js`, `src/ui/hud.js`, `scripts/weights.js`, `src/wiki/data.js`, GAME_DESIGN (§2, §3, §6).
+- **Tests** : crusher, blueprint, stuff mis aux nouvelles valeurs ; fall (+1 : passerelles illimitées) ; tier2, view,
+  wiki, craft, anticheat open/crusher : 89/89 + fall 12/12.
+- **Vérification** : ✅ simulation 3 × 5 : areas 3,4, profondeur 182,2 (avant 183,2), allers-retours 26,6, 0 blocage.
+- **Points fragiles** : un réglage dev qui remettrait `bridges` fini n'existe plus ; si un coût est ajouté un jour,
+  remettre la stat dans `shownStats`.
+- **Fusion de main (Jules, 21/10)** : ménage des textes intégré (conflits HUD / test de l'épée réglés). Deux tests
+  attendaient encore les anciennes pioches : `tests/skills.test.js` (Stuff × skills : 1,27 → pierre, 1,48 → fer) et
+  `tests/research.test.js` (Pioche en fer BP : +0,4). blueprint, wiki, world, research, lobby, stuff, crusher, skills,
+  fall : 90/90 ✅. ⚠️ `npm run test:anticheat` pas relancé (le concasseur a bougé) : à faire avant la mise en ligne.
+
+### Donjon aussi en area 4 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : remplacé à la fusion : main avait 100 % en areas 4 et 5 ; décision Geoffrey : **33 %** par area,
+  tirages indépendants (`DUNGEON.chance` 0.33 ; `tests/dungeon.test.js` : taux 30–36 % par area, 8–14 % les deux).
+- **Quoi** : `DUNGEON.areas = [4, 5]` ; tirage par area (`hash(seed, k+1) ^ salt`), donc indépendant (≈ 4 % des seeds
+  en ont deux). Rien d'autre à changer : `planDungeon`/`registerDungeon` travaillaient déjà par area.
+- **Piège corrigé au passage** : `tests/helpers.js` `worldFrom` vide aussi `G.dungeons` (la seed 1 a maintenant un
+  donjon en area 4 : les mondes dessinés en texte gardaient sa fiche alors que ses cases avaient disparu).
+- **Outil** : `scripts/simulate.js` affiche une ligne « donjon area k pas vu / découvert / vaincu » (areas débloquées).
+- **Tests** : `tests/dungeon.test.js` 12/12 (taux ≈ 20 % en area 4 et en area 5, ≈ 4 % les deux, aucune autre area).
+- **Vérification** : ✅ simulation 3 × 5 (seeds standard, aucune n'a de donjon en area 4) : identique, 0 blocage.
+  ✅ seeds 3, 16, 20 (donjon en area 4) sans skills et `--skills barbare` : 0 blocage ; le donjon n'est pas vu dans ces
+  sessions (seed 16 : area 4 atteinte mais pas la salle). ⚠️ Pas encore vu un donjon d'area 4 découvert en simulation.
+- **Hors sujet, déjà là avant** : seed 16 `--skills mixed` → blocage « Retour (treuil) » (Bleu, t 3225 s, x 25 y 16) :
+  voir l'entrée treuil.
+
+### Ténacité, Force brute, provocation (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : `STATS.tenacity = 0` (%) ; nœud Barbare `damage` : `adds:{ tenacity:5 }` (nouveau champ de nœud : points
+  ajoutés par rang, appliqués par `withSkillStats` après les multiplicateurs ; `{tenacity}` dans `desc`, rendu par
+  `nodeText`). `resists(G,m)` (src/sim/mobs.js) : un tirage `G.rng` par sort, **aucun tirage si ténacité 0** (parties
+  sans ténacité : hasard identique). Vol du gobelin : le vol est sauté. Occultiste : il se téléporte, pose son
+  cooldown, mais ne canalise pas. Provocation : `provoke` interrompt la canalisation à **chaque** coup (même déjà
+  provoqué) et ne bloque plus le sort (`o.taunt` retiré des conditions de `occult`). Stats `resisted` (mineur, partie).
+  Onglet Stuff : « Ténacité » affichée, apport des skills en « +x % » bleu. Wiki : texte de la stat, source Force brute.
+  `scripts/simulate.js` : `giveTree` passe par `withSkillStats` (avant : calcul à la main, sans ténacité) ; « résisté ».
+- **Fichiers** : `src/config.js`, `src/meta/skills.js`, `src/sim/mobs.js`, `src/ui/stuff.js`, `src/wiki/data.js`,
+  `scripts/simulate.js`, GAME_DESIGN §3 et §5.
+- **Tests** : mobs (provocation réécrite + 3 : interruption à chaque coup, ténacité 100 %, proportion 15 % et aucun
+  tirage à 0), skills (+1 : texte, `withSkillStats`, onglet Stuff, session) ; stuff, wiki : 46/46.
+- **Vérification** : ✅ simulation 3 × 5 sans skills : identique (182,2, 0 blocage). ✅ `--skills barbare` 3 × 5 : ≈ 15 %
+  des vols ignorés (ex. 48 volés / 8 résistés) ; étourdissements 11,0 → 11,6, areas 3,6 → 3,4, profondeur 186 → 182,4
+  (l'occultiste n'est plus neutralisé par la provocation), 0 blocage.
+- **Points fragiles** : un sort ignoré coûte quand même le cooldown de l'occultiste (choix : « sort perdu »).
+
+### IA : travailler dans la dernière area, focus minerai vers la plus profonde (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : ❌ **pas mis en ligne**. À la fusion avec main, conflit avec « Plus profond » de Jules (même idée,
+  déjà en ligne, `deepArea`/`workArea` dans `focus.js`) : on garde la version de main (décision Geoffrey). Ce qui suit
+  est l'historique ; `CFG.transitReach` et les tests associés sont retirés.
+- **Constat** (avant) : priorité « Minerais » (défaut) → en redescendant, le mineur visait tout filon à portée de
+  boussole dans les areas du dessus. Mesures (3 mineurs, `arrive.mjs` : déblocage → 1re entrée) : seed 31676 area 4
+  débloquée à 2985 s, jamais visitée ; seed 15838 area 3 débloquée à 2050 s, Rouge y entre à 3397 s.
+- **Quoi** : `workArea(G,m)` (src/sim/focus.js) = focus d'area, sinon la plus profonde des areas débloquées qui a encore
+  un minerai visé, sinon la dernière débloquée. `focusGoal` (focus minerai) renvoie `workArea` (avant : la plus proche).
+  `decideWork` : `inFocus(y,x,t)` accepte une cible de l'area de travail, ou d'une area au-dessus si elle est à
+  ≤ `CFG.transitReach` (1) du mineur ; sans focus, un coffre au trésor (non-ore) reste visé partout. Rien au-dessous.
+  Décision du créateur : « il prend ceux collés à son chemin ».
+- **Détecteur de blocage** (src/sim/diagnostics.js) : une descente de ≥ 3 couches compte comme progrès même si le
+  mineur vient de passer en retour (faux positif seed 7919 : 90 s de descente sans miner puis « fin de session »).
+- **Tests** : focus 25/25 (plus profonde, `workArea`, passage : charbon collé pris, or à 3 cases laissé, il atteint
+  l'area 1) ; team, diagnostics, winch, fall, mobs, goblin, dungeon, miner, treasure, session, skills, world : 126/126.
+- **Vérification** : ✅ simulation 3 × 5 : areas 3,4 → **4,0**, profondeur 182,2 → **225,8**, allers-retours 26,6 → 24,2,
+  0 blocage ; minerai total en baisse (seed 31676 : 1 119 → 976) mais plus profond. Arrivée dans l'area 4 : 1 à 7 min
+  après son déblocage (vers 37 min). ✅ `--focus coal:only` (7919, 31676) : profondeur 201 → 225, charbon −10 à −20 %,
+  0 blocage.
+- **Points fragiles / à surveiller** : ⚠️ équilibrage : l'area 4 est atteinte à chaque session avec 3 mineurs de base
+  (≈ 150 / 500 minerais, 200 pour débloquer l'area 5, la dernière) → le cap « ne pas finir en un essai » est plus
+  proche. Un mineur qui redescend alors qu'il reste peu de temps fait un aller-retour presque à vide (déjà là avant).
+
+### Treuil pas pris à la redescente (seed 1250570735, Geoffrey) — branche `geoffrey/retours-21-10`
+- **Cause** (`--skills mixed`, `winch.mjs` : chaque descente, temps dans le seau) : Rouge (secteur x 8) faisait 4
+  descentes sur 7 en « 17 s jusqu'à y 6, Creuse vers le bas ». `decideDeparture` le faisait marcher jusqu'à sa colonne
+  `homeX` ; il y tombait dans un trou (y 1-7) sans échelle, sans lien avec son puits (x 6) ni le treuil (on ne monte que
+  par une échelle) → `planDown` ne trouvait plus rien → puits neuf depuis la surface. Autre facteur, pas un bug : le
+  seau (0,85 × montée) est plus lent qu'une échelle posée, l'IA prend alors ses échelles.
+- **Quoi** : `decideDeparture` : si `G.winch` existe et que `planDown` (même filtre que `digDown`, extrait en
+  `downAvoid`) trouve une descente par l'existant, il part tout de suite en « Descend par l'existant ». Sans treuil :
+  inchangé (essai sans condition : test team « même case » 5,3 % > 5 %, profondeur 225,8 → 222,0 ; l'ancien départ ne
+  faisait que 2 puits neufs près de la surface en 3 sessions sans skills).
+- **Détecteur de blocage** : un mob tué pendant la fenêtre, ou plus de la moitié du temps à frapper, n'est pas un blocage
+  (faux positifs : barbare contre le minotaure ~2 min, seeds 16 et 23757 ; gobelins en série, seed 15838).
+- **Tests** : winch (+1 : seed 1250570735 mixed, aucun puits neuf à y ≤ 10 après la pose du treuil sur 20 min, les
+  non-logisticiens passent > 30 s dans le seau), diagnostics (+3 : boss, mob tué, descente puis retour), team, focus :
+  47/47.
+- **Vérification** : ✅ `winch.mjs` seed 1250570735 : plus aucune descente « jusqu'à y 6 » ; la plupart des descentes par
+  le seau. ✅ simulation 3 × 5 sans skills : identique au commit précédent (225,8, 0 blocage). ✅ `--skills mixed` 3 × 5 :
+  areas 4,6, profondeur 237,6, 0 blocage (avant correction du détecteur : 2 faux blocages). Ancien blocage seed 16
+  mixed « Retour (treuil) » : disparu.
+- **Points fragiles** : ⚠️ avec un arbre par mineur, l'area 5 (la dernière) est débloquée dans 3 sessions sur 5.
+
+### Lobby : « Prêt » et passage de chef (Geoffrey) — branche `geoffrey/retours-21-10`
+- **Quoi** : `server/party/service.js` : `m.ready` (enregistré, relu au démarrage) ; `ready(me, bool)` (valeur
+  strictement booléenne, sinon `bad_request` ; refusé en session ou pendant un lancement) ; `promote(me, id)` (chef
+  seulement, membre du groupe, pas soi ; nouveau et ancien chef « pas prêt ») ; `launch` en groupe : `not_ready` (409,
+  noms des membres) si un non-chef n'est pas prêt ; après lancement et à chaque `join`, tout le monde « pas prêt ».
+  Routes `POST /api/party/ready` `{ ready }` et `/api/party/promote` `{ id }` ; `partyApi.ready/promote`.
+  `src/ui/lobby.js` : `launchState` → membre : bouton « ✋ Je suis prêt » / « ✔ Prêt (annuler) » (`action:'ready'`) ;
+  chef : « ⏳ Pas prêt : … » ; places « ✔ prêt / pas prêt » ; bouton ★ (Nommer chef, confirmation) à côté du ×.
+- **Tests** : party 29/29 (+4 : prêt avant de lancer, remis à zéro au lancement et à l'arrivée, valeurs invalides,
+  passage de chef, redémarrage ; tests existants : `ready` avant chaque lancement en groupe ; « membre encore en
+  session » → maintenant `not_ready`, il ne peut pas se dire prêt depuis sa session), lobby 5/5.
+  Anti-triche 58/58 : `anticheat/party` (prêt avant de lancer) ; `anticheat/skills` : son contrôle « étape sans la
+  précédente » ne connaissait pas les étages (Échelle de 2 / Treuil côte à côte) → échouait déjà avant cette branche ;
+  aligné sur la règle (au moins un nœud de l'étage d'avant au max).
+- **Vérification** : ⚠️ pas regardé dans le navigateur (deux comptes) : bouton, libellés, ★ à vérifier en vrai.
+- **Points fragiles** : l'état « prêt » d'un membre ne se voit chez le chef qu'au prochain rafraîchissement du lobby.
+
+### Descente commune en équipe (Geoffrey) — branche `geoffrey/descente-commune`
+- **Quoi** : retour de partie (seed 1924731460, 3 joueurs) : un joueur « mine de son côté » pendant que les autres
+  descendent ensemble. Cause : `downAvoid` refusait tout fond à plus de 16 colonnes de `homeX` (`outOfSector>1`), et
+  sans treuil `decideDeparture` renvoyait chacun à sa colonne. La place 3 (x=42) est loin du coffre (x=22) et des
+  puits des places 1–2 : en simulation, Vert allait en x=41 et recreusait 0→50 pendant que Rouge et Bleu reprenaient
+  le puits en x≈13. `src/sim/ai.js` : `downAvoid` = seulement `crowdAt>0` ; `decideDeparture` prend la descente
+  existante depuis le coffre dès que `planDown` la juge rentable, treuil ou pas (avant : treuil seulement). Le coût
+  (`planDown`) décide toujours entre puits neuf et existant ; le secteur reste une pénalité sur les minerais.
+- **Tests** : team 5/5 (+1 : seed 1924731460, aucun « Creuse vers le bas » à y ≤ 15 entre 300 s et 1200 s sans
+  treuil ; échoue sans le correctif : « Vert t351 x41 y1 »). « Ne se marchent pas dessus » : ne compte plus les mineurs
+  en descente par l'existant (`goingDown`) ou en chute (même case 6,5 % → la descente commune en fait 3,7 % ; au travail
+  2,8 % contre 2,1 % avant). winch, miner, focus, skills, dungeon : 76/76.
+- **Vérification** : ✅ simulation 3 × 5 : profondeur 225,8 → 228,4, allers-retours 24,2 → 24,0, 0 blocage.
+  Temps pour rejoindre le front (profondeur max − 10) après un départ du coffre, 6 seeds : 100 s → 96 s.
+  Variante intermédiaire (secteur retiré seulement, départ inchangé) : 224,6, et Vert allait à sa colonne avant de
+  revenir au puits commun (aller-retour en surface).
+- **Points fragiles** : ⚠️ gain modeste avec le stuff de base ; avec des mineurs de stuffs différents (cas réel) l'écart
+  peut être plus grand, à vérifier en vrai. Le cas « en file par les mêmes échelles » (ancien −4 de profondeur) n'est
+  pas revenu en simulation, à surveiller.
+- **Mise en ligne (22/10)** : fusions de main (57 commits, puis LFG et Trésors des tours). Conflits : « Plus profond »
+  (main) gardé, `CFG.transitReach` retiré ; donjons `DUNGEON.chance` 0.33 ; concasseur, détecteur de blocage, focus :
+  main ; lobby : « Prêt » + avatars ; `statsHTML` (main) reprend l'affichage « +x % » de la ténacité. Tests venus de
+  main mis à jour : pioches ×2 (`amelioration`, `carac` : valeur de la pioche en pierre 130 → 260 x, ses lignes
+  doublent avec) ; bouton « Prêt » (`instant-server`, `social` : membre prêt avant `launch`). **LFG** : `formLobby` remet
+  tout le monde « pas prêt » (nouveaux venus) ; `autoLaunch` ne demande pas « prêt » (entrer dans la file vaut accord) ;
+  test `lfg` (+1). `npm test` 660/661 (0 échec), anti-triche 72/72.
+  Simulation 3 × 5 : areas 3,2, profondeur 195,0, 0 blocage (main seul : 3,4 / 197,2) ; `--skills mixed` : areas 4,0,
+  profondeur 207,8, 0 blocage. Temps pour rejoindre le front, 6 seeds : main seul **Vert 102 s** (Rouge 84, Bleu 88) →
+  après **Vert 89 s** (Rouge 82, Bleu 84) ; seed 1924731460 : Vert 116 → 78 s.
+- **Fusion des pièges (22/10)** : `mobs.js` : `stepOf(o)` (main) + ténacité gardée (le sort ignoré coûte quand même
+  le cooldown). Test « ne se marchent pas dessus » : 5,7 % > 5 % ; en cause la descente commune (sans elle : 0,9 %) :
+  groupés, ils combattent ensemble les mobs (pièges compris) sur la même case (4,9 % sur 5,7). Le test ne compte plus
+  les mineurs en combat (`m.foe`) : au travail 0,9 % (main seul 0,5 %). Simulation 3 × 5 : areas 3,2 / profondeur 190,4
+  (main seul : 3,0 / 192,0) ; `--skills mixed` : 3,6 / 201,4 (main : 3,6 / 201,0) ; 0 blocage. `npm test` : 673 + team
+  7/7, anti-triche 72/72.
+
+### Skin des autres dans le lobby (Geoffrey) — branche `geoffrey/skin-lobby`
+- **Quoi** : le lobby dessinait les autres membres en tenue de base (`drawPortrait(c, {})`, commentaire « les autres en
+  tenue de base ») : le serveur n'envoyait pas leur apparence. `server/game/service.js` : `lookFor(id)` = `lookOf` du
+  stuff porté (noms des pièces). `server/party/service.js` : `state()` remplit une `Map` `looks` (comme `trees`),
+  `publicParty` ajoute `look` à chaque membre (`{}` par défaut). `src/ui/lobby.js` : `portraitLook(slot, myLook)` →
+  le sien = `h.look()` (stuff local, à jour tout de suite), les autres = `sanitizeLook(slot.look)` ; canvas repérés
+  par `data-slot` (avant `data-me`).
+- **Tests** : skins (+1 : `lookFor` vide puis casque porté), party (+1 : chaque membre a son `look`), lobby (+1 :
+  `portraitLook`, pièces invalides ignorées, serveur sans `look`) ; lobby, skins, party, lfg, social : 80/80.
+- **Vérification** : ⚠️ pas regardé dans le navigateur à deux comptes.
+- **Points fragiles** : `state()` est appelé souvent par chaque lobby : `lookFor` relit inventaire + stuff de chaque
+  membre à chaque appel (comme `skillTreeOf` relit les skills). Avec PostgreSQL, 3 lectures de plus par appel ; à
+  mettre en cache si le serveur rame.
+
+### Retours du 22/10 : fours, butin, skills, chutes, bilan (Geoffrey) — branche `geoffrey/retours-22-10`, ✅ en ligne le 22/10
 - **Fours** : `src/meta/furnace.js` actions `empty` (un four) et `emptyAll` (tous) : chaque case (sortie comprise)
   repasse par `unload` ; une case qui ne rentre pas reste (compte `left`, renvoyé par le serveur et affiché). UI : bouton
   par four (`data-empty`), `#furnEmptyAll`, bouton `½` (floor(stock/2), au moins 1). `main.js` : onOp renvoie la réponse.
@@ -1685,3 +1848,6 @@ Règles (voir CLAUDE.md) :
   mixed` : 3,6 / 201, 0 blocage (inchangé). ⚠️ pas regardé dans le navigateur (boutons des fours, liste des skills).
 - **Points fragiles** : `side` vaut pour toute chute depuis une échelle (pas seulement près du treuil) ; le bilan d'une
   session jamais vue est marqué vu sans affichage quand une autre se termine.
+- **Fusion de main (descente commune, ténacité)** : `skills.js` garde `SKILL_ADD` / `behaviourSkills` à côté des `adds`
+  de main (ténacité) ; `ui/stuff.js` : l'affichage « +skill » de main montre aussi Pillage (plus de ligne `add` en double).
+  Après fusion : 291/291 sur les sujets, anti-triche 72/72, simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,6, 0 blocage.

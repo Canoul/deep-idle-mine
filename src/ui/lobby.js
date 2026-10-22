@@ -8,6 +8,7 @@ import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
+import { sanitizeLook } from '../meta/stuff.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -30,20 +31,31 @@ export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null)
   return slots.slice(0, Math.max(max, party?.members.length ?? 0));
 }
 
+/* skin d'une place : le sien = son stuff actuel (à jour sans attendre le serveur) ; les autres = l'équipement porté
+   envoyé par le serveur (look), revérifié */
+export const portraitLook = (slot, myLook = {}) => slot.me ? myLook : sanitizeLook(slot.look);
+
 /* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien », ou « Sans spécialisation » */
 export function specLabel(tree){
   const t = SKILLS.trees.find(x => x.id === tree);
   return t ? `${t.icon} ${t.label}` : 'Sans spécialisation';
 }
 
-/* Qui peut lancer, et ce que dit le bouton : seul ou chef = oui ; membre = on attend le chef ; déjà en session = non */
+/* Ce que fait le bouton principal : seul ou chef = Lancer (si tous les autres membres sont prêts) ; membre = se dire
+   prêt / ne plus l'être (action:'ready', ready = la valeur à envoyer) */
 export function launchState({ account, party, offline, busy, session }){
   if(offline || !account) return { can:false, label:'▶ Lancer la session' };
   if(session) return { can:false, label:'⛏ Session en cours' };
   if(busy || party?.launching) return { can:false, label:'… Lancement' };
   const leader = !party || party.leader === account.id;
-  if(!leader) return { can:false, label:'En attente du chef…' };
+  if(!leader){
+    const me = party.members.find(m => m.account === account.id);
+    return me?.ready ? { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false }
+                     : { can:true, label:'✋ Je suis prêt', action:'ready', ready:true };
+  }
   if(party?.members.some(m => m.playing)) return { can:false, label:'⏳ Le groupe finit sa session…' };
+  const waiting = party?.members.filter(m => m.account !== party.leader && !m.ready) ?? [];
+  if(waiting.length) return { can:false, label:`⏳ Pas prêt : ${waiting.map(m => m.name).join(', ')}` };
   const n = party?.members.length ?? 1;
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
@@ -70,7 +82,7 @@ export function mineModes(cur, locked = false, judgment = null){
   });
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), lfg(auto), lfgCancel } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
@@ -100,19 +112,22 @@ export function setupLobby(h){
     const all = modes.map(btn), at = modes.filter(m => !MINE_MODES.find(d => d.id === m.id)?.tower).length;   // après Mine et Mine instantanée, avant les tours
     all.splice(at, 0, judge);
     $('mineModes').innerHTML = all.join('');
-    $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
+    const slots = lobbySlots(account, party, GAME.maxPlayers, st.myTree);
+    $('lobbySlots').innerHTML = slots.map((s, i) => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const tags = [s.me && 'Toi', s.leader && 'chef', (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
-      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16"${s.me ? ' data-me' : ''}></canvas></span>`+
+      const ready = party && !s.leader && !s.playing ? (s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
+      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
-             (lead && !s.me ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
+             (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
+                              `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
-    /* sprite de chaque joueur : toi avec ton stuff, les autres en tenue de base */
-    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.hasAttribute('data-me') ? h.look?.() ?? {} : {}));
+    /* sprite de chaque joueur, avec son équipement */
+    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {})));
 
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
@@ -272,6 +287,8 @@ export function setupLobby(h){
   };
   $('inviteBox').onclick = e => { const c = e.target.closest('[data-copy]'); if(c) copy(c.dataset.copy, c); };
   $('lobbySlots').onclick = e => {
+    const p = e.target.closest('[data-promote]');
+    if(p){ if(confirm("Lui donner ta place de chef ? C'est lui qui lancera les sessions.")) act(() => h.party.promote(p.dataset.promote)); return; }
     const b = e.target.closest('[data-kick]'); if(!b) return;
     act(() => h.party.kick(b.dataset.kick));
   };
@@ -302,6 +319,8 @@ export function setupLobby(h){
 
   $('launchBtn').onclick = async () => {
     if(st.busy) return;
+    const ls = launchState(st);
+    if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
     try { await h.onLaunch({ mode: st.mode, ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }

@@ -32,7 +32,9 @@ test('début de partie : les mineurs ne se marchent pas dessus en travaillant', 
     const G=newSession(seed, {miners:3});
     for(let i=0;i<6000;i++){                        // 10 premières minutes
       tick(G);
-      const ms=G.miners.filter(m=>m.y>0 && m.mode!=='return'); if(ms.length<2) continue;
+      // en descente par un puits commun (ou en chute), partager une case est voulu ; en combat aussi (à plusieurs contre
+      // un mob dans une galerie d'une case, ils se traversent) : on ne compte que le travail
+      const ms=G.miners.filter(m=>m.y>0 && m.mode!=='return' && !m.goingDown && !m.fall && !m.foe); if(ms.length<2) continue;
       let min=Infinity, s=false;
       for(let a=0;a<ms.length;a++) for(let b=a+1;b<ms.length;b++){
         const d=Math.abs(ms[a].x-ms[b].x)+Math.abs(ms[a].y-ms[b].y); min=Math.min(min,d); if(d===0) s=true; }
@@ -55,6 +57,16 @@ test('session complète à 3 : aucun blocage, coffre commun = somme des contribu
     assert.ok(m.stats.ore>=100, `${m.name} : ${m.stats.ore} minerais`);
   }
   assert.ok(G.unlockedAreas-1 >= 3, `areas débloquées : ${G.unlockedAreas-1}`);
+});
+
+test('départ du coffre sans treuil : il reprend le puits déjà creusé au lieu d\'en recreuser un près de la surface (seed 1924731460)', () => {
+  const fresh = [];
+  runSession(1924731460, { miners:3, onTick:G => {
+    if(G.t < 300 || G.t > 1200 || G.winch) return;   // après le 1er aller-retour : des puits existent déjà
+    for(const m of G.miners)
+      if(m.mode === 'work' && m.y > 0 && m.y <= 15 && m.status === 'Creuse vers le bas') fresh.push(`${m.name} t${Math.round(G.t)} x${m.x} y${m.y}`);
+  } });
+  assert.deepEqual([...new Set(fresh.map(f => f.split(' ')[0]))], [], `puits neufs : ${fresh.slice(0, 3).join(', ')}`);
 });
 
 /* seeds « bug » à 3 (22/10, pièges + seuil 60 %) : 23757 = boucle entre deux galeries (la plus proche changeait à chaque

@@ -89,6 +89,15 @@ test('groupe de 2 entré après un solo : c\'est le solo qui rejoint le groupe',
   assert.equal(r.party.code, 'K7Q4P2');
 });
 
+test('lobby formé avec un nouveau venu : chacun redit qu\'il est prêt (bouton « Prêt »)', async () => {
+  const { party, advance } = setup();
+  await party.lfg(A); advance(1000);
+  await party.create(C); await party.join(D, 'K7Q4P2'); await party.ready(D, true);
+  const r = await party.lfg(C);
+  assert.deepEqual(r.party.members.map(m => [m.name, m.ready]), [['Max', false], ['Lou', false], ['Zoe', false]]);
+  await assert.rejects(party.launch(C, {}), { code:'not_ready' });
+});
+
 test('solo qui avait déjà un code (groupe d\'un joueur) : compte comme solo, son groupe vide disparaît', async () => {
   const { party } = setup();
   await party.create(B);                                    // K7Q4P2, seul dedans
