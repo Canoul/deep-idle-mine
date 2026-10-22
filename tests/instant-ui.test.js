@@ -62,3 +62,13 @@ test('MI caméra : cadrage centré sur le mineur, sans sortir de la mine ; vue p
   assert.deepEqual(miFrame(49, 50, 24, 14, 50, 50), { x: 26, y: 37 });         // coin bas-droite : dernière colonne, dernière ligne
   assert.deepEqual(miFrame(10, 10, 60, 14, 50, 50), { x: -5, y: 3.5 });       // plus large que la mine : centrée
 });
+
+test('MI inscription (navigateur) : bouton seulement dans les 30 dernières minutes ; dev : toujours ; heure en clair', async () => {
+  const { canSignup, clockText } = await import('../src/ui/instant-lobby.js');
+  const nextAt = Date.parse('2026-10-22T10:00:00Z'), st = { nextAt, signupAt: nextAt - MI.signupBefore * 1000, dev: false };
+  assert.equal(canSignup(st, st.signupAt - 1), false);
+  assert.equal(canSignup(st, st.signupAt), true);
+  assert.equal(canSignup(st, nextAt), false);
+  assert.equal(canSignup({ ...st, dev: true }, 0), true);
+  assert.equal(clockText(st.signupAt), '11 h 30');                     // 9 h 30 UTC = 11 h 30 à Paris (heure d'été)
+});

@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Mine instantanée : inscriptions 30 min avant, même en session
+- **Pour le joueur** :
+  - on ne peut s'inscrire à la mine instantanée que **dans les 30 dernières minutes** : pour celle de 12 h, fermé à
+    11 h 29 (« 🔒 Inscriptions à 11 h 30 »), ouvert à 11 h 30 ;
+  - on peut maintenant **s'inscrire pendant une session** : « Mine instantanée » reste cliquable dans le lobby. Si la
+    session n'est pas finie à l'heure, on **rate la mine** et la session continue (la carte prévient) ;
+  - lancer une session normale ne désinscrit plus ; inscrit en session, on garde son groupe jusqu'à l'entrée dans la
+    mine ;
+  - les rappels (30, 15, 5 min, 30 s) arrivent aussi pendant une session normale ;
+  - après une mine instantanée, on n'est dans aucune session (vérifié par un test).
+- **Décisions** : celles ci-dessus (Geoffrey).
+- **État** : 🧪 sur la branche `geoffrey/mi-inscription-30min` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Concasseur : nouvelles chances, plus de moyennes
 - **Pour le joueur** : chances par lot de 100 blocs : **terre** gemme 0,6 % / treasure 0,5 % ; **pierre** 0,9 % / 0,3 % ;
   **pierre dure** 1,2 % / 0,5 %. Dans l'aide « ? » et le wiki, on ne voit plus que la chance par lot : plus de

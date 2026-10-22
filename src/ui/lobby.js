@@ -53,7 +53,8 @@ export function launchState({ account, party, offline, busy, session }){
 export function mineModes(cur, locked = false, judgment = null){
   return MINE_MODES.filter(m => !m.tower || judgment?.sides?.[m.tower]?.open).map(m => {
     const done = !!m.tower && !!judgment?.sides?.[m.tower]?.done;
-    return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: locked || !m.ready || done };
+    /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10) */
+    return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled) || !m.ready || done };
   });
 }
 

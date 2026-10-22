@@ -88,7 +88,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé.
 - **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 22/10 : cachée
   au départ, découverte par la stat Découverte de chaque mineur, et caméra qui suit son mineur de près** (≈ 24
-  colonnes) ; ancien : toute la mine visible à l'écran) (`INSTANT_MINE` en
+  colonnes) ; ancien : toute la mine visible à l'écran ; **inscriptions seulement dans les 30 dernières minutes,
+  possibles en session** (encore en session à l'heure = mine ratée, la session continue ; lancer une session ne
+  désinscrit plus ; après la MI, aucune session) ; ancien : inscription à toute heure, refusée en session)
+  (`INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
   (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
   **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
