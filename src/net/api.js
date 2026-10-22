@@ -82,6 +82,7 @@ export const socialApi = {
   remove:  id   => request('POST', '/api/social/remove', { id }),     // retirer un ami ou annuler une demande
   invite:  id   => request('POST', '/api/social/invite', { id }),
   join:    id   => request('POST', '/api/social/join', { id }),
+  profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */

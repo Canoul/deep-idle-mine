@@ -16,34 +16,41 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const SLOT_ICON = { casque:'helmet', torse:'shield', pioche:'pickaxe', epee:'sword', boussole:'target' };
 const statLine = p => statsText(p) ? `<br><small class="stuffStats">${esc(statsText(p))}</small>` : '';
 
+/* les cases du stuff et le portrait au milieu, dans el. tag 'div' : en lecture seule (fiche d'un ami, onglet Social) */
+export function renderSlots(el, worn, tag = 'button'){
+  el.innerHTML = STUFF.slots.map(s => {
+    const p = worn[s.id];
+    return `<${tag} class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
+           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
+           `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</${tag}>`;
+  }).join('');
+  el.insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
+  drawPortrait(el.querySelector('.stuffHero canvas'), lookOf(worn));
+}
+
+/* stats du mineur : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu) */
+export function statsHTML(worn, effects){
+  const fr = v => String(v).replace('.', ',');
+  return minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
+    `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
+    (s.bonus || s.mult !== 1 ? ` <small class="mut">(`+
+      (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
+      (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
+      `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
+    `</span></div>`); }).join('');
+}
+
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
 export function setupStuff({ onOp }){
   let inv = { slots:[] }, worn = {}, effects = {}, busy = false, open = null;
 
   function render(){
-    $('stuffGrid').innerHTML = STUFF.slots.map(s => {
-      const p = worn[s.id];
-      return `<button class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
-             `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
-             `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</button>`;
-    }).join('');
-    $('stuffGrid').insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
-    drawPortrait($('stuffGrid').querySelector('.stuffHero canvas'), lookOf(worn));
+    renderSlots($('stuffGrid'), worn);
     renderStats();
     if(open) renderPicker();
   }
 
-  /* stats du mineur : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu) */
-  function renderStats(){
-    const fr = v => String(v).replace('.', ',');
-    $('stuffStatsBody').innerHTML = minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
-      `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
-      (s.bonus || s.mult !== 1 ? ` <small class="mut">(`+
-        (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
-        (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
-        `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
-      `</span></div>`); }).join('');
-  }
+  function renderStats(){ $('stuffStatsBody').innerHTML = statsHTML(worn, effects); }
 
   function renderPicker(){
     const s = STUFF.slots.find(x => x.id === open), cur = worn[open], list = piecesFor(inv, open);
