@@ -3,12 +3,14 @@
 
 /* id : identifiant (aussi utilisé dans l'adresse : #inventaire) ; ready : contenu déjà construit (sinon page d'attente) */
 export const TABS = [
-  { id:'mine',       label:'Mine',       icon:'⛏',  ready:true  },
+  { id:'lobby',      label:'Lobby',      icon:'🏠', ready:true  },   // groupe, préférences, lancer (lecture seule pendant une session)
+  { id:'session',    label:'Session',    icon:'⛏',  ready:true  },   // la mine en cours, puis le bilan
   { id:'inventaire', label:'Inventaire', icon:'🎒', ready:true  },
   { id:'stuff',      label:'Stuff',      icon:'🛡',  ready:true  },
   { id:'craft',      label:'Craft',      icon:'🔨', ready:true  },
   { id:'four',       label:'Four',       icon:'🔥', ready:true  },
   { id:'concasseur', label:'Concasseur', icon:'🪨', ready:true  },   // blocs concassés → gemmes, treasures
+  { id:'amelioration', label:'Amélioration', icon:'💎', ready:true },  // identifier (R1 à R7) et améliorer (+1 à +3) le stuff
   { id:'recherche',  label:'Recherche',  icon:'🔬', ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'⭐', ready:true  },   // arbres de skills (points gagnés aux niveaux)
   { id:'historique', label:'Historique', icon:'📜', ready:true  },   // sessions passées : seed et butin
@@ -18,11 +20,12 @@ export const TABS = [
 const KEY = 'deepIdleMine.tab';
 const isTab = id => TABS.some(t => t.id === id);
 
-/* Onglet à ouvrir au chargement : celui de l'adresse (#craft), sinon le dernier ouvert, sinon Mine. */
+/* Onglet à ouvrir au chargement : celui de l'adresse (#craft), sinon le dernier ouvert, sinon Lobby. */
 export function pickTab(hash, saved){
   const h = String(hash||'').replace(/^#/, '').toLowerCase();
   if(isTab(h)) return h;
-  if(h.startsWith('rejoindre=')) return 'mine';     // lien d'invitation à un groupe : le lobby est dans Mine
+  if(h === 'mine') return 'session';                 // ancienne adresse de l'onglet Mine (lobby + session, séparés depuis)
+  if(h.startsWith('rejoindre=')) return 'lobby';     // lien d'invitation à un groupe
   if(isTab(saved)) return saved;
   return TABS[0].id;
 }

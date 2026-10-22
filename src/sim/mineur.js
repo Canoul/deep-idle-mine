@@ -1,4 +1,6 @@
-/* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire. */
+/* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
+   Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
+   dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH } from '../config.js';
 import { lumAt } from './light.js';
 
@@ -47,7 +49,9 @@ export const buildT = (m,t) => t*(1-m.skill.build_time);
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens) */
 export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*dk(G,m));
-export const mineT  = (G,m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*dk(G,m));
+/* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
+export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
+export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
 
@@ -59,7 +63,7 @@ export const baseWinchT = m => 1/(m.carac.climbSpeed*WINCH.speedFactor);
 /* temps de PLANIFICATION d'une nouvelle échelle : skill build_time, et une sur deux est déjà posée avec l'échelle de 2
    de haut (tall_ladder : en moyenne moitié moins d'échelles à poser pour monter) */
 export const baseLadderT = m => CFG.ladderTime*(1-m.skill.build_time)*(m.skill.tall_ladder ? 0.5 : 1);
-export const baseMineT  = (m,t) => BLOCKS[t].hard/m.carac.mineSpeed;
+export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 
 /* ---- actions ---- */
 export function startAction(m,type,dur,data){ m.action={type, dur:Math.max(0.05,dur), t:0, data:data||{}}; }

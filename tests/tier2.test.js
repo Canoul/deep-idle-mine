@@ -13,7 +13,7 @@ import { research, recycle, researchPool, tierBlueprints, tierOfBlueprint, tierU
 import { statLines, statsOf } from '../src/meta/stuff.js';
 import { mineBlock } from '../src/sim/actions.js';
 import { decide } from '../src/sim/ai.js';
-import { dk } from '../src/sim/miner.js';
+import { dk } from '../src/sim/mineur.js';
 import { newSession } from '../src/sim/session.js';
 import { rarityOf } from '../src/meta/rarity.js';
 import { worldFrom } from './helpers.js';

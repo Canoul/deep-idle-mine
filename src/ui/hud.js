@@ -72,14 +72,15 @@ export function updateHUD(G, ui){
 
 /* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
 /* mini-état de la session dans la barre de navigation (visible depuis tous les onglets) */
-export function updateNavSession(G, waiting=false){
-  $('navTimer').textContent = !G ? (waiting ? 'résultat…' : 'aucune') : G.over ? 'terminée' : fmt(G.t)+' / '+fmt(SESSION_LEN);
-  $('navBar').style.width = (G ? Math.min(100, G.t/SESSION_LEN*100) : 0)+'%';
+/* len : durée de la partie en s de jeu (mine instantanée : INSTANT_MINE.duration) */
+export function updateNavSession(G, waiting=false, len=SESSION_LEN){
+  $('navTimer').textContent = !G ? (waiting ? 'résultat…' : 'aucune') : G.over ? 'terminée' : fmt(G.t)+' / '+fmt(len);
+  $('navBar').style.width = (G ? Math.min(100, G.t/len*100) : 0)+'%';
 }
 
 /* la partie du serveur est finie : le coffre est partagé et versé (quelques instants) */
-export function showSettling(){
-  $('endBox').innerHTML = '<h3>Session terminée</h3><p>Partage du coffre…</p>'+
+export function showSettling(mi=false){
+  $('endBox').innerHTML = (mi ? '<h3>🌀 Mine instantanée terminée</h3><p>Versement du butin…</p>' : '<h3>Session terminée</h3><p>Partage du coffre…</p>')+
     '<div class="bar"><i class="indet"></i></div>';
   $('end').hidden=false;
 }

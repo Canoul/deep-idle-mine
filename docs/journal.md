@@ -44,6 +44,114 @@ Modèle d'entrée :
   200 pour débloquer l'area 5, la dernière) : le contenu risque d'être fini trop vite. À surveiller.
 - **État** : 🧪 sur la branche `geoffrey/retours-21-10` (pas en ligne)
 
+## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
+- **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.
+  C'est corrigé. La cause : la protection « anti-minage de cryptomonnaie » d'Opera bloque tout fichier nommé
+  `miner.js` (le nom typique des scripts qui minent du Bitcoin en cachette), et notre fichier du mineur s'appelait
+  justement comme ça. Il s'appelle maintenant `mineur.js`.
+- **Décisions** : un test vérifie désormais qu'aucun fichier du jeu ne porte un nom visé par cette liste.
+- **À suivre** : faire confirmer au joueur Opera GX que tout marche (Ctrl+F5).
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Amélioration : le Cristal de pleine lune du minotaure remplace la « Pierre »
+- **Pour le joueur** : l'amélioration coûte des Plumes d'ange (mine instantanée) et des **Cristaux de pleine lune**
+  (minotaure du donjon). Avant ce correctif, elle demandait une « Pierre de pleine lune » que rien ne donnait : on ne
+  pouvait rien améliorer.
+- **Décisions** : la Pierre de pleine lune n'existe plus (c'était un malentendu : c'est le cristal du minotaure).
+- **À suivre** : 15 cristaux pour un +3, avec un donjon dans 20 % des parties et 1 à 3 cristaux par minotaure : c'est
+  lent, à surveiller.
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Onglet Amélioration : identification R1 à R7 et amélioration +1 à +3
+- **Pour le joueur** : nouvel onglet 💎 **Amélioration**.
+  - **Identification** : on pose une pièce de stuff et on sacrifie un deuxième exemplaire du même objet. La pièce
+    reçoit une qualité, de R1 « Utile » (30 %) à R7 « Légendaire » (1 %), et 1 à 4 lignes de stats en plus. Son nom
+    prend la couleur de la qualité (« Excellent : Pioche en pierre »), la case garde la couleur de rareté du type.
+  - **Amélioration** : +1, +2, +3 (+3 %, +5 %, +7 % sur toutes les stats de la pièce), avec des Plumes d'ange et des
+    Pierres de pleine lune ; ça peut rater (95 % puis 90 %), on ne perd alors que les matériaux.
+  - Nouvelles stats possibles : vitesse de minage en %, dégâts en %, critique (coup double), coup unique (bloc cassé
+    d'un coup), perçage (casse aussi le bloc derrière), butin des mobs.
+- **Décisions** : la valeur d'une ligne se calcule sur la valeur de l'objet lui-même (une pièce de haut niveau donne
+  de plus gros bonus) ; la fourchette vaut pour chaque ligne ; l'identification est définitive ; toutes les stats qui
+  ont une valeur en x peuvent tomber, sur n'importe quelle pièce ; +1 à +3 seulement pour l'instant ; critique :
+  10 % = la valeur d'une pioche en pierre. Pas d'ID dérivé « 113:4 » : chaque pièce garde sa qualité, ses lignes et
+  son niveau sur elle-même (deux R4 n'ont pas les mêmes stats).
+- **À suivre** :
+  - ~~décider d'où viennent les Pierres de pleine lune~~ → Cristal de pleine lune du minotaure (correctif plus haut) ;
+    les Plumes d'ange se ramassent dans la mine instantanée (c'est le même objet) ;
+  - les paliers +4 à +15 ;
+  - la chance d'avoir « +1 Découverte » en R6/R7 (25 % par ligne, provisoire) ;
+  - le prix du butin des mobs (provisoire) ;
+  - regarder l'onglet dans le navigateur (pas encore vérifié à l'écran) ;
+  - un test anti-triche des skills échoue déjà sur `main` (sans rapport) : à regarder.
+- **Tester** : `node scripts/give-admin.js --name <pseudo>` donne une pioche en pierre de chaque qualité et
+  50 matériaux. Serveur arrêté en local, ou redémarré après en ligne.
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Mine instantanée (MI)
+- **Pour le joueur** : rien encore en jeu. Les règles de la **mine instantanée** sont écrites (GAME_DESIGN §6) :
+  toutes les 2 h pile (heure de Paris), tous les inscrits dans une mine 50×50 remplie de minerais, chacun pour soi,
+  5 min de jeu (2 min 30 réelles). 1 % de tas de **Plumes d'ange** (nouvel objet rare, 1 à 5 par tas, au premier qui
+  passe dessus). Lobby dans un sous-onglet de l'onglet Mine, rappels à 30, 15, 5 min et 30 s (avec Rejoindre).
+- **Décisions** : butin non réduit (le MI devient une très bonne source d'or, à surveiller) ; déplacement libre dans
+  les galeries (pas d'échelle ni de gravité) ; départ espacé en surface ; pas d'XP ; stats de minage, de marche,
+  Fortune et shiny comptent ; 20 joueurs max par mine, répartis à parts égales au-delà ; fermer l'onglet ne fait rien
+  perdre, seul « Quitter » fait tout perdre. La plume n'a pas encore d'usage (idée de Geoffrey à venir).
+- **Simulation (étape 2)** : la mine instantanée tourne (sans serveur ni affichage pour l'instant). Chiffres avec le
+  stuff de base (`npm run simulate:mi`) : ~100 blocs par mineur en 5 min ; à 20 mineurs, 80 % de la mine vidée,
+  0 bloc disputé, chacun entre 93 et 110 blocs ; butin moyen par mineur ≈ 40 fers, 39 ors, 20 charbons, 2,3 plumes.
+  Seul : 4 % de la mine, et quasiment jamais de plume. Sans la pénalité « éviter les autres », 500 blocs disputés et
+  15 % de butin en moins : elle sert. Pioche +30 % de vitesse → +30 % de blocs (le stuff compte).
+- **Plumes** (décision de Geoffrey) : le mineur va chercher un tas accessible à 3 pas ou moins (avant, seul, il
+  passait à côté de tous). Résultat : ~4 plumes par MI seul, ~3 chacun à 20, presque plus de tas laissé par terre.
+- **Serveur (étape 3)** : la mine s'ouvre toute seule toutes les 2 h pile (heure de Paris, heures d'été et d'hiver
+  comprises ; la nuit où 2 h existe deux fois, une seule mine). Inscriptions gardées même si le serveur redémarre ;
+  s'inscrire fait quitter son groupe, refusé en session ; lancer une session normale désinscrit. 21 inscrits → 2 mines
+  (11 + 10). Le butin de chacun arrive dans son inventaire à la fin, une seule fois ; pas d'XP ; Quitter = rien. Si le
+  serveur redémarre pendant la mine, elle reprend à l'identique.
+- **Interface (étape 4)** : dans le **Lobby**, « Où miner » → **Mine instantanée** affiche le compte à rebours, le
+  nombre d'inscrits et **S'inscrire / Se désinscrire** (à la place de l'équipe et de Lancer). Rappels en bas à
+  droite, depuis n'importe quel onglet : 30 min, 15 min, 5 min, puis 30 s avec **Rejoindre / Décliner** (pas pendant
+  une session normale). À l'ouverture, tout le monde bascule sur **Session** : toute la mine à l'écran, chrono, ton
+  butin, classement, journal, **Quitter la mine** ; puis un bilan. Essayé dans Chrome à deux joueurs (mode dev,
+  bouton « Ouvrir maintenant ») : butin bien versé, rien pour celui qui quitte, aucune erreur.
+- **À suivre** : l'usage de la Plume d'ange (idée de Geoffrey) ; surveiller l'or rapporté par la MI une fois en ligne.
+- **État** : ✅ en ligne le 21/10
+
+## 21/10/2026 — Jules — Message d'erreur quand le jeu ne démarre pas (Opera GX)
+- **Pour le joueur** : si le jeu ne démarre pas (page avec le menu de gauche vide), un cadre rouge s'affiche en
+  haut et dit pourquoi : quel fichier est bloqué (bloqueur de pubs, extension…) ou quelle erreur l'a fait planter,
+  avec le navigateur utilisé. Il suffit d'en faire une capture pour l'équipe. Si JavaScript est coupé, un message le
+  dit aussi. Quand tout va bien, rien ne change.
+- **Pourquoi** : un joueur sur Opera GX voit le lobby vide. Le jeu ne vérifie pas le navigateur et n'utilise rien
+  de récent ; nos fichiers ne sont pas dans les listes anti-pubs EasyList / EasyPrivacy. Sans son message d'erreur,
+  impossible de savoir ce qui bloque chez lui : ce cadre nous le donnera.
+- **À suivre** : une fois en ligne, demander au joueur Opera GX une capture du cadre, puis corriger la vraie cause.
+- **État** : ✅ en ligne le 21/10
+
+---
+
+## 21/10/2026 — Geoffrey — Lobby et Session : deux onglets séparés
+- **Pour le joueur** : l'onglet « Mine » est remplacé par deux onglets.
+  - **🏠 Lobby** : le groupe, les invitations, les préférences, **où miner** (Mine ; la **Mine instantanée** est
+    affichée grisée « bientôt ») et le bouton Lancer. Pendant une session, il reste consultable en **lecture
+    seule**, avec un bandeau « ⛏ En session dans la mine · temps restant · Voir la session ».
+  - **⛏ Session** : la mine en direct, puis le bilan. Sans session : « Tu n'es pas en session ».
+  - Au lancement, **tout le groupe bascule sur Session**, quel que soit l'onglet ouvert. « Retour au lobby » après
+    le bilan ramène au Lobby. Le minuteur de session de la barre de gauche ouvre Session d'un clic.
+- **Décisions** : lobby en lecture seule pendant la session ; bascule automatique au lancement ; bilan dans Session ;
+  choix « Mine / MI » visible dès maintenant, MI grisée.
+- **À suivre** : la Mine instantanée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
+  conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
+- **État** : ✅ en ligne le 21/10
+
+
 ---
 
 ## 21/10/2026 — Jules — Ménage des textes du jeu

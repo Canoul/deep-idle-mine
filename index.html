@@ -19,17 +19,30 @@
   <button class="navAccount" id="navAccount" hidden></button>
 </nav>
 <div class="views" id="views">
-<section class="view" data-view="mine">
-<!-- lobby : avant de lancer une session -->
-<div id="lobby" class="lobbyWrap" hidden>
-  <h1>⛏ Mine</h1>
+<section class="view" data-view="lobby">
+<!-- lobby : préparer la prochaine session ; pendant une session, lecture seule (bandeau « en session ») -->
+<div id="lobby" class="lobbyWrap">
+  <h1>🏠 Lobby</h1>
+  <div class="inSession" id="lobbySession" hidden>
+    <span>⛏ <b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
+    <button class="on" id="lobbyToSession">Voir la session</button>
+  </div>
   <div class="card"><h2>Mineur</h2><div id="levelBody"></div></div>
   <div class="card invitesCard" id="invitesCard" hidden>
     <h2>Invitations</h2>
     <div id="invitesList"></div>
   </div>
   <div class="card">
-    <h2>Équipe de la prochaine session</h2>
+    <h2>Où miner</h2>
+    <div class="seg mineModes" id="mineModes"></div>
+  </div>
+  <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
+  <div class="card miCard" id="miCard" hidden>
+    <h2>🌀 Mine instantanée</h2>
+    <div id="miCardBody"></div>
+  </div>
+  <div class="card" id="teamCard">
+    <h2 id="teamTitle">Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
       <button class="on big" id="launchBtn">▶ Lancer la session</button>
@@ -42,7 +55,7 @@
     <p class="mut" id="lobbyInfo"></p>
     <p class="err" id="lobbyErr" hidden></p>
   </div>
-  <div class="card">
+  <div class="card" id="prefsCard">
     <h2>Critères / préférences</h2>
     <div class="prefs" id="prefsBox"></div>
     <p class="mut small">Appliquées à ton mineur pour toute la session.</p>
@@ -55,6 +68,14 @@
     </div>
     <div class="dev" id="devStats"></div>
   </div>
+</div>
+</section>
+<section class="view" data-view="session" hidden>
+<!-- pas de session en cours -->
+<div id="noSession" class="soon">
+  <div class="big">⛏</div><h2>Tu n'es pas en session</h2>
+  <p class="mut">Les sessions se lancent depuis le lobby.</p>
+  <button class="on" id="toLobbyBtn">🏠 Aller au lobby</button>
 </div>
 <!-- session en cours -->
 <div id="run" hidden>
@@ -99,7 +120,24 @@
   </aside>
 </main>
 </div>
-<!-- bilan de fin de session : ne couvre que l'onglet Mine (les autres onglets et la navigation restent utilisables) -->
+<!-- mine instantanée en cours (src/render/instant.js, src/ui/instant-hud.js) : toute la mine à l'écran -->
+<div id="miRun" hidden>
+<header>
+  <div class="timer" id="miTimer">00:00 / 05:00</div>
+  <div class="grow"><div class="bar"><i id="miTimeBar"></i></div></div>
+  <span class="mut" id="miLeft"></span>
+  <button id="miLeaveBtn" title="Tu ne recevras rien de cette mine">⏏ Quitter la mine</button>
+</header>
+<main>
+  <div id="cvMiWrap"><canvas id="cvMi"></canvas></div>
+  <aside>
+    <div class="card"><h2>Ton butin</h2><div id="miMine"></div><p class="mut small">Versé dans ton inventaire à la fin. Quitter = rien.</p></div>
+    <div class="card"><h2>Classement</h2><div id="miRank"></div><p class="mut small" id="miFeathersLeft"></p></div>
+    <div class="card"><h2>Journal</h2><div id="miLog" class="miLog"></div></div>
+  </aside>
+</main>
+</div>
+<!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
 <section class="view" data-view="inventaire" hidden>
@@ -127,6 +165,13 @@
     <div class="invHead"><h1>🔨 Craft</h1><span class="mut small">Clique une recette pour la voir.</span></div>
     <div id="craftList" class="craftList"></div>
     <div id="craftInfo" class="craftInfo"></div>
+  </div>
+</section>
+<section class="view" data-view="amelioration" hidden>
+  <div class="furnWrap">
+    <div class="invHead"><h1>💎 Amélioration</h1><span class="mut small">Identifie et améliore les pièces de ton inventaire.</span></div>
+    <div class="seg rsTabs" id="upTabs"></div>
+    <div class="craftInfo rsBody" id="upBody"></div>
   </div>
 </section>
 <section class="view" data-view="recherche" hidden>
@@ -172,6 +217,10 @@
 </div>
 </div>
 <div id="account" hidden><div class="box"></div></div>
+<!-- rappels de la mine instantanée (src/ui/instant-lobby.js), visibles depuis tous les onglets -->
+<div id="miNotice" class="miNotice" role="status" hidden></div>
+<script src="src/boot-check.js"></script>
 <script type="module" src="src/main.js"></script>
+<noscript><p style="position:fixed;top:16px;left:16px;right:16px;padding:14px;background:#2a1513;color:#eadfd3;border:1px solid #e5534b;border-radius:10px">⚠ JavaScript est désactivé pour ce site : le jeu ne peut pas démarrer.</p></noscript>
 </body>
 </html>

@@ -4,13 +4,18 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TABS, pickTab } from '../src/ui/nav.js';
 
-test('les onglets sont dans l\'ordre voulu, Mine en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Mine','Inventaire','Stuff','Craft','Four','Concasseur','Recherche','Skills','Historique','Social']);
+test('les onglets sont dans l\'ordre voulu, Lobby puis Session en premier', () => {
+  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Historique','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 
-test('onglet par défaut : Mine', () => {
-  assert.equal(pickTab('', null), 'mine');
+test('onglet par défaut : Lobby', () => {
+  assert.equal(pickTab('', null), 'lobby');
+});
+
+test('ancienne adresse #mine → Session ; ancien onglet « mine » mémorisé → Lobby (par défaut)', () => {
+  assert.equal(pickTab('#mine', 'four'), 'session');
+  assert.equal(pickTab('', 'mine'), 'lobby');
 });
 
 test('l\'adresse (#craft) passe avant le dernier onglet ouvert', () => {
@@ -22,26 +27,32 @@ test('sans adresse, on rouvre le dernier onglet', () => {
   assert.equal(pickTab('', 'skills'), 'skills');
 });
 
-test('le bilan de fin de session ne bloque que l\'onglet Mine, pas tout le site', () => {
+test('le bilan de fin de session ne bloque que l\'onglet Session, pas tout le site', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css  = readFileSync(new URL('../src/ui/style.css', import.meta.url), 'utf8');
-  const mine = html.match(/<section class="view" data-view="mine">([\s\S]*?)<\/section>/);
-  assert.ok(mine, 'section Mine trouvée');
-  assert.match(mine[1], /id="end"/, 'le bilan est DANS l\'onglet Mine');
+  const sess = html.match(/<section class="view" data-view="session"[^>]*>([\s\S]*?)<\/section>/);
+  assert.ok(sess, 'section Session trouvée');
+  assert.match(sess[1], /id="end"/, 'le bilan est DANS l\'onglet Session');
+  assert.match(sess[1], /id="run"/, 'la mine est dans l\'onglet Session');
+  assert.match(sess[1], /id="noSession"/, 'message « pas en session »');
+  const lob = html.match(/<section class="view" data-view="lobby"[^>]*>([\s\S]*?)<\/section>/);
+  assert.ok(lob, 'section Lobby trouvée');
+  assert.match(lob[1], /id="lobby"/);
+  assert.doesNotMatch(lob[1], /id="run"/, 'la mine n\'est plus dans le lobby');
   assert.equal(html.match(/id="end"/g).length, 1, 'un seul bilan dans la page');
   const rule = css.match(/#end\{([^}]*)\}/)[1];
   assert.doesNotMatch(rule, /position:fixed/, 'pas de calque sur toute la fenêtre');
   assert.match(rule, /position:absolute/);
-  assert.match(css, /\.view\[data-view="mine"\]\{[^}]*position:relative/, 'calque limité à la section Mine');
+  assert.match(css, /\.view\[data-view="session"\]\{[^}]*position:relative/, 'calque limité à la section Session');
 });
 
 test('valeurs inconnues ignorées', () => {
-  assert.equal(pickTab('#nimportequoi', 'pasunonglet'), 'mine');
+  assert.equal(pickTab('#nimportequoi', 'pasunonglet'), 'lobby');
   assert.equal(pickTab('#seed=12', 'four'), 'four');
 });
 
-test('lien d\'invitation à un groupe (#rejoindre=…) : ouvre Mine, où est le lobby', () => {
-  assert.equal(pickTab('#rejoindre=K7Q4P2', 'inventaire'), 'mine');
+test('lien d\'invitation à un groupe (#rejoindre=…) : ouvre le Lobby', () => {
+  assert.equal(pickTab('#rejoindre=K7Q4P2', 'inventaire'), 'lobby');
 });
 
 test('onglet Historique : présent ; carte d\'une session = seed, date, part (ou « rien reçu » si parti)', async () => {

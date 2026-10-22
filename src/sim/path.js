@@ -6,7 +6,7 @@
    sur une case sans appui continue donc en chute (landing). Jamais de chute de plus de CFG.maxFall cases. */
 import { W, CFG, CHEST_X, BLOCKS, BARRIER } from '../config.js';
 import { isAir, tileAt, landing, isWinch } from './world.js';
-import { baseMoveT, baseClimbT, baseMineT, baseWinchT, baseLadderT } from './miner.js';
+import { baseMoveT, baseClimbT, baseMineT, baseWinchT, baseLadderT } from './mineur.js';
 import { forbidMask } from './dungeon.js';
 
 /* build=false : uniquement l'existant (pas de minage, pas de nouvelle échelle).

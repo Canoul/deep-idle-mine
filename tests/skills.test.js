@@ -5,7 +5,7 @@ import { SKILLS, STATS, CFG, IDS } from '../src/config.js';
 import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText } from '../src/meta/skills.js';
 import { buildSession } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
-import { moveT } from '../src/sim/miner.js';
+import { moveT } from '../src/sim/mineur.js';
 import { stepDir, finishAction, killMob } from '../src/sim/actions.js';
 import { tackler } from '../src/sim/ai.js';
 import { updateMobs } from '../src/sim/mobs.js';

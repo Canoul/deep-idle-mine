@@ -4,11 +4,13 @@
    - un slot = un objet : { item:'Charbon', qty:100 } ;
    - un objet empilable déjà présent s'ajoute à sa pile (pas de maximum) ;
    - un objet absent prend le premier slot libre (ordre d'arrivée : un objet garde sa place) ;
-   - un objet non empilable (stuff) prend un slot par exemplaire : { item, qty:1, uid } ;
+   - un objet non empilable (stuff) prend un slot par exemplaire : { item, qty:1, uid } ; une pièce identifiée ou
+     améliorée porte aussi q, lines, plus (src/meta/piece.js) ;
    - capacité illimitée pour l'instant.
    Un slot vidé (objet consommé) devient null : le trou est réutilisé par le prochain nouvel objet. */
-import { ITEMS, INVENTORY, RESEARCH } from '../config.js';
+import { ITEMS, INVENTORY, RESEARCH, UPGRADE } from '../config.js';
 import { RECIPES } from '../recipes.js';
+import { sanitizePiece } from './piece.js';
 
 export const SAVE_VERSION = 1;
 
@@ -25,7 +27,9 @@ export const OPEN_MEMORY = 50;
 export const CRAFT_MEMORY = 50;
 /* unlocked : recettes débloquées par un blueprint (src/meta/craft.js), pour toujours */
 /* research : dernières recherches / recyclages de la table de recherche (src/meta/research.js) */
-export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[], unlocked:[], research:[] }; }
+/* upgrades : dernières identifications / améliorations { id, kind, uid, success? } (src/meta/upgrade.js) : une demande
+   renvoyée retrouve son résultat au lieu de tirer une seconde fois */
+export function createInventory(){ return { slots:[], nextUid:1, credited:[], opened:[], crafted:[], unlocked:[], research:[], upgrades:[] }; }
 
 /* une quantité acceptable : entier positif « sûr » (pas d'Infinity, NaN, décimale ni nombre trop grand) */
 const validQty = q => Number.isSafeInteger(q) && q > 0;
@@ -56,20 +60,24 @@ export function addItem(inv, item, qty){
   return touched;
 }
 
-/* sort une pièce de stuff (par son uid) de l'inventaire ; renvoie { item, uid } ou null */
+/* une pièce sans sa quantité : { item, uid, q?, lines?, plus? } */
+const pieceOf = ({ qty, ...p }) => p;
+
+/* sort une pièce de stuff (par son uid) de l'inventaire ; renvoie { item, uid, q?, lines?, plus? } ou null */
 export function takePiece(inv, uid){
   const i = inv.slots.findIndex(s => s && !isStackable(s.item) && s.uid === uid);
   if(i < 0) return null;
-  const { item } = inv.slots[i];
+  const piece = pieceOf(inv.slots[i]);
   inv.slots[i] = null;
   while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
-  return { item, uid };
+  return piece;
 }
 
-/* remet une pièce de stuff existante (elle garde son uid : ce n'est pas un nouvel objet) ; renvoie son slot */
+/* remet une pièce de stuff existante (elle garde son uid, sa qualité, ses lignes et son niveau : ce n'est pas un
+   nouvel objet) ; renvoie son slot */
 export function putPiece(inv, piece){
   const i = freeSlot(inv);
-  inv.slots[i] = { item:piece.item, qty:1, uid:piece.uid };
+  inv.slots[i] = { ...pieceOf(piece), qty:1 };
   if(inv.nextUid <= piece.uid) inv.nextUid = piece.uid + 1;
   return i;
 }
@@ -116,7 +124,7 @@ export function creditSession(inv, sessionId, bag){
 }
 
 /* ---- sauvegarde ---- */
-export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted, unlocked:inv.unlocked, research:inv.research });
+export const serialize = inv => JSON.stringify({ v:SAVE_VERSION, slots:inv.slots, nextUid:inv.nextUid, credited:inv.credited, opened:inv.opened, crafted:inv.crafted, unlocked:inv.unlocked, research:inv.research, upgrades:inv.upgrades });
 
 const validBag = b => b && typeof b === 'object' && !Array.isArray(b) && Object.values(b).every(validQty);
 
@@ -129,9 +137,10 @@ export function deserialize(json){
   inv.slots = d.slots.map(s => {
     if(!s || typeof s.item !== 'string' || !validQty(s.qty)) return null;
     if(isStackable(s.item)) return { item:s.item, qty:s.qty };
-    if(!Number.isSafeInteger(s.uid) || uids.has(s.uid)) return null;
-    uids.add(s.uid);
-    return { ...s, qty:1 };
+    const p = sanitizePiece(s);              // qualité, lignes et niveau revérifiés (src/meta/piece.js)
+    if(!p || uids.has(p.uid)) return null;
+    uids.add(p.uid);
+    return { ...p, qty:1 };
   });
   while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
   inv.nextUid = Math.max(Number.isSafeInteger(d.nextUid) ? d.nextUid : 1, 1, ...[...uids].map(u => u + 1));
@@ -147,6 +156,8 @@ export function deserialize(json){
   inv.research = Array.isArray(d.research) ? d.research.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string'
       && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
     .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
+  inv.upgrades = Array.isArray(d.upgrades) ? d.upgrades.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string' && Number.isSafeInteger(e.uid))
+    .map(e => ({ id:e.id, kind:e.kind, uid:e.uid, ...(typeof e.success === 'boolean' ? { success:e.success } : {}) })).slice(-UPGRADE.opMemory) : [];
   return inv;
 }
 

@@ -38,8 +38,10 @@ aside{display:flex;flex-direction:column;gap:10px}
 details summary{cursor:pointer;color:var(--mut)}
 .dev{display:grid;grid-template-columns:1fr 78px;gap:4px 8px;margin-top:8px;align-items:center;font-size:12px}
 .dev input{width:78px;padding:2px 6px}
-/* bilan de fin de session : calque limité à l'onglet Mine (pas à toute la fenêtre) */
-.view[data-view="mine"]{position:relative;min-height:100vh}
+/* bilan de fin de session : calque limité à l'onglet Session (pas à toute la fenêtre) */
+.view[data-view="session"]{position:relative;min-height:100vh}
+#noSession{padding:18vh 16px 0}
+#noSession button{margin-top:10px}
 #end{position:absolute;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:8vh 12px 12px;z-index:9}
 #end .box{position:sticky;top:8vh}
 #end .box{background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:22px 26px;max-width:440px;width:92%}
@@ -58,6 +60,8 @@ details summary{cursor:pointer;color:var(--mut)}
 #nav .ico{width:20px;text-align:center;font-size:16px}
 .navSession{font-size:12px;padding:8px;border-top:1px solid var(--line)}
 .navSession #navTimer{font-variant-numeric:tabular-nums}
+.navSession.live{cursor:pointer;border-radius:8px}
+.navSession.live:hover{background:#2a221d}
 .views{min-width:0}
 .view.placeholder{display:flex;align-items:center;justify-content:center;min-height:70vh}
 .soon{text-align:center}
@@ -148,7 +152,12 @@ details summary{cursor:pointer;color:var(--mut)}
 #end .box{max-height:92vh;overflow:auto}
 #end .share>span:first-child{white-space:nowrap}
 
-/* ---- lobby (onglet Mine, avant une session) ---- */
+/* ---- lobby (onglet Lobby ; lecture seule pendant une session) ---- */
+.inSession{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--acc);border-radius:10px;background:#2a221d}
+.inSession #lobbySessLeft{font-variant-numeric:tabular-nums}
+.lobbyWrap.locked .lockable{opacity:.55}
+.mineModes button:disabled{opacity:.5;cursor:not-allowed}
+.mineModes small{font-size:11px;opacity:.8}
 .lobbyWrap{max-width:720px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:12px}
 .lobbyWrap h1{font-size:20px;margin:0 0 4px}
 .pslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
@@ -204,7 +213,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @keyframes indet{0%{margin-left:-35%}100%{margin-left:100%}}
 @media(max-width:600px){.slots{grid-template-columns:1fr}}
 
-/* focus minerai (onglet Mine, pendant la session) */
+/* focus minerai (onglet Session, pendant la session) */
 #focusBody .pref{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:4px 0;font-size:13px}
 #focusBody .pref.off>span{opacity:.5}
 #focusBody .seg button{padding:2px 6px;font-size:11px}
@@ -371,3 +380,32 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s ease-in-out infinite}
 .hItem img{width:20px;height:20px;image-rendering:pixelated}
 .rsInfo{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#16120f;font-size:13px;display:flex;flex-direction:column;gap:3px}
 .pslot small.spec{color:var(--acc)}
+
+/* ---- Mine instantanée (src/ui/instant-lobby.js, src/ui/instant-hud.js, src/render/instant.js) ---- */
+#cvMi{width:100%;max-height:calc(100vh - 120px);object-fit:contain;display:block;background:#000;border:1px solid var(--line);
+  border-radius:8px;image-rendering:pixelated}
+#cvMiWrap{position:relative;min-width:0}
+.miCount{display:flex;flex-direction:column;align-items:center;gap:2px;margin:4px 0 10px}
+.miCount b{font-size:26px;font-variant-numeric:tabular-nums;color:var(--acc)}
+.miLog{font-size:12px;max-height:190px;overflow:auto;color:var(--mut)}
+#miRank .row{padding:2px 6px;border-radius:6px}
+#miRank .row.me{background:#2a221d;border:1px solid var(--acc)}
+.miNotice{position:fixed;right:16px;bottom:16px;z-index:20;max-width:min(360px,calc(100vw - 32px));display:flex;gap:12px;
+  align-items:center;background:var(--panel);border:1px solid var(--acc);border-radius:10px;padding:12px 14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.miNotice .miNoticeBtns{display:flex;gap:6px;flex-shrink:0}
+.miNotice .x{flex-shrink:0}
+.miFeather{width:14px;height:14px;vertical-align:-2px;image-rendering:pixelated}
+
+/* onglet Amélioration */
+.upPair{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0}
+.upPair>div{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:96px;text-align:center}
+.upBox{width:56px;height:56px;cursor:pointer}
+.upBox img{width:40px;height:40px;image-rendering:pixelated}
+.upLbl{font-size:12px;max-width:160px}
+.upPlus{font-size:20px;opacity:.7}
+.upInfo{flex-direction:column;align-items:flex-start!important;text-align:left!important;font-size:13px}
+.upRules{margin-top:14px;font-size:13px}
+.upTable{border-collapse:collapse;margin-top:6px}
+.upTable th,.upTable td{border-bottom:1px solid var(--line);padding:3px 8px;text-align:left}
+.rq{text-shadow:0 0 2px #000,0 0 1px #000}

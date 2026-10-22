@@ -1,9 +1,9 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
-import { createMiner, curLum } from './miner.js';
+import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
 import { updateMobs, tackler, channeler } from './mobs.js';
@@ -19,7 +19,7 @@ export function newSession(seed, opts={}){
   const n = opts.miners ?? 1;
   const specs = Array.isArray(n) ? n : (n>1 ? TEAM.slice(0,n) : [{}]);
   const G = {
-    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
+    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,

@@ -48,3 +48,18 @@ test('lobby : spécialisation de chaque joueur (arbre de skills), « Sans spéci
   const solo = lobbySlots({ id:'A', displayId:'A', displayName:'Zoe' }, null, 3, 'barbare');
   assert.equal(solo[0].tree, 'barbare');
 });
+
+test('pendant une session : Lancer impossible (« Session en cours »), même pour le chef', () => {
+  assert.deepEqual(launchState({ account:me, party:null, session:{ id:'s1' } }), { can:false, label:'⛏ Session en cours' });
+  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true })]);
+  assert.equal(launchState({ account:me, party:p, session:{ id:'s1' } }).can, false);
+  assert.equal(launchState({ account:me, party:p, session:null }).can, true, 'session finie : on peut relancer');
+});
+
+test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; tout grisé pendant une session', async () => {
+  const { mineModes } = await import('../src/ui/lobby.js');
+  const m = mineModes('mine');
+  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false]]);
+  assert.deepEqual(mineModes('mi').map(x => x.on), [false, true]);
+  assert.ok(mineModes('mine', true).every(x => x.disabled), 'lecture seule pendant la session');
+});
