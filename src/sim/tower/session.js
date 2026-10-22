@@ -25,6 +25,8 @@ export function newTower(seed, opts = {}){
     mode: 'tower', side, seed, t: 0, ticks: 0, over: false, ...world,
     rng: mulberry32(seed ^ 0x2545f491), fightRng: mulberry32(seed ^ 0x6a09e667),
     ladder: world.tiles.map(r => new Uint8Array(r.length)),
+    /* découvert : tout l'extérieur de la tour ; l'intérieur se découvre autour des mineurs (revealAround) */
+    seen: world.tiles.map((r, y) => Uint8Array.from(r, (_, x) => inTower(world, x, y) ? 0 : 1)),
     boss: { name: TOWER.sides[side].boss, hp: B.hp, maxhp: B.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h, target: null },
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
     log: [], stats: { mined: 0, ladders: 0, hits: 0, knocks: 0, dmg: 0 }, summary: null,
@@ -32,6 +34,7 @@ export function newTower(seed, opts = {}){
   };
   G.id = opts.id ?? `tower-${seed}-${Date.now().toString(36)}`;
   G.roster = [...G.miners];
+  for(const m of G.miners) revealAround(G, m);
   log(G, `${TOWER.sides[side].tower} : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} au pied de la tour. ${G.boss.name} attend au sommet.`);
   return G;
 }
@@ -50,6 +53,14 @@ const inGrid = (G, x, y) => x >= 0 && x < G.w && y >= 0 && y <= G.h;
 /* case vide où l'on peut être (le boss occupe ses cases) */
 export const towerAir = (G, x, y) => inGrid(G, x, y) && G.tiles[y][x] === 0 && !inBoss(G, x, y);
 const breakable = (G, x, y) => inTower(G, x, y) && G.tiles[y][x] !== 0 && !BLOCKS[G.tiles[y][x]].unbreakable;
+/* découverte : comme dans la mine (discoverMax autour du mineur), sans lumière (rayon plein) */
+export function revealAround(G, m){
+  const R = Math.max(1, m.carac.discoverMax ?? STATS.discoverMax), r = Math.ceil(R);
+  for(let dy = -r; dy <= r; dy++) for(let dx = -r; dx <= r; dx++){
+    const x = m.x + dx, y = m.y + dy;
+    if(inGrid(G, x, y) && dx * dx + dy * dy <= R * R) G.seen[y][x] = 1;
+  }
+}
 /* appui : comme dans la mine (vide dessous sans échelle ni sur la case ni juste dessous = chute) ; le sol porte */
 export const towerSupported = (G, x, y) =>
   !(y + 1 <= G.h && towerAir(G, x, y + 1) && !G.ladder[y + 1][x] && !(y > 0 && G.ladder[y][x]));
@@ -89,11 +100,17 @@ export function planTo(G, m, goals){
         if(l < heap.length && heap[l][0] < heap[s][0]) s = l; if(r < heap.length && heap[r][0] < heap[s][0]) s = r;
         if(s === i) break; [heap[s], heap[i]] = [heap[i], heap[s]]; i = s; } }
     return top; };
-  const dig = (x, y) => towerAir(G, x, y) ? 0 : breakable(G, x, y) ? mineT(m, G.tiles[y][x]) + (taken.has(y * w + x) ? 8 : 0) : Infinity;
+  /* ce que le mineur SAIT : une case pas encore découverte de l'intérieur est supposée de la stonebrick ordinaire */
+  const brick = TOWER.sides[G.side].brick;
+  const known = (x, y) => !inGrid(G, x, y) || G.seen[y][x];
+  const airK = (x, y) => known(x, y) ? towerAir(G, x, y) : false;
+  const dig = (x, y) => airK(x, y) ? 0
+    : !known(x, y) ? (inTower(G, x, y) ? mineT(m, brick) : Infinity)
+    : breakable(G, x, y) ? mineT(m, G.tiles[y][x]) + (taken.has(y * w + x) ? 8 : 0) : Infinity;
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* appui en supposant la case (x, y) creusée : une case pleine sous elle porte */
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
-  const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && towerAir(G, x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x]){ y++; n++; } return { y, n }; };
+  const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x]){ y++; n++; } return { y, n }; };
   while(heap.length){
     const [d, c] = pop();
     if(d > dist[c]) continue;
@@ -114,7 +131,7 @@ export function planTo(G, m, goals){
       if(dg < Infinity && (lad || inTower(G, cx, cy))) relax(c, d, cx, cy - 1, dg + (lad ? 0 : ladderT(m)) + climbT(m));
     }
     /* descendre : par une échelle (une case où il tient avec le vide dessous en a forcément une) */
-    if(cy + 1 <= G.h && towerAir(G, cx, cy + 1) && (G.ladder[cy][cx] || G.ladder[cy + 1][cx])) relax(c, d, cx, cy + 1, climbT(m));
+    if(cy + 1 <= G.h && airK(cx, cy + 1) && (G.ladder[cy][cx] || G.ladder[cy + 1][cx])) relax(c, d, cx, cy + 1, climbT(m));
   }
   return null;
 }
@@ -148,6 +165,7 @@ export function decide(G, m){
 }
 
 function startMine(G, m, x, y, status){
+  if(!breakable(G, x, y)) return act(m, 'wait', 0.1, {}, status);     // découvert indestructible : on replanifie
   const t = G.tiles[y][x];
   act(m, 'mine', chance(G, m.carac.oneTap || 0) ? 0 : mineT(m, t), { x, y }, status);
 }
@@ -173,6 +191,10 @@ function stepMiner(G, m){
 }
 
 function finish(G, m, a){
+  finishAction(G, m, a);
+  if(G.miners.includes(m)) revealAround(G, m);
+}
+function finishAction(G, m, a){
   if(a.type === 'move'){
     m.x = a.data.x; m.y = a.data.y;
     if(a.data.fall) m.fallN++;

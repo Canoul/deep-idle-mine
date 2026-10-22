@@ -64,7 +64,9 @@ const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire
                          not_same_item: 'Le sacrifice doit être le même objet.', maxed: 'Cette pièce est déjà au niveau maximum.',
                          not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.',
                          not_stuff: 'Seule une pièce de stuff peut être identifiée, améliorée ou enchantée.',
-                         not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.' };
+                         not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.',
+                         not_identified: 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.',
+                         rune_too_rare: 'Cette rune est de qualité trop élevée pour cette pièce (au plus la même qualité).' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',

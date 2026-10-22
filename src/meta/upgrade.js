@@ -91,6 +91,10 @@ export function enchantError(inv, uid, rune){
   if(!isStuff(p.item)) return 'not_stuff';
   if(!isRune(r.item)) return 'not_rune';
   if(p.rune) return 'already_enchanted';
+  /* rareté (22/10/2026) : une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne (R6 → rune R1 à R6).
+     Une pièce non identifiée n'a pas de qualité : elle doit d'abord être identifiée. */
+  if(!isIdentified(p)) return 'not_identified';
+  if(r.q > p.q) return 'rune_too_rare';
   return null;
 }
 

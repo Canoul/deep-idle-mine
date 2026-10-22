@@ -1,6 +1,7 @@
 /* Rendu des tours de l'Ange et du Démon : LIT la copie d'affichage (src/shared/tower-view.js), ne la modifie jamais.
-   Toute la tour tient à l'écran (sans caméra). Ciel autour, intérieur creusé en galerie, boss sur le toit avec sa
-   barre de vie, mineurs avec leur stuff. */
+   Caméra rapprochée (TOWER.view : cols × rows cases) qui suit le mineur du joueur, en glissant. Ciel autour,
+   intérieur pas encore découvert dans le noir, galeries creusées, boss sur le toit avec sa barre de vie, mineurs avec
+   leur stuff. */
 import { BLOCKS, TOWER } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
@@ -28,14 +29,28 @@ export function createTowerRenderer(cv){
     return bossImg[name];
   };
 
-  /* me : ID du compte du joueur (son mineur est entouré et dessiné au-dessus des autres) */
+  const V = TOWER.view;
+  cv.width = V.cols * T; cv.height = V.rows * T;
+  let cam = null;                                   // coin haut-gauche affiché, en cases (glisse vers sa cible)
+
+  /* me : ID du compte du joueur (son mineur est entouré, dessiné au-dessus des autres, et suivi par la caméra) */
   function draw(G, me){
-    if(cv.width !== G.w * T || cv.height !== (G.h + 1) * T){ cv.width = G.w * T; cv.height = (G.h + 1) * T; ctx.imageSmoothingEnabled = false; }
     const now = performance.now();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const cols = Math.min(V.cols, G.w), rows = Math.min(V.rows, G.h + 1);
+    if(cv.width !== cols * T || cv.height !== rows * T){ cv.width = cols * T; cv.height = rows * T; }
+    ctx.imageSmoothingEnabled = false;
+    const mine = G.miners.find(m => m.account === me), fol = mine ?? G.miners[0];
+    const [fx, fy] = fol ? instantPos(fol) : [G.bx + 1, G.roof];
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const want = { x: clamp(fx + 0.5 - cols / 2, 0, G.w - cols), y: clamp(fy + 0.5 - rows / 2, 0, G.h + 1 - rows) };
+    if(!cam || Math.abs(cam.x - want.x) + Math.abs(cam.y - want.y) > 12) cam = { ...want };   // départ, projection : on saute
+    else { cam.x += (want.x - cam.x) * 0.15; cam.y += (want.y - cam.y) * 0.15; }
+    ctx.setTransform(1, 0, 0, 1, Math.round(-cam.x * T), Math.round(-cam.y * T));
     const inside = (x, y) => x > G.x0 && x < G.x1 && y >= G.roof && y <= G.floor;
-    for(let y = 0; y <= G.h; y++) for(let x = 0; x < G.w; x++){
+    const x0 = Math.floor(cam.x), y0 = Math.floor(cam.y);
+    for(let y = y0; y <= Math.min(G.h, y0 + rows); y++) for(let x = x0; x <= Math.min(G.w - 1, x0 + cols); x++){
       const px = x * T, py = y * T, t = G.tiles[y][x];
+      if(G.seen && !G.seen[y]?.[x]){ ctx.fillStyle = '#07050a'; ctx.fillRect(px, py, T, T); continue; }   // pas encore découvert
       if(t === 0) blit(inside(x, y) ? 'tunnel' : 'sky', px, py, inside(x, y) ? '#2a1f18' : (G.side === 'demon' ? '#3a1530' : '#8fd8ff'));
       else blit(BLOCKS[t].tex, px, py, BLOCKS[t].color);
       if(G.ladder?.[y]?.[x] && t === 0) blit('ladder', px, py);
@@ -61,7 +76,6 @@ export function createTowerRenderer(cv){
       ctx.fillStyle = pct < TOWER.boss.rageBelow ? '#ff3b3b' : G.side === 'demon' ? '#c48bff' : '#8fd8ff';
       ctx.fillRect(bxp - 1, byp - 7, (bw + 2) * pct, 4);
     }
-    const mine = G.miners.find(m => m.account === me);
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
       const [x, y] = instantPos(m);
       sprite(m, x * T, y * T, m === mine, now);

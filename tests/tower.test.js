@@ -9,7 +9,7 @@ import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
 
 const team = n => Array.from({ length: n }, (_, i) => ({ name: 'M' + i, account: 'A' + i }));
 
-test('carte : tour de 15 × 30, murs et sol indestructibles, portes en bas, rez-de-chaussée vide, 5 % indestructible', () => {
+test('carte : tour de 15 × 30, murs et sol indestructibles, portes en bas, rez-de-chaussée vide, labyrinthe', () => {
   for(const side of ['angel', 'demon']){
     const T = genTower(7, side), S = TOWER.sides[side], L = towerLayout();
     assert.equal(T.x1 - T.x0 + 1, TOWER.width); assert.equal(T.floor - T.roof + 1, TOWER.height);
@@ -17,9 +17,22 @@ test('carte : tour de 15 × 30, murs et sol indestructibles, portes en bas, rez-
     for(let y = T.roof; y <= T.floor - TOWER.doorH; y++){ assert.equal(T.tiles[y][T.x0], S.hard); assert.equal(T.tiles[y][T.x1], S.hard); }
     for(let d = 0; d < TOWER.doorH; d++){ assert.equal(T.tiles[T.floor - d][T.x0], 0, 'porte gauche'); assert.equal(T.tiles[T.floor - d][T.x1], 0, 'porte droite'); }
     for(let x = T.x0 + 1; x < T.x1; x++) assert.equal(T.tiles[T.floor][x], 0, 'rez-de-chaussée vide');
-    let hard = 0, cells = 0;
-    for(let y = T.roof + 1; y < T.floor; y++) for(let x = T.x0 + 1; x < T.x1; x++){ cells++; if(T.tiles[y][x] === S.hard) hard++; else assert.equal(T.tiles[y][x], S.brick); }
-    assert.equal(hard, Math.round(cells * TOWER.unbreakablePct / 100));
+    /* labyrinthe : une ligne sur mazeEvery = mazeHard blocs indestructibles sur width (murs compris), un seul passage
+       d'un tenant, jamais au-dessus du passage de la ligne de mur précédente ; les autres lignes : de la brique */
+    let prevGap = null, walls = 0;
+    for(let y = T.roof + 1; y < T.floor; y++){
+      const row = Array.from({ length: TOWER.width }, (_, i) => T.tiles[y][T.x0 + i]);
+      const hard = row.filter(t => t === S.hard).length;
+      if((T.floor - y) % TOWER.mazeEvery === 0){
+        walls++;
+        assert.equal(hard, TOWER.mazeHard, `ligne ${y}`);
+        const gap = row.map((t, i) => t === S.brick ? T.x0 + i : null).filter(v => v !== null);
+        assert.equal(gap.at(-1) - gap[0] + 1, gap.length, 'un seul passage');
+        if(prevGap) assert.ok(!gap.some(x => prevGap.includes(x)), `ligne ${y} : passage au-dessus du précédent`);
+        prevGap = gap;
+      } else assert.equal(hard, y > T.floor - TOWER.doorH ? 0 : 2, `ligne ${y} : de la brique entre les murs (portes en bas)`);
+    }
+    assert.ok(walls >= 13);
     for(let x = T.bx; x < T.bx + TOWER.boss.w; x++) assert.equal(T.tiles[T.roof][x], S.hard, 'le toit sous le boss ne se perce pas');
     assert.equal(T.bx - T.x0, T.x1 - (T.bx + TOWER.boss.w - 1), 'boss au milieu');
     assert.deepEqual({ ...L }, { w: T.w, h: T.h, x0: T.x0, x1: T.x1, roof: T.roof, floor: T.floor, bx: T.bx, by: T.by });
@@ -44,9 +57,10 @@ test('carte : toujours un chemin cassable du rez-de-chaussée au toit (200 seeds
   assert.deepEqual(genTower(42, 'angel').tiles, genTower(42, 'angel').tiles);
 });
 
-test('à 3 (stuff de base) : ils percent le toit et tuent le boss avant la fin, sur 5 seeds ; personne ne reste coincé', () => {
+test('à 3 bien équipés (minage 1,6, 14 dégâts) : ils traversent le labyrinthe et tuent le boss avant la fin, sur 5 seeds', () => {
+  const gear = { mineSpeed: 1.6, damage: 14, attackSpeed: 120 };
   for(const seed of [11, 12, 13, 14, 15]){
-    const G = runTower(seed, { side: seed % 2 ? 'angel' : 'demon', miners: team(3) });
+    const G = runTower(seed, { side: seed % 2 ? 'angel' : 'demon', miners: team(3).map(m => ({ ...m, carac: gear })) });
     assert.equal(G.summary.success, true, `seed ${seed} : boss à ${G.summary.bossHp} PV`);
     assert.ok(G.summary.t < TOWER.duration);
     assert.ok(G.roster.every(m => m.stats.mined > 0 || m.stats.dmg > 0), 'chacun a travaillé');
@@ -55,7 +69,7 @@ test('à 3 (stuff de base) : ils percent le toit et tuent le boss avant la fin, 
 });
 
 test('mineur bien équipé, seul : il réussit ; le temps écoulé sans boss tué = échec', () => {
-  const strong = [{ name: 'Fort', account: 'F', carac: { damage: 20, mineSpeed: 3 } }];
+  const strong = [{ name: 'Fort', account: 'F', carac: { damage: 30, mineSpeed: 4 } }];
   assert.equal(runTower(3, { side: 'angel', miners: strong }).summary.success, true);
   const weak = [{ name: 'Lent', account: 'L', carac: { mineSpeed: 0.05 } }];
   const G = runTower(3, { side: 'angel', miners: weak });
@@ -124,4 +138,21 @@ test('partie en direct du serveur : une tour se joue jusqu\'au bout, le rejeu (r
   assert.deepEqual(a.summary, b.summary, 'même seed et mêmes départs : même partie');
   assert.equal(a.summary.shares.find(s => s.account === 'A2').left, true);
   assert.equal(a.view().mode, 'tower');
+});
+
+test('brouillard : l\'intérieur n\'est pas découvert au départ ; chaque mineur découvre autour de lui (Découverte)', async () => {
+  const { revealAround } = await import('../src/sim/tower/session.js');
+  const G = newTower(6, { side: 'angel', miners: [{ name: 'A', account: 'A' }, { name: 'B', account: 'B', carac: { discoverMax: 4 } }] });
+  let inner = 0, seen = 0;
+  for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++){ inner++; seen += G.seen[y][x]; }
+  assert.ok(seen > 0 && seen < inner / 3, `découvert au départ : ${seen} / ${inner}`);
+  assert.equal(G.seen[0][0], 1, 'l\'extérieur est connu');
+  const [a, b] = G.miners;
+  const disc = (m, r) => { for(let dy = -r; dy <= r; dy++) for(let dx = -r; dx <= r; dx++) if(dx * dx + dy * dy <= r * r && G.seen[m.y + dy]?.[m.x + dx] === 0) return false; return true; };
+  assert.ok(disc(a, 2) && disc(b, 4), 'rayon = Découverte');
+  a.y = G.roof + 4; revealAround(G, a);
+  assert.equal(G.seen[G.roof + 4][a.x], 1);
+  /* l'IA ne connaît pas les murs pas encore découverts : elle les découvre en creusant, sans jamais creuser un incassable */
+  const H = runTower(6, { side: 'angel', miners: team(3).map(m => ({ ...m, carac: { mineSpeed: 1.6, damage: 14 } })) });
+  assert.equal(H.summary.success, true);
 });

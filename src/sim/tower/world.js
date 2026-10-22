@@ -5,11 +5,11 @@
    la ligne h = floor + 1 (incassable, toute la largeur).
    - toit (ligne roof) : stonebrick cassable entre les murs (on le perce pour monter dessus), murs indestructibles ;
      on se tient DESSUS, ligne roof - 1 ; le boss (bossW × bossH) est posé au milieu (colonnes bx à bx + bossW - 1) ;
-   - intérieur (lignes roof + 1 à floor - 1) : stonebrick, dont unbreakablePct % indestructible ;
+   - intérieur (lignes roof + 1 à floor - 1) : stonebrick ; une ligne sur mazeEvery est une ligne de mur indestructible
+     percée d'un seul passage (labyrinthe : on ne monte pas tout droit) ;
    - rez-de-chaussée (ligne floor) : vide, les mineurs y apparaissent ;
    - portes : les doorH lignes du bas des deux murs sont vides.
-   Le tirage des blocs indestructibles garantit un chemin de cases cassables du rez-de-chaussée jusqu'au toit (sinon
-   on retire, avec un autre tirage). */
+   Un chemin de cases cassables du rez-de-chaussée jusqu'au toit est vérifié (sinon on retire, avec un autre tirage). */
 import { TOWER } from '../../config.js';
 import { mulberry32, shuffle } from '../../core/rng.js';
 
@@ -54,15 +54,19 @@ export function genTower(seed, side){
     for(let x = 0; x < w; x++) tiles[h][x] = S.hard;                               // sol
     for(let y = roof; y <= floor; y++){ tiles[y][x0] = S.hard; tiles[y][x1] = S.hard; }   // murs
     for(let d = 0; d < TOWER.doorH; d++){ tiles[floor - d][x0] = 0; tiles[floor - d][x1] = 0; }   // portes
-    const inner = [];
-    for(let y = roof; y < floor; y++) for(let x = x0 + 1; x < x1; x++){
-      tiles[y][x] = S.brick;
-      if(y > roof) inner.push([x, y]);                                             // le toit reste cassable
-    }
+    for(let y = roof; y < floor; y++) for(let x = x0 + 1; x < x1; x++) tiles[y][x] = S.brick;
     for(let x = L.bx; x < L.bx + TOWER.boss.w; x++) tiles[roof][x] = S.hard;      // le toit sous le boss ne se perce pas
-    shuffle(inner, r);
-    const n = Math.round(inner.length * TOWER.unbreakablePct / 100);
-    for(let i = 0; i < n; i++){ const [x, y] = inner[i]; tiles[y][x] = S.hard; }
+    /* labyrinthe : une ligne de mur toutes les mazeEvery lignes, en partant du dessus du rez-de-chaussée ; un seul
+       passage (gap cases) par ligne, qui ne chevauche pas celui de la ligne de mur précédente */
+    const gap = TOWER.width - TOWER.mazeHard, inner = x1 - x0 - 1;
+    let prev = null;
+    for(let y = floor - TOWER.mazeEvery; y > roof; y -= TOWER.mazeEvery){
+      const starts = [];
+      for(let a = x0 + 1; a + gap - 1 < x1; a++) if(!prev || a + gap - 1 < prev || a > prev + gap - 1) starts.push(a);
+      const a = starts.length ? starts[Math.floor(r() * starts.length)] : x0 + 1 + Math.floor(r() * (inner - gap + 1));
+      for(let x = x0 + 1; x < x1; x++) if(x < a || x >= a + gap) tiles[y][x] = S.hard;
+      prev = a;
+    }
     if(connected(tiles, L, S.hard) || attempt >= 20) return { ...L, side, tiles };
   }
 }

@@ -1299,6 +1299,32 @@ Règles (voir CLAUDE.md) :
   résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
   wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
+
+### Tours du Jugement : labyrinthe, brouillard, caméra, 10 min ; vérification « donjon » (Geoffrey) — branche `geoffrey/jugement-patch`, en ligne le 22/10
+- **Config** `TOWER` : `duration` 900 → 600 (5 min demandées, infaisables : voir mesures) ; `unbreakablePct`
+  remplacé par `mazeEvery: 2`, `mazeHard: 11` ; `view: { cols: 19, rows: 15 }`.
+- **`src/sim/tower/world.js`** : lignes de mur à partir de `floor - 2`, toutes les 2 lignes, passage d'un tenant de
+  `width - mazeHard` = 4 cases, jamais chevauchant le précédent.
+- **`src/sim/tower/session.js`** : `G.seen` (extérieur connu, intérieur à 0), `revealAround` (rayon `discoverMax`,
+  sans lumière) au départ et après chaque action ; le Dijkstra raisonne sur ce qui est découvert (case inconnue de
+  l'intérieur = brique ordinaire, inconnue = pas d'air pour les chutes) ; `startMine` refuse un bloc incassable
+  (attente 0,1 s puis replanification). Essai « attendre l'équipier au lieu de creuser le même bloc » : pire
+  (13 étages au lieu de 17 en 5 min), pas gardé.
+- **Vue / rendu** : `seen` envoyé (lignes de 0/1) ; `src/render/tower.js` : caméra 19 × 15 cases qui suit son mineur
+  (glisse, saute si l'écart dépasse 12 cases, ex. projection), intérieur non découvert en noir.
+- **Mesures** (`runTower`, 10 seeds, à 3) : 5 min / 6 s : base 0/10 (17 étages sur 30), minage 1,6 0/10 (25),
+  minage 2,5 + 20 dégâts 1/10 ; 5 min / 3 s : minage 1,6 + 14 dégâts 4/10. **Retenu 10 min / 6 s** : base 0/10,
+  minage 1,27 + 11 dégâts 3/10, minage 1,6 + 14 dégâts + 120 % attaque 10/10 (≈ 7,5 min), le même seul 0/10.
+- ✅ Chromium : caméra rapprochée, brouillard, murs du labyrinthe visibles ; seul en stuff de base : échec affiché.
+- **Vérification « donjon »** : aucune référence croisée entre `src/sim/tower/` et `DUNGEON` / `src/sim/dungeon.js`.
+  L'« erreur » de ce matin = test `world.test.js` pas à jour avec les donjons en areas 4 et 5 (corrigé dans l'étape
+  2) ; `dungeon.test.js` et `world.test.js` verts ; l'IA gère plusieurs donjons (`dungeonGoal` boucle sur
+  `G.dungeons`). Spec : « donjon » remplacé par « tour » à deux endroits. Simulation 3 mineurs × 6 (skills mixed,
+  stuff de base) : areas 4,0 en moyenne, profondeur 200 : **l'area 4 (et donc ses donjons) n'est jamais atteinte**, les
+  donjons n'y sont pas testés en conditions réelles (seulement par `dungeon.test.js`). ⚠️ **1 blocage sans lien avec
+  les donjons** : seed 23757, Bleu (logisticien) « Retour (treuil) » à (32, 157), t = 3445 s. Pas corrigé ici.
+- **Tests** : `tests/tower.test.js` (labyrinthe, équipe équipée, solo très équipé, brouillard). Suite complète +
+  anticheat : 659/659.
 ### Mine instantanée : découverte et caméra (Geoffrey) — branche `geoffrey/mi-decouverte-camera`, en ligne le 22/10
 - **Simulation** (`src/sim/instant/session.js`) : `G.seen` (surface à 1), `revealAround(G, m)` (rayon
   max(1, discoverMax), comme `revealAround` de la mine normale en pleine lumière) au départ, après chaque action
@@ -1322,6 +1348,16 @@ Règles (voir CLAUDE.md) :
   ✅ Chromium : « ? » et wiki affichés sans moyenne, 0 erreur console.
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu la MI cachée / caméra : conflits seulement dans les 3 docs
   (journal, debug, état du projet : tout gardé) ; 145 tests du sujet + anticheat 71/71 verts après fusion.
+
+### Enchantement : rune de qualité ≤ pièce (Geoffrey) — branche `geoffrey/enchantement-rune-rarete`, ✅ en ligne le 22/10
+- `enchantError` (`src/meta/upgrade.js`) : `not_identified` (pièce sans `q`) puis `rune_too_rare` (`rune.q > piece.q`),
+  après `already_enchanted`. Messages serveur dans `server/game/service.js` (`UPGRADE_ERRORS`). UI (`src/ui/upgrade.js`,
+  `enchantWhy`, même règle) : texte d'aide, étiquettes « jusqu'à Rn », « à identifier », « trop rare pour cette pièce »,
+  raison sous les cases ; wiki : paragraphe Enchantement.
+- Tests : `rune.test.js` (table pièce/rune de R1 à R7, rien ne bouge en cas de refus ; `withRune` identifie la pièce),
+  `anticheat/rune.test.js` (refus serveur, rune non consommée, acceptée à qualité égale) : verts.
+  ✅ Chromium : R3 + rune R7 refusé, R6 + R3 accepté avec aperçu, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` n'avait pas bougé ; tests du sujet et anticheat verts.
 
 ### Mine instantanée : inscriptions 30 min avant, possibles en session (Geoffrey) — branche `geoffrey/mi-inscription-30min`
 - **Config** `INSTANT_MINE.signupBefore` (1 800 s). `src/shared/instant.js` : `signupOpensAt`, `signupOpen`.
