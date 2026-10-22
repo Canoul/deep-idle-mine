@@ -111,4 +111,6 @@ export const PARTY_SERVER = {
   maxPendingInvites: 10,            // invitations en attente par groupe
   invitesPerHour: { max: 30, window: HOUR },        // invitations envoyées par compte (anti spam)
   joinFailures:   { max: 20, window: 15 * MIN },    // codes faux tapés par compte (anti devinette)
+  lfgTimeout: 30e3,                 // recherche de groupe : sans nouvelles du lobby depuis ce temps (onglet fermé), on sort de la file
+  lfgNotice: MIN,                   // « groupe trouvé » reste affiché ce temps
 };

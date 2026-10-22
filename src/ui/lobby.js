@@ -5,6 +5,7 @@
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
+import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
 
@@ -47,6 +48,17 @@ export function launchState({ account, party, offline, busy, session }){
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
 
+/* Recherche de groupe (mine classique seulement) : rien, le bouton « Chercher un groupe » (seul, ou chef d'un groupe de
+   2), ou la recherche en cours (cancel : c'est la sienne, on peut l'annuler ; sinon c'est celle de son chef) */
+export function lfgState({ account, party, offline, session, mode, lfg }){
+  if(offline || !account || session || party?.launching || mode !== MINE_MODES[0].id) return { show:false };
+  const search = lfg?.search;
+  if(search) return { show:true, searching:true, cancel:search.mine, auto:search.auto };
+  const n = party?.members.length ?? 1;
+  if(n >= GAME.maxPlayers || (n > 1 && party.leader !== account.id)) return { show:false };
+  return { show:true, searching:false };
+}
+
 /* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session.
    Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
    si le joueur les a déjà faites pendant cette ouverture. */
@@ -58,12 +70,13 @@ export function mineModes(cur, locked = false, judgment = null){
   });
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
-               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false };   // view 'jugement' : jauges à la place de l'équipe
+               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false,     // view 'jugement' : jauges à la place de l'équipe
+               lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null };   // lfgWant : sa recherche, à relancer si le serveur a redémarré
 
   function render(){
     const { account, offline, info, party } = st;
@@ -109,12 +122,13 @@ export function setupLobby(h){
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
     $('partyLeaveBtn').disabled = locked;
     $('joinRow').hidden = offline || !account || locked || (party && party.members.length > 1);
+    renderLfg();
 
     const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour percer jusqu'au sommet et vaincre le boss. `+
-                `Victoire : un coffre pour chaque joueur présent. Une seule victoire par ouverture.`
+                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
@@ -123,6 +137,32 @@ export function setupLobby(h){
     renderInvite();
     renderInvites();
     renderPrefs();
+  }
+
+  /* recherche de groupe : bouton, « lancer dès que plein », timer, « groupe trouvé » */
+  function renderLfg(){
+    const lf = lfgState(st), mine = lf.show && (!lf.searching || lf.cancel), found = st.lfg?.found;
+    $('lfgBtn').hidden = $('lfgAutoRow').hidden = !mine;
+    $('lfgBtn').classList.toggle('on', !!lf.searching);
+    $('lfgBtn').innerHTML = pxi('group') + (lf.searching ? 'Annuler la recherche' : 'Chercher un groupe');
+    $('lfgAuto').checked = lf.searching ? lf.auto : st.lfgAuto;
+    const status = lf.searching
+      ? `En recherche de groupe… <b id="lfgTime">${queueTime(Date.now() - st.lfgStart)}</b>`+
+        (lf.cancel ? '' : ' <span class="small">(lancée par le chef)</span>')+(lf.auto ? ' · lancement dès que plein' : '')
+      : found && !st.session ? `Groupe trouvé : <b>${esc(found.names.join(', '))}</b>`+
+        (found.error ? ` · lancement automatique impossible : ${esc(found.error)}` : '')
+      : '';
+    $('lfgStatus').hidden = !status;
+    $('lfgStatus').innerHTML = status;
+  }
+  setInterval(() => { const t = $('lfgTime'); if(t) t.textContent = queueTime(Date.now() - st.lfgStart); }, 1000);
+  /* état de la recherche reçu du serveur ; serveur redémarré (boot a changé) pendant sa recherche : on la relance */
+  function setLfg(lfg){
+    st.lfg = lfg;
+    if(lfg?.search) st.lfgStart = Date.now() - lfg.search.waited;
+    if(lfg?.search?.mine) st.lfgWant = { boot:lfg.boot, auto:lfg.search.auto };
+    else if(st.lfgWant && lfg && (lfg.boot === st.lfgWant.boot || lfg.found)) st.lfgWant = null;   // annulée, trouvée, sortie
+    else if(st.lfgWant && lfg){ const auto = st.lfgWant.auto; st.lfgWant = null; act(() => h.party.lfg(auto)); }
   }
 
   /* panneau « Inviter » : code + lien du groupe, invitation par ID, son propre ID */
@@ -182,6 +222,7 @@ export function setupLobby(h){
     try {
       const r = await fn();
       if(r && 'party' in r) st.party = r.party;
+      if(r && 'lfg' in r) setLfg(r.lfg);
       done?.();
     } catch(e){ error(e.message); }
     render();
@@ -216,6 +257,12 @@ export function setupLobby(h){
   };
   function pick(mode){ st.view = null; st.mode = mode; render(); h.onMode?.(st.mode); }
   $('lobbyToSession').onclick = () => h.onShowSession?.();
+
+  $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
+  $('lfgAuto').onchange = () => {
+    st.lfgAuto = $('lfgAuto').checked;
+    if(st.lfg?.search?.mine) act(() => h.party.lfg(st.lfgAuto));     // déjà en recherche : on garde sa place
+  };
 
   $('inviteBtn').onclick = () => {
     st.inviteOpen = !st.inviteOpen;
@@ -261,7 +308,12 @@ export function setupLobby(h){
   };
 
   return {
-    update(patch){ Object.assign(st, patch); render(); },
+    update(patch){
+      const { lfg, ...rest } = patch;
+      Object.assign(st, rest);
+      if('lfg' in patch) setLfg(lfg);
+      render();
+    },
     /* rejoindre par un code venu d'un lien d'invitation */
     join(code){ return act(() => h.party.join(code)); },
     /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */

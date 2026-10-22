@@ -399,17 +399,29 @@ export const SHINY = {
    objet par qualité : « Coffre angélique R4 ». Ouvert depuis l'inventaire (comme un Treasure), il donne une Rune de la
    même qualité, dont les lignes (stat et %) sont tirées à l'ouverture comme une identification. Rune ange = rune
    démon. Enchantement (onglet Amélioration) : la rune est consommée, ses lignes s'ajoutent à une pièce de stuff, une
-   seule rune par pièce, définitif. */
+   seule rune par pièce, définitif.
+   Depuis le 22/10/2026 (Geoffrey) : le boss donne un « Trésor » (treasures) au lieu d'un « Coffre » : non empilable,
+   rareté `treasureRarity` (contour de case) quelle que soit sa qualité, nom affiché « <qualité> Trésor démoniaque »
+   (« Antique Trésor démoniaque ») dans la couleur de sa qualité (UPGRADE.qualities). Nom interne : « Trésor
+   démoniaque R5 ». Les anciens « Coffre démoniaque R5 » (chests) restent dans le catalogue, empilables et ouvrables
+   (décision : pas de conversion), mais ne sont plus donnés. */
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,
+  treasures: { angel: { name:'Trésor angélique', tex:'chest_angel' }, demon: { name:'Trésor démoniaque', tex:'chest_demon' } },
+  treasureRarity: 'unique',
+  /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
-  /* rareté (contour de case) d'un coffre selon sa qualité */
   rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
 };
-/* nom de l'objet coffre d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) */
+const QUALITY_NUMS = [1,2,3,4,5,6,7];
+/* nom interne du trésor d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) : « Trésor démoniaque R5 » */
+export const treasureItem = (side, q) => `${RUNE.treasures[side].name} R${q}`;
+const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap(([side, c]) =>
+  QUALITY_NUMS.map(q => [treasureItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q }, treasure:true }])));
+/* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
 const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
-  [1,2,3,4,5,6,7].map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
+  QUALITY_NUMS.map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
 
 /* ---- Rareté des objets (src/meta/rarity.js) ----
    tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
@@ -422,11 +434,13 @@ export const RARITY = {
     { id:'rare',       label:'Rare',       color:'#3d8bff' },
     { id:'epique',     label:'Épique',     color:'#b06bff' },
     { id:'legendaire', label:'Légendaire', color:'#ff8c1a' },
+    { id:'unique',     label:'Unique',     color:'#c0480f' },     // trésors des tours (RUNE.treasureRarity)
   ],
   default: 'commun',
   items: {
     'Résidu angélique':'rare', 'Résidu démoniaque':'rare', [RUNE.item]:'epique',
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
+    ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -574,7 +588,8 @@ export const ITEMS = {
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
-  ...CHEST_ITEMS,                                                                       // coffres des tours (RUNE)
+  ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
+  ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),

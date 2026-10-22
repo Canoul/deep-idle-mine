@@ -17,7 +17,7 @@ export function fmtLeft(ms){
 export function towerState(side, v, now){
   const name = JUDGMENT.sides[side].tower;
   if(!v.open) return { cls: 'closed', text: `${name} : fermée`, sub: `Elle ouvre ${JUDGMENT.openHours} h quand la jauge atteint ${v.cap}.` };
-  if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Déjà faite pour cette ouverture : ton coffre est dans l\'inventaire.' };
+  if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Déjà faite pour cette ouverture : ton trésor est dans l\'inventaire.' };
   return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Choisis-la dans « Où miner », seul ou en groupe de 3.' };
 }
 

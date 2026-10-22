@@ -1559,6 +1559,71 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : solo débutant limité aux areas 0-1 ; le wiki (`src/wiki/data.js`) lit `CFG.unlockRatio`, le
   texte de `wiki.html` est écrit à la main (mis à 60 %).
 
+### Mine qui rétrécit et grandit en boucle sur téléphone (Jules) — branche `jules/fix-mine-mobile`, ✅ en ligne le 22/10
+- **Cause** : `fitMine` (`src/ui/fit.js`) prend la hauteur de `#cvWrap` pour choisir le nombre de lignes. Sur
+  téléphone (≤ 700 px), `#cv` est `position:static` : la boîte prend la hauteur du canvas affiché, donc la mine se
+  calait sur sa propre taille. `H = floor(rows × 16 × s)` tombe sous `rows × 16 × s` → `floor(h / (16 s))` = une
+  ligne de moins à chaque appel (toutes les 120 ms), jusqu'à minRows (20) ; et au 1er appel la boîte vaut la taille
+  du dessin non calé (544 px) → 48 lignes. Le test `> 60` censé détecter « sans hauteur imposée » ne marchait donc
+  jamais. Reproduit dans le navigateur (playwright, 393×852 dpr 2,625 : 37 → 20 lignes en 2 s, regrandit au
+  rechargement) ; en simulant fit.js : la taille dérive dans 87 % des cas (largeurs 300–440, dpr 1,5–4).
+- **Correction** : hauteur imposée seulement si `getComputedStyle(cv).position === 'absolute'` (ordinateur et
+  écrans moyens) ; sinon le nombre de lignes ne bouge plus (34 = `VIEW_ROWS`), la mine se cale sur la largeur.
+- **Tests** : `tests/fit.test.js` (nouveau, 3 : téléphone stable pour largeurs 300–440 × dpr 2 / 2,625 / 3, échouait
+  avant ; largeur remplie ; écran large inchangé) ✅. Navigateur : 360 / 390 / 393 / 412 / 430 px stables à 34
+  lignes ; 1280–1920 px inchangés (36–40 lignes selon la hauteur) ; écrans moyens (800–1024, et paysage 852×393) :
+  la hauteur vient des panneaux, la barre d'adresse (±56 px) ne change rien ✅.
+- **Non vérifié** : `fitInstant` (mine instantanée) et `fitCanvas` (tour) gardent le test `> 60` ; sur téléphone
+  `#miRun` / `#twRun` restent `position:fixed`, leur boîte peut suivre le canvas quand il est plus petit que la place
+  → même dérive possible. Pas reproduit (pas de signalement).
+
+### Recherche de groupe (LFG) (Geoffrey) — branche `geoffrey/lfg`, ✅ en ligne le 22/10
+- **Quoi** : file d'attente pour former un lobby de 3 (mine classique). Règle pure `matchLfg(queue, max)` dans
+  `src/shared/lfg.js` (groupe le plus ancien + solos les plus anciens, sinon `max` solos, l'hôte = le premier) ;
+  `queueTime(ms)` pour le timer.
+- **Serveur** (`server/party/service.js`) : `queue` (en mémoire, clé = solo ou chef d'un groupe de 2 ; on garde la
+  liste des membres à l'entrée), `found` (« groupe trouvé », `PARTY_SERVER.lfgNotice` = 1 min), `boot` (uuid du
+  démarrage). `lfgValid` : l'équipe (membres) doit être identique à l'entrée, pas en lancement, et c'est le chef.
+  `pruneLfg` : `lfgTimeout` 30 s sans `state()` du joueur, équipe changée, un membre en session. `runLfg` (verrou
+  `matching`) est appelé dans `state()` et `lfg()` : forme les lobbys (`formLobby` : invités retirés de leur groupe
+  d'un joueur, poussés dans celui de l'hôte, créé si besoin), puis `autoLaunch` si l'hôte a `auto` (même chemin que
+  `launch` : `p.launching`, `grace`, erreur gardée dans `found.error`). Actions `lfg(me, { auto })` (refus :
+  en session, groupe complet, pas chef ; re-cliquer garde `at`) et `lfgCancel`. `state()` renvoie `lfg: { boot, search,
+  found }`. Routes `POST /api/party/lfg`, `POST /api/party/lfg/cancel`.
+- **Navigateur** : `partyApi.lfg/lfgCancel` ; `lfgState()` exportée par `src/ui/lobby.js` (bouton, timer, annuler) ;
+  `#lfgBtn`, `#lfgAutoRow`, `#lfgStatus` dans `index.html` ; `lfgWant` : si `boot` change pendant sa recherche
+  (serveur redémarré), le lobby la relance. `src/main.js` : pop-up « Groupe trouvé » (`setLfgFound` / `syncNotifs`,
+  fusionnée avec les notifications Social).
+- **Tests** : `tests/lfg.test.js` (17 : règle, 3 solos, groupe de 2 prioritaire, solo avec code, membre, complet / en
+  session, annuler / pas de double entrée, équipe changée, onglet fermé, auto du chef seulement, auto qui échoue,
+  routes, boot) ; `tests/lobby.test.js` +2. lfg, lobby, party, server : 52/52 ✅. Essai HTTP sur un vrai serveur
+  (`DIM_DATA_DIR` temporaire, 3 invités) : lobby formé chez le premier, session lancée pour les 3 ✅.
+- **Pas vérifié** : ⚠️ rendu du panneau dans le navigateur (pas ouvert à l'œil).
+- **Points fragiles** : la file est perdue au redémarrage (voulu, `boot`) ; le signe de vie est le `GET /api/party`
+  du lobby (toutes les 2,5 s, ×2 en session) : un onglet en arrière-plan très ralenti par le navigateur peut sortir
+  de la file après 30 s. Le groupe d'un membre peut changer pendant l'`await` de `pruneLfg` : `lfgValid` est relu
+  juste avant de former le lobby.
+
+### Trésors des tours au lieu des coffres (Geoffrey) — branche `geoffrey/tresor-tour`, ✅ en ligne le 22/10
+- **Quoi** : le boss d'une tour donne `treasureItem(side, q)` (« Trésor démoniaque R5 ») au lieu de `chestItem`.
+  `src/config.js` : `RUNE.treasures`, `RUNE.treasureRarity = 'unique'`, `TREASURE_ITEMS` (`stack:false`,
+  `chest:{side,q}`, `treasure:true`) ; 6e rareté `unique` (`#c0480f`) dans `RARITY.tiers` (+ `style.css`, `wiki.css`).
+  Anciens `CHEST_ITEMS` gardés (empilables, ouvrables, plus donnés, cachés du wiki).
+- **Affichage** : `src/meta/piece.js` `treasureOf`, `itemName` (« Antique Trésor démoniaque »), `itemColor` (couleur
+  de la qualité) ; `pieceName` / `pieceColor` s'en servent ; `src/ui/rarity.js` `rname` : texte par défaut =
+  `itemName`, couleur de la qualité en style. Inventaire (bulle native), wiki (`item()`). Textes « coffre » des tours →
+  « trésor » (wiki, lobby, Jugement, Amélioration, fin de tour, Quitter). `scripts/give-admin.js --chests` donne des
+  trésors.
+- **Anti-duplication** : un trésor est une case avec `uid` ; `sanitizePiece` le garde (`{ item, uid }`, sans
+  qualité : elle est dans le nom). Sans ça, il disparaissait au rechargement de l'inventaire. uid en double refusé,
+  quantité > 1 ramenée à 1 (comme le stuff). Ouverture inchangée (`openTreasure` par nom, idempotente par opId).
+- **Tests** : `tests/rune.test.js` +2 (noms, couleurs, rareté, non empilable, relecture, ouverture, ancien coffre),
+  `rarity`, `wiki`, `game-service` (tour → trésor) adaptés. rune, rarity, wiki, inventory, game-service, lobby,
+  judgment : 99/99 ✅ ; `npm run test:anticheat` 72/72 ✅.
+- **Pas vérifié** : ⚠️ rendu dans le navigateur (couleur du nom, contour Unique) pas regardé à l'œil.
+- **Points fragiles** : le nom interne (« … R5 ») reste celui qui circule (sacs, historique, routes) ; tout nouvel
+  affichage d'un nom d'objet doit passer par `rname` / `itemName` pour montrer « Antique Trésor démoniaque ».
+
 ### Piège (Geoffrey) — branche `geoffrey/piege`, ✅ en ligne le 22/10
 - **Quoi** : `src/sim/trap.js` (nouveau) : `planTraps(seed, k, dungeon)` (rng `hash(seed,k+1) ^ TRAP.salt`, 2 tirages,
   30 essais de placement : marges, colonne du treuil ± 2, ni contre le donjon ni contre l'autre piège à 1 case près),

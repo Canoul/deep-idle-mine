@@ -33,6 +33,35 @@ Modèle d'entrée :
   pièges coûtent ~0,5 area par session (sans skills 3,0 au lieu de 3,6 ; skills mélangés 3,6 au lieu de 4,0),
   aucun blocage. À juger en jeu : trop dur ? trop long ?
 
+## 22/10/2026 — Geoffrey — Trésors des tours (au lieu des coffres)
+- **Pour le joueur** : battre le boss d'une tour donne maintenant un **Trésor** angélique ou démoniaque. Son nom dit
+  sa qualité, écrit dans la couleur de la qualité : « **Antique** Trésor démoniaque » (R5), « **Mystérieux** Trésor
+  démoniaque » (R6)… Chaque trésor prend sa case (ne s'empile pas), avec un contour **Unique** orange foncé, une
+  nouvelle rareté. Ouvert, il donne toujours une rune de sa qualité.
+- **Pourquoi** : un joueur a cru recevoir une rune « Légendaire » parce que son coffre R6 avait le contour
+  Légendaire, et il a eu une rune Mystérieux. Avec les Trésors, ce qu'on lit est ce qu'on obtient.
+- **Décisions** : les noms de qualité restent ceux d'aujourd'hui (R5 = Antique) ; même règle pour l'Ange et le
+  Démon ; les anciens coffres déjà gagnés **restent tels quels** et s'ouvrent comme avant (Geoffrey).
+- **À suivre** : regarder l'inventaire dans le navigateur (couleurs, contour).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Chercher un groupe (LFG)
+- **Pour le joueur** : dans le Lobby (mine classique), un bouton **« Chercher un groupe »**. On est mis en file avec
+  un timer, on peut annuler. Dès qu'il y a de quoi faire un lobby de 3, il se forme **d'un coup** : 3 solos → chez le
+  premier entré ; un groupe de 2 → le solo le plus ancien les rejoint. Pop-up « Groupe trouvé ». Case **« Lancer dès
+  que plein »** : si le chef du lobby formé l'a cochée, la session démarre toute seule.
+- **Décisions** : seul le chef d'un groupe de 2 lance ou annule la recherche ; le lancement automatique suit le choix
+  du chef seulement (Geoffrey).
+- **À suivre** : regarder le panneau dans le navigateur avec 3 vrais joueurs (testé côté serveur, pas encore à l'œil).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Téléphone : la mine ne rétrécit plus en boucle
+- **Pour le joueur** : sur téléphone, la mine de la session rapetissait d'une ligne à chaque instant puis se
+  remettait à grandir (au rechargement, en tournant le téléphone, en changeant d'onglet) : un effet « respiration »
+  qui donnait mal au cœur. Elle a maintenant une taille fixe : toute la largeur, 34 lignes de haut.
+- **À suivre** : la mine instantanée et la tour, sur téléphone, n'ont pas été vérifiées en vrai (pas de signalement).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture d'une area à 60 %
 - **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
   suivante (40 % avant). (Le seau du treuil est revenu à 0,85 × en même temps, mis en ligne par Jules : entrée suivante.)

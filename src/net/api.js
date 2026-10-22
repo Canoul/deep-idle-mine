@@ -96,4 +96,6 @@ export const partyApi = {
   decline: code => request('POST', '/api/party/decline', { code }),
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
+  lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)
+  lfgCancel: () => request('POST', '/api/party/lfg/cancel', {}),
 };

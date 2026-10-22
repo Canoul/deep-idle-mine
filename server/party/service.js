@@ -12,11 +12,16 @@
    Les groupes vivent en mémoire et sont recopiés dans le stockage (store, s'il est donné) à chaque vrai changement :
    un redémarrage du serveur (mise à jour automatique toutes les 2 min) les retrouve (load). Les signes de vie ne sont
    pas enregistrés (ils changent sans arrêt) : au redémarrage, tout le monde repart avec un délai neuf.
+   Recherche de groupe (LFG, mine classique, 22/10/2026) : un solo ou le chef d'un groupe de 2 entre dans une file ; dès
+   qu'elle permet un lobby complet, il se forme d'un coup (règle : src/shared/lfg.js). Le chef de ce lobby peut avoir
+   demandé « lancer dès que plein » : la session Mine démarre alors aussitôt. La file vit en mémoire seulement (perdue
+   au redémarrage : le navigateur s'en aperçoit grâce à `boot` et relance sa recherche).
    Testable seul : on lui passe le service de jeu, la recherche de compte et une horloge. */
 import crypto from 'node:crypto';
-import { GAME, PARTY } from '../../src/config.js';
+import { GAME, PARTY, MINE_MODES } from '../../src/config.js';
 import { CODE_ALPHABET, displayName, parseAccountId, formatAccountId } from '../../src/shared/account.js';
 import { parsePartyCode } from '../../src/shared/party.js';
+import { matchLfg } from '../../src/shared/lfg.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { PARTY_SERVER } from '../config.js';
 
@@ -99,6 +104,77 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   }
   const noChange = p => { if(p.launching) fail('launching', 409, 'La session est en train d\'être lancée.'); };
 
+  /* ---------- recherche de groupe (LFG) ---------- */
+
+  const queue = new Map();      // compte qui cherche (solo ou chef d'un groupe de 2) → { account, me, name, members, size, at, seenAt, auto }
+  const found = new Map();      // compte → { at, names, error } : « groupe trouvé », montré config.lfgNotice ms
+  const boot = crypto.randomUUID();   // change à chaque démarrage du serveur : la file a été perdue
+
+  const teamOf = id => { const p = partyOf(id); return p ? p.members.map(m => m.account) : [id]; };
+  /* une entrée vaut tant que l'équipe n'a pas bougé depuis son entrée dans la file (quelqu'un entre ou part : annulée) */
+  function lfgValid(e){
+    const p = partyOf(e.account);
+    if(p && (p.launching || (p.members.length > 1 && p.leader !== e.account))) return false;
+    return teamOf(e.account).join() === e.members.join();
+  }
+  /* sortent de la file : sans nouvelles depuis lfgTimeout (onglet fermé), équipe changée, quelqu'un en session */
+  async function pruneLfg(){
+    const now = clock();
+    for(const e of [...queue.values()]){
+      let out = now - e.seenAt > config.lfgTimeout || !lfgValid(e);
+      for(const id of e.members) out ||= !!await game.activeSessionId(id);
+      if(out) queue.delete(e.account);
+    }
+    for(const [id, f] of found) if(now - f.at > config.lfgNotice) found.delete(id);
+  }
+  /* forme un lobby d'un coup : les invités quittent leur groupe d'un joueur et entrent dans celui de l'hôte (créé s'il
+     n'en a pas) */
+  function formLobby({ host, guests }){
+    const p = partyOf(host.account) ?? create(host.me);
+    for(const g of guests){
+      const old = partyOf(g.account);
+      if(old) removeMember(old, g.account);
+      p.members.push({ account: g.account, name: g.name, seenAt: clock() });
+      p.invites.delete(g.account);
+    }
+    for(const e of [host, ...guests]) queue.delete(e.account);
+    const names = p.members.map(m => m.name);
+    for(const m of p.members) found.set(m.account, { at: clock(), names, error: null });
+    return p;
+  }
+  /* « lancer dès que plein » (choix du chef seulement) : un échec laisse le lobby formé, le chef lancera à la main */
+  async function autoLaunch(host, p){
+    p.launching = true;
+    try {
+      const members = [memberOf(p, host.account), ...p.members.filter(m => m.account !== host.account)];
+      grace(p, await game.start(host.me, { mode: MINE_MODES[0].id }, members.map(m => ({ account: m.account, name: m.name }))));
+    } catch(e){
+      for(const m of p.members) if(found.has(m.account)) found.get(m.account).error = e.message;
+    } finally { p.launching = false; }
+  }
+  let matching = false;
+  async function runLfg(){
+    if(matching) return;                     // un seul appariement à la fois (on attend le service de jeu au milieu)
+    matching = true;
+    try {
+      await pruneLfg();
+      let m;
+      while((m = matchLfg([...queue.values()].filter(lfgValid), GAME.maxPlayers))){
+        const p = formLobby(m);
+        if(m.host.auto) await autoLaunch(m.host, p);
+      }
+    } finally { matching = false; }
+  }
+  /* ce que voit le joueur : la recherche de son équipe (la sienne, ou celle de son chef), et « groupe trouvé » */
+  function lfgView(me){
+    const p = partyOf(me.id);
+    const e = queue.get(p && p.members.length > 1 ? p.leader : me.id);
+    const f = found.get(me.id);
+    return { boot,
+             search: e && lfgValid(e) ? { mine: e.account === me.id, waited: clock() - e.at, auto: e.auto } : null,
+             found: f ? { at: f.at, names: f.names, error: f.error } : null };
+  }
+
   /* ---------- stockage ---------- */
 
   /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
@@ -137,6 +213,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     async state(me){
       touch(me);
       await sweep();
+      if(queue.has(me.id)) queue.get(me.id).seenAt = clock();
+      await runLfg();
       const p = partyOf(me.id);
       /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session » */
       const playing = new Set();
@@ -150,7 +228,35 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
         session: await game.activeSessionId(me.id),       // le chef a lancé : le navigateur passe à la session
+        lfg: lfgView(me),
       };
+    },
+
+    /* entrer dans la recherche de groupe (seul, ou chef d'un groupe de 2) ; déjà dedans : on garde sa place et on met à
+       jour « lancer dès que plein » (auto) */
+    async lfg(me, body = {}){
+      touch(me); await sweep();
+      await notInSession(me);
+      const p = partyOf(me.id);
+      if(p){
+        noChange(p);
+        if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
+        if(p.members.length > 1 && p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la recherche.');
+      }
+      const members = teamOf(me.id), old = queue.get(me.id), now = clock();
+      queue.set(me.id, { account: me.id, me: { id: me.id, name: me.name ?? null, guest: !!me.guest }, name: displayName(me),
+                         members, size: members.length, auto: body.auto === true, seenAt: now,
+                         at: old && old.members.join() === members.join() ? old.at : now });
+      found.delete(me.id);
+      await runLfg();
+      const q = partyOf(me.id);
+      return { party: q ? publicParty(q, me.id) : null, lfg: lfgView(me), session: await game.activeSessionId(me.id) };
+    },
+
+    /* quitter la recherche */
+    async lfgCancel(me){
+      queue.delete(me.id);
+      return { lfg: lfgView(me) };
     },
 
     /* créer son groupe (pour avoir un code à partager). Déjà dans un groupe : on le garde. */
@@ -281,6 +387,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* pour les tests et le journal */
     count: () => parties.size,
+    lfgCount: () => queue.size,
     _sweep: saving(sweep),
   };
 }

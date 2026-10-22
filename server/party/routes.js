@@ -15,6 +15,8 @@ export function partyRoutes(party){
     'POST /api/party/invite':  async ctx => { needMe(ctx); return party.invite(ctx.me, str(ctx.body.id)); },
     'POST /api/party/decline': async ctx => { needMe(ctx); return party.decline(ctx.me, str(ctx.body.code)); },
     'POST /api/party/leave':   async ctx => { needMe(ctx); return party.leave(ctx.me); },
+    'POST /api/party/lfg':        async ctx => { needMe(ctx); return party.lfg(ctx.me, obj(ctx.body)); },
+    'POST /api/party/lfg/cancel': async ctx => { needMe(ctx); return party.lfgCancel(ctx.me); },
     'POST /api/party/kick':    async ctx => { needMe(ctx); return party.kick(ctx.me, str(ctx.body.id)); },
     'POST /api/game/start':    async ctx => { needMe(ctx); return [201, await party.launch(ctx.me, obj(ctx.body))]; },
   };

@@ -84,13 +84,13 @@ select option{background:var(--panel)}
 #tip div{color:var(--o2)}
 
 /* raretés (RARITY en config, src/ui/rarity.js) : contour plein dans la case, nom en couleur */
-:root{--r-commun:#b4b0a8;--r-inhabituel:#58d26a;--r-rare:#5a9cff;--r-epique:#c37dff;--r-legendaire:#ffa23a}
+:root{--r-commun:#b4b0a8;--r-inhabituel:#58d26a;--r-rare:#5a9cff;--r-epique:#c37dff;--r-legendaire:#ffa23a;--r-unique:#c0480f}
 .slot.r-commun{--rc:var(--r-commun)} .slot.r-inhabituel{--rc:var(--r-inhabituel)} .slot.r-rare{--rc:var(--r-rare)}
-.slot.r-epique{--rc:var(--r-epique)} .slot.r-legendaire{--rc:var(--r-legendaire)}
+.slot.r-epique{--rc:var(--r-epique)} .slot.r-legendaire{--rc:var(--r-legendaire)} .slot.r-unique{--rc:var(--r-unique)}
 .slot[class*=" r-"]{outline:var(--u) solid var(--rc);outline-offset:calc(-4*var(--u))}
 .slot[class*=" r-"]:hover{outline-color:var(--acc-lt)}
 .rn.r-commun{color:var(--r-commun)} .rn.r-inhabituel{color:var(--r-inhabituel)} .rn.r-rare{color:var(--r-rare)}
-.rn.r-epique{color:var(--r-epique)} .rn.r-legendaire{color:var(--r-legendaire)}
+.rn.r-epique{color:var(--r-epique)} .rn.r-legendaire{color:var(--r-legendaire)} .rn.r-unique{color:var(--r-unique)}
 .rq{text-shadow:var(--u) var(--u) 0 #000}
 
 /* shiny : lingot déjà cuit tombé à la mine (1 %) ; il scintille partout où son icône apparaît (par paliers) */
@@ -186,6 +186,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .pslot.away{opacity:.6}
 .pslot.invited{color:var(--txt)}
 .lobbyActions{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));align-items:center}
+.lfgStatus{margin:calc(2*var(--u)) 0 0;color:var(--mut)}
+.lfgStatus b{color:var(--acc-lt)}
 .invite{margin-top:calc(6*var(--u));padding:calc(3*var(--u)) calc(4*var(--u));box-shadow:inset 0 0 0 var(--u) var(--line);font-size:var(--fs-s)}
 .invite .code{color:var(--acc-lt);margin-left:calc(2*var(--u));letter-spacing:.08em}
 .invite .code[data-copy]{cursor:copy;padding:0 calc(2*var(--u))}
