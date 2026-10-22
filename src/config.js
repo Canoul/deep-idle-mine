@@ -634,7 +634,17 @@ export const INSTANT_MINE = {
   maxPerMine: 20,
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
-  featherReach: 3,
+  /* tas de plumes (22/10, Geoffrey) : un tas DÉCOUVERT passe avant tout, même enfermé dans la roche : le mineur creuse
+     droit vers lui. Il le chasse s'il est à au plus featherReach cases (à vol d'oiseau, en Manhattan) et qu'aucun autre
+     mineur n'en est plus proche (le plus proche y va, égalité : le plus petit numéro). Avant : seulement les tas
+     accessibles à 3 pas par les galeries déjà creusées. */
+  featherReach: 8,
+  /* cap (22/10, Geoffrey) : avant, tous les mineurs creusaient droit vers le bas jusqu'au fond. Chacun a un cap (une des
+     headings : [dx, dy, poids]) qu'il garde turnBlocks[0] à turnBlocks[1] blocs minés, puis il en tire un autre. Un bloc
+     miné dans le sens du cap ne coûte rien de plus ; dans le sens opposé, headingWeight s de pénalité (au travers :
+     la moitié). Plus headingWeight est grand, plus les galeries sont droites. */
+  headings: [[-1,0,2], [1,0,2], [0,1,1.5], [0,-1,0.6], [-1,1,1.5], [1,1,1.5], [-1,-1,0.5], [1,-1,0.5]],
+  headingWeight: 1.5, turnBlocks: [6, 14],
   /* inscriptions (22/10, Geoffrey) : ouvertes seulement signupBefore s avant l'ouverture (11 h 30 pour 12 h), même en
      session ; encore en session à l'heure = mine ratée, la session continue */
   signupBefore: 30*60,
