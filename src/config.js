@@ -438,7 +438,7 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
-    'Résidu angélique':'rare', 'Résidu démoniaque':'rare', [RUNE.item]:'epique',
+    [RUNE.item]:'epique',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
