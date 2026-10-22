@@ -49,7 +49,8 @@ test('qualité : les chances de la config (somme 100 %), sur 20 000 tirages', ()
 test('identification : le bon nombre de lignes, valeurs dans la fourchette, Découverte seulement en R6/R7 et une au plus', () => {
   const r = mulberry32(11);
   for(let i = 0; i < 3000; i++){
-    const { q, lines } = rollIdentity(PICK, r), d = UPGRADE.qualities.find(x => x.q === q);
+    const { q, lines, s: scale } = rollIdentity(PICK, r), d = UPGRADE.qualities.find(x => x.q === q);
+    assert.equal(scale, UPGRADE.scale, 'une pièce tirée porte le barème actuel');
     assert.equal(lines.length, d.lines);
     const disc = lines.filter(l => l.stat === 'discoverMax');
     assert.ok(disc.length <= 1 && (disc.length === 0 || q >= 6));
@@ -58,7 +59,7 @@ test('identification : le bon nombre de lignes, valeurs dans la fourchette, Déc
       assert.ok(l.pct >= d.min && l.pct <= d.max, `${l.stat} ${l.pct} R${q}`);
       assert.ok(lineValue(PICK, l) >= linePoints(PICK, l.stat, d.min) - 1e-9 && lineValue(PICK, l) <= linePoints(PICK, l.stat, d.max) + 1e-9);
     }
-    assert.ok(sanitizePiece({ item:PICK, uid:1, q, lines }).q === q, 'un tirage réel passe toujours la vérification');
+    assert.ok(sanitizePiece({ item:PICK, uid:1, q, lines, s: scale }).q === q, 'un tirage réel passe toujours la vérification');
   }
 });
 
@@ -181,12 +182,12 @@ test('sauvegarde : qualité, lignes et niveau gardés ; équiper puis retirer le
 });
 
 test('session : les caractéristiques viennent des pièces portées (lignes et niveau), pas seulement de leur nom', () => {
-  const piece = { item:PICK, uid:5, q:5, lines:[{ stat:'mineSpeedPct', pct:40 }, { stat:'crit', pct:45 }], plus:1 }   // 4 % et 4,5 %;
+  const piece = { item:PICK, uid:5, q:5, s:UPGRADE.scale, lines:[{ stat:'mineSpeedPct', pct:20 }, { stat:'crit', pct:25 }], plus:1 }   // 2 % et 2,5 %
   const rec = { players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } }, gear:{ A:{ pioche:piece } } };
   const [spec] = minerSpecs(rec);
   assert.equal(spec.carac.mineSpeed, 1.1);                                // 1 + 0,1 × 1,03, arrondi à 2 décimales
-  assert.equal(spec.carac.mineSpeedPct, 4.1);                             // 4 × 1,03 = 4,12
-  assert.equal(spec.carac.crit, 4.6);                                     // 4,5 × 1,03 = 4,64 → 4,6
+  assert.equal(spec.carac.mineSpeedPct, 2.1);                             // 2 × 1,03 = 2,06
+  assert.equal(spec.carac.crit, 2.6);                                     // 2,5 × 1,03 = 2,575 → 2,6
   const old = minerSpecs({ players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } } })[0];
   assert.equal(old.carac.mineSpeed, 1.1, 'une session sans gear : les noms suffisent, comme avant');
   assert.equal(old.carac.crit, 0);
@@ -290,4 +291,23 @@ test('identifier + améliorer + équiper : 300 suites au hasard, matière conser
     const uids = [...inv.slots.filter(s => s?.uid != null).map(s => s.uid), ...worn.map(p => p.uid)];
     assert.equal(new Set(uids).size, uids.length);
   }
+});
+
+test('barème : une pièce identifiée avant le 22/10/2026 est ramenée à la même place dans les nouvelles fourchettes', () => {
+  const [lo4, hi4] = UPGRADE.oldScales[1][4], d4 = UPGRADE.qualities.find(x => x.q === 4);
+  const old = { item:PICK, uid:1, q:4, lines:[{ stat:'crit', pct:hi4 }, { stat:'looting', pct:lo4 }], plus:2 };
+  const p = sanitizePiece(old);
+  assert.equal(p.q, 4, 'toujours identifiée');
+  assert.equal(p.s, UPGRADE.scale);
+  assert.deepEqual(p.lines, [{ stat:'crit', pct:d4.max }, { stat:'looting', pct:d4.min }]);
+  assert.equal(p.plus, 2, 'le niveau est gardé');
+  const mid = sanitizePiece({ item:PICK, uid:1, q:3, lines:[{ stat:'pods', pct:45 }] });   // milieu de 30-60
+  const d3 = UPGRADE.qualities.find(x => x.q === 3);
+  assert.equal(mid.lines[0].pct, Math.round((d3.min + d3.max) / 2 * 10) / 10);
+  const r7 = sanitizePiece({ item:PICK, uid:1, q:7, lines:[{ stat:'discoverMax' }, { stat:'crit', pct:55 }, { stat:'pods', pct:35 }, { stat:'fortune', pct:45 }] });
+  assert.equal(r7.lines.length, 4); assert.deepEqual(r7.lines[0], { stat:'discoverMax' }, 'la Découverte reste');
+  assert.deepEqual(sanitizePiece(p), p, 'relue une deuxième fois : plus rien ne bouge');
+  assert.equal(sanitizePiece({ ...old, lines:[{ stat:'crit', pct:99 }, { stat:'crit', pct:30 }] }).q, undefined, 'une ancienne ligne trafiquée reste refusée');
+  assert.equal(sanitizePiece({ ...old, s:2, lines:[{ stat:'crit', pct:hi4 }, { stat:'crit', pct:hi4 }] }).q, undefined, 'au barème actuel, l\'ancien maximum est hors fourchette');
+  for(const d of UPGRADE.qualities) assert.ok(Math.abs(d.lines * d.max - [25, 30, 35, 40, 50, 75, 100][d.q - 1]) < 1e-9, `total max R${d.q}`);
 });

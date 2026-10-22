@@ -249,7 +249,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Critique | 13 x par % | décision du créateur : 130 x (une pioche en pierre) = 10 % |
 | Coup unique | 13 x par % | mesuré (24 sessions solo) : ≈ 17 x par % à +50 %, autant que la vitesse de minage % à petite dose |
 | Perçage | 7 x par % | mesuré : ≈ 6,8 x par % à +50 % (les blocs percés sont surtout de la pierre, qui remplit le sac) |
-| Butin des mobs | 2 x par % *(provisoire)* | mesuré : +50 % donne +61 % de butin de mobs, mais rien sur les minerais ; le butin des mobs n'a pas encore de valeur en x |
+| Butin des mobs | 10 x par % *(22/10, décision du créateur : 100 x = +10 %)* | mesuré : +50 % donne +61 % de butin de mobs, mais rien sur les minerais |
 
 *Mesures bruitées : d'une seed à l'autre, la même partie diverge de ± 25 % ; d'où un gros bonus (+50 %) et 24 sessions.*
 
@@ -487,22 +487,24 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus 
 - *(22/10/2026)* **On choisit soi-même quelle pièce va dans quelle case** : un clic sur une case la sélectionne (cadre doré), puis un clic sur une pièce de la liste (toutes les pièces de l'inventaire) la pose dedans ; re-cliquer sur la case sélectionnée la vide. Si les deux pièces **ne sont pas le même objet** (ou si la pièce de gauche est déjà identifiée), on ne peut **juste pas identifier** : le bouton reste grisé et la raison est affichée.
 - *(22/10/2026)* **Affichage des lignes** : partout (liste, bulles, résultat), les stats de base de l'objet d'abord, puis **chaque ligne tirée à part**, même quand deux lignes portent la même stat (ex. « Fortune +1,2 % · Fortune +0,9 % »). En session, le mineur a bien la somme.
 
-| Qualité | Titre | Couleur du nom | Chance | Chaque ligne vaut | Lignes |
-|---|---|---|---|---|---|
-| R1 | Utile | #FFFFFF | 30 % | 10 à 30 % de la valeur de l'objet | 1 |
-| R2 | Bon | #00FF00 | 24 % | 20 à 40 % | 1 |
-| R3 | Haute qualité | #0080FF | 24 % | 30 à 60 % | 1 |
-| R4 | Excellent | #FF00FF | 14 % | 25 à 40 % | 2 |
-| R5 | Antique | #FFA500 | 4 % | 35 à 50 % | 2 |
-| R6 | Mystérieux | #FF0000 | 3 % | 30 à 50 % | 3 |
-| R7 | Légendaire | #FFFF00 | 1 % | 35 à 55 % | 4 |
+| Qualité | Titre | Couleur du nom | Chance | Chaque ligne vaut | Lignes | Total max |
+|---|---|---|---|---|---|---|
+| R1 | Utile | #FFFFFF | 30 % | 8 à 25 % de la valeur de l'objet | 1 | 25 % |
+| R2 | Bon | #00FF00 | 24 % | 15 à 30 % | 1 | 30 % |
+| R3 | Haute qualité | #0080FF | 24 % | 17,5 à 35 % | 1 | 35 % |
+| R4 | Excellent | #FF00FF | 14 % | 12,5 à 20 % | 2 | 40 % |
+| R5 | Antique | #FFA500 | 4 % | 17,5 à 25 % | 2 | 50 % |
+| R6 | Mystérieux | #FF0000 | 3 % | 15 à 25 % | 3 | 75 % |
+| R7 | Légendaire | #FFFF00 | 1 % | 16 à 25 % | 4 | 100 % |
 
+- **Nerf du 22/10/2026** *(décision du créateur)* : total max ramené à 25 / 30 / 35 / 40 / 50 / 75 / 100 % (avant 30 / 40 / 60 / 80 / 100 / 150 / 220 %) ; le minimum d'une ligne garde le même rapport au maximum qu'avant. **Les pièces déjà identifiées suivent** : chaque ligne est ramenée à la même place dans sa nouvelle fourchette (le haut de l'ancienne donne le haut de la nouvelle), à la relecture de l'inventaire et du stuff (`UPGRADE.scale` / `oldScales`, champ `s` de la pièce).
+- Tirage de la qualité vérifié le 22/10 (hasard `crypto` du serveur, 1 million de tirages conformes aux chances ; identifiant de demande neuf à chaque clic).
 - Une ligne garde **le % tiré**, pas sa valeur : si on rééquilibre un prix ou un objet, les pièces déjà identifiées suivent.
 - **Valeur de l'objet** = ses stats en unité x (catalogue de prix §3) : pioche en pierre 0,1 × 1 300 = **130 x**, pioche en fer 260 x, épée en fer (11 − 5) × 40 = 240 x.
-- **Une ligne** : une stat tirée au hasard (deux lignes peuvent tomber sur la même) parmi celles qui ont une valeur en x : vitesse de minage (fixe et %), dégâts (fixes et %), vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène. Valeur = valeur de l'objet × % tiré ÷ prix de la stat, arrondie (au moins un pas). Ex. R4 sur pioche en pierre, ligne à 32 % : 41,6 x = +0,032 de vitesse de minage, **ou** +1,2 % de fortune, **ou** +7 pods.
+- **Une ligne** : une stat tirée au hasard (deux lignes peuvent tomber sur la même) parmi celles qui ont une valeur en x : vitesse de minage (fixe et %), dégâts (fixes et %), vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène. Valeur = valeur de l'objet × % tiré ÷ prix de la stat, arrondie (au moins un pas). Ex. pioche en pierre, ligne à 20 % : 26 x = +0,02 de vitesse de minage, **ou** +0,7 % de fortune, **ou** +4 pods, **ou** +2,6 % de butin des mobs.
 - **Jamais de Découverte**, sauf en **R6 et R7** : chaque ligne a 25 % de chance *(provisoire)* d'être « +1 Découverte », une au plus par objet.
 - **Nom** : « Excellent : Pioche en pierre » dans la couleur de la qualité, qui passe avant la couleur de rareté du type. **Le contour de la case garde la rareté du type** (commun, inhabituel…).
-- Une R7 (4 lignes de 35 à 55 %) ajoute jusqu'à **+220 % de la valeur de l'objet** : une pioche en pierre R7 peut valoir plus qu'une pioche en fer brute. Assumé (1 % de chance), à surveiller.
+- Une R7 ajoute au plus **+100 % de la valeur de l'objet** (22/10 ; avant +220 %) : une pioche en pierre R7 vaut au plus une pioche en fer brute.
 
 **Amélioration** : +1 à **+3** pour l'instant (la suite viendra). Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
 

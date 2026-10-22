@@ -33,7 +33,7 @@ Modèle d'entrée :
 - **À suivre** : avec 1-2 plumes par tas et 100 plumes pour une pièce à +3, il faut beaucoup de mines instantanées
   (mesuré : ≈ 2 à 5 plumes par joueur et par mine, voir debug.md). La vitesse de minage en % des pièces améliorées compte
   maintenant aussi en mine instantanée.
-- **État** : 🧪 sur la branche `geoffrey/retours-22-10` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Session : colonnes jusqu'en bas, surface de nouveau visible
 - **Pour le joueur** : pendant une session, les panneaux de gauche et de droite descendent jusqu'en bas de l'écran

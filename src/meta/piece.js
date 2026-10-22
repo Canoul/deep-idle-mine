@@ -1,7 +1,7 @@
 /* Une pièce de stuff et ce qu'elle porte (onglet Amélioration) : qualité R1 à R7, lignes de stats tirées à
    l'identification, niveau d'amélioration (+1 à +3). Logique pure, partagée par le jeu et le serveur (qui fait foi).
 
-   Une pièce : { item, uid, q?, lines?, plus? }
+   Une pièce : { item, uid, q?, lines?, s?, plus? }  (s = barème des fourchettes, UPGRADE.scale ; absent = 1)
    - sans q : pas encore identifiée (c'est le cas de toutes les pièces fabriquées) ;
    - q (1 à 7) et lines [{ stat, pct }] : tirées par le serveur à l'identification, définitives. Une ligne garde son %
      tiré (de la valeur de l'objet), pas sa valeur : la valeur se recalcule depuis la config, donc un rééquilibrage
@@ -56,7 +56,29 @@ export function rollIdentity(item, rnd){
     const stat = UPGRADE.pool[Math.floor(rnd() * UPGRADE.pool.length)];
     lines.push({ stat, pct: pct1(d.min + rnd() * (d.max - d.min)) });
   }
-  return { q: d.q, lines };
+  return { q: d.q, lines, s: UPGRADE.scale };
+}
+
+/* ligne d'un ancien barème → même place dans la fourchette actuelle (arrondie au dixième, bornée) ; null si la ligne
+   n'était pas valide dans son propre barème */
+function rescaleLine(q, l, scale){
+  const old = UPGRADE.oldScales?.[scale]?.[q], d = qualityDef(q);
+  if(!old || !d || typeof l.pct !== 'number' || !Number.isFinite(l.pct) || l.pct < old[0] || l.pct > old[1]) return null;
+  const t = old[1] > old[0] ? (l.pct - old[0]) / (old[1] - old[0]) : 1;
+  return { stat: l.stat, pct: Math.min(d.max, Math.max(d.min, pct1(d.min + t * (d.max - d.min)))) };
+}
+/* lignes de la pièce dans le barème actuel (inchangées si elle y est déjà ; null si un ancien barème est inconnu) */
+function currentLines(raw){
+  const scale = raw.s ?? 1;
+  if(scale === UPGRADE.scale || !Array.isArray(raw.lines)) return raw.lines;
+  const out = [];
+  for(const l of raw.lines){
+    if(l && l.stat === 'discoverMax'){ out.push(l); continue; }
+    const r = l && typeof l.stat === 'string' ? rescaleLine(raw.q, l, scale) : null;
+    if(!r) return null;
+    out.push(r);
+  }
+  return out;
 }
 
 /* multiplicateur d'amélioration : +3 → ×1,07 (bonus total du palier) */
@@ -103,7 +125,8 @@ function validLines(q, lines){
 export function sanitizePiece(raw){
   if(!raw || typeof raw.item !== 'string' || !isStuff(raw.item) || !Number.isSafeInteger(raw.uid)) return null;
   const p = { item: raw.item, uid: raw.uid };
-  if(validLines(raw.q, raw.lines)) { p.q = raw.q; p.lines = raw.lines.map(l => l.stat === 'discoverMax' ? { stat: l.stat } : { stat: l.stat, pct: l.pct }); }
+  const lines = currentLines(raw);         // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
+  if(validLines(raw.q, lines)) { p.q = raw.q; p.lines = lines.map(l => l.stat === 'discoverMax' ? { stat: l.stat } : { stat: l.stat, pct: l.pct }); p.s = UPGRADE.scale; }
   if(Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS) p.plus = raw.plus;
   return p;
 }
