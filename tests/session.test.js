@@ -14,11 +14,11 @@ const BUG_SEEDS = [
 ];
 
 for(const seed of BUG_SEEDS){
-  test(`session complète seed ${seed} (1 mineur) : aucun blocage, au moins 2 areas débloquées`, () => {
+  test(`session complète seed ${seed} (1 mineur) : aucun blocage, au moins 1 area débloquée`, () => {
     const det=stuckDetector();
     const G=runSession(seed, { miners:1, onTick:det.onTick });
     assert.deepEqual(det.result(), []);
-    assert.ok(G.unlockedAreas-1 >= 2, `areas débloquées : ${G.unlockedAreas-1}`);
+    assert.ok(G.unlockedAreas-1 >= 1, `areas débloquées : ${G.unlockedAreas-1}`);
     assert.ok(G.stats.trips >= 8, `allers-retours : ${G.stats.trips}`);
   });
 }

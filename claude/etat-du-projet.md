@@ -73,9 +73,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   option « Fuir ».
 - **Focus en session** (panneau de l'onglet Session) : focus minerai (Aucun / Cibler / Uniquement) et focus area.
   « Plus profond » (de base) = travailler dans l'area débloquée la plus profonde et la suivre (22/10 ; ancien :
-  descendre en ramassant tout ce qui est à portée). Coûte ≈ 15 % de valeur, débloque une area de plus à 3.
-- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à **2 ×** la vitesse de montée
-  depuis le 22/10, ancien 0,85 ×), Barbare (provocation) ;
+  descendre en ramassant tout ce qui est à portée). Coûte ≈ 15 % de valeur en solo, ≈ 24 % à 3 (seau 0,85×).
+- **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
+  Repère (5 parties) : solo de base, area 1 ouverte (avant : 2) ; à 3 avec skills, area 4 (avant : la 5 dans
+  4 parties sur 5).
+- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
+  ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (10 cases, raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
