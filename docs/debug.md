@@ -1496,7 +1496,7 @@ Règles (voir CLAUDE.md) :
   (après le détecteur ; seeds 23757 et 31676 rejouées).
 - ⚠️ À voir : attente du barbare devant le donjon jusqu'à 0 d'oxygène (préexistant).
 
-### Résidus visés par l'IA au poids du treasure (Jules) — branche `jules/residus-poids`
+### Résidus visés par l'IA au poids du treasure (Jules) — branche `jules/residus-poids`, ✅ en ligne le 22/10
 - **Demande** : poids des résidus dans le choix des cibles = celui du treasure.
 - **Avant** : résidus = terrain sans `val`, `isTarget` faux → jamais visés, minés seulement sur le chemin.
 - **Changement** : `src/config.js` : `TREASURE_VAL` (12) pour le treasure et `val` des résidus 12 et 13 ;

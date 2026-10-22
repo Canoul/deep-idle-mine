@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Effet mesuré** (5 parties à 3) : **2,6 fois plus de résidus** rapportés (4,2 → 10,8 par session), donc des
   jauges du Jugement qui se remplissent plus vite ; valeur des minerais −3 %.
 - **Décisions** : poids du résidu = poids du treasure (Jules).
-- **État** : 🧪 sur la branche `jules/residus-poids` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Focus area : « Plus profond » vise vraiment l'area la plus profonde
 - **Pour le joueur** : avec « Plus profond » (choisi de base au début de la session), le mineur va travailler dans
