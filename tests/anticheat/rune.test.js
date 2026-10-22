@@ -14,6 +14,7 @@ const PICK = 'Pioche en pierre', CHEST = chestItem('angel', 3);
 async function setup(){
   const store = createMemoryGameStore();
   const inv = createInventory(); addItem(inv, PICK, 2); addItem(inv, CHEST, 2);
+  for(const s of inv.slots) if(s?.item === PICK) s.q = 5;       // identifiées : une rune R3 est acceptée (qualité ≤ celle de la pièce)
   await store.putInventory(ME.id, JSON.parse(serialize(inv)));
   const live = fakeLive(rec => ({ shares: rec.players.map(p => ({ account:p.account, left:false, bag:{} })) }));
   const game = createGameService({ store, liveRunner: live, clock: () => 1e6, dev:false,
@@ -65,6 +66,24 @@ test('enchanter : double clic = une seule rune consommée ; deuxième rune refus
     await assert.rejects(game.upgrade(ME, body));
   inv = (await game.state(ME)).inventory;
   assert.equal(runes(inv).length, 1); assert.equal(inv.slots.find(s => s?.uid === b).rune, undefined);
+});
+
+test('enchanter : la qualité de la rune ne dépasse jamais celle de la pièce, une pièce non identifiée est refusée (serveur)', async () => {
+  const { game, store, uids:[a, b] } = await setup();
+  await game.open(ME, { item:CHEST, opId:'op-chest-0010' });                        // rune R3
+  const raw = await store.getInventory(ME.id);
+  raw.slots.find(s => s?.uid === a).q = 2;                                          // pièce R2 : rune R3 trop rare
+  delete raw.slots.find(s => s?.uid === b).q;                                       // pièce non identifiée
+  await store.putInventory(ME.id, raw);
+  const r = runes((await game.state(ME)).inventory)[0].uid;
+  await assert.rejects(game.upgrade(ME, { action:'enchant', uid:a, rune:r, opId:'op-enchant-10' }), { code:'rune_too_rare' });
+  await assert.rejects(game.upgrade(ME, { action:'enchant', uid:b, rune:r, opId:'op-enchant-11' }), { code:'not_identified' });
+  const inv = (await game.state(ME)).inventory;
+  assert.equal(runes(inv).length, 1, 'la rune n\'est pas consommée');
+  assert.equal(inv.slots.find(s => s?.uid === a).rune, undefined); assert.equal(inv.slots.find(s => s?.uid === b).rune, undefined);
+  raw.slots.find(s => s?.uid === a).q = 3; await store.putInventory(ME.id, raw);     // pièce R3 : rune R3 acceptée
+  await game.upgrade(ME, { action:'enchant', uid:a, rune:r, opId:'op-enchant-12' });
+  assert.equal((await game.state(ME)).inventory.slots.find(s => s?.uid === a).rune.q, 3);
 });
 
 test('une rune ou une pièce enchantée trafiquée dans la base ne passe pas', async () => {
