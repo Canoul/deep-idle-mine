@@ -25,7 +25,7 @@ Modèle d'entrée :
   (effacé à la fin de la session).
 - **À suivre** : pas encore dans la mine instantanée ni dans les tours (le serveur l'accepte déjà, il manque
   l'affichage). Le chat est perdu si le serveur redémarre pendant la session (mise en ligne d'un changement).
-- **État** : 🧪 sur la branche `jules/chat-session` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Les mineurs vont chercher les résidus
 - **Pour le joueur** : un résidu angélique ou démoniaque découvert attire maintenant le mineur autant qu'un

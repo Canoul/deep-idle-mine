@@ -1509,7 +1509,7 @@ Règles (voir CLAUDE.md) :
 - **Simulation** (sonde, 5 seeds à 3, skills mixed) : résidus au coffre 4,2 → 10,8 / session, valeur minerais 1 502 →
   1 457 (−3 %), minerai 1 037 → 1 042, 0 blocage (détecteur de `simulate`, mêmes seeds que `--count 5`) ✅.
 
-### Chat de session (Jules) — branche `jules/chat-session`
+### Chat de session (Jules) — branche `jules/chat-session`, ✅ en ligne le 22/10
 - **Quoi** : chat des joueurs d'une session, en mémoire seulement.
 - **Fichiers** : `CHAT` (`src/config.js` : maxLen 200, keep 50, gapMs 1000, poll 3000, ttlMs 3 h) ;
   `src/shared/chat.js` (`cleanChatText` : chaîne, caractères de contrôle / bidi / zéro largeur → espace, espaces
