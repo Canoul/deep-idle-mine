@@ -6,12 +6,12 @@ import { stuckDetector, STUCK_WINDOW } from '../src/sim/diagnostics.js';
 
 /* fait « vivre » un faux mineur pendant STUCK_WINDOW + 10 s ; yAt(s) donne sa couche au temps s */
 /* mode : le mode du mineur, ou une fonction du temps (bascule en cours de route, ex. descente puis retour) ;
-   actAt(s) : type de son action au temps s (ex. 'attack'), aucune par défaut */
-function scenario(mode, yAt, actAt = () => null){
+   actAt(s) : type de son action au temps s (ex. 'attack'), aucune par défaut ; statusAt(s) : son statut affiché */
+function scenario(mode, yAt, actAt = () => null, statusAt = () => ''){
   const modeAt = typeof mode === 'function' ? mode : () => mode;
   const det=stuckDetector(), m={ name:'Test', x:5, y:yAt(0), mode:modeAt(0), status:'', stats:{mined:0, trips:0} }, G={ t:0, miners:[m] };
   const n=Math.round((STUCK_WINDOW+10)/DT);
-  for(let i=0;i<n;i++){ G.t=i*DT; m.y=yAt(G.t); m.mode=modeAt(G.t); const a=actAt(G.t); m.action=a ? { type:a } : null; det.onTick(G,i); }
+  for(let i=0;i<n;i++){ G.t=i*DT; m.y=yAt(G.t); m.mode=modeAt(G.t); const a=actAt(G.t); m.action=a ? { type:a } : null; m.status=statusAt(G.t); det.onTick(G,i); }
   return det.result();
 }
 
@@ -50,4 +50,16 @@ test('long combat sur place (boss du donjon) : pas un blocage', () => {
 
 test('immobile, à peine quelques coups dans la fenêtre : bloqué', () => {
   assert.equal(scenario('work', () => 40, s => s < 5 ? 'attack' : null).length, 1);
+});
+
+/* seeds 23757 et 31676 (3 mineurs, focus « Plus profond »), 22/10 : il attend le barbare devant le donjon, puis un
+   occultiste l'attaque (combat, étourdi) : occupé toute la fenêtre, pas bloqué */
+test('attente du barbare devant le donjon, puis combat et étourdissement : pas un blocage', () => {
+  const T = STUCK_WINDOW - 15;
+  assert.deepEqual(scenario('work', () => 228, s => s < T ? 'wait' : s < T + 8 ? 'attack' : 'stun',
+    s => s < T ? 'Attend le barbare devant le donjon' : 'Combat (occultiste)'), []);
+});
+
+test('attente ordinaire sur place (pas devant un donjon) : bloqué', () => {
+  assert.equal(scenario('work', () => 40, () => 'wait', () => 'Fin de session proche').length, 1);
 });

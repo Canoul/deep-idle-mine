@@ -5,7 +5,9 @@
    - une area où il reste moins de FOCUS.minLeft du nombre initial d'un minerai est épuisée pour lui : le mineur part
      vers l'area débloquée la plus proche qui en a encore ; s'il n'y en a plus nulle part, ce focus saute.
    Focus d'area : m.prefs.focus.area = numéro d'area (absent = toujours plus profond). Le mineur rejoint cette area et
-   y reste (il n'en vise que les cibles) ; il l'emporte sur le focus minerai, qui ne cherche alors que dans cette area. */
+   y reste (il n'en vise que les cibles) ; il l'emporte sur le focus minerai, qui ne cherche alors que dans cette area.
+   « Plus profond » (pas de focus d'area, pas de focus minerai) : pareil, avec l'area la plus profonde débloquée, qui
+   suit chaque déblocage (deepArea). */
 import { FOCUS, BLOCKS, IDS } from '../config.js';
 import { isOre, oreKey, areaOf } from './world.js';
 import { log } from './log.js';
@@ -32,6 +34,18 @@ export function focusArea(G,m){
   const a = m.prefs.focus?.area;
   return Number.isSafeInteger(a) && a < G.unlockedAreas ? a : null;
 }
+/* « Plus profond » : l'area la plus profonde débloquée, où il travaille comme avec un focus d'area (il ne finit plus
+   les filons des areas du dessus). null quand il ne s'applique pas : focus d'area choisi, focus minerai (l'area la
+   plus proche qui a ses minerais), ou area vidée (comportement d'avant : il descend, prend ce qu'il trouve). En fin
+   de session, l'area la plus profonde qu'il peut encore atteindre (profondeur max du trajet, m.tripCap). */
+export function deepArea(G,m){
+  if(focusArea(G,m) !== null || activeOres(m.prefs.focus).length) return null;
+  const k = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+  return areaDepleted(G,k) ? null : k;
+}
+/* area où il doit travailler : son focus d'area, sinon « Plus profond », sinon null (pas d'area imposée) */
+export const workArea = (G,m) => focusArea(G,m) ?? deepArea(G,m);
+
 /* areas où le focus minerai cherche ses minerais : l'area visée seule, sinon toutes les areas débloquées */
 const focusAreas = (G,m) => { const A = focusArea(G,m); return A !== null ? [A] : [...Array(G.unlockedAreas).keys()]; };
 
@@ -118,11 +132,11 @@ export function dropDepleted(G,m){
   }
 }
 
-/* area où le mineur doit aller pour son focus, ou null s'il est déjà au bon endroit (ou sans focus).
+/* area où le mineur doit aller pour son focus (ou « Plus profond »), ou null s'il est déjà au bon endroit (ou sans focus).
    La plus proche des areas débloquées qui a encore un minerai visé ; à égalité, celle du dessous. */
 export function focusGoal(G,m){
-  const A = focusArea(G,m);
-  if(A !== null) return Math.max(0, areaOf(m.y)) === A ? null : A;   // focus d'area : il l'emporte sur le focus minerai
+  const A = workArea(G,m);
+  if(A !== null) return Math.max(0, areaOf(m.y)) === A ? null : A;   // focus d'area (ou « Plus profond ») : il l'emporte
   const act = activeOres(m.prefs.focus);
   if(!act.length) return null;
   const cur = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.y)));

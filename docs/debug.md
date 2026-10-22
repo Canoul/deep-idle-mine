@@ -1472,3 +1472,27 @@ Règles (voir CLAUDE.md) :
   après 1 407 (+19 %), profondeur 214,4, 0 blocage (après correction du détecteur ; seed 39595 rejouée seule).
 - ⚠️ Gain d'équilibrage important pour un seul skill ; le solo sans skills ne change pas.
 
+### Focus area « Plus profond » ne visait pas l'area la plus profonde (Jules) — branche `jules/focus-plus-profond`, ✅ en ligne le 22/10
+- **Symptôme** (retour joueur) : « Plus profond » ne cible pas l'area la plus profonde. Mesure (sonde : part du temps
+  en mode work hors de la dernière area débloquée, 50 premières minutes, seeds 7919…39595) : 29 % en solo, 55 % à 3.
+- **Cause** : sans focus d'area, `focusArea` = null → aucune contrainte ; `decideWork` prend tout filon connu à portée
+  (`oreReach`, `range` 3 en descente) dans n'importe quelle area avant de descendre.
+- **Correction** (`src/sim/focus.js`) : `deepArea(G,m)` = dernière area débloquée, plafonnée à `areaOf(m.tripCap)` (fin
+  de session, règle de Geoffrey) ; null si focus d'area, focus minerai actif, ou area vidée (`areaDepleted`).
+  `workArea = focusArea ?? deepArea`, utilisée par `focusGoal`, `inFocus` et `focusStop` (`src/sim/ai.js`).
+  `dropDepleted` ne touche qu'au focus d'area choisi. Texte du panneau (`src/ui/focus.js`).
+- **Détecteur de blocage** (`src/sim/diagnostics.js`) : faux blocages en areas 4-5 (attente du barbare 77 s puis
+  occultiste ; minotaure + étourdi) → `busy` = action `attack` ou `stun`, ou statut « Attend le barbare devant le
+  donjon » ; ≥ `STUCK_BUSY_SHARE` (50 %, ancien `STUCK_FIGHT_SHARE`, attaque seule) de la fenêtre = pas bloqué.
+- **Test fall « session complète »** : seed 23757 solo, chute connue de 4 = il tue le mimic sur lequel il se tient
+  (appui disparu, voulu par la règle du 22/10). Ne compte plus que les chutes provoquées (action précédente `move` ou
+  `mine`). Passe aussi sur `main`.
+- **Tests** : focus +4 (deepArea et suivi des déblocages, exceptions, fin de session, il quitte un filon de l'area 0
+  pour l'area 1 : échoue avec l'ancien comportement) ; diagnostics +2. diagnostics, focus, team, session, fall, winch,
+  dungeon : ✅.
+- **Mesures** (sonde valeur = coffre × val, 5 seeds ; main avec seau ×2) : solo valeur 414 → 352, minerai 393 → 356,
+  hors dernière area 29 → 17 % ; à 3 (skills mixed) valeur 1 762 → 1 502, minerai 1 396 → 1 037, areas 4,0 → 5,0,
+  profondeur 214 → 265, hors dernière area 53 → 23 %. `simulate --miners 3 --count 5 --skills mixed` : 0 blocage
+  (après le détecteur ; seeds 23757 et 31676 rejouées).
+- ⚠️ À voir : attente du barbare devant le donjon jusqu'à 0 d'oxygène (préexistant).
+

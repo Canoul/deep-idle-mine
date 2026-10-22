@@ -69,6 +69,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **un en area 4 et un en area 5 à chaque partie**, décision du 22/10 ; ancien : area 5, 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
+- **Focus en session** (panneau de l'onglet Session) : focus minerai (Aucun / Cibler / Uniquement) et focus area.
+  « Plus profond » (de base) = travailler dans l'area débloquée la plus profonde et la suivre (22/10 ; ancien :
+  descendre en ramassant tout ce qui est à portée). Coûte ≈ 15 % de valeur, débloque une area de plus à 3.
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à **2 ×** la vitesse de montée
   depuis le 22/10, ancien 0,85 ×), Barbare (provocation) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
