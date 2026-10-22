@@ -1389,3 +1389,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/diagnostics.test.js` (+2 : descente puis bascule = pas bloqué ; immobile puis bascule = bloqué ;
   le premier échouait avant la correction). session, team : verts. Seed 23757 : 0 blocage (partie identique).
 - ⚠️ Inefficacité notée (pas corrigée) : redescente de 2 min 30 à 5 min de la fin, pour remonter aussitôt.
+
+## 22/10/2026 — Geoffrey — MI : galeries verticales, tas de plumes ignorés
+- **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
+- **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
+- **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
+

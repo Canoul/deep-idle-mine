@@ -241,6 +241,7 @@ function heapAt(d){
   const G = newInstant(5, { miners:players(1) });
   const [m] = G.miners;
   m.x = 10; m.y = 0;
+  G.tiles[1].fill(1);                          // sol plat : pas de trou sur le chemin
   G.feathers.clear(); G.feathers.set(0*G.w + 10 + d, 3);
   return { G, m };
 }
@@ -268,6 +269,33 @@ test('MI plumes : il va chercher le tas et le ramasse ; pris par un autre en che
   for(let i = 0; i < 30; i++) tickInstant(r.G);
   assert.equal(r.m.goal, null);
   assert.ok(r.m.stats.mined >= 1 || r.m.action?.type === 'mine');
+});
+
+test('MI plumes : un tas découvert enfermé dans la roche → il creuse vers lui ; l\'autre mineur plus proche le prend', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  m.x = 10; m.y = 0;
+  for(let y = 1; y <= 4; y++) for(let x = 5; x <= 15; x++) G.tiles[y][x] = 1;
+  G.feathers.clear(); G.feathers.set(4*G.w + 10, 2);
+  G.seen[4][10] = 1;
+  for(let i = 0; i < 400 && !m.inv[MI.featherItem]; i++) tickInstant(G);
+  assert.equal(m.inv[MI.featherItem], 2, 'tas ramassé après avoir creusé');
+  assert.ok(m.stats.mined <= 6, 'creusé droit vers le tas : ' + m.stats.mined);
+  const H = newInstant(5, { miners:players(2) });
+  const [a, b] = H.miners;
+  a.x = 4; a.y = 0; b.x = 10; b.y = 0;
+  H.feathers.clear(); H.feathers.set(0*H.w + 12, 2); H.seen[0][12] = 1;
+  plan(H, a); assert.equal(a.goal, null, 'a n\'est pas le plus proche');
+  plan(H, b); assert.deepEqual(b.goal, { x:12, y:0 });
+});
+
+test('MI cap : les galeries ne vont pas toutes droit vers le bas (peu de mineurs touchent le fond)', () => {
+  let bottom = 0, n = 0;
+  for(let seed = 1; seed <= 3; seed++){
+    const G = runInstant(seed, { miners:players(3) });
+    for(const m of G.miners){ n++; if(m.y >= G.h - 1) bottom++; }
+  }
+  assert.ok(bottom < n*0.6, `${bottom}/${n} au fond`);
 });
 
 test('MI découverte : cachée au départ sauf la surface ; chaque mineur découvre dans son rayon (discoverMax)', () => {

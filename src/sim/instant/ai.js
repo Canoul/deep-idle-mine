@@ -125,6 +125,7 @@ export function plan(G, m){
   const start = m.y*w + m.x;
   dist[start] = 0;
   const flee = m.flee && G.t < m.flee.until ? m.flee : null;
+  const mine = featherChase(G, m), chase = mine.best, head = chase ? null : heading(G, m);
   let best = null, bestFled = null, goal = null;
   /* file de priorité : tas binaire en deux tableaux (distance, nœud) */
   const hd = [0], hn = [start];
@@ -147,7 +148,7 @@ export function plan(G, m){
     const n = y*w + x, nh = hops[c] + Math.abs(y - y0) + 1;
     if(nh <= MI.featherReach)
       for(let yy = Math.min(y0, y); yy <= Math.max(y0, y); yy++)
-        if(G.feathers.has(yy*w + x) && (!G.seen || G.seen[yy][x])){ goal = { x, y:yy, node:n, from:c }; return; }   // seulement un tas déjà découvert
+        if(mine.keys.has(yy*w + x)){ goal = { x, y:yy, node:n, from:c }; return; }   // seulement un tas déjà découvert
     if(d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; hops[n] = nh; push(dist[n], n); }
   };
   while(hd.length && !goal){
@@ -161,7 +162,10 @@ export function plan(G, m){
       const k = y*w + x;
       if(done[k]) continue;
       done[k] = 1;
-      const cost = d + crowd(G, m, x, y) + G.rng()*0.01;   // un soupçon de hasard départage les égalités
+      /* tas découvert : creuser droit vers lui (foule et cap ignorés) ; sinon cap du mineur + foule */
+      let cost = chase ? d + 4*(Math.abs(x-chase.x) + Math.abs(y-chase.y))
+        : d + crowd(G, m, x, y) + headPenalty(head, x-cx, y-cy);
+      cost += G.rng()*0.01;                                // un soupçon de hasard départage les égalités
       const fled = flee && Math.abs(x-flee.x) + Math.abs(y-flee.y) < MI.fleeDist;
       const cand = { x, y, from:c, cost };
       if(fled){ if(!bestFled || cost < bestFled.cost) bestFled = cand; }
@@ -188,6 +192,42 @@ export function plan(G, m){
   const pick = best ?? bestFled;
   if(!pick){ m.target = null; m.path = []; return; }
   m.target = { x:pick.x, y:pick.y }; m.path = pathTo(pick.from, start, prev, w);
+}
+
+/* tas de plumes découvert à chasser : le plus proche (Manhattan, ≤ MI.featherReach) dont aucun autre mineur n'est plus
+   proche (égalité : le plus petit numéro d'abord) */
+function featherChase(G, m){
+  let best = null, bd = Infinity;
+  const keys = new Set(), idx = G.miners.indexOf(m);
+  for(const k of G.feathers.keys()){
+    const x = k % G.w, y = (k - x)/G.w;
+    if(G.seen && !G.seen[y][x]) continue;
+    const d = Math.abs(x-m.x) + Math.abs(y-m.y);
+    if(d > MI.featherReach) continue;
+    if(G.miners.some((o, i) => { if(o === m) return false; const od = Math.abs(x-o.x) + Math.abs(y-o.y); return od < d || (od === d && i < idx); })) continue;
+    keys.add(k);
+    if(d < bd){ best = { x, y }; bd = d; }
+  }
+  return { keys, best };
+}
+
+/* cap du mineur : tiré au hasard (pondéré) parmi MI.headings, gardé turnBlocks[0..1] choix de bloc ; renvoie [dx, dy] */
+function heading(G, m){
+  if(!m.head || m.headLeft <= 0){
+    const hs = MI.headings, tot = hs.reduce((a, q) => a + q[2], 0);
+    let r = G.rng()*tot, q = hs[hs.length-1];
+    for(const c of hs){ r -= c[2]; if(r < 0){ q = c; break; } }
+    m.head = [q[0], q[1]];
+    const [a, b] = MI.turnBlocks; m.headLeft = a + Math.floor(G.rng()*(b-a+1));
+  }
+  m.headLeft--;
+  return m.head;
+}
+/* pénalité d'un bloc voisin dans la direction (dx, dy) : 0 dans le sens du cap, headingWeight à l'opposé */
+function headPenalty(head, dx, dy){
+  if(!head) return 0;
+  const dot = (head[0]*dx + head[1]*dy) / Math.hypot(head[0], head[1]);   // 1 aligné, 0 de côté, -1 opposé
+  return MI.headingWeight*(1 - dot)/2;
 }
 
 /* cases où il tient, de celle après le départ jusqu'à `end` comprise (vide si end est le départ) */
