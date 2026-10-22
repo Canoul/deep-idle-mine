@@ -7,8 +7,11 @@ export const STUCK_WINDOW = 90;   // secondes sans rien miner ni déposer, sous 
    sauf s'il est en train de remonter pour de vrai (au moins STUCK_MIN_PROGRESS couches gagnées sur la période)
    ou de redescendre vers le front (au moins STUCK_MIN_PROGRESS couches descendues) : avec des areas profondes,
    le simple trajet jusqu'au front peut dépasser STUCK_WINDOW. Si le mineur passe en retour pendant la fenêtre, la
-   descente (avant) et la remontée (après) sont jugées chacune de leur côté (22/10 : faux blocage, seed 23757). */
+   descente (avant) et la remontée (après) sont jugées chacune de leur côté (22/10 : faux blocage, seed 23757).
+   Un mineur qui frappe au moins STUCK_FIGHT_SHARE de la fenêtre combat (le minotaure du donjon tient plus de 90 s) :
+   pas un blocage (22/10 : faux blocage, seed 39595). */
 export const STUCK_MIN_PROGRESS = 3;
+export const STUCK_FIGHT_SHARE = 0.5;
 export function stuckDetector(windowSec=STUCK_WINDOW){
   const W=Math.round(windowSec/DT), hist=new Map(), found=[];
   return {
@@ -24,12 +27,13 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         const climbing  = post.length>0 && post[post.length-1].y<=post[0].y-STUCK_MIN_PROGRESS;
         const descending = pre.length>0 && pre[pre.length-1].y>=pre[0].y+STUCK_MIN_PROGRESS;
         const waiting = b.status==='Attend le barbare devant le donjon';   // attente voulue (donjon), pas un blocage
-        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting)
+        const fighting = h.filter(s=>s.attack).length >= STUCK_FIGHT_SHARE*h.length;
+        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting && !fighting)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });
       }
       function push(m){
         let h=hist.get(m.id); if(!h) hist.set(m.id, h=[]);
-        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status });
+        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status, attack:m.action?.type==='attack' });
         if(h.length>W) h.shift();
         return h;
       }
