@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Enchantement : la qualité de la rune dépend de la pièce
+- **Pour le joueur** : une pièce n'accepte qu'une rune de qualité **égale ou inférieure** à la sienne : une pièce R6
+  (un casque, par exemple) peut recevoir une rune R1 à R6, pas une R7. L'onglet l'explique, marque dans la liste « jusqu'à R6 »
+  / « trop rare pour cette pièce », et dit pourquoi le bouton est grisé. Le serveur refuse aussi.
+- **Décisions** : cette règle (Geoffrey, 22/10). Conséquence choisie par Claude, **à valider** : une pièce **non
+  identifiée** n'a pas de qualité, donc elle doit d'abord être identifiée pour recevoir une rune (avant, elle pouvait).
+- **État** : 🧪 sur la branche `geoffrey/enchantement-rune-rarete` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Concasseur : nouvelles chances, plus de moyennes
 - **Pour le joueur** : chances par lot de 100 blocs : **terre** gemme 0,6 % / treasure 0,5 % ; **pierre** 0,9 % / 0,3 % ;
   **pierre dure** 1,2 % / 0,5 %. Dans l'aide « ? » et le wiki, on ne voit plus que la chance par lot : plus de

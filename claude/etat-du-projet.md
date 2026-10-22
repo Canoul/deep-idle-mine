@@ -42,7 +42,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
   - Victoire → chaque présent reçoit un **coffre R1 à R7** (chances de l'identification) ; une victoire par joueur et
     par ouverture ; un échec ne coûte rien. Coffre ouvert → une **Rune** de cette qualité (lignes tirées à
-    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif.
+    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
   - ⚠️ Mesures (stuff de base) : **0 résidu** en 8 sessions à 3 (personne n'entre en area 4) ; tour gagnée à 3 en
     ≈ 7 min (5/5), **seul 1/5**. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
