@@ -374,6 +374,13 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
   - Pendant la session, personne n'est retiré pour absence (le navigateur ne parle plus au groupe pendant la partie) : le délai de 5 min repart de la fin de la session. Le bilan compte comme une présence.
   - Un membre encore dans la session (le chef a quitté tôt, par exemple) est affiché « en session » ; le chef voit « ⏳ Le groupe finit sa session… » et ne peut pas relancer avant la fin.
   - Si le chef relance pendant qu'un membre lit encore son bilan, ce membre passe directement à la nouvelle session (son mineur y joue déjà).
+- **Chercher un groupe (LFG)** *(demande du créateur, 22/10/2026 ; mine classique seulement)* : un joueur seul, ou le **chef d'un groupe de 2**, clique **« Chercher un groupe »** dans le Lobby. Il est « en recherche » avec le **temps de queue** qui défile, et peut **annuler**. Le membre d'un groupe de 2 voit la recherche de son chef, sans bouton.
+  - **Un lobby se complète d'un coup**, jamais une place à la fois : on ne rejoint pas quelqu'un pour attendre le dernier à deux.
+  - **3 solos** dans la file → les 2 derniers rejoignent le lobby du **premier entré** (il devient chef).
+  - **Un groupe de 2** dans la file → c'est le **solo le plus ancien** qui rejoint **leur** lobby, même s'il était dans la file avant eux. Deux groupes de 2 ne se combinent jamais.
+  - **« Lancer dès que plein »** (case à cocher) : si **le chef du futur lobby** l'a cochée, la session Mine démarre dès que le lobby est complet ; sinon le chef lance comme d'habitude. Si le lancement échoue (serveur plein…), le lobby reste formé.
+  - Pop-up « Groupe trouvé » pour les 3 joueurs. On sort de la file si l'équipe change (quelqu'un entre ou part), si on lance une session, ou **30 s** sans nouvelles du lobby (onglet fermé) *(valeur de config)*.
+  - La file n'est **pas** enregistrée : après un redémarrage du serveur, le navigateur relance la recherche tout seul (on perd sa place dans la file).
 - **Les groupes survivent à un redémarrage du serveur** (la mise à jour automatique le redémarre à chaque nouvelle version) : ils sont enregistrés comme le reste (code, chef, membres, invitations) et retrouvés au démarrage.
 - Absence : un membre silencieux est retiré au bout de 5 min, comptées depuis la **fin réelle** de sa dernière session (une session peut finir après l'heure prévue si le serveur a dû rattraper du retard, ou à tout moment en mode dev) : celui qui revient le premier du bilan ne fait jamais sortir les autres.
 

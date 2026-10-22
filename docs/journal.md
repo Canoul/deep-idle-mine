@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Chercher un groupe (LFG)
+- **Pour le joueur** : dans le Lobby (mine classique), un bouton **« Chercher un groupe »**. On est mis en file avec
+  un timer, on peut annuler. Dès qu'il y a de quoi faire un lobby de 3, il se forme **d'un coup** : 3 solos → chez le
+  premier entré ; un groupe de 2 → le solo le plus ancien les rejoint. Pop-up « Groupe trouvé ». Case **« Lancer dès
+  que plein »** : si le chef du lobby formé l'a cochée, la session démarre toute seule.
+- **Décisions** : seul le chef d'un groupe de 2 lance ou annule la recherche ; le lancement automatique suit le choix
+  du chef seulement (Geoffrey).
+- **À suivre** : regarder le panneau dans le navigateur avec 3 vrais joueurs (testé côté serveur, pas encore à l'œil).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Jules — Téléphone : la mine ne rétrécit plus en boucle
 - **Pour le joueur** : sur téléphone, la mine de la session rapetissait d'une ligne à chaque instant puis se
   remettait à grandir (au rechargement, en tournant le téléphone, en changeant d'onglet) : un effet « respiration »

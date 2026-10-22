@@ -1,7 +1,7 @@
 /* Lobby : places affichées et bouton Lancer, depuis l'état du groupe envoyé par le serveur (logique pure). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lobbySlots, launchState } from '../src/ui/lobby.js';
+import { lobbySlots, launchState, lfgState } from '../src/ui/lobby.js';
 
 const me = { id:'AAAA1111', displayId:'AAAA-1111', displayName:'Zoe' };
 const party = (members, extra = {}) => ({ code:'K7Q4P2', leader:members[0].account, members, invited:[], ...extra });
@@ -73,4 +73,23 @@ test('« Où miner » : les tours du Jugement seulement quand elles sont ouverte
   const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
   assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
   assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
+});
+
+test('recherche de groupe : bouton pour un solo ou le chef d\'un groupe de 2, mine classique seulement', () => {
+  const two = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
+  assert.deepEqual(lfgState({ account:me, party:null, mode:'mine' }), { show:true, searching:false });
+  assert.equal(lfgState({ account:me, party:two, mode:'mine' }).show, true, 'chef d\'un groupe de 2');
+  assert.equal(lfgState({ account:{ id:'BBBB2222' }, party:two, mode:'mine' }).show, false, 'membre : pas de bouton');
+  assert.equal(lfgState({ account:me, party:party([M('AAAA1111', 'Zoe'), M('B', 'B'), M('C', 'C')]), mode:'mine' }).show, false, 'complet');
+  assert.equal(lfgState({ account:me, party:null, mode:'mi' }).show, false, 'mine instantanée');
+  assert.equal(lfgState({ account:me, party:null, mode:'tower_angel' }).show, false);
+  assert.equal(lfgState({ account:me, party:null, mode:'mine', session:{ id:'x' } }).show, false);
+  assert.equal(lfgState({ account:me, party:null, mode:'mine', offline:true }).show, false);
+});
+
+test('recherche en cours : celui qui l\'a lancée peut annuler, le membre voit seulement le timer', () => {
+  const two = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
+  assert.deepEqual(lfgState({ account:me, party:two, mode:'mine', lfg:{ search:{ mine:true, auto:true, waited:0 } } }),
+                   { show:true, searching:true, cancel:true, auto:true });
+  assert.equal(lfgState({ account:{ id:'BBBB2222' }, party:two, mode:'mine', lfg:{ search:{ mine:false, auto:false } } }).cancel, false);
 });
