@@ -26,6 +26,20 @@ def png(path, px):
         f.write(data)
 
 
+def png_wh(path, W, H, px):
+    """image de W × H pixels (boss des tours : 3 × 5 cases)."""
+    raw = b''.join(b'\x00' + b''.join(struct.pack('4B', *px[y * W + x]) for x in range(W)) for y in range(H))
+
+    def chunk(t, d):
+        c = struct.pack('>I', len(d)) + t + d
+        return c + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+
+    data = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', W, H, 8, 6, 0, 0, 0)) \
+        + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
+    with open(path, 'wb') as f:
+        f.write(data)
+
+
 def hexc(h, a=255):
     h = h.lstrip('#')
     return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), a)
@@ -307,6 +321,27 @@ def main():
     for (x, y) in [(7, 4), (8, 4), (7, 5), (7, 6), (8, 6), (9, 7), (7, 7), (7, 8), (6, 9), (7, 9), (8, 9), (7, 10)]:
         rect(rune, x, y, 1, 1, hexc('#ffc27a'))                            # glyphe
     tex['rune'] = rune
+
+    # stonebrick des tours : briques claires (ange) / sombres (démon), joints, décalées ; l'indestructible a des ferrures
+    def stonebrick(base, mortar, light, seed, hard=None):
+        px = noisy(hexc(base), seed, 0.08)
+        for yy in (0, 8):
+            rect(px, 0, yy, 16, 1, hexc(mortar))
+        for i, yy in enumerate((1, 9)):
+            off = 0 if i == 0 else 8
+            for xx in (off, (off + 8) % 16):
+                rect(px, xx, yy, 1, 7, hexc(mortar))
+            rect(px, 0, yy, 16, 1, hexc(light))
+        if hard:
+            rect(px, 0, 0, 16, 1, hexc(hard)); rect(px, 0, 15, 16, 1, hexc(hard))
+            rect(px, 0, 0, 1, 16, hexc(hard)); rect(px, 15, 0, 1, 16, hexc(hard))
+            for (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)):
+                rect(px, x, y, 1, 1, hexc(hard))
+        return px
+    tex['brick_angel'] = stonebrick('#bfe3ff', '#7fa6c9', '#e8f4ff', 501)
+    tex['brick_angel_hard'] = stonebrick('#8fb3d6', '#5c7fa3', '#cfe6ff', 502, hard='#ffd23f')
+    tex['brick_demon'] = stonebrick('#4a1f3a', '#26101e', '#6b3354', 503)
+    tex['brick_demon_hard'] = stonebrick('#2f1426', '#14080f', '#4a1f3a', 504, hard='#ff3b3b')
 
     tex['residue_angel'] = residue(4141, hexc('#8fd8ff'), hexc('#3d5a78'), hexc('#ffffff'))
     tex['residue_demon'] = residue(6666, hexc('#ff3b3b'), hexc('#6b2228'), hexc('#ffd0a0'))
@@ -691,7 +726,59 @@ def main():
     for name, px in tex.items():
         os.makedirs(os.path.dirname(os.path.join(OUT, name + '.png')), exist_ok=True)
         png(os.path.join(OUT, name + '.png'), px)
+    # boss des tours : 24 × 40 pixels (3 × 5 cases)
+    for name, px in bosses().items():
+        png_wh(os.path.join(OUT, name + '.png'), 24, 40, px)
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
+
+
+def bosses():
+    BW, BH = 24, 40
+
+    def blankb():
+        return [(0, 0, 0, 0)] * (BW * BH)
+
+    def r(px, x, y, w, h, c):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                if 0 <= xx < BW and 0 <= yy < BH:
+                    px[yy * BW + xx] = c
+
+    def figure(skin, robe, robe_d, trim, wing, wing_d, eye, crown, horns):
+        px = blankb()
+        # ailes déployées derrière le corps
+        for i in range(12):
+            r(px, 0 + i // 3, 8 + i, 6 - i // 3, 1, wing if i % 3 else wing_d)
+            r(px, 18 + i // 3 - (i // 3), 8 + i, 6 - i // 3, 1, wing if i % 3 else wing_d)
+        r(px, 1, 7, 4, 1, wing_d); r(px, 19, 7, 4, 1, wing_d)
+        # tête
+        r(px, 9, 3, 6, 6, skin)
+        r(px, 10, 5, 1, 1, eye); r(px, 13, 5, 1, 1, eye)
+        r(px, 11, 7, 2, 1, shade(skin, 0.75))
+        if crown:  # auréole
+            r(px, 8, 0, 8, 1, crown); r(px, 7, 1, 1, 1, crown); r(px, 16, 1, 1, 1, crown); r(px, 8, 2, 8, 1, shade(crown, 0.8))
+        if horns:  # cornes
+            r(px, 8, 1, 1, 3, horns); r(px, 7, 0, 1, 2, horns); r(px, 15, 1, 1, 3, horns); r(px, 16, 0, 1, 2, horns)
+        r(px, 9, 3, 6, 1, shade(skin, 0.85))
+        # robe
+        r(px, 7, 9, 10, 4, robe)                       # épaules
+        for i in range(24):
+            w = 8 + i // 4
+            r(px, 12 - w // 2, 13 + i, w, 1, robe if (i % 6) else robe_d)
+        r(px, 11, 9, 2, 28, robe_d)                     # pli central
+        r(px, 7, 9, 10, 1, trim); r(px, 6, 36, 12, 1, trim)
+        # bras et arme (lance de lumière / trident)
+        r(px, 5, 11, 2, 9, robe); r(px, 17, 11, 2, 9, robe)
+        r(px, 5, 20, 2, 2, skin); r(px, 17, 20, 2, 2, skin)
+        r(px, 20, 4, 1, 34, trim); r(px, 19, 3, 3, 1, eye); r(px, 20, 2, 1, 1, eye)
+        return px
+
+    return {
+        'boss_angel': figure(hexc('#f3dcc4'), hexc('#f4f7ff'), hexc('#c9d6ee'), hexc('#ffd23f'),
+                             hexc('#ffffff'), hexc('#bfe3ff'), hexc('#3d8bff'), hexc('#ffe27a'), None),
+        'boss_demon': figure(hexc('#b0303a'), hexc('#3a1530'), hexc('#220a1c'), hexc('#ff3b3b'),
+                             hexc('#5a1f4a'), hexc('#2a0f22'), hexc('#ffd23f'), None, hexc('#e0d0c0')),
+    }
 
 
 if __name__ == '__main__':

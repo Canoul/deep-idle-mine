@@ -97,6 +97,12 @@ export const BLOCKS = {
      ils remplissent les jauges de l'onglet Jugement. */
   12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu'},
   13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu'},
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (6 s, ne rapporte rien) et sa version
+     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:6, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:6, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
@@ -332,6 +338,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
+  'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -640,6 +647,9 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
+  { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
+  { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
@@ -685,6 +695,27 @@ export const JUDGMENT = {
     demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
   },
   poll: 15000,          // ms : rafraîchissement de l'onglet Jugement
+};
+
+/* ---- Tours de l'Ange et du Démon (concept Ange vs Démon, étape 4 ; src/sim/tower/) ----
+   Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers. Une tour
+   pleine de stonebrick (dureté hard s, 5 % indestructible) : les mineurs partent du rez-de-chaussée et creusent vers
+   le toit, où le boss attend. Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
+   lumière, ni butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
+   Carte : marge de `margin` colonnes de chaque côté ; tour de `width` colonnes (murs compris) et `height` lignes
+   (toit compris) ; `sky` lignes de ciel au-dessus du toit ; sol plein en dessous. Portes : les doorH lignes du bas des
+   deux murs. Boss : bossW × bossH au milieu du toit, immobile, pas provocable ; il frappe sa cible (premier arrivé sur
+   le toit, encore dessus) toutes les hitEvery s (rageEvery sous rageBelow de ses PV) ; chaque coup a knockChance
+   (knockBarb pour un barbare) de la projeter de knock cases vers l'extérieur (elle tombe de la tour). */
+export const TOWER = {
+  duration: 900,                                  // s de jeu (15 min)
+  width: 15, height: 30, sky: 7, margin: 8, doorH: 2, unbreakablePct: 5,
+  boss: { hp: 1000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.10, knockBarb: 0.05, knock: 6 },
+  sides: {
+    angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇' },
+    demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈' },
+  },
+  salt: 0x70e7e5,
 };
 
 /* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */
