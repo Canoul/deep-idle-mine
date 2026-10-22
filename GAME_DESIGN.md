@@ -575,6 +575,13 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
 - Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
 
+### Jugement : Ange contre Démon (onglet Jugement) *(décisions du créateur, 22/10/2026 ; valeurs provisoires, `JUDGMENT` en config ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`)*
+Un effort commun à tous les joueurs du serveur.
+- **Résidus** : à partir de l'**area 4**, **0,5 %** des cases de chaque area sont du **Résidu angélique** (pierre sombre aux fissures bleu ciel lumineuses) et 0,5 % du **Résidu démoniaque** (fissures rouges). Tirage à part de la seed, à la place de blocs de terrain : le reste de la mine ne change pas. Dureté de la pierre dure, **poids 6**, rareté rare ; partagés en fin de session comme les autres blocs. Pas de Fortune, pas de shiny, pas volés par les gobelins, ne comptent pas pour le déblocage.
+- **Jauges** : en fin de session, le serveur ajoute à la jauge de chaque camp les résidus **versés aux joueurs** (quitter = rien ; une session n'est comptée qu'une fois). **Cap 250**. Jauge pleine → la **tour** de ce camp **ouvre pendant 6 h** et la jauge repart de 0 (surplus perdu) ; elle continue de se remplir pendant l'ouverture. Pleine pendant une ouverture, elle reste à 250 et la tour rouvre dès la fin de l'ouverture en cours. Les deux tours peuvent être ouvertes en même temps.
+- **Onglet Jugement** (après Session) : les deux jauges **face à face**, l'Ange (blanc) remplie de la gauche vers le centre, le Démon (violet) de la droite vers le centre, avec « x / 250 ». Sous chacune : tour fermée, ou ouverte avec le temps restant (et « déjà faite » si le joueur a gagné son coffre pendant cette ouverture). Un point sur l'onglet signale une tour ouverte pas encore faite.
+- Tours, boss, coffres et runes : étapes suivantes de la spec.
+
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.
 - **Quand** : toutes les **2 h pile, heure de Paris** (0 h, 2 h, 4 h… ; heure d'été comprise). Dure **5 min de jeu** (2 min 30 réelles à ×2).

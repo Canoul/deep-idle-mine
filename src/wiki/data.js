@@ -64,9 +64,9 @@ export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.sp
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
 /* ---------- objets ---------- */
-export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
+export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
   mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau' };
-export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'blueprint', 'stuff', 'furnace'];
+export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'residu', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'blueprint', 'stuff', 'furnace'];
 const pct = c => Math.round(c * 1000) / 10;
 const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
 const statName = k => STUFF.statLabels[k] ?? k;

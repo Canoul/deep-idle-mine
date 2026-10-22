@@ -7,6 +7,7 @@ import { pxi } from './pxicons.js';
 export const TABS = [
   { id:'lobby',      label:'Lobby',      icon:'house',     ready:true  },   // groupe, préférences, lancer (lecture seule pendant une session)
   { id:'session',    label:'Session',    icon:'pickaxe',   ready:true  },   // la mine en cours, puis le bilan
+  { id:'jugement',   label:'Jugement',   icon:'radiance',  ready:true  },   // jauges Ange / Démon, tours ouvertes (src/ui/judgment.js)
   { id:'inventaire', label:'Inventaire', icon:'bag',       ready:true  },
   { id:'stuff',      label:'Stuff',      icon:'helmet',    ready:true  },
   { id:'craft',      label:'Craft',      icon:'hammer',    ready:true  },

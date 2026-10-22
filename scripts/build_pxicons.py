@@ -21,6 +21,7 @@ KENNEY = {
     'group': (44, 16), 'person': (43, 16), 'chest': (8, 6), 'skull': (34, 12), 'lock': (0, 10), 'key': (32, 11),
     'door': (0, 9), 'sword': (32, 8), 'shield': (37, 3), 'bubbles': (35, 11), 'ladder': (0, 6), 'sun': (27, 11),
     'arrow': (29, 20), 'target': (38, 12), 'feather': (29, 11), 'trophy': (40, 16), 'heart': (39, 10),
+    'radiance': (28, 12),
 }
 
 
