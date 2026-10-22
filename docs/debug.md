@@ -1323,7 +1323,7 @@ Règles (voir CLAUDE.md) :
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu la MI cachée / caméra : conflits seulement dans les 3 docs
   (journal, debug, état du projet : tout gardé) ; 145 tests du sujet + anticheat 71/71 verts après fusion.
 
-### Enchantement : rune de qualité ≤ pièce (Geoffrey) — branche `geoffrey/enchantement-rune-rarete`, 🧪 pas en ligne
+### Enchantement : rune de qualité ≤ pièce (Geoffrey) — branche `geoffrey/enchantement-rune-rarete`, ✅ en ligne le 22/10
 - `enchantError` (`src/meta/upgrade.js`) : `not_identified` (pièce sans `q`) puis `rune_too_rare` (`rune.q > piece.q`),
   après `already_enchanted`. Messages serveur dans `server/game/service.js` (`UPGRADE_ERRORS`). UI (`src/ui/upgrade.js`,
   `enchantWhy`, même règle) : texte d'aide, étiquettes « jusqu'à Rn », « à identifier », « trop rare pour cette pièce »,
@@ -1331,3 +1331,4 @@ Règles (voir CLAUDE.md) :
 - Tests : `rune.test.js` (table pièce/rune de R1 à R7, rien ne bouge en cas de refus ; `withRune` identifie la pièce),
   `anticheat/rune.test.js` (refus serveur, rune non consommée, acceptée à qualité égale) : verts.
   ✅ Chromium : R3 + rune R7 refusé, R6 + R3 accepté avec aperçu, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` n'avait pas bougé ; tests du sujet et anticheat verts.

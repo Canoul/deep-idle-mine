@@ -24,7 +24,7 @@ Modèle d'entrée :
   / « trop rare pour cette pièce », et dit pourquoi le bouton est grisé. Le serveur refuse aussi.
 - **Décisions** : cette règle (Geoffrey, 22/10). Confirmé par Geoffrey : une pièce **non
   identifiée** ne peut pas avoir de rune, elle doit d'abord être identifiée (avant, elle pouvait).
-- **État** : 🧪 sur la branche `geoffrey/enchantement-rune-rarete` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Geoffrey — Concasseur : nouvelles chances, plus de moyennes
 - **Pour le joueur** : chances par lot de 100 blocs : **terre** gemme 0,6 % / treasure 0,5 % ; **pierre** 0,9 % / 0,3 % ;
