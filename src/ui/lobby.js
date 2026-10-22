@@ -57,12 +57,12 @@ export function mineModes(cur, locked = false, judgment = null){
   });
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id) } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
-               session:null, mode:MINE_MODES[0].id };
+               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false };   // view 'jugement' : jauges à la place de l'équipe
 
   function render(){
     const { account, offline, info, party } = st;
@@ -77,10 +77,15 @@ export function setupLobby(h){
     const modes = mineModes(st.mode, locked, st.judgment);
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
     const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
-    $('miCard').hidden = !mi; $('teamCard').hidden = !!mi; $('prefsCard').hidden = !!mi || !!tower;
-    $('mineModes').innerHTML = mineModes(st.mode, locked, st.judgment).map(m =>
-      `<button data-mode="${m.id}" class="${m.on ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : m.done ? ' title="Déjà faite pendant cette ouverture"' : ''}>${esc(m.label)}`+
-      `${m.soon ? ' <small>(bientôt)</small>' : m.done ? ' <small>(déjà faite)</small>' : ''}</button>`).join('');
+    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges, rien ne se lance d'ici
+    $('judgmentCard').hidden = !jv;
+    $('miCard').hidden = jv || !mi; $('teamCard').hidden = jv || !!mi; $('prefsCard').hidden = jv || !!mi || !!tower;
+    const btn = m => `<button data-mode="${m.id}" class="${m.on && !jv ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : m.done ? ' title="Déjà faite pendant cette ouverture"' : ''}>${esc(m.label)}`+
+      `${m.soon ? ' <small>(bientôt)</small>' : m.done ? ' <small>(déjà faite)</small>' : ''}</button>`;
+    const judge = `<button data-view="jugement" class="${jv ? 'on' : ''}" title="Jauges Ange contre Démon et tours">⚖ Jugement${st.judgmentPending ? ' <small class="jnew">● tour ouverte</small>' : ''}</button>`;
+    const all = modes.map(btn), at = modes.filter(m => !MINE_MODES.find(d => d.id === m.id)?.tower).length;   // après Mine et Mine instantanée, avant les tours
+    all.splice(at, 0, judge);
+    $('mineModes').innerHTML = all.join('');
     $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
@@ -113,7 +118,7 @@ export function setupLobby(h){
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
+    $('devCard').hidden = jv || !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -203,11 +208,12 @@ export function setupLobby(h){
   };
 
   $('mineModes').onclick = e => {
+    if(e.target.closest('button[data-view]')){ st.view = 'jugement'; render(); h.onJudgment?.(); return; }
     const b = e.target.closest('button[data-mode]');
     if(!b || b.disabled) return;
-    st.mode = b.dataset.mode; render();
-    h.onMode?.(st.mode);
+    pick(b.dataset.mode);
   };
+  function pick(mode){ st.view = null; st.mode = mode; render(); h.onMode?.(st.mode); }
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('inviteBtn').onclick = () => {
@@ -257,6 +263,10 @@ export function setupLobby(h){
     update(patch){ Object.assign(st, patch); render(); },
     /* rejoindre par un code venu d'un lien d'invitation */
     join(code){ return act(() => h.party.join(code)); },
+    /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */
+    showJudgment(){ st.view = 'jugement'; render(); h.onJudgment?.(); },
+    /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
+    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment).some(m => m.id === mode && !m.disabled)) pick(mode); },
     error,
   };
 }

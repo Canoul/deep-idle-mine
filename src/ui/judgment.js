@@ -18,11 +18,11 @@ export function towerState(side, v, now){
   const name = JUDGMENT.sides[side].tower;
   if(!v.open) return { cls: 'closed', text: `${name} : fermée`, sub: `Elle ouvre ${JUDGMENT.openHours} h quand la jauge atteint ${v.cap}.` };
   if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Déjà faite pour cette ouverture : ton coffre est dans l\'inventaire.' };
-  return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Lance-la depuis le Lobby (« Où miner »), seul ou en groupe de 3.' };
+  return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Choisis-la dans « Où miner », seul ou en groupe de 3.' };
 }
 
-/* root : élément de l'onglet ; onLobby() : aller au Lobby */
-export function setupJudgment(root, { onLobby } = {}){
+/* root : élément de la carte (Lobby, choix « Jugement ») ; onTower(side) : choisir la tour de ce camp dans « Où miner » */
+export function setupJudgment(root, { onTower } = {}){
   let view = null, skew = 0, timer = null;
 
   function gauge(side){
@@ -38,14 +38,14 @@ export function setupJudgment(root, { onLobby } = {}){
       return `<div class="jside ${s}"><b>${esc(d.label)}</b><span class="jcount">${v.count} / ${v.cap}</span></div>`; };
     const state = s => { const t = towerState(s, view.sides[s], now);
       return `<div class="jtower ${s} ${t.cls}"><b>${esc(t.text)}</b><small class="mut">${esc(t.sub)}</small>`+
-        (t.cls === 'open' ? `<button class="on" data-lobby>${pxi('house')}Aller au Lobby</button>` : '')+`</div>`; };
+        (t.cls === 'open' ? `<button class="on" data-tower="${s}">${pxi('arrow')}Choisir la tour</button>` : '')+`</div>`; };
     root.innerHTML =
       `<div class="jHead">${head('angel')}<span class="jvs">${pxi('radiance')}</span>${head('demon')}</div>`+
       `<div class="jBars">${gauge('angel')}<span class="jmid"></span>${gauge('demon')}</div>`+
       `<div class="jTowers">${state('angel')}${state('demon')}</div>`;
   }
 
-  root.addEventListener('click', e => { if(e.target.closest('[data-lobby]')) onLobby?.(); });
+  root.addEventListener('click', e => { const b = e.target.closest('[data-tower]'); if(b) onTower?.(b.dataset.tower); });
 
   return {
     set(v){
@@ -56,7 +56,7 @@ export function setupJudgment(root, { onLobby } = {}){
       if(Object.values(v.sides).some(s => s.open)) timer = setInterval(render, 1000);
     },
     view(){ return view; },
-    /* une tour est-elle ouverte et pas encore faite par ce joueur (badge de l'onglet) */
+    /* une tour est-elle ouverte et pas encore faite par ce joueur (repère sur le bouton Jugement et l'onglet Lobby) */
     pending(){ return !!view && Object.values(view.sides).some(s => s.open && !s.done); },
   };
 }

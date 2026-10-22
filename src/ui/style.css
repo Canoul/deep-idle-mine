@@ -595,3 +595,4 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .twTitle{font-family:var(--f-title);font-size:var(--fs-xl);color:#ffe6c4}
 .twBossBar.angel>i{background:var(--j-angel-dk)} .twBossBar.demon>i{background:var(--j-demon)}
 #cvTw{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
+.jnew{color:var(--gold, #ffd23f)}

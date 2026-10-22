@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { TABS, pickTab } from '../src/ui/nav.js';
 
 test('les onglets sont dans l\'ordre voulu, Lobby puis Session en premier', () => {
-  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Jugement','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Historique','Social']);
+  assert.deepEqual(TABS.map(t => t.label), ['Lobby','Session','Inventaire','Stuff','Craft','Four','Concasseur','Amélioration','Recherche','Skills','Historique','Social']);
   assert.equal(new Set(TABS.map(t => t.id)).size, TABS.length, 'identifiants uniques');
 });
 
@@ -63,4 +63,12 @@ test('onglet Historique : présent ; carte d\'une session = seed, date, part (ou
   const h = sessionCard({ ...base, left:false, bag:{ Charbon:12, Fer:3 } });
   assert.match(h, /4242/); assert.match(h, /30 min/); assert.match(h, /Zoe, Max/); assert.match(h, /12/); assert.match(h, /Charbon/);
   assert.match(sessionCard({ ...base, left:true, bag:{} }), /rien reçu/);
+});
+
+test('Jugement : plus un onglet de la barre, mais dans le Lobby (#jugement → Lobby) ; 12 onglets, 12 touches', async () => {
+  const { TAB_KEYS } = await import('../src/ui/nav.js');
+  assert.ok(!TABS.some(t => t.id === 'jugement'));
+  assert.equal(pickTab('#jugement', 'four'), 'lobby');
+  assert.equal(pickTab('', 'jugement'), 'lobby', 'ancien onglet mémorisé');
+  assert.ok(TABS.filter(t => t.ready).length <= TAB_KEYS.length, 'chaque onglet a sa touche');
 });

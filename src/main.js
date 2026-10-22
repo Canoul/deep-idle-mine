@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer } from './render/instant.js';
@@ -162,13 +162,14 @@ setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur m
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
+let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
   ui.tab = id;
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
-  if(id==='jugement') setTimeout(() => pollJudgment());   // différé : l'onglet de départ s'ouvre avant la fin du chargement du module
+  if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
@@ -202,6 +203,7 @@ const lobby = setupLobby({
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
+  onJudgment: () => pollJudgment(),
   onLaunch: async opts => {
     lobby.error('');
     try { enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh(); }   // lancer désinscrit du MI
@@ -300,14 +302,14 @@ const social = setupSocial({
   join:    id => joinParty(() => socialApi.join(id)),
 });
 
-/* ---------- onglet Jugement : jauges Ange / Démon (communes à tous) ----------
+/* ---------- Jugement (dans le Lobby, « Où miner ») : jauges Ange / Démon (communes à tous) ----------
    Redemandées toutes les JUDGMENT.poll ms tant que la page est visible ; le badge signale une tour ouverte pas encore faite. */
-const judgment = setupJudgment($('judgmentBody'), { onLobby: () => nav.show('lobby') });
+const judgment = setupJudgment($('judgmentBody'), { onTower: side => lobby.pickMode(MINE_MODES.find(m => m.tower === side)?.id) });
 let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { judgment.set(await gameApi.judgment()); nav.badge('jugement', judgment.pending()); lobby.update({ judgment: judgment.view() }); }
+  try { judgment.set(await gameApi.judgment()); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
