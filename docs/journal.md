@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Fin de session : le mineur mine plus haut au lieu de descendre au front
+- **Pour le joueur** : quand un mineur repart de la surface peu avant la fin, il ne descend plus jusqu'au front pour
+  remonter aussitôt. Il se fixe une profondeur maximale (aller + retour = au plus la moitié du temps restant) et mine
+  au-dessus : filons, galeries.
+- **Mesures** (6 parties) : seul, 362 minerais contre 365 avant ; à 3, 1 073 contre 1 074 ; aucun blocage. Une partie
+  à 3 sur 6 ne débloque plus l'area 4 dans les dernières minutes (on ne fonce plus au front à la fin).
+- **Réglage** : la part du temps restant à garder pour miner (`endWorkShare`, 50 %) se change dans la config.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — « Blocage au treuil » : fausse alerte du détecteur
 - **Pour le joueur** : rien ne change. Le logisticien n'était pas coincé : il redescendait au front par le treuil, y
   arrivait en fin de session et remontait aussitôt. C'est l'outil de test (détecteur de blocage des simulations) qui

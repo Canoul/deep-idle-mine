@@ -41,8 +41,11 @@ export const CFG = {
   sectorPenalty:1,        // un minerai hors secteur vaut 1/(1 + sectorPenalty × éloignement relatif) de son prix
   rowCrowdCost:0.5,       // surcoût (s) par case d'un chemin sur la ligne d'un autre mineur (ou juste au-dessus / en dessous)
   rowCrowdPenalty:1,      // une cible sur la ligne d'un autre mineur (±1) vaut 1/(1 + rowCrowdPenalty × nb) de son prix
-  minWorkTime:30,         // ne repart pas de la surface s'il ne reste pas aller + retour + ce temps de travail
   endStayMin:45,          // en dessous de ce temps restant, il ne repart jamais
+  /* fin de session (22/10, Geoffrey) : il ne descend pas plus bas que la profondeur où l'aller et le retour depuis la
+     surface laissent cette part du temps restant à miner (il mine plus haut au lieu d'aller au front pour remonter
+     aussitôt). Vitesse estimée d'après sa dernière remontée (secondes par couche, échelles et détours compris). */
+  endWorkShare:0.5,
 };
 
 /* équipe : le jeu est prévu pour 3 joueurs sur la même carte (même seed, même monde, coffre commun) */
