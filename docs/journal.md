@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Décisions** : les noms de qualité restent ceux d'aujourd'hui (R5 = Antique) ; même règle pour l'Ange et le
   Démon ; les anciens coffres déjà gagnés **restent tels quels** et s'ouvrent comme avant (Geoffrey).
 - **À suivre** : regarder l'inventaire dans le navigateur (couleurs, contour).
-- **État** : 🧪 sur la branche `geoffrey/tresor-tour` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Geoffrey — Chercher un groupe (LFG)
 - **Pour le joueur** : dans le Lobby (mine classique), un bouton **« Chercher un groupe »**. On est mis en file avec

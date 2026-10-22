@@ -1604,7 +1604,7 @@ Règles (voir CLAUDE.md) :
   de la file après 30 s. Le groupe d'un membre peut changer pendant l'`await` de `pruneLfg` : `lfgValid` est relu
   juste avant de former le lobby.
 
-### Trésors des tours au lieu des coffres (Geoffrey) — branche `geoffrey/tresor-tour`
+### Trésors des tours au lieu des coffres (Geoffrey) — branche `geoffrey/tresor-tour`, ✅ en ligne le 22/10
 - **Quoi** : le boss d'une tour donne `treasureItem(side, q)` (« Trésor démoniaque R5 ») au lieu de `chestItem`.
   `src/config.js` : `RUNE.treasures`, `RUNE.treasureRarity = 'unique'`, `TREASURE_ITEMS` (`stack:false`,
   `chest:{side,q}`, `treasure:true`) ; 6e rareté `unique` (`#c0480f`) dans `RARITY.tiers` (+ `style.css`, `wiki.css`).
