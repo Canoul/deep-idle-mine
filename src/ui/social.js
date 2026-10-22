@@ -1,7 +1,12 @@
 /* Onglet Social : ajouter un ami par pseudo, demandes reçues (accepter / refuser) et envoyées, liste d'amis avec ce
-   qu'ils font (hors ligne, en ligne, en session, dans le lobby n/3) et les boutons Inviter / Rejoindre.
+   qu'ils font (hors ligne, en ligne, en session, dans le lobby n/3) et les boutons Inviter / Rejoindre / Stuff (sa
+   fiche : niveau, spécialisation, pièces portées, stats ; en lecture seule).
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
+import { SKILLS } from '../config.js';
+import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
+import { renderSlots, statsHTML } from './stuff.js';
+import { renderLevel } from './level.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -14,7 +19,10 @@ export const STATUS = {
 };
 export const statusText = f => f.status === 'lobby' ? `${STATUS.lobby.label} (${f.size}/${f.max})` : STATUS[f.status]?.label ?? '';
 
-/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id) } */
+/* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
+export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
+
+/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id) } */
 export function setupSocial(h){
   let st = null, busy = false;
 
@@ -22,7 +30,8 @@ export function setupSocial(h){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
     return `<div class="frow"><span class="fdot ${STATUS[f.status].cls}"></span>`+
       `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
-      `<span class="fbtns"><button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
+      `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
+      `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
       `<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
   }
@@ -65,8 +74,25 @@ export function setupSocial(h){
     else if(d.refuse) act(() => h.refuse(d.refuse));
     else if(d.invite) act(() => h.invite(d.invite), '✔ Invitation envoyée.');
     else if(d.join) act(() => h.join(d.join));
+    else if(d.profile) act(async () => showProfile(await h.profile(d.profile)));
     else if(d.remove && (!d.name || confirm(`Retirer ${d.name} de tes amis ?`))) act(() => h.remove(d.remove));
   };
+
+  /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */
+  function showProfile(p){
+    const box = $('fview').querySelector('.box'), worn = p.stuff || {};
+    box.innerHTML = `<h3>${pxi('helmet')}Stuff de ${esc(p.name)}<button id="fviewClose">Fermer</button></h3>`+
+      `<p class="mut small">${esc(treeText(p.skills) ? 'Spécialisation : ' + treeText(p.skills) : 'Pas encore de spécialisation')}</p>`+
+      `<div class="fviewBody"><div class="stuffGrid"></div>`+
+      `<div class="card stuffStatsCard"><h2>Stats du mineur</h2><div class="stuffLevel"></div><div class="fstats"></div></div></div>`;
+    renderSlots(box.querySelector('.stuffGrid'), worn, 'div');
+    renderLevel(box.querySelector('.stuffLevel'), p.progress);
+    box.querySelector('.fstats').innerHTML = statsHTML(worn, skillEffects(sanitizeSkills(p.skills)));
+    $('fviewClose').onclick = closeProfile;
+    $('fview').hidden = false;
+  }
+  const closeProfile = () => { $('fview').hidden = true; };
+  $('fview').onclick = e => { if(e.target === $('fview')) closeProfile(); };
 
   return {
     set(s){ if(s){ st = s; render(); } },

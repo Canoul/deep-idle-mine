@@ -167,6 +167,13 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return { party: r.party, ...await view(me) };
     },
 
+    /* voir le stuff d'un ami (niveau, pièces portées, skills), même hors ligne ; seulement un ami */
+    async profile(me, input){
+      const f = await friendOf(me, input);
+      if(!f) fail('not_found', 404, 'Ce joueur n\'existe plus.');
+      return { id: f.id, displayId: formatAccountId(f.id), name: displayName(f) || formatAccountId(f.id), ...await game.profile(f.id) };
+    },
+
   };
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); return fn(me, ...rest); }; }

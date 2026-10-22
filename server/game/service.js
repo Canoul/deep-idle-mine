@@ -286,6 +286,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                session: publicSession(active), ended: publicSession(ended) };
     },
 
+    /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
+       porté, skills. Lecture seule, rien sur l'inventaire ni la session. */
+    async profile(accountId){
+      const inv = await loadInventory(accountId);
+      return { stuff: (await loadStuff(accountId, inv)).worn,
+               progress: publicProgress(await loadProgress(accountId)),
+               skills: skillRanks(await loadSkills(accountId)) };
+    },
+
     async setPrefs(me, body){
       const p = sanitizePrefs(body);
       await store.putPrefs(me.id, p);

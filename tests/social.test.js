@@ -163,6 +163,29 @@ test('limites : nombre d\'amis, demandes en attente', async () => {
   await assert.rejects(social.request(D, 'Zoe'), { code:'too_many' });
 });
 
+test('voir le stuff d\'un ami : pièces portées, niveau, spécialisation, même hors ligne ; jamais son inventaire ; refusé si pas ami', async () => {
+  const { social, game, store, advance } = setup();
+  await friends(social, A, C);
+  await store.putInventory(C.id, { slots:[{ item:'Casque en chitine', qty:1, uid:1 }, { item:'Fer', qty:40 }], nextUid:2, credited:[] });
+  await game.stuff(C, { action:'equip', slot:'casque', uid:1, opId:'op-ami-casque' });
+  await store.putProgress(C.id, { xp:1200, credited:[] });                       // niveau 2 : 1 point de skill
+  await store.putSkills(C.id, { tree:'mineur', ranks:{ mine_speed:1 }, ops:[] });
+  advance(SOCIAL_SERVER.onlineFor + 60_000);                                      // Max est hors ligne
+  const p = await social.profile(A, C.id);
+  assert.equal(p.name, 'Max');
+  assert.deepEqual(p.stuff.casque, { item:'Casque en chitine', uid:1 });
+  assert.equal(p.stuff.pioche, null);
+  assert.equal(p.progress.level, 2);
+  assert.deepEqual(p.skills, { tree:'mineur', ranks:{ mine_speed:1 } });
+  assert.equal(JSON.stringify(p).includes('Fer'), false, 'rien de son inventaire');
+  assert.deepEqual(Object.keys(p).sort(), ['displayId', 'id', 'name', 'progress', 'skills', 'stuff']);
+  await assert.rejects(social.profile(D, C.id), { code:'not_friend' });            // pas ami
+  await assert.rejects(social.profile(A, 'n\'importe quoi'), { code:'not_friend' });
+  await assert.rejects(social.profile(A, A.id), { code:'not_friend' });
+  await social.remove(C, A.id);
+  await assert.rejects(social.profile(A, C.id), { code:'not_friend' });            // ami retiré : plus rien
+});
+
 test('relecture : stockage trafiqué nettoyé (ID invalides, doublons, demandes d\'un ami)', () => {
   const s = sanitizeSocial({ friends:['AAAA1111', 'AAAA1111', 'pas un id', 42, 'CCCC3333'],
                              incoming:[{ from:'AAAA1111', at:1 }, { from:'DDDD4444', at:2 }, { from:'DDDD4444', at:3 }, { from:'x', at:1 }, null],
@@ -224,6 +247,9 @@ test('HTTP : s\'inscrire, demander en ami par pseudo, accepter, voir l\'ami en l
     assert.equal(r.data.friends[0].status, 'online', 'Zoe a appelé /api/social : en ligne');
     r = await max('POST', '/api/social/join', { id });
     assert.equal(r.status, 200); assert.equal(r.data.party.members.length, 2);
+    r = await max('POST', '/api/social/profile', { id });
+    assert.equal(r.status, 200); assert.equal(r.data.name, 'Zoe'); assert.equal(r.data.progress.level, 1);
+    assert.equal((await client()('POST', '/api/social/profile', { id })).status, 401);
     r = await zoe('POST', '/api/social/request', { name:'personne' });
     assert.equal(r.status, 404); assert.equal(r.data.error.code, 'not_found');
   } finally { server.close(); }

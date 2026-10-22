@@ -1395,3 +1395,17 @@ Règles (voir CLAUDE.md) :
 - **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
 - **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
 
+
+### Voir le stuff d'un ami (Jules) — branche `jules/voir-stuff-ami`
+- **Serveur** : `game.profile(accountId)` (`server/game/service.js`) renvoie `{ stuff (worn), progress (publicProgress),
+  skills (skillRanks) }`, lecture seule, sans verrou (comme `state`). `social.profile(me, id)` (`server/social/service.js`)
+  passe par `friendOf` (refus `not_friend` 404 si pas ami, ID invalide ou soi-même), ajoute `id`, `displayId`, `name`.
+  Route `POST /api/social/profile { id }` (`server/social/routes.js`), `socialApi.profile` (`src/net/api.js`).
+- **Navigateur** : `src/ui/stuff.js` exporte `renderSlots(el, worn, tag)` (cases + portrait ; `tag 'div'` = lecture
+  seule) et `statsHTML(worn, effects)` (tableau des stats), utilisés par l'onglet Stuff (rendu identique à avant) et par
+  la fiche `#fview` (`src/ui/social.js`, `showProfile`, bouton `data-profile` ; `index.html`, `style.css`).
+- **Tests** : `tests/social.test.js` (+1 : fiche d'un ami hors ligne, pièce portée, niveau 2, skills ; rien de
+  l'inventaire, clés exactes ; refus pas ami / ID bidon / soi-même / ami retiré ; HTTP 200 et 401) : 14/14 ✅.
+- ✅ Chromium (mode dev, 2 comptes, pioche légendaire équipée) : fiche affichée à 1440×900 et 390×844, bulle d'info de
+  la pièce, stats, niveau, « Fermer » et clic à côté ferment ; 0 erreur console. ⚠️ Spécialisation affichée pas vue à
+  l'écran (le compte de test n'avait pas de point de skill ; `treeText` est simple).

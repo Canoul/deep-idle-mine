@@ -278,9 +278,16 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .focusNote button{margin-left:auto;min-height:0;padding:0 calc(2*var(--u))}
 
 /* ---------- fenêtres (treasure, stuff, four, concasseur) : ne couvrent que leur onglet ---------- */
-#loot,#spick,#fpick,#cpick{position:absolute;inset:0;background:rgba(8,5,4,.8);display:flex;align-items:flex-start;justify-content:center;padding:10vh calc(6*var(--u)) 0;z-index:9}
+#loot,#spick,#fpick,#cpick,#fview{position:absolute;inset:0;background:rgba(8,5,4,.8);display:flex;align-items:flex-start;justify-content:center;padding:10vh calc(6*var(--u)) 0;z-index:9}
 #loot .box,#spick .box,#fpick .box,#cpick .box{max-width:calc(220*var(--u));width:96%}
-#loot h3,#spick h3,#fpick h3,#cpick h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl);display:flex;align-items:center;gap:calc(3*var(--u))}
+#loot h3,#spick h3,#fpick h3,#cpick h3,#fview h3{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-xl);display:flex;align-items:center;gap:calc(3*var(--u))}
+/* fiche d'un ami (onglet Social) : les cases du stuff à gauche, les stats à droite, rien de cliquable */
+#fview{padding-top:4vh}
+#fview .box{max-width:calc(580*var(--u));width:96%}
+#fview .fviewBody{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
+#fview .stuffStatsCard{margin-top:0;max-width:none}
+#fview .stuffSlot,#fview .stuffSlot .slot{cursor:default}
+#fview h3 button{margin-left:auto;font-size:var(--fs)}
 #loot img,#fpick img,#cpick img,#spick img{width:calc(16*var(--u));height:calc(16*var(--u))}
 .lootRare{color:var(--acc-lt);margin-bottom:calc(3*var(--u))}
 .lootList{display:flex;flex-direction:column;gap:var(--u)}
@@ -481,6 +488,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 
 /* ---------- écrans moyens : la session passe en une colonne qui défile (mine en haut) ---------- */
 @media (max-width:1100px){
+  #fview .fviewBody{grid-template-columns:1fr}
+  #fview .stuffStatsCard{margin-top:calc(18*var(--u))}
   .orb{display:none}
   .runGrid{grid-template-columns:calc(130*var(--u)) minmax(0,1fr) calc(22*var(--u))}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
