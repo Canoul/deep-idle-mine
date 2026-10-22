@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
+- **Pour le joueur** :
+  - **Concasseur, bouton « ? »** : pour chaque bloc, la chance d'avoir **une gemme** (les trois s'additionnent :
+    0,3 % par lot de terre, pas 0,1 %), « 1 lot sur N » et le temps moyen de concassage (ex. terre : une gemme toutes
+    les ≈ 5 h 30, un Treasure T1 tous les ≈ 7 jours), puis le détail gemme par gemme. Même tableau dans le wiki.
+  - **Wiki** : nouvelles sections **Mine instantanée** (horaires, mine, plumes, gravité et échelles, rappels) et
+    **Amélioration** (qualités R1 à R7, paliers +1 à +3 et leur coût) ; donjon « à chaque partie, area 4 et area 5 » ;
+    onglets à jour (barre d'action en bas, Amélioration, Historique, vrai Social) ; la Plume d'ange n'est plus « pas
+    encore obtenable » ; plumes et cristaux affichent leur usage.
+- **À suivre** : le wiki décrit l'identification **sans stats** (branche `geoffrey/identification-sans-stats`) : à
+  mettre en ligne avec ou après elle.
+- **État** : 🧪 sur la branche `geoffrey/wiki-nouveautes` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Mine instantanée avec gravité, plumes, Amélioration, donjons partout
 - **Pour le joueur** :
   - **Mine instantanée** : les mineurs ne volent plus. Ils tombent quand il n'y a rien sous eux et posent des

@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { CRUSHER, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { createInventory, addAll, countOf, serialize } from '../src/meta/inventory.js';
-import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher } from '../src/meta/crusher.js';
+import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher, dropOdds, aboutTime } from '../src/meta/crusher.js';
+import { rollLoot } from '../src/meta/loot.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { fakeLive } from './helpers.js';
@@ -104,6 +105,28 @@ test('fréquence du butin proche des chances (200 000 lots de terre, hasard dét
   assert.equal(c.crushed, N);
   for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 120 && got[g] < 290, `${g} : ${got[g]} (attendu ~200)`);
   assert.ok(got['Treasure T1'] > 5 && got['Treasure T1'] < 45, `Treasure T1 : ${got['Treasure T1']} (attendu ~20)`);
+});
+
+test('aide « ? » : les chances affichées sont celles du tirage (gemmes additionnées, 1 lot sur N, temps moyen)', () => {
+  const [gem, tre] = dropOdds('Terre');
+  assert.equal(gem.family, 'gem');
+  assert.ok(Math.abs(gem.chance - 0.003) < 1e-12);                 // 3 gemmes à 0,1 % = 0,3 % d'en avoir une
+  assert.equal(Math.round(gem.every), 333);
+  assert.equal(aboutTime(gem.sec), '5 h 30');                         // 333 lots d'une minute
+  assert.equal(aboutTime(gem.items[0].sec), '16 h 40');
+  assert.equal(tre.items[0].item, 'Treasure T1');
+  assert.equal(aboutTime(tre.sec), '7 jours');
+  assert.deepEqual(dropOdds('Fer'), []);
+  assert.equal(aboutTime(90), '2 min'); assert.equal(aboutTime(Infinity), 'jamais');
+  /* contrôle par le vrai tirage : 1 million de lots de pierre, toutes familles */
+  for(const block of Object.keys(CRUSHER.loot)){
+    const rng = mulberry32(7), N = 1_000_000, got = {};
+    for(let i = 0; i < N; i++) for(const k of Object.keys(rollLoot(CRUSHER.loot[block], rng))) got[k] = (got[k] || 0) + 1;
+    for(const fam of dropOdds(block)){
+      const n = fam.items.reduce((s, it) => s + (got[it.item] || 0), 0), exp = fam.chance * N;
+      assert.ok(Math.abs(n - exp) < 5 * Math.sqrt(exp) + 1, `${block} ${fam.family} : ${n} (attendu ~${Math.round(exp)})`);
+    }
+  }
 });
 
 test('retirer, récupérer une case, tout récupérer ; opId rejoué sans effet', () => {

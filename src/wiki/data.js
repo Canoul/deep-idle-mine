@@ -1,10 +1,11 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON } from '../config.js';
+         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, UPGRADE, INSTANT_MINE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
+import { dropOdds } from '../meta/crusher.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
@@ -97,6 +98,7 @@ export function sourcesOf(item){
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
+  if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   for(const [tr, l] of Object.entries(LOOT)){
     const a = l.always.find(x => x.item === item);
@@ -113,7 +115,9 @@ export function sourcesOf(item){
 /* à quoi sert un objet : liste de textes courts */
 export function usesOf(item){
   const d = ITEMS[item], out = [];
-  if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`);
+  if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
+  if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
+    out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
   if(d?.cat === 'treasure') out.push('S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
   if(d?.cat === 'combustible') out.push('Combustible du four');
   if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].out}`);
@@ -163,7 +167,8 @@ export const furnaceRows = () => [
   ...FURNACE.alloys.map(a => ({ mode:'Alliage', out: a.out, inputs: a.in, fuel: a.fuel, time: a.time })),
 ];
 /* concasseur : une ligne par bloc (chances pour un lot de CRUSHER.batch blocs) */
-export const crusherRows = () => Object.entries(CRUSHER.loot).map(([block, l]) => ({ block, items: l.oneOf.flatMap(f => f.items) }));
+/* concasseur : une ligne par bloc ; par famille (une gemme, un treasure) : chance par lot, 1 lot sur N, temps moyen */
+export const crusherRows = () => Object.keys(CRUSHER.loot).map(block => ({ block, families: dropOdds(block) }));
 export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier) }));
 
 /* ---------- stats ---------- */
@@ -183,8 +188,8 @@ const STAT_HELP = {
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
   bridges:    'Passerelles qu\'il emporte pour traverser les trous.',
-  mineSpeedPct:'Bonus de vitesse de minage en % (amélioration) : vitesse = (base + bonus fixes) × (1 + ce %).',
-  damagePct:  'Bonus de dégâts en % (amélioration) : dégâts = (base + bonus fixes) × (1 + ce %).',
+  mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
+  damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
   crit:       'Chance qu\'un coup contre un mob fasse le double de dégâts.',
   oneTap:     'Chance de casser un bloc instantanément.',
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
@@ -233,3 +238,15 @@ export function fmt(n){
 export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
   bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
   hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });
+
+/* ---------- amélioration ---------- */
+export const qualityRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance }));
+export const upgradeRows = () => UPGRADE.levels.map((l, i) => ({ level: i + 1, pct: l.pct, chance: l.chance, cost: l.cost }));
+/* matériaux pour monter une pièce de +0 à +3 sans échec */
+export const upgradeTotal = () => UPGRADE.levels.reduce((t, l) => { for(const [k, v] of Object.entries(l.cost)) t[k] = (t[k] || 0) + v; return t; }, {});
+
+/* ---------- mine instantanée ---------- */
+export const instantInfo = () => ({ every: INSTANT_MINE.everyHours, game: INSTANT_MINE.duration, real: INSTANT_MINE.duration / 2,
+  w: INSTANT_MINE.w, h: INSTANT_MINE.h, comp: INSTANT_MINE.comp, feather: INSTANT_MINE.feather, fMin: INSTANT_MINE.featherMin,
+  fMax: INSTANT_MINE.featherMax, item: INSTANT_MINE.featherItem, max: INSTANT_MINE.maxPerMine, reach: INSTANT_MINE.featherReach,
+  lost: INSTANT_MINE.interruptMax, notify: INSTANT_MINE.notify });
