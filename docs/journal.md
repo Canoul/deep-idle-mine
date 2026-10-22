@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Pièges dans la mine
+- **Pour le joueur** : à partir de l'area 1, une area peut cacher 0, 1 ou 2 **pièges** : une petite salle vide de
+  5 × 3 entourée de roche normale (on ne la voit pas, seul un coin reste noir). Le mineur qui mine un bloc de la paroi
+  libère **5 mobs** de l'area (jamais de mimic), plus solides (PV × 1,5) et plus rapides (× 1,5), qui le chassent
+  partout. Un **barbare** dans le groupe vient à la rescousse, quels que soient ses réglages. Le wiki l'explique.
+- **Décisions** : 2 tirages de 25 % par area ; seul l'intérieur est caché (la paroi se découvre comme de la roche) ;
+  barbare « comme au donjon » ; physique normale : les mobs ne grimpent pas, un trou en hauteur les laisse dans leur
+  salle (le mineur choisit alors selon son réglage de combat).
+- **À suivre** : ~3 pièges ouverts par session à 3, chacun prend 1 à 4 min de combat ; profondeur moyenne presque
+  inchangée (215,4 contre 214,6 sans pièges), aucun blocage. À juger en jeu : trop facile ? trop long ?
+- **État** : 🧪 sur la branche `geoffrey/piege` (pas en ligne)
+
 ## 22/10/2026 — Jules — Chat de session
 - **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
   joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.

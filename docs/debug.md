@@ -1529,3 +1529,26 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
   sessions confondues ; pas d'affichage MI / tour.
 
+### Piège (Geoffrey) — branche `geoffrey/piege`
+- **Quoi** : `src/sim/trap.js` (nouveau) : `planTraps(seed, k, dungeon)` (rng `hash(seed,k+1) ^ TRAP.salt`, 2 tirages,
+  30 essais de placement : marges, colonne du treuil ± 2, ni contre le donjon ni contre l'autre piège à 1 case près),
+  `carveTrap` (salle → air, case d'air de la paroi → terrain principal), `registerTrap` (G.traps, G.veil = cases de la
+  salle cachées), `updateTraps` (chaque tick : une case de paroi à 0 → `spring`), `spring` (tout `seen`, 5 mobs posés sur
+  le sol de la salle avec `trap`, `hunt` = mineur le plus proche du trou, `speed`). Les mobs n'existent dans `G.mobs`
+  qu'après le déclenchement (rien à cacher dans la vue, le rendu, l'IA). `world.js` : donjon et pièges partagent `put`
+  (comptes de l'area). `session.js` : `revealAround` saute `veiled`, `updateTraps` entre les mineurs et les mobs.
+  `mobs.js` : `preyOf` → `o.hunt` après la provocation ; `inChase` (pas de limite mobChaseRange pour la cible chassée) ;
+  `stepOf` (mobStep / speed) ; walkerCap sans les mobs de piège. `ai.js` : `goFight` (sorti de `helpAlly`), `trapGoal`
+  (barbare, dans `decideWork` avant `dungeonGoal`), `fight` : un mob de piège inapprochable est ignoré tout de suite.
+  `TRAP` en config ; wiki (donjon → « Les pièges », `trapInfo`).
+- **Tests** : `tests/trap.test.js` 12/12 (tirage, placement, génération et comptes, caché, déclenché, trou en hauteur,
+  mob inapprochable, mimic, vitesse et chasse sans limite, hors quota et minuteur, barbare Fuir sans Aider allié, sans
+  barbare). `world.test.js` : « minerais exacts » ne vaut plus pour une area avec piège (comme le donjon). Voisins :
+  world, mobs, goblin, dungeon, treasure, judgment, view, diagnostics, focus, winch, team, session, wiki : ✅.
+- **Vérification** : ✅ 5 sessions à 3 (seeds de référence) : ~3 pièges générés, ~2,8 ouverts, les 5 mobs toujours tués
+  (70–250 s par piège) ; profondeur 212,8 (215,4 après la correction ci-dessous, 0 blocage) contre 214,6 sans pièges, areas 4,0 partout. `--skills mixed` :
+  combat plus court (~110 s contre ~150 s). ❌→✅ seed 15838 : faux « BLOQUÉ » (Rouge au-dessus de la salle, mobs
+  coincés dessous, 15 s d'attente par mob) corrigé par l'abandon immédiat du mob inapprochable.
+- **Points fragiles** : les seeds de non-régression des areas ≥ 1 ne jouent plus exactement la même partie (cases de
+  salle vidées) ; un mineur qui tombe par le haut dans la salle se bat à 5 contre 1 ; ⚠️ pas regardé dans le
+  navigateur (coin noir, apparition des mobs).

@@ -66,12 +66,12 @@ function mobs(){
     ...D.MOB_TYPES.map(m => { const t = r.types[m]; return t.chance ? num(`${Math.round(t.chance * 100)} %<div class="small mut">${f(t.hp)} PV</div>`) : num(none); }),
     num(`${f(Math.round(r.spawn[0]))} à ${f(Math.round(r.spawn[1]))} s`), num(r.cap)]));
   $('w-mobs-table').innerHTML = table(['Area', ...D.MOB_TYPES.map(m => '#' + D.MOB_INFO[m].name), '#Une apparition toutes les', '#Mobs en même temps (max)'], rows) +
-    `<p class="small mut">Le % = la chance qu'une apparition près de ton mineur soit ce mob, selon l'area où il se trouve. Les PV dépendent de l'area où le mob apparaît. Le rythme et le maximum dépendent de l'area la plus profonde ouverte (les mimics ne comptent pas dans le maximum). Première apparition après ${R.first} s de session. Avec les dégâts de base (${STATS.damage}), une bestiole de l'area 0 tombe en ${D.hitsToKill(D.MOB_INFO.bestiole?.hp0 ?? 0)} coups.</p>`;
+    `<p class="small mut">Le % = la chance qu'une apparition près de ton mineur soit ce mob, selon l'area où il se trouve. Les PV dépendent de l'area où le mob apparaît. Le rythme et le maximum dépendent de l'area la plus profonde ouverte (les mimics et les mobs des pièges ne comptent pas dans le maximum). Première apparition après ${R.first} s de session. Avec les dégâts de base (${STATS.damage}), une bestiole de l'area 0 tombe en ${D.hitsToKill(D.MOB_INFO.bestiole?.hp0 ?? 0)} coups.</p>`;
 }
 
 /* ---------- donjon ---------- */
 function dungeon(){
-  const g = D.dungeonInfo(), pct = Math.round(g.chance * 100);
+  const g = D.dungeonInfo(), t = D.trapInfo(), pct = Math.round(g.chance * 100);
   const list = g.areas.map(a => `l'area ${a}`), where = list.length > 1 ? `${list.slice(0, -1).join(', ')} et ${list.at(-1)}` : list[0];
   const intro = g.chance >= 1
     ? `<b>À chaque partie</b>, un donjon est caché dans ${g.areas.length > 1 ? list.join(' et un dans ') : where}`
@@ -87,7 +87,11 @@ function dungeon(){
       <p><b>Avec un barbare dans le groupe</b> (un joueur qui a choisi l'arbre Barbare) : tous les mineurs le rejoignent et creusent autour du donjon jusqu'à trouver l'entrée, puis <b>attendent devant</b>. Le <b>barbare entre le premier</b> ; ensuite les autres viennent l'aider (sauf ceux réglés sur <b>Fuir</b>, qui retournent miner).</p>
       <p><b>Sans barbare</b> : personne n'y entre, chacun mine comme d'habitude. Un mineur qui s'y retrouve par accident est <b>effrayé ${g.scared} s</b> : si le minotaure l'attaque pendant ce temps, il <b>s'enfuit d'un coup à la surface</b> (il garde son sac).</p></div>
   </div>
-  <p class="tip">💡 Les murs ne bloquent pas que les mineurs : le treuil ne passe jamais par un donjon, et aucun autre monstre n'apparaît dedans.</p>`;
+  <p class="tip">💡 Les murs ne bloquent pas que les mineurs : le treuil ne passe jamais par un donjon, et aucun autre monstre n'apparaît dedans.</p>
+  <h3>🪤 Les pièges</h3>
+  <p>À partir de l'area ${t.from}, chaque area fait <b>${t.tries} tirages de ${Math.round(t.chance * 100)} %</b> pour cacher un piège (donc 0, 1 ou ${t.tries} pièges, ${f(t.mean)} en moyenne) : une salle vide de ${t.w} × ${t.h} cases, entourée de <b>blocs normaux</b> de l'area. Rien ne la trahit, sauf un coin qui reste noir même éclairé : ton mineur ne peut pas voir dedans.</p>
+  <p>Dès qu'un bloc de la paroi est miné, le piège s'ouvre : <b>${t.mobs} mobs</b> de l'area (jamais de mimic), avec <b>${f(t.hpMul)} fois plus de PV</b> et <b>${f(t.speedMul)} fois plus rapides</b>, chassent le mineur, où qu'il aille. Ils ne grimpent pas : si le trou est en hauteur, ils restent dans leur salle. Ils ne comptent pas dans le maximum de mobs et ne changent pas le rythme des apparitions.</p>
+  <p><b>Avec un barbare dans le groupe</b>, il lâche tout et vient à la rescousse, quels que soient ses réglages (sauf s'il doit remonter : oxygène, sac plein, fin de session).</p>`;
 }
 
 /* ---------- mine instantanée ---------- */
