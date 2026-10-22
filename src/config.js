@@ -466,15 +466,24 @@ export const STUFF = {
    réussite = chance ; un échec ne coûte que les matériaux. Matériaux : Plume d'ange (mine instantanée) et Cristal de
    pleine lune (minotaure du donjon, DUNGEON.loot). Toutes les valeurs sont provisoires (équilibrage). */
 export const UPGRADE = {
+  /* fourchette d'UNE ligne (% de la valeur de l'objet) ; total max = lines × max : 25, 30, 35, 40, 50, 75, 100 %
+     (nerf du 22/10/2026, avant 30 à 220 %) ; min = même rapport min/max qu'avant */
   qualities: [
-    { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:10, max:30, lines:1 },
-    { q:2, label:'Bon',            color:'#00FF00', chance:0.24, min:20, max:40, lines:1 },
-    { q:3, label:'Haute qualité',  color:'#0080FF', chance:0.24, min:30, max:60, lines:1 },
-    { q:4, label:'Excellent',      color:'#FF00FF', chance:0.14, min:25, max:40, lines:2 },
-    { q:5, label:'Antique',        color:'#FFA500', chance:0.04, min:35, max:50, lines:2 },
-    { q:6, label:'Mystérieux',     color:'#FF0000', chance:0.03, min:30, max:50, lines:3 },
-    { q:7, label:'Légendaire',     color:'#FFFF00', chance:0.01, min:35, max:55, lines:4 },
+    { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:8,    max:25, lines:1 },
+    { q:2, label:'Bon',            color:'#00FF00', chance:0.24, min:15,   max:30, lines:1 },
+    { q:3, label:'Haute qualité',  color:'#0080FF', chance:0.24, min:17.5, max:35, lines:1 },
+    { q:4, label:'Excellent',      color:'#FF00FF', chance:0.14, min:12.5, max:20, lines:2 },
+    { q:5, label:'Antique',        color:'#FFA500', chance:0.04, min:17.5, max:25, lines:2 },
+    { q:6, label:'Mystérieux',     color:'#FF0000', chance:0.03, min:15,   max:25, lines:3 },
+    { q:7, label:'Légendaire',     color:'#FFFF00', chance:0.01, min:16,   max:25, lines:4 },
   ],
+  /* barème des fourchettes : une pièce identifiée garde le numéro du barème (champ s, absent = 1). À la relecture, une
+     ligne d'un ancien barème est ramenée dans la fourchette actuelle À LA MÊME PLACE (le haut de l'ancienne fourchette
+     donne le haut de la nouvelle) : les pièces déjà tirées suivent le rééquilibrage (src/meta/piece.js, sanitizePiece). */
+  scale: 2,
+  oldScales: {
+    1: { 1:[10,30], 2:[20,40], 3:[30,60], 4:[25,40], 5:[35,50], 6:[30,50], 7:[35,55] },   // jusqu'au 22/10/2026
+  },
   discover: { qualities:[6, 7], chance:0.25, value:1 },
   /* stats qui peuvent tomber sur une ligne (toutes celles qui ont une valeur en x ; pas la Découverte, à part) */
   pool: ['mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
@@ -482,9 +491,9 @@ export const UPGRADE = {
   /* prix d'un point en x (catalogue de GAME_DESIGN §3, mineur de base) ; crit : 130 x = 10 % (décision du créateur) ;
      mineSpeedPct = 1 % de 1 vitesse de minage (1300 / 100), damagePct = 1 % de 5 dégâts (40 × 5 / 100) ;
      oneTap, piercing, looting : mesurés par simulation le 21/10 (GAME_DESIGN §3) : coup unique ≈ minage en % (13),
-     perçage ≈ 7 (les blocs en plus remplissent le sac), butin des mobs : provisoire (le butin des mobs n'a pas encore de valeur en x) */
+     perçage ≈ 7 (les blocs en plus remplissent le sac), butin des mobs : 10 x par % (22/10, décision du créateur : 100 x = +10 %) */
   prices: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
-            discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:2 },
+            discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:10 },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },

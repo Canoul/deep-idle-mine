@@ -1113,3 +1113,20 @@ Règles (voir CLAUDE.md) :
 - **Tests** : camera (nouveau test setRows), nav : verts. ✅ Captures : 1918×904 (24 lignes, ciel visible, colonnes
   jusqu'en bas), 1440×900 (40 lignes, ×1 exact, colonnes au-dessus de la barre), 390×844 sans débordement.
 
+
+### Identification : nerf des qualités, butin des mobs, pièces existantes mises à jour (Geoffrey) — `main`, en ligne le 22/10
+- **Demande** : butin des mobs à +10 % pour 100 x ; total max des qualités R1 à R7 = 25 / 30 / 35 / 40 / 50 / 75 / 100 %
+  (avant 30 à 220 %) ; mettre à jour les pièces déjà identifiées ; vérifier le tirage (un joueur, Crousti, a eu 5 R4).
+- **Tirage vérifié** : le serveur tire avec `crypto` (pas de seed) ; 1 million de tirages conformes aux chances
+  (R4 13,98 % pour 14 %) ; le navigateur crée un identifiant de demande neuf à chaque clic (pas de réponse rejouée).
+  5 R4 de suite ≈ 1 chance sur 19 000 : malchance (ou chance), pas un bug. Les données de Crousti n'ont pas été lues
+  (pas d'accès à la base d'ici).
+- **Config** (`UPGRADE`) : `prices.looting` 2 → 10 ; fourchettes d'une ligne R1 8-25, R2 15-30, R3 17,5-35, R4 12,5-20,
+  R5 17,5-25, R6 15-25, R7 16-25 (max = total ÷ lignes ; min : même rapport min/max qu'avant).
+- **Pièces existantes** : `UPGRADE.scale` (= 2) et `UPGRADE.oldScales[1]` (anciennes fourchettes). Une pièce tirée
+  porte `s` ; sans `s` (= barème 1), `sanitizePiece` ramène chaque ligne à la même place dans la nouvelle fourchette
+  (haut → haut, bas → bas), garde la Découverte et le niveau. Fait à chaque relecture de l'inventaire et du stuff,
+  enregistré à la prochaine écriture. Sans ça, une ancienne ligne hors fourchette aurait dés-identifié la pièce.
+  Une session déjà lancée garde ses stats figées jusqu'à la fin.
+- **Tests** : `tests/amelioration.test.js` (nouveau test du barème, fixtures au barème 2) ; suite complète + anticheat
+  620/620.
