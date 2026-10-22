@@ -685,6 +685,13 @@ export const MINE_MODES = [
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000 };
 
+/* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
+   Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
+   maxLen : caractères par message · keep : derniers messages gardés par session · gapMs : délai minimal entre deux
+   messages d'un joueur · poll : rafraîchissement dans le navigateur (ms) · ttlMs : un salon sans message depuis ce
+   temps est oublié (filet de sécurité, la session dure 1 h) */
+export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3 };
+
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
 export const PREF_OPTIONS = {

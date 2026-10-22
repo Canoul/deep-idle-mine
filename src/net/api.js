@@ -49,6 +49,8 @@ export const gameApi = {
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
   focus:  focus        => request('POST', '/api/game/focus', { focus }),
+  chat:   after        => request('GET', '/api/game/chat?after=' + (after | 0)),   // messages du chat de la session
+  say:    text         => request('POST', '/api/game/chat', { text }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
   furnace: op          => request('POST', '/api/game/furnace', op),

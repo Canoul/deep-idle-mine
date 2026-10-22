@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Chat de session
+- **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
+  joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.
+- **Décisions** (Jules) : seulement les joueurs de la session ; panneau dans l'onglet Session ; rien n'est gardé
+  (effacé à la fin de la session).
+- **À suivre** : pas encore dans la mine instantanée ni dans les tours (le serveur l'accepte déjà, il manque
+  l'affichage). Le chat est perdu si le serveur redémarre pendant la session (mise en ligne d'un changement).
+- **État** : 🧪 sur la branche `jules/chat-session` (pas en ligne)
+
 ## 22/10/2026 — Jules — Les mineurs vont chercher les résidus
 - **Pour le joueur** : un résidu angélique ou démoniaque découvert attire maintenant le mineur autant qu'un
   treasure : il fait le détour pour le miner (avant : il ne les prenait qu'en passant). Statut « Va chercher un

@@ -2,7 +2,7 @@
 
    - Le serveur crée la session (seed, joueurs, préférences, heure de départ) et la FAIT TOURNER lui-même, en direct
      (server/game/live.js) : c'est la seule copie de la partie. Les navigateurs ne font que l'afficher.
-   - Le navigateur ne peut que dire « je lance », « je quitte », « focus », et lire l'état. Il n'écrit jamais dans un
+   - Le navigateur ne peut que dire « je lance », « je quitte », « focus », écrire dans le chat, et lire l'état. Il n'écrit jamais dans un
      inventaire et ne calcule aucun résultat : il n'y a rien à vérifier.
    - Un choix (quitter, focus) s'applique tout de suite dans la partie ; il est enregistré avec son tick, ce qui
      permet de reconstruire la partie à l'identique après un redémarrage du serveur.
@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, chestItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, chestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -37,6 +37,7 @@ import { identify, upgrade, enchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
+import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
 
 export class GameError extends Error {
@@ -108,6 +109,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* les parties en direct ; à la fin de l'une d'elles, son coffre est partagé et versé */
   const live = liveRunner({ onEnd: (id, summary) => { settleWith(id, summary).catch(console.error); } });
   const startLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);
+  const chat = createChat({ clock });   // chat des sessions, en mémoire (effacé à la fin de chaque session)
   const startHooks = [];           // appelés après le lancement d'une session normale (comptes des joueurs)
 
   /* ---------- lecture ---------- */
@@ -252,6 +254,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       }
       rec = await store.getGameSession(id);
       rec.status = 'done'; rec.result = summary; rec.endedAt = clock();
+      chat.drop(id);
       await store.putGameSession(rec);
     }).finally(() => settling.delete(id));
     settling.set(id, p);
@@ -409,7 +412,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
             /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
             live.close(rec.id);
             rec.leaves.push({ account: me.id, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
-            rec.status = 'done'; rec.endedAt = now;
+            rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);
             rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
           } else {
             if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
@@ -445,6 +448,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           return { event: ev };
         });
       });
+    },
+
+    /* chat de la session : seuls ses joueurs encore là écrivent ; le nom affiché est celui de la session (serveur),
+       jamais celui envoyé par le navigateur. En mémoire seulement (server/game/chat.js). */
+    async chatPost(me, body = {}){
+      const rec = await activeOf(me.id);
+      if(!rec || rec.status !== 'running') fail('no_session', 404, 'Aucune session en cours.');
+      const r = chat.post(rec.id, me.id, rec.players.find(p => p.account === me.id).name, body.text);
+      if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
+      if(r.error === 'too_fast') fail('too_many', 429, 'Doucement : un message par seconde au plus.');
+      return { message: r.msg };
+    },
+    /* messages de sa session après le numéro after (absent ou invalide : tous ceux gardés) */
+    async chatGet(me, after){
+      const rec = await activeOf(me.id);
+      if(!rec) fail('no_session', 404, 'Aucune session en cours.');
+      return { messages: chat.since(rec.id, Number.isSafeInteger(after) && after > 0 ? after : 0) };
     },
 
     /* la partie, pour l'afficher : depuis le tick since que le navigateur a déjà (absent : la carte entière).

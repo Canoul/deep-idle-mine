@@ -140,6 +140,10 @@
       <div class="row" style="margin-top:6px"><span>XP de la session</span><span id="xpBox">0</span></div>
       <div class="mut" style="margin-top:6px;font-size:12px">Versé dans l'inventaire à la fin de la session.</div>
     </div>
+    <!-- chat des joueurs de la session (src/ui/chat.js) -->
+    <div class="card" id="chatCard"><h2>Chat</h2><div id="chatLog" aria-live="polite"></div>
+      <form id="chatForm" class="chatForm"><input id="chatInput" autocomplete="off" placeholder="Message…" title="Écrire aux joueurs de la session"><button>Envoyer</button></form>
+      <div id="chatNote" class="mut small"></div></div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
   </aside>
 </main>
