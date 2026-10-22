@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Jules — Téléphone : la mine ne rétrécit plus en boucle
+- **Pour le joueur** : sur téléphone, la mine de la session rapetissait d'une ligne à chaque instant puis se
+  remettait à grandir (au rechargement, en tournant le téléphone, en changeant d'onglet) : un effet « respiration »
+  qui donnait mal au cœur. Elle a maintenant une taille fixe : toute la largeur, 34 lignes de haut.
+- **À suivre** : la mine instantanée et la tour, sur téléphone, n'ont pas été vérifiées en vrai (pas de signalement).
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture d'une area à 60 %
 - **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
   suivante (40 % avant). (Le seau du treuil est revenu à 0,85 × en même temps, mis en ligne par Jules : entrée suivante.)

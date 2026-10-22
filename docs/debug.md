@@ -1558,3 +1558,22 @@ Règles (voir CLAUDE.md) :
   areas 1,0, prof 95,4 (area 1 : 159 à 235 / 240).
 - **Points fragiles** : solo débutant limité aux areas 0-1 ; le wiki (`src/wiki/data.js`) lit `CFG.unlockRatio`, le
   texte de `wiki.html` est écrit à la main (mis à 60 %).
+
+### Mine qui rétrécit et grandit en boucle sur téléphone (Jules) — branche `jules/fix-mine-mobile`, ✅ en ligne le 22/10
+- **Cause** : `fitMine` (`src/ui/fit.js`) prend la hauteur de `#cvWrap` pour choisir le nombre de lignes. Sur
+  téléphone (≤ 700 px), `#cv` est `position:static` : la boîte prend la hauteur du canvas affiché, donc la mine se
+  calait sur sa propre taille. `H = floor(rows × 16 × s)` tombe sous `rows × 16 × s` → `floor(h / (16 s))` = une
+  ligne de moins à chaque appel (toutes les 120 ms), jusqu'à minRows (20) ; et au 1er appel la boîte vaut la taille
+  du dessin non calé (544 px) → 48 lignes. Le test `> 60` censé détecter « sans hauteur imposée » ne marchait donc
+  jamais. Reproduit dans le navigateur (playwright, 393×852 dpr 2,625 : 37 → 20 lignes en 2 s, regrandit au
+  rechargement) ; en simulant fit.js : la taille dérive dans 87 % des cas (largeurs 300–440, dpr 1,5–4).
+- **Correction** : hauteur imposée seulement si `getComputedStyle(cv).position === 'absolute'` (ordinateur et
+  écrans moyens) ; sinon le nombre de lignes ne bouge plus (34 = `VIEW_ROWS`), la mine se cale sur la largeur.
+- **Tests** : `tests/fit.test.js` (nouveau, 3 : téléphone stable pour largeurs 300–440 × dpr 2 / 2,625 / 3, échouait
+  avant ; largeur remplie ; écran large inchangé) ✅. Navigateur : 360 / 390 / 393 / 412 / 430 px stables à 34
+  lignes ; 1280–1920 px inchangés (36–40 lignes selon la hauteur) ; écrans moyens (800–1024, et paysage 852×393) :
+  la hauteur vient des panneaux, la barre d'adresse (±56 px) ne change rien ✅.
+- **Non vérifié** : `fitInstant` (mine instantanée) et `fitCanvas` (tour) gardent le test `> 60` ; sur téléphone
+  `#miRun` / `#twRun` restent `position:fixed`, leur boîte peut suivre le canvas quand il est plus petit que la place
+  → même dérive possible. Pas reproduit (pas de signalement).
+
