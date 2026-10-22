@@ -521,7 +521,7 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10
 Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
 - **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 100 plumes et 15 cristaux pour monter une pièce à +3 (sans échec). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
 
-**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce, définitif.** Une pièce non identifiée peut être enchantée ; identification et rune s'additionnent. Chaque ligne de rune vaut un **% de la valeur de la pièce enchantée** (même conversion que l'identification) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
+**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce, définitif.** **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur de la pièce enchantée** (même conversion que l'identification) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
 - **Coffres des tours** : *Coffre angélique R1 à R7* et *Coffre démoniaque R1 à R7* (un objet par qualité, empilables, contour selon la qualité : R1 commun → R5-R7 légendaire). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
 - Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % de la valeur de la pièce ».
 
@@ -553,16 +553,17 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
 - **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
 - Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
-- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) :
+- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) *(chances données par le créateur le 22/10/2026 ; avant : gemme 0,3 / 0,45 / 0,36 %, treasure 0,01 / 0,015 / 0,02 %)* :
 
-  | 100 blocs | Chaque gemme inférieure (rubis, saphir, jade) | Treasure |
+  | 100 blocs | Une gemme (rubis, saphir ou jade, 1/3 chacune) | Treasure |
   |---|---|---|
-  | Terre | 0,1 % | T1 : 0,01 % |
-  | Pierre | 0,15 % | T2 : 0,015 % |
-  | Pierre dure | 0,12 % | T2 : 0,02 % |
+  | Terre | 0,6 % | T1 : 0,5 % |
+  | Pierre | 0,9 % | T2 : 0,3 % |
+  | Pierre dure | 1,2 % | T2 : 0,5 % |
+- **L'aide « ? » et le wiki n'affichent que la chance par lot** : plus de « 1 lot sur N », ni de moyenne, ni de temps estimé avant un butin *(décision du 22/10/2026)*.
 - Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
 - **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.
-- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec ces chances : ≈ 1 gemme toutes les 60 sessions par joueur (≈ 20 en solo), un treasure toutes les ≈ 2 000 sessions. À rééquilibrer si le concasseur doit servir.
+- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 22/10 : ≈ 1 gemme toutes les 30 sessions par joueur, un treasure toutes les ≈ 60 sessions (avant : 60 et ≈ 2 000). À surveiller : le treasure est 25 à 50 fois plus fréquent qu'avant.
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
@@ -597,7 +598,7 @@ Un effort commun à tous les joueurs du serveur.
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.
 - **Quand** : toutes les **2 h pile, heure de Paris** (0 h, 2 h, 4 h… ; heure d'été comprise). Dure **5 min de jeu** (2 min 30 réelles à ×2).
-- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée** (pas de torche). Pas d'oxygène, pas de pods, pas de mobs. **Gravité comme dans la mine normale** *(22/10/2026 ; avant : il volait dans les galeries)* : sans appui, le mineur tombe ; pour **remonter**, il pose une **échelle** (temps de pose et skills comme dans la mine normale, échelle de 2 comprise). Échelles **illimitées** et **partagées** (tout le monde peut prendre celles des autres). Pas de limite de chute ni d'étourdissement ici (mine de 5 min).
+- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée**, mais **cachée au départ** *(22/10/2026, décision du créateur)* : comme dans la mine normale, chaque mineur **découvre** les cases autour de lui dans un rayon de sa stat **Découverte** (le rayon entier, puisque tout est éclairé) ; ce qui est découvert l'est pour tout le monde. Un mineur ne va chercher qu'un tas de plumes **déjà découvert**. Le navigateur ne reçoit jamais le contenu des cases cachées (seulement le nombre de tas restants) ; (pas de torche). Pas d'oxygène, pas de pods, pas de mobs. **Gravité comme dans la mine normale** *(22/10/2026 ; avant : il volait dans les galeries)* : sans appui, le mineur tombe ; pour **remonter**, il pose une **échelle** (temps de pose et skills comme dans la mine normale, échelle de 2 comprise). Échelles **illimitées** et **partagées** (tout le monde peut prendre celles des autres). Pas de limite de chute ni d'étourdissement ici (mine de 5 min).
 - **Départ** : les mineurs apparaissent sur la ligne de surface, au-dessus de la mine, **espacés régulièrement**.
 - **Tas de plumes d'ange** : une case **vide** portant un tas de plumes. Le **premier mineur qui arrive sur la case** le ramasse (le tas disparaît) et gagne **1 à 2 Plumes d'ange** *(22/10/2026 ; avant 1 à 5)* (rareté **rare**). L'IA ne les cherche pas au loin, mais **dès qu'un tas est accessible à 3 pas ou moins** par les galeries, le mineur va le prendre avant de reprendre son minage *(décision du 21/10 : sinon, mesuré, un mineur seul passait à côté de tous les tas)*. Plusieurs mineurs peuvent courir vers le même tas : le premier arrivé le prend.
 - **Chacun son butin** : ce qu'un mineur mine est à lui, **pas de partage, pas d'XP**. Si deux mineurs minent le même bloc, **celui qui finit en premier** gagne le minerai ; l'autre perd son travail sur ce bloc.
@@ -615,7 +616,7 @@ Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **ch
 - « La mine instantanée commence dans 30 min », puis 15 min, puis 5 min : simple information.
 - « La mine instantanée commence dans 30 secondes » : information **et invitation**, boutons **Rejoindre** / **Décliner** (pour un joueur déjà inscrit : information seule).
 
-**Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : **toute la mine à l'écran**, le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.
+**Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : la mine vue de près, **la caméra suit ton mineur** *(22/10/2026 ; avant : toute la mine à l'écran)*, environ 24 colonnes de large et autant de lignes que l'écran le permet (`INSTANT_MINE.camCols`), le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.
 
 **Le serveur fait foi** : il ouvre la mine à l'heure, répartit les inscrits, fait tourner la partie et verse à chacun son butin **une seule fois** à la fin.
 

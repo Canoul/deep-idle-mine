@@ -109,10 +109,14 @@ export function setupUpgrade({ onOp }){
 
   /* Enchantement : la pièce + une rune. Même principe de cases que l'identification. Aperçu : ce que la rune donnera
      sur CETTE pièce (ses lignes valent un % de la valeur de la pièce, niveau compris). */
+  /* pourquoi la rune ne peut pas aller sur la pièce (même règle que le serveur, src/meta/upgrade.js enchantError) */
+  const enchantWhy = (t, r) => !t ? '' : t.rune ? 'Cette pièce porte déjà une rune.'
+    : !isIdentified(t) ? 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.'
+    : r && r.q > t.q ? `Cette rune (R${r.q}) est trop rare pour cette pièce (R${t.q}) : au plus une rune R${t.q}.` : '';
   function renderEnchant(t, r){
     if(t && !isStuff(t.item)) t = null;
     if(r && !isRune(r.item)) r = null;
-    const why = t?.rune ? 'Cette pièce porte déjà une rune.' : '';
+    const why = enchantWhy(t, r);
     const can = t && r && !why && !busy;
     const sel = c => pick === c ? ' sel' : '';
     const label = k => STUFF.statLabels[k] ?? k, unit = k => STUFF.statUnits?.[k] ?? '';
@@ -121,7 +125,9 @@ export function setupUpgrade({ onOp }){
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
       `<p class="mut small">Une rune (gagnée dans les coffres des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
-      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce, c'est définitif.</p>`+
+      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce, c'est définitif. `+
+      `<b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> (une pièce R6 accepte une rune R1 à R6) : `+
+      `une pièce non identifiée doit d'abord être identifiée.</p>`+
       `<div class="upPair"><div>${box(t, 'Pièce à enchanter', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(r, 'Rune', 'upSacrifice' + sel('rune'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>✨ Enchanter</button></div>`+
@@ -130,8 +136,8 @@ export function setupUpgrade({ onOp }){
       message()+
       `<h3>${pick === 'target' ? 'Choisis la pièce à enchanter' : 'Choisis la rune'}</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
-          ? row(p, p.rune ? '<b>déjà enchantée</b>' : p.uid === t?.uid ? '<b>posée</b>' : '')
-          : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : ''}</button>`).join('')}</div>`
+          ? row(p, p.rune ? '<b>déjà enchantée</b>' : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
+          : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : t && isIdentified(t) && p.q > t.q ? `<b>trop rare pour cette pièce</b>` : ''}</button>`).join('')}</div>`
         : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un coffre de tour (Inventaire).'}</p>`);
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;

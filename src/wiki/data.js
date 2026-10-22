@@ -175,8 +175,7 @@ export const furnaceRows = () => [
   ...Object.entries(FURNACE.recipes).map(([ore, r]) => ({ mode:'Fondre', out: r.out, inputs: { [ore]: FURNACE.orePerIngot }, fuel: FURNACE.fuelPerIngot, time: r.time })),
   ...FURNACE.alloys.map(a => ({ mode:'Alliage', out: a.out, inputs: a.in, fuel: a.fuel, time: a.time })),
 ];
-/* concasseur : une ligne par bloc (chances pour un lot de CRUSHER.batch blocs) */
-/* concasseur : une ligne par bloc ; par famille (une gemme, un treasure) : chance par lot, 1 lot sur N, temps moyen */
+/* concasseur : une ligne par bloc ; par famille (une gemme, un treasure) : la chance par lot de CRUSHER.batch blocs */
 export const crusherRows = () => Object.keys(CRUSHER.loot).map(block => ({ block, families: dropOdds(block) }));
 export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier) }));
 

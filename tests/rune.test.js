@@ -63,10 +63,12 @@ test('relecture : une rune trafiquée ou incomplète disparaît ; une rune valid
   assert.deepEqual(inv.slots.filter(Boolean).map(s => s.uid), [3]);
 });
 
-function withRune(lines = [{ stat: 'crit', pct: 20 }], q = 1){
+/* pieceQ : qualité de la pièce (identifiée) ; une rune ne va que sur une pièce de qualité égale ou supérieure (22/10) */
+function withRune(lines = [{ stat: 'crit', pct: 20 }], q = 1, pieceQ = 7){
   const inv = createInventory();
   const [i] = addItem(inv, PICK, 1), [j] = addItem(inv, RUNE.item, 1);
   Object.assign(inv.slots[j], { q, lines, s: UPGRADE.scale });
+  if(pieceQ) inv.slots[i].q = pieceQ;
   return { inv, piece: inv.slots[i], rune: inv.slots[j] };
 }
 
@@ -84,12 +86,23 @@ test('enchanter : la rune est consommée, ses lignes s\'ajoutent à la pièce (v
   assert.equal(sanitizePiece(r.piece).rune.q, 1, 'relue : la rune de la pièce reste');
 });
 
-test('enchanter : niveau compris ; pièce non identifiée possible ; identification et rune s\'additionnent', () => {
-  const { inv, piece, rune } = withRune([{ stat: 'pods', pct: 20 }], 1);
+test('enchanter : niveau compris ; les lignes d\'une ancienne identification et la rune s\'additionnent', () => {
+  const { inv, piece, rune } = withRune([{ stat: 'pods', pct: 20 }], 1, 1);
   piece.plus = 3; piece.q = 1; piece.lines = [{ stat: 'pods', pct: 20 }]; piece.s = UPGRADE.scale;
   enchant(inv, { uid: piece.uid, rune: rune.uid, opId: id() });
   const one = lineValue(PICK, { stat: 'pods', pct: 20 });
   assert.equal(pieceBonus(piece).stats.pods, Math.round(2 * one * 1.07));
+});
+
+test('enchanter (22/10) : une pièce n\'accepte qu\'une rune de qualité égale ou inférieure à la sienne ; non identifiée = refusée', () => {
+  for(const [pq, rq, expected] of [[6, 3, null], [6, 6, null], [6, 1, null], [6, 7, 'rune_too_rare'], [3, 4, 'rune_too_rare'],
+                                   [1, 1, null], [1, 2, 'rune_too_rare'], [7, 7, null], [7, 1, null], [0, 1, 'not_identified']]){
+    const { inv, piece, rune } = withRune([{ stat: 'crit', pct: 20 }], rq, pq);
+    assert.equal(enchantError(inv, piece.uid, rune.uid), expected, `pièce R${pq}, rune R${rq}`);
+    const before = serialize(inv), r = enchant(inv, { uid: piece.uid, rune: rune.uid, opId: id() });
+    if(expected){ assert.equal(r.error, expected); assert.equal(serialize(inv), before, 'refusé : rien ne bouge'); }
+    else { assert.equal(r.ok, true); assert.equal(r.piece.rune.q, rq); assert.equal(inv.slots.filter(s => s?.item === RUNE.item).length, 0); }
+  }
 });
 
 test('enchanter : refus lisibles, rien ne bouge ; demande renvoyée appliquée une fois', () => {

@@ -42,7 +42,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
   - Victoire → chaque présent reçoit un **coffre R1 à R7** (chances de l'identification) ; une victoire par joueur et
     par ouverture ; un échec ne coûte rien. Coffre ouvert → une **Rune** de cette qualité (lignes tirées à
-    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif.
+    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
   - ⚠️ Mesures (stuff de base) : **0 résidu** en 8 sessions à 3 (personne n'entre en area 4) ; tour gagnée à 3 en
     ≈ 7 min (5/5), **seul 1/5**. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
@@ -83,8 +83,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
 - **Concasseur** (21/10, GAME_DESIGN §6) : 8 cases de blocs (famille **bloc** : terre, pierre, pierre dure), 100
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
-  treasure). Taux très bas pour l'instant (≈ 1 gemme / 60 sessions par joueur).
-- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en
+  treasure). Chances par lot depuis le 22/10 : gemme 0,6 / 0,9 / 1,2 %, treasure 0,5 / 0,3 / 0,5 % (terre / pierre /
+  pierre dure), soit ≈ 1 gemme / 30 sessions et 1 treasure / 60 par joueur (ancien : 1 gemme / 60, treasure / 2 000) ;
+  l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé.
+- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 22/10 : cachée
+  au départ, découverte par la stat Découverte de chaque mineur, et caméra qui suit son mineur de près** (≈ 24
+  colonnes) ; ancien : toute la mine visible à l'écran) (`INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
   (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
   **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.

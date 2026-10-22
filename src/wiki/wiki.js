@@ -2,7 +2,6 @@
 import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import * as D from './data.js';
-import { aboutTime } from '../meta/crusher.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -175,10 +174,10 @@ function craft(){
   $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
   const cpct = c => `${String(Math.round(c * 1e6) / 1e4).replace('.', ',')} %`;
   const FAMILY = { gem:'Une gemme (au hasard parmi les 3)', treasure:'Un treasure' };
-  $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot', '#En moyenne', '#Soit environ'], D.crusherRows().flatMap(r =>
+  $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot'], D.crusherRows().flatMap(r =>
     r.families.map((fam, k) => tr([k ? '' : item(r.block, CRUSHER.batch),
       fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
-      num(`<b>${cpct(fam.chance)}</b>`), num(`1 lot sur ${f(Math.round(fam.every))}`), num(`${aboutTime(fam.sec)} de concassage`)]))));
+      num(`<b>${cpct(fam.chance)}</b>`)]))));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));

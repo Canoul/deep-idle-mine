@@ -147,7 +147,7 @@ export function plan(G, m){
     const n = y*w + x, nh = hops[c] + Math.abs(y - y0) + 1;
     if(nh <= MI.featherReach)
       for(let yy = Math.min(y0, y); yy <= Math.max(y0, y); yy++)
-        if(G.feathers.has(yy*w + x)){ goal = { x, y:yy, node:n, from:c }; return; }
+        if(G.feathers.has(yy*w + x) && (!G.seen || G.seen[yy][x])){ goal = { x, y:yy, node:n, from:c }; return; }   // seulement un tas déjà découvert
     if(d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; hops[n] = nh; push(dist[n], n); }
   };
   while(hd.length && !goal){

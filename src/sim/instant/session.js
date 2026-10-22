@@ -26,12 +26,14 @@ export function newInstant(seed, opts={}){
     mode:'mi', seed, t:0, ticks:0, over:false, ...world,
     rng:mulberry32(seed^0x3c6ef372), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
     ladder: world.tiles.map(r => new Uint8Array(r.length)),   // échelles posées (1 = échelle sur la case)
+    seen: world.tiles.map((r, y) => new Uint8Array(r.length).fill(y === 0 ? 1 : 0)),   // cases découvertes (surface : oui)
     log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0, ladders:0 }, summary:null,
     miners: specs.map((s,i) => createInstantMiner(i, s, cols[i])),
   };
   G.id = opts.id ?? `mi-${seed}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   G.roster = [...G.miners];             // tous les joueurs, y compris ceux qui sont partis ; G.miners = les présents
   log(G, `Mine instantanée ouverte (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
+  for(const m of G.miners) revealAround(G, m);
   return G;
 }
 
@@ -57,8 +59,17 @@ export function tickInstant(G){
      l'intérieur d'un tick ; à égalité, l'ordre tourne à chaque tick (personne n'est favorisé par sa place) */
   const n = G.miners.length;
   const order = G.miners.map((m,i) => ({ m, k:remaining(m), r:(i+G.ticks)%n })).sort((a,b) => a.k-b.k || a.r-b.r);
-  for(const { m } of order) if(G.miners.includes(m)) stepMiner(G, m);
+  for(const { m } of order) if(G.miners.includes(m)){ stepMiner(G, m); revealAround(G, m); }
   if(G.ticks >= INSTANT_TICKS) endInstant(G);
+}
+
+/* découverte : les cases à au plus discoverMax (au moins 1) du mineur, comme dans la mine normale en pleine lumière.
+   Une seule carte pour tous (comme les échelles) : ce qu'un mineur découvre, tout le monde le voit. */
+export function revealAround(G, m){
+  const R = Math.max(1, m.carac.discoverMax), r = Math.ceil(R);
+  for(let dy = -r; dy <= r; dy++){ const y = m.y + dy; if(y < 0 || y > G.h) continue;
+    for(let dx = -r; dx <= r; dx++){ const x = m.x + dx; if(x < 0 || x >= G.w) continue;
+      if(dx*dx + dy*dy <= R*R) G.seen[y][x] = 1; } }
 }
 
 function stepMiner(G, m){
@@ -76,6 +87,7 @@ function finish(G, m, a){
   else if(a.type === 'ladder') placeLadder(G, m);
   else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
   else if(a.type === 'wait') m.stats.idle += a.dur;
+  revealAround(G, m);   // après chaque action : rien ne passe sans être vu, même plusieurs actions dans un tick
 }
 
 /* échelle sur la case du mineur (et celle du dessus si elle est vide, avec l'échelle de 2 : skill tall_ladder) */
