@@ -43,7 +43,7 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
   assert.equal(D.upgradeTotal()[INSTANT_MINE.featherItem], UPGRADE.levels.reduce((s, l) => s + l.cost[INSTANT_MINE.featherItem], 0));
   const rows = D.crusherRows();
   assert.deepEqual(rows.map(r => r.block), Object.keys(CRUSHER.loot));
-  assert.ok(rows.every(r => r.families.every(f => f.chance > 0 && f.every > 1)));
+  assert.ok(rows.every(r => r.families.every(f => f.chance > 0 && f.every === undefined && f.sec === undefined)));
   const html = fs.readFileSync(new URL('../wiki.html', import.meta.url), 'utf8');
   for(const id of ['mi', 'amelioration', 'concasseur', 'w-mi', 'w-qualities', 'w-upgrade', 'w-mi-notify', 'w-mi-lost'])
     assert.ok(html.includes(`id="${id}"`), id);

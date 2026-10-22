@@ -197,12 +197,16 @@ export const LOOT = {
 export const CRUSHER = {
   inSlots:8, outSlots:8, cols:4, batch:100, time:60,
   loot: {
-    'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.001) },
-                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.0001 }] } ] },
-    'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.0015) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.00015 }] } ] },
-    'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.0012) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.0002 }] } ] },
+    /* chances par lot de 100 blocs (décision du créateur, 22/10/2026) : « Une gemme » = chance d'avoir une gemme (les 3
+       gemmes se partagent ce total à parts égales : 0,6 % = 3 × 0,2 %), « Treasure » = chance d'avoir le treasure.
+       Terre 0,6 % / 0,5 % ; Pierre 0,9 % / 0,3 % ; Pierre dure 1,2 % / 0,5 % (avant : gemme 0,3 / 0,45 / 0,36 %,
+       treasure 0,01 / 0,015 / 0,02 %) */
+    'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.002) },
+                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.005 }] } ] },
+    'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.003) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.003 }] } ] },
+    'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.004) },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.005 }] } ] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

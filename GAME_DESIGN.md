@@ -553,16 +553,17 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
 - **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
 - Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
-- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) :
+- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) *(chances données par le créateur le 22/10/2026 ; avant : gemme 0,3 / 0,45 / 0,36 %, treasure 0,01 / 0,015 / 0,02 %)* :
 
-  | 100 blocs | Chaque gemme inférieure (rubis, saphir, jade) | Treasure |
+  | 100 blocs | Une gemme (rubis, saphir ou jade, 1/3 chacune) | Treasure |
   |---|---|---|
-  | Terre | 0,1 % | T1 : 0,01 % |
-  | Pierre | 0,15 % | T2 : 0,015 % |
-  | Pierre dure | 0,12 % | T2 : 0,02 % |
+  | Terre | 0,6 % | T1 : 0,5 % |
+  | Pierre | 0,9 % | T2 : 0,3 % |
+  | Pierre dure | 1,2 % | T2 : 0,5 % |
+- **L'aide « ? » et le wiki n'affichent que la chance par lot** : plus de « 1 lot sur N », ni de moyenne, ni de temps estimé avant un butin *(décision du 22/10/2026)*.
 - Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
 - **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.
-- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec ces chances : ≈ 1 gemme toutes les 60 sessions par joueur (≈ 20 en solo), un treasure toutes les ≈ 2 000 sessions. À rééquilibrer si le concasseur doit servir.
+- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 22/10 : ≈ 1 gemme toutes les 30 sessions par joueur, un treasure toutes les ≈ 60 sessions (avant : 60 et ≈ 2 000). À surveiller : le treasure est 25 à 50 fois plus fréquent qu'avant.
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
