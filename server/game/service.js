@@ -22,6 +22,7 @@ import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS }
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment } from '../../src/meta/judgment.js';
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
@@ -122,6 +123,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* stuff : relu avec l'inventaire (une pièce présente des deux côtés est retirée du stuff ; les uid restent uniques) */
   const loadStuff = async (accountId, inv) => sanitizeStuff(await store.getStuff(accountId), inv);
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
+  /* Jugement : jauges communes, relues et revérifiées, sous le verrou 'judgment' ; fn(j) renvoie true pour enregistrer.
+     Une tour dont la jauge est pleine s'ouvre à la lecture (refresh), et c'est enregistré. */
+  const withJudgment = fn => withLock('judgment', async () => {
+    const j = sanitizeJudgment(await store.getJudgment());
+    const opened = refreshJudgment(j, clock());
+    const r = await fn(j);
+    if(opened || r?.save) await store.putJudgment(j);
+    return r?.value ?? r;
+  });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp) });
@@ -215,7 +225,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
-          if(creditSession(inv, rec.id, share.bag)) await store.putInventory(share.account, JSON.parse(serialize(inv)));
+          if(!creditSession(inv, rec.id, share.bag)) return;
+          await store.putInventory(share.account, JSON.parse(serialize(inv)));
+          /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
+          await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
         });
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
         if(rec.mode !== 'mi') await withLock('xp:' + share.account, async () => {
@@ -579,6 +592,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
 
     /* historique : ses sessions terminées (gardées config.keepEnded), les plus récentes d'abord, avec la seed et SA part */
+    /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
+    async judgment(me){
+      return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+    },
+
     async history(me){
       const list = (await store.sessionsOf(me.id)).filter(s => s.status === 'done' && s.result).slice(0, 50);
       return { sessions: list.map(s => {

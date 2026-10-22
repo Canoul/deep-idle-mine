@@ -522,3 +522,28 @@ test('historique : sessions terminées du joueur, plus récentes d\'abord, avec 
   assert.equal(list.length, 2);
   assert.ok(list[0].startedAt > list[1].startedAt, 'la plus récente en haut');
 });
+
+test('Jugement : les résidus versés remplissent les jauges (une fois), partis = rien ; jauge pleine → tour ouverte 6 h', async () => {
+  const { JUDGMENT } = await import('../src/config.js');
+  const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
+  const { game, advance } = setup({ summary: fakeSummary(() => ({ [A]: 200, [D]: 6, Pierre: 10 })) });
+  const v0 = await game.judgment(ME);
+  assert.deepEqual([v0.sides.angel.count, v0.sides.angel.open], [0, false]);
+  /* à deux, un part : le partant ne verse rien, le présent verse sa part (ici tout le coffre) */
+  await game.start(ME, {}, team.slice(0, 2));
+  advance(60_000); await game.leave(OTHER, {});
+  advance(realDurationMs()); await game.pump();
+  let v = await game.judgment(ME);
+  assert.equal(v.sides.angel.count, 200); assert.equal(v.sides.demon.count, 6);
+  /* rejouer la fin (redémarrage) ne compte pas deux fois */
+  await game.recover(); await game.pump();
+  assert.equal((await game.judgment(ME)).sides.angel.count, 200);
+  /* une session de plus : 400 ≥ 250 → la tour de l'Ange ouvre, jauge à 0 (surplus perdu) */
+  await game.start(ME, {}); advance(realDurationMs()); await game.pump();
+  v = await game.judgment(OTHER);
+  assert.equal(v.sides.angel.open, true); assert.equal(v.sides.angel.count, 0);
+  assert.ok(v.sides.angel.openUntil > v.now && v.sides.angel.openUntil <= v.now + JUDGMENT.openHours * 3600e3);
+  assert.equal(v.sides.demon.open, false); assert.equal(v.sides.demon.count, 12);
+  advance(JUDGMENT.openHours * 3600e3);
+  assert.equal((await game.judgment(ME)).sides.angel.open, false, 'fermée au bout de 6 h');
+});

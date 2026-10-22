@@ -92,10 +92,15 @@ export const BLOCKS = {
   10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
   /* mur de donjon (DUNGEON) : brique de pierre violet sombre, incassable */
   11:{name:'Brique de donjon', type:'special', tex:'dungeon_brick', w:0, hard:Infinity, color:'#3a2a4a', dot:'#55406b', unbreakable:true, noDrop:true},
+  /* résidus (concept Ange vs Démon, JUDGMENT) : pierre sombre aux fissures lumineuses, dès l'area 4. Bloc ordinaire
+     (terrain) : pas de Fortune, pas de shiny, pas visé par l'IA, ne compte pas pour le déblocage. Rapportés au coffre,
+     ils remplissent les jauges de l'onglet Jugement. */
+  12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu'},
+  13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu'},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
-export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9 };
+export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -326,6 +331,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'residue_angel','residue_demon',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -384,6 +390,7 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
+    'Résidu angélique':'rare', 'Résidu démoniaque':'rare',
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -644,6 +651,20 @@ export const DUNGEON = {
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,
   salt: 0x0d06e0,
+};
+
+/* ---- Jugement : concept Ange vs Démon (22/10/2026, décisions du créateur ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Résidus : dans chaque area à partir de fromArea, pct % des cases de chaque sorte (tirage à part de la seed, à la place
+   de terrain : le reste de l'area ne change pas). Jauges (serveur, ns judgment) : les résidus versés aux joueurs en fin
+   de session s'ajoutent à la jauge de leur sorte ; à cap, le donjon associé ouvre pendant openHours h (la jauge
+   repart de 0, le surplus est perdu ; elle continue de se remplir pendant l'ouverture). */
+export const JUDGMENT = {
+  fromArea: 4, pct: 0.5, cap: 250, openHours: 6, salt: 0x5e51d0e,
+  sides: {
+    angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },
+    demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
+  },
+  poll: 15000,          // ms : rafraîchissement de l'onglet Jugement
 };
 
 /* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */

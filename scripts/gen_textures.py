@@ -269,6 +269,24 @@ def main():
             rect(brick, xx, yy, 6, 1, hexc('#5a4473'))        # arête claire en haut de chaque brique
     tex['dungeon_brick'] = brick
 
+    # résidus (Ange vs Démon) : pierre sombre, fissures lumineuses qui serpentent, halo plus pâle autour
+    def residue(seed, glow, halo, core):
+        px = noisy(hexc('#2c2f3a'), seed, 0.14)
+        r = random.Random(seed)
+        for (x, y) in [(2, 1), (5, 2), (11, 0), (1, 9), (13, 6)]:      # départs des fissures
+            for _ in range(7):
+                for (hx, hy) in ((x - 1, y), (x + 1, y)):
+                    if 0 <= hx < S and 0 <= hy < S and px[hy * S + hx][3] == 255 and px[hy * S + hx][0] < 90:
+                        px[hy * S + hx] = halo
+                rect(px, x, y, 1, 1, glow)
+                x = max(0, min(S - 1, x + r.choice((-1, 0, 1))))
+                y = max(0, min(S - 1, y + 1))
+        for (x, y) in [(4, 6), (10, 11)]:
+            rect(px, x, y, 1, 1, core)                                 # éclats les plus brillants
+        return px
+    tex['residue_angel'] = residue(4141, hexc('#8fd8ff'), hexc('#3d5a78'), hexc('#ffffff'))
+    tex['residue_demon'] = residue(6666, hexc('#ff3b3b'), hexc('#6b2228'), hexc('#ffd0a0'))
+
     # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots
     mino = blank()
     fur, fur_d, skin, skin_d, horn = hexc('#6b4226'), hexc('#4a2c18'), hexc('#a8714a'), hexc('#7d4f31'), hexc('#efe3c4')

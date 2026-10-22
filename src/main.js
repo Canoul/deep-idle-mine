@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer } from './render/instant.js';
@@ -44,6 +44,7 @@ import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { setupSocial } from './ui/social.js';
+import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, ApiError } from './net/api.js';
@@ -161,6 +162,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  if(id==='jugement') setTimeout(() => pollJudgment());   // différé : l'onglet de départ s'ouvre avant la fin du chargement du module
 });
 
 /* orbes de la barre d'action : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi */
@@ -181,7 +183,7 @@ function updateOrbs(shown, mi){
 
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
-  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); },
+  onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); },
   confirmLeave: () => confirm([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
@@ -291,6 +293,18 @@ const social = setupSocial({
   invite:  async id => { setSocial(await socialApi.invite(id)); pollLobby(); },
   join:    id => joinParty(() => socialApi.join(id)),
 });
+
+/* ---------- onglet Jugement : jauges Ange / Démon (communes à tous) ----------
+   Redemandées toutes les JUDGMENT.poll ms tant que la page est visible ; le badge signale une tour ouverte pas encore faite. */
+const judgment = setupJudgment($('judgmentBody'), { onLobby: () => nav.show('lobby') });
+let judgmentTimer = null;
+async function pollJudgment(){
+  clearTimeout(judgmentTimer);
+  if(acct.offline || !acct.account) return;
+  try { judgment.set(await gameApi.judgment()); nav.badge('jugement', judgment.pending()); }
+  catch(e){ console.warn(e); }
+  judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
+}
 
 /* lien d'invitation ouvert alors que la page l'est déjà (la barre a déjà remplacé l'adresse : on lit newURL) */
 addEventListener('hashchange', e => {
@@ -466,6 +480,7 @@ else {
 }
 startInstant();
 pollSocial();
+pollJudgment();
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
