@@ -708,17 +708,24 @@ export const JUDGMENT = {
 
 /* ---- Tours de l'Ange et du Démon (concept Ange vs Démon, étape 4 ; src/sim/tower/) ----
    Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers. Une tour
-   pleine de stonebrick (dureté hard s, 5 % indestructible) : les mineurs partent du rez-de-chaussée et creusent vers
-   le toit, où le boss attend. Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
-   lumière, ni butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
+   pleine de stonebrick (6 s) en labyrinthe : les mineurs partent du rez-de-chaussée et creusent vers le toit, où le
+   boss attend. L'intérieur n'est pas découvert au départ : chaque mineur découvre autour de lui (discoverMax, comme
+   dans la mine, sans lumière). Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
+   butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
    Carte : marge de `margin` colonnes de chaque côté ; tour de `width` colonnes (murs compris) et `height` lignes
    (toit compris) ; `sky` lignes de ciel au-dessus du toit ; sol plein en dessous. Portes : les doorH lignes du bas des
    deux murs. Boss : bossW × bossH au milieu du toit, immobile, pas provocable ; il frappe sa cible (premier arrivé sur
    le toit, encore dessus) toutes les hitEvery s (rageEvery sous rageBelow de ses PV) ; chaque coup a knockChance
    (knockBarb pour un barbare) de la projeter de knock cases vers l'extérieur (elle tombe de la tour). */
 export const TOWER = {
-  duration: 900,                                  // s de jeu (15 min)
-  width: 15, height: 30, sky: 7, margin: 8, doorH: 2, unbreakablePct: 5,
+  duration: 600,                                  // s de jeu (10 min, 22/10 : labyrinthe + brouillard ; avant 15 min)
+  width: 15, height: 30, sky: 7, margin: 8, doorH: 2,
+  /* labyrinthe (22/10, Geoffrey ; avant : 5 % de blocs indestructibles au hasard) : une ligne sur mazeEvery est une
+     ligne de mur, mazeHard blocs indestructibles sur `width` (murs extérieurs compris), soit un seul passage de
+     width − mazeHard cases, placé au hasard sans chevaucher celui de la ligne de mur précédente : on zigzague */
+  mazeEvery: 2, mazeHard: 11,
+  /* vue (navigateur) : cases montrées autour du mineur suivi (avant : toute la tour à l'écran) */
+  view: { cols: 19, rows: 15 },
   boss: { hp: 1000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.10, knockBarb: 0.05, knock: 6 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇' },

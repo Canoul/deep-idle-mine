@@ -1,6 +1,8 @@
 # Ange vs Démon — spec (22/10/2026)
 
-Concept du créateur (Geoffrey), validé en discussion le 22/10/2026. Valeurs provisoires, en config (`JUDGMENT`,
+Concept du créateur (Geoffrey), validé en discussion le 22/10/2026. **Vocabulaire** : le créateur a dit « donjon »
+pour deux choses ; ici, **tour** = le donjon du mode Jugement (Ange / Démon), **donjon** = la structure du minotaure
+dans la mine classique (`DUNGEON`, `src/sim/dungeon.js`), qui n'est pas concernée par ce document. Valeurs provisoires, en config (`JUDGMENT`,
 `TOWER`, `RUNE`). Ce document fait foi pour l'implémentation ; `GAME_DESIGN.md` en reprend l'essentiel.
 
 ## Étape 1 — tableau de conversion des stats (fait, `fc86f1c`)
@@ -19,9 +21,9 @@ Concept du créateur (Geoffrey), validé en discussion le 22/10/2026. Valeurs pr
   - Cap 250. Atteint → `openUntil = now + 6 h`, `opening` = nouveau numéro d'ouverture, `count = 0` (surplus perdu).
     Pendant l'ouverture la jauge continue de se remplir ; si elle atteint 250 pendant une ouverture, la nouvelle
     ouverture commence à la fin de l'actuelle (pas de cumul : `openUntil` repart de max(now, openUntil)).
-  - Les deux donjons peuvent être ouverts en même temps.
+  - Les deux tours peuvent être ouvertes en même temps.
 - **Onglet Jugement** (barre d'action, groupe des onglets de session) : deux jauges face à face, blanche (ange, à
-  gauche) et violette (démon, à droite), « x / 250 ». Donjon ouvert : bandeau « Tour de l'Ange ouverte — 5 h 12 min »,
+  gauche) et violette (démon, à droite), « x / 250 ». Tour ouverte : bandeau « Tour de l'Ange ouverte — 5 h 12 min »,
   et « Déjà fait pour cette ouverture » si le joueur a déjà gagné un coffre. `GET /api/judgment` (lecture publique
   pour un compte connecté).
 
@@ -38,6 +40,17 @@ Concept du créateur (Geoffrey), validé en discussion le 22/10/2026. Valeurs pr
   % de la valeur de **cette pièce** ÷ prix de la stat (comme une ligne d'identification). Le niveau (+1 à +3)
   s'applique aussi aux lignes de la rune. Revérifié à chaque relecture (`sanitizePiece`), comme l'identification.
 - Nom affiché : inchangé ; une icône « rune » à côté du nom et ses lignes listées à part (« Rune R4 : … »).
+
+## Patch du 22/10/2026 (après-midi, Geoffrey)
+- **Labyrinthe** : une ligne sur 2 est un mur de 11 blocs indestructibles sur 15 (murs extérieurs compris), soit un
+  seul passage de 4 cases, jamais au-dessus du passage précédent (choix de Claude : passage d'un tenant, pour forcer
+  le zigzag). Remplace les 5 % de blocs indestructibles au hasard.
+- **Brouillard** : l'intérieur n'est pas découvert au départ ; chaque mineur découvre autour de lui (`discoverMax`,
+  sans lumière). L'IA planifie avec ce qu'elle a découvert (case inconnue = brique ordinaire).
+- **Caméra** rapprochée qui suit le mineur du joueur (`TOWER.view`, 19 × 15 cases).
+- **Durée** : demandée à 5 min ; mesuré infaisable avec le labyrinthe (3 bien équipés : 0/10) → **10 min**
+  (décision du créateur, briques gardées à 6 s). Mesures (10 tours) : stuff de base 0/10, petit stuff 3/10,
+  minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min, le même seul 0/10.
 
 ## Étape 4 — tours de l'Ange et du Démon
 - **Lancement** : Lobby, « Où miner » propose `Tour de l'Ange` / `Tour du Démon` seulement quand elle est ouverte.
