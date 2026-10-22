@@ -1454,6 +1454,8 @@ Règles (voir CLAUDE.md) :
   conflits seulement dans le journal et le debug (tout gardé).
 
 ### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`, ✅ en ligne le 22/10
+- ❌ **Retiré le 22/10** (décision Geoffrey et Jules : la vitesse ne change pas) : voir « Treuil : retour à 0,85 » plus bas.
+  Le correctif du détecteur (long combat) est gardé.
 - **Symptôme** (retour joueur) : les mineurs sortent du treuil quand il y a une colonne d'échelles ou un trou profond
   à côté.
 - **Cause** : pas un bug de l'IA, le coût était juste. Seau = `WINCH.speedFactor` 0,85 × `climbSpeed` = 1,9 case/s ;
@@ -1529,16 +1531,27 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
   sessions confondues ; pas d'affichage MI / tour.
 
-### Seuil d'ouverture 60 % et treuil revenu à 0,85 × (Geoffrey) — branche `geoffrey/quota-treuil`, 🧪 pas en ligne
+### Treuil : retour à 0,85 (Jules) — branche `jules/treuil-vitesse-retour`, ✅ en ligne le 22/10
+- **Quoi** : `WINCH.speedFactor` 2 → 0,85 (`src/config.js`). Le symptôme d'origine revient (l'IA peut quitter le seau
+  pour une colonne d'échelles ou un trou à échelles espacées : coût réel plus faible, voir l'entrée « Treuil : l'IA
+  sortait du seau »). Si l'équipe veut l'éviter sans toucher la vitesse : piste « adhérence » au seau dans `search`
+  (`src/sim/path.js`), non faite.
+- **Gardé** : détecteur de blocage (combat, étourdi, attente du barbare = occupé).
+- **Tests** : `tests/winch.test.js` : valeurs 0,85, les 2 tests « il reste dans le seau » retirés (plus vrais).
+  winch, fall, focus, diagnostics, judgment, team : 75/75 ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` (avec « Plus profond » et résidus) : 0 blocage, areas 4,0,
+  profondeur 229,6. Les chiffres « Plus profond » et résidus du 22/10 mesurés avec le seau ×2 sont à relire avec
+  ça : « Plus profond » à 3 = 1 431 → 1 087 de valeur (−24 %) au seau 0,85.
+
+### Seuil d'ouverture 60 % (Geoffrey) — branche `geoffrey/quota-treuil`, ✅ en ligne le 22/10
 - **Contexte** : seed 1102884141, équipe de 3 sans nouveau stuff jusqu'à l'objectif « Area 6 ». La seed est ordinaire
   (même résultat que 7919…31676) ; la cause est le seau ×2 (`314e651`) + « Plus profond » (`571a12b`). Mesure
   `simulate --miners 3 --skills mixed`, 5 seeds dont 1102884141 : main de 16 h 44 (`4ce6819`) areas 4,0, prof 198 ;
   main de 19 h areas 4,8, prof 262.
-- **Quoi** : `CFG.unlockRatio` 0.4 → 0.6 ; `WINCH.speedFactor` 2 → 0.85 (`src/config.js`). L'IA n'avait pas d'adhérence
-  au seau : la vitesse seule la gardait dedans, donc on retrouve le comportement d'avant (elle peut prendre une
-  échelle ou un trou voisin plus rapide).
-- **Tests** : `winch.test.js` : valeurs 0,85 ; retirés les 2 tests « il reste dans le seau (colonne d'échelles / trou
-  profond à côté) », faux par construction à 0,85. `world.test.js` : objectif 12 / 240. `session.test.js` : sessions
+- **Fusion** : le retour du treuil à 0,85 avait été mis en ligne entre-temps par Jules (`6322421`, entrée
+  précédente) ; conflits résolus en gardant ses textes pour le treuil, seul le seuil 60 % vient de cette branche.
+- **Quoi** : `CFG.unlockRatio` 0.4 → 0.6 (`src/config.js`).
+- **Tests** : `world.test.js` : objectif 12 / 240. `session.test.js` : sessions
   solo de régression (seeds 65361775, 823773703, 63352, 7919) : ≥ 1 area ouverte (avant ≥ 2 ; à 60 % un mineur de
   base solo n'ouvre que l'area 1). winch, wiki, focus, session, world, team, diagnostics, dungeon, fall : ✅ 107/107.
 - **Simulation** (5 seeds de référence, 0 blocage) : 3 mineurs skills mixed : areas 4,0, prof 212,8 ; 2 mineurs skills mixed : areas 3,0, prof 165,8 ; 1 mineur de base :
