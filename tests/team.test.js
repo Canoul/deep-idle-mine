@@ -32,8 +32,9 @@ test('début de partie : les mineurs ne se marchent pas dessus en travaillant', 
     const G=newSession(seed, {miners:3});
     for(let i=0;i<6000;i++){                        // 10 premières minutes
       tick(G);
-      // en descente par un puits commun (ou en chute), partager une case est voulu : on ne compte que le travail
-      const ms=G.miners.filter(m=>m.y>0 && m.mode!=='return' && !m.goingDown && !m.fall); if(ms.length<2) continue;
+      // en descente par un puits commun (ou en chute), partager une case est voulu ; en combat aussi (à plusieurs contre
+      // un mob dans une galerie d'une case, ils se traversent) : on ne compte que le travail
+      const ms=G.miners.filter(m=>m.y>0 && m.mode!=='return' && !m.goingDown && !m.fall && !m.foe); if(ms.length<2) continue;
       let min=Infinity, s=false;
       for(let a=0;a<ms.length;a++) for(let b=a+1;b<ms.length;b++){
         const d=Math.abs(ms[a].x-ms[b].x)+Math.abs(ms[a].y-ms[b].y); min=Math.min(min,d); if(d===0) s=true; }
@@ -67,3 +68,14 @@ test('départ du coffre sans treuil : il reprend le puits déjà creusé au lieu
   } });
   assert.deepEqual([...new Set(fresh.map(f => f.split(' ')[0]))], [], `puits neufs : ${fresh.slice(0, 3).join(', ')}`);
 });
+
+/* seeds « bug » à 3 (22/10, pièges + seuil 60 %) : 23757 = boucle entre deux galeries (la plus proche changeait à chaque
+   pas, puis le focus « Plus profond » le rappelait quand le chemin passait par l'area du dessus) ; 15838 = fin de
+   session, galeries toutes trop profondes : il attendait sur place, le sac plein, au lieu de remonter */
+for(const seed of [23757, 15838]){
+  test(`session complète à 3, seed ${seed} : aucun blocage`, () => {
+    const det=stuckDetector();
+    runSession(seed, { miners:3, onTick:det.onTick });
+    assert.deepEqual(det.result(), []);
+  });
+}

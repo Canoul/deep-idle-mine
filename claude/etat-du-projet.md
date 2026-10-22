@@ -78,6 +78,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   option « Fuir ».
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste),
   un tirage par sort ; vient de Force brute (Barbare, +5 % par rang).
+- **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par
+  area ; salle 5 × 3 cachée dans des blocs normaux, 5 mobs (PV et vitesse × 1,5, hors quota) qui chassent le mineur dès
+  qu'un bloc de paroi disparaît ; le barbare vient à la rescousse. Mobs qui ne grimpent pas (physique normale).
 - **Focus en session** (panneau de l'onglet Session) : focus minerai (Aucun / Cibler / Uniquement) et focus area.
   « Plus profond » (de base) = travailler dans l'area débloquée la plus profonde et la suivre (22/10 ; ancien :
   descendre en ramassant tout ce qui est à portée). Coûte ≈ 15 % de valeur en solo, ≈ 24 % à 3 (seau 0,85×).

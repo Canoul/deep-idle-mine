@@ -8,6 +8,7 @@ import { finishAction } from './actions.js';
 import { decide } from './ai.js';
 import { updateMobs, tackler, channeler } from './mobs.js';
 import { updateDungeons } from './dungeon.js';
+import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare } from '../meta/level.js';
@@ -21,7 +22,7 @@ export function newSession(seed, opts={}){
   const G = {
     seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
-    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
+    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
@@ -42,12 +43,13 @@ export function newSession(seed, opts={}){
   return G;
 }
 
-/* zone de découverte : discoverMax × luminosité (au moins 1 bloc dès qu'il y a de la lumière), autour du mineur */
+/* zone de découverte : discoverMax × luminosité (au moins 1 bloc dès qu'il y a de la lumière), autour du mineur ;
+   l'intérieur d'un piège pas encore déclenché reste caché (src/sim/trap.js) */
 function revealAround(G,m){
   const lum=curLum(G,m), R=lum>0 ? Math.max(1,m.carac.discoverMax*lum) : 0, r=Math.ceil(R);
   for(let dy=-r;dy<=r;dy++){ const y=m.y+dy; if(y<1||y>maxRow(G)) continue;
     for(let dx=-r;dx<=r;dx++){ const x=m.x+dx; if(x<0||x>=W) continue;
-      if(dx*dx+dy*dy<=R*R) G.seen[y][x]=1; } }
+      if(dx*dx+dy*dy<=R*R && !veiled(G,x,y)) G.seen[y][x]=1; } }
 }
 
 /* fait avancer un mineur de DT secondes : enchaîne ses actions dans le budget de temps disponible */
@@ -75,6 +77,7 @@ export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners) stepMiner(G,m);
+  updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   for(const m of G.miners){
     // un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe déjà)

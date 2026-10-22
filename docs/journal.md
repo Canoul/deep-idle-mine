@@ -30,6 +30,21 @@ Modèle d'entrée :
   descendre.
 - **État** : ✅ en ligne le 22/10
 
+## 22/10/2026 — Geoffrey — Pièges dans la mine
+- **Pour le joueur** : à partir de l'area 1, une area peut cacher 0, 1 ou 2 **pièges** : une petite salle vide de
+  5 × 3 entourée de roche normale (on ne la voit pas, seul un coin reste noir). Le mineur qui mine un bloc de la paroi
+  libère **5 mobs** de l'area (jamais de mimic), plus solides (PV × 1,5) et plus rapides (× 1,5), qui le chassent
+  partout. Un **barbare** dans le groupe vient à la rescousse, quels que soient ses réglages. Le wiki l'explique.
+- **Décisions** : 2 tirages de 25 % par area ; seul l'intérieur est caché (la paroi se découvre comme de la roche) ;
+  barbare « comme au donjon » ; physique normale : les mobs ne grimpent pas, un trou en hauteur les laisse dans leur
+  salle (le mineur choisit alors selon son réglage de combat).
+- **IA corrigée au passage** (deux défauts que les trous des pièges faisaient apparaître) : un mineur pouvait
+  tourner en rond entre deux galeries à la limite de deux areas ; en fin de session, s'il n'avait plus le temps
+  de creuser plus bas, il attendait sur place, le sac plein, au lieu de remonter déposer.
+- **À suivre** : ~3 pièges ouverts par session à 3, chacun prend 1 à 4 min de combat. Avec le seuil à 60 %, les
+  pièges coûtent ~0,5 area par session (sans skills 3,0 au lieu de 3,6 ; skills mélangés 3,6 au lieu de 4,0),
+  aucun blocage. À juger en jeu : trop dur ? trop long ?
+
 ## 22/10/2026 — Geoffrey — Trésors des tours (au lieu des coffres)
 - **Pour le joueur** : battre le boss d'une tour donne maintenant un **Trésor** angélique ou démoniaque. Son nom dit
   sa qualité, écrit dans la couleur de la qualité : « **Antique** Trésor démoniaque » (R5), « **Mystérieux** Trésor

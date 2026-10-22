@@ -738,6 +738,22 @@ export const DUNGEON = {
   salt: 0x0d06e0,
 };
 
+/* ---- Piège (src/sim/trap.js) — décisions du créateur, 22/10 ; valeurs provisoires ----
+   À partir de l'area fromArea, tries tirages indépendants de chance chacun (tirage à part de la seed : le reste de
+   l'area ne change pas) : 0, 1 ou 2 pièges par area. Un piège = une salle vide de w × h cases, entourée d'une paroi
+   d'une case faite des blocs normaux de l'area (on ne la distingue pas de la roche), à margin cases des bords de la
+   mine et de l'area, jamais sur la colonne du treuil ± winchGap, ni contre un donjon ou un autre piège.
+   L'intérieur reste caché (la découverte du mineur l'ignore) tant qu'aucun bloc de la paroi n'a été retiré. Dès qu'un
+   bloc de paroi disparaît, tout le piège se dévoile et ses mobs (mobs tirés dans la table de l'area, sans mimic, PV et
+   vitesse × hpMul / speedMul) prennent en chasse le mineur le plus proche, sans limite de distance. Un barbare dans la
+   partie vient tuer ces mobs, quels que soient ses réglages (comme au donjon ; les raisons de remonter passent avant).
+   Les mobs du piège ne comptent pas dans le plafond de mobs (walkerCap) et ne touchent pas au rythme des apparitions. */
+export const TRAP = {
+  fromArea: 1, chance: 0.25, tries: 2, w: 5, h: 3, mobs: 5, hpMul: 1.5, speedMul: 1.5,
+  margin: 2, winchGap: 2, attempts: 30,
+  salt: 0x7a9b3e,
+};
+
 /* ---- Jugement : concept Ange vs Démon (22/10/2026, décisions du créateur ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
    Résidus : dans chaque area à partir de fromArea, pct % des cases de chaque sorte (tirage à part de la seed, à la place
    de terrain : le reste de l'area ne change pas). Jauges (serveur, ns judgment) : les résidus versés aux joueurs en fin
