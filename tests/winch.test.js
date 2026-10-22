@@ -1,5 +1,5 @@
 /* Treuil (skill Logisticien, étape 2) : posé au milieu de la mine à chaque nouvelle area par le logisticien, il sert à
-   tous (monter / descendre à 2 × la vitesse de montée, s'arrêter à n'importe quelle ligne). */
+   tous (monter / descendre à 0,85 × la vitesse de montée, s'arrêter à n'importe quelle ligne). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { WINCH, CFG, IDS, W } from '../src/config.js';
@@ -20,8 +20,8 @@ function shaft(bottom, depth = bottom + 4){
   return G;
 }
 
-test('config : au milieu de la mine, seau à 2 × la vitesse de montée', () => {
-  assert.equal(X, Math.floor(W / 2)); assert.equal(WINCH.speedFactor, 2);
+test('config : au milieu de la mine, seau à 0,85 × la vitesse de montée', () => {
+  assert.equal(X, Math.floor(W / 2)); assert.equal(WINCH.speedFactor, 0.85);
 });
 
 test('le puits du treuil tient le mineur à n\'importe quelle ligne (comme une échelle) ; il peut miner à côté', () => {
@@ -40,7 +40,7 @@ test('monter / descendre dans le seau : pas d\'échelle à poser, 2 × la vitess
   assert.equal(m.action.type, 'move', 'pas d\'échelle');
   assert.ok(Math.abs(m.action.dur - winchT(G, m)) < 1e-9, 'durée du seau (obscurité comprise)');
   assert.ok(m.action.data.winch);
-  assert.ok(Math.abs(winchT(G, m) - climbT(G, m) / 2) < 1e-9);
+  assert.ok(Math.abs(winchT(G, m) - climbT(G, m) / 0.85) < 1e-9);
   m.action = null; assert.ok(stepDir(G, m, 0, 1)); assert.ok(m.action.data.winch, 'descente aussi');
 });
 
@@ -49,34 +49,11 @@ test('itinéraire : le treuil est pris en compte (remonter de 40 cases par le se
   m.x = X; m.y = 40;
   const r = search(G, m, X, 40, false, (x, y) => y === 0, Infinity, 1);
   assert.ok(r, 'chemin par l\'existant (build=false) : le treuil suffit');
-  assert.ok(Math.abs(r.dist[r.n] - 40 / (m.carac.climbSpeed * 2)) < 1e-6, `coût ${r.dist[r.n]}`);
+  assert.ok(Math.abs(r.dist[r.n] - 40 / (m.carac.climbSpeed * 0.85)) < 1e-6, `coût ${r.dist[r.n]}`);
   /* et depuis une galerie à côté : il rejoint le puits puis monte */
   for(let x = X + 1; x <= X + 6; x++) G.tiles[30][x] = 0;
   const r2 = search(G, m, X + 6, 30, false, (x, y) => y === 0, Infinity, 1);
   assert.ok(r2);
-});
-
-/* colonnes traversées par l'itinéraire trouvé (de l'arrivée au départ) */
-function pathCols(r){
-  const xs = new Set();
-  for(let n = r.n; n >= 0 && n !== r.start; n = r.par[n]) xs.add(n % W);
-  return xs;
-}
-
-test('itinéraire : il reste dans le seau, même avec une colonne d\'échelles collée au puits', () => {
-  const G = shaft(40), m = G.miners[0];
-  for(let y = 1; y <= 40; y++){ G.tiles[y][X + 1] = 0; G.ladder[y][X + 1] = 1; }
-  const down = search(G, m, X, 0, false, (x, y) => y === 40, Infinity, 1);
-  assert.deepEqual([...pathCols(down)], [X], 'descente : ne sort pas du seau pour l\'échelle');
-  const up = search(G, m, X, 40, false, (x, y) => y === 0, Infinity, 1);
-  assert.deepEqual([...pathCols(up)], [X], 'montée : idem');
-});
-
-test('itinéraire : il reste dans le seau, même avec un trou profond à côté (chutes de 2 cases d\'échelle en échelle)', () => {
-  const G = shaft(42), m = G.miners[0];
-  for(let y = 1; y <= 42; y++){ G.tiles[y][X + 1] = 0; G.ladder[y][X + 1] = y % 3 === 0 ? 1 : 0; }
-  const r = search(G, m, X, 0, false, (x, y) => y === 42, Infinity, 1);
-  assert.deepEqual([...pathCols(r)], [X]);
 });
 
 test('échelle de 2 de haut : l\'itinéraire compte moitié moins d\'échelles à poser', () => {
