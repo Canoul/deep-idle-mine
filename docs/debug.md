@@ -1577,6 +1577,53 @@ Règles (voir CLAUDE.md) :
   `#miRun` / `#twRun` restent `position:fixed`, leur boîte peut suivre le canvas quand il est plus petit que la place
   → même dérive possible. Pas reproduit (pas de signalement).
 
+### Recherche de groupe (LFG) (Geoffrey) — branche `geoffrey/lfg`, ✅ en ligne le 22/10
+- **Quoi** : file d'attente pour former un lobby de 3 (mine classique). Règle pure `matchLfg(queue, max)` dans
+  `src/shared/lfg.js` (groupe le plus ancien + solos les plus anciens, sinon `max` solos, l'hôte = le premier) ;
+  `queueTime(ms)` pour le timer.
+- **Serveur** (`server/party/service.js`) : `queue` (en mémoire, clé = solo ou chef d'un groupe de 2 ; on garde la
+  liste des membres à l'entrée), `found` (« groupe trouvé », `PARTY_SERVER.lfgNotice` = 1 min), `boot` (uuid du
+  démarrage). `lfgValid` : l'équipe (membres) doit être identique à l'entrée, pas en lancement, et c'est le chef.
+  `pruneLfg` : `lfgTimeout` 30 s sans `state()` du joueur, équipe changée, un membre en session. `runLfg` (verrou
+  `matching`) est appelé dans `state()` et `lfg()` : forme les lobbys (`formLobby` : invités retirés de leur groupe
+  d'un joueur, poussés dans celui de l'hôte, créé si besoin), puis `autoLaunch` si l'hôte a `auto` (même chemin que
+  `launch` : `p.launching`, `grace`, erreur gardée dans `found.error`). Actions `lfg(me, { auto })` (refus :
+  en session, groupe complet, pas chef ; re-cliquer garde `at`) et `lfgCancel`. `state()` renvoie `lfg: { boot, search,
+  found }`. Routes `POST /api/party/lfg`, `POST /api/party/lfg/cancel`.
+- **Navigateur** : `partyApi.lfg/lfgCancel` ; `lfgState()` exportée par `src/ui/lobby.js` (bouton, timer, annuler) ;
+  `#lfgBtn`, `#lfgAutoRow`, `#lfgStatus` dans `index.html` ; `lfgWant` : si `boot` change pendant sa recherche
+  (serveur redémarré), le lobby la relance. `src/main.js` : pop-up « Groupe trouvé » (`setLfgFound` / `syncNotifs`,
+  fusionnée avec les notifications Social).
+- **Tests** : `tests/lfg.test.js` (17 : règle, 3 solos, groupe de 2 prioritaire, solo avec code, membre, complet / en
+  session, annuler / pas de double entrée, équipe changée, onglet fermé, auto du chef seulement, auto qui échoue,
+  routes, boot) ; `tests/lobby.test.js` +2. lfg, lobby, party, server : 52/52 ✅. Essai HTTP sur un vrai serveur
+  (`DIM_DATA_DIR` temporaire, 3 invités) : lobby formé chez le premier, session lancée pour les 3 ✅.
+- **Pas vérifié** : ⚠️ rendu du panneau dans le navigateur (pas ouvert à l'œil).
+- **Points fragiles** : la file est perdue au redémarrage (voulu, `boot`) ; le signe de vie est le `GET /api/party`
+  du lobby (toutes les 2,5 s, ×2 en session) : un onglet en arrière-plan très ralenti par le navigateur peut sortir
+  de la file après 30 s. Le groupe d'un membre peut changer pendant l'`await` de `pruneLfg` : `lfgValid` est relu
+  juste avant de former le lobby.
+
+### Trésors des tours au lieu des coffres (Geoffrey) — branche `geoffrey/tresor-tour`, ✅ en ligne le 22/10
+- **Quoi** : le boss d'une tour donne `treasureItem(side, q)` (« Trésor démoniaque R5 ») au lieu de `chestItem`.
+  `src/config.js` : `RUNE.treasures`, `RUNE.treasureRarity = 'unique'`, `TREASURE_ITEMS` (`stack:false`,
+  `chest:{side,q}`, `treasure:true`) ; 6e rareté `unique` (`#c0480f`) dans `RARITY.tiers` (+ `style.css`, `wiki.css`).
+  Anciens `CHEST_ITEMS` gardés (empilables, ouvrables, plus donnés, cachés du wiki).
+- **Affichage** : `src/meta/piece.js` `treasureOf`, `itemName` (« Antique Trésor démoniaque »), `itemColor` (couleur
+  de la qualité) ; `pieceName` / `pieceColor` s'en servent ; `src/ui/rarity.js` `rname` : texte par défaut =
+  `itemName`, couleur de la qualité en style. Inventaire (bulle native), wiki (`item()`). Textes « coffre » des tours →
+  « trésor » (wiki, lobby, Jugement, Amélioration, fin de tour, Quitter). `scripts/give-admin.js --chests` donne des
+  trésors.
+- **Anti-duplication** : un trésor est une case avec `uid` ; `sanitizePiece` le garde (`{ item, uid }`, sans
+  qualité : elle est dans le nom). Sans ça, il disparaissait au rechargement de l'inventaire. uid en double refusé,
+  quantité > 1 ramenée à 1 (comme le stuff). Ouverture inchangée (`openTreasure` par nom, idempotente par opId).
+- **Tests** : `tests/rune.test.js` +2 (noms, couleurs, rareté, non empilable, relecture, ouverture, ancien coffre),
+  `rarity`, `wiki`, `game-service` (tour → trésor) adaptés. rune, rarity, wiki, inventory, game-service, lobby,
+  judgment : 99/99 ✅ ; `npm run test:anticheat` 72/72 ✅.
+- **Pas vérifié** : ⚠️ rendu dans le navigateur (couleur du nom, contour Unique) pas regardé à l'œil.
+- **Points fragiles** : le nom interne (« … R5 ») reste celui qui circule (sacs, historique, routes) ; tout nouvel
+  affichage d'un nom d'objet doit passer par `rname` / `itemName` pour montrer « Antique Trésor démoniaque ».
+
 ### Équilibrage du 21/10 (Geoffrey) — branche `geoffrey/retours-21-10`
 - **État au 22/10** : chances du concasseur remplacées à la fusion par celles de main (décision du 22/10) ; pioches ×2,
   ceinture +10 torches, passerelles illimitées gardées.
@@ -1709,3 +1756,13 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ gain modeste avec le stuff de base ; avec des mineurs de stuffs différents (cas réel) l'écart
   peut être plus grand, à vérifier en vrai. Le cas « en file par les mêmes échelles » (ancien −4 de profondeur) n'est
   pas revenu en simulation, à surveiller.
+- **Mise en ligne (22/10)** : fusions de main (57 commits, puis LFG et Trésors des tours). Conflits : « Plus profond »
+  (main) gardé, `CFG.transitReach` retiré ; donjons `DUNGEON.chance` 0.33 ; concasseur, détecteur de blocage, focus :
+  main ; lobby : « Prêt » + avatars ; `statsHTML` (main) reprend l'affichage « +x % » de la ténacité. Tests venus de
+  main mis à jour : pioches ×2 (`amelioration`, `carac` : valeur de la pioche en pierre 130 → 260 x, ses lignes
+  doublent avec) ; bouton « Prêt » (`instant-server`, `social` : membre prêt avant `launch`). **LFG** : `formLobby` remet
+  tout le monde « pas prêt » (nouveaux venus) ; `autoLaunch` ne demande pas « prêt » (entrer dans la file vaut accord) ;
+  test `lfg` (+1). `npm test` 660/661 (0 échec), anti-triche 72/72.
+  Simulation 3 × 5 : areas 3,2, profondeur 195,0, 0 blocage (main seul : 3,4 / 197,2) ; `--skills mixed` : areas 4,0,
+  profondeur 207,8, 0 blocage. Temps pour rejoindre le front, 6 seeds : main seul **Vert 102 s** (Rouge 84, Bleu 88) →
+  après **Vert 89 s** (Rouge 82, Bleu 84) ; seed 1924731460 : Vert 116 → 78 s.
