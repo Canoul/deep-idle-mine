@@ -1207,3 +1207,24 @@ Règles (voir CLAUDE.md) :
   (donjon, treasure et résidus comptés à part). Suite complète + anticheat 632/632.
 - Une session en cours déjà arrivée en area 4 au moment de la mise en ligne serait rejouée avec des résidus si le
   serveur redémarre (la génération de l'area 4+ a changé) : rare (stuff de base), sans perte de butin déjà versé.
+
+### Ange vs Démon, étape 3 : coffres des tours, runes, Enchantement (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Config** `RUNE` + `chestItem(side, q)` : 14 objets `Coffre angélique R1` … `Coffre démoniaque R7` (cat treasure,
+  empilables, `chest:{ side, q }`, rareté selon q) et `Rune` (cat rune, non empilable). Textures `chest_angel`,
+  `chest_demon`, `rune`.
+- **`src/meta/piece.js`** : `rollLines` (extrait de `rollIdentity`), `rollChestQuality`, `rollRune(q)`, `isRune` ;
+  `sanitizePiece` accepte une Rune (toujours tirée, sans niveau) et `piece.rune` ({ q, lines, s }, revérifiée comme
+  une identification, barème compris) ; `pieceBonus` additionne les lignes de la rune.
+- **`src/meta/loot.js`** : un coffre de tour s'ouvre comme un Treasure et donne une Rune (lignes tirées à
+  l'ouverture). **`src/meta/upgrade.js`** : `enchant` / `enchantError` (`not_stuff`, `not_rune`,
+  `already_enchanted`) ; identification et amélioration refusent maintenant une rune (`not_stuff`).
+- **Serveur** : action `enchant` de `POST /api/game/upgrade` ; `open` relit maintenant le stuff porté avant
+  d'ouvrir (une rune reçoit un uid neuf : sans ça, elle pouvait prendre l'uid d'une pièce portée si le compteur de
+  la base était trop bas. Test anticheat qui échoue sans la correction).
+- **UI** : rubrique Enchantement (onglet Amélioration) : cases pièce + rune, aperçu de ce que la rune donnera sur
+  CETTE pièce, confirmation ; infobulle d'une rune en « % de la valeur de la pièce ». ✅ Testé dans Chromium
+  (1440×900) : 2 coffres ouverts par l'API, rune R4 posée sur une épée en fer (+3,1 % perçage, +0,15 marche), pièce
+  marquée « déjà enchantée », aucune erreur de page.
+- **Outil admin** : `node scripts/give-admin.js --name X --chests 1` donne un coffre de chaque qualité (ange et
+  démon) pour tester sans tour.
+- **Tests** : `tests/rune.test.js`, `tests/anticheat/rune.test.js`, rareté. Suite complète + anticheat 644/644.

@@ -31,7 +31,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
-import { identify, upgrade } from '../../src/meta/upgrade.js';
+import { identify, upgrade, enchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
@@ -60,7 +60,9 @@ const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'e
 const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire (retire-la d\'abord si elle est équipée).',
                          same_piece: 'Il faut un deuxième exemplaire à sacrifier.', already_identified: 'Cette pièce est déjà identifiée.',
                          not_same_item: 'Le sacrifice doit être le même objet.', maxed: 'Cette pièce est déjà au niveau maximum.',
-                         not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.' };
+                         not_enough: 'Il te manque des matériaux.', bad_request: 'Demande invalide.',
+                         not_stuff: 'Seule une pièce de stuff peut être identifiée, améliorée ou enchantée.',
+                         not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -460,6 +462,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);                     // une rune reçoit un uid neuf : jamais celui d'une pièce portée
         const res = openTreasure(inv, item, opId, random);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
@@ -566,12 +569,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async upgrade(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
-      if(!isInt(body.uid) || (action === 'identify' && !isInt(body.sacrifice))) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
+      if(!isInt(body.uid) || (action === 'identify' && !isInt(body.sacrifice)) || (action === 'enchant' && !isInt(body.rune)))
+        fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
         const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random)
-                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random) : { error: 'bad_request' };
+                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random)
+                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId }) : { error: 'bad_request' };
         if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { piece: r.piece, success: r.success ?? true, inventory: publicInventory(inv) };

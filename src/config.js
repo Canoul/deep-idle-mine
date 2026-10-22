@@ -331,7 +331,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon',
+  'residue_angel','residue_demon','rune','chest_angel','chest_demon',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -376,6 +376,23 @@ export const SHINY = {
   salt: 0x5a1e7a11,                         // pour dériver G.shinyRng de la seed
 };
 
+/* ---- Coffres de tour et runes (concept Ange vs Démon, étape 3 ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Le boss d'une tour donne à chaque joueur un coffre de sa tour, de qualité R1 à R7 (chances UPGRADE.qualities), un
+   objet par qualité : « Coffre angélique R4 ». Ouvert depuis l'inventaire (comme un Treasure), il donne une Rune de la
+   même qualité, dont les lignes (stat et %) sont tirées à l'ouverture comme une identification. Rune ange = rune
+   démon. Enchantement (onglet Amélioration) : la rune est consommée, ses lignes s'ajoutent à une pièce de stuff, une
+   seule rune par pièce, définitif. */
+export const RUNE = {
+  item: 'Rune', tex: 'rune', chestWeight: 2,
+  chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
+  /* rareté (contour de case) d'un coffre selon sa qualité */
+  rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
+};
+/* nom de l'objet coffre d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) */
+export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
+const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
+  [1,2,3,4,5,6,7].map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
+
 /* ---- Rareté des objets (src/meta/rarity.js) ----
    tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
    items : rareté des objets qui ne sont pas « commun » (les autres le sont par défaut). Les shiny prennent
@@ -390,7 +407,8 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
-    'Résidu angélique':'rare', 'Résidu démoniaque':'rare',
+    'Résidu angélique':'rare', 'Résidu démoniaque':'rare', [RUNE.item]:'epique',
+    ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -538,6 +556,8 @@ export const ITEMS = {
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
+  ...CHEST_ITEMS,                                                                       // coffres des tours (RUNE)
+  [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
