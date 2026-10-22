@@ -10,6 +10,7 @@ export function gameRoutes(game){
   return {
     'GET /api/game/info':    async () => game.info(),
     'GET /api/game/state':   async ctx => { needMe(ctx); return game.state(ctx.me); },
+    'GET /api/game/judgment': async ctx => { needMe(ctx); return game.judgment(ctx.me); },
     'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },
     'POST /api/game/start':  async ctx => { needMe(ctx); return [201, await game.start(ctx.me, obj(ctx.body))]; },
@@ -19,6 +20,10 @@ export function gameRoutes(game){
       return game.view(ctx.me, since === null || since === '' ? null : Number(since)); },
     'POST /api/game/clock':  async ctx => { needMe(ctx); return game.devClock(ctx.me, obj(ctx.body)); },
     'POST /api/game/focus':  async ctx => { needMe(ctx); return game.focus(ctx.me, obj(ctx.body)); },
+    'GET /api/game/chat':    async ctx => { needMe(ctx);
+      const after = new URL(ctx.req.url, 'http://x').searchParams.get('after');
+      return game.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
+    'POST /api/game/chat':   async ctx => { needMe(ctx); return game.chatPost(ctx.me, obj(ctx.body)); },
     'POST /api/game/finish': async ctx => { needMe(ctx); return game.finish(ctx.me); },
     'POST /api/game/open':   async ctx => { needMe(ctx); return game.open(ctx.me, obj(ctx.body)); },
     'POST /api/game/furnace': async ctx => { needMe(ctx); return game.furnace(ctx.me, obj(ctx.body)); },

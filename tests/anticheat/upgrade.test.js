@@ -12,7 +12,7 @@ const PICK = 'Pioche en pierre', FEATHER = 'Plume d\'ange', STONE = 'Cristal de 
 
 async function setup(random = () => 0.5){
   const store = createMemoryGameStore();
-  const inv = createInventory(); addItem(inv, PICK, 3); addAll(inv, { [FEATHER]:10, [STONE]:10 });
+  const inv = createInventory(); addItem(inv, PICK, 3); addAll(inv, { [FEATHER]:30, [STONE]:10 });
   await store.putInventory(ME.id, JSON.parse(serialize(inv)));
   const live = fakeLive(rec => ({ shares: rec.players.map(p => ({ account:p.account, left:false, bag:{} })) }));
   const game = createGameService({ store, liveRunner: live, clock: () => 1e6, dev:false, random,
@@ -38,7 +38,7 @@ test('demandes invalides refusées sans rien changer', async () => {
                      { action:'identify', uid:a, sacrifice:a, opId:'op-bad-0004' }, { action:'upgrade', uid:999, opId:'op-bad-0005' }])
     await assert.rejects(game.upgrade(ME, body));
   const inv = (await game.state(ME)).inventory;
-  assert.equal(count(inv, PICK), 3); assert.equal(count(inv, FEATHER), 10);
+  assert.equal(count(inv, PICK), 3); assert.equal(count(inv, FEATHER), 30);
   assert.ok(inv.slots.every(s => s?.q === undefined));
 });
 
@@ -47,7 +47,7 @@ test('améliorer : matériaux consommés une fois ; une pièce portée ne s\'am�
   const op = { action:'upgrade', uid:a, opId:'op-upgrade-1' };
   await Promise.all([game.upgrade(ME, op), game.upgrade(ME, op)]);
   let inv = (await game.state(ME)).inventory;
-  assert.equal(count(inv, FEATHER), 7); assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);
+  assert.equal(count(inv, FEATHER), 10); assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:b, opId:'op-equip-01' });
   await assert.rejects(game.upgrade(ME, { action:'upgrade', uid:b, opId:'op-upgrade-2' }), { code:'not_owned' });
 });

@@ -50,6 +50,22 @@ test('chute de 3 cases dans un trou connu (découvert) : pas d\'étourdissement'
   assert.equal(m.stats.stuns, 0);
 });
 
+test('chute de plus de 3 cases dans un trou connu (jamais voulue : son appui a disparu) : étourdi aussi', () => {
+  const G = worldFrom(pit(8)), m = G.miners[0];       // trou découvert de 7 cases, il n'a rien sous lui
+  run(G, 10);
+  assert.equal(m.y, 8);
+  assert.equal(m.stats.stuns, 1);
+  assert.equal(m.status, 'Étourdi (chute)');
+});
+
+test('chantier du treuil : jamais étourdi, même en tombant de plus de 3 cases dans son puits', () => {
+  const G = worldFrom(pit(8)), m = G.miners[0];
+  m.winchJob = { bottom:20 };
+  run(G, 10);
+  assert.equal(m.y, 8);
+  assert.equal(m.stats.stuns, 0);
+});
+
 test('chute imprévue de plus de 3 cases : étourdi aussi', () => {
   const G = worldFrom(pit(8)), m = G.miners[0];
   hide(G, 5, 2, 9);
@@ -86,6 +102,18 @@ test('creuser sous ses pieds au-dessus d\'un trou connu trop profond : refusé',
   assert.equal(deepFall(G, m, 0, 1), false);
   assert.equal(stepDir(G, m, 0, 1), true);
   assert.equal(m.action.type, 'mine');
+});
+
+test('sur une échelle, descendre dans un trou connu trop profond (puits d\'un autre) : refusé', () => {
+  const G = worldFrom(pit(7)), m = G.miners[0];       // en (5,1), vide de 2 à 6 : un puits de 5 cases sous lui
+  G.ladder[1][5] = 1;                                  // il tient sur son échelle
+  assert.equal(deepFall(G, m, 0, 1), true);
+  assert.equal(stepDir(G, m, 0, 1), false);
+  G.ladder[4][5] = 1;                                  // une échelle plus bas : chute de 2 jusqu'à elle, permis
+  assert.equal(deepFall(G, m, 0, 1), false);
+  G.ladder[4][5] = 0; hide(G, 5, 2, 7);                // le même puits, pas découvert : il ne sait pas, il descend
+  assert.equal(deepFall(G, m, 0, 1), false);
+  assert.equal(stepDir(G, m, 0, 1), true);
 });
 
 test('marcher vers un trou connu trop profond : passerelle (ou refus sans passerelle)', () => {
@@ -131,11 +159,14 @@ test('session complète : jamais bloqué, chute connue jamais au-delà de 3 case
   const { newSession, tick } = await import('../src/sim/session.js');
   const G = newSession(23757, { miners:1 });
   const m = G.miners[0];
-  let start = null, worst = 0;
+  /* seules comptent les chutes qu'il provoque (pas en marchant ou en creusant) ; son appui qui disparaît sous lui n'en
+     est pas une (22/10, seed 23757 avec « Plus profond » : il tue le mimic sur lequel il se tient, chute de 4) */
+  let start = null, worst = 0, prev = null;
   while(!G.over){
     const falling = m.action?.data?.fall;
-    if(falling && start === null) start = { y:m.y, blind:m.fall?.blind };
-    if(!falling && start !== null){ if(!start.blind) worst = Math.max(worst, m.y - start.y); start = null; }
+    if(falling && start === null) start = { y:m.y, blind:m.fall?.blind, chosen:prev === 'move' || prev === 'mine' };
+    if(!falling && start !== null){ if(!start.blind && start.chosen) worst = Math.max(worst, m.y - start.y); start = null; }
+    if(!falling && m.action) prev = m.action.type;
     tick(G);
   }
   assert.ok(worst <= CFG.maxFall, `chute connue de ${worst} cases`);

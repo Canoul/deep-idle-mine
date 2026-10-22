@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { CRUSHER, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { createInventory, addAll, countOf, serialize } from '../src/meta/inventory.js';
-import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher } from '../src/meta/crusher.js';
+import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher, dropOdds } from '../src/meta/crusher.js';
+import { rollLoot } from '../src/meta/loot.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { fakeLive } from './helpers.js';
@@ -30,9 +31,11 @@ test('tables : les chances demandées par le créateur', () => {
   for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']){
     assert.equal(ch('Terre', g), 0.002); assert.equal(ch('Pierre', g), 0.003); assert.equal(ch('Pierre dure', g), 0.004);
   }
-  assert.equal(ch('Terre', 'Treasure T1'), 0.001);
-  assert.equal(ch('Pierre', 'Treasure T2'), 0.001);
-  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.0015);
+  /* par lot de 100 blocs (22/10) : une gemme 0,6 / 0,9 / 1,2 %, treasure 0,5 / 0,3 / 0,5 % */
+  for(const [b, gem] of [['Terre', 0.006], ['Pierre', 0.009], ['Pierre dure', 0.012]]) assert.ok(Math.abs(dropOdds(b)[0].chance - gem) < 1e-12, b);
+  assert.equal(ch('Terre', 'Treasure T1'), 0.005);
+  assert.equal(ch('Pierre', 'Treasure T2'), 0.003);
+  assert.equal(ch('Pierre dure', 'Treasure T2'), 0.005);
 });
 
 test('poser : bloc seulement, une sorte par case, quantités invalides refusées, rien ne bouge en cas de refus', () => {
@@ -103,7 +106,26 @@ test('fréquence du butin proche des chances (200 000 lots de terre, hasard dét
   for(const s of c.out) if(s) got[s.item] = s.qty;
   assert.equal(c.crushed, N);
   for(const g of ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur']) assert.ok(got[g] > 320 && got[g] < 480, `${g} : ${got[g]} (attendu ~400)`);
-  assert.ok(got['Treasure T1'] > 140 && got['Treasure T1'] < 260, `Treasure T1 : ${got['Treasure T1']} (attendu ~200)`);
+  assert.ok(got['Treasure T1'] > 880 && got['Treasure T1'] < 1120, `Treasure T1 : ${got['Treasure T1']} (attendu ~1000)`);
+});
+
+test('aide « ? » : les chances affichées sont celles du tirage (gemmes additionnées) ; ni moyenne ni temps estimé', () => {
+  const [gem, tre] = dropOdds('Terre');
+  assert.equal(gem.family, 'gem');
+  assert.ok(Math.abs(gem.chance - 0.006) < 1e-12);                 // 3 gemmes à 0,2 % = 0,6 % d'en avoir une
+  assert.equal(tre.items[0].item, 'Treasure T1');
+  assert.equal(tre.chance, 0.005);
+  for(const o of [gem, tre, ...gem.items]) assert.deepEqual(Object.keys(o).filter(k => k === 'every' || k === 'sec'), []);
+  assert.deepEqual(dropOdds('Fer'), []);
+  /* contrôle par le vrai tirage : 1 million de lots de pierre, toutes familles */
+  for(const block of Object.keys(CRUSHER.loot)){
+    const rng = mulberry32(7), N = 1_000_000, got = {};
+    for(let i = 0; i < N; i++) for(const k of Object.keys(rollLoot(CRUSHER.loot[block], rng))) got[k] = (got[k] || 0) + 1;
+    for(const fam of dropOdds(block)){
+      const n = fam.items.reduce((s, it) => s + (got[it.item] || 0), 0), exp = fam.chance * N;
+      assert.ok(Math.abs(n - exp) < 5 * Math.sqrt(exp) + 1, `${block} ${fam.family} : ${n} (attendu ~${Math.round(exp)})`);
+    }
+  }
 });
 
 test('retirer, récupérer une case, tout récupérer ; opId rejoué sans effet', () => {

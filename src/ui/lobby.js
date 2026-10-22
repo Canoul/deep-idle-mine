@@ -3,8 +3,10 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
+import { pxi } from './pxicons.js';
+import { drawPortrait } from '../render/portrait.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -52,17 +54,23 @@ export function launchState({ account, party, offline, busy, session }){
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
 
-/* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session */
-export function mineModes(cur, locked = false){
-  return MINE_MODES.map(m => ({ id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, disabled: locked || !m.ready }));
+/* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session.
+   Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
+   si le joueur les a déjà faites pendant cette ouverture. */
+export function mineModes(cur, locked = false, judgment = null){
+  return MINE_MODES.filter(m => !m.tower || judgment?.sides?.[m.tower]?.open).map(m => {
+    const done = !!m.tower && !!judgment?.sides?.[m.tower]?.done;
+    /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10) */
+    return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled) || !m.ready || done };
+  });
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), promote(id) } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), promote(id) } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
-               session:null, mode:MINE_MODES[0].id };
+               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false };   // view 'jugement' : jauges à la place de l'équipe
 
   function render(){
     const { account, offline, info, party } = st;
@@ -73,26 +81,38 @@ export function setupLobby(h){
     $('lobbySession').hidden = !locked;
     $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
     /* Mine instantanée : pas d'équipe ni de Lancer (elle s'ouvre à heure fixe), sa carte d'inscription à la place */
-    const mi = MINE_MODES.find(m => m.id === st.mode)?.scheduled;
-    $('miCard').hidden = !mi; $('teamCard').hidden = !!mi; $('prefsCard').hidden = !!mi;
-    $('mineModes').innerHTML = mineModes(st.mode, locked).map(m =>
-      `<button data-mode="${m.id}" class="${m.on ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : ''}>${esc(m.label)}${m.soon ? ' <small>(bientôt)</small>' : ''}</button>`).join('');
+    /* une tour choisie qui vient de fermer (ou déjà faite) : retour à la Mine */
+    const modes = mineModes(st.mode, locked, st.judgment);
+    if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
+    const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
+    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges, rien ne se lance d'ici
+    $('judgmentCard').hidden = !jv;
+    $('miCard').hidden = jv || !mi; $('teamCard').hidden = jv || !!mi; $('prefsCard').hidden = jv || !!mi || !!tower;
+    const btn = m => `<button data-mode="${m.id}" class="${m.on && !jv ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : m.done ? ' title="Déjà faite pendant cette ouverture"' : ''}>${esc(m.label)}`+
+      `${m.soon ? ' <small>(bientôt)</small>' : m.done ? ' <small>(déjà faite)</small>' : ''}</button>`;
+    const judge = `<button data-view="jugement" class="${jv ? 'on' : ''}" title="Jauges Ange contre Démon et tours">⚖ Jugement${st.judgmentPending ? ' <small class="jnew">● tour ouverte</small>' : ''}</button>`;
+    const all = modes.map(btn), at = modes.filter(m => !MINE_MODES.find(d => d.id === m.id)?.tower).length;   // après Mine et Mine instantanée, avant les tours
+    all.splice(at, 0, judge);
+    $('mineModes').innerHTML = all.join('');
     $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
       if(s.kind === 'free')
-        return `<div class="pslot free"><span class="av">+</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
+        return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
-        return `<div class="pslot free invited"><span class="av">✉</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
+        return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
-      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av">${s.leader ? '★' : esc(s.name?.[0]?.toUpperCase() ?? '?')}</span>`+
+      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16"${s.me ? ' data-me' : ''}></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
                               `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
+    /* sprite de chaque joueur : toi avec ton stuff, les autres en tenue de base */
+    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.hasAttribute('data-me') ? h.look?.() ?? {} : {}));
 
     const ls = launchState(st);
-    $('launchBtn').disabled = !ls.can; $('launchBtn').textContent = ls.label;
+    if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
+    $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     $('inviteBtn').disabled = offline || !account || locked;
     $('inviteBtn').classList.toggle('on', st.inviteOpen);
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
@@ -102,11 +122,13 @@ export function setupLobby(h){
     const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
+      : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour percer jusqu'au sommet et vaincre le boss. `+
+                `Victoire : un coffre pour chaque joueur présent. Une seule victoire par ouverture.`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
+    $('devCard').hidden = jv || !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -196,11 +218,12 @@ export function setupLobby(h){
   };
 
   $('mineModes').onclick = e => {
+    if(e.target.closest('button[data-view]')){ st.view = 'jugement'; render(); h.onJudgment?.(); return; }
     const b = e.target.closest('button[data-mode]');
     if(!b || b.disabled) return;
-    st.mode = b.dataset.mode; render();
-    h.onMode?.(st.mode);
+    pick(b.dataset.mode);
   };
+  function pick(mode){ st.view = null; st.mode = mode; render(); h.onMode?.(st.mode); }
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('inviteBtn').onclick = () => {
@@ -254,6 +277,10 @@ export function setupLobby(h){
     update(patch){ Object.assign(st, patch); render(); },
     /* rejoindre par un code venu d'un lien d'invitation */
     join(code){ return act(() => h.party.join(code)); },
+    /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */
+    showJudgment(){ st.view = 'jugement'; render(); h.onJudgment?.(); },
+    /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
+    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment).some(m => m.id === mode && !m.disabled)) pick(mode); },
     error,
   };
 }

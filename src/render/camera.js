@@ -3,7 +3,7 @@
    que verticalement. Logique pure, testée sans navigateur (tests/camera.test.js). */
 import { CAMERA } from '../config.js';
 
-/* viewRows : lignes visibles à l'écran */
+/* viewRows : lignes visibles à l'écran (changeable : la vue s'adapte à la hauteur de la fenêtre, setRows) */
 export function createCamera(viewRows){
   const cam = { y: CAMERA.top, free: false };
   /* plus bas qu'on puisse aller : le fond de la mine connue (lastRow) visible avec une petite marge */
@@ -28,6 +28,9 @@ export function createCamera(viewRows){
     },
     /* revient au mineur suivi (glissade depuis la position actuelle) */
     follow(){ cam.free = false; },
+    /* nombre de lignes visibles (fenêtre plus ou moins haute) */
+    setRows(n){ if(Number.isInteger(n) && n > 0) viewRows = n; },
+    get rows(){ return viewRows; },
   };
 }
 

@@ -31,6 +31,30 @@ test('wiki : sources et usages tirés des recettes, du four, des treasures et de
   for(const [name, r] of Object.entries(RECIPES)) assert.deepEqual(by[name].recipe.cost, r.cost, name);
 });
 
+test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amélioration, concasseur, donjon', async () => {
+  const { UPGRADE, INSTANT_MINE, DUNGEON, CRUSHER } = await import('../src/config.js');
+  const by = Object.fromEntries(D.itemGroups().flatMap(g => g.items).map(i => [i.name, i]));
+  const plume = by[INSTANT_MINE.featherItem];
+  assert.ok(plume.sources.some(s => s.startsWith('Mine instantanée')), plume.sources.join(' / '));
+  assert.ok(plume.uses.some(u => u.startsWith('Amélioration : ') && u.includes(`${UPGRADE.levels[2].cost[INSTANT_MINE.featherItem]} pour +3`)));
+  assert.ok(by[DUNGEON.loot.item].uses.some(u => u.startsWith('Amélioration : ')));
+  assert.ok(by['Pioche en pierre'].uses.includes('S\'identifie et s\'améliore (onglet Amélioration)'));
+  assert.equal(D.qualityRows().length, 7);
+  assert.equal(D.upgradeTotal()[INSTANT_MINE.featherItem], UPGRADE.levels.reduce((s, l) => s + l.cost[INSTANT_MINE.featherItem], 0));
+  const rows = D.crusherRows();
+  assert.deepEqual(rows.map(r => r.block), Object.keys(CRUSHER.loot));
+  assert.ok(rows.every(r => r.families.every(f => f.chance > 0 && f.every === undefined && f.sec === undefined)));
+  const html = fs.readFileSync(new URL('../wiki.html', import.meta.url), 'utf8');
+  for(const id of ['mi', 'amelioration', 'concasseur', 'w-mi', 'w-qualities', 'w-upgrade', 'w-mi-notify', 'w-mi-lost'])
+    assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(!html.includes('Bientôt : liste d\'amis') && !html.includes('La barre à gauche') && !html.includes('viendra plus tard'));
+  for(const id of ['ange', 'w-judgment', 'w-tower', 'w-runes']) assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(by['Résidu angélique'].sources[0].startsWith('Miné à partir de l\'area 4'));
+  assert.ok(by['Coffre démoniaque R7'].uses[0].includes('Rune R7'));
+  assert.ok(!by.Rune.sources.includes('Pas encore obtenable'));
+  assert.equal(D.runeRows().length, 7);
+});
+
 test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais', () => {
   const rows = D.areaRows();
   assert.equal(rows.length, AREAS.length);

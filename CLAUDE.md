@@ -1,4 +1,4 @@
-# Deep Idle Mine — instructions pour Claude
+# Deep Mine Idle — instructions pour Claude
 
 Ce fichier est lu par Claude au début de chaque discussion. Plusieurs personnes travaillent sur le jeu, chacune
 avec sa propre discussion Claude, et **les discussions ne partagent pas leur historique** : tout ce qui doit
@@ -124,6 +124,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min.
 - `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point), ~6 min.
 - `npm run textures` : régénère `textures/` (Python).
+- `npm run textures:ui` : régénère les éléments d'interface pixel art (`textures/ui/`) et les icônes
+  (`src/ui/pxicons.js`) (Python).
 
 ## 7. Structure
 
@@ -137,22 +139,24 @@ src/config.js         TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js        recettes de craft          src/skins.js  apparence des mineurs selon le stuff
 src/core/             hasard déterministe (rng)
 src/sim/              simulation pure, sans DOM : world, light, mineur, path, actions, ai, mobs, session, log,
-                      diagnostics, dungeon
+                      diagnostics, dungeon ; instant/ (mine instantanée), tower/ (tours de l'Ange et du Démon)
 src/meta/             progression hors session, logique pure : inventory, share, loot, furnace, crusher, craft,
-                      stuff, research, skills
-src/shared/           règles partagées jeu + serveur : account, game, view, préférences, réglages dev, party
+                      stuff, research, skills, piece/upgrade (identification, amélioration, runes), judgment (jauges)
+src/shared/           règles partagées jeu + serveur : account, game, view, préférences, réglages dev, party,
+                      instant, tower (+ leurs *-view.js : ce que le serveur envoie au navigateur)
 src/net/              appels au serveur (api)
 src/render/           canvas (lit l'état, ne le modifie jamais), textures
 src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory, furnace, crusher, craft, stuff,
-                      research, skills, history, account…) + style.css
+                      research, skills, history, account, orbs…) + style.css (pixel art « Forge noire ») + pxicons.js
 src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
 src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
-                      direct dans un fil d'exécution), party/ (groupes), db/ (PostgreSQL)
+                      direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
+                      instantanée), db/ (PostgreSQL)
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
 deploy/ovh/           installation et mise à jour du serveur OVH
-docs/                 journal.md (avancement), debug.md (journal technique), comptes.md, deploiement-ovh.md,
+docs/                 journal.md (avancement), debug.md (journal technique), securite.md, comptes.md, deploiement-ovh.md,
                       archive/ (documents d'anciens choix, ex. Render)
 textures/             PNG 16×16 (skins des mineurs dans textures/skins/)
 prototype/            ancien prototype monolithique (référence seulement)
@@ -201,5 +205,5 @@ intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. 
 
 ## 10. Hors périmètre pour l'instant
 
-Ne pas implémenter sans demande : la liste d'amis / l'onglet Social (une ébauche existe sur `origin/social`), les
-fondations. Prévoir l'architecture pour, sans les construire. (La spécialisation des rôles, elle, fait partie du jeu.)
+Ne pas implémenter sans demande : les fondations. Prévoir l'architecture pour, sans les construire. (La
+spécialisation des rôles et l'onglet Social, eux, font partie du jeu.)

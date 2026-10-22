@@ -64,3 +64,11 @@ test('onglet Historique : présent ; carte d\'une session = seed, date, part (ou
   assert.match(h, /4242/); assert.match(h, /30 min/); assert.match(h, /Zoe, Max/); assert.match(h, /12/); assert.match(h, /Charbon/);
   assert.match(sessionCard({ ...base, left:true, bag:{} }), /rien reçu/);
 });
+
+test('Jugement : plus un onglet de la barre, mais dans le Lobby (#jugement → Lobby) ; 12 onglets, 12 touches', async () => {
+  const { TAB_KEYS } = await import('../src/ui/nav.js');
+  assert.ok(!TABS.some(t => t.id === 'jugement'));
+  assert.equal(pickTab('#jugement', 'four'), 'lobby');
+  assert.equal(pickTab('', 'jugement'), 'lobby', 'ancien onglet mémorisé');
+  assert.ok(TABS.filter(t => t.ready).length <= TAB_KEYS.length, 'chaque onglet a sa touche');
+});

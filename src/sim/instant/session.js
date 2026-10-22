@@ -1,6 +1,7 @@
 /* Mine instantanée : la partie et sa boucle à pas fixe (DT). Chacun pour soi : ce qu'un mineur mine va dans son sac,
-   gardé jusqu'à la fin ; pas de coffre, pas de partage, pas d'XP. Ni oxygène, ni pods, ni mobs, ni lumière : le mineur
-   se déplace librement (4 directions) dans les cases vides. Ne touche ni au DOM ni au canvas.
+   gardé jusqu'à la fin ; pas de coffre, pas de partage, pas d'XP. Ni oxygène, ni pods, ni mobs, ni lumière. Gravité et
+   échelles comme dans la mine normale (22/10, voir ai.js) : G.ladder[y][x], échelles illimitées et partagées. Ne
+   touche ni au DOM ni au canvas.
    Bloc disputé : quand un mineur finit un bloc, les autres qui minaient ce même bloc perdent leur travail (« bloc
    perdu ») ; après MI.interruptMax blocs perdus d'affilée, il change de zone (voir ai.js). */
 import { INSTANT_MINE as MI, DT, STATS, BLOCKS, ITEMS, SHINY, FORTUNE, SKILLS } from '../../config.js';
@@ -8,7 +9,7 @@ import { mulberry32 } from '../../core/rng.js';
 import { shinyOf, fortuneExtra } from '../actions.js';
 import { log } from '../log.js';
 import { genInstantMine, spawnColumns } from './world.js';
-import { decide } from './ai.js';
+import { decide, miSupported } from './ai.js';
 export { miMoveT, miMineT } from './ai.js';
 
 /* fin jugée au compteur de ticks (jamais au temps flottant) */
@@ -24,12 +25,15 @@ export function newInstant(seed, opts={}){
   const G = {
     mode:'mi', seed, t:0, ticks:0, over:false, ...world,
     rng:mulberry32(seed^0x3c6ef372), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt),
-    log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0 }, summary:null,
+    ladder: world.tiles.map(r => new Uint8Array(r.length)),   // échelles posées (1 = échelle sur la case)
+    seen: world.tiles.map((r, y) => new Uint8Array(r.length).fill(y === 0 ? 1 : 0)),   // cases découvertes (surface : oui)
+    log:[], stats:{ mined:0, contested:0, feathers:0, shiny:0, ladders:0 }, summary:null,
     miners: specs.map((s,i) => createInstantMiner(i, s, cols[i])),
   };
   G.id = opts.id ?? `mi-${seed}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   G.roster = [...G.miners];             // tous les joueurs, y compris ceux qui sont partis ; G.miners = les présents
   log(G, `Mine instantanée ouverte (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
+  for(const m of G.miners) revealAround(G, m);
   return G;
 }
 
@@ -41,7 +45,7 @@ function createInstantMiner(id, s, x){
     target:null, path:[],               // bloc visé et cases vides à traverser pour l'atteindre
     goal:null,                          // tas de plumes visé (ramassage opportuniste, MI.featherReach)
     interrupts:0, flee:null,            // blocs perdus d'affilée ; zone à fuir { x, y, until }
-    stats:{ mined:0, lost:0, feathers:0, shiny:0, fortune:0, idle:0 },
+    stats:{ mined:0, lost:0, feathers:0, shiny:0, fortune:0, idle:0, ladders:0 },
   };
 }
 
@@ -55,8 +59,17 @@ export function tickInstant(G){
      l'intérieur d'un tick ; à égalité, l'ordre tourne à chaque tick (personne n'est favorisé par sa place) */
   const n = G.miners.length;
   const order = G.miners.map((m,i) => ({ m, k:remaining(m), r:(i+G.ticks)%n })).sort((a,b) => a.k-b.k || a.r-b.r);
-  for(const { m } of order) if(G.miners.includes(m)) stepMiner(G, m);
+  for(const { m } of order) if(G.miners.includes(m)){ stepMiner(G, m); revealAround(G, m); }
   if(G.ticks >= INSTANT_TICKS) endInstant(G);
+}
+
+/* découverte : les cases à au plus discoverMax (au moins 1) du mineur, comme dans la mine normale en pleine lumière.
+   Une seule carte pour tous (comme les échelles) : ce qu'un mineur découvre, tout le monde le voit. */
+export function revealAround(G, m){
+  const R = Math.max(1, m.carac.discoverMax), r = Math.ceil(R);
+  for(let dy = -r; dy <= r; dy++){ const y = m.y + dy; if(y < 0 || y > G.h) continue;
+    for(let dx = -r; dx <= r; dx++){ const x = m.x + dx; if(x < 0 || x >= G.w) continue;
+      if(dx*dx + dy*dy <= R*R) G.seen[y][x] = 1; } }
 }
 
 function stepMiner(G, m){
@@ -71,8 +84,17 @@ function stepMiner(G, m){
 
 function finish(G, m, a){
   if(a.type === 'move'){ m.x = a.data.x; m.y = a.data.y; pickFeathers(G, m); }
+  else if(a.type === 'ladder') placeLadder(G, m);
   else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
   else if(a.type === 'wait') m.stats.idle += a.dur;
+  revealAround(G, m);   // après chaque action : rien ne passe sans être vu, même plusieurs actions dans un tick
+}
+
+/* échelle sur la case du mineur (et celle du dessus si elle est vide, avec l'échelle de 2 : skill tall_ladder) */
+function placeLadder(G, m){
+  const put = (x, y) => { if(!G.ladder[y][x]){ G.ladder[y][x] = 1; G.stats.ladders++; m.stats.ladders++; } };
+  put(m.x, m.y);
+  if(m.skill.tall_ladder && m.y-1 >= 1 && G.tiles[m.y-1][m.x] === 0) put(m.x, m.y-1);
 }
 
 /* tas de plumes : le premier mineur qui arrive sur la case le ramasse en entier */
@@ -94,6 +116,9 @@ function mineCell(G, m, x, y){
   if(m.skill.ore_rush) m.rushUntil = G.t + SKILLS.rushTime;
   if(m.target && m.target.x === x && m.target.y === y) m.target = null;
   for(const o of G.miners) if(o !== m && o.action?.type === 'mine' && o.action.data.x === x && o.action.data.y === y) blockLost(G, o);
+  /* le bloc portait quelqu'un (posé dessus, ou en train de poser une échelle) : il perd son action et tombe */
+  for(const o of G.miners)
+    if(o.x === x && o.y === y-1 && o.action && o.action.type !== 'move' && !miSupported(G, o.x, o.y)){ o.action = null; o.path = []; o.target = null; }
 }
 
 /* un autre a fini avant lui le bloc qu'il minait : travail perdu ; au bout de interruptMax d'affilée, il fuit la zone */

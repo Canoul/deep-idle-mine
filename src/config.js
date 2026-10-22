@@ -24,7 +24,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
 export const CFG = {
-  ladderTime:2, refillRate:30, unlockRatio:0.4,
+  ladderTime:2, refillRate:30, unlockRatio:0.6,
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
@@ -40,13 +40,15 @@ export const CFG = {
   shaftGap:3,             // écart minimal entre les puits de deux mineurs
   crowdRadius:4,          // en dessous de cette distance (Manhattan) d'un autre mineur, une zone est « occupée »
   crowdPenalty:2,         // un minerai proche d'un autre mineur (ou de sa cible) vaut 1/(1 + crowdPenalty × nb) de son prix
-  transitReach:1,         // au-dessus de son area de travail (la plus profonde), il ne prend que les minerais à ≤ transitReach cases de lui (21/10)
   sectorHalf:8,           // en équipe : demi-largeur du secteur de préférence de chaque mineur (autour de sa colonne home)
   sectorPenalty:1,        // un minerai hors secteur vaut 1/(1 + sectorPenalty × éloignement relatif) de son prix
   rowCrowdCost:0.5,       // surcoût (s) par case d'un chemin sur la ligne d'un autre mineur (ou juste au-dessus / en dessous)
   rowCrowdPenalty:1,      // une cible sur la ligne d'un autre mineur (±1) vaut 1/(1 + rowCrowdPenalty × nb) de son prix
-  minWorkTime:30,         // ne repart pas de la surface s'il ne reste pas aller + retour + ce temps de travail
   endStayMin:45,          // en dessous de ce temps restant, il ne repart jamais
+  /* fin de session (22/10, Geoffrey) : il ne descend pas plus bas que la profondeur où l'aller et le retour depuis la
+     surface laissent cette part du temps restant à miner (il mine plus haut au lieu d'aller au front pour remonter
+     aussitôt). Vitesse estimée d'après sa dernière remontée (secondes par couche, échelles et détours compris). */
+  endWorkShare:0.5,
 };
 
 /* équipe : le jeu est prévu pour 3 joueurs sur la même carte (même seed, même monde, coffre commun) */
@@ -77,6 +79,8 @@ export const HELP = { range:20 };
    - special  : bloc de jeu sans rôle de ressource (barrière) */
 export const BLOCK_TYPES = ['terrain', 'ore', 'build', 'treasure', 'special'];
 
+/* attrait d'un treasure découvert pour l'IA (val), repris tel quel pour les résidus */
+const TREASURE_VAL = 12;
 export const BLOCKS = {
   /* family 'bloc' : dans l'inventaire, objets de type Bloc (ils se concassent : onglet Concasseur, CRUSHER) */
   1:{name:'Terre',   type:'terrain', tex:'dirt',    w:1, hard:0.6, color:'#7a5230', dot:'#8d6240', family:'bloc'},
@@ -93,13 +97,25 @@ export const BLOCKS = {
   9:{name:'Pierre dure', type:'terrain', tex:'hardstone', w:3, hard:2.4, color:'#575c66', dot:'#6c727d', family:'bloc'},
   /* treasure : entité enfouie dans la mine ; ouverte, elle donne un objet Treasure TX (TREASURE).
      val = attrait pour l'IA une fois découverte */
-  10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:12, noDrop:true},
+  10:{name:'Treasure', type:'treasure', tex:'treasure', w:0, hard:1.0, color:'#7d828c', dot:'#ffd23f', val:TREASURE_VAL, noDrop:true},
   /* mur de donjon (DUNGEON) : brique de pierre violet sombre, incassable */
   11:{name:'Brique de donjon', type:'special', tex:'dungeon_brick', w:0, hard:Infinity, color:'#3a2a4a', dot:'#55406b', unbreakable:true, noDrop:true},
+  /* résidus (concept Ange vs Démon, JUDGMENT) : pierre sombre aux fissures lumineuses, dès l'area 4. Bloc ordinaire
+     (terrain) : pas de Fortune, pas de shiny, ne compte pas pour le déblocage. Visé par l'IA une fois découvert, au
+     même poids qu'un treasure (val, 22/10/2026 ; avant : jamais visé). Rapportés au coffre, ils remplissent les
+     jauges de l'onglet Jugement. */
+  12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu', val:TREASURE_VAL},
+  13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu', val:TREASURE_VAL},
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (6 s, ne rapporte rien) et sa version
+     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:6, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:6, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
-export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9 };
+export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -190,12 +206,16 @@ export const LOOT = {
 export const CRUSHER = {
   inSlots:8, outSlots:8, cols:4, batch:100, time:60,
   loot: {
+    /* chances par lot de 100 blocs (décision du créateur, 22/10/2026) : « Une gemme » = chance d'avoir une gemme (les 3
+       gemmes se partagent ce total à parts égales : 0,6 % = 3 × 0,2 %), « Treasure » = chance d'avoir le treasure.
+       Terre 0,6 % / 0,5 % ; Pierre 0,9 % / 0,3 % ; Pierre dure 1,2 % / 0,5 % (avant : gemme 0,3 / 0,45 / 0,36 %,
+       treasure 0,01 / 0,015 / 0,02 %) */
     'Terre':       { always:[], oneOf:[ { family:'gem', items:gems(0.002) },
-                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.001 }] } ] },
+                                        { family:'treasure', items:[{ item:'Treasure T1', chance:0.005 }] } ] },
     'Pierre':      { always:[], oneOf:[ { family:'gem', items:gems(0.003) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.001 }] } ] },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.003 }] } ] },
     'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.004) },
-                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.0015 }] } ] },
+                                        { family:'treasure', items:[{ item:'Treasure T2', chance:0.005 }] } ] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -282,10 +302,12 @@ export const XP = {
    wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
 /* Treuil (skill Logisticien, étape 2) : un puits au milieu de la mine (colonne x), de la surface jusqu'au haut de la
    dernière area débloquée. Un seau monte et descend à speedFactor × la vitesse de montée du mineur ; tout le monde
-   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). */
+   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne. Plus lent qu'une échelle : l'IA peut sortir
+   du seau pour une colonne d'échelles ou un trou à côté (×2 essayé le 22/10/2026, refusé : la vitesse ne change pas). */
 export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
 
-export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4 };
+export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
+  minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
@@ -330,6 +352,8 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'residue_angel','residue_demon','rune','chest_angel','chest_demon',
+  'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -374,6 +398,23 @@ export const SHINY = {
   salt: 0x5a1e7a11,                         // pour dériver G.shinyRng de la seed
 };
 
+/* ---- Coffres de tour et runes (concept Ange vs Démon, étape 3 ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Le boss d'une tour donne à chaque joueur un coffre de sa tour, de qualité R1 à R7 (chances UPGRADE.qualities), un
+   objet par qualité : « Coffre angélique R4 ». Ouvert depuis l'inventaire (comme un Treasure), il donne une Rune de la
+   même qualité, dont les lignes (stat et %) sont tirées à l'ouverture comme une identification. Rune ange = rune
+   démon. Enchantement (onglet Amélioration) : la rune est consommée, ses lignes s'ajoutent à une pièce de stuff, une
+   seule rune par pièce, définitif. */
+export const RUNE = {
+  item: 'Rune', tex: 'rune', chestWeight: 2,
+  chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
+  /* rareté (contour de case) d'un coffre selon sa qualité */
+  rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
+};
+/* nom de l'objet coffre d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) */
+export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
+const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
+  [1,2,3,4,5,6,7].map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
+
 /* ---- Rareté des objets (src/meta/rarity.js) ----
    tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
    items : rareté des objets qui ne sont pas « commun » (les autres le sont par défaut). Les shiny prennent
@@ -388,6 +429,8 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
+    'Résidu angélique':'rare', 'Résidu démoniaque':'rare', [RUNE.item]:'epique',
+    ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',
@@ -470,32 +513,45 @@ export const STUFF = {
    réussite = chance ; un échec ne coûte que les matériaux. Matériaux : Plume d'ange (mine instantanée) et Cristal de
    pleine lune (minotaure du donjon, DUNGEON.loot). Toutes les valeurs sont provisoires (équilibrage). */
 export const UPGRADE = {
+  /* fourchette d'UNE ligne (% de la valeur de l'objet) ; total max = lines × max : 25, 30, 35, 40, 50, 75, 100 %
+     (nerf du 22/10/2026, avant 30 à 220 %) ; min = même rapport min/max qu'avant */
   qualities: [
-    { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:10, max:30, lines:1 },
-    { q:2, label:'Bon',            color:'#00FF00', chance:0.24, min:20, max:40, lines:1 },
-    { q:3, label:'Haute qualité',  color:'#0080FF', chance:0.24, min:30, max:60, lines:1 },
-    { q:4, label:'Excellent',      color:'#FF00FF', chance:0.14, min:25, max:40, lines:2 },
-    { q:5, label:'Antique',        color:'#FFA500', chance:0.04, min:35, max:50, lines:2 },
-    { q:6, label:'Mystérieux',     color:'#FF0000', chance:0.03, min:30, max:50, lines:3 },
-    { q:7, label:'Légendaire',     color:'#FFFF00', chance:0.01, min:35, max:55, lines:4 },
+    { q:1, label:'Utile',          color:'#FFFFFF', chance:0.30, min:8,    max:25, lines:1 },
+    { q:2, label:'Bon',            color:'#00FF00', chance:0.24, min:15,   max:30, lines:1 },
+    { q:3, label:'Haute qualité',  color:'#0080FF', chance:0.24, min:17.5, max:35, lines:1 },
+    { q:4, label:'Excellent',      color:'#FF00FF', chance:0.14, min:12.5, max:20, lines:2 },
+    { q:5, label:'Antique',        color:'#FFA500', chance:0.04, min:17.5, max:25, lines:2 },
+    { q:6, label:'Mystérieux',     color:'#FF0000', chance:0.03, min:15,   max:25, lines:3 },
+    { q:7, label:'Légendaire',     color:'#FFFF00', chance:0.01, min:16,   max:25, lines:4 },
   ],
+  /* barème des fourchettes : une pièce identifiée garde le numéro du barème (champ s, absent = 1). À la relecture, une
+     ligne d'un ancien barème est ramenée dans la fourchette actuelle À LA MÊME PLACE (le haut de l'ancienne fourchette
+     donne le haut de la nouvelle) : les pièces déjà tirées suivent le rééquilibrage (src/meta/piece.js, sanitizePiece). */
+  scale: 2,
+  oldScales: {
+    1: { 1:[10,30], 2:[20,40], 3:[30,60], 4:[25,40], 5:[35,50], 6:[30,50], 7:[35,55] },   // jusqu'au 22/10/2026
+  },
   discover: { qualities:[6, 7], chance:0.25, value:1 },
   /* stats qui peuvent tomber sur une ligne (toutes celles qui ont une valeur en x ; pas la Découverte, à part) */
   pool: ['mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
          'speed','climbSpeed','pods','oxygenMax'],
-  /* prix d'un point en x (catalogue de GAME_DESIGN §3, mineur de base) ; crit : 130 x = 10 % (décision du créateur) ;
-     mineSpeedPct = 1 % de 1 vitesse de minage (1300 / 100), damagePct = 1 % de 5 dégâts (40 × 5 / 100) ;
-     oneTap, piercing, looting : mesurés par simulation le 21/10 (GAME_DESIGN §3) : coup unique ≈ minage en % (13),
-     perçage ≈ 7 (les blocs en plus remplissent le sac), butin des mobs : provisoire (le butin des mobs n'a pas encore de valeur en x) */
-  prices: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
-            discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:2 },
+  /* VALEUR d'un objet en x = somme de ses stats × worth (catalogue mesuré de GAME_DESIGN §3, mineur de base) :
+     pioche en pierre 0,1 × 1300 = 130 x, épée en fer (11 − 5) × 40 = 240 x. */
+  worth: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
+           discoverMax:190, compassRows:300, mineSpeedPct:13, damagePct:2, crit:13, oneTap:13, piercing:7, looting:10 },
+  /* CONVERSION d'une ligne (identification, rune) : x par point de stat. Tableau du créateur du 22/10/2026, donné
+     « pour 100 x » : vitesse de minage +0,05, minage % +5, dégâts +2,5, dégâts % +20, vitesse d'attaque +20, critique +7,
+     fortune +2, coup unique +7, perçage +10, butin des mobs +10, marche +0,4, montée +0,3, pods +20, oxygène +25.
+     prix = 100 ÷ valeur pour 100 x. Les pièces gardent leur %, elles suivent donc ce tableau sans migration. */
+  prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
+            piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300 },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
   levels: [
-    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':3, 'Cristal de pleine lune':3 } },
-    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':5, 'Cristal de pleine lune':5 } },
-    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':7, 'Cristal de pleine lune':7 } },
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey)
+    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
+    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -522,6 +578,8 @@ export const ITEMS = {
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
+  ...CHEST_ITEMS,                                                                       // coffres des tours (RUNE)
+  [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
@@ -544,7 +602,7 @@ export const ACCOUNT = {
   recoveryLength: 16,               // caractères du code de secours (affiché en 4 groupes de 4)
   /* pseudos interdits (comparés sans majuscules ni accents) */
   reservedNames: ['admin', 'administrateur', 'moderateur', 'modo', 'support', 'staff', 'systeme', 'system',
-                  'invite', 'guest', 'anonyme', 'deepidlemine', 'serveur', 'server', 'root'],
+                  'invite', 'guest', 'anonyme', 'deepidlemine', 'deepmineidle', 'serveur', 'server', 'root'],
 };
 
 /* ---- Sessions de jeu (décidées et vérifiées par le serveur) ----
@@ -580,11 +638,29 @@ export const INSTANT_MINE = {
   duration: 300,                       // s de jeu
   w: 50, h: 50,
   comp: { coal:20, iron:40, gold:39 }, feather: 1,
-  featherMin: 1, featherMax: 5,
+  featherMin: 1, featherMax: 2,                       // 22/10 (Geoffrey) : 1-2 par tas (avant 1-5)
   maxPerMine: 20,
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,
   interruptMax: 3, fleeDist: 8, fleeTime: 20,
-  featherReach: 3,
+  /* tas de plumes (22/10, Geoffrey) : un tas DÉCOUVERT passe avant tout, même enfermé dans la roche : le mineur creuse
+     droit vers lui. Il le chasse s'il est à au plus featherReach cases (à vol d'oiseau, en Manhattan) et qu'aucun autre
+     mineur n'en est plus proche (le plus proche y va, égalité : le plus petit numéro). Avant : seulement les tas
+     accessibles à 3 pas par les galeries déjà creusées. */
+  featherReach: 8,
+  /* cap (22/10, Geoffrey) : avant, tous les mineurs creusaient droit vers le bas jusqu'au fond. Chacun a un cap (une des
+     headings : [dx, dy, poids]) qu'il garde turnBlocks[0] à turnBlocks[1] blocs minés, puis il en tire un autre. Un bloc
+     miné dans le sens du cap ne coûte rien de plus ; dans le sens opposé, headingWeight s de pénalité (au travers :
+     la moitié). Plus headingWeight est grand, plus les galeries sont droites. */
+  headings: [[-1,0,2], [1,0,2], [0,1,1.5], [0,-1,0.6], [-1,1,1.5], [1,1,1.5], [-1,-1,0.5], [1,-1,0.5]],
+  headingWeight: 1.5, turnBlocks: [6, 14],
+  /* inscriptions (22/10, Geoffrey) : ouvertes seulement signupBefore s avant l'ouverture (11 h 30 pour 12 h), même en
+     session ; encore en session à l'heure = mine ratée, la session continue */
+  signupBefore: 30*60,
+  /* découverte (22/10, Geoffrey) : la mine est cachée au départ (sauf la surface) ; chaque mineur découvre autour de lui
+     dans un rayon de sa stat discoverMax (tout est éclairé : le rayon entier, comme une case en pleine lumière) */
+  /* caméra (22/10, Geoffrey) : elle suit ton mineur ; camCols colonnes à l'écran (zoom), autant de lignes que la
+     hauteur le permet (au moins camMinRows) */
+  camCols: 24, camMinRows: 14, camEase: 0.2,
   notify: [30*60, 15*60, 5*60, 30], inviteAt: 30,
   featherItem: 'Plume d\'ange', featherTex: 'angel_feather', heapTex: 'angel_feathers',
 };
@@ -604,7 +680,20 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
+  { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
+  { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
+/* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
+   `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
+export const SOCIAL = { poll:4000, hiddenPoll:20000 };
+
+/* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
+   Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
+   maxLen : caractères par message · keep : derniers messages gardés par session · gapMs : délai minimal entre deux
+   messages d'un joueur · poll : rafraîchissement dans le navigateur (ms) · ttlMs : un salon sans message depuis ce
+   temps est oublié (filet de sécurité, la session dure 1 h) */
+export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
@@ -627,11 +716,53 @@ export const PREF_OPTIONS = {
      le tacle pendant ce temps, il s'enfuit d'un coup à la surface.
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
-  areas: [4, 5], chance: 0.2, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // area 4 ajoutée le 21/10 (Geoffrey) : tirage indépendant par area
+  areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
   boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,
   salt: 0x0d06e0,
+};
+
+/* ---- Jugement : concept Ange vs Démon (22/10/2026, décisions du créateur ; spec docs/superpowers/specs/2026-10-22-ange-demon-design.md) ----
+   Résidus : dans chaque area à partir de fromArea, pct % des cases de chaque sorte (tirage à part de la seed, à la place
+   de terrain : le reste de l'area ne change pas). Jauges (serveur, ns judgment) : les résidus versés aux joueurs en fin
+   de session s'ajoutent à la jauge de leur sorte ; à cap, le donjon associé ouvre pendant openHours h (la jauge
+   repart de 0, le surplus est perdu ; elle continue de se remplir pendant l'ouverture). */
+export const JUDGMENT = {
+  fromArea: 4, pct: 0.5, cap: 250, openHours: 6, salt: 0x5e51d0e,
+  sides: {
+    angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },
+    demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
+  },
+  poll: 15000,          // ms : rafraîchissement de l'onglet Jugement
+};
+
+/* ---- Tours de l'Ange et du Démon (concept Ange vs Démon, étape 4 ; src/sim/tower/) ----
+   Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers. Une tour
+   pleine de stonebrick (6 s) en labyrinthe : les mineurs partent du rez-de-chaussée et creusent vers le toit, où le
+   boss attend. L'intérieur n'est pas découvert au départ : chaque mineur découvre autour de lui (discoverMax, comme
+   dans la mine, sans lumière). Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
+   butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
+   Carte : marge de `margin` colonnes de chaque côté ; tour de `width` colonnes (murs compris) et `height` lignes
+   (toit compris) ; `sky` lignes de ciel au-dessus du toit ; sol plein en dessous. Portes : les doorH lignes du bas des
+   deux murs. Boss : bossW × bossH au milieu du toit, immobile, pas provocable ; il frappe sa cible (premier arrivé sur
+   le toit, encore dessus) toutes les hitEvery s (rageEvery sous rageBelow de ses PV) ; chaque coup a knockChance
+   (knockBarb pour un barbare) de la projeter de knock cases vers l'extérieur (elle tombe de la tour). */
+export const TOWER = {
+  duration: 600,                                  // s de jeu (10 min, 22/10 : labyrinthe + brouillard ; avant 15 min)
+  width: 15, height: 30, sky: 7, margin: 8, doorH: 2,
+  /* labyrinthe (22/10, Geoffrey ; avant : 5 % de blocs indestructibles au hasard) : une ligne sur mazeEvery est une
+     ligne de mur, mazeHard blocs indestructibles sur `width` (murs extérieurs compris), soit un seul passage de
+     width − mazeHard cases, placé au hasard sans chevaucher celui de la ligne de mur précédente : on zigzague */
+  mazeEvery: 2, mazeHard: 11,
+  /* vue (navigateur) : cases montrées autour du mineur suivi (avant : toute la tour à l'écran) */
+  view: { cols: 19, rows: 15 },
+  boss: { hp: 1000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.10, knockBarb: 0.05, knock: 6 },
+  sides: {
+    angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇' },
+    demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈' },
+  },
+  salt: 0x70e7e5,
 };
 
 /* mobs présentés dans le lobby (option « Aider allié » : ignoré oui / non) : nom et texture */

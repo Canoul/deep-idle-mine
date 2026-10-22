@@ -5,7 +5,7 @@
 import { CRUSHER } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
-import { crushable, nextSlot, lotsLeft, progress, cycleMs } from '../meta/crusher.js';
+import { crushable, nextSlot, lotsLeft, progress, cycleMs, dropOdds } from '../meta/crusher.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -129,13 +129,20 @@ export function setupCrusher({ onOp, onSync }){
   }
   function closePicker(){ $('cpick').hidden = true; }
 
-  /* fenêtre « ? » : ce que donne chaque bloc (pour BATCH blocs) */
+  /* fenêtre « ? » : les vraies chances de chaque bloc, par lot. Par famille (une gemme, un treasure) : la chance
+     par lot ; puis le détail objet par objet. Ni moyenne ni temps estimé. */
   function openHelp(){
     const box = $('cpick').querySelector('.box');
-    box.innerHTML = `<h3>Butin pour ${BATCH} blocs</h3><div class="frecipes">`+
-      Object.entries(CRUSHER.loot).map(([b, t]) => `<div class="frec"><div class="fout">${icon(b)}<b>${BATCH} ${esc(b)}</b></div>`+
-        `<div class="fparts">${t.oneOf.flatMap(f => f.items).map(i => `${icon(i.item)}${rname(i.item)} <span class="mut">${pct(i.chance)}</span>`).join('<span class="mut">·</span>')}</div></div>`).join('')+
-      `</div><p class="mut small">Un cycle toutes les ${CRUSHER.time} s, même page fermée. Les blocs ne sont consommés qu'à la fin du cycle. Au plus une gemme par cycle.</p>`+
+    const FAMILY = { gem:'Une gemme', treasure:'Un treasure' };
+    const family = f => f.items.length === 1
+      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${pct(f.chance)}</b></div>`
+      : `<div class="fodds"><b>${FAMILY[f.family] ?? esc(f.family)} : ${pct(f.chance)}</b></div>`+
+        `<div class="fparts">${f.items.map(i => `${icon(i.item)}${rname(i.item)} <span class="mut">${pct(i.chance)}</span>`).join('<span class="mut">·</span>')}</div>`;
+    box.innerHTML = `<h3>Chances par lot de ${BATCH} blocs</h3><div class="frecipes">`+
+      Object.keys(CRUSHER.loot).map(b => `<div class="frec"><div class="fout">${icon(b)}<b>${BATCH} ${esc(b)}</b></div>`+
+        dropOdds(b).map(family).join('') + `</div>`).join('')+
+      `</div><p class="mut small">Un lot par ${CRUSHER.time} s, même page fermée. À chaque lot, un seul tirage pour les gemmes ` +
+      `(au plus une) et un pour le treasure : la plupart des lots ne donnent rien.</p>`+
       `<p style="text-align:right"><button id="cpickClose">Fermer</button></p>`;
     $('cpick').hidden = false;
     $('cpickClose').onclick = closePicker;

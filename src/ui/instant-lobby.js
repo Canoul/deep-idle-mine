@@ -23,11 +23,17 @@ export function crossedNotice(prev, now, nextAt, notify = MI.notify){
   return hit.length ? Math.min(...hit) : null;
 }
 
-/* h : { api: { state, join, quit, devOpen }, canNotify() (pas pendant une session normale), locked() (en session :
-         pas d'inscription), onJoined() (aller au lobby, mode MI), onState(st) (le lobby sait si on est inscrit),
+/* inscriptions ouvertes au moment t (ms, heure du serveur) pour cet état du serveur (fenêtre des 30 dernières minutes ;
+   mode dev : toujours) */
+export const canSignup = (st, t) => !!st && (st.dev || (t >= st.signupAt && t < st.nextAt));
+/* « 11 h 30 » : heure de Paris de l'ouverture des inscriptions */
+export const clockText = ms => new Date(ms).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', timeZone: MI.timeZone }).replace(':', ' h ');
+
+/* h : { api: { state, join, quit, devOpen }, canNotify() (pas pendant la mine instantanée), inSession() (en session
+         normale : s'inscrire reste possible, mais il faudra l'avoir finie à l'heure), onJoined() (aller au lobby, mode MI), onState(st) (le lobby sait si on est inscrit),
          onOpened() (mode dev : la mine vient d'être ouverte) } */
 export function setupInstantLobby(h){
-  let st = null, offset = 0, prev = null, busy = false, err = '', timer = null, refreshing = null;
+  let st = null, offset = 0, prev = null, busy = false, err = '', timer = null, refreshing = null, shownOpen = null;
   const now = () => Date.now() + offset;
 
   async function refresh(){
@@ -44,18 +50,21 @@ export function setupInstantLobby(h){
     const box = $('miCardBody');
     if(!box) return;
     if(!st){ box.innerHTML = `<p class="mut">${esc(err || 'Chargement…')}</p>`; return; }
-    const left = st.nextAt - now(), real = Math.round(MI.duration / GAME.speed);
+    const left = st.nextAt - now(), real = Math.round(MI.duration / GAME.speed), open = canSignup(st, now());
+    shownOpen = open;
     box.innerHTML =
       `<div class="miCount"><span class="mut">La mine instantanée commence dans</span><b id="miCountdown">${countdownText(left)}</b></div>`+
       `<div class="row"><span>Inscrits</span><b>${st.count}</b></div>`+
       `<div class="lobbyActions">${st.registered
         ? `<button id="miQuit"${busy ? ' disabled' : ''}>Se désinscrire</button><span class="okmsg">✔ Tu es inscrit</span>`
-        : `<button class="on big" id="miJoin"${busy || h.locked?.() ? ' disabled' : ''}>🌀 S'inscrire</button>`}`+
+        : open ? `<button class="on big" id="miJoin"${busy ? ' disabled' : ''}>🌀 S'inscrire</button>`
+               : `<button class="big" disabled>🔒 Inscriptions à ${clockText(st.signupAt)}</button>`}`+
         (st.dev ? `<button id="miDevOpen"${busy || !st.count ? ' disabled' : ''} title="Mode développeur : sans attendre l'heure">⚡ Ouvrir maintenant (dev)</button>` : '')+`</div>`+
       `<p class="mut small">Toutes les ${MI.everyHours} h pile (heure de Paris). ${Math.floor(real / 60)} min ${p2(real % 60)} de pillage dans une mine
         ${MI.w}×${MI.h} pleine de minerais, avec tous les inscrits : <b>chacun pour soi</b>, chacun son butin, pas d'XP.
         Des tas de <b>plumes d'ange</b> s'y cachent. Tu peux fermer la page ; seul <b>Quitter</b> te fait tout perdre.
-        S'inscrire te fait quitter ton groupe.</p>`+
+        Inscriptions <b>${MI.signupBefore / 60} min avant</b>, même en session ; entrer dans la mine te fait quitter ton groupe.</p>`+
+      (st.registered && h.inSession?.() ? `<p class="small"><b>⚠ Tu es en session :</b> si elle n'est pas finie à l'heure, tu rates la mine instantanée (ta session continue).</p>` : '')+
       (err ? `<p class="err">${esc(err)}</p>` : '');
     $('miJoin')?.addEventListener('click', () => act(h.api.join));
     $('miQuit')?.addEventListener('click', () => act(h.api.quit));
@@ -76,6 +85,7 @@ export function setupInstantLobby(h){
     if(st){
       const t = now(), el = $('miCountdown');
       if(el) el.textContent = countdownText(st.nextAt - t);
+      if(canSignup(st, t) !== shownOpen) render();          // 11 h 30 pile : le bouton S'inscrire apparaît
       const n = crossedNotice(prev, t, st.nextAt);
       if(n != null && h.canNotify()) notice(n);
       prev = t;
@@ -87,8 +97,10 @@ export function setupInstantLobby(h){
   /* fenêtre de rappel ; au dernier (inviteAt), pour un joueur pas inscrit : Rejoindre / Décliner */
   function notice(s){
     const box = $('miNotice'), invite = s <= MI.inviteAt && !st.registered;
+    const sub = st.registered ? (h.inSession?.() ? 'Tu es inscrit : finis ta session avant le départ.' : 'Tu es inscrit.')
+              : s >= MI.signupBefore ? 'Les inscriptions sont ouvertes (Lobby, « Où miner »).' : '';
     box.innerHTML = `<div><b>🌀 La mine instantanée commence dans ${noticeDelay(s)}</b>`+
-      (st.registered ? '<div class="mut small">Tu es inscrit.</div>' : '')+`</div>`+
+      (sub ? `<div class="mut small">${sub}</div>` : '')+`</div>`+
       (invite ? `<div class="miNoticeBtns"><button class="on" id="miNoticeJoin">Rejoindre</button><button id="miNoticeNo">Décliner</button></div>`
               : `<button class="x" id="miNoticeNo" title="Fermer">×</button>`);
     box.hidden = false;

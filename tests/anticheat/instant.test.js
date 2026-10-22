@@ -47,9 +47,9 @@ test('MI : quitter = rien, même en revenant (pas de retour dans la mine, pas de
   await game.leave(A);
   await assert.rejects(game.leave(A), e => e.code === 'no_session');
   assert.equal((await game.state(A)).session, null);
-  await instant.join(A);                                      // il se réinscrit : c'est pour la PROCHAINE mine
+  await assert.rejects(instant.join(A), e => e.code === 'signup_closed', 'pas de réinscription pendant la mine (prochaine dans 2 h)');
   t.now = SLOT + 61e3;
-  assert.deepEqual(await instant.tick(), []);
+  assert.deepEqual(await instant.tick(), [], 'pas de retour dans la mine');
   t.now = s.finishAt + 1; await game.pump();
   assert.equal(await total(store, A.id), 0);
   assert.ok(await total(store, B.id) > 0);
@@ -62,8 +62,14 @@ test('MI : un joueur n\'est jamais dans deux mines, ni en mine et en session', a
   assert.equal(await game.openInstant('mi-x-2', SLOT, [{ account:A.id, name:'Zoe' }]), null, 'déjà dans une mine');
   assert.equal(await game.openInstant('mi-x-1', SLOT, [{ account:B.id, name:'Max' }]), null, 'même mine pas rouverte');
   await assert.rejects(game.start(A, {}), e => e.code === 'session_running');
-  await assert.rejects(instant.join(A), e => e.code === 'session_running');
-  t.now = SLOT;
+  /* inscrit en session pour la mine suivante (permis dans les 30 dernières minutes) : jamais deux mines à la fois */
+  t.now = SLOT + 2 * 3600e3 - 60e3;
+  await instant.join(A);
+  assert.equal(await game.activeSessionId(A.id), 'mi-x-1', 'toujours dans sa mine (jamais finie dans ce test)');
+  t.now = SLOT + 2 * 3600e3;
+  const next = await instant.tick();
+  assert.ok(next.every(x => !x.players.some(p => p.account === A.id)), 'encore en session à l\'heure : écarté de la nouvelle mine');
+  assert.equal(await game.activeSessionId(A.id), 'mi-x-1');
 });
 
 test('MI : ce que le navigateur envoie n\'est pas lu (inscription, ouverture dev hors mode dev)', async () => {

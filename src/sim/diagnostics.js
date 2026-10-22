@@ -6,8 +6,14 @@ export const STUCK_WINDOW = 90;   // secondes sans rien miner ni déposer, sous 
 /* Détecteur de blocage : un mineur est « bloqué » s'il passe STUCK_WINDOW s sous terre sans miner ni déposer,
    sauf s'il est en train de remonter pour de vrai (au moins STUCK_MIN_PROGRESS couches gagnées sur la période)
    ou de redescendre vers le front (au moins STUCK_MIN_PROGRESS couches descendues) : avec des areas profondes,
-   le simple trajet jusqu'au front peut dépasser STUCK_WINDOW. */
+   le simple trajet jusqu'au front peut dépasser STUCK_WINDOW. Si le mineur passe en retour pendant la fenêtre, la
+   descente (avant) et la remontée (après) sont jugées chacune de leur côté (22/10 : faux blocage, seed 23757).
+   Un mineur qui passe au moins STUCK_BUSY_SHARE de la fenêtre à frapper, étourdi ou à attendre le barbare devant le
+   donjon est occupé (le minotaure tient plus de 90 s ; l'occultiste étourdit) : pas un blocage (22/10 : faux blocages,
+   seeds 39595, 23757, 31676). */
 export const STUCK_MIN_PROGRESS = 3;
+export const STUCK_BUSY_SHARE = 0.5;
+const WAIT_BARBARIAN = 'Attend le barbare devant le donjon';
 export function stuckDetector(windowSec=STUCK_WINDOW){
   const W=Math.round(windowSec/DT), hist=new Map(), found=[];
   return {
@@ -17,18 +23,20 @@ export function stuckDetector(windowSec=STUCK_WINDOW){
         const h=push(m);
         if(h.length<W || found.some(f=>f.miner===m.name)) continue;
         const a=h[0], b=h[h.length-1];
-        const climbing  = b.mode==='return' && b.y<=a.y-STUCK_MIN_PROGRESS;
-        // descendu vers le front, même s'il vient de passer en retour (longue descente sans miner, puis fin de session)
-        const descending = b.y>=a.y+STUCK_MIN_PROGRESS;
-        const waiting = b.status==='Attend le barbare devant le donjon';   // attente voulue (donjon), pas un blocage
-        // combat : un mob tué pendant la période, ou plus de la moitié du temps à frapper (boss de 1000 PV, ~2 min)
-        const fighting = a.kills!==b.kills || h.filter(s=>s.attack).length > h.length/2;
-        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting && !fighting)
+        /* bascule en retour pendant la fenêtre (arrivé au front en fin de session, il repart aussitôt) : on juge à part
+           la partie avant (descente) et la partie après (montée) ; sinon, toute la fenêtre */
+        const k=h.findIndex(s=>s.mode==='return'), pre=k>0 ? h.slice(0,k) : (b.mode==='return' ? [] : h), post=k>=0 ? h.slice(k) : [];
+        const climbing  = post.length>0 && post[post.length-1].y<=post[0].y-STUCK_MIN_PROGRESS;
+        const descending = pre.length>0 && pre[pre.length-1].y>=pre[0].y+STUCK_MIN_PROGRESS;
+        const waiting = b.status===WAIT_BARBARIAN;   // attente voulue (donjon), pas un blocage
+        const busy = h.filter(s=>s.busy).length >= STUCK_BUSY_SHARE*h.length;
+        if(a.mined===b.mined && a.trips===b.trips && h.every(s=>s.y>0) && !climbing && !descending && !waiting && !busy)
           found.push({ miner:m.name, t:Math.round(G.t), x:m.x, y:m.y, mode:m.mode, status:m.status });
       }
       function push(m){
         let h=hist.get(m.id); if(!h) hist.set(m.id, h=[]);
-        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, kills:m.stats.kills, attack:m.action?.type==='attack', mode:m.mode, status:m.status });
+        h.push({ y:m.y, mined:m.stats.mined, trips:m.stats.trips, mode:m.mode, status:m.status,
+                 busy:m.action?.type==='attack' || m.action?.type==='stun' || m.status===WAIT_BARBARIAN });
         if(h.length>W) h.shift();
         return h;
       }

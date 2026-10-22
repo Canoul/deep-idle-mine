@@ -978,7 +978,608 @@ Règles (voir CLAUDE.md) :
 - **Vérification** : ✅ Chromium headless, serveur local, toute requête `/miner.js` refusée comme Opera : 11 onglets,
   pas de cadre, `mineur.js` chargé. ⚠️ À reconfirmer par le joueur Opera GX après la mise en ligne.
 
+### Direction artistique « Forge noire » en pixel art (Jules) — branche `jules/da-pixel-forge`, ✅ en ligne le 21/10
+- **Quoi** : interface réécrite d'après la maquette `design/poc/4-pixel-forge.html` (branche `jules/poc-design`).
+  Aucune règle du jeu, simulation ou route serveur ne change ; les identifiants lus par `src/ui/*.js` sont gardés.
+- **Fichiers** :
+  - `scripts/gen_ui.py` → `textures/ui/` (mur, panneau 18×18 tranche 6, bouton 15×15 tranche 3, case 18×18
+    tranche 3, barre 9×9, plaque de titre) ; `scripts/build_pxicons.py` → `src/ui/pxicons.js` (29 icônes du Kenney
+    1-Bit Pack, CC0, planche dans `scripts/assets/`) ; commande `npm run textures:ui`.
+  - `src/ui/style.css` réécrit : unité `--u` (taille d'un pixel d'art : 2 px, 3 px à partir de 1800×1000), tout en
+    multiples de `--u`, cadres en `border-image`. Pas de `zoom` CSS : il décalerait la bulle d'info (`tooltip.js`)
+    et le glisser de la caméra (coordonnées écran).
+  - `index.html` : barre du haut (`.topbar` : compte, nom, `.navSession`, wiki) ; `#nav` devient la barre d'action
+    en bas avec les orbes `#orbL` / `#orbR` ; lobby en deux colonnes (`.lobbyCols`) ; session en grille
+    `.runGrid` (`.runL`, `#cvWrap`, `#depthRail`, `.runR`), `#run` et `#miRun` en `position:fixed` sous la barre ;
+    émojis des titres → `<i data-pxi>` (remplis par `fillIcons` de `nav.js`).
+  - `src/ui/nav.js` : icônes pixel (`TABS[].icon` = nom d'icône), touches `TAB_KEYS`, `fillIcons`.
+  - Nouveaux : `src/ui/orbs.js` (orbes dessinés pixel par pixel), `src/ui/fit.js` (taille de la mine : la plus grande
+    dans sa boîte, ×1 / ×2 exact si on perd ≤ 20 %), `src/render/portrait.js` (sprite du mineur + stuff hors mine).
+  - `src/main.js` : orbes (O₂ / pods du mineur suivi pendant une session, sinon temps / XP), `fitCanvas` à chaque
+    rafraîchissement du HUD, portrait de la barre du haut ; `src/ui/hud.js` : jauge de profondeur (`updateRail`,
+    repères recréés seulement si l'équipe change) ; `stuff.js` : mineur au centre (`.stuffHero`, dernier enfant de
+    `#stuffGrid` : le CSS place les cases 1-5 à gauche, 6-10 à droite) ; `skills.js` : icônes pixel ;
+    `lobby.js` : sprites de l'équipe (toi avec ton stuff, option `look`), l'icône du bouton Lancer remplace le « ▶ »
+    du texte ; `account.js` : portrait dans `.av`.
+- **Tests** : nav, lobby, stuff, skills, blocked-names, boot-check, instant-mine, skins, research, blueprint,
+  treasure, loot, tier2, account-http : 134/134 ✅. Les règles exigées par `nav.test.js` (`#end{position:absolute`,
+  `.view[data-view="session"]{position:relative`) sont gardées.
+- **Vérification** : ✅ partie complète en local (`npm run dev`, invité, 2 mineurs de test, ×300 jusqu'au bilan),
+  captures des 11 onglets à 1440×900, lobby / session / stuff / inventaire à 1920×1080, 1280×720 et 390×844 sans
+  défilement horizontal, 0 erreur console. Mine à ×1 exact à 1440×900.
+  ⚠️ Pas vérifié : mine instantanée en cours (`#miRun`), fenêtres du four / concasseur / stuff avec de vrais objets,
+  Safari / Firefox, le compte connecté (pseudo + mot de passe), un groupe à plusieurs vrais joueurs.
+- **Points fragiles** : les boutons « conteneurs » (`.stuffSlot`, `.fopt`, cases de la barre d'action, `.navAccount`)
+  annulent le `border-image` des boutons ; un nouveau bouton conteneur devra faire pareil. Polices Jersey chargées
+  depuis Google Fonts (sans internet : police système). Le wiki garde son ancien style (`src/wiki/wiki.css`).
+- **Mise en ligne (21/10)** : testé en local par Jules (« tout est bon ») ; `main` n'avait pas bougé ; tests de
+  l'interface 134/134 relancés avant la fusion.
+### 21/10/2026 — Onglet Social (amis, présence, pop-ups)
+- **Quoi** : onglet Social (n'était qu'une page d'attente). Ajouter un ami par pseudo (ou ID : les invités n'ont pas
+  de pseudo) → demande à accepter / refuser ; demandes croisées = amis tout de suite ; retirer / annuler. Liste des
+  amis avec statut (hors ligne / en ligne / en session mine / dans le lobby n/3) et boutons Inviter / Rejoindre.
+  Pop-ups en haut à gauche (`#notifs`, `src/ui/notify.js`) : « xxx vous a invité dans son lobby » (Rejoindre /
+  Décliner) et « xxx vous a envoyé une demande d'ami » (Accepter / Refuser).
+- **Présence** : `GET /api/social` appelé toutes les 4 s (20 s onglet caché) dans tous les onglets, même en session ;
+  toute demande au service social = signe de vie ; en ligne si < 45 s (`SOCIAL_SERVER.onlineFor`). En mémoire.
+- **Groupes** : `party.joinFriend` (rejoindre le groupe d'un ami, créé avec lui comme chef s'il n'en a pas) ;
+  `party.invite` refuse maintenant un joueur en session (`friend_in_session`), y compris l'invitation par ID du lobby.
+  `party.groupOf` / `party.invitesOf` pour l'onglet.
+- **Stockage** : ns `social` par compte `{ friends, incoming, outgoing }`, relu par `sanitizeSocial` ; une demande
+  écrit les deux comptes en une fois (`putSocial(entries)`) ; écritures du service en file (double clic = une demande).
+- **Fichiers** : `server/social/{service,routes}.js`, `server/{app,main,config}.js`, `server/party/service.js`,
+  `server/game/store.js`, `server/db/postgres.js`, `src/config.js` (SOCIAL), `src/net/api.js`, `src/main.js`,
+  `src/ui/{social,notify,nav}.js`, `src/ui/style.css`, `index.html`, GAME_DESIGN §6, CLAUDE.md.
+- **Tests** : `tests/social.test.js` (13 : pseudo / ID, croisées, refuser / annuler / retirer, statuts, inviter,
+  invitation refusée en session côté groupes, rejoindre + complet + en session, limites, relecture trafiquée, écriture
+  des deux comptes ensemble, double clic, HTTP). party, game-service, nav, postgres, game-http, account-http, anticheat
+  party + server : verts.
+- **Vérification** : ✅ Chromium headless à 3 joueurs (Zoe, Max, Lou) : demande → pop-up + pastille chez Max,
+  acceptée depuis la pop-up ; Lou accepte depuis l'onglet ; Lou rejoint le lobby de Zoe (créé, Zoe chef) ; Zoe invite
+  Max (sur l'onglet Inventaire) → pop-up → Rejoindre → lobby 3/3 ; mobile 390 px ; 0 erreur console. Statut « en
+  session » vérifié par les tests seulement. ⚠️ Pas testé en ligne (PostgreSQL : nouveau ns `social`).
+
+### Fusion de l'onglet Social (Geoffrey) + noms des onglets + nom du jeu (Jules) — branche `jules/social`, ✅ en ligne le 22/10
+- **Fusion** de `origin/social` (1 commit signé « Claude », 21/10 15h20, base d'avant la mine instantanée et la refonte
+  pixel ; 39 commits de retard). 11 conflits résolus en gardant les deux côtés : `server/app.js`, `server/main.js`
+  (services `instant` et `social` côte à côte), `server/game/store.js` (Maps `signups` et `socials`, `db.load` avec
+  `mi_signup` et `social`, `crushers` gardé), `server/db/postgres.js` (commentaire), `src/net/api.js` (`instantApi`
+  et `socialApi`), `src/config.js` (`PARTY.pollInSession`, `MINE_MODES`, `SOCIAL`), `src/main.js` (imports,
+  `startInstant()` et `pollSocial()`), `src/ui/nav.js` (Social `ready:true`), `src/ui/style.css` (Forge noire gardée,
+  styles Social et pop-ups réécrits en pixel), `CLAUDE.md`, `docs/debug.md` (les deux entrées gardées).
+- **Adaptations** : `nav.show('mine')` → `'lobby'` (l'onglet Mine n'existe plus) ; icônes pixel dans les pop-ups
+  (`notify.js`) et les boutons Inviter / Rejoindre (`social.js`) ; titre de l'onglet en `data-pxi` ; GAME_DESIGN :
+  barre d'action en bas (oubli de la refonte), renvois vers l'onglet Lobby.
+- **Noms des onglets** toujours visibles sous l'icône (`.dock ul button .lbl` n'est plus une bulle) ; `--dock-h`
+  58u ; orbes masqués sous 1100 px de large ; `TAB_KEYS` + « = » (12 onglets prêts).
+- **Nom du jeu** : « Deep Mine Idle » dans `index.html`, `account.js`, `wiki.html`, le message du serveur, les titres
+  de README / CLAUDE / GAME_DESIGN / état du projet ; `deepmineidle` ajouté aux pseudos réservés. Inchangés exprès :
+  services systemd, dossiers et scripts de `deploy/ovh/` (`deep-idle-mine`), `package.json`, clés localStorage
+  (`deepIdleMine.*` : les changer effacerait l'onglet mémorisé des joueurs), le prototype.
+- **Tests** : social, nav, lobby, party, game-service, postgres (1 sauté sans base), game-http, instant-*, live,
+  account-*, wiki, boot-check, blocked-names : tout vert. ✅ Test à deux joueurs en local (2 navigateurs) : demande
+  d'ami par ID → pop-up chez l'autre → accepter → « En ligne » → Inviter → pop-up → Rejoindre → lobby à 2 avec le
+  bon chef ; captures 1440, 1280, 390 sans débordement.
+- ⚠️ **Pas vérifié** : le Social avec PostgreSQL (en ligne, nouveau ns `social`), un ami en session (boutons grisés),
+  la présence « hors ligne » après 45 s, deux comptes avec pseudo.
+- **Mine plus grande** (retour de Jules : trop petite) : `fitCanvas(cv, box, minShown)` ; pour la mine normale
+  `CAMERA.minShown` = 0,65 (config) : elle remplit la largeur tant qu'au moins 65 % des lignes restent visibles, la
+  boîte `#cvWrap` rogne le haut et le bas (`overflow:hidden`, `#cv` centré en absolu ; statique sur téléphone). La
+  caméra centre déjà le mineur suivi (`fy - viewRows/2 + 2`). Glisser pour défiler reste juste (`clientHeight` = hauteur
+  affichée entière). La mine instantanée reste entière (minShown 1). ✅ captures 1536×713, 1920×1080, 390×844 ;
+  tests camera + nav verts.
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 224 tests du sujet verts (postgres sauté sans base).
+  ⚠️ À surveiller au premier démarrage en ligne : chargement du ns `social` dans PostgreSQL (`createPgGameStore`).
+
+### Revue de sécurité (Jules) — branche `jules/securite`, ✅ en ligne le 22/10
+- **Vérifié, rien à corriger** : historique git (150 commits) sans secret (seulement des exemples `postgres://…` et des
+  mots de passe de test) ; scrypt + sel + `timingSafeEqual`, jeton 256 bits haché, cookie HttpOnly / SameSite=Strict /
+  Secure en ligne (`DIM_SECURE_COOKIE=1` posé par `install.sh`), sessions coupées au changement / à la récupération du
+  mot de passe, purge horaire ; JSON obligatoire (CSRF) ; corps ≤ 16 Ko ; erreurs 500 sans détail ; X-Forwarded-For
+  lu par la droite ; toutes les routes sauf `info` exigent `ctx.me` ; contrôles d'appartenance (kick, invite, join,
+  ack) ; mode dev seulement par variable serveur ; requêtes SQL paramétrées ; `publicAccount` sans empreintes ; pas
+  d'IP ni d'e-mail stockés ; pseudos limités à lettres / chiffres / - / _ et textes échappés ; `npm audit` : 0 ;
+  OVH : 127.0.0.1 + Caddy, env 600, systemd durci, ufw, fail2ban, unattended-upgrades.
+- **Corrigé** :
+  - `server/config.js` `securityHeaders` (CSP `script-src 'self'`, styles et polices Google, `frame-ancestors 'none'`,
+    nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP) posés par `server/app.js` sur toutes les
+    réponses ; HSTS (`hsts`) seulement si le cookie est `Secure`. Aucun script en ligne ni `eval` dans le jeu : rien
+    à adapter. ✅ 0 violation dans la console sur les 12 onglets, une session, le wiki ; polices chargées.
+  - `/prototype/` retiré de `publicPaths` (inutile en ligne, et la CSP le casserait).
+  - `server/accounts/ratelimit.js` : grand ménage des clés sans coup récent quand la taille double (mémoire bornée,
+    sans parcours à chaque tentative).
+  - `.gitignore` : `.env`, `*.env`, `.env.*`.
+  - `tests/anticheat/skills.test.js` : la règle vérifiée était « le nœud d'avant dans la liste » (avant les arbres en
+    étages, 2113f71) ; maintenant « au moins un nœud de l'étage d'avant au max », comme le serveur. Pas une faille.
+- **Tests** : nouveau `tests/security.test.js` (en-têtes sur page / fichier / API / erreurs, HSTS, chemins non servis,
+  limiteur) ; anticheat 67/67 ; account-*, game-http, social, wiki, blocked-names, boot-check, instant-server verts.
+- ⚠️ **Hors code, non vérifiable d'ici** : protection de `main` et 2FA sur GitHub (dépôt public, mise à jour auto
+  depuis `main`) ; sauvegardes Neon ; `sslmode=require` dans `DATABASE_URL`. E-mails de Geoffrey publics (commits,
+  `.mailmap`) : impossible à retirer sans réécrire `main`.
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` n'avait pas bougé ; 105 tests du sujet + anticheat 67/67 verts.
+  À surveiller : en ligne, l'en-tête HSTS n'apparaît que si `DIM_SECURE_COOKIE=1` (posé par `install.sh`).
+
+### Session : colonnes jusqu'en bas, lignes visibles adaptées (Jules) — branche `jules/colonnes-session`, ✅ en ligne le 22/10
+- **Bug** : la surface n'était plus visible. Cause : l'agrandissement du 21/10 (`CAMERA.minShown`) rognait le haut et
+  le bas du canvas en CSS ; la caméra croyait montrer 34 lignes, et en haut de la mine c'est le ciel qui était coupé.
+- **Correction** : plus de rognage. Le nombre de lignes dessinées s'adapte : `renderer.setRows(n)`
+  (`src/render/canvas.js` : `cv.height`, boucle de dessin, `panPixels`) et `camera.setRows(n)`
+  (`src/render/camera.js`) ; `fitMine` (`src/ui/fit.js`) remplit la largeur et prend `floor(hauteur / case)` lignes
+  entre `CAMERA.minRows` (20) et `CAMERA.maxRows` (48), en se calant sur la hauteur sous 20. Sans hauteur imposée
+  (téléphone), le nombre de lignes ne change pas. `fitCanvas` ne sert plus qu'à la mine instantanée.
+- **Colonnes** : `#run` va jusqu'en bas (`bottom:0`) ; la mine, la jauge et les colonnes gardent une marge du bas
+  égale à la barre d'action ; `clearDock` (fit.js) l'enlève à une colonne quand la barre (centrée) ne passe pas sous
+  elle. Sous 1100 px (session qui défile), marges à 0.
+- **Tests** : camera (nouveau test setRows), nav : verts. ✅ Captures : 1918×904 (24 lignes, ciel visible, colonnes
+  jusqu'en bas), 1440×900 (40 lignes, ×1 exact, colonnes au-dessus de la barre), 390×844 sans débordement.
+
+
+### Identification : nerf des qualités, butin des mobs, pièces existantes mises à jour (Geoffrey) — `main`, en ligne le 22/10
+- **Demande** : butin des mobs à +10 % pour 100 x ; total max des qualités R1 à R7 = 25 / 30 / 35 / 40 / 50 / 75 / 100 %
+  (avant 30 à 220 %) ; mettre à jour les pièces déjà identifiées ; vérifier le tirage (un joueur, Crousti, a eu 5 R4).
+- **Tirage vérifié** : le serveur tire avec `crypto` (pas de seed) ; 1 million de tirages conformes aux chances
+  (R4 13,98 % pour 14 %) ; le navigateur crée un identifiant de demande neuf à chaque clic (pas de réponse rejouée).
+  5 R4 de suite ≈ 1 chance sur 19 000 : malchance (ou chance), pas un bug. Les données de Crousti n'ont pas été lues
+  (pas d'accès à la base d'ici).
+- **Config** (`UPGRADE`) : `prices.looting` 2 → 10 ; fourchettes d'une ligne R1 8-25, R2 15-30, R3 17,5-35, R4 12,5-20,
+  R5 17,5-25, R6 15-25, R7 16-25 (max = total ÷ lignes ; min : même rapport min/max qu'avant).
+- **Pièces existantes** : `UPGRADE.scale` (= 2) et `UPGRADE.oldScales[1]` (anciennes fourchettes). Une pièce tirée
+  porte `s` ; sans `s` (= barème 1), `sanitizePiece` ramène chaque ligne à la même place dans la nouvelle fourchette
+  (haut → haut, bas → bas), garde la Découverte et le niveau. Fait à chaque relecture de l'inventaire et du stuff,
+  enregistré à la prochaine écriture. Sans ça, une ancienne ligne hors fourchette aurait dés-identifié la pièce.
+  Une session déjà lancée garde ses stats figées jusqu'à la fin.
+- **Tests** : `tests/amelioration.test.js` (nouveau test du barème, fixtures au barème 2) ; suite complète + anticheat
+  620/620.
+
+### Mine instantanée : gravité et échelles ; plumes 1-2 ; coûts d'amélioration ; identification ; donjons 100 % (Geoffrey) — branche `geoffrey/retours-22-10`, ✅ en ligne le 22/10
+- **MI gravité** (`src/sim/instant/ai.js` réécrit, `session.js`) : `G.ladder[y][x]` (Uint8Array par ligne) ; `miSupported`
+  = même règle que `supported` de la mine normale (vide dessous sans échelle ni sur la case ni juste dessous ; le fond
+  ligne h porte). `decide` : sans appui → action `move` d'une case vers le bas (`data.fall`, 1/CFG.fallSpeed). `plan` :
+  Dijkstra au temps sur les cases où il tient (marcher + chute, monter = échelle à poser `CFG.ladderTime × (1 −
+  build_time)`, ×0,5 en planif si `tall_ladder`, + 1/climbSpeed ; descendre par l'échelle). Candidats = blocs pleins
+  touchant une case atteinte (4 directions, comme avant), coût = temps + foule. Tas de plumes : `hops` (cases
+  traversées, chute comprise) ≤ featherReach → `m.goal`. Chemin = suite de cases où il tient ; `step` fait une case à la
+  fois, la gravité fait la chute ; un chemin qui ne colle plus est replanifié. Action `ladder` (pose sur sa case, +1
+  au-dessus avec tall_ladder). `mineCell` : un mineur posé sur le bloc miné (sauf en marche) perd son action et tombe.
+  `miMineT` compte maintenant `mineSpeedPct` (stat d'amélioration, oubliée avant). Pas de limite de chute ni
+  d'étourdissement en MI (choix de Claude, à valider). Vue : `ladders` (liste de cases) dans `instant-view.js`, rendu
+  par la texture `ladder` (`src/render/instant.js`).
+- **Mesures** (5 seeds, 5 min) — avant / après : 1 mineur 107 / 107 blocs ; 3 : 105 / 108 ; 10 : 103 / 105 ; 20 : 100 / 95
+  (min 85), ≈ 10 échelles par mineur à 20 ; 0 inactivité, jamais en l'air hors chute, jamais de montée sans échelle.
+  Plumes par joueur et par mine (tas 1-2) : 4,8 seul, 3,5 à 3, 2,8 à 10, 1,9 à 20. Il faut 100 plumes pour +3.
+- **Plumes** : `INSTANT_MINE.featherMax` 5 → 2. **Coûts** : `UPGRADE.levels` plumes 20 / 30 / 50 (cristaux 3 / 5 / 7).
+- **Identification** (`src/ui/upgrade.js`) : état `pick` ('target' | 'sacrifice') ; clic sur une case = la choisir
+  (`.sel`), re-clic sur la case choisie remplie = la vider ; la liste montre toutes les pièces sauf celle de l'autre
+  case ; bouton grisé + raison si objets différents ou pièce déjà identifiée. Serveur inchangé (il refusait déjà :
+  `not_same_item`, `already_identified`).
+- **Lignes séparées** : `statLines` (`src/meta/stuff.js`) = effets de l'objet (`pieceBonus` sans lignes, × niveau), puis
+  chaque ligne (`lineValue × plusMult`, arrondie au pas). Les totaux de session (`statsOf`, `pieceBonus`) ne changent pas.
+- **Donjon** : `DUNGEON.areas` [4, 5], `chance` 1. Tests : `dungeon.test.js` (100 % en 4 et 5, plus de « seed sans
+  donjon »), `helpers.js` (`G.dungeons=[]` dans worldFrom).
+- **Tests** : instant-mine (+3 : jamais en l'air, chute, échelles jusqu'au dernier bloc), instant-ui (échelles dans la
+  vue), amelioration (lignes séparées, coûts), anticheat/upgrade (quantités) ; 167 tests des sujets + anticheat 67/67
+  verts. Simulation 3 mineurs × 5 : identique à main (base : l'area 4 est à peine atteinte), 0 blocage.
+- ⚠️ Mineurs forts (minage 3, 4 seeds) : le détecteur de blocage signale 2 fois le barbare « Entre dans le donjon » /
+  « Combat le minotaure » en area 4 (≈ 70 s de trajet + combat sans miner) : faux positif du détecteur (combat), pas
+  un blocage ; la branche `geoffrey/retours-21-10` touche déjà ce détecteur.
+- ✅ Chromium (1440 et 390) : identification (objets différents → grisé + raison, case choisie en doré, identification
+  réussie, lignes séparées dans la liste), coûts +1 affichés 20 plumes ; MI ouverte en dev, le mineur tombe et creuse.
+  ⚠️ Pas vu à l'écran : des échelles dans une MI à plusieurs (testé par la vue et la simulation seulement).
+- ⚠️ **Conflit attendu** avec `geoffrey/retours-21-10` (pas fusionnée) : `DUNGEON.areas` et `tests/dungeon.test.js`
+  (elle passait l'area 4 à 20 %) : garder [4, 5] et chance 1.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu 1c67b15 (barème d'identification) : seul conflit
+  `docs/debug.md` (deux entrées gardées) ; 168 tests du sujet + anticheat 67/67 verts après fusion.
+
+### Identification : nouveau tableau de conversion des stats (Geoffrey) — `main`, en ligne le 22/10
+- **Demande** (étape 1 du concept Ange vs Démon) : tableau « stat pour 100 x » du créateur, pour l'identification et les
+  futures runes : vitesse de minage +0,05, minage % +5, dégâts +2,5, dégâts % +20, vitesse d'attaque +20, critique +7,
+  fortune +2, coup unique +7, perçage +10, butin des mobs +10, marche +0,4, montée +0,3, pods +20, oxygène +25.
+- **Config** : `UPGRADE.prices` = conversion d'une ligne (x par point = 100 ÷ valeur pour 100 x) ; nouveau
+  `UPGRADE.worth` = l'ancien catalogue mesuré, qui sert seulement à la **valeur de l'objet** (`itemValue`). Choix de
+  Claude : sans cette séparation, la pioche en pierre serait passée de 130 à 200 x (prix de la vitesse de minage 1300 →
+  2000) et toutes ses lignes auraient grossi d'environ 54 %.
+- Les pièces gardent leur %, elles suivent le tableau sans migration.
+- **Tests** : `tests/amelioration.test.js` (valeurs attendues recalculées). Suite complète + anticheat : 622/623.
+  ⚠️ L'échec restant (« chaque area (0 à 6) : blocs posés = comptes de l'area ») existe **sans** ce changement : il
+  vient de `d40ce42` (donjons en areas 4 et 5 à 100 %), pas corrigé ici.
+
+### Ange vs Démon, étape 2 : résidus, jauges, onglet Jugement (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Spec** du concept complet (validée en discussion) : `docs/superpowers/specs/2026-10-22-ange-demon-design.md`.
+  Choix de Claude, non tranché par le créateur : projection du boss à **6 cases** (5 n'auraient jamais fait tomber).
+- **Blocs** 12 `Résidu angélique` et 13 `Résidu démoniaque` (terrain, famille `residu`, poids 6, dureté 2,4, rareté
+  rare). `placeResidues` (`src/sim/world.js`) : dès l'area 4, 0,5 % de chaque, tirage à part (`JUDGMENT.salt`), posés
+  en dernier à la place de terrain : le reste de la mine est inchangé. Textures `residue_angel` / `residue_demon`
+  (`scripts/gen_textures.py`). Icône `radiance` (Kenney 28,12) pour l'onglet.
+- **Jauges** : `src/meta/judgment.js` (pur) ; ns `judgment` clé `state` dans le stockage ; ajout dans `settleWith`
+  (`server/game/service.js`) seulement quand `creditSession` verse vraiment (une fois par session et par joueur) ;
+  `GET /api/game/judgment`. Une tour pleine s'ouvre à la lecture suivante (`refresh`).
+- **Onglet Jugement** (3e, après Session : les touches 3 à = se décalent, Social n'a plus de touche) :
+  `src/ui/judgment.js`, styles `.jg` / `.jtower`. ✅ Captures 1440×900 et 390×844 (jauges 37/250 et 182/250, tour de
+  l'Ange ouverte avec le temps restant). Bug trouvé à la capture : la jauge restait sur « Chargement… » (premier appel
+  avant la connexion) → appel aussi au démarrage et à l'ouverture de l'onglet.
+- **Test du créateur à faire** : le bouton « Aller au Lobby » d'une tour ouverte mène au Lobby, où la tour n'est pas
+  encore proposée (étape 4).
+- ⚠️ **Rythme** (simulation, 3 mineurs × 8 sessions, stuff de base) : **0 résidu**. Les mineurs s'arrêtent vers la
+  case 190, l'area 4 commence à 202 : ils la débloquent parfois en fin de session sans y entrer. Même en faisant viser
+  les résidus par l'IA (essai, pas gardé) : 0. Les jauges ne bougeront qu'avec des joueurs équipés qui minent en
+  area 4-5 (13 résidus de chaque par area). Signalé au créateur.
+- Le test « chaque area : blocs posés = comptes » échouait depuis `d40ce42` (murs de donjon pas comptés) : corrigé
+  (donjon, treasure et résidus comptés à part). Suite complète + anticheat 632/632.
+- Une session en cours déjà arrivée en area 4 au moment de la mise en ligne serait rejouée avec des résidus si le
+  serveur redémarre (la génération de l'area 4+ a changé) : rare (stuff de base), sans perte de butin déjà versé.
+
+### Ange vs Démon, étape 3 : coffres des tours, runes, Enchantement (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Config** `RUNE` + `chestItem(side, q)` : 14 objets `Coffre angélique R1` … `Coffre démoniaque R7` (cat treasure,
+  empilables, `chest:{ side, q }`, rareté selon q) et `Rune` (cat rune, non empilable). Textures `chest_angel`,
+  `chest_demon`, `rune`.
+- **`src/meta/piece.js`** : `rollLines` (extrait de `rollIdentity`), `rollChestQuality`, `rollRune(q)`, `isRune` ;
+  `sanitizePiece` accepte une Rune (toujours tirée, sans niveau) et `piece.rune` ({ q, lines, s }, revérifiée comme
+  une identification, barème compris) ; `pieceBonus` additionne les lignes de la rune.
+- **`src/meta/loot.js`** : un coffre de tour s'ouvre comme un Treasure et donne une Rune (lignes tirées à
+  l'ouverture). **`src/meta/upgrade.js`** : `enchant` / `enchantError` (`not_stuff`, `not_rune`,
+  `already_enchanted`) ; identification et amélioration refusent maintenant une rune (`not_stuff`).
+- **Serveur** : action `enchant` de `POST /api/game/upgrade` ; `open` relit maintenant le stuff porté avant
+  d'ouvrir (une rune reçoit un uid neuf : sans ça, elle pouvait prendre l'uid d'une pièce portée si le compteur de
+  la base était trop bas. Test anticheat qui échoue sans la correction).
+- **UI** : rubrique Enchantement (onglet Amélioration) : cases pièce + rune, aperçu de ce que la rune donnera sur
+  CETTE pièce, confirmation ; infobulle d'une rune en « % de la valeur de la pièce ». ✅ Testé dans Chromium
+  (1440×900) : 2 coffres ouverts par l'API, rune R4 posée sur une épée en fer (+3,1 % perçage, +0,15 marche), pièce
+  marquée « déjà enchantée », aucune erreur de page.
+- **Outil admin** : `node scripts/give-admin.js --name X --chests 1` donne un coffre de chaque qualité (ange et
+  démon) pour tester sans tour.
+- **Tests** : `tests/rune.test.js`, `tests/anticheat/rune.test.js`, rareté. Suite complète + anticheat 644/644.
+
+### Ange vs Démon, étape 4 : tours de l'Ange et du Démon (Geoffrey) — branche `claude/ange-demon`, fusionnée et en ligne le 22/10
+- **Config** `TOWER` ; blocs 14-17 (stonebrick ange / démon et leurs versions indestructibles) ; modes de lancement
+  `tower_angel` / `tower_demon` dans `MINE_MODES` (champ `tower`).
+- **Simulation** `src/sim/tower/` : `world.js` (carte : ciel, tour 15 × 30, portes, 5 % indestructible avec chemin
+  garanti, toit sous le boss incassable), `session.js` (Dijkstra « en creusant » : à côté, monter en posant une
+  échelle dans la tour, descendre par une échelle, chutes ≤ CFG.maxFall ; boss, ordre d'arrivée, coups, rage,
+  projection de 6 cases, étourdissement à l'atterrissage, départs, fin). Déterministe (seed) : le serveur rejoue.
+- **Partagé** `src/shared/tower.js` (construction depuis l'enregistrement, départs), `src/shared/tower-view.js`
+  (envoi complet à chaque fois, comme la MI). `server/game/live-game.js` : 3e sorte de partie.
+- **Serveur** : `start` refuse `tower_closed` / `tower_done`, note `rec.opening` ; durée `TOWER.duration` ;
+  `settleWith` : réussite → un coffre par présent (qualité tirée par le serveur) puis `markDone` seulement si
+  l'ouverture n'a pas changé ; pas d'XP ; pas de focus.
+- **Navigateur** : bloc `#twRun` (chrono, Boss, Équipe, Journal, Quitter la tour), `src/render/tower.js`
+  (ciel teinté, briques, boss 24 × 40 px, barre de vie, marqueur de cible), `src/ui/tower-hud.js` (HUD et bilan),
+  Lobby (`mineModes` filtre les tours fermées, « Lancer la tour », texte d'explication, préférences cachées).
+- ✅ **Essai complet dans Chromium** (serveur de dev, jauge de l'Ange ouverte à la main) : la tour apparaît dans
+  « Où miner », lancement, partie affichée (creusement, échelles, boss), boss vaincu, bilan, **Coffre angélique R1**
+  dans l'inventaire, aucune erreur de page. Captures 1440×900.
+- **Équilibrage mesuré** (stuff de base) : à 3, ≈ 7 min, 5/5 ; seul, 1/5 (boss à 100-200 PV). Signalé au créateur.
+- **Tests** : `tests/tower.test.js` (carte, chemin garanti sur 200 seeds, IA à 3, solo fort / faible, boss, rage,
+  projection, barbare, départs, rejeu de la partie en direct), `tests/game-service.test.js` (circuit serveur :
+  fermée, échec, réussite à deux avec un départ, déjà faite, groupe bloqué, fermeture), `tests/lobby.test.js`.
+  `tests/helpers.js` : le faux gestionnaire finit une tour à `TOWER_TICKS`. Suite complète + anticheat : 655/655.
+
+### État du projet : Ange vs Démon, branche identification-sans-stats signalée (Geoffrey) — en ligne le 22/10
+- `claude/etat-du-projet.md` (dépôt et projet claude.ai) : section Ange contre Démon ; l'Amélioration décrit ce qui
+  est sur `main` (identification AVEC lignes) et signale la branche `geoffrey/identification-sans-stats` (pas
+  fusionnée, mêmes fichiers que les runes : `src/meta/piece.js`, `src/ui/upgrade.js`, `tests/amelioration.test.js`).
+  ⚠️ À sa fusion : garder `rollLines` / `rollRune` (les runes tirent toujours des lignes) et le barème `scale` 2.
+- Remarque de méthode : les commits `1c67b15` (nerf identification) et `fc86f1c` (tableau de stats) ont été faits
+  directement sur `main`, sans « Par : » ni entrée dans `docs/journal.md` (CLAUDE.md pas lu en début de discussion).
+  Rattrapé dans l'entrée du journal du 22/10 « Ange contre Démon ».
+
+### Identification : qualité seule, plus de lignes (Geoffrey) — branche `geoffrey/identification-sans-stats`, fusionnée et en ligne le 22/10
+- `rollIdentity` (`src/meta/piece.js`) renvoie `{ q }` (un seul tirage du hasard). `sanitizePiece` : qualité connue sans
+  lignes (`lines` absent ou `[]`) → `{ q }` ; sinon, anciennes lignes revérifiées comme avant (barème, `validLines`).
+  Les pièces identifiées avant le 22/10 **gardent** leurs lignes (confirmé par Geoffrey le 22/10 ; pour
+  les retirer un jour : ne garder que `q` dans `sanitizePiece`). Pièce `{ q }` : mêmes stats qu'une pièce non identifiée (testé).
+- UI (`src/ui/upgrade.js`) : texte sans « stats en plus », tableau des qualités = qualité + chance, message de réussite
+  = nom seul. `UPGRADE.qualities` garde min / max / lines (relecture des anciennes pièces).
+- Tests : amelioration (nouveau test « seulement la qualité ») + anticheat/upgrade : verts.
+
+- **Fusion avec Ange vs Démon (22/10)** : conflits `src/meta/piece.js` (gardé `rollLines` / `rollChestQuality` / `rollRune` de main ; `rollIdentity` = `{ q }` ; `sanitizePiece` : `sanitizeLines` d'abord, sinon qualité seule, rune revérifiée) et `tests/amelioration.test.js` (tests de main gardés, titre du test identifier « sans lignes »). amelioration, rarity, rune, anticheat rune + upgrade : 44/44 ✅.
+
+### Jugement dans le Lobby (Geoffrey) — branche `geoffrey/jugement-lobby`, en ligne le 22/10
+- `index.html` : section `data-view="jugement"` retirée ; carte `#judgmentCard` (même `#judgmentBody`) dans la colonne
+  gauche du Lobby. `src/ui/nav.js` : onglet retiré, `pickTab('#jugement')` → lobby. `src/ui/lobby.js` : `st.view`
+  ('jugement' ou null), bouton `data-view` inséré après les modes non-tour, `showJudgment()`, `pickMode(mode)` ;
+  cartes équipe / préférences / MI / dev cachées en vue Jugement. `src/ui/judgment.js` : « Choisir la tour »
+  (`onTower(side)`) au lieu de « Aller au Lobby ». `src/main.js` : `wantJudgment` (hash lu avant la navigation),
+  badge sur `lobby`, `judgmentPending` passé au lobby. Le serveur ne change pas (Jugement n'est pas un mode).
+- Tests : nav (ordre des onglets, #jugement), lobby, judgment : 25/25 ✅. Chromium 1440×900 et 390×844 : bouton,
+  carte, retour à Mine, lien #jugement ✅, aucune erreur. ⚠️ Pas vu à l'écran : une tour ouverte (« Choisir la tour »).
+### Wiki à jour + vraies chances du concasseur (Geoffrey) — branche `geoffrey/wiki-nouveautes`
+- **Concasseur** : `src/meta/crusher.js` gagne `dropOdds(bloc)` (par famille : somme des chances, `every` = 1/chance
+  lots, `sec` = temps moyen) et `aboutTime(s)`. Utilisés par la fenêtre « ? » (`src/ui/crusher.js`, styles `.fodds`)
+  et par le wiki (`crusherRows`). Les chances de la config ne changent pas : c'est l'affichage.
+- **Wiki** : `data.js` (source Plume d'ange = MI, usages des matériaux d'`UPGRADE.levels`, stuff « s'identifie »,
+  `qualityRows`, `upgradeRows`, `upgradeTotal`, `instantInfo`) ; `wiki.js` (sections MI et Amélioration, donjon à
+  chance 1 / plusieurs areas, tableau concasseur) ; `wiki.html` (sommaire, onglets, textes).
+- **Tests** : `tests/crusher.test.js` (dropOdds + contrôle contre `rollLoot`, 1 million de lots par bloc) et
+  `tests/wiki.test.js` (nouveautés) : 21/21 ✅. Chromium : wiki et fenêtre « ? » vus, aucune erreur console ✅.
+- ⚠️ Le texte d'identification suppose `geoffrey/identification-sans-stats` fusionnée (qualité seule).
+- ⚠️ `geoffrey/retours-21-10` (non fusionnée) relève les chances du concasseur : le « ? » et le wiki suivront la
+  config tout seuls si elle passe.
+- **Ajout avant la mise en ligne (22/10)** : section `#ange` (`judgmentInfo`, `runeRows` dans `data.js` ; `judgment()`
+  dans `wiki.js`) et rubrique Enchantement ; sources / usages des résidus, coffres (`ITEMS[x].chest`) et de la Rune ;
+  résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
+  wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
+
+
+### Tours du Jugement : labyrinthe, brouillard, caméra, 10 min ; vérification « donjon » (Geoffrey) — branche `geoffrey/jugement-patch`, en ligne le 22/10
+- **Config** `TOWER` : `duration` 900 → 600 (5 min demandées, infaisables : voir mesures) ; `unbreakablePct`
+  remplacé par `mazeEvery: 2`, `mazeHard: 11` ; `view: { cols: 19, rows: 15 }`.
+- **`src/sim/tower/world.js`** : lignes de mur à partir de `floor - 2`, toutes les 2 lignes, passage d'un tenant de
+  `width - mazeHard` = 4 cases, jamais chevauchant le précédent.
+- **`src/sim/tower/session.js`** : `G.seen` (extérieur connu, intérieur à 0), `revealAround` (rayon `discoverMax`,
+  sans lumière) au départ et après chaque action ; le Dijkstra raisonne sur ce qui est découvert (case inconnue de
+  l'intérieur = brique ordinaire, inconnue = pas d'air pour les chutes) ; `startMine` refuse un bloc incassable
+  (attente 0,1 s puis replanification). Essai « attendre l'équipier au lieu de creuser le même bloc » : pire
+  (13 étages au lieu de 17 en 5 min), pas gardé.
+- **Vue / rendu** : `seen` envoyé (lignes de 0/1) ; `src/render/tower.js` : caméra 19 × 15 cases qui suit son mineur
+  (glisse, saute si l'écart dépasse 12 cases, ex. projection), intérieur non découvert en noir.
+- **Mesures** (`runTower`, 10 seeds, à 3) : 5 min / 6 s : base 0/10 (17 étages sur 30), minage 1,6 0/10 (25),
+  minage 2,5 + 20 dégâts 1/10 ; 5 min / 3 s : minage 1,6 + 14 dégâts 4/10. **Retenu 10 min / 6 s** : base 0/10,
+  minage 1,27 + 11 dégâts 3/10, minage 1,6 + 14 dégâts + 120 % attaque 10/10 (≈ 7,5 min), le même seul 0/10.
+- ✅ Chromium : caméra rapprochée, brouillard, murs du labyrinthe visibles ; seul en stuff de base : échec affiché.
+- **Vérification « donjon »** : aucune référence croisée entre `src/sim/tower/` et `DUNGEON` / `src/sim/dungeon.js`.
+  L'« erreur » de ce matin = test `world.test.js` pas à jour avec les donjons en areas 4 et 5 (corrigé dans l'étape
+  2) ; `dungeon.test.js` et `world.test.js` verts ; l'IA gère plusieurs donjons (`dungeonGoal` boucle sur
+  `G.dungeons`). Spec : « donjon » remplacé par « tour » à deux endroits. Simulation 3 mineurs × 6 (skills mixed,
+  stuff de base) : areas 4,0 en moyenne, profondeur 200 : **l'area 4 (et donc ses donjons) n'est jamais atteinte**, les
+  donjons n'y sont pas testés en conditions réelles (seulement par `dungeon.test.js`). ⚠️ **1 blocage sans lien avec
+  les donjons** : seed 23757, Bleu (logisticien) « Retour (treuil) » à (32, 157), t = 3445 s. Pas corrigé ici.
+- **Tests** : `tests/tower.test.js` (labyrinthe, équipe équipée, solo très équipé, brouillard). Suite complète +
+  anticheat : 659/659.
+### Mine instantanée : découverte et caméra (Geoffrey) — branche `geoffrey/mi-decouverte-camera`, en ligne le 22/10
+- **Simulation** (`src/sim/instant/session.js`) : `G.seen` (surface à 1), `revealAround(G, m)` (rayon
+  max(1, discoverMax), comme `revealAround` de la mine normale en pleine lumière) au départ, après chaque action
+  (`finish`) et à chaque tick. `ai.js` : un tas de plumes n'est un but que s'il est découvert.
+- **Envoi** (`src/shared/instant-view.js`) : `seen` (lignes de 0/1) ; une case cachée part en 0 ; seulement les tas
+  découverts ; `heapsLeft` = vrai nombre de tas (HUD, `src/ui/instant-hud.js`).
+- **Rendu** (`src/render/instant.js`) : caméra qui suit le mineur du joueur (à défaut le premier), `miFrame` (cadrage pur,
+  testé), `setRows` ; config `INSTANT_MINE.camCols` 24, `camMinRows` 14, `camEase`. `src/ui/fit.js` : `fitInstant`
+  (largeur = camCols colonnes, lignes selon la hauteur) ; `fitCanvas` ne sert plus qu'aux tours.
+- **Tests** : instant-mine (découverte, tas caché), instant-ui (envoi, cadrage), instant-server, camera : 42/42 ✅.
+  Simulation MI à 1, 3, 20 mineurs : butin identique à avant ✅. Chromium 1440×900 et 390×844 en mode dev (« Ouvrir
+  maintenant ») : mine noire, découverte autour du mineur, caméra qui suit, aucune erreur ✅.
+- ⚠️ Pas de déplacement libre de la caméra en MI (molette) : elle suit toujours ton mineur.
+
+### Concasseur : chances du créateur, plus de moyenne ni de temps estimé (Geoffrey) — branche `geoffrey/concasseur-taux`, ✅ en ligne le 22/10
+- `CRUSHER.loot` (`src/config.js`) : gemmes 0,002 / 0,003 / 0,004 par gemme (= 0,6 / 0,9 / 1,2 % d'en avoir une), treasure
+  0,005 / 0,003 / 0,005. `dropOdds` ne renvoie plus que `chance` (plus de `every` ni `sec`) ; `aboutTime` supprimé.
+  Retirés : « 1 lot sur N · ≈ toutes les X » et la phrase sur les moyennes dans le « ? » (`src/ui/crusher.js`), colonnes
+  « En moyenne » / « Soit environ » et le paragraphe sur les moyennes du wiki (`src/wiki/wiki.js`, `wiki.html`).
+- Tests : crusher (chances, aide sans moyenne, fréquence sur 200 000 et 1 million de lots), wiki, anticheat : verts.
+  ✅ Chromium : « ? » et wiki affichés sans moyenne, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` avait reçu la MI cachée / caméra : conflits seulement dans les 3 docs
+  (journal, debug, état du projet : tout gardé) ; 145 tests du sujet + anticheat 71/71 verts après fusion.
+
+### Enchantement : rune de qualité ≤ pièce (Geoffrey) — branche `geoffrey/enchantement-rune-rarete`, ✅ en ligne le 22/10
+- `enchantError` (`src/meta/upgrade.js`) : `not_identified` (pièce sans `q`) puis `rune_too_rare` (`rune.q > piece.q`),
+  après `already_enchanted`. Messages serveur dans `server/game/service.js` (`UPGRADE_ERRORS`). UI (`src/ui/upgrade.js`,
+  `enchantWhy`, même règle) : texte d'aide, étiquettes « jusqu'à Rn », « à identifier », « trop rare pour cette pièce »,
+  raison sous les cases ; wiki : paragraphe Enchantement.
+- Tests : `rune.test.js` (table pièce/rune de R1 à R7, rien ne bouge en cas de refus ; `withRune` identifie la pièce),
+  `anticheat/rune.test.js` (refus serveur, rune non consommée, acceptée à qualité égale) : verts.
+  ✅ Chromium : R3 + rune R7 refusé, R6 + R3 accepté avec aperçu, 0 erreur console.
+- **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` n'avait pas bougé ; tests du sujet et anticheat verts.
+
+### Mine instantanée : inscriptions 30 min avant, possibles en session (Geoffrey) — branche `geoffrey/mi-inscription-30min`, en ligne le 22/10
+- **Config** `INSTANT_MINE.signupBefore` (1 800 s). `src/shared/instant.js` : `signupOpensAt`, `signupOpen`.
+- **Serveur** (`server/instant/service.js`) : `join` refuse `signup_closed` hors fenêtre (sauf dev), n'exige plus
+  d'être hors session ; quitte le groupe seulement hors session ; `open` fait quitter leur groupe à ceux qui entrent
+  (`party.leave({ id })`, erreurs ignorées). `state` renvoie `signupAt` / `signupOpen`. `server/main.js` : plus de
+  `game.onStart(… instant.drop)` (lancer ne désinscrit plus ; `onStart` reste dans le service de jeu, inutilisé).
+  Un inscrit en session à l'heure est écarté par `openInstant` (déjà le cas) et son inscription effacée.
+- **Navigateur** : `src/ui/instant-lobby.js` (`canSignup`, `clockText`, bouton « 🔒 Inscriptions à … », avertissement en
+  session, rappel « inscriptions ouvertes », re-rendu à l'ouverture de la fenêtre) ; `src/ui/lobby.js` : le mode
+  `scheduled` (MI) reste cliquable en lecture seule ; `src/main.js` : `canNotify` = pas pendant la MI, `inSession`.
+- **Tests** : instant-server (fenêtre 11 h 29 / 11 h 30, inscription en session + mine ratée, lancer ne désinscrit plus,
+  groupe quitté à l'entrée, aucune session après la MI), instant-ui (`canSignup`, `clockText`), lobby, party,
+  anticheat/instant (pas de réinscription pendant la mine ; inscrit en mine pour la suivante = écarté) : ✅.
+  Chromium (dev) : session lancée, lobby → Mine instantanée → S'inscrire en session ✅, aucune erreur.
+  ⚠️ Bouton fermé « 🔒 Inscriptions à … » pas vu à l'écran (testé seulement par `canSignup`).
+
+
+### Faux blocage « Retour (treuil) » (seed 23757) : détecteur corrigé (Geoffrey) — branche `geoffrey/fix-treuil-retour`, en ligne le 22/10
+- **Symptôme** : `simulate --miners 3 --count 6 --skills mixed`, seed 23757 : ⚠ BLOQUÉ Bleu (logisticien),
+  `{"t":3445,"x":32,"y":157,"mode":"return","status":"Retour (treuil)"}`.
+- **Cause** (trace tick par tick, `scratchpad/stuck.mjs`) : pas de blocage. De 3300 à 3443 s, il redescend au front par
+  le puits du treuil (y 9 → 158, deux combats de 15 et 28 s), puis passe en `return` (fin de session) et remonte sans
+  arrêt jusqu'à la surface (3548 s). Le détecteur (`src/sim/diagnostics.js`) n'exemptait une descente que si le mode
+  en FIN de fenêtre n'était pas `return`, et une montée que si y avait baissé sur TOUTE la fenêtre : la bascule
+  descente → retour ne passait ni l'un ni l'autre.
+- **Correction** : si le mineur passe en `return` pendant la fenêtre, la partie avant (descente ≥ 3 couches) et la
+  partie après (montée ≥ 3 couches) sont jugées séparément. Sans bascule : règle inchangée.
+- **Tests** : `tests/diagnostics.test.js` (+2 : descente puis bascule = pas bloqué ; immobile puis bascule = bloqué ;
+  le premier échouait avant la correction). session, team : verts. Seed 23757 : 0 blocage (partie identique).
+- ⚠️ Inefficacité notée (pas corrigée) : redescente de 2 min 30 à 5 min de la fin, pour remonter aussitôt.
+
+### Fin de session : profondeur maximale par trajet (Geoffrey) — branche `geoffrey/fin-de-session-plus-haut`, en ligne le 22/10
+- **Demande** : en fin de session, le mineur doit miner plus haut au lieu d'aller au front (seed 23757 : le logisticien
+  repartait à 3295 s, descendait 150 cases par le treuil et remontait sans travailler).
+- **`src/sim/ai.js`** : `depthCap(G,m)` = couches telles que (descente + remontée × 1,25) × secondes par couche ≤
+  (1 − `CFG.endWorkShare`) × temps restant − 12 s ; secondes par couche = `m.secPerRow` mesuré à la dernière remontée
+  (`m.returnFromY`, ≥ 10 couches), sinon 1,25 / vitesse de montée. **`m.tripCap` fixé quand il décide de repartir**
+  (`decideSurface`, avant de rejoindre son puits : il peut tomber dans le treuil en chemin et passer en `work` sans
+  `decideDeparture`, ligne `departure && y>0`). `decideWork` : pas de cible ni de descente sous `tripCap` ;
+  `explore(G,m,k,cap)` ne prend que des galeries au-dessus. Départ refusé si temps restant < `endStayMin` ou
+  `depthCap` < 3 (avant : temps restant < 2 × dernier retour + `minWorkTime`, supprimé de la config).
+- **Erreurs en route** : cap recalculé à chaque décision → il remontait sans cesse de galerie en galerie (Rouge,
+  130 s « Change de galerie ») : fixé par trajet. Premier test mesurait l'action « mine » seule (les pas dans la
+  galerie ne comptaient pas) : mesure = tout sauf le trajet pur (retour, « Descend par l'existant », chute).
+- **Tests** : `tests/session.test.js` (+1 : départ tardif ≥ 1/3 du trajet à travailler ; échoue sans la correction :
+  Bleu 26 %). Suite complète + anticheat 669/669.
+- **Simulation avant / après** (6 seeds) : solo minerais 365 → 362, valeur 406 → 396, profondeur 120 → 119 ; à 3
+  (skills mixed) minerais 1074 → 1073, valeur 1470 → 1458, areas 4,00 → 3,83, 0 blocage des deux côtés.
+## 22/10/2026 — Geoffrey — MI : galeries verticales, tas de plumes ignorés
+- **Cause** : coût = temps de trajet seul + foule ; un bloc voisin coûte 0, la gravité et la montée (échelles) coûteuse → puits vers le bas. Foule à 0 : inchangé (18/18 au fond). Tas : seulement via les cases vides à ≤ 3 pas.
+- **Correction** : cap par mineur (`heading`, `headPenalty`) ; `featherChase` : tas découvert ≤ featherReach (8), le plus proche l'emporte, creusement glouton vers lui.
+- **Tests** : `tests/instant-mine.test.js` (+2 ; test featherReach : sol plat). Mesure 3 mineurs : fond 4/18 (avant 18/18), blocs/mineur 104 (avant 108), tas pris 9,3/9,5.
+
+
+### Chutes connues de plus de 3 cases sans étourdissement (Jules) — branche `jules/fix-chute`, ✅ en ligne le 22/10
+- **Symptôme** (retour joueur) : un mineur tombe de plus de 3 cases dans un trou déjà creusé par un autre et n'est pas
+  étourdi. Mesure (script de sonde, 8 parties à 3, skills mixed, seeds 1 à 8) : 8 chutes connues > 3 hors treuil
+  (6 « Creuse vers le bas », ex. seed 5 Vert 4 fois en (42, 10) ; 2 « Combat (bestiole) »).
+- **Cause** : `stepFall` (`src/sim/actions.js`) ne voyait que le pas de côté et le minage sous les pieds. Debout sur une
+  échelle, descendre (dy = 1) dans une case VIDE sans appui n'était pas vérifié : `deepFall` renvoyait faux, `digDown`
+  / `fight` faisaient le pas, il tombait dans le puits connu d'un autre. Le pathfinder (`path.js`) respectait déjà
+  `maxFall` ; c'est le pas direct de `digDown` (`stepDir(0,1)`) qui passait outre.
+- **Correction** : `stepFall` gère aussi `dx = 0, dy = 1` vers une case vide sans appui (`fallInfo` de la case du
+  dessous). `deepFall` refuse donc ce pas ; `digDown` se décale ou explore (code existant). Filet de sécurité
+  (`decide`, `src/sim/ai.js`) : à l'atterrissage, étourdi si chute imprévue ≥ `stunFall` **ou** chute de plus de
+  `maxFall`, même connue ; jamais en chantier de treuil (`winchJob`). GAME_DESIGN §3 « Chutes » mis à jour.
+- **Tests** : `tests/fall.test.js` +3 (sur une échelle au-dessus d'un puits connu de 5 : refusé ; échelle plus bas :
+  permis ; puits caché : permis ; chute connue de 7 sans appui : étourdi ; chantier du treuil : jamais étourdi). Les
+  deux premiers échouaient avant la correction. fall, winch, session, team, mobs, diagnostics, dungeon, focus, miner :
+  102/102 ✅.
+- **Mesures après** : mêmes 8 parties, chutes connues > 3 hors treuil : 0 ✅ (restent les chutes du logisticien dans
+  le puits du treuil, permises). `simulate --miners 3 --count 5 --skills mixed` : 0 blocage ✅, areas 4,0, profondeur
+  198,8, étourdissements 11,4 / session.
+- ⚠️ Pas traité ici : allers-retours colonne → treuil au départ du coffre (39 sur les 8 parties) ; corrigé par le commit
+  `7c36a32` de Geoffrey (branche `geoffrey/retours-21-10`, pas en ligne ; sonde : 0 sur les seeds 2 et 4).
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » (Geoffrey, `ai.js`) :
+  fusion automatique du code, conflit seulement dans le journal (les deux entrées gardées). Après fusion : tests de la
+  simulation 103/103 ✅, `simulate --count 5 --skills mixed` : 0 blocage, profondeur 199,8, étourdissements 11,4.
+### Voir le stuff d'un ami (Jules) — branche `jules/voir-stuff-ami`, ✅ en ligne le 22/10
+- **Serveur** : `game.profile(accountId)` (`server/game/service.js`) renvoie `{ stuff (worn), progress (publicProgress),
+  skills (skillRanks) }`, lecture seule, sans verrou (comme `state`). `social.profile(me, id)` (`server/social/service.js`)
+  passe par `friendOf` (refus `not_friend` 404 si pas ami, ID invalide ou soi-même), ajoute `id`, `displayId`, `name`.
+  Route `POST /api/social/profile { id }` (`server/social/routes.js`), `socialApi.profile` (`src/net/api.js`).
+- **Navigateur** : `src/ui/stuff.js` exporte `renderSlots(el, worn, tag)` (cases + portrait ; `tag 'div'` = lecture
+  seule) et `statsHTML(worn, effects)` (tableau des stats), utilisés par l'onglet Stuff (rendu identique à avant) et par
+  la fiche `#fview` (`src/ui/social.js`, `showProfile`, bouton `data-profile` ; `index.html`, `style.css`).
+- **Tests** : `tests/social.test.js` (+1 : fiche d'un ami hors ligne, pièce portée, niveau 2, skills ; rien de
+  l'inventaire, clés exactes ; refus pas ami / ID bidon / soi-même / ami retiré ; HTTP 200 et 401) : 14/14 ✅.
+- ✅ Chromium (mode dev, 2 comptes, pioche légendaire équipée) : fiche affichée à 1440×900 et 390×844, bulle d'info de
+  la pièce, stats, niveau, « Fermer » et clic à côté ferment ; 0 erreur console. ⚠️ Spécialisation affichée pas vue à
+  l'écran (le compte de test n'avait pas de point de skill ; `treeText` est simple).
+- **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » et `jules/fix-chute` :
+  conflits seulement dans le journal et le debug (tout gardé).
+
+### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`, ✅ en ligne le 22/10
+- ❌ **Retiré le 22/10** (décision Geoffrey et Jules : la vitesse ne change pas) : voir « Treuil : retour à 0,85 » plus bas.
+  Le correctif du détecteur (long combat) est gardé.
+- **Symptôme** (retour joueur) : les mineurs sortent du treuil quand il y a une colonne d'échelles ou un trou profond
+  à côté.
+- **Cause** : pas un bug de l'IA, le coût était juste. Seau = `WINCH.speedFactor` 0,85 × `climbSpeed` = 1,9 case/s ;
+  échelle = 2,25 ; chute = 8 (≤ 3 cases). `search` (`src/sim/path.js`) prenait donc l'échelle d'à côté, ou un trou
+  avec des échelles espacées (chute de 2 + 1 case d'échelle ≈ 0,23 s/case contre 0,53 dans le seau).
+- **Correction** : `WINCH.speedFactor` 0,85 → 2 (`src/config.js`) : 0,22 s/case, sous l'échelle (0,44) et sous le
+  trou à échelles espacées. Pas d'« adhérence » au seau dans l'IA (choix de Jules : la vitesse seule).
+- **Détecteur de blocage** (`src/sim/diagnostics.js`) : avec le seau plus rapide, l'équipe atteint le minotaure ;
+  le combat dure > 90 s sans miner → faux blocage (seed 39595, Rouge, t = 3305). Nouveau : frapper (action `attack`)
+  au moins `STUCK_FIGHT_SHARE` (50 %) de la fenêtre = pas un blocage.
+- **Tests** : `tests/winch.test.js` +2 (descente / montée avec une colonne d'échelles collée au puits ; trou à échelles
+  espacées : le chemin reste en x = 25 ; les deux échouaient avant, chemin en x = 26), valeurs 0,85 → 2 ;
+  `tests/diagnostics.test.js` +2 (long combat : pas bloqué ; quelques coups puis immobile : bloqué). winch, fall,
+  team, session, diagnostics : ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` : avant minerai 1 186 / partie, profondeur 199,8, 0 blocage ;
+  après 1 407 (+19 %), profondeur 214,4, 0 blocage (après correction du détecteur ; seed 39595 rejouée seule).
+- ⚠️ Gain d'équilibrage important pour un seul skill ; le solo sans skills ne change pas.
+
+### Focus area « Plus profond » ne visait pas l'area la plus profonde (Jules) — branche `jules/focus-plus-profond`, ✅ en ligne le 22/10
+- **Symptôme** (retour joueur) : « Plus profond » ne cible pas l'area la plus profonde. Mesure (sonde : part du temps
+  en mode work hors de la dernière area débloquée, 50 premières minutes, seeds 7919…39595) : 29 % en solo, 55 % à 3.
+- **Cause** : sans focus d'area, `focusArea` = null → aucune contrainte ; `decideWork` prend tout filon connu à portée
+  (`oreReach`, `range` 3 en descente) dans n'importe quelle area avant de descendre.
+- **Correction** (`src/sim/focus.js`) : `deepArea(G,m)` = dernière area débloquée, plafonnée à `areaOf(m.tripCap)` (fin
+  de session, règle de Geoffrey) ; null si focus d'area, focus minerai actif, ou area vidée (`areaDepleted`).
+  `workArea = focusArea ?? deepArea`, utilisée par `focusGoal`, `inFocus` et `focusStop` (`src/sim/ai.js`).
+  `dropDepleted` ne touche qu'au focus d'area choisi. Texte du panneau (`src/ui/focus.js`).
+- **Détecteur de blocage** (`src/sim/diagnostics.js`) : faux blocages en areas 4-5 (attente du barbare 77 s puis
+  occultiste ; minotaure + étourdi) → `busy` = action `attack` ou `stun`, ou statut « Attend le barbare devant le
+  donjon » ; ≥ `STUCK_BUSY_SHARE` (50 %, ancien `STUCK_FIGHT_SHARE`, attaque seule) de la fenêtre = pas bloqué.
+- **Test fall « session complète »** : seed 23757 solo, chute connue de 4 = il tue le mimic sur lequel il se tient
+  (appui disparu, voulu par la règle du 22/10). Ne compte plus que les chutes provoquées (action précédente `move` ou
+  `mine`). Passe aussi sur `main`.
+- **Tests** : focus +4 (deepArea et suivi des déblocages, exceptions, fin de session, il quitte un filon de l'area 0
+  pour l'area 1 : échoue avec l'ancien comportement) ; diagnostics +2. diagnostics, focus, team, session, fall, winch,
+  dungeon : ✅.
+- **Mesures** (sonde valeur = coffre × val, 5 seeds ; main avec seau ×2) : solo valeur 414 → 352, minerai 393 → 356,
+  hors dernière area 29 → 17 % ; à 3 (skills mixed) valeur 1 762 → 1 502, minerai 1 396 → 1 037, areas 4,0 → 5,0,
+  profondeur 214 → 265, hors dernière area 53 → 23 %. `simulate --miners 3 --count 5 --skills mixed` : 0 blocage
+  (après le détecteur ; seeds 23757 et 31676 rejouées).
+- ⚠️ À voir : attente du barbare devant le donjon jusqu'à 0 d'oxygène (préexistant).
+
+### Résidus visés par l'IA au poids du treasure (Jules) — branche `jules/residus-poids`, ✅ en ligne le 22/10
+- **Demande** : poids des résidus dans le choix des cibles = celui du treasure.
+- **Avant** : résidus = terrain sans `val`, `isTarget` faux → jamais visés, minés seulement sur le chemin.
+- **Changement** : `src/config.js` : `TREASURE_VAL` (12) pour le treasure et `val` des résidus 12 et 13 ;
+  `src/sim/world.js` : `isResidue` (family 'residu'), `isTarget` les inclut ; `src/sim/ai.js` : statut « Va chercher
+  un résidu ». Comme le treasure : visés une fois découverts (`G.seen`), la boussole ne les signale pas, `targetVal`
+  les garde en focus « Uniquement » (pas des minerais). Toujours `terrain` : pas de Fortune, pas de shiny, hors
+  déblocage et hors focus minerai. Scripts `weights` / `stat-values` : inchangés (filtre type 'ore').
+- **Tests** : `tests/judgment.test.js` +3 (poids = treasure, y compris en « Uniquement » ; visé face à un charbon plus
+  proche ; non découvert = ignoré ; les deux premiers échouaient avant). judgment, treasure, focus, world : ✅.
+- **Simulation** (sonde, 5 seeds à 3, skills mixed) : résidus au coffre 4,2 → 10,8 / session, valeur minerais 1 502 →
+  1 457 (−3 %), minerai 1 037 → 1 042, 0 blocage (détecteur de `simulate`, mêmes seeds que `--count 5`) ✅.
+
+### Chat de session (Jules) — branche `jules/chat-session`, ✅ en ligne le 22/10
+- **Quoi** : chat des joueurs d'une session, en mémoire seulement.
+- **Fichiers** : `CHAT` (`src/config.js` : maxLen 200, keep 50, gapMs 1000, poll 3000, ttlMs 3 h) ;
+  `src/shared/chat.js` (`cleanChatText` : chaîne, caractères de contrôle / bidi / zéro largeur → espace, espaces
+  resserrés, 1 à maxLen caractères comptés en points de code, sinon null) ; `server/game/chat.js` (`createChat` :
+  salon par id de session, numéros croissants, cadence par compte, oubli après ttlMs sans message, `drop`) ;
+  `server/game/service.js` (`chatPost` : session `running` de `activeOf`, nom pris dans `rec.players` ; `chatGet` :
+  `running` ou `settling` ; `chat.drop` à la fin dans `settleWith` et quand tous sont partis) ; routes
+  `GET /api/game/chat?after=N`, `POST /api/game/chat` ; `src/net/api.js` (`chat`, `say`) ; `src/ui/chat.js`
+  (relu toutes les 3 s, ×5 onglet caché ; `gen` pour ignorer une réponse d'une session précédente ; texte échappé) ;
+  `index.html` (#chatCard dans `.runR`) ; `src/main.js` (start dans `enterSession` hors MI / tour, stop dans
+  `showNoSession` et `showResult`) ; style.
+- **Tests** : `tests/chat.test.js` (9 : texte, balisage gardé tel quel, salon / keep / numéros, cadence, oubli,
+  service : nom serveur, hors session / parti refusés, invalides et trop rapides, effacé à la fin) ;
+  `tests/game-http.test.js` +1 (401 sans compte, 404 sans session, écrire / relire après N, 429, 400). chat,
+  game-service, game-http, security, boot-check, blocked-names, nav : ✅. Vérifié dans le navigateur (`npm run dev`,
+  playwright) : message affiché, `<b>` échappé, nom en vert pour soi.
+- **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
+  sessions confondues ; pas d'affichage MI / tour.
+
+### Treuil : retour à 0,85 (Jules) — branche `jules/treuil-vitesse-retour`, ✅ en ligne le 22/10
+- **Quoi** : `WINCH.speedFactor` 2 → 0,85 (`src/config.js`). Le symptôme d'origine revient (l'IA peut quitter le seau
+  pour une colonne d'échelles ou un trou à échelles espacées : coût réel plus faible, voir l'entrée « Treuil : l'IA
+  sortait du seau »). Si l'équipe veut l'éviter sans toucher la vitesse : piste « adhérence » au seau dans `search`
+  (`src/sim/path.js`), non faite.
+- **Gardé** : détecteur de blocage (combat, étourdi, attente du barbare = occupé).
+- **Tests** : `tests/winch.test.js` : valeurs 0,85, les 2 tests « il reste dans le seau » retirés (plus vrais).
+  winch, fall, focus, diagnostics, judgment, team : 75/75 ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` (avec « Plus profond » et résidus) : 0 blocage, areas 4,0,
+  profondeur 229,6. Les chiffres « Plus profond » et résidus du 22/10 mesurés avec le seau ×2 sont à relire avec
+  ça : « Plus profond » à 3 = 1 431 → 1 087 de valeur (−24 %) au seau 0,85.
+
+### Seuil d'ouverture 60 % (Geoffrey) — branche `geoffrey/quota-treuil`, ✅ en ligne le 22/10
+- **Contexte** : seed 1102884141, équipe de 3 sans nouveau stuff jusqu'à l'objectif « Area 6 ». La seed est ordinaire
+  (même résultat que 7919…31676) ; la cause est le seau ×2 (`314e651`) + « Plus profond » (`571a12b`). Mesure
+  `simulate --miners 3 --skills mixed`, 5 seeds dont 1102884141 : main de 16 h 44 (`4ce6819`) areas 4,0, prof 198 ;
+  main de 19 h areas 4,8, prof 262.
+- **Fusion** : le retour du treuil à 0,85 avait été mis en ligne entre-temps par Jules (`6322421`, entrée
+  précédente) ; conflits résolus en gardant ses textes pour le treuil, seul le seuil 60 % vient de cette branche.
+- **Quoi** : `CFG.unlockRatio` 0.4 → 0.6 (`src/config.js`).
+- **Tests** : `world.test.js` : objectif 12 / 240. `session.test.js` : sessions
+  solo de régression (seeds 65361775, 823773703, 63352, 7919) : ≥ 1 area ouverte (avant ≥ 2 ; à 60 % un mineur de
+  base solo n'ouvre que l'area 1). winch, wiki, focus, session, world, team, diagnostics, dungeon, fall : ✅ 107/107.
+- **Simulation** (5 seeds de référence, 0 blocage) : 3 mineurs skills mixed : areas 4,0, prof 212,8 ; 2 mineurs skills mixed : areas 3,0, prof 165,8 ; 1 mineur de base :
+  areas 1,0, prof 95,4 (area 1 : 159 à 235 / 240).
+- **Points fragiles** : solo débutant limité aux areas 0-1 ; le wiki (`src/wiki/data.js`) lit `CFG.unlockRatio`, le
+  texte de `wiki.html` est écrit à la main (mis à 60 %).
+
+### Mine qui rétrécit et grandit en boucle sur téléphone (Jules) — branche `jules/fix-mine-mobile`, ✅ en ligne le 22/10
+- **Cause** : `fitMine` (`src/ui/fit.js`) prend la hauteur de `#cvWrap` pour choisir le nombre de lignes. Sur
+  téléphone (≤ 700 px), `#cv` est `position:static` : la boîte prend la hauteur du canvas affiché, donc la mine se
+  calait sur sa propre taille. `H = floor(rows × 16 × s)` tombe sous `rows × 16 × s` → `floor(h / (16 s))` = une
+  ligne de moins à chaque appel (toutes les 120 ms), jusqu'à minRows (20) ; et au 1er appel la boîte vaut la taille
+  du dessin non calé (544 px) → 48 lignes. Le test `> 60` censé détecter « sans hauteur imposée » ne marchait donc
+  jamais. Reproduit dans le navigateur (playwright, 393×852 dpr 2,625 : 37 → 20 lignes en 2 s, regrandit au
+  rechargement) ; en simulant fit.js : la taille dérive dans 87 % des cas (largeurs 300–440, dpr 1,5–4).
+- **Correction** : hauteur imposée seulement si `getComputedStyle(cv).position === 'absolute'` (ordinateur et
+  écrans moyens) ; sinon le nombre de lignes ne bouge plus (34 = `VIEW_ROWS`), la mine se cale sur la largeur.
+- **Tests** : `tests/fit.test.js` (nouveau, 3 : téléphone stable pour largeurs 300–440 × dpr 2 / 2,625 / 3, échouait
+  avant ; largeur remplie ; écran large inchangé) ✅. Navigateur : 360 / 390 / 393 / 412 / 430 px stables à 34
+  lignes ; 1280–1920 px inchangés (36–40 lignes selon la hauteur) ; écrans moyens (800–1024, et paysage 852×393) :
+  la hauteur vient des panneaux, la barre d'adresse (±56 px) ne change rien ✅.
+- **Non vérifié** : `fitInstant` (mine instantanée) et `fitCanvas` (tour) gardent le test `> 60` ; sur téléphone
+  `#miRun` / `#twRun` restent `position:fixed`, leur boîte peut suivre le canvas quand il est plus petit que la place
+  → même dérive possible. Pas reproduit (pas de signalement).
+
 ### Équilibrage du 21/10 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : chances du concasseur remplacées à la fusion par celles de main (décision du 22/10) ; pioches ×2,
+  ceinture +10 torches, passerelles illimitées gardées.
 - **Quoi** : concasseur (terre gemmes 0,2 % / T1 0,1 % ; pierre 0,3 % / T2 0,1 % ; pierre dure 0,4 % / T2 0,15 %) ;
   pioches ×2 (pierre +0,2, fer +0,4) ; Ceinture en peau de gobelin `torches:+10` (au lieu de `discoverMax:+1`) ;
   passerelles illimitées : `STATS.bridges = Infinity` (la décrémentation laisse Infinity ; JSON → `null`, le HUD
@@ -995,6 +1596,8 @@ Règles (voir CLAUDE.md) :
   fall : 90/90 ✅. ⚠️ `npm run test:anticheat` pas relancé (le concasseur a bougé) : à faire avant la mise en ligne.
 
 ### Donjon aussi en area 4 (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : remplacé à la fusion : main avait 100 % en areas 4 et 5 ; décision Geoffrey : **33 %** par area,
+  tirages indépendants (`DUNGEON.chance` 0.33 ; `tests/dungeon.test.js` : taux 30–36 % par area, 8–14 % les deux).
 - **Quoi** : `DUNGEON.areas = [4, 5]` ; tirage par area (`hash(seed, k+1) ^ salt`), donc indépendant (≈ 4 % des seeds
   en ont deux). Rien d'autre à changer : `planDungeon`/`registerDungeon` travaillaient déjà par area.
 - **Piège corrigé au passage** : `tests/helpers.js` `worldFrom` vide aussi `G.dungeons` (la seed 1 a maintenant un
@@ -1026,6 +1629,9 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : un sort ignoré coûte quand même le cooldown de l'occultiste (choix : « sort perdu »).
 
 ### IA : travailler dans la dernière area, focus minerai vers la plus profonde (Geoffrey) — branche `geoffrey/retours-21-10`
+- **État au 22/10** : ❌ **pas mis en ligne**. À la fusion avec main, conflit avec « Plus profond » de Jules (même idée,
+  déjà en ligne, `deepArea`/`workArea` dans `focus.js`) : on garde la version de main (décision Geoffrey). Ce qui suit
+  est l'historique ; `CFG.transitReach` et les tests associés sont retirés.
 - **Constat** (avant) : priorité « Minerais » (défaut) → en redescendant, le mineur visait tout filon à portée de
   boussole dans les areas du dessus. Mesures (3 mineurs, `arrive.mjs` : déblocage → 1re entrée) : seed 31676 area 4
   débloquée à 2985 s, jamais visitée ; seed 15838 area 3 débloquée à 2050 s, Rouge y entre à 3397 s.

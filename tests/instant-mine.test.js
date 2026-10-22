@@ -6,12 +6,12 @@ import { INSTANT_MINE as MI, ITEMS, TEXTURES, IDS, BLOCKS } from '../src/config.
 import { rarityOf } from '../src/meta/rarity.js';
 import { genInstantMine, spawnColumns } from '../src/sim/instant/world.js';
 import { newInstant, tickInstant, runInstant, leaveInstant, endInstant, INSTANT_TICKS, instantItems } from '../src/sim/instant/session.js';
-import { plan } from '../src/sim/instant/ai.js';
+import { plan, miSupported } from '../src/sim/instant/ai.js';
 
 const players = n => Array.from({ length:n }, (_, i) => ({ name:'J'+i, account:'acc'+i }));
 const count = (W, id) => W.tiles.slice(1).reduce((a, r) => a + r.filter(v => v === id).length, 0);
 
-test('MI : composition = 100 %, que des minerais connus, plumes 1 à 5', () => {
+test('MI : composition = 100 %, que des minerais connus, plumes 1 à 2', () => {
   const total = Object.values(MI.comp).reduce((a, b) => a + b, 0) + MI.feather;
   assert.equal(total, 100);
   for(const k of Object.keys(MI.comp)) assert.ok(IDS[k] > 0, k);
@@ -30,14 +30,15 @@ test('MI : Plume d\'ange, objet rare qui s\'empile, textures de l\'objet et du t
 
 /* ---------- génération ---------- */
 
-test('MI génération : 50×50 sous une ligne de surface vide, composition exacte, plumes 1 à 5, même seed = même mine', () => {
+test('MI génération : 50×50 sous une ligne de surface vide, composition exacte, plumes 1 à 2, même seed = même mine', () => {
   const A = genInstantMine(42), B = genInstantMine(42), C = genInstantMine(43);
   assert.equal(A.tiles.length, MI.h + 1);
   assert.ok(A.tiles[0].every(v => v === 0));
   assert.equal(count(A, IDS.coal), 500); assert.equal(count(A, IDS.iron), 1000); assert.equal(count(A, IDS.gold), 975);
   assert.equal(A.feathers.size, 25);
   for(const [k, n] of A.feathers){
-    assert.ok(n >= 1 && n <= 5);
+    assert.ok(n >= MI.featherMin && n <= MI.featherMax);
+    assert.ok(n >= 1 && n <= 2, 'tas de 1 à 2 plumes (22/10)');
     const x = k % A.w, y = (k - x) / A.w;
     assert.ok(y >= 1 && A.tiles[y][x] === 0, 'un tas est une case vide');
   }
@@ -90,6 +91,48 @@ test('MI : 20 mineurs se dispersent (peu de blocs disputés, butins proches)', (
   assert.ok(G.stats.mined > 0.7 * 2500, `minés ${G.stats.mined}`);
   assert.ok(G.stats.contested < 50, `disputés ${G.stats.contested}`);
   assert.ok(Math.min(...per) > 0.8 * Math.max(...per), per.join(','));
+});
+
+/* ---------- gravité et échelles (22/10) ---------- */
+
+test('MI gravité : jamais en l\'air sans tomber, ne monte que par une échelle (20 mineurs)', () => {
+  let falls = 0, climbs = 0;
+  const G = runInstant(13, { miners:players(20), onTick(G){
+    for(const m of G.miners){
+      const a = m.action;
+      if(!a) continue;
+      if(!miSupported(G, m.x, m.y)) assert.ok(a.type === 'move', `${m.name} en l'air : ${a.type} (${m.x},${m.y})`);
+      if(a.type === 'move' && a.data.y === m.y + 1 && a.data.fall) falls++;
+      if(a.type === 'move' && a.data.y < m.y){ climbs++; assert.ok(G.ladder[m.y][m.x], `${m.name} monte sans échelle`); }
+    }
+  } });
+  assert.ok(falls > 0 && climbs > 0, `chutes ${falls}, montées ${climbs}`);
+  assert.ok(G.stats.ladders > 0);
+  assert.equal(G.summary.shares.reduce((a, s) => a + s.stats.ladders, 0), G.stats.ladders);
+});
+
+test('MI gravité : un mineur sans sol tombe jusqu\'au premier appui', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  for(let y = 1; y <= 6; y++) G.tiles[y][10] = 0;
+  G.tiles[7][10] = IDS.iron; G.feathers.clear();
+  m.x = 10; m.y = 0;
+  tickInstant(G);
+  assert.equal(m.status, 'Tombe');
+  for(let i = 0; i < 10; i++) tickInstant(G);
+  assert.equal(m.y, 6, 'posé sur le fer de la ligne 7');
+});
+
+test('MI échelles : seul au fond d\'une mine vide, il pose des échelles pour aller chercher le dernier bloc en haut', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  for(let y = 1; y <= G.h; y++) G.tiles[y].fill(0);
+  G.tiles[1][20] = IDS.gold; G.feathers.clear();
+  m.x = 5; m.y = G.h;
+  for(let i = 0; i < 2000 && G.tiles[1][20]; i++) tickInstant(G);
+  assert.equal(G.tiles[1][20], 0, 'bloc miné');
+  assert.equal(m.stats.mined, 1);
+  assert.ok(m.stats.ladders >= G.h - 2, `échelles posées : ${m.stats.ladders}`);
 });
 
 /* ---------- bloc disputé ---------- */
@@ -198,6 +241,7 @@ function heapAt(d){
   const G = newInstant(5, { miners:players(1) });
   const [m] = G.miners;
   m.x = 10; m.y = 0;
+  G.tiles[1].fill(1);                          // sol plat : pas de trou sur le chemin
   G.feathers.clear(); G.feathers.set(0*G.w + 10 + d, 3);
   return { G, m };
 }
@@ -225,4 +269,58 @@ test('MI plumes : il va chercher le tas et le ramasse ; pris par un autre en che
   for(let i = 0; i < 30; i++) tickInstant(r.G);
   assert.equal(r.m.goal, null);
   assert.ok(r.m.stats.mined >= 1 || r.m.action?.type === 'mine');
+});
+
+test('MI plumes : un tas découvert enfermé dans la roche → il creuse vers lui ; l\'autre mineur plus proche le prend', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  m.x = 10; m.y = 0;
+  for(let y = 1; y <= 4; y++) for(let x = 5; x <= 15; x++) G.tiles[y][x] = 1;
+  G.feathers.clear(); G.feathers.set(4*G.w + 10, 2);
+  G.seen[4][10] = 1;
+  for(let i = 0; i < 400 && !m.inv[MI.featherItem]; i++) tickInstant(G);
+  assert.equal(m.inv[MI.featherItem], 2, 'tas ramassé après avoir creusé');
+  assert.ok(m.stats.mined <= 6, 'creusé droit vers le tas : ' + m.stats.mined);
+  const H = newInstant(5, { miners:players(2) });
+  const [a, b] = H.miners;
+  a.x = 4; a.y = 0; b.x = 10; b.y = 0;
+  H.feathers.clear(); H.feathers.set(0*H.w + 12, 2); H.seen[0][12] = 1;
+  plan(H, a); assert.equal(a.goal, null, 'a n\'est pas le plus proche');
+  plan(H, b); assert.deepEqual(b.goal, { x:12, y:0 });
+});
+
+test('MI cap : les galeries ne vont pas toutes droit vers le bas (peu de mineurs touchent le fond)', () => {
+  let bottom = 0, n = 0;
+  for(let seed = 1; seed <= 3; seed++){
+    const G = runInstant(seed, { miners:players(3) });
+    for(const m of G.miners){ n++; if(m.y >= G.h - 1) bottom++; }
+  }
+  assert.ok(bottom < n*0.6, `${bottom}/${n} au fond`);
+});
+
+test('MI découverte : cachée au départ sauf la surface ; chaque mineur découvre dans son rayon (discoverMax)', () => {
+  const G = newInstant(9, { miners:[{ name:'A' }, { name:'B', carac:{ discoverMax:4 } }] });
+  const [a, b] = G.miners;
+  assert.ok(G.seen[0].every(v => v === 1), 'surface découverte');
+  const seenCount = () => G.seen.slice(1).reduce((n, r) => n + r.reduce((s, v) => s + v, 0), 0);
+  const near = (m, R) => { let n = 0; for(let y = 1; y <= G.h; y++) for(let x = 0; x < G.w; x++) if((x-m.x)**2 + (y-m.y)**2 <= R*R) n++; return n; };
+  assert.equal(seenCount(), near(a, 2) + near(b, 4), 'au départ : seulement le rayon de chacun');
+  assert.equal(G.seen[a.y + 3]?.[a.x], 0, 'à 3 cases de A (rayon 2) : caché');
+  assert.equal(G.seen[b.y + 4][b.x], 1, 'à 4 cases de B (rayon 4) : découvert');
+  const empty0 = G.tiles.map(r => [...r].map(t => t === 0));   // tas de plumes : cases vides dès le départ
+  for(let i = 0; i < 600; i++) tickInstant(G);
+  for(const m of G.miners) assert.equal(G.seen[m.y][m.x], 1);
+  let mined = 0;
+  for(let y = 1; y <= G.h; y++) for(let x = 0; x < G.w; x++) if(G.tiles[y][x] === 0 && !empty0[y][x]){ mined++; assert.equal(G.seen[y][x], 1, `case minée ${x},${y} découverte`); }
+  assert.ok(mined > 20, `${mined} blocs minés`);
+});
+
+test('MI plumes : un tas pas encore découvert n\'attire pas le mineur', () => {
+  const G = newInstant(5, { miners:players(1) });
+  const [m] = G.miners;
+  m.x = 10; m.y = 0;
+  G.feathers.clear(); G.feathers.set(0*G.w + 10 + MI.featherReach, 3);
+  G.seen[0][10 + MI.featherReach] = 0;          // (la surface est découverte d'habitude : on la cache pour le test)
+  plan(G, m);
+  assert.equal(m.goal, null);
 });

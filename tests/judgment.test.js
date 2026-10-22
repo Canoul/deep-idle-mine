@@ -1,0 +1,120 @@
+/* Jugement (concept Ange vs Démon) : jauges globales, ouverture des tours, « déjà fait » par ouverture. */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { JUDGMENT, IDS, BLOCKS, TREASURE_BLOCK } from '../src/config.js';
+import { isTarget } from '../src/sim/world.js';
+import { targetVal, setFocus } from '../src/sim/focus.js';
+import { decide } from '../src/sim/ai.js';
+import { updateLight } from '../src/sim/light.js';
+import { worldFrom } from './helpers.js';
+import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone } from '../src/meta/judgment.js';
+
+const H = 3600e3, CAP = JUDGMENT.cap, OPEN = JUDGMENT.openHours * H;
+const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
+
+test('jauges : les résidus du sac s\'ajoutent à leur sorte, le reste est ignoré', () => {
+  const j = createJudgment();
+  assert.equal(addResidues(j, { [A]: 3, [D]: 2, 'Pierre': 50 }, 0), true);
+  assert.equal(j.angel.count, 3); assert.equal(j.demon.count, 2);
+  assert.equal(addResidues(j, { 'Fer': 4 }, 0), false, 'rien à ajouter : pas de changement');
+  assert.equal(addResidues(j, { [A]: -5, [D]: 1.5, [A + 'x']: 9 }, 0), false, 'quantités invalides ignorées');
+});
+
+test('jauge pleine : la tour ouvre pour 6 h, la jauge repart de 0 (surplus perdu) et se remplit pendant l\'ouverture', () => {
+  const j = createJudgment(), t0 = 1_000_000;
+  addResidues(j, { [A]: CAP - 1 }, t0);
+  assert.equal(isOpen(j, 'angel', t0), false);
+  addResidues(j, { [A]: 5 }, t0 + 10);
+  assert.equal(isOpen(j, 'angel', t0 + 10), true);
+  assert.equal(j.angel.openUntil, t0 + 10 + OPEN);
+  assert.equal(j.angel.opening, 1);
+  assert.equal(j.angel.count, 0, 'surplus perdu');
+  assert.equal(isOpen(j, 'demon', t0 + 10), false, 'l\'autre jauge ne bouge pas');
+  addResidues(j, { [A]: 40 }, t0 + 20);
+  assert.equal(j.angel.count, 40, 'elle se remplit pendant l\'ouverture');
+  assert.equal(isOpen(j, 'angel', t0 + 10 + OPEN), false, 'fermée au bout de 6 h');
+});
+
+test('pleine pendant une ouverture : bloquée à 250, la tour rouvre à la fin de l\'ouverture en cours', () => {
+  const j = createJudgment();
+  addResidues(j, { [A]: CAP }, 0);
+  addResidues(j, { [A]: CAP + 30 }, H);
+  assert.equal(j.angel.count, CAP); assert.equal(j.angel.opening, 1, 'pas de nouvelle ouverture tant que la tour est ouverte');
+  assert.equal(refresh(j, OPEN - 1), false);
+  assert.equal(refresh(j, OPEN + 5), true, 'à la fin : nouvelle ouverture');
+  assert.equal(j.angel.opening, 2); assert.equal(j.angel.count, 0); assert.equal(j.angel.openUntil, OPEN + 5 + OPEN);
+});
+
+test('les deux tours peuvent être ouvertes en même temps', () => {
+  const j = createJudgment();
+  addResidues(j, { [A]: CAP, [D]: CAP }, 0);
+  assert.equal(isOpen(j, 'angel', 1), true); assert.equal(isOpen(j, 'demon', 1), true);
+});
+
+test('« déjà fait » : par compte et par ouverture ; une nouvelle ouverture efface la liste', () => {
+  const j = createJudgment();
+  addResidues(j, { [A]: CAP }, 0);
+  assert.equal(hasDone(j, 'angel', 'K1'), false);
+  assert.equal(markDone(j, 'angel', 'K1'), true);
+  assert.equal(markDone(j, 'angel', 'K1'), false, 'une seule fois');
+  assert.equal(hasDone(j, 'angel', 'K1'), true); assert.equal(hasDone(j, 'demon', 'K1'), false);
+  addResidues(j, { [A]: CAP }, H); refresh(j, OPEN + 1);
+  assert.equal(hasDone(j, 'angel', 'K1'), false, 'nouvelle ouverture : on peut la refaire');
+});
+
+test('relecture : un état abîmé ou trafiqué redevient valide', () => {
+  assert.deepEqual(sanitizeJudgment(null), createJudgment());
+  const j = sanitizeJudgment({ angel: { count: 9e9, openUntil: 'x', opening: -2 }, demon: { count: 12.7 },
+                               done: { angel: { opening: 0, accounts: ['K1', 3, 'K1'] } }, hack: 1 });
+  assert.equal(j.angel.count, CAP); assert.equal(j.angel.openUntil, 0); assert.equal(j.angel.opening, 0);
+  assert.equal(j.demon.count, 12);
+  assert.deepEqual(j.done.angel.accounts, ['K1']);
+  assert.equal(j.hack, undefined);
+});
+
+test('vue publique : compte, cap, ouvert, temps restant, déjà fait pour ce joueur', () => {
+  const j = createJudgment();
+  addResidues(j, { [A]: CAP, [D]: 7 }, 0); markDone(j, 'angel', 'K1');
+  const v = publicJudgment(j, 1000, 'K1');
+  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: true });
+  assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false });
+  assert.equal(v.now, 1000);
+});
+
+/* ---------- résidus dans la mine : visés par l'IA comme un treasure (22/10/2026) ---------- */
+
+const RES = [IDS.residueAngel, IDS.residueDemon];
+/* galerie éclairée : mineur en (3,2), charbon en (1,2), un résidu au bout en (7,2) */
+function gallery(t){
+  const G = worldFrom(['', 'd'.repeat(50), '#c @   ##', '#########']);
+  G.tiles[2][7] = t;
+  G.torches.push({ x:3, y:2 }); updateLight(G);
+  return G;
+}
+
+test('résidus : cibles de l\'IA, au même poids que le treasure (même en focus « Uniquement »)', () => {
+  const m = { prefs:{ focus:{} } };
+  for(const t of RES){
+    assert.ok(isTarget(t));
+    assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val);
+  }
+  m.prefs.focus = { iron:'only' };
+  for(const t of RES) assert.equal(targetVal(m, t), BLOCKS[TREASURE_BLOCK].val, 'pas un minerai : jamais ignoré');
+});
+
+test('IA : un résidu découvert est visé, même face à un charbon plus proche', () => {
+  for(const t of RES){
+    const G = gallery(t), m = G.miners[0];
+    decide(G, m);
+    assert.deepEqual(m.target, { x:7, y:2 });
+    assert.equal(m.status, 'Va chercher un résidu');
+  }
+});
+
+test('IA : un résidu non découvert n\'attire pas le mineur', () => {
+  const G = gallery(IDS.residueAngel), m = G.miners[0];
+  G.seen[2][7] = 0;
+  decide(G, m);
+  assert.notDeepEqual(m.target, { x:7, y:2 });
+});
+

@@ -1,6 +1,6 @@
 /* Base PostgreSQL (en ligne, ex. Neon) : une seule table clé → valeur JSON, partagée par les comptes et le jeu.
 
-     dim_data (ns, key, value)   ns = sorte d'objet : account, session, inventory, furnace, crusher, stuff, prefs, progress, skills, game_session, party, mi_signup
+     dim_data (ns, key, value)   ns = sorte d'objet : account, session, inventory, furnace, crusher, stuff, prefs, progress, skills, game_session, party, mi_signup, social
 
    Le serveur garde tout en mémoire (un seul serveur à la fois) : la base sert à ne rien perdre au redémarrage,
    au redéploiement ou à la mise en veille de l'hébergeur. Au démarrage on charge tout ; ensuite chaque modification

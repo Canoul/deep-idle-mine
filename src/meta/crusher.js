@@ -157,3 +157,15 @@ export function sanitizeCrusher(raw){
 
 /* ce que le navigateur voit (sans la mémoire des demandes) */
 export const publicCrusher = (c, now) => ({ in:c.in, out:c.out, since:c.since, crushed:c.crushed, finds:c.finds, now });
+
+/* ---- Chances réelles, pour l'aide « ? » de l'onglet et le wiki ----
+   Un lot = CRUSHER.batch blocs = un cycle de CRUSHER.time s. rollLoot fait UN tirage par famille : les chances des
+   objets d'une famille s'additionnent (3 gemmes à 0,2 % = 0,6 % d'avoir une gemme, jamais deux). Pour chaque famille
+   et chaque objet : la chance par lot (pas de moyenne ni de temps estimé : décision du créateur, 22/10/2026). */
+export function dropOdds(block){
+  const t = CRUSHER.loot[block];
+  if(!t) return [];
+  return t.oneOf.map(f => ({ family: f.family, chance: f.items.reduce((s, i) => s + i.chance, 0),
+                             items: f.items.map(i => ({ item: i.item, chance: i.chance })) }));
+}
+

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, AREA_Y0, IDS, BARRIER, AREAS, TREASURE_BLOCK } from '../src/config.js';
+import { W, AREA_H, AREA_Y0, IDS, BARRIER, AREAS, TREASURE_BLOCK, DUNGEON_WALL, JUDGMENT } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
 import { areaOf, areaTop, tileAt, supported, landing, genArea, typeOf } from '../src/sim/world.js';
 import { mulberry32 } from '../src/core/rng.js';
@@ -49,16 +49,34 @@ test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à 
   for(let k=1;k<=6;k++) genArea(G,k);
   for(let k=0;k<=6;k++){
     const a=G.areas[k], comp=AREAS[Math.min(k,AREAS.length-1)].comp, c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
+    /* blocs posés par-dessus la composition : donjon (murs, intérieur vide), treasure, résidus (Jugement) */
+    const extra=(c[DUNGEON_WALL]||0)+(c[TREASURE_BLOCK]||0)+(c[IDS.residueAngel]||0)+(c[IDS.residueDemon]||0);
+    const replaced=extra+(a.counts.air||0)-Math.round((comp.air||0)*W*AREA_H/100);
     let total=0;
     for(const n in comp){
-      assert.equal(c[IDS[n]]||0, a.counts[n], `area ${k} ${n} : posés ≠ comptés`);
-      // arrondis (au plus 1 bloc par entrée, absorbés par le terrain principal) + 1 bloc remplacé par un coffre au trésor
-      assert.ok(Math.abs(a.counts[n]-comp[n]*W*AREA_H/100)<=3, `area ${k} ${n} : ${a.counts[n]}`);
+      assert.equal(c[IDS[n]]||0, a.counts[n]||0, `area ${k} ${n} : posés ≠ comptés`);
+      // arrondis (au plus 1 bloc par entrée, absorbés par le terrain principal) + blocs remplacés (donjon, treasure, résidus)
+      assert.ok(Math.abs(a.counts[n]-comp[n]*W*AREA_H/100)<=3+replaced, `area ${k} ${n} : ${a.counts[n]}`);
       total+=c[IDS[n]]||0;
     }
-    assert.equal(total+(c[TREASURE_BLOCK]||0), W*AREA_H, `area ${k} : aucun autre bloc`);
-    for(const n in comp) if(typeOf(IDS[n])==='ore') assert.equal(c[IDS[n]], Math.round(comp[n]*W*AREA_H/100), `area ${k} ${n} : minerais exacts`);
+    for(const key of ['residueAngel','residueDemon']) assert.equal(c[IDS[key]]||0, a.counts[key]||0, `area ${k} ${key} : posés ≠ comptés`);
+    assert.equal(total+extra, W*AREA_H, `area ${k} : aucun autre bloc`);
+    for(const n in comp) if(typeOf(IDS[n])==='ore' && !G.dungeons.some(d=>d.k===k))
+      assert.equal(c[IDS[n]], Math.round(comp[n]*W*AREA_H/100), `area ${k} ${n} : minerais exacts`);
   }
+});
+
+test('résidus (Jugement) : aucun avant l\'area 4, puis 0,5 % de chaque sorte, à la place de terrain, déterministes', () => {
+  const G=newSession(5), H=newSession(5);
+  for(let k=1;k<=6;k++){ genArea(G,k); genArea(H,k); }
+  const n=Math.round(W*AREA_H*JUDGMENT.pct/100);
+  for(let k=0;k<=6;k++){
+    const c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
+    const want=k>=JUDGMENT.fromArea ? n : 0;
+    assert.equal(c[IDS.residueAngel]||0, want, `area ${k} ange`);
+    assert.equal(c[IDS.residueDemon]||0, want, `area ${k} démon`);
+  }
+  assert.deepEqual(G.tiles, H.tiles, 'même seed, même mine');
 });
 
 test('compositions : chaque area totalise 100 %', () => {
@@ -139,6 +157,6 @@ test('panneau de la mine : l\'objectif suit la dernière area ouverte, pas l\'ar
   const G = { unlockedAreas:2, areas:[{ oreMined:250, oreTotal:250 }, { oreMined:12, oreTotal:400 }] };
   const h = objectiveHtml(G);
   assert.match(h, /minerais de l'area 1/);
-  assert.match(h, /12 \/ 160/);
+  assert.match(h, /12 \/ 240/);   // 60 % de 400
   assert.match(h, /Area 2/);
 });

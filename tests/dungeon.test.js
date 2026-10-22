@@ -1,4 +1,4 @@
-/* Donjon (areas 4 et 5, 20 % chacune) : génération, minotaure enfermé, déclencheur, barbare d'abord, Fuir, effroi, butin. */
+/* Donjon (areas 4 et 5, 33 % chacune) : génération, minotaure enfermé, déclencheur, barbare d'abord, Fuir, effroi, butin. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { W, AREA_H, DUNGEON, DUNGEON_WALL, BLOCKS, IDS, XP, SHARE, ITEMS, WINCH, CHEST_X, PREF_OPTIONS } from '../src/config.js';
@@ -28,13 +28,14 @@ function scene({ miners=1, trees=[], prefs=[] }={}){
 
 /* ---------- génération ---------- */
 
-test('donjon : ~20 % des seeds, en areas 4 et 5 seulement, tirages indépendants', () => {
+test('donjon : ~33 % des seeds, en areas 4 et 5 seulement, tirages indépendants', () => {
+  assert.equal(DUNGEON.chance, 0.33);
   for(const k of [4,5]){
     let n=0; for(let s=1;s<=3000;s++) if(planDungeon(s,k)) n++;
-    assert.ok(n>3000*0.17 && n<3000*0.23, `area ${k} : taux ${n/3000}`);
+    assert.ok(n>3000*0.30 && n<3000*0.36, `area ${k} : taux ${n/3000}`);
   }
   let both=0; for(let s=1;s<=3000;s++) if(planDungeon(s,4) && planDungeon(s,5)) both++;
-  assert.ok(both>3000*0.02 && both<3000*0.06, `les deux : ${both/3000}`);   // ~4 % si indépendants
+  assert.ok(both>3000*0.08 && both<3000*0.14, `les deux : ${both/3000}`);   // ~11 % si indépendants
   for(let s=1;s<=300;s++) for(const k of [0,1,2,3,6,7]) assert.equal(planDungeon(s,k), null);
 });
 
@@ -66,10 +67,10 @@ test('donjon : carré 10×10 de briques incassables, intérieur vide, une seule 
   }
 });
 
-test('donjon : même seed, même donjon ; seed sans donjon : rien', () => {
+test('donjon : même seed, mêmes donjons (un en area 4, un en area 5)', () => {
   const s=seedWith();
   assert.deepEqual(upTo5(s).dungeons, upTo5(s).dungeons);
-  assert.deepEqual(upTo5(seedWith(false)).dungeons, []);
+  assert.deepEqual(upTo5(s).dungeons.map(d=>d.k).sort(), [4,5]);
 });
 
 /* ---------- déclencheur, entrée ---------- */

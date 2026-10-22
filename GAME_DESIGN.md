@@ -1,4 +1,4 @@
-# Deep Idle Mine — Game Design
+# Deep Mine Idle — Game Design
 
 Source de vérité des règles du jeu. Les valeurs marquées *(provisoire)* sont des estimations du prototype, à équilibrer. Les autres sont des décisions fermes.
 
@@ -25,8 +25,8 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - Le monde est découpé en **areas** de 50 blocs de haut sur 50 de large (2500 blocs par area).
 - Chaque area a une **composition en pourcentages**, affichée dans un panneau quand le mineur y entre.
   - Exemple area 0 : 52% terre, 33% pierre, 10% charbon, 5% vide, soit 250 charbons sur 2500 blocs.
-- **Déblocage de l'area suivante** : miner un seuil de minerais de l'area courante, par défaut **40%** des minerais.
-  - Exemple area 0 : 40% de 250 charbons = 100 charbons.
+- **Déblocage de l'area suivante** : miner un seuil de minerais de l'area courante, par défaut **60%** des minerais (*valeur d'équilibrage* ; 40 % avant le 22/10/2026).
+  - Exemple area 0 : 60% de 250 charbons = 150 charbons.
   - Tant que le seuil n'est pas atteint, le fond de l'area est une **barrière infranchissable** : un bloc spécial « Barrière », incassable, qui délimite les deux areas. Pour l'IA c'est une case non franchissable, ignorée dans ses chemins. Quand l'area suivante se débloque, la barrière disparaît.
 - L'area suivante se trouve **en dessous** de l'actuelle : l'expérience voulue est le « going deep ».
 - Seules les areas débloquées ont besoin d'exister en mémoire ; la profondeur est quasi gratuite.
@@ -112,7 +112,8 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 ### Déplacement
 - **Le mineur est soumis à la gravité** : s'il y a du vide sous lui, il tombe case par case (8 blocs/s *(provisoire)*) jusqu'à atterrir sur un bloc solide ou **sur une échelle**. Il ne tombe pas s'il est sur une case avec échelle, ni s'il est posé juste au-dessus d'une case avec échelle. *(À définir : dégâts ou ralentissement de chute, voir questions ouvertes.)*
 - **Chutes** *(décision ferme ; valeurs provisoires)* :
-  - le mineur **ne se jette jamais dans un trou de plus de 3 cases** qu'il connaît (cases découvertes) : l'IA ne prévoit aucune chute plus haute ; devant un tel trou, il pose une passerelle, passe ailleurs ou creuse un autre puits ;
+  - le mineur **ne se jette jamais dans un trou de plus de 3 cases** qu'il connaît (cases découvertes) : l'IA ne prévoit aucune chute plus haute ; devant un tel trou, il pose une passerelle, passe ailleurs ou creuse un autre puits. Vaut aussi quand il descend de son échelle dans le puits d'un autre mineur *(corrigé le 22/10/2026 : il s'y jetait)* ;
+  - une chute de **plus de 3 cases** l'étourdit **toujours**, même dans un trou connu : puisqu'il ne s'y jette jamais, c'est que son appui a disparu *(22/10/2026)*. Seule exception : le chantier du treuil (§ Treuil) ;
   - une chute **imprévue** (dans du vide pas encore découvert) de **3 cases ou plus** l'**étourdit 5 s** : il ne peut plus rien faire (ni bouger, ni miner, ni frapper), même taclé ; l'oxygène continue de baisser. Des étoiles tournent au-dessus de sa tête. Une chute connue de 3 cases ne l'étourdit pas.
   - Repère (simulation, 5 sessions) : ≈ 6 étourdissements par session en solo, ≈ 12 à 3 mineurs (≈ 30 à 60 s perdues).
 - Le mineur ne peut pas sauter. Actions possibles : **aller à gauche/droite, miner, poser une échelle**.
@@ -128,11 +129,11 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 ### Autonomie (IA)
 Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et les **préférences** (voir §7).
 - Par défaut il creuse vers le bas.
-- **Il travaille dans la dernière area débloquée** *(décision du 21/10)* : les areas du dessus ne sont qu'un passage. En les traversant, il ne prend que les minerais **collés à lui** (à 1 case, *provisoire*) et continue de descendre ; les coffres au trésor découverts restent visés partout (sans focus). Avant, il minait chaque filon repéré en chemin et n'atteignait souvent jamais la dernière area (seed 31676 : area 4 débloquée à 50 min, jamais visitée).
 - **Après un retour en surface, il repart de zéro** : il n'est pas obligé de retourner là où il s'était arrêté. Un minerai connu mais lointain (plus de 12 blocs *(provisoire)*) n'est pas plus attirant que creuser du neuf.
 - **Réutiliser l'existant** : pour descendre ou changer de galerie, l'IA compare le temps d'un trajet par les échelles et galeries déjà posées au temps d'un nouveau puits (mine + échelle à chaque case), et prend le moins cher.
 - La **boussole** aide l'IA à choisir : s'il vaut mieux aller sur les côtés vers un minerai plutôt que descendre.
 - Quand le fond de l'area est verrouillé, il explore en **galeries** horizontales pour trouver les minerais manquants.
+- **Fin de session** *(22/10/2026, Geoffrey ; `CFG.endWorkShare`)* : quand il repart de la surface, il fixe pour ce trajet une **profondeur maximale** : celle où l'aller et le retour depuis la surface prennent au plus **la moitié du temps restant**. Il ne descend pas plus bas et n'y vise pas de minerai : il mine **plus haut** (filons, galeries) au lieu d'aller au front pour remonter aussitôt. La vitesse de trajet est mesurée sur sa dernière remontée (échelles, treuil, détours compris). Il ne repart plus s'il reste moins de 45 s ou si cette profondeur est de moins de 3 couches. *(Avant : il repartait s'il restait 2 × son dernier retour + 30 s, et descendait toujours jusqu'au front.)*
 
 ### Focus minerai
 Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
@@ -140,13 +141,14 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de c
 - **« Uniquement » écrase « Cibler »** : dès qu'un minerai est en « Uniquement », les minerais en « Cibler » sont ignorés aussi.
 - **Seuls les blocs de type ore sont concernés** : les treasures découverts restent visés. D'autres cibles (coffres, pierres précieuses…) pourront s'ajouter plus tard.
 - Le jeu connaît, pour chaque area, le **nombre initial et le restant** de chaque minerai.
-- **Où il cherche** *(changé le 21/10)* : sans focus area, il cherche ses minerais visés dans **l'area débloquée la plus profonde qui en a encore** (au moins 20 % *(provisoire)* du nombre initial). Il y descend même si son area en a encore ; au-dessus, il ne prend que les minerais visés collés à lui. Si les areas du dessous sont épuisées pour ce minerai, il remonte vers la plus profonde qui en a. Il ne descend pas dans une area épuisée : il explore la sienne en galeries. *(Avant le 21/10 : l'area la plus proche.)*
+- **Area épuisée** : s'il reste moins de **20 %** *(provisoire)* du nombre initial d'un minerai visé dans l'area du mineur, il part vers **l'area débloquée la plus proche** qui en a encore (au-dessus ou en dessous ; à égalité, celle du dessous). Il ne descend pas non plus dans une area épuisée : il explore la sienne en galeries.
 - **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
 - Le changement est envoyé au serveur, qui l'**applique tout de suite** dans la partie (il n'y en a qu'une, sur le serveur) : tous les joueurs le voient en même temps. Il est enregistré avec son tick (comme un départ).
 
 ### Focus area
 Pendant la session, un panneau **Focus area** de l'onglet Session permet de choisir **où** travaille le mineur du joueur :
-- **Plus profond** *(option de base)* : comportement normal, il descend jusqu'à l'area débloquée la plus profonde.
+- **Plus profond** *(option de base, active dès le début de la session ; décision du 22/10/2026)* : le mineur travaille dans **l'area débloquée la plus profonde**, comme avec un focus sur cette area, et **suit chaque déblocage** tout seul. Il ne finit plus les filons des areas du dessus (avant : il descendait en prenant tout ce qui était à portée, et passait plus de la moitié de son temps au-dessus). Exceptions : avec un **focus minerai**, c'est lui qui choisit l'area (la plus proche qui en a encore) ; si l'area la plus profonde est vidée (< 20 %), retour à l'ancien comportement ; en **fin de session**, l'area la plus profonde qu'il peut encore atteindre (profondeur maximale du trajet).
+  - Repère (simulation, 5 parties, seau 0,85×) : solo, valeur rapportée 414 → 352 (−15 %) ; à 3, 1 431 → 1 087 (−24 %), profondeur 200 → 228, areas débloquées inchangées (4). Plus profond = moins de quantité, des minerais plus rares ; choisir une area précise reste possible.
 - **Une area précise** (0, 1, 2…) : seules les **areas débloquées** sont proposées (la liste grandit avec les déblocages). Le mineur rejoint cette area (il descend ou remonte), y reste, ne descend pas plus bas et **ne vise que les cibles de cette area** (minerais et treasures).
 - **Area vidée** *(décision ferme)* : s'il reste moins de **20 %** *(même seuil que le focus minerai, provisoire)* de tous les minerais de l'area choisie, le focus area **saute** : retour à « Plus profond », avec un message dans le panneau. Le mineur ne perd pas la fin de session à creuser des galeries vides (en simulation, 3 mineurs vident l'area 0 en ~25 min).
 - **Avec le focus minerai** *(décision ferme)* : le focus area décide **où** va le mineur, le focus minerai décide **ce qu'il vise** dans cette area. Si l'area choisie passe sous le seuil pour un minerai visé, ce focus minerai saute (message dans le panneau), le focus area reste.
@@ -203,9 +205,9 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
 - **Treuil** *(décision ferme ; vitesse provisoire)* : une sorte d'ascenseur, un seau en bois tiré par une poulie.
   - **Pose** : quand une nouvelle area est débloquée, le logisticien qui a le skill **Treuil** (le premier s'il y en a plusieurs) arrête ce qu'il fait, remonte à la surface (dépôt, oxygène), va **au milieu de la mine** (x = 25) et creuse tout droit vers le bas. Arrivé au **haut de la nouvelle area**, il pose **tout le treuil d'un coup**, de la surface jusque-là, et **retire les échelles** qui se trouvaient dans le puits (le treuil occupe toute la colonne ; plus personne n'y pose d'échelle, même la 2e case d'une échelle de 2). Pendant ce chantier il n'est **jamais étourdi** et peut tomber de plus de 3 cases dans son puits. S'il doit remonter (oxygène, pods, torches, fin de session), il reprend le chantier ensuite.
   - **Prolongement** : à l'area suivante, il redescend par le treuil et prolonge le **même puits**.
-  - **Utilisation** : tous les mineurs, en même temps, sans attente, **dans les deux sens**, à **0,85 × leur vitesse de montée** (stuff compris). On peut s'arrêter à **n'importe quelle ligne** du puits pour miner à gauche ou à droite. Les itinéraires de l'IA le prennent en compte (pas d'échelle à poser, chemin tout droit).
-  - **Départ du coffre** *(21/10)* : quand le treuil existe, le mineur prend directement la descente existante (treuil ou ses échelles) au lieu de rejoindre d'abord sa colonne. Il choisit le trajet le plus rapide : le seau (0,85×) étant plus lent qu'une échelle déjà posée, un mineur qui a ses échelles jusqu'à son chantier peut les préférer.
-  - Repère (simulation, 3 logisticiens complets × 5 sessions) : profondeur 207 (186 sans skills), ≈ 15 min par mineur et par session dans le seau. À noter : le seau (0,85×) est plus lent qu'une échelle déjà posée ; il fait gagner du temps parce qu'il évite les échelles à poser et les détours.
+  - **Utilisation** : tous les mineurs, en même temps, sans attente, **dans les deux sens**, à **0,85 × leur vitesse de montée** (stuff compris). *(22/10/2026 : ×2 essayé quelques heures pour que l'IA ne sorte plus du seau, refusé avec Geoffrey : la vitesse ne change pas.)* On peut s'arrêter à **n'importe quelle ligne** du puits pour miner à gauche ou à droite. Les itinéraires de l'IA le prennent en compte (pas d'échelle à poser, chemin tout droit).
+  - **Départ du coffre** *(21/10, élargi le 22/10)* : s'il existe une descente (treuil ou puits déjà creusé) qui vaut mieux qu'un puits neuf, le mineur la prend directement au lieu de rejoindre d'abord sa colonne (voir « descente commune », §multijoueur). Il choisit le trajet le plus rapide : le seau (0,85×) étant plus lent qu'une échelle déjà posée, un mineur qui a ses échelles jusqu'à son chantier peut les préférer.
+  - Repère (simulation, 3 logisticiens complets × 5 sessions) : profondeur 207 (186 sans skills), ≈ 15 min par mineur et par session dans le seau. À noter : le seau (0,85×) est plus lent qu'une échelle déjà posée ; il fait gagner du temps parce qu'il évite les échelles à poser et les détours. L'IA peut donc en sortir pour une colonne d'échelles ou un trou à côté.
 - Provocation : un mineur taclé par ce mob est libéré tout de suite et reprend son travail (même s'il est réglé sur « Ignorer les mobs »).
 - **Échelles au retour** *(décision ferme)* : quand plusieurs mineurs remontent au même endroit, c'est le **logisticien** qui pose les échelles. Un autre mineur qui devrait en poser une attend s'il y a un logisticien qui remonte à moins de 5 cases, en dessous de lui ou à sa hauteur ; au-delà de 4 s d'attente, il la pose lui-même (jamais bloqué).
 - Repère (simulation, 3 mineurs × 5 sessions, un arbre complet chacun) : areas 3,6 → 4,0, profondeur 186 → 196.
@@ -252,7 +254,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Critique | 13 x par % | décision du créateur : 130 x (une pioche en pierre) = 10 % |
 | Coup unique | 13 x par % | mesuré (24 sessions solo) : ≈ 17 x par % à +50 %, autant que la vitesse de minage % à petite dose |
 | Perçage | 7 x par % | mesuré : ≈ 6,8 x par % à +50 % (les blocs percés sont surtout de la pierre, qui remplit le sac) |
-| Butin des mobs | 2 x par % *(provisoire)* | mesuré : +50 % donne +61 % de butin de mobs, mais rien sur les minerais ; le butin des mobs n'a pas encore de valeur en x |
+| Butin des mobs | 10 x par % *(22/10, décision du créateur : 100 x = +10 %)* | mesuré : +50 % donne +61 % de butin de mobs, mais rien sur les minerais |
 
 *Mesures bruitées : d'une seed à l'autre, la même partie diverge de ± 25 % ; d'où un gros bonus (+50 %) et 24 sessions.*
 
@@ -317,7 +319,7 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
   - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à 2,3 cases ou quand le mineur essaie de les miner. **Un mimic se combat, il ne se mine pas** : dévoilé, sa case n'est plus un minerai pour l'IA (ni cible, ni bloc à creuser). Il **tacle** le mineur à côté de lui. Butin : 3 minerais du type imité (ni shiny ni Fortune).
   - **Occultiste** *(21/10)* : mage noir humain terré sous terre, à partir de l'**area 4**. Même physique et même tacle que les bestioles. **Sort** : prêt toutes les **15 s** (la première fois 15 s après son apparition). Quand il est prêt, l'occultiste **se téléporte à 3 cases** (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint depuis la cible sans miner (à défaut à 4, puis à 2 ; jamais au contact : il ne lance pas son sort au corps à corps), puis **canalise** un rayon de lumière noire : la cible est **étourdie 5 s** (elle ne fait plus rien, même pas frapper). Pendant la canalisation, il ne bouge pas et ne tacle pas. **Frappé par un barbare qui a la Provocation**, il arrête tout de suite sa canalisation (la cible est libérée) ; il peut relancer son sort quand il est prêt (sur le barbare, sa seule cible) *(21/10 ; avant : il ne lançait plus jamais son sort)*. La **ténacité** de la cible peut ignorer la canalisation. Butin : **Tissu sombre** (1 à 3). XP 15 *(provisoire)*.
 - **Donjon** *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `DUNGEON` en config)* :
-  - **Où** : **areas 4 et 5** *(area 4 ajoutée le 21/10)*, **20 %** de chance dans chacune, tirées indépendamment (tirage à part de la seed : le reste de l'area ne change pas ; une partie peut avoir deux donjons). Un carré de **10 × 10** : murs en **briques de donjon** (pierre taillée violet sombre) **incassables**, intérieur vide, **une seule entrée** (une brique manquante) dans le mur de gauche ou de droite, sur l'une des 3 lignes du bas de l'intérieur (on y entre en marchant, chute de 2 cases au plus). Jamais à moins de 2 cases d'un bord de la mine ou d'une limite d'area (l'entrée ne donne jamais sur un bord), jamais sur la colonne du treuil ± 5. Les blocs qu'il remplace sortent des comptes de l'area (déblocage, focus).
+  - **Où** : **areas 4 et 5**, **33 %** de chance dans chacune, tirées indépendamment (décision du 22/10/2026, Geoffrey ; avant : 100 % en areas 4 et 5 quelques heures, encore avant : area 5 seulement, 20 %). Tirage à part de la seed : le reste de l'area ne change pas ; une partie peut avoir deux donjons. Un carré de **10 × 10** : murs en **briques de donjon** (pierre taillée violet sombre) **incassables**, intérieur vide, **une seule entrée** (une brique manquante) dans le mur de gauche ou de droite, sur l'une des 3 lignes du bas de l'intérieur (on y entre en marchant, chute de 2 cases au plus). Jamais à moins de 2 cases d'un bord de la mine ou d'une limite d'area (l'entrée ne donne jamais sur un bord), jamais sur la colonne du treuil ± 5. Les blocs qu'il remplace sortent des comptes de l'area (déblocage, focus).
   - **Minotaure** (boss) : mi-homme mi-taureau, debout. **1 000 PV**, ne fait que **tacler** (rien de spécial), **100 XP**. **Enfermé** : il ne sort jamais de sa salle et ne vise que les mineurs qui y sont (intérieur ou entrée). Aucun autre mob n'apparaît dans un donjon.
   - **Butin** : **1 à 3 Cristaux de pleine lune** (rareté rare, Pillage compris), **pas partagés** : comme les Treasure TX, chaque joueur présent à la fin en reçoit la quantité entière.
   - **Déclencheur** : un mineur **découvre** un bloc de la structure (mur, entrée ou intérieur). Avant, personne ne sait qu'il est là.
@@ -356,6 +358,7 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 **Au lancement, tout le groupe bascule sur l'onglet Session** (le chef tout de suite, les autres dans les secondes qui suivent, quel que soit l'onglet ouvert).
 
 **Onglet Session** : la mine en cours, le panneau **Focus minerai** (§3), puis le **bilan** à la fin (« Retour au lobby » ouvre le Lobby). Sans session : « Tu n'es pas en session » et un bouton vers le lobby. **Quitter la session** = le joueur ne reçoit rien (voir le partage).
+- **Chat de session** *(décision du 22/10/2026, Jules ; valeurs provisoires)* : un panneau **Chat** dans l'onglet Session (mine classique). Seuls les **joueurs de la session encore présents** lisent et écrivent (pas les amis, pas le serveur entier ; quitter la session = plus de chat). Le nom affiché est celui de la session. **200 caractères** par message, **un message par seconde** au plus, les **50 derniers** messages gardés. Rien n'est conservé : le chat est **effacé à la fin de la session** (pas d'historique). Pas encore affiché dans la mine instantanée ni dans les tours.
 
 **Le Lobby pendant une session : lecture seule.** Un bandeau « ⛏ En session dans la mine · temps restant · Voir la session » ; le groupe reste visible (chacun « en session »), mais on ne peut ni lancer, ni inviter, ni rejoindre, ni quitter le groupe, ni changer les préférences ou le type de mine. Dès la fin (pendant le bilan), il redevient utilisable.
 - **Combat** : le mineur se tourne vers le mob et frappe avec l'arme qu'il a en main (l'épée équipée, sinon la pioche), en coups de taille animés.
@@ -389,9 +392,9 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 **Mode développeur** (serveur lancé avec `npm run dev`, jamais en ligne) : vitesses ×1 à ×300 et pause (réglées sur le serveur, qui fait tourner la partie ; à ×300, la partie va aussi vite que le serveur peut la calculer), seed au choix, mineurs de test sans compte, réglages des stats ; la fin est libre (la partie est jouée jusqu'au bout d'un coup).
 
 ### Navigation
-Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social**.
+Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et =). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
 - **Lobby** : le groupe, les préférences, le type de mine, Lancer (lecture seule pendant une session). Onglet ouvert par défaut ; un lien d'invitation y mène.
-- **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le mini-minuteur de la barre y mène aussi d'un clic.
+- **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le minuteur de la barre du haut y mène aussi d'un clic.
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
 - **Four** : fondre les minerais en lingots (voir ci-dessous).
 - **Concasseur** : concasser les blocs pour un peu de butin (voir ci-dessous).
@@ -401,8 +404,19 @@ Une barre d'onglets est **toujours ouverte à gauche** de l'écran : **Lobby, Se
 - **Stuff** : équiper les pièces du mineur (voir ci-dessous).
 - **Skills** : dépenser les points gagnés aux niveaux (voir §3, Skills).
 - **Historique** : les sessions terminées du joueur (gardées 30 jours), la plus récente en haut : date, durée, joueurs, **seed**, areas débloquées, profondeur, XP reçue et **sa part du butin** (« rien reçu » s'il est parti avant la fin).
-- Social : à concevoir (page d'attente pour l'instant).
-- Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; un mini-minuteur de session reste visible dans la barre.
+- **Social** : les amis, ce qu'ils font, les inviter ou les rejoindre (voir ci-dessous).
+- Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; le minuteur de session reste visible dans la barre du haut.
+
+### Social (onglet Social) *(demande du créateur, 21/10/2026)*
+- **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
+- L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne.
+- Pour chaque ami **en ligne** (en ligne ou dans le lobby) : **Inviter** (invitation dans son groupe, comme l'invitation par ID du lobby) et **Rejoindre** (entrer dans son groupe ; s'il n'en a pas, un groupe est créé avec lui comme chef). Rejoindre est grisé si son groupe est complet ; les deux sont grisés si l'ami est déjà dans ton groupe, ou si toi-même es en session.
+- **Un joueur en session ne peut pas être invité**, ni depuis l'onglet Social ni par ID depuis le lobby (le serveur refuse), ni rejoint.
+- **Voir le stuff d'un ami** *(demande du créateur, 22/10/2026)* : bouton **Stuff** sur chaque ami (même hors ligne ou en session) → sa fiche, en lecture seule : **niveau**, **spécialisation**, **pièces portées** (qualité, amélioration, rune, avec leur bulle d'info) et **stats du mineur** (stuff + skills, comme son onglet Stuff). Jamais son inventaire. Réservé aux amis (le serveur refuse sinon).
+- **Notifications en pop-up, en haut à gauche** de l'écran, sur n'importe quel onglet :
+  - invitation de groupe : « **xxx vous a invité dans son lobby** », boutons **Rejoindre** (emmène à l'onglet Lobby) et **Décliner** ;
+  - demande d'ami : « **xxx vous a envoyé une demande d'ami** », boutons **Accepter** et **Refuser**. La demande est aussi listée dans l'onglet Social (« Demandes d'ami reçues »), avec une pastille sur l'onglet.
+- Limites *(config serveur)* : 100 amis, 20 demandes envoyées en attente, 30 demandes par heure.
 
 ### Inventaire global
 Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (ex. « Charbon × 100 »).
@@ -475,37 +489,49 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
-Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (plus tard). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
+Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
 
-**Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous), puis des **lignes de stats** en plus de ses stats de base. **Définitif** : une pièce identifiée ne se ré-identifie pas.
+**Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous). **Définitif** : une pièce identifiée ne se ré-identifie pas.
+- **Depuis le 22/10/2026 (décision du créateur) : l'identification ne donne plus que la qualité** (titre et couleur du nom), **aucune stat en plus**. Les lignes de stats décrites ci-dessous ne concernent que les **pièces identifiées avant** : elles les **gardent** *(décision du créateur, 22/10/2026)*. Les colonnes « Chaque ligne vaut / Lignes / Total max » ne servent plus qu'à revérifier ces anciennes pièces.
+- *(22/10/2026)* **On choisit soi-même quelle pièce va dans quelle case** : un clic sur une case la sélectionne (cadre doré), puis un clic sur une pièce de la liste (toutes les pièces de l'inventaire) la pose dedans ; re-cliquer sur la case sélectionnée la vide. Si les deux pièces **ne sont pas le même objet** (ou si la pièce de gauche est déjà identifiée), on ne peut **juste pas identifier** : le bouton reste grisé et la raison est affichée.
+- *(22/10/2026)* **Affichage des lignes** : partout (liste, bulles, résultat), les stats de base de l'objet d'abord, puis **chaque ligne tirée à part**, même quand deux lignes portent la même stat (ex. « Fortune +1,2 % · Fortune +0,9 % »). En session, le mineur a bien la somme.
 
-| Qualité | Titre | Couleur du nom | Chance | Chaque ligne vaut | Lignes |
-|---|---|---|---|---|---|
-| R1 | Utile | #FFFFFF | 30 % | 10 à 30 % de la valeur de l'objet | 1 |
-| R2 | Bon | #00FF00 | 24 % | 20 à 40 % | 1 |
-| R3 | Haute qualité | #0080FF | 24 % | 30 à 60 % | 1 |
-| R4 | Excellent | #FF00FF | 14 % | 25 à 40 % | 2 |
-| R5 | Antique | #FFA500 | 4 % | 35 à 50 % | 2 |
-| R6 | Mystérieux | #FF0000 | 3 % | 30 à 50 % | 3 |
-| R7 | Légendaire | #FFFF00 | 1 % | 35 à 55 % | 4 |
+| Qualité | Titre | Couleur du nom | Chance | Chaque ligne vaut | Lignes | Total max |
+|---|---|---|---|---|---|---|
+| R1 | Utile | #FFFFFF | 30 % | 8 à 25 % de la valeur de l'objet | 1 | 25 % |
+| R2 | Bon | #00FF00 | 24 % | 15 à 30 % | 1 | 30 % |
+| R3 | Haute qualité | #0080FF | 24 % | 17,5 à 35 % | 1 | 35 % |
+| R4 | Excellent | #FF00FF | 14 % | 12,5 à 20 % | 2 | 40 % |
+| R5 | Antique | #FFA500 | 4 % | 17,5 à 25 % | 2 | 50 % |
+| R6 | Mystérieux | #FF0000 | 3 % | 15 à 25 % | 3 | 75 % |
+| R7 | Légendaire | #FFFF00 | 1 % | 16 à 25 % | 4 | 100 % |
 
+- **Nerf du 22/10/2026** *(décision du créateur)* : total max ramené à 25 / 30 / 35 / 40 / 50 / 75 / 100 % (avant 30 / 40 / 60 / 80 / 100 / 150 / 220 %) ; le minimum d'une ligne garde le même rapport au maximum qu'avant. **Les pièces déjà identifiées suivent** : chaque ligne est ramenée à la même place dans sa nouvelle fourchette (le haut de l'ancienne donne le haut de la nouvelle), à la relecture de l'inventaire et du stuff (`UPGRADE.scale` / `oldScales`, champ `s` de la pièce).
+- Tirage de la qualité vérifié le 22/10 (hasard `crypto` du serveur, 1 million de tirages conformes aux chances ; identifiant de demande neuf à chaque clic).
 - Une ligne garde **le % tiré**, pas sa valeur : si on rééquilibre un prix ou un objet, les pièces déjà identifiées suivent.
 - **Valeur de l'objet** = ses stats en unité x (catalogue de prix §3) : pioche en pierre 0,1 × 1 300 = **130 x**, pioche en fer 260 x, épée en fer (11 − 5) × 40 = 240 x.
-- **Une ligne** : une stat tirée au hasard (deux lignes peuvent tomber sur la même) parmi celles qui ont une valeur en x : vitesse de minage (fixe et %), dégâts (fixes et %), vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène. Valeur = valeur de l'objet × % tiré ÷ prix de la stat, arrondie (au moins un pas). Ex. R4 sur pioche en pierre, ligne à 32 % : 41,6 x = +0,032 de vitesse de minage, **ou** +1,2 % de fortune, **ou** +7 pods.
+- **Une ligne** : une stat tirée au hasard (deux lignes peuvent tomber sur la même) parmi celles qui ont une valeur en x : vitesse de minage (fixe et %), dégâts (fixes et %), vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène. Valeur = valeur de l'objet × % tiré ÷ prix de la stat, arrondie (au moins un pas). Ex. pioche en pierre, ligne à 20 % : 26 x = +0,013 de vitesse de minage, **ou** +0,5 % de fortune, **ou** +5 pods, **ou** +2,6 % de butin des mobs.
+- **Conversion d'une ligne** *(tableau du créateur, 22/10/2026 ; `UPGRADE.prices`)* : ce que donne une ligne pour **100 x** : vitesse de minage +0,05 · minage % +5 % · dégâts +2,5 · dégâts % +20 % · vitesse d'attaque +20 % · critique +7 % · fortune +2 % · coup unique +7 % · perçage +10 % · butin des mobs +10 % · marche +0,4 · montée +0,3 · pods +20 · oxygène max +25. La **valeur de l'objet** reste celle du catalogue mesuré (`UPGRADE.worth` : pioche en pierre 130 x, épée en fer 240 x). Les mêmes valeurs servent aux runes (Enchantement).
 - **Jamais de Découverte**, sauf en **R6 et R7** : chaque ligne a 25 % de chance *(provisoire)* d'être « +1 Découverte », une au plus par objet.
 - **Nom** : « Excellent : Pioche en pierre » dans la couleur de la qualité, qui passe avant la couleur de rareté du type. **Le contour de la case garde la rareté du type** (commun, inhabituel…).
-- Une R7 (4 lignes de 35 à 55 %) ajoute jusqu'à **+220 % de la valeur de l'objet** : une pioche en pierre R7 peut valoir plus qu'une pioche en fer brute. Assumé (1 % de chance), à surveiller.
+- Une R7 ajoute au plus **+100 % de la valeur de l'objet** (22/10 ; avant +220 %) : une pioche en pierre R7 vaut au plus une pioche en fer brute.
 
 **Amélioration** : +1 à **+3** pour l'instant (la suite viendra). Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
 
 | Niveau | Stats | Réussite | Coût |
 |---|---|---|---|
-| +1 | +3 % | 100 % | 3 Plumes d'ange, 3 Cristaux de pleine lune |
-| +2 | +5 % | 95 % | 5 + 5 |
-| +3 | +7 % | 90 % | 7 + 7 |
+| +1 | +3 % | 100 % | 20 Plumes d'ange, 3 Cristaux de pleine lune |
+| +2 | +5 % | 95 % | 30 plumes + 5 cristaux |
+| +3 | +7 % | 90 % | 50 plumes + 7 cristaux |
+
+*(Plumes relevées le 22/10/2026 : 3 / 5 / 7 → 20 / 30 / 50.)*
 
 Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 15 cristaux pour monter une pièce à +3. Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 100 plumes et 15 cristaux pour monter une pièce à +3 (sans échec). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+
+**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce, définitif.** **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur de la pièce enchantée** (même conversion que l'identification) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
+- **Coffres des tours** : *Coffre angélique R1 à R7* et *Coffre démoniaque R1 à R7* (un objet par qualité, empilables, contour selon la qualité : R1 commun → R5-R7 légendaire). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
+- Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % de la valeur de la pièce ».
 
 ### Four (onglet Four)
 - **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.
@@ -535,18 +561,17 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
 - **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
 - Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
-- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) :
+- **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) *(chances données par le créateur le 22/10/2026 ; avant : gemme 0,3 / 0,45 / 0,36 %, treasure 0,01 / 0,015 / 0,02 %)* :
 
-  | 100 blocs | Chaque gemme inférieure (rubis, saphir, jade) | Treasure |
+  | 100 blocs | Une gemme (rubis, saphir ou jade, 1/3 chacune) | Treasure |
   |---|---|---|
-  | Terre | 0,2 % | T1 : 0,1 % |
-  | Pierre | 0,3 % | T2 : 0,1 % |
-  | Pierre dure | 0,4 % | T2 : 0,15 % |
-
-  *(Taux relevés le 21/10 par le créateur : ×2 à ×3 sur les gemmes, ×7 à ×10 sur les treasures.)*
+  | Terre | 0,6 % | T1 : 0,5 % |
+  | Pierre | 0,9 % | T2 : 0,3 % |
+  | Pierre dure | 1,2 % | T2 : 0,5 % |
+- **L'aide « ? » et le wiki n'affichent que la chance par lot** : plus de « 1 lot sur N », ni de moyenne, ni de temps estimé avant un butin *(décision du 22/10/2026)*.
 - Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
 - **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.
-- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 21/10 (relevées) : ≈ 1 gemme toutes les 30 sessions par joueur (≈ 10 en solo), un treasure toutes les ≈ 250 sessions (≈ 80 en solo). Avant : 1 gemme / 60 sessions, 1 treasure / 2 000.
+- ⚠️ **Ordre de grandeur** (simulation 3 mineurs, 21/10) : une session rapporte ≈ 530 terre + 760 pierre au coffre commun, soit ≈ 4 lots par joueur. Avec les chances du 22/10 : ≈ 1 gemme toutes les 30 sessions par joueur, un treasure toutes les ≈ 60 sessions (avant : 60 et ≈ 2 000). À surveiller : le treasure est 25 à 50 fois plus fréquent qu'avant.
 
 ### Table de recherche (onglet Recherche)
 Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**. Deux sous-onglets :
@@ -564,28 +589,45 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
 - Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
 
+### Jugement : Ange contre Démon (Lobby, « Où miner » → Jugement) *(décisions du créateur, 22/10/2026 ; valeurs provisoires, `JUDGMENT` en config ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`)*
+Un effort commun à tous les joueurs du serveur.
+- **Résidus** : à partir de l'**area 4**, **0,5 %** des cases de chaque area sont du **Résidu angélique** (pierre sombre aux fissures bleu ciel lumineuses) et 0,5 % du **Résidu démoniaque** (fissures rouges). Tirage à part de la seed, à la place de blocs de terrain : le reste de la mine ne change pas. Dureté de la pierre dure, **poids 6**, rareté rare ; partagés en fin de session comme les autres blocs. Pas de Fortune, pas de shiny, pas volés par les gobelins, ne comptent pas pour le déblocage. **Visés par l'IA** une fois découverts, au **même poids qu'un treasure** (12 ; *décision du 22/10/2026*, avant : jamais visés, minés seulement en passant). Repère (simulation, 5 parties à 3, mesuré avec le seau ×2 retiré depuis) : 4,2 → 10,8 résidus rapportés par session, valeur des minerais −3 %.
+- **Jauges** : en fin de session, le serveur ajoute à la jauge de chaque camp les résidus **versés aux joueurs** (quitter = rien ; une session n'est comptée qu'une fois). **Cap 250**. Jauge pleine → la **tour** de ce camp **ouvre pendant 6 h** et la jauge repart de 0 (surplus perdu) ; elle continue de se remplir pendant l'ouverture. Pleine pendant une ouverture, elle reste à 250 et la tour rouvre dès la fin de l'ouverture en cours. Les deux tours peuvent être ouvertes en même temps.
+- **Jugement, dans le Lobby** *(décision du créateur, 22/10/2026 ; avant : un onglet à part, après Session)* : « Où miner » propose **Mine, Mine instantanée, ⚖ Jugement**, puis les tours ouvertes. Jugement remplace l'équipe et les préférences par la carte des jauges (rien ne se lance d'ici ; « Choisir la tour » sélectionne la tour ouverte dans « Où miner »). L'ancienne adresse `#jugement` ouvre le Lobby sur cette carte. Les deux jauges **face à face**, l'Ange (blanc) remplie de la gauche vers le centre, le Démon (violet) de la droite vers le centre, avec « x / 250 ». Sous chacune : tour fermée, ou ouverte avec le temps restant (et « déjà faite » si le joueur a gagné son coffre pendant cette ouverture). Une tour ouverte pas encore faite est signalée par un point sur l'onglet **Lobby** et « ● tour ouverte » sur le bouton Jugement.
+- **Tours de l'Ange et du Démon** *(22/10/2026 ; `TOWER` en config, `src/sim/tower/`)* :
+  - **Lancement** : Lobby, « Où miner » propose la tour **seulement quand elle est ouverte** (grisée « déjà faite » si le joueur a déjà gagné son coffre pendant cette ouverture). Groupe de 1 à 3 ; le serveur refuse une tour fermée ou déjà faite par un membre. Un échec ne consomme rien. **10 min de jeu** *(22/10 après-midi ; demandé à 5 min, mesuré infaisable avec le labyrinthe ; avant 15 min)*.
+  - **La tour** : sur le sol, au milieu du ciel. **15 de large** (murs indestructibles compris) **× 30 de haut** (toit compris). Intérieur plein de **stonebrick** angélique (bleu clair) ou démoniaque (sombre), **6 s** à miner, en **labyrinthe** *(22/10 après-midi, Geoffrey ; avant : 5 % de blocs indestructibles au hasard)* : une ligne sur 2 est un mur de **11 blocs indestructibles sur 15** (murs extérieurs compris), soit un seul passage de 4 cases, jamais au-dessus du passage précédent *(passage d'un tenant : choix de Claude)*. Un chemin cassable jusqu'au toit est garanti. **L'intérieur n'est pas découvert au départ** : chaque mineur découvre autour de lui (sa **Découverte**, comme dans la mine, sans lumière). Rez-de-chaussée vide (les mineurs y apparaissent), une **porte** de 2 cases en bas de chaque mur. Ni oxygène, ni pods, ni lumière, ni butin des blocs, ni mobs. Gravité ; échelles **dans la tour seulement** (illimitées, partagées).
+  - **IA** : elle creuse vers le toit au plus court avec ce qui est **découvert** (une case inconnue est supposée de la brique ordinaire ; elle contourne les murs à mesure qu'elle les découvre), perce le toit, va au contact du boss (devant ou derrière) et frappe (dégâts, % de dégâts, vitesse d'attaque, critique comme en mine). Tombée dehors, elle rentre par la porte la plus proche et remonte par les échelles posées. *(Passerelles autorisées par la règle, mais l'IA n'en a pas besoin : elle creuse.)*
+  - **Boss** (Ange / Démon) : **1 000 PV**, 3 × 5 cases au milieu du toit (le toit sous lui ne se perce pas), immobile, **pas provocable**. Il vise le **premier arrivé sur le toit** qui y est encore, puis le suivant. Il frappe sa cible au contact **toutes les 1 s** (**0,5 s sous 33 %** de ses PV). Chaque coup a **10 %** de chance (**5 % pour un barbare**) de la **projeter de 6 cases** vers l'extérieur *(6 : choix de Claude, avec 5 elle ne tombait jamais)* : elle tombe au pied de la tour, **étourdie 5 s** (chute imprévue). Le coup ne fait rien d'autre.
+  - **Fin** : boss vaincu = fin, **chaque joueur présent reçoit un Coffre angélique / démoniaque** (qualité R1 à R7 tirée par le serveur, voir Enchantement) et la tour est « faite » pour lui jusqu'à la prochaine ouverture. 10 min écoulées = rien. Pas d'XP.
+  - **Affichage** : caméra rapprochée (19 × 15 cases) qui suit ton mineur ; l'intérieur non découvert est noir.
+  - Repères (simulation, 10 tours chacun, 10 min) : à 3, **stuff de base 0/10** (au mieux le sommet à 9 min 20), petit stuff (minage 1,27, 11 dégâts) **3/10**, **minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min** ; le même stuff **seul 0/10**.
+
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.
 - **Quand** : toutes les **2 h pile, heure de Paris** (0 h, 2 h, 4 h… ; heure d'été comprise). Dure **5 min de jeu** (2 min 30 réelles à ×2).
-- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée** (pas de torche). Pas d'oxygène, pas de pods, pas de mobs, pas d'échelle : le mineur **se déplace librement** dans les galeries qu'il a creusées (haut, bas, côtés, sans gravité).
+- **La mine** : **50 × 50** blocs, **que des minerais** : 20 % charbon, 40 % fer, 39 % or, et **1 % de tas de plumes d'ange**. Entièrement **éclairée**, mais **cachée au départ** *(22/10/2026, décision du créateur)* : comme dans la mine normale, chaque mineur **découvre** les cases autour de lui dans un rayon de sa stat **Découverte** (le rayon entier, puisque tout est éclairé) ; ce qui est découvert l'est pour tout le monde. Un mineur ne va chercher qu'un tas de plumes **déjà découvert**. Le navigateur ne reçoit jamais le contenu des cases cachées (seulement le nombre de tas restants) ; (pas de torche). Pas d'oxygène, pas de pods, pas de mobs. **Gravité comme dans la mine normale** *(22/10/2026 ; avant : il volait dans les galeries)* : sans appui, le mineur tombe ; pour **remonter**, il pose une **échelle** (temps de pose et skills comme dans la mine normale, échelle de 2 comprise). Échelles **illimitées** et **partagées** (tout le monde peut prendre celles des autres). Pas de limite de chute ni d'étourdissement ici (mine de 5 min).
 - **Départ** : les mineurs apparaissent sur la ligne de surface, au-dessus de la mine, **espacés régulièrement**.
-- **Tas de plumes d'ange** : une case **vide** portant un tas de plumes. Le **premier mineur qui arrive sur la case** le ramasse (le tas disparaît) et gagne **1 à 5 Plumes d'ange** (rareté **rare**). L'IA ne les cherche pas au loin, mais **dès qu'un tas est accessible à 3 pas ou moins** par les galeries, le mineur va le prendre avant de reprendre son minage *(décision du 21/10 : sinon, mesuré, un mineur seul passait à côté de tous les tas)*. Plusieurs mineurs peuvent courir vers le même tas : le premier arrivé le prend.
+- **Tas de plumes d'ange** : une case **vide** portant un tas de plumes. Le **premier mineur qui arrive sur la case** le ramasse (le tas disparaît) et gagne **1 à 2 Plumes d'ange** *(22/10/2026 ; avant 1 à 5)* (rareté **rare**). **Priorité aux tas découverts** *(22/10/2026, décision du créateur ; avant : seulement à 3 pas par les galeries)* : dès qu'un tas **découvert** est à **8 cases ou moins** (à vol d'oiseau), le mineur le plus proche (égalité : le plus petit numéro) y va avant tout, **même s'il est enfermé dans la roche** : il creuse droit vers lui. Les autres mineurs continuent leur travail. **Galeries** *(22/10/2026)* : chaque mineur a un **cap** (gauche, droite, bas, haut, diagonales) qu'il garde 6 à 14 blocs puis change au hasard ; miner à contre-sens de son cap coûte une pénalité (`INSTANT_MINE.headingWeight`). Résultat : les galeries partent dans tous les sens au lieu d'un puits droit jusqu'au fond (3 mineurs : 4 sur 18 touchent le fond, contre 18 sur 18). Plusieurs mineurs peuvent courir vers le même tas : le premier arrivé le prend.
 - **Chacun son butin** : ce qu'un mineur mine est à lui, **pas de partage, pas d'XP**. Si deux mineurs minent le même bloc, **celui qui finit en premier** gagne le minerai ; l'autre perd son travail sur ce bloc.
 - **Le stuff compte** : vitesse de minage, vitesse de marche, **Fortune** et **shiny** s'appliquent comme en session. Les spécialisations restent choisies mais n'ont pas d'effet particulier ici.
 - **IA du mineur** : tous les blocs valent pareil (aucune priorité de minerai) ; il creuse dans tous les sens, vers le bloc le moins coûteux en temps, en **évitant les zones où il y a déjà d'autres mineurs** (pénalité par mineur proche et par bloc déjà visé par un autre). S'il perd **3 blocs d'affilée** (un autre les a finis avant lui), il **change de zone** (il ne suit pas indéfiniment un mineur plus rapide).
 - **Plusieurs mines** : au plus **20 joueurs par mine** ; au-delà, les inscrits sont répartis en mines de tailles égales (21 inscrits → 11 + 10). Un inscrit seul joue seul.
 
 **Lobby MI** (onglet **Lobby**, « Où miner » → **Mine instantanée** ; un joueur inscrit retrouve son lobby sur ce choix) :
-- On peut s'y inscrire **quand on veut** ; un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
-- S'inscrire **fait quitter le groupe** de la session normale. On ne peut **pas s'inscrire pendant une session** (il faut d'abord la quitter). **Lancer une session normale désinscrit** du MI.
-- À l'heure dite, les inscrits partent tous dans la mine ; personne ne la rejoint après le début.
+- Un compte à rebours affiche « La mine instantanée commence dans Xh Xmin Xs ».
+- **Inscriptions ouvertes seulement dans les 30 dernières minutes** *(décision du créateur, 22/10/2026 ; `INSTANT_MINE.signupBefore` ; avant : à toute heure)* : 11 h 29 fermé (bouton « 🔒 Inscriptions à 11 h 30 »), 11 h 30 ouvert, pour la mine de 12 h. Le serveur refuse aussi une inscription hors de cette fenêtre (mode dev : à toute heure).
+- **On peut s'inscrire pendant une session** (normale ou tour) *(22/10/2026 ; avant : refusé)* : « Mine instantanée » reste choisissable dans le lobby en lecture seule, et la carte prévient « si ta session n'est pas finie à l'heure, tu rates la mine ». **Encore en session à l'heure pile** : le joueur **rate la mine instantanée**, sa session continue, son inscription est effacée. Lancer une session normale **ne désinscrit plus**.
+- S'inscrire hors session **fait quitter le groupe** ; inscrit pendant une session, on reste dans son groupe et on le quitte **en entrant dans la mine**.
+- À l'heure dite, les inscrits (qui ne sont pas en session) partent tous dans la mine ; personne ne la rejoint après le début.
+- **Après la mine instantanée, le joueur n'est dans aucune session** (ni mine instantanée ni mine normale) : il revient au lobby, libre *(règle du créateur, 22/10/2026 ; testée)*.
 - **Fermer l'onglet ne change rien** (la partie tourne sur le serveur, le butin arrive à la fin). **Seul le bouton Quitter fait tout perdre** : quitter avant la fin = rien.
 
-**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; jamais pendant une session normale) :
-- « La mine instantanée commence dans 30 min », puis 15 min, puis 5 min : simple information.
+**Rappels** (seulement si la page du jeu est ouverte, dans n'importe quel onglet ; **aussi pendant une session normale** depuis le 22/10, puisqu'on peut s'y inscrire ; jamais pendant la mine instantanée elle-même) :
+- « La mine instantanée commence dans 30 min » (« les inscriptions sont ouvertes »), puis 15 min, puis 5 min : simple information.
 - « La mine instantanée commence dans 30 secondes » : information **et invitation**, boutons **Rejoindre** / **Décliner** (pour un joueur déjà inscrit : information seule).
 
-**Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : **toute la mine à l'écran**, le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.
+**Pendant la mine** (onglet **Session**, tout le monde y bascule à l'ouverture) : la mine vue de près, **la caméra suit ton mineur** *(22/10/2026 ; avant : toute la mine à l'écran)*, environ 24 colonnes de large et autant de lignes que l'écran le permet (`INSTANT_MINE.camCols`), le chrono (5 min de jeu), ton butin, le classement (blocs minés, plumes), le journal, et **Quitter la mine**. À la fin, un bilan : ce qui est versé, le classement.
 
 **Le serveur fait foi** : il ouvre la mine à l'heure, répartit les inscrits, fait tourner la partie et verse à chacun son butin **une seule fois** à la fin.
 

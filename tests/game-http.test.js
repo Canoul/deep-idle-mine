@@ -84,3 +84,21 @@ test('corps invalides : pas de plantage', async () => {
   assert.equal((await b('POST', '/api/game/ack', { id: 12 })).status, 400);
   assert.equal((await b('POST', '/api/game/leave', {})).status, 404);
 });
+
+test('chat de session : connecté seulement ; écrire puis relire après un numéro', async () => {
+  assert.equal((await browser()('GET', '/api/game/chat')).status, 401);
+  assert.equal((await browser()('POST', '/api/game/chat', { text:'x' })).status, 401);
+  const b = browser();
+  await b('POST', '/api/account/guest', {});
+  assert.equal((await b('GET', '/api/game/chat')).status, 404, 'pas de session : pas de chat');
+  await b('POST', '/api/game/start', {});
+  const sent = await b('POST', '/api/game/chat', { text:'  hello <b>mine</b> ' });
+  assert.equal(sent.status, 200);
+  assert.equal(sent.data.message.text, 'hello <b>mine</b>');
+  assert.deepEqual((await b('GET', '/api/game/chat')).data.messages.map(m => m.text), ['hello <b>mine</b>']);
+  assert.deepEqual((await b('GET', `/api/game/chat?after=${sent.data.message.id}`)).data.messages, []);
+  assert.equal((await b('GET', '/api/game/chat?after=abc')).data.messages.length, 1, 'numéro invalide : tout');
+  assert.equal((await b('POST', '/api/game/chat', { text:'vite' })).status, 429);
+  assert.equal((await b('POST', '/api/game/chat', { text:'' })).status, 400);
+  await b('POST', '/api/game/leave', {});
+});

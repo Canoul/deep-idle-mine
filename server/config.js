@@ -37,8 +37,26 @@ export const SERVER = {
      ligne que le réglage des relais est bon (l'adresse affichée doit être la tienne) */
   logProxyCheck: proxyHops() > 0,
   maxBodyBytes: 16 * 1024,
-  /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/, ne l'est jamais) */
-  publicPaths: ['/index.html', '/wiki.html', '/src/', '/textures/', '/prototype/'],
+  /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/ et l'ancien prototype, ne l'est jamais) */
+  publicPaths: ['/index.html', '/wiki.html', '/src/', '/textures/'],
+  /* en-têtes de sécurité, sur toutes les réponses (pages, fichiers, API) :
+     - CSP : seuls les scripts du jeu s'exécutent (aucun script en ligne, aucun autre site) ; styles et polices :
+       le jeu et Google Fonts ; le jeu ne peut pas être affiché dans un cadre (iframe) d'un autre site ;
+     - nosniff : un fichier n'est jamais exécuté avec un autre type que celui annoncé ;
+     - pas d'adresse de page envoyée aux autres sites, pas de caméra, micro ni position. */
+  securityHeaders: {
+    'Content-Security-Policy': [
+      "default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com", "img-src 'self' data:", "connect-src 'self'", "object-src 'none'",
+      "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'"].join('; '),
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Cross-Origin-Opener-Policy': 'same-origin',
+  },
+  /* https seulement (avec le cookie « Secure ») : le navigateur ne repassera jamais en http pendant un an */
+  hsts: 'max-age=31536000',
 };
 
 export const SESSIONS = {
@@ -77,6 +95,15 @@ export const GAME_SERVER = {
 export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
 
 /* Groupes (server/party/) : salle d'attente en mémoire avant une session commune. */
+/* Amis (onglet Social, server/social/service.js) */
+export const SOCIAL_SERVER = {
+  onlineFor: 45e3,                  // en ligne : a donné signe de vie (onglet ouvert, même caché) depuis ce temps
+  maxFriends: 100,                  // amis par compte
+  maxOutgoing: 20,                  // demandes d'ami envoyées en attente
+  maxIncoming: 50,                  // demandes reçues gardées (les plus anciennes tombent)
+  requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
+};
+
 export const PARTY_SERVER = {
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà

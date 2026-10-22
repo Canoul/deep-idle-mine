@@ -3,50 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deep Idle Mine</title>
+<title>Deep Mine Idle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Jersey+15&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
 <div class="app">
-<nav id="nav">
-  <div class="brand">⛏ Deep Idle Mine</div>
-  <ul></ul>
-  <a class="navWiki" href="wiki.html" target="_blank" rel="noopener" title="Règles, objets, recettes, mobs… (nouvel onglet)">📖 Wiki du jeu</a>
+<!-- barre du haut : compte, nom du jeu, session en cours (visible depuis tous les onglets), wiki -->
+<header class="topbar">
+  <button class="navAccount" id="navAccount" hidden></button>
+  <div class="brand"><i data-pxi="pickaxe"></i>Deep Mine Idle</div>
   <div class="navSession" title="La session continue de tourner quand tu changes d'onglet">
-    <div class="row"><span class="mut">Session</span><span id="navTimer">—</span></div>
+    <i data-pxi="hourglass"></i><span id="navTimer">—</span>
     <div class="bar"><i id="navBar"></i></div>
   </div>
-  <button class="navAccount" id="navAccount" hidden></button>
-</nav>
+  <a class="navWiki" href="wiki.html" target="_blank" rel="noopener" title="Règles, objets, recettes, mobs… (nouvel onglet)"><i data-pxi="book"></i><span>Wiki</span></a>
+</header>
 <div class="views" id="views">
 <section class="view" data-view="lobby">
 <!-- lobby : préparer la prochaine session ; pendant une session, lecture seule (bandeau « en session ») -->
 <div id="lobby" class="lobbyWrap">
-  <h1>🏠 Lobby</h1>
+  <h1><i data-pxi="house"></i>Lobby</h1>
   <div class="inSession" id="lobbySession" hidden>
-    <span>⛏ <b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
+    <span><i data-pxi="pickaxe"></i><b>En session dans la mine</b> <span class="mut" id="lobbySessLeft"></span></span>
     <button class="on" id="lobbyToSession">Voir la session</button>
   </div>
+  <div class="lobbyCols">
+  <div class="lobbyCol">
   <div class="card"><h2>Mineur</h2><div id="levelBody"></div></div>
-  <div class="card invitesCard" id="invitesCard" hidden>
-    <h2>Invitations</h2>
-    <div id="invitesList"></div>
-  </div>
   <div class="card">
     <h2>Où miner</h2>
     <div class="seg mineModes" id="mineModes"></div>
   </div>
+  <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
+  <div class="card" id="judgmentCard" hidden>
+    <h2><i data-pxi="radiance"></i>Ange contre Démon</h2>
+    <p class="mut small">L'effort de tous les mineurs : chaque résidu rapporté au coffre remplit la jauge de son camp.</p>
+    <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
+    <p class="mut small">Les résidus angéliques et démoniaques se trouvent dans la roche à partir de l'area 4. Une jauge pleine ouvre la tour de son camp pendant quelques heures : au sommet, un boss garde un coffre.</p>
+  </div>
   <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
   <div class="card miCard" id="miCard" hidden>
-    <h2>🌀 Mine instantanée</h2>
+    <h2>Mine instantanée</h2>
     <div id="miCardBody"></div>
+  </div>
+  <div class="card" id="prefsCard">
+    <h2>Critères / préférences</h2>
+    <div class="prefs" id="prefsBox"></div>
+    <p class="mut small">Appliquées à ton mineur pour toute la session.</p>
+  </div>
+  </div>
+  <div class="lobbyCol">
+  <div class="card invitesCard" id="invitesCard" hidden>
+    <h2>Invitations</h2>
+    <div id="invitesList"></div>
   </div>
   <div class="card" id="teamCard">
     <h2 id="teamTitle">Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
-      <button class="on big" id="launchBtn">▶ Lancer la session</button>
-      <button id="inviteBtn">✉ Inviter des joueurs</button>
+      <button class="on big" id="launchBtn"><i data-pxi="arrow"></i>Lancer la session</button>
+      <button id="inviteBtn"><i data-pxi="group"></i>Inviter des joueurs</button>
       <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
     </div>
     <div class="invite" id="inviteBox" hidden></div>
@@ -54,11 +73,6 @@
       <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
     <p class="mut" id="lobbyInfo"></p>
     <p class="err" id="lobbyErr" hidden></p>
-  </div>
-  <div class="card" id="prefsCard">
-    <h2>Critères / préférences</h2>
-    <div class="prefs" id="prefsBox"></div>
-    <p class="mut small">Appliquées à ton mineur pour toute la session.</p>
   </div>
   <div class="card devCard" id="devCard" hidden>
     <h2>Mode développeur</h2>
@@ -68,14 +82,16 @@
     </div>
     <div class="dev" id="devStats"></div>
   </div>
+  </div>
+  </div>
 </div>
 </section>
 <section class="view" data-view="session" hidden>
 <!-- pas de session en cours -->
 <div id="noSession" class="soon">
-  <div class="big">⛏</div><h2>Tu n'es pas en session</h2>
+  <div class="big"><i data-pxi="pickaxe"></i></div><h2>Tu n'es pas en session</h2>
   <p class="mut">Les sessions se lancent depuis le lobby.</p>
-  <button class="on" id="toLobbyBtn">🏠 Aller au lobby</button>
+  <button class="on" id="toLobbyBtn"><i data-pxi="house"></i>Aller au lobby</button>
 </div>
 <!-- session en cours -->
 <div id="run" hidden>
@@ -86,18 +102,11 @@
   <div id="speedBtns"></div>
   <button id="pauseBtn" hidden>⏸ Pause</button>
   <span class="mut small" id="seedLbl"></span>
-  <button id="leaveBtn" title="Tu ne recevras rien de cette session">⏏ Quitter la session</button>
+  <button id="leaveBtn" title="Tu ne recevras rien de cette session"><i data-pxi="door"></i>Quitter la session</button>
 </header>
-<main>
-  <div id="cvWrap">
-    <canvas id="cv" title="Molette, glisser ou flèches ↑ ↓ : se déplacer dans la mine"></canvas>
-    <button id="followBtn" hidden>⌖ Suivre</button>
-  </div>
-  <aside>
-    <div class="card"><h2>Équipe <span class="mut" style="text-transform:none;letter-spacing:0">(clic = suivre)</span></h2><div id="teamBody"></div></div>
-    <div class="card" id="focusAreaCard" hidden><h2>Focus area</h2><div id="focusAreaBody"></div></div>
-    <div class="card" id="focusCard" hidden><h2>Focus minerai</h2><div id="focusBody"></div></div>
-    <div class="card" id="areaCard"><h2>Area</h2><div id="areaBody"></div></div>
+<main class="runGrid">
+  <aside class="runL">
+    <div class="card"><h2>Équipe</h2><div id="teamBody"></div><p class="mut small">Clic sur un mineur : la caméra le suit.</p></div>
     <div class="card">
       <h2 id="minerTitle">Mineur</h2>
       <div class="row"><span>État</span><span class="st" id="mStatus">—</span></div>
@@ -109,6 +118,21 @@
       <div class="row" style="margin-top:8px"><span>Torches</span><span id="mTorch">0</span></div>
       <div class="row"><span>Sur lui</span><span id="mInv" class="mut">—</span></div>
     </div>
+    <div class="card" id="focusAreaCard" hidden><h2>Focus area</h2><div id="focusAreaBody"></div></div>
+    <div class="card" id="focusCard" hidden><h2>Focus minerai</h2><div id="focusBody"></div></div>
+  </aside>
+  <div id="cvWrap">
+    <canvas id="cv" title="Molette, glisser ou flèches ↑ ↓ : se déplacer dans la mine"></canvas>
+    <button id="followBtn" hidden><i data-pxi="target"></i>Suivre</button>
+  </div>
+  <!-- jauge de profondeur : surface en haut, fond de la mine ouverte en bas, un repère par mineur (src/ui/hud.js) -->
+  <div class="rail" id="depthRail">
+    <span class="railEnd"><i data-pxi="ladder"></i><small>Surface</small></span>
+    <div class="tube"><i></i><div id="railMarks"></div></div>
+    <span class="railEnd hot"><small>Fond</small><i data-pxi="skull"></i></span>
+  </div>
+  <aside class="runR">
+    <div class="card" id="areaCard"><h2>Area</h2><div id="areaBody"></div></div>
     <div class="card">
       <h2>Coffre commun (session)</h2>
       <div id="chestBox" class="mut">vide</div>
@@ -116,6 +140,10 @@
       <div class="row" style="margin-top:6px"><span>XP de la session</span><span id="xpBox">0</span></div>
       <div class="mut" style="margin-top:6px;font-size:12px">Versé dans l'inventaire à la fin de la session.</div>
     </div>
+    <!-- chat des joueurs de la session (src/ui/chat.js) -->
+    <div class="card" id="chatCard"><h2>Chat</h2><div id="chatLog" aria-live="polite"></div>
+      <form id="chatForm" class="chatForm"><input id="chatInput" autocomplete="off" placeholder="Message…" title="Écrire aux joueurs de la session"><button>Envoyer</button></form>
+      <div id="chatNote" class="mut small"></div></div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
   </aside>
 </main>
@@ -126,9 +154,9 @@
   <div class="timer" id="miTimer">00:00 / 05:00</div>
   <div class="grow"><div class="bar"><i id="miTimeBar"></i></div></div>
   <span class="mut" id="miLeft"></span>
-  <button id="miLeaveBtn" title="Tu ne recevras rien de cette mine">⏏ Quitter la mine</button>
+  <button id="miLeaveBtn" title="Tu ne recevras rien de cette mine"><i data-pxi="door"></i>Quitter la mine</button>
 </header>
-<main>
+<main class="runGrid mi">
   <div id="cvMiWrap"><canvas id="cvMi"></canvas></div>
   <aside>
     <div class="card"><h2>Ton butin</h2><div id="miMine"></div><p class="mut small">Versé dans ton inventaire à la fin. Quitter = rien.</p></div>
@@ -137,12 +165,29 @@
   </aside>
 </main>
 </div>
+<div id="twRun" hidden>
+<header>
+  <div class="twTitle" id="twTitle"></div>
+  <div class="timer" id="twTimer">00:00 / 15:00</div>
+  <div class="grow"><div class="bar"><i id="twTimeBar"></i></div></div>
+  <span class="mut" id="twLeft"></span>
+  <button id="twLeaveBtn" title="Tu ne recevras pas de coffre"><i data-pxi="door"></i>Quitter la tour</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvTwWrap"><canvas id="cvTw"></canvas></div>
+  <aside>
+    <div class="card"><h2>Boss</h2><div id="twBoss"></div></div>
+    <div class="card"><h2>Équipe</h2><div id="twTeam"></div></div>
+    <div class="card"><h2>Journal</h2><div id="twLog" class="miLog"></div></div>
+  </aside>
+</main>
+</div>
 <!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
 <section class="view" data-view="inventaire" hidden>
   <div class="invWrap">
-    <div class="invHead"><h1>🎒 Inventaire</h1><span id="invCount" class="mut"></span></div>
+    <div class="invHead"><h1><i data-pxi="bag"></i>Inventaire</h1><span id="invCount" class="mut"></span></div>
     <div id="invGrid" class="invGrid"></div>
     <div id="invInfo" class="invInfo"></div>
   </div>
@@ -151,7 +196,7 @@
 </section>
 <section class="view" data-view="stuff" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>🛡 Stuff</h1><span class="mut small">Clique une case pour équiper une pièce de ton inventaire.</span></div>
+    <div class="invHead"><h1><i data-pxi="helmet"></i>Stuff</h1><span class="mut small">Clique une case pour équiper une pièce de ton inventaire.</span></div>
     <div id="stuffGrid" class="stuffGrid"></div>
     <div class="card stuffStatsCard"><h2>Stats du mineur</h2>
       <div id="stuffLevelBody" class="stuffLevel"></div><div id="stuffStatsBody"></div>
@@ -162,42 +207,56 @@
 </section>
 <section class="view" data-view="craft" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>🔨 Craft</h1><span class="mut small">Clique une recette pour la voir.</span></div>
+    <div class="invHead"><h1><i data-pxi="hammer"></i>Craft</h1><span class="mut small">Clique une recette pour la voir.</span></div>
     <div id="craftList" class="craftList"></div>
     <div id="craftInfo" class="craftInfo"></div>
   </div>
 </section>
 <section class="view" data-view="amelioration" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>💎 Amélioration</h1><span class="mut small">Identifie et améliore les pièces de ton inventaire.</span></div>
+    <div class="invHead"><h1><i data-pxi="gem"></i>Amélioration</h1><span class="mut small">Identifie et améliore les pièces de ton inventaire.</span></div>
     <div class="seg rsTabs" id="upTabs"></div>
     <div class="craftInfo rsBody" id="upBody"></div>
   </div>
 </section>
 <section class="view" data-view="recherche" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>🔬 Table de recherche</h1><span class="mut small">Dépense tes Blueprint parts, recycle tes blueprints.</span></div>
+    <div class="invHead"><h1><i data-pxi="book"></i>Table de recherche</h1><span class="mut small">Dépense tes Blueprint parts, recycle tes blueprints.</span></div>
     <div class="seg rsTabs" id="rsTabs"></div>
     <div class="craftInfo rsBody" id="rsBody"></div>
   </div>
 </section>
 <section class="view" data-view="skills" hidden>
   <div class="furnWrap skWrap">
-    <div class="invHead"><h1>⭐ Skills</h1><span class="mut small">Choisis un arbre : chaque étape demande la précédente au rang max.</span></div>
+    <div class="invHead"><h1><i data-pxi="sparkle"></i>Skills</h1><span class="mut small">Choisis un arbre : chaque étape demande la précédente au rang max.</span></div>
     <div id="skillHead" class="skHead"></div>
     <div id="skillTrees" class="skTrees"></div>
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
   </div>
 </section>
+<section class="view" data-view="social" hidden>
+  <div class="furnWrap" id="socialBody">
+    <div class="invHead"><h1><i data-pxi="group"></i>Social</h1><span class="mut small" id="socialCount"></span></div>
+    <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
+      <button class="on">Ajouter</button></form>
+    <p id="socialMsg" hidden></p>
+    <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
+    <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
+    <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
+    <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. « Stuff » montre son équipement, ses stats et son niveau. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+  </div>
+  <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
+  <div id="fview" hidden><div class="box"></div></div>
+</section>
 <section class="view" data-view="historique" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>📜 Historique</h1><span class="mut small">Tes sessions des 30 derniers jours.</span></div>
+    <div class="invHead"><h1><i data-pxi="hourglass"></i>Historique</h1><span class="mut small">Tes sessions des 30 derniers jours.</span></div>
     <div id="histBody" class="histList"></div>
   </div>
 </section>
 <section class="view" data-view="concasseur" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>🪨 Concasseur</h1><span class="mut small">100 blocs par minute → peut-être une gemme ou un treasure</span></div>
+    <div class="invHead"><h1><i data-pxi="rock"></i>Concasseur</h1><span class="mut small">100 blocs par minute → peut-être une gemme ou un treasure</span></div>
     <div id="crushBody" class="furnList"></div>
     <p class="err" id="crushErr" hidden></p>
     <p class="mut small">Clique une case d'entrée pour poser ou retirer des blocs, une case de sortie pour récupérer le butin. Le concassage continue même page fermée.</p>
@@ -206,7 +265,7 @@
 </section>
 <section class="view" data-view="four" hidden>
   <div class="furnWrap">
-    <div class="invHead"><h1>🔥 Four</h1><span class="mut small">10 minerais + 10 charbons = 1 lingot</span></div>
+    <div class="invHead"><h1><i data-pxi="fire"></i>Four</h1><span class="mut small">10 minerais + 10 charbons = 1 lingot</span></div>
     <div id="furnList" class="furnList"></div>
     <p class="err" id="furnErr" hidden></p>
     <p class="mut small">Clique une case pour poser ou retirer, et la sortie pour récupérer les lingots. La fonte continue même page fermée.</p>
@@ -215,7 +274,15 @@
   <div id="fpick" hidden><div class="box"></div></div>
 </section>
 </div>
+<!-- barre d'action (onglets avec leur nom, touches 1 à 9, 0, - et =) entre deux orbes : temps de session et XP, ou oxygène et pods du
+     mineur suivi pendant une session (src/ui/orbs.js) -->
+<nav id="nav" class="dock">
+  <div class="orb" id="orbL"><canvas width="36" height="36"></canvas><div class="v"></div></div>
+  <ul></ul>
+  <div class="orb" id="orbR"><canvas width="36" height="36"></canvas><div class="v"></div></div>
+</nav>
 </div>
+<div id="notifs" aria-live="polite"></div>
 <div id="account" hidden><div class="box"></div></div>
 <!-- rappels de la mine instantanée (src/ui/instant-lobby.js), visibles depuis tous les onglets -->
 <div id="miNotice" class="miNotice" role="status" hidden></div>

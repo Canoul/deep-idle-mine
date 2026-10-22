@@ -56,10 +56,23 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
   assert.equal(launchState({ account:me, party:p, session:null }).can, true, 'session finie : on peut relancer');
 });
 
-test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; tout grisé pendant une session', async () => {
+test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seule la MI reste choisissable', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
   assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false]]);
   assert.deepEqual(mineModes('mi').map(x => x.on), [false, true]);
-  assert.ok(mineModes('mine', true).every(x => x.disabled), 'lecture seule pendant la session');
+  const locked = mineModes('mine', true);
+  assert.ok(locked.find(x => x.id === 'mine').disabled, 'lecture seule pendant la session');
+  assert.equal(locked.find(x => x.id === 'mi').disabled, false, 'mais la mine instantanée reste choisissable (inscription en session, 22/10)');
+});
+
+test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
+  const { mineModes } = await import('../src/ui/lobby.js');
+  const ids = j => mineModes('mine', false, j).map(m => m.id);
+  assert.deepEqual(ids(null), ['mine', 'mi'], 'fermées : absentes');
+  const j = { sides: { angel: { open: true, done: false }, demon: { open: false, done: false } } };
+  assert.deepEqual(ids(j), ['mine', 'mi', 'tower_angel']);
+  const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
+  assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
+  assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
 });

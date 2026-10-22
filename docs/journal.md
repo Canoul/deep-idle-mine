@@ -22,25 +22,316 @@ Modèle d'entrée :
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
   (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite
   (3ᵉ place, loin du coffre) n'est plus isolé au début de chaque descente ; on se répartit une fois au fond.
-- **Décisions** (Geoffrey) : option « C » : plus de limite de secteur pour descendre par l'existant.
+- **Décisions** (Geoffrey) : option « C » : plus de limite de secteur pour descendre par l'existant. À la mise en
+  ligne (fusion avec main) : on garde « Plus profond » de Jules plutôt que « travailler dans la dernière area » ;
+  donjons à **33 %** en areas 4 et 5 (au lieu de 100 %).
 - **À suivre** : regarder une vraie partie à 3. Au tout premier départ, aucun puits n'existe : chacun creuse le sien
   (ça ne change pas). Un mineur en priorité « Minerais » suit toujours les filons proches de la surface avant de
   descendre.
-- **État** : 🧪 sur la branche `geoffrey/descente-commune` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
+## 22/10/2026 — Jules — Téléphone : la mine ne rétrécit plus en boucle
+- **Pour le joueur** : sur téléphone, la mine de la session rapetissait d'une ligne à chaque instant puis se
+  remettait à grandir (au rechargement, en tournant le téléphone, en changeant d'onglet) : un effet « respiration »
+  qui donnait mal au cœur. Elle a maintenant une taille fixe : toute la largeur, 34 lignes de haut.
+- **À suivre** : la mine instantanée et la tour, sur téléphone, n'ont pas été vérifiées en vrai (pas de signalement).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Mine plus longue : seuil d'ouverture d'une area à 60 %
+- **Pour le joueur** : il faut maintenant miner **60 % des minerais** de la dernière area ouverte pour ouvrir la
+  suivante (40 % avant). (Le seau du treuil est revenu à 0,85 × en même temps, mis en ligne par Jules : entrée suivante.)
+- **Pourquoi** : depuis les mises en ligne de cet après‑midi (seau ×2 et focus « Plus profond »), une équipe de 3
+  atteignait l'area 5, la dernière, dès la première partie (vu en jeu sur la seed 1102884141, sans nouveau stuff).
+  Le cap du jeu, c'est de progresser de session en session grâce au stuff.
+- **Chiffres** (5 parties simulées, mineurs de base) : à 3 avec skills, la dernière area ouverte est la 4 à chaque
+  partie (avant ce changement : la 5 dans 4 parties sur 5), profondeur 262 → 213 ; à 2 avec skills, la 3 (profondeur ≈ 166) ; en solo, seule l'area 1
+  s'ouvre (avant : la 2), profondeur ≈ 95.
+- **Décisions** (Geoffrey) : seuil 60 % (valeur d'équilibrage). Le focus « Plus profond » de Jules est gardé.
+- **À suivre** : ⚠️ en solo, un débutant ne voit plus que les areas 0 et 1 à sa première partie : à surveiller (on
+  pourrait garder 40 % pour les premières areas et 60 % pour les profondes).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Treuil : retour à la vitesse d'avant
+- **Pour le joueur** : le seau du treuil reprend sa vitesse d'avant (0,85 × la vitesse sur échelle). Le seau à ×2,
+  en ligne quelques heures, est retiré. Les mineurs peuvent de nouveau sortir du seau pour une colonne d'échelles ou
+  un trou à côté.
+- **Décisions** : la vitesse du treuil ne change pas (Geoffrey et Jules).
+- **Conséquence** : sans le seau rapide, « Plus profond » coûte plus à 3 (≈ −24 % de valeur au lieu de −15 %) et
+  l'area 5 ne s'ouvre plus. Simulation (5 parties à 3) : 0 blocage, profondeur 230, areas 4.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Chat de session
+- **Pour le joueur** : un panneau **Chat** dans l'onglet Session (à droite, au-dessus du journal). On écrit aux
+  joueurs de sa session ; ses propres messages sont en vert. 200 caractères par message, un par seconde au plus.
+- **Décisions** (Jules) : seulement les joueurs de la session ; panneau dans l'onglet Session ; rien n'est gardé
+  (effacé à la fin de la session).
+- **À suivre** : pas encore dans la mine instantanée ni dans les tours (le serveur l'accepte déjà, il manque
+  l'affichage). Le chat est perdu si le serveur redémarre pendant la session (mise en ligne d'un changement).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Les mineurs vont chercher les résidus
+- **Pour le joueur** : un résidu angélique ou démoniaque découvert attire maintenant le mineur autant qu'un
+  treasure : il fait le détour pour le miner (avant : il ne les prenait qu'en passant). Statut « Va chercher un
+  résidu ».
+- **Effet mesuré** (5 parties à 3) : **2,6 fois plus de résidus** rapportés (4,2 → 10,8 par session), donc des
+  jauges du Jugement qui se remplissent plus vite ; valeur des minerais −3 %.
+- **Décisions** : poids du résidu = poids du treasure (Jules).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Focus area : « Plus profond » vise vraiment l'area la plus profonde
+- **Pour le joueur** : avec « Plus profond » (choisi de base au début de la session), le mineur va travailler dans
+  l'area la plus profonde ouverte et y redescend à chaque nouvelle area. Avant, il finissait les filons des areas du
+  haut et passait plus de la moitié de son temps au-dessus.
+- **Prix à payer** (5 parties) : environ **15 % de valeur rapportée en moins** (solo 414 → 352 ; à 3 : 1 762 →
+  1 502), mais à 3 l'**area 5** s'ouvre à chaque partie (avant : la 4), profondeur 214 → 265.
+- **Décisions** : c'est le comportement voulu pour le bouton (Jules). Avec un focus minerai, c'est lui qui choisit
+  l'area, comme avant.
+- **À suivre** : si la perte de quantité gêne, on peut ajouter un bouton « Auto » (l'ancien comportement).
+  L'attente du barbare devant le donjon peut aller jusqu'à 0 d'oxygène (déjà le cas avant, vu plus souvent ici).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Treuil : le seau va plus vite, les mineurs y restent
+- **Pour le joueur** : le seau du treuil monte et descend **2 fois plus vite qu'une échelle** (avant : un peu moins
+  vite qu'une échelle). Les mineurs ne sortent plus du treuil pour descendre par une colonne d'échelles ou un trou
+  d'à côté, qui étaient plus rapides.
+- **Effet mesuré** (5 parties à 3, un logisticien) : minerai rapporté **+19 %** (1 186 → 1 407), profondeur 200 →
+  214. L'équipe atteint maintenant le donjon de l'area 4 avant la fin.
+- **Décisions** : vitesse ×2 (choix de Jules ; valeur provisoire). En dessous de ×2, un trou à côté reste plus rapide.
+- **À suivre** : +19 %, c'est un gros gain pour un seul skill : à surveiller avec la progression.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Voir le stuff de ses amis
+- **Pour le joueur** : dans l'onglet **Social**, chaque ami a un bouton **Stuff**. Il ouvre sa fiche : son niveau, sa
+  spécialisation, les pièces qu'il porte (avec leur bulle d'info : qualité, amélioration, rune) et ses stats de mineur,
+  exactement comme dans son propre onglet Stuff. Ça marche même si l'ami est hors ligne ou en session. On ne voit
+  jamais son inventaire, et seulement pour un ami.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Chutes : plus de saut dans le puits d'un autre, et toujours étourdi au-delà de 3 cases
+- **Pour le joueur** : un mineur debout sur son échelle se jetait parfois dans le puits déjà creusé par un autre (4 à
+  6 cases), sans être étourdi puisque le trou était « connu ». Il ne le fait plus : comme pour les autres trous, il
+  passe ailleurs ou creuse son propre puits. Et si un mineur tombe quand même de plus de 3 cases (son appui disparaît),
+  il est maintenant **étourdi 5 s**, même dans un trou déjà découvert. Le logisticien qui creuse le puits du treuil
+  reste exempté.
+- **Mesures** (8 parties à 3) : chutes connues de plus de 3 cases hors treuil 8 → 0. Simulation 5 sessions :
+  0 blocage, profondeur ≈ 199, ≈ 11 étourdissements par session (inchangé).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Fin de session : le mineur mine plus haut au lieu de descendre au front
+- **Pour le joueur** : quand un mineur repart de la surface peu avant la fin, il ne descend plus jusqu'au front pour
+  remonter aussitôt. Il se fixe une profondeur maximale (aller + retour = au plus la moitié du temps restant) et mine
+  au-dessus : filons, galeries.
+- **Mesures** (6 parties) : seul, 362 minerais contre 365 avant ; à 3, 1 073 contre 1 074 ; aucun blocage. Une partie
+  à 3 sur 6 ne débloque plus l'area 4 dans les dernières minutes (on ne fonce plus au front à la fin).
+- **Réglage** : la part du temps restant à garder pour miner (`endWorkShare`, 50 %) se change dans la config.
+
+
+## 22/10/2026 — Geoffrey — Mine instantanée : galeries dans tous les sens, tas de plumes prioritaires
+- **Pour le joueur** : les mineurs ne creusent plus tous droit vers le bas : chacun suit un cap qu'il change de temps en temps. Un tas de plumes découvert à 8 cases ou moins passe avant tout, même enfermé dans la roche : le mineur le plus proche creuse vers lui.
+- **Décisions** : la pénalité de proximité n'était pas la cause (testée à 0 : rien ne change). La cause : un bloc voisin ne coûte rien, la gravité et la montée coûteuse font le reste.
+- **À suivre** : régler `headingWeight` / `turnBlocks` si les galeries sont trop droites ou trop erratiques.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — « Blocage au treuil » : fausse alerte du détecteur
+- **Pour le joueur** : rien ne change. Le logisticien n'était pas coincé : il redescendait au front par le treuil, y
+  arrivait en fin de session et remontait aussitôt. C'est l'outil de test (détecteur de blocage des simulations) qui
+  se trompait quand un mineur passe de « descend » à « remonte » ; il est corrigé.
+- **À suivre** (pas un bug) : ce logisticien part pour 2 min 30 de descente à 5 min de la fin (deux combats en route),
+  pour remonter dès son arrivée. Une règle « ne pas redescendre si le temps restant ne permet pas de travailler »
+  ferait gagner un peu ; à décider.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Mine instantanée : inscriptions 30 min avant, même en session
+- **Pour le joueur** :
+  - on ne peut s'inscrire à la mine instantanée que **dans les 30 dernières minutes** : pour celle de 12 h, fermé à
+    11 h 29 (« 🔒 Inscriptions à 11 h 30 »), ouvert à 11 h 30 ;
+  - on peut maintenant **s'inscrire pendant une session** : « Mine instantanée » reste cliquable dans le lobby. Si la
+    session n'est pas finie à l'heure, on **rate la mine** et la session continue (la carte prévient) ;
+  - lancer une session normale ne désinscrit plus ; inscrit en session, on garde son groupe jusqu'à l'entrée dans la
+    mine ;
+  - les rappels (30, 15, 5 min, 30 s) arrivent aussi pendant une session normale ;
+  - après une mine instantanée, on n'est dans aucune session (vérifié par un test).
+- **Décisions** : celles ci-dessus (Geoffrey).
+- **État** : ✅ en ligne le 22/10
+## 22/10/2026 — Geoffrey — Tours du Jugement : labyrinthe, brouillard, caméra, 10 minutes
+- **Pour le joueur** :
+  - **Labyrinthe** : dans les tours, une ligne sur deux est un mur incassable percé d'un seul passage (4 cases), jamais
+    au-dessus du précédent : on zigzague au lieu de monter tout droit.
+  - **Brouillard** : l'intérieur de la tour est noir au départ ; chaque mineur découvre autour de lui (sa Découverte),
+    comme dans la mine.
+  - **Caméra** : rapprochée, elle suit ton mineur (avant : toute la tour à l'écran).
+  - **Durée** : 10 min (avant 15).
+- **Décisions** : Geoffrey ; 5 min demandées, mais mesuré infaisable avec le labyrinthe (même bien équipés : 0/10) →
+  10 min, briques gardées à 6 s (choix de Geoffrey). Choix de Claude : le passage est d'un seul tenant.
+- **Mesures** (10 tours, à 3) : stuff de base 0/10 ; petit stuff 3/10 ; minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min ;
+  le même seul 0/10.
+- **Vérifié** : aucune confusion dans le code entre la **tour** du Jugement et le **donjon** (minotaure) de la mine
+  classique. L'« erreur » signalée plus tôt était un test pas à jour depuis les donjons en areas 4 et 5 (corrigé
+  ce midi), pas un bug du jeu. La spec disait « donjon » pour la tour à deux endroits : corrigé.
+## 22/10/2026 — Geoffrey — Enchantement : la qualité de la rune dépend de la pièce
+- **Pour le joueur** : une pièce n'accepte qu'une rune de qualité **égale ou inférieure** à la sienne : une pièce R6
+  (un casque, par exemple) peut recevoir une rune R1 à R6, pas une R7. L'onglet l'explique, marque dans la liste « jusqu'à R6 »
+  / « trop rare pour cette pièce », et dit pourquoi le bouton est grisé. Le serveur refuse aussi.
+- **Décisions** : cette règle (Geoffrey, 22/10). Confirmé par Geoffrey : une pièce **non
+  identifiée** ne peut pas avoir de rune, elle doit d'abord être identifiée (avant, elle pouvait).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Concasseur : nouvelles chances, plus de moyennes
+- **Pour le joueur** : chances par lot de 100 blocs : **terre** gemme 0,6 % / treasure 0,5 % ; **pierre** 0,9 % / 0,3 % ;
+  **pierre dure** 1,2 % / 0,5 %. Dans l'aide « ? » et le wiki, on ne voit plus que la chance par lot : plus de
+  « 1 lot sur N », de moyenne ni de temps estimé.
+- **Décisions** : ces chances (Geoffrey, 22/10). « Une gemme » = chance d'en avoir une, partagée à parts égales entre
+  rubis, jade et saphir (choix de lecture de Claude : 0,6 % = 3 × 0,2 %).
+- **À suivre** : le treasure devient 25 à 50 fois plus fréquent (≈ 1 par 60 sessions et par joueur, avant ≈ 2 000).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Mine instantanée : mine cachée et caméra de près
+- **Pour le joueur** :
+  - la mine instantanée est **cachée au départ**, comme la mine normale : chaque mineur découvre les cases autour de
+    lui selon sa stat **Découverte** (2 de base), et ce qu'il découvre, tout le monde le voit ;
+  - la **caméra suit ton mineur** de près (environ 24 colonnes au lieu de toute la mine) : on ne voit plus toute la
+    carte d'un coup ;
+  - le classement affiche « x tas de plumes restants dans la mine ».
+- **Décisions** : celles ci-dessus (Geoffrey). Choix de Claude : la découverte est commune à tous (comme la mine
+  normale) ; un mineur ne va chercher qu'un tas déjà découvert ; zoom de 24 colonnes (réglable).
+- **Mesuré** : aucun effet sur le butin (simulation à 1, 3 et 20 mineurs : mêmes plumes et minerais qu'avant).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
+- **Pour le joueur** :
+  - **Concasseur, bouton « ? »** : pour chaque bloc, la chance d'avoir **une gemme** (les trois s'additionnent :
+    0,3 % par lot de terre, pas 0,1 %), « 1 lot sur N » et le temps moyen de concassage (ex. terre : une gemme toutes
+    les ≈ 5 h 30, un Treasure T1 tous les ≈ 7 jours), puis le détail gemme par gemme. Même tableau dans le wiki.
+  - **Wiki** : nouvelles sections **Mine instantanée** (horaires, mine, plumes, gravité et échelles, rappels) et
+    **Amélioration** (qualités R1 à R7, paliers +1 à +3 et leur coût) ; donjon « à chaque partie, area 4 et area 5 » ;
+    onglets à jour (barre d'action en bas, Amélioration, Historique, vrai Social) ; la Plume d'ange n'est plus « pas
+    encore obtenable » ; plumes et cristaux affichent leur usage.
+  - **Ange contre Démon** dans le wiki : résidus, jauges du Jugement (dans le Lobby), tours et boss, coffres, runes et
+    **Enchantement** (lignes d'une rune selon sa qualité) ; résidus, coffres et rune ont leur source et leur usage.
+- **État** : ✅ en ligne le 22/10 (après l'identification sans stats et le Jugement dans le Lobby)
+## 22/10/2026 — Geoffrey — Le Jugement passe dans le Lobby
+- **Pour le joueur** : plus d'onglet Jugement dans la barre. Dans le **Lobby**, « Où miner » propose **Mine, Mine
+  instantanée, ⚖ Jugement** : Jugement affiche les deux jauges et l'état des tours à la place de l'équipe. Quand une tour
+  est ouverte, « Choisir la tour » la sélectionne directement ; un point sur l'onglet Lobby et « ● tour ouverte » sur
+  le bouton le signalent. L'ancien lien `#jugement` mène au Lobby, sur les jauges. Social reprend la touche « = ».
+- **Décisions** : Jugement dans le Lobby (Geoffrey).
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Identification : la qualité seule, plus de stats
+- **Pour le joueur** : identifier une pièce lui donne toujours une qualité (R1 Utile à R7 Légendaire : titre et couleur
+  du nom), mais **plus aucune stat en plus**. Le tableau des qualités dans l'onglet ne montre plus que les chances.
+- **Décisions** : celle-ci (Geoffrey, 22/10) ; les pièces identifiées avant **gardent** leurs lignes de stats (Geoffrey).
+- **État** : ✅ en ligne le 22/10 (les runes, elles, tirent toujours des lignes)
+
+## 22/10/2026 — Geoffrey — Ange contre Démon : résidus, Jugement, tours, coffres, runes et Enchantement
+- **Pour le joueur** :
+  - **Résidus** : à partir de l'area 4, des blocs de **Résidu angélique** (fissures bleu ciel) et **démoniaque**
+    (fissures rouges) dans la roche. Rapportés au coffre, ils remplissent deux **jauges communes à tous les joueurs**.
+  - **Onglet Jugement** (3e onglet) : les deux jauges face à face (Ange blanc, Démon violet), 250 chacune.
+  - **Tours** : une jauge pleine **ouvre la tour de son camp pendant 6 h**. On la lance depuis le Lobby (« Où miner »),
+    seul ou à 3 : on creuse une tour de 30 de haut jusqu'au toit, où l'**Ange** (ou le **Démon**, 1 000 PV) attend. Il
+    vise le premier arrivé et peut le projeter en bas de la tour (moins souvent un barbare). 15 min pour le battre.
+  - **Victoire** : chacun reçoit un **coffre** (qualité R1 à R7). Ouvert, il donne une **Rune**. Une seule victoire par
+    joueur et par ouverture ; un échec ne coûte rien.
+  - **Enchantement** (onglet Amélioration) : on pose une rune sur une pièce de stuff ; ses lignes s'ajoutent à la pièce
+    (une rune par pièce, définitif). L'écran montre ce que la rune donnera avant de valider.
+  - **Identification** : nouveau tableau de conversion des stats (Geoffrey) ; total max des qualités ramené à
+    25 / 30 / 35 / 40 / 50 / 75 / 100 % ; butin des mobs à +10 % pour 100 x. Les pièces déjà identifiées ont suivi.
+- **Décisions** : concept et règles de Geoffrey (spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`).
+  Choix de Claude à valider : projection du boss de **6 cases** (5 n'aurait jamais fait tomber) ; la valeur d'un
+  objet reste celle du catalogue (pioche en pierre 130 x), le nouveau tableau sert seulement à convertir les lignes.
+- **À suivre** : avec un stuff de base, **personne ne mine en area 4** (simulation : 0 résidu en 8 sessions à 3) : les
+  jauges ne monteront qu'avec des joueurs équipés. Une tour se gagne à 3 en ≈ 7 min, mais **seul, 1 fois sur 5**
+  (stuff de base). Pour tester l'Enchantement sans tour : `node scripts/give-admin.js --name X --chests 1`.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Geoffrey — Mine instantanée avec gravité, plumes, Amélioration, donjons partout
+- **Pour le joueur** :
+  - **Mine instantanée** : les mineurs ne volent plus. Ils tombent quand il n'y a rien sous eux et posent des
+    **échelles** pour remonter (illimitées, chacun peut prendre celles des autres). Pas d'étourdissement en cas de chute.
+  - **Tas de plumes d'ange** : 1 à 2 plumes par tas (avant 1 à 5).
+  - **Amélioration** : coût en plumes relevé à **20 / 30 / 50** pour +1 / +2 / +3 (cristaux inchangés : 3 / 5 / 7).
+  - **Identification** : on clique sur une case, puis sur une pièce pour l'y poser (n'importe laquelle) ; si les deux
+    pièces ne sont pas le même objet, le bouton reste grisé avec la raison. Les lignes tirées s'affichent **une par
+    une** (« Fortune +1,2 % · Fortune +0,9 % ») au lieu d'être additionnées.
+  - **Donjon** : il y en a un en **area 4 et un en area 5 à chaque partie** (avant : area 5, 20 %).
+- **Décisions** : celles ci-dessus (Geoffrey, 22/10). Choix de Claude à valider : en mine instantanée, pas de limite
+  de chute ni d'étourdissement.
+- **À suivre** : avec 1-2 plumes par tas et 100 plumes pour une pièce à +3, il faut beaucoup de mines instantanées
+  (mesuré : ≈ 2 à 5 plumes par joueur et par mine, voir debug.md). La vitesse de minage en % des pièces améliorées compte
+  maintenant aussi en mine instantanée.
+- **État** : ✅ en ligne le 22/10
+
+## 22/10/2026 — Jules — Session : colonnes jusqu'en bas, surface de nouveau visible
+- **Pour le joueur** : pendant une session, les panneaux de gauche et de droite descendent jusqu'en bas de l'écran
+  quand la barre d'action ne passe pas dessous (grands écrans) ; la mine montre de nouveau la surface et le ciel en
+  début de session (bug de l'agrandissement de la veille : le haut de la vue était rogné). La mine remplit toujours
+  la largeur, et montre plus ou moins de lignes selon la hauteur de l'écran.
+- **État** : ✅ en ligne le 22/10
+
+---
+
+## 22/10/2026 — Jules — Revue de sécurité
+- **Pour le joueur** : rien de visible. Le jeu est mieux protégé contre les sites malveillants (il ne peut plus être
+  affiché dans un cadre d'un autre site, seuls nos propres scripts peuvent tourner sur la page).
+- **Bilan** : pas de faille trouvée dans les comptes, les mots de passe, les droits, la base ou l'économie ; aucun
+  secret dans le dépôt ni dans son historique. Corrigé : en-têtes de sécurité, ancien prototype plus servi en ligne,
+  fichiers `.env` ignorés par git, limiteur de tentatives à mémoire bornée, un test anti-triche des skills qui était
+  resté sur l'ancienne règle des arbres.
+- **Décisions** : mémo `docs/securite.md` (ce qui est protégé, règles à garder, à faire hors code).
+- **À suivre (hors code)** : protéger la branche `main` sur GitHub et activer la double authentification ; le dépôt
+  est public ; les adresses e-mail de Geoffrey sont visibles dans les commits (voir le mémo).
+- **État** : ✅ en ligne le 22/10
+
+---
+
+## 21/10/2026 — Jules — Onglet Social, noms des onglets visibles, nouveau nom « Deep Mine Idle »
+- **Pour le joueur** :
+  - **onglet Social** (fait par Geoffrey, fusionné et mis au style pixel par Jules) : ajouter un ami par pseudo (ou
+    par ID pour un invité), accepter / refuser, voir si ses amis sont en ligne, en session ou dans un lobby, les
+    inviter ou les rejoindre ; demandes d'ami et invitations arrivent en **pop-up** en haut à gauche ;
+  - la barre d'action affiche **le nom de chaque onglet en permanence** (plus seulement au survol) ; touche « = »
+    pour le 12e onglet (Social) ;
+  - le jeu s'appelle **Deep Mine Idle** (titre de la page, logo, écran de connexion, wiki).
+  - **la mine est plus grande** pendant la session : elle remplit toute la largeur entre les panneaux (le haut et
+    le bas de la vue peuvent être un peu rognés ; la caméra garde ton mineur au milieu).
+- **Décisions** : l'onglet Social fait partie du jeu (retiré du « hors périmètre ») ; nom du jeu : Deep Mine Idle
+  (les noms techniques du serveur, `deep-idle-mine`, ne changent pas).
+- **À suivre** : tester le Social à deux vrais joueurs en ligne.
+- **État** : ✅ en ligne le 22/10
+
+---
+
+## 21/10/2026 — Jules — Nouvelle direction artistique : la Forge noire en pixel art
+- **Pour le joueur** : tout le jeu passe en pixel art « Forge noire » (brique brune, fer riveté, braise), choisie
+  parmi les maquettes de `design/poc/` (branche `jules/poc-design`).
+  - Les onglets sont dans une **barre d'action en bas** (touches 1 à 9, 0 et -), entre deux **orbes** : temps de
+    session et XP, ou oxygène et pods de ton mineur pendant une session. Le menu de gauche disparaît.
+  - En haut : ton mineur (avec son stuff), le temps de la session en cours, le wiki.
+  - **Session** : panneaux à gauche et à droite, la mine entière au centre (on voit toute sa largeur, moins
+    zoomée qu'en plein écran), et une **jauge de profondeur** avec un repère par mineur. L'écran de session tient
+    exactement dans la fenêtre.
+  - **Stuff** : ton mineur au centre, équipé, entouré de ses 10 cases. **Lobby** : les sprites de l'équipe.
+  - Cadres, boutons, cases et icônes en vrais pixels ; s'adapte à l'écran (plus grand au-delà de 1800×1000) et au
+    téléphone.
+- **Décisions** : direction artistique Forge noire en pixel art (Jules) ; la mine se voit en entier pendant la
+  session (pas de gros plan).
+- **À suivre** : le wiki (`wiki.html`) garde l'ancien look ; la mine instantanée a été vérifiée seulement à
+  l'affichage du lobby ; retours des joueurs sur la taille de l'interface.
+- **État** : ✅ en ligne le 21/10
 ## 21/10/2026 — Geoffrey — Retours lobby, IA, donjon, ténacité, équilibrage
 - **Pour le joueur** :
-  - concasseur plus généreux (gemmes ×2 à ×3, treasures ×7 à ×10) ;
+  - concasseur plus généreux (gemmes ×2 à ×3, treasures ×7 à ×10) ; *remplacé par les chances décidées le 22/10* ;
   - pioches deux fois plus efficaces (pierre +0,2, fer +0,4 de vitesse de minage) ;
   - Ceinture en peau de gobelin : +10 torches (au lieu de Découverte +1) ;
   - passerelles illimitées.
-  - le donjon peut aussi apparaître en area 4 (20 %, tiré à part de l'area 5 : une partie peut en avoir deux).
+  - le donjon peut aussi apparaître en area 4 (20 %, tiré à part de l'area 5 : une partie peut en avoir deux) ;
+    *à la mise en ligne : 33 % en areas 4 et 5*.
   - nouvelle stat **Ténacité** : chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste) ;
     Force brute (Barbare) donne +5 % de dégâts **et** +5 % de ténacité par rang ;
   - Provocation : frapper un occultiste qui canalise l'interrompt, mais il peut relancer son sort (sur le barbare).
-  - IA : le mineur travaille dans la **dernière area débloquée** ; en traversant celles du dessus, il ne prend que
-    les minerais collés à lui. Focus minerai : il cherche dans l'area la plus profonde qui en a encore.
-    En simulation (3 mineurs de base) : profondeur 182 → 226, l'area 4 est atteinte à chaque session.
+  - ~~IA : le mineur travaille dans la dernière area débloquée~~ : *pas mis en ligne*, « Plus profond » de Jules
+    (déjà en ligne) fait la même chose ; on garde le sien (décision Geoffrey, 22/10).
   - Treuil (seed 1250570735) : en repartant du coffre, un mineur allait d'abord à « sa » colonne, tombait parfois dans
     un trou sans échelle près de la surface et creusait un nouveau puits au lieu de prendre le treuil. Corrigé : quand le
     treuil existe, il prend directement la descente existante. Le treuil reste plus lent qu'une échelle déjà posée
@@ -50,9 +341,8 @@ Modèle d'entrée :
     place (★).
 - **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
   la ceinture garde son nom.
-- **À suivre** : ⚠️ avec l'IA qui descend mieux, 3 mineurs de base minent ≈ 150 / 500 minerais de l'area 4 (il en faut
-  200 pour débloquer l'area 5, la dernière) : le contenu risque d'être fini trop vite. À surveiller.
-- **État** : 🧪 sur la branche `geoffrey/retours-21-10` (pas en ligne)
+- **À suivre** : le bouton « Prêt » n'a pas encore été essayé à deux comptes dans le navigateur.
+- **État** : ✅ en ligne le 22/10
 
 ## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
 - **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.

@@ -71,9 +71,13 @@ function mobs(){
 
 /* ---------- donjon ---------- */
 function dungeon(){
-  const g = D.dungeonInfo(), pct = Math.round(g.chance * 100), areas = g.areas.join(', ');
+  const g = D.dungeonInfo(), pct = Math.round(g.chance * 100);
+  const list = g.areas.map(a => `l'area ${a}`), where = list.length > 1 ? `${list.slice(0, -1).join(', ')} et ${list.at(-1)}` : list[0];
+  const intro = g.chance >= 1
+    ? `<b>À chaque partie</b>, un donjon est caché dans ${g.areas.length > 1 ? list.join(' et un dans ') : where}`
+    : `Dans ${where}, il y a <b>${pct} % de chance</b>${g.areas.length > 1 ? ' (tirée pour chaque area)' : ''} qu'un donjon soit caché dans la roche`;
   $('w-dungeon').innerHTML = `
-  <p>Dans l'area ${esc(areas)}, il y a <b>${pct} % de chance</b> qu'un donjon soit caché dans la roche : un carré de ${g.size} × ${g.size} en <b>briques violettes</b> qu'aucune pioche ne peut casser, avec <b>une seule entrée</b> sur un côté. Dedans, un monstre l'attend.</p>
+  <p>${intro} : un carré de ${g.size} × ${g.size} en <b>briques violettes</b> qu'aucune pioche ne peut casser, avec <b>une seule entrée</b> sur un côté. Dedans, un monstre l'attend.</p>
   <div class="mobs">
     <div class="mob"><h3><img src="textures/${esc(g.boss.tex)}.png" alt="">${esc(g.boss.name)}</h3>
       <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle et ne fait rien de spécial : il <b>tacle</b> qui s'approche.</p>
@@ -84,6 +88,49 @@ function dungeon(){
       <p><b>Sans barbare</b> : personne n'y entre, chacun mine comme d'habitude. Un mineur qui s'y retrouve par accident est <b>effrayé ${g.scared} s</b> : si le minotaure l'attaque pendant ce temps, il <b>s'enfuit d'un coup à la surface</b> (il garde son sac).</p></div>
   </div>
   <p class="tip">💡 Les murs ne bloquent pas que les mineurs : le treuil ne passe jamais par un donjon, et aucun autre monstre n'apparaît dedans.</p>`;
+}
+
+/* ---------- mine instantanée ---------- */
+function instant(){
+  const m = D.instantInfo(), NAME = { coal:'Charbon', iron:'Fer', gold:'Or' };
+  const hours = Array.from({ length: 24 / m.every }, (_, i) => `${i * m.every} h`);
+  $('w-mi').innerHTML = table(['Quand', 'Durée', 'La mine', 'Joueurs'], [tr([
+    `Toutes les <b>${m.every} h pile</b>, heure de Paris<div class="small mut">${hours.join(', ')}</div>`,
+    `<b>${m.game / 60} min</b> de jeu<div class="small mut">${mmss(m.real)} en vrai</div>`,
+    `${m.w} × ${m.h} blocs, <b>que des minerais</b> : ${Object.entries(m.comp).map(([k, v]) => `${v} % ${item(NAME[k] ?? k)}`).join(', ')}, et <b>${f(m.feather)} % de tas de plumes</b>`,
+    `Jusqu'à <b>${m.max}</b> par mine<div class="small mut">au-delà, plusieurs mines de tailles égales</div>`])]) +
+    `<p>Un <b>tas de plumes</b> est une case vide qui porte des plumes : le <b>premier mineur qui passe dessus</b> le ramasse et gagne <b>${m.fMin} à ${m.fMax} ${item(m.item)}</b>. Ton mineur ne les cherche pas au loin, mais il va prendre tout tas à ${m.reach} pas ou moins. Compte en moyenne quelques plumes par mine instantanée.</p>`;
+  const n = m.notify.map(s => s >= 60 ? `${s / 60} min` : `${s} s`);
+  $('w-mi-notify').innerHTML = `Si la page du jeu est ouverte, des rappels arrivent ${n.slice(0, -1).join(', ')} et ${n.at(-1)} avant le début ; le dernier propose <b>Rejoindre</b> ou <b>Décliner</b>.`;
+  $('w-mi-lost').textContent = m.lost;
+}
+
+/* ---------- Ange contre Démon ---------- */
+function judgment(){
+  const g = D.judgmentInfo(), T = g.tower, B = T.boss, sec = s => s >= 60 ? `${s / 60} min` : `${s} s`;
+  const sides = Object.values(g.sides);
+  $('w-judgment').innerHTML = `<h2>Les résidus</h2><p>À partir de l'<b>area ${g.fromArea}</b>, ${f(g.pct)} % des blocs de chaque area sont du ${sides.map(s => item(s.item)).join(' et du ')} (soit ${g.residues} de chaque par area). Ils pèsent lourd dans le sac, mais une fois rapportés au coffre, ils remplissent la jauge de leur camp : <b>tous les joueurs du serveur remplissent les mêmes jauges</b>. Ils sont aussi partagés en fin de session comme les autres blocs. Quitter la session = ils ne comptent pas.</p>`+
+    table(['Jauge', '#Pour ouvrir la tour', 'Ensuite'], sides.map(s => tr([`<b>${esc(s.label)}</b>`, num(f(g.cap)), `La <b>${esc(s.tower)}</b> ouvre <b>${g.hours} h</b> ; la jauge repart de 0 et continue de se remplir`])));
+  $('w-tower').innerHTML = `<ul>
+    <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>
+    <li><b>La tour</b> : ${T.width} de large × ${T.height} de haut, pleine de briques à miner (<b>6 s</b> chacune) et construite en <b>labyrinthe</b> : une ligne sur ${T.mazeEvery} est un mur de briques incassables percé d'un seul passage de ${T.width - T.mazeHard} cases, jamais au-dessus du précédent (un chemin jusqu'en haut existe toujours). L'intérieur n'est pas découvert au départ : chaque mineur découvre autour de lui (sa Découverte, comme dans la mine). Ni oxygène, ni sac, ni mobs, et les briques ne rapportent rien. La gravité compte : on pose des échelles (illimitées, partagées).</li>
+    <li><b>Le boss</b> (l'Ange ou le Démon) : <b>${f(B.hp)} PV</b>, sur le toit. Il vise le premier arrivé, frappe ${B.hitEvery === 1 ? 'chaque seconde' : `toutes les ${f(B.hitEvery)} s`} (toutes les ${f(B.rageEvery)} s sous ${Math.round(B.rageBelow * 100)} % de ses PV). Chaque coup a <b>${Math.round(B.knockChance * 100)} %</b> de chance (${Math.round(B.knockBarb * 100)} % contre un barbare) de <b>projeter</b> le mineur hors de la tour : il tombe en bas, étourdi 5 s, et doit tout remonter. On ne peut pas le provoquer.</li>
+    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>coffre</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
+  </ul>`;
+}
+
+/* ---------- amélioration ---------- */
+function upgrade(){
+  $('w-qualities').innerHTML = table(['Qualité', 'Titre', '#Chance'], D.qualityRows().map(q =>
+    tr([`<b>R${q.q}</b>`, `<b style="color:${esc(q.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(q.label)}</b>`, num(`${f(Math.round(q.chance * 1000) / 10)} %`)])));
+  $('w-runes').innerHTML = table(['Qualité de la rune', '#Lignes', '#Chaque ligne vaut', '#Total au mieux'], D.runeRows().map(r =>
+    tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
+        num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
+    `<p class="small mut">En % de la valeur de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>`;
+  const total = D.upgradeTotal();
+  $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>
+    tr([`<b>+${r.level}</b>`, num(`+${r.pct} %`), num(`${Math.round(r.chance * 100)} %`), ings(r.cost)]))) +
+    `<p class="small mut">Le bonus est celui du palier (pas cumulé) : une pioche en pierre +3 a 7 % de vitesse de minage en plus que la même à +0. Pour monter une pièce de +0 à +3 sans échec, il faut en tout :</p>${ings(total)}`;
 }
 
 /* ---------- objets ---------- */
@@ -125,8 +172,12 @@ function craft(){
     return tr([`<b>${esc(t.name)}</b>`, num(`×${f(t.speed)}`), key ? `Four n° ${FURNACE.unlockItems[key].slot + 1} : fabriquer un ${item(key)} et l'« Utiliser » dans l'inventaire` : 'Le four de départ']);
   }).concat(tr(['<span class="mut">Four n° 3</span>', num(none), '<span class="mut">Fermé pour l\'instant</span>'])));
   $('w-crusher-rule').textContent = `${CRUSHER.inSlots} cases d'entrée pour tes blocs (terre, pierre, pierre dure) : toutes les ${CRUSHER.time} secondes, il concasse ${CRUSHER.batch} blocs de la première case qui en a assez (de haut en bas, de gauche à droite), même page fermée.`;
-  $('w-crusher').innerHTML = table(['Lot', 'Butin (chance par lot)'], D.crusherRows().map(r =>
-    tr([item(r.block, CRUSHER.batch), r.items.map(i => `${item(i.item)} ${String(Math.round(i.chance * 1e6) / 1e4).replace('.', ',')} %`).join('<br>')])));
+  const cpct = c => `${String(Math.round(c * 1e6) / 1e4).replace('.', ',')} %`;
+  const FAMILY = { gem:'Une gemme (au hasard parmi les 3)', treasure:'Un treasure' };
+  $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot'], D.crusherRows().flatMap(r =>
+    r.families.map((fam, k) => tr([k ? '' : item(r.block, CRUSHER.batch),
+      fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
+      num(`<b>${cpct(fam.chance)}</b>`)]))));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));
@@ -175,6 +226,6 @@ function toc(){
   document.querySelectorAll('main section').forEach(s => obs.observe(s));
 }
 
-for(const fn of [areas, blocks, mobs, dungeon, rarity, items, craft, stats, treasures, level, toc]){
+for(const fn of [areas, blocks, mobs, dungeon, instant, judgment, rarity, items, craft, upgrade, stats, treasures, level, toc]){
   try { fn(); } catch(e){ console.error(fn.name, e); }
 }

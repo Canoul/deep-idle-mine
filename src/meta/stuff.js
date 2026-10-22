@@ -8,7 +8,7 @@
 import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS } from './skills.js';
-import { pieceBonus, pieceName, sanitizePiece } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
@@ -36,13 +36,29 @@ export const gearOf = st => sanitizeGear(st.worn);
 const num = v => String(v).replace('.', ',');
 const unitOf = k => STUFF.statUnits?.[k] ?? '';
 /* effets d'une pièce (un nom d'objet, ou une pièce avec sa qualité et son niveau), un par ligne :
-   ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) : 'Dégâts 11' */
+   ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) : 'Dégâts 11'.
+   D'abord les effets de l'objet, puis CHAQUE ligne tirée à l'identification, à part, même quand elle porte la même
+   stat qu'une autre (décision du créateur, 22/10) : ['Vitesse de minage +0,1', 'Vitesse de minage +0,03', …].
+   Les valeurs incluent le niveau d'amélioration. Ce que le mineur a vraiment en session : statsOf (somme, arrondie). */
 export function statLines(entry){
-  const b = pieceBonus(entry);
+  const p = typeof entry === 'string' ? { item: entry } : entry || {};
+  if(ITEMS[p.item]?.cat === 'rune') return runeLines(p);
+  const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
+  const label = k => STUFF.statLabels[k] ?? k;
   return [
-    ...Object.entries(b.set).map(([k, v]) => `${STUFF.statLabels[k] ?? k} ${num(v)}${unitOf(k)}`),
-    ...Object.entries(b.stats).map(([k, v]) => `${STUFF.statLabels[k] ?? k} +${num(v)}${unitOf(k)}`),
+    ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${num(v)}${unitOf(k)}`),
+    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} +${num(v)}${unitOf(k)}`),
+    ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
+      `${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
+    ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
+      `Rune · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
   ];
+}
+/* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur de la pièce qu'elle enchantera */
+export function runeLines(p){
+  const label = k => STUFF.statLabels[k] ?? k;
+  return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
+    : `${label(l.stat)} : ${num(l.pct)} % de la valeur de la pièce`);
 }
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');
@@ -77,6 +93,7 @@ export function minerStats(worn, effects = {}){
 /* bulle d'info d'une pièce de stuff (nom d'objet ou pièce) : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
 export function stuffTip(entry){
   const item = typeof entry === 'string' ? entry : entry?.item;
+  if(ITEMS[item]?.cat === 'rune') return [pieceName(entry), ...statLines(entry), 'À poser sur une pièce : onglet Amélioration, Enchantement'].join('\n');
   if(ITEMS[item]?.cat !== 'stuff') return null;
   const lines = statLines(entry);
   return [pieceName(entry), ...(lines.length ? lines : ['Aucun effet'])].join('\n');

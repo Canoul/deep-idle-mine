@@ -12,7 +12,8 @@ export const TILE=16, VIEW_ROWS=34;
 
 export function createRenderer(cv){
   const ctx=cv.getContext('2d');
-  cv.width=W*TILE; cv.height=VIEW_ROWS*TILE;
+  let rows=VIEW_ROWS;   // lignes dessinées : s'adapte à la hauteur de la fenêtre (setRows)
+  cv.width=W*TILE; cv.height=rows*TILE;
   ctx.imageSmoothingEnabled=false;
   const TEX=loadTextures();
   const cam=createCamera(VIEW_ROWS);
@@ -46,7 +47,7 @@ export function createRenderer(cv){
     const camY=cam.update(fy, mr+1);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
-    for(let y=y0;y<=y0+VIEW_ROWS+1;y++){
+    for(let y=y0;y<=y0+rows+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
@@ -120,7 +121,12 @@ export function createRenderer(cv){
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
   const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
-  const panPixels = px => pan(-px / (cv.clientHeight / VIEW_ROWS || TILE));
+  const panPixels = px => pan(-px / (cv.clientHeight / rows || TILE));
+  /* nombre de lignes visibles : le canvas change de hauteur, la caméra le sait (la surface reste visible en haut) */
+  function setRows(n){
+    if(n === rows || !Number.isInteger(n) || n < 1) return;
+    rows = n; cv.height = rows*TILE; ctx.imageSmoothingEnabled = false; cam.setRows(n);
+  }
 
-  return { draw, pan, panPixels, follow: () => cam.follow(), get free(){ return cam.free; } };
+  return { draw, pan, panPixels, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
 }

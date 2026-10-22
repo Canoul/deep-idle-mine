@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { INSTANT_MINE as MI } from '../src/config.js';
-import { nextSlot, lastSlot, splitMines, instantDurationMs, localHour } from '../src/shared/instant.js';
+import { nextSlot, lastSlot, splitMines, instantDurationMs, localHour, signupOpen } from '../src/shared/instant.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { createInlineRunner } from '../server/game/live.js';
@@ -25,7 +25,6 @@ async function setup({ store = createMemoryGameStore(), now = T0 } = {}){
   await party.load();
   const instant = createInstantService({ game, party, store, clock });
   await instant.load();
-  game.onStart(a => instant.drop(a));
   return { store, game, party, instant, t, clock };
 }
 const inv = async (store, id) => deserialize(JSON.stringify(await store.getInventory(id) ?? {}));
@@ -64,27 +63,55 @@ test('MI inscription : compte à rebours, inscrit, idempotent, se désinscrire',
   await instant.quit(ME);
 });
 
-test('MI inscription : refusée pendant une session ; s\'inscrire fait quitter son groupe', async () => {
-  const { instant, game, party } = await setup();
-  const { party: p } = await party.create(ME);
-  await party.join(OTHER, p.code);
-  await instant.join(OTHER);
-  assert.equal((await party.state(OTHER)).party, null, 'il a quitté le groupe');
-  assert.equal((await party.state(ME)).party.members.length, 1);
-  await game.start(ME, {});
-  await assert.rejects(instant.join(ME), e => e.status === 409 && e.code === 'session_running');
+test('MI inscription : seulement dans les 30 dernières minutes (11 h 29 fermée, 11 h 30 ouverte)', async () => {
+  const { instant, t } = await setup({ now: SLOT - MI.signupBefore * 1000 - 60e3 });
+  let st = await instant.state(ME);
+  assert.equal(st.signupOpen, false); assert.equal(st.signupAt, SLOT - MI.signupBefore * 1000);
+  await assert.rejects(instant.join(ME), e => e.status === 409 && e.code === 'signup_closed');
+  assert.equal(instant.count(), 0);
+  t.now = SLOT - MI.signupBefore * 1000;
+  assert.equal((await instant.state(ME)).signupOpen, true);
+  await instant.join(ME);
+  assert.equal(instant.count(), 1);
+  assert.equal(signupOpen(SLOT, SLOT), false, 'à l\'heure pile : fermé (la mine part)');
 });
 
-test('MI : lancer une session normale désinscrit (soi et les membres du groupe)', async () => {
-  const { instant, party } = await setup();
+test('MI inscription en session : acceptée (le groupe est gardé) ; encore en session à l\'heure → mine ratée, session continue', async () => {
+  const { instant, game, party, t } = await setup();
   const { party: p } = await party.create(ME);
   await party.join(OTHER, p.code);
+  await party.ready(OTHER, true);                               // bouton « Prêt » : le chef ne lance qu'avec tout le monde prêt
+  await party.launch(ME, {}); await flush();
+  assert.ok(await game.activeSessionId(ME.id));
   await instant.join(ME);
-  await party.join(ME, p.code).catch(() => {});                 // ME est sorti du groupe en s'inscrivant : il y revient
   assert.equal(instant.count(), 1);
-  await party.launch((await party.state(ME)).party.leader === ME.id ? ME : OTHER, {});
-  await flush();
-  assert.equal(instant.count(), 0);
+  assert.equal((await party.state(ME)).party.members.length, 2, 'en session : il reste dans son groupe');
+  t.now = SLOT;
+  assert.deepEqual(await instant.tick(), [], 'personne n\'entre : il est encore en session');
+  assert.equal((await game.state(ME)).session.mode, 'mine', 'sa session normale continue');
+  assert.equal(instant.count(), 0, 'son inscription est effacée');
+});
+
+test('MI : lancer une session normale ne désinscrit plus ; session finie avant l\'heure → il entre et quitte son groupe', async () => {
+  const { instant, game, party, t } = await setup();
+  const { party: p } = await party.create(ME);
+  await party.join(OTHER, p.code);
+  await party.ready(OTHER, true);                               // bouton « Prêt » : le chef ne lance qu'avec tout le monde prêt
+  await party.launch(ME, {}); await flush();
+  await instant.join(ME);
+  await game.leave(ME);                                         // sa session est finie avant l'heure (il l'a quittée)
+  assert.equal(await game.activeSessionId(ME.id), null);
+  assert.equal(instant.count(), 1, 'toujours inscrit');
+  t.now = SLOT;
+  const opened = await instant.tick();
+  assert.deepEqual(opened.map(s => s.players.map(x => x.account)), [[ME.id]]);
+  assert.equal((await party.state(ME)).party, null, 'il a quitté son groupe en entrant dans la mine');
+  /* s'inscrire hors session : on quitte son groupe tout de suite (comme avant) */
+  const b = await setup();
+  const { party: q } = await b.party.create(ME);
+  await b.party.join(OTHER, q.code);
+  await b.instant.join(OTHER);
+  assert.equal((await b.party.state(OTHER)).party, null);
 });
 
 test('MI : inscriptions gardées après un redémarrage du serveur', async () => {
@@ -116,7 +143,7 @@ test('MI ouverture : rien avant l\'heure ; à l\'heure, une mine (session « ins
   assert.deepEqual(await instant.tick(), []);
   await assert.rejects(game.start(ME, {}), e => e.code === 'session_running');
   await assert.rejects(game.focus(ME, { focus:{} }), e => e.status === 400);
-  await assert.rejects(instant.join(ME), e => e.code === 'session_running');
+  await assert.rejects(instant.join(ME), e => e.code === 'signup_closed', 'prochaine mine dans 2 h : inscriptions fermées');
 });
 
 test('MI ouverture : 21 inscrits → 2 mines (11 + 10) ; un inscrit déjà en session est écarté', async () => {
@@ -151,6 +178,8 @@ test('MI partie complète : butin de chacun versé une fois, sans XP ; celui qui
   const st = await game.state(ME);
   assert.equal(st.session, null);
   assert.equal(st.ended.id, s.id); assert.equal(st.ended.mode, 'mi');
+  assert.equal(await game.activeSessionId(ME.id), null, 'après la MI : aucune session (ni MI ni mine)');
+  assert.equal(await game.activeSessionId(OTHER.id), null);
   const res = st.ended.result, mine = res.shares.find(x => x.account === ME.id), his = res.shares.find(x => x.account === OTHER.id);
   assert.ok(mine.stats.mined > 50, `miné ${mine.stats.mined}`);
   assert.deepEqual(his.bag, {}); assert.equal(his.left, true);

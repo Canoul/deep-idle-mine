@@ -13,7 +13,8 @@
     "simulate:mi": "node scripts/simulate-instant.js",
     "weights": "node scripts/weights.js",
     "stat-values": "node scripts/stat-values.js",
-    "textures": "python scripts/gen_textures.py"
+    "textures": "python scripts/gen_textures.py",
+    "textures:ui": "python scripts/gen_ui.py && python scripts/build_pxicons.py"
   },
   "engines": {
     "node": ">=20"

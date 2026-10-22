@@ -5,10 +5,13 @@ import { DT } from '../src/config.js';
 import { stuckDetector, STUCK_WINDOW } from '../src/sim/diagnostics.js';
 
 /* fait « vivre » un faux mineur pendant STUCK_WINDOW + 10 s ; yAt(s) donne sa couche au temps s */
-function scenario(mode, yAt){
-  const det=stuckDetector(), m={ name:'Test', x:5, y:yAt(0), mode, status:'', stats:{mined:0, trips:0} }, G={ t:0, miners:[m] };
+/* mode : le mode du mineur, ou une fonction du temps (bascule en cours de route, ex. descente puis retour) ;
+   actAt(s) : type de son action au temps s (ex. 'attack'), aucune par défaut ; statusAt(s) : son statut affiché */
+function scenario(mode, yAt, actAt = () => null, statusAt = () => ''){
+  const modeAt = typeof mode === 'function' ? mode : () => mode;
+  const det=stuckDetector(), m={ name:'Test', x:5, y:yAt(0), mode:modeAt(0), status:'', stats:{mined:0, trips:0} }, G={ t:0, miners:[m] };
   const n=Math.round((STUCK_WINDOW+10)/DT);
-  for(let i=0;i<n;i++){ G.t=i*DT; m.y=yAt(G.t); det.onTick(G,i); }
+  for(let i=0;i<n;i++){ G.t=i*DT; m.y=yAt(G.t); m.mode=modeAt(G.t); const a=actAt(G.t); m.action=a ? { type:a } : null; m.status=statusAt(G.t); det.onTick(G,i); }
   return det.result();
 }
 
@@ -28,23 +31,35 @@ test('oscille sur place sans progresser : bloqué', () => {
   assert.equal(scenario('work', s=>40+(Math.floor(s)%2)).length, 1);
 });
 
-/* variante : le mineur peut frapper (action attack) ou changer de mode en cours de route */
-function scenario2(step){
-  const det=stuckDetector(), m={ name:'Test', x:5, y:10, mode:'work', status:'', action:null, stats:{mined:0, trips:0, kills:0} }, G={ t:0, miners:[m] };
-  const n=Math.round((STUCK_WINDOW+10)/DT);
-  for(let i=0;i<n;i++){ G.t=i*DT; step(m, G.t); det.onTick(G,i); }
-  return det.result();
-}
-
-test('combat long contre un boss (il frappe sans cesse) : pas un blocage ; immobile sans frapper : bloqué', () => {
-  assert.deepEqual(scenario2(m => { m.action={ type:'attack' }; }), []);
-  assert.equal(scenario2(m => { m.action={ type:'wait' }; }).length, 1);
+/* seed 23757 (3 mineurs, arbres mélangés), 22/10 : le logisticien redescend au front par le treuil, y arrive en fin de
+   session et repart aussitôt en retour. Sur la fenêtre, il a descendu puis vient de passer en « retour » : pas bloqué. */
+test('descente vers le front puis bascule en retour juste avant la fin de la fenêtre : pas un blocage', () => {
+  const T = STUCK_WINDOW - 5;
+  assert.deepEqual(scenario(s => s < T ? 'work' : 'return', s => s < T ? 100 + Math.floor(s * 0.6) : 100 + Math.floor(T * 0.6) - Math.floor(s - T)), []);
 });
 
-test('un mob tué pendant la période : pas un blocage', () => {
-  assert.deepEqual(scenario2((m, t) => { if(t > 50) m.stats.kills = 1; }), []);
+test('immobile puis bascule en retour sans remonter : bloqué', () => {
+  assert.equal(scenario(s => s < STUCK_WINDOW - 5 ? 'work' : 'return', () => 40).length, 1);
 });
 
-test('longue descente puis passage en retour (fin de session) : pas un blocage', () => {
-  assert.deepEqual(scenario2((m, t) => { m.y = 10 + Math.floor(t * 2); if(t > 95) m.mode = 'return'; }), []);
+/* seed 39595 (3 mineurs, arbres mélangés, seau ×2), 22/10 : l'équipe combat le minotaure du donjon (1000 PV) pendant
+   plus de 90 s sans rien miner : c'est un combat, pas un blocage */
+test('long combat sur place (boss du donjon) : pas un blocage', () => {
+  assert.deepEqual(scenario('work', () => 214, s => Math.floor(s) % 10 < 8 ? 'attack' : null), []);
+});
+
+test('immobile, à peine quelques coups dans la fenêtre : bloqué', () => {
+  assert.equal(scenario('work', () => 40, s => s < 5 ? 'attack' : null).length, 1);
+});
+
+/* seeds 23757 et 31676 (3 mineurs, focus « Plus profond »), 22/10 : il attend le barbare devant le donjon, puis un
+   occultiste l'attaque (combat, étourdi) : occupé toute la fenêtre, pas bloqué */
+test('attente du barbare devant le donjon, puis combat et étourdissement : pas un blocage', () => {
+  const T = STUCK_WINDOW - 15;
+  assert.deepEqual(scenario('work', () => 228, s => s < T ? 'wait' : s < T + 8 ? 'attack' : 'stun',
+    s => s < T ? 'Attend le barbare devant le donjon' : 'Combat (occultiste)'), []);
+});
+
+test('attente ordinaire sur place (pas devant un donjon) : bloqué', () => {
+  assert.equal(scenario('work', () => 40, () => 'wait', () => 'Fin de session proche').length, 1);
 });

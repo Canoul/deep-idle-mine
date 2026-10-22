@@ -38,7 +38,7 @@ const newPassFields = () =>
 
 const VIEWS = {
   login: () => `
-    <h3>⛏ Deep Idle Mine</h3>
+    <h3>⛏ Deep Mine Idle</h3>
     <p class="mut">Connecte-toi pour retrouver ta mine.</p>
     <form data-mode="login">
       ${pseudoField()}
@@ -212,7 +212,7 @@ export function renderNavAccount(el, { account, offline }){
     el.title = 'Pas de serveur de jeu : progression gardée dans ce navigateur';
     return;
   }
-  el.innerHTML = `<span class="av">${esc(account.displayName[0]?.toUpperCase())}</span>
+  el.innerHTML = `<span class="av"><canvas width="16" height="16"></canvas></span>
     <span class="who"><b>${esc(account.displayName)}</b><small>${account.guest ? 'Invité · à sécuriser' : esc(account.displayId)}</small></span>`;
   el.title = 'Mon compte';
 }

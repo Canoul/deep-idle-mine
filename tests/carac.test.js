@@ -14,7 +14,7 @@ test('caractéristiques : base + somme des bonus des pièces', () => {
   const c = equippedStats(['Casque en chitine', 'Plastron en chitine', 'Pioche en pierre', 'Bottes en chitine', 'Jambes en chitine']);
   assert.equal(c.oxygenMax, STATS.oxygenMax + 30);
   assert.equal(c.pods, STATS.pods + 25);
-  assert.equal(c.mineSpeed, 1.1);
+  assert.equal(c.mineSpeed, 1.2);
   assert.equal(c.speed, STATS.speed + 0.5);
   assert.equal(c.climbSpeed, 2.65);                       // arrondi au centième
   assert.equal(c.damage, STATS.damage);                   // rien ne touche aux dégâts
@@ -30,8 +30,8 @@ test('en session : chaque mineur a les caractéristiques de SON stuff', () => {
   assert.equal(a.carac.oxygenMax, STATS.oxygenMax + 30);
   assert.equal(a.ox, STATS.oxygenMax + 30);               // part avec son oxygène max
   assert.equal(b.carac.pods, STATS.pods);
-  assert.equal(b.carac.mineSpeed, 1.1);
-  assert.ok(Math.abs(baseMineT(b, 2) - baseMineT(a, 2) / 1.1) < 1e-12);   // la pioche en pierre mine plus vite
+  assert.equal(b.carac.mineSpeed, 1.2);
+  assert.ok(Math.abs(baseMineT(b, 2) - baseMineT(a, 2) / 1.2) < 1e-12);   // la pioche en pierre mine plus vite
   assert.ok(mineT(G, b, 2) < mineT(G, a, 2));
 });
 

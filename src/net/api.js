@@ -42,12 +42,15 @@ export const accountApi = {
 export const gameApi = {
   info:   ()           => request('GET', '/api/game/info'),
   state:  ()           => request('GET', '/api/game/state'),
-  history: ()          => request('GET', '/api/game/history'),   // sessions terminées : seed et sa part
+  history: ()          => request('GET', '/api/game/history'),
+  judgment: ()         => request('GET', '/api/game/judgment'),  // jauges Ange / Démon (onglet Jugement)   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
   start:  (opts = {})  => request('POST', '/api/game/start', opts),
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
   focus:  focus        => request('POST', '/api/game/focus', { focus }),
+  chat:   after        => request('GET', '/api/game/chat?after=' + (after | 0)),   // messages du chat de la session
+  say:    text         => request('POST', '/api/game/chat', { text }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
   open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
   furnace: op          => request('POST', '/api/game/furnace', op),
@@ -70,6 +73,18 @@ export const instantApi = {
   join:  () => request('POST', '/api/instant/join', {}),
   quit:  () => request('POST', '/api/instant/quit', {}),
   devOpen: () => request('POST', '/api/instant/dev-open', {}),   // mode dev : ouvrir tout de suite
+};
+
+/* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
+export const socialApi = {
+  state:   ()   => request('GET', '/api/social'),
+  request: name => request('POST', '/api/social/request', { name }),   // pseudo (ou ID de compte)
+  accept:  id   => request('POST', '/api/social/accept', { id }),
+  refuse:  id   => request('POST', '/api/social/refuse', { id }),
+  remove:  id   => request('POST', '/api/social/remove', { id }),     // retirer un ami ou annuler une demande
+  invite:  id   => request('POST', '/api/social/invite', { id }),
+  join:    id   => request('POST', '/api/social/join', { id }),
+  profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
