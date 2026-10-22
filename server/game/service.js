@@ -534,7 +534,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = furnaceOp(st, inv, op, clock());
         if(r.error) fail(r.error, ['not_enough', 'slot_busy', 'not_empty', 'no_recipe', 'already_unlocked', 'locked_before'].includes(r.error) ? 409 : 400, FURNACE_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putInventoryAndFurnaces(me.id, JSON.parse(serialize(inv)), st);
-        return { inventory: publicInventory(inv), furnaces: publicFurnaces(st) };
+        return { inventory: publicInventory(inv), furnaces: publicFurnaces(st), left: r.left ?? 0 };   // left : cases restées (« Tout retirer », inventaire plein)
       });
     },
 

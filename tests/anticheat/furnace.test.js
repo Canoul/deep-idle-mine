@@ -30,7 +30,7 @@ test('four : matière conservée sur 500 suites d\'actions au hasard (quantités
       const slot = ['ore', 'fuel', 'out', 'x'][Math.floor(r() * 4)];
       const item = ['Fer', 'Or', 'Diamant', 'Charbon', 'Lingot de fer', 'Pierre'][Math.floor(r() * 6)];
       const qty = r() < 0.2 ? BAD_QTY[Math.floor(r() * BAD_QTY.length)] : 1 + Math.floor(r() * 80);
-      const action = ['load', 'load', 'unload', 'collect', 'hack'][Math.floor(r() * 5)];
+      const action = ['load', 'load', 'unload', 'collect', 'hack', 'empty', 'emptyAll'][Math.floor(r() * 7)];   // empty / emptyAll : « Tout retirer » (22/10)
       furnaceOp(st, inv, { action, furnace: Math.floor(r() * 4) - (r() < 0.1 ? 5 : 0), slot, item, qty, opId }, now);
     }
     for(const f of st.list) advance(f, now + 1e12);
@@ -60,7 +60,7 @@ test('alliage : matière conservée sur 300 suites d\'actions au hasard (modes, 
     for(let k = 0; k < 30; k++){
       const pick = a => a[Math.floor(r() * a.length)];
       const opId = ids.length && r() < 0.2 ? pick(ids) : 'o' + t + '-' + k; ids.push(opId);
-      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode']), slot:pick(['ore','a','b','fuel','out']),
+      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode','empty','emptyAll']), slot:pick(['ore','a','b','fuel','out']),
                   item:pick(Object.keys(BAG)), qty:r() < 0.2 ? pick(BAD_QTY) : 1 + Math.floor(r() * 40), mode:pick(['smelt','alloy','x']) };
       furnaceOp(st, inv, o, now);
       now += Math.floor(r() * 400_000);
