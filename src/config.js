@@ -296,8 +296,10 @@ export const XP = {
    wheelRows / keyRows = lignes parcourues par cran de molette / par appui sur une flèche (PageUp/PageDown : ×3) */
 /* Treuil (skill Logisticien, étape 2) : un puits au milieu de la mine (colonne x), de la surface jusqu'au haut de la
    dernière area débloquée. Un seau monte et descend à speedFactor × la vitesse de montée du mineur ; tout le monde
-   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). */
-export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
+   l'utilise en même temps, et on peut s'arrêter à n'importe quelle ligne (comme une échelle rapide). Plus rapide qu'une
+   échelle (et presque qu'une chute) : sinon l'IA sortait du seau pour une colonne d'échelles ou un trou à côté
+   (0,85 avant le 22/10/2026). */
+export const WINCH = { x: Math.floor(W/2), speedFactor:2 };
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
