@@ -9,8 +9,9 @@ export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 /* catégories de blocs (voir BLOCK_TYPES dans config) ; 0 = case vide, sans catégorie */
 export const typeOf = t => t ? BLOCKS[t].type : null;
 export const isOre  = t => typeOf(t)==='ore';
-/* ce que l'IA peut viser une fois découvert : minerais et treasures */
-export const isTarget = t => isOre(t) || typeOf(t)==='treasure';
+export const isResidue = t => !!t && BLOCKS[t].family==='residu';
+/* ce que l'IA peut viser une fois découvert : minerais, treasures et résidus (Jugement) */
+export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t);
 /* objet rapporté par un treasure de l'area k (Treasure T1, T2…) ; le dernier tier couvre les areas au-delà */
 export const treasureItem = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
 

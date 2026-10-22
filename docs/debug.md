@@ -1496,3 +1496,16 @@ Règles (voir CLAUDE.md) :
   (après le détecteur ; seeds 23757 et 31676 rejouées).
 - ⚠️ À voir : attente du barbare devant le donjon jusqu'à 0 d'oxygène (préexistant).
 
+### Résidus visés par l'IA au poids du treasure (Jules) — branche `jules/residus-poids`, ✅ en ligne le 22/10
+- **Demande** : poids des résidus dans le choix des cibles = celui du treasure.
+- **Avant** : résidus = terrain sans `val`, `isTarget` faux → jamais visés, minés seulement sur le chemin.
+- **Changement** : `src/config.js` : `TREASURE_VAL` (12) pour le treasure et `val` des résidus 12 et 13 ;
+  `src/sim/world.js` : `isResidue` (family 'residu'), `isTarget` les inclut ; `src/sim/ai.js` : statut « Va chercher
+  un résidu ». Comme le treasure : visés une fois découverts (`G.seen`), la boussole ne les signale pas, `targetVal`
+  les garde en focus « Uniquement » (pas des minerais). Toujours `terrain` : pas de Fortune, pas de shiny, hors
+  déblocage et hors focus minerai. Scripts `weights` / `stat-values` : inchangés (filtre type 'ore').
+- **Tests** : `tests/judgment.test.js` +3 (poids = treasure, y compris en « Uniquement » ; visé face à un charbon plus
+  proche ; non découvert = ignoré ; les deux premiers échouaient avant). judgment, treasure, focus, world : ✅.
+- **Simulation** (sonde, 5 seeds à 3, skills mixed) : résidus au coffre 4,2 → 10,8 / session, valeur minerais 1 502 →
+  1 457 (−3 %), minerai 1 037 → 1 042, 0 blocage (détecteur de `simulate`, mêmes seeds que `--count 5`) ✅.
+
