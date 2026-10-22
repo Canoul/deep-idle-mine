@@ -149,7 +149,8 @@ test('rejoindre un ami : son groupe (créé s\'il n\'en a pas, dont il est chef)
   assert.ok(!friend(await social.state(D), C).canJoin, 'groupe complet');
   await assert.rejects(social.join(D, C.id), { code:'party_full' });
   await party.leave(B);
-  await party.launch(C, {});                            // C (chef) lance pour lui et A
+  await party.ready(A, true);
+  await party.launch(C, {});                            // C (chef) lance pour lui et A (prêt)
   await assert.rejects(social.join(D, C.id), { code:'friend_in_session' });
   assert.ok(await game.activeSessionId(A.id));
 });

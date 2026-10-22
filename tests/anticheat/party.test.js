@@ -42,6 +42,7 @@ test('inviter ne fait pas entrer : seul celui qui accepte joue (et reçoit une p
 test('partir juste avant la fin : aucune part, même si le départ tombe sur le dernier tick', async () => {
   const { game, party, store, advance } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.ready(B, true);
   const { session } = await party.launch(A, {});
   advance(realDurationMs() - 500);
   await game.leave(B, {});

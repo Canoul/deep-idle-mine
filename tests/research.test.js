@@ -86,6 +86,6 @@ test('recycle : demande rejouée → même nombre de parts, un seul blueprint d�
 test('table de recherche : description du blueprint obtenu (recette débloquée et ses effets)', async () => {
   const { bpInfoHtml } = await import('../src/ui/research.js');
   const h = bpInfoHtml('Pioche en fer BP');
-  assert.match(h, /Débloque la recette/); assert.match(h, /Pioche en fer/); assert.match(h, /Vitesse de minage \+0,2/);
+  assert.match(h, /Débloque la recette/); assert.match(h, /Pioche en fer/); assert.match(h, /Vitesse de minage \+0,4/);
   assert.match(bpInfoHtml('Inconnu BP'), /aucune recette/);
 });

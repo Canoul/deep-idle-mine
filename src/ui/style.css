@@ -183,6 +183,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .pslot small{color:var(--mut);font-size:var(--fs-s)}
 .pslot small.spec{color:var(--acc-lt)}
 .pslot .x{position:absolute;top:0;right:0;min-height:0;width:calc(12*var(--u));height:calc(12*var(--u));padding:0;border-width:var(--u)}
+.pslot .x.promote{right:calc(13*var(--u))}
 .pslot.away{opacity:.6}
 .pslot.invited{color:var(--txt)}
 .lobbyActions{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));align-items:center}

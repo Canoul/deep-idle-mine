@@ -6,7 +6,7 @@
    - le premier point dépensé choisit l'arbre ; les autres arbres sont bloqués jusqu'au reset ;
    - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
-import { SKILLS } from '../config.js';
+import { SKILLS, STUFF } from '../config.js';
 
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
 /* nœuds de l'étage d'avant (ceux qui débloquent ce nœud) ; vide pour l'étage 1 */
@@ -66,11 +66,18 @@ export function sanitizeSkills(raw, points = Infinity){
 
 /* skills qui multiplient une stat du mineur (le reste agit pendant la partie : oxygène, vitesse après un minerai…) */
 export const SKILL_STATS = { mineSpeed:'mine_speed', damage:'damage' };
-/* applique ces multiplicateurs à des caractéristiques { stat: valeur } (déjà avec le stuff) ; renvoie une copie.
-   Même calcul en session (src/shared/game.js) et dans l'onglet Stuff. */
+/* rang d'un nœud retrouvé depuis son effet (rang × per) */
+const rankFrom = (n, effects) => Math.round((effects?.[n.id] || 0) / n.per);
+/* applique ces multiplicateurs, puis les points ajoutés (adds des nœuds : ténacité…), à des caractéristiques
+   { stat: valeur } (déjà avec le stuff) ; renvoie une copie. Même calcul en session (src/shared/game.js) et dans
+   l'onglet Stuff. */
 export function withSkillStats(carac, effects){
   const out = { ...carac };
   for(const [stat, node] of Object.entries(SKILL_STATS)) if(effects?.[node]) out[stat] = carac[stat] * (1 + effects[node]);
+  for(const n of Object.values(NODES)) if(n.adds){
+    const r = rankFrom(n, effects);
+    if(r) for(const [stat, v] of Object.entries(n.adds)) out[stat] = (out[stat] || 0) + r * v;
+  }
   return out;
 }
 
@@ -85,5 +92,8 @@ export function skillEffects(st){
 /* texte d'un nœud avec la valeur au rang r (au moins 1, pour montrer ce que donne le premier rang) */
 export function nodeText(id, r){
   const n = NODES[id], v = Math.max(1, r) * n.per;
-  return n.desc.replace('{v}', n.per === 1 ? '' : `${String(Math.round(v * 1000) / 10).replace('.', ',')} %`);
+  let text = n.desc.replace('{v}', n.per === 1 ? '' : `${String(Math.round(v * 1000) / 10).replace('.', ',')} %`);
+  for(const [stat, p] of Object.entries(n.adds || {}))
+    text = text.replace(`{${stat}}`, `${String(Math.max(1, r) * p).replace('.', ',')}${STUFF.statUnits?.[stat] ?? ''}`);
+  return text;
 }

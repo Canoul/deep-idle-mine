@@ -122,7 +122,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 - Pour choisir où creuser, l'IA compte d'avance ce coût de retour : une case creusée vers le bas = une échelle à poser plus tard.
 - **Vitesse de montée** : stat à part (2,25 blocs/s *(provisoire)*, soit ×0,75 de la marche), utilisée sur échelle dans les deux sens. Elle s'améliore indépendamment de la vitesse de marche. Conséquence voulue : pour remonter, l'IA choisit un chemin au **temps** le plus court et préfère marcher horizontalement vers une échelle existante plutôt que de remonter tout droit en posant de nouvelles échelles.
 - **Creuser vers le bas ou vers le haut coûte plus cher qu'horizontalement** : chaque case verticale impose une échelle (2 s de pose) et se parcourt plus lentement (vitesse de montée), à l'aller comme au retour. L'IA compte ce coût (pose + trajets futurs) quand elle choisit un minerai : elle préfère donc les galeries.
-- **Passerelle** : un bloc que le mineur pose (1 s *(provisoire)*) pour **combler un trou** et le traverser horizontalement. C'est plus rentable qu'une chute suivie d'échelles pour remonter. **Il ne peut la poser que s'il tient lui-même** (sur un bloc ou sur une échelle), jamais dans le vide ; depuis une échelle, il peut en poser à gauche ou à droite. Plus généralement, le mineur ne peut agir que depuis une case où il tient : l'IA ne prévoit jamais de s'arrêter dans le vide. Le mineur en porte 10 *(provisoire)*, rechargées en surface ; la passerelle est cassable et ne rapporte rien. *(À définir : faut-il un coût en ressource ?)*
+- **Passerelle** : un bloc que le mineur pose (1 s *(provisoire)*) pour **combler un trou** et le traverser horizontalement. C'est plus rentable qu'une chute suivie d'échelles pour remonter. **Il ne peut la poser que s'il tient lui-même** (sur un bloc ou sur une échelle), jamais dans le vide ; depuis une échelle, il peut en poser à gauche ou à droite. Plus généralement, le mineur ne peut agir que depuis une case où il tient : l'IA ne prévoit jamais de s'arrêter dans le vide. Les passerelles sont **illimitées** (décision du 21/10) ; la passerelle est cassable et ne rapporte rien. *(À définir : faut-il un coût en ressource ?)*
 - **Montée** : uniquement par échelle. Pour creuser vers le haut, il pose une échelle avant de miner le bloc du dessus.
 - Les « fondations » (boucher un trou) sont prévues mais pas encore implémentées.
 
@@ -166,6 +166,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Vitesse d'attaque | Rythme des coups contre un mob, **en %** (100 % = un coup toutes les 0,8 s, 200 % = deux fois plus vite ; ralentie dans le noir comme le reste) | 100 % *(provisoire)* |
 | Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
+| Ténacité *(21/10)* | **Chance, en %, d'ignorer un sort de mob qui le vise** : le vol du gobelin, la canalisation de l'occultiste. **Un tirage à chaque sort** (chaque vol, chaque canalisation). Un sort ignoré est perdu (l'occultiste s'est téléporté et attend son prochain sort). Vient du skill Force brute (Barbare) | 0 % *(provisoire)* |
 
 **Stats d'amélioration** *(21/10/2026, onglet Amélioration ; 0 de base, elles ne viennent que des lignes tirées à l'identification)* :
 
@@ -194,7 +195,7 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
 |---|---|---|---|
 | **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend **1 d'oxygène** (tout court, pas un % de l'oxygène max) | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
 | **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | **deux cases côte à côte** : 0/1 **Échelle de 2** (échelle de 2 de haut au lieu de 1, si la case du dessus est vide) · 0/1 **Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
-| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; un occultiste provoqué ne lance plus son sort | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
+| **Barbare** | 0/3 : dégâts +5 % **et ténacité +5 %** *(21/10)* | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; chaque coup sur un occultiste qui canalise **interrompt** la canalisation, mais il peut en relancer une (sur le barbare : en 1 contre 1, le barbare peut être étourdi, sauf si sa ténacité joue) *(changé le 21/10)* | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
 
 - **Affichage** *(décision ferme)* : dans l'onglet Skills, chaque arbre est dessiné comme un **arbre de compétences de RPG** : une case ronde (icône, rang « 0/3 », nom) par skill, reliée par des **lignes** aux cases de l'étage d'avant. La ligne s'allume (dorée) quand la case du dessus est au max ; une case qu'on peut apprendre brille et porte un « + » (clic = un rang) ; une case verrouillée est grisée. Survoler (ou toucher) une case affiche sa description, son rang et ce qui la bloque.
 - Noms des cases : Mineur = Pioche aiguisée, Second souffle, Ruée ; Logisticien = Bâtisseur, Échelle de 2, Treuil, Navette ; Barbare = Force brute, Provocation, Pillage.
@@ -205,6 +206,7 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
   - **Pose** : quand une nouvelle area est débloquée, le logisticien qui a le skill **Treuil** (le premier s'il y en a plusieurs) arrête ce qu'il fait, remonte à la surface (dépôt, oxygène), va **au milieu de la mine** (x = 25) et creuse tout droit vers le bas. Arrivé au **haut de la nouvelle area**, il pose **tout le treuil d'un coup**, de la surface jusque-là, et **retire les échelles** qui se trouvaient dans le puits (le treuil occupe toute la colonne ; plus personne n'y pose d'échelle, même la 2e case d'une échelle de 2). Pendant ce chantier il n'est **jamais étourdi** et peut tomber de plus de 3 cases dans son puits. S'il doit remonter (oxygène, pods, torches, fin de session), il reprend le chantier ensuite.
   - **Prolongement** : à l'area suivante, il redescend par le treuil et prolonge le **même puits**.
   - **Utilisation** : tous les mineurs, en même temps, sans attente, **dans les deux sens**, à **0,85 × leur vitesse de montée** (stuff compris). *(22/10/2026 : ×2 essayé quelques heures pour que l'IA ne sorte plus du seau, refusé avec Geoffrey : la vitesse ne change pas.)* On peut s'arrêter à **n'importe quelle ligne** du puits pour miner à gauche ou à droite. Les itinéraires de l'IA le prennent en compte (pas d'échelle à poser, chemin tout droit).
+  - **Départ du coffre** *(21/10, élargi le 22/10)* : s'il existe une descente (treuil ou puits déjà creusé) qui vaut mieux qu'un puits neuf, le mineur la prend directement au lieu de rejoindre d'abord sa colonne (voir « descente commune », §multijoueur). Il choisit le trajet le plus rapide : le seau (0,85×) étant plus lent qu'une échelle déjà posée, un mineur qui a ses échelles jusqu'à son chantier peut les préférer.
   - Repère (simulation, 3 logisticiens complets × 5 sessions) : profondeur 207 (186 sans skills), ≈ 15 min par mineur et par session dans le seau. À noter : le seau (0,85×) est plus lent qu'une échelle déjà posée ; il fait gagner du temps parce qu'il évite les échelles à poser et les détours. L'IA peut donc en sortir pour une colonne d'échelles ou un trou à côté.
 - Provocation : un mineur taclé par ce mob est libéré tout de suite et reprend son travail (même s'il est réglé sur « Ignorer les mobs »).
 - **Échelles au retour** *(décision ferme)* : quand plusieurs mineurs remontent au même endroit, c'est le **logisticien** qui pose les échelles. Un autre mineur qui devrait en poser une attend s'il y a un logisticien qui remonte à moins de 5 cases, en dessous de lui ou à sa hauteur ; au-delà de 4 s d'attente, il la pose lui-même (jamais bloqué).
@@ -231,7 +233,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 
 | Stat | Base | Prix d'un point | Exemple |
 |---|---|---|---|
-| Vitesse de minage | 1 | 1 300 x | +0,2 = 260 x (Pioche en fer) |
+| Vitesse de minage | 1 | 1 300 x | +0,4 = 520 x (Pioche en fer) |
 | Vitesse (marche) | 3 | 240 x | +0,6 = 144 x (Bottes en fer) |
 | Vitesse de montée | 2,25 | 250 x | +0,6 = 150 x (Jambes en fer) |
 | Pods | 200 | 6 x *(prix « comme frein »)* | +33 = 198 x (Plastron en fer) |
@@ -240,8 +242,8 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
-| Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Ceinture, Cape de Naingui |
-| Vision, boussole, passerelles, torches | – | ≈ 0 (effet indirect ou trop faible) | – |
+| Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Cape de Naingui |
+| Vision, boussole, torches (passerelles : illimitées) | – | ≈ 0 (effet indirect ou trop faible) | – |
 
 **Stats d'amélioration** *(21/10/2026)* :
 
@@ -311,13 +313,13 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
 - Types :
   - **Bestioles** : se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien. Butin : **chitine** (1 à 2, poids 1).
   - **Gobelins** : même physique et même tacle que les bestioles.
-    - **Vol** : toutes les **2 secondes** de tacle, le gobelin vole **un minerai** (bloc de type ore : charbon, fer, or, diamant) tiré au hasard dans l'inventaire du mineur taclé, chaque unité ayant la même chance. Le minerai volé est **perdu**. Il ne vole ni terre, ni pierre, ni butin de mob, ni shiny, ni Treasure TX.
+    - **Vol** : toutes les **2 secondes** de tacle, le gobelin vole **un minerai** (bloc de type ore : charbon, fer, or, diamant) tiré au hasard dans l'inventaire du mineur taclé, chaque unité ayant la même chance. Le minerai volé est **perdu**. Il ne vole ni terre, ni pierre, ni butin de mob, ni shiny, ni Treasure TX. Chaque vol peut être ignoré par la **ténacité** du mineur *(21/10)*.
     - **Butin** : **peau de gobelin** (1 à 2, poids 1) et **chitine** (1).
     - Intention : un mineur qui tue vite perd peu ; c'est une raison concrète d'améliorer ses dégâts pour les areas profondes.
   - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à 2,3 cases ou quand le mineur essaie de les miner. **Un mimic se combat, il ne se mine pas** : dévoilé, sa case n'est plus un minerai pour l'IA (ni cible, ni bloc à creuser). Il **tacle** le mineur à côté de lui. Butin : 3 minerais du type imité (ni shiny ni Fortune).
-  - **Occultiste** *(21/10)* : mage noir humain terré sous terre, à partir de l'**area 4**. Même physique et même tacle que les bestioles. **Sort** : prêt toutes les **15 s** (la première fois 15 s après son apparition). Quand il est prêt, l'occultiste **se téléporte à 3 cases** (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint depuis la cible sans miner (à défaut à 4, puis à 2 ; jamais au contact : il ne lance pas son sort au corps à corps), puis **canalise** un rayon de lumière noire : la cible est **étourdie 5 s** (elle ne fait plus rien, même pas frapper). Pendant la canalisation, il ne bouge pas et ne tacle pas. **Provoqué** (Barbare), il arrête tout de suite sa canalisation (la cible est libérée) et ne lance plus jamais son sort. Butin : **Tissu sombre** (1 à 3). XP 15 *(provisoire)*.
+  - **Occultiste** *(21/10)* : mage noir humain terré sous terre, à partir de l'**area 4**. Même physique et même tacle que les bestioles. **Sort** : prêt toutes les **15 s** (la première fois 15 s après son apparition). Quand il est prêt, l'occultiste **se téléporte à 3 cases** (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint depuis la cible sans miner (à défaut à 4, puis à 2 ; jamais au contact : il ne lance pas son sort au corps à corps), puis **canalise** un rayon de lumière noire : la cible est **étourdie 5 s** (elle ne fait plus rien, même pas frapper). Pendant la canalisation, il ne bouge pas et ne tacle pas. **Frappé par un barbare qui a la Provocation**, il arrête tout de suite sa canalisation (la cible est libérée) ; il peut relancer son sort quand il est prêt (sur le barbare, sa seule cible) *(21/10 ; avant : il ne lançait plus jamais son sort)*. La **ténacité** de la cible peut ignorer la canalisation. Butin : **Tissu sombre** (1 à 3). XP 15 *(provisoire)*.
 - **Donjon** *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `DUNGEON` en config)* :
-  - **Où** : **un donjon en area 4 et un en area 5, à chaque partie** (100 %, décision du 22/10/2026 ; avant : area 5 seulement, 20 %). Tirage à part de la seed : le reste de l'area ne change pas. Un carré de **10 × 10** : murs en **briques de donjon** (pierre taillée violet sombre) **incassables**, intérieur vide, **une seule entrée** (une brique manquante) dans le mur de gauche ou de droite, sur l'une des 3 lignes du bas de l'intérieur (on y entre en marchant, chute de 2 cases au plus). Jamais à moins de 2 cases d'un bord de la mine ou d'une limite d'area (l'entrée ne donne jamais sur un bord), jamais sur la colonne du treuil ± 5. Les blocs qu'il remplace sortent des comptes de l'area (déblocage, focus).
+  - **Où** : **areas 4 et 5**, **33 %** de chance dans chacune, tirées indépendamment (décision du 22/10/2026, Geoffrey ; avant : 100 % en areas 4 et 5 quelques heures, encore avant : area 5 seulement, 20 %). Tirage à part de la seed : le reste de l'area ne change pas ; une partie peut avoir deux donjons. Un carré de **10 × 10** : murs en **briques de donjon** (pierre taillée violet sombre) **incassables**, intérieur vide, **une seule entrée** (une brique manquante) dans le mur de gauche ou de droite, sur l'une des 3 lignes du bas de l'intérieur (on y entre en marchant, chute de 2 cases au plus). Jamais à moins de 2 cases d'un bord de la mine ou d'une limite d'area (l'entrée ne donne jamais sur un bord), jamais sur la colonne du treuil ± 5. Les blocs qu'il remplace sortent des comptes de l'area (déblocage, focus).
   - **Minotaure** (boss) : mi-homme mi-taureau, debout. **1 000 PV**, ne fait que **tacler** (rien de spécial), **100 XP**. **Enfermé** : il ne sort jamais de sa salle et ne vise que les mineurs qui y sont (intérieur ou entrée). Aucun autre mob n'apparaît dans un donjon.
   - **Butin** : **1 à 3 Cristaux de pleine lune** (rareté rare, Pillage compris), **pas partagés** : comme les Treasure TX, chaque joueur présent à la fin en reçoit la quantité entière.
   - **Déclencheur** : un mineur **découvre** un bloc de la structure (mur, entrée ou intérieur). Avant, personne ne sait qu'il est là.
@@ -375,11 +377,12 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 - **Inviter des joueurs** ouvre un panneau avec le **code du groupe** (6 caractères, ex. `K7Q4P2`) et un **lien** à envoyer (`https://deepmineidle.fr/#rejoindre=K7Q4P2`) : l'ami clique, se connecte (invité ou compte) et prend une place. On peut aussi taper un code dans « Tu as un code de groupe ? ».
 - **Inviter par ID** : on tape l'ID de compte d'un ami (`7K3Q-9XHP`) ; il voit l'invitation en haut de son lobby (**Rejoindre** / **Refuser**). Inviter ne fait pas entrer : seul celui qui accepte joue. Une invitation dure 1 h.
 - Places : le **chef** (celui qui a créé le groupe, ★) puis les membres, les invités en attente, les places libres (3 au total). Un membre absent (onglet fermé) est marqué « absent », puis retiré après 5 min sans nouvelles.
-- **Seul le chef lance** (« Lancer à N ») ; les autres voient « En attente du chef… ». La session est créée pour tous les membres présents dans le groupe ; le chef est le premier mineur (à gauche), puis les autres dans l'ordre d'arrivée. Chacun garde ses propres préférences.
+- **Prêt** *(21/10/2026)* : chaque membre (sauf le chef : lancer = prêt) clique « ✋ Je suis prêt » (et peut annuler). Les places affichent « ✔ prêt » / « pas prêt ». **Le chef ne peut lancer que si tous les autres sont prêts** (il voit « ⏳ Pas prêt : Max, Lou »). Au lancement, et quand quelqu'un rejoint le groupe, **tout le monde repasse « pas prêt »** : à la fin d'une session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
+- **Seul le chef lance** (« Lancer à N »). La session est créée pour tous les membres présents dans le groupe ; le chef est le premier mineur (à gauche), puis les autres dans l'ordre d'arrivée. Chacun garde ses propres préférences.
 - **Apparence des mineurs** : chaque mineur porte le **pseudo** de son joueur, affiché en petit au-dessus de sa tête (en doré pour celui que la caméra suit). Tous ont le **même corps** ; ce qui les distingue, c'est leur **stuff équipé**, dessiné sur eux (ex. chitine = armure rouge sur les parties équipées). Quand il mine ou frappe, le mineur sort sa **pioche** : en bois (marron) par défaut, en pierre (grise) s'il a la pioche en pierre. L'équipement visible est celui porté **au lancement** de la session. Les skins sont décrits dans `src/skins.js`, les textures dans `textures/skins/`.
-- Le chef peut **retirer** un membre ou annuler une invitation (×). **Quitter le groupe** = on se retrouve seul. Si le chef part, le membre suivant devient chef.
+- Le chef peut **retirer** un membre ou annuler une invitation (×). **Quitter le groupe** = on se retrouve seul. Si le chef part, le membre suivant devient chef. Le chef peut aussi **donner sa place** à un membre (★ sur sa place, avec confirmation) ; l'ancien chef devient un membre comme les autres et doit se dire prêt *(21/10/2026)*.
 - Pendant la session, tout le monde voit **la même partie** : il n'y en a qu'une, elle tourne sur le serveur. Un joueur qui quitte part **tout de suite** : son mineur disparaît de la partie, chez tous. Partir dans les toutes dernières secondes ne rapporte rien non plus.
-- **Le groupe reste après la session** *(décision du créateur, 21/10/2026)* : à la fin, chacun revient au lobby **dans le même groupe**, et le chef peut relancer tout de suite, sans réinviter. Un joueur qui ne veut pas enchaîner **quitte le groupe** (bouton « Quitter le groupe »).
+- **Le groupe reste après la session** *(décision du créateur, 21/10/2026)* : à la fin, chacun revient au lobby **dans le même groupe**, et le chef peut relancer sans réinviter, dès que les autres sont prêts. Un joueur qui ne veut pas enchaîner **quitte le groupe** (bouton « Quitter le groupe »).
   - Pendant la session, personne n'est retiré pour absence (le navigateur ne parle plus au groupe pendant la partie) : le délai de 5 min repart de la fin de la session. Le bilan compte comme une présence.
   - Un membre encore dans la session (le chef a quitté tôt, par exemple) est affiché « en session » ; le chef voit « ⏳ Le groupe finit sa session… » et ne peut pas relancer avant la fin.
   - Si le chef relance pendant qu'un membre lit encore son bilan, ce membre passe directement à la nouvelle session (son mineur y joue déjà).
@@ -460,7 +463,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Bonus |
   |---|---|---|
-  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,1 |
+  | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,2 *(×2 le 21/10)* |
   | Épée en pierre | 15 lingots de fer | Dégâts 8 (remplace les mains nues : 5 ; +3, moitié de l'épée en fer, ≈ 120 x) |
   | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
   | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +25 |
@@ -471,13 +474,13 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,2 |
+  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,4 *(×2 le 21/10)* |
   | Épée en fer | 10 Tainted iron | Dégâts 11 (remplace les mains nues : 5) |
   | Casque en fer | 5 Tainted iron | Oxygène +38 |
   | Plastron en fer | 8 Tainted iron | Pods +33 |
   | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +0,6 |
   | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
-  | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Découverte +1 |
+  | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
 
@@ -498,7 +501,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
-- **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,1 »).
+- **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
@@ -664,8 +667,8 @@ Pas d'adresse e-mail. Détails techniques : `docs/comptes.md`.
 - **Coordination des IA (réservation)** : chaque mineur reste indépendant, mais ne vise pas un minerai déjà visé ou en cours de minage par un autre, évite une ligne de galerie qu'un autre creuse, et ne creuse pas dans un puits qu'un autre creuse sous lui (il se décale d'au moins 3 colonnes). En cas de conflit, le plus petit numéro garde la cible.
 - **Répartition dans la mine** *(valeurs provisoires)* : pour ne pas se marcher dessus,
   - **filon réservé** : un minerai à moins de 4 blocs de la cible d'un autre est exclu ; un minerai proche d'un autre mineur vaut moins ;
-  - **secteur de préférence** : chacun a un tiers de la largeur (1er mineur à gauche, 2e au centre, 3e à droite) ; un minerai hors secteur vaut moins, et il ne « descend par l'existant » que dans son secteur. Préférence douce : il en sort si c'est plus rentable ;
-  - **départ de son puits** : après le coffre, chacun rejoint la colonne au centre de son secteur avant de redescendre ;
+  - **secteur de préférence** : chacun a un tiers de la largeur (1er mineur à gauche, 2e au centre, 3e à droite) ; un minerai hors secteur vaut moins. Préférence douce : il en sort si c'est plus rentable ;
+  - **descente commune** : après le coffre, s'il existe déjà un chemin vers le fond (puits creusé, treuil) qui vaut mieux qu'un puits neuf, il le prend, même hors de son secteur (on se répartit au fond, pas pendant la descente) ; sinon il rejoint la colonne au centre de son secteur pour ouvrir son puits ;
   - pas de torche en double quand deux mineurs arrivent ensemble dans le noir.
 - Les retours peuvent partager la même grande échelle (c'est le chemin le plus rapide) ; à l'écran, les mineurs sur la même case sont légèrement décalés.
 - **Fin de session** (aussi en solo) : un mineur ne repart de la surface que s'il reste le temps de l'aller, de 30 s de travail et du retour (estimés d'après la durée de son dernier retour).

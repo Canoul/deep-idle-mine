@@ -15,13 +15,13 @@ let n = 0; const id = () => 'op-bp-' + (++n);
 
 /* les objets demandés par le créateur : effet, recette, blueprint */
 const NEW = {
-  'Pioche en fer':   { stats:{ mineSpeed:0.2 },  cost:{ 'Tainted iron':20 } },
+  'Pioche en fer':   { stats:{ mineSpeed:0.4 },  cost:{ 'Tainted iron':20 } },
   'Épée en fer':     { set:{ damage:11 },        cost:{ 'Tainted iron':10 } },
   'Casque en fer':   { stats:{ oxygenMax:38 },   cost:{ 'Tainted iron':5 } },
   'Plastron en fer': { stats:{ pods:33 },        cost:{ 'Tainted iron':8 } },
   'Jambes en fer':   { stats:{ climbSpeed:0.6 }, cost:{ 'Tainted iron':7 } },
   'Bottes en fer':   { stats:{ speed:0.6 },      cost:{ 'Tainted iron':4, 'Peau de gobelin':5, 'Lingot d\'or':1 } },
-  'Ceinture en peau de gobelin': { stats:{ discoverMax:1 }, cost:{ 'Peau de gobelin':20, 'Lingot d\'or':20 } },
+  'Ceinture en peau de gobelin': { stats:{ torches:10 }, cost:{ 'Peau de gobelin':20, 'Lingot d\'or':20 } },
 };
 
 test('les 7 pièces : effets, recettes et blueprint du Treasure T1', () => {
@@ -85,10 +85,10 @@ test('sauvegarde trafiquée : seules des recettes à blueprint existantes, une f
 test('effets : l\'épée remplace les mains nues (11 au lieu de 5), les autres s\'ajoutent', () => {
   const c = equippedStats(['Épée en fer', 'Pioche en fer', 'Casque en fer', 'Plastron en fer', 'Jambes en fer', 'Bottes en fer', 'Ceinture en peau de gobelin']);
   assert.equal(c.damage, 11);
-  assert.equal(c.mineSpeed, 1.2); assert.equal(c.oxygenMax, STATS.oxygenMax + 38); assert.equal(c.pods, STATS.pods + 33);
-  assert.equal(c.climbSpeed, 2.85); assert.equal(c.speed, 3.6); assert.equal(c.discoverMax, STATS.discoverMax + 1);
+  assert.equal(c.mineSpeed, 1.4); assert.equal(c.oxygenMax, STATS.oxygenMax + 38); assert.equal(c.pods, STATS.pods + 33);
+  assert.equal(c.climbSpeed, 2.85); assert.equal(c.speed, 3.6); assert.equal(c.discoverMax, STATS.discoverMax); assert.equal(c.torches, STATS.torches + 10);
   assert.deepEqual(statLines('Épée en fer'), ['Dégâts 11']);
-  assert.deepEqual(statLines('Ceinture en peau de gobelin'), ['Découverte +1']);
+  assert.deepEqual(statLines('Ceinture en peau de gobelin'), ['Torches +10']);
 });
 
 test('apparence : armure en fer, ceinture, pioche en fer, épée sortie seulement pour frapper', () => {

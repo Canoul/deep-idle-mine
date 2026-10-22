@@ -195,7 +195,8 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
-  bridges:    'Passerelles qu\'il emporte pour traverser les trous.',
+  bridges:    'Passerelles pour traverser les trous (illimitées).',
+  tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste (un tirage à chaque sort).",
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
   crit:       'Chance qu\'un coup contre un mob fasse le double de dégâts.',
@@ -203,7 +204,7 @@ const STAT_HELP = {
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
   looting:    'Butin des mobs en plus, en % (comme le skill Pillage).',
 };
-const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', discoverMax:' blocs',
+const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', discoverMax:' blocs',
   mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };
 export function statRows(){
@@ -211,6 +212,7 @@ export function statRows(){
   for(const t of SKILLS.trees) for(const n of t.nodes){
     const key = { mine_speed:'mineSpeed', damage:'damage', ore_rush:'speed', travel_rush:'speed' }[n.id];
     if(key) (skillBoost[key] ||= []).push(`${n.name} (${t.label})`);
+    for(const k of Object.keys(n.adds || {})) (skillBoost[k] ||= []).push(`${n.name} (${t.label})`);
   }
   const keys = [...STUFF.shownStats, ...Object.keys(STATS).filter(k => !STUFF.shownStats.includes(k))];
   return keys.map(k => ({ key: k, label: STUFF.statLabels[k] ?? (k === 'torchRadius' ? 'Rayon des torches' : k), base: STATS[k],

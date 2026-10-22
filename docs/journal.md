@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
+- **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
+  (ou le treuil) au lieu de retourner à sa colonne pour recreuser un puits depuis la surface. Le mineur de droite
+  (3ᵉ place, loin du coffre) n'est plus isolé au début de chaque descente ; on se répartit une fois au fond.
+- **Décisions** (Geoffrey) : option « C » : plus de limite de secteur pour descendre par l'existant. À la mise en
+  ligne (fusion avec main) : on garde « Plus profond » de Jules plutôt que « travailler dans la dernière area » ;
+  donjons à **33 %** en areas 4 et 5 (au lieu de 100 %).
+- **À suivre** : regarder une vraie partie à 3. Au tout premier départ, aucun puits n'existe : chacun creuse le sien
+  (ça ne change pas). Un mineur en priorité « Minerais » suit toujours les filons proches de la surface avant de
+  descendre.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Pièges dans la mine
 - **Pour le joueur** : à partir de l'area 1, une area peut cacher 0, 1 ou 2 **pièges** : une petite salle vide de
   5 × 3 entourée de roche normale (on ne la voit pas, seul un coin reste noir). Le mineur qui mine un bloc de la paroi
@@ -344,6 +356,30 @@ Modèle d'entrée :
 - **À suivre** : le wiki (`wiki.html`) garde l'ancien look ; la mine instantanée a été vérifiée seulement à
   l'affichage du lobby ; retours des joueurs sur la taille de l'interface.
 - **État** : ✅ en ligne le 21/10
+## 21/10/2026 — Geoffrey — Retours lobby, IA, donjon, ténacité, équilibrage
+- **Pour le joueur** :
+  - concasseur plus généreux (gemmes ×2 à ×3, treasures ×7 à ×10) ; *remplacé par les chances décidées le 22/10* ;
+  - pioches deux fois plus efficaces (pierre +0,2, fer +0,4 de vitesse de minage) ;
+  - Ceinture en peau de gobelin : +10 torches (au lieu de Découverte +1) ;
+  - passerelles illimitées.
+  - le donjon peut aussi apparaître en area 4 (20 %, tiré à part de l'area 5 : une partie peut en avoir deux) ;
+    *à la mise en ligne : 33 % en areas 4 et 5*.
+  - nouvelle stat **Ténacité** : chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste) ;
+    Force brute (Barbare) donne +5 % de dégâts **et** +5 % de ténacité par rang ;
+  - Provocation : frapper un occultiste qui canalise l'interrompt, mais il peut relancer son sort (sur le barbare).
+  - ~~IA : le mineur travaille dans la dernière area débloquée~~ : *pas mis en ligne*, « Plus profond » de Jules
+    (déjà en ligne) fait la même chose ; on garde le sien (décision Geoffrey, 22/10).
+  - Treuil (seed 1250570735) : en repartant du coffre, un mineur allait d'abord à « sa » colonne, tombait parfois dans
+    un trou sans échelle près de la surface et creusait un nouveau puits au lieu de prendre le treuil. Corrigé : quand le
+    treuil existe, il prend directement la descente existante. Le treuil reste plus lent qu'une échelle déjà posée
+    (règle actuelle) : un mineur qui a ses échelles jusqu'à son chantier peut encore les préférer.
+  - Lobby : bouton « ✋ Je suis prêt » pour les membres ; le chef ne lance que si tout le monde est prêt, et tout le
+    monde repasse « pas prêt » à chaque lancement (pas de relance sans l'accord des autres) ; le chef peut donner sa
+    place (★).
+- **Décisions** : le chef n'a pas besoin de cocher « Prêt » (lancer = prêt) ; la ténacité se tire à chaque sort ;
+  la ceinture garde son nom.
+- **À suivre** : le bouton « Prêt » n'a pas encore été essayé à deux comptes dans le navigateur.
+- **État** : ✅ en ligne le 22/10
 
 ## 21/10/2026 — Jules — Opera GX : le jeu démarre de nouveau
 - **Pour le joueur** : sur Opera GX (et avec certains bloqueurs de pubs), le jeu restait bloqué sur un lobby vide.
@@ -451,6 +487,7 @@ Modèle d'entrée :
 - **À suivre** : la Mine instantanée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
   conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
 - **État** : ✅ en ligne le 21/10
+
 
 ---
 

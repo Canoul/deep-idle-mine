@@ -50,6 +50,10 @@ const veinTaken = (G,m,x,y) => others(G,m).some(o=>near(o.target,x,y));
 const torchByOther = (G,m) => others(G,m).some(o=>o.action && o.action.type==='torch' && Math.abs(o.x-m.x)+Math.abs(o.y-m.y)<=2);
 /* éloignement relatif hors de son secteur (0 dans le secteur ; 1 = une demi-largeur de secteur en dehors…) */
 const outOfSector = (m,x) => m.homeX==null ? 0 : Math.max(0, Math.abs(x-m.homeX)-CFG.sectorHalf)/CFG.sectorHalf;
+/* fond visé par « descendre par l'existant » : pas là où un autre travaille déjà. Pas de limite de secteur : on se
+   répartit au fond, pas pendant la descente (seed 1924731460 : le mineur de droite recreusait un puits depuis la
+   surface pendant que les deux autres reprenaient le leur) */
+const downAvoid = (G,m) => (x,y) => crowdAt(G,m,x,y)>0;
 
 /* Fond de l'area verrouillé (ou area du dessous épuisée pour le focus) : creuser des galeries horizontales
    (une ligne sur 3) dans l'area k pour trouver les minerais manquants. */
@@ -150,9 +154,16 @@ function decideSurface(G,m){
   decideDeparture(G,m);
 }
 
-/* en équipe : chacun rejoint sa colonne de départ avant de redescendre (sinon tous repartent du coffre en file) */
+/* en équipe : au départ du coffre, il reprend une descente existante si elle vaut le coup, sinon il rejoint sa colonne */
 function decideDeparture(G,m){
-  if(m.homeX!=null && m.x!==m.homeX){
+  // une descente par l'existant vaut le coup depuis le coffre (treuil ou puits déjà creusé) : il la prend tout de suite,
+  // sans passer par sa colonne (seed 1250570735 : en rejoignant sa colonne, il tombait dans un trou sans échelle et
+  // creusait un nouveau puits au lieu de prendre le treuil ; seed 1924731460 : le mineur de droite allait jusqu'à sa
+  // colonne recreuser un puits depuis la surface). On se répartit au fond (secteurs), pas pendant la descente.
+  // Sinon il rejoint sa colonne pour ouvrir son puits.
+  const away = m.homeX!=null && m.x!==m.homeX;
+  if(away && planDown(G,m,downAvoid(G,m))) m.status='Descend par l\'existant';
+  else if(away){
     m.status='Rejoint son puits';
     if(stepDir(G,m,Math.sign(m.homeX-m.x),0,{noBridge:true})) return;
   }
@@ -280,8 +291,8 @@ function decideWork(G,m){
 }
 
 function digDown(G,m){
-  // ne pas descendre là où un autre travaille déjà, ni loin de son secteur
-  const pd=planDown(G,m,(x,y)=>crowdAt(G,m,x,y)>0 || outOfSector(m,x)>1);
+  // ne pas descendre là où un autre travaille déjà
+  const pd=planDown(G,m,downAvoid(G,m));
   if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; m.goingDown=true; return; }
   // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
   if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;

@@ -6,7 +6,10 @@
    - Seul le chef lance : le serveur crée alors la session de jeu pour tous les membres (server/game/service.js).
      Le groupe RESTE après le lancement (décision du créateur, 21/10/2026) : à la fin de la session, chacun revient
      dans le même groupe et le chef peut relancer sans réinviter. Qui ne veut pas enchaîner quitte le groupe.
-     Si le chef part, le membre suivant devient chef ; un groupe vide disparaît.
+     Si le chef part, le membre suivant devient chef ; un groupe vide disparaît. Le chef peut aussi donner sa place.
+   - « Prêt » (21/10/2026) : chaque membre (sauf le chef : lancer = prêt) se déclare prêt ; le chef ne lance que si tous
+     les autres le sont. Au lancement, et quand quelqu'un rejoint, tout le monde repasse « pas prêt » : à la fin d'une
+     session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
    - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
      est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
    Les groupes vivent en mémoire et sont recopiés dans le stockage (store, s'il est donné) à chaque vrai changement :
@@ -50,13 +53,17 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
-                                            leader: m.account === p.leader, me: m.account === meId,
+                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
   }
 
   /* ---------- ménage ---------- */
+
+  const unready = p => { for(const m of p.members) m.ready = false; };
+  /* membres (hors chef) qui ne sont pas prêts */
+  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready);
 
   function removeMember(p, accountId){
     p.members = p.members.filter(m => m.account !== accountId);
@@ -131,10 +138,11 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
      n'en a pas) */
   function formLobby({ host, guests }){
     const p = partyOf(host.account) ?? create(host.me);
+    unready(p);                                        // des nouveaux venus : tout le monde redit qu'il est prêt
     for(const g of guests){
       const old = partyOf(g.account);
       if(old) removeMember(old, g.account);
-      p.members.push({ account: g.account, name: g.name, seenAt: clock() });
+      p.members.push({ account: g.account, name: g.name, seenAt: clock(), ready: false });
       p.invites.delete(g.account);
     }
     for(const e of [host, ...guests]) queue.delete(e.account);
@@ -179,7 +187,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
   const saved = p => ({ code: p.code, leader: p.leader, createdAt: p.createdAt,
-                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null })),
+                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready })),
                         invites: [...p.invites.values()] });
   const written = new Map();                 // code → JSON déjà enregistré
   /* enregistre les groupes qui ont vraiment changé, efface ceux qui ont disparu */
@@ -197,7 +205,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const s of await store.getParties()){
       if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
-                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined })),
+                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true })),
                   invites: new Map((s.invites || []).map(i => [i.account, i])) };
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
@@ -280,7 +288,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
-      p.members.push({ account: me.id, name: displayName(me), seenAt: clock() });
+      unready(p);                                      // un nouveau venu : tout le monde redit qu'il est prêt
+      p.members.push({ account: me.id, name: displayName(me), seenAt: clock(), ready: false });
       p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
@@ -353,6 +362,33 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { party: publicParty(p, me.id) };
     },
 
+    /* se déclarer prêt (ou plus prêt). value doit être exactement true ou false. */
+    async ready(me, value){
+      touch(me);
+      if(typeof value !== 'boolean') fail('bad_request', 400, 'Valeur invalide.');
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
+      noChange(p);
+      await notInSession(me);
+      memberOf(p, me.id).ready = value;
+      return { party: publicParty(p, me.id) };
+    },
+
+    /* le chef donne sa place de chef à un autre membre */
+    async promote(me, input){
+      touch(me);
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
+      if(p.leader !== me.id) fail('not_leader', 403, 'Seul le chef du groupe peut nommer un autre chef.');
+      noChange(p);
+      const id = parseAccountId(input);
+      if(!id || id === me.id || !memberOf(p, id)) fail('invalid_id', 400, 'Joueur invalide.');
+      p.leader = id;
+      memberOf(p, id).ready = false;                   // le chef n'a pas d'état « prêt »
+      memberOf(p, me.id).ready = false;                // l'ancien chef devient membre : à lui de dire qu'il est prêt
+      return { party: publicParty(p, me.id) };
+    },
+
     /* « Lancer la session » : seul = session solo ; en groupe, seul le chef lance, pour tous les membres.
        Le groupe reste (on enchaîne les sessions sans se réinviter). Un membre encore dans la session précédente :
        lancement refusé par le service de jeu (member_in_session), le groupe ne bouge pas. */
@@ -367,11 +403,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       }
       if(p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la session.');
       noChange(p);
+      const waiting = notReady(p);
+      if(waiting.length) fail('not_ready', 409, `Pas encore prêt : ${waiting.map(m => m.name).join(', ')}.`);
       p.launching = true;                              // plus d'entrée ni de sortie pendant la création
       try {
         const members = [memberOf(p, me.id), ...p.members.filter(m => m.account !== me.id)];
         const r = await game.start(me, body, members.map(m => ({ account: m.account, name: m.name })));
         grace(p, r);
+        unready(p);                                    // la session finie, chacun redira qu'il est prêt
         return r;
       } finally { p.launching = false; }
     },

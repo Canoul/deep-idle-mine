@@ -80,6 +80,7 @@ test('MI inscription en session : acceptée (le groupe est gardé) ; encore en s
   const { instant, game, party, t } = await setup();
   const { party: p } = await party.create(ME);
   await party.join(OTHER, p.code);
+  await party.ready(OTHER, true);                               // bouton « Prêt » : le chef ne lance qu'avec tout le monde prêt
   await party.launch(ME, {}); await flush();
   assert.ok(await game.activeSessionId(ME.id));
   await instant.join(ME);
@@ -95,6 +96,7 @@ test('MI : lancer une session normale ne désinscrit plus ; session finie avant 
   const { instant, game, party, t } = await setup();
   const { party: p } = await party.create(ME);
   await party.join(OTHER, p.code);
+  await party.ready(OTHER, true);                               // bouton « Prêt » : le chef ne lance qu'avec tout le monde prêt
   await party.launch(ME, {}); await flush();
   await instant.join(ME);
   await game.leave(ME);                                         // sa session est finie avant l'heure (il l'a quittée)

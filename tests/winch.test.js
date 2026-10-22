@@ -117,3 +117,24 @@ test('puits du treuil : on n\'y pose plus d\'échelle (même une échelle de 2 q
   assert.equal(G.ladder[9][X], 1, 'sous le treuil : échelle normale');
   assert.equal(G.ladder[8][X], 0, 'la 2e case est dans le puits : pas d\'échelle');
 });
+
+test('départ du coffre : il prend la descente existante (treuil) au lieu de creuser un puits neuf près de la surface (seed 1250570735)', async () => {
+  const { runSession } = await import('../src/sim/session.js');
+  const { SKILLS } = await import('../src/config.js');
+  const { sanitizeSkills, skillEffects, withSkillStats } = await import('../src/meta/skills.js');
+  const give = (m, tree) => { const t = SKILLS.trees.find(x => x.id === tree);
+    const st = sanitizeSkills({ tree, ranks:Object.fromEntries(t.nodes.map(n => [n.id, n.max])) });
+    m.skill = { ...m.skill, ...skillEffects(st) }; m.skillTree = tree; m.carac = withSkillStats(m.carac, m.skill); };
+  const fresh = [];
+  let winchRides = 0;
+  runSession(1250570735, { miners:3, onTick:(G, i) => {
+    if(i === 0) G.miners.forEach((m, k) => give(m, SKILLS.trees[k % 3].id));   // mineur, logisticien, barbare
+    if(G.t > 1200) return;
+    for(const m of G.miners){
+      if(G.winch && m.mode === 'work' && m.y > 0 && m.y <= 10 && m.status === 'Creuse vers le bas') fresh.push(`${m.name} t${Math.round(G.t)} x${m.x} y${m.y}`);
+      if(m.skillTree !== 'logisticien' && isWinch(G, m.x, m.y)) winchRides++;
+    }
+  } });
+  assert.deepEqual([...new Set(fresh.map(f => f.split(' ')[0]))], [], `puits neufs : ${fresh.slice(0, 3).join(', ')}`);
+  assert.ok(winchRides > 300, `les autres prennent le seau (${winchRides} ticks)`);
+});
