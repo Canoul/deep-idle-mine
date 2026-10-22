@@ -16,13 +16,15 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, chestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment } from '../../src/meta/judgment.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
+import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
+import { rollChestQuality } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
@@ -222,6 +224,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
+      /* tour réussie : chaque joueur encore présent reçoit un coffre de la tour, qualité tirée par le serveur (RUNE) */
+      const side = towerSide(rec.mode);
+      if(side) for(const share of summary.shares || [])
+        share.bag = summary.success && share.account && !share.left && !hasLeft(rec, share.account)
+          ? { [chestItem(side, rollChestQuality(random))]: 1 } : {};
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;
@@ -231,9 +238,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           await store.putInventory(share.account, JSON.parse(serialize(inv)));
           /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
           await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
+          /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
+          if(side && summary.success)
+            await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account) }));
         });
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
-        if(rec.mode !== 'mi') await withLock('xp:' + share.account, async () => {
+        if(rec.mode !== 'mi' && !side) await withLock('xp:' + share.account, async () => {
           const pr = await loadProgress(share.account);
           if(creditXp(pr, rec.id, share.xp ?? 0)) await store.putProgress(share.account, pr);
         });
@@ -294,7 +304,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
+      const side = modeDef.tower ?? null;
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
+        /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture */
+        let opening = null;
+        if(side){
+          const t = await withJudgment(j => ({ value: { open: towerOpen(j, side, clock()), opening: j[side].opening,
+                                                         done: players.filter(p => hasDone(j, side, p.account)) } }));
+          if(!t.open) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
+          if(t.done.length) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
+          opening = t.opening;
+        }
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
@@ -323,7 +343,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
           prefs, looks, gear, skills,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
-          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + realDurationMs(speed),
+          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
+          ...(side ? { opening } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
@@ -401,6 +422,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const rec = await store.getGameSession(rec0.id);
           if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
           if(rec.mode === 'mi') fail('bad_request', 400, 'Pas de focus dans la mine instantanée.');
+          if(isTowerMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une tour.');
           rec.focus ??= [];
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');

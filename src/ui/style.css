@@ -221,11 +221,11 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #end .share.me{background:var(--sel);box-shadow:inset 0 0 0 var(--u) var(--acc)}
 #noSession{padding:16vh calc(6*var(--u)) 0}
 #noSession button{margin-top:calc(4*var(--u))}
-#run,#miRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
+#run,#miRun,#twRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
 /* la mine et la jauge restent au-dessus de la barre d'action ; les colonnes aussi par défaut, mais descendent jusqu'en
    bas de l'écran quand la barre (centrée) ne passe pas dessous (src/ui/fit.js, clearDock) */
-#cvWrap,#cvMiWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
-#run>header,#miRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
+#cvWrap,#cvMiWrap,#cvTwWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:var(--dock-h)}
+#run>header,#miRun>header,#twRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
 .grow{flex:1;min-width:calc(60*var(--u))}
@@ -237,7 +237,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .runL .card,.runR .card,.runGrid.mi .card{font-size:var(--fs-s)}
 .runL .card>h2,.runR .card>h2,.runGrid.mi .card>h2{font-size:var(--fs)}
-#cvWrap,#cvMiWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
+#cvWrap,#cvMiWrap,#cvTwWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
 /* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
 #cvWrap{overflow:hidden}
 #cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
@@ -483,7 +483,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .runR{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;overflow:visible}
   .runR .card{flex:1 1 calc(130*var(--u))}
   #run{position:static;min-height:calc(100dvh - var(--top-h) - var(--dock-h))}
-  #cvWrap,#cvMiWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
+  #cvWrap,#cvMiWrap,#cvTwWrap,.rail,.runL,.runR,.runGrid.mi>aside{margin-bottom:0!important}   /* la page défile : la marge du bas suffit */
   .runGrid{min-height:calc(100dvh - var(--top-h) - var(--dock-h) - 30*var(--u))}
   #cvWrap{min-height:calc(260*var(--u))}
   .skTrees{grid-template-columns:1fr}
@@ -590,3 +590,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .jTowers{grid-template-columns:1fr}
   .jtower.demon{align-items:flex-start;text-align:left}
 }
+
+/* ---- Tours (session) : réutilise la mise en page de la mine instantanée ---- */
+.twTitle{font-family:var(--f-title);font-size:var(--fs-xl);color:#ffe6c4}
+.twBossBar.angel>i{background:var(--j-angel-dk)} .twBossBar.demon>i{background:var(--j-demon)}
+#cvTw{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}

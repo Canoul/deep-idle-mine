@@ -139,10 +139,11 @@ src/config.js         TOUTES les valeurs d'équilibrage et constantes
 src/recipes.js        recettes de craft          src/skins.js  apparence des mineurs selon le stuff
 src/core/             hasard déterministe (rng)
 src/sim/              simulation pure, sans DOM : world, light, mineur, path, actions, ai, mobs, session, log,
-                      diagnostics, dungeon
+                      diagnostics, dungeon ; instant/ (mine instantanée), tower/ (tours de l'Ange et du Démon)
 src/meta/             progression hors session, logique pure : inventory, share, loot, furnace, crusher, craft,
-                      stuff, research, skills
-src/shared/           règles partagées jeu + serveur : account, game, view, préférences, réglages dev, party
+                      stuff, research, skills, piece/upgrade (identification, amélioration, runes), judgment (jauges)
+src/shared/           règles partagées jeu + serveur : account, game, view, préférences, réglages dev, party,
+                      instant, tower (+ leurs *-view.js : ce que le serveur envoie au navigateur)
 src/net/              appels au serveur (api)
 src/render/           canvas (lit l'état, ne le modifie jamais), textures
 src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory, furnace, crusher, craft, stuff,
