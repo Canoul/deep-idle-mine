@@ -1543,3 +1543,29 @@ Règles (voir CLAUDE.md) :
   profondeur 229,6. Les chiffres « Plus profond » et résidus du 22/10 mesurés avec le seau ×2 sont à relire avec
   ça : « Plus profond » à 3 = 1 431 → 1 087 de valeur (−24 %) au seau 0,85.
 
+### Recherche de groupe (LFG) (Geoffrey) — branche `geoffrey/lfg`, 🧪 pas en ligne
+- **Quoi** : file d'attente pour former un lobby de 3 (mine classique). Règle pure `matchLfg(queue, max)` dans
+  `src/shared/lfg.js` (groupe le plus ancien + solos les plus anciens, sinon `max` solos, l'hôte = le premier) ;
+  `queueTime(ms)` pour le timer.
+- **Serveur** (`server/party/service.js`) : `queue` (en mémoire, clé = solo ou chef d'un groupe de 2 ; on garde la
+  liste des membres à l'entrée), `found` (« groupe trouvé », `PARTY_SERVER.lfgNotice` = 1 min), `boot` (uuid du
+  démarrage). `lfgValid` : l'équipe (membres) doit être identique à l'entrée, pas en lancement, et c'est le chef.
+  `pruneLfg` : `lfgTimeout` 30 s sans `state()` du joueur, équipe changée, un membre en session. `runLfg` (verrou
+  `matching`) est appelé dans `state()` et `lfg()` : forme les lobbys (`formLobby` : invités retirés de leur groupe
+  d'un joueur, poussés dans celui de l'hôte, créé si besoin), puis `autoLaunch` si l'hôte a `auto` (même chemin que
+  `launch` : `p.launching`, `grace`, erreur gardée dans `found.error`). Actions `lfg(me, { auto })` (refus :
+  en session, groupe complet, pas chef ; re-cliquer garde `at`) et `lfgCancel`. `state()` renvoie `lfg: { boot, search,
+  found }`. Routes `POST /api/party/lfg`, `POST /api/party/lfg/cancel`.
+- **Navigateur** : `partyApi.lfg/lfgCancel` ; `lfgState()` exportée par `src/ui/lobby.js` (bouton, timer, annuler) ;
+  `#lfgBtn`, `#lfgAutoRow`, `#lfgStatus` dans `index.html` ; `lfgWant` : si `boot` change pendant sa recherche
+  (serveur redémarré), le lobby la relance. `src/main.js` : pop-up « Groupe trouvé » (`setLfgFound` / `syncNotifs`,
+  fusionnée avec les notifications Social).
+- **Tests** : `tests/lfg.test.js` (17 : règle, 3 solos, groupe de 2 prioritaire, solo avec code, membre, complet / en
+  session, annuler / pas de double entrée, équipe changée, onglet fermé, auto du chef seulement, auto qui échoue,
+  routes, boot) ; `tests/lobby.test.js` +2. lfg, lobby, party, server : 52/52 ✅. Essai HTTP sur un vrai serveur
+  (`DIM_DATA_DIR` temporaire, 3 invités) : lobby formé chez le premier, session lancée pour les 3 ✅.
+- **Pas vérifié** : ⚠️ rendu du panneau dans le navigateur (pas ouvert à l'œil).
+- **Points fragiles** : la file est perdue au redémarrage (voulu, `boot`) ; le signe de vie est le `GET /api/party`
+  du lobby (toutes les 2,5 s, ×2 en session) : un onglet en arrière-plan très ralenti par le navigateur peut sortir
+  de la file après 30 s. Le groupe d'un membre peut changer pendant l'`await` de `pruneLfg` : `lfgValid` est relu
+  juste avant de former le lobby.

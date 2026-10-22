@@ -256,7 +256,8 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg });
+    setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);
 }
@@ -266,12 +267,27 @@ async function pollLobby(){
    groupe, affichées en pop-up en haut à gauche. */
 const notify = setupNotify($('notifs'));
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let socialTimer = null;
+let socialTimer = null, lastSocial = null, lfgFound = null;
+/* recherche de groupe : « groupe trouvé » en pop-up (l'état vient du lobby) */
+function setLfgFound(found){
+  if((found?.at ?? null) === (lfgFound?.at ?? null)) return;
+  lfgFound = found ?? null;
+  syncNotifs();
+}
 function setSocial(st){
   if(!st?.friends) return st;
   social.set(st);
   nav.badge('social', st.incoming.length > 0);
+  lastSocial = st;
+  syncNotifs();
+  return st;
+}
+function syncNotifs(){
+  const st = lastSocial ?? { partyInvites: [], incoming: [] };
   notify.sync([
+    ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
+      text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
+      actions: [{ label: 'Voir le lobby', primary: true, run: async () => nav.show('lobby') }] }] : []),
     ...st.partyInvites.map(i => ({ key: 'p:' + i.code, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
@@ -279,11 +295,10 @@ function setSocial(st){
       actions: [{ label: 'Accepter', primary: true, run: async () => setSocial(await socialApi.accept(r.id)) },
                 { label: 'Refuser', run: async () => setSocial(await socialApi.refuse(r.id)) }] })),
   ]);
-  return st;
 }
 async function pollSocial(){
   clearTimeout(socialTimer);
-  if(acct.offline || !acct.account){ notify.sync([]); return; }
+  if(acct.offline || !acct.account){ lastSocial = null; lfgFound = null; notify.sync([]); return; }
   try { setSocial(await socialApi.state()); } catch(e){ console.warn(e); }
   socialTimer = setTimeout(pollSocial, document.hidden ? SOCIAL.hiddenPoll : SOCIAL.poll);
 }

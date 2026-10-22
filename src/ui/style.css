@@ -186,6 +186,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .pslot.away{opacity:.6}
 .pslot.invited{color:var(--txt)}
 .lobbyActions{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));align-items:center}
+.lfgStatus{margin:calc(2*var(--u)) 0 0;color:var(--mut)}
+.lfgStatus b{color:var(--acc-lt)}
 .invite{margin-top:calc(6*var(--u));padding:calc(3*var(--u)) calc(4*var(--u));box-shadow:inset 0 0 0 var(--u) var(--line);font-size:var(--fs-s)}
 .invite .code{color:var(--acc-lt);margin-left:calc(2*var(--u));letter-spacing:.08em}
 .invite .code[data-copy]{cursor:copy;padding:0 calc(2*var(--u))}
