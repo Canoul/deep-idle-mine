@@ -18,6 +18,23 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Tours du Jugement : labyrinthe, brouillard, caméra, 10 minutes
+- **Pour le joueur** :
+  - **Labyrinthe** : dans les tours, une ligne sur deux est un mur incassable percé d'un seul passage (4 cases), jamais
+    au-dessus du précédent : on zigzague au lieu de monter tout droit.
+  - **Brouillard** : l'intérieur de la tour est noir au départ ; chaque mineur découvre autour de lui (sa Découverte),
+    comme dans la mine.
+  - **Caméra** : rapprochée, elle suit ton mineur (avant : toute la tour à l'écran).
+  - **Durée** : 10 min (avant 15).
+- **Décisions** : Geoffrey ; 5 min demandées, mais mesuré infaisable avec le labyrinthe (même bien équipés : 0/10) →
+  10 min, briques gardées à 6 s (choix de Geoffrey). Choix de Claude : le passage est d'un seul tenant.
+- **Mesures** (10 tours, à 3) : stuff de base 0/10 ; petit stuff 3/10 ; minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min ;
+  le même seul 0/10.
+- **Vérifié** : aucune confusion dans le code entre la **tour** du Jugement et le **donjon** (minotaure) de la mine
+  classique. L'« erreur » signalée plus tôt était un test pas à jour depuis les donjons en areas 4 et 5 (corrigé
+  ce midi), pas un bug du jeu. La spec disait « donjon » pour la tour à deux endroits : corrigé.
+- **État** : ✅ en ligne le 22/10
+
 ## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
 - **Pour le joueur** :
   - **Concasseur, bouton « ? »** : pour chaque bloc, la chance d'avoir **une gemme** (les trois s'additionnent :
