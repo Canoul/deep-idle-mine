@@ -118,3 +118,46 @@ test('enchanter : refus lisibles, rien ne bouge ; demande renvoyée appliquée u
   const again = enchant(inv, { uid: piece.uid, rune: rune.uid, opId: op });
   assert.equal(again.repeated, true); assert.equal(again.piece.rune.q, 1);
 });
+
+/* Trésors des tours (22/10/2026) : remplacent les coffres ; non empilables, rareté Unique, nom « <qualité> Trésor … »
+   dans la couleur de la qualité ; les anciens coffres restent ouvrables */
+test('trésors : 7 qualités par tour, non empilables, rareté Unique, nom et couleur de la qualité', async () => {
+  const { treasureItem } = await import('../src/config.js');
+  const { itemName, itemColor, pieceName, pieceColor } = await import('../src/meta/piece.js');
+  const { rarityOf } = await import('../src/meta/rarity.js');
+  const { rname } = await import('../src/ui/rarity.js');
+  for(const side of ['angel', 'demon']) for(let q = 1; q <= 7; q++){
+    const t = treasureItem(side, q), d = UPGRADE.qualities[q - 1];
+    assert.equal(ITEMS[t]?.stack, false, t); assert.equal(ITEMS[t].chest.q, q); assert.ok(canOpen(t), t);
+    assert.equal(rarityOf(t), 'unique', t);
+    assert.equal(itemName(t), `${d.label} ${RUNE.treasures[side].name}`); assert.equal(itemColor(t), d.color);
+    assert.ok(rname(t).includes(`color:${d.color}`) && rname(t).includes(itemName(t)) && rname(t).includes('r-unique'), rname(t));
+  }
+  assert.equal(treasureItem('demon', 5), 'Trésor démoniaque R5');
+  assert.equal(itemName(treasureItem('demon', 5)), 'Antique Trésor démoniaque');
+  const inv = createInventory(); addItem(inv, treasureItem('demon', 6), 1);
+  assert.equal(pieceName(inv.slots[0]), 'Mystérieux Trésor démoniaque'); assert.equal(pieceColor(inv.slots[0]), UPGRADE.qualities[5].color);
+  assert.equal(itemName(PICK), PICK); assert.equal(itemColor(PICK), null);
+  assert.equal(itemName(chestItem('demon', 6)), 'Coffre démoniaque R6', 'ancien coffre : nom inchangé');
+});
+
+test('trésors : un par case, gardés au rechargement, une rune de leur qualité à l\'ouverture ; ancien coffre toujours ouvrable', async () => {
+  const { treasureItem } = await import('../src/config.js');
+  const inv = createInventory(), t = treasureItem('angel', 7);
+  addItem(inv, t, 2);
+  assert.equal(inv.slots.filter(s => s?.item === t).length, 2, 'deux cases'); assert.ok(inv.slots.every(s => s.qty === 1 && s.uid > 0));
+  const back = deserialize(serialize(inv));
+  assert.equal(countOf(back, t), 2, 'gardés au rechargement');
+  const dup = deserialize(JSON.stringify({ v: 1, slots: [{ item: t, qty: 1, uid: 5 }, { item: t, qty: 1, uid: 5 }, { item: t, qty: 3, uid: 6, q: 7 }] }));
+  assert.deepEqual(dup.slots.filter(Boolean).map(s => [s.uid, s.qty, s.q]), [[5, 1, undefined], [6, 1, undefined]],
+    'uid en double : refusé ; quantité > 1 ramenée à 1 (comme le stuff) ; pas de qualité ajoutée');
+  const r = openTreasure(back, t, id(), mulberry32(2));
+  assert.deepEqual(r.loot, { [RUNE.item]: 1 }); assert.equal(countOf(back, t), 1);
+  const rune = back.slots.find(s => s?.item === RUNE.item);
+  assert.equal(rune.q, 7); assert.equal(rune.lines.length, UPGRADE.qualities[6].lines);
+  const old = createInventory(), c = chestItem('demon', 3);
+  addItem(old, c, 2);
+  assert.equal(old.slots.length, 1, 'ancien coffre : toujours empilable');
+  assert.equal(openTreasure(old, c, id(), mulberry32(3)).loot[RUNE.item], 1);
+  assert.equal(old.slots.find(s => s?.item === RUNE.item).q, 3);
+});

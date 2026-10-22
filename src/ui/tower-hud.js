@@ -35,7 +35,7 @@ export function showTowerEnd(rec, me, onBack, onInventory){
     `<h3>${S.icon} ${esc(S.tower)} : ${s.success ? `${esc(S.boss)} vaincu !` : 'échec'}</h3>`+
     (mine?.left ? '<p>Tu as quitté la tour avant la fin : <b>rien</b> n\'est versé.</p>'
       : s.success ? `<p>Ton butin : <span class="pill">${rname(chest)}</span> (dans ton inventaire : ouvre-le pour obtenir une rune).</p>`
-      : `<p>${esc(S.boss)} tient toujours (${s.bossHp} / ${s.bossMax} PV). Pas de coffre, mais tu peux retenter tant que la tour est ouverte.</p>`)+
+      : `<p>${esc(S.boss)} tient toujours (${s.bossHp} / ${s.bossMax} PV). Pas de trésor, mais tu peux retenter tant que la tour est ouverte.</p>`)+
     (s.shares || []).map(p => `<div class="row share${p.account === me ? ' me' : ''}"><span>${esc(nameOf(p.account) ?? p.miner)}${p.account === me ? ' (toi)' : ''}</span>`+
       `<span>${p.left ? '<span class="mut">a quitté : rien</span>' : `${p.stats?.dmg ?? 0} dégâts · ${p.stats?.mined ?? 0} blocs${p.stats?.knocked ? ` · projeté ${p.stats.knocked}×` : ''}`}</span></div>`).join('')+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';

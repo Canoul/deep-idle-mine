@@ -10,7 +10,8 @@ import * as D from '../src/wiki/data.js';
 
 test('wiki : chaque objet du jeu est listé une fois, avec un usage et une source', () => {
   const all = D.itemGroups().flatMap(g => g.items);
-  assert.deepEqual(all.map(i => i.name).sort(), Object.keys(ITEMS).sort());
+  /* sauf les anciens coffres de tour (plus donnés, remplacés par les trésors le 22/10) */
+  assert.deepEqual(all.map(i => i.name).sort(), Object.keys(ITEMS).filter(n => !(ITEMS[n].chest && !ITEMS[n].treasure)).sort());
   for(const i of all){
     assert.ok(i.uses.length && i.sources.length, i.name);
     assert.ok(i.rarity, i.name);
@@ -50,7 +51,8 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
   assert.ok(!html.includes('Bientôt : liste d\'amis') && !html.includes('La barre à gauche') && !html.includes('viendra plus tard'));
   for(const id of ['ange', 'w-judgment', 'w-tower', 'w-runes']) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(by['Résidu angélique'].sources[0].startsWith('Miné à partir de l\'area 4'));
-  assert.ok(by['Coffre démoniaque R7'].uses[0].includes('Rune R7'));
+  assert.ok(by['Trésor démoniaque R7'].uses[0].includes('Rune R7'));
+  assert.equal(by['Coffre démoniaque R7'], undefined, 'ancien coffre : plus listé');
   assert.ok(!by.Rune.sources.includes('Pas encore obtenable'));
   assert.equal(D.runeRows().length, 7);
 });

@@ -124,7 +124,7 @@ export function setupUpgrade({ onOp }){
       : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
-      `<p class="mut small">Une rune (gagnée dans les coffres des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
+      `<p class="mut small">Une rune (gagnée dans les trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
       `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce, c'est définitif. `+
       `<b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> (une pièce R6 accepte une rune R1 à R6) : `+
       `une pièce non identifiée doit d'abord être identifiée.</p>`+
@@ -138,7 +138,7 @@ export function setupUpgrade({ onOp }){
       (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
           ? row(p, p.rune ? '<b>déjà enchantée</b>' : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
           : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : t && isIdentified(t) && p.q > t.q ? `<b>trop rare pour cette pièce</b>` : ''}</button>`).join('')}</div>`
-        : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un coffre de tour (Inventaire).'}</p>`);
+        : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un trésor de tour (Inventaire).'}</p>`);
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;
       if(pick === 'target'){ target = uid; if(rune == null) pick = 'rune'; }

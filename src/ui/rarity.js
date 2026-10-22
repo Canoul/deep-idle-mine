@@ -2,15 +2,19 @@
    reprises de RARITY en config. */
 import { RARITY } from '../config.js';
 import { rarityOf, rarityDef } from '../meta/rarity.js';
-import { pieceName, pieceColor } from '../meta/piece.js';
+import { pieceName, pieceColor, itemName, itemColor } from '../meta/piece.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
 /* classe à ajouter à la case d'un objet (avec l'espace devant) : ' r-commun', ' r-inhabituel'… */
 export const rcls = item => ` r-${rarityOf(item)}`;
 
-/* nom de l'objet dans la couleur de sa rareté ; text : texte affiché (par défaut le nom) */
-export const rname = (item, text = item, tag = 'span') => `<${tag} class="rn r-${rarityOf(item)}">${esc(text)}</${tag}>`;
+/* nom de l'objet dans la couleur de sa rareté (un trésor : dans la couleur de sa qualité) ; text : texte affiché (par
+   défaut le nom affiché, src/meta/piece.js itemName) */
+export function rname(item, text = itemName(item), tag = 'span'){
+  const c = itemColor(item);
+  return `<${tag} class="rn r-${rarityOf(item)}"${c ? ` style="color:${c}"` : ''}>${esc(text)}</${tag}>`;
+}
 
 /* nom d'une pièce de stuff (« Excellent : Pioche en pierre +2 ») : dans la couleur de sa qualité si elle est identifiée
    (elle passe avant la couleur de la rareté du type ; le contour de la case, lui, garde la rareté du type) */

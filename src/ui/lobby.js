@@ -128,7 +128,7 @@ export function setupLobby(h){
     $('lobbyInfo').innerHTML = offline ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour percer jusqu'au sommet et vaincre le boss. `+
-                `Victoire : un coffre pour chaque joueur présent. Une seule victoire par ouverture.`
+                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);

@@ -1,6 +1,6 @@
 /* Wiki du joueur : mêmes couleurs que le jeu (src/ui/style.css) */
 :root{--bg:#14110f;--panel:#1f1a17;--panel2:#181410;--line:#3a312b;--txt:#eadfd3;--mut:#9a8b7d;--acc:#ffb84d;--ok:#6fcf7f;--bad:#e5534b;--o2:#5bc0eb;
-  --r-commun:#9d9d9d;--r-inhabituel:#3ddc5a;--r-rare:#3d8bff;--r-epique:#b06bff;--r-legendaire:#ff8c1a}
+  --r-commun:#9d9d9d;--r-inhabituel:#3ddc5a;--r-rare:#3d8bff;--r-epique:#b06bff;--r-legendaire:#ff8c1a;--r-unique:#c0480f}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:64px}
 body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
@@ -53,9 +53,9 @@ table.simple{border:1px solid var(--line);border-radius:10px;border-collapse:sep
 .it{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .ic{width:24px;height:24px;flex:none;image-rendering:pixelated;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:2px}
 .ic.r-commun{border-color:var(--r-commun)}.ic.r-inhabituel{border-color:var(--r-inhabituel)}.ic.r-rare{border-color:var(--r-rare)}
-.ic.r-epique{border-color:var(--r-epique)}.ic.r-legendaire{border-color:var(--r-legendaire)}
+.ic.r-epique{border-color:var(--r-epique)}.ic.r-legendaire{border-color:var(--r-legendaire)}.ic.r-unique{border-color:var(--r-unique)}
 .rn.r-commun{color:var(--r-commun)}.rn.r-inhabituel{color:var(--r-inhabituel)}.rn.r-rare{color:var(--r-rare)}
-.rn.r-epique{color:var(--r-epique)}.rn.r-legendaire{color:var(--r-legendaire)}
+.rn.r-epique{color:var(--r-epique)}.rn.r-legendaire{color:var(--r-legendaire)}.rn.r-unique{color:var(--r-unique)}
 .rn{font-weight:600}
 .pill{display:inline-block;padding:1px 8px;margin:1px 2px 1px 0;border-radius:999px;background:#2c2520;border:1px solid var(--line);font-size:12px;white-space:nowrap}
 .pill.stat{color:var(--ok);border-color:#35583b}
