@@ -23,7 +23,7 @@ import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { createTowerRenderer } from './render/tower.js';
 import { applyTowerView } from './shared/tower-view.js';
 import { isTowerMode } from './shared/tower.js';
-import { tickAt } from './shared/game.js';
+import { tickAt, resultChoice } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
@@ -62,6 +62,7 @@ let rec = null;            // session en cours (enregistrement du serveur)
 let G = null;              // copie d'affichage de la partie du serveur (src/shared/view.js)
 let clockOffset = 0;       // heure du serveur − heure locale (ms)
 let waiting = false;       // partie finie, résultat du serveur attendu
+let waitingFor = null;     // … celui de cette session (id)
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
 const renderer = createRenderer($('cv'));
@@ -136,6 +137,7 @@ const furnace = setupFurnace({
     const r = await gameApi.furnace({ ...op, opId: newOpId() });
     setInventory(r.inventory);
     furnace.set(r.furnaces);
+    return r;
   },
 });
 
@@ -437,7 +439,7 @@ async function leave(){
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */
 function ended(){
-  waiting = true; clearTimeout(viewTimer);
+  waiting = true; waitingFor = rec?.id ?? null; clearTimeout(viewTimer);
   showSettling(isMi());
   pollResult();
 }
@@ -446,7 +448,9 @@ async function pollResult(){
   if(!waiting) return;
   try {
     const st = await gameApi.state();
-    if(st.ended){ return showResult(st); }
+    const what = resultChoice(st.ended, waitingFor);
+    if(what === 'show') return showResult(st);
+    if(what === 'stale') gameApi.ack(st.ended.id).catch(() => {});   // ancien bilan jamais vu : pas celui de cette session
     if(!st.session){ return showNoSession(); }                // plus rien à attendre (abandonnée)
   } catch(e){ console.warn(e); }
   setTimeout(pollResult, 1000);

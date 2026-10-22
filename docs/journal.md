@@ -18,6 +18,24 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Petits retours : fours, butin, skills, chutes, bilan
+- **Pour le joueur** :
+  - fours : bouton **Tout retirer** (un par four, et un pour tous les fours) et bouton **½** à côté de Max ;
+  - Résidus angélique et démoniaque : rareté **commune** (contour gris) ;
+  - **butin des mobs** (Pillage, stat Butin des mobs) : 9 % = 9 % de chance d'avoir **1 butin en plus**, plus une
+    multiplication (avant : 3 cristaux × 1,09 donnait 27 % de chance d'en avoir 4) ;
+  - onglet Stats : Pillage apparaît dans « Butin des mobs » (le bonus comptait bien en jeu, il n'était pas affiché), et
+    les skills de comportement (Bâtisseur, Navette, Provocation…) sont listés sous les stats ;
+  - chute : une chute qui finit sur une échelle se fait à la vitesse de l'échelle ; l'IA ne sort plus du treuil (ni
+    d'une échelle) pour tomber à côté et y revenir plus bas (227 détours sur 3 sessions → 14) ;
+  - bilan : la fin d'une mine n'affiche plus le bilan d'une tour restée ouverte ; le bilan détaille ce qui était
+    encore dans les sacs (perdu).
+- **Décisions** : les Cristaux de pleine lune restent dans le sac jusqu'au dépôt (perdus s'ils ne sont pas déposés à
+  la fin).
+- **À suivre** : regarder en jeu le bouton ½ et Tout retirer ; sans skills, profondeur 192 → 186 (les raccourcis par
+  chute étaient un peu plus rapides).
+- **État** : 🧪 sur la branche `geoffrey/retours-22-10` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Pièges dans la mine
 - **Pour le joueur** : à partir de l'area 1, une area peut cacher 0, 1 ou 2 **pièges** : une petite salle vide de
   5 × 3 entourée de roche normale (on ne la voit pas, seul un coin reste noir). Le mineur qui mine un bloc de la paroi

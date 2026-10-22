@@ -110,10 +110,11 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 ## 3. Le mineur
 
 ### Déplacement
-- **Le mineur est soumis à la gravité** : s'il y a du vide sous lui, il tombe case par case (8 blocs/s *(provisoire)*) jusqu'à atterrir sur un bloc solide ou **sur une échelle**. Il ne tombe pas s'il est sur une case avec échelle, ni s'il est posé juste au-dessus d'une case avec échelle. *(À définir : dégâts ou ralentissement de chute, voir questions ouvertes.)*
+- **Le mineur est soumis à la gravité** : s'il y a du vide sous lui, il tombe case par case (8 blocs/s *(provisoire)*) jusqu'à atterrir sur un bloc solide ou **sur une échelle**. Il ne tombe pas s'il est sur une case avec échelle, ni s'il est posé juste au-dessus d'une case avec échelle. **Une chute qui finit sur une échelle se fait à la vitesse de l'échelle**, pas à 8 blocs/s *(22/10/2026)*. *(À définir : dégâts ou ralentissement de chute, voir questions ouvertes.)*
 - **Chutes** *(décision ferme ; valeurs provisoires)* :
   - le mineur **ne se jette jamais dans un trou de plus de 3 cases** qu'il connaît (cases découvertes) : l'IA ne prévoit aucune chute plus haute ; devant un tel trou, il pose une passerelle, passe ailleurs ou creuse un autre puits. Vaut aussi quand il descend de son échelle dans le puits d'un autre mineur *(corrigé le 22/10/2026 : il s'y jetait)* ;
   - une chute de **plus de 3 cases** l'étourdit **toujours**, même dans un trou connu : puisqu'il ne s'y jette jamais, c'est que son appui a disparu *(22/10/2026)*. Seule exception : le chantier du treuil (§ Treuil) ;
+  - **depuis le seau du treuil ou une échelle**, l'IA compte une chute à la vitesse du puits : elle ne sort plus du puits pour tomber à côté (plus vite) puis y revenir plus bas *(22/10/2026 : alternance treuil / chute sur le côté)* ;
   - une chute **imprévue** (dans du vide pas encore découvert) de **3 cases ou plus** l'**étourdit 5 s** : il ne peut plus rien faire (ni bouger, ni miner, ni frapper), même taclé ; l'oxygène continue de baisser. Des étoiles tournent au-dessus de sa tête. Une chute connue de 3 cases ne l'étourdit pas.
   - Repère (simulation, 5 sessions) : ≈ 6 étourdissements par session en solo, ≈ 12 à 3 mineurs (≈ 30 à 60 s perdues).
 - Le mineur ne peut pas sauter. Actions possibles : **aller à gauche/droite, miner, poser une échelle**.
@@ -176,7 +177,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Critique | Chance qu'un coup contre un mob fasse **le double** de dégâts |
 | Coup unique | Chance de casser un bloc **instantanément** |
 | Perçage | Chance de casser aussi **le bloc juste derrière** celui miné (dans la direction du coup) ; il rapporte son butin comme un bloc miné (fortune, shiny, déblocage), jamais une barrière, un mur de donjon ni un mimic, jamais en chaîne |
-| Butin des mobs | Butin des mobs en plus, en % : s'ajoute au skill Pillage (même calcul) |
+| Butin des mobs | **Chance, en %, d'un butin en plus** à chaque mob tué (pas un multiplicateur, 22/10/2026) : 9 % = 9 % de chance d'avoir 1 de plus ; au-delà de 100 %, la partie entière est sûre (150 % = +1, et 50 % de chance de +2). S'ajoute au skill Pillage ; l'onglet Stats montre le total |
 
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
@@ -194,7 +195,7 @@ Trois arbres **en étages** (3 étages chacun). Un étage peut avoir **plusieurs
 |---|---|---|---|
 | **Mineur** | 0/3 : vitesse de minage +2 % | 0/1 : miner un minerai rend **1 d'oxygène** (tout court, pas un % de l'oxygène max) | 0/5 : marche +3 % pendant 3 s après un minerai (ne se cumule pas, remis à 3 s) |
 | **Logisticien** | 0/3 : temps de construction (échelle, passerelle, torche) −5 % | **deux cases côte à côte** : 0/1 **Échelle de 2** (échelle de 2 de haut au lieu de 1, si la case du dessus est vide) · 0/1 **Treuil** (ci-dessous) | 0/5 : marche +3 % quand il remonte à la surface (retour, jusqu'au coffre) ou redescend au front (rejoint son puits, descend par l'existant) |
-| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; un occultiste provoqué ne lance plus son sort | 0/5 : butin des mobs +3 % (la part décimale est tirée au hasard) |
+| **Barbare** | 0/3 : dégâts +5 % | 0/1 : **provocation** : le mob qu'il frappe (tous les mobs, mimic compris) lâche les autres mineurs et, jusqu'à sa mort, ne peut plus poursuivre ni tacler que lui ; un occultiste provoqué ne lance plus son sort | 0/5 : butin des mobs +3 % (chance d'un butin en plus, voir la stat Butin des mobs ; affiché dans les stats, 22/10) |
 
 - **Affichage** *(décision ferme)* : dans l'onglet Skills, chaque arbre est dessiné comme un **arbre de compétences de RPG** : une case ronde (icône, rang « 0/3 », nom) par skill, reliée par des **lignes** aux cases de l'étage d'avant. La ligne s'allume (dorée) quand la case du dessus est au max ; une case qu'on peut apprendre brille et porte un « + » (clic = un rang) ; une case verrouillée est grisée. Survoler (ou toucher) une case affiche sa description, son rang et ce qui la bloque.
 - Noms des cases : Mineur = Pioche aiguisée, Second souffle, Ruée ; Logisticien = Bâtisseur, Échelle de 2, Treuil, Navette ; Barbare = Force brute, Provocation, Pillage.
@@ -347,7 +348,7 @@ Une session réunit **jusqu'à 3 mineurs, un par joueur** (chaque mineur est rat
 - **reste** d'une division qui ne tombe pas juste : donné **au hasard**, une unité au plus par joueur (100 charbons à 3 → 33, 33, 34). Le tirage dépend de la seed : même partie, même partage ;
 - **Treasure TX** : ne se partage pas, **chaque joueur en reçoit un exemplaire** par Treasure TX rapporté, quel que soit son tier (un treasure ouvert à 3 = 1 Treasure TX pour chacun) ;
 - **solo** : le joueur garde tout ;
-- ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre).
+- ce qu'un mineur porte encore sur lui à la fin est perdu (il n'est pas dans le coffre), y compris les Cristaux de pleine lune *(confirmé le 22/10/2026)* ; le bilan en donne le détail par mineur.
 - **un joueur qui quitte la session avant la fin ne reçoit rien** : son mineur disparaît de la mine, ce qu'il portait est perdu. Si tout le monde part, la session s'arrête et personne ne reçoit rien.
 - **Partage par tranches (anti-boosting)** *(décision du créateur, 21/10/2026)* : chaque départ coupe la session en tranches. Le butin déposé pendant une tranche est partagé à parts égales entre les joueurs **présents pendant cette tranche** ; la part d'un joueur parti est **perdue** (elle ne revient pas aux autres). Ex. : 3 joueurs pendant 50 min, 2 partent, le dernier reste seul 10 min → il reçoit 1/3 du butin des 50 premières minutes + tout celui des 10 dernières ; les 2/3 restants des 50 min ne sont versés à personne. Sans départ, rien ne change (une seule tranche). Même règle pour l'XP.
 - **le partage est calculé par le serveur** (anti-triche) : voir « Lancer une session » ci-dessous.
@@ -445,7 +446,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).
 - Partout où l'objet apparaît (inventaire, craft, four, stuff, recherche, coffre en session, bulles), le **contour de sa case** et la **couleur de son nom** suivent sa rareté. La fiche d'un objet de l'inventaire affiche aussi le libellé de la rareté.
-- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. **Rare** : Cape de Naingui (et son BP).
+- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. Les **Résidus angélique et démoniaque** sont **communs** *(22/10/2026 ; avant : rares)*. **Rare** : Cape de Naingui (et son BP).
 - Le vert étant pris par la rareté : un objet tout juste arrivé brille d'un halo blanc, et une recette qu'on peut fabriquer porte une coche ✔.
 
 ### Craft (onglet Craft)
@@ -554,7 +555,8 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   - **minerai** : seulement un objet de la famille **ore** ; une seule sorte à la fois ;
   - **combustible** : seulement un objet de la famille **combustible** (le charbon) ;
   - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
-- Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre** ou bouton **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
+- Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre**, bouton **½** = la moitié de son stock arrondie en dessous, ou **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
+- **Tout retirer** *(22/10/2026)* : un bouton par four, et un en haut de l'onglet pour tous les fours. Toutes les cases (ingrédients, combustible, produits finis) reviennent dans l'inventaire ; une case qui n'y rentre pas reste dans le four, intacte.
 - **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**. Le **diamant ne se fond pas** (pas de recette).
 - La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
 - Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).

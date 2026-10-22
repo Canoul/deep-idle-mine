@@ -120,6 +120,8 @@ export function endSession(G){
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
     kills:G.stats.kills, stolen:G.stats.stolen, xp:G.stats.xp, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
+    /* le détail de ce que chacun portait encore (perdu : il fallait le déposer au coffre), pour le bilan */
+    lostBags: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>({ name:m.name, items:{...m.inv} })),
     miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };
   const present = G.roster.filter(m => m.left==null);

@@ -1661,3 +1661,27 @@ Règles (voir CLAUDE.md) :
   - **Vérification** : ✅ 3 × 5 : areas 3,0, profondeur 192,0, 0 blocage (sans pièges : 3,6 / 199,8) ; `--skills
     mixed` : 3,6 / 201,0, 0 blocage (sans pièges : 4,0 / 212,8). ⚠️ les deux corrections changent l'IA pour toutes
     les parties (l'engagement sur la galerie surtout) : à surveiller.
+
+### Retours du 22/10 : fours, butin, skills, chutes, bilan (Geoffrey) — branche `geoffrey/retours-22-10`
+- **Fours** : `src/meta/furnace.js` actions `empty` (un four) et `emptyAll` (tous) : chaque case (sortie comprise)
+  repasse par `unload` ; une case qui ne rentre pas reste (compte `left`, renvoyé par le serveur et affiché). UI : bouton
+  par four (`data-empty`), `#furnEmptyAll`, bouton `½` (floor(stock/2), au moins 1). `main.js` : onOp renvoie la réponse.
+- **Rareté** : résidus retirés de `RARITY.items` (communs).
+- **Butin** : `actions.js lootOf` : n + floor(b) + (rng < frac(b)) au lieu de n×(1+b). Test statistique sur 20 000 mobs.
+- **Stats** : `SKILL_ADD` (looting ← loot ×100, affichage seulement : la partie lit toujours `m.skill.loot`),
+  `behaviourSkills(effects)` (nœuds hors SKILL_STATS/SKILL_ADD, texte `nodeText`) ; `minerStats` → champ `add`.
+  Vérifié : tous les skills sont lus en jeu (mine_speed/damage via carac ; ore_oxygen, ore_rush, build_time,
+  tall_ladder, winch, travel_rush, taunt, loot dans sim/).
+- **Chutes** : `world.js ontoLadder` ; `ai.js` : une case de chute dure climbT si la chute finit sur une échelle ;
+  `path.js` : `drop` (même règle) et `side` (pas de côté depuis un seau ou une échelle : chute comptée au moins à la
+  vitesse du puits). Mesure (3 seeds, skills mixed, motif « puits → côté → chute → retour au puits ») : 227 → 14.
+- **Bilan** : `shared/game.js resultChoice(ended, waitingFor)` ; `main.js pollResult` attend le résultat de la session
+  jouée (`waitingFor = rec.id`) ; un ancien jamais vu est `ack` sans être affiché. Cause : bilan de tour pas fermé, mine
+  relancée depuis le lobby, `state()` renvoyait le plus récent « done » pendant le partage de la mine.
+  `session.js` : `summary.lostBags` (détail par mineur), affiché dans `hud.js`.
+- **Tests** : `bilan.test.js` (nouveau, 2), fall +2, skills +1 (et butin réécrit), furnace +2, anticheat/furnace
+  (empty/emptyAll dans les suites au hasard), rarity, stuff. 253/253 sur les sujets touchés ; anti-triche 72/72.
+- **Vérification** : ✅ simulation 3 × 5 : 3,0 areas, profondeur 186, 0 blocage (avant : 3,0 / 192) ; `--skills
+  mixed` : 3,6 / 201, 0 blocage (inchangé). ⚠️ pas regardé dans le navigateur (boutons des fours, liste des skills).
+- **Points fragiles** : `side` vaut pour toute chute depuis une échelle (pas seulement près du treuil) ; le bilan d'une
+  session jamais vue est marqué vu sans affichage quand une autre se termine.
