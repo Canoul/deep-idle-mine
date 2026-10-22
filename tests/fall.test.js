@@ -144,11 +144,14 @@ test('session complète : jamais bloqué, chute connue jamais au-delà de 3 case
   const { newSession, tick } = await import('../src/sim/session.js');
   const G = newSession(23757, { miners:1 });
   const m = G.miners[0];
-  let start = null, worst = 0;
+  /* seules comptent les chutes qu'il provoque (pas en marchant ou en creusant) ; son appui qui disparaît sous lui n'en
+     est pas une (22/10, seed 23757 avec « Plus profond » : il tue le mimic sur lequel il se tient, chute de 4) */
+  let start = null, worst = 0, prev = null;
   while(!G.over){
     const falling = m.action?.data?.fall;
-    if(falling && start === null) start = { y:m.y, blind:m.fall?.blind };
-    if(!falling && start !== null){ if(!start.blind) worst = Math.max(worst, m.y - start.y); start = null; }
+    if(falling && start === null) start = { y:m.y, blind:m.fall?.blind, chosen:prev === 'move' || prev === 'mine' };
+    if(!falling && start !== null){ if(!start.blind && start.chosen) worst = Math.max(worst, m.y - start.y); start = null; }
+    if(!falling && m.action) prev = m.action.type;
     tick(G);
   }
   assert.ok(worst <= CFG.maxFall, `chute connue de ${worst} cases`);
