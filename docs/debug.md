@@ -1359,7 +1359,7 @@ Règles (voir CLAUDE.md) :
   ✅ Chromium : R3 + rune R7 refusé, R6 + R3 accepté avec aperçu, 0 erreur console.
 - **Mise en ligne (22/10)** : demandée par Geoffrey ; `main` n'avait pas bougé ; tests du sujet et anticheat verts.
 
-### Mine instantanée : inscriptions 30 min avant, possibles en session (Geoffrey) — branche `geoffrey/mi-inscription-30min`
+### Mine instantanée : inscriptions 30 min avant, possibles en session (Geoffrey) — branche `geoffrey/mi-inscription-30min`, en ligne le 22/10
 - **Config** `INSTANT_MINE.signupBefore` (1 800 s). `src/shared/instant.js` : `signupOpensAt`, `signupOpen`.
 - **Serveur** (`server/instant/service.js`) : `join` refuse `signup_closed` hors fenêtre (sauf dev), n'exige plus
   d'être hors session ; quitte le groupe seulement hors session ; `open` fait quitter leur groupe à ceux qui entrent

@@ -29,7 +29,7 @@ Modèle d'entrée :
   - les rappels (30, 15, 5 min, 30 s) arrivent aussi pendant une session normale ;
   - après une mine instantanée, on n'est dans aucune session (vérifié par un test).
 - **Décisions** : celles ci-dessus (Geoffrey).
-- **État** : 🧪 sur la branche `geoffrey/mi-inscription-30min` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 ## 22/10/2026 — Geoffrey — Tours du Jugement : labyrinthe, brouillard, caméra, 10 minutes
 - **Pour le joueur** :
   - **Labyrinthe** : dans les tours, une ligne sur deux est un mur incassable percé d'un seul passage (4 cases), jamais
