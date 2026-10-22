@@ -1453,7 +1453,7 @@ Règles (voir CLAUDE.md) :
 - **Mise en ligne (22/10)** : demandée par Jules ; `main` avait reçu « fin de session plus haut » et `jules/fix-chute` :
   conflits seulement dans le journal et le debug (tout gardé).
 
-### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`
+### Treuil : l'IA sortait du seau (Jules) — branche `jules/treuil-vitesse`, ✅ en ligne le 22/10
 - **Symptôme** (retour joueur) : les mineurs sortent du treuil quand il y a une colonne d'échelles ou un trou profond
   à côté.
 - **Cause** : pas un bug de l'IA, le coût était juste. Seau = `WINCH.speedFactor` 0,85 × `climbSpeed` = 1,9 case/s ;

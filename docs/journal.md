@@ -26,7 +26,7 @@ Modèle d'entrée :
   214. L'équipe atteint maintenant le donjon de l'area 4 avant la fin.
 - **Décisions** : vitesse ×2 (choix de Jules ; valeur provisoire). En dessous de ×2, un trou à côté reste plus rapide.
 - **À suivre** : +19 %, c'est un gros gain pour un seul skill : à surveiller avec la progression.
-- **État** : 🧪 sur la branche `jules/treuil-vitesse` (pas en ligne)
+- **État** : ✅ en ligne le 22/10
 
 ## 22/10/2026 — Jules — Voir le stuff de ses amis
 - **Pour le joueur** : dans l'onglet **Social**, chaque ami a un bouton **Stuff**. Il ouvre sa fiche : son niveau, sa
