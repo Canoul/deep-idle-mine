@@ -17,6 +17,7 @@ l'hébergement. Le détail technique de chaque correction est dans `docs/debug.m
 | Injections | Base : requêtes paramétrées uniquement. Page : tout texte venant d'un joueur est échappé, et un pseudo ne peut contenir que lettres, chiffres, « - », « _ ». |
 | En-têtes | Politique de contenu stricte (seuls nos scripts, polices Google), pas d'affichage dans un cadre d'un autre site, `nosniff`, HSTS en https (`server/config.js`, `securityHeaders`). |
 | Fichiers servis | Liste blanche : `index.html`, `wiki.html`, `src/`, `textures/`. Jamais `data/`, le code serveur, les scripts, la doc, `.git`. |
+| Chat de session | Seuls les joueurs de la session encore présents lisent et écrivent ; nom donné par le serveur ; texte nettoyé (caractères de contrôle et d'inversion retirés, 200 caractères), un message par seconde, échappé à l'affichage. En mémoire seulement, effacé à la fin de la session. |
 | Données personnelles | Le serveur ne garde ni e-mail ni adresse IP (les adresses ne servent qu'aux limites, en mémoire). Un compte public = ID, pseudo, date de création. |
 | Économie | Suite anti-triche (`npm run test:anticheat`) : duplication, quantités invalides, demandes rejouées. |
 | Serveur OVH | Jeu sur 127.0.0.1 derrière Caddy (https), utilisateur sans droits, service systemd verrouillé, pare-feu (22/80/443), fail2ban, mises à jour de sécurité automatiques, réglages (`/etc/deep-idle-mine.env`) lisibles par root seulement. |

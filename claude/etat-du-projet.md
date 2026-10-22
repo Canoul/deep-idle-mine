@@ -49,6 +49,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     3) : stuff de base 0/10, petit stuff 3/10, minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min, le même seul 0/10.
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un coffre de chaque qualité).
+- **Chat de session** (22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
+  seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
 - **Social** (21/10, Geoffrey ; fusionné par Jules) : amis par pseudo (ou ID pour un invité), demandes à accepter,
   présence (hors ligne, en ligne, en session, dans le lobby x/3), Inviter / Rejoindre, notifications en pop-up en haut
   à gauche (GAME_DESIGN §6). Serveur : `server/social/`, stockage `social` dans PostgreSQL. **Voir le stuff d'un ami**

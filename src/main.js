@@ -36,6 +36,7 @@ import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { renderLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
+import { setupChat } from './ui/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
@@ -231,7 +232,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
-  rec = null; G = null; waiting = false; clearTimeout(viewTimer);
+  rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('noSession').hidden = false;
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
@@ -336,6 +337,9 @@ const focusPanel = setupFocusPanel({
   },
 });
 
+/* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
+const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
+
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
   try { applyClock((await gameApi.clock(opts)).session.clock); } catch(e){ alert(e.message); }
@@ -360,6 +364,7 @@ function enterSession(session){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw; $('miRun').hidden = !mi; $('twRun').hidden = !tw;
+  if(mi || tw) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   pollView();
   pollLobby();                                   // le lobby continue de montrer le groupe
@@ -436,7 +441,7 @@ async function pollResult(){
 function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
-  rec = null; G = null; waiting = false;
+  rec = null; G = null; waiting = false; chat.stop();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill

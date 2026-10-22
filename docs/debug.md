@@ -1509,3 +1509,23 @@ Règles (voir CLAUDE.md) :
 - **Simulation** (sonde, 5 seeds à 3, skills mixed) : résidus au coffre 4,2 → 10,8 / session, valeur minerais 1 502 →
   1 457 (−3 %), minerai 1 037 → 1 042, 0 blocage (détecteur de `simulate`, mêmes seeds que `--count 5`) ✅.
 
+### Chat de session (Jules) — branche `jules/chat-session`, ✅ en ligne le 22/10
+- **Quoi** : chat des joueurs d'une session, en mémoire seulement.
+- **Fichiers** : `CHAT` (`src/config.js` : maxLen 200, keep 50, gapMs 1000, poll 3000, ttlMs 3 h) ;
+  `src/shared/chat.js` (`cleanChatText` : chaîne, caractères de contrôle / bidi / zéro largeur → espace, espaces
+  resserrés, 1 à maxLen caractères comptés en points de code, sinon null) ; `server/game/chat.js` (`createChat` :
+  salon par id de session, numéros croissants, cadence par compte, oubli après ttlMs sans message, `drop`) ;
+  `server/game/service.js` (`chatPost` : session `running` de `activeOf`, nom pris dans `rec.players` ; `chatGet` :
+  `running` ou `settling` ; `chat.drop` à la fin dans `settleWith` et quand tous sont partis) ; routes
+  `GET /api/game/chat?after=N`, `POST /api/game/chat` ; `src/net/api.js` (`chat`, `say`) ; `src/ui/chat.js`
+  (relu toutes les 3 s, ×5 onglet caché ; `gen` pour ignorer une réponse d'une session précédente ; texte échappé) ;
+  `index.html` (#chatCard dans `.runR`) ; `src/main.js` (start dans `enterSession` hors MI / tour, stop dans
+  `showNoSession` et `showResult`) ; style.
+- **Tests** : `tests/chat.test.js` (9 : texte, balisage gardé tel quel, salon / keep / numéros, cadence, oubli,
+  service : nom serveur, hors session / parti refusés, invalides et trop rapides, effacé à la fin) ;
+  `tests/game-http.test.js` +1 (401 sans compte, 404 sans session, écrire / relire après N, 429, 400). chat,
+  game-service, game-http, security, boot-check, blocked-names, nav : ✅. Vérifié dans le navigateur (`npm run dev`,
+  playwright) : message affiché, `<b>` échappé, nom en vert pour soi.
+- **Points fragiles** : perdu au redémarrage du serveur (en mémoire, voulu) ; la cadence est par compte, toutes
+  sessions confondues ; pas d'affichage MI / tour.
+
