@@ -8,6 +8,7 @@ import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
+import { sanitizeLook } from '../meta/stuff.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -29,6 +30,10 @@ export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null)
   while(slots.length < max) slots.push({ kind:'free' });
   return slots.slice(0, Math.max(max, party?.members.length ?? 0));
 }
+
+/* skin d'une place : le sien = son stuff actuel (à jour sans attendre le serveur) ; les autres = l'équipement porté
+   envoyé par le serveur (look), revérifié */
+export const portraitLook = (slot, myLook = {}) => slot.me ? myLook : sanitizeLook(slot.look);
 
 /* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien », ou « Sans spécialisation » */
 export function specLabel(tree){
@@ -107,7 +112,8 @@ export function setupLobby(h){
     const all = modes.map(btn), at = modes.filter(m => !MINE_MODES.find(d => d.id === m.id)?.tower).length;   // après Mine et Mine instantanée, avant les tours
     all.splice(at, 0, judge);
     $('mineModes').innerHTML = all.join('');
-    $('lobbySlots').innerHTML = lobbySlots(account, party, GAME.maxPlayers, st.myTree).map(s => {
+    const slots = lobbySlots(account, party, GAME.maxPlayers, st.myTree);
+    $('lobbySlots').innerHTML = slots.map((s, i) => {
       if(s.kind === 'free')
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
@@ -115,13 +121,13 @@ export function setupLobby(h){
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
-      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16"${s.me ? ' data-me' : ''}></canvas></span>`+
+      return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
                               `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
-    /* sprite de chaque joueur : toi avec ton stuff, les autres en tenue de base */
-    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.hasAttribute('data-me') ? h.look?.() ?? {} : {}));
+    /* sprite de chaque joueur, avec son équipement */
+    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {})));
 
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');

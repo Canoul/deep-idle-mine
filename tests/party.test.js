@@ -364,6 +364,15 @@ test('lobby : chaque membre du groupe montre sa spécialisation (arbre de skills
   assert.deepEqual(st.party.members.map(m => [m.account, m.tree]), [[A.id, 'logisticien'], [B.id, null], [C.id, 'barbare']]);
 });
 
+test('lobby : chaque membre du groupe montre son skin (équipement porté)', async () => {
+  const { party, game } = setup();
+  const L = { [A.id]:{ casque:'Casque en chitine' }, [B.id]:{}, [C.id]:{ pioche:'Pioche en pierre' } };
+  game.lookFor = async id => L[id];
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  const st = await party.state(B);
+  assert.deepEqual(st.party.members.map(m => [m.account, m.look]), [[A.id, L[A.id]], [B.id, {}], [C.id, L[C.id]]]);
+});
+
 test('spécialisation : lue par le service de jeu depuis les skills du compte', async () => {
   const { game } = setup();
   assert.equal(await game.skillTreeOf(A.id), null);

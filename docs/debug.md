@@ -1810,3 +1810,17 @@ Règles (voir CLAUDE.md) :
   les mineurs en combat (`m.foe`) : au travail 0,9 % (main seul 0,5 %). Simulation 3 × 5 : areas 3,2 / profondeur 190,4
   (main seul : 3,0 / 192,0) ; `--skills mixed` : 3,6 / 201,4 (main : 3,6 / 201,0) ; 0 blocage. `npm test` : 673 + team
   7/7, anti-triche 72/72.
+
+### Skin des autres dans le lobby (Geoffrey) — branche `geoffrey/skin-lobby`
+- **Quoi** : le lobby dessinait les autres membres en tenue de base (`drawPortrait(c, {})`, commentaire « les autres en
+  tenue de base ») : le serveur n'envoyait pas leur apparence. `server/game/service.js` : `lookFor(id)` = `lookOf` du
+  stuff porté (noms des pièces). `server/party/service.js` : `state()` remplit une `Map` `looks` (comme `trees`),
+  `publicParty` ajoute `look` à chaque membre (`{}` par défaut). `src/ui/lobby.js` : `portraitLook(slot, myLook)` →
+  le sien = `h.look()` (stuff local, à jour tout de suite), les autres = `sanitizeLook(slot.look)` ; canvas repérés
+  par `data-slot` (avant `data-me`).
+- **Tests** : skins (+1 : `lookFor` vide puis casque porté), party (+1 : chaque membre a son `look`), lobby (+1 :
+  `portraitLook`, pièces invalides ignorées, serveur sans `look`) ; lobby, skins, party, lfg, social : 80/80.
+- **Vérification** : ⚠️ pas regardé dans le navigateur à deux comptes.
+- **Points fragiles** : `state()` est appelé souvent par chaque lobby : `lookFor` relit inventaire + stuff de chaque
+  membre à chaque appel (comme `skillTreeOf` relit les skills). Avec PostgreSQL, 3 lectures de plus par appel ; à
+  mettre en cache si le serveur rame.
