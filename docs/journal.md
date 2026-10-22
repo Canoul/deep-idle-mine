@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 22/10/2026 — Geoffrey — Wiki à jour, vraies chances du concasseur
+- **Pour le joueur** :
+  - **Concasseur, bouton « ? »** : pour chaque bloc, la chance d'avoir **une gemme** (les trois s'additionnent :
+    0,3 % par lot de terre, pas 0,1 %), « 1 lot sur N » et le temps moyen de concassage (ex. terre : une gemme toutes
+    les ≈ 5 h 30, un Treasure T1 tous les ≈ 7 jours), puis le détail gemme par gemme. Même tableau dans le wiki.
+  - **Wiki** : nouvelles sections **Mine instantanée** (horaires, mine, plumes, gravité et échelles, rappels) et
+    **Amélioration** (qualités R1 à R7, paliers +1 à +3 et leur coût) ; donjon « à chaque partie, area 4 et area 5 » ;
+    onglets à jour (barre d'action en bas, Amélioration, Historique, vrai Social) ; la Plume d'ange n'est plus « pas
+    encore obtenable » ; plumes et cristaux affichent leur usage.
+  - **Ange contre Démon** dans le wiki : résidus, jauges du Jugement (dans le Lobby), tours et boss, coffres, runes et
+    **Enchantement** (lignes d'une rune selon sa qualité) ; résidus, coffres et rune ont leur source et leur usage.
+- **État** : ✅ en ligne le 22/10 (après l'identification sans stats et le Jugement dans le Lobby)
 ## 22/10/2026 — Geoffrey — Le Jugement passe dans le Lobby
 - **Pour le joueur** : plus d'onglet Jugement dans la barre. Dans le **Lobby**, « Où miner » propose **Mine, Mine
   instantanée, ⚖ Jugement** : Jugement affiche les deux jauges et l'état des tours à la place de l'équipe. Quand une tour

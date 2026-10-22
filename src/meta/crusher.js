@@ -157,3 +157,25 @@ export function sanitizeCrusher(raw){
 
 /* ce que le navigateur voit (sans la mémoire des demandes) */
 export const publicCrusher = (c, now) => ({ in:c.in, out:c.out, since:c.since, crushed:c.crushed, finds:c.finds, now });
+
+/* ---- Chances réelles, pour l'aide « ? » de l'onglet et le wiki ----
+   Un lot = CRUSHER.batch blocs = un cycle de CRUSHER.time s. rollLoot fait UN tirage par famille : les chances des
+   objets d'une famille s'additionnent (3 gemmes à 0,1 % = 0,3 % d'avoir une gemme, jamais deux). Pour chaque famille
+   et chaque objet : chance par lot, « 1 lot sur every » (moyenne) et le temps moyen concasseur en marche sans arrêt. */
+export function dropOdds(block){
+  const t = CRUSHER.loot[block];
+  if(!t) return [];
+  const odds = chance => ({ chance, every: chance > 0 ? 1 / chance : Infinity, sec: chance > 0 ? CRUSHER.time / chance : Infinity });
+  return t.oneOf.map(f => ({ family: f.family, ...odds(f.items.reduce((s, i) => s + i.chance, 0)),
+                             items: f.items.map(i => ({ item: i.item, ...odds(i.chance) })) }));
+}
+
+/* durée moyenne lisible et arrondie : « 17 min », « 5 h 30 », « 7 jours » */
+export function aboutTime(sec){
+  if(!Number.isFinite(sec)) return 'jamais';
+  const min = Math.round(sec / 60);
+  if(min < 60) return `${Math.max(1, min)} min`;
+  if(min < 48 * 60){ const h = Math.floor(min / 60), m = Math.round((min % 60) / 10) * 10;
+    return m === 60 ? `${h + 1} h` : m ? `${h} h ${String(m).padStart(2, '0')}` : `${h} h`; }
+  return `${Math.round(min / 1440)} jours`;
+}

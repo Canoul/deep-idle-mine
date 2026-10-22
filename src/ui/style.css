@@ -340,6 +340,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .fout,.fparts{display:flex;align-items:center;gap:calc(2*var(--u));flex-wrap:wrap}
 .fout b{flex:1;font-weight:400}
 .fparts{margin-top:var(--u);font-size:var(--fs-s)}
+.fodds{display:flex;align-items:center;gap:calc(2*var(--u));flex-wrap:wrap;margin-top:calc(2*var(--u));font-size:var(--fs-s)}
+.fodds .mut{flex-basis:100%;margin-top:calc(-1*var(--u))}
+.fodds img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
 .fparts img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
 .furn.locked{opacity:.55}
 .furn.locked h3{margin:0}

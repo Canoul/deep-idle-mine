@@ -1282,4 +1282,20 @@ Règles (voir CLAUDE.md) :
   badge sur `lobby`, `judgmentPending` passé au lobby. Le serveur ne change pas (Jugement n'est pas un mode).
 - Tests : nav (ordre des onglets, #jugement), lobby, judgment : 25/25 ✅. Chromium 1440×900 et 390×844 : bouton,
   carte, retour à Mine, lien #jugement ✅, aucune erreur. ⚠️ Pas vu à l'écran : une tour ouverte (« Choisir la tour »).
+### Wiki à jour + vraies chances du concasseur (Geoffrey) — branche `geoffrey/wiki-nouveautes`
+- **Concasseur** : `src/meta/crusher.js` gagne `dropOdds(bloc)` (par famille : somme des chances, `every` = 1/chance
+  lots, `sec` = temps moyen) et `aboutTime(s)`. Utilisés par la fenêtre « ? » (`src/ui/crusher.js`, styles `.fodds`)
+  et par le wiki (`crusherRows`). Les chances de la config ne changent pas : c'est l'affichage.
+- **Wiki** : `data.js` (source Plume d'ange = MI, usages des matériaux d'`UPGRADE.levels`, stuff « s'identifie »,
+  `qualityRows`, `upgradeRows`, `upgradeTotal`, `instantInfo`) ; `wiki.js` (sections MI et Amélioration, donjon à
+  chance 1 / plusieurs areas, tableau concasseur) ; `wiki.html` (sommaire, onglets, textes).
+- **Tests** : `tests/crusher.test.js` (dropOdds + contrôle contre `rollLoot`, 1 million de lots par bloc) et
+  `tests/wiki.test.js` (nouveautés) : 21/21 ✅. Chromium : wiki et fenêtre « ? » vus, aucune erreur console ✅.
+- ⚠️ Le texte d'identification suppose `geoffrey/identification-sans-stats` fusionnée (qualité seule).
+- ⚠️ `geoffrey/retours-21-10` (non fusionnée) relève les chances du concasseur : le « ? » et le wiki suivront la
+  config tout seuls si elle passe.
+- **Ajout avant la mise en ligne (22/10)** : section `#ange` (`judgmentInfo`, `runeRows` dans `data.js` ; `judgment()`
+  dans `wiki.js`) et rubrique Enchantement ; sources / usages des résidus, coffres (`ITEMS[x].chest`) et de la Rune ;
+  résidus listés en areas ≥ `JUDGMENT.fromArea` dans le tableau des blocs. Plus aucun objet « Pas encore obtenable ».
+  wiki + crusher 21/21 ✅, Chromium sans erreur ✅. Mis en ligne le 22/10.
 
