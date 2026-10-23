@@ -115,7 +115,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
   Repère (5 parties) : solo de base, area 1 ouverte (avant : 2) ; à 3 avec skills, area 4 (avant : la 5 dans
   4 parties sur 5).
-- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
+- **Spécialisation** : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.

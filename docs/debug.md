@@ -2070,3 +2070,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** : mobs, skills, tower, rune, anticheat/rune, rarity, inventory, party, lobby, instant-server, judgment,
   game-service, wiki, stuff, amelioration, anticheat complet ✅.
 - **Simulation** `--miners 3 --count 5 --skills mixed` : areas 3,0, profondeur 194, allers-retours 28,8, 0 blocage ✅.
+
+### Mineur : Légende de la flemme (Geoffrey) — branche `geoffrey/legende-flemme`, ✅ en ligne le 23/10
+- **Quoi** : nœud `lazy_legend` (`SKILLS.trees` mineur, row 4, max 1, per 0.05). `lazyTeleport(G,m)` (`src/sim/ai.js`,
+  appelé en tête de `decideReturn`) : un tirage par remontée (`m.lazyTry === m.returnStart`), jamais si
+  `m.reason === 'fin de session'` ; RNG à part `G.lazyRng` (seed ^ 0x1a2e5e, créé au premier tirage). Réussi :
+  `x = CHEST_X, y = 0`, remise à zéro de fall / target / foe / digCol / galleryRow / exploring ; `stats.lazy`.
+  Tacle et étourdissement passent avant `decideReturn` (tirage après). MI et tours : autre IA, pas concernées.
+  Icône `sparkle` (`src/ui/skills.js`).
+- **Tests** : skills (structure de l'arbre, Ruée au max exigée, tirage unique, fin de session, en partie à 100 %) ✅.
+- **Simulation** `--miners 3 --count 5 --skills mineur` : areas 3,2, profondeur 197, allers-retours 26,8, 0 blocage ✅.
