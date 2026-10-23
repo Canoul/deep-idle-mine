@@ -60,6 +60,14 @@ export function launchState({ account, party, offline, busy, session }){
   return { can:true, label: n > 1 ? `▶ Lancer à ${n}` : '▶ Lancer la session' };
 }
 
+/* Case « Prêt tout le temps » : seulement pour un membre (pas le chef) d'un groupe ; utilisable aussi pendant une
+   session, pour être prêt dès la suivante */
+export function alwaysReadyState({ account, party, offline }){
+  if(offline || !account || !party || party.members.length < 2 || party.leader === account.id) return { show:false };
+  const me = party.members.find(m => m.account === account.id);
+  return { show: !!me, checked: !!me?.always };
+}
+
 /* Recherche de groupe (mine classique seulement) : rien, le bouton « Chercher un groupe » (seul, ou chef d'un groupe de
    2), ou la recherche en cours (cancel : c'est la sienne, on peut l'annuler ; sinon c'est celle de son chef) */
 export function lfgState({ account, party, offline, session, mode, lfg }){
@@ -82,7 +90,7 @@ export function mineModes(cur, locked = false, judgment = null){
   });
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), promote(id), lfg(auto), lfgCancel } }
+/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
@@ -119,7 +127,7 @@ export function setupLobby(h){
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
-      const ready = party && !s.leader && !s.playing ? (s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
+      const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
@@ -132,6 +140,9 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
+    const ar = alwaysReadyState(st);
+    $('alwaysReadyRow').hidden = !ar.show;
+    $('alwaysReady').checked = !!ar.checked;
     $('inviteBtn').disabled = offline || !account || locked;
     $('inviteBtn').classList.toggle('on', st.inviteOpen);
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
@@ -274,6 +285,7 @@ export function setupLobby(h){
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
+  $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
     if(st.lfg?.search?.mine) act(() => h.party.lfg(st.lfgAuto));     // déjà en recherche : on garde sa place

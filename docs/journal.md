@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »
+- **Pour le joueur** : dans un groupe, un membre peut cocher **« Prêt tout le temps »** (à côté du bouton Prêt). Il
+  reste alors prêt d'une session à l'autre, même quand quelqu'un rejoint : le chef relance sans attendre de clic. On
+  peut la cocher pendant une session, pour la suivante. Décocher ou « Prêt (annuler) » l'arrête.
+- **Décisions** : réservée aux membres (le chef n'a pas d'état « prêt ») ; reste cochée tant qu'on est dans le groupe
+  (choix de Claude à valider : on pourrait aussi la décocher quand un inconnu rejoint).
+- **À suivre** : regarder la case dans le navigateur.
+- **État** : 🧪 sur la branche `geoffrey/pret-tout-le-temps` (pas en ligne)
+
 ## 22/10/2026 — Geoffrey — Barbare : nouveau talent « Braum »
 - **Pour le joueur** : l'arbre Barbare a un **4e étage**, **Braum** (0/3, il faut Pillage au max). Quand le barbare
   va aider un allié (mob qui le poursuit, boss d'un donjon découvert, mobs d'un piège), il marche et grimpe (échelle

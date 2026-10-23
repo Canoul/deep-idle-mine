@@ -1869,3 +1869,16 @@ Règles (voir CLAUDE.md) :
 - **Après fusion de main** (retours-22-10 : butin, chutes, skills de comportement) : 198/198 ✅ ; simulation 3 barbares
   profondeur 192,4, 0 blocage. Braum apparaît tout seul dans « Skills en partie » (`behaviourSkills`, onglet Stuff).
 
+### Lobby : « Prêt tout le temps » (Geoffrey) — branche `geoffrey/pret-tout-le-temps`, 🧪 pas en ligne
+- **Quoi** : champ `always` sur un membre de groupe (`server/party/service.js`). `unready` remet `ready = !!always`,
+  `notReady` ignore les `always`, `promote` aussi (l'ancien chef garde son `always`). Nouvelle action
+  `alwaysReady(me, bool)` (route `POST /api/party/always-ready` `{ always }`, `partyApi.alwaysReady`) : **pas** de
+  `notInSession` (cochable pendant la session). `ready(me, false)` remet aussi `always` à faux. `always` enregistré
+  avec le groupe (`saved` / `load`) et envoyé dans `publicParty`. Lobby : `alwaysReadyState` (pure, `src/ui/lobby.js`),
+  case `#alwaysReady` dans `.lobbyActions` (`index.html`, style `.lobbyActions .chk`), tag « ✔ prêt tout le temps ».
+- **Tests** : party (relance sans clic après session, nouveau venu, cochée en session, annulation, valeurs invalides,
+  promote, redémarrage, route HTTP), lobby (`alwaysReadyState`) : ✅ 59/59 avec social.
+- **Points fragiles** : ⚠️ pas regardé dans un navigateur. Un membre `always` absent (onglet fermé) compte comme prêt :
+  le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
+  les garde-fous.
+
