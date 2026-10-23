@@ -38,16 +38,15 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 (0,5 % chacun, poids 6), visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
-    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu**. **Refonte du 23/10** (branche
-    `geoffrey/tour-serpentin`, pas encore en ligne) : tour 20 × 32, **7 étages** de 3 séparés par des planchers
+    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu**. **Refonte du 23/10** (en ligne) : tour 20 × 32, **7 étages** de 3 séparés par des planchers
     indestructibles percés d'une porte de 3 cases au bord, alternée gauche / droite (**serpentin**) ; étage 0 vide, puis
     en alternance (tirée par la seed) **plein de stonebrick** (6 s) ou **5 Séraphins / Diablotins** (200 PV, taclent,
     porte du plafond scellée tant qu'il en reste) ; découverte **étage par étage**, lumière et torches illimitées ;
-    boss **5000 PV** (2000 le matin) qui **marche** vers le plus proche quand personne n'est à son contact (2 × vitesse de base),
+    boss **3500 PV** (essayés : 2000, 5000) qui **marche** vers le plus proche quand personne n'est à son contact (2 × vitesse de base),
     projection **20 %** (10 % barbare) de 6 cases, chute jusqu'en bas depuis le bord ; **le barbare se met du côté
-    opposé** aux autres ; on passe derrière le boss (choix de Claude à valider). Mesures (20 tours, sans skills) : base
-    **0 %**, 2 mineurs + 1 barbare à 1,1 / 10 **90 %**, 2 barbares 15 dégâts + mineur 1,3 **100 %** (victoire vers
-    9 min 15 sur 10). `npm run simulate:tower`. (Ancien : 15 × 30 en labyrinthe, boss 1000 PV immobile, 10 / 5 %.)
+    opposé** aux autres ; on passe derrière le boss (choix de Claude à valider). Mesures à 3500 PV (20 tours, sans skills) : base
+    **0 %**, 2 mineurs + 1 barbare à 1,1 / 10 **0 %** (reste ≈ 300 PV), 2 barbares 15 dégâts + mineur 1,3 **60 %**
+    (victoire vers 9 min 53 sur 10). `npm run simulate:tower`. (Ancien : 15 × 30 en labyrinthe, boss 1000 PV immobile, 10 / 5 %.)
   - Victoire → chaque présent reçoit un **trésor R1 à R7** (chances de l'identification) ; une victoire par joueur et
     par ouverture ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la

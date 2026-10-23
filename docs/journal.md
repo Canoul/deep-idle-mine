@@ -35,8 +35,10 @@ Modèle d'entrée :
 - **Boss à 5 000 PV** (demande de Geoffrey, 11 h) : b et c **0/20** (arrivée sur le toit vers 8 min 15 : il reste
   ~100 s, les deux compos font au mieux 3 750 et 4 400 dégâts). À trancher : durée à 12-13 min, briques plus rapides,
   ou 5 000 PV visés pour un stuff plus fort.
+- **Boss à 3 500 PV** (décision de Geoffrey, 11 h 10) : base 0/20, compo b **0/20** (il reste ≈ 300 PV), compo c
+  **12/20** (victoire vers 9 min 53).
 - **À suivre** : regarder la tour dans le navigateur (mobs, lumière, caméra) ; ajuster ensemble les chiffres.
-- **État** : 🧪 sur la branche `geoffrey/tour-serpentin` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »
 - **Pour le joueur** : dans un groupe, un membre peut cocher **« Prêt tout le temps »** (à côté du bouton Prêt). Il

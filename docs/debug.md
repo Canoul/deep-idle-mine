@@ -1882,7 +1882,7 @@ Règles (voir CLAUDE.md) :
   le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
   les garde-fous.
 
-### Tours : refonte en étages (Geoffrey) — branche `geoffrey/tour-serpentin`
+### Tours : refonte en étages (Geoffrey) — branche `geoffrey/tour-serpentin`, ✅ en ligne le 23/10
 - **Quoi** : `src/sim/tower/world.js` réécrit : `floors` étages de `floorH` lignes + séparation (indestructible, porte
   de `gate` cases en brique au bord, côté alterné depuis `L.gate0` tiré par la seed), `kinds` (empty / blocks / mobs,
   premier tiré par la seed), helpers `floorBottom/Top/Ceil`, `floorOf`, `isCeil`, `gateCols`, `towerLight` (lumière
@@ -1906,3 +1906,4 @@ Règles (voir CLAUDE.md) :
   chaque case (pénalité `taken`) : du temps perdu, mais pas de blocage.
 - **Boss 5 000 PV** (`TOWER.boss.hp`, 23/10 11 h) : b 0/20 (reste 1 620 PV en moyenne), c 0/20 (1 267). Test « compo
   forte » changé : toit atteint et boss entamé (plus de victoire attendue). ✅ tower 10/10.
+- **Boss 3 500 PV** (décision, mis en ligne) : b 0/20 (reste 10 à 660 PV), c 12/20 (victoire à 9:53). ✅ tower 10/10.

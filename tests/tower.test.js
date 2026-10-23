@@ -77,8 +77,8 @@ test('mobs : la porte du plafond reste scellée tant qu\'il en reste un ; ils ta
   assert.equal(mobDist({ x: 5, y: 10 }, { x: 6, y: 9 }), 1);
 });
 
-test('boss : 5000 PV ; projection 20 % (10 % barbare) ; il marche vers le plus proche quand personne n\'est à son contact', () => {
-  assert.equal(TOWER.boss.hp, 5000); assert.equal(TOWER.boss.knockChance, 0.2); assert.equal(TOWER.boss.knockBarb, 0.1);
+test('boss : 3500 PV ; projection 20 % (10 % barbare) ; il marche vers le plus proche quand personne n\'est à son contact', () => {
+  assert.equal(TOWER.boss.hp, 3500); assert.equal(TOWER.boss.knockChance, 0.2); assert.equal(TOWER.boss.knockBarb, 0.1);
   const G = newTower(5, { side: 'angel', miners: team(2) });
   for(const o of G.mobs) o.hp = 0;
   const [a, b] = G.miners, y = G.roof - 1;
