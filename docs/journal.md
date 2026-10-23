@@ -9,6 +9,15 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+---
+
 ## 23/10/2026 — Geoffrey — Outil : donner un objet à un joueur
 - **Pour le joueur** : rien (outil d'administration).
 - **Pour l'équipe** : `scripts/give-item.js` donne n'importe quel objet du jeu à un compte (ex. un Treasure T3 à
@@ -33,15 +42,6 @@ Modèle d'entrée :
 - **À suivre** : deux fois moins de résidus rapportés → les jauges (cap 250) mettront environ deux fois plus de temps à
   se remplir.
 - **État** : ✅ en ligne le 23/10
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
-
----
 
 ## 23/10/2026 — Geoffrey — Nouveau mob : le Gallianix
 - **Pour le joueur** : à chaque nouvelle area débloquée, un **Gallianix** (canard jaune qui sautille) apparaît à la
@@ -178,7 +178,6 @@ Modèle d'entrée :
 - **À suivre** : regarder à deux comptes dans le navigateur. Quand un ami change de stuff, son skin change au
   rafraîchissement suivant du lobby (quelques secondes).
 - **État** : ✅ en ligne le 22/10
-
 
 ## 22/10/2026 — Geoffrey — Les mineurs reprennent le puits des autres
 - **Pour le joueur** : en équipe, après un passage au coffre, un mineur reprend le puits déjà creusé par les autres
@@ -323,7 +322,6 @@ Modèle d'entrée :
 - **Mesures** (6 parties) : seul, 362 minerais contre 365 avant ; à 3, 1 073 contre 1 074 ; aucun blocage. Une partie
   à 3 sur 6 ne débloque plus l'area 4 dans les dernières minutes (on ne fonce plus au front à la fin).
 - **Réglage** : la part du temps restant à garder pour miner (`endWorkShare`, 50 %) se change dans la config.
-
 
 ## 22/10/2026 — Geoffrey — Mine instantanée : galeries dans tous les sens, tas de plumes prioritaires
 - **Pour le joueur** : les mineurs ne creusent plus tous droit vers le bas : chacun suit un cap qu'il change de temps en temps. Un tas de plumes découvert à 8 cases ou moins passe avant tout, même enfermé dans la roche : le mineur le plus proche creuse vers lui.
@@ -649,7 +647,6 @@ Modèle d'entrée :
 - **À suivre** : la Mine instantanée elle-même. La branche `origin/social` touche aussi `main.js` et `nav.js` :
   conflits à résoudre quand l'une des deux sera fusionnée après l'autre.
 - **État** : ✅ en ligne le 21/10
-
 
 ---
 
