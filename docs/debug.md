@@ -2080,3 +2080,42 @@ Règles (voir CLAUDE.md) :
   Icône `sparkle` (`src/ui/skills.js`).
 - **Tests** : skills (structure de l'arbre, Ruée au max exigée, tirage unique, fin de session, en partie à 100 %) ✅.
 - **Simulation** `--miners 3 --count 5 --skills mineur` : areas 3,2, profondeur 197, allers-retours 26,8, 0 blocage ✅.
+
+### Mule, skill Logisticien étage 4 (Geoffrey) — branche `geoffrey/mule`, ✅ en ligne le 23/10
+- **Quoi** : spec `docs/superpowers/specs/2026-10-23-mule-design.md`. Config : nœud `mule` (row 4), `MULE`
+  { capacityPct 2, depositTime 1, pickTime 1, pickBelow 10 }, `needsAll` sur `travel_rush` (Navette exige tous les
+  nœuds de l'étage 2 ; `blockedReason` dans `src/meta/skills.js`), texture `backpack`. `src/sim/mule.js` : état
+  `G.mule` { carrier, placed, x, y, inv, by, load }, `muleCap` (calculée en direct sur les présents), `muleSpot`,
+  `depositToMule` (partiel), `emptyMule` (crédite `chestBy` au déposant), `pickMule`, `placeMule`, `muleOnLeave`.
+  IA (`ai.js`) : modes `mule` (aller déposer, pods pleins si le sac est plus près que le coffre et `muleFits`),
+  `fetch` (aller ramasser), `m.muleJob` (pose après le treuil, `decideMulePlace`), `m.muleFetch` (prolongation : sac
+  ≤ pickBelow couches sous lui), `planPickup` (fin de session : une décision par remontée, refaite si le sac vide se
+  remplit), `muleEstT` (estimation sans recherche), détour de fin de session compté seulement s'il est possible,
+  `decideSurface` va chercher le sac s'il n'aura plus le temps après un autre trajet. Actions `muleDeposit`,
+  `mulePick`, `mulePlace` ; `deposit` vide le sac transporté. `world.js` : le treuil est prolongé de préférence par
+  le porteur, puis un logisticien avec Mule. `session.js` : `muleOnLeave` avant la photo `shareMarks` ; sac pas
+  rapporté → `summary.lostBags` (« Sac de X »). Vue : `mule` { x, y, load, cap } si posé ; `canvas.js` dessine sac et
+  jauge. `simulate.js` : `--no-mule`, coffre en pods, ligne « sac (Mule) ».
+- **Bugs trouvés en simulation et corrigés** : pickup à chaque reprise du chantier après un combat (descente
+  de 80 couches) → `muleFetch` seulement au lancement ; plongée vers un sac vide (seed 79190) ; sac rempli juste
+  après la décision de remontée (39595, perdu) ; allers-retours d'une case à la surface en comptant un détour
+  impossible (39595).
+- **Tests** : `tests/mule.test.js` (17), `tests/anticheat/mule.test.js` (conservation sur 2 000 suites, départ,
+  fin), skills (Navette), winch, world, mobs, view, share, session, diagnostics, wiki, anticheat duplication/skills
+  ✅ 145/145.
+- **Simulation** 3 × 10 `--skills mixed` (seeds de référence) : avec Mule coffre 3 946 pods, profondeur 187,6,
+  areas 3,1, 0 blocage, 0 perdu, 27 dépôts / 4 993 pods passés par le sac ; sans (`--no-mule`) 4 074, 187,3, 3,1.
+  Logisticien 520 blocs minés contre 571 ; les autres 825 contre 839. **Écart du coffre pas significatif** (paires
+  par seed : −128 pods en moyenne, écart type ≈ 380, Mule gagne 3/10). Temps du logisticien (minutes par partie,
+  même 10 seeds, statuts regroupés) : statuts « sac » 1,5, dont 52 s de « Va ramasser son sac » qui est sa
+  remontée normale par le treuil (remontée + coffre : 9,2 + 0,9 contre 9,9 sans Mule) et 33 s de « Va au sac » (le
+  logisticien dépose lui-même : un gain) ; **coût réel ≈ 6 s** (mine la case 1,2, pose 2,1, ramasse 1,6) ;
+  travail 14,9 contre 16,1 ; chantier du treuil 24,5 contre 23,6
+  (≈ 40 % de sa session dans le chantier, avec ou sans Mule).
+- **Fusion avec main** (23/10, avant mise en ligne) : main avait reçu les corrections de la boucle du treuil
+  (`fix-treuil-boucle`) et la Légende de la flemme (Mineur, étage 4). Conflit dans `decideReturn` : Mule (planPickup,
+  needsPickup) d'abord, puis `lazyTeleport` (arbres exclusifs : un logisticien n'a jamais la flemme). Les repères
+  ci-dessus ont été mesurés avant ces corrections du treuil.
+- **Points fragiles** : ⚠️ rendu (sac, jauge, icône du skill) pas regardé dans un navigateur. Gain non mesurable sur
+  10 parties : décision de design en attente (vider à chaque remontée ?). Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
+  passage au coffre.

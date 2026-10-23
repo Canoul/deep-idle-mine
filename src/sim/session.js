@@ -10,6 +10,7 @@ import { updateMobs, tackler, channeler } from './mobs.js';
 import { updateDungeons } from './dungeon.js';
 import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
+import { muleOnLeave } from './mule.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare } from '../meta/level.js';
 
@@ -105,6 +106,7 @@ export function leaveSession(G, who){
   if(!m || m.left!=null || !G.miners.includes(m)) return false;
   /* anti-boosting : le butin déposé jusqu'ici se partage entre les joueurs présents jusqu'ici (lui compris : sa part
      de cette tranche est perdue, elle ne revient pas aux autres) */
+  muleOnLeave(G, m);   // Mule : le contenu du sac part au coffre AVANT la photo du partage (miné pendant sa présence)
   G.shareMarks.push({ t:G.t, chest:{ ...G.chest }, xp:G.stats.xp||0, present:G.roster.filter(x => x.left==null) });
   m.left = G.t; m.action = null; m.status = 'A quitté la session';
   G.miners = G.miners.filter(x => x!==m);
@@ -124,8 +126,10 @@ export function endSession(G){
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,
     kills:G.stats.kills, stolen:G.stats.stolen, xp:G.stats.xp, trips:G.stats.trips, treasures:G.stats.treasures, chest:{...G.chest}, chestBy:JSON.parse(JSON.stringify(G.chestBy)),
     id:G.id, lost: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>m.name),
-    /* le détail de ce que chacun portait encore (perdu : il fallait le déposer au coffre), pour le bilan */
-    lostBags: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>({ name:m.name, items:{...m.inv} })),
+    /* le détail de ce que chacun portait encore (perdu : il fallait le déposer au coffre), pour le bilan ; et le sac de
+       la Mule pas rapporté au coffre (posé dans la mine, ou porté par un logisticien pas remonté) */
+    lostBags: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>({ name:m.name, items:{...m.inv} }))
+      .concat(G.mule && Object.keys(G.mule.inv).length ? [{ name:muleLabel(G), items:{...G.mule.inv} }] : []),
     miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
   };
   const present = G.roster.filter(m => m.left==null);
@@ -134,6 +138,8 @@ export function endSession(G){
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
     left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m) }));
 }
+
+const muleLabel = G => 'Sac de ' + (G.roster.find(m => m.id===G.mule.carrier)?.name ?? 'la Mule');
 
 /* Partage par tranches (anti-boosting) : la session est coupée à chaque départ. Le butin déposé (et l'XP gagnée)
    pendant une tranche est partagé à parts égales entre les joueurs présents PENDANT cette tranche ; la part d'un joueur

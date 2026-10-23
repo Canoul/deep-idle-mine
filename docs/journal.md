@@ -88,6 +88,28 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 23/10/2026 — Geoffrey — Skill Mule (Logisticien, étage 4)
+- **Pour le joueur** : nouveau skill **Mule** (0/1) au 4e étage du Logisticien. Quand il pose le treuil, le
+  logisticien pose un **sac** à côté du bas du treuil (jauge de remplissage au-dessus). Un mineur aux pods pleins y
+  dépose si le sac est plus près que la surface (dépôt partiel si la place manque). Capacité : 2 × les pods des
+  logisticiens qui ont Mule (400 de base). Le logisticien le vide au coffre quand il prolonge le treuil et en fin de
+  session ; s'il quitte la partie, le sac part au coffre. Un sac pas rapporté à la fin est perdu (bilan).
+- **Aussi** : **Navette** (étage 3) exige maintenant **Échelle de 2 et Treuil** : tout logisticien qui prend Mule a
+  le Treuil. Une sauvegarde qui n'avait qu'une des deux perd Navette et récupère ses points.
+- **Décisions** (Geoffrey) : sac vidé seulement à la prolongation et en fin de session, même plein entre-temps ;
+  capacité = somme des pods des logisticiens avec Mule ; tous les objets acceptés ; mine classique seulement.
+  Choix de Claude à valider : case de gauche si la droite est incassable ; chaque objet compte pour celui qui l'a
+  déposé ; en fin de session, le logisticien passe par le sac lors de sa dernière remontée qui le permet.
+- **Repères** (simulation, 10 parties à 3, un arbre complet chacun) : ≈ 2,7 dépôts et 500 pods par partie passent
+  par le sac, 0 sac perdu, 0 blocage. Le sac ne coûte au logisticien que **≈ 6 s par partie** (miner la case, poser, ramasser) : il le
+  reprend en remontant par le treuil, sur son chemin. Coffre
+  3 946 pods contre 4 074 sans Mule : écart dans le hasard (±15 % d'une partie à l'autre, Mule gagne 3 paires sur
+  10) ; **pas d'effet mesurable** sur 10 parties. Le sac, plein après une vague de dépôts, attend la prolongation
+  suivante : il rapporte peu.
+- **À savoir** : sans lien avec Mule, le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil.
+- **Décision** (Geoffrey) : mis en ligne tel quel (vider le sac à chaque remontée : pas retenu pour l'instant).
+- **État** : ✅ en ligne le 23/10
+
 ---
 
 ## 23/10/2026 — Geoffrey — Nouveau mob : le Gallianix

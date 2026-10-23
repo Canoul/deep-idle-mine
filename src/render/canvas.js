@@ -77,6 +77,12 @@ export function createRenderer(cv){
     for(const o of fm.pings){ if(G.tiles[o.y]&&G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
     blit('chest',CHEST_X*TILE,sy(0));
     if(G.winch) blit('winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil en surface
+    if(G.mule){                                            // sac de la Mule : sur sa case, jauge de remplissage au-dessus
+      const px=G.mule.x*TILE, py=sy(G.mule.y), f=G.mule.cap>0 ? Math.min(1,G.mule.load/G.mule.cap) : 1;
+      blit('backpack',px,py);
+      ctx.fillStyle='rgba(0,0,0,.75)'; ctx.fillRect(px+1,py-4,TILE-2,3);
+      ctx.fillStyle = f>=1 ? '#e05a3a' : f>=0.75 ? '#e0b03a' : '#6fc24a'; ctx.fillRect(px+1,py-4,Math.round((TILE-2)*f),3);
+    }
     for(const T of G.torches){
       const px=T.x*TILE, py=sy(T.y);
       const g=ctx.createRadialGradient(px+8,py+8,2,px+8,py+8,TILE*3); g.addColorStop(0,'rgba(255,200,90,.35)'); g.addColorStop(1,'rgba(255,200,90,0)');

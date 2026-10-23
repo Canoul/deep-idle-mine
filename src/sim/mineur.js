@@ -17,6 +17,9 @@ export function createMiner(id, opts={}){
     skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null
     yieldSince: null,               // attend qu'un logisticien pose l'échelle (depuis ce temps)
     winchJob: null,                 // chantier du treuil (logisticien) : { bottom : ligne à atteindre }
+    muleJob: null,                  // Mule : case où poser son sac après le treuil ({x,y}) ; pickFail : recherche du sac ratée (t)
+    pickFail: null,
+    muleFetch: false,               // Mule : il passe reprendre son sac avant de remonter (prolongation du treuil)
     rushUntil: -1,                  // fin du bonus de vitesse après un minerai (skill ore_rush)
     goingDown: false,               // redescend au front par l'existant (skill travel_rush)
     helping: false,                 // va aider un allié ou se bat pour lui : tacle, donjon, piège (skill braum)
