@@ -32,7 +32,7 @@ Modèle d'entrée :
   3 min et 50 charbons comme les autres alliages.
 - **À suivre** : à quoi sert le steel (craft) ; plus de charbon à partir de l'area 5 (il faudra le ramener d'en haut
   pour le four) ; l'area 6 n'a pas de donjon (donjon en areas 4 et 5) et garde les mobs de l'area 5.
-- **État** : 🧪 sur la branche `geoffrey/graphite` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Retours du 23/10 : socle du coffre, Tainted gold, temps d'un ami, compteur LFG
 - **Pour le joueur** :

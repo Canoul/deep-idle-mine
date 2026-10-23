@@ -74,7 +74,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Retours du 23/10** : socle incassable sous le coffre (bloc 18, colonne 22 ; le treuil est en colonne 25) ;
   Tainted gold = 5 lingots d'or + **20 peaux de gobelin** (ancien : 20 chitine) ; Social : temps restant d'un ami en
   session ; Lobby : compteur « x joueurs en recherche » du LFG, visible sans chercher.
-- **Graphite et area 6** (23/10, Geoffrey ; branche `geoffrey/graphite`, pas encore en ligne) : minerai **Graphite ore**
+- **Graphite et area 6** (23/10, Geoffrey ; en ligne le 23/10) : minerai **Graphite ore**
   (dureté 4, poids 3, attrait 4, 4 XP) en areas 5 et 6 ; four : 10 → 1 **Graphite ingot** (60 s) ; alliage **Steel
   ingot** = 3 Tainted iron + 10 Graphite ingot (50 charbons, 3 min), sans usage pour l'instant. **Area 5** revue (55
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,

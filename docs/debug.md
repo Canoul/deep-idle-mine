@@ -1900,7 +1900,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
 
 
-### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, 🧪 pas en ligne
+### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, ✅ en ligne le 23/10
 - **Quoi** : bloc 19 `Graphite ore` (`ore`, tex `graphite`, w 3, hard 4.0, val 4, dot `#2f3b4d`), `IDS.graphite = 19`,
   `XP.ore.graphite = 4` (`src/config.js`). `AREAS[5]` revue (iron 9.5, diamond 0.5, graphite 5, plus de coal) et
   `AREAS[6]` ajoutée (répétée au-delà). `FURNACE.recipes['Graphite ore']` → `Graphite ingot` (60 s, tex
