@@ -18,6 +18,23 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Tours : étages en serpentin, Séraphins et Diablotins, boss qui bouge
+- **Pour le joueur** : la tour du Jugement est refaite. 20 de large, **7 étages** séparés par des planchers
+  incassables percés d'une **porte de 3 cases** collée à gauche puis à droite : on traverse chaque étage en serpentin.
+  Étage 0 vide, puis un étage sur deux **plein de briques** ou **gardé par 5 Séraphins / Diablotins** (200 PV, ils
+  taclent ; la porte du plafond ne s'ouvre qu'une fois tous morts). Chaque étage se découvre en entier quand on y
+  entre, il fait noir (torches illimitées). Le boss a **2 000 PV**, **se déplace** vers le mineur le plus proche quand
+  personne n'est à son contact, projette à **20 %** (10 % pour un barbare) ; projeté depuis le bord, on tombe en bas
+  et on remonte tout. Le **barbare se met du côté opposé** aux autres. Caméra aussi large que la tour.
+- **Décisions** : celles de Geoffrey ci-dessus. Choix de Claude à valider : on **passe derrière le boss** (sinon le
+  barbare ne peut pas rejoindre l'autre côté) ; le combat (et donc le déplacement du boss) commence au **premier coup
+  reçu** ; deux mineurs ne posent pas la même échelle (le second attend).
+- **Mesures** (20 tours par compo, sans skills) : 3 mineurs de base **0 %** ; 2 mineurs + 1 barbare à 1,1 / 10
+  **90 %** ; 2 barbares à 15 dégâts + 1 mineur à 1,3 **100 %**. Victoires vers 9 min 15-9 min 20 sur 10 : peu de marge.
+  Nouveau : `npm run simulate:tower`.
+- **À suivre** : regarder la tour dans le navigateur (mobs, lumière, caméra) ; ajuster ensemble les chiffres.
+- **État** : 🧪 sur la branche `geoffrey/tour-serpentin` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »
 - **Pour le joueur** : dans un groupe, un membre peut cocher **« Prêt tout le temps »** (à côté du bouton Prêt). Il
   reste alors prêt d'une session à l'autre, même quand quelqu'un rejoint : le chef relance sans attendre de clic. On

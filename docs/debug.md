@@ -1882,3 +1882,26 @@ Règles (voir CLAUDE.md) :
   le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
   les garde-fous.
 
+### Tours : refonte en étages (Geoffrey) — branche `geoffrey/tour-serpentin`
+- **Quoi** : `src/sim/tower/world.js` réécrit : `floors` étages de `floorH` lignes + séparation (indestructible, porte
+  de `gate` cases en brique au bord, côté alterné depuis `L.gate0` tiré par la seed), `kinds` (empty / blocks / mobs,
+  premier tiré par la seed), helpers `floorBottom/Top/Ceil`, `floorOf`, `isCeil`, `gateCols`, `towerLight` (lumière
+  partagée avec l'affichage). `TOWER` en config remplacé (plus de `height`, `mazeEvery`, `mazeHard` ; `mobs`, `gate`,
+  `boss.speedMul`, `sides.*.mob/mobTex`). `src/sim/tower/session.js` réécrit : mobs (`placeMobs`, `stepMobs`, tacle
+  `grab`, provocation si `skill.taunt`), porte scellée (`sealedFloor` dans `breakable`), `revealFloor` à l'entrée d'un
+  étage (remplace `revealAround`), torches (`torchThreshold`, `darkSlow`), boss mobile (`stepBoss` : `engaged` au
+  premier coup, marche si personne au contact ni derrière lui, `bossFits`), côté du barbare (`wantedSide`), on passe
+  derrière le boss (`towerAir` n'exclut plus ses cases), pas de double échelle / double minage (`busy`).
+  Vue : `tower-view.js` envoie boss.x/y, torches, mobs des étages découverts, `reached`, `mobsLeft` ; la lumière est
+  recalculée côté navigateur par `towerLight`. Rendu (`render/tower.js`) : torches, ombre, mobs 16 × 32 et leur vie.
+  Textures `seraph`, `imp` (`gen_textures.py`, `tower_mobs()`). Wiki, lobby, HUD : textes. `scripts/simulate-tower.js`.
+- **Tests** : `tests/tower.test.js` réécrit (carte, mobs, porte scellée, tacle, boss 2000 / 20 % / déplacement /
+  chute du bord, côté du barbare, torches, compo forte 5/5 sans blocage, base échoue, vue, partie en direct) ✅ 10/10 ;
+  game-service 43, lobby 12, wiki 7, rarity 5, boot-check 3 ✅.
+- **Simulation** (`--count 20`) : a) base 0/20 ; b) 18/20 ; c) 20/20 ; 0 attente « bloqué ».
+- **Pas vérifié** : ⚠️ rendu dans le navigateur (mobs, ombre, caméra 22 × 16, boss qui se déplace). L'ombre est dessinée
+  avant les mobs et les mineurs (ils ne sont pas assombris).
+- **Points fragiles** : les seeds changent peu le résultat (tour symétrique, seuls le côté des portes et l'ordre
+  blocs/mobs varient). Dans un étage de blocs, le 2e mineur creuse souvent la ligne du dessus en posant une échelle à
+  chaque case (pénalité `taken`) : du temps perdu, mais pas de blocage.
+

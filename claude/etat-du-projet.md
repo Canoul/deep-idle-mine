@@ -38,19 +38,23 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 (0,5 % chacun, poids 6), visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
-    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu** (22/10 après-midi ; 5 min
-    demandées, infaisables) : creuser une tour 15 × 30 (stonebrick 6 s) **en labyrinthe** (une ligne sur 2 = 11 blocs
-    indestructibles sur 15, un seul passage de 4 cases), **cachée au départ** (Découverte de chaque mineur), caméra
-    rapprochée qui suit son mineur, jusqu'au toit et battre l'**Ange** / le **Démon** (1000 PV, vise le premier
-    arrivé, frappe 1/s puis 2/s sous 33 %, 10 % de chance de projeter de 6 cases, 5 % pour un barbare).
+    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu**. **Refonte du 23/10** (branche
+    `geoffrey/tour-serpentin`, pas encore en ligne) : tour 20 × 32, **7 étages** de 3 séparés par des planchers
+    indestructibles percés d'une porte de 3 cases au bord, alternée gauche / droite (**serpentin**) ; étage 0 vide, puis
+    en alternance (tirée par la seed) **plein de stonebrick** (6 s) ou **5 Séraphins / Diablotins** (200 PV, taclent,
+    porte du plafond scellée tant qu'il en reste) ; découverte **étage par étage**, lumière et torches illimitées ;
+    boss **2000 PV** qui **marche** vers le plus proche quand personne n'est à son contact (2 × vitesse de base),
+    projection **20 %** (10 % barbare) de 6 cases, chute jusqu'en bas depuis le bord ; **le barbare se met du côté
+    opposé** aux autres ; on passe derrière le boss (choix de Claude à valider). Mesures (20 tours, sans skills) : base
+    **0 %**, 2 mineurs + 1 barbare à 1,1 / 10 **90 %**, 2 barbares 15 dégâts + mineur 1,3 **100 %** (victoire vers
+    9 min 15 sur 10). `npm run simulate:tower`. (Ancien : 15 × 30 en labyrinthe, boss 1000 PV immobile, 10 / 5 %.)
   - Victoire → chaque présent reçoit un **trésor R1 à R7** (chances de l'identification) ; une victoire par joueur et
     par ouverture ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
     couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
-  - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4) ; tour (10 tours, à
-    3) : stuff de base 0/10, petit stuff 3/10, minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min, le même seul 0/10.
-  - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. Choix de Claude à valider : projection de 6 cases (5 ne faisait jamais tomber).
+  - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
+  - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. 
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3

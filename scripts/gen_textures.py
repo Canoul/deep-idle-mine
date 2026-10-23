@@ -729,6 +729,8 @@ def main():
     # boss des tours : 24 × 40 pixels (3 × 5 cases)
     for name, px in bosses().items():
         png_wh(os.path.join(OUT, name + '.png'), 24, 40, px)
+    for name, px in tower_mobs().items():
+        png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 
 
@@ -779,6 +781,64 @@ def bosses():
         'boss_demon': figure(hexc('#b0303a'), hexc('#3a1530'), hexc('#220a1c'), hexc('#ff3b3b'),
                              hexc('#5a1f4a'), hexc('#2a0f22'), hexc('#ffd23f'), None, hexc('#e0d0c0')),
     }
+
+
+def tower_mobs():
+    """mobs des étages des tours (23/10) : 1 case de large × 2 de haut (16 × 32 pixels).
+    Séraphin : petit gardien ailé en robe blanche, auréole, lance de lumière.
+    Diablotin : petit démon rouge sombre, cornes, ailes de chauve-souris, queue fourchue, fourche."""
+    MW, MH = 16, 32
+
+    def blankm():
+        return [(0, 0, 0, 0)] * (MW * MH)
+
+    def r(px, x, y, w, h, c):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                if 0 <= xx < MW and 0 <= yy < MH:
+                    px[yy * MW + xx] = c
+
+    # Séraphin
+    sp = blankm()
+    wing, wing_d = hexc('#ffffff'), hexc('#bfe3ff')
+    for i in range(9):                                   # ailes repliées dans le dos
+        r(sp, 0 + i // 4, 9 + i, 3, 1, wing if i % 3 else wing_d)
+        r(sp, 13 - i // 4, 9 + i, 3, 1, wing if i % 3 else wing_d)
+    gold = hexc('#ffd23f')
+    r(sp, 5, 1, 6, 1, gold); r(sp, 4, 2, 1, 1, gold); r(sp, 11, 2, 1, 1, gold); r(sp, 5, 3, 6, 1, shade(gold, 0.8))   # auréole
+    skin = hexc('#f3dcc4')
+    r(sp, 5, 4, 6, 6, skin); r(sp, 5, 4, 6, 1, hexc('#ffe9a8'))          # tête, cheveux dorés
+    r(sp, 6, 6, 1, 1, hexc('#3d8bff')); r(sp, 9, 6, 1, 1, hexc('#3d8bff'))
+    robe, robe_d = hexc('#f4f7ff'), hexc('#c9d6ee')
+    r(sp, 4, 10, 8, 3, robe)
+    for i in range(17):
+        w = 8 + i // 5
+        r(sp, 8 - w // 2, 13 + i, w, 1, robe if i % 5 else robe_d)
+    r(sp, 7, 10, 2, 20, robe_d)
+    r(sp, 4, 10, 8, 1, gold); r(sp, 3, 29, 10, 1, gold)
+    r(sp, 13, 5, 1, 25, hexc('#e8d9a0')); r(sp, 12, 3, 3, 2, hexc('#8fd8ff')); r(sp, 13, 2, 1, 1, hexc('#ffffff'))   # lance
+    r(sp, 12, 15, 2, 2, skin)
+
+    # Diablotin
+    im = blankm()
+    bat, bat_d = hexc('#5a1f4a'), hexc('#2a0f22')
+    for i in range(8):                                   # ailes de chauve-souris
+        r(im, 0, 8 + i, 3 - i // 3, 1, bat if i % 2 else bat_d)
+        r(im, 13 + i // 3, 8 + i, 3 - i // 3, 1, bat if i % 2 else bat_d)
+    horn = hexc('#e0d0c0')
+    r(im, 4, 2, 1, 3, horn); r(im, 3, 1, 1, 2, horn); r(im, 11, 2, 1, 3, horn); r(im, 12, 1, 1, 2, horn)
+    red, red_d = hexc('#b0303a'), hexc('#7a1a24')
+    r(im, 5, 4, 6, 6, red); r(im, 5, 9, 6, 1, red_d)
+    r(im, 6, 6, 1, 1, hexc('#ffd23f')); r(im, 9, 6, 1, 1, hexc('#ffd23f'))
+    r(im, 7, 8, 2, 1, hexc('#220a1c'))
+    r(im, 5, 10, 6, 9, red); r(im, 7, 11, 2, 7, red_d)    # corps
+    r(im, 5, 18, 6, 2, hexc('#3a1530'))                   # pagne
+    r(im, 5, 20, 2, 9, red); r(im, 9, 20, 2, 9, red)      # jambes
+    r(im, 4, 29, 3, 2, hexc('#220a1c')); r(im, 9, 29, 3, 2, hexc('#220a1c'))
+    r(im, 11, 19, 1, 6, red_d); r(im, 12, 24, 2, 1, red_d); r(im, 13, 23, 1, 1, red_d)   # queue fourchue
+    r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
+    r(im, 3, 13, 2, 2, red)
+    return {'seraph': sp, 'imp': im}
 
 
 if __name__ == '__main__':

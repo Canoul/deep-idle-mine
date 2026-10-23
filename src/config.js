@@ -354,7 +354,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
-  'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon',
+  'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -769,30 +769,38 @@ export const JUDGMENT = {
   poll: 15000,          // ms : rafraîchissement de l'onglet Jugement
 };
 
-/* ---- Tours de l'Ange et du Démon (concept Ange vs Démon, étape 4 ; src/sim/tower/) ----
-   Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers. Une tour
-   pleine de stonebrick (6 s) en labyrinthe : les mineurs partent du rez-de-chaussée et creusent vers le toit, où le
-   boss attend. L'intérieur n'est pas découvert au départ : chaque mineur découvre autour de lui (discoverMax, comme
-   dans la mine, sans lumière). Gravité, échelles et passerelles (dans la tour seulement) ; ni oxygène, ni pods, ni
-   butin des blocs, ni mobs. Boss mort = fin : chaque joueur présent reçoit un coffre (RUNE).
-   Carte : marge de `margin` colonnes de chaque côté ; tour de `width` colonnes (murs compris) et `height` lignes
-   (toit compris) ; `sky` lignes de ciel au-dessus du toit ; sol plein en dessous. Portes : les doorH lignes du bas des
-   deux murs. Boss : bossW × bossH au milieu du toit, immobile, pas provocable ; il frappe sa cible (premier arrivé sur
-   le toit, encore dessus) toutes les hitEvery s (rageEvery sous rageBelow de ses PV) ; chaque coup a knockChance
-   (knockBarb pour un barbare) de la projeter de knock cases vers l'extérieur (elle tombe de la tour). */
+/* ---- Tours de l'Ange et du Démon (concept Ange vs Démon ; src/sim/tower/) ----
+   Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers.
+   Refonte du 23/10 (Geoffrey ; avant : 15 × 30 pleine de stonebrick en labyrinthe, boss 1000 PV immobile) :
+   tour de `width` colonnes (murs compris) × 32 lignes : `floors` étages de floorH lignes, chacun surmonté d'une ligne de
+   séparation indestructible percée d'une porte de `gate` cases en stonebrick (6 s), collée à gauche ou à droite en
+   alternance (serpentin : on traverse chaque étage). La séparation du dernier étage est le toit (porte au bord aussi) ;
+   au-dessus (roofH lignes, à ciel ouvert), le boss. Étage 0 vide ; étages 1 à floors-1 en alternance « blocs » (plein
+   de stonebrick) / « mobs » (vide, mobs.count mobs), le premier tiré par la seed.
+   Découverte étage par étage (un mineur entre dans un étage : tout l'étage et son plafond se découvrent) ; lumière
+   comme dans la mine (torches illimitées, rayon STATS.torchRadius, ralenti dans le noir). Gravité, échelles
+   illimitées et partagées dans la tour ; ni oxygène, ni pods, ni butin. Boss mort = fin : un trésor par présent (RUNE).
+   Carte : marge de `margin` colonnes de chaque côté, `sky` lignes de ciel au-dessus du boss, sol plein en dessous ;
+   portes d'entrée : les doorH lignes du bas des deux murs. */
 export const TOWER = {
-  duration: 600,                                  // s de jeu (10 min, 22/10 : labyrinthe + brouillard ; avant 15 min)
-  width: 15, height: 30, sky: 7, margin: 8, doorH: 2,
-  /* labyrinthe (22/10, Geoffrey ; avant : 5 % de blocs indestructibles au hasard) : une ligne sur mazeEvery est une
-     ligne de mur, mazeHard blocs indestructibles sur `width` (murs extérieurs compris), soit un seul passage de
-     width − mazeHard cases, placé au hasard sans chevaucher celui de la ligne de mur précédente : on zigzague */
-  mazeEvery: 2, mazeHard: 11,
-  /* vue (navigateur) : cases montrées autour du mineur suivi (avant : toute la tour à l'écran) */
-  view: { cols: 19, rows: 15 },
-  boss: { hp: 1000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.10, knockBarb: 0.05, knock: 6 },
+  duration: 600,                                  // s de jeu (10 min)
+  width: 20, floors: 7, floorH: 3, gate: 3,      // 7 × (3 + 1) = 28 lignes + 4 de toit = 32
+  sky: 4, margin: 8, doorH: 2,
+  /* vue (navigateur) : caméra qui suit le mineur, aussi large que la tour (avant : 19 × 15) */
+  view: { cols: 22, rows: 16 },
+  /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans
+     l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
+     le taclent au contact (rien d'autre). La porte du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
+  mobs: { count: 5, hp: 200, step: 0.9 },
+  /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
+     personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de
+     base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
+     parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
+     vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). */
+  boss: { hp: 2000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, speedMul: 2 },
   sides: {
-    angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇' },
-    demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈' },
+    angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
+    demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },
   },
   salt: 0x70e7e5,
 };
