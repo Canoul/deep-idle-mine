@@ -1942,3 +1942,25 @@ Règles (voir CLAUDE.md) :
 - **Boss 5 000 PV** (`TOWER.boss.hp`, 23/10 11 h) : b 0/20 (reste 1 620 PV en moyenne), c 0/20 (1 267). Test « compo
   forte » changé : toit atteint et boss entamé (plus de victoire attendue). ✅ tower 10/10.
 - **Boss 3 500 PV** (décision, mis en ligne) : b 0/20 (reste 10 à 660 PV), c 12/20 (victoire à 9:53). ✅ tower 10/10.
+
+### Stuff en acier, Plastron de l'équilibre, Treasure T3 (Geoffrey) — branche `geoffrey/stuff-acier`, ✅ en ligne le 23/10
+- **Quoi** : `STUFF.items` (6 pièces « … en acier », `Plastron de l'équilibre`), `RECIPES` (unlock = « … BP »),
+  `RARITY.items` (acier inhabituel, plastron épique, BP compris), `TREASURE.tiers` (T2 maxArea 4, T3 maxArea 6),
+  `LOOT['Treasure T3']` (always graphite / tissu / parts ; oneOf blueprint, gem, material = Cristal de pleine lune 10 %).
+  Le catalogue `ITEMS` crée les BP (cat blueprint) et le Treasure T3 depuis la config. Skins (`src/skins.js`) et
+  textures (`gen_textures.py` : armure `steel` dans la boucle des matériaux, pioche / épée acier, `chest_balance`,
+  `treasure_t3` avec ferrures diamant, calques `skins/steel_*`, `skins/balance_chest`, `skins/pick_steel`,
+  `skins/sword_steel`). `SHARE.copyToAll` suit `TREASURE.tiers` : le T3 est copié à chaque joueur comme T1 / T2.
+- **Piège corrigé** : l'entrée `ITEMS['Cristal de pleine lune']` (w 1) était écrasée par la table LOOT (sans w) dès
+  que le cristal entre dans un `oneOf` : déplacée après le spread de LOOT. Testé.
+- **Tests** : `tests/steel-gear.test.js` (nouveau : stats fer × 1,2, recettes, blueprints, rareté, skins, table et
+  ouverture du T3), treasure / wiki / loot / rarity mis à jour (T3 en areas 5+, « tier sans table » = T9), blueprint,
+  craft, stuff, skins, upgrade, crusher ✅ ; anticheat 72/72 ✅.
+- **Points fragiles / à vérifier** : ⚠️ pas regardé dans un navigateur. `RESEARCH.tiers` n'a pas de tier 3 :
+  `tierOfBlueprint` rend null, le recyclage d'un BP T3 prend le barème du tier 1 (30-60). `UPGRADE.worth` n'a ni
+  `tenacity` ni `torches` : la valeur du plastron pour l'identification ne les compte pas. Coûts : 10 Shiny iron par
+  pièce d'armure (1 % de shiny par fer miné ≈ 1 000 fers), 10 diamants par outil (area 5 : 13 diamants, area 6 : 25).
+- **Wiki** (même branche) : `wiki.html` (T1 / T2 / T3 dans l'aide des areas, bonus « un par famille » des treasures,
+  inscriptions MI : 30 dernières minutes, en session possible, session pas désinscrite), `src/wiki/wiki.js` (libellé
+  de la famille `material` → « matériau »). Tests wiki ✅. ⚠️ Page non ouverte dans un navigateur (pas de navigateur
+  dans la session) : données vérifiées via `src/wiki/data.js`.

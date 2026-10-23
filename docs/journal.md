@@ -18,6 +18,24 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Stuff en acier, Plastron de l'équilibre, Treasure T3
+- **Pour le joueur** :
+  - **Treasure T3** dans les areas 5 et 6 (le T2 ne sort plus qu'en areas 3 et 4). Il contient toujours 20 à 40
+    Graphite ore, 3 à 10 Tissu sombre et 10 à 20 Blueprint parts ; parfois un blueprint d'acier (1 % chacun), celui du
+    Plastron de l'équilibre (0,5 %), une gemme (2 % chacune) ou un Cristal de pleine lune (10 %).
+  - **Six pièces en acier** (inhabituelles, gris bleuté), recettes secrètes débloquées par leur blueprint : la pièce en
+    fer × 1,2. Casque 46 d'oxygène, plastron 40 pods, jambes et bottes +0,72, pioche +0,48, épée 13 dégâts. Armure :
+    Steel ingot + 10 Shiny iron + 10 Tissu sombre ; pioche et épée : Steel ingot + 10 Shiny gold + 10 Diamant.
+  - **Plastron de l'équilibre** (épique, moitié ange moitié démon) : 50 Steel ingot, 20 Shiny gold, une gemme de
+    chaque, 50 résidus de chaque camp. Pods +60, oxygène +20, minage et dégâts +2 %, attaque +5 %, ténacité +2 %,
+    fortune +1 %, butin des mobs +2 %, torches +5.
+- **Décisions** : arrondis à l'entier (46, 40, 13) ; oxygène du Plastron de l'équilibre +20 ; noms « … en acier ».
+- **À suivre** : pas de tier 3 dans la Table de recherche (un blueprint T3 recyclé rend 30 à 60 parts, comme le
+  tier 1) ; coût en Shiny et en Diamant à surveiller ; les résidus du plastron ne remplissent pas les jauges du Jugement.
+- **Wiki** : mention du T3 dans les areas et les treasures (le reste se met à jour tout seul depuis la config) ;
+  section Mine instantanée corrigée (inscriptions dans les 30 dernières minutes, possibles en session).
+- **État** : ✅ en ligne le 23/10
+
 ## 23/10/2026 — Geoffrey — Tours : étages en serpentin, Séraphins et Diablotins, boss qui bouge
 - **Pour le joueur** : la tour du Jugement est refaite. 20 de large, **7 étages** séparés par des planchers
   incassables percés d'une **porte de 3 cases** collée à gauche puis à droite : on traverse chaque étage en serpentin.

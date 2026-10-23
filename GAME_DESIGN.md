@@ -83,10 +83,11 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | Areas | Objet |
   |---|---|
   | 0 à 2 | **Treasure T1** |
-  | 3 à 5 | **Treasure T2** |
+  | 3 et 4 | **Treasure T2** |
+  | 5 et 6 | **Treasure T3** *(23/10/2026 ; avant : T2 en areas 3 à 5)* |
 
-  Au-delà de l'area 5, le dernier tier s'applique (T2) *(provisoire, en attendant un T3)*. Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
-- **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas (T1 et T2 en ont une).
+  Au-delà de l'area 6, le dernier tier s'applique (T3). Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
+- **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas (T1, T2 et T3 en ont une).
 - **Contenu du Treasure T1** *(valeurs provisoires)* :
 
   | Objet | Quantité | Chance |
@@ -108,6 +109,16 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | **Un blueprint** parmi : Gants tactique, Gants d'ouvrier, Cape de Naingui | 1 | 2 % chacun (6 % au total) |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1,5 % chacune (4,5 % au total) |
 
+- **Contenu du Treasure T3** *(23/10/2026, Geoffrey ; mêmes principes)* :
+
+  | Objet | Quantité | Chance |
+  |---|---|---|
+  | Graphite ore | 20 à 40 | 100 % |
+  | Tissu sombre | 3 à 10 | 100 % |
+  | Blueprint parts | 10 à 20 | 100 % |
+  | **Un blueprint** parmi : Casque, Plastron, Jambes, Bottes, Pioche, Épée en acier (1 % chacun) ; Plastron de l'équilibre (0,5 %) | 1 | 6,5 % au total |
+  | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 2 % chacune (6 % au total) |
+  | Cristal de pleine lune | 1 | 10 % |
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
@@ -458,7 +469,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).
 - Partout où l'objet apparaît (inventaire, craft, four, stuff, recherche, coffre en session, bulles), le **contour de sa case** et la **couleur de son nom** suivent sa rareté. La fiche d'un objet de l'inventaire affiche aussi le libellé de la rareté.
-- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. Les **Résidus angélique et démoniaque** sont **communs** *(22/10/2026 ; avant : rares)*. **Rare** : Cape de Naingui (et son BP).
+- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. Les **Résidus angélique et démoniaque** sont **communs** *(22/10/2026 ; avant : rares)*. **Rare** : Cape de Naingui (et son BP). *(23/10/2026)* **Inhabituel** aussi : les six pièces en acier et leurs BP ; **Épique** : Plastron de l'équilibre (et son BP).
 - Le vert étant pris par la rareté : un objet tout juste arrivé brille d'un halo blanc, et une recette qu'on peut fabriquer porte une coche ✔.
 
 ### Craft (onglet Craft)
@@ -502,6 +513,19 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +5 % (≈ 180 x) |
   | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
 
+  Tier 3 (blueprints du Treasure T3, 23/10/2026, Geoffrey). **Acier** = la pièce en fer × 1,2, arrondi à l'entier pour
+  l'oxygène, les pods et les dégâts ; rareté **inhabituel**. **Plastron de l'équilibre** : rareté **épique**.
+
+  | Objet | Recette | Effet |
+  |---|---|---|
+  | Casque en acier | 10 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Oxygène +46 |
+  | Plastron en acier | 16 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Pods +40 |
+  | Jambes en acier | 14 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +0,72 |
+  | Bottes en acier | 8 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +0,72 |
+  | Pioche en acier | 20 Steel ingot + 10 Shiny gold + 10 Diamant | Vitesse de minage +0,48 |
+  | Épée en acier | 10 Steel ingot + 10 Shiny gold + 10 Diamant | Dégâts 13 (remplace les mains nues : 5) |
+  | Plastron de l'équilibre (case torse) | 50 Steel ingot + 20 Shiny gold + 1 Rubis, 1 Saphir, 1 Jade inférieurs + 50 Résidus angéliques + 50 Résidus démoniaques | Pods +60, oxygène +20, vitesse de minage +2 %, dégâts +2 %, vitesse d'attaque +5 %, ténacité +2 %, fortune +1 %, butin des mobs +2 %, torches +5 |
+
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
 ### Stuff (onglet Stuff)
@@ -510,7 +534,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
 - Une pièce peut **ajouter** à une stat (ex. Pods +25) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
-- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape). En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
+- Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape) ; **pièces en acier** (gris bleuté) et **Plastron de l'équilibre** (moitié blanc, moitié rouge) depuis le 23/10. En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15). Le total est exactement ce que le mineur a en session.
 

@@ -152,7 +152,8 @@ export const TREASURE = {
   itemWeight:2, itemCount:1,
   tiers: [
     { item:'Treasure T1', maxArea:2, tex:'treasure_t1' },   // areas 0 à 2
-    { item:'Treasure T2', maxArea:5, tex:'treasure_t2' },   // areas 3 à 5 (et au-delà)
+    { item:'Treasure T2', maxArea:4, tex:'treasure_t2' },   // areas 3 et 4 (avant le 23/10 : 3 à 5 et au-delà)
+    { item:'Treasure T3', maxArea:6, tex:'treasure_t3' },   // areas 5 et 6 (et au-delà), 23/10 Geoffrey
   ],
 };
 
@@ -201,6 +202,27 @@ export const LOOT = {
         { item:'Cape de Naingui BP',    chance:0.02 },
       ]},
       { family:'gem', items:gems(0.015) },
+    ],
+  },
+  /* Treasure T3 (areas 5 et au-delà, 23/10/2026, Geoffrey) : pièces en acier et Plastron de l'équilibre */
+  'Treasure T3': {
+    always: [
+      { item:'Graphite ore',    min:20, max:40 },
+      { item:'Tissu sombre',    min:3,  max:10 },
+      { item:'Blueprint parts', min:10, max:20 },
+    ],
+    oneOf: [
+      { family:'blueprint', tex:'blueprint', items:[
+        { item:'Casque en acier BP',          chance:0.01 },
+        { item:'Plastron en acier BP',        chance:0.01 },
+        { item:'Jambes en acier BP',          chance:0.01 },
+        { item:'Bottes en acier BP',          chance:0.01 },
+        { item:'Pioche en acier BP',          chance:0.01 },
+        { item:'Épée en acier BP',            chance:0.01 },
+        { item:'Plastron de l\'équilibre BP', chance:0.005 },
+      ]},
+      { family:'gem', items:gems(0.02) },
+      { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
     ],
   },
 };
@@ -356,10 +378,11 @@ export const SKILLS = {
 };
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
+  'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
@@ -462,6 +485,9 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
+    ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
+      [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
+    'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Cristal de pleine lune':'rare',
     'Plume d\'ange':'rare',
   },
@@ -511,6 +537,16 @@ export const STUFF = {
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
+    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène, pods et
+       dégâts (45,6 → 46 ; 39,6 → 40 ; 13,2 → 13) */
+    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:46 } },
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:40 } },
+    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:0.72 } },
+    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:0.72 } },
+    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.48 } },
+    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:13 } },     // remplace les mains nues (5)
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:60, oxygenMax:20, mineSpeedPct:2, damagePct:2,
+                                   attackSpeed:5, tenacity:2, fortune:1, looting:2, torches:5 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',
@@ -601,13 +637,13 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
-  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot)   // matériau de la Cape de Naingui, laissé par l'occultiste (MOBS.occult)
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
+  'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
 

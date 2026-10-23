@@ -41,11 +41,11 @@ test('fréquence observée proche de la probabilité configurée (30 %)', () => 
   assert.ok(Math.abs(f-AREAS[0].chestChance)<0.05, `fréquence ${f.toFixed(3)}`);
 });
 
-test('coffre déterministe ; butin = Treasure T1 en areas 0–2, T2 en areas 3–5 (et au-delà)', () => {
+test('coffre déterministe ; butin = Treasure T1 en areas 0–2, T2 en areas 3–4, T3 en areas 5 et au-delà', () => {
   withChance(1, () => {
     const A=newSession(77), B=newSession(77);
     for(let k=1;k<=7;k++){ genArea(A,k); genArea(B,k); }
-    const want=['Treasure T1','Treasure T1','Treasure T1','Treasure T2','Treasure T2','Treasure T2','Treasure T2','Treasure T2'];
+    const want=['Treasure T1','Treasure T1','Treasure T1','Treasure T2','Treasure T2','Treasure T3','Treasure T3','Treasure T3'];
     for(let k=0;k<=7;k++){
       assert.deepEqual(A.areas[k].treasure, B.areas[k].treasure);
       assert.equal(A.areas[k].treasure.item, want[k], `area ${k}`);
@@ -58,7 +58,9 @@ test('tiers : treasureItem suit la config', () => {
   assert.equal(treasureItem(0), 'Treasure T1');
   assert.equal(treasureItem(2), 'Treasure T1');
   assert.equal(treasureItem(3), 'Treasure T2');
-  assert.equal(treasureItem(5), 'Treasure T2');
+  assert.equal(treasureItem(4), 'Treasure T2');
+  assert.equal(treasureItem(5), 'Treasure T3');
+  assert.equal(treasureItem(6), 'Treasure T3');
   assert.equal(treasureItem(9), TREASURE.tiers.at(-1).item, 'au-delà : dernier tier');
 });
 

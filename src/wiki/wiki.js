@@ -205,7 +205,7 @@ function treasures(){
   $('w-loot').innerHTML = D.lootTables().map(t => `<h2>${item(t.name)}</h2>` + table(['Objet', '#Quantité', '#Chance'], [
     ...t.always.map(a => tr([item(a.item), num(`${f(a.min)} à ${f(a.max)}`), num('<b>toujours</b>')])),
     ...t.families.flatMap(fam => [
-      `<tr><td colspan="3" class="mut small">Bonus ${fam.family === 'blueprint' ? 'blueprint' : fam.family === 'gem' ? 'gemme' : esc(fam.family)} : au plus 1, ${f(Math.round(fam.total * 1000) / 10)} % de chance d'en avoir un</td></tr>`,
+      `<tr><td colspan="3" class="mut small">Bonus ${({ blueprint:'blueprint', gem:'gemme', material:'matériau' })[fam.family] ?? esc(fam.family)} : au plus 1, ${f(Math.round(fam.total * 1000) / 10)} % de chance d'en avoir un</td></tr>`,
       ...fam.items.map(i => tr([item(i.item), num(1), num(`${f(Math.round(i.chance * 1000) / 10)} %`)])),
     ]),
   ])).join('');

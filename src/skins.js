@@ -17,6 +17,11 @@ export const SKIN = {
     'Plastron en fer':     'skins/iron_chest',
     'Jambes en fer':       'skins/iron_legs',
     'Bottes en fer':       'skins/iron_boots',
+    'Casque en acier':     'skins/steel_helmet',       // acier : gris bleuté sombre
+    'Plastron en acier':   'skins/steel_chest',
+    'Jambes en acier':     'skins/steel_legs',
+    'Bottes en acier':     'skins/steel_boots',
+    'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
   },
 
@@ -25,11 +30,13 @@ export const SKIN = {
     base:               'skins/pick_wood',             // bois : marron
     'Pioche en pierre': 'skins/pick_stone',            // pierre : grise
     'Pioche en fer':    'skins/pick_iron',             // fer : acier clair
+    'Pioche en acier':  'skins/pick_steel',            // acier : gris bleuté
   },
   /* arme sortie pour frapper un mob : l'épée équipée, sinon la pioche (mains nues + pioche) */
   sword: {
     'Épée en pierre':   'skins/sword_stone',
     'Épée en fer':      'skins/sword_iron',
+    'Épée en acier':    'skins/sword_steel',
   },
 };
 
