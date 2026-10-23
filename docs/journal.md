@@ -18,6 +18,22 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Graphite, Steel ingot, nouvelle area 6
+- **Pour le joueur** :
+  - Nouveau minerai **Graphite ore** (veines gris-bleu), dans les **areas 5 et 6**. Plus dur que l'or (dureté 4),
+    poids 3, 4 XP.
+  - **Four** : 10 Graphite ore + 10 charbons → **1 Graphite ingot** en 1 min.
+  - **Alliage** : 3 Tainted iron + 10 Graphite ingot + 50 charbons → **1 Steel ingot** en 3 min. Le steel ne sert à
+    rien pour l'instant (recettes à venir).
+  - **Area 5 revue** : 55 % pierre, 20 % pierre dure, 9,5 % fer, 5 % or, 0,5 % diamant, 5 % graphite, 5 % vide
+    (plus de charbon). **Nouvelle area 6** (et au-delà) : 35 % pierre, 40 % pierre dure, 7 % fer, 6 % or, 1 % diamant,
+    6 % graphite, 5 % vide.
+- **Décisions** : ligne de l'area 5 ramenée à 100 % par le fer (9,5 % au lieu de 10). Graphite 60 s au four, steel
+  3 min et 50 charbons comme les autres alliages.
+- **À suivre** : à quoi sert le steel (craft) ; plus de charbon à partir de l'area 5 (il faudra le ramener d'en haut
+  pour le four) ; l'area 6 n'a pas de donjon (donjon en areas 4 et 5) et garde les mobs de l'area 5.
+- **État** : 🧪 sur la branche `geoffrey/graphite` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Retours du 23/10 : socle du coffre, Tainted gold, temps d'un ami, compteur LFG
 - **Pour le joueur** :
   - La case **sous le coffre** de la surface est un **socle incassable** (dalle grise cerclée de fer) : plus personne ne

@@ -115,10 +115,12 @@ export const BLOCKS = {
   /* socle du coffre (23/10, Geoffrey) : la case sous le coffre de la surface, incassable (le pathfinder ne creuse plus
      sous le coffre) */
   18:{name:'Socle du coffre', type:'special', tex:'chest_base', w:0, hard:Infinity, color:'#5a5a62', dot:'#b0b0b8', unbreakable:true, noDrop:true},
+  /* graphite (23/10, Geoffrey) : minerai des areas 5 et 6 ; fondu en Graphite ingot, qui sert au Steel ingot */
+  19:{name:'Graphite ore', type:'ore', tex:'graphite', w:3, hard:4.0, color:'#7d828c', dot:'#2f3b4d', val:4},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
-export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13 };
+export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -137,7 +139,10 @@ export const AREAS = [
   { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.3 },
   { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.3 },
   { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.3 },
-  { comp:{         stone:55, hardstone:20,  coal:3,  iron:8,  gold:7,  diamond:2,    air:5}, chestChance:0.3 },
+  /* areas 5 et 6 : décision du 23/10 (Geoffrey), graphite et plus de charbon ; ancien area 5 :
+     stone 55, hardstone 20, coal 3, iron 8, gold 7, diamond 2, air 5 */
+  { comp:{         stone:55, hardstone:20,           iron:9.5, gold:5, diamond:0.5, graphite:5, air:5}, chestChance:0.3 },
+  { comp:{         stone:35, hardstone:40,           iron:7,   gold:6, diamond:1,   graphite:6, air:5}, chestChance:0.3 },
 ];
 
 /* butin d'un treasure : un objet « Treasure TX » dont le tier dépend de l'area où le treasure est enfoui
@@ -293,7 +298,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    talentPerLevel : points de talent gagnés à chaque niveau (dépensés plus tard dans l'onglet Talents).
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
-  ore: { coal:1, iron:2, gold:4, diamond:7 },
+  ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4 },
   mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, minotaure:100 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
@@ -351,9 +356,9 @@ export const SKILLS = {
 };
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
-  'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
+  'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
@@ -378,10 +383,12 @@ export const FURNACE = {
   recipes: {
     Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
     Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
+    'Graphite ore': { out:'Graphite ingot', time:60, tex:'ingot_graphite' },        // 23/10, Geoffrey
   },
   alloys: [
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':20 }, fuel:50, time:180, tex:'ingot_tainted' },
     { out:'Tainted gold', in:{ 'Lingot d\'or':5,  'Peau de gobelin':20 }, fuel:50, time:180, tex:'ingot_tainted_gold' },
+    { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':10 },  fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

@@ -1899,3 +1899,20 @@ Règles (voir CLAUDE.md) :
   party, lfg, lobby ✅ ; anticheat 72/72. ⚠️ Rien regardé dans un navigateur.
 - **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
 
+
+### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, 🧪 pas en ligne
+- **Quoi** : bloc 19 `Graphite ore` (`ore`, tex `graphite`, w 3, hard 4.0, val 4, dot `#2f3b4d`), `IDS.graphite = 19`,
+  `XP.ore.graphite = 4` (`src/config.js`). `AREAS[5]` revue (iron 9.5, diamond 0.5, graphite 5, plus de coal) et
+  `AREAS[6]` ajoutée (répétée au-delà). `FURNACE.recipes['Graphite ore']` → `Graphite ingot` (60 s, tex
+  `ingot_graphite`) ; `FURNACE.alloys` + `Steel ingot` = `Tainted iron` 3 + `Graphite ingot` 10, fuel 50, 180 s, tex
+  `ingot_steel`. Les objets sont créés par le catalogue `ITEMS` (rien d'autre à déclarer). Textures `graphite`,
+  `ingot_graphite`, `ingot_steel` (`scripts/gen_textures.py`, les autres PNG inchangés). Couleur du panneau d'area
+  (`src/ui/hud.js`), wiki (`AREA_KEYS`, `BLOCK_NAME`).
+- **Arrondis** : 9,5 % et 0,5 % de 2 500 = 237,5 et 12,5 → `Math.round` 238 et 13 : l'area 5 a **501** minerais (le
+  terrain principal absorbe l'écart). Test wiki mis à jour (7 areas, 501).
+- **Tests** : `tests/graphite.test.js` (nouveau : bloc, compositions = 100 %, génération, fonte, alliage), world,
+  furnace, wiki, level, focus, inventory, iron-furnace-gold-compass ✅ ; anticheat 72/72 ✅. Simulation 3 × 5 :
+  3,0 areas, profondeur 192,2, **0 blocage** (identique : en stuff de base personne n'atteint l'area 5).
+- **Points fragiles** : ⚠️ pas regardé dans un navigateur. Pas de shiny pour le graphite (`SHINY.items` : fer et or
+  seulement). `DUNGEON.areas` reste [4, 5] : pas de donjon en area 6. `MOBS.spawnTable` : l'area 6 reprend la ligne
+  de l'area 5. Treasure en area 6 : T2 (dernier tier).
