@@ -1,7 +1,7 @@
 /* Rendu des tours de l'Ange et du Démon : LIT la copie d'affichage (src/shared/tower-view.js), ne la modifie jamais.
-   Caméra rapprochée (TOWER.view : cols × rows cases) qui suit le mineur du joueur, en glissant. Ciel autour,
-   intérieur pas encore découvert dans le noir, galeries creusées, boss sur le toit avec sa barre de vie, mineurs avec
-   leur stuff. */
+   Caméra rapprochée (TOWER.view : cols × rows cases, aussi large que la tour) qui suit le mineur du joueur, en
+   glissant. Ciel autour, étages pas encore découverts en noir, ombre selon la lumière des torches, Séraphins /
+   Diablotins (2 cases de haut) avec leur vie, boss sur le toit avec sa barre de vie, mineurs avec leur stuff. */
 import { BLOCKS, TOWER } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
@@ -40,7 +40,8 @@ export function createTowerRenderer(cv){
     if(cv.width !== cols * T || cv.height !== rows * T){ cv.width = cols * T; cv.height = rows * T; }
     ctx.imageSmoothingEnabled = false;
     const mine = G.miners.find(m => m.account === me), fol = mine ?? G.miners[0];
-    const [fx, fy] = fol ? instantPos(fol) : [G.bx + 1, G.roof];
+    const bx0 = G.boss?.x ?? G.bx, by0 = G.boss?.y ?? G.by;
+    const [fx, fy] = fol ? instantPos(fol) : [bx0 + 1, G.roof];
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const want = { x: clamp(fx + 0.5 - cols / 2, 0, G.w - cols), y: clamp(fy + 0.5 - rows / 2, 0, G.h + 1 - rows) };
     if(!cam || Math.abs(cam.x - want.x) + Math.abs(cam.y - want.y) > 12) cam = { ...want };   // départ, projection : on saute
@@ -55,6 +56,25 @@ export function createTowerRenderer(cv){
       else blit(BLOCKS[t].tex, px, py, BLOCKS[t].color);
       if(G.ladder?.[y]?.[x] && t === 0) blit('ladder', px, py);
     }
+    /* torches, puis l'ombre de l'intérieur découvert selon la lumière (comme dans la mine) */
+    for(const tc of G.torches || []) if(G.seen?.[tc.y]?.[tc.x]) blit('torch', tc.x * T, tc.y * T);
+    for(let y = y0; y <= Math.min(G.h, y0 + rows); y++) for(let x = x0; x <= Math.min(G.w - 1, x0 + cols); x++){
+      if(!inside(x, y) || !G.seen?.[y]?.[x]) continue;
+      let l = 0;
+      for(const [dx, dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) l = Math.max(l, G.light?.get((y + dy) * G.w + x + dx) || 0);
+      const a = 0.72 * (1 - Math.min(1, l * 1.4));
+      if(a > 0.01){ ctx.fillStyle = `rgba(4,2,8,${a.toFixed(2)})`; ctx.fillRect(x * T, y * T, T, T); }
+    }
+    /* mobs des étages (2 cases de haut) et leur vie */
+    const mobTex = TOWER.sides[G.side]?.mobTex;
+    for(const o of G.mobs || []){
+      const px = o.x * T, py = (o.y - 1) * T;
+      blit(mobTex, px, py, G.side === 'demon' ? '#8a1f2a' : '#e8f0ff', T, 2 * T);
+      if(o.awake && o.hp < o.maxhp){
+        ctx.fillStyle = '#000'; ctx.fillRect(px + 1, py - 4, T - 2, 3);
+        ctx.fillStyle = '#ff5a3b'; ctx.fillRect(px + 1, py - 4, (T - 2) * Math.max(0, o.hp / o.maxhp), 3);
+      }
+    }
     /* ciel teinté : rouge sombre pour le Démon */
     if(G.side === 'demon'){ ctx.fillStyle = 'rgba(90,10,40,.35)'; ctx.fillRect(0, 0, G.w * T, G.roof * T); }
     /* blocs en cours de minage : fissure qui grandit */
@@ -66,7 +86,7 @@ export function createTowerRenderer(cv){
       ctx.fillRect(px + T * (1 - p) / 2, py + T * (1 - p) / 2, T * p, T * p);
     }
     /* boss et sa barre de vie */
-    const b = G.boss, bw = TOWER.boss.w * T, bh = TOWER.boss.h * T, bxp = G.bx * T, byp = G.by * T;
+    const b = G.boss, bw = TOWER.boss.w * T, bh = TOWER.boss.h * T, bxp = bx0 * T, byp = by0 * T;
     if(b.hp > 0){
       const img = bossTex(G.side);
       if(ready(img)) ctx.drawImage(img, bxp, byp, bw, bh);

@@ -18,6 +18,27 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Tours : étages en serpentin, Séraphins et Diablotins, boss qui bouge
+- **Pour le joueur** : la tour du Jugement est refaite. 20 de large, **7 étages** séparés par des planchers
+  incassables percés d'une **porte de 3 cases** collée à gauche puis à droite : on traverse chaque étage en serpentin.
+  Étage 0 vide, puis un étage sur deux **plein de briques** ou **gardé par 5 Séraphins / Diablotins** (200 PV, ils
+  taclent ; la porte du plafond ne s'ouvre qu'une fois tous morts). Chaque étage se découvre en entier quand on y
+  entre, il fait noir (torches illimitées). Le boss a **2 000 PV**, **se déplace** vers le mineur le plus proche quand
+  personne n'est à son contact, projette à **20 %** (10 % pour un barbare) ; projeté depuis le bord, on tombe en bas
+  et on remonte tout. Le **barbare se met du côté opposé** aux autres. Caméra aussi large que la tour.
+- **Décisions** : celles de Geoffrey ci-dessus. Choix de Claude à valider : on **passe derrière le boss** (sinon le
+  barbare ne peut pas rejoindre l'autre côté) ; le combat (et donc le déplacement du boss) commence au **premier coup
+  reçu** ; deux mineurs ne posent pas la même échelle (le second attend).
+- **Mesures** (20 tours par compo, sans skills) : 3 mineurs de base **0 %** ; 2 mineurs + 1 barbare à 1,1 / 10
+  **90 %** ; 2 barbares à 15 dégâts + 1 mineur à 1,3 **100 %**. Victoires vers 9 min 15-9 min 20 sur 10 : peu de marge.
+  Nouveau : `npm run simulate:tower`.
+- **Boss à 5 000 PV** (demande de Geoffrey, 11 h) : b et c **0/20** (arrivée sur le toit vers 8 min 15 : il reste
+  ~100 s, les deux compos font au mieux 3 750 et 4 400 dégâts). À trancher : durée à 12-13 min, briques plus rapides,
+  ou 5 000 PV visés pour un stuff plus fort.
+- **Boss à 3 500 PV** (décision de Geoffrey, 11 h 10) : base 0/20, compo b **0/20** (il reste ≈ 300 PV), compo c
+  **12/20** (victoire vers 9 min 53).
+- **À suivre** : regarder la tour dans le navigateur (mobs, lumière, caméra) ; ajuster ensemble les chiffres.
+
 ## 23/10/2026 — Geoffrey — Graphite, Steel ingot, nouvelle area 6
 - **Pour le joueur** :
   - Nouveau minerai **Graphite ore** (veines gris-bleu), dans les **areas 5 et 6**. Plus dur que l'or (dureté 4),
@@ -47,6 +68,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : les 4 points ci-dessus. Choix de Claude à valider : le temps d'un ami est le temps
   **restant** (pas le temps écoulé) ; un groupe de 2 en recherche compte pour 2 joueurs.
 - **À suivre** : regarder le socle, le compteur et la ligne Social dans le navigateur.
+
 - **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »

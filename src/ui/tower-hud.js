@@ -19,10 +19,11 @@ export function updateTowerHUD(G, me, left){
   setHtml($('twBoss'),
     `<div class="row"><span><b>${esc(b.name)}</b>${pct < TOWER.boss.rageBelow * 100 ? ' <span class="err">· enragé</span>' : ''}</span><b>${b.hp} / ${b.maxhp} PV</b></div>`+
     `<div class="bar twBossBar ${esc(G.side)}"><i style="width:${pct}%"></i></div>`+
-    `<p class="mut small">Il vise le premier arrivé au sommet. Chaque coup peut le projeter hors de la tour${G.stats?.knocks ? ` (${G.stats.knocks} projection${G.stats.knocks > 1 ? 's' : ''})` : ''}.</p>`);
+    `<p class="mut small">Étage ${G.reached ?? 0} / ${TOWER.floors}${G.mobsLeft ? ` · ${G.mobsLeft} ${esc(S.mob)}${G.mobsLeft > 1 ? 's' : ''} réveillé${G.mobsLeft > 1 ? 's' : ''}` : ''}. `+
+    `Il frappe le premier arrivé à son contact ; chaque coup peut le projeter (hors de la tour depuis le bord)${G.stats?.knocks ? ` : ${G.stats.knocks} projection${G.stats.knocks > 1 ? 's' : ''}` : ''}.</p>`);
   setHtml($('twTeam'), G.miners.map(m =>
     `<div class="row${m.account === me ? ' me' : ''}"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.target ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
-    `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.mined ? ` · ${m.stats.mined} blocs` : ''}</span></div>`).join('') || '<p class="mut">Tout le monde est parti.</p>');
+    `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} mobs` : ''}${m.stats.mined ? ` · ${m.stats.mined} blocs` : ''}</span></div>`).join('') || '<p class="mut">Tout le monde est parti.</p>');
   setHtml($('twLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));
 }
 
