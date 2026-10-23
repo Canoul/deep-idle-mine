@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** : réservée aux membres (le chef n'a pas d'état « prêt ») ; reste cochée tant qu'on est dans le groupe
   (choix de Claude à valider : on pourrait aussi la décocher quand un inconnu rejoint).
 - **À suivre** : regarder la case dans le navigateur.
-- **État** : 🧪 sur la branche `geoffrey/pret-tout-le-temps` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 22/10/2026 — Geoffrey — Barbare : nouveau talent « Braum »
 - **Pour le joueur** : l'arbre Barbare a un **4e étage**, **Braum** (0/3, il faut Pillage au max). Quand le barbare

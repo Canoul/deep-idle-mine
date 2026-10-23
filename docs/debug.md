@@ -1869,7 +1869,7 @@ Règles (voir CLAUDE.md) :
 - **Après fusion de main** (retours-22-10 : butin, chutes, skills de comportement) : 198/198 ✅ ; simulation 3 barbares
   profondeur 192,4, 0 blocage. Braum apparaît tout seul dans « Skills en partie » (`behaviourSkills`, onglet Stuff).
 
-### Lobby : « Prêt tout le temps » (Geoffrey) — branche `geoffrey/pret-tout-le-temps`, 🧪 pas en ligne
+### Lobby : « Prêt tout le temps » (Geoffrey) — branche `geoffrey/pret-tout-le-temps`, ✅ en ligne le 23/10
 - **Quoi** : champ `always` sur un membre de groupe (`server/party/service.js`). `unready` remet `ready = !!always`,
   `notReady` ignore les `always`, `promote` aussi (l'ancien chef garde son `always`). Nouvelle action
   `alwaysReady(me, bool)` (route `POST /api/party/always-ready` `{ always }`, `partyApi.alwaysReady`) : **pas** de
