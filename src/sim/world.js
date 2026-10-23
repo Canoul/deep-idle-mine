@@ -100,7 +100,7 @@ export function genArea(G,k){
   for(const p of traps) carveTrap(p, (x, ry) => grid[ry*W+x], put, IDS[big]);
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
-  placeResidues(G.seed, k, grid, counts);
+  if(!G.noResidues) placeResidues(G.seed, k, grid, counts);   // pas de résidus si une tour était ouverte au lancement (23/10)
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));

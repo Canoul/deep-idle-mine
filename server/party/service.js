@@ -37,6 +37,10 @@ const fail = (code, status, message, extra) => { throw new PartyError(code, stat
 export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
+  /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe. Seule la case le change ; il le garde en
+     changeant de groupe (nouveau groupe, invitation, LFG). Retrouvé au redémarrage depuis les groupes enregistrés. */
+  const alwaysOn = new Set();
+  const newMember = (account, name) => ({ account, name, seenAt: clock(), ready: alwaysOn.has(account), always: alwaysOn.has(account) });
   const limit = {
     invite: createLimiter(config.invitesPerHour, clock),
     join:   createLimiter(config.joinFailures, clock),
@@ -103,7 +107,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   function create(me){
     let code;
     do code = newCode(); while(parties.has(code));
-    const p = { code, leader: me.id, members: [{ account: me.id, name: displayName(me), seenAt: clock() }],
+    const p = { code, leader: me.id, members: [newMember(me.id, displayName(me))],
                 invites: new Map(), createdAt: clock(), launching: false };
     parties.set(code, p);
     return p;
@@ -145,7 +149,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const g of guests){
       const old = partyOf(g.account);
       if(old) removeMember(old, g.account);
-      p.members.push({ account: g.account, name: g.name, seenAt: clock(), ready: false });
+      p.members.push(newMember(g.account, g.name));
       p.invites.delete(g.account);
     }
     for(const e of [host, ...guests]) queue.delete(e.account);
@@ -211,6 +215,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
                   members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true })),
                   invites: new Map((s.invites || []).map(i => [i.account, i])) };
+      for(const m of p.members) if(m.always) alwaysOn.add(m.account);
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
       written.set(p.code, JSON.stringify(saved(p)));
@@ -296,7 +301,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
       unready(p);                                      // un nouveau venu : tout le monde redit qu'il est prêt
-      p.members.push({ account: me.id, name: displayName(me), seenAt: clock(), ready: false });
+      p.members.push(newMember(me.id, displayName(me)));
       p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
@@ -337,7 +342,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
-      p.members.push({ account: me.id, name: displayName(me), seenAt: clock() });
+      p.members.push(newMember(me.id, displayName(me)));
       p.invites.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
@@ -378,8 +383,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       noChange(p);
       await notInSession(me);
       const m = memberOf(p, me.id);
-      m.ready = value;
-      if(!value) m.always = false;                     // « plus prêt » : on sort aussi du « prêt tout le temps »
+      m.ready = value || !!m.always;                   // « prêt tout le temps » : seule la case le retire (23/10)
       return { party: publicParty(p, me.id) };
     },
 
@@ -394,6 +398,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const m = memberOf(p, me.id);
       m.always = value;
       m.ready = value;
+      if(value) alwaysOn.add(me.id); else alwaysOn.delete(me.id);
       return { party: publicParty(p, me.id) };
     },
 

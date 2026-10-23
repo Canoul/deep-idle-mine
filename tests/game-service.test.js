@@ -584,3 +584,16 @@ test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour 
   advance(JUDGMENT.openHours * 3600e3);
   await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }), { code: 'tower_closed' });
 });
+
+test('Jugement (23/10) : une mine lancée pendant l\'ouverture d\'une tour est enregistrée sans résidus ; avant, rien de spécial', async () => {
+  const { JUDGMENT } = await import('../src/config.js');
+  const A = JUDGMENT.sides.angel.item;
+  const { game, advance, store } = setup({ summary: fakeSummary(() => ({ [A]: JUDGMENT.cap })) });
+  const first = (await game.start(ME, {})).session;
+  assert.equal((await store.getGameSession(first.id)).residues, undefined, 'aucune tour ouverte : résidus normaux');
+  advance(realDurationMs()); await game.pump();
+  assert.equal((await game.judgment(ME)).sides.angel.open, true);
+  assert.equal((await game.judgment(ME)).sides.demon.paused, true, 'jauge du Démon en pause');
+  const second = (await game.start(ME, {})).session;
+  assert.equal((await store.getGameSession(second.id)).residues, false, 'tour ouverte : pas de résidus dans cette mine');
+});

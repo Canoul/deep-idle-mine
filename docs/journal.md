@@ -9,6 +9,26 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Retours de l'après-midi : occultiste, Force brute, fragments de rune, prêt, MI, Jugement
+- **Pour le joueur** :
+  - **Occultiste** : 150 PV de base (avant 100). La Provocation du barbare **casse** son rayon mais ne l'empêche pas
+    de le relancer : un barbare peut se faire étourdir (vérifié en vrai combat ; le wiki disait l'inverse, corrigé).
+  - **Force brute** (barbare) : en plus, **2 % de dégâts de zone par rang** : chaque coup touche aussi les mobs à
+    1 case de sa cible (boss compris).
+  - **Runes** : on peut **retirer** une rune d'une pièce (gratuit, onglet Amélioration). Elle revient en **Fragment de
+    rune** : mêmes lignes, **% divisés par 2**. Un fragment se repose comme une rune ; posé, il ne se retire plus.
+  - **Prêt tout le temps** : ne se décoche plus tout seul, seulement en cliquant sur la case ; il suit le joueur
+    d'un groupe à l'autre.
+  - **Mine instantanée** : ne fait plus quitter son groupe. On s'y inscrit seul ; après la mine, on est toujours dans
+    son lobby.
+  - **Jugement** : **une tour à la fois**. Pendant qu'une tour est ouverte, la jauge de l'autre est en pause et les
+    mines lancées pendant ce temps n'ont plus de résidus. À la fermeture, tout reprend.
+- **Décisions** (Geoffrey, réponses aux questions) : zone = mobs à 1 case de la cible ; fragment reposable comme une
+  rune ; retrait gratuit ; fragment posé définitif. Choix de Claude : la ligne « +1 Découverte » d'un fragment n'est
+  pas divisée (ce n'est pas un %) ; fragment de rareté « rare ».
+- **À suivre** : regarder dans le navigateur le bouton « Retirer la rune » et la jauge « en pause ».
+- **État** : ✅ en ligne le 23/10
+
 ## 23/10/2026 — Geoffrey — Plastrons : plus de pods
 - **Pour le joueur** : les plastrons donnent plus de pods : chitine **+30** (avant 25), fer **+50** (33), acier **+80**
   (40), équilibre **+125** (60). Les plastrons **déjà fabriqués** ont les nouvelles valeurs (les stats sont lues

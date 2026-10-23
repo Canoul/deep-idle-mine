@@ -18,7 +18,7 @@ const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 test('PV : formules du créateur (k = area où naît le mob)', () => {
   assert.equal(mobHp('bestiole', 0), 50); assert.equal(mobHp('mimic', 3), Math.round(50 * 1.15 ** 3));
   assert.equal(mobHp('gobelin', 1), 100); assert.equal(mobHp('gobelin', 5), Math.round(100 * 1.15 ** 4));
-  assert.equal(mobHp('occultiste', 4), 100); assert.equal(mobHp('occultiste', 5), 115);
+  assert.equal(mobHp('occultiste', 4), 150); assert.equal(mobHp('occultiste', 5), 173);   // 150 depuis le 23/10
 });
 
 test('tacle : à 1 case du mineur, le mob s\'arrête à côté de lui et l\'immobilise', () => {
@@ -95,6 +95,23 @@ test('occultiste provoqué : le coup interrompt la canalisation (cible libérée
   o.cast = 0; run(G, 1);
   assert.equal(o.channel?.target, barb.id, 'il relance, sur le barbare (sa seule cible)');
   assert.equal(channeler(G, barb), o, 'en 1 contre 1, le barbare peut être étourdi');
+});
+
+test('combat réel contre un occultiste provoqué : la provocation casse les canalisations mais ne les empêche pas', () => {
+  /* rien de forcé : un barbare (Provocation) et un autre mineur face à un occultiste immortel, 60 s de jeu */
+  const G = corridor(2), [a, b] = G.miners; a.x = 6; b.x = 30; b.ox = a.ox = 1e6;
+  b.skillTree = 'barbare'; b.skill = { ...b.skill, taunt: 1 };
+  const o = mob(G, { type: 'occultiste', x: 20, y: a.y, cast: MOBS.occult.cooldown });
+  let casts = 0, onBarb = 0, prev = null;
+  for(let i = 0; i < 600; i++){
+    run(G, 1);
+    const c = o.channel?.target ?? null;
+    if(c !== null && prev === null){ casts++; if(c === b.id) onBarb++; }
+    prev = c;
+  }
+  assert.equal(o.taunt, b.id, 'provoqué par le barbare');
+  assert.ok(casts >= 3, `il continue de lancer son sort (${casts} fois en 60 s)`);
+  assert.ok(onBarb >= 2, `sur le barbare aussi (${onBarb} fois)`);
 });
 
 test('provocation pendant une canalisation sur un autre : chaque coup l\'interrompt, même déjà provoqué', () => {
@@ -213,4 +230,19 @@ test('treuil : sorti du puits par un combat, le logisticien y retourne (au lieu 
   run(G, 30);
   assert.equal(m.mode, 'winch', `toujours en chantier (${m.status})`);
   assert.equal(m.x, 25, 'revenu dans le puits');
+});
+
+test('Force brute : chaque coup touche aussi les mobs à 1 case de la cible (2 % du coup par rang), pas plus loin', async () => {
+  const { skillEffects, sanitizeSkills } = await import('../src/meta/skills.js');
+  const G = corridor(1), m = G.miners[0];
+  m.x = 5; m.ox = 1e6; m.skillTree = 'barbare';
+  m.skill = { ...m.skill, ...skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3 } })) };
+  const o = mob(G, { type:'gobelin', x:6, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
+  const q = mob(G, { type:'gobelin', x:7, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
+  const far = mob(G, { type:'gobelin', x:8, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
+  run(G, 30);
+  const hit = 1000 - o.hp;
+  assert.ok(hit > 0, 'il frappe sa cible');
+  assert.ok(Math.abs((1000 - q.hp) - hit * 0.06) < 1e-6, `voisin : 6 % (${1000 - q.hp} pour ${hit})`);
+  assert.equal(far.hp, 1000, 'à 2 cases : rien');
 });

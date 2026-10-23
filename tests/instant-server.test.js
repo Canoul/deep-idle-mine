@@ -92,7 +92,7 @@ test('MI inscription en session : acceptée (le groupe est gardé) ; encore en s
   assert.equal(instant.count(), 0, 'son inscription est effacée');
 });
 
-test('MI : lancer une session normale ne désinscrit plus ; session finie avant l\'heure → il entre et quitte son groupe', async () => {
+test('MI : lancer une session normale ne désinscrit plus ; session finie avant l\'heure → il entre et GARDE son groupe (23/10)', async () => {
   const { instant, game, party, t } = await setup();
   const { party: p } = await party.create(ME);
   await party.join(OTHER, p.code);
@@ -105,13 +105,15 @@ test('MI : lancer une session normale ne désinscrit plus ; session finie avant 
   t.now = SLOT;
   const opened = await instant.tick();
   assert.deepEqual(opened.map(s => s.players.map(x => x.account)), [[ME.id]]);
-  assert.equal((await party.state(ME)).party, null, 'il a quitté son groupe en entrant dans la mine');
-  /* s'inscrire hors session : on quitte son groupe tout de suite (comme avant) */
+  assert.equal((await party.state(ME)).party?.members.length, 2, 'il reste dans son groupe en entrant dans la mine');
+  await game.leave(ME);                                         // la MI finie : il retrouve son lobby, toujours dans le groupe
+  assert.equal((await party.state(ME)).party?.members.length, 2);
+  /* s'inscrire hors session : on garde son groupe aussi */
   const b = await setup();
   const { party: q } = await b.party.create(ME);
   await b.party.join(OTHER, q.code);
   await b.instant.join(OTHER);
-  assert.equal((await b.party.state(OTHER)).party, null);
+  assert.equal((await b.party.state(OTHER)).party?.members.length, 2);
 });
 
 test('MI : inscriptions gardées après un redémarrage du serveur', async () => {

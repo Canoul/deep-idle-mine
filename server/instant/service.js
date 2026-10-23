@@ -2,7 +2,8 @@
 
    - On s'inscrit pour la prochaine ouverture (toutes les 2 h pile, heure de Paris : src/shared/instant.js), seulement
      dans les MI.signupBefore dernières secondes (11 h 30 → 12 h ; décision du 22/10), y compris pendant une session.
-     S'inscrire hors session fait quitter son groupe ; en session, on le quitte à l'entrée dans la mine. Lancer une
+     La MI ne touche pas aux groupes (23/10/2026, Geoffrey ; avant : on quittait son groupe) : on s'y inscrit seul, on
+     ne peut pas y inviter, et le joueur reste dans le lobby de son groupe pendant et après la mine. Lancer une
      session normale ne désinscrit pas : encore en session à l'heure, le joueur rate la mine (game.openInstant
      l'écarte) et sa session continue ; son inscription est effacée comme les autres. Mode dev : à toute heure.
    - À l'heure (tick, appelé en continu par le serveur), les inscrits sont répartis en mines d'au plus MI.maxPerMine
@@ -44,11 +45,7 @@ export function createInstantService({ game, party = null, store, clock = Date.n
     const out = [];
     for(let i = 0; i < mines.length; i++){
       const s = await game.openInstant(`mi-${slot}-${i + 1}`, slot, mines[i].map(p => ({ account: p.account, name: p.name })));
-      if(s){
-        out.push(s);
-        /* ceux qui entrent dans la mine quittent leur groupe (inscrits pendant une session : ils y étaient encore) */
-        for(const p of s.players ?? []) await party?.leave({ id: p.account }).catch(() => {});
-      }
+      if(s) out.push(s);                     // chacun garde son groupe (23/10)
     }
     await drop(list.map(p => p.account));
     opened = slot;
@@ -73,12 +70,11 @@ export function createInstantService({ game, party = null, store, clock = Date.n
                signupAt: signupOpensAt(nextAt), signupOpen: dev || signupOpen(clock(), nextAt),
                maxPerMine: MI.maxPerMine, notify: MI.notify, inviteAt: MI.inviteAt, duration: MI.duration, dev };
     },
-    /* s'inscrire : seulement dans les 30 dernières minutes (même en session) ; hors session, on quitte son groupe.
+    /* s'inscrire : seulement dans les 30 dernières minutes (même en session), seul, sans quitter son groupe.
        Idempotent (déjà inscrit = rien ne change). */
     async join(me){
       if(!dev && !signupOpen(clock())) fail('signup_closed', 409, `Les inscriptions ouvrent ${MI.signupBefore / 60} min avant la mine instantanée.`);
       if(!signups.has(me.id)){
-        if(!await game.activeSessionId(me.id)) await party?.leave(me);
         const s = { account: me.id, name: displayName(me), at: clock() };
         signups.set(me.id, s);
         await store.putInstantSignup(me.id, s);

@@ -98,3 +98,20 @@ test('une rune ou une pièce enchantée trafiquée dans la base ne passe pas', a
   assert.equal(runes(inv).length, 0, 'rune trafiquée retirée');
   assert.equal(inv.slots.find(s => s?.uid === a).rune, undefined, 'rune inventée ignorée');
 });
+
+test('retirer une rune (serveur) : une demande renvoyée = un seul fragment ; la rune disparaît de la pièce ; fragment posé verrouillé', async () => {
+  const { game, uids } = await setup();
+  const open = await game.open(ME, { item:CHEST, opId:'op-chest-frag1' });
+  const rune = runes(open.inventory)[0];
+  await game.upgrade(ME, { action:'enchant', uid:uids[0], rune:rune.uid, opId:'op-ench-frag01' });
+  const a = await game.upgrade(ME, { action:'unenchant', uid:uids[0], opId:'op-unen-frag01' });
+  const b = await game.upgrade(ME, { action:'unenchant', uid:uids[0], opId:'op-unen-frag01' });
+  const frags = inv => inv.slots.filter(s => s?.item === RUNE.fragment.item);
+  assert.equal(frags(b.inventory).length, 1, 'un seul fragment');
+  assert.equal(a.fragment.uid, b.fragment.uid);
+  assert.equal(a.inventory.slots.find(s => s?.uid === uids[0]).rune, undefined);
+  await assert.rejects(game.upgrade(ME, { action:'unenchant', uid:uids[0], opId:'op-unen-frag02' }), { code:'no_rune' });
+  await game.upgrade(ME, { action:'enchant', uid:uids[1], rune:a.fragment.uid, opId:'op-ench-frag02' });
+  await assert.rejects(game.upgrade(ME, { action:'unenchant', uid:uids[1], opId:'op-unen-frag03' }), { code:'fragment_locked' });
+  await assert.rejects(game.upgrade(ME, { action:'unenchant', uid:'x', opId:'op-unen-frag04' }), { code:'bad_request' });
+});

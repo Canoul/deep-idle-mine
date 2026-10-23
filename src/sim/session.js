@@ -27,6 +27,8 @@ export function newSession(seed, opts={}){
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
     summary:null,
+    /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
+    noResidues: !!opts.noResidues,
   };
   /* id unique de la session (distinct de la seed : rejouer une seed = une autre session) ; sert à ne créditer
      qu'une seule fois le coffre d'une session dans un inventaire */

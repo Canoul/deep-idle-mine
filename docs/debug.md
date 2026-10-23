@@ -2045,4 +2045,28 @@ Règles (voir CLAUDE.md) :
   dégâts +10 → 51 min ; rayon de torche +2 → 51 min ; oxygène +100 → 51 min 43 ; torches +20 → 53 min 39 ; pierre
   1,0 s / pierre dure 1,8 s → 51 min 29 ; pioche en fer +0,6 → 50 min 36.
 
-
+### Retours de l'après-midi du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10-apm`, ✅ en ligne le 23/10
+- **Occultiste** : `MOBS.hpBase.occultiste` 100 → 150. Rien à corriger dans `mobs.js` : `provoke` met fin à la
+  canalisation, `occult` relance au cooldown sur la cible provoquée. Nouveau test « combat réel » (mobs.test.js : 60 s,
+  rien de forcé, ≥ 3 sorts dont ≥ 2 sur le barbare). Wiki : le texte « coupe son sort pour de bon » était faux.
+- **Force brute zone** : nœud `damage` + `aoe:0.02` (config) ; `aoeOf(effects)` (`src/meta/skills.js`, rang × aoe) ;
+  `splash` dans `src/sim/actions.js` (mobs à Manhattan ≤ 1 de la cible, pas un mimic caché, kill → `killMob` par le
+  barbare) ; tour : `hitMob` / `mobDied` (`src/sim/tower/session.js`). `nodeText` remplace `{aoe}`.
+- **Fragments** : `RUNE.fragment` ({ item:'Fragment de rune', tex, factor:0.5 }), objet `cat:'rune', fragment:true`
+  (rareté rare). `isFragment`, `runeFactor` (`src/meta/piece.js`) ; `lineValue(item, l, f)` (discoverMax inchangé) ;
+  `pieceBonus` applique le facteur aux lignes de `p.rune` si `rune.frag`. `sanitizePiece` garde `rune.frag`.
+  `unenchant` / `unenchantError` (`src/meta/upgrade.js`, opId rejouable : `upgrades` garde `fragment`, relu par
+  `deserialize`). Serveur : action `unenchant` (`/api/game/upgrade`), erreurs `no_rune`, `fragment_locked`. UI :
+  bouton « Retirer la rune », aperçu du fragment ÷ 2. Texture `rune_fragment`.
+- **Prêt tout le temps** : `alwaysOn` (Set de comptes, `server/party/service.js`), `newMember` le reprend partout ;
+  `ready(false)` ne touche plus `always` ; reconstruit au `load`. Lobby : bouton principal « ✔ Prêt tout le temps »
+  désactivé. ⚠️ Un joueur sans groupe au redémarrage perd le réglage (pas d'enregistrement par compte).
+- **MI** : `server/instant/service.js` n'appelle plus `party.leave` (inscription, ouverture). Un membre en MI bloque le
+  lancement du chef (`member_in_session`, déjà là).
+- **Jugement** : `anyOpen`, `paused` (`src/meta/judgment.js`) ; `refresh` n'ouvre pas une tour si l'autre l'est ;
+  `addResidues` ignore le camp en pause ; `publicJudgment` : `paused` par camp, `residues`. Serveur : `rec.residues =
+  false` au lancement d'une mine classique si une tour est ouverte ; `buildSession` → `noResidues` → `genArea` saute
+  `placeResidues`. UI Jugement : « en pause ».
+- **Tests** : mobs, skills, tower, rune, anticheat/rune, rarity, inventory, party, lobby, instant-server, judgment,
+  game-service, wiki, stuff, amelioration, anticheat complet ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` : areas 3,0, profondeur 194, allers-retours 28,8, 0 blocage ✅.

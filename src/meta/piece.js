@@ -22,6 +22,10 @@ export const qualityDef = q => QUALITY.get(q) ?? null;
 export const MAX_PLUS = UPGRADE.levels.length;
 export const isStuff = item => ITEMS[item]?.cat === 'stuff';
 export const isRune = item => ITEMS[item]?.cat === 'rune';
+/* fragment de rune (rune retirée d'une pièce, RUNE.fragment) : ses % ne comptent que pour RUNE.fragment.factor */
+export const isFragment = item => ITEMS[item]?.fragment === true;
+/* part des % d'une rune posée (rune:{ …, frag:true } = un fragment) ou d'un objet rune / fragment */
+export const runeFactor = r => (r?.frag || isFragment(r?.item)) ? RUNE.fragment.factor : 1;
 export const isIdentified = p => !!p && QUALITY.has(p.q);
 
 /* arrondi au pas de la stat (0,001 pour la vitesse de minage, 1 pour les pods…), sans les restes de virgule flottante */
@@ -53,7 +57,7 @@ export function rollQuality(rnd){
 /* % tiré, arrondi au dixième (c'est ce qui est enregistré) */
 const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
-export const lineValue = (item, l) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct);
+export const lineValue = (item, l, f = 1) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct * f);
 
 /* lignes d'une qualité : nombre de lignes, stat et % tirés (Découverte possible en R6/R7, une au plus) */
 function rollLines(d, rnd){
@@ -113,7 +117,8 @@ export function pieceBonus(entry){
   const p = typeof entry === 'string' ? { item: entry } : entry || {};
   const d = ITEMS[p.item]; if(!d) return { stats:{}, set:{} };
   const m = plusMult(p.plus | 0), stats = { ...(d.stats || {}) }, set = {};
-  for(const l of [...(p.lines || []), ...(p.rune?.lines || [])]) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
+  for(const l of p.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
+  for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l, runeFactor(p.rune));
   for(const k in stats) stats[k] = m === 1 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);
   for(const [k, v] of Object.entries(d.set || {})) set[k] = m === 1 ? v : roundStat(k, STATS[k] + (v - STATS[k]) * m);
   return { stats, set };
@@ -166,7 +171,7 @@ export function sanitizePiece(raw){
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
   if(id) Object.assign(p, id);
   else if(qualityDef(raw.q) && (raw.lines === undefined || (Array.isArray(raw.lines) && raw.lines.length === 0))) p.q = raw.q;   // identifiée depuis le 22/10 : qualité seule
-  if(raw.rune && typeof raw.rune === 'object'){ const r = sanitizeLines(raw.rune); if(r) p.rune = r; }
+  if(raw.rune && typeof raw.rune === 'object'){ const r = sanitizeLines(raw.rune); if(r) p.rune = raw.rune.frag === true ? { ...r, frag: true } : r; }
   if(Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS) p.plus = raw.plus;
   return p;
 }

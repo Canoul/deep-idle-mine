@@ -115,3 +115,9 @@ test('« Prêt tout le temps » : seulement pour un membre (pas le chef, pas seu
   const q = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
   assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:q }), { show:true, checked:false });
 });
+
+test('prêt tout le temps (23/10) : le bouton principal ne permet pas de l\'annuler (seule la case)', () => {
+  const p = { leader:'AAAA1111', members:[{ account:'AAAA1111', name:'Zoe' }, { account:'BBBB2222', name:'Max', ready:true, always:true }] };
+  assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:false, label:'✔ Prêt tout le temps' });
+});
+
