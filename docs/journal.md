@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Décisions** : treasures et résidus passent avant le focus d'area quand ils sont à portée (Geoffrey).
 - **À suivre** : rien de visible sur les 5 parties de référence (aucune ne tombe sur ces cas) ; la seed 1384517703
   ouvre maintenant son treasure.
-- **État** : 🧪 sur la branche `geoffrey/fin-session-canards-tresor` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Mineur : skill « Légende de la flemme »
 - **Pour le joueur** : 4e étage de l'arbre Mineur, 0/1 (après Ruée 5/5) : quand le mineur doit remonter à la surface,

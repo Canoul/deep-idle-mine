@@ -2120,7 +2120,7 @@ Règles (voir CLAUDE.md) :
   10 parties : décision de design en attente (vider à chaque remontée ?). Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
   passage au coffre.
 
-### Fin de session : chasse au Gallianix ; treasure hors du focus d'area (Geoffrey) — branche `geoffrey/fin-session-canards-tresor`
+### Fin de session : chasse au Gallianix ; treasure hors du focus d'area (Geoffrey) — branche `geoffrey/fin-session-canards-tresor`, ✅ en ligne le 23/10
 - **Treasure** : seed 1384517703 (3 mineurs, `--skills mixed`), treasure en (24, 50), area 0, collé au puits du treuil
   (x 25) : vu à 400 s, jamais ouvert. Cause : `inFocus` (`decideWork`, `src/sim/ai.js`) écartait toute cible hors de
   `workArea` (« Plus profond » = area 1) ; le poids (`TREASURE_VAL` 12) n'y était pour rien. Correction : `inFocus(y,t)`
