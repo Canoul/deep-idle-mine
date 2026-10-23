@@ -1975,7 +1975,7 @@ Règles (voir CLAUDE.md) :
   recyclage 40-70 ; tier inconnu = 4), wiki ✅ ; anticheat ✅.
 - **Points fragiles** : ⚠️ onglet non regardé dans un navigateur. Un poids invalide (≤ 0, NaN) compte pour 1.
 
-### Résidus : 0,5 % en cumul, sur la pierre (Geoffrey) — branche `geoffrey/residus-cumul`, 🧪 pas en ligne
+### Résidus : 0,5 % en cumul, sur la pierre (Geoffrey) — branche `geoffrey/residus-cumul`, ✅ en ligne le 23/10
 - **Constat** (mesure, seeds 1, 7919, 424242) : areas 4 à 6 = 13 anges + 13 démons = 1,04 %, pris sur pierre et pierre
   dure : `placeResidues` appliquait `JUDGMENT.pct` à chaque camp.
 - **Quoi** : `placeResidues` (`src/sim/world.js`) : n = round(N × pct / 100) = 13 en tout, `floor(n/2)` par camp, le reste

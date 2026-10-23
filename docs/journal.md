@@ -17,7 +17,7 @@ Modèle d'entrée :
   13, et le camp du 13e est tiré par la seed (équilibré en moyenne).
 - **À suivre** : deux fois moins de résidus rapportés → les jauges (cap 250) mettront environ deux fois plus de temps à
   se remplir.
-- **État** : 🧪 sur la branche `geoffrey/residus-cumul` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
