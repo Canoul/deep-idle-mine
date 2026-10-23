@@ -114,7 +114,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   sac posé à côté du bas du treuil (2 × pods des logisticiens avec Mule), les mineurs aux pods pleins y déposent s'il
   est plus près que la surface, vidé au coffre seulement à la prolongation et en fin de session (décision Geoffrey).
   **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3) : 0 blocage, 0 perdu, le sac coûte
-  1,5 min par partie au logisticien, effet sur le coffre non mesurable (hasard ±15 %) : décision en attente (vider à
+  ≈ 6 s par partie au logisticien (il le reprend en remontant par le treuil), effet sur le coffre non mesurable (hasard ±15 %) : décision en attente (vider à
   chaque remontée ?). Le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil (avec ou sans Mule).
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;

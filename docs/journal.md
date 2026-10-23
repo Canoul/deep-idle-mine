@@ -48,7 +48,8 @@ Modèle d'entrée :
   Choix de Claude à valider : case de gauche si la droite est incassable ; chaque objet compte pour celui qui l'a
   déposé ; en fin de session, le logisticien passe par le sac lors de sa dernière remontée qui le permet.
 - **Repères** (simulation, 10 parties à 3, un arbre complet chacun) : ≈ 2,7 dépôts et 500 pods par partie passent
-  par le sac, 0 sac perdu, 0 blocage. Le sac coûte **1,5 min par partie** au logisticien (poser, ramasser). Coffre
+  par le sac, 0 sac perdu, 0 blocage. Le sac ne coûte au logisticien que **≈ 6 s par partie** (miner la case, poser, ramasser) : il le
+  reprend en remontant par le treuil, sur son chemin. Coffre
   3 946 pods contre 4 074 sans Mule : écart dans le hasard (±15 % d'une partie à l'autre, Mule gagne 3 paires sur
   10) ; **pas d'effet mesurable** sur 10 parties. Le sac, plein après une vague de dépôts, attend la prolongation
   suivante : il rapporte peu.

@@ -2038,7 +2038,10 @@ Règles (voir CLAUDE.md) :
   areas 3,1, 0 blocage, 0 perdu, 27 dépôts / 4 993 pods passés par le sac ; sans (`--no-mule`) 4 074, 187,3, 3,1.
   Logisticien 520 blocs minés contre 571 ; les autres 825 contre 839. **Écart du coffre pas significatif** (paires
   par seed : −128 pods en moyenne, écart type ≈ 380, Mule gagne 3/10). Temps du logisticien (minutes par partie,
-  même 10 seeds, statuts regroupés) : sac 1,5 ; travail 14,9 contre 16,1 ; chantier du treuil 24,5 contre 23,6
+  même 10 seeds, statuts regroupés) : statuts « sac » 1,5, dont 52 s de « Va ramasser son sac » qui est sa
+  remontée normale par le treuil (remontée + coffre : 9,2 + 0,9 contre 9,9 sans Mule) et 33 s de « Va au sac » (le
+  logisticien dépose lui-même : un gain) ; **coût réel ≈ 6 s** (mine la case 1,2, pose 2,1, ramasse 1,6) ;
+  travail 14,9 contre 16,1 ; chantier du treuil 24,5 contre 23,6
   (≈ 40 % de sa session dans le chantier, avec ou sans Mule).
 - **Points fragiles** : ⚠️ rendu (sac, jauge, icône du skill) pas regardé dans un navigateur. Gain non mesurable sur
   10 parties : décision de design en attente (vider à chaque remontée ?). Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
