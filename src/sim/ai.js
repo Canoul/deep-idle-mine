@@ -1,6 +1,6 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
@@ -143,6 +143,7 @@ export function depthCap(G,m){
 
 function decideSurface(G,m){
   const left=SESSION_LEN-G.t;
+  if(huntDuck(G,m,left)) return;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
   if(m.load>0 || bagToEmpty(G,m)){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
   if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
@@ -163,6 +164,32 @@ function decideSurface(G,m){
      et avant de rejoindre son puits : il peut tomber dans le treuil en chemin, et partir sans repasser ici) */
   m.tripCap=depthCap(G,m);
   decideDeparture(G,m);
+}
+
+/* fin de session, rien à déposer : au lieu d'attendre au coffre, il va frapper le Gallianix le plus proche (réglage
+   « combat » sur Combattre), s'il a le temps de revenir au coffre ensuite (ce qu'il lâche est dans son sac). Il ne
+   marche que sur du sol (il ne tombe pas dans la mine), donc pas vers un canard de l'autre côté d'un trou. */
+function huntDuck(G,m,left){
+  if(m.prefs.fightMobs!==true || m.load>0 || bagToEmpty(G,m) || !(left<CFG.endStayMin || depthCap(G,m)<3)) return false;
+  if(isCarrier(G,m) && mulePlaced(G) && G.mule.load>0) return false;   // Mule : son sac passe avant (decideSurface)
+  let best=null, bd=Infinity;
+  for(const o of G.mobs){
+    if(o.type!==DUCK.type || o.hp<=0 || o.y!==0) continue;
+    const d=Math.abs(o.x-m.x);
+    if(d>=bd || !surfaceWalk(G,m.x,o.x)) continue;
+    if(left < (d+Math.abs(o.x-CHEST_X))*moveT(G,m)*1.25 + DUCK.huntMargin) continue;   // aller, retour au coffre, le combat
+    best=o; bd=d;
+  }
+  if(!best) return false;
+  if(bd<=1){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
+  m.status=`Chasse le Gallianix ${best.name}`;
+  if(stepDir(G,m,Math.sign(best.x-m.x),0,{noBridge:true})) return true;
+  idle(m,0.3); return true;
+}
+/* de a à b à la surface, chaque case a un appui (pas de trou où tomber) */
+function surfaceWalk(G,a,b){
+  for(let x=Math.min(a,b); x<=Math.max(a,b); x++) if(!supported(G,x,0)) return false;
+  return true;
 }
 
 /* en équipe : au départ du coffre, il reprend une descente existante si elle vaut le coup, sinon il rejoint sa colonne */
@@ -261,7 +288,9 @@ function decideWork(G,m){
   // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière). Vaut pour le focus
   // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai), et pour la
   // galerie qu'il va creuser (seed 23757 : galerie en haut de l'area 3, chemin par la dernière ligne de l'area 2)
-  const onTheWay = goal!==null && ((m.target && areaOf(m.target.y)===goal) || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
+  // … et pour un treasure ou un résidu visé hors de l'area de travail (voir inFocus plus bas)
+  const onTheWay = goal!==null && ((m.target && (areaOf(m.target.y)===goal || !isOre(G.tiles[m.target.y][m.target.x])))
+    || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
@@ -291,13 +320,15 @@ function decideWork(G,m){
   const A=workArea(G,m), act=activeOres(m.prefs.focus);
   /* fin de session : rien sous la profondeur maximale du trajet, fixée au départ de la surface (il mine plus haut) */
   const cap=m.tripCap ?? Infinity;
-  const inFocus = y => y<=cap && (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act));
+  /* un treasure ou un résidu découvert à portée (CFG.oreReach) est visé quel que soit le focus d'area : sinon celui
+     d'une area du dessus restait là toute la partie, même à 3 cases du treuil où tout le monde passe (seed 1384517703) */
+  const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
-    if(!inFocus(o.y)) continue;
+    if(!inFocus(o.y,o.t)) continue;
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre

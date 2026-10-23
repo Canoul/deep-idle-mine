@@ -318,7 +318,8 @@ export const MOBS = {
    jamais dans la mine : il saute par-dessus les trous (jump cases au plus), sinon il fait demi-tour. Il a un pseudo,
    pris dans names dans l'ordre (1er canard de la session = 1er nom), en boucle. Les mineurs le combattent comme les
    autres mobs (réglage « combat »). Vaincu : heart.chance de laisser heart.item, rapporté au coffre commun.
-   Hors de MOBS.hpBase : pas dans les tirages d'apparition, ni dans le maximum de mobs. Hasard à part (salt). */
+   Hors de MOBS.hpBase : pas dans les tirages d'apparition, ni dans le maximum de mobs. Hasard à part (salt).
+   Fin de session (23/10) : un mineur qui attendrait au coffre va plutôt le chasser (src/sim/ai.js, huntDuck). */
 export const DUCK = {
   type: 'gallianix', name: 'Gallianix', tex: 'duck', hp: 50,
   names: ['Cuiseuse de sperme', 'Roxanne', 'La brésilienne', 'La thaïlandaise'],
@@ -327,6 +328,7 @@ export const DUCK = {
   pause: 0.35,            // chance de rester sur place à chaque pas
   jump: 3,                // trou le plus large qu'il saute (en cases)
   heart: { item: 'Fragment de cœur', chance: 0.25, tex: 'heart_fragment' },
+  huntMargin: 20,         // fin de session : il ne va le chasser que s'il lui reste ce temps (s) en plus de l'aller-retour
   salt: 0x6a11a41,
 };
 

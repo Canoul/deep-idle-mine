@@ -145,3 +145,22 @@ test('chaque Treasure TX a son icône d\'inventaire et son entrée au catalogue'
 test('l\'entité de la mine s\'appelle Treasure', () => {
   assert.equal(BLOCKS[TREASURE_BLOCK].name, 'Treasure');
 });
+
+test('IA : un treasure découvert dans une area du dessus, à portée, est ouvert malgré « Plus profond » (seed 1384517703)', async () => {
+  const { newSession: ns, tick } = await import('../src/sim/session.js');
+  const { tryUnlock, areaOf: aOf } = await import('../src/sim/world.js');
+  const G = ns(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  const top = areaTop(1);
+  G.mobs = [];
+  for(let y = top-3; y <= top+2; y++){ G.tiles[y][25] = 0; G.ladder[y][25] = 1; }   // puits (comme celui du treuil)
+  G.tiles[top-2][24] = TREASURE_BLOCK; G.seen[top-2][24] = 1;                       // treasure collé à la paroi, area 0
+  m.x = 25; m.y = top+2; m.mode = 'work';
+  let opened = false;
+  for(let i = 0; i < 600 && !opened; i++){ tick(G); opened = G.tiles[top-2][24] !== TREASURE_BLOCK; }
+  assert.ok(opened, 'treasure ouvert');
+  assert.ok(Object.keys(m.inv).some(k => k.startsWith('Treasure')));
+  let back = false;
+  for(let i = 0; i < 600 && !back; i++){ tick(G); back = aOf(m.y) === 1; }
+  assert.ok(back, 'il retourne travailler dans l\'area 1');
+});

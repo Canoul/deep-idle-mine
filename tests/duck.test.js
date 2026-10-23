@@ -102,3 +102,40 @@ test('session complète : les mineurs le combattent sans se bloquer (même seed 
   for(const o of ducks(A)) assert.equal(o.y, 0);
   assert.ok(W > 0);
 });
+
+/* fin de session (23/10) : un mineur qui attendrait au coffre va chasser le canard, s'il a le temps de revenir */
+import { SESSION_LEN, DT } from '../src/config.js';
+import { run as runTicks } from './helpers.js';
+function endGame({ left = 40, duckX = CHEST_X + 4, fight = true } = {}){
+  const G = newSession(11, { miners: 1 }), m = G.miners[0];
+  G.ticks = Math.round((SESSION_LEN - left) / DT); G.t = G.ticks * DT;
+  G.mobs = [{ id: G.mobId++, type: DUCK.type, name: 'Roxanne', x: duckX, y: 0, hp: DUCK.hp, maxhp: DUCK.hp, cd: 99, dir: 1 }];
+  m.x = CHEST_X; m.y = 0; m.mode = 'surface'; m.action = null; m.prefs = { ...m.prefs, fightMobs: fight };
+  return { G, m, duck: G.mobs[0] };
+}
+
+test('fin de session : au lieu d\'attendre au coffre, il va tuer le canard, puis revient au coffre', () => {
+  const { G, m, duck } = endGame();
+  let chased = false;
+  for(let i = 0; i < 300 && duck.hp > 0; i++){ runTicks(G, 1); if(m.status.includes('Gallianix')) chased = true; }
+  assert.ok(chased, 'il le chasse');
+  assert.ok(duck.hp <= 0, 'canard vaincu');
+  assert.equal(m.y, 0, 'jamais tombé dans la mine');
+  runTicks(G, 100);
+  assert.equal(m.x, CHEST_X, 'revenu au coffre');
+  assert.equal(m.load, 0, 'ce qu\'il a lâché est déposé');
+});
+
+test('fin de session : pas de chasse sans le temps de revenir, en « Ignorer », ou de l\'autre côté d\'un trou', () => {
+  for(const [why, opts, prep] of [
+    ['trop tard', { left: 10 }, null],
+    ['Ignorer', { fight: false }, null],
+    ['trou', {}, G => { G.tiles[1][CHEST_X + 2] = 0; G.tiles[2][CHEST_X + 2] = 0; }],
+  ]){
+    const { G, m, duck } = endGame(opts);
+    prep?.(G);
+    runTicks(G, 50);
+    assert.equal(m.x, CHEST_X, why);
+    assert.equal(duck.hp, DUCK.hp, why);
+  }
+});

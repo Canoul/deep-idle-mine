@@ -2119,3 +2119,23 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ rendu (sac, jauge, icône du skill) pas regardé dans un navigateur. Gain non mesurable sur
   10 parties : décision de design en attente (vider à chaque remontée ?). Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
   passage au coffre.
+
+### Fin de session : chasse au Gallianix ; treasure hors du focus d'area (Geoffrey) — branche `geoffrey/fin-session-canards-tresor`, ✅ en ligne le 23/10
+- **Treasure** : seed 1384517703 (3 mineurs, `--skills mixed`), treasure en (24, 50), area 0, collé au puits du treuil
+  (x 25) : vu à 400 s, jamais ouvert. Cause : `inFocus` (`decideWork`, `src/sim/ai.js`) écartait toute cible hors de
+  `workArea` (« Plus profond » = area 1) ; le poids (`TREASURE_VAL` 12) n'y était pour rien. Correction : `inFocus(y,t)`
+  laisse passer les cibles non-minerai (treasure, résidus) à portée (`CFG.oreReach`, filtre déjà là), toujours sous
+  `tripCap` ; `onTheWay` compte une cible non-minerai, sinon `changeArea` effaçait la cible au premier pas dans l'area
+  du dessus (oscillation).
+- **Canard** : `huntDuck` (appelé en tête de `decideSurface`) : `fightMobs === true`, rien à déposer, fin de session
+  (`left < endStayMin` ou `depthCap < 3`), pas de sac Mule à récupérer ; canard le plus proche à la surface joignable
+  par `surfaceWalk` (chaque case de la ligne 0 `supported`) et `left ≥ (aller + retour au coffre) × moveT × 1,25 +
+  DUCK.huntMargin` (20 s). Au contact (≤ 1 case) : `fight`. Le butin passe par le sac puis `deposit` comme d'habitude.
+- **Tests** : `tests/duck.test.js` (+2 : chasse puis retour au coffre ; pas trop tard / Ignorer / trou),
+  `tests/treasure.test.js` (+1, échoue sans la correction) ; focus, miner, mule, winch, team, mobs, skills,
+  diagnostics ✅ (126).
+- **Simulation** `--miners 3 --count 5 --skills mixed` : identique avant / après (areas 3,8, profondeur 207,8,
+  coffre 4 531 pods, 0 blocage) : les seeds de référence ne tombent sur aucun des deux cas. Chasse observée sur
+  3 parties sur 5 (90 à 130 ticks-mineur) ; 15838 : 2 canards vivants à la fin, personne n'était au coffre.
+- **Points fragiles** : ⚠️ pas regardé dans le navigateur. Un treasure à portée dans une area au-dessus de `tripCap`
+  reste ignoré (voulu : fin de session).
