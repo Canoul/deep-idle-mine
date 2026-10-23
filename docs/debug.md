@@ -1985,7 +1985,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** : world (4 seeds : 13 en tout, écart ≤ 1, comptes = blocs posés, pierre dure intacte, déterministe),
   judgment, wiki, blocks, view, tower ✅ 52/52. Simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,2, 0 blocage (inchangé).
 
-### Mine instantanée : composition avec graphite et diamant (Geoffrey) — branche `geoffrey/mi-composition`, 🧪 pas en ligne
+### Mine instantanée : composition avec graphite et diamant (Geoffrey) — branche `geoffrey/mi-composition`, ✅ en ligne le 23/10
 - **Quoi** : `INSTANT_MINE.comp` = { coal 20, iron 40, gold 33, graphite 5, diamond 1 } (+ feather 1). `genInstantMine`
   est générique (IDS) : rien d'autre à changer. Wiki : la ligne de la MI prend `BLOCK_NAME` (avant : charbon / fer / or
   seulement).
