@@ -1,5 +1,6 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK } from '../config.js';
+import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './mineur.js';
@@ -112,6 +113,11 @@ export function killMob(G,m,o){
     const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     collect(m,L.item,ITEMS[L.item].w ?? 1,n);
     log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item})`);
+  } else if(o.type===DUCK.type){
+    /* Gallianix : un Fragment de cœur une fois sur 4 (hasard du canard, pas de Pillage), rapporté au coffre commun */
+    const r=(G.duckRng ??= mulberry32(G.seed ^ DUCK.salt)), h=DUCK.heart;
+    if(r() < h.chance){ collect(m,h.item,ITEMS[h.item].w ?? 1,1); log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu (+1 ${h.item.toLowerCase()})`); }
+    else log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu`);
   } else if(o.type==='occultiste'){
     const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);

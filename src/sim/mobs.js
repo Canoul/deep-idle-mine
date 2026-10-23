@@ -1,10 +1,11 @@
 /* Mobs (GAME_DESIGN §4) : bestioles, gobelins et occultistes (se déplacent), mimics (immobiles, faux minerais).
    Tous les mobs TACLENT : à 1 case ou moins (Manhattan) du mineur qu'ils visent, ils l'immobilisent (un seul mineur
    par mob) jusqu'à leur mort. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible. */
-import { W, DT, CFG, MOBS, BLOCKS, mobHp } from '../config.js';
+import { W, DT, CFG, MOBS, BLOCKS, DUCK, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
 import { log } from './log.js';
 import { dungeonAt, inRoom, interior } from './dungeon.js';
+import { spawnDucks, updateDuck } from './duck.js';
 
 /* mobs qui marchent (même physique que le mineur) */
 export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste']);
@@ -104,6 +105,7 @@ export function updateMobs(G){
   for(const o of G.mobs){
     if(o.hp<=0) continue;
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
+    if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
     if(o.type==='mimic'){
       if(!o.revealed && G.miners.some(m=>m.y>0 && Math.hypot(o.x-m.x,o.y-m.y)<=MOBS.mimicRevealDist)) revealMimic(G,o);
       updateGrab(G,o); o.chase=chaseOf(G,o); continue;
@@ -130,6 +132,7 @@ export function updateMobs(G){
   }
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
   spawnMobs(G);
+  spawnDucks(G);
 }
 
 /* vol du gobelin : tant qu'il tacle un mineur, un minerai toutes les goblinStealEvery secondes, tiré au hasard parmi

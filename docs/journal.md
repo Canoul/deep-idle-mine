@@ -28,6 +28,17 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Nouveau mob : le Gallianix
+- **Pour le joueur** : à chaque nouvelle area débloquée, un **Gallianix** (canard jaune qui sautille) apparaît à la
+  surface, près du coffre. Il a un pseudo comme un joueur (« Cuiseuse de sperme », « Roxanne », « La brésilienne »,
+  « La thaïlandaise », dans l'ordre puis en boucle), 50 PV, ne tacle pas, saute par-dessus les trous et ne tombe jamais
+  dans la mine. Vaincu, il laisse un **Fragment de cœur** une fois sur 4, qui va au coffre commun.
+- **Décisions** : pas de canard au lancement (seulement aux déblocages) ; les mineurs le frappent comme un autre mob ;
+  fragment dans le coffre commun. Choix de Claude : 5 XP, s'envole vers le sol le plus proche si on creuse sous lui.
+- **À suivre** : le Fragment de cœur ne sert à rien pour l'instant. Les canards coûtent un peu de temps (profondeur
+  moyenne à 3 : 192 → 182 en simulation).
+- **État** : 🧪 sur la branche `geoffrey/gallianix` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Table de recherche : tier 3
 - **Pour le joueur** : la Table de recherche a un **Tier 3** (150 parts) qui donne les plans du Treasure T3 (pièces
   en acier, Plastron de l'équilibre). Il s'ouvre quand toutes les recettes du tier 2 sont apprises, comme le tier 2

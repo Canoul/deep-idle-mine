@@ -89,6 +89,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp).
   Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
+- **Gallianix** (23/10, Geoffrey ; branche `geoffrey/gallianix`, pas encore en ligne) : canard de la surface, un par
+  area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
+  dans la mine ; 25 % de **Fragment de cœur** (coffre commun, sans usage pour l'instant). `src/sim/duck.js`.
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)

@@ -313,6 +313,23 @@ export const MOBS = {
      sa canalisation en cours, mais ne l'empêche pas d'en relancer une (21/10). La ténacité de la cible peut l'ignorer. */
   occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
 };
+/* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
+   nouvelle area débloquée pendant la session (pas au lancement). Il ne tacle pas et ne chasse personne ; il ne tombe
+   jamais dans la mine : il saute par-dessus les trous (jump cases au plus), sinon il fait demi-tour. Il a un pseudo,
+   pris dans names dans l'ordre (1er canard de la session = 1er nom), en boucle. Les mineurs le combattent comme les
+   autres mobs (réglage « combat »). Vaincu : heart.chance de laisser heart.item, rapporté au coffre commun.
+   Hors de MOBS.hpBase : pas dans les tirages d'apparition, ni dans le maximum de mobs. Hasard à part (salt). */
+export const DUCK = {
+  type: 'gallianix', name: 'Gallianix', tex: 'duck', hp: 50,
+  names: ['Cuiseuse de sperme', 'Roxanne', 'La brésilienne', 'La thaïlandaise'],
+  range: 8,               // il reste à range cases au plus du coffre (colonne CHEST_X)
+  step: 1.2,              // secondes entre deux pas (il marche lentement)
+  pause: 0.35,            // chance de rester sur place à chaque pas
+  jump: 3,                // trou le plus large qu'il saute (en cases)
+  heart: { item: 'Fragment de cœur', chance: 0.25, tex: 'heart_fragment' },
+  salt: 0x6a11a41,
+};
+
 /* PV d'un mob de ce type né dans l'area k */
 export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth ** Math.max(0, k - MOBS.minArea[type]));
 
@@ -324,7 +341,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4 },
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, minotaure:100 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -389,7 +406,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','torch','stun','winch_rope','winch_top','bucket'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -640,7 +657,8 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
-  'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },              // ramassée dans la mine instantanée (INSTANT_MINE)
+  'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },
+  [DUCK.heart.item]: { cat:'material',  tex:DUCK.heart.tex, w:1, stack:true },             // laissé par le Gallianix (DUCK)              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)

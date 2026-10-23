@@ -1,5 +1,5 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
-import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS } from '../config.js';
+import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
@@ -46,6 +46,13 @@ function blocks(){
 
 /* ---------- mobs ---------- */
 /* ce que fait chaque mob, en langage simple (les chiffres viennent de la config) */
+/* Gallianix (DUCK) : hors des tirages d'apparition, fiche à part */
+const duckCard = () => `<div class="mob"><h3><img src="textures/${esc(DUCK.tex)}.png" alt="">${esc(DUCK.name)}</h3>
+  <p>Un canard jaune qui sautille <b>à la surface</b>, autour du coffre (${DUCK.range} cases au plus). <b>Un Gallianix apparaît à chaque nouvelle area débloquée</b> pendant la session. Il saute par-dessus les trous et ne tombe jamais dans la mine.</p>
+  <p>Comme un joueur, il a un <b>pseudo</b> : le 1er canard de la session s'appelle « ${esc(DUCK.names[0])} », le 2e « ${esc(DUCK.names[1])} », et ainsi de suite (${DUCK.names.length} noms, puis on recommence).</p>
+  <p><b>Danger :</b> aucun, il ne tacle pas : il se balade. Ton mineur le frappe s'il le voit (réglage « combat »).</p>
+  <p><b>À partir de :</b> la première area débloquée · <b>PV :</b> ${DUCK.hp}</p>
+  <p><b>Butin :</b> ${f(DUCK.heart.chance * 100)} % de chance d'avoir 1 ${item(DUCK.heart.item)} (dans le coffre commun) · <b>${XP.mob[DUCK.type] ?? 0} XP</b></p></div>`;
 const MOB_TEXT = {
   bestiole:   R => `<p>Le mob de base. Elle apparaît dans une galerie, entre ${R.dist[0]} et ${R.dist[1]} cases de ton mineur, et lui fonce dessus. Elle suit les mêmes règles que lui : pas de saut, elle monte par les échelles.</p>
                     <p><b>Danger :</b> le tacle.</p>`,
@@ -62,7 +69,7 @@ function mobs(){
     const loot = m === 'mimic' ? `${R.mimicLoot} exemplaires du minerai qu'il imitait` : i.loot.map(l => `${l.min === l.max ? l.min : `${l.min} à ${l.max}`} ${item(l.item)}`).join(' + ');
     return `<div class="mob"><h3>${i.tex ? `<img src="textures/${esc(i.tex)}.png" alt="">` : ''}${esc(i.name)}</h3>${(MOB_TEXT[m] ?? (() => ''))(R)}
       <p><b>À partir de :</b> l'area ${i.minArea} · <b>PV :</b> ${i.hp0} au départ, +${f(Math.round((R.growth - 1) * 1000) / 10)} % par area plus profonde</p>
-      <p><b>Butin :</b> ${loot} · <b>${i.xp} XP</b></p></div>`; }).join('')}</div>`;
+      <p><b>Butin :</b> ${loot} · <b>${i.xp} XP</b></p></div>`; }).join('')}${duckCard()}</div>`;
   const rows = D.mobRows().map(r => tr([`<b>${r.last ? r.k + '+' : r.k}</b>`,
     ...D.MOB_TYPES.map(m => { const t = r.types[m]; return t.chance ? num(`${Math.round(t.chance * 100)} %<div class="small mut">${f(t.hp)} PV</div>`) : num(none); }),
     num(`${f(Math.round(r.spawn[0]))} à ${f(Math.round(r.spawn[1]))} s`), num(r.cap)]));

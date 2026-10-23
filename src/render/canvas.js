@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -86,6 +86,17 @@ export function createRenderer(cv){
     for(const o of G.mobs){
       if(o.hp<=0) continue;
       const [ox,oy]=o._to ? shownPos(G,o,frameNow) : [o.x,o.y], px=ox*TILE, py=sy(oy);
+      if(o.type===DUCK.type){
+        /* Gallianix : à la surface, toujours visible ; il sautille (plus haut quand il saute un trou) ; pseudo au-dessus,
+           en jaune pour ne pas le confondre avec un joueur */
+        const hop=Math.abs(Math.sin(frameNow/180+o.id))*(o.hop ? 6 : 2), dy=py-hop;
+        blit(DUCK.tex,px,dy,'#ffd23f');
+        ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+        ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(o.name ?? DUCK.name,px+TILE/2,dy-2);
+        ctx.fillStyle='#ffe36b'; ctx.fillText(o.name ?? DUCK.name,px+TILE/2,dy-2);
+        if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,dy-12,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,dy-12,TILE*o.hp/o.maxhp,2); }
+        continue;
+      }
       if(o.type==='mimic'){
         if(!o.revealed) continue;
         blit(BLOCKS[o.ore].tex,px,py,BLOCKS[o.ore].dot); blit('mimic',px,py);

@@ -28,7 +28,7 @@ function minerView(m){
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore,
+const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
   channel: o.channel ? o.channel.target : null, grab: o.grab ?? null });
 
 /* ---------- serveur ---------- */
