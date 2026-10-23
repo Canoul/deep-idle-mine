@@ -1942,3 +1942,14 @@ Règles (voir CLAUDE.md) :
 - **Boss 5 000 PV** (`TOWER.boss.hp`, 23/10 11 h) : b 0/20 (reste 1 620 PV en moyenne), c 0/20 (1 267). Test « compo
   forte » changé : toit atteint et boss entamé (plus de victoire attendue). ✅ tower 10/10.
 - **Boss 3 500 PV** (décision, mis en ligne) : b 0/20 (reste 10 à 660 PV), c 12/20 (victoire à 9:53). ✅ tower 10/10.
+
+### Résidus : 0,5 % en cumul, sur la pierre (Geoffrey) — branche `geoffrey/residus-cumul`, 🧪 pas en ligne
+- **Constat** (mesure, seeds 1, 7919, 424242) : areas 4 à 6 = 13 anges + 13 démons = 1,04 %, pris sur pierre et pierre
+  dure : `placeResidues` appliquait `JUDGMENT.pct` à chaque camp.
+- **Quoi** : `placeResidues` (`src/sim/world.js`) : n = round(N × pct / 100) = 13 en tout, `floor(n/2)` par camp, le reste
+  à un camp tiré par le RNG des résidus ; cases candidates = `IDS.stone` seulement (`counts.stone` décrémenté).
+  Commentaire de `JUDGMENT` (config) ; textes du wiki (`data.js`, `wiki.js`). ⚠️ Une première version avait coupé la
+  ligne de `JUDGMENT` par un commentaire (`openHours`, `salt` perdus) : repéré par judgment.test, corrigé.
+- **Tests** : world (4 seeds : 13 en tout, écart ≤ 1, comptes = blocs posés, pierre dure intacte, déterministe),
+  judgment, wiki, blocks, view, tower ✅ 52/52. Simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,2, 0 blocage (inchangé).
+

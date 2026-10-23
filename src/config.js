@@ -771,6 +771,7 @@ export const TRAP = {
    de session s'ajoutent à la jauge de leur sorte ; à cap, le donjon associé ouvre pendant openHours h (la jauge
    repart de 0, le surplus est perdu ; elle continue de se remplir pendant l'ouverture). */
 export const JUDGMENT = {
+  /* pct : % des blocs de l'area, les deux résidus ensemble, pris sur la pierre normale (23/10) */
   fromArea: 4, pct: 0.5, cap: 250, openHours: 6, salt: 0x5e51d0e,
   sides: {
     angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },

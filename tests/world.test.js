@@ -66,17 +66,25 @@ test('chaque area (0 à 6) : blocs posés = comptes de l\'area, comptes = % (à 
   }
 });
 
-test('résidus (Jugement) : aucun avant l\'area 4, puis 0,5 % de chaque sorte, à la place de terrain, déterministes', () => {
-  const G=newSession(5), H=newSession(5);
-  for(let k=1;k<=6;k++){ genArea(G,k); genArea(H,k); }
+test('résidus (Jugement, 23/10) : aucun avant l\'area 4, puis 0,5 % en tout (moitié chacun), pris sur la pierre, déterministes', () => {
   const n=Math.round(W*AREA_H*JUDGMENT.pct/100);
-  for(let k=0;k<=6;k++){
-    const c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
-    const want=k>=JUDGMENT.fromArea ? n : 0;
-    assert.equal(c[IDS.residueAngel]||0, want, `area ${k} ange`);
-    assert.equal(c[IDS.residueDemon]||0, want, `area ${k} démon`);
+  for(const seed of [5, 1, 7919, 424242]){
+    const G=newSession(seed), H=newSession(seed);
+    for(let k=1;k<=6;k++){ genArea(G,k); genArea(H,k); }
+    for(let k=0;k<=6;k++){
+      const c=countRows(G, areaTop(k), areaTop(k)+AREA_H-1);
+      const a=c[IDS.residueAngel]||0, d=c[IDS.residueDemon]||0;
+      if(k < JUDGMENT.fromArea){ assert.equal(a+d, 0, `area ${k}`); continue; }
+      assert.equal(a+d, n, `seed ${seed} area ${k} : ${n} résidus en tout`);
+      assert.ok(Math.abs(a-d) <= 1, `seed ${seed} area ${k} : moitié chacun (${a} / ${d})`);
+      assert.equal(G.areas[k].counts.residueAngel, a); assert.equal(G.areas[k].counts.residueDemon, d);
+    }
+    assert.deepEqual(G.tiles, H.tiles, 'même seed, même mine');
   }
-  assert.deepEqual(G.tiles, H.tiles, 'même seed, même mine');
+  /* seule la pierre normale cède sa place : pierre dure, terre et minerais comptent autant qu'avant */
+  const G=newSession(7919); genArea(G,1); genArea(G,2); genArea(G,3); genArea(G,4);
+  const c=G.areas[4].counts, comp=AREAS[4].comp, N=W*AREA_H;
+  assert.equal(c.hardstone, Math.round(comp.hardstone*N/100), 'pierre dure intacte');
 });
 
 test('compositions : chaque area totalise 100 %', () => {
