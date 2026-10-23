@@ -27,7 +27,7 @@ Modèle d'entrée :
   rune ; retrait gratuit ; fragment posé définitif. Choix de Claude : la ligne « +1 Découverte » d'un fragment n'est
   pas divisée (ce n'est pas un %) ; fragment de rareté « rare ».
 - **À suivre** : regarder dans le navigateur le bouton « Retirer la rune » et la jauge « en pause ».
-- **État** : 🧪 sur la branche `geoffrey/retours-23-10-apm` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Plastrons : plus de pods
 - **Pour le joueur** : les plastrons donnent plus de pods : chitine **+30** (avant 25), fer **+50** (33), acier **+80**

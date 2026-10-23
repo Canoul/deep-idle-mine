@@ -2045,7 +2045,7 @@ Règles (voir CLAUDE.md) :
   dégâts +10 → 51 min ; rayon de torche +2 → 51 min ; oxygène +100 → 51 min 43 ; torches +20 → 53 min 39 ; pierre
   1,0 s / pierre dure 1,8 s → 51 min 29 ; pioche en fer +0,6 → 50 min 36.
 
-### Retours de l'après-midi du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10-apm`
+### Retours de l'après-midi du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10-apm`, ✅ en ligne le 23/10
 - **Occultiste** : `MOBS.hpBase.occultiste` 100 → 150. Rien à corriger dans `mobs.js` : `provoke` met fin à la
   canalisation, `occult` relance au cooldown sur la cible provoquée. Nouveau test « combat réel » (mobs.test.js : 60 s,
   rien de forcé, ≥ 3 sorts dont ≥ 2 sur le barbare). Wiki : le texte « coupe son sort pour de bon » était faux.

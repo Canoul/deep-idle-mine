@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 23/10/2026 après-midi (retours sur la branche `geoffrey/retours-23-10-apm`, pas en ligne).*
+*Dernière mise à jour : 23/10/2026 après-midi (retours de l'après-midi en ligne).*
 
 ---
 
@@ -36,7 +36,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
-  - **Une tour à la fois** (23/10 après-midi, branche `geoffrey/retours-23-10-apm`) : pendant qu'une tour est ouverte,
+  - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,
     la jauge de l'autre est en pause et les mines lancées pendant ce temps n'ont pas de résidus (`residues:false` dans
     la session). Ancien : les deux tours pouvaient être ouvertes ensemble.
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 : **0,5 % au total** (13 par area, moitié chacun), à la place de pierre normale (23/10 ; ancien : 0,5 % chacun, pris sur tout terrain), poids 6, visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
