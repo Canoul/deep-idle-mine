@@ -2069,4 +2069,4 @@ Règles (voir CLAUDE.md) :
   `placeResidues`. UI Jugement : « en pause ».
 - **Tests** : mobs, skills, tower, rune, anticheat/rune, rarity, inventory, party, lobby, instant-server, judgment,
   game-service, wiki, stuff, amelioration, anticheat complet ✅.
-
+- **Simulation** `--miners 3 --count 5 --skills mixed` : areas 3,0, profondeur 194, allers-retours 28,8, 0 blocage ✅.
