@@ -2011,3 +2011,25 @@ Règles (voir CLAUDE.md) :
   Simulation 3 × 5 : 3,0 areas, profondeur 182,4 (main : 192,2), **0 blocage** ; solo : 1,2 areas, 0 blocage.
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
+
+### Treuil : boucle « Va installer le treuil » ↔ « Retour (treuil) » (Geoffrey) — branche `geoffrey/fix-treuil-boucle`, ✅ en ligne le 23/10
+- **Symptôme** (seed 1209172417, logisticien solo avec le treuil) : à partir de ~50 min, il part du coffre vers
+  `WINCH.x`, tombe en (24,1) (trou à côté du puits ; `noBridge:true` à la surface pour ne pas boucher le puits), et
+  comme il n'est pas dans la colonne du treuil, `decideWinch` ne le laisse y retourner qu'à une hauteur `≤ winchDepth` ;
+  `winchDepth` vaut null (nouveau chantier de prolongation, ou entraîné dans un combat dès la 1re case : seed 39595, le
+  1er treuil jamais posé) → `reason='treuil'` → il remonte par l'échelle de (23,1) sans repasser au-dessus du trou →
+  recommence. **Invisible pour `stuckDetector`** (il bouge tout le temps).
+- **Correction** (`src/sim/ai.js`, `decideWinch`) : hauteur rejoignable = max(`winchDepth`, `G.winch.bottom`, nombre de
+  cases déjà vides de la colonne du treuil depuis la ligne 1).
+- **Tests** : winch (2 nouveaux : prolongement et premier treuil, trou à côté + échelle voisine ; ils échouent sans la
+  correction), session, fall, skills, dungeon, mobs, trap, team.
+- **Mesure** (script de comptage des passages en « Retour (treuil) », 8 seeds × 1 et 3 logisticiens complets) : avant
+  1 à 1 755 par mineur (12 cas sur 16 > 100) ; après 1 à 4, treuil posé partout (52 à 204).
+- **Simulation `--skills logisticien`** (5 seeds) : à 3, areas 3,2 → **3,6**, profondeur 190,2 → **199,2** ; seul,
+  1,4 → 1,6 et 97 → 107 ; 0 blocage (avant = première correction seule). Tests liés ✅ 102/102.
+- **Simulation sans skills** : 182,4 de profondeur à 3 (192,2 ce matin) : écart venu de `main` (Gallianix, fusionné
+  entre-temps), la correction ne touche que le chantier du treuil.
+- **Points fragiles** : la colonne du treuil « déjà vide » peut traverser une poche d'air naturelle : il peut alors
+  rejoindre le puits plus bas, c'est voulu (il continue de creuser depuis là). Combats Gallianix longs (≥ 30 s, mineur
+  souvent en `wait`) vus par un détecteur ciblé : pas traité ici.
+
