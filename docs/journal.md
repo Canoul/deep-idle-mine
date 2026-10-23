@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Table de recherche : tier 3
+- **Pour le joueur** : la Table de recherche a un **Tier 3** (150 parts) qui donne les plans du Treasure T3 (pièces
+  en acier, Plastron de l'équilibre). Il s'ouvre quand toutes les recettes du tier 2 sont apprises, comme le tier 2
+  après le tier 1. Le **plan du Plastron de l'équilibre** sort **4 fois moins souvent** que chaque autre plan (≈ 4 %
+  tant que les 7 sont possibles). Recycler un plan T3 rend 40 à 70 parts.
+- **Décisions** : rareté du plan épique = poids 0,25 (4× moins, dans la fourchette 3 à 5 demandée) ; recyclage du tier
+  3 = celui du tier 2 (même prix), choix de Claude à valider.
+- **État** : ✅ en ligne le 23/10
+
 ## 23/10/2026 — Geoffrey — Stuff en acier, Plastron de l'équilibre, Treasure T3
 - **Pour le joueur** :
   - **Treasure T3** dans les areas 5 et 6 (le T2 ne sort plus qu'en areas 3 et 4). Il contient toujours 20 à 40

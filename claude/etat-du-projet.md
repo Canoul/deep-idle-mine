@@ -87,7 +87,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
   BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (fer × 1,2, inhabituelles ; Steel
   ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp).
-  Pas de tier 3 à la Table de recherche.
+  Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
+  épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)

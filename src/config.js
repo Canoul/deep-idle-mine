@@ -260,6 +260,9 @@ export const RESEARCH = {
   tiers: [
     { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:30, max:60 } },
     { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
+    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 (même prix). weights : poids d'un blueprint dans le
+       tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:150, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

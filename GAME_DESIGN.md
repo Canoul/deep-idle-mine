@@ -634,11 +634,12 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
   |---|---|---|---|
   | 1 | 100 parts | ceux d'un Treasure T1 (les 9) | 30 à 60 parts |
   | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui) | 40 à 70 parts |
+  | 3 *(23/10/2026)* | 150 parts | ceux d'un Treasure T3 (les six pièces en acier, Plastron de l'équilibre) | 40 à 70 parts *(choix de Claude : comme le tier 2, même prix)* |
 
-  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes du tier d'avant** *(décision ferme)* : l'option « Tier 2 » est grisée (🔒) avec le nombre de recettes qui manquent, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026).
-  - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise** : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; un blueprint qui ne débloquerait rien resterait toujours possible. Tier entièrement appris : plus rien à tirer.
+  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes du tier d'avant** *(décision ferme)* : l'option « Tier 2 » est grisée (🔒) avec le nombre de recettes qui manquent, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026) ; le tier 2 avec ses **3 recettes** ouvre le tier 3.
+  - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise**. Tirage **pondéré** *(23/10/2026)* : chaque blueprint pèse 1, sauf le **Plastron de l'équilibre BP** (épique) qui pèse **0,25**, soit **4 fois moins** de chance que chaque autre plan (≈ 4 % quand les 7 plans du tier 3 sont possibles ; 100 % s'il est le dernier à apprendre) : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; un blueprint qui ne débloquerait rien resterait toujours possible. Tier entièrement appris : plus rien à tirer.
   - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
-- **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 30 à 60 (tier 1), 40 à 70 (tier 2) *(provisoire)*.
+- **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 30 à 60 (tier 1), 40 à 70 (tiers 2 et 3) *(provisoire)*.
 - C'est le **serveur** qui fait l'action et tire le hasard (imprévisible) ; un double clic n'agit qu'une fois.
 - Repère : recherche puis recyclage = 100 parts contre 30 à 60 (tier 1), 150 contre 40 à 70 (tier 2) : on perd toujours au change (pas de boucle infinie).
 

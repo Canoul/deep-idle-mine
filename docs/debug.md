@@ -1964,3 +1964,13 @@ Règles (voir CLAUDE.md) :
   inscriptions MI : 30 dernières minutes, en session possible, session pas désinscrite), `src/wiki/wiki.js` (libellé
   de la famille `material` → « matériau »). Tests wiki ✅. ⚠️ Page non ouverte dans un navigateur (pas de navigateur
   dans la session) : données vérifiées via `src/wiki/data.js`.
+
+### Table de recherche : tier 3 (Geoffrey) — branche `geoffrey/recherche-t3`, ✅ en ligne le 23/10
+- **Quoi** : `RESEARCH.tiers` + `{ tier:3, from:'Treasure T3', cost:150, recycle:{40,70}, weights:{ 'Plastron de
+  l'équilibre BP':0.25 } }`. `src/meta/research.js` : `weightOf`, `researchOdds`, tirage pondéré `pick` (un seul
+  `rng()`, comme avant : poids tous à 1 = même résultat que l'ancien tirage uniforme). Le verrou (`tierUnlocked`), le
+  serveur et l'onglet étaient déjà génériques. Wiki : note « N fois moins de chance » (`researchRows().rarer`), astuce
+  du tier d'avant généralisée.
+- **Tests** : research (tier 3 fermé puis ouvert, 150 parts, poids 4× moins avec 20 000 tirages ≈ 4 %, dernier plan,
+  recyclage 40-70 ; tier inconnu = 4), wiki ✅ ; anticheat ✅.
+- **Points fragiles** : ⚠️ onglet non regardé dans un navigateur. Un poids invalide (≤ 0, NaN) compte pour 1.
