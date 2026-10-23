@@ -222,7 +222,9 @@ function decideWork(G,m){
   const rp=m.y>0 ? planReturn(G,m) : null;
   let tRet = rp ? rp.cost*1.25 : 0;
   /* Mule : en fin de session, le porteur passe d'abord par son sac ; son retour compte ce détour */
-  if(rp && isCarrier(G,m) && mulePlaced(G) && G.mule.load>0) tRet=Math.max(tRet, muleEstT(G,m));
+  /* (seulement si c'est encore possible : sinon le sac est perdu, et compter ce détour le faisait remonter aussitôt
+     reparti, en boucle, seed 39595) */
+  if(rp && isCarrier(G,m) && mulePlaced(G) && G.mule.load>0){ const via=muleEstT(G,m); if(left>=via) tRet=Math.max(tRet, via); }
   if(m.y>0){
     let reason=null;
     if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
@@ -510,8 +512,9 @@ const needsPickup = (G,m) => {
 /* au début de chaque remontée (une seule fois : sinon la fenêtre s'ouvrait en route et il redescendait, seed 79190) :
    est-ce la dernière qui lui laisse le temps de récupérer son sac ? */
 function planPickup(G,m){
-  if(m.pickPlanAt===m.returnStart) return;
-  m.pickPlanAt=m.returnStart; m.pickPlan=null;
+  /* décidé pour cette remontée, sauf si le sac était vide et qu'un mineur vient d'y déposer (seed 39595) */
+  if(m.pickPlanAt===m.returnStart && !(m.pickPlanEmpty && G.mule?.load>0)) return;
+  m.pickPlanAt=m.returnStart; m.pickPlan=null; m.pickPlanEmpty=!(G.mule?.load>0);
   if(!isCarrier(G,m) || !mulePlaced(G) || !(G.mule.load>0)) return;
   const left=SESSION_LEN-G.t, via=muleEstT(G,m);
   if(left>=via && left<via+fetchFromTop(G,m)+CFG.endStayMin) m.pickPlan=m.returnStart;
