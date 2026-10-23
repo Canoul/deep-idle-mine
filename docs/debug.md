@@ -1994,7 +1994,7 @@ Règles (voir CLAUDE.md) :
   par mineur Fer 36,0, Or 30,1 (avant 35,6), Charbon 18,4, Graphite 4,5, Diamant 0,9, Plumes 1,9 (inchangé). À 3 :
   Graphite 5,3, Diamant 1,3, Plumes 4,9.
 
-### Gallianix (Geoffrey) — branche `geoffrey/gallianix`, 🧪 pas en ligne
+### Gallianix (Geoffrey) — branche `geoffrey/gallianix`, ✅ en ligne le 23/10
 - **Quoi** : `DUCK` en config (type `gallianix`, 50 PV, names, range 8, step 1,2 s, pause 0,35, jump 3, heart 25 %,
   salt), `XP.mob.gallianix` 5, objet `Fragment de cœur` (material, w 1). `src/sim/duck.js` : `spawnDucks` (un canard
   par area débloquée depuis le lancement : `G.ducks` < `G.unlockedAreas − G.duckBase`, `duckBase` posé dans

@@ -46,7 +46,7 @@ Modèle d'entrée :
   fragment dans le coffre commun. Choix de Claude : 5 XP, s'envole vers le sol le plus proche si on creuse sous lui.
 - **À suivre** : le Fragment de cœur ne sert à rien pour l'instant. Les canards coûtent un peu de temps (profondeur
   moyenne à 3 : 192 → 182 en simulation).
-- **État** : 🧪 sur la branche `geoffrey/gallianix` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Table de recherche : tier 3
 - **Pour le joueur** : la Table de recherche a un **Tier 3** (150 parts) qui donne les plans du Treasure T3 (pièces
