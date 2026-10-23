@@ -63,7 +63,7 @@ test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais',
   assert.equal(rows.length, AREAS.length);
   assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 501, 500]);
   for(const r of rows) assert.equal(r.unlock, Math.ceil(CFG.unlockRatio * r.ores));
-  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T2', 'Treasure T2']);
+  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T3', 'Treasure T3']);
 });
 
 test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris', () => {

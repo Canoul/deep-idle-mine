@@ -24,7 +24,12 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   /* trésors des tours : toujours Unique ; anciens coffres : rareté selon leur qualité (RUNE.rarity) ; rune épique */
   const TOWER = Object.keys(ITEMS).filter(n => ITEMS[n].chest || ITEMS[n].cat === 'rune');
   for(const n of TOWER) assert.equal(rarityOf(n), ITEMS[n].treasure ? 'unique' : ITEMS[n].chest ? RUNE.rarity[ITEMS[n].chest.q] : 'epique', n);
-  for(const n of Object.keys(ITEMS)) if(!UNCOMMON.includes(n) && !TIER2.includes(n) && !RARE.includes(n) && !TOWER.includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* tier 3 (23/10) : pièces en acier inhabituelles, Plastron de l'équilibre épique (et leurs blueprints) */
+  const STEEL = ['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p => [`${p} en acier`, `${p} en acier BP`]);
+  const EPIC = ['Plastron de l\'équilibre', 'Plastron de l\'équilibre BP'];
+  for(const n of STEEL) assert.equal(rarityOf(n), 'inhabituel', n);
+  for(const n of EPIC) assert.equal(rarityOf(n), 'epique', n);
+  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

@@ -118,7 +118,7 @@ def main():
 
     # icônes d'inventaire des objets Treasure TX : même coffre, ferrures à la couleur du tier
     # (T1 argent, T2 or) et marques de tier (1 ou 2 barres) en bas à droite
-    for tier, trim, lock in [(1, '#c0c6cf', '#e8ecf1'), (2, '#d4a017', '#ffd23f')]:
+    for tier, trim, lock in [(1, '#c0c6cf', '#e8ecf1'), (2, '#d4a017', '#ffd23f'), (3, '#4de8f0', '#c8fbff')]:   # T3 : diamant
         icon = blank()
         rect(icon, 1, 4, 14, 10, hexc('#8a5a2b'))
         rect(icon, 1, 4, 14, 3, hexc('#5c3a1a'))
@@ -501,7 +501,8 @@ def main():
 
     # pièces d'armure (stuff), mêmes formes par matériau : chitine = plaques rouge sombre de carapace, fer = gris acier
     for mat, base, hi, lo in [('chitin', '#a8343a', '#d65a5a', '#5e1a1e'),
-                              ('iron', '#9aa1ab', '#d9dde3', '#5a6069')]:
+                              ('iron', '#9aa1ab', '#d9dde3', '#5a6069'),
+                              ('steel', '#5f6f84', '#a9bbd0', '#2f3a48')]:          # acier : gris bleuté sombre
         chit, chit_hi, chit_lo = hexc(base), hexc(hi), hexc(lo)
         helmet = blank()
         rect(helmet, 3, 3, 10, 7, chit)
@@ -563,6 +564,39 @@ def main():
     rect(sword, 2, 12, 2, 2, hexc('#8a5a2b'))      # poignée
     rect(sword, 1, 14, 2, 1, hexc('#ffd23f'))      # pommeau
     tex['sword_iron'] = sword
+
+    # pioche et épée en acier (stuff) : mêmes formes que le fer, métal gris bleuté, pommeau diamant
+    pick = blank()
+    for i in range(10):
+        rect(pick, 3 + i, 13 - i, 2, 2, hexc('#5c3a1a'))
+    for x, y in [(4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(pick, x, y, 2, 2, hexc('#6f8197'))
+    rect(pick, 5, 2, 4, 1, hexc('#c3d3e4'))
+    rect(pick, 3, 4, 2, 2, hexc('#3a4656'))
+    rect(pick, 13, 9, 2, 2, hexc('#3a4656'))
+    tex['pickaxe_steel'] = pick
+    sword = blank()
+    for i in range(9):
+        rect(sword, 5 + i, 9 - i, 2, 2, hexc('#7f8fa3'))
+    for i in range(8):
+        rect(sword, 6 + i, 9 - i, 1, 1, hexc('#d6e2ef'))
+    rect(sword, 3, 9, 5, 2, hexc('#2f3a48'))
+    rect(sword, 4, 8, 2, 4, hexc('#2f3a48'))
+    rect(sword, 2, 12, 2, 2, hexc('#5c3a1a'))
+    rect(sword, 1, 14, 2, 1, hexc('#4de8f0'))
+    tex['sword_steel'] = sword
+
+    # plastron de l'équilibre : forme du plastron, moitié gauche blanc-or (ange), moitié droite rouge sombre (démon)
+    chest = blank()
+    for x0, base, hi, lo in [(0, '#e8f4ff', '#ffffff', '#ffd23f'), (8, '#7a1f2a', '#ff3b3b', '#3a0f16')]:
+        rect(chest, max(2, x0), 2, 6, 4, hexc(base))
+        rect(chest, max(4, x0), 6, 4, 8, hexc(base))
+        for y in (7, 10):
+            rect(chest, max(4, x0), y, 4, 1, hexc(lo))
+        rect(chest, x0 + 3 if x0 else 3, 3, 2, 1, hexc(hi))
+    rect(chest, 6, 2, 4, 2, (0, 0, 0, 0))
+    rect(chest, 7, 8, 2, 2, hexc('#b06bff'))        # gemme centrale
+    tex['chest_balance'] = chest
     # épée en pierre (stuff) : même forme, lame en pierre grise, garde en bois, sans pommeau doré
     sword_st = blank()
     for i in range(9):
@@ -676,7 +710,8 @@ def main():
     tex['skins/body'] = sk_body
 
     # calques d'armure par matériau : chitine = rouge, fer = gris acier
-    for mat, r0, r1, r2 in [('chitin', '#b3261e', '#e0503f', '#6e1410'), ('iron', '#9aa1ab', '#d9dde3', '#5a6069')]:
+    for mat, r0, r1, r2 in [('chitin', '#b3261e', '#e0503f', '#6e1410'), ('iron', '#9aa1ab', '#d9dde3', '#5a6069'),
+                            ('steel', '#5f6f84', '#a9bbd0', '#2f3a48')]:
         red, red_hi, red_lo = hexc(r0), hexc(r1), hexc(r2)
         sk_helmet = blank()
         rect(sk_helmet, 4, 1, 8, 3, red)
@@ -704,6 +739,13 @@ def main():
             rect(sk_boots, x0, 15, 2, 1, red_lo)
             rect(sk_boots, x0 + 1, 14, 1, 1, red_hi)
         tex['skins/' + mat + '_boots'] = sk_boots
+    sk_bal = blank()                               # plastron de l'équilibre : ange à gauche, démon à droite
+    rect(sk_bal, 4, 7, 4, 3, hexc('#e8f4ff'))
+    rect(sk_bal, 8, 7, 4, 3, hexc('#7a1f2a'))
+    rect(sk_bal, 4, 7, 1, 3, hexc('#ffd23f'))
+    rect(sk_bal, 11, 7, 1, 3, hexc('#3a0f16'))
+    rect(sk_bal, 7, 8, 2, 1, hexc('#b06bff'))
+    tex['skins/balance_chest'] = sk_bal
     sk_belt = blank()                              # ceinture en peau de gobelin : bande verte, boucle dorée
     rect(sk_belt, 5, 10, 6, 1, hexc('#4f7d32'))
     rect(sk_belt, 7, 10, 2, 1, hexc('#ffd23f'))
@@ -721,11 +763,18 @@ def main():
     rect(sk_sword_st, 3, 10, 5, 2, hexc('#6b4f3a'))
     rect(sk_sword_st, 2, 12, 2, 3, hexc('#8a5a2b'))
     tex['skins/sword_stone'] = sk_sword_st
+    sk_sword_sl = blank()
+    for i in range(9):
+        rect(sk_sword_sl, 5 + i, 10 - i, 2, 2, hexc('#7f8fa3'))
+    rect(sk_sword_sl, 3, 10, 5, 2, hexc('#2f3a48'))
+    rect(sk_sword_sl, 2, 12, 2, 3, hexc('#5c3a1a'))
+    tex['skins/sword_steel'] = sk_sword_sl
 
     # pioches tenues en main (manche en bas à gauche, tête en haut à droite) : bois = marron, pierre = grise
     for name, head, light, dark in [('skins/pick_wood', '#7a4f2a', '#a0703f', '#4f321a'),
                                     ('skins/pick_stone', '#8d939c', '#c3c8cf', '#5f646c'),
-                                    ('skins/pick_iron', '#b8bec7', '#eef0f3', '#6f7680')]:
+                                    ('skins/pick_iron', '#b8bec7', '#eef0f3', '#6f7680'),
+                                    ('skins/pick_steel', '#6f8197', '#c3d3e4', '#3a4656')]:
         pk = blank()
         for i in range(9):
             rect(pk, 2 + i, 13 - i, 2, 2, hexc('#8a5a2b'))
