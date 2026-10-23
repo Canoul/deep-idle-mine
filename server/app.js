@@ -13,6 +13,7 @@ import { gameRoutes } from './game/routes.js';
 import { partyRoutes } from './party/routes.js';
 import { instantRoutes } from './instant/routes.js';
 import { socialRoutes } from './social/routes.js';
+import { adminRoutes } from './admin/routes.js';
 
 /* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
    party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
@@ -21,7 +22,9 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
-                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}) };
+                   ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}),
+                   /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
+                   ...(game && store ? adminRoutes({ accounts: store, game, token: config.adminToken }) : {}) };
   let proxyChecked = !config.logProxyCheck;
 
   /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */

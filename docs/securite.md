@@ -42,3 +42,8 @@ l'hébergement. Le détail technique de chaque correction est dans `docs/debug.m
 - Vérifier que les **sauvegardes Neon** (restauration dans le temps) sont actives.
 - Geoffrey : ses adresses e-mail (perso et pro) apparaissent dans les commits publics. Pour la suite, activer
   « Keep my email addresses private » dans GitHub et utiliser l'adresse `…@users.noreply.github.com` pour git.
+
+## Administration (23/10/2026)
+- `POST /api/admin/give` (donner un objet) : clé `DIM_ADMIN_TOKEN` (≥ 32 caractères) dans `/etc/deep-idle-mine.env`,
+  jamais dans git ; acceptée seulement depuis la machine (127.0.0.1 / ::1) et sans en-tête de relais (donc jamais via
+  Caddy) ; tout refus répond 404 comme une route inconnue. Sans clé réglée, l'administration est fermée.

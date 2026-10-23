@@ -2,6 +2,9 @@
 # Caddy obtient et renouvelle tout seul le certificat https, et redirige http vers https.
 __SITE__ {
 	encode zstd gzip
+	# administration (/api/admin/…) : jamais depuis internet, seulement sur le VPS lui-même (server/admin/routes.js)
+	@admin path /api/admin /api/admin/*
+	respond @admin 404
 	# Caddy remplace tout X-Forwarded-For envoyé par le joueur par sa vraie adresse (DIM_TRUST_PROXY=1)
 	reverse_proxy 127.0.0.1:8000
 }

@@ -2012,12 +2012,19 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
 
-### Outil give-item (Geoffrey) — branche `geoffrey/give-item`, 🧪 pas en ligne
-- **Quoi** : `scripts/give-item.js --name --item --qty [--env]` : refuse un objet absent d'`ITEMS` (nom exact) et une
-  quantité hors 1..1000 (entier), compte cherché par `nameKey`. `--env` lit un fichier systemd (KEY=valeur) sans
-  écraser l'environnement, puis charge les modules serveur (DATABASE_URL / DIM_DATA_DIR lus au chargement). Pièce de
-  stuff : `sanitizeStuff` avant l'ajout (uid). Écrit l'inventaire par `putInventory`.
-- **Tests** : `tests/give-item.test.js` (stockage fichier temporaire : don, cumul, refus, --env) ✅.
-- **Point fragile** : le serveur garde les inventaires en mémoire : l'arrêter avant, le relancer après (sinon un
-  inventaire réécrit par le jeu peut effacer le cadeau). Le fichier `/etc/deep-idle-mine.env` n'est lisible qu'en
-  root : lancer le script avec `sudo`.
+### Administration sans redémarrage : give-item (Geoffrey) — branche `geoffrey/give-item`, 🧪 pas en ligne
+- **Quoi** : route `POST /api/admin/give` (`server/admin/routes.js`, branchée dans `server/app.js` quand le service de
+  jeu existe) → `game.adminGive(accountId, item, qty)` (`server/game/service.js`) : sous le verrou `inv:<id>`, comme
+  une action de joueur (mémoire + base ensemble). Compte par `nameKey`, objet exact d'`ITEMS`, qty entier 1..1000
+  (`ADMIN_MAX_QTY`). Journal serveur : « Admin : +n objet pour pseudo ».
+- **Accès** (`adminAllowed`) : clé `SERVER.adminToken` = `DIM_ADMIN_TOKEN` (≥ 32 caractères, sinon fermé), comparée
+  à temps constant sur les empreintes ; connexion depuis 127.0.0.1 / ::1 seulement ; aucun en-tête de relais
+  (X-Forwarded-For, Forwarded, X-Real-IP : Caddy en ajoute toujours un). Refus = 404 « Route inconnue ». Caddyfile
+  modèle : `respond 404` sur `/api/admin*` (⚠️ ne s'applique qu'en relançant `install.sh` ; la route se défend seule).
+- **Script** : `scripts/give-item.js` appelle la route ; clé et port lus dans `/etc/deep-idle-mine.env` (format
+  systemd, d'où `sudo`), `--url` pour les tests. (Ancien, quelques minutes sur la branche : écriture directe en base,
+  qui exigeait d'arrêter le jeu.)
+- **Tests** : `tests/admin.test.js` (don, mémoire à jour, clés fausses / absentes / courtes, relais, garde-fous,
+  adresses), `tests/give-item.test.js` (script contre un vrai serveur, clé lue dans le fichier, refus) ✅ ; game-http,
+  account-http ✅ ; anticheat 72/72 ✅.
+- **Point fragile** : pas d'opId : relancer la même commande donne deux fois.

@@ -18,10 +18,12 @@ Modèle d'entrée :
 
 ---
 
-## 23/10/2026 — Geoffrey — Outil : donner un objet à un joueur
-- **Pour le joueur** : rien (outil d'administration).
-- **Pour l'équipe** : `scripts/give-item.js` donne n'importe quel objet du jeu à un compte (ex. un Treasure T3 à
-  crousti). Mode d'emploi dans `docs/deploiement-ovh.md` (arrêter le jeu, lancer la commande, relancer le jeu).
+## 23/10/2026 — Geoffrey — Outil : donner un objet à un joueur, sans redémarrer
+- **Pour le joueur** : rien (outil d'administration) ; un cadeau apparaît tout de suite dans son inventaire.
+- **Pour l'équipe** : sur le VPS, `sudo node /opt/deep-idle-mine/scripts/give-item.js --name crousti --item
+  "Treasure T3"` donne n'importe quel objet du jeu à un compte **sans arrêter ni redémarrer le jeu**. Il faut une
+  fois la clé `DIM_ADMIN_TOKEN` dans les réglages du serveur (mode d'emploi dans `docs/deploiement-ovh.md`).
+- **Sécurité** : la commande ne marche que depuis le VPS lui-même, avec la clé ; depuis internet, elle n'existe pas.
 - **État** : 🧪 sur la branche `geoffrey/give-item` (pas en ligne)
 
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
