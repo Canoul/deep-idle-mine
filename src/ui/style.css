@@ -187,6 +187,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .pslot.away{opacity:.6}
 .pslot.invited{color:var(--txt)}
 .lobbyActions{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));align-items:center}
+.lobbyActions .lfgCount{display:flex;gap:calc(2*var(--u));align-items:center;opacity:.85}
 .lobbyActions .chk{display:flex;gap:calc(3*var(--u));align-items:center;cursor:pointer}
 .lfgStatus{margin:calc(2*var(--u)) 0 0;color:var(--mut)}
 .lfgStatus b{color:var(--acc-lt)}

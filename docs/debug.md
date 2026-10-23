@@ -1882,3 +1882,20 @@ Règles (voir CLAUDE.md) :
   le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
   les garde-fous.
 
+### Retours du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10`, 🧪 pas en ligne
+- **Socle du coffre** : bloc 18 `CHEST_BASE` (`special`, `unbreakable`, `noDrop`, tex `chest_base` générée par
+  `gen_textures.py`), posé en `G.tiles[1][CHEST_X]` dans `newSession` (`src/sim/session.js`). Le coffre (`CHEST_X` = 22)
+  n'est pas au milieu (`WINCH.x` = 25) : pas déplacé. Tests : blocks (posé, toujours là après 1 h), world (couche 1 =
+  terre sauf le socle). Simulation 3 × 5 : 3,0 areas, profondeur 192,2, **0 blocage** (identique à avant).
+- **Tainted gold** : `FURNACE.alloys` (`src/config.js`) or 5 + `Peau de gobelin` 20. Un four enregistré « or + chitine »
+  garde ses cases (`sanitizeFurnaces`) mais `activeRecipe` → null : il ne tourne plus, le joueur décharge. Tests :
+  iron-furnace-gold-compass (nouvelle recette, ancienne refusée, ancien four sans perte), wiki ; anticheat 72/72 ✅.
+- **Temps d'un ami** : `game.activeSessionInfo(id)` → `{ mode, leftMs }` (`finishAt - now`, null en dev) ;
+  `social.statusOf` renvoie `mode`, `leftMs` ; `statusText` / `leftText` (`src/ui/social.js`) : minute du dessus,
+  « < 1 min ». Test social ✅.
+- **Compteur LFG** : `lfgView` renvoie `players` (somme des `size` des entrées valides de la file) à tout le monde ;
+  `lfgCountText` (pure, `src/ui/lobby.js`), `#lfgCount` dans `.lobbyActions`. Tests lfg ✅.
+- **Vérification** : blocks, world, session, wiki, fall, winch, view, dungeon, furnace, craft, social, game-service,
+  party, lfg, lobby ✅ ; anticheat 72/72. ⚠️ Rien regardé dans un navigateur.
+- **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
+
