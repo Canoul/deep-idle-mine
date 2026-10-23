@@ -6,6 +6,7 @@ import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT } from './mineur.js';
 import { log } from './log.js';
+import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
@@ -184,7 +185,22 @@ function yieldLadder(G,m){
   return G.t-m.yieldSince < SKILLS.ladderYieldMax;
 }
 
+/* Légende de la flemme (skill Mineur, 23/10) : un tirage par remontée, la première fois qu'il décide de son trajet de
+   retour (donc après un tacle ou un étourdissement, qui passent avant), sauf en fin de session. Hasard à part (même
+   seed, même résultat ; ne change pas les autres tirages). Réussi : il apparaît au-dessus du coffre, sur la surface. */
+export function lazyTeleport(G,m){
+  if(!m.skill.lazy_legend || m.y<=0 || m.lazyTry===m.returnStart || m.reason==='fin de session') return false;
+  m.lazyTry=m.returnStart;
+  G.lazyRng ??= mulberry32(G.seed ^ 0x1a2e5e);
+  if(!(G.lazyRng() < m.skill.lazy_legend)) return false;
+  m.x=CHEST_X; m.y=0; m.fall=null; m.target=null; m.foe=null; m.digCol=null; m.galleryRow=null; m.exploring=false;
+  m.stats.lazy=(m.stats.lazy||0)+1; G.stats.lazy=(G.stats.lazy||0)+1;
+  log(G, `💤 ${m.name} a la flemme : il se téléporte au-dessus du coffre (${m.reason})`);
+  return true;
+}
+
 function decideReturn(G,m,rp){
+  if(lazyTeleport(G,m)) rp=null;
   if(m.y===0){
     m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
     /* vitesse de remontée mesurée (secondes par couche), pour la profondeur maximale de fin de session */

@@ -9,6 +9,14 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Mineur : skill « Légende de la flemme »
+- **Pour le joueur** : 4e étage de l'arbre Mineur, 0/1 (après Ruée 5/5) : quand le mineur doit remonter à la surface,
+  **5 % de chance de se téléporter au-dessus du coffre commun**.
+- **Décisions** (Geoffrey) : un tirage par remontée ; toutes les raisons sauf la fin de session ; taclé ou étourdi, le
+  tirage se fait après ; mine classique seulement.
+- **À suivre** : regarder l'onglet Skills (4e étage du Mineur, icône).
+- **État** : 🧪 sur la branche `geoffrey/legende-flemme` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Retours de l'après-midi : occultiste, Force brute, fragments de rune, prêt, MI, Jugement
 - **Pour le joueur** :
   - **Occultiste** : 150 PV de base (avant 100). La Provocation du barbare **casse** son rayon mais ne l'empêche pas
