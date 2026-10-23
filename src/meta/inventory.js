@@ -157,7 +157,8 @@ export function deserialize(json){
       && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
     .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
   inv.upgrades = Array.isArray(d.upgrades) ? d.upgrades.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string' && Number.isSafeInteger(e.uid))
-    .map(e => ({ id:e.id, kind:e.kind, uid:e.uid, ...(typeof e.success === 'boolean' ? { success:e.success } : {}) })).slice(-UPGRADE.opMemory) : [];
+    .map(e => ({ id:e.id, kind:e.kind, uid:e.uid, ...(typeof e.success === 'boolean' ? { success:e.success } : {}),
+                 ...(Number.isSafeInteger(e.fragment) ? { fragment:e.fragment } : {}) })).slice(-UPGRADE.opMemory) : [];
   return inv;
 }
 

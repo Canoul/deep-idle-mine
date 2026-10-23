@@ -289,7 +289,7 @@ export const MOBS = {
     { gobelin:0.5, occultiste:0.3, mimic:0.2 },
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:100 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150 },   // occultiste : 150 le 23/10 (avant 100)
   minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
@@ -386,6 +386,8 @@ export const SKILLS = {
       { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
       { id:'ore_oxygen',  row:2, max:1, per:1,    icon:'🫧', name:'Second souffle',  desc:'Miner un minerai rend 1 d\'oxygène' },
       { id:'ore_rush',    row:3, max:5, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
+      /* 23/10 (Geoffrey) : un tirage par remontée, au moment où il part (après un tacle ou un étourdissement), mine classique seulement */
+      { id:'lazy_legend', row:4, max:1, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'build_time',  row:1, max:3, per:0.05, icon:'🔨', name:'Bâtisseur',       desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
@@ -395,7 +397,7 @@ export const SKILLS = {
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
       { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
       { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
@@ -417,7 +419,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','chest_angel','chest_demon',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack'];
 
@@ -478,6 +480,10 @@ export const SHINY = {
    (décision : pas de conversion), mais ne sont plus donnés. */
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,
+  /* Fragment de rune (23/10/2026, Geoffrey) : une rune retirée d'une pièce (gratuit) devient un fragment, de la même
+     qualité et avec les mêmes lignes, dont les % ne comptent que pour `factor` (÷ 2 ; la ligne « +1 Découverte » n'est pas
+     un % : inchangée). Un fragment se repose comme une rune (mêmes règles) ; un fragment posé ne se retire plus. */
+  fragment: { item: 'Fragment de rune', tex: 'rune_fragment', factor: 0.5 },
   treasures: { angel: { name:'Trésor angélique', tex:'chest_angel' }, demon: { name:'Trésor démoniaque', tex:'chest_demon' } },
   treasureRarity: 'unique',
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
@@ -509,7 +515,7 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
-    [RUNE.item]:'epique',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
+    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
@@ -553,7 +559,7 @@ export const STUFF = {
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
-    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
+    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
@@ -561,7 +567,7 @@ export const STUFF = {
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:33 } },
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:50 } },   // 23/10 (Geoffrey) : avant 33
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
@@ -570,15 +576,15 @@ export const STUFF = {
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
-    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène, pods et
-       dégâts (45,6 → 46 ; 39,6 → 40 ; 13,2 → 13) */
+    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène et
+       dégâts (45,6 → 46 ; 13,2 → 13) ; sauf le plastron (pods 80, 23/10 : les pods sont le levier de la progression) */
     'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:46 } },
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:40 } },
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:80 } },   // 23/10 (Geoffrey) : avant 40 (fer × 1,2)
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:0.72 } },
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:0.72 } },
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.48 } },
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:13 } },     // remplace les mains nues (5)
-    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:60, oxygenMax:20, mineSpeedPct:2, damagePct:2,
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2,   // pods 125 le 23/10 (avant 60)
                                    attackSpeed:5, tenacity:2, fortune:1, looting:2, torches:5 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
@@ -675,6 +681,7 @@ export const ITEMS = {
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
+  [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids

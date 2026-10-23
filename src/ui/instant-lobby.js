@@ -63,7 +63,7 @@ export function setupInstantLobby(h){
       `<p class="mut small">Toutes les ${MI.everyHours} h pile (heure de Paris). ${Math.floor(real / 60)} min ${p2(real % 60)} de pillage dans une mine
         ${MI.w}×${MI.h} pleine de minerais, avec tous les inscrits : <b>chacun pour soi</b>, chacun son butin, pas d'XP.
         Des tas de <b>plumes d'ange</b> s'y cachent. Tu peux fermer la page ; seul <b>Quitter</b> te fait tout perdre.
-        Inscriptions <b>${MI.signupBefore / 60} min avant</b>, même en session ; entrer dans la mine te fait quitter ton groupe.</p>`+
+        Inscriptions <b>${MI.signupBefore / 60} min avant</b>, même en session. Chacun s'inscrit seul (pas d'invitation) ; tu restes dans ton groupe, que tu retrouves après la mine.</p>`+
       (st.registered && h.inSession?.() ? `<p class="small"><b>⚠ Tu es en session :</b> si elle n'est pas finie à l'heure, tu rates la mine instantanée (ta session continue).</p>` : '')+
       (err ? `<p class="err">${esc(err)}</p>` : '');
     $('miJoin')?.addEventListener('click', () => act(h.api.join));

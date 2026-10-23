@@ -9,6 +9,59 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Mineur : skill « Légende de la flemme »
+- **Pour le joueur** : 4e étage de l'arbre Mineur, 0/1 (après Ruée 5/5) : quand le mineur doit remonter à la surface,
+  **5 % de chance de se téléporter au-dessus du coffre commun**.
+- **Décisions** (Geoffrey) : un tirage par remontée ; toutes les raisons sauf la fin de session ; taclé ou étourdi, le
+  tirage se fait après ; mine classique seulement.
+- **À suivre** : regarder l'onglet Skills (4e étage du Mineur, icône).
+- **État** : ✅ en ligne le 23/10
+
+## 23/10/2026 — Geoffrey — Retours de l'après-midi : occultiste, Force brute, fragments de rune, prêt, MI, Jugement
+- **Pour le joueur** :
+  - **Occultiste** : 150 PV de base (avant 100). La Provocation du barbare **casse** son rayon mais ne l'empêche pas
+    de le relancer : un barbare peut se faire étourdir (vérifié en vrai combat ; le wiki disait l'inverse, corrigé).
+  - **Force brute** (barbare) : en plus, **2 % de dégâts de zone par rang** : chaque coup touche aussi les mobs à
+    1 case de sa cible (boss compris).
+  - **Runes** : on peut **retirer** une rune d'une pièce (gratuit, onglet Amélioration). Elle revient en **Fragment de
+    rune** : mêmes lignes, **% divisés par 2**. Un fragment se repose comme une rune ; posé, il ne se retire plus.
+  - **Prêt tout le temps** : ne se décoche plus tout seul, seulement en cliquant sur la case ; il suit le joueur
+    d'un groupe à l'autre.
+  - **Mine instantanée** : ne fait plus quitter son groupe. On s'y inscrit seul ; après la mine, on est toujours dans
+    son lobby.
+  - **Jugement** : **une tour à la fois**. Pendant qu'une tour est ouverte, la jauge de l'autre est en pause et les
+    mines lancées pendant ce temps n'ont plus de résidus. À la fermeture, tout reprend.
+- **Décisions** (Geoffrey, réponses aux questions) : zone = mobs à 1 case de la cible ; fragment reposable comme une
+  rune ; retrait gratuit ; fragment posé définitif. Choix de Claude : la ligne « +1 Découverte » d'un fragment n'est
+  pas divisée (ce n'est pas un %) ; fragment de rareté « rare ».
+- **À suivre** : regarder dans le navigateur le bouton « Retirer la rune » et la jauge « en pause ».
+- **État** : ✅ en ligne le 23/10
+
+## 23/10/2026 — Geoffrey — Plastrons : plus de pods
+- **Pour le joueur** : les plastrons donnent plus de pods : chitine **+30** (avant 25), fer **+50** (33), acier **+80**
+  (40), équilibre **+125** (60). Les plastrons **déjà fabriqués** ont les nouvelles valeurs (les stats sont lues
+  dans le catalogue à chaque session) ; les lignes d'identification et les runes sur un plastron grandissent aussi
+  (elles valent un % de la valeur de la pièce).
+- **Décisions** : les pods sont le levier de la progression (simulation : +100 pods sur une équipe en fer = area 5
+  ouverte 6 min plus tôt ; dureté de la pierre, oxygène, torches, dégâts : 0 à 3 min). L'acier ne suit plus
+  « fer × 1,2 » pour le plastron.
+- **À suivre** : mesurer l'effet sur l'ouverture de l'area 5 (cible : ~45 min pour une équipe stuffée).
+- **État** : ✅ en ligne le 23/10
+
+## 23/10/2026 — Geoffrey — Correction : le logisticien tournait en boucle autour du treuil
+- **Pour le joueur** : un logisticien qui part installer ou prolonger le treuil pouvait tomber dans un trou juste à
+  côté du puits (près du coffre), remonter, retomber, remonter… toutes les 2 secondes, souvent jusqu'à la fin de la
+  session (seed 1209172417, capture de Geoffrey : « coincé entre le coffre et l'échelle »). Maintenant, tombé à côté,
+  il rejoint le puits du treuil et continue son chantier.
+- **Ampleur** (simulation, 8 seeds × 1 et 3 logisticiens) : avant, jusqu'à **1 755 remontées** dans une session et, sur
+  une seed, le treuil n'était **jamais posé** ; après, **1 à 4** remontées par session (les vrais retours : pods,
+  oxygène), treuil posé et prolongé partout. Ce n'était pas le socle du coffre.
+  Des logisticiens à 3 descendent en moyenne de 190 à 199 couches.
+- **À suivre** : la simulation montre aussi des combats contre le Gallianix qui durent 30 s ou plus près de la surface
+  (le mineur attend beaucoup) : à regarder à part.
+- **État** : ✅ en ligne le 23/10
+
+
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
 - **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
   **5 % graphite** et **1 % diamant** (nouveaux), plus 1 % de tas de plumes. Par mine : 125 graphites et 25 diamants.
@@ -54,8 +107,8 @@ Modèle d'entrée :
   10) ; **pas d'effet mesurable** sur 10 parties. Le sac, plein après une vague de dépôts, attend la prolongation
   suivante : il rapporte peu.
 - **À savoir** : sans lien avec Mule, le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil.
-- **À décider** : garder tel quel, ou vider le sac à chaque remontée du logisticien (recommandé par Claude).
-- **État** : 🔧 branche `geoffrey/mule`, pas en ligne
+- **Décision** (Geoffrey) : mis en ligne tel quel (vider le sac à chaque remontée : pas retenu pour l'instant).
+- **État** : ✅ en ligne le 23/10
 
 ---
 

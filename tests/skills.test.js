@@ -15,10 +15,10 @@ let n = 0; const id = () => 'op-sk-' + (++n);
 const learnAll = (st, nodes, points = 99) => { for(const x of nodes) assert.ok(skillOp(st, { action:'learn', node:x, opId:id() }, points).ok, x); return st; };
 const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n => Array(n.max).fill(n.id));
 
-test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + Braum 3 et Mule 1 au 4e) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
+test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5], logisticien:[3, 1, 1, 5, 1], barbare:[3, 1, 5, 3] }[t.id]);   // étage 4 : Braum (Barbare), Mule (Logisticien)
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1], logisticien:[3, 1, 1, 5, 1], barbare:[3, 1, 5, 3] }[t.id]);   // 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
   assert.deepEqual(lg.map(n => [n.id, n.row]), [['build_time', 1], ['tall_ladder', 2], ['winch', 2], ['travel_rush', 3], ['mule', 4]]);
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
@@ -219,8 +219,8 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
 test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {
   const { withSkillStats } = await import('../src/meta/skills.js');
   const { minerStats } = await import('../src/meta/stuff.js');
-  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %');
-  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %');
+  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %, dégâts de zone 2 % (mobs à 1 case de sa cible)');
+  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %, dégâts de zone 6 % (mobs à 1 case de sa cible)');
   const st = learnAll(createSkills(), ['damage', 'damage']);
   const eff = skillEffects(st);
   const c = withSkillStats({ ...STATS }, eff);
@@ -231,4 +231,45 @@ test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (te
   /* en session : la carac du mineur porte la ténacité */
   const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], skills:{ A:{ tree:st.tree, ranks:{ ...st.ranks } } } });
   assert.equal(G.miners[0].carac.tenacity, 10);
+});
+
+test('Force brute : 2 % de dégâts de zone par rang (aoeOf), dans le texte du nœud', async () => {
+  const { aoeOf, skillEffects, sanitizeSkills, nodeText } = await import('../src/meta/skills.js');
+  const eff = r => skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:r } }));
+  assert.equal(aoeOf(eff(0)), 0); assert.equal(aoeOf(eff(1)), 0.02); assert.equal(aoeOf(eff(3)), 0.06);
+  assert.equal(aoeOf(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3 } }))), 0);
+  assert.match(nodeText('damage', 2), /dégâts de zone 4 %/);
+});
+
+/* ---- Légende de la flemme (arbre Mineur, 4e étage, 23/10) ---- */
+test('Légende de la flemme : 4e étage du Mineur (Ruée au max avant), 0/1, 5 %', async () => {
+  const { SKILLS } = await import('../src/config.js');
+  const n = SKILLS.trees.find(t => t.id === 'mineur').nodes.find(x => x.id === 'lazy_legend');
+  assert.equal(n.row, 4); assert.equal(n.max, 1); assert.equal(n.per, 0.05);
+  const { sanitizeSkills, skillEffects } = await import('../src/meta/skills.js');
+  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:4, lazy_legend:1 } })).lazy_legend, 0, 'Ruée pas au max : refusé');
+  assert.equal(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:5, lazy_legend:1 } })).lazy_legend, 0.05);
+});
+
+test('Légende de la flemme : un tirage par remontée ; réussi = au-dessus du coffre ; jamais en fin de session', async () => {
+  const { newSession, tick } = await import('../src/sim/session.js');
+  const { lazyTeleport } = await import('../src/sim/ai.js');
+  const { CHEST_X } = await import('../src/config.js');
+  const G = newSession(5, { miners: 1 }), m = G.miners[0];
+  m.skill.lazy_legend = 1;                                    // 100 % pour le test
+  Object.assign(m, { x: 10, y: 30, mode: 'return', reason: 'pods pleins', returnStart: 12 });
+  assert.equal(lazyTeleport(G, m), true);
+  assert.deepEqual([m.x, m.y], [CHEST_X, 0]); assert.equal(m.stats.lazy, 1);
+  Object.assign(m, { x: 10, y: 30 });
+  assert.equal(lazyTeleport(G, m), false, 'même remontée : pas de deuxième tirage');
+  Object.assign(m, { returnStart: 40, reason: 'fin de session' });
+  assert.equal(lazyTeleport(G, m), false, 'fin de session : jamais');
+  m.skill.lazy_legend = 0; Object.assign(m, { returnStart: 50, reason: 'oxygène' });
+  assert.equal(lazyTeleport(G, m), false, 'sans le skill : jamais');
+  /* en partie : avec le skill à 100 %, les remontées (sac plein) finissent toutes au coffre d'un coup */
+  const H = newSession(9, { miners: 1 }), k = H.miners[0];
+  k.skill.lazy_legend = 1; k.carac.pods = 30;
+  for(let i = 0; i < 6000 && !(k.stats.lazy >= 2); i++) tick(H);
+  assert.ok(k.stats.lazy >= 2, `téléportations : ${k.stats.lazy}`);
+  assert.ok(k.stats.trips >= 1, 'il a bien déposé au coffre');
 });

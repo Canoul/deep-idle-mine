@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 22/10/2026 (après-midi : Ange contre Démon en ligne, `main` = `f06fb6a`).*
+*Dernière mise à jour : 23/10/2026 après-midi (retours de l'après-midi en ligne).*
 
 ---
 
@@ -28,13 +28,17 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
   groupe bascule sur Session. **« Prêt tout le temps »** (23/10) : case pour un membre, il reste prêt d'une session à
-  l'autre, le chef enchaîne sans attendre. Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
+  l'autre, le chef enchaîne sans attendre ; depuis l'après-midi du 23/10, seule la case la décoche et elle suit le
+  joueur d'un groupe à l'autre (ancien : « Prêt (annuler) » la décochait). Le serveur enregistre le type de mine (`mode`) et refuse un type pas prêt.
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
 
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
+  - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,
+    la jauge de l'autre est en pause et les mines lancées pendant ce temps n'ont pas de résidus (`residues:false` dans
+    la session). Ancien : les deux tours pouvaient être ouvertes ensemble.
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 : **0,5 % au total** (13 par area, moitié chacun), à la place de pierre normale (23/10 ; ancien : 0,5 % chacun, pris sur tout terrain), poids 6, visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
@@ -51,7 +55,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     par ouverture ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
     couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
-    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée.
+    l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. 
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
@@ -93,13 +97,15 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
   dans la mine ; 25 % de **Fragment de cœur** (coffre commun, sans usage pour l'instant). `src/sim/duck.js`.
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
-  téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
+  téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre ; 150 PV de base depuis le 23/10, ancien 100 ;
+  la Provocation casse la canalisation sans l'empêcher). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste),
-  un tirage par sort ; vient de Force brute (Barbare, +5 % par rang).
+  un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
+  par rang** depuis le 23/10 (mobs à 1 case de la cible).
 - **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par
   area ; salle 5 × 3 cachée dans des blocs normaux, 5 mobs (PV et vitesse × 1,5, hors quota) qui chassent le mineur dès
   qu'un bloc de paroi disparaît ; le barbare vient à la rescousse. Mobs qui ne grimpent pas (physique normale).
@@ -109,14 +115,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
   Repère (5 parties) : solo de base, area 1 ouverte (avant : 2) ; à 3 avec skills, area 4 (avant : la 5 dans
   4 parties sur 5).
-- **Mule** (23/10, Geoffrey ; branche `geoffrey/mule`, **pas en ligne** ; spec
-  `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE` en config, `src/sim/mule.js`) : Logisticien étage 4,
-  sac posé à côté du bas du treuil (2 × pods des logisticiens avec Mule), les mineurs aux pods pleins y déposent s'il
-  est plus près que la surface, vidé au coffre seulement à la prolongation et en fin de session (décision Geoffrey).
-  **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3) : 0 blocage, 0 perdu, le sac coûte
-  ≈ 6 s par partie au logisticien (il le reprend en remontant par le treuil), effet sur le coffre non mesurable (hasard ±15 %) : décision en attente (vider à
-  chaque remontée ?). Le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil (avec ou sans Mule).
-- **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
+- **Mule** (23/10, Geoffrey ; en ligne le 23/10 ; spec `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE`
+  en config, `src/sim/mule.js`) : Logisticien étage 4, sac posé à côté du bas du treuil (2 × pods des logisticiens
+  avec Mule), les mineurs aux pods pleins y déposent s'il est plus près que la surface, vidé au coffre seulement à la
+  prolongation et en fin de session (décision Geoffrey ; vider à chaque remontée : pas retenu pour l'instant).
+  **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3, avant les corrections du treuil du
+  23/10) : 0 blocage, 0 perdu, le sac coûte ≈ 6 s par partie au logisticien (il le reprend en remontant par le
+  treuil), effet sur le coffre non mesurable (hasard ±15 %).
+- **Spécialisation** : arbres de skills Mineur (4e étage **Légende de la flemme** depuis le 23/10 : 5 % de se téléporter au coffre à chaque remontée, sauf en fin de session), Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
@@ -141,7 +147,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre dure), soit ≈ 1 gemme / 30 sessions et 1 treasure / 60 par joueur (ancien : 1 gemme / 60, treasure / 2 000) ;
   l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé.
 - **MI, galeries (en ligne le 22/10)** : cap par mineur (galeries dans tous les sens) et tas de plumes découvert ≤ 8 cases prioritaire, même dans la roche.
-- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 22/10 : cachée
+- **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 23/10 après-midi :
+  ne touche plus aux groupes** (inscription seule, on reste dans son lobby ; ancien : on quittait son groupe) ; **depuis le 22/10 : cachée
   au départ, découverte par la stat Découverte de chaque mineur, et caméra qui suit son mineur de près** (≈ 24
   colonnes) ; ancien : toute la mine visible à l'écran ; **inscriptions seulement dans les 30 dernières minutes,
   possibles en session** (encore en session à l'heure = mine ratée, la session continue ; lancer une session ne

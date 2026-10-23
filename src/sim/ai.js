@@ -7,6 +7,7 @@ import { stepDir, deepFall } from './actions.js';
 import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT, baseMoveT, baseWinchT } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
+import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
@@ -194,9 +195,24 @@ function yieldLadder(G,m){
   return G.t-m.yieldSince < SKILLS.ladderYieldMax;
 }
 
+/* Légende de la flemme (skill Mineur, 23/10) : un tirage par remontée, la première fois qu'il décide de son trajet de
+   retour (donc après un tacle ou un étourdissement, qui passent avant), sauf en fin de session. Hasard à part (même
+   seed, même résultat ; ne change pas les autres tirages). Réussi : il apparaît au-dessus du coffre, sur la surface. */
+export function lazyTeleport(G,m){
+  if(!m.skill.lazy_legend || m.y<=0 || m.lazyTry===m.returnStart || m.reason==='fin de session') return false;
+  m.lazyTry=m.returnStart;
+  G.lazyRng ??= mulberry32(G.seed ^ 0x1a2e5e);
+  if(!(G.lazyRng() < m.skill.lazy_legend)) return false;
+  m.x=CHEST_X; m.y=0; m.fall=null; m.target=null; m.foe=null; m.digCol=null; m.galleryRow=null; m.exploring=false;
+  m.stats.lazy=(m.stats.lazy||0)+1; G.stats.lazy=(G.stats.lazy||0)+1;
+  log(G, `💤 ${m.name} a la flemme : il se téléporte au-dessus du coffre (${m.reason})`);
+  return true;
+}
+
 function decideReturn(G,m,rp){
   planPickup(G,m);
   if(needsPickup(G,m)){ m.mode='fetch'; return decideFetch(G,m); }   // Mule : prolongation du treuil ou fin de session
+  if(lazyTeleport(G,m)) rp=null;
   if(m.y===0){
     m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
     /* vitesse de remontée mesurée (secondes par couche), pour la profondeur maximale de fin de session */
@@ -417,7 +433,12 @@ function decideWinch(G,m){
     else {
       /* sorti du puits (combat, tacle) : il y retourne par le chemin le plus court s'il est proche, à une hauteur déjà
          creusée ; sinon il repart d'en haut (avec des mobs résistants, repartir d'en haut à chaque combat tournait en rond) */
-      const top=m.winchDepth ?? 0;
+      /* hauteur déjà creusée : celle de ce chantier, le treuil déjà posé qu'il prolonge, ou la colonne du treuil déjà
+         vide depuis la surface (seed 1209172417, 23/10 : tombé à côté du puits en allant le prolonger, il remontait,
+         retombait, remontait… jusqu'à la fin ; seed 39595 : entraîné dans un combat dès la 1re case du puits, sa
+         hauteur n'était jamais notée, même boucle) */
+      let open=0; while(open<maxRow(G) && isAir(G,WINCH.x,open+1)) open++;
+      const top=Math.max(m.winchDepth ?? 0, G.winch?.bottom ?? 0, open);
       const r=top>0 && search(G,m,m.x,m.y,true,(x,y)=>x===WINCH.x && y>=1 && y<=top,CFG.planMaxCost);
       const st=r && firstStep(r,r.n);
       if(st && (st.dx||st.dy)){ m.status='Retourne au puits du treuil'; if(!stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})) idle(m,0.3); return; }

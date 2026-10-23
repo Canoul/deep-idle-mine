@@ -90,6 +90,14 @@ export function withSkillStats(carac, effects){
   return out;
 }
 
+/* dégâts de zone (Force brute, 23/10) : part de chaque coup infligée aussi aux mobs à 1 case de la cible
+   (rang × aoe du nœud) ; 0 sans le skill. effects = skillEffects (m.skill en partie). */
+export function aoeOf(effects){
+  let x = 0;
+  for(const n of Object.values(NODES)) if(n.aoe) x += rankFrom(n, effects) * n.aoe;
+  return Math.round(x * 1e6) / 1e6;
+}
+
 /* rangs seuls (ce qu'on fige dans l'enregistrement d'une session) */
 export const skillRanks = st => ({ tree:st.tree, ranks:{ ...st.ranks } });
 
@@ -104,5 +112,6 @@ export function nodeText(id, r){
   let text = n.desc.replace('{v}', n.per === 1 ? '' : `${String(Math.round(v * 1000) / 10).replace('.', ',')} %`);
   for(const [stat, p] of Object.entries(n.adds || {}))
     text = text.replace(`{${stat}}`, `${String(Math.max(1, r) * p).replace('.', ',')}${STUFF.statUnits?.[stat] ?? ''}`);
+  if(n.aoe) text = text.replace('{aoe}', `${String(Math.round(Math.max(1, r) * n.aoe * 1000) / 10).replace('.', ',')} %`);
   return text;
 }

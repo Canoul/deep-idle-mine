@@ -2012,7 +2012,76 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
 
-### Mule, skill Logisticien étage 4 (Geoffrey) — branche `geoffrey/mule`, ⚠️ pas en ligne
+### Treuil : boucle « Va installer le treuil » ↔ « Retour (treuil) » (Geoffrey) — branche `geoffrey/fix-treuil-boucle`, ✅ en ligne le 23/10
+- **Symptôme** (seed 1209172417, logisticien solo avec le treuil) : à partir de ~50 min, il part du coffre vers
+  `WINCH.x`, tombe en (24,1) (trou à côté du puits ; `noBridge:true` à la surface pour ne pas boucher le puits), et
+  comme il n'est pas dans la colonne du treuil, `decideWinch` ne le laisse y retourner qu'à une hauteur `≤ winchDepth` ;
+  `winchDepth` vaut null (nouveau chantier de prolongation, ou entraîné dans un combat dès la 1re case : seed 39595, le
+  1er treuil jamais posé) → `reason='treuil'` → il remonte par l'échelle de (23,1) sans repasser au-dessus du trou →
+  recommence. **Invisible pour `stuckDetector`** (il bouge tout le temps).
+- **Correction** (`src/sim/ai.js`, `decideWinch`) : hauteur rejoignable = max(`winchDepth`, `G.winch.bottom`, nombre de
+  cases déjà vides de la colonne du treuil depuis la ligne 1).
+- **Tests** : winch (2 nouveaux : prolongement et premier treuil, trou à côté + échelle voisine ; ils échouent sans la
+  correction), session, fall, skills, dungeon, mobs, trap, team.
+- **Mesure** (script de comptage des passages en « Retour (treuil) », 8 seeds × 1 et 3 logisticiens complets) : avant
+  1 à 1 755 par mineur (12 cas sur 16 > 100) ; après 1 à 4, treuil posé partout (52 à 204).
+- **Simulation `--skills logisticien`** (5 seeds) : à 3, areas 3,2 → **3,6**, profondeur 190,2 → **199,2** ; seul,
+  1,4 → 1,6 et 97 → 107 ; 0 blocage (avant = première correction seule). Tests liés ✅ 102/102.
+- **Simulation sans skills** : 182,4 de profondeur à 3 (192,2 ce matin) : écart venu de `main` (Gallianix, fusionné
+  entre-temps), la correction ne touche que le chantier du treuil.
+- **Points fragiles** : la colonne du treuil « déjà vide » peut traverser une poche d'air naturelle : il peut alors
+  rejoindre le puits plus bas, c'est voulu (il continue de creuser depuis là). Combats Gallianix longs (≥ 30 s, mineur
+  souvent en `wait`) vus par un détecteur ciblé : pas traité ici.
+
+### Plastrons : pods 30 / 50 / 80 / 125 (Geoffrey) — branche `geoffrey/pods-plastrons`, ✅ en ligne le 23/10
+- **Quoi** : `STUFF.items` (`src/config.js`) : Plastron en chitine 25 → 30, fer 33 → 50, acier 40 → 80, équilibre 60 →
+  125. Rien n'est stocké dans les pièces (`sanitizePiece` ne garde que item, uid, q, lines, rune, plus) : `pieceBonus`
+  et `itemValue` relisent le catalogue, donc les pièces existantes changent seules. `itemValue` : chitine 180, fer 300,
+  acier 480, équilibre 925,8 x → une ligne « pods 20 % » vaut 7 / 12 / 19 / 37 pods.
+- **Tests** : carac, amelioration (30 × 1,03 → 31), stuff, blueprint, steel-gear (plus de « fer × 1,2 » pour les pods),
+  craft, rarity, research, rune, tier2, wiki ✅.
+- **Mesures d'équilibrage du 23/10** (scripts temporaires, équipe logisticien + mineur + barbare niv. 7 en fer, outils
+  fer, arrêt à l'ouverture de l'area 5) : area 5 à 53-54 min ; seuil 50 % → 45 min 25 ; pods +100 → 47 min 56 ;
+  dégâts +10 → 51 min ; rayon de torche +2 → 51 min ; oxygène +100 → 51 min 43 ; torches +20 → 53 min 39 ; pierre
+  1,0 s / pierre dure 1,8 s → 51 min 29 ; pioche en fer +0,6 → 50 min 36.
+
+### Retours de l'après-midi du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10-apm`, ✅ en ligne le 23/10
+- **Occultiste** : `MOBS.hpBase.occultiste` 100 → 150. Rien à corriger dans `mobs.js` : `provoke` met fin à la
+  canalisation, `occult` relance au cooldown sur la cible provoquée. Nouveau test « combat réel » (mobs.test.js : 60 s,
+  rien de forcé, ≥ 3 sorts dont ≥ 2 sur le barbare). Wiki : le texte « coupe son sort pour de bon » était faux.
+- **Force brute zone** : nœud `damage` + `aoe:0.02` (config) ; `aoeOf(effects)` (`src/meta/skills.js`, rang × aoe) ;
+  `splash` dans `src/sim/actions.js` (mobs à Manhattan ≤ 1 de la cible, pas un mimic caché, kill → `killMob` par le
+  barbare) ; tour : `hitMob` / `mobDied` (`src/sim/tower/session.js`). `nodeText` remplace `{aoe}`.
+- **Fragments** : `RUNE.fragment` ({ item:'Fragment de rune', tex, factor:0.5 }), objet `cat:'rune', fragment:true`
+  (rareté rare). `isFragment`, `runeFactor` (`src/meta/piece.js`) ; `lineValue(item, l, f)` (discoverMax inchangé) ;
+  `pieceBonus` applique le facteur aux lignes de `p.rune` si `rune.frag`. `sanitizePiece` garde `rune.frag`.
+  `unenchant` / `unenchantError` (`src/meta/upgrade.js`, opId rejouable : `upgrades` garde `fragment`, relu par
+  `deserialize`). Serveur : action `unenchant` (`/api/game/upgrade`), erreurs `no_rune`, `fragment_locked`. UI :
+  bouton « Retirer la rune », aperçu du fragment ÷ 2. Texture `rune_fragment`.
+- **Prêt tout le temps** : `alwaysOn` (Set de comptes, `server/party/service.js`), `newMember` le reprend partout ;
+  `ready(false)` ne touche plus `always` ; reconstruit au `load`. Lobby : bouton principal « ✔ Prêt tout le temps »
+  désactivé. ⚠️ Un joueur sans groupe au redémarrage perd le réglage (pas d'enregistrement par compte).
+- **MI** : `server/instant/service.js` n'appelle plus `party.leave` (inscription, ouverture). Un membre en MI bloque le
+  lancement du chef (`member_in_session`, déjà là).
+- **Jugement** : `anyOpen`, `paused` (`src/meta/judgment.js`) ; `refresh` n'ouvre pas une tour si l'autre l'est ;
+  `addResidues` ignore le camp en pause ; `publicJudgment` : `paused` par camp, `residues`. Serveur : `rec.residues =
+  false` au lancement d'une mine classique si une tour est ouverte ; `buildSession` → `noResidues` → `genArea` saute
+  `placeResidues`. UI Jugement : « en pause ».
+- **Tests** : mobs, skills, tower, rune, anticheat/rune, rarity, inventory, party, lobby, instant-server, judgment,
+  game-service, wiki, stuff, amelioration, anticheat complet ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` : areas 3,0, profondeur 194, allers-retours 28,8, 0 blocage ✅.
+
+### Mineur : Légende de la flemme (Geoffrey) — branche `geoffrey/legende-flemme`, ✅ en ligne le 23/10
+- **Quoi** : nœud `lazy_legend` (`SKILLS.trees` mineur, row 4, max 1, per 0.05). `lazyTeleport(G,m)` (`src/sim/ai.js`,
+  appelé en tête de `decideReturn`) : un tirage par remontée (`m.lazyTry === m.returnStart`), jamais si
+  `m.reason === 'fin de session'` ; RNG à part `G.lazyRng` (seed ^ 0x1a2e5e, créé au premier tirage). Réussi :
+  `x = CHEST_X, y = 0`, remise à zéro de fall / target / foe / digCol / galleryRow / exploring ; `stats.lazy`.
+  Tacle et étourdissement passent avant `decideReturn` (tirage après). MI et tours : autre IA, pas concernées.
+  Icône `sparkle` (`src/ui/skills.js`).
+- **Tests** : skills (structure de l'arbre, Ruée au max exigée, tirage unique, fin de session, en partie à 100 %) ✅.
+- **Simulation** `--miners 3 --count 5 --skills mineur` : areas 3,2, profondeur 197, allers-retours 26,8, 0 blocage ✅.
+
+### Mule, skill Logisticien étage 4 (Geoffrey) — branche `geoffrey/mule`, ✅ en ligne le 23/10
 - **Quoi** : spec `docs/superpowers/specs/2026-10-23-mule-design.md`. Config : nœud `mule` (row 4), `MULE`
   { capacityPct 2, depositTime 1, pickTime 1, pickBelow 10 }, `needsAll` sur `travel_rush` (Navette exige tous les
   nœuds de l'étage 2 ; `blockedReason` dans `src/meta/skills.js`), texture `backpack`. `src/sim/mule.js` : état
@@ -2043,7 +2112,10 @@ Règles (voir CLAUDE.md) :
   logisticien dépose lui-même : un gain) ; **coût réel ≈ 6 s** (mine la case 1,2, pose 2,1, ramasse 1,6) ;
   travail 14,9 contre 16,1 ; chantier du treuil 24,5 contre 23,6
   (≈ 40 % de sa session dans le chantier, avec ou sans Mule).
+- **Fusion avec main** (23/10, avant mise en ligne) : main avait reçu les corrections de la boucle du treuil
+  (`fix-treuil-boucle`) et la Légende de la flemme (Mineur, étage 4). Conflit dans `decideReturn` : Mule (planPickup,
+  needsPickup) d'abord, puis `lazyTeleport` (arbres exclusifs : un logisticien n'a jamais la flemme). Les repères
+  ci-dessus ont été mesurés avant ces corrections du treuil.
 - **Points fragiles** : ⚠️ rendu (sac, jauge, icône du skill) pas regardé dans un navigateur. Gain non mesurable sur
   10 parties : décision de design en attente (vider à chaque remontée ?). Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
   passage au coffre.
-

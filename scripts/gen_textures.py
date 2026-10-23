@@ -357,6 +357,17 @@ def main():
         rect(rune, x, y, 1, 1, hexc('#ffc27a'))                            # glyphe
     tex['rune'] = rune
 
+    # fragment de rune (23/10) : la moitié gauche du losange, cassée en biais, glyphe à moitié éteint
+    frag = blank()
+    for i, (x0, w) in enumerate([(7, 1), (6, 2), (5, 3), (4, 4), (3, 5), (2, 6), (2, 5), (3, 3), (4, 2), (5, 1)]):
+        rect(frag, x0 + 1, 3 + i, w, 1, hexc('#5a5f6e'))
+        rect(frag, x0 + 1, 3 + i, 1, 1, hexc('#8b91a3'))
+    for (x, y) in [(7, 5), (7, 6), (6, 7), (7, 8), (6, 9)]:
+        rect(frag, x, y, 1, 1, hexc('#b88a55'))
+    for (x, y) in [(10, 11), (11, 12), (9, 13)]:                       # éclats
+        rect(frag, x, y, 1, 1, hexc('#6b7080'))
+    tex['rune_fragment'] = frag
+
     # stonebrick des tours : briques claires (ange) / sombres (démon), joints, décalées ; l'indestructible a des ferrures
     def stonebrick(base, mortar, light, seed, hard=None):
         px = noisy(hexc(base), seed, 0.08)

@@ -9,7 +9,7 @@ import { blockedReason, rankOf, nodeText, parentsOf } from '../meta/skills.js';
 /* icônes pixel (src/ui/pxicons.js) ; sans correspondance, l'émoji de la config */
 const TREE_PX = { mineur:'pickaxe', logisticien:'ladder', barbare:'sword' };
 const NODE_PX = { mine_speed:'pickaxe', ore_oxygen:'bubbles', ore_rush:'feather', build_time:'hammer', tall_ladder:'ladder', winch:'key',
-                  travel_rush:'arrow', mule:'bag', damage:'sword', taunt:'skull', loot:'chest', braum:'shield' };
+                  travel_rush:'arrow', mule:'bag', damage:'sword', taunt:'skull', loot:'chest', braum:'shield', lazy_legend:'sparkle' };
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
