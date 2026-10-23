@@ -68,6 +68,14 @@ export function alwaysReadyState({ account, party, offline }){
   return { show: !!me, checked: !!me?.always };
 }
 
+/* compteur de la recherche de groupe, visible même sans chercher (23/10) : vaut-il la peine de s'inscrire ? Mine
+   classique, hors session ; null sinon. players : joueurs en recherche (un groupe de 2 compte pour 2) */
+export function lfgCountText({ account, offline, session, mode, lfg }){
+  if(offline || !account || session || mode !== MINE_MODES[0].id || !Number.isSafeInteger(lfg?.players)) return null;
+  const n = lfg.players;
+  return n === 0 ? 'Personne en recherche' : `${n} joueur${n > 1 ? 's' : ''} en recherche`;
+}
+
 /* Recherche de groupe (mine classique seulement) : rien, le bouton « Chercher un groupe » (seul, ou chef d'un groupe de
    2), ou la recherche en cours (cancel : c'est la sienne, on peut l'annuler ; sinon c'est celle de son chef) */
 export function lfgState({ account, party, offline, session, mode, lfg }){
@@ -180,6 +188,9 @@ export function setupLobby(h){
       : '';
     $('lfgStatus').hidden = !status;
     $('lfgStatus').innerHTML = status;
+    const count = lfgCountText(st);
+    $('lfgCount').hidden = !count;
+    $('lfgCount').innerHTML = count ? pxi('group') + esc(count) : '';
   }
   setInterval(() => { const t = $('lfgTime'); if(t) t.textContent = queueTime(Date.now() - st.lfgStart); }, 1000);
   /* état de la recherche reçu du serveur ; serveur redémarré (boot a changé) pendant sa recherche : on la relance */

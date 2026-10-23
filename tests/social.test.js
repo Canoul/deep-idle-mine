@@ -13,6 +13,8 @@ import { createApp } from '../server/app.js';
 import { SERVER, SOCIAL_SERVER, ROOT } from '../server/config.js';
 import { nameKey } from '../src/shared/account.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
+import { realDurationMs } from '../src/shared/game.js';
+import { statusText } from '../src/ui/social.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
 const B = { id:'BBBB2222', name:null, guest:true };          // invité : pas de pseudo
@@ -153,6 +155,21 @@ test('rejoindre un ami : son groupe (créé s\'il n\'en a pas, dont il est chef)
   await party.launch(C, {});                            // C (chef) lance pour lui et A (prêt)
   await assert.rejects(social.join(D, C.id), { code:'friend_in_session' });
   assert.ok(await game.activeSessionId(A.id));
+});
+
+test('ami en session : on voit le type de mine et le temps qui lui reste (23/10)', async () => {
+  const { social, party, advance } = setup();
+  await friends(social, A, C);
+  await party.launch(C, {});                            // C seul : une session de mine
+  const f = friend(await social.state(A), C);
+  assert.equal(f.status, 'session'); assert.equal(f.mode, 'mine');
+  assert.equal(f.leftMs, realDurationMs());
+  advance(10 * 60_000);
+  assert.equal(friend(await social.state(A), C).leftMs, realDurationMs() - 10 * 60_000);
+  assert.equal(statusText({ status:'session', mode:'mine', leftMs: 23 * 60_000 - 1 }), 'En session mine · reste 23 min');
+  assert.equal(statusText({ status:'session', mode:'tower_angel', leftMs: 30_000 }), 'En session · Tour de l\'Ange · reste < 1 min');
+  assert.equal(statusText({ status:'session', mode:'mine', leftMs:null }), 'En session mine', 'mode dev : pas de fin');
+  assert.equal(statusText({ status:'lobby', size:2, max:3 }), 'Dans le lobby (2/3)');
 });
 
 test('limites : nombre d\'amis, demandes en attente', async () => {

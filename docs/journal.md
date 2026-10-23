@@ -18,6 +18,21 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Retours du 23/10 : socle du coffre, Tainted gold, temps d'un ami, compteur LFG
+- **Pour le joueur** :
+  - La case **sous le coffre** de la surface est un **socle incassable** (dalle grise cerclée de fer) : plus personne ne
+    creuse sous le coffre. Le coffre n'a pas bougé : il est en colonne 22, le treuil en colonne 25 (le milieu), ils ne
+    se gênent pas.
+  - **Tainted gold** : 5 lingots d'or + **20 peaux de gobelin** (au lieu de 20 chitine). Un four déjà chargé avec
+    l'ancienne recette s'arrête, rien n'est perdu : on reprend ses lingots et sa chitine.
+  - **Social** : un ami en session affiche le **temps qui lui reste** (« En session mine · reste 23 min » ; pour une
+    tour ou la mine instantanée, son nom).
+  - **Chercher un groupe** : le Lobby affiche **combien de joueurs cherchent** un groupe, même si on ne cherche pas.
+- **Décisions** (Geoffrey) : les 4 points ci-dessus. Choix de Claude à valider : le temps d'un ami est le temps
+  **restant** (pas le temps écoulé) ; un groupe de 2 en recherche compte pour 2 joueurs.
+- **À suivre** : regarder le socle, le compteur et la ligne Social dans le navigateur.
+- **État** : ✅ en ligne le 23/10
+
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »
 - **Pour le joueur** : dans un groupe, un membre peut cocher **« Prêt tout le temps »** (à côté du bouton Prêt). Il
   reste alors prêt d'une session à l'autre, même quand quelqu'un rejoint : le chef relance sans attendre de clic. On

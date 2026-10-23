@@ -24,7 +24,8 @@ test('wiki : sources et usages tirés des recettes, du four, des treasures et de
   assert.ok(by['Shiny gold'].sources[0].includes('de l\'or'));
   assert.ok(by['Four en fer BP'].uses.some(u => u.includes('débloque la recette Four en fer')));
   assert.ok(by['Four en fer'].uses.some(u => u.includes('ouvre le four 2')));
-  assert.ok(by['Chitine'].uses.some(u => u.includes('Tainted gold')));
+  assert.ok(by['Peau de gobelin'].uses.some(u => u.includes('Tainted gold')));
+  assert.ok(!by['Chitine'].uses.some(u => u.includes('Tainted gold')));
   assert.ok(by['Rubis inférieur'].sources.some(s => s === 'Treasure T2 : 1,5 % de chance'));
   assert.deepEqual(by['Gants tactique'].stats, [`Vitesse d'attaque +${ITEMS['Gants tactique'].stats.attackSpeed} %`]);
   assert.deepEqual(by['Épée en fer'].stats, ['Dégâts 11']);

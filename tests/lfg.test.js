@@ -8,6 +8,7 @@ import { createPartyService } from '../server/party/service.js';
 import { partyRoutes } from '../server/party/routes.js';
 import { PARTY_SERVER } from '../server/config.js';
 import { fakeLive } from './helpers.js';
+import { lfgCountText } from '../src/ui/lobby.js';
 
 const acc = (id, name) => ({ id, name, guest:false });
 const A = acc('AAAA1111', 'Zoe'), B = acc('BBBB2222', 'Bob'), C = acc('CCCC3333', 'Max'),
@@ -199,4 +200,30 @@ test('routes : entrer et annuler (compte requis) ; auto n\'accepte que true', as
 test('redémarrage du serveur : boot change (le navigateur relance sa recherche)', async () => {
   const a = setup(), b = setup();
   assert.notEqual((await a.party.state(A)).lfg.boot, (await b.party.state(A)).lfg.boot);
+});
+
+test('compteur (23/10) : joueurs en recherche, vu aussi par qui ne cherche pas ; un groupe de 2 compte pour 2', async () => {
+  const { party } = setup();
+  assert.equal((await party.state(E)).lfg.players, 0);
+  await party.create(B); await party.join(C, 'K7Q4P2');
+  await party.lfg(B, {});
+  assert.equal((await party.state(E)).lfg.players, 2, 'E ne cherche pas et voit le groupe de 2');
+  assert.equal((await party.state(C)).lfg.players, 2, 'le membre aussi');
+  await party.lfgCancel(B);
+  assert.equal((await party.state(E)).lfg.players, 0, 'annulée');
+  await party.lfg(A, {}); await party.lfg(D, {});
+  assert.equal((await party.state(E)).lfg.players, 2);
+  await party.lfg(E, {});                                   // 3 solos : le lobby se forme, la file se vide
+  assert.equal((await party.state(E)).lfg.players, 0);
+});
+
+test('compteur (23/10) : texte du lobby, mine classique et hors session seulement', () => {
+  const base = { account:{ id:'AAAA1111' }, mode:'mine' };
+  assert.equal(lfgCountText({ ...base, lfg:{ players:0 } }), 'Personne en recherche');
+  assert.equal(lfgCountText({ ...base, lfg:{ players:1 } }), '1 joueur en recherche');
+  assert.equal(lfgCountText({ ...base, lfg:{ players:2 } }), '2 joueurs en recherche');
+  assert.equal(lfgCountText({ ...base, mode:'mi', lfg:{ players:2 } }), null);
+  assert.equal(lfgCountText({ ...base, session:{ id:'s' }, lfg:{ players:2 } }), null);
+  assert.equal(lfgCountText({ ...base, offline:true, lfg:{ players:2 } }), null);
+  assert.equal(lfgCountText({ ...base, lfg:null }), null);
 });

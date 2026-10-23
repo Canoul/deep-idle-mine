@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, AREA_Y0, IDS, BARRIER, AREAS, TREASURE_BLOCK, DUNGEON_WALL, JUDGMENT } from '../src/config.js';
+import { W, AREA_H, AREA_Y0, IDS, BARRIER, AREAS, TREASURE_BLOCK, DUNGEON_WALL, JUDGMENT, CHEST_X } from '../src/config.js';
 import { newSession } from '../src/sim/session.js';
 import { areaOf, areaTop, tileAt, supported, landing, genArea, typeOf } from '../src/sim/world.js';
 import { mulberry32 } from '../src/core/rng.js';
@@ -23,10 +23,10 @@ test('seeds différentes → mondes différents', () => {
   assert.notDeepEqual(newSession(1).tiles, newSession(2).tiles);
 });
 
-test('couche 1 toujours en terre, hors de toute area', () => {
+test('couche 1 toujours en terre (sauf le socle sous le coffre, 23/10), hors de toute area', () => {
   for(const seed of [1, 99, 123456]){
     const G=newSession(seed);
-    assert.ok(G.tiles[1].every(t=>t===IDS.dirt));
+    assert.ok(G.tiles[1].every((t,x)=>t===IDS.dirt || x===CHEST_X));
   }
   assert.equal(areaOf(0), -1); assert.equal(areaOf(1), -1);
   const last0=AREA_Y0+AREA_H-1;   // dernière couche de l'area 0
