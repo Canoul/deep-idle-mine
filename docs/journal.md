@@ -9,6 +9,15 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
+- **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
+  **5 % graphite** et **1 % diamant** (nouveaux), plus 1 % de tas de plumes. Par mine : 125 graphites et 25 diamants.
+- **Repères** (simulation, 5 mines) : à 20 joueurs, par joueur ≈ 4,5 graphites et 0,9 diamant, l'or passe de 35,6 à
+  30,1, le reste ne bouge pas ; à 3 joueurs ≈ 5,3 graphites et 1,3 diamant.
+- **À suivre** : un diamant par MI et par joueur environ, soit ~12 diamants par jour en faisant toutes les MI : à
+  comparer aux 10 diamants par outil en acier.
+- **État** : ✅ en ligne le 23/10
+
 ## 23/10/2026 — Geoffrey — Résidus : 0,5 % au total, à la place de la pierre
 - **Pour le joueur** : à partir de l'area 4, chaque area a **13 résidus** (6 d'un camp, 7 de l'autre), soit 0,5 % des
   blocs, au lieu de 26 (13 + 13, 1,04 %). Ils remplacent uniquement de la **pierre normale** ; la pierre dure et le

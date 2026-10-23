@@ -720,7 +720,7 @@ export const INSTANT_MINE = {
   everyHours: 2, timeZone: 'Europe/Paris',
   duration: 300,                       // s de jeu
   w: 50, h: 50,
-  comp: { coal:20, iron:40, gold:39 }, feather: 1,
+  comp: { coal:20, iron:40, gold:33, graphite:5, diamond:1 }, feather: 1,   // 23/10 (Geoffrey) : or 39 → 33, + graphite 5, + diamant 1
   featherMin: 1, featherMax: 2,                       // 22/10 (Geoffrey) : 1-2 par tas (avant 1-5)
   maxPerMine: 20,
   crowdRadius: 4, crowdWeight: 3, takenPenalty: 10,

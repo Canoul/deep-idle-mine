@@ -104,7 +104,7 @@ function dungeon(){
 
 /* ---------- mine instantanée ---------- */
 function instant(){
-  const m = D.instantInfo(), NAME = { coal:'Charbon', iron:'Fer', gold:'Or' };
+  const m = D.instantInfo(), NAME = BLOCK_NAME;
   const hours = Array.from({ length: 24 / m.every }, (_, i) => `${i * m.every} h`);
   $('w-mi').innerHTML = table(['Quand', 'Durée', 'La mine', 'Joueurs'], [tr([
     `Toutes les <b>${m.every} h pile</b>, heure de Paris<div class="small mut">${hours.join(', ')}</div>`,
