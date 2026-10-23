@@ -2012,7 +2012,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
 
-### Treuil : boucle « Va installer le treuil » ↔ « Retour (treuil) » (Geoffrey) — branche `geoffrey/fix-treuil-boucle`, 🧪 pas en ligne
+### Treuil : boucle « Va installer le treuil » ↔ « Retour (treuil) » (Geoffrey) — branche `geoffrey/fix-treuil-boucle`, ✅ en ligne le 23/10
 - **Symptôme** (seed 1209172417, logisticien solo avec le treuil) : à partir de ~50 min, il part du coffre vers
   `WINCH.x`, tombe en (24,1) (trou à côté du puits ; `noBridge:true` à la surface pour ne pas boucher le puits), et
   comme il n'est pas dans la colonne du treuil, `decideWinch` ne le laisse y retourner qu'à une hauteur `≤ winchDepth` ;

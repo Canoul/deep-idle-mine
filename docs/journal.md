@@ -20,7 +20,7 @@ Modèle d'entrée :
   Des logisticiens à 3 descendent en moyenne de 190 à 199 couches.
 - **À suivre** : la simulation montre aussi des combats contre le Gallianix qui durent 30 s ou plus près de la surface
   (le mineur attend beaucoup) : à regarder à part.
-- **État** : 🧪 sur la branche `geoffrey/fix-treuil-boucle` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
 - **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
