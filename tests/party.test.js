@@ -343,7 +343,8 @@ test('HTTP : Zoé crée, Max rejoint par le code, Zoé lance, les deux sont dans
     assert.equal(inv.data.error.code, 'already_member');
     assert.equal((await zoe('POST', '/api/game/start', {})).data.error.code, 'not_ready');
     assert.equal((await max('POST', '/api/party/ready', { ready:'oui' })).status, 400, 'valeur invalide');
-    assert.equal((await max('POST', '/api/party/ready', { ready:true })).status, 200);
+    assert.equal((await max('POST', '/api/party/always-ready', { always:'oui' })).status, 400, 'valeur invalide');
+    assert.equal((await max('POST', '/api/party/always-ready', { always:true })).status, 200);
     const start = await zoe('POST', '/api/game/start', {});
     assert.equal(start.status, 201);
     assert.equal(start.data.session.players.length, 2);
@@ -401,6 +402,48 @@ test('prêt : quelqu\'un rejoint → tout le monde repasse « pas prêt » ; val
   assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, false, false]);
   for(const v of ['true', 1, null, undefined, {}]) await assert.rejects(party.ready(B, v), { code:'bad_request' });
   await assert.rejects(party.ready(D, true), { code:'no_party' });
+});
+
+test('prêt tout le temps : le membre reste prêt après une session et quand quelqu\'un arrive ; le chef enchaîne sans attendre (23/10)', async () => {
+  const { party, game } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, true);
+  assert.deepEqual((await party.state(A)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]]);
+  await party.join(C, 'K7Q4P2');                                 // un nouveau venu : B reste prêt, C doit le dire
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, true, false]);
+  await party.ready(C, true);
+  await party.launch(A, {});
+  await party.alwaysReady(C, true);                              // possible pendant la session : pour la suivante
+  for(const p of [A, B, C]) await game.leave(p, {});
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.ready), [false, true, true], 'toujours prêts après la session');
+  assert.equal((await party.launch(A, {})).session.players.length, 3, 'relance sans clic « prêt »');
+});
+
+test('prêt tout le temps : « plus prêt » ou décocher l\'arrête ; valeurs invalides et sans groupe refusées', async () => {
+  const { party } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, true);
+  await party.ready(B, false);
+  assert.deepEqual((await party.state(B)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, false]]);
+  await party.alwaysReady(B, true); await party.alwaysReady(B, false);
+  await assert.rejects(party.launch(A, {}), { code:'not_ready' });
+  for(const v of ['true', 1, null, undefined, {}]) await assert.rejects(party.alwaysReady(B, v), { code:'bad_request' });
+  await assert.rejects(party.alwaysReady(D, true), { code:'no_party' });
+  /* un membre qui l'avait coché devient chef puis redevient membre : il l'a toujours */
+  await party.alwaysReady(B, true);
+  await party.promote(A, B.id); await party.promote(B, A.id);
+  assert.equal((await party.state(A)).party.members.find(m => m.account === B.id).ready, true);
+});
+
+test('prêt tout le temps : gardé quand le serveur redémarre', async () => {
+  const clock = () => 5_000_000, store = createMemoryGameStore();
+  const mk = st => createPartyService({ game:createGameService({ store:st, liveRunner:fakeLive(fakeSummary), clock }), store:st, clock,
+                                        getAccount:async id => ACCOUNTS[id] ?? null, newCode:() => 'K7Q4P2' });
+  const party = mk(store);
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.alwaysReady(B, true);
+  const party2 = mk(createMemoryGameStore(store.snapshot()));
+  await party2.load();
+  assert.deepEqual((await party2.state(A)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]]);
 });
 
 test('chef : il peut donner sa place à un membre ; le nouveau chef lance, l\'ancien doit se dire prêt', async () => {

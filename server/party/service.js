@@ -53,7 +53,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
-                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
+                                            leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready || !!m.always,
+                                            always: !!m.always,
                                             playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
                                             look: looks.get(m.account) ?? {},
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
@@ -62,9 +63,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* ---------- ménage ---------- */
 
-  const unready = p => { for(const m of p.members) m.ready = false; };
+  /* « Prêt tout le temps » (m.always) : le membre reste prêt, rien ne le remet à « pas prêt » */
+  const unready = p => { for(const m of p.members) m.ready = !!m.always; };
   /* membres (hors chef) qui ne sont pas prêts */
-  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready);
+  const notReady = p => p.members.filter(m => m.account !== p.leader && !m.ready && !m.always);
 
   function removeMember(p, accountId){
     p.members = p.members.filter(m => m.account !== accountId);
@@ -188,7 +190,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
 
   /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
   const saved = p => ({ code: p.code, leader: p.leader, createdAt: p.createdAt,
-                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready })),
+                        members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready, always: !!m.always })),
                         invites: [...p.invites.values()] });
   const written = new Map();                 // code → JSON déjà enregistré
   /* enregistre les groupes qui ont vraiment changé, efface ceux qui ont disparu */
@@ -206,7 +208,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const s of await store.getParties()){
       if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
-                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true })),
+                  members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true })),
                   invites: new Map((s.invites || []).map(i => [i.account, i])) };
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
@@ -374,7 +376,23 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
       noChange(p);
       await notInSession(me);
-      memberOf(p, me.id).ready = value;
+      const m = memberOf(p, me.id);
+      m.ready = value;
+      if(!value) m.always = false;                     // « plus prêt » : on sort aussi du « prêt tout le temps »
+      return { party: publicParty(p, me.id) };
+    },
+
+    /* « Prêt tout le temps » : le membre reste prêt d'une session à l'autre (et quand quelqu'un arrive), le chef peut
+       enchaîner sans attendre son clic. Possible pendant une session (on le coche pour la suivante). value : true / false. */
+    async alwaysReady(me, value){
+      touch(me);
+      if(typeof value !== 'boolean') fail('bad_request', 400, 'Valeur invalide.');
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
+      noChange(p);
+      const m = memberOf(p, me.id);
+      m.always = value;
+      m.ready = value;
       return { party: publicParty(p, me.id) };
     },
 
@@ -389,7 +407,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(!id || id === me.id || !memberOf(p, id)) fail('invalid_id', 400, 'Joueur invalide.');
       p.leader = id;
       memberOf(p, id).ready = false;                   // le chef n'a pas d'état « prêt »
-      memberOf(p, me.id).ready = false;                // l'ancien chef devient membre : à lui de dire qu'il est prêt
+      memberOf(p, me.id).ready = !!memberOf(p, me.id).always;   // l'ancien chef devient membre : à lui de dire qu'il est prêt (sauf « prêt tout le temps »)
       return { party: publicParty(p, me.id) };
     },
 

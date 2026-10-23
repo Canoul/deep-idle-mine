@@ -1,7 +1,7 @@
 /* Lobby : places affichées et bouton Lancer, depuis l'état du groupe envoyé par le serveur (logique pure). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lobbySlots, launchState, lfgState } from '../src/ui/lobby.js';
+import { lobbySlots, launchState, lfgState, alwaysReadyState } from '../src/ui/lobby.js';
 
 const me = { id:'AAAA1111', displayId:'AAAA-1111', displayName:'Zoe' };
 const party = (members, extra = {}) => ({ code:'K7Q4P2', leader:members[0].account, members, invited:[], ...extra });
@@ -103,4 +103,15 @@ test('recherche en cours : celui qui l\'a lancée peut annuler, le membre voit s
   assert.deepEqual(lfgState({ account:me, party:two, mode:'mine', lfg:{ search:{ mine:true, auto:true, waited:0 } } }),
                    { show:true, searching:true, cancel:true, auto:true });
   assert.equal(lfgState({ account:{ id:'BBBB2222' }, party:two, mode:'mine', lfg:{ search:{ mine:false, auto:false } } }).cancel, false);
+});
+
+test('« Prêt tout le temps » : seulement pour un membre (pas le chef, pas seul), cochée selon le serveur, aussi en session', () => {
+  const p = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max', { ready:true, always:true })]);
+  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p }), { show:true, checked:true });
+  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, session:{ id:'s1' } }), { show:true, checked:true });
+  assert.equal(alwaysReadyState({ account:me, party:p }).show, false, 'le chef');
+  assert.equal(alwaysReadyState({ account:me, party:null }).show, false, 'seul');
+  assert.equal(alwaysReadyState({ account:{ id:'BBBB2222' }, party:p, offline:true }).show, false);
+  const q = party([M('AAAA1111', 'Zoe'), M('BBBB2222', 'Max')]);
+  assert.deepEqual(alwaysReadyState({ account:{ id:'BBBB2222' }, party:q }), { show:true, checked:false });
 });
