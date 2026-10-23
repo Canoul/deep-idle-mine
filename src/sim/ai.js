@@ -148,7 +148,7 @@ function decideSurface(G,m){
   // repartir ne vaut le coup que s'il reste un peu de temps ; près de la fin, il ira miner moins profond (depthCap)
   /* Mule : son sac est encore en bas. S'il n'aura plus le temps de le chercher après un autre trajet, il y va
      maintenant (s'il a encore le temps ; sinon le sac est perdu et il fait comme d'habitude) */
-  if(isCarrier(G,m) && mulePlaced(G) && !pickBlocked(G,m)){
+  if(isCarrier(G,m) && mulePlaced(G) && G.mule.load>0 && !pickBlocked(G,m)){
     const need=fetchT(G,m);
     if(left>need && (left<need+CFG.endStayMin || left<CFG.endStayMin || depthCap(G,m)<3)){
       m.mode='fetch'; m.reason='fin de session'; m.returnStart=G.t; log(G, `🎒 ${m.name} redescend chercher son sac (fin de session)`);
@@ -195,6 +195,7 @@ function yieldLadder(G,m){
 }
 
 function decideReturn(G,m,rp){
+  planPickup(G,m);
   if(needsPickup(G,m)){ m.mode='fetch'; return decideFetch(G,m); }   // Mule : prolongation du treuil ou fin de session
   if(m.y===0){
     m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
@@ -221,7 +222,7 @@ function decideWork(G,m){
   const rp=m.y>0 ? planReturn(G,m) : null;
   let tRet = rp ? rp.cost*1.25 : 0;
   /* Mule : en fin de session, le porteur passe d'abord par son sac ; son retour compte ce détour */
-  if(rp && isCarrier(G,m) && mulePlaced(G)) tRet=Math.max(tRet, muleEstT(G,m));
+  if(rp && isCarrier(G,m) && mulePlaced(G) && G.mule.load>0) tRet=Math.max(tRet, muleEstT(G,m));
   if(m.y>0){
     let reason=null;
     if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
@@ -502,9 +503,19 @@ const pickBlocked = (G,m) => m.pickFail!=null && G.t-m.pickFail<CFG.foeGiveUp;
 const needsPickup = (G,m) => {
   if(!isCarrier(G,m) || !mulePlaced(G) || pickBlocked(G,m)) return false;
   if(m.muleFetch) return true;
-  const left=SESSION_LEN-G.t, via=muleEstT(G,m);
-  return left>=via && (m.reason==='fin de session' || left<via+fetchFromTop(G,m)+CFG.endStayMin);
+  if(!(G.mule.load>0)) return false;                       // sac vide : rien à perdre, pas de détour
+  if(m.reason==='fin de session') return SESSION_LEN-G.t>=muleEstT(G,m);
+  return m.pickPlan===m.returnStart;                        // décidé au début de cette remontée (planPickup)
 };
+/* au début de chaque remontée (une seule fois : sinon la fenêtre s'ouvrait en route et il redescendait, seed 79190) :
+   est-ce la dernière qui lui laisse le temps de récupérer son sac ? */
+function planPickup(G,m){
+  if(m.pickPlanAt===m.returnStart) return;
+  m.pickPlanAt=m.returnStart; m.pickPlan=null;
+  if(!isCarrier(G,m) || !mulePlaced(G) || !(G.mule.load>0)) return;
+  const left=SESSION_LEN-G.t, via=muleEstT(G,m);
+  if(left>=via && left<via+fetchFromTop(G,m)+CFG.endStayMin) m.pickPlan=m.returnStart;
+}
 /* temps estimé (avec la marge de 1,25 du retour) pour aller du sac au coffre : par le seau, puis à pied */
 const muleToChestT = (G,m) => (G.mule.y*baseWinchT(m) + Math.abs(G.mule.x-CHEST_X)*baseMoveT(m))*1.25;
 /* temps estimé d'un retour qui passe par le sac : jusqu'au sac (par le puits), le ramasser, puis jusqu'au coffre.
