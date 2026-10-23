@@ -182,6 +182,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     const e = queue.get(p && p.members.length > 1 ? p.leader : me.id);
     const f = found.get(me.id);
     return { boot,
+             players: [...queue.values()].filter(lfgValid).reduce((n, q) => n + q.size, 0),   // joueurs en recherche, montrés à tous (23/10)
              search: e && lfgValid(e) ? { mine: e.account === me.id, waited: clock() - e.at, auto: e.auto } : null,
              found: f ? { at: f.at, names: f.names, error: f.error } : null };
   }

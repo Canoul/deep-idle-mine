@@ -1,6 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
 import { createMiner, curLum } from './mineur.js';
@@ -38,6 +38,7 @@ export function newSession(seed, opts={}){
   for(let y=1;y<=TOP_DIRT_ROWS;y++){   // couche(s) de terre sous la surface, visibles dès le départ
     G.tiles.push(new Uint8Array(W).fill(IDS.dirt)); G.ladder.push(new Uint8Array(W)); G.seen.push(new Uint8Array(W).fill(1));
   }
+  G.tiles[1][CHEST_X] = CHEST_BASE;   // socle incassable sous le coffre (23/10)
   genArea(G,0); G.unlockedAreas = 1;
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;

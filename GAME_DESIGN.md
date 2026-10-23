@@ -31,7 +31,7 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - L'area suivante se trouve **en dessous** de l'actuelle : l'expérience voulue est le « going deep ».
 - Seules les areas débloquées ont besoin d'exister en mémoire ; la profondeur est quasi gratuite.
 - **La couche 1 du monde (juste sous la surface) est toujours en terre.** Elle **ne fait partie d'aucune area** (pour ne pas fausser les pourcentages) : l'area 0 occupe les couches 2 à 51, l'area 1 les couches 52 à 101, etc.
-- Le **coffre** est généré au spawn, sur la surface. Les ressources déposées dedans partent dans l'inventaire global à la fin de la session du joueur.
+- Le **coffre** est généré au spawn, sur la surface. Les ressources déposées dedans partent dans l'inventaire global à la fin de la session du joueur. Il est en colonne 22 (sur 50), à côté du treuil (colonne 25, le milieu). **La case sous le coffre est un « socle » incassable** *(23/10/2026, Geoffrey)* : personne ne creuse sous le coffre, ce qui évite des bugs de chemin.
 
 ### Catégories de blocs
 
@@ -55,16 +55,21 @@ Chaque bloc appartient à une catégorie :
 
 ### Compositions des areas
 
-| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Vide |
-|---|---|---|---|---|---|---|---|---|
-| 0 | 52 | 33 | – | 10 | – | – | – | 5 |
-| 1 | 30 | 49 | – | 15 | 1 | – | – | 5 |
-| 2 | 20 | 55 | – | 10 | 10 | – | – | 5 |
-| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | 5 |
-| 4 | – | 60 | 15 | 5 | 10 | 5 | – | 5 |
-| 5+ | – | 55 | 20 | 3 | 8 | 7 | 2 | 5 |
+| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Vide |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 52 | 33 | – | 10 | – | – | – | – | 5 |
+| 1 | 30 | 49 | – | 15 | 1 | – | – | – | 5 |
+| 2 | 20 | 55 | – | 10 | 10 | – | – | – | 5 |
+| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | 5 |
+| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | 5 |
+| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | 5 |
+| 6+ | – | 35 | 40 | – | 7 | 6 | 1 | 6 | 5 |
 
-La dernière ligne se répète au-delà. Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+La dernière ligne se répète au-delà. Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
+au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide.
+- **Graphite** (23/10/2026) : minerai `Graphite ore` des areas 5 et 6 (dureté 4, poids 3, attrait 4, 4 XP *(provisoire)*).
+  Au four : **10 Graphite ore → 1 Graphite ingot** (10 charbons, 60 s). Alliage : **Steel ingot = 3 Tainted iron +
+  10 Graphite ingot** (50 charbons, 3 min). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
 - Les minerais sont générés en petits filons (1 à 4 blocs).
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
@@ -396,6 +401,7 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
   - **Un groupe de 2** dans la file → c'est le **solo le plus ancien** qui rejoint **leur** lobby, même s'il était dans la file avant eux. Deux groupes de 2 ne se combinent jamais.
   - **« Lancer dès que plein »** (case à cocher) : si **le chef du futur lobby** l'a cochée, la session Mine démarre dès que le lobby est complet ; sinon le chef lance comme d'habitude. Si le lancement échoue (serveur plein…), le lobby reste formé.
   - Pop-up « Groupe trouvé » pour les 3 joueurs. On sort de la file si l'équipe change (quelqu'un entre ou part), si on lance une session, ou **30 s** sans nouvelles du lobby (onglet fermé) *(valeur de config)*.
+  - **Compteur** *(23/10/2026, Geoffrey)* : le Lobby affiche « **x joueurs en recherche** » (« Personne en recherche » à 0) **même quand on ne cherche pas**, pour savoir si ça vaut le coup de s'inscrire. Un groupe de 2 compte pour 2. Mine classique seulement, pas pendant une session.
   - La file n'est **pas** enregistrée : après un redémarrage du serveur, le navigateur relance la recherche tout seul (on perd sa place dans la file).
 - **Les groupes survivent à un redémarrage du serveur** (la mise à jour automatique le redémarre à chaque nouvelle version) : ils sont enregistrés comme le reste (code, chef, membres, invitations) et retrouvés au démarrage.
 - Absence : un membre silencieux est retiré au bout de 5 min, comptées depuis la **fin réelle** de sa dernière session (une session peut finir après l'heure prévue si le serveur a dû rattraper du retard, ou à tout moment en mode dev) : celui qui revient le premier du bilan ne fait jamais sortir les autres.
@@ -429,7 +435,7 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
 - **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
-- L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne.
+- L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne. **Un ami en session affiche le temps qu'il lui reste** (« En session mine · reste 23 min », arrondi à la minute du dessus ; « En session · Tour de l'Ange · … » pour une tour ou la mine instantanée) *(23/10/2026, Geoffrey)*.
 - Pour chaque ami **en ligne** (en ligne ou dans le lobby) : **Inviter** (invitation dans son groupe, comme l'invitation par ID du lobby) et **Rejoindre** (entrer dans son groupe ; s'il n'en a pas, un groupe est créé avec lui comme chef). Rejoindre est grisé si son groupe est complet ; les deux sont grisés si l'ami est déjà dans ton groupe, ou si toi-même es en session.
 - **Un joueur en session ne peut pas être invité**, ni depuis l'onglet Social ni par ID depuis le lobby (le serveur refuse), ni rejoint.
 - **Voir le stuff d'un ami** *(demande du créateur, 22/10/2026)* : bouton **Stuff** sur chaque ami (même hors ligne ou en session) → sa fiche, en lecture seule : **niveau**, **spécialisation**, **pièces portées** (qualité, amélioration, rune, avec leur bulle d'info) et **stats du mineur** (stuff + skills, comme son onglet Stuff). Jamais son inventaire. Réservé aux amis (le serveur refuse sinon).
@@ -563,7 +569,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
 - Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre**, bouton **½** = la moitié de son stock arrondie en dessous, ou **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
 - **Tout retirer** *(22/10/2026)* : un bouton par four, et un en haut de l'onglet pour tous les fours. Toutes les cases (ingrédients, combustible, produits finis) reviennent dans l'inventaire ; une case qui n'y rentre pas reste dans le four, intacte.
-- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**. Le **diamant ne se fond pas** (pas de recette).
+- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min, graphite 1 min** *(graphite : 23/10/2026)*. Le **diamant ne se fond pas** (pas de recette).
 - La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
 - Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).
 - **Le serveur fait foi** : chaque action est faite par lui, inventaire et four changent ensemble ; une demande renvoyée (double clic) ne s'applique qu'une fois.
@@ -577,7 +583,8 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   | Produit | Ingrédients | Combustible | Durée |
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
-  | **Tainted gold** | 5 lingots d'or + 20 chitine | 50 charbons | 3 min |
+  | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
+  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 10 Graphite ingot | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.

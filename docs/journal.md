@@ -38,6 +38,37 @@ Modèle d'entrée :
 - **Boss à 3 500 PV** (décision de Geoffrey, 11 h 10) : base 0/20, compo b **0/20** (il reste ≈ 300 PV), compo c
   **12/20** (victoire vers 9 min 53).
 - **À suivre** : regarder la tour dans le navigateur (mobs, lumière, caméra) ; ajuster ensemble les chiffres.
+
+## 23/10/2026 — Geoffrey — Graphite, Steel ingot, nouvelle area 6
+- **Pour le joueur** :
+  - Nouveau minerai **Graphite ore** (veines gris-bleu), dans les **areas 5 et 6**. Plus dur que l'or (dureté 4),
+    poids 3, 4 XP.
+  - **Four** : 10 Graphite ore + 10 charbons → **1 Graphite ingot** en 1 min.
+  - **Alliage** : 3 Tainted iron + 10 Graphite ingot + 50 charbons → **1 Steel ingot** en 3 min. Le steel ne sert à
+    rien pour l'instant (recettes à venir).
+  - **Area 5 revue** : 55 % pierre, 20 % pierre dure, 9,5 % fer, 5 % or, 0,5 % diamant, 5 % graphite, 5 % vide
+    (plus de charbon). **Nouvelle area 6** (et au-delà) : 35 % pierre, 40 % pierre dure, 7 % fer, 6 % or, 1 % diamant,
+    6 % graphite, 5 % vide.
+- **Décisions** : ligne de l'area 5 ramenée à 100 % par le fer (9,5 % au lieu de 10). Graphite 60 s au four, steel
+  3 min et 50 charbons comme les autres alliages.
+- **À suivre** : à quoi sert le steel (craft) ; plus de charbon à partir de l'area 5 (il faudra le ramener d'en haut
+  pour le four) ; l'area 6 n'a pas de donjon (donjon en areas 4 et 5) et garde les mobs de l'area 5.
+- **État** : ✅ en ligne le 23/10
+
+## 23/10/2026 — Geoffrey — Retours du 23/10 : socle du coffre, Tainted gold, temps d'un ami, compteur LFG
+- **Pour le joueur** :
+  - La case **sous le coffre** de la surface est un **socle incassable** (dalle grise cerclée de fer) : plus personne ne
+    creuse sous le coffre. Le coffre n'a pas bougé : il est en colonne 22, le treuil en colonne 25 (le milieu), ils ne
+    se gênent pas.
+  - **Tainted gold** : 5 lingots d'or + **20 peaux de gobelin** (au lieu de 20 chitine). Un four déjà chargé avec
+    l'ancienne recette s'arrête, rien n'est perdu : on reprend ses lingots et sa chitine.
+  - **Social** : un ami en session affiche le **temps qui lui reste** (« En session mine · reste 23 min » ; pour une
+    tour ou la mine instantanée, son nom).
+  - **Chercher un groupe** : le Lobby affiche **combien de joueurs cherchent** un groupe, même si on ne cherche pas.
+- **Décisions** (Geoffrey) : les 4 points ci-dessus. Choix de Claude à valider : le temps d'un ami est le temps
+  **restant** (pas le temps écoulé) ; un groupe de 2 en recherche compte pour 2 joueurs.
+- **À suivre** : regarder le socle, le compteur et la ligne Social dans le navigateur.
+
 - **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »

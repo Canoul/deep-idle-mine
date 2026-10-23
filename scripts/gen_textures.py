@@ -170,6 +170,7 @@ def main():
     tex['iron'] = ore(4, '#7d828c', '#d9a67f')
     tex['gold'] = ore(5, '#7d828c', '#ffd23f')
     tex['diamond'] = ore(6, '#7d828c', '#4de8f0')
+    tex['graphite'] = ore(19, '#7d828c', '#2f3b4d')   # graphite : veines gris-bleu métallique
 
     # fond de galerie creusée
     tex['tunnel'] = noisy(hexc('#2a1f18'), 7, 0.05)
@@ -179,6 +180,16 @@ def main():
     for i in range(0, S, 4):
         rect(barrier, i, (i // 4) % 2 * 8, 2, 8, hexc('#4a4a66'))
     tex['barrier'] = barrier
+
+    # socle du coffre : dalle de pierre grise cerclée de fer, rivets aux coins (incassable)
+    base = noisy(hexc('#5a5a62'), 18, 0.08)
+    iron = hexc('#2e2e34')
+    rect(base, 0, 0, 16, 2, iron); rect(base, 0, 14, 16, 2, iron)
+    rect(base, 0, 0, 2, 16, iron); rect(base, 14, 0, 2, 16, iron)
+    for (rx, ry) in ((2, 2), (12, 2), (2, 12), (12, 12)):
+        rect(base, rx, ry, 2, 2, hexc('#b0b0b8'))
+    rect(base, 4, 7, 8, 2, hexc('#46464e'))
+    tex['chest_base'] = base
 
     # passerelle : planches de bois, posée par le mineur pour combler un trou
     # dalle d'un quart de bloc : remplit le haut de la case (4 px), transparente en dessous
@@ -420,7 +431,9 @@ def main():
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
                                     ('ingot_tainted', '#8b6f8f', '#c2a6c4', '#4f3a52'),    # alliage fer + chitine
-                                    ('ingot_tainted_gold', '#b9924a', '#e6c98a', '#6e5226')]:   # alliage or + chitine
+                                    ('ingot_tainted_gold', '#b9924a', '#e6c98a', '#6e5226'),   # alliage or + chitine
+                                    ('ingot_graphite', '#4a505a', '#8a93a0', '#2a2e35'),       # graphite fondu
+                                    ('ingot_steel', '#7f8fa3', '#d6e2ef', '#3f4a58')]:         # alliage tainted iron + graphite
         ing = blank()
         for i, yy in enumerate(range(6, 12)):
             rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))

@@ -24,7 +24,8 @@ test('wiki : sources et usages tirés des recettes, du four, des treasures et de
   assert.ok(by['Shiny gold'].sources[0].includes('de l\'or'));
   assert.ok(by['Four en fer BP'].uses.some(u => u.includes('débloque la recette Four en fer')));
   assert.ok(by['Four en fer'].uses.some(u => u.includes('ouvre le four 2')));
-  assert.ok(by['Chitine'].uses.some(u => u.includes('Tainted gold')));
+  assert.ok(by['Peau de gobelin'].uses.some(u => u.includes('Tainted gold')));
+  assert.ok(!by['Chitine'].uses.some(u => u.includes('Tainted gold')));
   assert.ok(by['Rubis inférieur'].sources.some(s => s === 'Treasure T2 : 1,5 % de chance'));
   assert.deepEqual(by['Gants tactique'].stats, [`Vitesse d'attaque +${ITEMS['Gants tactique'].stats.attackSpeed} %`]);
   assert.deepEqual(by['Épée en fer'].stats, ['Dégâts 11']);
@@ -60,9 +61,9 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
 test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais', () => {
   const rows = D.areaRows();
   assert.equal(rows.length, AREAS.length);
-  assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 500]);
+  assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 501, 500]);
   for(const r of rows) assert.equal(r.unlock, Math.ceil(CFG.unlockRatio * r.ores));
-  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T2']);
+  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T2', 'Treasure T2']);
 });
 
 test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris', () => {

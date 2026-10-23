@@ -21,3 +21,14 @@ test('catégories : minerais, constructions, blocs spéciaux', () => {
 test('seuls les minerais ont une valeur pour l\'IA', () => {
   for(const id in BLOCKS) if(BLOCKS[id].type==='ore') assert.ok(BLOCKS[id].val>0, BLOCKS[id].name);
 });
+
+test('socle du coffre (23/10) : la case sous le coffre est incassable dès le départ, le reste de la couche est de la terre', async () => {
+  const { CHEST_X, CHEST_BASE, W } = await import('../src/config.js');
+  const { newSession, runSession } = await import('../src/sim/session.js');
+  const G = newSession(7919, { miners:3 });
+  assert.equal(G.tiles[1][CHEST_X], CHEST_BASE);
+  assert.ok(BLOCKS[CHEST_BASE].unbreakable && BLOCKS[CHEST_BASE].noDrop);
+  assert.equal([...G.tiles[1]].filter(t => t === IDS.dirt).length, W - 1);
+  const end = runSession(7919, { miners:3 });
+  assert.equal(end.tiles[1][CHEST_X], CHEST_BASE, 'toujours là après 1 h de jeu');
+});

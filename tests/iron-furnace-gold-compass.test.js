@@ -24,18 +24,26 @@ test('recettes : Four en fer et Boussole en or, débloquées par leur BP ; tout 
   for(const n of ['Four en fer', 'Boussole en or', 'Tainted gold']) assert.ok(ITEMS[n]?.tex, `${n} a une icône`);
 });
 
-test('Tainted gold : alliage 5 lingots d\'or + 20 chitine + 50 charbon, 3 min (comme le Tainted iron)', () => {
-  const r = alloyOf('Lingot d\'or', 'Chitine');
+test('Tainted gold : alliage 5 lingots d\'or + 20 peaux de gobelin + 50 charbon, 3 min (23/10 ; avant : chitine)', () => {
+  const r = alloyOf('Lingot d\'or', 'Peau de gobelin');
   assert.deepEqual({ out:r.out, in:r.in, fuel:r.fuel, time:r.time },
-                   { out:'Tainted gold', in:{ 'Lingot d\'or':5, Chitine:20 }, fuel:50, time:180 });
+                   { out:'Tainted gold', in:{ 'Lingot d\'or':5, 'Peau de gobelin':20 }, fuel:50, time:180 });
+  assert.equal(alloyOf('Lingot d\'or', 'Chitine'), null, 'l\'ancienne recette ne marche plus');
   assert.equal(alloyOf('Lingot de fer', 'Chitine').out, 'Tainted iron', 'le Tainted iron ne change pas');
-  const { inv, st } = setup({ 'Lingot d\'or':5, Chitine:20, Charbon:50 });
+  const { inv, st } = setup({ 'Lingot d\'or':5, 'Peau de gobelin':20, Charbon:50 });
   assert.ok(op(st, inv, { action:'mode', furnace:0, mode:'alloy' }).ok);
   assert.ok(op(st, inv, { action:'load', furnace:0, slot:'a', item:'Lingot d\'or', qty:5 }).ok);
-  assert.ok(op(st, inv, { action:'load', furnace:0, slot:'b', item:'Chitine', qty:20 }).ok);
+  assert.ok(op(st, inv, { action:'load', furnace:0, slot:'b', item:'Peau de gobelin', qty:20 }).ok);
   assert.ok(op(st, inv, { action:'load', furnace:0, slot:'fuel', item:'Charbon', qty:50 }).ok);
   assert.ok(furnaceOp(st, inv, { opId:'collect-1', action:'collect', furnace:0 }, 1e6 + 180_000).ok);
   assert.equal(countOf(inv, 'Tainted gold'), 1);
+});
+
+test('Tainted gold : un four chargé avec l\'ancienne recette (or + chitine) s\'arrête sans rien perdre', () => {
+  const st = sanitizeFurnaces({ list:[{ mode:'alloy', a:{ item:'Lingot d\'or', qty:5 }, b:{ item:'Chitine', qty:20 }, fuel:{ item:'Charbon', qty:50 }, since:1 }] });
+  const f = st.list[0];
+  assert.deepEqual([f.a, f.b, f.fuel], [{ item:'Lingot d\'or', qty:5 }, { item:'Chitine', qty:20 }, { item:'Charbon', qty:50 }]);
+  assert.equal(f.since, null, 'ne fabrique plus rien');
 });
 
 test('Four en fer : « Utiliser » consomme l\'objet et ouvre le 2e four, un Four en fer ×1,25', () => {

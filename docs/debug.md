@@ -1882,6 +1882,41 @@ Règles (voir CLAUDE.md) :
   le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
   les garde-fous.
 
+### Retours du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10`, ✅ en ligne le 23/10
+- **Socle du coffre** : bloc 18 `CHEST_BASE` (`special`, `unbreakable`, `noDrop`, tex `chest_base` générée par
+  `gen_textures.py`), posé en `G.tiles[1][CHEST_X]` dans `newSession` (`src/sim/session.js`). Le coffre (`CHEST_X` = 22)
+  n'est pas au milieu (`WINCH.x` = 25) : pas déplacé. Tests : blocks (posé, toujours là après 1 h), world (couche 1 =
+  terre sauf le socle). Simulation 3 × 5 : 3,0 areas, profondeur 192,2, **0 blocage** (identique à avant).
+- **Tainted gold** : `FURNACE.alloys` (`src/config.js`) or 5 + `Peau de gobelin` 20. Un four enregistré « or + chitine »
+  garde ses cases (`sanitizeFurnaces`) mais `activeRecipe` → null : il ne tourne plus, le joueur décharge. Tests :
+  iron-furnace-gold-compass (nouvelle recette, ancienne refusée, ancien four sans perte), wiki ; anticheat 72/72 ✅.
+- **Temps d'un ami** : `game.activeSessionInfo(id)` → `{ mode, leftMs }` (`finishAt - now`, null en dev) ;
+  `social.statusOf` renvoie `mode`, `leftMs` ; `statusText` / `leftText` (`src/ui/social.js`) : minute du dessus,
+  « < 1 min ». Test social ✅.
+- **Compteur LFG** : `lfgView` renvoie `players` (somme des `size` des entrées valides de la file) à tout le monde ;
+  `lfgCountText` (pure, `src/ui/lobby.js`), `#lfgCount` dans `.lobbyActions`. Tests lfg ✅.
+- **Vérification** : blocks, world, session, wiki, fall, winch, view, dungeon, furnace, craft, social, game-service,
+  party, lfg, lobby ✅ ; anticheat 72/72. ⚠️ Rien regardé dans un navigateur.
+- **Points fragiles** : le socle est un bloc `special` en couche 1 (hors area) : `rowDone` l'ignore (incassable).
+
+
+### Graphite, Steel ingot, area 6 (Geoffrey) — branche `geoffrey/graphite`, ✅ en ligne le 23/10
+- **Quoi** : bloc 19 `Graphite ore` (`ore`, tex `graphite`, w 3, hard 4.0, val 4, dot `#2f3b4d`), `IDS.graphite = 19`,
+  `XP.ore.graphite = 4` (`src/config.js`). `AREAS[5]` revue (iron 9.5, diamond 0.5, graphite 5, plus de coal) et
+  `AREAS[6]` ajoutée (répétée au-delà). `FURNACE.recipes['Graphite ore']` → `Graphite ingot` (60 s, tex
+  `ingot_graphite`) ; `FURNACE.alloys` + `Steel ingot` = `Tainted iron` 3 + `Graphite ingot` 10, fuel 50, 180 s, tex
+  `ingot_steel`. Les objets sont créés par le catalogue `ITEMS` (rien d'autre à déclarer). Textures `graphite`,
+  `ingot_graphite`, `ingot_steel` (`scripts/gen_textures.py`, les autres PNG inchangés). Couleur du panneau d'area
+  (`src/ui/hud.js`), wiki (`AREA_KEYS`, `BLOCK_NAME`).
+- **Arrondis** : 9,5 % et 0,5 % de 2 500 = 237,5 et 12,5 → `Math.round` 238 et 13 : l'area 5 a **501** minerais (le
+  terrain principal absorbe l'écart). Test wiki mis à jour (7 areas, 501).
+- **Tests** : `tests/graphite.test.js` (nouveau : bloc, compositions = 100 %, génération, fonte, alliage), world,
+  furnace, wiki, level, focus, inventory, iron-furnace-gold-compass ✅ ; anticheat 72/72 ✅. Simulation 3 × 5 :
+  3,0 areas, profondeur 192,2, **0 blocage** (identique : en stuff de base personne n'atteint l'area 5).
+- **Points fragiles** : ⚠️ pas regardé dans un navigateur. Pas de shiny pour le graphite (`SHINY.items` : fer et or
+  seulement). `DUNGEON.areas` reste [4, 5] : pas de donjon en area 6. `MOBS.spawnTable` : l'area 6 reprend la ligne
+  de l'area 5. Treasure en area 6 : T2 (dernier tier).
+
 ### Tours : refonte en étages (Geoffrey) — branche `geoffrey/tour-serpentin`, ✅ en ligne le 23/10
 - **Quoi** : `src/sim/tower/world.js` réécrit : `floors` étages de `floorH` lignes + séparation (indestructible, porte
   de `gate` cases en brique au bord, côté alterné depuis `L.gate0` tiré par la seed), `kinds` (empty / blocks / mobs,
