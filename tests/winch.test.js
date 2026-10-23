@@ -152,3 +152,18 @@ test('prolonger le treuil : tombé à côté du puits (trou près de la surface)
   assert.equal(G.winch.bottom, 16);
   assert.ok(ups <= 1, `remonté ${ups} fois à la surface pendant le chantier`);
 });
+
+test('premier treuil : la 1re case du puits déjà ouverte (combat dès l\'entrée), tombé à côté, il le rejoint au lieu de boucler (seed 39595)', () => {
+  const G = worldFrom(['', ...Array.from({ length:24 }, () => '#'.repeat(W))]), m = G.miners[0];
+  G.tiles[1][X] = 0;                                       // il est entré dans le puits, puis un combat l'en a sorti
+  G.tiles[1][X - 1] = 0;                                   // trou juste à gauche
+  G.tiles[1][X - 2] = 0; G.ladder[1][X - 2] = 1;           // il remonte par l'échelle d'à côté
+  m.x = X - 3; m.y = 0; m.skill.winch = 1; m.skillTree = 'logisticien';
+  m.winchJob = { bottom:12 }; m.winchDepth = null;
+  m.mode = 'surface';
+  let ups = 0, prev = m.y;
+  for(let i = 0; i < 3000 && m.winchJob; i++){ run(G, 1); if(prev > 0 && m.y === 0) ups++; prev = m.y; }
+  assert.equal(m.winchJob, null, 'chantier fini');
+  assert.equal(G.winch.bottom, 12);
+  assert.ok(ups <= 1, `remonté ${ups} fois à la surface pendant le chantier`);
+});
