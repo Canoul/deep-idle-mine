@@ -6,7 +6,9 @@ import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './mineur.js';
 import { provoke, revealMimic } from './mobs.js';
 import { log } from './log.js';
+import { aoeOf } from '../meta/skills.js';
 import { noEntry } from './dungeon.js';
+import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -153,14 +155,36 @@ export function finishAction(G,m,a){
         const mine=G.chestBy[m.id] || (G.chestBy[m.id]={}); mine[k]=(mine[k]||0)+m.inv[k];
         parts.push(m.inv[k]+' '+k);
       }
-      log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++;
-      m.inv={}; m.load=0; break; }
+      if(parts.length){ log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++; }
+      m.inv={}; m.load=0;
+      if(isCarrier(G,m) && !G.mule.placed) emptyMule(G, m.name);   // Mule : le sac qu'il rapporte
+      break; }
+    /* Mule (src/sim/mule.js) : dépôt dans le sac, ramassage, pose (la case doit être restée vide) */
+    case 'muleDeposit': depositToMule(G,m); break;
+    case 'mulePick': if(isCarrier(G,m)) pickMule(G,m); m.muleFetch=false; break;
+    case 'mulePlace':
+      if(isCarrier(G,m) && !G.mule.placed && isAir(G,a.data.x,a.data.y)){ placeMule(G,m,a.data.x,a.data.y); m.muleJob=null; }
+      break;
     case 'stun': break;   // étourdi : il ne fait rien pendant toute l'action
     case 'attack': {
       const o=a.data.mob; if(o.hp>0){
         if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-        o.hp-=hitDamage(G,m); m.foeHit=G.t; if(o.hp<=0) killMob(G,m,o);
+        const dmg=hitDamage(G,m);
+        o.hp-=dmg; m.foeHit=G.t;
+        splash(G,m,o,dmg);
+        if(o.hp<=0) killMob(G,m,o);
       } break; }
+  }
+}
+
+/* dégâts de zone (Force brute, 23/10) : une part du coup touche aussi les mobs vivants à 1 case (Manhattan) de la
+   cible, boss compris ; jamais un mimic encore caché. Un mob tué ainsi compte pour le mineur (butin, XP). */
+function splash(G,m,o,dmg){
+  const k=aoeOf(m.skill); if(k<=0) return;
+  for(const q of G.mobs){
+    if(q===o || q.hp<=0 || (q.type==='mimic' && !q.revealed) || Math.abs(q.x-o.x)+Math.abs(q.y-o.y)>1) continue;
+    q.hp-=dmg*k;
+    if(q.hp<=0) killMob(G,m,q);
   }
 }
 

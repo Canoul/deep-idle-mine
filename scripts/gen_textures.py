@@ -357,6 +357,17 @@ def main():
         rect(rune, x, y, 1, 1, hexc('#ffc27a'))                            # glyphe
     tex['rune'] = rune
 
+    # fragment de rune (23/10) : la moitié gauche du losange, cassée en biais, glyphe à moitié éteint
+    frag = blank()
+    for i, (x0, w) in enumerate([(7, 1), (6, 2), (5, 3), (4, 4), (3, 5), (2, 6), (2, 5), (3, 3), (4, 2), (5, 1)]):
+        rect(frag, x0 + 1, 3 + i, w, 1, hexc('#5a5f6e'))
+        rect(frag, x0 + 1, 3 + i, 1, 1, hexc('#8b91a3'))
+    for (x, y) in [(7, 5), (7, 6), (6, 7), (7, 8), (6, 9)]:
+        rect(frag, x, y, 1, 1, hexc('#b88a55'))
+    for (x, y) in [(10, 11), (11, 12), (9, 13)]:                       # éclats
+        rect(frag, x, y, 1, 1, hexc('#6b7080'))
+    tex['rune_fragment'] = frag
+
     # stonebrick des tours : briques claires (ange) / sombres (démon), joints, décalées ; l'indestructible a des ferrures
     def stonebrick(base, mortar, light, seed, hard=None):
         px = noisy(hexc(base), seed, 0.08)
@@ -707,6 +718,18 @@ def main():
     rect(bucket, 2, 12, 12, 1, hexc('#5a6069'))
     rect(bucket, 3, 6, 2, 9, hexc('#b8854a'))
     tex['bucket'] = bucket
+    # sac de la Mule (skill Logisticien) : sac à dos en cuir, rabat, sangles et boucle en fer
+    backpack = blank()
+    rect(backpack, 5, 1, 6, 2, hexc('#5c3a1a'))   # poignée
+    rect(backpack, 6, 2, 4, 1, (0, 0, 0, 0))
+    rect(backpack, 3, 3, 10, 12, hexc('#8a5a2b'))  # corps
+    rect(backpack, 3, 3, 10, 5, hexc('#a06a35'))   # rabat
+    rect(backpack, 3, 8, 10, 1, hexc('#5c3a1a'))   # bord du rabat
+    rect(backpack, 7, 7, 2, 3, hexc('#9aa3ad'))    # boucle
+    rect(backpack, 4, 10, 1, 4, hexc('#6e4520'))   # coutures
+    rect(backpack, 11, 10, 1, 4, hexc('#6e4520'))
+    rect(backpack, 3, 15, 10, 1, hexc('#4a2e14'))  # fond
+    tex['backpack'] = backpack
 
     # étourdi (chute imprévue) : étoiles jaunes qui tournent au-dessus de la tête du mineur (haut de la case)
     stun = blank()

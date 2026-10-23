@@ -1,11 +1,13 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT } from './mineur.js';
+import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT, baseMoveT, baseWinchT } from './mineur.js';
+import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
+import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
@@ -141,10 +143,20 @@ export function depthCap(G,m){
 
 function decideSurface(G,m){
   const left=SESSION_LEN-G.t;
+  if(huntDuck(G,m,left)) return;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
-  if(m.load>0){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
+  if(m.load>0 || bagToEmpty(G,m)){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
   if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
   // repartir ne vaut le coup que s'il reste un peu de temps ; près de la fin, il ira miner moins profond (depthCap)
+  /* Mule : son sac est encore en bas. S'il n'aura plus le temps de le chercher après un autre trajet, il y va
+     maintenant (s'il a encore le temps ; sinon le sac est perdu et il fait comme d'habitude) */
+  if(isCarrier(G,m) && mulePlaced(G) && G.mule.load>0 && !pickBlocked(G,m)){
+    const need=fetchT(G,m);
+    if(left>need && (left<need+CFG.endStayMin || left<CFG.endStayMin || depthCap(G,m)<3)){
+      m.mode='fetch'; m.reason='fin de session'; m.returnStart=G.t; log(G, `🎒 ${m.name} redescend chercher son sac (fin de session)`);
+      return decideFetch(G,m);
+    }
+  }
   if(left<CFG.endStayMin || depthCap(G,m)<3){ m.status='Fin de session proche'; idle(m,1); return; }
   if(m.winchJob){ m.mode='winch'; return decideWinch(G,m); }   // chantier du treuil : il repart d'en haut, au milieu
   m.mode='departure';
@@ -152,6 +164,32 @@ function decideSurface(G,m){
      et avant de rejoindre son puits : il peut tomber dans le treuil en chemin, et partir sans repasser ici) */
   m.tripCap=depthCap(G,m);
   decideDeparture(G,m);
+}
+
+/* fin de session, rien à déposer : au lieu d'attendre au coffre, il va frapper le Gallianix le plus proche (réglage
+   « combat » sur Combattre), s'il a le temps de revenir au coffre ensuite (ce qu'il lâche est dans son sac). Il ne
+   marche que sur du sol (il ne tombe pas dans la mine), donc pas vers un canard de l'autre côté d'un trou. */
+function huntDuck(G,m,left){
+  if(m.prefs.fightMobs!==true || m.load>0 || bagToEmpty(G,m) || !(left<CFG.endStayMin || depthCap(G,m)<3)) return false;
+  if(isCarrier(G,m) && mulePlaced(G) && G.mule.load>0) return false;   // Mule : son sac passe avant (decideSurface)
+  let best=null, bd=Infinity;
+  for(const o of G.mobs){
+    if(o.type!==DUCK.type || o.hp<=0 || o.y!==0) continue;
+    const d=Math.abs(o.x-m.x);
+    if(d>=bd || !surfaceWalk(G,m.x,o.x)) continue;
+    if(left < (d+Math.abs(o.x-CHEST_X))*moveT(G,m)*1.25 + DUCK.huntMargin) continue;   // aller, retour au coffre, le combat
+    best=o; bd=d;
+  }
+  if(!best) return false;
+  if(bd<=1){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
+  m.status=`Chasse le Gallianix ${best.name}`;
+  if(stepDir(G,m,Math.sign(best.x-m.x),0,{noBridge:true})) return true;
+  idle(m,0.3); return true;
+}
+/* de a à b à la surface, chaque case a un appui (pas de trou où tomber) */
+function surfaceWalk(G,a,b){
+  for(let x=Math.min(a,b); x<=Math.max(a,b); x++) if(!supported(G,x,0)) return false;
+  return true;
 }
 
 /* en équipe : au départ du coffre, il reprend une descente existante si elle vaut le coup, sinon il rejoint sa colonne */
@@ -184,7 +222,24 @@ function yieldLadder(G,m){
   return G.t-m.yieldSince < SKILLS.ladderYieldMax;
 }
 
+/* Légende de la flemme (skill Mineur, 23/10) : un tirage par remontée, la première fois qu'il décide de son trajet de
+   retour (donc après un tacle ou un étourdissement, qui passent avant), sauf en fin de session. Hasard à part (même
+   seed, même résultat ; ne change pas les autres tirages). Réussi : il apparaît au-dessus du coffre, sur la surface. */
+export function lazyTeleport(G,m){
+  if(!m.skill.lazy_legend || m.y<=0 || m.lazyTry===m.returnStart || m.reason==='fin de session') return false;
+  m.lazyTry=m.returnStart;
+  G.lazyRng ??= mulberry32(G.seed ^ 0x1a2e5e);
+  if(!(G.lazyRng() < m.skill.lazy_legend)) return false;
+  m.x=CHEST_X; m.y=0; m.fall=null; m.target=null; m.foe=null; m.digCol=null; m.galleryRow=null; m.exploring=false;
+  m.stats.lazy=(m.stats.lazy||0)+1; G.stats.lazy=(G.stats.lazy||0)+1;
+  log(G, `💤 ${m.name} a la flemme : il se téléporte au-dessus du coffre (${m.reason})`);
+  return true;
+}
+
 function decideReturn(G,m,rp){
+  planPickup(G,m);
+  if(needsPickup(G,m)){ m.mode='fetch'; return decideFetch(G,m); }   // Mule : prolongation du treuil ou fin de session
+  if(lazyTeleport(G,m)) rp=null;
   if(m.y===0){
     m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
     /* vitesse de remontée mesurée (secondes par couche), pour la profondeur maximale de fin de session */
@@ -208,13 +263,19 @@ function decideWork(G,m){
   m.digCol=null;   // réservations rafraîchies à chaque décision
   if(!m.exploring) m.galleryRow=null;
   const rp=m.y>0 ? planReturn(G,m) : null;
-  const tRet = rp ? rp.cost*1.25 : 0;
+  let tRet = rp ? rp.cost*1.25 : 0;
+  /* Mule : en fin de session, le porteur passe d'abord par son sac ; son retour compte ce détour */
+  /* (seulement si c'est encore possible : sinon le sac est perdu, et compter ce détour le faisait remonter aussitôt
+     reparti, en boucle, seed 39595) */
+  if(rp && isCarrier(G,m) && mulePlaced(G) && G.mule.load>0){ const via=muleEstT(G,m); if(left>=via) tRet=Math.max(tRet, via); }
   if(m.y>0){
     let reason=null;
     if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
+    /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
+    if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
   }
@@ -227,7 +288,9 @@ function decideWork(G,m){
   // le rappeler effacerait sa cible, qu'il reprendrait aussitôt (oscillation à la frontière). Vaut pour le focus
   // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai), et pour la
   // galerie qu'il va creuser (seed 23757 : galerie en haut de l'area 3, chemin par la dernière ligne de l'area 2)
-  const onTheWay = goal!==null && ((m.target && areaOf(m.target.y)===goal) || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
+  // … et pour un treasure ou un résidu visé hors de l'area de travail (voir inFocus plus bas)
+  const onTheWay = goal!==null && ((m.target && (areaOf(m.target.y)===goal || !isOre(G.tiles[m.target.y][m.target.x])))
+    || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
   let best=null,bs=0;
@@ -257,13 +320,15 @@ function decideWork(G,m){
   const A=workArea(G,m), act=activeOres(m.prefs.focus);
   /* fin de session : rien sous la profondeur maximale du trajet, fixée au départ de la surface (il mine plus haut) */
   const cap=m.tripCap ?? Infinity;
-  const inFocus = y => y<=cap && (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act));
+  /* un treasure ou un résidu découvert à portée (CFG.oreReach) est visé quel que soit le focus d'area : sinon celui
+     d'une area du dessus restait là toute la partie, même à 3 cases du treuil où tout le monde passe (seed 1384517703) */
+  const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
-    if(!inFocus(o.y)) continue;
+    if(!inFocus(o.y,o.t)) continue;
     const dist=Math.abs(o.x-m.x)+Math.abs(o.y-m.y);
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre
@@ -399,7 +464,12 @@ function decideWinch(G,m){
     else {
       /* sorti du puits (combat, tacle) : il y retourne par le chemin le plus court s'il est proche, à une hauteur déjà
          creusée ; sinon il repart d'en haut (avec des mobs résistants, repartir d'en haut à chaque combat tournait en rond) */
-      const top=m.winchDepth ?? 0;
+      /* hauteur déjà creusée : celle de ce chantier, le treuil déjà posé qu'il prolonge, ou la colonne du treuil déjà
+         vide depuis la surface (seed 1209172417, 23/10 : tombé à côté du puits en allant le prolonger, il remontait,
+         retombait, remontait… jusqu'à la fin ; seed 39595 : entraîné dans un combat dès la 1re case du puits, sa
+         hauteur n'était jamais notée, même boucle) */
+      let open=0; while(open<maxRow(G) && isAir(G,WINCH.x,open+1)) open++;
+      const top=Math.max(m.winchDepth ?? 0, G.winch?.bottom ?? 0, open);
       const r=top>0 && search(G,m,m.x,m.y,true,(x,y)=>x===WINCH.x && y>=1 && y<=top,CFG.planMaxCost);
       const st=r && firstStep(r,r.n);
       if(st && (st.dx||st.dy)){ m.status='Retourne au puits du treuil'; if(!stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})) idle(m,0.3); return; }
@@ -411,13 +481,17 @@ function decideWinch(G,m){
     else if(left<=m.y/m.carac.climbSpeed*1.25+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; return decideReturn(G,m); }
+    /* Mule : en descendant par le puits, il reprend son sac posé à côté de l'ancien bas du treuil (il le reposera en bas) */
+    if(isCarrier(G,m) && mulePlaced(G) && nearMule(G,m.x,m.y) && G.mule.y<job.bottom){ m.status='Ramasse son sac'; startAction(m,'mulePick',MULE.pickTime,{}); return; }
     if(m.y>=job.bottom){
       G.winch={ x:WINCH.x, bottom:Math.max(G.winch?.bottom ?? 0, m.y) };
       /* il retire les échelles du puits : le treuil prend toute la colonne, de la surface jusqu'en bas */
       let removed=0;
       for(let y=1;y<=G.winch.bottom;y++) if(G.ladder[y][WINCH.x]){ G.ladder[y][WINCH.x]=0; removed++; }
       log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`+(removed ? ` (${removed} échelle${removed>1?'s':''} retirée${removed>1?'s':''})` : ''));
-      m.winchJob=null; m.winchDepth=null; m.mode='work'; return decideWork(G,m);
+      m.winchJob=null; m.winchDepth=null; m.mode='work';
+      m.muleJob=muleAfterWinch(G,m);   // Mule : il pose son sac à côté du bas du treuil (null : pas de sac à poser)
+      return m.muleJob ? decideMulePlace(G,m) : decideWork(G,m);
     }
     if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
     m.status='Creuse le puits du treuil';
@@ -472,6 +546,93 @@ function trapGoal(G,m){
   return goFight(G,m,best,bd,'Combat ('+best.type+', piège)', who ? 'À la rescousse de '+who : 'Va au piège');
 }
 
+/* ---- Mule (skill Logisticien, étage 4 ; src/sim/mule.js) ---- */
+/* au coffre, le porteur vide aussi le sac qu'il transporte */
+const bagToEmpty = (G,m) => isCarrier(G,m) && !G.mule.placed && Object.keys(G.mule.inv).length>0;
+/* recherche vers le sac ratée il y a peu : on ne la relance pas à chaque décision */
+const pickBlocked = (G,m) => m.pickFail!=null && G.t-m.pickFail<CFG.foeGiveUp;
+/* le porteur ramasse son sac posé quand il remonte pour prolonger le treuil (m.muleFetch : le sac est sur son chemin,
+   voir decide), ou en fin de session : quand cette remontée est la dernière qui lui laisse le temps de récupérer le
+   sac (après, un aller-retour depuis la surface ne passerait plus), et s'il a encore le temps d'aller le chercher */
+const needsPickup = (G,m) => {
+  if(!isCarrier(G,m) || !mulePlaced(G) || pickBlocked(G,m)) return false;
+  if(m.muleFetch) return true;
+  if(!(G.mule.load>0)) return false;                       // sac vide : rien à perdre, pas de détour
+  if(m.reason==='fin de session') return SESSION_LEN-G.t>=muleEstT(G,m);
+  return m.pickPlan===m.returnStart;                        // décidé au début de cette remontée (planPickup)
+};
+/* au début de chaque remontée (une seule fois : sinon la fenêtre s'ouvrait en route et il redescendait, seed 79190) :
+   est-ce la dernière qui lui laisse le temps de récupérer son sac ? */
+function planPickup(G,m){
+  /* décidé pour cette remontée, sauf si le sac était vide et qu'un mineur vient d'y déposer (seed 39595) */
+  if(m.pickPlanAt===m.returnStart && !(m.pickPlanEmpty && G.mule?.load>0)) return;
+  m.pickPlanAt=m.returnStart; m.pickPlan=null; m.pickPlanEmpty=!(G.mule?.load>0);
+  if(!isCarrier(G,m) || !mulePlaced(G) || !(G.mule.load>0)) return;
+  const left=SESSION_LEN-G.t, via=muleEstT(G,m);
+  if(left>=via && left<via+fetchFromTop(G,m)+CFG.endStayMin) m.pickPlan=m.returnStart;
+}
+/* temps estimé (avec la marge de 1,25 du retour) pour aller du sac au coffre : par le seau, puis à pied */
+const muleToChestT = (G,m) => (G.mule.y*baseWinchT(m) + Math.abs(G.mule.x-CHEST_X)*baseMoveT(m))*1.25;
+/* temps estimé d'un retour qui passe par le sac : jusqu'au sac (par le puits), le ramasser, puis jusqu'au coffre.
+   Une estimation (pas de recherche d'itinéraire) : elle est calculée à chaque décision. */
+const muleEstT = (G,m) => (Math.abs(m.y-G.mule.y)*baseWinchT(m) + Math.abs(m.x-G.mule.x)*baseMoveT(m))*1.25 + MULE.pickTime + muleToChestT(G,m);
+/* depuis la surface : aller chercher le sac et revenir, avec une marge (fetchT : depuis là où il est ; fetchFromTop :
+   depuis le coffre) */
+const fetchT = (G,m) => muleEstT(G,m) + 12;
+const fetchFromTop = (G,m) => 2*muleToChestT(G,m) + MULE.pickTime + 12;
+
+/* il va ramasser son sac (mode 'fetch' : pas un retour, il peut descendre) ; ramassé (ou plus besoin) : il remonte */
+function decideFetch(G,m){
+  if(!needsPickup(G,m)){ m.mode='return'; m.muleFetch=false; return decideReturn(G,m); }
+  return goPickup(G,m);
+}
+/* un sac posé où il reste de la place pour ce qu'il porte, plus près (en temps) que le coffre */
+function muleWorth(G,m,rp){
+  if(!muleFits(G,m)) return false;
+  return !!search(G,m,m.x,m.y,true,(x,y)=>nearMule(G,x,y), rp ? rp.cost : Infinity, 1);
+}
+
+function goPickup(G,m){
+  if(nearMule(G,m.x,m.y)){ m.status='Ramasse son sac'; startAction(m,'mulePick',MULE.pickTime,{}); return; }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>nearMule(G,x,y),Infinity,1), s=r && firstStep(r,r.n);
+  if(!s || !(s.dx||s.dy)){ m.pickFail=G.t; log(G, `🎒 ${m.name} ne peut pas rejoindre son sac`); idle(m,0.3); return; }
+  m.status='Va ramasser son sac';
+  if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return;
+  idle(m,0.3);
+}
+
+/* pods pleins : il va déposer dans le sac. Déposé (ou sac devenu plein, ramassé, trop loin) : il reprend son travail
+   s'il a de la place, sinon il remonte au coffre comme d'habitude. Oxygène et fin de session passent avant. */
+function decideMule(G,m){
+  const left=SESSION_LEN-G.t;
+  const back = reason => { m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m); };
+  if(m.load<m.carac.pods-2){ m.mode='work'; return decideWork(G,m); }
+  if(m.ox<=0) return back('oxygène');
+  if(left<=m.y/m.carac.climbSpeed*1.25+12) return back('fin de session');
+  if(!muleFits(G,m)) return back('pods pleins');   // sac plein (ou plus assez de place pour ce qu'il porte)
+  if(nearMule(G,m.x,m.y)){ m.status='Dépose dans le sac'; startAction(m,'muleDeposit',MULE.depositTime,{}); return; }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>nearMule(G,x,y),Infinity,1), s=r && firstStep(r,r.n);
+  if(!s || !(s.dx||s.dy)) return back('pods pleins');
+  m.status='Va au sac';
+  if(stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge})) return;
+  idle(m,0.3);
+}
+
+/* treuil posé : il pose son sac sur la case m.muleJob, à côté du bas du treuil (il la mine si besoin) */
+function decideMulePlace(G,m){
+  const s=m.muleJob;
+  const drop = why => { if(why) log(G, `🎒 ${m.name} ne peut pas poser son sac (${why})`); m.muleJob=null; return decideWork(G,m); };
+  if(!G.mule || G.mule.placed || G.mule.carrier!==m.id) return drop(null);
+  const d=Math.abs(s.x-m.x)+Math.abs(s.y-m.y);
+  if(d<=1 && isAir(G,s.x,s.y)){ m.status='Pose son sac'; startAction(m,'mulePlace',MULE.pickTime,{x:s.x,y:s.y}); return; }
+  if(d===1){ m.status='Fait la place du sac'; if(stepDir(G,m,s.x-m.x,s.y-m.y,{noBridge:true})) return; return drop('bloc incassable'); }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-s.x)+Math.abs(y-s.y)===1,Infinity,1), st=r && firstStep(r,r.n);
+  if(!st || !(st.dx||st.dy)) return drop('case inatteignable');
+  m.status='Va poser son sac';
+  if(stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})) return;
+  idle(m,0.3);
+}
+
 export function decide(G,m){
   m.helping=false;   // skill braum : remis à vrai par une aide (helpAlly, trapGoal, dungeonGoal) ou le combat qui suit
   // gravité : sans appui, il tombe d'une case. Au début de la chute, on note d'où il part et s'il connaissait le trou.
@@ -515,11 +676,17 @@ export function decide(G,m){
     if(helpAlly(G,m)) return;
   }
   /* chantier du treuil : il arrête ce qu'il fait et remonte (le chantier commence toujours d'en haut) */
-  if(m.winchJob && (m.mode==='work' || m.mode==='departure')){
-    if(m.y>0){ m.mode='return'; m.reason='treuil'; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : treuil à installer`); }
+  if(m.winchJob && (m.mode==='work' || m.mode==='departure' || m.mode==='mule')){
+    if(m.y>0){ m.mode='return'; m.reason='treuil'; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : treuil à installer`);
+      /* Mule : il repasse par son sac (pour le vider au coffre) s'il est sur son chemin ; sinon il le reprendra en
+         redescendant par le puits */
+      m.muleFetch = isCarrier(G,m) && mulePlaced(G) && G.mule.y<=m.y+MULE.pickBelow; }
     else m.mode='winch';
   }
   if(m.mode==='winch')     return decideWinch(G,m);
+  if(m.mode==='mule')      return decideMule(G,m);
+  if(m.mode==='fetch')     return decideFetch(G,m);
+  if(m.muleJob && m.mode==='work' && m.y>0) return decideMulePlace(G,m);
   if(m.mode==='surface')   return decideSurface(G,m);
   if(m.mode==='departure') return decideDeparture(G,m);
   if(m.mode==='return')    return decideReturn(G,m);

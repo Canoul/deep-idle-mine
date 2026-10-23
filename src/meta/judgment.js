@@ -6,7 +6,10 @@
    - openUntil : heure (ms) de fermeture de la tour (0 = jamais ouverte) ; opening : numéro de la dernière ouverture ;
    - done : comptes qui ont déjà gagné un coffre pendant l'ouverture `opening` (une seule fois par ouverture).
    Jauge pleine et tour fermée → ouverture tout de suite pour JUDGMENT.openHours, jauge à 0 (surplus perdu). Pleine
-   pendant une ouverture : elle reste à cap et la tour rouvre dès la fin de l'ouverture en cours (refresh). */
+   pendant une ouverture : elle reste à cap et la tour rouvre dès la fin de l'ouverture en cours (refresh).
+   Une tour à la fois (23/10/2026, Geoffrey) : pendant qu'une tour est ouverte, la jauge de l'autre camp est en pause
+   (ses résidus versés ne comptent pas, elle n'ouvre pas même pleine) et les mines lancées pendant ce temps n'ont pas
+   de résidus (le serveur l'enregistre dans la session : residues:false). */
 import { JUDGMENT } from '../config.js';
 
 export const SIDES = Object.keys(JUDGMENT.sides);
@@ -37,13 +40,17 @@ export function sanitizeJudgment(raw){
 }
 
 export const isOpen = (j, side, now) => now < j[side].openUntil;
+/* une des deux tours est-elle ouverte ? (23/10 : plus de résidus dans les mines lancées pendant une ouverture) */
+export const anyOpen = (j, now) => SIDES.some(s => isOpen(j, s, now));
+/* la jauge de ce camp est en pause : l'AUTRE tour est ouverte (23/10, Geoffrey) */
+export const paused = (j, side, now) => SIDES.some(s => s !== side && isOpen(j, s, now));
 
 /* ouvre les tours dont la jauge est pleine et qui sont fermées ; true si quelque chose a changé */
 export function refresh(j, now){
   let changed = false;
   for(const s of SIDES){
     const g = j[s];
-    if(g.count >= JUDGMENT.cap && !isOpen(j, s, now)){
+    if(g.count >= JUDGMENT.cap && !isOpen(j, s, now) && !paused(j, s, now)){   // une tour à la fois (23/10)
       g.count = 0; g.opening++; g.openUntil = now + OPEN_MS;
       j.done[s] = { opening: g.opening, accounts: [] };
       changed = true;
@@ -57,7 +64,7 @@ export function addResidues(j, bag, now){
   let changed = false;
   for(const s of SIDES){
     const n = bag?.[JUDGMENT.sides[s].item];
-    if(!Number.isSafeInteger(n) || n <= 0) continue;
+    if(!Number.isSafeInteger(n) || n <= 0 || paused(j, s, now)) continue;   // l'autre tour est ouverte : ignorés
     const g = j[s], before = g.count;
     g.count = Math.min(JUDGMENT.cap, g.count + n);
     if(g.count !== before) changed = true;
@@ -78,6 +85,6 @@ export function markDone(j, side, account){
 export function publicJudgment(j, now, account){
   const sides = {};
   for(const s of SIDES) sides[s] = { count: j[s].count, cap: JUDGMENT.cap, open: isOpen(j, s, now), openUntil: j[s].openUntil,
-                                     done: !!account && hasDone(j, s, account) };
-  return { sides, now };
+                                     done: !!account && hasDone(j, s, account), paused: paused(j, s, now) };
+  return { sides, now, residues: !anyOpen(j, now) };
 }

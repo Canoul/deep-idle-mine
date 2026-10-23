@@ -4,7 +4,8 @@
    État d'un joueur : { tree: null | id d'arbre, ranks: { id de nœud: rang }, ops:[opId…] }.
    - points disponibles = points de skill du niveau (levelOf) − rangs dépensés ;
    - le premier point dépensé choisit l'arbre ; les autres arbres sont bloqués jusqu'au reset ;
-   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max ;
+   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max (tous, si le
+     nœud a needsAll : Navette exige Échelle de 2 et Treuil) ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
 import { SKILLS, STUFF } from '../config.js';
 
@@ -26,7 +27,8 @@ export function blockedReason(st, id, points){
   if(st.tree && st.tree !== n.tree) return 'other_tree';
   if(rankOf(st, id) >= n.max) return 'maxed';
   const parents = parentsOf(id);
-  if(parents.length && !parents.some(p => rankOf(st, p.id) >= p.max)) return 'needs_previous';
+  const maxed = p => rankOf(st, p.id) >= p.max;
+  if(parents.length && !(n.needsAll ? parents.every(maxed) : parents.some(maxed))) return 'needs_previous';
   if(spentPoints(st) >= points) return 'no_points';
   return null;
 }
@@ -88,6 +90,14 @@ export function withSkillStats(carac, effects){
   return out;
 }
 
+/* dégâts de zone (Force brute, 23/10) : part de chaque coup infligée aussi aux mobs à 1 case de la cible
+   (rang × aoe du nœud) ; 0 sans le skill. effects = skillEffects (m.skill en partie). */
+export function aoeOf(effects){
+  let x = 0;
+  for(const n of Object.values(NODES)) if(n.aoe) x += rankFrom(n, effects) * n.aoe;
+  return Math.round(x * 1e6) / 1e6;
+}
+
 /* rangs seuls (ce qu'on fige dans l'enregistrement d'une session) */
 export const skillRanks = st => ({ tree:st.tree, ranks:{ ...st.ranks } });
 
@@ -102,5 +112,6 @@ export function nodeText(id, r){
   let text = n.desc.replace('{v}', n.per === 1 ? '' : `${String(Math.round(v * 1000) / 10).replace('.', ',')} %`);
   for(const [stat, p] of Object.entries(n.adds || {}))
     text = text.replace(`{${stat}}`, `${String(Math.max(1, r) * p).replace('.', ',')}${STUFF.statUnits?.[stat] ?? ''}`);
+  if(n.aoe) text = text.replace('{aoe}', `${String(Math.round(Math.max(1, r) * n.aoe * 1000) / 10).replace('.', ',')} %`);
   return text;
 }

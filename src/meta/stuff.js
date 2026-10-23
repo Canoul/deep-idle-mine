@@ -8,7 +8,7 @@
 import { STUFF, ITEMS, STATS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
-import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* case où va un objet (null si ce n'est pas une pièce d'équipement) */
@@ -51,14 +51,15 @@ export function statLines(entry){
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
       `${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
-      `Rune · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
+      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
   ];
 }
 /* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur de la pièce qu'elle enchantera */
 export function runeLines(p){
   const label = k => STUFF.statLabels[k] ?? k;
+  const f = runeFactor(p);
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-    : `${label(l.stat)} : ${num(l.pct)} % de la valeur de la pièce`);
+    : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % de la valeur de la pièce`);
 }
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');

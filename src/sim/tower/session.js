@@ -10,6 +10,7 @@
    Pas de butin dans la partie : le serveur donne les trésors à la fin (server/game/service.js). */
 import { TOWER, DT, STATS, BLOCKS, CFG } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
+import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -158,7 +159,16 @@ function hitMob(G, m, o){
   const dmg = hitDmg(G, m);
   o.hp = Math.max(0, o.hp - dmg); G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
   if(m.skill.taunt) o.taunt = m.id;
+  /* dégâts de zone (Force brute) : les mobs voisins de la cible prennent une part du coup */
+  const k = aoeOf(m.skill);
+  if(k > 0) for(const q of G.mobs) if(q !== o && q.hp > 0 && q.awake && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) <= 1){
+    q.hp = Math.max(0, q.hp - dmg * k); G.stats.dmg += dmg * k; m.stats.dmg += dmg * k;
+    if(q.hp <= 0) mobDied(G, m, q);
+  }
   if(o.hp > 0) return;
+  mobDied(G, m, o);
+}
+function mobDied(G, m, o){
   o.grab = null; G.stats.kills++; m.stats.kills++;
   const left = G.mobs.filter(q => q.floor === o.floor && q.hp > 0).length;
   log(G, left ? `⚔ ${m.name} abat un ${TOWER.sides[G.side].mob} (étage ${o.floor} : encore ${left})`

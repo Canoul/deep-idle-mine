@@ -100,7 +100,7 @@ export function genArea(G,k){
   for(const p of traps) carveTrap(p, (x, ry) => grid[ry*W+x], put, IDS[big]);
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
-  placeResidues(G.seed, k, grid, counts);
+  if(!G.noResidues) placeResidues(G.seed, k, grid, counts);   // pas de résidus si une tour était ouverte au lancement (23/10)
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -171,8 +171,9 @@ export function tryUnlock(G){
   genArea(G, G.unlockedAreas); G.unlockedAreas++;
   for(const m of G.miners){ m.exploring=false; m.skipRows.clear(); }
   log(G, `🔓 Area ${k+1} débloquée !`);
-  /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle area */
-  const lg=G.miners.find(m=>m.skill?.winch);
+  /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle
+     area ; de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
+  const lg=G.miners.find(m=>m.skill?.winch && G.mule?.carrier===m.id) ?? G.miners.find(m=>m.skill?.winch && m.skill?.mule) ?? G.miners.find(m=>m.skill?.winch);
   if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
   return true;
 }
