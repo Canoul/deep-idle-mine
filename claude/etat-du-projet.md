@@ -138,7 +138,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   désinscrit plus ; après la MI, aucune session) ; ancien : inscription à toute heure, refusée en session)
   (`INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
-  (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 39 % or, 1 % tas de
+  (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 33 % or, 5 % graphite,
+  1 % diamant depuis le 23/10 ; ancien : 39 % or, ni graphite ni diamant ; 1 % tas de
   **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
   IA à part (`src/sim/instant/`) : aucun minerai prioritaire, évite les autres mineurs, change de zone après 3 blocs
   perdus, va chercher un tas de plumes à 3 pas ou moins. **Gravité et échelles** depuis le 22/10 (ancien : il
