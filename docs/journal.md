@@ -32,7 +32,9 @@ Modèle d'entrée :
 - **Décisions** : arrondis à l'entier (46, 40, 13) ; oxygène du Plastron de l'équilibre +20 ; noms « … en acier ».
 - **À suivre** : pas de tier 3 dans la Table de recherche (un blueprint T3 recyclé rend 30 à 60 parts, comme le
   tier 1) ; coût en Shiny et en Diamant à surveiller ; les résidus du plastron ne remplissent pas les jauges du Jugement.
-- **État** : 🧪 sur la branche `geoffrey/stuff-acier` (pas en ligne)
+- **Wiki** : mention du T3 dans les areas et les treasures (le reste se met à jour tout seul depuis la config) ;
+  section Mine instantanée corrigée (inscriptions dans les 30 dernières minutes, possibles en session).
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Tours : étages en serpentin, Séraphins et Diablotins, boss qui bouge
 - **Pour le joueur** : la tour du Jugement est refaite. 20 de large, **7 étages** séparés par des planchers
