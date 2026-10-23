@@ -797,7 +797,7 @@ export const TOWER = {
      base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
      vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). */
-  boss: { hp: 2000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, speedMul: 2 },
+  boss: { hp: 5000, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, speedMul: 2 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },

@@ -43,7 +43,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     indestructibles percés d'une porte de 3 cases au bord, alternée gauche / droite (**serpentin**) ; étage 0 vide, puis
     en alternance (tirée par la seed) **plein de stonebrick** (6 s) ou **5 Séraphins / Diablotins** (200 PV, taclent,
     porte du plafond scellée tant qu'il en reste) ; découverte **étage par étage**, lumière et torches illimitées ;
-    boss **2000 PV** qui **marche** vers le plus proche quand personne n'est à son contact (2 × vitesse de base),
+    boss **5000 PV** (2000 le matin) qui **marche** vers le plus proche quand personne n'est à son contact (2 × vitesse de base),
     projection **20 %** (10 % barbare) de 6 cases, chute jusqu'en bas depuis le bord ; **le barbare se met du côté
     opposé** aux autres ; on passe derrière le boss (choix de Claude à valider). Mesures (20 tours, sans skills) : base
     **0 %**, 2 mineurs + 1 barbare à 1,1 / 10 **90 %**, 2 barbares 15 dégâts + mineur 1,3 **100 %** (victoire vers

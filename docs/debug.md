@@ -1904,4 +1904,5 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : les seeds changent peu le résultat (tour symétrique, seuls le côté des portes et l'ordre
   blocs/mobs varient). Dans un étage de blocs, le 2e mineur creuse souvent la ligne du dessus en posant une échelle à
   chaque case (pénalité `taken`) : du temps perdu, mais pas de blocage.
-
+- **Boss 5 000 PV** (`TOWER.boss.hp`, 23/10 11 h) : b 0/20 (reste 1 620 PV en moyenne), c 0/20 (1 267). Test « compo
+  forte » changé : toit atteint et boss entamé (plus de victoire attendue). ✅ tower 10/10.

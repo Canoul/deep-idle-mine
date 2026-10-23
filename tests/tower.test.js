@@ -77,8 +77,8 @@ test('mobs : la porte du plafond reste scellée tant qu\'il en reste un ; ils ta
   assert.equal(mobDist({ x: 5, y: 10 }, { x: 6, y: 9 }), 1);
 });
 
-test('boss : 2000 PV ; projection 20 % (10 % barbare) ; il marche vers le plus proche quand personne n\'est à son contact', () => {
-  assert.equal(TOWER.boss.hp, 2000); assert.equal(TOWER.boss.knockChance, 0.2); assert.equal(TOWER.boss.knockBarb, 0.1);
+test('boss : 5000 PV ; projection 20 % (10 % barbare) ; il marche vers le plus proche quand personne n\'est à son contact', () => {
+  assert.equal(TOWER.boss.hp, 5000); assert.equal(TOWER.boss.knockChance, 0.2); assert.equal(TOWER.boss.knockBarb, 0.1);
   const G = newTower(5, { side: 'angel', miners: team(2) });
   for(const o of G.mobs) o.hp = 0;
   const [a, b] = G.miners, y = G.roof - 1;
@@ -127,13 +127,14 @@ test('lumière : il pose des torches dans le noir (illimitées)', () => {
   assert.ok(G.light.size > 0);
 });
 
-test('compo forte (2 barbares 15 dégâts + mineur 1,3) : victoire sur 5 seeds ; stuff de base : échec', () => {
+test('compo forte (2 barbares 15 dégâts + mineur 1,3) : toit atteint et boss entamé sur 5 seeds, sans blocage ; stuff de base : échec', () => {
   const strong = [{ name: 'B1', account: 'B1', skillTree: 'barbare', carac: { damage: 15 } },
                   { name: 'B2', account: 'B2', skillTree: 'barbare', carac: { damage: 15 } },
                   { name: 'M', account: 'M', carac: { mineSpeed: 1.3 } }];
   for(const seed of [11, 12, 13, 14, 15]){
     const G = runTower(seed, { side: seed % 2 ? 'angel' : 'demon', miners: strong });
-    assert.equal(G.summary.success, true, `seed ${seed} : boss à ${G.summary.bossHp} PV, étage ${G.summary.floor}`);
+    assert.equal(G.summary.floor, TOWER.floors, `seed ${seed} : toit atteint (étage ${G.summary.floor})`);
+    assert.ok(G.summary.bossHp < TOWER.boss.hp * 0.8, `seed ${seed} : boss entamé (${G.summary.bossHp} PV)`);
     assert.equal(G.stats.blocked, 0, 'jamais bloqué');
     assert.equal(G.summary.kills, G.mobs.length, 'tous les mobs tués');
   }

@@ -32,6 +32,9 @@ Modèle d'entrée :
 - **Mesures** (20 tours par compo, sans skills) : 3 mineurs de base **0 %** ; 2 mineurs + 1 barbare à 1,1 / 10
   **90 %** ; 2 barbares à 15 dégâts + 1 mineur à 1,3 **100 %**. Victoires vers 9 min 15-9 min 20 sur 10 : peu de marge.
   Nouveau : `npm run simulate:tower`.
+- **Boss à 5 000 PV** (demande de Geoffrey, 11 h) : b et c **0/20** (arrivée sur le toit vers 8 min 15 : il reste
+  ~100 s, les deux compos font au mieux 3 750 et 4 400 dégâts). À trancher : durée à 12-13 min, briques plus rapides,
+  ou 5 000 PV visés pour un stuff plus fort.
 - **À suivre** : regarder la tour dans le navigateur (mobs, lumière, caméra) ; ajuster ensemble les chiffres.
 - **État** : 🧪 sur la branche `geoffrey/tour-serpentin` (pas en ligne)
 
