@@ -113,8 +113,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE` en config, `src/sim/mule.js`) : Logisticien étage 4,
   sac posé à côté du bas du treuil (2 × pods des logisticiens avec Mule), les mineurs aux pods pleins y déposent s'il
   est plus près que la surface, vidé au coffre seulement à la prolongation et en fin de session (décision Geoffrey).
-  **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3) : 0 blocage, 0 perdu, mais coffre
-  **−3 %** (le logisticien mine 9 % de moins) : décision en attente.
+  **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3) : 0 blocage, 0 perdu, le sac coûte
+  1,5 min par partie au logisticien, effet sur le coffre non mesurable (hasard ±15 %) : décision en attente (vider à
+  chaque remontée ?). Le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil (avec ou sans Mule).
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;

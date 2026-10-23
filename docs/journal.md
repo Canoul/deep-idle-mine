@@ -48,10 +48,12 @@ Modèle d'entrée :
   Choix de Claude à valider : case de gauche si la droite est incassable ; chaque objet compte pour celui qui l'a
   déposé ; en fin de session, le logisticien passe par le sac lors de sa dernière remontée qui le permet.
 - **Repères** (simulation, 10 parties à 3, un arbre complet chacun) : ≈ 2,7 dépôts et 500 pods par partie passent
-  par le sac, 0 sac perdu, 0 blocage. **Mais le coffre baisse de 3 %** (3 946 contre 4 074 pods sans Mule) : le
-  logisticien mine 9 % de moins (détours pour reprendre et poser le sac), et le sac, plein après une vague de
-  dépôts, attend longtemps la prolongation suivante.
-- **À décider** : garder tel quel, vider le sac à chaque remontée du logisticien, ou augmenter la capacité.
+  par le sac, 0 sac perdu, 0 blocage. Le sac coûte **1,5 min par partie** au logisticien (poser, ramasser). Coffre
+  3 946 pods contre 4 074 sans Mule : écart dans le hasard (±15 % d'une partie à l'autre, Mule gagne 3 paires sur
+  10) ; **pas d'effet mesurable** sur 10 parties. Le sac, plein après une vague de dépôts, attend la prolongation
+  suivante : il rapporte peu.
+- **À savoir** : sans lien avec Mule, le logisticien passe ≈ 24 min sur 60 dans le chantier du treuil.
+- **À décider** : garder tel quel, ou vider le sac à chaque remontée du logisticien (recommandé par Claude).
 - **État** : 🔧 branche `geoffrey/mule`, pas en ligne
 
 ---
