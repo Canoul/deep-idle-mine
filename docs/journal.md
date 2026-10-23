@@ -31,7 +31,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : les 4 points ci-dessus. Choix de Claude à valider : le temps d'un ami est le temps
   **restant** (pas le temps écoulé) ; un groupe de 2 en recherche compte pour 2 joueurs.
 - **À suivre** : regarder le socle, le compteur et la ligne Social dans le navigateur.
-- **État** : 🧪 sur la branche `geoffrey/retours-23-10` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Lobby : « Prêt tout le temps »
 - **Pour le joueur** : dans un groupe, un membre peut cocher **« Prêt tout le temps »** (à côté du bouton Prêt). Il

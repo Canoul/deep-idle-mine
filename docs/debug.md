@@ -1882,7 +1882,7 @@ Règles (voir CLAUDE.md) :
   le chef peut le lancer dans une session ; le partage anti-boosting et le retrait au bout de `memberTimeout` restent
   les garde-fous.
 
-### Retours du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10`, 🧪 pas en ligne
+### Retours du 23/10 (Geoffrey) — branche `geoffrey/retours-23-10`, ✅ en ligne le 23/10
 - **Socle du coffre** : bloc 18 `CHEST_BASE` (`special`, `unbreakable`, `noDrop`, tex `chest_base` générée par
   `gen_textures.py`), posé en `G.tiles[1][CHEST_X]` dans `newSession` (`src/sim/session.js`). Le coffre (`CHEST_X` = 22)
   n'est pas au milieu (`WINCH.x` = 25) : pas déplacé. Tests : blocks (posé, toujours là après 1 h), world (couche 1 =
