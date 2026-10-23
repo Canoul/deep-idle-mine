@@ -51,11 +51,11 @@ export const travelling = m => m.mode==='return' || m.mode==='surface' || m.mode
 export const helpBoost = m => m.helping ? m.skill.braum : 0;
 export const walkBoost = (G,m) => 1 + (G.t < m.rushUntil ? m.skill.ore_rush : 0) + (travelling(m) ? m.skill.travel_rush : 0) + helpBoost(m);
 export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
-/* temps d'une construction (échelle, passerelle, torche), réduit par le skill build_time */
-export const buildT = (m,t) => t*(1-m.skill.build_time);
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m)));
-/* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens) */
-export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*dk(G,m)*(1+helpBoost(m)));
+/* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens), × l'Escalateur
+   du groupe (winchMult) */
+export const winchMult = G => 1 + (G.winchBoost || 0);
+export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m)));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
 export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m));
@@ -66,10 +66,10 @@ export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5)
    de la case où se trouve le mineur, sinon le meilleur chemin change d'une case à l'autre (va-et-vient). */
 export const baseMoveT  = m => 1/m.carac.speed;
 export const baseClimbT = m => 1/m.carac.climbSpeed;
-export const baseWinchT = m => 1/(m.carac.climbSpeed*WINCH.speedFactor);
-/* temps de PLANIFICATION d'une nouvelle échelle : skill build_time, et une sur deux est déjà posée avec l'échelle de 2
+export const baseWinchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G));
+/* temps de PLANIFICATION d'une nouvelle échelle : une sur deux est déjà posée avec l'échelle de 2
    de haut (tall_ladder : en moyenne moitié moins d'échelles à poser pour monter) */
-export const baseLadderT = m => CFG.ladderTime*(1-m.skill.build_time)*(m.skill.tall_ladder ? 0.5 : 1);
+export const baseLadderT = m => CFG.ladderTime*(m.skill.tall_ladder ? 0.5 : 1);
 export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 
 /* ---- actions ---- */

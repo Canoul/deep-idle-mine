@@ -4,7 +4,7 @@ import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKI
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, buildT, baseMoveT, baseWinchT } from './mineur.js';
+import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -277,7 +277,7 @@ function decideWork(G,m){
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
-    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',CFG.torchTime,{}); return; }
   }
   if(trapGoal(G,m)) return;
   if(dungeonGoal(G,m)) return;
@@ -493,7 +493,7 @@ function decideWinch(G,m){
       m.muleJob=muleAfterWinch(G,m);   // Mule : il pose son sac à côté du bas du treuil (null : pas de sac à poser)
       return m.muleJob ? decideMulePlace(G,m) : decideWork(G,m);
     }
-    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',buildT(m,CFG.torchTime),{}); return; }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',CFG.torchTime,{}); return; }
     m.status='Creuse le puits du treuil';
   }
   if(stepDir(G,m,0,1)) return;
@@ -516,6 +516,9 @@ function helpAlly(G,m){
   if(!best) return false;
   const who=(G.miners.find(a=>a.id===best.chase)?.name ?? 'un allié')+' ('+best.type+')';
   m.helping=true; m.helpFoe=best.id;
+  /* il lâche sa cible et sa galerie : le mob mort, il choisit son travail là où il est, au lieu de retraverser la mine
+     pour reprendre l'ancien (23/10/2026, Geoffrey) */
+  m.target=null; m.galleryRow=null;
   return goFight(G,m,best,bd,'Aide '+who,'Va aider '+who);
 }
 
@@ -572,10 +575,10 @@ function planPickup(G,m){
   if(left>=via && left<via+fetchFromTop(G,m)+CFG.endStayMin) m.pickPlan=m.returnStart;
 }
 /* temps estimé (avec la marge de 1,25 du retour) pour aller du sac au coffre : par le seau, puis à pied */
-const muleToChestT = (G,m) => (G.mule.y*baseWinchT(m) + Math.abs(G.mule.x-CHEST_X)*baseMoveT(m))*1.25;
+const muleToChestT = (G,m) => (G.mule.y*baseWinchT(G,m) + Math.abs(G.mule.x-CHEST_X)*baseMoveT(m))*1.25;
 /* temps estimé d'un retour qui passe par le sac : jusqu'au sac (par le puits), le ramasser, puis jusqu'au coffre.
    Une estimation (pas de recherche d'itinéraire) : elle est calculée à chaque décision. */
-const muleEstT = (G,m) => (Math.abs(m.y-G.mule.y)*baseWinchT(m) + Math.abs(m.x-G.mule.x)*baseMoveT(m))*1.25 + MULE.pickTime + muleToChestT(G,m);
+const muleEstT = (G,m) => (Math.abs(m.y-G.mule.y)*baseWinchT(G,m) + Math.abs(m.x-G.mule.x)*baseMoveT(m))*1.25 + MULE.pickTime + muleToChestT(G,m);
 /* depuis la surface : aller chercher le sac et revenir, avec une marge (fetchT : depuis là où il est ; fetchFromTop :
    depuis le coffre) */
 const fetchT = (G,m) => muleEstT(G,m) + 12;

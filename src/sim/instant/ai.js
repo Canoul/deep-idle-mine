@@ -16,8 +16,8 @@ export const miMoveT = (G,m) => 1/(m.carac.speed*(1 + (G.t < m.rushUntil ? (m.sk
 export const miMineT = (m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*(1 + (m.carac.mineSpeedPct||0)/100));
 export const miClimbT = m => 1/m.carac.climbSpeed;
 export const miFallT = () => 1/CFG.fallSpeed;
-/* pose d'une échelle (skill build_time) ; en planification, l'échelle de 2 (tall_ladder) en pose une sur deux */
-export const miLadderT = m => CFG.ladderTime*(1 - (m.skill.build_time||0));
+/* pose d'une échelle ; en planification, l'échelle de 2 (tall_ladder) en pose une sur deux */
+export const miLadderT = () => CFG.ladderTime;
 const planLadderT = m => miLadderT(m)*(m.skill.tall_ladder ? 0.5 : 1);
 
 const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];

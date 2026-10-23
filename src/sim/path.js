@@ -41,7 +41,7 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
   const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed, maxFall=CFG.maxFall,
         drop=(x,l,k=l.n)=>k*(ontoLadder(G,x,l.y) ? cl : fall),   // k cases de chute jusqu'à l (échelle à l'arrivée : vitesse d'échelle)
-        wt=baseWinchT(m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)
+        wt=baseWinchT(G,m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)
   /* bloc qu'on peut creuser : ni barrière, ni incassable, ni mimic dévoilé (un mimic se combat, il ne se mine pas) */
   const mim=G.mimicCells, brk=(x,y,t)=>t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x));
   const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(m,t); mineCache.set(t,v); } return v; };

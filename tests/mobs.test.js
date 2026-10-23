@@ -180,6 +180,24 @@ test('Aider allié : il part tout de suite vers le mob qui a pris un allié en c
     run(G, 20); assert.ok(!/aide/i.test(alice.status), `ignoré : elle n'y va pas (${alice.status})`); }
 });
 
+test('Aider allié : le mob mort, il reprend sur place au lieu de retourner à sa cible d\'avant (23/10, Geoffrey)', () => {
+  const G = worldFrom(['', 'd'.repeat(50), '#@' + ' '.repeat(40) + '#', '##c' + '#'.repeat(47), '#'.repeat(50)], { miners: 2 });
+  const [alice, bob] = G.miners;
+  alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;
+  alice.prefs = { ...alice.prefs, helpAllies: true, fightMobs: true }; alice.carac.light = 2;
+  alice.target = { x: 2, y: 3 };                                     // le charbon qu'elle allait miner, à 12 cases
+  alice.galleryRow = 2;
+  const b = mob(G, { type: 'bestiole', x: 31, y: bob.y, hp: 50, maxhp: 50 });
+  run(G, 40);
+  assert.match(alice.status, /aide/i);
+  assert.equal(alice.target, null, 'partir aider abandonne sa cible'); assert.equal(alice.galleryRow, null);
+  let t = 0; while(b.hp > 0 && t++ < 600) run(G, 1);
+  assert.ok(b.hp <= 0, 'le mob est mort');
+  let minX = alice.x;
+  for(let i = 0; i < 200; i++){ run(G, 1); minX = Math.min(minX, alice.x); }
+  assert.ok(minX > 20, `elle reste travailler près du combat (x min ${minX})`);
+});
+
 test('Braum : le barbare marche plus vite quand il va aider, puis plus quand il reprend son travail', () => {
   const G = corridor(2), [alice, bob] = G.miners;
   alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;

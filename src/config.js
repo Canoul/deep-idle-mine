@@ -381,8 +381,11 @@ export const SKILLS = {
   /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
      Un nœud de l'étage r > 1 exige qu'AU MOINS UN nœud de l'étage r−1 de son arbre soit au rang max (les lignes de
      l'arbre relient chaque nœud à ceux de l'étage d'avant). needsAll : il faut TOUS les nœuds de l'étage d'avant au
-     rang max (Navette, 23/10/2026, Geoffrey : Échelle de 2 ET Treuil, pour qu'un logisticien avec Mule ait toujours le
-     Treuil). name/icon : affichage de l'onglet Skills. */
+     rang max (Escalateur, 23/10/2026, Geoffrey : Échelle de 2 ET Treuil, pour qu'un logisticien avec Mule ait toujours le
+     Treuil). name/icon : affichage de l'onglet Skills.
+     Logisticien refait le 23/10/2026 au soir (Geoffrey) : Bâtisseur supprimé, Navette passe à l'étage 1 (max 3, avant
+     max 5 à l'étage 3), Escalateur à l'étage 3. Même coût total jusqu'à Mule (11 points) ; les points qui ne tiennent
+     plus dans le nouvel arbre sont rendus à la relecture (sanitizeSkills). */
   trees: [
     { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
       { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
@@ -392,10 +395,11 @@ export const SKILLS = {
       { id:'lazy_legend', row:4, max:1, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
-      { id:'build_time',  row:1, max:3, per:0.05, icon:'🔨', name:'Bâtisseur',       desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
+      { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
       { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
       { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
-      { id:'travel_rush', row:3, max:5, per:0.03, needsAll:true, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+      /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
+      { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[

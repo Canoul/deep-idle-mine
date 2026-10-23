@@ -18,6 +18,22 @@ Modèle d'entrée :
 
 ---
 
+## 23/10/2026 — Geoffrey — Retours du soir : aide sans retour, Logisticien refait, donjon révélé
+- **Pour le joueur** :
+  - **Aider allié** : après avoir aidé, le mineur se remet au travail là où il est, au lieu de retraverser la mine pour
+    retrouver le minerai ou la galerie qu'il avait avant.
+  - **Logisticien** : **Bâtisseur supprimé**. Étage 1 : **Navette** (max 3). Étage 3 : **Escalateur** (max 5), le seau du
+    treuil va +5 % par rang plus vite **pour tout le groupe** (deux logisticiens : le meilleur rang compte). Mule demande
+    Escalateur 5/5. Le chemin complet coûte toujours 11 points ; les logisticiens existants récupèrent les points qui ne
+    tiennent plus (Bâtisseur, Navette 4 et 5, Mule) et doivent les replacer.
+  - **Donjon** : dès qu'un mineur entre dedans, tout le donjon (murs, intérieur, minotaure) apparaît d'un coup.
+- **Décisions** (Geoffrey) : celles ci-dessus. Choix de Claude à valider : Escalateur ne se cumule pas entre
+  logisticiens (comme les anneaux).
+- **À suivre** : ⚠️ **équilibrage** : retirer Bâtisseur coûte cher (simulation, 5 parties à 3, un arbre par mineur au
+  max : areas 3,8 → 3,2, coffre −4 %) et Escalateur au max ne le rattrape presque pas. Le coffre « traversable » à la
+  surface n'est pas fait : je n'ai pas reproduit de blocage, exemple demandé.
+- **État** : 🧪 sur la branche `geoffrey/retours-23-10-soir` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Anneaux : 2 cases de stuff, effet pour tout le groupe
 - **Pour le joueur** : deux nouvelles cases **Anneau** dans l'onglet Stuff. Un anneau ne donne rien à son porteur seul :
   son effet va à **tout le groupe** de la session. Deux joueurs avec le même anneau = l'effet compte une fois ; on ne

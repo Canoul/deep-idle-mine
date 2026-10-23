@@ -2182,3 +2182,22 @@ Règles (voir CLAUDE.md) :
   profondeur 182,4 (aucun anneau en simulation : chemin inchangé).
 - **Points fragiles** : ⚠️ onglet Stuff à 12 cases et icônes pas regardés dans un navigateur. Les stats affichées dans
   l'onglet Stuff ne montrent que ses propres anneaux (ceux du groupe ne sont connus qu'au lancement).
+
+### Retours du 23/10 au soir : aide sans retour, Logisticien refait, donjon révélé (Geoffrey) — branche `geoffrey/retours-23-10-soir`, 🧪 pas en ligne
+- **Aide** : `helpAlly` (`src/sim/ai.js`) remet `m.target` et `m.galleryRow` à null au départ : l'engagement de
+  `decideWork` (cible gardée tant qu'elle existe) le renvoyait à son ancien minerai. `m.exploring` est gardé (levé au
+  déblocage) : il reprend la galerie la plus proche de là où il est. Test `tests/mobs.test.js` (échouait avant).
+- **Logisticien** : `build_time` supprimé de `SKILLS` et de tout le code (`buildT` retiré de `mineur.js`, `actions.js`,
+  `ai.js`, `tower/session.js` ; `miLadderT`, `baseLadderT` sans réduction) : sinon `m.skill.build_time` undefined →
+  NaN. `travel_rush` étage 1 max 3 ; `winch_speed` étage 3 (`needsAll`), per 0,05. `G.winchBoost` = max des
+  `skill.winch_speed` des mineurs au lancement (`newSession`) ; `winchMult(G)` dans `winchT` et `baseWinchT(G,m)`
+  (signature changée : `path.js`, `ai.js` Mule). Anciennes sauvegardes : `sanitizeSkills` rejoue étage par étage,
+  test « Logisticien refait » (11 points → 5 gardés, 6 rendus, rachat à 11). Icône `hourglass`.
+- **Donjon** : `updateDungeons` (`src/sim/dungeon.js`) : premier mineur dans `interior` → tout le carré `G.seen = 1`,
+  `d.revealed`. Avant le test `d.cleared` (vaut aussi après la mort du boss). Test `tests/dungeon.test.js`.
+- **Tests** : skills, mule, winch, mobs, trap, instant-mine, tower, team, miner, focus, wiki ✅ (171) ; dungeon ✅ (13).
+- **Simulation** `--miners 3 --count 5 --skills mixed` (mêmes seeds) : `main` areas 3,8, profondeur 207,8, coffre
+  4 531 ; **main sans Bâtisseur (per 0)** 3,0 / 198,0 / 4 356 ; **branche** 3,2 / 196,4 / 4 357 ; 0 blocage. La baisse
+  vient de Bâtisseur (−15 % sur échelles, passerelles, torches) ; Escalateur 5/5 (+25 % sur le seau) rattrape peu.
+- **Coffre traversable** : pas fait. `tiles[0]` est vide partout (le coffre n'est qu'un dessin) ; recherche de chemin
+  de x 40 à x 5 sur la surface ✅, mineur Rouge à x 8 sur 3 seeds ✅. En attente d'un exemple (seed, capture).
