@@ -8,11 +8,12 @@
      rune:{ q, lines, s } (frag:true pour un fragment). Une seule par pièce.
    - unenchant (23/10/2026) : retire la rune d'une pièce, gratuitement ; elle revient dans l'inventaire en Fragment de
      rune (même qualité, mêmes lignes, % ÷ 2 : RUNE.fragment). Un fragment posé ne se retire plus (définitif).
+   Les anneaux (RINGS) ne passent par aucune de ces étapes (erreur 'ring').
    Seulement des pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff).
    opId : une demande renvoyée (double clic, requête rejouée) retrouve son résultat, sans tirer ni consommer deux fois. */
 import { UPGRADE, RUNE } from '../config.js';
 import { countOf, removeItem, putPiece } from './inventory.js';
-import { rollIdentity, isIdentified, isStuff, isRune, isFragment, MAX_PLUS } from './piece.js';
+import { rollIdentity, isIdentified, isStuff, isRune, isRing, isFragment, MAX_PLUS } from './piece.js';
 
 const slotOfUid = (inv, uid) => Number.isSafeInteger(uid) ? inv.slots.findIndex(s => s && s.uid === uid) : -1;
 const remember = (inv, entry) => {
@@ -41,6 +42,7 @@ export function identifyError(inv, uid, sacrifice){
   if(uid === sacrifice) return 'same_piece';
   const p = inv.slots[i];
   if(!isStuff(p.item)) return 'not_stuff';
+  if(isRing(p.item)) return 'ring';
   if(isIdentified(p)) return 'already_identified';
   if(inv.slots[j].item !== p.item) return 'not_same_item';
   return null;
@@ -66,6 +68,7 @@ export function upgradeError(inv, uid){
   const p = slotOfUid(inv, uid) >= 0 ? pieceAt(inv, uid) : null;
   if(!p) return 'not_owned';
   if(!isStuff(p.item)) return 'not_stuff';
+  if(isRing(p.item)) return 'ring';
   if(!nextLevel(p)) return 'maxed';
   if(upgradeNeeds(inv, p).some(n => n.have < n.need)) return 'not_enough';
   return null;
@@ -92,6 +95,7 @@ export function enchantError(inv, uid, rune){
   const p = inv.slots[i], r = inv.slots[j];
   if(!isStuff(p.item)) return 'not_stuff';
   if(!isRune(r.item)) return 'not_rune';
+  if(isRing(p.item)) return 'ring';
   if(p.rune) return 'already_enchanted';
   /* rareté (22/10/2026) : une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne (R6 → rune R1 à R6).
      Une pièce non identifiée n'a pas de qualité : elle doit d'abord être identifiée. */

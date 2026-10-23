@@ -29,7 +29,8 @@ export function renderSlots(el, worn, tag = 'button'){
 }
 
 /* stats du mineur : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu) ;
-   un skill qui ajoute des points (ténacité) s'affiche « +5 % » en bleu */
+   un skill qui ajoute des points (ténacité) s'affiche « +5 % » en bleu ; l'effet des anneaux portés en violet
+   (en session, ceux du reste du groupe s'y ajoutent) */
 export function statsHTML(worn, effects){
   const fr = v => String(v).replace('.', ',');
   const rows = minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
@@ -39,6 +40,7 @@ export function statsHTML(worn, effects){
       (s.mult === 1 && s.skill ? ` <span class="skillStats" title="skills">+${fr(s.skill)}${u}</span>` : '')+
       (s.mult !== 1 ? `${s.bonus ? ')' : ''} <span class="skillStats" title="skills : multiplicateur">×${fr(s.mult)}</span>` : '')+
       `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
+    (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${fr(s.ring)}${u}</small>` : '')+
     `</span></div>`); }).join('');
   /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
   const extra = behaviourSkills(effects);

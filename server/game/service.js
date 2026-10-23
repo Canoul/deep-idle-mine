@@ -59,7 +59,7 @@ const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: '
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
 const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
-                       wrong_slot: 'Cette pièce ne va pas dans cette case.' };
+                       wrong_slot: 'Cette pièce ne va pas dans cette case.', same_ring: 'Tu portes déjà cet anneau.' };
 const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire (retire-la d\'abord si elle est équipée).',
                          same_piece: 'Il faut un deuxième exemplaire à sacrifier.', already_identified: 'Cette pièce est déjà identifiée.',
                          not_same_item: 'Le sacrifice doit être le même objet.', maxed: 'Cette pièce est déjà au niveau maximum.',
@@ -68,7 +68,8 @@ const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire
                          not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.',
                          not_identified: 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.',
                          rune_too_rare: 'Cette rune est de qualité trop élevée pour cette pièce (au plus la même qualité).',
-                         no_rune: 'Cette pièce ne porte pas de rune.', fragment_locked: 'Un fragment de rune posé ne se retire plus.' };
+                         no_rune: 'Cette pièce ne porte pas de rune.', fragment_locked: 'Un fragment de rune posé ne se retire plus.',
+                         ring: 'Un anneau ne s\'identifie, ne s\'améliore et ne s\'enchante pas.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',

@@ -9,6 +9,28 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+---
+
+## 23/10/2026 — Geoffrey — Anneaux : 2 cases de stuff, effet pour tout le groupe
+- **Pour le joueur** : deux nouvelles cases **Anneau** dans l'onglet Stuff. Un anneau ne donne rien à son porteur seul :
+  son effet va à **tout le groupe** de la session. Deux joueurs avec le même anneau = l'effet compte une fois ; on ne
+  peut pas porter deux fois le même anneau. 8 anneaux : tigre (vitesse +3 %), lion (dégâts +3 %), rat (minage +3 %),
+  baleine (oxygène +3 %), cuck (pods +3 %), nerd (XP +3 %), Midas (fortune +2 %, épique), Bouffon (butin +2 %, épique).
+  On les trouve **en ouvrant un Trésor** de l'Ange ou du Démon (en plus de la rune) : ≈ 6,5 % par trésor, Midas
+  seulement chez l'Ange, Bouffon chez le Démon. Pas de craft, pas d'identification, d'amélioration ni d'enchantement.
+- **Décisions** (Geoffrey) : amélioration +1 à +3 interdite aussi ; « +3 % » = ×1,03 sur le total (stuff et skills
+  compris) ; en mine instantanée, l'anneau ne sert qu'à son porteur ; l'anneau tombe à l'ouverture du trésor, pas à la
+  victoire. Choix de Claude à valider : **un seul tirage par trésor** (jamais deux anneaux d'un coup).
+- **À suivre** : regarder l'onglet Stuff (12 cases) et les icônes des anneaux dans le navigateur.
+- **État** : 🧪 sur la branche `geoffrey/anneaux` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Petites corrections : canards en fin de partie, treasure oublié
 - **Pour le joueur** : en fin de session, au lieu d'attendre au coffre sans rien faire, les mineurs vont tuer les
   Gallianix (canards) de la surface, s'ils ont le temps de revenir au coffre ensuite (le Fragment de cœur n'est pas
@@ -93,13 +115,6 @@ Modèle d'entrée :
 - **À suivre** : deux fois moins de résidus rapportés → les jauges (cap 250) mettront environ deux fois plus de temps à
   se remplir.
 - **État** : ✅ en ligne le 23/10
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 23/10/2026 — Geoffrey — Skill Mule (Logisticien, étage 4)
 - **Pour le joueur** : nouveau skill **Mule** (0/1) au 4e étage du Logisticien. Quand il pose le treuil, le

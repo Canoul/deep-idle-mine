@@ -1,11 +1,12 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
 import { dropOdds } from '../meta/crusher.js';
+import { ringLines } from '../meta/stuff.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
@@ -78,6 +79,7 @@ const unit = k => STUFF.statUnits?.[k] ?? '';
 export function statsOf(item){
   const d = ITEMS[item];
   if(!d || d.cat !== 'stuff') return [];
+  if(Object.hasOwn(RINGS.items, item)) return ringLines(item);
   return [
     ...Object.entries(d.set || {}).map(([k, v]) => `${statName(k)} ${fmt(v)}${unit(k)}`),
     ...Object.entries(d.stats || {}).map(([k, v]) => `${statName(k)} +${fmt(v)}${unit(k)}`),
@@ -104,6 +106,8 @@ export function sourcesOf(item){
   const chest = ITEMS[item]?.chest;
   if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
+  for(const [side, list] of Object.entries(RINGS.drops)) for(const r of list) if(r.item === item)
+    out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
   if(item === DUCK.heart.item) out.push(`Butin du ${DUCK.name} (canard de la surface) : ${fmt(pct(DUCK.heart.chance))} % de chance, dans le coffre commun`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
@@ -122,7 +126,10 @@ export function sourcesOf(item){
 /* à quoi sert un objet : liste de textes courts */
 export function usesOf(item){
   const d = ITEMS[item], out = [];
-  if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
+  if(d?.cat === 'stuff' && Object.hasOwn(RINGS.items, item))
+    out.push('S\'équipe dans une des 2 cases d\'anneau (jamais deux fois le même)', 'Son effet va à tout le groupe de la session, une seule fois même si plusieurs joueurs le portent ; en mine instantanée, à son porteur seulement',
+             'Ne s\'identifie pas, ne s\'améliore pas, ne s\'enchante pas');
+  else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
   if(d?.cat === 'treasure') out.push(d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');

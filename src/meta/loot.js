@@ -1,7 +1,7 @@
 /* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
-   pure (le hasard est passé en paramètre).
+   pure (le hasard est passé en paramètre). Un trésor de tour (RUNE.treasures) peut aussi donner un anneau (RINGS.drops).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT, ITEMS, RUNE } from '../config.js';
+import { LOOT, ITEMS, RUNE, RINGS } from '../config.js';
 import { removeItem, addAll, addItem, OPEN_MEMORY } from './inventory.js';
 import { rollRune } from './piece.js';
 
@@ -39,6 +39,11 @@ export function openTreasure(inv, item, opId, rng){
     const [i] = addItem(inv, RUNE.item, 1);
     Object.assign(inv.slots[i], rollRune(chest.q, rng));
     loot = { [RUNE.item]: 1 };
+    if(ITEMS[item].treasure){                // trésor de tour : au plus un anneau, tirage unique (RINGS.drops)
+      const ring = rollLoot({ always:[], oneOf:[{ items: RINGS.drops[chest.side] ?? [] }] }, rng);
+      addAll(inv, ring);
+      Object.assign(loot, ring);
+    }
   } else {
     loot = rollLoot(LOOT[item], rng);
     addAll(inv, loot);

@@ -6,7 +6,7 @@ import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js'
 import { canOpen } from '../meta/loot.js';
 import { unlockOf, unlockError } from '../meta/furnace.js';
 import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
-import { statsText, slotOf } from '../meta/stuff.js';
+import { statsText, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname } from './rarity.js';
@@ -51,9 +51,10 @@ function blueprintHtml(inv, s){
   return ` <button class="on invLearn" data-item="${esc(s.item)}" title="Le blueprint est consommé, la recette reste débloquée pour toujours">Utiliser</button>`;
 }
 
-/* pièce de stuff : bouton « Équiper » (dans sa case ; la pièce qui y est revient dans l'inventaire) */
+/* pièce de stuff : bouton « Équiper » (dans sa case ; la pièce qui y est revient dans l'inventaire). Un anneau va dans
+   la case qui porte déjà le même anneau, sinon dans une case vide (src/meta/stuff.js equipSlotFor) */
 export function equipHtml(s, worn){
-  const slot = slotOf(s.item);
+  const slot = equipSlotFor(s.item, worn ?? {});
   if(!slot || s.uid == null) return '';
   const label = STUFF.slots.find(x => x.id === slot)?.label ?? slot, cur = worn?.[slot]?.item;
   return ` <button class="on invEquip" data-uid="${s.uid}" data-slot="${slot}">Équiper</button>`+
