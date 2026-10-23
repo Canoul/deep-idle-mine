@@ -17,6 +17,7 @@ Modèle d'entrée :
 - **Ampleur** (simulation, 8 seeds × 1 et 3 logisticiens) : avant, jusqu'à **1 755 remontées** dans une session et, sur
   une seed, le treuil n'était **jamais posé** ; après, **1 à 4** remontées par session (les vrais retours : pods,
   oxygène), treuil posé et prolongé partout. Ce n'était pas le socle du coffre.
+  Des logisticiens à 3 descendent en moyenne de 190 à 199 couches.
 - **À suivre** : la simulation montre aussi des combats contre le Gallianix qui durent 30 s ou plus près de la surface
   (le mineur attend beaucoup) : à regarder à part.
 - **État** : 🧪 sur la branche `geoffrey/fix-treuil-boucle` (pas en ligne)

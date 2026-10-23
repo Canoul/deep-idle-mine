@@ -2025,6 +2025,8 @@ Règles (voir CLAUDE.md) :
   correction), session, fall, skills, dungeon, mobs, trap, team.
 - **Mesure** (script de comptage des passages en « Retour (treuil) », 8 seeds × 1 et 3 logisticiens complets) : avant
   1 à 1 755 par mineur (12 cas sur 16 > 100) ; après 1 à 4, treuil posé partout (52 à 204).
+- **Simulation `--skills logisticien`** (5 seeds) : à 3, areas 3,2 → **3,6**, profondeur 190,2 → **199,2** ; seul,
+  1,4 → 1,6 et 97 → 107 ; 0 blocage (avant = première correction seule). Tests liés ✅ 102/102.
 - **Simulation sans skills** : 182,4 de profondeur à 3 (192,2 ce matin) : écart venu de `main` (Gallianix, fusionné
   entre-temps), la correction ne touche que le chantier du treuil.
 - **Points fragiles** : la colonne du treuil « déjà vide » peut traverser une poche d'air naturelle : il peut alors
