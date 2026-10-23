@@ -690,6 +690,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
+    /* sa session en cours vue par ses amis (onglet Social) : type de mine et temps restant (ms, null en mode dev), ou null */
+    activeSessionInfo: async accountId => {
+      const rec = await activeOf(accountId);
+      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : null;
+    },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */

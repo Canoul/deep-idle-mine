@@ -2,7 +2,7 @@
    qu'ils font (hors ligne, en ligne, en session, dans le lobby n/3) et les boutons Inviter / Rejoindre / Stuff (sa
    fiche : niveau, spécialisation, pièces portées, stats ; en lecture seule).
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS } from '../config.js';
+import { SKILLS, MINE_MODES } from '../config.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
 import { renderSlots, statsHTML } from './stuff.js';
@@ -17,7 +17,17 @@ export const STATUS = {
   session: { label: 'En session mine', cls: 'play' },
   lobby:   { label: 'Dans le lobby',  cls: 'on' },
 };
-export const statusText = f => f.status === 'lobby' ? `${STATUS.lobby.label} (${f.size}/${f.max})` : STATUS[f.status]?.label ?? '';
+/* temps restant d'une session, arrondi à la minute du dessus : « reste 23 min », « reste < 1 min » ; null si inconnu */
+export const leftText = ms => !Number.isFinite(ms) ? null : ms < 60_000 ? 'reste < 1 min' : `reste ${Math.ceil(ms / 60_000)} min`;
+export function statusText(f){
+  if(f.status === 'lobby') return `${STATUS.lobby.label} (${f.size}/${f.max})`;
+  if(f.status === 'session'){
+    const mode = MINE_MODES.find(m => m.id === f.mode);
+    const label = !f.mode || f.mode === 'mine' || !mode ? STATUS.session.label : `En session · ${mode.label}`;
+    return [label, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
+  }
+  return STATUS[f.status]?.label ?? '';
+}
 
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
