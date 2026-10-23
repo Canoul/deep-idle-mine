@@ -25,7 +25,7 @@ Modèle d'entrée :
   tant que les 7 sont possibles). Recycler un plan T3 rend 40 à 70 parts.
 - **Décisions** : rareté du plan épique = poids 0,25 (4× moins, dans la fourchette 3 à 5 demandée) ; recyclage du tier
   3 = celui du tier 2 (même prix), choix de Claude à valider.
-- **État** : 🧪 sur la branche `geoffrey/recherche-t3` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Stuff en acier, Plastron de l'équilibre, Treasure T3
 - **Pour le joueur** :
