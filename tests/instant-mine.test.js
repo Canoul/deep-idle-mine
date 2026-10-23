@@ -34,7 +34,8 @@ test('MI génération : 50×50 sous une ligne de surface vide, composition exact
   const A = genInstantMine(42), B = genInstantMine(42), C = genInstantMine(43);
   assert.equal(A.tiles.length, MI.h + 1);
   assert.ok(A.tiles[0].every(v => v === 0));
-  assert.equal(count(A, IDS.coal), 500); assert.equal(count(A, IDS.iron), 1000); assert.equal(count(A, IDS.gold), 975);
+  assert.equal(count(A, IDS.coal), 500); assert.equal(count(A, IDS.iron), 1000); assert.equal(count(A, IDS.gold), 825);
+  assert.equal(count(A, IDS.graphite), 125); assert.equal(count(A, IDS.diamond), 25);   // 23/10
   assert.equal(A.feathers.size, 25);
   for(const [k, n] of A.feathers){
     assert.ok(n >= MI.featherMin && n <= MI.featherMax);
