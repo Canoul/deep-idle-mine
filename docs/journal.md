@@ -15,7 +15,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : un tirage par remontée ; toutes les raisons sauf la fin de session ; taclé ou étourdi, le
   tirage se fait après ; mine classique seulement.
 - **À suivre** : regarder l'onglet Skills (4e étage du Mineur, icône).
-- **État** : 🧪 sur la branche `geoffrey/legende-flemme` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Retours de l'après-midi : occultiste, Force brute, fragments de rune, prêt, MI, Jugement
 - **Pour le joueur** :
