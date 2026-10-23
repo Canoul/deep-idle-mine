@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -105,6 +105,7 @@ export function sourcesOf(item){
   if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
+  if(item === DUCK.heart.item) out.push(`Butin du ${DUCK.name} (canard de la surface) : ${fmt(pct(DUCK.heart.chance))} % de chance, dans le coffre commun`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   for(const [tr, l] of Object.entries(LOOT)){
     const a = l.always.find(x => x.item === item);

@@ -1994,3 +1994,20 @@ Règles (voir CLAUDE.md) :
   par mineur Fer 36,0, Or 30,1 (avant 35,6), Charbon 18,4, Graphite 4,5, Diamant 0,9, Plumes 1,9 (inchangé). À 3 :
   Graphite 5,3, Diamant 1,3, Plumes 4,9.
 
+### Gallianix (Geoffrey) — branche `geoffrey/gallianix`, ✅ en ligne le 23/10
+- **Quoi** : `DUCK` en config (type `gallianix`, 50 PV, names, range 8, step 1,2 s, pause 0,35, jump 3, heart 25 %,
+  salt), `XP.mob.gallianix` 5, objet `Fragment de cœur` (material, w 1). `src/sim/duck.js` : `spawnDucks` (un canard
+  par area débloquée depuis le lancement : `G.ducks` < `G.unlockedAreas − G.duckBase`, `duckBase` posé dans
+  `newSession`), `updateDuck` (ligne 0, sol = couche 1 pleine ou échelle ; saut ≤ 3 cases ; sans sol sous lui →
+  `nearestGround`), `duckName`. Branché dans `updateMobs` (avant la chute) ; mort dans `killMob` (actions.js). Hasard
+  à part `G.duckRng` (seed ^ salt). Hors de `MOBS.hpBase` : ni `MOB_TYPES`, ni `walkerCap`, ni la liste « Aider allié ».
+  `mobView` envoie `name` et `hop`. Rendu : `canvas.js` (sautillement, pseudo jaune, barre de vie au-dessus du nom).
+  Textures `duck`, `heart_fragment`. Wiki : fiche à part (`duckCard`), source du fragment.
+- **Bug trouvé et corrigé** : les mineurs creusent la couche 1 sur 7 cases sous un canard au bord de sa zone : il
+  restait en l'air ~40 min (seed 7919) → `nearestGround`.
+- **Tests** : `tests/duck.test.js` (config, naissance, pseudos en boucle, promenade : jamais en l'air ni hors zone,
+  saut d'un trou étroit et demi-tour devant un large, envol, butin ≈ 25 % sur 2 000, déterminisme) ✅ ; mobs, session,
+  view, world, trap, dungeon, game-service, game-replay, game-http, share, level, blocks, wiki ✅ ; anticheat 72/72 ✅.
+  Simulation 3 × 5 : 3,0 areas, profondeur 182,4 (main : 192,2), **0 blocage** ; solo : 1,2 areas, 0 blocage.
+- **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
+  (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.

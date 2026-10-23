@@ -132,6 +132,30 @@ def main():
             rect(icon, 11 + i * 2, 14, 1, 1, hexc(lock))
         tex['treasure_t%d' % tier] = icon
 
+    # Gallianix (canard jaune, regard vers la droite) et fragment de cœur (moitié de cœur rouge, cassure en zigzag)
+    duck = blank()
+    rect(duck, 4, 8, 9, 5, hexc('#ffd23f'))          # corps
+    rect(duck, 3, 9, 1, 3, hexc('#ffd23f'))          # queue
+    rect(duck, 2, 8, 1, 2, hexc('#e6b81e'))
+    rect(duck, 9, 3, 4, 5, hexc('#ffd23f'))          # tête
+    rect(duck, 13, 5, 2, 2, hexc('#ff8c1a'))         # bec
+    rect(duck, 11, 4, 1, 1, hexc('#1b1b1f'))         # œil
+    rect(duck, 5, 9, 4, 1, hexc('#fff1a8'))          # reflet de l'aile
+    rect(duck, 6, 10, 4, 2, hexc('#e6b81e'))         # aile
+    rect(duck, 6, 13, 1, 2, hexc('#ff8c1a'))         # pattes
+    rect(duck, 10, 13, 1, 2, hexc('#ff8c1a'))
+    rect(duck, 5, 15, 3, 1, hexc('#ff8c1a'))
+    rect(duck, 9, 15, 3, 1, hexc('#ff8c1a'))
+    tex['duck'] = duck
+    heart = blank()
+    # moitié gauche d'un cœur, bord droit cassé en zigzag
+    for y, x0, x1 in [(3, 3, 6), (4, 2, 7), (5, 2, 8), (6, 2, 7), (7, 3, 8), (8, 4, 7), (9, 5, 8), (10, 6, 7), (11, 7, 8), (12, 8, 8)]:
+        rect(heart, x0, y, x1 - x0 + 1, 1, hexc('#d63a4a'))
+    rect(heart, 3, 4, 2, 1, hexc('#ff8a96')); rect(heart, 3, 5, 1, 1, hexc('#ff8a96'))   # reflet
+    for y, x in [(5, 8), (7, 8), (9, 8), (11, 8)]:
+        rect(heart, x, y, 1, 1, hexc('#8e1f2b'))                                        # cassure
+    tex['heart_fragment'] = heart
+
     # blueprint : feuille bleue roulée en haut, tracé blanc d'un objet
     bp = blank()
     rect(bp, 2, 2, 12, 12, hexc('#2f6fb5'))

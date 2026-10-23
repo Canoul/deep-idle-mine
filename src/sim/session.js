@@ -40,6 +40,7 @@ export function newSession(seed, opts={}){
   }
   G.tiles[1][CHEST_X] = CHEST_BASE;   // socle incassable sous le coffre (23/10)
   genArea(G,0); G.unlockedAreas = 1;
+  G.duckBase = G.unlockedAreas; G.ducks = 0;   // Gallianix : un canard par area débloquée ensuite (src/sim/duck.js)
   log(G, `Session démarrée (seed ${seed}, ${G.miners.length} mineur${G.miners.length>1?'s':''})`);
   return G;
 }
