@@ -4,7 +4,8 @@
    État d'un joueur : { tree: null | id d'arbre, ranks: { id de nœud: rang }, ops:[opId…] }.
    - points disponibles = points de skill du niveau (levelOf) − rangs dépensés ;
    - le premier point dépensé choisit l'arbre ; les autres arbres sont bloqués jusqu'au reset ;
-   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max ;
+   - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max (tous, si le
+     nœud a needsAll : Navette exige Échelle de 2 et Treuil) ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
 import { SKILLS, STUFF } from '../config.js';
 
@@ -26,7 +27,8 @@ export function blockedReason(st, id, points){
   if(st.tree && st.tree !== n.tree) return 'other_tree';
   if(rankOf(st, id) >= n.max) return 'maxed';
   const parents = parentsOf(id);
-  if(parents.length && !parents.some(p => rankOf(st, p.id) >= p.max)) return 'needs_previous';
+  const maxed = p => rankOf(st, p.id) >= p.max;
+  if(parents.length && !(n.needsAll ? parents.every(maxed) : parents.some(maxed))) return 'needs_previous';
   if(spentPoints(st) >= points) return 'no_points';
   return null;
 }

@@ -368,7 +368,9 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
 export const SKILLS = {
   /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
      Un nœud de l'étage r > 1 exige qu'AU MOINS UN nœud de l'étage r−1 de son arbre soit au rang max (les lignes de
-     l'arbre relient chaque nœud à ceux de l'étage d'avant). name/icon : affichage de l'onglet Skills. */
+     l'arbre relient chaque nœud à ceux de l'étage d'avant). needsAll : il faut TOUS les nœuds de l'étage d'avant au
+     rang max (Navette, 23/10/2026, Geoffrey : Échelle de 2 ET Treuil, pour qu'un logisticien avec Mule ait toujours le
+     Treuil). name/icon : affichage de l'onglet Skills. */
   trees: [
     { id:'mineur', label:'Mineur', icon:'⛏', nodes:[
       { id:'mine_speed',  row:1, max:3, per:0.02, icon:'⛏', name:'Pioche aiguisée', desc:'Vitesse de minage +{v}' },
@@ -379,7 +381,7 @@ export const SKILLS = {
       { id:'build_time',  row:1, max:3, per:0.05, icon:'🔨', name:'Bâtisseur',       desc:'Temps de construction (échelle, passerelle, torche) −{v}' },
       { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
       { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
-      { id:'travel_rush', row:3, max:5, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+      { id:'travel_rush', row:3, max:5, per:0.03, needsAll:true, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
       { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },

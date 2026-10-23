@@ -9,10 +9,9 @@ foi pour l'implémentation ; `GAME_DESIGN.md` §Skills en reprendra l'essentiel.
   il exige qu'au moins une case de l'étage 3 soit au rang max (Navette 5/5).
 - Mine classique uniquement (pas en mine instantanée ni en tour : il n'y a pas de treuil).
 - Il ne fait rien sans treuil : le sac n'existe que si **le logisticien qui pose le treuil a Mule**.
-- ⚠️ **À trancher** : l'arbre permet de prendre Mule sans Treuil (étage 2 validé par Échelle de 2). Un tel
-  logisticien n'aurait jamais de sac (il ne pose pas de treuil) ; il compterait seulement dans la capacité si un
-  autre pose le treuil avec Mule. Options : (a) laisser tel quel, la description du skill le dit ; (b) exiger
-  Treuil 1/1 pour prendre Mule (recommandé : un point ne peut pas être dépensé pour rien).
+- **Prérequis** (décision de Geoffrey, 23/10) : l'étage 3 du Logisticien (Navette) exige **les deux** cases de
+  l'étage 2, Échelle de 2 **et** Treuil (`needsAll` en config). Tout logisticien qui atteint Mule a donc le Treuil.
+  Fait dans un commit à part.
 
 ## Le sac (« backpack »)
 - **Un seul sac par session**, porté par le logisticien qui pose le treuil (aujourd'hui : le premier logisticien

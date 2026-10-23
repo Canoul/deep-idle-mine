@@ -224,7 +224,7 @@ function level(){
   $('w-levels').innerHTML = table(['#Niveau', '#XP pour y passer', '#XP totale'], D.levelRows(10).map(r =>
     tr([num(`<b>${r.level}</b>`), num(f(r.need)), num(f(r.total))]))) + '<p class="small mut">Chaque niveau demande 1,5 fois plus d\'XP que le précédent. Un niveau = 1 point de skill.</p>';
   $('w-skills').innerHTML = `<div class="trees">${D.skillTrees().map(t => `<div class="tree"><h3>${t.icon} ${esc(t.label)}</h3>` +
-    t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} · ${n.max} rang${n.max > 1 ? 's' : ''}</span></span>` +
+    t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} · ${n.max} rang${n.max > 1 ? 's' : ''}${n.needsAll ? ' · exige toutes les cases de l\'étage d\'avant' : ''}</span></span>` +
       `<small>${esc(n.desc.replace('{v}', n.perText ? `${f(Math.round(n.per * 1000) / 10)} %` : '').replace(/\s+/g, ' '))}${n.perText && n.max > 1 ? ` par rang (max : ${esc(n.maxText.match(/[+−-]?\d+(,\d+)? %/)?.[0] ?? '')})` : ''}</small></div>`).join('') +
     '</div>').join('')}</div>`;
 }
