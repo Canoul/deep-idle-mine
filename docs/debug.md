@@ -2011,3 +2011,33 @@ Règles (voir CLAUDE.md) :
   Simulation 3 × 5 : 3,0 areas, profondeur 182,4 (main : 192,2), **0 blocage** ; solo : 1,2 areas, 0 blocage.
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
+
+### Mule, skill Logisticien étage 4 (Geoffrey) — branche `geoffrey/mule`, ⚠️ pas en ligne
+- **Quoi** : spec `docs/superpowers/specs/2026-10-23-mule-design.md`. Config : nœud `mule` (row 4), `MULE`
+  { capacityPct 2, depositTime 1, pickTime 1, pickBelow 10 }, `needsAll` sur `travel_rush` (Navette exige tous les
+  nœuds de l'étage 2 ; `blockedReason` dans `src/meta/skills.js`), texture `backpack`. `src/sim/mule.js` : état
+  `G.mule` { carrier, placed, x, y, inv, by, load }, `muleCap` (calculée en direct sur les présents), `muleSpot`,
+  `depositToMule` (partiel), `emptyMule` (crédite `chestBy` au déposant), `pickMule`, `placeMule`, `muleOnLeave`.
+  IA (`ai.js`) : modes `mule` (aller déposer, pods pleins si le sac est plus près que le coffre et `muleFits`),
+  `fetch` (aller ramasser), `m.muleJob` (pose après le treuil, `decideMulePlace`), `m.muleFetch` (prolongation : sac
+  ≤ pickBelow couches sous lui), `planPickup` (fin de session : une décision par remontée, refaite si le sac vide se
+  remplit), `muleEstT` (estimation sans recherche), détour de fin de session compté seulement s'il est possible,
+  `decideSurface` va chercher le sac s'il n'aura plus le temps après un autre trajet. Actions `muleDeposit`,
+  `mulePick`, `mulePlace` ; `deposit` vide le sac transporté. `world.js` : le treuil est prolongé de préférence par
+  le porteur, puis un logisticien avec Mule. `session.js` : `muleOnLeave` avant la photo `shareMarks` ; sac pas
+  rapporté → `summary.lostBags` (« Sac de X »). Vue : `mule` { x, y, load, cap } si posé ; `canvas.js` dessine sac et
+  jauge. `simulate.js` : `--no-mule`, coffre en pods, ligne « sac (Mule) ».
+- **Bugs trouvés en simulation et corrigés** : pickup à chaque reprise du chantier après un combat (descente
+  de 80 couches) → `muleFetch` seulement au lancement ; plongée vers un sac vide (seed 79190) ; sac rempli juste
+  après la décision de remontée (39595, perdu) ; allers-retours d'une case à la surface en comptant un détour
+  impossible (39595).
+- **Tests** : `tests/mule.test.js` (17), `tests/anticheat/mule.test.js` (conservation sur 2 000 suites, départ,
+  fin), skills (Navette), winch, world, mobs, view, share, session, diagnostics, wiki, anticheat duplication/skills
+  ✅ 145/145.
+- **Simulation** 3 × 10 `--skills mixed` (seeds de référence) : avec Mule coffre 3 946 pods, profondeur 187,6,
+  areas 3,1, 0 blocage, 0 perdu, 27 dépôts / 4 993 pods passés par le sac ; sans (`--no-mule`) 4 074, 187,3, 3,1.
+  Logisticien 520 blocs minés contre 571 ; les autres 825 contre 839.
+- **Points fragiles** : ⚠️ rendu (sac, jauge, icône du skill) pas regardé dans un navigateur. Gain négatif mesuré :
+  décision de design en attente. Le porteur qui ne pose pas son sac (case inatteignable) le garde jusqu'au prochain
+  passage au coffre.
+

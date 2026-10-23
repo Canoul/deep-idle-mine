@@ -109,6 +109,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
   Repère (5 parties) : solo de base, area 1 ouverte (avant : 2) ; à 3 avec skills, area 4 (avant : la 5 dans
   4 parties sur 5).
+- **Mule** (23/10, Geoffrey ; branche `geoffrey/mule`, **pas en ligne** ; spec
+  `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE` en config, `src/sim/mule.js`) : Logisticien étage 4,
+  sac posé à côté du bas du treuil (2 × pods des logisticiens avec Mule), les mineurs aux pods pleins y déposent s'il
+  est plus près que la surface, vidé au coffre seulement à la prolongation et en fin de session (décision Geoffrey).
+  **Navette exige maintenant Échelle de 2 ET Treuil**. Repère (10 parties à 3) : 0 blocage, 0 perdu, mais coffre
+  **−3 %** (le logisticien mine 9 % de moins) : décision en attente.
 - **Spécialisation** : arbres de skills Mineur, Logisticien (échelles, treuil : seau à 0,85 × la vitesse de montée ;
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
