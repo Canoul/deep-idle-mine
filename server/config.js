@@ -37,6 +37,9 @@ export const SERVER = {
      ligne que le réglage des relais est bon (l'adresse affichée doit être la tienne) */
   logProxyCheck: proxyHops() > 0,
   maxBodyBytes: 16 * 1024,
+  /* clé des routes d'administration (/api/admin/…, server/admin/routes.js) : DIM_ADMIN_TOKEN, 32 caractères au moins,
+     dans /etc/deep-idle-mine.env sur le VPS, JAMAIS dans git. Absente ou trop courte : l'administration est fermée. */
+  adminToken: process.env.DIM_ADMIN_TOKEN || '',
   /* seuls ces chemins sont servis au navigateur (le reste du dépôt, dont data/ et l'ancien prototype, ne l'est jamais) */
   publicPaths: ['/index.html', '/wiki.html', '/src/', '/textures/'],
   /* en-têtes de sécurité, sur toutes les réponses (pages, fichiers, API) :

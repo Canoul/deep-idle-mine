@@ -1,0 +1,51 @@
+/* Routes d'administration (/api/admin/…) : réservées aux créateurs du jeu, depuis le serveur lui-même.
+   Exemple sur le VPS (la clé est dans /etc/deep-idle-mine.env, DIM_ADMIN_TOKEN) :
+     curl -X POST http://127.0.0.1:8000/api/admin/give -H "Authorization: Bearer CLÉ" \
+          -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
+
+   Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
+   comme si elle n'existait pas :
+   1. une clé est réglée (DIM_ADMIN_TOKEN, 32 caractères au moins) et la requête porte exactement la même ;
+   2. la connexion vient de la machine elle-même (127.0.0.1 ou ::1) ;
+   3. elle n'est pas passée par un relais : aucun en-tête X-Forwarded-For / Forwarded / X-Real-IP (Caddy en ajoute
+      toujours un : une requête venue d'internet est donc refusée même si elle connaît la clé).
+   Le dépôt est public : la clé n'est jamais dans git. */
+import crypto from 'node:crypto';
+import { HttpError } from '../http/http.js';
+import { nameKey } from '../../src/shared/account.js';
+
+export const ADMIN_TOKEN_MIN = 32;
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+const RELAY_HEADERS = ['x-forwarded-for', 'forwarded', 'x-real-ip'];
+const hidden = () => new HttpError(404, 'not_found', 'Route inconnue.');
+
+/* même clé ? (comparaison à temps constant, sur les empreintes : pas de fuite de longueur) */
+function sameToken(given, token){
+  const h = s => crypto.createHash('sha256').update(String(s)).digest();
+  return crypto.timingSafeEqual(h(given), h(token));
+}
+/* la requête a-t-elle le droit d'administrer ? */
+export function adminAllowed(req, token){
+  if(typeof token !== 'string' || token.length < ADMIN_TOKEN_MIN) return false;
+  if(!LOOPBACK.has(req.socket?.remoteAddress ?? '')) return false;
+  if(RELAY_HEADERS.some(h => req.headers[h] !== undefined)) return false;
+  const m = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ''));
+  return !!m && sameToken(m[1], token);
+}
+
+/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive) */
+export function adminRoutes({ accounts, game, token }){
+  const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
+  return {
+    'POST /api/admin/give': async ctx => {
+      guard(ctx);
+      const { name, item } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;
+      if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', 'name : le pseudo du joueur.');
+      const acc = await accounts.findAccountByName(nameKey(name));
+      if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
+      const r = await game.adminGive(acc.id, item, qty);
+      console.log(`Admin : +${r.qty} ${r.item} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
+      return { account: acc.name, ...r };
+    },
+  };
+}

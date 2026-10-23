@@ -2140,7 +2140,24 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ pas regardé dans le navigateur. Un treasure à portée dans une area au-dessus de `tripCap`
   reste ignoré (voulu : fin de session).
 
-### Anneaux : 2 cases, effet de groupe, butin des trésors de tour (Geoffrey) — branche `geoffrey/anneaux`, 🧪 pas en ligne
+### Administration sans redémarrage : give-item (Geoffrey) — branche `geoffrey/give-item`, ✅ en ligne le 23/10
+- **Quoi** : route `POST /api/admin/give` (`server/admin/routes.js`, branchée dans `server/app.js` quand le service de
+  jeu existe) → `game.adminGive(accountId, item, qty)` (`server/game/service.js`) : sous le verrou `inv:<id>`, comme
+  une action de joueur (mémoire + base ensemble). Compte par `nameKey`, objet exact d'`ITEMS`, qty entier 1..1000
+  (`ADMIN_MAX_QTY`). Journal serveur : « Admin : +n objet pour pseudo ».
+- **Accès** (`adminAllowed`) : clé `SERVER.adminToken` = `DIM_ADMIN_TOKEN` (≥ 32 caractères, sinon fermé), comparée
+  à temps constant sur les empreintes ; connexion depuis 127.0.0.1 / ::1 seulement ; aucun en-tête de relais
+  (X-Forwarded-For, Forwarded, X-Real-IP : Caddy en ajoute toujours un). Refus = 404 « Route inconnue ». Caddyfile
+  modèle : `respond 404` sur `/api/admin*` (⚠️ ne s'applique qu'en relançant `install.sh` ; la route se défend seule).
+- **Script** : `scripts/give-item.js` appelle la route ; clé et port lus dans `/etc/deep-idle-mine.env` (format
+  systemd, d'où `sudo`), `--url` pour les tests. (Ancien, quelques minutes sur la branche : écriture directe en base,
+  qui exigeait d'arrêter le jeu.)
+- **Tests** : `tests/admin.test.js` (don, mémoire à jour, clés fausses / absentes / courtes, relais, garde-fous,
+  adresses), `tests/give-item.test.js` (script contre un vrai serveur, clé lue dans le fichier, refus) ✅ ; game-http,
+  account-http ✅ ; anticheat 72/72 ✅.
+- **Point fragile** : pas d'opId : relancer la même commande donne deux fois.
+
+### Anneaux : 2 cases, effet de groupe, butin des trésors de tour (Geoffrey) — branche `geoffrey/anneaux`, ✅ en ligne le 23/10
 - **Config** : `RINGS` (`src/config.js`, avant `RARITY`) : `items` (tex, rarity, `mult` = % du total, `add` = points,
   `xp` = % du pot), `drops.angel|demon` (format `oneOf` de `rollLoot` : un tirage, au plus un anneau). Les anneaux
   entrent dans `STUFF.items` avec `slot:'anneau'` (aucune stat propre). `STUFF.slots` + `anneau1`, `anneau2` avec

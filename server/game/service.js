@@ -16,12 +16,12 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, treasureItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, countOf } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality } from '../../src/meta/piece.js';
@@ -101,6 +101,9 @@ function createLocks(){
   withLock.many = (keys, fn) => [...new Set(keys)].sort().reduceRight((inner, key) => () => withLock(key, inner), fn)();
   return withLock;
 }
+
+/* quantité maximale d'un don d'administration (adminGive) */
+export const ADMIN_MAX_QTY = 1000;
 
 export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
                                     config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
@@ -510,6 +513,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         fail('too_early', 409, 'La session n\'est pas encore terminée.', { retryAfter: Math.ceil((rec.finishAt - clock()) / 1000) });
       await settle(rec.id);
       return { session: publicSession(await store.getGameSession(rec.id)) };
+    },
+
+    /* administration (server/admin/routes.js, jamais appelée par un joueur) : donne qty exemplaires d'un objet du jeu à
+       un compte, sous le verrou de son inventaire (comme une action du joueur : mémoire et base changent ensemble, aucun
+       redémarrage). Nom exact d'ITEMS, qty entier de 1 à ADMIN_MAX_QTY. */
+    async adminGive(accountId, item, qty){
+      if(typeof item !== 'string' || !Object.hasOwn(ITEMS, item)) fail('bad_item', 400, `« ${item} » n'est pas un objet du jeu (nom exact).`);
+      if(!Number.isSafeInteger(qty) || qty < 1 || qty > ADMIN_MAX_QTY) fail('bad_request', 400, `Quantité : un entier de 1 à ${ADMIN_MAX_QTY}.`);
+      return withLock('inv:' + accountId, async () => {
+        const inv = await loadInventory(accountId);
+        if(ITEMS[item].cat === 'stuff' || ITEMS[item].stack === false) await loadStuff(accountId, inv);   // uid neufs
+        const before = countOf(inv, item);
+        addItem(inv, item, qty);
+        await store.putInventory(accountId, JSON.parse(serialize(inv)));
+        return { item, qty, before, after: countOf(inv, item) };
+      });
     },
 
     /* ouvrir un Treasure TX de son inventaire : le serveur tire le butin. opId (choisi par le navigateur) rend la

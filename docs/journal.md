@@ -29,7 +29,15 @@ Modèle d'entrée :
   compris) ; en mine instantanée, l'anneau ne sert qu'à son porteur ; l'anneau tombe à l'ouverture du trésor, pas à la
   victoire. Choix de Claude à valider : **un seul tirage par trésor** (jamais deux anneaux d'un coup).
 - **À suivre** : regarder l'onglet Stuff (12 cases) et les icônes des anneaux dans le navigateur.
-- **État** : 🧪 sur la branche `geoffrey/anneaux` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
+
+## 23/10/2026 — Geoffrey — Outil : donner un objet à un joueur, sans redémarrer
+- **Pour le joueur** : rien (outil d'administration) ; un cadeau apparaît tout de suite dans son inventaire.
+- **Pour l'équipe** : sur le VPS, `sudo node /opt/deep-idle-mine/scripts/give-item.js --name crousti --item
+  "Treasure T3"` donne n'importe quel objet du jeu à un compte **sans arrêter ni redémarrer le jeu**. Il faut une
+  fois la clé `DIM_ADMIN_TOKEN` dans les réglages du serveur (mode d'emploi dans `docs/deploiement-ovh.md`).
+- **Sécurité** : la commande ne marche que depuis le VPS lui-même, avec la clé ; depuis internet, elle n'existe pas.
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Petites corrections : canards en fin de partie, treasure oublié
 - **Pour le joueur** : en fin de session, au lieu d'attendre au coffre sans rien faire, les mineurs vont tuer les
