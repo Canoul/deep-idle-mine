@@ -2011,3 +2011,13 @@ Règles (voir CLAUDE.md) :
   Simulation 3 × 5 : 3,0 areas, profondeur 182,4 (main : 192,2), **0 blocage** ; solo : 1,2 areas, 0 blocage.
 - **Points fragiles** : ⚠️ rendu non regardé dans un navigateur. Le mineur qui poursuit le canard marche à la surface
   (trous possibles) : aucun blocage mesuré. Mode dev : des areas débloquées après le lancement font naître des canards.
+
+### Outil give-item (Geoffrey) — branche `geoffrey/give-item`, 🧪 pas en ligne
+- **Quoi** : `scripts/give-item.js --name --item --qty [--env]` : refuse un objet absent d'`ITEMS` (nom exact) et une
+  quantité hors 1..1000 (entier), compte cherché par `nameKey`. `--env` lit un fichier systemd (KEY=valeur) sans
+  écraser l'environnement, puis charge les modules serveur (DATABASE_URL / DIM_DATA_DIR lus au chargement). Pièce de
+  stuff : `sanitizeStuff` avant l'ajout (uid). Écrit l'inventaire par `putInventory`.
+- **Tests** : `tests/give-item.test.js` (stockage fichier temporaire : don, cumul, refus, --env) ✅.
+- **Point fragile** : le serveur garde les inventaires en mémoire : l'arrêter avant, le relancer après (sinon un
+  inventaire réécrit par le jeu peut effacer le cadeau). Le fichier `/etc/deep-idle-mine.env` n'est lisible qu'en
+  root : lancer le script avec `sudo`.

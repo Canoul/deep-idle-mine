@@ -109,6 +109,7 @@ Ensuite, Render peut être supprimé (Settings → Delete Web Service) quand tou
 | Redémarrer le jeu | `sudo systemctl restart deep-idle-mine` |
 | Changer un réglage | `sudo nano /etc/deep-idle-mine.env` (Ctrl+O Entrée pour enregistrer, Ctrl+X pour sortir), puis redémarrer |
 | Redémarrer tout le VPS | `sudo reboot` (le jeu repart tout seul) |
+| Donner un objet à un joueur | `sudo systemctl stop deep-idle-mine`, puis `cd /opt/deep-idle-mine && sudo node scripts/give-item.js --env /etc/deep-idle-mine.env --name PSEUDO --item "Treasure T3" --qty 1`, puis `sudo systemctl start deep-idle-mine` (nom exact de l'objet ; arrêter le jeu avant, sinon il peut écraser le cadeau) |
 
 Réglages (`/etc/deep-idle-mine.env`) : `DATABASE_URL` (Neon), `DIM_MAX_LIVE` (sessions en même temps, 24),
 `DIM_HOST=127.0.0.1`, `DIM_TRUST_PROXY=1`, `DIM_SECURE_COOKIE=1` (ces trois-là ne se changent pas).

@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Outil : donner un objet à un joueur
+- **Pour le joueur** : rien (outil d'administration).
+- **Pour l'équipe** : `scripts/give-item.js` donne n'importe quel objet du jeu à un compte (ex. un Treasure T3 à
+  crousti). Mode d'emploi dans `docs/deploiement-ovh.md` (arrêter le jeu, lancer la commande, relancer le jeu).
+- **État** : 🧪 sur la branche `geoffrey/give-item` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
 - **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
   **5 % graphite** et **1 % diamant** (nouveaux), plus 1 % de tas de plumes. Par mine : 125 graphites et 25 diamants.
