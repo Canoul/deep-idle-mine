@@ -55,16 +55,21 @@ Chaque bloc appartient à une catégorie :
 
 ### Compositions des areas
 
-| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Vide |
-|---|---|---|---|---|---|---|---|---|
-| 0 | 52 | 33 | – | 10 | – | – | – | 5 |
-| 1 | 30 | 49 | – | 15 | 1 | – | – | 5 |
-| 2 | 20 | 55 | – | 10 | 10 | – | – | 5 |
-| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | 5 |
-| 4 | – | 60 | 15 | 5 | 10 | 5 | – | 5 |
-| 5+ | – | 55 | 20 | 3 | 8 | 7 | 2 | 5 |
+| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Vide |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 52 | 33 | – | 10 | – | – | – | – | 5 |
+| 1 | 30 | 49 | – | 15 | 1 | – | – | – | 5 |
+| 2 | 20 | 55 | – | 10 | 10 | – | – | – | 5 |
+| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | 5 |
+| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | 5 |
+| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | 5 |
+| 6+ | – | 35 | 40 | – | 7 | 6 | 1 | 6 | 5 |
 
-La dernière ligne se répète au-delà. Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+La dernière ligne se répète au-delà. Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
+au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide.
+- **Graphite** (23/10/2026) : minerai `Graphite ore` des areas 5 et 6 (dureté 4, poids 3, attrait 4, 4 XP *(provisoire)*).
+  Au four : **10 Graphite ore → 1 Graphite ingot** (10 charbons, 60 s). Alliage : **Steel ingot = 3 Tainted iron +
+  10 Graphite ingot** (50 charbons, 3 min). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
 - Les minerais sont générés en petits filons (1 à 4 blocs).
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
@@ -564,7 +569,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
 - Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre**, bouton **½** = la moitié de son stock arrondie en dessous, ou **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
 - **Tout retirer** *(22/10/2026)* : un bouton par four, et un en haut de l'onglet pour tous les fours. Toutes les cases (ingrédients, combustible, produits finis) reviennent dans l'inventaire ; une case qui n'y rentre pas reste dans le four, intacte.
-- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min**. Le **diamant ne se fond pas** (pas de recette).
+- **1 lingot = 10 minerais + 10 charbons** *(provisoire)*. Temps par lingot : **fer 1 min, or 2 min, graphite 1 min** *(graphite : 23/10/2026)*. Le **diamant ne se fond pas** (pas de recette).
 - La fonte avance **en temps réel, même page fermée** (le serveur calcule à partir de l'heure de départ). Une **barre de progression** montre l'avancée du lingot en cours.
 - Minerais et charbon ne sont consommés qu'**à la fin** d'un lingot : **retirer** une case rend tout ce qu'elle contient, y compris ce qui fondait (le lingot en cours est annulé).
 - **Le serveur fait foi** : chaque action est faite par lui, inventaire et four changent ensemble ; une demande renvoyée (double clic) ne s'applique qu'une fois.
@@ -579,6 +584,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
   | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
+  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 10 Graphite ingot | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.

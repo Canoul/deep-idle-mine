@@ -9,7 +9,7 @@ import { dropOdds } from '../meta/crusher.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
-export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'air'];
+export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'graphite', 'air'];
 const isOreKey = k => blockByKey(k)?.type === 'ore';
 
 /* ---------- areas ---------- */

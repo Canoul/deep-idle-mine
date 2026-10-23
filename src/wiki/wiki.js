@@ -20,7 +20,7 @@ export const item = (name, qty) => { const r = rarityOf(name), d = ITEMS[name], 
 const ings = cost => `<div class="ings">${Object.entries(cost).map(([n, q]) => item(n, q)).join('')}</div>`;
 const pills = (list, cls = '') => list.map(t => `<span class="pill ${cls}">${esc(t)}</span>`).join(' ');
 const areaLabel = r => r.last ? `${r.k}+` : String(r.k);
-const BLOCK_NAME = { dirt:'Terre', stone:'Pierre', hardstone:'Pierre dure', coal:'Charbon', iron:'Fer', gold:'Or', diamond:'Diamant', air:'Vide' };
+const BLOCK_NAME = { dirt:'Terre', stone:'Pierre', hardstone:'Pierre dure', coal:'Charbon', iron:'Fer', gold:'Or', diamond:'Diamant', graphite:'Graphite', air:'Vide' };
 const blockName = key => BLOCK_NAME[key] ?? key;
 
 /* ---------- areas ---------- */
