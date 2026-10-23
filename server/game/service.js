@@ -22,7 +22,7 @@ import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS }
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
@@ -33,7 +33,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
-import { identify, upgrade, enchant } from '../../src/meta/upgrade.js';
+import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
@@ -67,7 +67,8 @@ const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire
                          not_stuff: 'Seule une pièce de stuff peut être identifiée, améliorée ou enchantée.',
                          not_rune: 'Il faut une rune pour enchanter.', already_enchanted: 'Cette pièce porte déjà une rune.',
                          not_identified: 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.',
-                         rune_too_rare: 'Cette rune est de qualité trop élevée pour cette pièce (au plus la même qualité).' };
+                         rune_too_rare: 'Cette rune est de qualité trop élevée pour cette pièce (au plus la même qualité).',
+                         no_rune: 'Cette pièce ne porte pas de rune.', fragment_locked: 'Un fragment de rune posé ne se retire plus.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -329,6 +330,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(t.done.length) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
           opening = t.opening;
         }
+        /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
+        const residues = side ? null : await withJudgment(j => ({ value: !anyTowerOpen(j, clock()) }));
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
@@ -359,6 +362,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
+          ...(residues === false ? { residues: false } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
@@ -629,10 +633,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
         const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random)
                 : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random)
-                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId }) : { error: 'bad_request' };
+                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId })
+                : action === 'unenchant' ? unenchant(inv, { uid: body.uid, opId }) : { error: 'bad_request' };
         if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { piece: r.piece, success: r.success ?? true, inventory: publicInventory(inv) };
+        return { piece: r.piece, fragment: r.fragment, success: r.success ?? true, inventory: publicInventory(inv) };
       });
     },
 

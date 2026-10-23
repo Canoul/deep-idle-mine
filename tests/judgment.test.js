@@ -7,7 +7,7 @@ import { targetVal, setFocus } from '../src/sim/focus.js';
 import { decide } from '../src/sim/ai.js';
 import { updateLight } from '../src/sim/light.js';
 import { worldFrom } from './helpers.js';
-import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone } from '../src/meta/judgment.js';
+import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone, paused, anyOpen } from '../src/meta/judgment.js';
 
 const H = 3600e3, CAP = JUDGMENT.cap, OPEN = JUDGMENT.openHours * H;
 const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
@@ -45,10 +45,23 @@ test('pleine pendant une ouverture : bloquée à 250, la tour rouvre à la fin d
   assert.equal(j.angel.opening, 2); assert.equal(j.angel.count, 0); assert.equal(j.angel.openUntil, OPEN + 5 + OPEN);
 });
 
-test('les deux tours peuvent être ouvertes en même temps', () => {
+test('une tour à la fois (23/10) : l\'autre jauge est en pause pendant l\'ouverture, puis reprend', () => {
   const j = createJudgment();
   addResidues(j, { [A]: CAP, [D]: CAP }, 0);
-  assert.equal(isOpen(j, 'angel', 1), true); assert.equal(isOpen(j, 'demon', 1), true);
+  assert.equal(isOpen(j, 'angel', 1), true); assert.equal(isOpen(j, 'demon', 1), false, 'pleines en même temps : une seule ouvre');
+  assert.equal(j.demon.count, CAP, 'la pleine attend');
+  assert.equal(paused(j, 'demon', 1), true); assert.equal(paused(j, 'angel', 1), false);
+  assert.equal(anyOpen(j, 1), true); assert.equal(anyOpen(j, OPEN + 1), false);
+  /* pendant l'ouverture de l'Ange : les résidus démoniaques ne comptent pas, les angéliques si */
+  const k = createJudgment();
+  addResidues(k, { [A]: CAP }, 0);
+  assert.equal(addResidues(k, { [D]: 40, [A]: 5 }, H), true);
+  assert.equal(k.demon.count, 0, 'jauge du Démon en pause'); assert.equal(k.angel.count, 5);
+  /* fermeture de l'Ange : la jauge du Démon reprend ; une jauge pleine en attente ouvre à ce moment */
+  addResidues(k, { [D]: 12 }, OPEN + 1);
+  assert.equal(k.demon.count, 12);
+  refresh(j, OPEN + 1);
+  assert.equal(isOpen(j, 'demon', OPEN + 2), true, 'le Démon ouvre quand l\'Ange ferme'); assert.equal(isOpen(j, 'angel', OPEN + 2), false);
 });
 
 test('« déjà fait » : par compte et par ouverture ; une nouvelle ouverture efface la liste', () => {
@@ -76,8 +89,9 @@ test('vue publique : compte, cap, ouvert, temps restant, déjà fait pour ce jou
   const j = createJudgment();
   addResidues(j, { [A]: CAP, [D]: 7 }, 0); markDone(j, 'angel', 'K1');
   const v = publicJudgment(j, 1000, 'K1');
-  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: true });
-  assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false });
+  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: true, paused: false });
+  assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false, paused: true });
+  assert.equal(v.residues, false, 'une tour ouverte : pas de résidus dans les mines');
   assert.equal(v.now, 1000);
 });
 
@@ -116,5 +130,17 @@ test('IA : un résidu non découvert n\'attire pas le mineur', () => {
   G.seen[2][7] = 0;
   decide(G, m);
   assert.notDeepEqual(m.target, { x:7, y:2 });
+});
+
+test('mine lancée pendant une ouverture (23/10) : aucun résidu (record.residues = false) ; même seed sinon identique', async () => {
+  const { buildSession } = await import('../src/shared/game.js');
+  const rec = residues => ({ id:'r', seed:77, players:[{ account:'K1', name:'Zoe' }], prefs:{}, looks:{}, gear:{}, skills:{}, bots:0, ...(residues === false ? { residues:false } : {}) });
+  const { genArea } = await import('../src/sim/world.js');
+  const on = buildSession(rec(true)), off = buildSession(rec(false));
+  for(const G of [on, off]) while(G.unlockedAreas <= JUDGMENT.fromArea){ genArea(G, G.unlockedAreas); G.unlockedAreas++; }
+  const n = G => G.tiles.reduce((s, row) => s + [...row].filter(t => RES.includes(t)).length, 0);
+  assert.ok(n(on) > 0, `résidus sans tour ouverte : ${n(on)}`);
+  assert.equal(n(off), 0, 'aucun résidu quand une tour était ouverte');
+  assert.equal(off.noResidues, true); assert.equal(on.noResidues, false);
 });
 

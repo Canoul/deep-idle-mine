@@ -61,7 +61,7 @@ const MOB_TEXT = {
   mimic:      R => `<p>Un <b>faux minerai</b> : un vrai minerai de la roche, près de ton mineur, se transforme en mimic caché (même la boussole s'y trompe). Il se dévoile quand ton mineur arrive à ${f(R.reveal)} cases ou essaie de le miner. Ensuite il se combat : on ne le mine plus.</p>
                     <p><b>Danger :</b> il tacle ton mineur s'il est juste à côté.</p>`,
   occultiste: R => `<p>Un mage noir qui vit au fond de la mine. Toutes les ${R.occult.cooldown} s, il se <b>téléporte</b> à ${R.occult.tpDist} cases de ton mineur et lance un rayon de lumière noire.</p>
-                    <p><b>Danger :</b> ton mineur est <b>étourdi ${R.occult.channel} s</b> (il ne peut plus rien faire), et l'occultiste tacle aussi. Un barbare avec <b>Provocation</b> coupe son sort pour de bon.</p>`,
+                    <p><b>Danger :</b> ton mineur est <b>étourdi ${R.occult.channel} s</b> (il ne peut plus rien faire), et l'occultiste tacle aussi. Un barbare avec <b>Provocation</b> qui le frappe <b>casse</b> le rayon en cours (ton mineur est libéré), mais ne l'empêche pas de relancer son sort plus tard, sur le barbare : le barbare aussi peut se faire étourdir.</p>`,
 };
 function mobs(){
   const R = D.MOB_RULES;
@@ -122,7 +122,8 @@ function judgment(){
   const g = D.judgmentInfo(), T = g.tower, B = T.boss, sec = s => s >= 60 ? `${s / 60} min` : `${s} s`;
   const sides = Object.values(g.sides);
   $('w-judgment').innerHTML = `<h2>Les résidus</h2><p>À partir de l'<b>area ${g.fromArea}</b>, ${f(g.pct)} % des blocs de chaque area sont des résidus, à la place de la pierre : du ${sides.map(s => item(s.item)).join(' et du ')}, moitié chacun (soit ${g.residues} par area en tout). Ils pèsent lourd dans le sac, mais une fois rapportés au coffre, ils remplissent la jauge de leur camp : <b>tous les joueurs du serveur remplissent les mêmes jauges</b>. Ils sont aussi partagés en fin de session comme les autres blocs. Quitter la session = ils ne comptent pas.</p>`+
-    table(['Jauge', '#Pour ouvrir la tour', 'Ensuite'], sides.map(s => tr([`<b>${esc(s.label)}</b>`, num(f(g.cap)), `La <b>${esc(s.tower)}</b> ouvre <b>${g.hours} h</b> ; la jauge repart de 0 et continue de se remplir`])));
+    table(['Jauge', '#Pour ouvrir la tour', 'Ensuite'], sides.map(s => tr([`<b>${esc(s.label)}</b>`, num(f(g.cap)), `La <b>${esc(s.tower)}</b> ouvre <b>${g.hours} h</b> ; la jauge repart de 0 et continue de se remplir`])))+
+    `<p><b>Une tour à la fois</b> : pendant qu'une tour est ouverte, la jauge de l'autre camp est <b>en pause</b> (ses résidus ne comptent pas), et les mines lancées pendant ce temps n'ont <b>plus de résidus</b>. À la fermeture, tout reprend.</p>`;
   $('w-tower').innerHTML = `<ul>
     <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>
     <li><b>La tour</b> : ${T.width} de large, <b>${T.floors} étages</b> de ${T.floorH} cases de haut séparés par un plancher incassable, puis le toit. Chaque plancher est percé d'une <b>porte</b> de ${T.gate} cases en briques (6 s chacune), collée à gauche puis à droite en alternance : on traverse <b>tous les étages en serpentin</b>. L'étage 0 est vide ; au-dessus, un étage sur deux est <b>plein de briques</b> à creuser, l'autre <b>vide mais gardé par ${T.mobs.count} ${esc(T.sides.angel.mob)}s</b> (tour de l'Ange) ou <b>${esc(T.sides.demon.mob)}s</b> (tour du Démon), ${f(T.mobs.hp)} PV chacun, qui taclent au contact. La porte de leur plafond reste <b>fermée tant qu'il en reste un vivant</b>. Un étage se découvre <b>en entier</b> quand un mineur y entre. Il fait noir : torches illimitées. Gravité et échelles (illimitées, partagées). Ni oxygène, ni sac, et les briques ne rapportent rien.</li>
@@ -138,7 +139,8 @@ function upgrade(){
   $('w-runes').innerHTML = table(['Qualité de la rune', '#Lignes', '#Chaque ligne vaut', '#Total au mieux'], D.runeRows().map(r =>
     tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
         num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
-    `<p class="small mut">En % de la valeur de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>`;
+    `<p class="small mut">En % de la valeur de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>` +
+    `<p>On peut <b>retirer une rune</b> d'une pièce (onglet Amélioration, gratuit) : elle revient dans l'inventaire en <b>Fragment de rune</b>, même qualité et mêmes lignes, mais <b>chaque % est divisé par 2</b> (la ligne +1 Découverte ne change pas). Un fragment se pose comme une rune ; une fois posé, il ne se retire plus.</p>`;
   const total = D.upgradeTotal();
   $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>
     tr([`<b>+${r.level}</b>`, num(`+${r.pct} %`), num(`${Math.round(r.chance * 100)} %`), ings(r.cost)]))) +

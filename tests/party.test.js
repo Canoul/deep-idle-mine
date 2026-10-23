@@ -419,13 +419,20 @@ test('prêt tout le temps : le membre reste prêt après une session et quand qu
   assert.equal((await party.launch(A, {})).session.players.length, 3, 'relance sans clic « prêt »');
 });
 
-test('prêt tout le temps : « plus prêt » ou décocher l\'arrête ; valeurs invalides et sans groupe refusées', async () => {
+test('prêt tout le temps (23/10) : seule la case l\'enlève (« plus prêt » ne l\'arrête pas) ; gardé en changeant de groupe ; valeurs invalides refusées', async () => {
   const { party } = setup();
   await party.create(A); await party.join(B, 'K7Q4P2');
   await party.alwaysReady(B, true);
   await party.ready(B, false);
-  assert.deepEqual((await party.state(B)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, false]]);
-  await party.alwaysReady(B, true); await party.alwaysReady(B, false);
+  assert.deepEqual((await party.state(B)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]], 'toujours coché');
+  /* B quitte et rejoint un autre groupe : la case le suit */
+  await party.leave(B); await party.create(C);
+  const code = (await party.state(C)).party.code;
+  await party.join(B, code);
+  assert.deepEqual((await party.state(C)).party.members.map(m => [m.ready, m.always]), [[false, false], [true, true]], 'nouveau groupe : coché et prêt');
+  await party.leave(B); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, false);
+  assert.deepEqual((await party.state(B)).party.members.map(m => [m.ready, m.always]), [[false, false], [false, false]], 'décoché par le joueur');
   await assert.rejects(party.launch(A, {}), { code:'not_ready' });
   for(const v of ['true', 1, null, undefined, {}]) await assert.rejects(party.alwaysReady(B, v), { code:'bad_request' });
   await assert.rejects(party.alwaysReady(D, true), { code:'no_party' });

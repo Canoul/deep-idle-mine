@@ -1,10 +1,10 @@
 /* Onglet Amélioration : trois rubriques. Identification (une pièce + un exemplaire sacrifié → qualité R1 à R7 et
    lignes de stats), Amélioration (+1 à +3, matériaux, peut rater), Enchantement (une pièce + une Rune : les lignes de
-   la rune s'ajoutent à la pièce, une rune par pièce, définitif).
+   la rune s'ajoutent à la pièce, une rune par pièce ; retirée, elle devient un fragment aux % divisés par 2).
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */
 import { UPGRADE, STUFF } from '../config.js';
-import { isIdentified, isStuff, isRune, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
+import { isIdentified, isStuff, isRune, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
 import { statLines, runeLines } from '../meta/stuff.js';
 import { sacrificesFor, nextLevel, upgradeNeeds } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
@@ -110,7 +110,7 @@ export function setupUpgrade({ onOp }){
   /* Enchantement : la pièce + une rune. Même principe de cases que l'identification. Aperçu : ce que la rune donnera
      sur CETTE pièce (ses lignes valent un % de la valeur de la pièce, niveau compris). */
   /* pourquoi la rune ne peut pas aller sur la pièce (même règle que le serveur, src/meta/upgrade.js enchantError) */
-  const enchantWhy = (t, r) => !t ? '' : t.rune ? 'Cette pièce porte déjà une rune.'
+  const enchantWhy = (t, r) => !t ? '' : t.rune ? (t.rune.frag ? 'Cette pièce porte déjà un fragment de rune (définitif).' : 'Cette pièce porte déjà une rune : retire-la d\'abord (elle redevient un fragment).')
     : !isIdentified(t) ? 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.'
     : r && r.q > t.q ? `Cette rune (R${r.q}) est trop rare pour cette pièce (R${t.q}) : au plus une rune R${t.q}.` : '';
   function renderEnchant(t, r){
@@ -121,22 +121,25 @@ export function setupUpgrade({ onOp }){
     const sel = c => pick === c ? ' sel' : '';
     const label = k => STUFF.statLabels[k] ?? k, unit = k => STUFF.statUnits?.[k] ?? '';
     const preview = t && r && !why ? r.lines.map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-      : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
+      : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l, runeFactor(r)) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
       `<p class="mut small">Une rune (gagnée dans les trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
-      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce, c'est définitif. `+
+      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce. `+
+      `<b>Retirer une rune</b> est gratuit, mais elle revient en <b>Fragment de rune</b> : mêmes lignes, % divisés par 2. `+
+      `Un fragment se repose comme une rune, et une fois posé, il ne se retire plus. `+
       `<b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> (une pièce R6 accepte une rune R1 à R6) : `+
       `une pièce non identifiée doit d'abord être identifiée.</p>`+
       `<div class="upPair"><div>${box(t, 'Pièce à enchanter', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(r, 'Rune', 'upSacrifice' + sel('rune'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>✨ Enchanter</button></div>`+
       (preview ? `<p class="okmsg small">Sur cette pièce : ${esc(preview)}</p>` : '')+
+      (t?.rune && !t.rune.frag ? `<p><button id="upRemove"${busy ? ' disabled' : ''}>💔 Retirer la rune (elle devient un fragment)</button></p>` : '')+
       (why ? `<p class="err">${why}</p>` : '')+
       message()+
       `<h3>${pick === 'target' ? 'Choisis la pièce à enchanter' : 'Choisis la rune'}</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
-          ? row(p, p.rune ? '<b>déjà enchantée</b>' : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
+          ? row(p, p.rune ? (p.rune.frag ? '<b>fragment posé</b>' : '<b>déjà enchantée</b>') : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
           : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : t && isIdentified(t) && p.q > t.q ? `<b>trop rare pour cette pièce</b>` : ''}</button>`).join('')}</div>`
         : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un trésor de tour (Inventaire).'}</p>`);
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
@@ -148,9 +151,15 @@ export function setupUpgrade({ onOp }){
     const choose = (c, filled, clear) => () => { if(pick === c && filled) clear(); pick = c; msg = ''; render(); };
     $('upBody').querySelector('.upTarget').onclick = choose('target', !!t, () => { target = null; });
     $('upBody').querySelector('.upSacrifice').onclick = choose('rune', !!r, () => { rune = null; });
+    const rm = $('upBody').querySelector('#upRemove');
+    if(rm) rm.onclick = async () => {
+      if(busy) return;
+      if(!confirm(`Retirer la rune de ${pieceName(t)} ? Elle revient dans ton inventaire en Fragment de rune, avec ses % divisés par 2.`)) return;
+      await send({ action:'unenchant', uid:t.uid }, x => `✔ Rune retirée : ${pname(x.fragment)} dans ton inventaire (${esc(runeLines(x.fragment).join(' · '))})`);
+    };
     $('upGo').onclick = async () => {
       if(busy || !can) return;
-      if(!confirm(`Poser ${pieceName(r)} sur ${pieceName(t)} ? La rune est consommée, c'est définitif.`)) return;
+      if(!confirm(`Poser ${pieceName(r)} sur ${pieceName(t)} ? La rune est consommée.${isFragment(r.item) ? ' Un fragment posé ne se retire plus.' : ''}`)) return;
       await send({ action:'enchant', uid:t.uid, rune:r.uid }, x => `✔ ${pname(x.piece)} : ${esc(statLines(x.piece).join(' · '))}`);
       rune = null; target = null; pick = 'target'; render();
     };

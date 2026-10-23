@@ -289,7 +289,7 @@ export const MOBS = {
     { gobelin:0.5, occultiste:0.3, mimic:0.2 },
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:100 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150 },   // occultiste : 150 le 23/10 (avant 100)
   minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
@@ -382,7 +382,7 @@ export const SKILLS = {
       { id:'travel_rush', row:3, max:5, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
-      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },
+      { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
       { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
       { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
@@ -404,7 +404,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','chest_angel','chest_demon',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket'];
 
@@ -465,6 +465,10 @@ export const SHINY = {
    (décision : pas de conversion), mais ne sont plus donnés. */
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,
+  /* Fragment de rune (23/10/2026, Geoffrey) : une rune retirée d'une pièce (gratuit) devient un fragment, de la même
+     qualité et avec les mêmes lignes, dont les % ne comptent que pour `factor` (÷ 2 ; la ligne « +1 Découverte » n'est pas
+     un % : inchangée). Un fragment se repose comme une rune (mêmes règles) ; un fragment posé ne se retire plus. */
+  fragment: { item: 'Fragment de rune', tex: 'rune_fragment', factor: 0.5 },
   treasures: { angel: { name:'Trésor angélique', tex:'chest_angel' }, demon: { name:'Trésor démoniaque', tex:'chest_demon' } },
   treasureRarity: 'unique',
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
@@ -496,7 +500,7 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
-    [RUNE.item]:'epique',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
+    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
@@ -662,6 +666,7 @@ export const ITEMS = {
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
+  [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids

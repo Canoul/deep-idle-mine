@@ -5,8 +5,8 @@ import { UPGRADE, RUNE, chestItem, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
 import { createInventory, addItem, countOf, deserialize, serialize } from '../src/meta/inventory.js';
 import { canOpen, openTreasure } from '../src/meta/loot.js';
-import { rollChestQuality, rollRune, sanitizePiece, pieceBonus, lineValue, isRune } from '../src/meta/piece.js';
-import { enchant, enchantError } from '../src/meta/upgrade.js';
+import { rollChestQuality, rollRune, sanitizePiece, pieceBonus, lineValue, isRune, isFragment, roundStat } from '../src/meta/piece.js';
+import { enchant, enchantError, unenchant, unenchantError } from '../src/meta/upgrade.js';
 import { statLines } from '../src/meta/stuff.js';
 
 const PICK = 'Pioche en pierre';
@@ -160,4 +160,47 @@ test('trésors : un par case, gardés au rechargement, une rune de leur qualité
   assert.equal(old.slots.length, 1, 'ancien coffre : toujours empilable');
   assert.equal(openTreasure(old, c, id(), mulberry32(3)).loot[RUNE.item], 1);
   assert.equal(old.slots.find(s => s?.item === RUNE.item).q, 3);
+});
+
+test('retirer une rune (23/10) : gratuit, elle revient en Fragment de rune (mêmes lignes, % ÷ 2), reposable, puis définitif', () => {
+  const d2 = UPGRADE.qualities.find(q => q.q === 2), pct = d2.max;
+  const L = Array.from({ length: d2.lines }, (_, i) => ({ stat: i % 2 ? 'pods' : 'crit', pct }));
+  const { inv, piece, rune } = withRune(L, 2, 5);
+  enchant(inv, { uid: piece.uid, rune: rune.uid, opId: id() });
+  const full = pieceBonus(piece).stats;
+  const op = id(), r = unenchant(inv, { uid: piece.uid, opId: op });
+  assert.equal(r.ok, true); assert.equal(piece.rune, undefined, 'la pièce n\'a plus de rune');
+  const f = r.fragment;
+  assert.equal(f.item, RUNE.fragment.item); assert.equal(f.q, 2); assert.ok(isRune(f.item) && isFragment(f.item));
+  assert.deepEqual(f.lines, L, 'les mêmes lignes');
+  assert.notEqual(f.uid, rune.uid);
+  /* demande renvoyée : rien de plus */
+  const again = unenchant(inv, { uid: piece.uid, opId: op });
+  assert.equal(again.repeated, true); assert.equal(inv.slots.filter(s => s?.item === RUNE.fragment.item).length, 1);
+  /* reposé : chaque ligne vaut la moitié du % */
+  assert.equal(enchantError(inv, piece.uid, f.uid), null);
+  enchant(inv, { uid: piece.uid, rune: f.uid, opId: id() });
+  assert.equal(piece.rune.frag, true);
+  const half = pieceBonus(piece).stats;
+  assert.equal(half.crit, roundStat('crit', L.filter(l => l.stat === 'crit').reduce((s, l) => s + lineValue(PICK, { ...l, pct: l.pct / 2 }), 0)));
+  assert.ok(half.crit < full.crit, `${half.crit} < ${full.crit}`);
+  assert.ok(statLines(piece).some(t => t.startsWith('Fragment')));
+  /* un fragment posé ne se retire plus ; relu, il reste un fragment */
+  assert.equal(unenchantError(inv, piece.uid), 'fragment_locked');
+  assert.equal(sanitizePiece(JSON.parse(JSON.stringify(piece))).rune.frag, true);
+  /* refus : pièce sans rune, absente */
+  const [k] = addItem(inv, PICK, 1);
+  assert.equal(unenchantError(inv, inv.slots[k].uid), 'no_rune'); assert.equal(unenchantError(inv, 99999), 'not_owned');
+});
+
+test('fragment : mêmes règles qu\'une rune (qualité ≤ pièce), relu et revérifié ; la ligne Découverte reste +1', () => {
+  const { inv, piece } = withRune(undefined, 1, 3);
+  const [j] = addItem(inv, RUNE.fragment.item, 1);
+  Object.assign(inv.slots[j], { q: 5, lines: [{ stat: 'crit', pct: 30 }, { stat: 'pods', pct: 30 }, { stat: 'oxygenMax', pct: 30 }], s: UPGRADE.scale });
+  const d5 = UPGRADE.qualities.find(q => q.q === 5);
+  inv.slots[j].lines = Array.from({ length: d5.lines }, () => ({ stat: 'crit', pct: d5.min }));
+  assert.equal(enchantError(inv, piece.uid, inv.slots[j].uid), 'rune_too_rare');
+  const bad = { item: RUNE.fragment.item, uid: 7, q: 2, lines: [{ stat: 'crit', pct: 999 }], s: UPGRADE.scale };
+  assert.equal(sanitizePiece(bad), null, 'fragment trafiqué : refusé');
+  assert.equal(lineValue(PICK, { stat: 'discoverMax' }, 0.5), lineValue(PICK, { stat: 'discoverMax' }));
 });

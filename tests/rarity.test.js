@@ -23,7 +23,7 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   for(const n of RARE) assert.equal(rarityOf(n), 'rare', n);
   /* trésors des tours : toujours Unique ; anciens coffres : rareté selon leur qualité (RUNE.rarity) ; rune épique */
   const TOWER = Object.keys(ITEMS).filter(n => ITEMS[n].chest || ITEMS[n].cat === 'rune');
-  for(const n of TOWER) assert.equal(rarityOf(n), ITEMS[n].treasure ? 'unique' : ITEMS[n].chest ? RUNE.rarity[ITEMS[n].chest.q] : 'epique', n);
+  for(const n of TOWER) assert.equal(rarityOf(n), ITEMS[n].treasure ? 'unique' : ITEMS[n].chest ? RUNE.rarity[ITEMS[n].chest.q] : ITEMS[n].fragment ? 'rare' : 'epique', n);   // fragment de rune : rare (23/10)
   /* tier 3 (23/10) : pièces en acier inhabituelles, Plastron de l'équilibre épique (et leurs blueprints) */
   const STEEL = ['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p => [`${p} en acier`, `${p} en acier BP`]);
   const EPIC = ['Plastron de l\'équilibre', 'Plastron de l\'équilibre BP'];

@@ -216,8 +216,8 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
 test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (texte, session, onglet Stuff)', async () => {
   const { withSkillStats } = await import('../src/meta/skills.js');
   const { minerStats } = await import('../src/meta/stuff.js');
-  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %');
-  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %');
+  assert.equal(nodeText('damage', 1), 'Dégâts infligés +5 %, ténacité +5 %, dégâts de zone 2 % (mobs à 1 case de sa cible)');
+  assert.equal(nodeText('damage', 3), 'Dégâts infligés +15 %, ténacité +15 %, dégâts de zone 6 % (mobs à 1 case de sa cible)');
   const st = learnAll(createSkills(), ['damage', 'damage']);
   const eff = skillEffects(st);
   const c = withSkillStats({ ...STATS }, eff);
@@ -228,4 +228,12 @@ test('Barbare, Force brute : +5 % de dégâts ET +5 % de ténacité par rang (te
   /* en session : la carac du mineur porte la ténacité */
   const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], skills:{ A:{ tree:st.tree, ranks:{ ...st.ranks } } } });
   assert.equal(G.miners[0].carac.tenacity, 10);
+});
+
+test('Force brute : 2 % de dégâts de zone par rang (aoeOf), dans le texte du nœud', async () => {
+  const { aoeOf, skillEffects, sanitizeSkills, nodeText } = await import('../src/meta/skills.js');
+  const eff = r => skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:r } }));
+  assert.equal(aoeOf(eff(0)), 0); assert.equal(aoeOf(eff(1)), 0.02); assert.equal(aoeOf(eff(3)), 0.06);
+  assert.equal(aoeOf(skillEffects(sanitizeSkills({ tree:'mineur', ranks:{ mine_speed:3 } }))), 0);
+  assert.match(nodeText('damage', 2), /dégâts de zone 4 %/);
 });

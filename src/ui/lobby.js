@@ -50,6 +50,7 @@ export function launchState({ account, party, offline, busy, session }){
   const leader = !party || party.leader === account.id;
   if(!leader){
     const me = party.members.find(m => m.account === account.id);
+    if(me?.always) return { can:false, label:'✔ Prêt tout le temps' };   // seule la case l'enlève (23/10)
     return me?.ready ? { can:true, label:'✔ Prêt (annuler)', action:'ready', ready:false }
                      : { can:true, label:'✋ Je suis prêt', action:'ready', ready:true };
   }

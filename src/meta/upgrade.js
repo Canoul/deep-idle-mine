@@ -4,13 +4,15 @@
    - identify : la pièce (pas encore identifiée) + un autre exemplaire du même objet, sacrifié (peu importe sa qualité ou
      son niveau) → qualité et lignes tirées (src/meta/piece.js). Définitif.
    - upgrade : +1 niveau (jusqu'à UPGRADE.levels.length), coûte les matériaux du palier ; un échec ne coûte que ça.
-   - enchant : une pièce + une Rune (RUNE) → la rune est consommée, la pièce reçoit rune:{ q, lines, s }. Une seule par
-     pièce, définitif.
+   - enchant : une pièce + une Rune (RUNE) ou un Fragment de rune → la rune est consommée, la pièce reçoit
+     rune:{ q, lines, s } (frag:true pour un fragment). Une seule par pièce.
+   - unenchant (23/10/2026) : retire la rune d'une pièce, gratuitement ; elle revient dans l'inventaire en Fragment de
+     rune (même qualité, mêmes lignes, % ÷ 2 : RUNE.fragment). Un fragment posé ne se retire plus (définitif).
    Seulement des pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff).
    opId : une demande renvoyée (double clic, requête rejouée) retrouve son résultat, sans tirer ni consommer deux fois. */
-import { UPGRADE } from '../config.js';
-import { countOf, removeItem } from './inventory.js';
-import { rollIdentity, isIdentified, isStuff, isRune, MAX_PLUS } from './piece.js';
+import { UPGRADE, RUNE } from '../config.js';
+import { countOf, removeItem, putPiece } from './inventory.js';
+import { rollIdentity, isIdentified, isStuff, isRune, isFragment, MAX_PLUS } from './piece.js';
 
 const slotOfUid = (inv, uid) => Number.isSafeInteger(uid) ? inv.slots.findIndex(s => s && s.uid === uid) : -1;
 const remember = (inv, entry) => {
@@ -107,8 +109,34 @@ export function enchant(inv, op){
   const j = slotOfUid(inv, op.rune), r = inv.slots[j];
   inv.slots[j] = null;                                   // la rune est consommée
   const p = pieceAt(inv, op.uid);
-  p.rune = { q: r.q, lines: r.lines.map(l => ({ ...l })), s: r.s };
+  p.rune = { q: r.q, lines: r.lines.map(l => ({ ...l })), s: r.s, ...(isFragment(r.item) ? { frag: true } : {}) };
   while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
   remember(inv, { id: op.opId, kind: 'enchant', uid: op.uid });
   return { ok:true, repeated:false, piece: p };
+}
+
+/* pourquoi on ne peut pas retirer la rune de cette pièce (code d'erreur) ou null */
+export function unenchantError(inv, uid){
+  const i = slotOfUid(inv, uid);
+  if(i < 0) return 'not_owned';
+  const p = inv.slots[i];
+  if(!isStuff(p.item)) return 'not_stuff';
+  if(!p.rune) return 'no_rune';
+  if(p.rune.frag) return 'fragment_locked';
+  return null;
+}
+
+/* op = { uid, opId } ; renvoie { ok, repeated, piece, fragment } ou { error }. La rune sort de la pièce et devient un
+   Fragment de rune (nouvel objet, nouvel uid) : rien n'est créé deux fois (opId). */
+export function unenchant(inv, op){
+  const prev = repeated(inv, op.opId, 'unenchant');
+  if(prev) return { ok:true, repeated:true, piece: pieceAt(inv, prev.uid), fragment: pieceAt(inv, prev.fragment) };
+  const e = unenchantError(inv, op.uid);
+  if(e) return { error: e };
+  const p = pieceAt(inv, op.uid), r = p.rune;
+  delete p.rune;
+  const fragment = { item: RUNE.fragment.item, uid: inv.nextUid, q: r.q, lines: r.lines.map(l => ({ ...l })), s: r.s };
+  putPiece(inv, fragment);
+  remember(inv, { id: op.opId, kind: 'unenchant', uid: op.uid, fragment: fragment.uid });
+  return { ok:true, repeated:false, piece: p, fragment: pieceAt(inv, fragment.uid) };
 }
