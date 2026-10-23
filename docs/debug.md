@@ -2140,7 +2140,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ pas regardé dans le navigateur. Un treasure à portée dans une area au-dessus de `tripCap`
   reste ignoré (voulu : fin de session).
 
-### Administration sans redémarrage : give-item (Geoffrey) — branche `geoffrey/give-item`, 🧪 pas en ligne
+### Administration sans redémarrage : give-item (Geoffrey) — branche `geoffrey/give-item`, ✅ en ligne le 23/10
 - **Quoi** : route `POST /api/admin/give` (`server/admin/routes.js`, branchée dans `server/app.js` quand le service de
   jeu existe) → `game.adminGive(accountId, item, qty)` (`server/game/service.js`) : sous le verrou `inv:<id>`, comme
   une action de joueur (mémoire + base ensemble). Compte par `nameKey`, objet exact d'`ITEMS`, qty entier 1..1000

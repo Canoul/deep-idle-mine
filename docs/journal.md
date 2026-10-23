@@ -15,7 +15,7 @@ Modèle d'entrée :
   "Treasure T3"` donne n'importe quel objet du jeu à un compte **sans arrêter ni redémarrer le jeu**. Il faut une
   fois la clé `DIM_ADMIN_TOKEN` dans les réglages du serveur (mode d'emploi dans `docs/deploiement-ovh.md`).
 - **Sécurité** : la commande ne marche que depuis le VPS lui-même, avec la clé ; depuis internet, elle n'existe pas.
-- **État** : 🧪 sur la branche `geoffrey/give-item` (pas en ligne)
+- **État** : ✅ en ligne le 23/10
 
 ## 23/10/2026 — Geoffrey — Petites corrections : canards en fin de partie, treasure oublié
 - **Pour le joueur** : en fin de session, au lieu d'attendre au coffre sans rien faire, les mineurs vont tuer les
