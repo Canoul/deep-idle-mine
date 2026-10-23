@@ -423,6 +423,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
+  'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack'];
 
 /* ---- Hors session : four (onglet Four) ----
@@ -502,6 +503,38 @@ export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
 const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
   QUALITY_NUMS.map(q => [chestItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:true, chest:{ side, q } }])));
 
+/* ---- Anneaux (23/10/2026, Geoffrey) ----
+   Deux cases de stuff (STUFF.slots, `fits: slot`). Un anneau n'a aucune stat pour son porteur seul : son effet va à
+   TOUT le groupe de la session (porteur compris), une seule fois même si plusieurs joueurs portent le même anneau
+   (src/meta/stuff.js withRings). Un joueur ne peut pas porter deux fois le même anneau. En mine instantanée (chacun
+   pour soi), seulement sur son porteur.
+   Ni craft, ni identification, ni amélioration, ni enchantement : un anneau ne vient que des trésors des tours.
+   Effets : mult = % ajouté au TOTAL de la stat (stuff et skills compris : ×1,03) ; add = points ajoutés à une stat
+   déjà en % (dégâts %, minage %, fortune, butin des mobs) ; xp = % d'XP en plus pour le pot commun de la session.
+   drops : à l'ouverture d'un trésor de tour (RUNE.treasures), en plus de la rune, un seul tirage : au plus un anneau,
+   chance de chacun. Valeurs provisoires (équilibrage). */
+export const RINGS = {
+  slot: 'anneau',
+  items: {
+    'Anneau du tigre':      { tex:'ring_tiger',  rarity:'rare',   mult:{ speed:3, climbSpeed:3 } },
+    'Anneau du lion':       { tex:'ring_lion',   rarity:'rare',   add:{ damagePct:3 } },
+    'Anneau du rat':        { tex:'ring_rat',    rarity:'rare',   add:{ mineSpeedPct:3 } },
+    'Anneau de la baleine': { tex:'ring_whale',  rarity:'rare',   mult:{ oxygenMax:3 } },
+    'Anneau du cuck':       { tex:'ring_cuck',   rarity:'rare',   mult:{ pods:3 } },
+    'Anneau du nerd':       { tex:'ring_nerd',   rarity:'rare',   xp:3 },
+    'Anneau de Midas':      { tex:'ring_midas',  rarity:'epique', add:{ fortune:2 } },
+    'Anneau du Bouffon':    { tex:'ring_jester', rarity:'epique', add:{ looting:2 } },
+  },
+  drops: {
+    angel: [ { item:'Anneau du tigre', chance:0.01 }, { item:'Anneau du lion', chance:0.01 }, { item:'Anneau du rat', chance:0.01 },
+             { item:'Anneau de la baleine', chance:0.01 }, { item:'Anneau du cuck', chance:0.01 }, { item:'Anneau du nerd', chance:0.01 },
+             { item:'Anneau de Midas', chance:0.005 } ],
+    demon: [ { item:'Anneau du tigre', chance:0.01 }, { item:'Anneau du lion', chance:0.01 }, { item:'Anneau du rat', chance:0.01 },
+             { item:'Anneau de la baleine', chance:0.01 }, { item:'Anneau du cuck', chance:0.01 }, { item:'Anneau du nerd', chance:0.01 },
+             { item:'Anneau du Bouffon', chance:0.005 } ],
+  },
+};
+
 /* ---- Rareté des objets (src/meta/rarity.js) ----
    tiers : du plus commun au plus rare ; color = contour de la case de l'objet et couleur de son nom, partout.
    items : rareté des objets qui ne sont pas « commun » (les autres le sont par défaut). Les shiny prennent
@@ -531,6 +564,7 @@ export const RARITY = {
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Cristal de pleine lune':'rare',
     'Plume d\'ange':'rare',
+    ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
   },
 };
 
@@ -555,6 +589,8 @@ export const STUFF = {
     { id:'gants',    label:'Gants',    icon:'🧤' }, { id:'ceinture', label:'Ceinture', icon:'🎗' },
     { id:'pioche',   label:'Pioche',   icon:'⛏' },  { id:'epee',     label:'Épée',     icon:'🗡' },
     { id:'cape',     label:'Cape',     icon:'🧣' }, { id:'boussole', label:'Boussole', icon:'🧭' },
+    /* deux cases pour le même genre de pièce : `fits` = la case des objets qu'elles acceptent (RINGS) */
+    { id:'anneau1',  label:'Anneau',   icon:'💍', fits:'anneau' }, { id:'anneau2',  label:'Anneau',   icon:'💍', fits:'anneau' },
   ],
   /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur) ; set : valeur qui REMPLACE la base (ex. l'épée
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
@@ -588,6 +624,8 @@ export const STUFF = {
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:13 } },     // remplace les mains nues (5)
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2,   // pods 125 le 23/10 (avant 60)
                                    attackSpeed:5, tenacity:2, fortune:1, looting:2, torches:5 } },
+    /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
+    ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',

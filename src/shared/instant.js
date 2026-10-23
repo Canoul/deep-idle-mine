@@ -3,7 +3,7 @@
    - répartition des inscrits en mines d'au plus MI.maxPerMine joueurs, de tailles égales ;
    - construction et rejeu de la partie depuis l'enregistrement du serveur (seed, joueurs, stuff, skills, départs). */
 import { INSTANT_MINE as MI, DT } from '../config.js';
-import { sanitizeLook, equippedStats } from '../meta/stuff.js';
+import { sanitizeLook, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
 import { newInstant, leaveInstant, INSTANT_TICKS } from '../sim/instant/session.js';
 
@@ -57,13 +57,14 @@ export { INSTANT_TICKS };
 export const instantTickAt = (elapsedMs, speed) => Math.max(0, Math.min(INSTANT_TICKS, Math.floor(elapsedMs / 1000 * speed / DT + 1e-9)));
 
 /* mineurs de la mine : un par joueur, avec son pseudo, son stuff porté (apparence + caractéristiques) et ses skills
-   figés à l'ouverture (revérifiés) ; même calcul que pour une session normale (src/shared/game.js minerSpecs) */
+   figés à l'ouverture (revérifiés) ; même calcul que pour une session normale (src/shared/game.js minerSpecs), sauf les
+   anneaux : chacun pour soi, ils ne profitent qu'à leur porteur */
 export function instantSpecs(record){
   return (record.players || []).map((p, i) => {
     const look = sanitizeLook(record.looks?.[p.account]);
     const st = sanitizeSkills(record.skills?.[p.account]), skills = skillEffects(st);
     return { name: String(p.name || '').slice(0, 24) || 'Joueur ' + (i + 1), account: p.account, look,
-             carac: withSkillStats(equippedStats(Object.values(look)), skills), skills, skillTree: st.tree };
+             carac: withRings(withSkillStats(equippedStats(Object.values(look)), skills), ringsOf(Object.values(look))), skills, skillTree: st.tree };
   });
 }
 

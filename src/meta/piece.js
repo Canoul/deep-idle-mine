@@ -14,7 +14,7 @@
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
    Les nombres viennent de UPGRADE (config) : qualités, prix des stats en x, pas d'arrondi, paliers. */
-import { UPGRADE, ITEMS, STATS, RUNE } from '../config.js';
+import { UPGRADE, ITEMS, STATS, RUNE, RINGS } from '../config.js';
 
 const QUALITY = new Map(UPGRADE.qualities.map(d => [d.q, d]));
 /* { q, label, color, chance, min, max, lines } de cette qualité, ou null */
@@ -22,6 +22,8 @@ export const qualityDef = q => QUALITY.get(q) ?? null;
 export const MAX_PLUS = UPGRADE.levels.length;
 export const isStuff = item => ITEMS[item]?.cat === 'stuff';
 export const isRune = item => ITEMS[item]?.cat === 'rune';
+/* anneau (RINGS) : du stuff qu'on n'identifie, n'améliore ni n'enchante jamais */
+export const isRing = item => typeof item === 'string' && Object.hasOwn(RINGS.items, item);
 /* fragment de rune (rune retirée d'une pièce, RUNE.fragment) : ses % ne comptent que pour RUNE.fragment.factor */
 export const isFragment = item => ITEMS[item]?.fragment === true;
 /* part des % d'une rune posée (rune:{ …, frag:true } = un fragment) ou d'un objet rune / fragment */
@@ -167,6 +169,7 @@ export function sanitizePiece(raw){
   }
   if(treasureOf(raw.item)) return { item: raw.item, uid: raw.uid };   // un trésor : sa qualité est dans son nom
   if(!isStuff(raw.item)) return null;
+  if(isRing(raw.item)) return { item: raw.item, uid: raw.uid };       // un anneau : ni qualité, ni niveau, ni rune
   const p = { item: raw.item, uid: raw.uid };
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
   if(id) Object.assign(p, id);

@@ -1,7 +1,7 @@
 /* Rareté des objets : commun par défaut, liste du créateur en inhabituel, shiny inhabituels. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RARITY, ITEMS, SHINY, RUNE } from '../src/config.js';
+import { RARITY, ITEMS, SHINY, RUNE, RINGS } from '../src/config.js';
 import { rarityOf, rarityDef } from '../src/meta/rarity.js';
 import { rcls, rname, rlabel } from '../src/ui/rarity.js';
 
@@ -29,7 +29,10 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const EPIC = ['Plastron de l\'équilibre', 'Plastron de l\'équilibre BP'];
   for(const n of STEEL) assert.equal(rarityOf(n), 'inhabituel', n);
   for(const n of EPIC) assert.equal(rarityOf(n), 'epique', n);
-  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC].includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* anneaux (23/10) : rares, Midas et Bouffon épiques */
+  const RINGS_ = Object.keys(RINGS.items);
+  for(const n of RINGS_) assert.equal(rarityOf(n), /Midas|Bouffon/.test(n) ? 'epique' : 'rare', n);
+  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

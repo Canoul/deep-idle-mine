@@ -1,4 +1,4 @@
-/* Stuff : 10 cases, équiper (la pièce quitte l'inventaire), remplacer, retirer, relecture sans duplication. */
+/* Stuff : 12 cases, équiper (la pièce quitte l'inventaire), remplacer, retirer, relecture sans duplication. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STUFF } from '../src/config.js';
@@ -13,9 +13,9 @@ function setup(picks = 1){
 }
 const uids = inv => inv.slots.filter(s => s?.item === PICK).map(s => s.uid);
 
-test('les 10 cases demandées', () => {
-  assert.deepEqual(SLOT_IDS, ['casque','torse','jambes','pieds','gants','ceinture','pioche','epee','cape','boussole']);
-  assert.equal(STUFF.slots.length, 10);
+test('les 12 cases demandées (dont 2 d\'anneau, 23/10)', () => {
+  assert.deepEqual(SLOT_IDS, ['casque','torse','jambes','pieds','gants','ceinture','pioche','epee','cape','boussole','anneau1','anneau2']);
+  assert.equal(STUFF.slots.length, 12);
 });
 
 test('la case pioche propose les pioches de l\'inventaire, les autres cases rien', () => {
@@ -94,7 +94,7 @@ test('stats du mineur : base + bonus des pièces portées, arrondies ; sans stuf
   const { STATS } = await import('../src/config.js');
   const { minerStats } = await import('../src/meta/stuff.js');
   const get = (worn, key) => minerStats(worn).find(s => s.key === key);
-  assert.deepEqual(get({}, 'oxygenMax'), { key:'oxygenMax', label:'Oxygène', base:STATS.oxygenMax, bonus:0, mult:1, add:0, skill:0, total:STATS.oxygenMax });
+  assert.deepEqual(get({}, 'oxygenMax'), { key:'oxygenMax', label:'Oxygène', base:STATS.oxygenMax, bonus:0, mult:1, add:0, skill:0, ring:0, total:STATS.oxygenMax });
   const worn = { casque:{ item:'Casque en chitine', uid:1 }, jambes:{ item:'Jambes en chitine', uid:2 }, pioche:{ item:PICK, uid:3 }, torse:null };
   assert.equal(get(worn, 'oxygenMax').total, STATS.oxygenMax + 30);
   assert.equal(get(worn, 'climbSpeed').total, Math.round((STATS.climbSpeed + 0.4) * 100) / 100);

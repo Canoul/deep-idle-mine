@@ -2156,3 +2156,29 @@ Règles (voir CLAUDE.md) :
   adresses), `tests/give-item.test.js` (script contre un vrai serveur, clé lue dans le fichier, refus) ✅ ; game-http,
   account-http ✅ ; anticheat 72/72 ✅.
 - **Point fragile** : pas d'opId : relancer la même commande donne deux fois.
+
+### Anneaux : 2 cases, effet de groupe, butin des trésors de tour (Geoffrey) — branche `geoffrey/anneaux`, ✅ en ligne le 23/10
+- **Config** : `RINGS` (`src/config.js`, avant `RARITY`) : `items` (tex, rarity, `mult` = % du total, `add` = points,
+  `xp` = % du pot), `drops.angel|demon` (format `oneOf` de `rollLoot` : un tirage, au plus un anneau). Les anneaux
+  entrent dans `STUFF.items` avec `slot:'anneau'` (aucune stat propre). `STUFF.slots` + `anneau1`, `anneau2` avec
+  `fits:'anneau'` : **une case n'est plus forcément le `slot` de l'objet** → `fits(item, slot)` dans
+  `src/meta/stuff.js` (remplace `slotOf(item) === slot` dans sanitizeLook/Gear, stuffOp, sanitizeStuff, piecesFor) ;
+  `equipSlotFor` pour le bouton « Équiper » de l'inventaire.
+- **Doublon** : `stuffOp` → `same_ring` ; `sanitizeLook`/`sanitizeGear` gardent le premier ; `sanitizeStuff` remet
+  le second exemplaire dans l'inventaire (`putPiece`, pas de perte).
+- **Effet** : `withRings(carac, rings)` après `withSkillStats` dans `minerSpecs` (`src/shared/game.js`, anneaux de
+  tous les joueurs via `groupRings(record)`, donc aussi les tours) et `instantSpecs` (MI : ses propres anneaux).
+  XP : `newSession({ xpMult })` → `G.xpMult`, appliqué dans `shareBySegments` (`Math.round(dxp × xpMult)` par
+  segment). Sans anneau : `withRings` ne change rien, `xpMult` = 1 → parties identiques.
+- **Verrous** : `isRing` (`src/meta/piece.js`) ; `sanitizePiece` enlève q/lines/plus/rune d'un anneau ;
+  `identifyError`/`upgradeError`/`enchantError` → `'ring'` (messages dans `server/game/service.js`) ; l'onglet
+  Amélioration ne liste pas les anneaux. Butin : `openTreasure` (`src/meta/loot.js`), seulement si
+  `ITEMS[item].treasure` (pas les anciens coffres ni les Treasure TX), idempotent par opId (le loot rejoué contient
+  l'anneau).
+- **UI / wiki** : grille Stuff à 6 lignes (`style.css`), colonne violette `.ringStats` (`minerStats` → `ring`),
+  textures `ring_*` (`scripts/gen_textures.py`), wiki (`statsOf`, `usesOf`, `sourcesOf`).
+- **Tests** : `tests/anneaux.test.js` (11), `tests/anticheat/anneaux.test.js` (3) ; stuff, rarity mis à jour ;
+  185 tests liés ✅ ; `npm run test:anticheat` 79/79 ✅. Simulation `--miners 3 --count 5` : 0 blocage, areas 3,0,
+  profondeur 182,4 (aucun anneau en simulation : chemin inchangé).
+- **Points fragiles** : ⚠️ onglet Stuff à 12 cases et icônes pas regardés dans un navigateur. Les stats affichées dans
+  l'onglet Stuff ne montrent que ses propres anneaux (ceux du groupe ne sont connus qu'au lancement).

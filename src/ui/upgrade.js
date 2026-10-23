@@ -4,7 +4,7 @@
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */
 import { UPGRADE, STUFF } from '../config.js';
-import { isIdentified, isStuff, isRune, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
+import { isIdentified, isStuff, isRune, isRing, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
 import { statLines, runeLines } from '../meta/stuff.js';
 import { sacrificesFor, nextLevel, upgradeNeeds } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
@@ -31,7 +31,7 @@ const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">
 export function setupUpgrade({ onOp }){
   let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, pick = 'target', busy = false, msg = '', ok = true;
   let rune = null;                                 // Enchantement : uid de la rune posée
-  const pieces = () => inv.slots.filter(s => s && s.uid != null && isStuff(s.item));
+  const pieces = () => inv.slots.filter(s => s && s.uid != null && isStuff(s.item) && !isRing(s.item));   // un anneau ne passe pas par ici (RINGS)
   const runes = () => inv.slots.filter(s => s && s.uid != null && isRune(s.item));
   const byUid = uid => inv.slots.find(s => s && s.uid != null && s.uid === uid) ?? null;
 

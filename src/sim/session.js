@@ -30,6 +30,7 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
+    xpMult: Number.isFinite(opts.xpMult) && opts.xpMult > 0 ? opts.xpMult : 1,   // anneaux du groupe (RINGS) : XP du pot commun
   };
   /* id unique de la session (distinct de la seed : rejouer une seed = une autre session) ; sert à ne créditer
      qu'une seule fois le coffre d'une session dans un inventaire */
@@ -154,7 +155,7 @@ function shareBySegments(G, present){
     const delta = {};
     for(const k in mk.chest){ const q = mk.chest[k] - (prevChest[k] || 0); if(q > 0) delta[k] = q; }
     const n = mk.present.length, dxp = Math.max(0, mk.xp - prevXp);
-    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(dxp, n);
+    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(Math.round(dxp * (G.xpMult ?? 1)), n);
     mk.present.forEach((m, j) => {
       if(!bags.has(m)) return;                                       // parti avant la fin : sa part est perdue
       const b = bags.get(m);

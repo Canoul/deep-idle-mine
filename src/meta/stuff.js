@@ -4,31 +4,46 @@
    État d'un joueur : { worn: { case: pièce | null }, ops:[opId…] } ; une pièce : { item, uid, q?, lines?, plus? }
    (qualité, lignes et niveau d'amélioration : src/meta/piece.js).
    Équiper sort la pièce de l'inventaire (et y remet celle qu'elle remplace) ; retirer l'y remet. Une pièce garde
-   son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée. */
-import { STUFF, ITEMS, STATS } from '../config.js';
+   son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée.
+   Anneaux (RINGS) : deux cases (anneau1, anneau2) pour le même genre d'objet, jamais deux fois le même anneau ; leur
+   effet va à tout le groupe de la session (withRings), une fois par anneau différent. */
+import { STUFF, ITEMS, STATS, RINGS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
-import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
-/* case où va un objet (null si ce n'est pas une pièce d'équipement) */
+/* genre de case où va un objet ('casque', 'anneau'…), null si ce n'est pas une pièce d'équipement */
 export const slotOf = item => ITEMS[item]?.cat === 'stuff' ? ITEMS[item].slot ?? null : null;
+/* cet objet va-t-il dans cette case ? (une case `fits` accepte les objets de ce genre : les deux cases d'anneau) */
+const SLOT_KIND = Object.fromEntries(STUFF.slots.map(s => [s.id, s.fits ?? s.id]));
+export const fits = (item, slot) => Object.hasOwn(SLOT_KIND, slot) && slotOf(item) === SLOT_KIND[slot];
+/* cases où peut aller cet objet ; equipSlotFor : celle où l'équiper (bouton « Équiper » de l'inventaire) : celle qui
+   porte déjà le même anneau (il le remplace), sinon la première vide, sinon la première */
+export const slotsFor = item => SLOT_IDS.filter(id => fits(item, id));
+export function equipSlotFor(item, worn = {}){
+  const ids = slotsFor(item);
+  return ids.find(id => worn[id]?.item === item) ?? ids.find(id => !worn[id]) ?? ids[0] ?? null;
+}
+/* le même objet est-il déjà porté dans une AUTRE case ? (anneaux : jamais deux fois le même) */
+const wornElsewhere = (worn, slot, item) => SLOT_IDS.some(id => id !== slot && worn[id]?.item === item);
 
 /* apparence d'un mineur en session : { case: objet } des pièces portées (src/skins.js). Visuel seulement.
    sanitizeLook : revérifiée (case connue, pièce qui va dans cette case) ; lookOf : depuis le stuff d'un joueur. */
 export function sanitizeLook(look){
   const out = {};
   if(!look || typeof look !== 'object') return out;
-  for(const slot of SLOT_IDS) if(typeof look[slot] === 'string' && slotOf(look[slot]) === slot) out[slot] = look[slot];
+  for(const slot of SLOT_IDS) if(typeof look[slot] === 'string' && fits(look[slot], slot) && !wornElsewhere(lookItems(out), slot, look[slot])) out[slot] = look[slot];
   return out;
 }
+const lookItems = look => Object.fromEntries(Object.entries(look).map(([k, v]) => [k, { item: v }]));
 export const lookOf = st => Object.fromEntries(Object.entries(st.worn).filter(([, p]) => p).map(([slot, p]) => [slot, p.item]));
 /* pièces portées pour les caractéristiques en session (qualité, lignes, niveau) : { case: pièce }.
    sanitizeGear : revérifiée (case connue, pièce qui va dans cette case, piece.js) ; gearOf : depuis le stuff d'un joueur. */
 export function sanitizeGear(gear){
   const out = {};
   if(!gear || typeof gear !== 'object') return out;
-  for(const slot of SLOT_IDS){ const p = sanitizePiece(gear[slot]); if(p && slotOf(p.item) === slot) out[slot] = p; }
+  for(const slot of SLOT_IDS){ const p = sanitizePiece(gear[slot]); if(p && fits(p.item, slot) && !wornElsewhere(out, slot, p.item)) out[slot] = p; }
   return out;
 }
 export const gearOf = st => sanitizeGear(st.worn);
@@ -43,6 +58,7 @@ const unitOf = k => STUFF.statUnits?.[k] ?? '';
 export function statLines(entry){
   const p = typeof entry === 'string' ? { item: entry } : entry || {};
   if(ITEMS[p.item]?.cat === 'rune') return runeLines(p);
+  if(isRing(p.item)) return ringLines(p.item);
   const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
   const label = k => STUFF.statLabels[k] ?? k;
   return [
@@ -61,6 +77,31 @@ export function runeLines(p){
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
     : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % de la valeur de la pièce`);
 }
+/* effet de groupe d'un anneau : ['Groupe · Vitesse (marche) +3 %', …] */
+export function ringLines(item){
+  const d = RINGS.items[item]; if(!d) return [];
+  const label = k => STUFF.statLabels[k] ?? k;
+  return [
+    ...Object.entries(d.mult || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)} %`),
+    ...Object.entries(d.add || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)}${unitOf(k)}`),
+    ...(d.xp ? [`Groupe · XP +${num(d.xp)} %`] : []),
+  ];
+}
+/* anneaux différents parmi des pièces (noms ou pièces), triés : ceux du groupe = ringsOf de toutes ses pièces */
+export const ringsOf = items => [...new Set((items || []).map(e => typeof e === 'string' ? e : e?.item).filter(isRing))].sort();
+/* caractéristiques avec l'effet de ces anneaux, chacun une fois : mult = % du total, add = points (RINGS) */
+export function withRings(carac, rings){
+  const out = { ...carac };
+  for(const r of new Set(rings || [])){
+    const d = RINGS.items[r]; if(!d) continue;
+    for(const [k, v] of Object.entries(d.mult || {})) if(typeof out[k] === 'number') out[k] = r2(out[k] * (1 + v / 100));
+    for(const [k, v] of Object.entries(d.add || {})) out[k] = r2((out[k] || 0) + v);
+  }
+  return out;
+}
+/* multiplicateur d'XP du pot commun de la session avec ces anneaux (1 = aucun) */
+export const ringXpMult = rings => 1 + [...new Set(rings || [])].reduce((s, r) => s + (RINGS.items[r]?.xp || 0), 0) / 100;
+
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');
 const r2 = v => Math.round(v * 100) / 100;   // 2,25 + 0,4 donne 2,65 et pas 2,6500000000000004
@@ -83,13 +124,18 @@ export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(
    bonus = apport du stuff (ajouté), mult = multiplicateur des skills (1 = aucun), total = (base + bonus) × mult : ce qu'il a
    en session ; skill = ce que le multiplicateur ajoute (total − (base + bonus)) */
 export function minerStats(worn, effects = {}){
-  const s = statsOf(Object.values(worn || {}).filter(Boolean));
+  const pieces = Object.values(worn || {}).filter(Boolean);
+  const s = statsOf(pieces);
   const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
   const all = withSkillStats(withStuff, effects);
   const multOf = key => Object.hasOwn(SKILL_STATS, key) ? 1 + (effects[SKILL_STATS[key]] || 0) : 1;
   const addOf = key => Object.hasOwn(SKILL_ADD, key) ? (effects[SKILL_ADD[key].node] || 0) * SKILL_ADD[key].scale : 0;
+  /* anneaux de ce joueur (en session, ceux du reste du groupe s'ajoutent) : ring = ce qu'ils ajoutent au total */
+  const before = Object.fromEntries(STUFF.shownStats.map(k => [k, r2(all[k] + addOf(k))]));
+  const after = withRings(before, ringsOf(pieces));
   return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key],
-    mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key)), total:r2(all[key] + addOf(key)) }));
+    mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key)),
+    ring:r2(after[key] - before[key]), total:after[key] }));
 }
 
 /* bulle d'info d'une pièce de stuff (nom d'objet ou pièce) : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */
@@ -104,7 +150,7 @@ export function stuffTip(entry){
 export function createStuff(){ return { worn: Object.fromEntries(SLOT_IDS.map(s => [s, null])), ops: [] }; }
 
 /* pièces de l'inventaire qui vont dans cette case */
-export const piecesFor = (inv, slot) => inv.slots.filter(s => s && s.uid != null && slotOf(s.item) === slot);
+export const piecesFor = (inv, slot) => inv.slots.filter(s => s && s.uid != null && fits(s.item, slot));
 
 /* op = { action:'equip'|'unequip', slot, uid, opId } ; modifie inv et st ensemble. Renvoie { ok, repeated } ou { error } */
 export function stuffOp(inv, st, op){
@@ -115,7 +161,8 @@ export function stuffOp(inv, st, op){
     if(!Number.isSafeInteger(op.uid)) return { error:'bad_request' };
     const s = inv.slots.find(s => s && s.uid === op.uid);
     if(!s) return { error:'not_owned' };
-    if(slotOf(s.item) !== op.slot) return { error:'wrong_slot' };
+    if(!fits(s.item, op.slot)) return { error:'wrong_slot' };
+    if(wornElsewhere(st.worn, op.slot, s.item)) return { error:'same_ring' };   // jamais deux fois le même anneau
     st.worn[op.slot] = takePiece(inv, op.uid);
     if(cur) putPiece(inv, cur);                          // l'ancienne pièce revient dans l'inventaire
   } else if(op.action === 'unequip'){
@@ -135,10 +182,11 @@ export function sanitizeStuff(raw, inv){
   for(const slot of SLOT_IDS){
     const p = worn[slot];
     const piece = sanitizePiece(p);                   // qualité, lignes et niveau revérifiés
-    if(!piece || slotOf(piece.item) !== slot || seen.has(piece.uid)) continue;
+    if(!piece || !fits(piece.item, slot) || seen.has(piece.uid)) continue;
     seen.add(piece.uid);
-    st.worn[slot] = piece;
     if(inv.nextUid <= p.uid) inv.nextUid = p.uid + 1;
+    if(wornElsewhere(st.worn, slot, piece.item)){ putPiece(inv, piece); continue; }   // 2e exemplaire du même anneau : rendu à l'inventaire
+    st.worn[slot] = piece;
   }
   st.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-STUFF.opMemory) : [];
   return st;

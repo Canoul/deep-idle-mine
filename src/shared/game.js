@@ -10,7 +10,7 @@
 import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
-import { sanitizeLook, sanitizeGear, equippedStats } from '../meta/stuff.js';
+import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpMult } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
 
 /* ---------- préférences ---------- */
@@ -70,16 +70,23 @@ export function minerSpecs(record){
     ? Object.values(sanitizeGear(record.gear[players[i].account])) : Object.values(lookOf(i));
   /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats */
   const skillsOf = i => skillEffects(sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null));
-  const caracOf = i => withSkillStats(equippedStats(gearOf(i)), skillsOf(i));
+  /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
+  const rings = groupRings(record);
+  const caracOf = i => withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings);
   const treeOf = i => sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null).tree;
   const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i) });
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
   return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
 }
 
+/* anneaux portés par les joueurs de la session au lancement (RINGS), chacun une fois */
+export const groupRings = record => ringsOf((record.players || []).flatMap(p => record.gear?.[p.account]
+  ? Object.values(sanitizeGear(record.gear[p.account])) : Object.values(sanitizeLook(record.looks?.[p.account]))));
+
 export function buildSession(record){
   return newSession(record.seed, {
     miners: minerSpecs(record),
+    xpMult: ringXpMult(groupRings(record)),         // Anneau du nerd : XP du pot commun
     accounts: (record.players || []).map(p => p.account),
     id: record.id,
     noResidues: record.residues === false,          // une tour du Jugement était ouverte au lancement (23/10)

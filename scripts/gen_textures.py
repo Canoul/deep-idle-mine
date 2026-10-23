@@ -832,6 +832,27 @@ def main():
         rect(pk, 13, 8, 2, 1, hexc(dark))
         tex[name] = pk
 
+    # anneaux (23/10) : anneau vu de face (métal) et une pierre sur le dessus, couleur propre à chaque anneau
+    def ring(metal, gem):
+        px = blank()
+        m, ml, md = hexc(metal), shade(hexc(metal), 1.3), shade(hexc(metal), 0.6)
+        for y in range(S):
+            for x in range(S):
+                d = ((x - 7.5) ** 2 + (y - 9.5) ** 2) ** 0.5
+                if 2.6 <= d <= 5.2:
+                    px[y * S + x] = ml if (x < 7 and y < 10) else (md if (x > 8 and y > 10) else m)
+        g, gl, gd = hexc(gem), shade(hexc(gem), 1.4), shade(hexc(gem), 0.6)
+        rect(px, 6, 1, 4, 4, g)                                             # pierre
+        rect(px, 6, 1, 4, 1, gd); rect(px, 6, 4, 4, 1, gd)
+        rect(px, 7, 2, 1, 1, gl)                                            # reflet
+        rect(px, 6, 5, 4, 1, m)                                             # chaton
+        return px
+    for name, metal, gem in [('ring_tiger', '#c9a23a', '#ff9a1f'), ('ring_lion', '#c9a23a', '#e03b2a'),
+                             ('ring_rat', '#9aa1ab', '#a0623a'), ('ring_whale', '#9aa1ab', '#3aa7ff'),
+                             ('ring_cuck', '#9aa1ab', '#7bd25a'), ('ring_nerd', '#9aa1ab', '#b77bff'),
+                             ('ring_midas', '#ffd23f', '#fff2a8'), ('ring_jester', '#b06bff', '#ff4fb8')]:
+        tex[name] = ring(metal, gem)
+
     for name, px in tex.items():
         os.makedirs(os.path.dirname(os.path.join(OUT, name + '.png')), exist_ok=True)
         png(os.path.join(OUT, name + '.png'), px)
