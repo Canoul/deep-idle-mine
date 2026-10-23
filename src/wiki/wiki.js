@@ -114,7 +114,7 @@ function instant(){
 function judgment(){
   const g = D.judgmentInfo(), T = g.tower, B = T.boss, sec = s => s >= 60 ? `${s / 60} min` : `${s} s`;
   const sides = Object.values(g.sides);
-  $('w-judgment').innerHTML = `<h2>Les résidus</h2><p>À partir de l'<b>area ${g.fromArea}</b>, ${f(g.pct)} % des blocs de chaque area sont du ${sides.map(s => item(s.item)).join(' et du ')} (soit ${g.residues} de chaque par area). Ils pèsent lourd dans le sac, mais une fois rapportés au coffre, ils remplissent la jauge de leur camp : <b>tous les joueurs du serveur remplissent les mêmes jauges</b>. Ils sont aussi partagés en fin de session comme les autres blocs. Quitter la session = ils ne comptent pas.</p>`+
+  $('w-judgment').innerHTML = `<h2>Les résidus</h2><p>À partir de l'<b>area ${g.fromArea}</b>, ${f(g.pct)} % des blocs de chaque area sont des résidus, à la place de la pierre : du ${sides.map(s => item(s.item)).join(' et du ')}, moitié chacun (soit ${g.residues} par area en tout). Ils pèsent lourd dans le sac, mais une fois rapportés au coffre, ils remplissent la jauge de leur camp : <b>tous les joueurs du serveur remplissent les mêmes jauges</b>. Ils sont aussi partagés en fin de session comme les autres blocs. Quitter la session = ils ne comptent pas.</p>`+
     table(['Jauge', '#Pour ouvrir la tour', 'Ensuite'], sides.map(s => tr([`<b>${esc(s.label)}</b>`, num(f(g.cap)), `La <b>${esc(s.tower)}</b> ouvre <b>${g.hours} h</b> ; la jauge repart de 0 et continue de se remplir`])));
   $('w-tower').innerHTML = `<ul>
     <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>

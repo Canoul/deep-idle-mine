@@ -9,6 +9,16 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Résidus : 0,5 % au total, à la place de la pierre
+- **Pour le joueur** : à partir de l'area 4, chaque area a **13 résidus** (6 d'un camp, 7 de l'autre), soit 0,5 % des
+  blocs, au lieu de 26 (13 + 13, 1,04 %). Ils remplacent uniquement de la **pierre normale** ; la pierre dure et le
+  reste ne bougent plus.
+- **Décisions** (Geoffrey) : 0,5 % en cumul, pris sur la pierre normale. 0,5 % de 2 500 blocs = 12,5 : on arrondit à
+  13, et le camp du 13e est tiré par la seed (équilibré en moyenne).
+- **À suivre** : deux fois moins de résidus rapportés → les jauges (cap 250) mettront environ deux fois plus de temps à
+  se remplir.
+- **État** : ✅ en ligne le 23/10
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).

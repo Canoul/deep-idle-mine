@@ -1974,3 +1974,14 @@ Règles (voir CLAUDE.md) :
 - **Tests** : research (tier 3 fermé puis ouvert, 150 parts, poids 4× moins avec 20 000 tirages ≈ 4 %, dernier plan,
   recyclage 40-70 ; tier inconnu = 4), wiki ✅ ; anticheat ✅.
 - **Points fragiles** : ⚠️ onglet non regardé dans un navigateur. Un poids invalide (≤ 0, NaN) compte pour 1.
+
+### Résidus : 0,5 % en cumul, sur la pierre (Geoffrey) — branche `geoffrey/residus-cumul`, ✅ en ligne le 23/10
+- **Constat** (mesure, seeds 1, 7919, 424242) : areas 4 à 6 = 13 anges + 13 démons = 1,04 %, pris sur pierre et pierre
+  dure : `placeResidues` appliquait `JUDGMENT.pct` à chaque camp.
+- **Quoi** : `placeResidues` (`src/sim/world.js`) : n = round(N × pct / 100) = 13 en tout, `floor(n/2)` par camp, le reste
+  à un camp tiré par le RNG des résidus ; cases candidates = `IDS.stone` seulement (`counts.stone` décrémenté).
+  Commentaire de `JUDGMENT` (config) ; textes du wiki (`data.js`, `wiki.js`). ⚠️ Une première version avait coupé la
+  ligne de `JUDGMENT` par un commentaire (`openHours`, `salt` perdus) : repéré par judgment.test, corrigé.
+- **Tests** : world (4 seeds : 13 en tout, écart ≤ 1, comptes = blocs posés, pierre dure intacte, déterministe),
+  judgment, wiki, blocks, view, tower ✅ 52/52. Simulation 3 × 5 : 3,0 / 192,2, mixed 3,4 / 201,2, 0 blocage (inchangé).
+
