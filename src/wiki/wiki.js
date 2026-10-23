@@ -187,7 +187,7 @@ function craft(){
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));
   $('w-research').innerHTML = table(['Tier', '#Prix', 'Blueprints possibles', '#Recycler un BP du tier rend'], D.researchRows().map(r =>
-    tr([`<b>Tier ${r.tier}</b>`, num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>`,
+    tr([`<b>Tier ${r.tier}</b>`, num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>` + r.rarer.map(x => `<div class="small mut">${esc(x.item)} : ${f(x.times)} fois moins de chance que les autres</div>`).join(''),
         num(`${r.recycle.min} à ${r.recycle.max} parts`)])));
 }
 
