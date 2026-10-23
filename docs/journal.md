@@ -9,6 +9,17 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Plastrons : plus de pods
+- **Pour le joueur** : les plastrons donnent plus de pods : chitine **+30** (avant 25), fer **+50** (33), acier **+80**
+  (40), équilibre **+125** (60). Les plastrons **déjà fabriqués** ont les nouvelles valeurs (les stats sont lues
+  dans le catalogue à chaque session) ; les lignes d'identification et les runes sur un plastron grandissent aussi
+  (elles valent un % de la valeur de la pièce).
+- **Décisions** : les pods sont le levier de la progression (simulation : +100 pods sur une équipe en fer = area 5
+  ouverte 6 min plus tôt ; dureté de la pierre, oxygène, torches, dégâts : 0 à 3 min). L'acier ne suit plus
+  « fer × 1,2 » pour le plastron.
+- **À suivre** : mesurer l'effet sur l'ouverture de l'area 5 (cible : ~45 min pour une équipe stuffée).
+- **État** : 🧪 sur la branche `geoffrey/pods-plastrons` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Mine instantanée : graphite et diamant
 - **Pour le joueur** : la mine instantanée contient maintenant 20 % charbon, 40 % fer, **33 % or** (avant 39 %),
   **5 % graphite** et **1 % diamant** (nouveaux), plus 1 % de tas de plumes. Par mine : 125 graphites et 25 diamants.

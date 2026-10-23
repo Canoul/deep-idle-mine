@@ -20,7 +20,7 @@ const ARMOR = { 'Shiny iron':10, 'Tissu sombre':10 }, TOOL = { 'Shiny gold':10, 
 /* demandé par le créateur : pièce en fer × 1,2 (entier le plus proche pour oxygène, pods, dégâts) */
 const STEEL = {
   'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:46 },     cost:{ 'Steel ingot':10, ...ARMOR } },
-  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:40 },          cost:{ 'Steel ingot':16, ...ARMOR } },
+  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:80 },          cost:{ 'Steel ingot':16, ...ARMOR } },
   'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:0.72 },  cost:{ 'Steel ingot':14, ...ARMOR } },
   'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:0.72 },       cost:{ 'Steel ingot':8,  ...ARMOR } },
   'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.48 },   cost:{ 'Steel ingot':20, ...TOOL } },
@@ -36,7 +36,7 @@ test('pièces en acier : fer × 1,2, même case, recette et blueprint, inhabitue
     assert.deepEqual(it.stats, d.stats ?? {}, name);
     assert.deepEqual(it.set, d.set ?? {}, name);
     for(const [k, v] of Object.entries({ ...iron.stats, ...iron.set }))
-      assert.ok(Math.abs(({ ...it.stats, ...it.set })[k] - v * 1.2) <= 0.5, `${name} ${k} ≈ fer × 1,2`);
+      if(k !== 'pods') assert.ok(Math.abs(({ ...it.stats, ...it.set })[k] - v * 1.2) <= 0.5, `${name} ${k} ≈ fer × 1,2`);   // plastron : pods fixés à part (23/10)
     assert.deepEqual(RECIPES[name].cost, d.cost, name);
     assert.equal(RECIPES[name].unlock, name + ' BP');
     assert.equal(rarityOf(name), 'inhabituel'); assert.equal(rarityOf(name + ' BP'), 'inhabituel');
@@ -46,14 +46,14 @@ test('pièces en acier : fer × 1,2, même case, recette et blueprint, inhabitue
 
 test('Plastron de l\'équilibre : torse, ses 9 stats, recette du créateur, épique', () => {
   assert.equal(ITEMS[BALANCE].slot, 'torse');
-  assert.deepEqual(ITEMS[BALANCE].stats, { pods:60, oxygenMax:20, mineSpeedPct:2, damagePct:2, attackSpeed:5,
+  assert.deepEqual(ITEMS[BALANCE].stats, { pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2, attackSpeed:5,
                                            tenacity:2, fortune:1, looting:2, torches:5 });
   assert.deepEqual(RECIPES[BALANCE].cost, { 'Steel ingot':50, 'Shiny gold':20, 'Rubis inférieur':1, 'Saphir inférieur':1,
                                             'Jade inférieur':1, 'Résidu angélique':50, 'Résidu démoniaque':50 });
   assert.equal(RECIPES[BALANCE].unlock, BALANCE + ' BP');
   assert.equal(rarityOf(BALANCE), 'epique'); assert.equal(rarityOf(BALANCE + ' BP'), 'epique');
   const s = equippedStats([BALANCE]), base = equippedStats([]);
-  assert.equal(s.pods - base.pods, 60); assert.equal(s.tenacity - base.tenacity, 2);
+  assert.equal(s.pods - base.pods, 125); assert.equal(s.tenacity - base.tenacity, 2);
   assert.equal(s.torches - base.torches, 5); assert.equal(s.mineSpeedPct, 2);
 });
 
