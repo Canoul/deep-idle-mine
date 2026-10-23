@@ -138,3 +138,17 @@ test('départ du coffre : il prend la descente existante (treuil) au lieu de cre
   assert.deepEqual([...new Set(fresh.map(f => f.split(' ')[0]))], [], `puits neufs : ${fresh.slice(0, 3).join(', ')}`);
   assert.ok(winchRides > 300, `les autres prennent le seau (${winchRides} ticks)`);
 });
+
+test('prolonger le treuil : tombé à côté du puits (trou près de la surface), il le rejoint au lieu de remonter en boucle (seed 1209172417)', () => {
+  const G = shaft(10, 24), m = G.miners[0];
+  G.tiles[1][X - 1] = 0;                                   // trou juste à gauche du treuil, sous la surface
+  G.tiles[1][X - 2] = 0; G.ladder[1][X - 2] = 1;           // une échelle à côté : il remonte par là, sans repasser au-dessus du trou
+  m.x = X - 3; m.y = 0; m.skill.winch = 1; m.skillTree = 'logisticien';
+  m.winchJob = { bottom:16 };
+  m.mode = 'surface';
+  let ups = 0, prev = m.y;
+  for(let i = 0; i < 3000 && m.winchJob; i++){ run(G, 1); if(prev > 0 && m.y === 0) ups++; prev = m.y; }
+  assert.equal(m.winchJob, null, 'chantier fini');
+  assert.equal(G.winch.bottom, 16);
+  assert.ok(ups <= 1, `remonté ${ups} fois à la surface pendant le chantier`);
+});

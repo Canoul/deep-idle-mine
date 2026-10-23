@@ -399,7 +399,9 @@ function decideWinch(G,m){
     else {
       /* sorti du puits (combat, tacle) : il y retourne par le chemin le plus court s'il est proche, à une hauteur déjà
          creusée ; sinon il repart d'en haut (avec des mobs résistants, repartir d'en haut à chaque combat tournait en rond) */
-      const top=m.winchDepth ?? 0;
+      /* hauteur déjà creusée : celle de ce chantier, ou le treuil déjà posé qu'il prolonge (seed 1209172417, 23/10 :
+         tombé à côté du treuil en allant le prolonger, il remontait, retombait, remontait… jusqu'à la fin) */
+      const top=Math.max(m.winchDepth ?? 0, G.winch?.bottom ?? 0);
       const r=top>0 && search(G,m,m.x,m.y,true,(x,y)=>x===WINCH.x && y>=1 && y<=top,CFG.planMaxCost);
       const st=r && firstStep(r,r.n);
       if(st && (st.dx||st.dy)){ m.status='Retourne au puits du treuil'; if(!stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})) idle(m,0.3); return; }
