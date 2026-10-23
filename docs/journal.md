@@ -9,6 +9,19 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 23/10/2026 — Geoffrey — Petites corrections : canards en fin de partie, treasure oublié
+- **Pour le joueur** : en fin de session, au lieu d'attendre au coffre sans rien faire, les mineurs vont tuer les
+  Gallianix (canards) de la surface, s'ils ont le temps de revenir au coffre ensuite (le Fragment de cœur n'est pas
+  perdu). Ils ne le font pas en « Ignorer » ou « Fuir », ni si le canard est de l'autre côté d'un trou.
+- **Pour le joueur** : un treasure découvert dans une area du dessus (ex. collé au puits du treuil, où tout le monde
+  passe) restait là toute la partie : avec « Plus profond », le mineur ne regardait que l'area la plus profonde. Ce
+  n'était pas une question de poids (le treasure est déjà la cible la plus attirante). Maintenant, un treasure ou un
+  résidu découvert à 12 cases ou moins est pris quel que soit le focus d'area.
+- **Décisions** : treasures et résidus passent avant le focus d'area quand ils sont à portée (Geoffrey).
+- **À suivre** : rien de visible sur les 5 parties de référence (aucune ne tombe sur ces cas) ; la seed 1384517703
+  ouvre maintenant son treasure.
+- **État** : 🧪 sur la branche `geoffrey/fin-session-canards-tresor` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Mineur : skill « Légende de la flemme »
 - **Pour le joueur** : 4e étage de l'arbre Mineur, 0/1 (après Ruée 5/5) : quand le mineur doit remonter à la surface,
   **5 % de chance de se téléporter au-dessus du coffre commun**.
