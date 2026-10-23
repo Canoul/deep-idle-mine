@@ -31,7 +31,7 @@ Idle game sur navigateur. Le joueur ne contrôle pas directement le mineur : il 
 - L'area suivante se trouve **en dessous** de l'actuelle : l'expérience voulue est le « going deep ».
 - Seules les areas débloquées ont besoin d'exister en mémoire ; la profondeur est quasi gratuite.
 - **La couche 1 du monde (juste sous la surface) est toujours en terre.** Elle **ne fait partie d'aucune area** (pour ne pas fausser les pourcentages) : l'area 0 occupe les couches 2 à 51, l'area 1 les couches 52 à 101, etc.
-- Le **coffre** est généré au spawn, sur la surface. Les ressources déposées dedans partent dans l'inventaire global à la fin de la session du joueur.
+- Le **coffre** est généré au spawn, sur la surface. Les ressources déposées dedans partent dans l'inventaire global à la fin de la session du joueur. Il est en colonne 22 (sur 50), à côté du treuil (colonne 25, le milieu). **La case sous le coffre est un « socle » incassable** *(23/10/2026, Geoffrey)* : personne ne creuse sous le coffre, ce qui évite des bugs de chemin.
 
 ### Catégories de blocs
 

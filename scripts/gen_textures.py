@@ -180,6 +180,16 @@ def main():
         rect(barrier, i, (i // 4) % 2 * 8, 2, 8, hexc('#4a4a66'))
     tex['barrier'] = barrier
 
+    # socle du coffre : dalle de pierre grise cerclée de fer, rivets aux coins (incassable)
+    base = noisy(hexc('#5a5a62'), 18, 0.08)
+    iron = hexc('#2e2e34')
+    rect(base, 0, 0, 16, 2, iron); rect(base, 0, 14, 16, 2, iron)
+    rect(base, 0, 0, 2, 16, iron); rect(base, 14, 0, 2, 16, iron)
+    for (rx, ry) in ((2, 2), (12, 2), (2, 12), (12, 12)):
+        rect(base, rx, ry, 2, 2, hexc('#b0b0b8'))
+    rect(base, 4, 7, 8, 2, hexc('#46464e'))
+    tex['chest_base'] = base
+
     # passerelle : planches de bois, posée par le mineur pour combler un trou
     # dalle d'un quart de bloc : remplit le haut de la case (4 px), transparente en dessous
     bridge = blank()
