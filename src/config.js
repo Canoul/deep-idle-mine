@@ -356,6 +356,16 @@ export const XP = {
    du seau pour une colonne d'échelles ou un trou à côté (×2 essayé le 22/10/2026, refusé : la vitesse ne change pas). */
 export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
 
+/* Mule (skill Logisticien, étage 4, 23/10/2026, Geoffrey ; spec docs/superpowers/specs/2026-10-23-mule-design.md) :
+   le logisticien qui pose le treuil pose un sac à côté du bas du treuil (à droite, sinon à gauche). Les mineurs aux
+   pods pleins y déposent si le sac est plus près que la surface. Capacité = capacityPct × la somme des pods des
+   logisticiens présents qui ont Mule. Vidé dans le coffre seulement à la prolongation du treuil et en fin de session
+   (le logisticien le ramasse en remontant), ou si le logisticien quitte la session. Valeurs provisoires.
+   depositTime / pickTime : durée (s) d'un dépôt dans le sac et du ramassage / de la pose.
+   pickBelow : à la prolongation, il passe reprendre son sac s'il n'est pas plus de pickBelow couches sous lui (sinon il
+   le reprendra en redescendant par le puits du treuil, sans le vider). */
+export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
+
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
 
@@ -382,6 +392,7 @@ export const SKILLS = {
       { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
       { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
       { id:'travel_rush', row:3, max:5, per:0.03, needsAll:true, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
+      { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
       { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}', adds:{ tenacity:5 } },
@@ -408,7 +419,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).

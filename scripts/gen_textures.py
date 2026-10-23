@@ -707,6 +707,18 @@ def main():
     rect(bucket, 2, 12, 12, 1, hexc('#5a6069'))
     rect(bucket, 3, 6, 2, 9, hexc('#b8854a'))
     tex['bucket'] = bucket
+    # sac de la Mule (skill Logisticien) : sac à dos en cuir, rabat, sangles et boucle en fer
+    backpack = blank()
+    rect(backpack, 5, 1, 6, 2, hexc('#5c3a1a'))   # poignée
+    rect(backpack, 6, 2, 4, 1, (0, 0, 0, 0))
+    rect(backpack, 3, 3, 10, 12, hexc('#8a5a2b'))  # corps
+    rect(backpack, 3, 3, 10, 5, hexc('#a06a35'))   # rabat
+    rect(backpack, 3, 8, 10, 1, hexc('#5c3a1a'))   # bord du rabat
+    rect(backpack, 7, 7, 2, 3, hexc('#9aa3ad'))    # boucle
+    rect(backpack, 4, 10, 1, 4, hexc('#6e4520'))   # coutures
+    rect(backpack, 11, 10, 1, 4, hexc('#6e4520'))
+    rect(backpack, 3, 15, 10, 1, hexc('#4a2e14'))  # fond
+    tex['backpack'] = backpack
 
     # étourdi (chute imprévue) : étoiles jaunes qui tournent au-dessus de la tête du mineur (haut de la case)
     stun = blank()

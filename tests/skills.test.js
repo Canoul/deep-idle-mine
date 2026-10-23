@@ -15,12 +15,12 @@ let n = 0; const id = () => 'op-sk-' + (++n);
 const learnAll = (st, nodes, points = 99) => { for(const x of nodes) assert.ok(skillOp(st, { action:'learn', node:x, opId:id() }, points).ok, x); return st; };
 const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n => Array(n.max).fill(n.id));
 
-test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + Braum 3 au 4e pour le Barbare) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
+test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + Braum 3 et Mule 1 au 4e) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5], logisticien:[3, 1, 1, 5], barbare:[3, 1, 5, 3] }[t.id]);   // Barbare : Braum à l'étage 4
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5], logisticien:[3, 1, 1, 5, 1], barbare:[3, 1, 5, 3] }[t.id]);   // étage 4 : Braum (Barbare), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
-  assert.deepEqual(lg.map(n => [n.id, n.row]), [['build_time', 1], ['tall_ladder', 2], ['winch', 2], ['travel_rush', 3]]);
+  assert.deepEqual(lg.map(n => [n.id, n.row]), [['build_time', 1], ['tall_ladder', 2], ['winch', 2], ['travel_rush', 3], ['mule', 4]]);
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
   assert.equal(nodeText('mine_speed', 3), 'Vitesse de minage +6 %');
   assert.equal(nodeText('ore_rush', 0).startsWith('Vitesse de marche +3 %'), true);

@@ -11,12 +11,14 @@
      node scripts/simulate.js --focus area:0      → focus d'area (combinable : area:1,coal:only)
      node scripts/simulate.js --skills barbare    → chaque mineur a l'arbre complet (mineur, logisticien, barbare) ;
                                                      mixed = un arbre différent par mineur (1er mineur, 2e logisticien, 3e barbare)
+     node scripts/simulate.js --skills mixed --no-mule → pareil, sans le skill Mule (comparer le sac)
    Affiche : areas débloquées, profondeur max, coffre, allers-retours, coffres au trésor ouverts / enfouis
    (dans les areas générées), et un détecteur de blocage. */
 import { runSession } from '../src/sim/session.js';
 import { stuckDetector } from '../src/sim/diagnostics.js';
 import { setFocus } from '../src/sim/focus.js';
 import { SKILLS } from '../src/config.js';
+import { itemW } from '../src/sim/mule.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../src/meta/skills.js';
 
 const args = process.argv.slice(2);
@@ -26,11 +28,13 @@ const count  = +opt('count', 8);
 const seeds  = opt('seeds', null) ? String(opt('seeds')).split(',').map(Number) : Array.from({length:count},(_,i)=>(i+1)*7919);
 const json   = args.includes('--json');
 const skills = opt('skills', null);
+const noMule = args.includes('--no-mule');
 /* arbre de skills complet (tous les rangs) pour un mineur : mêmes effets qu'en session (src/shared/game.js) */
 function giveTree(m, tree){
   const t = SKILLS.trees.find(x => x.id === tree); if(!t) throw new Error('arbre inconnu : ' + tree);
   const st = sanitizeSkills({ tree, ranks:Object.fromEntries(t.nodes.map(n => [n.id, n.max])) });
   m.skill = { ...m.skill, ...skillEffects(st) }; m.skillTree = tree;
+  if(noMule) m.skill.mule = 0;
   m.carac = withSkillStats(m.carac, m.skill);   // mêmes stats qu'en session (multiplicateurs, ténacité…)
 }
 const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))
@@ -49,9 +53,12 @@ for(const seed of seeds){
     mined: G.stats.mined, kills: G.stats.kills, treasures: G.stats.treasures,
     treasuresHidden: G.areas.filter(a=>a.treasure).length,
     ore: G.areas.map(a=>a.oreMined+'/'+a.oreTotal), chest: G.chest,
+    chestPods: Math.round(Object.entries(G.chest).reduce((s,[k,n])=>s+n*itemW(k),0)),   // poids total rapporté au coffre
     focusLeft: G.miners.map(m=>JSON.stringify(m.prefs.focus)).join(' '), focusDropped: G.miners.some(m=>m.focusNotice),
     miners: G.miners.map(m=>({ name:m.name, ...m.stats, chest:G.chestBy[m.id]||{} })),
     stuck: det.result(),
+    mule: { deposits: G.stats.muleDeposits||0, pods: G.stats.mulePods||0, emptied: G.stats.muleEmptied||0,
+            lost: G.mule ? G.mule.load : 0, placed: !!G.mule?.placed },
     dungeons: G.dungeons.filter(d=>d.k<G.unlockedAreas).map(d=>`area ${d.k} ${d.cleared ? 'vaincu' : d.found ? 'découvert' : 'pas vu'}`),
   });
 }
@@ -61,6 +68,7 @@ if(json){ console.log(JSON.stringify(rows, null, 1)); process.exit(0); }
 for(const r of rows){
   console.log(`seed ${String(r.seed).padStart(10)} | areas débloquées ${r.areas-1} | prof max ${String(r.depth).padStart(3)} | allers-retours ${String(r.trips).padStart(2)} | treasures ${r.treasures}/${r.treasuresHidden} | étourdi ${r.stuns}× | minerai ${r.ore.join(' ')}` +
     (r.stuck.length ? `  ⚠ BLOQUÉ ${JSON.stringify(r.stuck[0])}` : ''));
+  if(r.mule.deposits || r.mule.emptied || r.mule.lost) console.log(`    sac (Mule) : ${r.mule.deposits} dépôts, ${Math.round(r.mule.pods)} pods déposés, ${Math.round(r.mule.emptied)} vidés au coffre, ${Math.round(r.mule.lost)} perdus`);
   if(r.dungeons.length) console.log(`    donjon ${r.dungeons.join(' | ')}`);
   if(focus) console.log(`    coffre ${JSON.stringify(r.chest)} | focus en fin ${r.focusLeft}${r.focusDropped ? ' (abandonné en cours de route)' : ''}`);
   if(miners>1) for(const m of r.miners)
@@ -68,5 +76,5 @@ for(const r of rows){
 }
 const avg = k => (rows.reduce((s,r)=>s+r[k],0)/rows.length).toFixed(1);
 const stuck = rows.filter(r=>r.stuck.length).length;
-console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')}, étourdissements ${avg('stuns')} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
+console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')}, coffre ${avg('chestPods')} pods, étourdissements ${avg('stuns')} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
 process.exitCode = stuck ? 1 : 0;

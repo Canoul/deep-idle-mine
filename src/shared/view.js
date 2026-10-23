@@ -8,6 +8,7 @@
    (même calcul, src/sim/light.js). Le navigateur ne calcule aucun résultat : il affiche. */
 import { W } from '../config.js';
 import { updateLight } from '../sim/light.js';
+import { muleCap } from '../sim/mule.js';
 
 const HISTORY = 400;           // changements gardés (un navigateur plus en retard reçoit la carte entière)
 const row = (a, enc) => Array.from(a, enc).join('');
@@ -67,6 +68,7 @@ export function createViewer(G){
       tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
       miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
       chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
+      mule: muleView(G),
     };
     /* changements depuis since : le navigateur est à jour, ou on a tous les lots depuis son tick */
     if(since === G.ticks) return { ...base, cells: [], torches: [], torchesFrom: G.torches.length };
@@ -110,10 +112,13 @@ function glide(M, oldList, newList, target, now){
   }
 }
 
+/* sac de la Mule, posé dans la mine : sa case et son remplissage (jauge) ; null sinon (pas de sac, ou transporté) */
+const muleView = G => G.mule?.placed ? { x: G.mule.x, y: G.mule.y, load: Math.round(G.mule.load), cap: muleCap(G) } : null;
+
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
   return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], chest: {}, chestBy: {},
-           stats: {}, areas: [], unlockedAreas: 0, winch: null, log: [], t: 0, ticks: -1, over: false, ready: false };
+           stats: {}, areas: [], unlockedAreas: 0, winch: null, mule: null, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
 /* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
@@ -142,6 +147,6 @@ export function applyView(M, v, now = performance.now()){
   M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
   M._at = now;
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
-                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, ready: true });
+                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, ready: true });
   return M;
 }
