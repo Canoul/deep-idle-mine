@@ -83,6 +83,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5
+  et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
+  BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (fer × 1,2, inhabituelles ; Steel
+  ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp).
+  Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
+  épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)

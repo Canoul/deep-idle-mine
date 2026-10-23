@@ -33,4 +33,14 @@ export const RECIPES = {
   'Gants tactique':      { cost: { 'Shiny iron': 20, 'Tainted iron': 20, 'Jade inférieur': 1 },   qty: 1, unlock: 'Gants tactique BP' },
   'Gants d\'ouvrier':    { cost: { 'Shiny gold': 20, 'Tainted iron': 20 },                        qty: 1, unlock: 'Gants d\'ouvrier BP' },
   'Cape de Naingui':     { cost: { 'Tissu sombre': 20, 'Rubis inférieur': 1, 'Saphir inférieur': 1 }, qty: 1, unlock: 'Cape de Naingui BP' },
+
+  /* débloquées par un blueprint (Treasure T3, 23/10/2026, Geoffrey) */
+  'Casque en acier':     { cost: { 'Steel ingot': 10, 'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Casque en acier BP' },
+  'Plastron en acier':   { cost: { 'Steel ingot': 16, 'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Plastron en acier BP' },
+  'Jambes en acier':     { cost: { 'Steel ingot': 14, 'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Jambes en acier BP' },
+  'Bottes en acier':     { cost: { 'Steel ingot': 8,  'Shiny iron': 10, 'Tissu sombre': 10 }, qty: 1, unlock: 'Bottes en acier BP' },
+  'Pioche en acier':     { cost: { 'Steel ingot': 20, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Pioche en acier BP' },
+  'Épée en acier':       { cost: { 'Steel ingot': 10, 'Shiny gold': 10, 'Diamant': 10 },      qty: 1, unlock: 'Épée en acier BP' },
+  'Plastron de l\'équilibre': { cost: { 'Steel ingot': 50, 'Shiny gold': 20, 'Rubis inférieur': 1, 'Saphir inférieur': 1,
+                         'Jade inférieur': 1, 'Résidu angélique': 50, 'Résidu démoniaque': 50 }, qty: 1, unlock: 'Plastron de l\'équilibre BP' },
 };

@@ -2,7 +2,8 @@
    et fournit le hasard : imprévisible, pas la seed).
    - Recherche : on dépense RESEARCH.tiers[t].cost Blueprint parts (tout ou rien) et on obtient un blueprint du tier,
      tiré au hasard parmi ceux du Treasure du tier dont la recette n'est pas encore apprise (un BP déjà en stock peut
-     ressortir ; un BP qui ne débloque encore rien reste toujours dans le tirage).
+     ressortir ; un BP qui ne débloque encore rien reste toujours dans le tirage). Tirage pondéré par
+     RESEARCH.tiers[t].weights (1 par défaut ; ex. tier 3 : le plan épique pèse 0,25).
    - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes du tier d'avant (tierUnlocked). Les blueprints
      qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas.
    - Recycle : un blueprint (n'importe lequel) est détruit et rend entre min et max Blueprint parts, selon le tier du
@@ -24,6 +25,20 @@ export const tierBlueprints = t => {
 };
 /* blueprints que la recherche peut donner à ce joueur : ceux du tier dont il n'a pas appris la recette */
 export const researchPool = (inv, t) => tierBlueprints(t).filter(bp => { const r = recipeOfBlueprint(bp); return !r || !isUnlocked(r, inv); });
+/* poids d'un blueprint dans le tirage de son tier (1 par défaut) */
+export const weightOf = (t, bp) => { const w = tierOf(t)?.weights?.[bp]; return Number.isFinite(w) && w > 0 ? w : 1; };
+/* chance de chaque blueprint du tirage actuel de ce joueur : [{ item, chance }] (somme = 1) */
+export const researchOdds = (inv, t) => {
+  const pool = researchPool(inv, t), total = pool.reduce((s, bp) => s + weightOf(t, bp), 0);
+  return pool.map(item => ({ item, chance: weightOf(t, item) / total }));
+};
+/* tirage pondéré, un seul nombre aléatoire */
+function pick(pool, t, rng){
+  const total = pool.reduce((s, bp) => s + weightOf(t, bp), 0);
+  let x = rng() * total;
+  for(const bp of pool){ x -= weightOf(t, bp); if(x < 0) return bp; }
+  return pool.at(-1);
+}
 /* tier d'un blueprint : celui dont la table de butin le contient (null s'il n'est dans aucune) */
 export const tierOfBlueprint = bp => RESEARCH.tiers.find(d => tierBlueprints(d.tier).includes(bp)) ?? null;
 /* recettes du tier que le joueur n'a pas encore apprises (les blueprints sans recette ne comptent pas) */
@@ -49,7 +64,7 @@ export function research(inv, t, opId, rng){
   const pool = researchPool(inv, t);
   if(!pool.length) return { error:'nothing_left' };
   if(!removeItem(inv, PARTS, def.cost)) return { error:'not_enough' };
-  const item = pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))];
+  const item = pick(pool, t, rng);
   addItem(inv, item, 1);
   const result = { ok:true, item };
   remember(inv, { id:opId, kind:'research', result });

@@ -187,7 +187,7 @@ function craft(){
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,
         r.unlock ? `Débloquée par ${item(r.unlock)}` : '<b>De base</b>'])));
   $('w-research').innerHTML = table(['Tier', '#Prix', 'Blueprints possibles', '#Recycler un BP du tier rend'], D.researchRows().map(r =>
-    tr([`<b>Tier ${r.tier}</b>`, num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>`,
+    tr([`<b>Tier ${r.tier}</b>`, num(item('Blueprint parts', r.cost)), `<div class="ings">${r.blueprints.map(b => item(b)).join('')}</div>` + r.rarer.map(x => `<div class="small mut">${esc(x.item)} : ${f(x.times)} fois moins de chance que les autres</div>`).join(''),
         num(`${r.recycle.min} à ${r.recycle.max} parts`)])));
 }
 
@@ -205,7 +205,7 @@ function treasures(){
   $('w-loot').innerHTML = D.lootTables().map(t => `<h2>${item(t.name)}</h2>` + table(['Objet', '#Quantité', '#Chance'], [
     ...t.always.map(a => tr([item(a.item), num(`${f(a.min)} à ${f(a.max)}`), num('<b>toujours</b>')])),
     ...t.families.flatMap(fam => [
-      `<tr><td colspan="3" class="mut small">Bonus ${fam.family === 'blueprint' ? 'blueprint' : fam.family === 'gem' ? 'gemme' : esc(fam.family)} : au plus 1, ${f(Math.round(fam.total * 1000) / 10)} % de chance d'en avoir un</td></tr>`,
+      `<tr><td colspan="3" class="mut small">Bonus ${({ blueprint:'blueprint', gem:'gemme', material:'matériau' })[fam.family] ?? esc(fam.family)} : au plus 1, ${f(Math.round(fam.total * 1000) / 10)} % de chance d'en avoir un</td></tr>`,
       ...fam.items.map(i => tr([item(i.item), num(1), num(`${f(Math.round(i.chance * 1000) / 10)} %`)])),
     ]),
   ])).join('');

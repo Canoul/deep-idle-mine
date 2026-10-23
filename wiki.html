@@ -133,7 +133,7 @@
   <h1>Les areas</h1>
   <p>Chaque area a sa propre recette de blocs. Plus on descend, plus il y a de pierre dure (lente à miner)… et de minerais précieux. Les chiffres sont en <b>% des 2 500 blocs</b> de l'area. La dernière ligne se répète pour toutes les areas plus profondes.</p>
   <div id="w-areas"></div>
-  <p class="tip">💡 <b>À miner</b> = le nombre de minerais (tous types confondus) à miner dans l'area pour faire sauter la barrière du fond et ouvrir la suivante. <b>Treasure</b> = la chance qu'un treasure soit caché dans l'area, et son niveau (T1 ou T2).</p>
+  <p class="tip">💡 <b>À miner</b> = le nombre de minerais (tous types confondus) à miner dans l'area pour faire sauter la barrière du fond et ouvrir la suivante. <b>Treasure</b> = la chance qu'un treasure soit caché dans l'area, et son niveau (T1, T2 ou T3).</p>
 </section>
 
 <section id="blocs">
@@ -163,8 +163,8 @@
   <div id="w-mi"></div>
   <h2>S'inscrire</h2>
   <ul>
-    <li>Onglet <b>Lobby</b>, « Où miner » → <b>Mine instantanée</b> : un compte à rebours, le nombre d'inscrits et le bouton <b>S'inscrire</b>. On peut s'inscrire quand on veut.</li>
-    <li>S'inscrire <b>fait quitter ton groupe</b>, et c'est impossible pendant une session. Lancer une session normale te désinscrit.</li>
+    <li>Onglet <b>Lobby</b>, « Où miner » → <b>Mine instantanée</b> : un compte à rebours, le nombre d'inscrits et le bouton <b>S'inscrire</b>. Les inscriptions n'ouvrent que <b>dans les 30 dernières minutes</b> (de 11 h 30 à midi pour la mine de midi), <b>même pendant une session</b>.</li>
+    <li>S'inscrire hors session <b>fait quitter ton groupe</b> (en session, tu le quittes en entrant dans la mine). Lancer une session ne te désinscrit pas, mais si tu es <b>encore en session à l'heure</b>, tu rates la mine (ta session continue).</li>
     <li>À l'heure dite, tous les inscrits partent ensemble ; personne ne peut rejoindre après le début.</li>
     <li id="w-mi-notify"></li>
   </ul>
@@ -214,7 +214,7 @@
   <h2>La table de recherche</h2>
   <p>Tu n'as pas eu de chance avec les treasures ? Dépense tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard parmi ceux dont tu n'as pas encore la recette.</p>
   <div id="w-research"></div>
-  <p class="tip">💡 Le tier 2 s'ouvre seulement quand tu as appris <b>toutes</b> les recettes du tier 1. Recycler un blueprint rend toujours moins de parts qu'il n'en a coûté.</p>
+  <p class="tip">💡 Un tier s'ouvre seulement quand tu as appris <b>toutes</b> les recettes du tier d'avant (le tier 2 après le tier 1, le tier 3 après le tier 2). Recycler un blueprint rend toujours moins de parts qu'il n'en a coûté.</p>
 </section>
 
 <section id="amelioration">
@@ -245,7 +245,7 @@
   <h1>Les treasures</h1>
   <p>Un <b>treasure</b> est un coffre enfoui dans la roche. Il y a <b>30 % de chance</b> qu'une area en cache un. Ton mineur le vise dès qu'il le voit. En le cassant, il obtient un objet <b>Treasure TX</b> (X = son niveau), que tu ouvres ensuite dans l'inventaire (bouton « Ouvrir »).</p>
   <div id="w-treasure-tiers"></div>
-  <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> blueprint et <b>une</b> gemme par treasure.</p>
+  <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> objet de chaque famille de bonus (un blueprint, une gemme, un Cristal de pleine lune) par treasure.</p>
   <div id="w-loot"></div>
 </section>
 

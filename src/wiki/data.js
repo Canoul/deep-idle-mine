@@ -177,7 +177,8 @@ export const furnaceRows = () => [
 ];
 /* concasseur : une ligne par bloc ; par famille (une gemme, un treasure) : la chance par lot de CRUSHER.batch blocs */
 export const crusherRows = () => Object.keys(CRUSHER.loot).map(block => ({ block, families: dropOdds(block) }));
-export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier) }));
+export const researchRows = () => RESEARCH.tiers.map(t => ({ tier: t.tier, cost: t.cost, recycle: t.recycle, from: t.from, blueprints: blueprintsOfTier(t.tier),
+  rarer: Object.entries(t.weights ?? {}).filter(([, w]) => w > 0 && w < 1).map(([bp, w]) => ({ item: bp, times: Math.round(1 / w * 10) / 10 })) }));
 
 /* ---------- stats ---------- */
 const STAT_HELP = {
