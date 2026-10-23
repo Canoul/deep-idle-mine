@@ -577,7 +577,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   | Produit | Ingrédients | Combustible | Durée |
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
-  | **Tainted gold** | 5 lingots d'or + 20 chitine | 50 charbons | 3 min |
+  | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
