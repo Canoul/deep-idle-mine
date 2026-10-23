@@ -2033,3 +2033,16 @@ Règles (voir CLAUDE.md) :
   rejoindre le puits plus bas, c'est voulu (il continue de creuser depuis là). Combats Gallianix longs (≥ 30 s, mineur
   souvent en `wait`) vus par un détecteur ciblé : pas traité ici.
 
+### Plastrons : pods 30 / 50 / 80 / 125 (Geoffrey) — branche `geoffrey/pods-plastrons`, ✅ en ligne le 23/10
+- **Quoi** : `STUFF.items` (`src/config.js`) : Plastron en chitine 25 → 30, fer 33 → 50, acier 40 → 80, équilibre 60 →
+  125. Rien n'est stocké dans les pièces (`sanitizePiece` ne garde que item, uid, q, lines, rune, plus) : `pieceBonus`
+  et `itemValue` relisent le catalogue, donc les pièces existantes changent seules. `itemValue` : chitine 180, fer 300,
+  acier 480, équilibre 925,8 x → une ligne « pods 20 % » vaut 7 / 12 / 19 / 37 pods.
+- **Tests** : carac, amelioration (30 × 1,03 → 31), stuff, blueprint, steel-gear (plus de « fer × 1,2 » pour les pods),
+  craft, rarity, research, rune, tier2, wiki ✅.
+- **Mesures d'équilibrage du 23/10** (scripts temporaires, équipe logisticien + mineur + barbare niv. 7 en fer, outils
+  fer, arrêt à l'ouverture de l'area 5) : area 5 à 53-54 min ; seuil 50 % → 45 min 25 ; pods +100 → 47 min 56 ;
+  dégâts +10 → 51 min ; rayon de torche +2 → 51 min ; oxygène +100 → 51 min 43 ; torches +20 → 53 min 39 ; pierre
+  1,0 s / pierre dure 1,8 s → 51 min 29 ; pioche en fer +0,6 → 50 min 36.
+
+

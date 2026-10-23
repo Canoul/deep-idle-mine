@@ -540,7 +540,7 @@ export const STUFF = {
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
-    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:25 } },
+    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
@@ -548,7 +548,7 @@ export const STUFF = {
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:33 } },
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:50 } },   // 23/10 (Geoffrey) : avant 33
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
@@ -557,15 +557,15 @@ export const STUFF = {
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
-    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène, pods et
-       dégâts (45,6 → 46 ; 39,6 → 40 ; 13,2 → 13) */
+    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène et
+       dégâts (45,6 → 46 ; 13,2 → 13) ; sauf le plastron (pods 80, 23/10 : les pods sont le levier de la progression) */
     'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:46 } },
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:40 } },
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:80 } },   // 23/10 (Geoffrey) : avant 40 (fer × 1,2)
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:0.72 } },
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:0.72 } },
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.48 } },
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:13 } },     // remplace les mains nues (5)
-    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:60, oxygenMax:20, mineSpeedPct:2, damagePct:2,
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2,   // pods 125 le 23/10 (avant 60)
                                    attackSpeed:5, tenacity:2, fortune:1, looting:2, torches:5 } },
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
