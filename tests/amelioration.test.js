@@ -25,9 +25,9 @@ function setup(picks = 2, feathers = 0, stones = feathers){
 
 /* ---------- valeur en x et lignes ---------- */
 
-test('valeur des objets en x : pioche en pierre 260, pioche en fer 910, épée en fer 360 (set) (fer buffé le 24/10)', () => {
+test('valeur des objets en x : pioche en pierre 260, pioche en fer 650, épée en fer 360 (set) (fer buffé le 24/10)', () => {
   assert.equal(itemValue(PICK), 260);
-  assert.equal(Math.round(itemValue('Pioche en fer')), 910);   // 0,7 × 1 300
+  assert.equal(Math.round(itemValue('Pioche en fer')), 650);   // 0,5 × 1 300
   assert.equal(itemValue('Épée en fer'), 360);                 // (14 − 5) × 40
   assert.equal(itemValue('Inconnu'), 0);
   assert.notEqual(UPGRADE.worth.mineSpeed, UPGRADE.prices.mineSpeed, 'valeur de l\'objet (catalogue) ≠ conversion d\'une ligne');
