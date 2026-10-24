@@ -18,6 +18,25 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Buff du stuff en fer et en acier
+- **Pour le joueur** : les pièces en fer, en acier et le Plastron de l'équilibre sont nettement plus fortes, **y compris
+  celles déjà fabriquées** (et leurs lignes d'identification et runes, qui suivent la valeur de la pièce).
+  - Fer (× 1,75, épée × 1,25) : pioche +0,7 (avant +0,4), épée 14 (11), casque +67 (+38), plastron +88 (+50),
+    jambes et bottes +1,05 (+0,6).
+  - Acier (× 1,5, épée × 1,25) : pioche +0,72 (+0,48), épée 16 (13), casque +69 (+46), plastron +120 (+80),
+    jambes et bottes +1,08 (+0,72).
+  - Plastron de l'équilibre (× 1,5) : pods +188 (+125), oxygène +30, minage +3 %, dégâts +3 %, vitesse d'attaque +8 %,
+    ténacité +3 %, fortune +2 %, butin +3 %, torches +8.
+- **Décisions** : le but est qu'une équipe en fer (mineur, logisticien, barbare) arrive en moyenne à ~5,4 areas au lieu
+  de 5,0, sans changer les équipes moins équipées (sans stuff ≈ 4,0, chitine ≈ 4,1 : elles ne portent pas ces pièces).
+  Mesures avant le patch : aucune stat seule, même doublée, ne suffisait ; tout le fer × 1,75 donnait 5,5 sur 20 parties.
+- **À suivre** : l'acier n'est plus qu'à peine au-dessus du fer (casque +69 contre +67, pioche +0,72 contre +0,7) alors
+  qu'il coûte des diamants : à revoir. L'écart chitine → fer devient grand (plastron +30 → +88). Vérification par
+  simulation avec les valeurs exactes du patch interrompue (mise en ligne demandée) : à refaire.
+- **État** : ✅ en ligne le 24/10
+
+---
+
 ## 24/10/2026 — Geoffrey — XP de spécialisation et Sorts
 - **Pour le joueur** :
   - **XP de spécialisation** : chaque session rapporte aussi 10 % de ton XP à ta spécialisation (Mineur,

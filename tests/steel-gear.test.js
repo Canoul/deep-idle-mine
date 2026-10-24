@@ -17,18 +17,19 @@ const invWith = bag => { const inv = createInventory(); addAll(inv, bag); return
 let n = 0; const id = () => 'op-steel-' + (++n);
 const ARMOR = { 'Shiny iron':10, 'Tissu sombre':10 }, TOOL = { 'Shiny gold':10, 'Diamant':10 };
 
-/* demandé par le créateur : pièce en fer × 1,2 (entier le plus proche pour oxygène, pods, dégâts) */
+/* demandé par le créateur : au départ pièce en fer × 1,2 ; le 24/10, acier × 1,5 et épée × 1,25 (entier le plus proche
+   pour oxygène, pods, dégâts). L'acier reste au-dessus du fer sur chaque stat. */
 const STEEL = {
-  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:46 },     cost:{ 'Steel ingot':10, ...ARMOR } },
-  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:80 },          cost:{ 'Steel ingot':16, ...ARMOR } },
-  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:0.72 },  cost:{ 'Steel ingot':14, ...ARMOR } },
-  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:0.72 },       cost:{ 'Steel ingot':8,  ...ARMOR } },
-  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.48 },   cost:{ 'Steel ingot':20, ...TOOL } },
-  'Épée en acier':     { iron:'Épée en fer',     set:{ damage:13 },          cost:{ 'Steel ingot':10, ...TOOL } },
+  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:69 },     cost:{ 'Steel ingot':10, ...ARMOR } },
+  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, ...ARMOR } },
+  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.08 },  cost:{ 'Steel ingot':14, ...ARMOR } },
+  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.08 },       cost:{ 'Steel ingot':8,  ...ARMOR } },
+  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.72 },   cost:{ 'Steel ingot':20, ...TOOL } },
+  'Épée en acier':     { iron:'Épée en fer',     set:{ damage:16 },          cost:{ 'Steel ingot':10, ...TOOL } },
 };
 const BALANCE = 'Plastron de l\'équilibre';
 
-test('pièces en acier : fer × 1,2, même case, recette et blueprint, inhabituel', () => {
+test('pièces en acier : au-dessus du fer, même case, recette et blueprint, inhabituel', () => {
   for(const [name, d] of Object.entries(STEEL)){
     const it = ITEMS[name], iron = ITEMS[d.iron];
     assert.equal(it?.cat, 'stuff', name);
@@ -36,7 +37,7 @@ test('pièces en acier : fer × 1,2, même case, recette et blueprint, inhabitue
     assert.deepEqual(it.stats, d.stats ?? {}, name);
     assert.deepEqual(it.set, d.set ?? {}, name);
     for(const [k, v] of Object.entries({ ...iron.stats, ...iron.set }))
-      if(k !== 'pods') assert.ok(Math.abs(({ ...it.stats, ...it.set })[k] - v * 1.2) <= 0.5, `${name} ${k} ≈ fer × 1,2`);   // plastron : pods fixés à part (23/10)
+      assert.ok(({ ...it.stats, ...it.set })[k] > v, `${name} ${k} au-dessus du fer`);
     assert.deepEqual(RECIPES[name].cost, d.cost, name);
     assert.equal(RECIPES[name].unlock, name + ' BP');
     assert.equal(rarityOf(name), 'inhabituel'); assert.equal(rarityOf(name + ' BP'), 'inhabituel');
@@ -46,15 +47,15 @@ test('pièces en acier : fer × 1,2, même case, recette et blueprint, inhabitue
 
 test('Plastron de l\'équilibre : torse, ses 9 stats, recette du créateur, épique', () => {
   assert.equal(ITEMS[BALANCE].slot, 'torse');
-  assert.deepEqual(ITEMS[BALANCE].stats, { pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2, attackSpeed:5,
-                                           tenacity:2, fortune:1, looting:2, torches:5 });
+  assert.deepEqual(ITEMS[BALANCE].stats, { pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3, attackSpeed:8,
+                                           tenacity:3, fortune:2, looting:3, torches:8 });
   assert.deepEqual(RECIPES[BALANCE].cost, { 'Steel ingot':50, 'Shiny gold':20, 'Rubis inférieur':1, 'Saphir inférieur':1,
                                             'Jade inférieur':1, 'Résidu angélique':50, 'Résidu démoniaque':50 });
   assert.equal(RECIPES[BALANCE].unlock, BALANCE + ' BP');
   assert.equal(rarityOf(BALANCE), 'epique'); assert.equal(rarityOf(BALANCE + ' BP'), 'epique');
   const s = equippedStats([BALANCE]), base = equippedStats([]);
-  assert.equal(s.pods - base.pods, 125); assert.equal(s.tenacity - base.tenacity, 2);
-  assert.equal(s.torches - base.torches, 5); assert.equal(s.mineSpeedPct, 2);
+  assert.equal(s.pods - base.pods, 188); assert.equal(s.tenacity - base.tenacity, 3);
+  assert.equal(s.torches - base.torches, 8); assert.equal(s.mineSpeedPct, 3);
 });
 
 test('pas débloquées de base ; le blueprint débloque, puis fabrication', () => {
@@ -104,4 +105,25 @@ test('ouvrir des Treasure T3 : toujours graphite, tissu, parts ; fréquences pro
   assert.ok(r.loot['Graphite ore'] >= 20 && r.loot['Graphite ore'] <= 40);
   assert.ok(r.loot['Tissu sombre'] >= 3 && r.loot['Blueprint parts'] >= 10);
   assert.equal(countOf(inv, 'Treasure T3'), 0);
+});
+
+/* buff du 24/10 (Geoffrey) : les pièces déjà fabriquées le reçoivent aussi. Une pièce enregistrée ne garde que son nom,
+   sa qualité, ses lignes (en %) et son niveau : ses stats sont relues dans le catalogue au lancement de chaque session. */
+test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lignes comprises', async () => {
+  const { minerSpecs } = await import('../src/shared/game.js');
+  const { lineValue } = await import('../src/meta/piece.js');
+  const { STATS, UPGRADE } = await import('../src/config.js');
+  const line = { stat:'pods', pct:20 };
+  const gear = { torse:{ item:'Plastron en fer', uid:7, q:2, lines:[line], s:UPGRADE.scale }, pioche:{ item:'Pioche en acier', uid:8 },
+                 epee:{ item:'Épée en fer', uid:9 }, casque:{ item:'Casque en acier', uid:10 } };
+  const [m] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:gear } });
+  assert.equal(m.carac.pods, STATS.pods + 88 + lineValue('Plastron en fer', line));
+  assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.72);
+  assert.equal(m.carac.damage, 14);
+  assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 69);
+  /* la ligne suit la valeur de l'objet : 20 % de 528 x (88 pods) = 21 pods ; elle en valait 12 avec 50 pods */
+  assert.equal(lineValue('Plastron en fer', line), 21);
+  const [b] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:{ torse:{ item:BALANCE, uid:11 } } } });
+  assert.equal(b.carac.pods, STATS.pods + 188);
+  assert.equal(b.carac.torches, STATS.torches + 8);
 });

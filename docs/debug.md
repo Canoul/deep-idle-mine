@@ -2273,3 +2273,23 @@ Règles (voir CLAUDE.md) :
   pas en arrière, recharge 30 s, pas de boucle. Dynamite casse sous les échelles (les échelles restent, `G.ladder`).
   Ulti shen téléporte sans chemin (pas dans un donjon interdit).
 
+### Buff du stuff fer et acier (Geoffrey, 24/10) — ✅ en ligne le 24/10
+- **Quoi** : `STUFF.items` (`src/config.js`) : fer × 1,75 (épée × 1,25), acier × 1,5 (épée × 1,25), Plastron de
+  l'équilibre × 1,5 ; stats entières arrondies à l'unité (demi → au-dessus : 66,5 → 67, 87,5 → 88, 7,5 → 8, 1,5 → 2),
+  vitesses gardées en décimales (0,7 ; 1,05 ; 1,08 ; 0,72). Rien d'autre ne change : `pieceBonus` relit `ITEMS` à chaque
+  calcul, donc les pièces enregistrées (nom, qualité, lignes en %, niveau) ont les nouvelles stats, et `itemValue` suit
+  (lignes et runes grandissent : 20 % sur le plastron en fer = 21 pods au lieu de 12).
+- **Pourquoi** : mesure du 24/10 (script hors dépôt, 3 mineurs mineur/logisticien/barbare aux arbres complets, seeds
+  7919 × k) : fer 5,0 areas sur 20/20 seeds (area 5 ouverte vers 49 min, 20 % du seuil de l'area suivante en fin de
+  session). Buffs isolés sur 10 seeds (plastron 90, jambes 1,2, bottes 1,2, casque 90, pioche 0,8, épée 17) : 5,0
+  partout. Tout × 1,5 : 5,1 ; × 1,75 : 5,5 (20 seeds) ; × 2 : 6,0. Pioche seule 1,5 : 5,3 (20 seeds). Chitine 4,1, base 4,0.
+  Répartition du temps (5 seeds, fer) : remontée 19 %, redescente 15 %, minerai 17,5 %, blocs 9 %, combat 8 %.
+- **Tests** : amelioration, anneaux, blueprint, game-service, iron-furnace-gold-compass, rarity, research, skills,
+  steel-gear, stuff, wiki ✅ (156). Nouveau test (`tests/steel-gear.test.js`) : pièces déjà fabriquées (identifiée avec
+  une ligne, acier, épée, équilibre) via `minerSpecs` → nouvelles stats. L'ancien test « acier ≈ fer × 1,2 » devient
+  « acier au-dessus du fer sur chaque stat ». Pas d'anticheat : aucun chemin de ressources touché.
+- **État de vérification** : ⚠️ la simulation avec les valeurs exactes du patch (arrondis : épée fer 14 au lieu de 15,5
+  dans la mesure × 1,75) a été interrompue avant la fin, à la demande de Geoffrey (mise en ligne). Attendu ≈ 5,4–5,5
+  areas pour l'équipe en fer : à confirmer sur 20 seeds.
+- **Points fragiles** : l'acier dépasse à peine le fer (casque 69/67, jambes et bottes 1,08/1,05, pioche 0,72/0,7) ;
+  le test « acier au-dessus du fer » cassera si on remonte encore le fer sans l'acier.

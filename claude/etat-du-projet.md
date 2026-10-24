@@ -94,8 +94,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
 - **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5
   et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
-  BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (fer × 1,2, inhabituelles ; Steel
+  BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (inhabituelles ; ancien : fer × 1,2 ; Steel
   ingot + Shiny + Tissu sombre ou Diamant) et **Plastron de l'équilibre** (épique, 9 stats, 50 résidus de chaque camp).
+- **Buff du stuff fer et acier** (24/10, Geoffrey) : fer × 1,75 (épée × 1,25), acier × 1,5 (épée × 1,25), Plastron de
+  l'équilibre × 1,5, arrondi à l'entier pour les stats entières ; les pièces déjà fabriquées en profitent (stats relues
+  dans le catalogue). But : une équipe en fer (mineur, logisticien, barbare, skills complets) ≈ 5,4 areas au lieu de
+  5,0 ; sans stuff (4,0) et en chitine (4,1) inchangés. Ancien : fer pioche +0,4, épée 11, casque +38, plastron +50,
+  jambes et bottes +0,6 ; acier +0,48, 13, +46, +80, +0,72.
   Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
