@@ -2245,3 +2245,31 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/anneaux.test.js` (nerd : [515, 500] à 2 avec un porteur, [333, 342, 333] à 3) ; anneaux, level,
   session, stuff, wiki, share, party ✅ (92).
 - **Point fragile** : le bonus est calculé sur le total des tranches (un seul arrondi), pas tranche par tranche.
+
+### XP de spécialisation et Sorts (Geoffrey, 24/10) — branche `geoffrey/sorts` (partie de `geoffrey/xp-bonus-perso`), 🧪 pas en ligne
+- **XP de spé** : `XP.specPct` (10) / `XP.specCurve` (100 ×1,5) ; `src/meta/level.js` : `specXpOf`, `specLevelOf`,
+  `specLevels`, progression `{ xp, spec:{arbre:xp}, credited }`, `creditXp(p, id, xp, { tree, xp })` (même idempotence).
+  `endSession` met `specTree`/`specXp` dans chaque part (affichage du bilan) ; le serveur **recalcule** (`settleWith` :
+  arbre de `rec.skills`, `specXpOf(share.xp)`). `publicProgress.spec`, `game.specLevelOf` → `party.members[].specLevel`
+  → `specLabel(tree, level)` (lobby). Skills : `specLevelHtml` (`src/ui/level.js`).
+- **Sorts** : `SPELLS` (config), `src/meta/spells.js` (état `{ learned, slots, ops }`, `spellOp`, `learnScroll`,
+  `equippedSpells`, `sessionSpells`), stockage ns `spells` (+ `putInventoryAndSpells` pour un parchemin : une seule
+  écriture), `POST /api/game/spells`, figés dans `rec.spells[compte]` au lancement (revérifiés : `sessionSpells` dans
+  `minerSpecs`). Parchemins : objets `cat:'scroll'`, texture `scroll`.
+- **Simulation** (`src/sim/spells.js`) : `afterDecide` (après `decide` dans `stepMiner` : move → `dash`, mine →
+  `dynamite`), `updateSpells` (après les mineurs dans `tick` : Illumination, Inspiration `G.inspire`, Ulti shen),
+  `learnOnMine` (dans `mineBlock`, Fast learner → `m.learned`). `mineT` × (1 + Inspiration) × (1 + appris) ;
+  `baseMineT` (plans) inchangé. `breakBlock` exporté (Dynamite). Vue : `spells`, `spellCd` par mineur ; rendu : `dash`
+  interpolé comme `move`. `simulate.js --spells a,b`.
+- **Tests** : `tests/spells.test.js` (14), `tests/anticheat/spells.test.js` (4), level, lobby, game-service, nav ✅ ;
+  régression sim (miner, session, team, mobs, dungeon, fall, trap, winch, mule, view, skills, replay, live…) 195 ✅ ;
+  anticheat 83 ✅.
+- **Simulation** `--miners 3 --count 5 --skills mixed` sans / avec tous les sorts (2 par mineur) : areas 4,8 / 5,0 ;
+  profondeur 200 / 203 ; minés 2390 / 2511 ; pods au coffre 4276 / 4563 ; sorts lancés ≈ 59 / 30 / 80 par mineur.
+  1re version (Ulti shen aussi en remontée) : areas 4,0 et une alerte « Retour (oxygène) » à y 192 → Ulti limité au
+  mode `work`. ⚠️ Détecteur de blocage : 3 alertes sur 2 seeds avec sorts (« Va au piège », « Descend par l'existant »,
+  « Change d'area ») contre 1 sans : pas analysé, à vérifier (seeds 15838 / 39595, `--spells …`).
+- **Points fragiles** : Dash peut dépasser l'objectif d'une IA qui n'a pas de `m.target` (retour, treuil) : quelques
+  pas en arrière, recharge 30 s, pas de boucle. Dynamite casse sous les échelles (les échelles restent, `G.ladder`).
+  Ulti shen téléporte sans chemin (pas dans un donjon interdit).
+

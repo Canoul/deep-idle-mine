@@ -18,6 +18,26 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — XP de spécialisation et Sorts
+- **Pour le joueur** :
+  - **XP de spécialisation** : chaque session rapporte aussi 10 % de ton XP à ta spécialisation (Mineur,
+    Logisticien ou Barbare), avec un niveau par spécialisation. Il s'affiche dans l'onglet Skills (barre d'XP), dans le
+    lobby (« 🪜 Logisticien (SP lvl : 3) ») et au bilan.
+  - **Nouvel onglet Sorts** : 4 emplacements (2 ouverts, 2 verrouillés), et la liste de tous les sorts (cadenas sur
+    ceux qu'on n'a pas encore). On équipe d'un clic ou en glissant le sort. En session, les sorts partent tout seuls
+    dès qu'ils sont rechargés et utiles ; une barre en bas de la mine montre le compte à rebours.
+  - 6 sorts : **Dash** (Barbare niv. 5), **Illumination** (Mineur niv. 5), **Inspiration** (Logisticien niv. 5),
+    **Dynamite** (Mineur niv. 10), **Ulti shen** et **Fast learner** (à apprendre avec un parchemin).
+- **Décisions** (Geoffrey) : une XP par spécialisation, gardée si on change ; 10 % de sa part après le partage et le
+  bonus de l'anneau ; courbe 100 puis ×1,5 ; le niveau de spé ne donne rien d'autre que les sorts pour l'instant. Sorts
+  déclenchés tout seuls (pas de clic), mais seulement quand ils servent ; Dynamite ne casse que ce que le mineur peut
+  miner (jamais une échelle ni le sol sous un mineur) ; Ulti shen limité à 5 % des PV sur un boss, seulement pour un
+  allié (rien en solo).
+- **À suivre** : d'où viennent les parchemins (aucune source pour l'instant) ; comment s'ouvrent les emplacements 3
+  et 4. Fast learner se cumule sans limite, à surveiller. En simulation (3 mineurs, 5 parties) avec les sorts :
+  ≈ +7 % de ressources rapportées, même profondeur ; le détecteur de blocage signale un peu plus d'alertes, à revoir.
+- **État** : 🧪 sur la branche `geoffrey/sorts` (pas en ligne ; contient aussi le bonus d'XP personnel)
+
 ## 24/10/2026 — Geoffrey — Bonus d'XP personnel (Anneau du nerd)
 - **Pour le joueur** : le « +3 % d'XP » de l'Anneau du nerd ne profite plus qu'à celui qui le porte. L'XP de la session
   est d'abord partagée à parts égales, puis le porteur gagne +3 % sur sa part. Ex. à 3 avec 1000 XP : 333 chacun,

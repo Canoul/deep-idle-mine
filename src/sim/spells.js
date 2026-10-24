@@ -148,11 +148,12 @@ function inspire(G,m){
 export const inspireBonus = G => G.inspire && G.t < G.inspire.until ? G.inspire.pct : 0;
 
 /* Ulti shen : un autre mineur du groupe se bat (il frappe un mob, ou un mob le tacle) → téléporté sur sa case, il
-   inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Pas pendant un chantier de treuil,
-   la Mule, une chute ou un étourdissement ; jamais dans un donjon interdit. */
+   inflige hpPct des PV max du mob (bossPct sur un boss), puis se bat à ses côtés. Seulement quand il travaille (pas
+   en remontée, pas pendant un chantier de treuil, la Mule, une chute ou un étourdissement) ; jamais dans un donjon interdit. */
 function ulti(G,m){
   const S = SPELL.ulti_shen, a = m.action;
-  if(m.winchJob || m.muleJob || m.mode==='winch' || m.mode==='mule' || m.mode==='fetch' || m.fall) return;
+  /* pas en remontée (oxygène, pods pleins : le téléporter plus bas le mettrait en danger), ni en chantier */
+  if(m.mode!=='work' || m.winchJob || m.muleJob || m.fall) return;
   if(a && (a.type==='stun' || a.data.fall || a.type==='dash' || a.type==='dynamite')) return;
   for(const o of G.miners){
     if(o===m || o.y<=0) continue;
