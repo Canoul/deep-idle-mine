@@ -206,7 +206,7 @@ function decideDeparture(G,m){
     m.status='Rejoint son puits';
     if(stepDir(G,m,Math.sign(m.homeX-m.x),0,{noBridge:true})) return;
   }
-  m.mode='work'; m.dir=0; m.target=null; m.skipRows.clear();   // repart de la surface : pas obligé de retourner à l'ancien front
+  m.mode='work'; m.dir=0; m.target=null; m.skipRows.clear(); m.shiftTo=null;   // repart de la surface : pas obligé de retourner à l'ancien front
   m.exploring=false;
   decideWork(G,m);
 }
@@ -357,6 +357,7 @@ function decideWork(G,m){
 }
 
 function digDown(G,m){
+  if(keepShift(G,m)) return;
   // ne pas descendre là où un autre travaille déjà
   const pd=planDown(G,m,downAvoid(G,m));
   if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; m.goingDown=true; return; }
@@ -408,8 +409,23 @@ function shiftColumn(G,m,ok=null){
   const r=search(G,m,m.x,m.y,true,(x,y)=>y===m.y && x!==m.x && cols.every(c=>Math.abs(c-x)>=CFG.shaftGap) && (!ok || ok(x,y)),CFG.planMaxCost);
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)) return false;
+  m.shiftTo={ x:r.n%W, y:(r.n/W)|0, until:G.t+CFG.shiftCommit };
   m.status='Se décale (puits occupé)';
   return stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge});
+}
+
+/* colonne choisie par shiftColumn : il continue d'y aller tant qu'il n'y est pas. Sans ça, l'itinéraire qui commençait
+   par monter (sortir du coin d'un donjon, sol incassable) était oublié une case plus haut : il « creusait vers le bas »
+   par l'échelle qu'il venait de poser et revenait au coin (seed 29823892 : 114 s de va-et-vient, 24/10/2026).
+   Abandonnée une fois arrivé, inatteignable, ou après CFG.shiftCommit s. */
+function keepShift(G,m){
+  const s=m.shiftTo;
+  if(!s) return false;
+  if((m.x===s.x && m.y===s.y) || G.t>s.until){ m.shiftTo=null; return false; }
+  const r=search(G,m,m.x,m.y,true,(x,y)=>x===s.x && y===s.y,CFG.planMaxCost), st=r && firstStep(r,r.n);
+  if(!st || !(st.dx||st.dy) || !stepDir(G,m,st.dx,st.dy,{noBridge:!st.bridge})){ m.shiftTo=null; return false; }
+  m.status='Se décale (puits occupé)';
+  return true;
 }
 
 /* tacle : src/sim/mobs.js (tackler, réexporté plus haut) */

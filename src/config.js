@@ -38,6 +38,7 @@ export const CFG = {
   oxygenOutSlow:1,        // multiplicateur de temps disponible à 0 d'oxygène (1 = aucun ralentissement : il remonte sans oxygène)
   mobChaseRange:14,       // distance (Manhattan) à partir de laquelle une bestiole poursuit le mineur
   shaftGap:3,             // écart minimal entre les puits de deux mineurs
+  shiftCommit:20,         // s : il garde au plus ce temps la colonne où il a décidé de se décaler (sinon il la cherche à nouveau)
   crowdRadius:4,          // en dessous de cette distance (Manhattan) d'un autre mineur, une zone est « occupée »
   crowdPenalty:2,         // un minerai proche d'un autre mineur (ou de sa cible) vaut 1/(1 + crowdPenalty × nb) de son prix
   sectorHalf:8,           // en équipe : demi-largeur du secteur de préférence de chaque mineur (autour de sa colonne home)

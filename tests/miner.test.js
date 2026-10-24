@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { IDS } from '../src/config.js';
+import { IDS, DUNGEON_WALL } from '../src/config.js';
 import { compassScan, decide, tackler } from '../src/sim/ai.js';
 import { stepDir } from '../src/sim/actions.js';
 import { planReturn } from '../src/sim/path.js';
@@ -192,4 +192,24 @@ test('journal : entrer dans une area n\'écrit rien ; il garde toute une session
   for(let i=0;i<LOG_MAX+10;i++) log(G, 'ligne '+i);
   assert.equal(G.log.length, LOG_MAX);
   assert.equal(G.log[0].msg, 'ligne '+(LOG_MAX+9), 'la plus récente en haut');
+});
+
+/* seed 29823892 (retour joueur, 24/10/2026) : coin d'une salle de donjon, sol et mur incassables. Pour se décaler vers
+   une colonne où creuser, l'itinéraire commence par monter ; une case plus haut il oubliait ce projet, « creusait vers le
+   bas » par l'échelle qu'il venait de poser et revenait dans le coin : 114 s de va-et-vient */
+test('sol incassable : il sort du coin par le haut pour aller creuser ailleurs, sans va-et-vient', () => {
+  const G=worldFrom([
+    '',
+    '#         ######',
+    '#     X#########',
+    '#    @X#########',   // mineur dans le coin, mur incassable à droite (x=6)
+    'XXXXXXX#########',   // sol incassable
+    '################',
+  ].map(r=>r.replace(/X/g,'h')));
+  for(let y=2;y<=4;y++) for(let x=0;x<=6;x++) if(G.tiles[y][x]===IDS.hardstone) G.tiles[y][x]=DUNGEON_WALL;
+  const m=G.miners[0];
+  let flips=0, last=m.y;
+  for(let i=0;i<600 && m.stats.mined===0;i++){ run(G,1); if(m.y!==last){ flips++; last=m.y; } }
+  assert.ok(m.stats.mined>0, `il finit par creuser (position ${m.x},${m.y}, ${m.status}, ${flips} changements de ligne)`);
+  assert.ok(flips<=8, `pas de va-et-vient (${flips} changements de ligne)`);
 });
