@@ -2371,7 +2371,7 @@ Règles (voir CLAUDE.md) :
   pour la vitesse des simulations. Un méphite peut viser un mineur dans une galerie qu'il ne peut pas rejoindre par le
   vide (mineur entouré de roche) : il reste sur place, sans osciller.
 
-### Sets (Geoffrey, 24/10) — branche `geoffrey/sets`, 🧪 pas en ligne
+### Sets (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Quoi** : `SETS` (config : max 20, nameMax 24) ; `src/meta/sets.js` (`snapshot`, `setOp` create/save/rename/delete,
   `applySet`, `sanitizeSets`) ; stockage ns `sets` + `putLoadout` (inventaire, stuff, skills, sorts, sets en un seul
   `changed`) ; `POST /api/game/sets` (verrous inv + skills + spells + sets, triés par `withLock.many` ; create/save/equip

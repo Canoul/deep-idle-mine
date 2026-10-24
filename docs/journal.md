@@ -97,7 +97,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : une seule liste, qui agit toujours sur tout (stuff + skills + sorts) ; une pièce disparue
   laisse sa case vide ; impossible pendant une session ; pas de limite (garde-fou technique : 20).
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/sets` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — XP de spécialisation et Sorts
 - **Pour le joueur** :
