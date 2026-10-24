@@ -19,6 +19,7 @@ export function createMemoryGameStore(initial = {}){
   const stuff = new Map(Object.entries(initial.stuff ?? {}));
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
+  const spells = new Map(Object.entries(initial.spells ?? {}));       // { learned, slots, ops } (src/meta/spells.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
@@ -58,6 +59,14 @@ export function createMemoryGameStore(initial = {}){
     /* skills : à part de la progression (un versement d'XP en fin de session n'écrase jamais un point dépensé) */
     async getSkills(accountId){ return copy(skills.get(accountId)) ?? null; },
     async putSkills(accountId, s){ skills.set(accountId, copy(s)); await store.changed([{ ns: 'skills', key: accountId, value: s }]); },
+
+    /* sorts : un parchemin appris passe de l'inventaire aux sorts, en une seule écriture (comme les fours) */
+    async getSpells(accountId){ return copy(spells.get(accountId)) ?? null; },
+    async putSpells(accountId, s){ spells.set(accountId, copy(s)); await store.changed([{ ns: 'spells', key: accountId, value: s }]); },
+    async putInventoryAndSpells(accountId, inv, s){
+      inventories.set(accountId, copy(inv)); spells.set(accountId, copy(s));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'spells', key: accountId, value: s }]);
+    },
 
     async getPrefs(accountId){ return copy(prefs.get(accountId)) ?? null; },
     async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed([{ ns: 'prefs', key: accountId, value: p }]); },
@@ -99,6 +108,7 @@ export function createMemoryGameStore(initial = {}){
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          crushers: Object.fromEntries(crushers),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
+                         spells: Object.fromEntries(spells),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
@@ -132,9 +142,9 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'game_session', 'party', 'mi_signup', 'social', 'judgment']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'game_session', 'party', 'mi_signup', 'social', 'judgment']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
-                                        progress: rows.progress, skills: rows.skills,
+                                        progress: rows.progress, skills: rows.skills, spells: rows.spells,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment });
   store.changed = changes => db.write(changes);

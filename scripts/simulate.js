@@ -12,6 +12,8 @@
      node scripts/simulate.js --skills barbare    → chaque mineur a l'arbre complet (mineur, logisticien, barbare) ;
                                                      mixed = un arbre différent par mineur (1er mineur, 2e logisticien, 3e barbare)
      node scripts/simulate.js --skills mixed --no-mule → pareil, sans le skill Mule (comparer le sac)
+     node scripts/simulate.js --skills mineur --spells illumination,dynamite → sorts équipés (SPELLS) : ceux de la
+                                                    spécialisation du mineur, 2 au plus (comme en session)
    Affiche : areas débloquées, profondeur max, coffre, allers-retours, coffres au trésor ouverts / enfouis
    (dans les areas générées), et un détecteur de blocage. */
 import { runSession } from '../src/sim/session.js';
@@ -20,6 +22,7 @@ import { setFocus } from '../src/sim/focus.js';
 import { SKILLS } from '../src/config.js';
 import { itemW } from '../src/sim/mule.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../src/meta/skills.js';
+import { sessionSpells } from '../src/meta/spells.js';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i=args.indexOf('--'+name); return i<0 ? def : (args[i+1] ?? true); };
@@ -29,6 +32,7 @@ const seeds  = opt('seeds', null) ? String(opt('seeds')).split(',').map(Number) 
 const json   = args.includes('--json');
 const skills = opt('skills', null);
 const noMule = args.includes('--no-mule');
+const spells = opt('spells', null) ? String(opt('spells')).split(',') : null;
 /* arbre de skills complet (tous les rangs) pour un mineur : mêmes effets qu'en session (src/shared/game.js) */
 function giveTree(m, tree){
   const t = SKILLS.trees.find(x => x.id === tree); if(!t) throw new Error('arbre inconnu : ' + tree);
@@ -46,6 +50,7 @@ for(const seed of seeds){
   const G = runSession(seed, { miners, onTick: (G,i) => {
     if(i===0 && focus) for(const m of G.miners) setFocus(G, m, focus);
     if(i===0 && skills) G.miners.forEach((m, k) => giveTree(m, skills === 'mixed' ? SKILLS.trees[k % 3].id : skills));
+    if(i===0 && spells) for(const m of G.miners) m.spells = sessionSpells(spells, m.skillTree);
     det.onTick(G,i);
   } });
   rows.push({

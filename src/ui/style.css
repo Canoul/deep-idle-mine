@@ -623,3 +623,31 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .twBossBar.angel>i{background:var(--j-angel-dk)} .twBossBar.demon>i{background:var(--j-demon)}
 #cvTw{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 .jnew{color:var(--gold, #ffd23f)}
+
+/* ---------- onglet Sorts (src/ui/spells.js) ---------- */
+.spGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:calc(9*var(--u))}
+@media (max-width:700px){ .spGrid{grid-template-columns:1fr} }
+.spSlots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(6*var(--u));margin-bottom:calc(6*var(--u))}
+.spSlot{min-height:calc(40*var(--u));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--u);text-align:center;cursor:pointer;
+  border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
+.spSlot.sel{border-image-source:url(../../textures/ui/slot_sel.png)}
+.spSlot.locked{cursor:default;opacity:.5}
+.spSlot.bad .spName{color:var(--err,#ff6a5a)}
+.spSlot .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.spIcon{font-size:var(--fs-l);line-height:1;display:grid;place-items:center;min-width:calc(14*var(--u))}
+.spIcon .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.spName{font-size:var(--fs-s)}
+.spList{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(110*var(--u)),1fr));gap:calc(4*var(--u))}
+.spCard{display:flex;align-items:center;gap:calc(4*var(--u));padding:calc(3*var(--u)) calc(4*var(--u));cursor:grab;
+  border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_n.png) 3 fill / calc(3*var(--u)) stretch}
+.spCard.on{border-image-source:url(../../textures/ui/slot_sel.png)}
+.spCard.off{cursor:default;filter:grayscale(1) brightness(.75)}
+.spCard .spText{display:flex;flex-direction:column;flex:1;min-width:0}
+.spCard button{flex:none}
+/* barre des sorts en session (src/ui/hud.js spellBarHtml), en bas de la mine */
+.spellBar{position:absolute;z-index:1;left:50%;bottom:calc(4*var(--u));transform:translateX(-50%);display:flex;gap:calc(3*var(--u));pointer-events:auto}
+.spB{position:relative;width:calc(22*var(--u));height:calc(22*var(--u));display:grid;place-items:center;
+  border:calc(3*var(--u)) solid transparent;border-image:url(../../textures/ui/slot_sel.png) 3 fill / calc(3*var(--u)) stretch}
+.spB.cd{border-image-source:url(../../textures/ui/slot_n.png)}
+.spB.cd .spIcon{filter:grayscale(1) brightness(.5)}
+.spB .spLeft{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-l);color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}

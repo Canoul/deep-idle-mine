@@ -623,3 +623,35 @@ test('XP de spécialisation : 10 % de sa part, à l\'arbre figé au lancement, u
   assert.equal(await game.specLevelOf(A.id, 'barbare'), 1);
   assert.equal(await game.specLevelOf(A.id, null), null);
 });
+
+/* ---------- sorts (24/10) ---------- */
+
+test('sorts par le serveur : parchemin appris (consommé, une fois), équiper vérifié, sorts valides figés au lancement', async () => {
+  const { createMemoryGameStore } = await import('../server/game/store.js');
+  const { createGameService } = await import('../server/game/service.js');
+  const { fakeLive } = await import('./helpers.js');
+  const { createInventory, addItem, serialize } = await import('../src/meta/inventory.js');
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1_000_000, randomSeed:() => 4242 });
+  const A = { id:'AAAA1111', name:'Zoe' }, SCROLL = 'Parchemin « Ulti shen »';
+  await assert.rejects(game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'short' }), { code:'bad_request' });
+  await assert.rejects(game.spells(A, { action:'learn', item:SCROLL, opId:'op-spell-01' }), { code:'not_owned' });
+  const inv = createInventory(); addItem(inv, SCROLL, 1);
+  await store.putInventory(A.id, JSON.parse(serialize(inv)));
+  let r = await game.spells(A, { action:'learn', item:SCROLL, opId:'op-spell-02' });
+  r = await game.spells(A, { action:'learn', item:SCROLL, opId:'op-spell-02' });           // double clic
+  assert.deepEqual(r.spells.learned, ['ulti_shen']);
+  assert.equal(r.inventory.slots.filter(Boolean).length, 0, 'parchemin consommé une seule fois');
+  await assert.rejects(game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-03' }), { code:'locked' });
+  await assert.rejects(game.spells(A, { action:'equip', spell:'ulti_shen', slot:2, opId:'op-spell-04' }), { code:'slot_locked' });
+  /* Dash : barbare niveau de spé 5 (XP de spé 100+150+225+338 = 813) */
+  await store.putProgress(A.id, { xp:2600, spec:{ barbare:813 }, credited:[] });
+  await game.skills(A, { action:'learn', node:'damage', opId:'op-spell-05' });
+  await game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-06' });
+  r = await game.spells(A, { action:'equip', spell:'ulti_shen', slot:1, opId:'op-spell-07' });
+  assert.deepEqual(r.spells.slots, ['dash', 'ulti_shen']);
+  assert.deepEqual((await game.state(A)).spells.slots, ['dash', 'ulti_shen']);
+  await game.skills(A, { action:'reset', opId:'op-spell-08' });                              // plus barbare : Dash ne part pas
+  const { session } = await game.start(A, {});
+  assert.deepEqual((await store.getGameSession(session.id)).spells[A.id], ['ulti_shen']);
+});

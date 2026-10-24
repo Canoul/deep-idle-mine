@@ -38,6 +38,9 @@ export function createMiner(id, opts={}){
     torches:carac.torches, bridges:carac.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
     prefs: { ...PREFS, focus:{}, ...(opts.prefs||{}) },   // focus : minerais visés (src/sim/focus.js)
     focusNotice:null,               // dernier focus abandonné faute de minerai ({t, msg}), affiché au joueur
+    /* sorts équipés (SPELLS, figés au lancement) : recharge (heure où chacun est de nouveau prêt, 0 = prêt) et blocs
+       appris par Fast learner ({ id de bloc: bonus de vitesse }) ; voir src/sim/spells.js */
+    spells: Array.isArray(opts.spells) ? [...opts.spells] : [], spellCd: {}, learned: {},
     stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0, stuns:0 },
     fall:null,                      // chute en cours : { y0 : ligne de départ, blind : trou pas découvert }
   };
@@ -60,7 +63,9 @@ export const winchMult = G => 1 + (G.winchBoost || 0);
 export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m)));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
-export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m));
+/* sorts : Inspiration (G.inspire, pour tout le groupe) et Fast learner (m.learned, par type de bloc) */
+const spellMine = (G,m,t) => (1+(G.inspire && G.t<G.inspire.until ? G.inspire.pct : 0))*(1+(m.learned?.[t]||0));
+export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m)*spellMine(G,m,t));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
 

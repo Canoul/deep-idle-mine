@@ -12,6 +12,7 @@ import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../si
 import { setFocus } from '../sim/focus.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
+import { sessionSpells } from '../meta/spells.js';
 
 /* ---------- préférences ---------- */
 
@@ -75,8 +76,10 @@ export function minerSpecs(record){
   const caracOf = i => withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings);
   const treeOf = i => sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
+  /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
+  const spellsOf = i => i < players.length ? sessionSpells(record.spells?.[players[i].account], treeOf(i)) : [];
   const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i),
-                       xpPct: ringXpPct(ringsOf(gearOf(i))) });
+                       xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i) });
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
   return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
 }

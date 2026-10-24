@@ -1,5 +1,5 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS } from '../config.js';
+import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS, SPELLS } from '../config.js';
 import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
@@ -45,6 +45,8 @@ export function updateHUD(G, ui){
   $('podBar').style.background=m.load>=pods*0.9?'var(--bad)':'var(--ok)';
   $('mTorch').textContent=m.torches+' en réserve · '+(Number.isFinite(m.bridges) ? m.bridges+' passerelles' : 'passerelles illimitées');   // Infinity arrive en null (JSON)
   $('mInv').innerHTML=chips(m.inv);
+  // sorts équipés du mineur suivi : recharge restante sur chaque sort
+  { const html=spellBarHtml(m, G.t); $('spellBar').hidden=!html; if(html) setHtml($('spellBar'), html); }
 
   // coffre commun + contributions
   $('chestBox').innerHTML=chips(G.chest);
@@ -168,4 +170,16 @@ export function objectiveHtml(G){
   const need=unlockNeed(a);
   return `<div class="row" style="margin-top:8px"><span>🔒 Area ${f+1} : minerais de l'area ${f}</span><span>${a.oreMined} / ${need}</span></div>`+
     `<div class="bar"><i style="width:${Math.min(100,a.oreMined/need*100)}%;background:var(--acc)"></i></div>`;
+}
+
+/* barre des sorts d'un mineur (m.spells, m.spellCd : heure où chaque sort est de nouveau prêt) au temps t de la partie :
+   un carré par sort, grisé avec les secondes restantes pendant la recharge ; '' sans sort */
+export function spellBarHtml(m, t){
+  if(!m?.spells?.length) return '';
+  return m.spells.map(id => {
+    const s = SPELLS.list.find(x => x.id === id); if(!s) return '';
+    const left = Math.ceil((m.spellCd?.[id] ?? 0) - t - 1e-9);
+    return `<div class="spB${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
+           `<span class="spIcon">${s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
+  }).join('');
 }

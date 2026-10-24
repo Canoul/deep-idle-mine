@@ -33,6 +33,7 @@ export function gameRoutes(game){
     'POST /api/game/learn':  async ctx => { needMe(ctx); return game.learn(ctx.me, obj(ctx.body)); },
     'POST /api/game/research': async ctx => { needMe(ctx); return game.research(ctx.me, obj(ctx.body)); },
     'POST /api/game/skills': async ctx => { needMe(ctx); return game.skills(ctx.me, obj(ctx.body)); },
+    'POST /api/game/spells': async ctx => { needMe(ctx); return game.spells(ctx.me, obj(ctx.body)); },
     'POST /api/game/upgrade': async ctx => { needMe(ctx); return game.upgrade(ctx.me, obj(ctx.body)); },
     'POST /api/game/stuff':  async ctx => { needMe(ctx); return game.stuff(ctx.me, obj(ctx.body)); },
     'POST /api/game/ack':    async ctx => { needMe(ctx); await game.ack(ctx.me, obj(ctx.body).id); return [204]; },

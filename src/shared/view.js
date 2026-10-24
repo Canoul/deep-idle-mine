@@ -25,6 +25,7 @@ function minerView(m){
     pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)
     look: m.look || {},                                              // équipement visible (skin, src/skins.js)
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
+    spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },          // sorts équipés et recharges (barre des sorts)
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
   };
 }

@@ -59,6 +59,7 @@ export const gameApi = {
   craft:  (item, opId) => request('POST', '/api/game/craft', { item, opId }),
   learn:  (item, opId) => request('POST', '/api/game/learn', { item, opId }),   // utiliser un blueprint
   research: op         => request('POST', '/api/game/research', op),
+  spells: op           => request('POST', '/api/game/spells', op),            // { action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }
   skills: op           => request('POST', '/api/game/skills', op),            // { action:'learn', node } | { action:'reset' }          // { action:'research', tier } | { action:'recycle', item }
   stuff:  op           => request('POST', '/api/game/stuff', op),
   upgrade: op          => request('POST', '/api/game/upgrade', op),           // { action:'identify', uid, sacrifice, opId } | { action:'upgrade', uid, opId }

@@ -462,6 +462,20 @@ def main():
         rect(heap, x, y, 1, 1, spark)                               # éclats dorés
     tex['angel_feathers'] = heap
 
+    # parchemin de sort (objet, onglet Sorts) : feuille beige roulée aux deux bouts, lignes d'écriture, sceau rouge
+    scr = blank()
+    paper, paper_l, paper_d, ink, seal, seal_l = hexc('#e9d7a6'), hexc('#f7ecc9'), hexc('#b89a5c'), hexc('#6b4a2a'), hexc('#b8282e'), hexc('#e8565a')
+    rect(scr, 3, 3, 10, 10, paper)                                  # feuille
+    rect(scr, 3, 3, 10, 1, paper_l)                                 # bord éclairé
+    rect(scr, 2, 2, 12, 2, paper_d); rect(scr, 2, 2, 12, 1, paper)  # rouleau du haut
+    rect(scr, 2, 12, 12, 2, paper_d); rect(scr, 2, 13, 12, 1, paper)   # rouleau du bas
+    rect(scr, 1, 2, 1, 2, paper_d); rect(scr, 14, 2, 1, 2, paper_d)
+    rect(scr, 1, 12, 1, 2, paper_d); rect(scr, 14, 12, 1, 2, paper_d)
+    for yy in (5, 7, 9):                                            # lignes d'écriture
+        rect(scr, 5, yy, 6 if yy != 9 else 4, 1, ink)
+    rect(scr, 10, 9, 3, 3, seal); rect(scr, 10, 9, 1, 1, seal_l)    # sceau
+    tex['scroll'] = scr
+
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),

@@ -11,6 +11,7 @@ import { updateDungeons } from './dungeon.js';
 import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
+import { afterDecide, updateSpells } from './spells.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare, specXpOf } from '../meta/level.js';
 
@@ -70,7 +71,7 @@ function stepMiner(G,m){
   }
   let budget = DT*(m.ox<=0?CFG.oxygenOutSlow:1), guard=0;
   while(budget>1e-9 && guard++<30){
-    if(!m.action){ decide(G,m); if(!m.action) break; }
+    if(!m.action){ decide(G,m); if(!m.action) break; afterDecide(G,m); }   // sorts : Dash, Dynamite
     const a=m.action, need=a.dur-a.t;
     if(budget>=need){ budget-=need; m.action=null; finishAction(G,m,a); }
     else { a.t+=budget; budget=0; }
@@ -85,6 +86,7 @@ export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners) stepMiner(G,m);
+  updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   for(const m of G.miners){

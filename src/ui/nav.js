@@ -15,12 +15,13 @@ export const TABS = [
   { id:'amelioration', label:'Amélioration', icon:'gem',   ready:true  },   // identifier (R1 à R7) et améliorer (+1 à +3) le stuff
   { id:'recherche',  label:'Recherche',  icon:'book',      ready:true  },   // table de recherche (blueprints)
   { id:'skills',     label:'Skills',     icon:'sparkle',   ready:true  },   // arbres de skills (points gagnés aux niveaux)
+  { id:'sorts',      label:'Sorts',      icon:'radiance',  ready:true  },   // sorts équipés (déclenchés tout seuls en session)
   { id:'historique', label:'Historique', icon:'hourglass', ready:true  },   // sessions passées : seed et butin
   { id:'social',     label:'Social',     icon:'group',     ready:true  },   // amis : présence, inviter, rejoindre
 ];
 
 /* touche du clavier de chaque onglet, dans l'ordre de la barre (les onglets en attente n'en ont pas) */
-export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','='];
+export const TAB_KEYS = ['1','2','3','4','5','6','7','8','9','0','-','=','²'];
 
 /* icônes pixel posées dans la page : <i data-pxi="nom"></i> */
 export function fillIcons(root = document){

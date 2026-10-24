@@ -27,6 +27,7 @@ import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.
 import { rollChestQuality } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
+import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
@@ -53,6 +54,10 @@ const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.'
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
                        maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
                        no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.' };
+const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas encore débloqué.',
+                       wrong_tree: 'Ce sort est réservé à une autre spécialisation.', slot_locked: 'Cet emplacement est verrouillé.',
+                       not_scroll: 'Cet objet n\'est pas un parchemin de sort.', already_learned: 'Tu connais déjà ce sort : ton parchemin est gardé.',
+                       not_owned: 'Tu n\'as pas ce parchemin.', bad_request: 'Demande invalide.' };
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
@@ -152,6 +157,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
   const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
   const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st) });
+  /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
+  const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
+  const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
+    spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
@@ -292,6 +301,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: publicProgress(await loadProgress(me.id)),
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
+               spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },
@@ -348,10 +358,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
-        const prefs = {}, looks = {}, gear = {}, skills = {};
+        const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
           skills[p.account] = skillRanks(await loadSkills(p.account));   // figés pour toute la session
+          /* sorts équipés encore valides (débloqués, bonne spécialisation), figés eux aussi */
+          spells[p.account] = equippedSpells(await loadSpells(p.account), await spellCtx(p.account));
           /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) ; ses caractéristiques :
              les mêmes pièces, avec leur qualité et leur niveau (gear) */
           const st = await loadStuff(p.account, await loadInventory(p.account));
@@ -364,7 +376,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
-          prefs, looks, gear, skills,
+          prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
@@ -609,6 +621,29 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, r.error === 'unknown' || r.error === 'bad_request' ? 400 : 409, SKILL_ERRORS[r.error] ?? 'Demande invalide.');
         if(!r.repeated) await store.putSkills(me.id, st);
         return { skills: publicSkills(st, points) };
+      });
+    },
+
+    /* sorts : { action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item } (apprendre un
+       parchemin : il quitte l'inventaire, le sort reste acquis). Possible pendant une session : les sorts de la session
+       en cours sont figés au lancement. opId : une demande renvoyée n'agit qu'une fois. */
+    async spells(me, body = {}){
+      const { action, opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const err = e => fail(e, e === 'unknown' || e === 'bad_request' ? 400 : 409, SPELL_ERRORS[e] ?? 'Demande invalide.');
+      if(action === 'learn') return withLock('inv:' + me.id, () => withLock('spells:' + me.id, async () => {
+        const inv = await loadInventory(me.id), st = await loadSpells(me.id);
+        const r = learnScroll(st, inv, body.item, opId);
+        if(r.error) err(r.error);
+        if(!r.repeated) await store.putInventoryAndSpells(me.id, JSON.parse(serialize(inv)), st);
+        return { spells: publicSpells(st, await spellCtx(me.id)), inventory: publicInventory(inv) };
+      }));
+      return withLock('spells:' + me.id, async () => {
+        const st = await loadSpells(me.id), ctx = await spellCtx(me.id);
+        const r = spellOp(st, { action, spell: body.spell, slot: body.slot, opId }, ctx);
+        if(r.error) err(r.error);
+        if(!r.repeated) await store.putSpells(me.id, st);
+        return { spells: publicSpells(st, ctx) };
       });
     },
 

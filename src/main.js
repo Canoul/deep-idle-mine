@@ -43,6 +43,7 @@ import { setupFurnace } from './ui/furnace.js';
 import { setupCrusher } from './ui/crusher.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
+import { setupSpells } from './ui/spells.js';
 import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
@@ -156,7 +157,13 @@ const research = setupResearch({
 const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
-  onChange: s => { stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby : sa spécialisation
+  onChange: s => { stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+});
+
+/* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
+const spells = setupSpells({
+  onOp: op => gameApi.spells({ ...op, opId: newOpId() }),
+  onInventory: inv => setInventory(inv),
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -477,6 +484,7 @@ function showResult(st){
 function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
   furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
+  spells.setInventory(ui.inv);
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
@@ -489,6 +497,7 @@ function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
   renderLevel($('levelBody'), progress); renderLevel($('stuffLevelBody'), progress);   // lobby et onglet Stuff
   skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
+  spells.setContext({ spec: Object.fromEntries(Object.entries(progress?.spec ?? {}).map(([t, s]) => [t, s.level])) });
   return up;
 }
 
@@ -500,6 +509,7 @@ async function refresh(){
   crusher.set(st.crusher);
   stuff.set(st.stuff);
   skills.set(st.skills);
+  spells.set(st.spells);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
   else showNoSession();

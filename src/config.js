@@ -428,6 +428,51 @@ export const SKILLS = {
   opMemory: 50,         // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
+/* Sorts (onglet Sorts, 24/10/2026, Geoffrey). 4 emplacements (slots), dont openSlots ouverts ; les autres restent
+   verrouillés pour l'instant. Un sort se débloque par un niveau de spécialisation (unlock.tree + unlock.level, XP.specCurve)
+   ou en apprenant son parchemin (unlock.scroll : l'objet est consommé, le sort reste acquis pour le compte). needTree :
+   il faut cette spécialisation (arbre de skills figé au lancement) pour l'équiper et qu'il agisse en session.
+   En session, chaque sort part tout seul dès que son temps de recharge (cd, en s) est fini ET qu'il peut servir
+   (src/sim/spells.js) ; sinon il reste prêt. Les sorts équipés sont figés au lancement (comme les skills).
+   Valeurs provisoires. */
+export const SPELLS = {
+  slots: 4, openSlots: 2,
+  opMemory: 50,
+  list: [
+    /* avance de range cases au plus sur sa ligne (sens de son pas), à speed × sa vitesse de marche ; s'arrête devant un
+       bloc, un trou ou un mob. Mob heurté : dmg × ses dégâts, recharge × hitCd */
+    { id:'dash', name:'Dash', icon:'💨', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
+      range:6, speed:6, dmg:5, hitCd:0.5, minCells:2,
+      desc:'Fonce de 6 cases au plus sur son chemin (600 % de vitesse), s\'arrête devant un bloc, un trou ou un mob. Mob heurté : 500 % de ses dégâts et recharge réduite de moitié' },
+    /* révèle les blocs à radius cases (cercle) ; part s'il en reste au moins un inconnu */
+    { id:'illumination', name:'Illumination', icon:'💡', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
+      radius:5,
+      desc:'Révèle tous les blocs dans un rayon de 5 autour du mineur' },
+    /* vitesse de minage +mineSpeed pour tous les mineurs pendant duration s ; la recharge commence à la fin de l'effet.
+       Plusieurs logisticiens : pas de cumul, le suivant attend la fin de l'effet (ils s'enchaînent) */
+    { id:'inspiration', name:'Inspiration', icon:'🎺', unlock:{ tree:'logisticien', level:5 }, needTree:'logisticien', cd:180,
+      duration:60, mineSpeed:0.10,
+      desc:'Tous les mineurs minent 10 % plus vite pendant 60 s (la recharge commence à la fin de l\'effet)' },
+    /* quand un autre mineur du groupe se bat (frappe ou est taclé) : téléporté sur sa case, inflige hpPct des PV max du
+       mob (bossPct sur un boss : minotaure, Gallianix) */
+    { id:'ulti_shen', name:'Ulti shen', icon:'🌀', unlock:{ scroll:'Parchemin « Ulti shen »' }, cd:180,
+      hpPct:0.20, bossPct:0.05,
+      desc:'Quand un allié se bat : se téléporte à lui et inflige 20 % des PV max du mob (5 % sur un boss)' },
+    /* le prochain bloc miné (pas de la terre ni un trésor) est « appris » : ce type de bloc se mine bonus plus vite
+       jusqu'à la fin de la session (cumulable) ; la recharge commence une fois le bloc appris */
+    { id:'fast_learner', name:'Fast learner', icon:'📖', unlock:{ scroll:'Parchemin « Fast learner »' }, cd:300,
+      bonus:0.10,
+      desc:'Le prochain bloc miné (sauf terre et trésor) est appris : ce type de bloc se mine 10 % plus vite jusqu\'à la fin de la session (cumulable)' },
+    /* lancée dans le sens du minage, jusqu'à reach cases ou au premier bloc ; explose dans un rayon radius (cercle) :
+       casse ce que le mineur peut miner (pas les constructions ni l'incassable), comme s'il l'avait miné (butin, XP,
+       fortune). Le lancer dure throwTime s */
+    { id:'dynamite', name:'Dynamite', icon:'🧨', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
+      reach:2, radius:2, throwTime:0.5,
+      desc:'Lance une dynamite devant lui (2 cases au plus) : elle casse tous les blocs minables dans un rayon de 2, comme s\'il les minait' },
+  ],
+};
+
+
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
@@ -438,7 +483,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack','scroll'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -732,6 +777,8 @@ export const ITEMS = {
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },
+  /* parchemins de sorts (SPELLS) : appris dans l'onglet Sorts (consommés) ; aucune source pour l'instant (24/10) */
+  ...Object.fromEntries(SPELLS.list.filter(s => s.unlock.scroll).map(s => [s.unlock.scroll, { cat:'scroll', tex:'scroll', w:1, stack:true }])),
   [DUCK.heart.item]: { cat:'material',  tex:DUCK.heart.tex, w:1, stack:true },             // laissé par le Gallianix (DUCK)              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
