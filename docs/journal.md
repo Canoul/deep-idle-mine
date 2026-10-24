@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Les occultistes lâchent aussi de la chitine
+
+L'occultiste vaincu donne maintenant **1 à 2 Chitine** en plus de ses 1 à 3 Tissu sombre (comme le gobelin, qui donne
+déjà de la chitine en plus de sa peau). Wiki et règles du jeu à jour. 🚧 pas encore en ligne.
+
 ## 24/10/2026 — Geoffrey — XP de spécialisation : même courbe que le niveau
 - **Pour le joueur** : monter un niveau de spécialisation (SP lvl) demande maintenant autant d'XP que monter un niveau
   de mineur (1000 pour le niveau 2, puis ×1,5). On en gagne toujours la moitié de son XP. En solo : niveau 2 en ≈ 3
