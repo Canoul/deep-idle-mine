@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Mine instantanée : les mineurs ne foncent plus au fond
+- **Pour le joueur** : dans la mine instantanée, les mineurs creusent davantage sur les côtés au lieu de faire des
+  puits jusqu'au fond. À 3 mineurs, ceux qui finissent au fond passent de 43 % à 3 %. La moitié basse de la mine ne
+  représente plus que 25 % des blocs creusés, contre 42 % avant. Le nombre de blocs creusés ne change pas (≈ 102 par
+  mineur).
+- **Décisions** : creuser sous ses pieds compte maintenant comme un pas. Avant, c'était gratuit (le mineur tombe tout
+  seul dans le trou), donc il préférait toujours descendre.
+- **À suivre** : un peu moins de plumes ramassées (à 3 : 4,6 → 4,1 par mineur), car les mineurs restent plus dans la
+  même zone. On peut compenser avec plus de tas, ou aller plus loin vers l'horizontal (plus de galeries, encore moins
+  de plumes).
+- **État** : ✅ en ligne le 24/10 (le code est parti avec le commit `e4397eb` d'une autre discussion ; doc ajoutée ensuite)
+
 ## 24/10/2026 — Geoffrey — Les occultistes lâchent aussi de la chitine
 
 L'occultiste vaincu donne maintenant **1 à 2 Chitine** en plus de ses 1 à 3 Tissu sombre (comme le gobelin, qui donne
