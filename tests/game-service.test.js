@@ -618,9 +618,9 @@ test('XP de spécialisation : 50 % de sa part, à l\'arbre figé au lancement, u
   now += realDurationMs() + 1000; await game.pump(); await game.pump();
   const pr = await store.getProgress(A.id);
   assert.deepEqual(pr.spec, { barbare:432 });
-  assert.equal((await game.state(A)).progress.spec.barbare.level, 3);   // 100 + 150 = 250 ≤ 432 < 475
+  assert.equal((await game.state(A)).progress.spec.barbare.level, 1);   // 432 < 1000 (même courbe que le niveau)
   assert.ok(pr.credited.includes(session.id));
-  assert.equal(await game.specLevelOf(A.id, 'barbare'), 3);
+  assert.equal(await game.specLevelOf(A.id, 'barbare'), 1);
   assert.equal(await game.specLevelOf(A.id, null), null);
 });
 
@@ -644,8 +644,8 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   assert.equal(r.inventory.slots.filter(Boolean).length, 0, 'parchemin consommé une seule fois');
   await assert.rejects(game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-03' }), { code:'locked' });
   await assert.rejects(game.spells(A, { action:'equip', spell:'ulti_shen', slot:2, opId:'op-spell-04' }), { code:'slot_locked' });
-  /* Dash : barbare niveau de spé 5 (XP de spé 100+150+225+338 = 813) */
-  await store.putProgress(A.id, { xp:2600, spec:{ barbare:813 }, credited:[] });
+  /* Dash : barbare niveau de spé 5 (XP de spé 1000+1500+2250+3375 = 8125) */
+  await store.putProgress(A.id, { xp:2600, spec:{ barbare:8125 }, credited:[] });
   await game.skills(A, { action:'learn', node:'damage', opId:'op-spell-05' });
   await game.spells(A, { action:'equip', spell:'dash', slot:0, opId:'op-spell-06' });
   r = await game.spells(A, { action:'equip', spell:'ulti_shen', slot:1, opId:'op-spell-07' });

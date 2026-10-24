@@ -101,7 +101,7 @@ async function server(){
   const store = createMemoryGameStore();
   const k = kit();
   await store.putInventory('AAAA1111', JSON.parse(serialize(k.inv)));
-  await store.putProgress('AAAA1111', { xp:2600, spec:{ barbare:813 }, credited:[] });
+  await store.putProgress('AAAA1111', { xp:2600, spec:{ barbare:8125 }, credited:[] });
   const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1e6, randomSeed:() => 1 });
   return { game, store, uid:k.uid };
 }
