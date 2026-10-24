@@ -69,9 +69,10 @@ test('spécialisation : 50 % de la part (24/10 ; ancien 10 %), arrondi vers le b
   assert.equal(specXpOf(865), 432);
   assert.equal(specXpOf(1), 0);
   for(const bad of [-10, 1.5, NaN, Infinity, '100', null]) assert.equal(specXpOf(bad), 0);
-  assert.deepEqual(specLevelOf(0), { level:1, into:0, need:100 });
-  assert.deepEqual(specLevelOf(99), { level:1, into:99, need:100 });
-  assert.deepEqual(specLevelOf(250), { level:3, into:0, need:225 });
+  assert.deepEqual(specLevelOf(0), { level:1, into:0, need:1000 });
+  assert.deepEqual(specLevelOf(999), { level:1, into:999, need:1000 });
+  assert.deepEqual(specLevelOf(2500), { level:3, into:0, need:2250 });
+  for(const xp of [0, 999, 2500, 8125, 50000]) assert.deepEqual(specLevelOf(xp), (({ level, into, need }) => ({ level, into, need }))(levelOf(xp)), 'même courbe que le niveau du mineur');
 });
 
 test("spécialisation : versée avec l'XP, une seule fois, à l'arbre donné ; arbre inconnu ou quantité invalide ignorés", () => {
@@ -145,7 +146,7 @@ test('serveur : l\'XP est versée à la fin, une seule fois, et le niveau se lit
   const { game, store, advance } = server();
   const { spec, ...p0 } = (await game.state(ME)).progress;
   assert.deepEqual(p0, { xp:0, level:1, into:0, need:1000, talentPoints:0 });
-  assert.deepEqual(spec.mineur, { xp:0, level:1, into:0, need:100 }, 'niveau de spécialisation de chaque arbre');
+  assert.deepEqual(spec.mineur, { xp:0, level:1, into:0, need:1000 }, 'niveau de spécialisation de chaque arbre');
   for(let i = 0; i < 2; i++){
     await game.start(ME, {});
     advance(realDurationMs());

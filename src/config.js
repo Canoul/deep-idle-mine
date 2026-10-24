@@ -358,10 +358,10 @@ export const XP = {
   maxLevel: 200,
   /* XP de spécialisation (24/10/2026, Geoffrey) : pct % de la part d'XP du joueur (après partage et bonus personnel,
      arrondi vers le bas) va à l'arbre de skills figé au lancement (rien sans arbre). Une XP par arbre, gardée quand
-     on change d'arbre. specCurve : comme curve (100, 150, 225…). Seulement affichée pour l'instant ; elle débloque
-     des sorts (SPELLS). Valeurs provisoires. */
+     on change d'arbre. specCurve : la même courbe que le niveau du mineur (1000, 1500, 2250…) ; seul le gain change
+     (specPct). Seulement affichée pour l'instant ; elle débloque des sorts (SPELLS). Valeurs provisoires. */
   specPct: 50,          // 24/10/2026 (Geoffrey) : ancien 10
-  specCurve: { first:100, factor:1.5 },
+  specCurve: { first:1000, factor:1.5 },   // 24/10/2026 (Geoffrey) : = curve ; ancien first:100
 };
 
 /* caméra de la session (affichage) : top = ligne la plus haute affichée (le ciel), margin = lignes affichées sous le
