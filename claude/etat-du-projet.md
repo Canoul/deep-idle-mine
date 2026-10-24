@@ -109,12 +109,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ancien : en fin de session seulement) ; 25 % de **Fragment de cœur** (coffre commun, sans usage pour l'instant). `src/sim/duck.js`.
 - **Mobs** (refonte du 21/10, GAME_DESIGN §5) : bestiole, gobelin (dès l'area 1), mimic, **occultiste** (area 4+,
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre ; 150 PV de base depuis le 23/10, ancien 100 ;
-  la Provocation casse la canalisation sans l'empêcher). PV ×5 à ×10 (k = area où naît le mob),
+  la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, 70 PV, **vole** sans gravité ni
+  échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
+  pris sur le gobelin). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
   et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
-- **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste),
+- **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
   un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).
 - **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par

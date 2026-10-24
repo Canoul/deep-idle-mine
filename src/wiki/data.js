@@ -57,12 +57,13 @@ export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
     bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
     gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
     occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }],
+    mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
     mimic:      [],
   }[m] ?? [],
 }]));
 function mm([min, max]){ return { min, max }; }
 export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
-  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, help: HELP.range };
+  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range };
 /* coups pour tuer un mob de pv points de vie, avec des dégâts d */
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
@@ -97,7 +98,7 @@ export function sourcesOf(item){
   }
   for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
-    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
@@ -206,7 +207,7 @@ const STAT_HELP = {
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
   bridges:    'Passerelles pour traverser les trous (illimitées).',
-  tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste (un tirage à chaque sort).",
+  tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
   crit:       'Chance qu\'un coup contre un mob fasse le double de dégâts.',

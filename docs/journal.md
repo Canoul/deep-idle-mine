@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Nouveau mob : le Méphite
+- **Pour le joueur** : un nouveau mob à partir de l'**area 3**, le **Méphite**, une masse de gaz verte aux yeux jaunes.
+  Il **vole** : pas besoin d'échelle, il traverse les galeries vides et rattrape le mineur même en haut d'un puits.
+  Fragile (70 PV en area 3), mais tant qu'il tacle, le mineur perd **5 d'oxygène toutes les 2 s** (plusieurs méphites ne
+  se cumulent pas ; la Ténacité peut ignorer chaque perte). Il laisse **1 à 2 Vésicules de gaz** (sans usage pour
+  l'instant) et donne 12 XP. Il peut aussi sortir des pièges.
+- **Décisions** : apparition 5 % en area 3, 15 % en area 4, 20 % en area 5 et au-delà, pris sur la part du gobelin.
+  Vol réel (choix de Geoffrey). XP 12 (entre gobelin et occultiste). Difficulté mesurée ≈ 6/10 : environ 25 s
+  perdues par rencontre avec une équipe en fer (7 s de combat + 18 s d'oxygène).
+- **À suivre** : un usage pour la Vésicule de gaz. Vérifié : aucune partie bloquée, et pas d’effet sur la progression (sans stuff 4,0 areas, en fer 5,1 : comme avant).
+- **État** : 🧪 sur la branche `geoffrey/mephite` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
 - **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
   matin, +0,4 avant), **pioche en acier +0,6** (au lieu de +0,72, +0,48 avant). Les pièces déjà fabriquées suivent.

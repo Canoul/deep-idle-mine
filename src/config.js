@@ -287,18 +287,18 @@ export const MOBS = {
     { bestiole:0.8, mimic:0.2 },
     { bestiole:0.6, gobelin:0.2, mimic:0.2 },
     { bestiole:0.4, gobelin:0.4, mimic:0.2 },
-    { bestiole:0.2, gobelin:0.6, mimic:0.2 },
-    { gobelin:0.7, occultiste:0.1, mimic:0.2 },
-    { gobelin:0.5, occultiste:0.3, mimic:0.2 },
+    { bestiole:0.2, gobelin:0.55, mephite:0.05, mimic:0.2 },   // méphite : 24/10 (Geoffrey), pris sur le gobelin (avant 0,6)
+    { gobelin:0.55, occultiste:0.1, mephite:0.15, mimic:0.2 },  // avant gobelin 0,7
+    { gobelin:0.3, occultiste:0.3, mephite:0.2, mimic:0.2 },    // avant gobelin 0,5
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150 },   // occultiste : 150 le 23/10 (avant 100)
-  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70 },   // occultiste : 150 le 23/10 (avant 100)
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
   spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
   firstSpawn: 25,
-  walkerCap:  k => 2 + k,          // mobs qui marchent vivants en même temps (bestioles, gobelins, occultistes ; pas les mimics)
+  walkerCap:  k => 2 + k,          // mobs qui se déplacent vivants en même temps (bestioles, gobelins, occultistes, méphites ; pas les mimics)
   spawnMin: 5, spawnMax: 10,       // distance d'apparition autour du mineur visé (Manhattan)
   mimicLoot:  3,                   // minerais rapportés par un mimic vaincu
   mimicRevealDist: 2.3,
@@ -315,6 +315,10 @@ export const MOBS = {
      la cible est étourdie tant que dure la canalisation (channel s). Un coup d'un barbare qui a la Provocation interrompt
      sa canalisation en cours, mais ne l'empêche pas d'en relancer une (21/10). La ténacité de la cible peut l'ignorer. */
   occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
+  /* méphite (24/10/2026, Geoffrey) : il VOLE (pas de gravité, il traverse les cases vides sans échelle, flyReach = cases
+     explorées au plus pour trouver son chemin). Asphyxie : tant qu'au moins un méphite tacle un mineur, il perd oxygen
+     d'oxygène toutes les every secondes (non cumulable entre méphites ; chaque pulse est ignorable par la ténacité). */
+  mephite: { every:2, oxygen:5, flyReach:400, item:'Vésicule de gaz', loot: rng => 1 + Math.floor(rng()*2) },
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
    nouvelle area débloquée pendant la session (pas au lancement). Il ne tacle pas et ne chasse personne ; il ne tombe
@@ -347,7 +351,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4 },
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, minotaure:100, gallianix:5 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -479,11 +483,11 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack','scroll'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack','scroll'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -776,6 +780,7 @@ export const ITEMS = {
   'Blueprint parts': { cat:'blueprint', tex:'bp_parts', stack:true },
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
+  'Vésicule de gaz': { cat:'material',  tex:'gas_vesicle', stack:true },   // butin du méphite (24/10), sans usage pour l'instant
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },
   /* parchemins de sorts (SPELLS) : appris dans l'onglet Sorts (consommés) ; aucune source pour l'instant (24/10) */
   ...Object.fromEntries(SPELLS.list.filter(s => s.unlock.scroll).map(s => [s.unlock.scroll, { cat:'scroll', tex:'scroll', w:1, stack:true }])),
@@ -1001,6 +1006,7 @@ export const MOB_INFO = {
   gobelin:    { name:'Gobelin',    tex:'goblin' },
   mimic:      { name:'Mimic',      tex:'mimic', under:'iron' },   // le mimic se dessine par-dessus un minerai
   occultiste: { name:'Occultiste', tex:'occultist' },
+  mephite:    { name:'Méphite',    tex:'mephite' },
 };
 
 /* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre

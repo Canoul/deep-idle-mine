@@ -305,6 +305,28 @@ def main():
     rect(occ, 1, 11, 1, 1, hexc('#e0b0ff'))
     tex['occultist'] = occ
 
+    # méphite : masse de gaz verdâtre, ronde et flasque, deux yeux jaunes, traînée de volutes vers le bas
+    meph = blank()
+    gas, gas_d, gas_l = hexc('#7fae45'), hexc('#4f7a2a'), hexc('#b5d97a')
+    rect(meph, 5, 2, 6, 1, gas)            # haut arrondi
+    rect(meph, 3, 3, 10, 2, gas)
+    rect(meph, 2, 5, 12, 4, gas)           # corps
+    rect(meph, 3, 9, 10, 2, gas)           # bas flasque
+    rect(meph, 2, 8, 12, 1, gas_d)         # pli
+    rect(meph, 5, 3, 3, 1, gas_l)          # reflet
+    rect(meph, 4, 4, 1, 1, gas_l)
+    rect(meph, 5, 6, 2, 2, hexc('#ffd23f'))  # yeux jaunes
+    rect(meph, 9, 6, 2, 2, hexc('#ffd23f'))
+    rect(meph, 6, 7, 1, 1, hexc('#3a2a00'))  # pupilles
+    rect(meph, 10, 7, 1, 1, hexc('#3a2a00'))
+    rect(meph, 4, 11, 2, 1, gas_d)         # volutes
+    rect(meph, 7, 11, 2, 2, gas)
+    rect(meph, 11, 11, 1, 1, gas_d)
+    rect(meph, 5, 13, 1, 1, gas_d)
+    rect(meph, 8, 14, 1, 1, gas_d)
+    rect(meph, 10, 13, 1, 1, gas_d)
+    tex['mephite'] = meph
+
     # brique de donjon : pierre taillée violet sombre, joints noirs, briques décalées une rangée sur deux
     brick = noisy(hexc('#3d2c50'), 77, 0.10)
     mortar = hexc('#1a1224')
@@ -701,6 +723,19 @@ def main():
     rect(cloth, 2, 11, 12, 2, hexc('#1c1228'))
     rect(cloth, 4, 6, 3, 1, hexc('#6a3d92'))
     tex['dark_cloth'] = cloth
+
+    # vésicule de gaz (butin du méphite) : petite poche translucide verte, nouée en haut, gaz plus clair dedans
+    ves = blank()
+    skin, skin_d = hexc('#9cc865'), hexc('#5d8a32')
+    rect(ves, 7, 2, 2, 2, skin_d)          # noeud
+    rect(ves, 5, 4, 6, 1, skin)
+    rect(ves, 4, 5, 8, 7, skin)            # poche
+    rect(ves, 5, 12, 6, 1, skin)
+    rect(ves, 3, 7, 1, 3, skin_d)          # bords
+    rect(ves, 12, 7, 1, 3, skin_d)
+    rect(ves, 5, 6, 2, 2, hexc('#d9f0b0'))  # reflet
+    rect(ves, 7, 9, 3, 2, hexc('#c4e38f'))  # gaz
+    tex['gas_vesicle'] = ves
 
 
 

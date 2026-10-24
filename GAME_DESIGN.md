@@ -183,7 +183,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Vitesse d'attaque | Rythme des coups contre un mob, **en %** (100 % = un coup toutes les 0,8 s, 200 % = deux fois plus vite ; ralentie dans le noir comme le reste) | 100 % *(provisoire)* |
 | Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
-| Ténacité *(21/10)* | **Chance, en %, d'ignorer un sort de mob qui le vise** : le vol du gobelin, la canalisation de l'occultiste. **Un tirage à chaque sort** (chaque vol, chaque canalisation). Un sort ignoré est perdu (l'occultiste s'est téléporté et attend son prochain sort). Vient du skill Force brute (Barbare) | 0 % *(provisoire)* |
+| Ténacité *(21/10)* | **Chance, en %, d'ignorer un sort de mob qui le vise** : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite *(24/10)*. **Un tirage à chaque sort** (chaque vol, chaque canalisation, chaque perte d'oxygène). Un sort ignoré est perdu (l'occultiste s'est téléporté et attend son prochain sort). Vient du skill Force brute (Barbare) | 0 % *(provisoire)* |
 
 **Stats d'amélioration** *(21/10/2026, onglet Amélioration ; 0 de base, elles ne viennent que des lignes tirées à l'identification)* :
 
@@ -198,7 +198,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
-- **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
+- **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15**, méphite **12** *(24/10)* (mob de base, sans XP de minerai en plus).
 - **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents, comme le coffre (arrondi vers le bas), **par tranches** : l'XP gagnée avant un départ est divisée entre les présents d'alors, la part du partant est perdue. **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
 - **Bonus d'XP personnel** *(24/10/2026)* : un « % XP » (Anneau du nerd) s'applique à la part de son porteur **après** le partage ; il ne gonfle pas le pot des autres.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
@@ -348,17 +348,19 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
   | Mimic | 50 × 1,15^k | 0 |
   | Gobelin | 100 × 1,15^(k − 1) | 1 |
   | Occultiste | **150** × 1,15^(k − 4) *(23/10 ; avant 100)* | 4 |
+  | Méphite *(24/10)* | 70 × 1,15^(k − 3) | 3 |
   Repères (mineur de base : 5 dégâts, un coup toutes les 0,8 s) : bestiole 10 coups en area 0, 16 en area 3 ; gobelin 20 coups en area 1, 35 en area 5 ; occultiste 30 à 35 coups ; mimic 10 à 21 coups.
 - **Apparitions** *(décision du créateur, 21/10)* : une tentative toutes les (40 à 70 s) ÷ (1 + 0,15 × dernière area débloquée), première à 25 s, autour des mineurs sous terre chacun son tour. Le type est tiré selon l'**area du mineur visé** :
-  | Area | Bestiole | Gobelin | Occultiste | Mimic |
-  |---|---|---|---|---|
-  | 0 | 80 % | – | – | 20 % |
-  | 1 | 60 % | 20 % | – | 20 % |
-  | 2 | 40 % | 40 % | – | 20 % |
-  | 3 | 20 % | 60 % | – | 20 % |
-  | 4 | – | 70 % | 10 % | 20 % |
-  | 5 | – | 50 % | 30 % | 20 % |
-  Les mobs qui marchent naissent au sol dans une galerie déjà découverte, à 5 à 10 cases du mineur visé, dans une area où leur type peut naître ; au plus 2 + (dernière area débloquée) en vie en même temps (les mimics ne comptent pas). Les **mimics** naissent autrement : **un minerai de la roche** à 5 à 10 cases du mineur devient un mimic caché (pas un minerai visé ou en train d'être miné). Ils ne sont plus placés à la génération des areas.
+  | Area | Bestiole | Gobelin | Occultiste | Méphite | Mimic |
+  |---|---|---|---|---|---|
+  | 0 | 80 % | – | – | – | 20 % |
+  | 1 | 60 % | 20 % | – | – | 20 % |
+  | 2 | 40 % | 40 % | – | – | 20 % |
+  | 3 | 20 % | 55 % | – | 5 % | 20 % |
+  | 4 | – | 55 % | 10 % | 15 % | 20 % |
+  | 5 et plus | – | 30 % | 30 % | 20 % | 20 % |
+  *(24/10 : méphite ajouté, pris sur le gobelin ; avant gobelin 60 / 70 / 50 % en areas 3 / 4 / 5)*
+  Les mobs qui marchent naissent au sol (le méphite, qui vole, aussi en l'air) dans une galerie déjà découverte, à 5 à 10 cases du mineur visé, dans une area où leur type peut naître ; au plus 2 + (dernière area débloquée) en vie en même temps (les mimics ne comptent pas). Les **mimics** naissent autrement : **un minerai de la roche** à 5 à 10 cases du mineur devient un mimic caché (pas un minerai visé ou en train d'être miné). Ils ne sont plus placés à la génération des areas.
 - Types :
   - **Bestioles** : se rapprochent du mineur. **Elles suivent la même physique que le mineur** : gravité, pas de saut, montée uniquement par une échelle (×0,75), descente par l'échelle ou en se laissant tomber. Elles ne creusent pas et ne posent rien. Butin : **chitine** (1 à 2, poids 1).
   - **Gobelins** : même physique et même tacle que les bestioles.
@@ -367,6 +369,7 @@ Portée de 8 blocs horizontalement *(provisoire)*, **uniquement sur la ligne où
     - Intention : un mineur qui tue vite perd peu ; c'est une raison concrète d'améliorer ses dégâts pour les areas profondes.
   - **Mimics** : faux minerais, visibles à la boussole comme des minerais. Ils se dévoilent à 2,3 cases ou quand le mineur essaie de les miner. **Un mimic se combat, il ne se mine pas** : dévoilé, sa case n'est plus un minerai pour l'IA (ni cible, ni bloc à creuser). Il **tacle** le mineur à côté de lui. Butin : 3 minerais du type imité (ni shiny ni Fortune).
   - **Occultiste** *(21/10)* : mage noir humain terré sous terre, à partir de l'**area 4**. Même physique et même tacle que les bestioles. **Sort** : prêt toutes les **15 s** (la première fois 15 s après son apparition). Quand il est prêt, l'occultiste **se téléporte à 3 cases** (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint depuis la cible sans miner (à défaut à 4, puis à 2 ; jamais au contact : il ne lance pas son sort au corps à corps), puis **canalise** un rayon de lumière noire : la cible est **étourdie 5 s** (elle ne fait plus rien, même pas frapper). Pendant la canalisation, il ne bouge pas et ne tacle pas. **Frappé par un barbare qui a la Provocation**, il arrête tout de suite sa canalisation (la cible est libérée) ; il peut relancer son sort quand il est prêt (sur le barbare, sa seule cible) *(21/10 ; avant : il ne lançait plus jamais son sort)*. **La provocation casse la canalisation, elle ne l'empêche pas** : un barbare peut se faire étourdir (vérifié le 23/10 : en 60 s de vrai combat, l'occultiste provoqué lance son sort au moins 3 fois, dont au moins 2 sur le barbare). La **ténacité** de la cible peut ignorer la canalisation. Butin : **Tissu sombre** (1 à 3). XP 15 *(provisoire)*.
+  - **Méphite** *(24/10/2026, Geoffrey)* : masse de gaz verdâtre, ronde et flasque, deux yeux jaunes, traînée de volutes ; à partir de l'**area 3**, fragile (**70 PV** en area 3, +15 % par area). Il **vole** *(décision du créateur)* : pas de gravité, il se déplace dans les 4 directions par les **cases vides**, sans échelle (il rejoint un mineur en haut d'un puits, là où une bestiole reste en bas) ; il prend le plus court chemin par le vide jusqu'à une case voisine de sa cible, n'entre pas dans un donjon ni dans un piège encore caché. Même tacle que les autres. **Asphyxie** : tant qu'il tacle un mineur, celui-ci perd **5 d'oxygène toutes les 2 s** (en plus de sa respiration ; jamais sous 0). **Non cumulable** : plusieurs méphites sur le même mineur = toujours −5 toutes les 2 s. Chaque perte est ignorable par la **ténacité**. Il peut sortir d'un **piège** (areas 3 et plus). Butin : **Vésicule de gaz** (1 à 2, matériau, sans usage pour l’instant). XP **12** *(provisoire : entre le gobelin, 10, et l’occultiste, 15 ; mesuré ≈ 25 s perdues par rencontre en stuff fer, combat + oxygène)*. Difficulté ≈ **6/10**.
   - **Gallianix** *(23/10/2026, Geoffrey)* : canard jaune qui sautille **à la surface**, autour du coffre (8 cases au plus de la colonne du coffre). **Un Gallianix naît à chaque area débloquée pendant la session** (pas au lancement, pour l'area 0), sur une case de la surface qui a du sol. Il se promène au hasard, lentement ; il **ne tombe jamais dans la mine** : il saute par-dessus un trou de 3 cases au plus, sinon il fait demi-tour ; si les mineurs creusent sous lui, il s'envole vers le sol le plus proche *(choix de Claude)*. Il **ne tacle pas** et ne chasse personne. **50 PV** (fixes). Il a un **pseudo** affiché au-dessus de lui comme un joueur (en jaune) : 1er canard de la session = 1er nom de la liste « Cuiseuse de sperme », « Roxanne », « La brésilienne », « La thaïlandaise », 2e canard = 2e nom, etc., puis on recommence au 1er. Les mineurs le combattent comme les autres mobs (réglage « combat »). **À chaque passage au coffre** (pas seulement en fin de session), une fois son sac vidé, un mineur va chasser le Gallianix le plus proche avant de repartir (réglage « combat » sur Combattre), s'il a le temps de revenir au coffre ensuite (aller-retour + 20 s *(provisoire)*) et sans traverser de trou *(23/10/2026, Geoffrey ; à chaque passage depuis le 24/10 : en fin de session seulement, les mineurs encore en remontée laissaient les canards en vie, seed 87312228)*. Butin : **1 Fragment de cœur** avec **25 %** de chance (sans Pillage), dans le sac du mineur, donc au **coffre commun** (partagé comme le reste). XP 5 *(provisoire, choix de Claude)*. Hors des tirages d'apparition et du maximum de mobs. Repère (simulation à 3, 5 parties) : 3 canards par session, ≈ 2 vaincus, ≈ 130 s de combat cumulées pour les 3 mineurs, profondeur moyenne 192 → 182.
 - **Donjon** *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `DUNGEON` en config)* :
   - **Où** : **areas 4 et 5**, **33 %** de chance dans chacune, tirées indépendamment (décision du 22/10/2026, Geoffrey ; avant : 100 % en areas 4 et 5 quelques heures, encore avant : area 5 seulement, 20 %). Tirage à part de la seed : le reste de l'area ne change pas ; une partie peut avoir deux donjons. Un carré de **10 × 10** : murs en **briques de donjon** (pierre taillée violet sombre) **incassables**, intérieur vide, **une seule entrée** (une brique manquante) dans le mur de gauche ou de droite, sur l'une des 3 lignes du bas de l'intérieur (on y entre en marchant, chute de 2 cases au plus). Jamais à moins de 2 cases d'un bord de la mine ou d'une limite d'area (l'entrée ne donne jamais sur un bord), jamais sur la colonne du treuil ± 5. Les blocs qu'il remplace sortent des comptes de l'area (déblocage, focus).
@@ -562,6 +565,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Épée en acier | 10 Steel ingot + 10 Shiny gold + 10 Diamant | Dégâts 16 (remplace les mains nues : 5) *(24/10 ; avant 13)* |
   | Plastron de l'équilibre (case torse) | 50 Steel ingot + 20 Shiny gold + 1 Rubis, 1 Saphir, 1 Jade inférieurs + 50 Résidus angéliques + 50 Résidus démoniaques | Pods +188, oxygène +30, vitesse de minage +3 %, dégâts +3 %, vitesse d'attaque +8 %, ténacité +3 %, fortune +2 %, butin des mobs +3 %, torches +8 *(24/10 : × 1,5 arrondi ; avant pods +125, oxygène +20, 2 %, 2 %, 5 %, 2 %, 1 %, 2 %, torches +5)* |
 
+  **Vésicule de gaz** *(24/10)* : matériau, butin du méphite (1 à 2), sans usage pour l'instant.
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
 ### Stuff (onglet Stuff)

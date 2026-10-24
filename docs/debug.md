@@ -2301,3 +2301,27 @@ Règles (voir CLAUDE.md) :
   steel-gear mis à jour.
 - **État de vérification** : ⚠️ pas de simulation. Repère des mesures du matin : pioche +0,4 → +0,8 seule = +17 lignes de
   profondeur ; le buff complet avec pioche 0,7 donnait ≈ 5,5 areas en fer. Avec 0,5, attendre un peu moins : à mesurer.
+
+### Méphite (Geoffrey, 24/10) — 🧪 branche geoffrey/mephite
+- **Quoi** : `MOBS.spawnTable` (méphite 0,05 / 0,15 / 0,2 en areas 3 / 4 / 5+, gobelin 0,55 / 0,55 / 0,3), `hpBase.mephite`
+  70, `minArea.mephite` 3, `MOBS.mephite` { every 2, oxygen 5, flyReach 400, item, loot 1–2 }, `XP.mob.mephite` 12,
+  objet `Vésicule de gaz` (material, tex `gas_vesicle`), `MOB_INFO.mephite`, textures `mephite` / `gas_vesicle`
+  (`scripts/gen_textures.py`).
+- `src/sim/mobs.js` : `FLYERS` / `isFlyer` (méphite aussi dans `WALKERS` : plafond walkerCap et poursuite) ; pas de
+  chute pour un volant ; `flyStep` = BFS par les cases vides (4 directions, ni donjon ni intérieur de piège voilé, au plus
+  `flyReach` cases) jusqu'à une case voisine de la proie, un pas par `mobStep` ; `asphyxia(G)` après la boucle des mobs :
+  un compteur par mineur (`m.choke`) tant qu'au moins un méphite le tient, pulse → `resists` sinon `m.ox -= 5` (≥ 0),
+  stats `choked`. Apparition : un volant peut naître en l'air (pas de `supported`). `src/sim/actions.js` : butin.
+  Rendu : sprite qui flotte (±1 px, affichage seulement). Wiki : fiche, butin, texte de la Ténacité.
+- **Tests** : `tests/mephite.test.js` (8 : table, PV 70/81/93, vol dans un puits sans échelle vs bestiole bloquée, ne
+  tombe pas, asphyxie −5 / 2 s, non cumulable, ténacité 100 % → rien + plancher 0, butin 1–2, pièges) ✅ ;
+  `tests/goblin.test.js` : tirages adaptés à la nouvelle table + cas méphite. ⚠️ Ce test échouait déjà sur main
+  (occultiste attendu à 100 PV, 150 depuis le 23/10) : corrigé (150 / 173). Mobs, trap, wiki, rarity, inventory, view,
+  session, team, dungeon, fall, winch, mule, skills, miner, duck, loot, crusher, lobby, diagnostics, skins, stuff… ✅ (348).
+- **Mesure** (10 seeds, 3 mineurs en fer, arbres complets) : 7,1 méphites par session (dont 0,6 de piège), 7,3 s de
+  combat par rencontre, 25 pulses d'asphyxie par session (127 s d'oxygène) → ≈ 25 s par rencontre. Pour comparer :
+  gobelin ≈ 16 s (vol compris), occultiste ≈ 17,5 s. Areas 5,1 (inchangé à ±0,1).
+- **Simulation standard** `--miners 3 --count 5 --skills mixed` : 5 sessions, 0 bloquée ✅ (areas 3,6, profondeur 200, 29 allers-retours). Effet sur la progression (même équipe, mêmes 10 seeds, arbres complets) : sans stuff 4,0 → 4,0 areas (2,4 méphites et 74 s d'oxygène perdues par session) ; en fer 5,1 → 5,1.
+- **Points fragiles** : `flyStep` lance une recherche (≤ 400 cases) à chaque pas d'un méphite qui chasse : à surveiller
+  pour la vitesse des simulations. Un méphite peut viser un mineur dans une galerie qu'il ne peut pas rejoindre par le
+  vide (mineur entouré de roche) : il reste sur place, sans osciller.

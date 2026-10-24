@@ -113,6 +113,7 @@ export function createRenderer(cv){
         if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
         else if(o.type==='minotaure') blit('minotaur',px,py,'#6b4226');   // boss du donjon
+        else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
         else blit('bug',px,py,'#d14b4b');
         // occultiste qui canalise : rayon de lumière noire jusqu'au mineur étourdi
         const tg=o.channel!=null && G.miners.find(m=>m.id===o.channel);
