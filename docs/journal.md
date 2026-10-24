@@ -30,6 +30,20 @@ Modèle d'entrée :
 - **À suivre** : un usage pour la Vésicule de gaz. Vérifié : aucune partie bloquée, et pas d’effet sur la progression (sans stuff 4,0 areas, en fer 5,1 : comme avant).
 - **État** : ✅ en ligne le 24/10
 
+
+## 24/10/2026 — Geoffrey — Simulations deux fois plus rapides
+- **Pour le joueur** : rien ne change en jeu. Le mineur remonte au même moment et prend les mêmes décisions. Le serveur
+  consomme moins de processeur pendant les parties.
+- **Décisions** : le calcul du chemin de retour au coffre (81 % du temps d'une session) est guidé vers le haut : même
+  temps de retour, deux fois moins de calcul. Session simulée à 3 mineurs : 34 s → 15 s. Quand deux chemins prennent
+  exactement le même temps, le mineur peut prendre l'autre : une seed rejouée à 3 mineurs peut donc donner une partie
+  très légèrement différente de celle d'avant (1 sur 5 en simulation).
+- **À suivre** : une étape 2 (recalculer ce chemin moins souvent quand la fin de session est loin) pourrait gagner
+  encore, mais elle changerait le comportement du mineur : pas faite, à décider.
+- **État** : ✅ en ligne le 24/10
+
+---
+
 ## 24/10/2026 — Geoffrey — Mise à jour mineure : dégâts de zone vérifiés, XP de spé ×5, jauges à 200
 - **Pour le joueur** :
   - **XP de spécialisation** : 50 % de sa part d'XP au lieu de 10 %. En solo, ≈ 430 par session : niveau 5 en ≈ 2
@@ -43,6 +57,8 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : XP de spé 50 %, cap des jauges 200 ; dégâts de zone : valeur inchangée, mais affichés.
 - **À suivre** : ⚠️ le chiffre n'a pas été regardé dans un navigateur.
 - **État** : ✅ en ligne le 24/10
+
+---
 
 ## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
 - **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
