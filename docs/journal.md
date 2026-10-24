@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — XP de spécialisation : même courbe que le niveau
+- **Pour le joueur** : monter un niveau de spécialisation (SP lvl) demande maintenant autant d'XP que monter un niveau
+  de mineur (1000 pour le niveau 2, puis ×1,5). On en gagne toujours la moitié de son XP. En solo : niveau 2 en ≈ 3
+  sessions, niveau 5 (sorts Dash, Illumination, Inspiration) en ≈ 19, niveau 10 (Dynamite) en ≈ 174.
+- **Décisions** (Geoffrey) : courbe de l'XP de spé = courbe du niveau (avant : 10 fois moins chère, 100 ×1,5).
+- **À suivre** : les sorts de classe deviennent lointains (Dynamite ≈ 174 sessions) : revoir leurs niveaux de
+  déblocage si c'est trop. Les comptes qui avaient déjà de l'XP de spé gardent leur XP, mais leur niveau baisse.
+- **État** : 🧪 sur la branche `geoffrey/xp-sp-courbe` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Nouveau mob : le Méphite
 - **Pour le joueur** : un nouveau mob à partir de l'**area 3**, le **Méphite**, une masse de gaz verte aux yeux jaunes.
   Il **vole** : pas besoin d'échelle, il traverse les galeries vides et rattrape le mineur même en haut d'un puits.
