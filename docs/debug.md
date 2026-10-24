@@ -2215,7 +2215,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : un canard qui saute un trou pendant la chasse → `surfaceWalk` faux, le mineur rentre au coffre puis
   repart (pas de boucle : il ne rechasse qu'au prochain passage en mode surface).
 
-### Aider allié : va-et-vient sur place (Geoffrey, 24/10) — branche `geoffrey/fix-aide-allie`, 🧪 pas en ligne
+### Aider allié : va-et-vient sur place (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Retour joueur** : seed 1928461225, deux joueurs en Aider allié, « on tournait sur nous-mêmes » (aider, filon, mob,
   échelle, aider…). Reproduit en simulation (2 et 3 mineurs, `helpAllies` forcé).
 - **Causes** (`helpAlly`, `src/sim/ai.js`) : 1) `o.chase` = mineur le plus proche (`preyOf`, `src/sim/mobs.js`) ; en

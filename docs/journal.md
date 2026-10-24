@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** : correctif, pas de nouvelle règle. Valeur provisoire : 30 cases de marge (l'aide démarre toujours à
   20 cases au plus).
 - **À suivre** : à revoir en jeu sur la seed 1928461225 avec Galia.
-- **État** : 🧪 sur la branche `geoffrey/fix-aide-allie` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Les mineurs tuent les canards en remontant
 - **Pour le joueur** : quand un mineur remonte déposer au coffre, il va tuer le Gallianix qui traîne à côté avant de
