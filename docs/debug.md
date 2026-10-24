@@ -2301,3 +2301,16 @@ Règles (voir CLAUDE.md) :
   steel-gear mis à jour.
 - **État de vérification** : ⚠️ pas de simulation. Repère des mesures du matin : pioche +0,4 → +0,8 seule = +17 lignes de
   profondeur ; le buff complet avec pioche 0,7 donnait ≈ 5,5 areas en fer. Avec 0,5, attendre un peu moins : à mesurer.
+
+### Mise à jour mineure : dégâts de zone, XP de spé 50 %, cap des jauges 200 (Geoffrey, 24/10) — branche `geoffrey/maj-mineure`, 🧪 pas en ligne
+- **Dégâts de zone** : seule source = nœud barbare `damage` (Force brute, `aoe:0.02` par rang) → `aoeOf(m.skill)`
+  (`src/meta/skills.js`) → `splash` (`src/sim/actions.js`, mine) et `hitMob` (`src/sim/tower/session.js`). Chaîne
+  vérifiée de bout en bout : `buildSession` avec `skills:{A:{tree:'barbare',ranks:{damage:3}}}` → coup 5,75, voisin
+  −0,345 (6 %), mob à 3 cases intact ✅. Mesure (5 seeds × 3 barbares 3/3) : 7350 coups, 20 % avec un mob voisin. Pas
+  de bug ; effet trop faible pour se voir. Aucun retour visuel (pas de chiffre affiché). Test `tests/skills.test.js` (+1).
+- **XP de spé** : `XP.specPct` 10 → 50. Tests `tests/level.test.js` (865 → 432) et `tests/game-service.test.js`
+  (barbare 432, SP lvl 3).
+- **Jauges** : `JUDGMENT.cap` 250 → 200. `sanitizeJudgment` borne `count` à cap : une jauge enregistrée au-dessus de
+  200 est ramenée à 200 et ouvre sa tour au prochain `refresh` (si aucune autre tour n'est ouverte). Test
+  `tests/game-service.test.js` (150 puis 300 ≥ 200).
+- **Tests** : level, spells, judgment, game-service, tower, wiki ✅ (99) ; skills ✅ (21).

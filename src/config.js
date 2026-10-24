@@ -355,7 +355,7 @@ export const XP = {
      arrondi vers le bas) va à l'arbre de skills figé au lancement (rien sans arbre). Une XP par arbre, gardée quand
      on change d'arbre. specCurve : comme curve (100, 150, 225…). Seulement affichée pour l'instant ; elle débloque
      des sorts (SPELLS). Valeurs provisoires. */
-  specPct: 10,
+  specPct: 50,          // 24/10/2026 (Geoffrey) : ancien 10
   specCurve: { first:100, factor:1.5 },
 };
 
@@ -950,8 +950,9 @@ export const TRAP = {
    de session s'ajoutent à la jauge de leur sorte ; à cap, le donjon associé ouvre pendant openHours h (la jauge
    repart de 0, le surplus est perdu ; elle continue de se remplir pendant l'ouverture). */
 export const JUDGMENT = {
+  /* cap : 200 depuis le 24/10/2026 (Geoffrey ; ancien 250) */
   /* pct : % des blocs de l'area, les deux résidus ensemble, pris sur la pierre normale (23/10) */
-  fromArea: 4, pct: 0.5, cap: 250, openHours: 6, salt: 0x5e51d0e,
+  fromArea: 4, pct: 0.5, cap: 200, openHours: 6, salt: 0x5e51d0e,
   sides: {
     angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },
     demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
