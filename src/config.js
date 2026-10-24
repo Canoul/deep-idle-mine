@@ -378,6 +378,11 @@ export const WINCH = { x: Math.floor(W/2), speedFactor:0.85 };
    le reprendra en redescendant par le puits du treuil, sans le vider). */
 export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
 
+/* Chiffre des dégâts de zone (Force brute) au-dessus du mob touché (src/render/splash.js, 24/10/2026, Geoffrey) :
+   splashMs = durée de l'animation (ms, heure du navigateur) ; splashRise = pixels de montée ; splashGame = âge max du
+   coup (s de partie) pour l'afficher (évite de rejouer de vieux coups à la reconnexion). Affichage seulement. */
+export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
+
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
 

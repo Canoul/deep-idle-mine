@@ -2314,3 +2314,12 @@ Règles (voir CLAUDE.md) :
   200 est ramenée à 200 et ouvre sa tour au prochain `refresh` (si aucune autre tour n'est ouverte). Test
   `tests/game-service.test.js` (150 puis 300 ≥ 200).
 - **Tests** : level, spells, judgment, game-service, tower, wiki ✅ (99) ; skills ✅ (21).
+- **Affichage des dégâts de zone** (option 2 choisie) : `splash` (mine) et `hitMob` (tours) posent
+  `q.splash = { v, t: G.t }` sur le mob touché par la zone ; `mobView` (`src/shared/view.js`) et la vue des tours
+  (`src/shared/tower-view.js`) l'envoient ; `src/render/splash.js` (`drawSplash`, `splashText`) dessine « -0,3 » qui
+  monte (`FX.splashRise` px) et s'efface en `FX.splashMs` ms, heure du navigateur (première fois qu'il voit ce coup :
+  fluide entre deux envois) ; ignoré si plus vieux que `FX.splashGame` s de partie (reconnexion). Appelé dans
+  `src/render/canvas.js` et `src/render/tower.js`. Tests `tests/skills.test.js` (+1, et le bout en bout vérifie
+  `splash` et la vue) ; skills, tower, view, mobs, dungeon ✅ (72). ⚠️ pas regardé dans un navigateur.
+- **Incident** : une autre discussion a basculé `F:\idledollexminer` sur `geoffrey/perf-chemin` pendant ce travail ;
+  mes fichiers ont été déplacés dans un worktree séparé (patch), le sien n'a pas été touché (`path.js`).

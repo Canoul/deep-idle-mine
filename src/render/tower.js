@@ -6,6 +6,7 @@ import { BLOCKS, TOWER } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
 import { instantPos } from './instant.js';
+import { drawSplash } from './splash.js';
 
 export const TW_TILE = 16;
 
@@ -74,6 +75,7 @@ export function createTowerRenderer(cv){
         ctx.fillStyle = '#000'; ctx.fillRect(px + 1, py - 4, T - 2, 3);
         ctx.fillStyle = '#ff5a3b'; ctx.fillRect(px + 1, py - 4, (T - 2) * Math.max(0, o.hp / o.maxhp), 3);
       }
+      drawSplash(ctx, o, G.t, now, px, py - 4, T);   // dégâts de zone reçus (Force brute)
     }
     /* ciel teinté : rouge sombre pour le Démon */
     if(G.side === 'demon'){ ctx.fillStyle = 'rgba(90,10,40,.35)'; ctx.fillRect(0, 0, G.w * T, G.roof * T); }

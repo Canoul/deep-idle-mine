@@ -27,7 +27,7 @@ export function createTowerViewer(G){
       seen: G.seen.map(r => r.join('')),
       boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, y: G.boss.y },
       torches: G.torches.map(t => t.y * G.w + t.x),
-      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab })),
+      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
       miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
     };
