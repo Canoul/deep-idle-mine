@@ -2390,3 +2390,10 @@ Règles (voir CLAUDE.md) :
   spells, lobby, anticheat/spells ✅ (95/95).
 - **Point fragile** : les comptes existants gardent leur XP de spé brute, leur niveau recalculé baisse ; un sort
   déjà équipé dont le niveau n'est plus atteint ne part plus en session (`equipBlocked`, comme après un reset).
+
+### Occultiste : butin de chitine (Geoffrey, 24/10) — ✅ en ligne le 24/10 (anticheat 85/85)
+- **Quoi** : `MOBS.occult.chitin` (config : `rng => 1 + floor(rng()*2)`) ; `killMob` (`src/sim/actions.js`) crédite
+  `MOBS.bugItem` via `lootOf` (Pillage compris), comme `goblinChitin` ; wiki `src/wiki/data.js` (2e ligne de butin).
+  Un tirage `G.rng()` de plus par occultiste tué : les parties d'une même seed ne sont plus identiques à avant.
+- **Tests** : `tests/mobs.test.js` (300 kills : Tissu {1,2,3}, Chitine {1,2}), `tests/wiki.test.js`, goblin,
+  anticheat/mule ✅ (39/39). Simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,2, prof 193).
