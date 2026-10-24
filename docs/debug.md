@@ -2390,3 +2390,28 @@ Règles (voir CLAUDE.md) :
   spells, lobby, anticheat/spells ✅ (95/95).
 - **Point fragile** : les comptes existants gardent leur XP de spé brute, leur niveau recalculé baisse ; un sort
   déjà équipé dont le niveau n'est plus atteint ne part plus en session (`equipBlocked`, comme après un reset).
+
+### MI : descente gratuite → puits jusqu'au fond (Geoffrey, 24/10) — ✅ en ligne le 24/10
+- **Symptôme** (retour de Geoffrey) : les mineurs de la MI foncent au fond au lieu de creuser sur les côtés.
+  Sonde (10 seeds, stats de base) : étalement horizontal/vertical des blocs minés 0,57 / 0,44 / 0,31 à 1 / 3 / 8
+  mineurs ; 95 % atteignent y ≥ 40 à 8. Échelles rares (1 à 2 par mineur) : ce n'est pas la remontée qui coûte.
+- **Cause** : `plan` (`src/sim/instant/ai.js`) cote un bloc voisin au temps de trajet jusqu'à la case d'où le miner.
+  Le bloc du dessous coûte 0 (la gravité y amène le mineur gratuitement) ; le suivant sur le côté coûte un pas. Les
+  caps diagonaux vers le bas (pénalité 0,22 dans les deux sens) dégénéraient donc en puits droits : bas + diagonales
+  basses = 45 % des caps tirés.
+- **Correction** : `+ MI.downWeight × mv` (mv = 1/speed) sur un bloc dy = 1, `downWeight: 1` en config. Proportionnel
+  au pas : en secondes fixes, il y a un seuil à mv (0,3 → 0,4 s : 26/60 → 3/60 au fond), qui basculerait avec la stat
+  vitesse.
+- **Mesures** (20 seeds ; dw 0 → 1) : 1 mineur, au fond 8/20 → 1/20, moitié basse 35 → 18 %, h/v 0,61 → 0,90, plumes
+  5,2 → 5,6 ; 3 mineurs, 26/60 → 2/60, 42 → 25 %, h/v 0,48 → 0,66, plumes 4,58 → 4,08 ; 8 mineurs, 56/160 → 34/160,
+  51 → 40 %, h/v 0,32 → 0,39, plumes 3,66 → 3,27. Blocs/mineur ≈ 102 inchangé, grimpe ≈ 0,5 % du temps.
+  dw 1,15 : h/v 1,12 à 3, plumes 3,8.
+- **Tests** : `tests/instant-mine.test.js` +1 (« MI descente », 4 seeds × 3 mineurs : ≤ 15 % au fond, < 33 % des blocs
+  dans la moitié basse ; échoue avec downWeight 0 : 2/12 au fond). instant-mine, instant-server, instant-ui, wiki :
+  49/49 ✅. Pas de `npm run simulate` : la mine normale n'est pas touchée.
+- **Mise en ligne** : deux discussions travaillaient dans le même dossier ; le code (config, ai.js, test) est parti
+  dans le commit `e4397eb` de l'autre (« Journal : XP de spé… », fusionné dans `main` par `d3f3877`), avec une partie
+  du chantier Occultiste/Chitine (`src/sim/actions.js`, `tests/mobs.test.js`, `MOBS.occult.chitin`). Doc ajoutée
+  ensuite par la branche `geoffrey/ia-exploration-blocages`. Conseil : une discussion = un dossier (git worktree).
+- **Points fragiles** : moins de plumes (zone couverte plus concentrée en haut). Le test « MI descente » a peu de marge
+  sur sa première borne (2/12 sans la correction contre ≤ 1,8 permis).

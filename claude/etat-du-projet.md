@@ -188,7 +188,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   IA à part (`src/sim/instant/`) : aucun minerai prioritaire, évite les autres mineurs, change de zone après 3 blocs
   perdus, va chercher un tas de plumes à 3 pas ou moins. **Gravité et échelles** depuis le 22/10 (ancien : il
   volait) : il tombe sans appui, pose des échelles illimitées et partagées pour remonter, sans limite de chute ni
-  étourdissement (choix de Claude à valider) ; ≈ 2 à 5 plumes par joueur et par MI (moins à 20). Côté serveur, c'est une session `mode: 'mi'` (même vie
+  étourdissement (choix de Claude à valider) ; **galeries** : un cap par mineur (22/10) et, depuis le 24/10, creuser
+  vers le bas coûte un pas (`downWeight`) : ils ne foncent plus au fond (ancien : descente gratuite, puits jusqu'au fond) ; ≈ 2 à 5 plumes par joueur et par MI (moins à 20). Côté serveur, c'est une session `mode: 'mi'` (même vie
   qu'une session : partie en direct, Quitter = rien, versement unique), sans XP. Rappels à 30, 15, 5 min et 30 s.
   Équilibrage à surveiller : ≈ 40 fers et 39 ors par joueur et par MI.
 
