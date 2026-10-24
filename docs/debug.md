@@ -2323,3 +2323,26 @@ Règles (voir CLAUDE.md) :
   `splash` et la vue) ; skills, tower, view, mobs, dungeon ✅ (72). ⚠️ pas regardé dans un navigateur.
 - **Incident** : une autre discussion a basculé `F:\idledollexminer` sur `geoffrey/perf-chemin` pendant ce travail ;
   mes fichiers ont été déplacés dans un worktree séparé (patch), le sien n'a pas été touché (`path.js`).
+
+### Retour au coffre guidé (A*) : simulation × 2 (Geoffrey, 24/10) — ✅ en ligne le 24/10
+- **Diagnostic** (`node --cpu-prof`, seed 7919, 3 mineurs, 34 s) : `planReturn` 81 % du temps (dont `search` 35 % en
+  propre, tas 15 %, `relax` 13 %, `landing` 10 %). ~14 000 appels par session à 3 mineurs (`decideWork` en appelle un
+  à chaque décision pour `tRet`, `decideReturn` à chaque pas), ~100 millions de nœuds sortis du tas.
+- **Quoi** : `search` (`src/sim/path.js`) prend une estimation optionnelle `h` (A*) : priorité du tas = dist + h, entrée
+  périmée si `popD > dist[n]+h(n)`, arrêt `popD > maxCost`. `h=null` = Dijkstra inchangé (tous les autres appels).
+  `planReturn` passe `returnH(G,m)` : |x − CHEST_X| × baseMoveT + y × min(baseClimbT, baseWinchT si treuil).
+  Admissible et cohérente : tout pas horizontal coûte ≥ baseMoveT (marche, galerie, passerelle), toute montée ≥
+  échelle ou seau ; `rowCrowdCost`, chutes et minage ne font qu'ajouter. Même coût de retour exact ; seul le choix entre
+  deux itinéraires à égalité parfaite peut changer (ordre de sortie du tas différent).
+- **Mesures** : nœuds sortis ÷ 2 à 2,5 ; session 3 mineurs 34 s → 15,5 s (seul) ; `--miners 3 --count 5` lancé en même
+  temps que l'ancienne version : 267,7 s → 154,2 s. Parties identiques : 4/5 à 3 mineurs (seed 39595 : prof 187 → 186,
+  coffre 3944 → 4024 pods environ, 0 blocage) ; prototype sur 6 seeds : 6/6 à 1 mineur, 4/6 à 3 mineurs (47514 : coffre
+  4238 → 4104). Écarts dans les deux sens, du même ordre que le bruit entre seeds.
+- **Tests** : nouveau `tests/path.test.js` (A* = Dijkstra sur ~20 instants de vraies sessions à 1 et 3 mineurs, et avec
+  le treuil) ; régression miner, fall, winch, dungeon, mobs, tier2, research, game-replay, session, diagnostics, focus,
+  mule, team, game-service, trap, treasure : 265 ✅.
+- **État de vérification** : ✅ (temps de retour identique vérifié, simulation 5 sessions sans blocage).
+- **Points fragiles** : si on ajoute un jour un déplacement plus rapide qu'un pas par colonne ou qu'une montée par ligne
+  (téléport, saut, sort de déplacement dans l'itinéraire, treuil horizontal…), `returnH` doit en tenir compte, sinon le
+  retour ne sera plus le plus rapide. `tests/path.test.js` le détecte. Prochaine piste (pas faite, change le
+  comportement) : ne pas recalculer `planReturn` à chaque décision de `decideWork` quand la fin de session est loin.
