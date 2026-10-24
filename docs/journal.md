@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
+- **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
+  matin, +0,4 avant), **pioche en acier +0,6** (au lieu de +0,72, +0,48 avant). Les pièces déjà fabriquées suivent.
+- **Décisions** : pioches × 1,25 au lieu de × 1,75 (fer) et × 1,5 (acier). Le reste du buff du jour ne change pas.
+- **À suivre** : l'équipe en fer avancera un peu moins loin que les ~5,5 areas visées par le buff complet (la pioche
+  était le plus gros levier) : à mesurer.
+- **État** : 🧪 sur la branche `geoffrey/pioche-x125` (pas en ligne)
+
+---
+
 ## 24/10/2026 — Geoffrey — Buff du stuff en fer et en acier
 - **Pour le joueur** : les pièces en fer, en acier et le Plastron de l'équilibre sont nettement plus fortes, **y compris
   celles déjà fabriquées** (et leurs lignes d'identification et runes, qui suivent la valeur de la pièce).

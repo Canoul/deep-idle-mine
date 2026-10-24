@@ -2293,3 +2293,11 @@ Règles (voir CLAUDE.md) :
   areas pour l'équipe en fer : à confirmer sur 20 seeds.
 - **Points fragiles** : l'acier dépasse à peine le fer (casque 69/67, jambes et bottes 1,08/1,05, pioche 0,72/0,7) ;
   le test « acier au-dessus du fer » cassera si on remonte encore le fer sans l'acier.
+
+### Pioches : buff réduit à × 1,25 (Geoffrey, 24/10) — 🧪 branche geoffrey/pioche-x125
+- **Quoi** : `STUFF.items` : Pioche en fer 0,7 → 0,5 (0,4 × 1,25), Pioche en acier 0,72 → 0,6 (0,48 × 1,25). Le reste du
+  buff du 24/10 (entrée précédente) est inchangé.
+- **Tests** : amelioration (valeur pioche en fer 650 x), blueprint, research, skills ((1 + 0,5) × 1,06 = 1,59),
+  steel-gear mis à jour.
+- **État de vérification** : ⚠️ pas de simulation. Repère des mesures du matin : pioche +0,4 → +0,8 seule = +17 lignes de
+  profondeur ; le buff complet avec pioche 0,7 donnait ≈ 5,5 areas en fer. Avec 0,5, attendre un peu moins : à mesurer.

@@ -13,9 +13,9 @@ import { existsSync } from 'node:fs';
 const invWith = bag => { const inv = createInventory(); addAll(inv, bag); return inv; };
 let n = 0; const id = () => 'op-bp-' + (++n);
 
-/* les objets demandés par le créateur : effet, recette, blueprint (fer × 1,75, épée × 1,25 le 24/10) */
+/* les objets demandés par le créateur : effet, recette, blueprint (fer × 1,75, épée et pioche × 1,25 le 24/10) */
 const NEW = {
-  'Pioche en fer':   { stats:{ mineSpeed:0.7 },  cost:{ 'Tainted iron':20 } },
+  'Pioche en fer':   { stats:{ mineSpeed:0.5 },  cost:{ 'Tainted iron':20 } },
   'Épée en fer':     { set:{ damage:14 },        cost:{ 'Tainted iron':10 } },
   'Casque en fer':   { stats:{ oxygenMax:67 },   cost:{ 'Tainted iron':5 } },
   'Plastron en fer': { stats:{ pods:88 },        cost:{ 'Tainted iron':8 } },
@@ -85,7 +85,7 @@ test('sauvegarde trafiquée : seules des recettes à blueprint existantes, une f
 test('effets : l\'épée remplace les mains nues (14 au lieu de 5), les autres s\'ajoutent', () => {
   const c = equippedStats(['Épée en fer', 'Pioche en fer', 'Casque en fer', 'Plastron en fer', 'Jambes en fer', 'Bottes en fer', 'Ceinture en peau de gobelin']);
   assert.equal(c.damage, 14);
-  assert.equal(c.mineSpeed, 1.7); assert.equal(c.oxygenMax, STATS.oxygenMax + 67); assert.equal(c.pods, STATS.pods + 88);
+  assert.equal(c.mineSpeed, 1.5); assert.equal(c.oxygenMax, STATS.oxygenMax + 67); assert.equal(c.pods, STATS.pods + 88);
   assert.equal(c.climbSpeed, 3.3); assert.equal(c.speed, 4.05); assert.equal(c.discoverMax, STATS.discoverMax); assert.equal(c.torches, STATS.torches + 10);
   assert.deepEqual(statLines('Épée en fer'), ['Dégâts 14']);
   assert.deepEqual(statLines('Ceinture en peau de gobelin'), ['Torches +10']);
