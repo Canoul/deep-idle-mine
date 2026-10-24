@@ -319,7 +319,8 @@ export const MOBS = {
    pris dans names dans l'ordre (1er canard de la session = 1er nom), en boucle. Les mineurs le combattent comme les
    autres mobs (réglage « combat »). Vaincu : heart.chance de laisser heart.item, rapporté au coffre commun.
    Hors de MOBS.hpBase : pas dans les tirages d'apparition, ni dans le maximum de mobs. Hasard à part (salt).
-   Fin de session (23/10) : un mineur qui attendrait au coffre va plutôt le chasser (src/sim/ai.js, huntDuck). */
+   À chaque passage au coffre, sac vidé, un mineur va le chasser (src/sim/ai.js, huntDuck ; 24/10, avant :
+   seulement en fin de session). */
 export const DUCK = {
   type: 'gallianix', name: 'Gallianix', tex: 'duck', hp: 50,
   names: ['Cuiseuse de sperme', 'Roxanne', 'La brésilienne', 'La thaïlandaise'],

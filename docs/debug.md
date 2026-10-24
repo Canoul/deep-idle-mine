@@ -2201,3 +2201,16 @@ Règles (voir CLAUDE.md) :
   vient de Bâtisseur (−15 % sur échelles, passerelles, torches) ; Escalateur 5/5 (+25 % sur le seau) rattrape peu.
 - **Coffre traversable** : pas fait. `tiles[0]` est vide partout (le coffre n'est qu'un dessin) ; recherche de chemin
   de x 40 à x 5 sur la surface ✅, mineur Rouge à x 8 sur 3 seeds ✅. En attente d'un exemple (seed, capture).
+
+### Gallianix chassé à chaque passage au coffre (Geoffrey, 24/10) — branche `geoffrey/retours-23-10-soir`, 🧪 pas en ligne
+- **Panne** : seed 87312228, canards jamais tués (1 mineur : 1/1 en vie à la fin ; 3 mineurs : 2/3). Le combat de
+  `decide` (`src/sim/ai.js`) est sous `if(m.y>0)` : rien à la surface ; `huntDuck` n'agissait que si
+  `left<CFG.endStayMin || depthCap<3`, or à ce moment les mineurs sont encore en « Retour (fin de session) ».
+- **Correctif** : `huntDuck` sans la condition de fin de session (gardé : `fightMobs===true`, sac vide, pas de sac de
+  Mule à chercher, temps aller-retour ×1,25 + `DUCK.huntMargin`, `surfaceWalk`). Appelé en tête de `decideSurface` :
+  il dépose d'abord (load>0 → false), chasse, revient au coffre, redépose le butin, repart.
+- **Tests** : `tests/duck.test.js` (+2 : chasse en cours de session ; seed 87312228 à 3 mineurs, 0 canard en vie, ~16 s)
+  ✅ ; `tests/session.test.js` ✅ (18 en tout). Simulation `--miners 3 --count 5` : 0 blocage, areas 3,0, profondeur
+  189,6, coffre 4 079 ✅.
+- **Point fragile** : un canard qui saute un trou pendant la chasse → `surfaceWalk` faux, le mineur rentre au coffre puis
+  repart (pas de boucle : il ne rechasse qu'au prochain passage en mode surface).

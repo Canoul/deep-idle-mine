@@ -139,3 +139,21 @@ test('fin de session : pas de chasse sans le temps de revenir, en « Ignorer »,
     assert.equal(duck.hp, DUCK.hp, why);
   }
 });
+
+/* en cours de session (24/10) : à chaque passage au coffre, sac vidé, il va tuer le canard avant de repartir. Avant, la
+   chasse n'existait qu'en fin de session, où les mineurs sont souvent encore en remontée : canards jamais tués */
+test('en cours de session : sac vidé au coffre, il tue le canard avant de repartir', () => {
+  const { G, m, duck } = endGame({ left: 2000 });
+  for(let i = 0; i < 300 && duck.hp > 0; i++) runTicks(G, 1);
+  assert.ok(duck.hp <= 0, 'canard vaincu');
+  assert.equal(m.y, 0, 'jamais tombé dans la mine');
+});
+
+test('seed 87312228 : plus aucun canard laissé en vie à la fin de la session', () => {
+  for(const miners of [3]){
+    const G = newSession(87312228, { miners });
+    for(let i = 0; i < SESSION_LEN / DT; i++) tick(G);
+    assert.ok(G.ducks >= 1, 'au moins un canard né');
+    assert.equal(ducks(G).length, 0, `${miners} mineur(s)`);
+  }
+});

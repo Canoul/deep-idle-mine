@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Les mineurs tuent les canards en remontant
+- **Pour le joueur** : quand un mineur remonte déposer au coffre, il va tuer le Gallianix qui traîne à côté avant de
+  redescendre (si « combat » est sur Combattre). Avant, il ne le chassait qu'en toute fin de session, et comme les
+  mineurs sont souvent encore en train de remonter à ce moment-là, les canards restaient en vie (seed 87312228).
+- **Décisions** : aucune nouvelle ; la chasse garde ses limites (temps de revenir au coffre, pas de trou à traverser).
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/retours-23-10-soir` (pas en ligne)
+
 ## 23/10/2026 — Geoffrey — Retours du soir : aide sans retour, Logisticien refait, donjon révélé
 - **Pour le joueur** :
   - **Aider allié** : après avoir aidé, le mineur se remet au travail là où il est, au lieu de retraverser la mine pour

@@ -166,11 +166,12 @@ function decideSurface(G,m){
   decideDeparture(G,m);
 }
 
-/* fin de session, rien à déposer : au lieu d'attendre au coffre, il va frapper le Gallianix le plus proche (réglage
-   « combat » sur Combattre), s'il a le temps de revenir au coffre ensuite (ce qu'il lâche est dans son sac). Il ne
-   marche que sur du sol (il ne tombe pas dans la mine), donc pas vers un canard de l'autre côté d'un trou. */
+/* à la surface, sac vidé au coffre : il va frapper le Gallianix le plus proche (réglage « combat » sur Combattre) avant
+   de repartir, s'il a le temps de revenir au coffre ensuite (ce qu'il lâche est dans son sac). Avant, seulement en fin
+   de session : les mineurs encore en remontée à la fin laissaient tous les canards en vie (seed 87312228, 24/10/2026).
+   Il ne marche que sur du sol (il ne tombe pas dans la mine), donc pas vers un canard de l'autre côté d'un trou. */
 function huntDuck(G,m,left){
-  if(m.prefs.fightMobs!==true || m.load>0 || bagToEmpty(G,m) || !(left<CFG.endStayMin || depthCap(G,m)<3)) return false;
+  if(m.prefs.fightMobs!==true || m.load>0 || bagToEmpty(G,m)) return false;
   if(isCarrier(G,m) && mulePlaced(G) && G.mule.load>0) return false;   // Mule : son sac passe avant (decideSurface)
   let best=null, bd=Infinity;
   for(const o of G.mobs){
