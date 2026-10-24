@@ -283,3 +283,30 @@ test('Légende de la flemme : un tirage par remontée ; réussi = au-dessus du c
   assert.ok(k.stats.lazy >= 2, `téléportations : ${k.stats.lazy}`);
   assert.ok(k.stats.trips >= 1, 'il a bien déposé au coffre');
 });
+
+/* 24/10 (Geoffrey, « pas appliqué ? ») : bout en bout, depuis les skills du compte jusqu'au coup en partie */
+test('Force brute 3/3 : en partie, le mob collé à la cible prend 6 % du coup', async () => {
+  const { buildSession } = await import('../src/shared/game.js');
+  const { finishAction } = await import('../src/sim/actions.js');
+  const G = buildSession({ seed:5, id:'aoe', players:[{ account:'A', name:'Geo' }], skills:{ A:{ tree:'barbare', ranks:{ damage:3 } } } });
+  const m = G.miners[0];
+  const mk = (id, dx) => ({ id, type:'bestiole', x:m.x + dx, y:m.y, hp:100, maxhp:100 });
+  const [a, b, far] = [mk(900, 1), mk(901, 2), mk(902, 4)];
+  G.mobs.push(a, b, far);
+  finishAction(G, m, { type:'attack', data:{ mob:a } });
+  const dmg = 100 - a.hp;
+  assert.ok(Math.abs(dmg - 5.75) < 1e-9, `coup ${dmg}`);                  // 5 × 1,15
+  assert.ok(Math.abs((100 - b.hp) - dmg * 0.06) < 1e-9, `voisin ${100 - b.hp}`);
+  assert.equal(far.hp, 100, 'pas au-delà d\'1 case');
+  /* affichage (24/10, option 2) : le coup de zone est noté sur le mob et envoyé au navigateur */
+  assert.ok(Math.abs(b.splash.v - dmg * 0.06) < 1e-9); assert.equal(b.splash.t, G.t);
+  assert.equal(a.splash, undefined, 'la cible n\'a pas de chiffre de zone'); assert.equal(far.splash, undefined);
+  const { createViewer } = await import('../src/shared/view.js');
+  const sent = createViewer(G)().mobs.find(o => o.id === 901);
+  assert.deepEqual(sent.splash, b.splash);
+});
+
+test('chiffre des dégâts de zone : « -0,3 », « -1,2 », « -13 », jamais « -0 »', async () => {
+  const { splashText } = await import('../src/render/splash.js');
+  assert.deepEqual([0.345, 1.23, 12.6, 0.01].map(splashText), ['-0,3', '-1,2', '-13', '-0,1']);
+});
