@@ -2439,3 +2439,11 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/wiki.test.js` (8, dont 1 nouveau : sorts, XP de spé, anneaux, date du bandeau) ✅. Rendu vérifié
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
+
+### Treasures : 40 % par area (Geoffrey, 24/10) — 🧪 branche `geoffrey/tresor-40`
+- **Quoi** : `AREAS[*].chestChance` 0,3 → 0,4 (les 7 areas). Wiki : `D.treasureChanceText()` remplace le « 30 % »
+  écrit à la main (`#w-treasure-chance`). GAME_DESIGN §2 Treasures.
+- **Tests** : wiki (9, dont 1 nouveau), treasure, world, loot, game-replay ✅ (54).
+- **Simulation** `--miners 3 --count 5`, mêmes seeds : 0 bloquée ✅ ; areas 3,2, profondeur 193,4, coffre 4 075 pods :
+  identiques à 0,3 (le tirage du treasure ne change pas le reste de l'area) ; treasures présents dans les areas
+  ouvertes 1,2 → 1,6, ouverts 0,4 → 0,4 (seed 7919 : 2/2 → 2/3).

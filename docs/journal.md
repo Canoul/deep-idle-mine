@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Plus de treasures : 40 % par area
+- **Pour le joueur** : chaque area a maintenant **40 %** de chance de cacher un treasure (avant 30 %), dans toutes
+  les areas. Le wiki suit tout seul (le chiffre est lu dans le jeu).
+- **Décisions** (Geoffrey) : chance de treasure 30 % → 40 %.
+- **À suivre** : en simulation (équipe de 3 sans stuff, 5 parties), il y a plus de treasures dans les areas ouvertes
+  (1,2 → 1,6 par partie), mais les mineurs en ouvrent autant (0,4) : un treasure n'est visé qu'une fois découvert,
+  et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
+  équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
+- **État** : 🧪 sur la branche `geoffrey/tresor-40` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en

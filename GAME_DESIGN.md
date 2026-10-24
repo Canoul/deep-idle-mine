@@ -76,7 +76,7 @@ au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide
 
 ### Treasures
 Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appeler « coffre » à l'oral, c'est bien un treasure, pas le coffre de dépôt de la surface) ; l'**objet** qu'il donne s'appelle **Treasure TX**, X étant son tier.
-- Chaque area a une **probabilité** qu'un treasure y soit enfoui : **30 %** par défaut *(provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même treasure.
+- Chaque area a une **probabilité** qu'un treasure y soit enfoui : **40 %** par défaut *(24/10/2026, Geoffrey ; avant 30 % ; provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même treasure.
 - Le treasure remplace un bloc de terrain au hasard dans l'area.
 - **Butin** *(décision ferme)* : **1 objet Treasure TX**, **aucun minerai**. Le tier dépend de l'area où le treasure est enfoui :
 

@@ -113,3 +113,8 @@ test('wiki : sorts, XP de spécialisation, anneaux et date de mise à jour (24/1
   for(const id of ['sorts', 'spe', 'anneaux', 'sets', 'w-spells', 'w-spec']) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(!/Il en porte 10/.test(html), 'passerelles illimitées');
 });
+
+test('wiki : chance de treasure par area lue dans la config (40 % depuis le 24/10)', () => {
+  assert.equal(D.treasureChanceText(), '40 %');
+  assert.ok(AREAS.every(a => a.chestChance === 0.4));
+});

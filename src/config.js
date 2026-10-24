@@ -135,17 +135,18 @@ export const BUILDS = {
 
 /* composition en % par area (la dernière est répétée au-delà). Comptes exacts, pas probabilistes.
    air = cases déjà vides à la génération (poches naturelles), cachées tant qu'elles ne sont pas découvertes.
-   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed). */
+   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed) ; 0,4 partout depuis
+   le 24/10/2026 (Geoffrey ; avant 0,3). */
 export const AREAS = [
-  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.3 },
-  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.3 },
-  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.3 },
-  { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.3 },
-  { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.3 },
+  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.4 },
+  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.4 },
+  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.4 },
+  { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.4 },
+  { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.4 },
   /* areas 5 et 6 : décision du 23/10 (Geoffrey), graphite et plus de charbon ; ancien area 5 :
      stone 55, hardstone 20, coal 3, iron 8, gold 7, diamond 2, air 5 */
-  { comp:{         stone:55, hardstone:20,           iron:9.5, gold:5, diamond:0.5, graphite:5, air:5}, chestChance:0.3 },
-  { comp:{         stone:35, hardstone:40,           iron:7,   gold:6, diamond:1,   graphite:6, air:5}, chestChance:0.3 },
+  { comp:{         stone:55, hardstone:20,           iron:9.5, gold:5, diamond:0.5, graphite:5, air:5}, chestChance:0.4 },
+  { comp:{         stone:35, hardstone:40,           iron:7,   gold:6, diamond:1,   graphite:6, air:5}, chestChance:0.4 },
 ];
 
 /* butin d'un treasure : un objet « Treasure TX » dont le tier dépend de l'area où le treasure est enfoui

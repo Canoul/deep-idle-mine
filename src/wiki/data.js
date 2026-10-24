@@ -295,4 +295,7 @@ export const specInfo = () => ({ pct: XP.specPct, sameCurve: XP.specCurve.first 
   first: XP.specCurve.first, factor: XP.specCurve.factor, trees: SKILLS.trees.map(t => ({ icon: t.icon, label: t.label })) });
 /* chance d'avoir un anneau en ouvrant un trésor de tour, par camp */
 export const ringDrop = () => Object.fromEntries(Object.entries(RINGS.drops).map(([side, l]) => [side, l.reduce((t, r) => t + r.chance, 0)]));
+/* chance qu'une area cache un treasure : « 40 % », ou « 30 à 40 % » si elle change d'une area à l'autre */
+export const treasureChanceText = () => { const c = [...new Set(AREAS.map(a => Math.round(a.chestChance * 100)))].sort((a, b) => a - b);
+  return c.length === 1 ? `${c[0]} %` : `${c[0]} à ${c.at(-1)} %`; };
 export const helpInfo = () => ({ range: HELP.range, keep: HELP.keep });
