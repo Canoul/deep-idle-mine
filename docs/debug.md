@@ -2431,7 +2431,7 @@ Règles (voir CLAUDE.md) :
   (5 / 8 / 7 / 4). Wiki généré depuis les recettes (rien à faire). GAME_DESIGN : tableau du stuff en acier.
 - **Tests** : `tests/steel-gear.test.js` (coûts attendus), craft, wiki ✅ (20) ; `npm run test:anticheat` ✅ (85).
 
-### Wiki à jour + date dans le bandeau (Geoffrey, 24/10) — 🧪 branche `geoffrey/wiki-xp-spe`
+### Wiki à jour + date dans le bandeau (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Quoi** : `wiki.html` (bandeau `.maj` « 🗓 Mis à jour le … », sections `#sorts`, `#spe`, `#anneaux`, `#sets`, textes
   corrigés : passerelles, touches, MI, aider allié) ; `src/wiki/data.js` (`spellRows`, `spellInfo`, `specInfo`,
   `ringDrop`, `helpInfo`, lus dans `SPELLS`, `XP`, `RINGS`, `HELP`) ; `src/wiki/wiki.js` (`spells()`, `#w-spec`,

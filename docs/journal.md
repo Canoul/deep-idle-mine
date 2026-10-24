@@ -27,7 +27,7 @@ Modèle d'entrée :
   tour (parfois un anneau). Les recettes (acier + Tainted gold), le butin (chitine de l'occultiste) et les stats
   étaient déjà à jour : ces tableaux viennent du jeu.
 - **Décisions** (Geoffrey) : la date du bandeau se met à jour à chaque changement du wiki (règle ajoutée à CLAUDE.md).
-- **État** : 🧪 sur la branche `geoffrey/wiki-xp-spe` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Armure en acier : il faut aussi du Tainted gold
 - **Pour le joueur** : casque, plastron, jambes et bottes en acier demandent en plus du **Tainted gold**, la moitié du
