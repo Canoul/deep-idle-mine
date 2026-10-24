@@ -162,6 +162,7 @@ function hitMob(G, m, o){
   const k = aoeOf(m.skill);
   if(k > 0) for(const q of G.mobs) if(q !== o && q.hp > 0 && q.awake && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) <= 1){
     q.hp = Math.max(0, q.hp - dmg * k); G.stats.dmg += dmg * k; m.stats.dmg += dmg * k;
+    q.splash = { v: dmg * k, t: G.t };   // affiché au-dessus du mob (src/render/splash.js)
     if(q.hp <= 0) mobDied(G, m, q);
   }
   if(o.hp > 0) return;

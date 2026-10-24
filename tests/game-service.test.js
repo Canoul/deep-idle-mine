@@ -526,7 +526,7 @@ test('historique : sessions terminées du joueur, plus récentes d\'abord, avec 
 test('Jugement : les résidus versés remplissent les jauges (une fois), partis = rien ; jauge pleine → tour ouverte 6 h', async () => {
   const { JUDGMENT } = await import('../src/config.js');
   const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
-  const { game, advance } = setup({ summary: fakeSummary(() => ({ [A]: 200, [D]: 6, Pierre: 10 })) });
+  const { game, advance } = setup({ summary: fakeSummary(() => ({ [A]: 150, [D]: 6, Pierre: 10 })) });
   const v0 = await game.judgment(ME);
   assert.deepEqual([v0.sides.angel.count, v0.sides.angel.open], [0, false]);
   /* à deux, un part : le partant ne verse rien, le présent verse sa part (ici tout le coffre) */
@@ -534,11 +534,11 @@ test('Jugement : les résidus versés remplissent les jauges (une fois), partis 
   advance(60_000); await game.leave(OTHER, {});
   advance(realDurationMs()); await game.pump();
   let v = await game.judgment(ME);
-  assert.equal(v.sides.angel.count, 200); assert.equal(v.sides.demon.count, 6);
+  assert.equal(v.sides.angel.count, 150); assert.equal(v.sides.demon.count, 6);
   /* rejouer la fin (redémarrage) ne compte pas deux fois */
   await game.recover(); await game.pump();
-  assert.equal((await game.judgment(ME)).sides.angel.count, 200);
-  /* une session de plus : 400 ≥ 250 → la tour de l'Ange ouvre, jauge à 0 (surplus perdu) */
+  assert.equal((await game.judgment(ME)).sides.angel.count, 150);
+  /* une session de plus : 300 ≥ 200 (cap) → la tour de l'Ange ouvre, jauge à 0 (surplus perdu) */
   await game.start(ME, {}); advance(realDurationMs()); await game.pump();
   v = await game.judgment(OTHER);
   assert.equal(v.sides.angel.open, true); assert.equal(v.sides.angel.count, 0);
@@ -600,7 +600,7 @@ test('Jugement (23/10) : une mine lancée pendant l\'ouverture d\'une tour est e
 
 /* ---------- XP de spécialisation (24/10) ---------- */
 
-test('XP de spécialisation : 10 % de sa part, à l\'arbre figé au lancement, une seule fois ; rien sans arbre', async () => {
+test('XP de spécialisation : 50 % de sa part, à l\'arbre figé au lancement, une seule fois ; rien sans arbre', async () => {
   const { createMemoryGameStore } = await import('../server/game/store.js');
   const { createGameService } = await import('../server/game/service.js');
   const { fakeLive } = await import('./helpers.js');
@@ -617,10 +617,10 @@ test('XP de spécialisation : 10 % de sa part, à l\'arbre figé au lancement, u
   const { session } = await game.start(A, {});
   now += realDurationMs() + 1000; await game.pump(); await game.pump();
   const pr = await store.getProgress(A.id);
-  assert.deepEqual(pr.spec, { barbare:86 });
-  assert.equal((await game.state(A)).progress.spec.barbare.level, 1);
+  assert.deepEqual(pr.spec, { barbare:432 });
+  assert.equal((await game.state(A)).progress.spec.barbare.level, 3);   // 100 + 150 = 250 ≤ 432 < 475
   assert.ok(pr.credited.includes(session.id));
-  assert.equal(await game.specLevelOf(A.id, 'barbare'), 1);
+  assert.equal(await game.specLevelOf(A.id, 'barbare'), 3);
   assert.equal(await game.specLevelOf(A.id, null), null);
 });
 

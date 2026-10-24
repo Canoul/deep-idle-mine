@@ -18,6 +18,20 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Mise à jour mineure : dégâts de zone vérifiés, XP de spé ×5, jauges à 200
+- **Pour le joueur** :
+  - **XP de spécialisation** : 50 % de sa part d'XP au lieu de 10 %. En solo, ≈ 430 par session : niveau 5 en ≈ 2
+    sessions, niveau 10 (Dynamite) en ≈ 17 (avant ≈ 87).
+  - **Jauges Ange / Démon** : la tour s'ouvre à **200** résidus au lieu de 250. Une jauge déjà au-dessus de 200 en
+    ligne ouvrira sa tour tout de suite.
+  - **Dégâts de zone** (Force brute, barbare) : vérifiés, ils sont bien codés et appliqués (mine et tours), depuis les
+    skills du compte jusqu'au coup. Mais c'est minuscule : 2 % du coup par rang (6 % à 3/3), soit ≈ 0,35 PV sur un mob
+    voisin pour un coup de 5,75. Un coup sur cinq environ a un mob voisin. D'où l'impression que ça ne marche pas.
+    **Nouveau** : un petit chiffre orange (« -0,3 ») monte au-dessus de chaque mob touché par la zone (mine et tours).
+- **Décisions** (Geoffrey) : XP de spé 50 %, cap des jauges 200 ; dégâts de zone : valeur inchangée, mais affichés.
+- **À suivre** : ⚠️ le chiffre n'a pas été regardé dans un navigateur.
+- **État** : ✅ en ligne le 24/10
+
 ## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
 - **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
   matin, +0,4 avant), **pioche en acier +0,6** (au lieu de +0,72, +0,48 avant). Les pièces déjà fabriquées suivent.
