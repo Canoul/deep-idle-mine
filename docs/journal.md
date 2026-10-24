@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
+- **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
+  (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en
+  plus, mêmes paliers que le niveau), **les anneaux** et **les sets** ; onglets Stuff (12 cases), Skills (SP lvl) et
+  Sorts. Corrigé : passerelles illimitées (le wiki disait 10), touches de la barre, mine instantanée (priorité aux
+  tas de plumes découverts, galeries dans tous les sens), « Aider allié » (garde son mob jusqu'à 30 cases), trésors de
+  tour (parfois un anneau). Les recettes (acier + Tainted gold), le butin (chitine de l'occultiste) et les stats
+  étaient déjà à jour : ces tableaux viennent du jeu.
+- **Décisions** (Geoffrey) : la date du bandeau se met à jour à chaque changement du wiki (règle ajoutée à CLAUDE.md).
+- **État** : 🧪 sur la branche `geoffrey/wiki-xp-spe` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Armure en acier : il faut aussi du Tainted gold
 - **Pour le joueur** : casque, plastron, jambes et bottes en acier demandent en plus du **Tainted gold**, la moitié du
   Steel ingot de la recette : casque 5, plastron 8, jambes 7, bottes 4 (24 pour l'armure complète, soit 120 lingots

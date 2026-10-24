@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -282,3 +282,17 @@ export const judgmentInfo = () => ({ fromArea: JUDGMENT.fromArea, pct: JUDGMENT.
 /* lignes d'une rune selon sa qualité : nombre, fourchette d'une ligne (% de la valeur de la pièce enchantée) */
 export const runeRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance, lines: q.lines,
   min: q.min, max: q.max, total: q.lines * q.max, discover: UPGRADE.discover.qualities.includes(q.q) }));
+
+/* ---------- sorts, XP de spécialisation, anneaux, aider allié (24/10) ---------- */
+const TREE_OF = id => SKILLS.trees.find(t => t.id === id);
+/* un sort : déblocage (« Mineur, niveau de spé 5 » ou le parchemin), spécialisation exigée, effet, recharge (s) */
+export const spellRows = () => SPELLS.list.map(s => ({ id: s.id, name: s.name, icon: s.icon, desc: s.desc, cd: s.cd,
+  unlock: s.unlock.scroll ? { scroll: s.unlock.scroll } : { tree: TREE_OF(s.unlock.tree), level: s.unlock.level },
+  needTree: s.needTree ? TREE_OF(s.needTree) : null }));
+export const spellInfo = () => ({ slots: SPELLS.slots, open: SPELLS.openSlots });
+/* XP de spécialisation : % de sa part d'XP ; même courbe que le niveau du mineur ? */
+export const specInfo = () => ({ pct: XP.specPct, sameCurve: XP.specCurve.first === XP.curve.first && XP.specCurve.factor === XP.curve.factor,
+  first: XP.specCurve.first, factor: XP.specCurve.factor, trees: SKILLS.trees.map(t => ({ icon: t.icon, label: t.label })) });
+/* chance d'avoir un anneau en ouvrant un trésor de tour, par camp */
+export const ringDrop = () => Object.fromEntries(Object.entries(RINGS.drops).map(([side, l]) => [side, l.reduce((t, r) => t + r.chance, 0)]));
+export const helpInfo = () => ({ range: HELP.range, keep: HELP.keep });

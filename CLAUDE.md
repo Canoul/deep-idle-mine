@@ -64,6 +64,8 @@ expliquant en une phrase ce que tu fais.
 - **`claude/etat-du-projet.md`** : si c'est un nouveau système, une décision de design, un changement
   d'hébergement ou un équilibrage notable. Ce qui est remplacé est marqué « ancien », jamais laissé comme actuel.
 - **`GAME_DESIGN.md`** : si une règle du jeu a changé.
+- **`wiki.html`** (wiki du joueur) : si le changement se voit côté joueur. Les tableaux viennent de la config, mais
+  les textes sont écrits à la main : mets-les à jour, et la date « Mis à jour le JJ/MM/AAAA » du bandeau.
 
 ---
 
