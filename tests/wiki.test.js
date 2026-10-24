@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { ITEMS, AREAS, CFG, LOOT, STATS, MOBS, mobHp } from '../src/config.js';
+import { ITEMS, AREAS, CFG, LOOT, STATS, MOBS, mobHp, SPELLS, XP, RINGS } from '../src/config.js';
 import { RECIPES } from '../src/recipes.js';
 import { SERVER, ROOT } from '../server/config.js';
 import { resolvePublic } from '../server/http/static.js';
@@ -95,4 +95,21 @@ test('wiki : la page est servie par le jeu (et seulement elle, pas un autre .htm
   assert.ok(resolvePublic(ROOT, SERVER.publicPaths, '/wiki.html'));
   assert.ok(resolvePublic(ROOT, SERVER.publicPaths, '/src/wiki/wiki.js'));
   assert.equal(resolvePublic(ROOT, SERVER.publicPaths, '/GAME_DESIGN.md'), null);
+});
+
+test('wiki : sorts, XP de spécialisation, anneaux et date de mise à jour (24/10)', () => {
+  const sp = D.spellRows();
+  assert.deepEqual(sp.map(s => s.id), SPELLS.list.map(s => s.id), 'chaque sort du jeu est listé');
+  const dash = sp.find(s => s.id === 'dash');
+  assert.deepEqual([dash.unlock.tree.label, dash.unlock.level, dash.needTree.label, dash.cd], ['Barbare', 5, 'Barbare', 30]);
+  assert.equal(sp.find(s => s.id === 'ulti_shen').unlock.scroll, 'Parchemin « Ulti shen »');
+  assert.equal(sp.find(s => s.id === 'ulti_shen').needTree, null);
+  const spec = D.specInfo();
+  assert.equal(spec.pct, XP.specPct);
+  assert.equal(spec.sameCurve, true, 'XP de spé : mêmes paliers que le niveau');
+  assert.ok(Math.abs(D.ringDrop().angel - RINGS.drops.angel.reduce((t, r) => t + r.chance, 0)) < 1e-9);
+  const html = fs.readFileSync(new URL('../wiki.html', import.meta.url), 'utf8');
+  assert.match(html, /class="maj"[^>]*>🗓 Mis à jour le \d{2}\/\d{2}\/\d{4}</, 'date de mise à jour dans le bandeau');
+  for(const id of ['sorts', 'spe', 'anneaux', 'sets', 'w-spells', 'w-spec']) assert.ok(html.includes(`id="${id}"`), id);
+  assert.ok(!/Il en porte 10/.test(html), 'passerelles illimitées');
 });

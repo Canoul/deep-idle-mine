@@ -113,10 +113,12 @@ function instant(){
     `<b>${m.game / 60} min</b> de jeu<div class="small mut">${mmss(m.real)} en vrai</div>`,
     `${m.w} × ${m.h} blocs, <b>que des minerais</b> : ${Object.entries(m.comp).map(([k, v]) => `${v} % ${item(NAME[k] ?? k)}`).join(', ')}, et <b>${f(m.feather)} % de tas de plumes</b>`,
     `Jusqu'à <b>${m.max}</b> par mine<div class="small mut">au-delà, plusieurs mines de tailles égales</div>`])]) +
-    `<p>Un <b>tas de plumes</b> est une case vide qui porte des plumes : le <b>premier mineur qui passe dessus</b> le ramasse et gagne <b>${m.fMin} à ${m.fMax} ${item(m.item)}</b>. Ton mineur ne les cherche pas au loin, mais il va prendre tout tas à ${m.reach} pas ou moins. Compte en moyenne quelques plumes par mine instantanée.</p>`;
+    `<p>Un <b>tas de plumes</b> est une case vide qui porte des plumes : le <b>premier mineur qui passe dessus</b> le ramasse et gagne <b>${m.fMin} à ${m.fMax} ${item(m.item)}</b>. Dès qu'un tas <b>déjà découvert</b> est à ${m.reach} cases ou moins (à vol d'oiseau), le mineur le plus proche y va avant tout, <b>en creusant droit vers lui</b> s'il le faut. Compte en moyenne quelques plumes par mine instantanée.</p>`;
   const n = m.notify.map(s => s >= 60 ? `${s / 60} min` : `${s} s`);
   $('w-mi-notify').innerHTML = `Si la page du jeu est ouverte, des rappels arrivent ${n.slice(0, -1).join(', ')} et ${n.at(-1)} avant le début ; le dernier propose <b>Rejoindre</b> ou <b>Décliner</b>.`;
   $('w-mi-lost').textContent = m.lost;
+  const h = D.helpInfo();
+  $('w-help-range').textContent = h.range; $('w-help-keep').textContent = h.keep;
 }
 
 /* ---------- Ange contre Démon ---------- */
@@ -130,7 +132,7 @@ function judgment(){
     <li><b>Lancement</b> : dans le Lobby, « Où miner » propose la tour <b>seulement quand elle est ouverte</b>. Seul ou en groupe jusqu'à 3. <b>${sec(T.duration)}</b> de jeu.</li>
     <li><b>La tour</b> : ${T.width} de large, <b>${T.floors} étages</b> de ${T.floorH} cases de haut séparés par un plancher incassable, puis le toit. Chaque plancher est percé d'une <b>porte</b> de ${T.gate} cases en briques (6 s chacune), collée à gauche puis à droite en alternance : on traverse <b>tous les étages en serpentin</b>. L'étage 0 est vide ; au-dessus, un étage sur deux est <b>plein de briques</b> à creuser, l'autre <b>vide mais gardé par ${T.mobs.count} ${esc(T.sides.angel.mob)}s</b> (tour de l'Ange) ou <b>${esc(T.sides.demon.mob)}s</b> (tour du Démon), ${f(T.mobs.hp)} PV chacun, qui taclent au contact. La porte de leur plafond reste <b>fermée tant qu'il en reste un vivant</b>. Un étage se découvre <b>en entier</b> quand un mineur y entre. Il fait noir : torches illimitées. Gravité et échelles (illimitées, partagées). Ni oxygène, ni sac, et les briques ne rapportent rien.</li>
     <li><b>Le boss</b> (l'Ange ou le Démon) : <b>${f(B.hp)} PV</b>, sur le toit. Une fois le combat engagé, s'il n'a personne à son contact, il <b>marche</b> vers le mineur le plus proche (deux fois plus vite qu'un mineur), sans quitter le toit. Il frappe ${B.hitEvery === 1 ? 'chaque seconde' : `toutes les ${f(B.hitEvery)} s`} (toutes les ${f(B.rageEvery)} s sous ${Math.round(B.rageBelow * 100)} % de ses PV) le premier arrivé parmi ceux à son contact. Chaque coup a <b>${Math.round(B.knockChance * 100)} %</b> de chance (${Math.round(B.knockBarb * 100)} % contre un barbare) de le <b>projeter de ${B.knock} cases</b> : il perd du temps à revenir, et s'il passe le bord de la tour, il <b>tombe jusqu'en bas</b> (étourdi 5 s) et doit tout remonter. Le <b>barbare</b> se place du côté opposé aux autres mineurs, pour que les projections ne partent pas toutes du même côté. On passe derrière le boss pour changer de côté.</li>
-    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>trésor</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a> de sa qualité. Son nom donne sa qualité, dans la couleur de la qualité (« Antique Trésor démoniaque ») ; il ne s'empile pas et sa case a le contour <b>Unique</b>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
+    <li><b>Victoire</b> : chaque joueur présent reçoit un <b>trésor</b> angélique ou démoniaque, de qualité R1 à R7 (mêmes chances que l'identification), qui contient une <a href="#amelioration">Rune</a> de sa qualité, et parfois un <a href="#anneaux">anneau</a> (${f(Math.round(D.ringDrop().angel * 1000) / 10)} % de chance). Son nom donne sa qualité, dans la couleur de la qualité (« Antique Trésor démoniaque ») ; il ne s'empile pas et sa case a le contour <b>Unique</b>. <b>Une victoire par joueur et par ouverture.</b> Temps écoulé = rien, mais rien n'est perdu. Pas d'XP.</li>
   </ul>`;
 }
 
@@ -227,10 +229,28 @@ function level(){
   $('w-xp').innerHTML = table(['Action', 'Quoi', '#XP'], D.xpRows().map(r => tr([r.kind, `<span class="it">${icon(r.tex)}${esc(r.what)}</span>`, num(r.xp)])));
   $('w-levels').innerHTML = table(['#Niveau', '#XP pour y passer', '#XP totale'], D.levelRows(10).map(r =>
     tr([num(`<b>${r.level}</b>`), num(f(r.need)), num(f(r.total))]))) + '<p class="small mut">Chaque niveau demande 1,5 fois plus d\'XP que le précédent. Un niveau = 1 point de skill.</p>';
+  const sp = D.specInfo();
+  $('w-spec').innerHTML = `<p>En plus de ton XP normale, chaque session donne <b>${sp.pct} % de ta part d'XP</b> en <b>XP de spécialisation</b>, pour l'arbre de skills que tu avais au lancement (${sp.trees.map(t => `${t.icon} ${esc(t.label)}`).join(', ')}). Rien n'est retiré de ton XP normale : avec une part de 1 000 XP, tu reçois <b>1 000 XP + ${f(Math.floor(1000 * sp.pct / 100))} XP de spé</b>.</p>
+    <ul><li><b>Une XP par arbre</b> : elle est gardée si tu changes d'arbre, et tu la retrouves en revenant.</li>
+    <li>${sp.sameCurve ? '<b>Mêmes paliers que le niveau du mineur</b> (tableau ci-dessus)' : `${f(sp.first)} XP pour le niveau 2, puis ×${f(sp.factor)} à chaque niveau`} : comme tu en gagnes ${sp.pct} %, on monte ${f(Math.round(100 / sp.pct))} fois moins vite qu'en niveau.</li>
+    <li>Sans arbre de skills choisi au lancement : pas d'XP de spé. Qui quitte la session : rien.</li>
+    <li>Ton niveau de spé (« SP lvl ») s'affiche dans l'onglet Skills, dans le lobby et au bilan. Il <b>débloque des <a href="#sorts">sorts</a></b>.</li>
+    <li>Le bonus de l'<b>Anneau du nerd</b> (XP +3 %) s'ajoute à ta part avant ce calcul, et ne profite qu'à toi.</li></ul>`;
   $('w-skills').innerHTML = `<div class="trees">${D.skillTrees().map(t => `<div class="tree"><h3>${t.icon} ${esc(t.label)}</h3>` +
     t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} · ${n.max} rang${n.max > 1 ? 's' : ''}${n.needsAll ? ' · exige toutes les cases de l\'étage d\'avant' : ''}</span></span>` +
       `<small>${esc(n.desc.replace('{v}', n.perText ? `${f(Math.round(n.per * 1000) / 10)} %` : '').replace(/\s+/g, ' '))}${n.perText && n.max > 1 ? ` par rang (max : ${esc(n.maxText.match(/[+−-]?\d+(,\d+)? %/)?.[0] ?? '')})` : ''}</small></div>`).join('') +
     '</div>').join('')}</div>`;
+}
+
+/* ---------- sorts ---------- */
+function spells(){
+  const s = D.spellInfo();
+  $('w-spells-rule').innerHTML = `<b>${s.slots} emplacements</b>, dont <b>${s.open} ouverts</b> pour l'instant (les autres ont un cadenas).`;
+  $('w-spells').innerHTML = table(['Sort', 'Comment le débloquer', 'Réservé à', 'Effet', '#Recharge'], D.spellRows().map(r => tr([
+    `<b>${r.icon} ${esc(r.name)}</b>`,
+    r.unlock.scroll ? `Apprendre le ${item(r.unlock.scroll)}` : `${r.unlock.tree.icon} ${esc(r.unlock.tree.label)} : niveau de spé <b>${r.unlock.level}</b>`,
+    r.needTree ? `${r.needTree.icon} ${esc(r.needTree.label)}` : 'Tout le monde',
+    esc(r.desc), num(mmss(r.cd))])));
 }
 
 /* ---------- sommaire : section visible en surbrillance ---------- */
@@ -242,6 +262,6 @@ function toc(){
   document.querySelectorAll('main section').forEach(s => obs.observe(s));
 }
 
-for(const fn of [areas, blocks, mobs, dungeon, instant, judgment, rarity, items, craft, upgrade, stats, treasures, level, toc]){
+for(const fn of [areas, blocks, mobs, dungeon, instant, judgment, rarity, items, craft, upgrade, stats, treasures, level, spells, toc]){
   try { fn(); } catch(e){ console.error(fn.name, e); }
 }
