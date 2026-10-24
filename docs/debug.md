@@ -2733,3 +2733,18 @@ Règles (voir CLAUDE.md) :
   logisticien pourra en poser un à sa propre chute. Le wiki lit `T.winch.setup` (T = TOWER via `judgmentInfo`).
 - ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/skills.test.js` « onglet Stuff : les stats montrent aussi les bonus
   des skills » (échoue aussi sans ce chantier).
+
+### Rejouer une session de joueur (Geoffrey, 24/10) — branche `geoffrey/ia-exploration-blocages`
+- **Pourquoi** : trois retours avec seed (222945787 « Plus profond » qui ne mine pas au fond, 1562880641 bloqué dans le
+  treuil, 29823892 bloqué « Se décale (puits occupé) » ↔ « Creuse une galerie » avec torche et double échelle) **ne se
+  reproduisent pas** en simulation générique (1 à 3 mineurs, sans skills, logisticien, mixed : 0 blocage). La seed ne
+  fixe que la mine ; stuff, skills, préférences et focus changent les décisions.
+- **Quoi** : `scripts/export-session.js` (lecture seule : `SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY` puis
+  un SELECT sur `dim_data`, ns `game_session`, filtre `value->>'seed'` ; pas d'`openDatabase`, qui fait un CREATE
+  TABLE) → `data/replays/<seed>-<id>.json` (ignoré par git : pseudos, ID de compte). `scripts/replay-session.js` :
+  `replayTrace(record, { still, watch, maxTicks })` = même boucle que `replayRecord` (overrides, `applyDueEvents`,
+  `tick`) + `stuckDetector` + « sur place » (même case à 1 près, rien miné, ni attaque ni étourdissement, ≥ still s) +
+  suivi pas à pas d'un mineur.
+- **Tests** : `tests/replay-session.test.js` (2 : même résumé que `replayRecord` avec départ et focus ; suivi limité à
+  la période) ✅.
+- **État** : ⚠️ export pas encore lancé sur la vraie base (il faut `DATABASE_URL`). Mise à jour 25/10 : lancé (3 sessions dans `data/replays`) ✅ ; repris dans `geoffrey/rejeu-visuel` (commit seul, sans les correctifs d'IA de la branche).
