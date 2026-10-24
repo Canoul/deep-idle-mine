@@ -651,3 +651,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .spB.cd{border-image-source:url(../../textures/ui/slot_n.png)}
 .spB.cd .spIcon{filter:grayscale(1) brightness(.5)}
 .spB .spLeft{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-l);color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
+
+/* ---------- sets (src/ui/sets.js) : à gauche dans Stuff, Skills et Sorts ---------- */
+.setWrap{max-width:calc(520*var(--u))}
+.skWrap{max-width:calc(640*var(--u))}
+.setLay{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
+.spGrid{grid-template-columns:calc(120*var(--u)) minmax(0,1fr) minmax(0,2fr)}
+.setsCard h2{font-size:var(--fs)}
+.setRow{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));padding:calc(2*var(--u)) 0;border-bottom:var(--u) solid var(--line)}
+.setRow b{flex:1 1 100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.setRow button{padding:0 calc(3*var(--u))}
+.setsBody>.setNew{margin-top:calc(4*var(--u));width:100%}
+@media (max-width:700px){ .setLay,.spGrid{grid-template-columns:1fr} }

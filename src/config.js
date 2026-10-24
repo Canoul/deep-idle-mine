@@ -444,6 +444,11 @@ export const SKILLS = {
    En session, chaque sort part tout seul dès que son temps de recharge (cd, en s) est fini ET qu'il peut servir
    (src/sim/spells.js) ; sinon il reste prêt. Les sorts équipés sont figés au lancement (comme les skills).
    Valeurs provisoires. */
+/* Sets (onglets Stuff, Skills et Sorts, 24/10/2026, Geoffrey) : un set enregistre le stuff porté, les skills et les
+   sorts ; « Équiper » remet tout d'un coup (hors session). Pas de limite voulue pour le joueur : max est un garde-fou
+   (taille de la sauvegarde). nameMax : longueur d'un nom. Valeurs provisoires. */
+export const SETS = { max:20, nameMax:24, opMemory:50 };
+
 export const SPELLS = {
   slots: 4, openSlots: 2,
   opMemory: 50,
