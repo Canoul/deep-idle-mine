@@ -155,11 +155,12 @@ test('ténacité : ~la bonne proportion de sorts ignorés ; sans ténacité, auc
   assert.equal(G.rng(), before, 'aucun nombre tiré');
 });
 
-test('occultiste vaincu : 1 à 3 Tissu sombre', () => {
-  const G = corridor(), m = G.miners[0]; const seen = new Set();
+test('occultiste vaincu : 1 à 3 Tissu sombre et 1 à 2 Chitine', () => {
+  const G = corridor(), m = G.miners[0]; const seen = new Set(), chitin = new Set();
   G.rng = mulberry32(9);
-  for(let i = 0; i < 300; i++){ m.inv = {}; const o = mob(G, { type: 'occultiste', x: 3, y: m.y }); killMob(G, m, o); seen.add(m.inv['Tissu sombre']); }
+  for(let i = 0; i < 300; i++){ m.inv = {}; const o = mob(G, { type: 'occultiste', x: 3, y: m.y }); killMob(G, m, o); seen.add(m.inv['Tissu sombre']); chitin.add(m.inv['Chitine']); }
   assert.deepEqual([...seen].sort(), [1, 2, 3]);
+  assert.deepEqual([...chitin].sort(), [1, 2]);
 });
 
 test('Aider allié : il part tout de suite vers le mob qui a pris un allié en chasse, sauf les mobs qu\'il ignore', () => {

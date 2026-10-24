@@ -2382,3 +2382,11 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : un set retient des uid ; une pièce améliorée garde son uid (OK), une pièce recyclée/sacrifiée
   disparaît (case vide). La réponse renvoie tout l'équipement : le navigateur remplace inventaire, stuff, skills, sorts.
 
+### XP de spécialisation : même courbe que le niveau (Geoffrey, 24/10) — ✅ en ligne le 24/10
+- **Quoi** : `XP.specCurve` passe de `{ first:100, factor:1.5 }` à `{ first:1000, factor:1.5 }` (= `XP.curve`) ;
+  `XP.specPct` reste 50. Aucun code changé (`src/meta/level.js` lit déjà la config).
+- **Tests** : `tests/level.test.js` (besoins 1000 / 2250 + test « même courbe que `levelOf` »),
+  `tests/game-service.test.js` (432 XP de spé → niveau 1 ; Dash niveau 5 = 8125), `tests/sets.test.js` (8125) ;
+  spells, lobby, anticheat/spells ✅ (95/95).
+- **Point fragile** : les comptes existants gardent leur XP de spé brute, leur niveau recalculé baisse ; un sort
+  déjà équipé dont le niveau n'est plus atteint ne part plus en session (`equipBlocked`, comme après un reset).

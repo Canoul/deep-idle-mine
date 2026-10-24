@@ -299,6 +299,21 @@ test('MI cap : les galeries ne vont pas toutes droit vers le bas (peu de mineurs
   assert.ok(bottom < n*0.6, `${bottom}/${n} au fond`);
 });
 
+test('MI descente : descendre coûte un pas, ils ne foncent plus au fond (côtés autant que le bas)', () => {
+  let bottom = 0, n = 0, deep = 0, mined = 0;
+  for(let seed = 1; seed <= 4; seed++){
+    const G = newInstant(seed, { miners:players(3) });
+    for(let i = 0; i <= INSTANT_TICKS && !G.over; i++){
+      const acts = G.miners.map(m => m.action?.type === 'mine' ? m.action.data : null), before = G.miners.map(m => m.stats.mined);
+      tickInstant(G);
+      G.miners.forEach((m, j) => { if(acts[j] && m.stats.mined > before[j]){ mined++; if(acts[j].y > G.h/2) deep++; } });
+    }
+    for(const m of G.miners){ n++; if(m.y >= G.h - 1) bottom++; }
+  }
+  assert.ok(bottom <= n*0.15, `${bottom}/${n} au fond`);
+  assert.ok(deep < mined*0.33, `${deep}/${mined} blocs dans la moitié basse`);
+});
+
 test('MI découverte : cachée au départ sauf la surface ; chaque mineur découvre dans son rayon (discoverMax)', () => {
   const G = newInstant(9, { miners:[{ name:'A' }, { name:'B', carac:{ discoverMax:4 } }] });
   const [a, b] = G.miners;

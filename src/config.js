@@ -314,7 +314,8 @@ export const MOBS = {
      tpDist cases (Manhattan) de sa cible, sur une case vide où l'on tient et qu'on rejoint sans miner, puis canalise :
      la cible est étourdie tant que dure la canalisation (channel s). Un coup d'un barbare qui a la Provocation interrompt
      sa canalisation en cours, mais ne l'empêche pas d'en relancer une (21/10). La ténacité de la cible peut l'ignorer. */
-  occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3) },
+  occult: { cooldown:15, channel:5, tpDist:3, tpReach:12, item:'Tissu sombre', loot: rng => 1 + Math.floor(rng()*3),
+            chitin: rng => 1 + Math.floor(rng()*2) },   // chitine en plus (24/10, Geoffrey)
   /* méphite (24/10/2026, Geoffrey) : il VOLE (pas de gravité, il traverse les cases vides sans échelle, flyReach = cases
      explorées au plus pour trouver son chemin). Asphyxie : tant qu'au moins un méphite tacle un mineur, il perd oxygen
      d'oxygène toutes les every secondes (non cumulable entre méphites ; chaque pulse est ignorable par la ténacité). */
@@ -873,6 +874,12 @@ export const INSTANT_MINE = {
      la moitié). Plus headingWeight est grand, plus les galeries sont droites. */
   headings: [[-1,0,2], [1,0,2], [0,1,1.5], [0,-1,0.6], [-1,1,1.5], [1,1,1.5], [-1,-1,0.5], [1,-1,0.5]],
   headingWeight: 1.5, turnBlocks: [6, 14],
+  /* descente (24/10, Geoffrey) : miner le bloc sous ses pieds coûte downWeight × le temps d'un pas. Sans ça, descendre
+     était gratuit (il tombe tout seul) alors qu'aller sur le côté demande un pas : les caps en diagonale vers le bas
+     devenaient des puits et les mineurs fonçaient au fond (3 mineurs, 20 seeds : 26/60 au fond, 42 % des blocs dans la
+     moitié basse ; avec 1 : 2/60 et 25 %). À 1, bas et côté se valent et le cap décide ; au-dessus de 1, il évite de
+     descendre (1,15 : galeries nettement horizontales, mais ≈ 15 % de plumes en moins). */
+  downWeight: 1,
   /* inscriptions (22/10, Geoffrey) : ouvertes seulement signupBefore s avant l'ouverture (11 h 30 pour 12 h), même en
      session ; encore en session à l'heure = mine ratée, la session continue */
   signupBefore: 30*60,
