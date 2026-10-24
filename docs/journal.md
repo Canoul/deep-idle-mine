@@ -18,6 +18,23 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Deux mineurs bloqués corrigés, et un outil pour rejouer les parties des joueurs
+- **Pour le joueur** :
+  - **Bloqué dans le treuil** (seed 1562880641) : avec un focus sur une area profonde en fin de session, le mineur
+    faisait l'ascenseur dans le treuil jusqu'à la fin (le focus le faisait descendre, la profondeur maximale pour avoir le
+    temps de remonter le faisait remonter). Maintenant, il travaille dans l'area la plus profonde qu'il peut encore
+    atteindre, comme avec « Plus profond ».
+  - **Bloqué au coin du donjon** (seed 29823892) : après le minotaure, dans le coin de la salle (sol incassable), il
+    montait d'une case pour aller creuser ailleurs, oubliait son idée, redescendait… pendant 2 minutes. Il garde
+    maintenant la colonne où il va.
+- **Décisions** : aucune règle nouvelle, à part le focus d'area en fin de session (ci-dessus).
+- **Outil** : on peut sortir de la base l'enregistrement d'une partie (avec sa seed) et la rejouer à l'identique sur
+  son ordinateur. Une seed seule ne suffit pas : le stuff, les skills et les préférences des joueurs changent tout.
+- **À suivre** : seed 222945787 (« Plus profond » mais il ne mine pas au fond) : pas de blocage, mais le logisticien
+  quitte le fond à chaque déblocage pour le treuil, même à 3 minutes de la fin. Question posée à Geoffrey.
+- **État** : 🧪 sur la branche `geoffrey/rejeu-session` (pas en ligne)
+
+
 ## 24/10/2026 — Geoffrey — XP de spécialisation : même courbe que le niveau
 - **Pour le joueur** : monter un niveau de spécialisation (SP lvl) demande maintenant autant d'XP que monter un niveau
   de mineur (1000 pour le niveau 2, puis ×1,5). On en gagne toujours la moitié de son XP. En solo : niveau 2 en ≈ 3

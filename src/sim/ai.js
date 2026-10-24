@@ -357,10 +357,10 @@ function decideWork(G,m){
 }
 
 function digDown(G,m){
-  if(keepShift(G,m)) return;
   // ne pas descendre là où un autre travaille déjà
   const pd=planDown(G,m,downAvoid(G,m));
-  if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; m.goingDown=true; return; }
+  if(pd && (pd.dx||pd.dy) && stepDir(G,m,pd.dx,pd.dy,{noBridge:!pd.bridge})){ m.status='Descend par l\'existant'; m.goingDown=true; m.shiftTo=null; return; }
+  if(keepShift(G,m)) return;
   // un autre creuse déjà ce puits sous moi : je me décale pour ouvrir le mien
   if(columnTaken(G,m,m.x) && shiftColumn(G,m)) return;
   m.digCol=m.x; m.status='Creuse vers le bas';
@@ -409,12 +409,13 @@ function shiftColumn(G,m,ok=null){
   const r=search(G,m,m.x,m.y,true,(x,y)=>y===m.y && x!==m.x && cols.every(c=>Math.abs(c-x)>=CFG.shaftGap) && (!ok || ok(x,y)),CFG.planMaxCost);
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)) return false;
-  m.shiftTo={ x:r.n%W, y:(r.n/W)|0, until:G.t+CFG.shiftCommit };
+  if(ok) m.shiftTo={ x:r.n%W, y:(r.n/W)|0, until:G.t+CFG.shiftCommit };   // sol impossible à creuser ici : il s'y tient (keepShift)
   m.status='Se décale (puits occupé)';
   return stepDir(G,m,s.dx,s.dy,{noBridge:!s.bridge});
 }
 
-/* colonne choisie par shiftColumn : il continue d'y aller tant qu'il n'y est pas. Sans ça, l'itinéraire qui commençait
+/* colonne choisie par shiftColumn quand le sol ne se creuse pas sous lui (incassable, trou trop profond) : il continue
+   d'y aller tant qu'il n'y est pas (pas pour un puits occupé : l'autre bouge, on refait le choix). Sans ça, l'itinéraire qui commençait
    par monter (sortir du coin d'un donjon, sol incassable) était oublié une case plus haut : il « creusait vers le bas »
    par l'échelle qu'il venait de poser et revenait au coin (seed 29823892 : 114 s de va-et-vient, 24/10/2026).
    Abandonnée une fois arrivé, inatteignable, ou après CFG.shiftCommit s. */

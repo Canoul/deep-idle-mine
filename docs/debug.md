@@ -2405,3 +2405,25 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/replay-session.test.js` (2 : même résumé que `replayRecord` avec départ et focus ; suivi limité à
   la période) ✅.
 - **État** : ⚠️ export pas encore lancé sur la vraie base (il faut `DATABASE_URL`).
+
+### Va-et-vient au coin d'un donjon, ascenseur dans le treuil (Geoffrey, 24/10) — branche `geoffrey/rejeu-session`
+- **Méthode** : enregistrements exportés de la base (`scripts/export-session.js`), rejoués avec `scripts/replay-session.js`.
+- **29823892** (Yloise, mineur, t2523, 114 s) : dans la salle du donjon après le minotaure, case (44,223), sol et mur droit
+  incassables. `digDown` → sol incassable → `shiftColumn` : itinéraire qui commence par monter (pose d'échelle). En
+  (44,222), nouvelle décision : du vide dessous → « Creuse vers le bas » → redescend. Alternance toutes les 0,4 s (le
+  statut « Se décale (puits occupé) » s'affiche aussi pour le sol incassable). **Correctif** : `m.shiftTo` (posé par
+  `shiftColumn` seulement avec une condition `ok`, c.-à-d. sol incassable ou trou trop profond), suivi par `keepShift`
+  dans `digDown` après `planDown` ; abandonné à l'arrivée, si inatteignable, après `CFG.shiftCommit` (20 s), et au départ
+  de la surface. ⚠️ Première version (commit pour tout décalage, avant `planDown`) : 15 seeds 3.8 → 3.6 areas ; version
+  resserrée : 3.9 areas, profondeur 205.3 → 206.5, coffre 4483 → 4488, 0 blocage (`--miners 3 --count 15 --skills mixed`).
+- **1562880641** (Yloise, focus area 4 posé à 33 min) : en fin de session `tripCap` 135 (area 2). `focusGoal` → area 4 →
+  `changeArea` descend le treuil jusqu'à 202 ; en 202, `down` faux (`m.y≥cap`) → `explore` en area 2 (galerie 134) →
+  monte en 201 → hors de l'area 4 → redescend. **Correctif** : `workArea` = `min(focusArea, capArea)` (`capArea` = ce que
+  `deepArea` utilisait déjà). Vérifié aussi sur le code de main avec ce seul correctif : 0 blocage (avant : blocage t3380).
+- **222945787** : 0 blocage. Plus profond fonctionne (69 à 86 % du temps de travail dans l'area la plus profonde). Le
+  logisticien (canoul) part au treuil à chaque déblocage, y compris à 57 min (area 5) : il remonte de 213 et creuse le
+  treuil jusqu'à la fin sans le finir. ❓ Question de design posée (ne pas lancer un chantier impossible à finir ?).
+- **Tests** : `tests/miner.test.js` +1 (coin incassable, échoue sans le correctif : 106 changements de ligne),
+  `tests/focus.test.js` +1 (focus d'area plafonné par `tripCap`) ; miner, focus, winch, dungeon, team, fall, mule,
+  game-replay, session, diagnostics, path, trap, skills, replay-session : 176 ✅.
+- **État** : ✅ vérifié en rejeu des 3 parties (0 blocage, 0 « sur place ») et en simulation.
