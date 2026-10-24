@@ -68,8 +68,11 @@ export const DEFAULT_MINERS = 3;
    lesquels il ne va pas aider (liste de clés de MOBS.hpBase) */
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
-   avant son arrivée et il traverse la mine pour rien (allers-retours mesurés en simulation). Provisoire. */
-export const HELP = { range:20 };
+   avant son arrivée et il traverse la mine pour rien (allers-retours mesurés en simulation). Provisoire.
+   keep : une fois parti aider, il garde ce mob jusqu'à keep cases (marge) : pile à range, un pas de contournement le
+   sortait de portée, il retournait travailler, revenait à range… (seed 1928461225, 24/10/2026). Au-delà de keep, il
+   abandonne ce mob pour de bon (sinon même va-et-vient à keep). */
+export const HELP = { range:20, keep:30 };
 
 /* Catégories de blocs : chaque bloc a un `type`.
    - terrain  : roche de remplissage (terre, pierre…)

@@ -24,6 +24,7 @@ export function createMiner(id, opts={}){
     goingDown: false,               // redescend au front par l'existant (skill travel_rush)
     helping: false,                 // va aider un allié ou se bat pour lui : tacle, donjon, piège (skill braum)
     helpFoe: null,                  // mob qu'il est allé combattre pour un allié (le combat qui suit compte aussi)
+    helpSkip: null,                 // mob dont il a abandonné l'aide (trop loin, HELP.keep) : il n'y retourne pas
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
