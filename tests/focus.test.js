@@ -6,7 +6,7 @@ import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaOf, areaTop, tryUnlock } from '../src/sim/world.js';
 import { mineBlock } from '../src/sim/actions.js';
-import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, deepArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
+import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, deepArea, workArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
 import { buildSession, applyDueEvents, replayRecord } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
 
@@ -268,6 +268,24 @@ test("Plus profond : en fin de session, l'area la plus profonde qu'il peut attei
   assert.equal(deepArea(G, m), 0);
   m.tripCap = areaTop(1)+5;
   assert.equal(deepArea(G, m), 1);
+});
+
+/* seed 1562880641 (retour joueur, 24/10/2026) : focus sur l'area 4, profondeur max du trajet dans l'area 2. Le focus le
+   faisait descendre le treuil jusqu'à l'area 4, la profondeur max le renvoyait une case plus haut chercher une galerie
+   de l'area 2, puis le focus le redescendait : ascenseur jusqu'à la fin de la session */
+test("focus d'area : en fin de session, pas plus profond que la profondeur max du trajet (comme « Plus profond »)", () => {
+  const G = newSession(2), m = G.miners[0];
+  G.areas[0].oreMined = 1e9; assert.ok(tryUnlock(G));
+  setFocus(G, m, { area:1 });
+  assert.equal(workArea(G, m), 1, 'pas de limite : son area');
+  m.tripCap = areaTop(1)-1;
+  assert.equal(workArea(G, m), 0, "l'area 1 est hors d'atteinte : la plus profonde qu'il peut atteindre");
+  m.y = areaTop(0)+3;
+  assert.equal(focusGoal(G, m), null, "dans l'area 0, il y reste au lieu de redescendre");
+  m.tripCap = areaTop(1)+5;
+  assert.equal(workArea(G, m), 1);
+  setFocus(G, m, { area:0 }); m.tripCap = areaTop(1)+5;
+  assert.equal(workArea(G, m), 0, "un focus moins profond que la limite ne change pas");
 });
 
 test("Plus profond : l'area 1 débloquée, il quitte l'area 0 pour l'area 1 au lieu d'y finir les filons", () => {

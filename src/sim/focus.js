@@ -40,11 +40,19 @@ export function focusArea(G,m){
    de session, l'area la plus profonde qu'il peut encore atteindre (profondeur max du trajet, m.tripCap). */
 export function deepArea(G,m){
   if(focusArea(G,m) !== null || activeOres(m.prefs.focus).length) return null;
-  const k = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+  const k = capArea(G,m);
   return areaDepleted(G,k) ? null : k;
 }
-/* area où il doit travailler : son focus d'area, sinon « Plus profond », sinon null (pas d'area imposée) */
-export const workArea = (G,m) => focusArea(G,m) ?? deepArea(G,m);
+/* area la plus profonde qu'il peut atteindre : la plus profonde débloquée, ou celle de sa profondeur max de fin de session */
+const capArea = (G,m) => Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+/* area où il doit travailler : son focus d'area, sinon « Plus profond », sinon null (pas d'area imposée).
+   Focus d'area trop profond pour la fin de session : l'area la plus profonde qu'il peut atteindre, comme « Plus profond »
+   (seed 1562880641, 24/10/2026 : le focus le descendait dans l'area 4, la profondeur max le renvoyait chercher une
+   galerie plus haut, en boucle dans le puits du treuil jusqu'à la fin) */
+export function workArea(G,m){
+  const A = focusArea(G,m);
+  return A !== null ? Math.min(A, capArea(G,m)) : deepArea(G,m);
+}
 
 /* areas où le focus minerai cherche ses minerais : l'area visée seule, sinon toutes les areas débloquées */
 const focusAreas = (G,m) => { const A = focusArea(G,m); return A !== null ? [A] : [...Array(G.unlockedAreas).keys()]; };
