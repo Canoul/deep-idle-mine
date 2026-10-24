@@ -2391,7 +2391,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : les comptes existants gardent leur XP de spé brute, leur niveau recalculé baisse ; un sort
   déjà équipé dont le niveau n'est plus atteint ne part plus en session (`equipBlocked`, comme après un reset).
 
-### Occultiste : butin de chitine (Geoffrey, 24/10) — ⚠️ pas encore en ligne
+### Occultiste : butin de chitine (Geoffrey, 24/10) — ✅ en ligne le 24/10 (anticheat 85/85)
 - **Quoi** : `MOBS.occult.chitin` (config : `rng => 1 + floor(rng()*2)`) ; `killMob` (`src/sim/actions.js`) crédite
   `MOBS.bugItem` via `lootOf` (Pillage compris), comme `goblinChitin` ; wiki `src/wiki/data.js` (2e ligne de butin).
   Un tirage `G.rng()` de plus par occultiste tué : les parties d'une même seed ne sont plus identiques à avant.
