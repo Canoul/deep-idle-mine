@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Simulations deux fois plus rapides
+- **Pour le joueur** : rien ne change en jeu. Le mineur remonte au même moment et prend les mêmes décisions. Le serveur
+  consomme moins de processeur pendant les parties.
+- **Décisions** : le calcul du chemin de retour au coffre (81 % du temps d'une session) est guidé vers le haut : même
+  temps de retour, deux fois moins de calcul. Session simulée à 3 mineurs : 34 s → 15 s. Quand deux chemins prennent
+  exactement le même temps, le mineur peut prendre l'autre : une seed rejouée à 3 mineurs peut donc donner une partie
+  très légèrement différente de celle d'avant (1 sur 5 en simulation).
+- **À suivre** : une étape 2 (recalculer ce chemin moins souvent quand la fin de session est loin) pourrait gagner
+  encore, mais elle changerait le comportement du mineur : pas faite, à décider.
+- **État** : 🧪 sur la branche `geoffrey/perf-chemin` (pas en ligne)
+
+---
+
 ## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
 - **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
   matin, +0,4 avant), **pioche en acier +0,6** (au lieu de +0,72, +0,48 avant). Les pièces déjà fabriquées suivent.

@@ -10,12 +10,16 @@ import { baseMoveT, baseClimbT, baseMineT, baseWinchT, baseLadderT } from './min
 import { forbidMask } from './dungeon.js';
 
 /* build=false : uniquement l'existant (pas de minage, pas de nouvelle échelle).
-   lw : poids de planification d'une NOUVELLE échelle (>1 pousse à réutiliser l'existant ; 1 = temps réel). */
-export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlanWeight){
+   lw : poids de planification d'une NOUVELLE échelle (>1 pousse à réutiliser l'existant ; 1 = temps réel).
+   h : estimation du temps restant jusqu'au but depuis le nœud n, jamais au-dessus du vrai temps (A*). Elle ne change
+   ni le coût trouvé ni l'itinéraire (sauf à égalité parfaite entre deux itinéraires) : elle fait seulement explorer
+   d'abord les cases qui vont vers le but. null = Dijkstra classique (toutes les directions à égalité). */
+export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlanWeight,h=null){
   const H=G.tiles.length, N=H*W, dist=new Float64Array(N).fill(Infinity), par=new Int32Array(N).fill(-1), typ=new Uint8Array(N);
   /* tas binaire (file de priorité) en deux tableaux parallèles : distance hd, nœud hn. Mêmes comparaisons et mêmes
      échanges qu'un tas de paires [d,n] : les nœuds sortent dans le même ordre (itinéraires identiques, à égalité
-     comprise), sans créer de petits tableaux à chaque opération. popD/popN : le dernier élément sorti. */
+     comprise), sans créer de petits tableaux à chaque opération. popD/popN : le dernier élément sorti.
+     Avec h, la priorité est distance + h (la distance reste dans dist). */
   const hd=[], hn=[];
   let popD=0, popN=0;
   const push=(d,n)=>{
@@ -37,7 +41,7 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   for(const o of G.miners) if(o!==m && o.y>0) for(let k=-1;k<=1;k++) if(o.y+k>=1 && o.y+k<H) busy[o.y+k]=1;
   /* cases de donjon où ce mineur n'a pas le droit d'entrer (src/sim/dungeon.js) */
   const ban=forbidMask(G,m);
-  const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x; if(ban && ban[n]) return; const nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(nd,n); } };
+  const relax=(from,d,x,y,c,ty=0)=>{ const n=y*W+x; if(ban && ban[n]) return; const nd=d+c+(busy[y]?CFG.rowCrowdCost:0); if(nd<dist[n]){ dist[n]=nd; par[n]=from; typ[n]=ty; push(h ? nd+h(n) : nd,n); } };
   /* durées de base calculées une fois par recherche (mêmes formules que baseMoveT, baseClimbT, baseMineT) */
   const mv=baseMoveT(m), cl=baseClimbT(m), moveT=()=>mv, climbT=()=>cl, fall=1/CFG.fallSpeed, maxFall=CFG.maxFall,
         drop=(x,l,k=l.n)=>k*(ontoLadder(G,x,l.y) ? cl : fall),   // k cases de chute jusqu'à l (échelle à l'arrivée : vitesse d'échelle)
@@ -45,10 +49,10 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
   /* bloc qu'on peut creuser : ni barrière, ni incassable, ni mimic dévoilé (un mimic se combat, il ne se mine pas) */
   const mim=G.mimicCells, brk=(x,y,t)=>t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x));
   const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(m,t); mineCache.set(t,v); } return v; };
-  const start=sy*W+sx; dist[start]=0; push(0,start);
+  const start=sy*W+sx; dist[start]=0; push(h ? h(start) : 0,start);
   while(hd.length){
-    pop(); const d=popD, n=popN; if(d>dist[n]) continue;
-    if(d>maxCost) break;
+    pop(); const n=popN, d=dist[n]; if(popD>(h ? d+h(n) : d)) continue;   // entrée périmée (nœud déjà vu moins cher)
+    if(popD>maxCost) break;   // h ne surestime jamais : plus rien ne peut atteindre le but sous maxCost
     const x=n%W, y=(n/W)|0;
     if(goalFn && goalFn(x,y)) return {n,dist,par,typ,start,sx,sy};
     /* sauter du seau ou d'une échelle dans le vide d'à côté : la chute compte à la vitesse du puits, pas plus vite.
@@ -94,10 +98,21 @@ export function firstStep(r,n){
   return cx!==r.sx ? {dx:Math.sign(cx-r.sx),dy:0,bridge:r.typ[c]===1} : {dx:0,dy:Math.sign(cy-r.sy)};
 }
 
-/* retour au coffre, au temps réel (poids 1) : {cost, dx, dy, bridge} ou null */
+/* retour au coffre, au temps réel (poids 1) : {cost, dx, dy, bridge} ou null.
+   Calcul le plus coûteux de la simulation (~14 000 fois par session) : guidé par returnH (A*), même résultat,
+   2 à 2,5 fois moins de cases explorées (24/10, Geoffrey). */
 export function planReturn(G,m){
-  const r=search(G,m,m.x,m.y,true,(x,y)=>y===0&&x===CHEST_X,Infinity,1); if(!r) return null;
+  const r=search(G,m,m.x,m.y,true,(x,y)=>y===0&&x===CHEST_X,Infinity,1,returnH(G,m)); if(!r) return null;
   const s=firstStep(r,r.n); return s && {cost:r.dist[r.n],...s};
+}
+
+/* temps minimal pour rejoindre le coffre depuis le nœud n : chaque colonne coûte au moins un pas (marcher, miner ou
+   passerelle : jamais moins que baseMoveT), chaque ligne à remonter au moins une montée (échelle, ou seau du treuil
+   s'il est plus rapide). Jamais au-dessus du vrai temps, et elle ne baisse jamais de plus que le coût d'un pas :
+   A* trouve donc le même temps de retour que Dijkstra. */
+export function returnH(G,m){
+  const mv=baseMoveT(m), up=G.winch ? Math.min(baseClimbT(m), baseWinchT(G,m)) : baseClimbT(m);
+  return n=>Math.abs(n%W-CHEST_X)*mv+((n/W)|0)*up;
 }
 
 /* Descendre en réutilisant l'existant : si une échelle/galerie déjà posée mène bien plus bas, y aller coûte moins
