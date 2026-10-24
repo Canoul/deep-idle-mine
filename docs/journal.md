@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Armure en acier : il faut aussi du Tainted gold
+- **Pour le joueur** : casque, plastron, jambes et bottes en acier demandent en plus du **Tainted gold**, la moitié du
+  Steel ingot de la recette : casque 5, plastron 8, jambes 7, bottes 4 (24 pour l'armure complète, soit 120 lingots
+  d'or et 480 peaux de gobelin au four). Pioche, épée et Plastron de l'équilibre : inchangés.
+- **Décisions** (Geoffrey) : Tainted gold = ½ du Steel ingot sur l'armure en acier.
+- **État** : ✅ en ligne le 24/10
+
 ## 24/10/2026 — Geoffrey — Mine instantanée : les mineurs ne foncent plus au fond
 - **Pour le joueur** : dans la mine instantanée, les mineurs creusent davantage sur les côtés au lieu de faire des
   puits jusqu'au fond. À 3 mineurs, ceux qui finissent au fond passent de 43 % à 3 %. La moitié basse de la mine ne

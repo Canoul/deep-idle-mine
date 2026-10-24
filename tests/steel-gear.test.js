@@ -20,10 +20,10 @@ const ARMOR = { 'Shiny iron':10, 'Tissu sombre':10 }, TOOL = { 'Shiny gold':10, 
 /* demandé par le créateur : au départ pièce en fer × 1,2 ; le 24/10, acier × 1,5, épée et pioche × 1,25 (entier le plus proche
    pour oxygène, pods, dégâts). L'acier reste au-dessus du fer sur chaque stat. */
 const STEEL = {
-  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:69 },     cost:{ 'Steel ingot':10, ...ARMOR } },
-  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, ...ARMOR } },
-  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.08 },  cost:{ 'Steel ingot':14, ...ARMOR } },
-  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.08 },       cost:{ 'Steel ingot':8,  ...ARMOR } },
+  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:69 },     cost:{ 'Steel ingot':10, 'Tainted gold':5,  ...ARMOR } },
+  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, 'Tainted gold':8,  ...ARMOR } },
+  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.08 },  cost:{ 'Steel ingot':14, 'Tainted gold':7,  ...ARMOR } },
+  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.08 },       cost:{ 'Steel ingot':8,  'Tainted gold':4,  ...ARMOR } },
   'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.6 },    cost:{ 'Steel ingot':20, ...TOOL } },
   'Épée en acier':     { iron:'Épée en fer',     set:{ damage:16 },          cost:{ 'Steel ingot':10, ...TOOL } },
 };
