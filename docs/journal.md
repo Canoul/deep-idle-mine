@@ -36,7 +36,7 @@ Modèle d'entrée :
 - **À suivre** : d'où viennent les parchemins (aucune source pour l'instant) ; comment s'ouvrent les emplacements 3
   et 4. Fast learner se cumule sans limite, à surveiller. En simulation (3 mineurs, 5 parties) avec les sorts :
   ≈ +7 % de ressources rapportées, même profondeur ; le détecteur de blocage signale un peu plus d'alertes, à revoir.
-- **État** : 🧪 sur la branche `geoffrey/sorts` (pas en ligne ; contient aussi le bonus d'XP personnel)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Bonus d'XP personnel (Anneau du nerd)
 - **Pour le joueur** : le « +3 % d'XP » de l'Anneau du nerd ne profite plus qu'à celui qui le porte. L'XP de la session
@@ -45,7 +45,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : le bonus d'XP est personnel et s'applique après la répartition ; seul le bonus n'est pas
   partagé. Les autres anneaux restent des effets de groupe.
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/xp-bonus-perso` (pas en ligne)
+- **État** : ✅ en ligne le 24/10 (avec les Sorts)
 
 ## 24/10/2026 — Geoffrey — Aider allié : fini les allers-retours sur place
 - **Pour le joueur** : deux mineurs en « Aider allié » ne tournent plus en rond entre « aller aider », « retourner au

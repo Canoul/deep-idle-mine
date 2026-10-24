@@ -2234,7 +2234,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : `helpSkip` ne garde qu'un mob ; `helpFoe` n'est jamais remis à null à la mort du mob (id unique,
   sans effet).
 
-### Bonus d'XP personnel, après le partage du pot (Geoffrey, 24/10) — branche `geoffrey/xp-bonus-perso`, 🧪 pas en ligne
+### Bonus d'XP personnel, après le partage du pot (Geoffrey, 24/10) — ✅ en ligne le 24/10 (avec les Sorts)
 - **Avant** : `buildSession` passait `xpMult = ringXpMult(groupRings)` ; `shareBySegments` multipliait chaque tranche du
   pot avant `xpShare` → tout le groupe profitait de l'Anneau du nerd.
 - **Maintenant** : `ringXpPct(rings)` (`src/meta/stuff.js`, somme des `RINGS.items[r].xp` des anneaux d'UN joueur) ;
@@ -2246,7 +2246,7 @@ Règles (voir CLAUDE.md) :
   session, stuff, wiki, share, party ✅ (92).
 - **Point fragile** : le bonus est calculé sur le total des tranches (un seul arrondi), pas tranche par tranche.
 
-### XP de spécialisation et Sorts (Geoffrey, 24/10) — branche `geoffrey/sorts` (partie de `geoffrey/xp-bonus-perso`), 🧪 pas en ligne
+### XP de spécialisation et Sorts (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **XP de spé** : `XP.specPct` (10) / `XP.specCurve` (100 ×1,5) ; `src/meta/level.js` : `specXpOf`, `specLevelOf`,
   `specLevels`, progression `{ xp, spec:{arbre:xp}, credited }`, `creditXp(p, id, xp, { tree, xp })` (même idempotence).
   `endSession` met `specTree`/`specXp` dans chaque part (affichage du bilan) ; le serveur **recalcule** (`settleWith` :
