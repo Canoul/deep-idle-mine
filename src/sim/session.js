@@ -12,7 +12,7 @@ import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
 import { shareChest } from '../meta/share.js';
-import { xpShare } from '../meta/level.js';
+import { xpShare, specXpOf } from '../meta/level.js';
 
 /* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x}
    opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre */
@@ -139,7 +139,9 @@ export function endSession(G){
   const { bags, xp, segments } = shareBySegments(G, present);
   G.summary.segments = segments;
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
-    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m) }));
+    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m),
+    /* XP de spécialisation : XP.specPct % de sa part, pour l'arbre figé au lancement (rien sans arbre) */
+    specTree: m.skillTree, specXp: m.left!=null || !m.skillTree ? 0 : specXpOf(xp.get(m)) }));
 }
 
 const muleLabel = G => 'Sac de ' + (G.roster.find(m => m.id===G.mule.carrier)?.name ?? 'la Mule');

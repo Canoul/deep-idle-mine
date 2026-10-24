@@ -597,3 +597,29 @@ test('Jugement (23/10) : une mine lancée pendant l\'ouverture d\'une tour est e
   const second = (await game.start(ME, {})).session;
   assert.equal((await store.getGameSession(second.id)).residues, false, 'tour ouverte : pas de résidus dans cette mine');
 });
+
+/* ---------- XP de spécialisation (24/10) ---------- */
+
+test('XP de spécialisation : 10 % de sa part, à l\'arbre figé au lancement, une seule fois ; rien sans arbre', async () => {
+  const { createMemoryGameStore } = await import('../server/game/store.js');
+  const { createGameService } = await import('../server/game/service.js');
+  const { fakeLive } = await import('./helpers.js');
+  const { realDurationMs } = await import('../src/shared/game.js');
+  let now = 1_000_000;
+  const sum = rec => ({ id:rec.id, shares: rec.players.map(p => ({ account:p.account, left:false, bag:{}, xp:865 })) });
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner:fakeLive(sum), clock:() => now, randomSeed:() => 4242 });
+  const A = { id:'AAAA1111', name:'Zoe' };
+  await game.start(A, {}); now += realDurationMs() + 1000; await game.pump();
+  assert.deepEqual((await store.getProgress(A.id)).spec ?? {}, {}, 'sans arbre : pas d\'XP de spé');
+  await store.putProgress(A.id, { ...(await store.getProgress(A.id)), xp:2600 });
+  await game.skills(A, { action:'learn', node:'damage', opId:'op-spec-xp-2' });
+  const { session } = await game.start(A, {});
+  now += realDurationMs() + 1000; await game.pump(); await game.pump();
+  const pr = await store.getProgress(A.id);
+  assert.deepEqual(pr.spec, { barbare:86 });
+  assert.equal((await game.state(A)).progress.spec.barbare.level, 1);
+  assert.ok(pr.credited.includes(session.id));
+  assert.equal(await game.specLevelOf(A.id, 'barbare'), 1);
+  assert.equal(await game.specLevelOf(A.id, null), null);
+});

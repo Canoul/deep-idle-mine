@@ -53,13 +53,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map()){
+  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready || !!m.always,
                                             always: !!m.always,
                                             playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
+                                            specLevel: specLv.get(m.account) ?? null,
                                             look: looks.get(m.account) ?? {},
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
@@ -239,11 +240,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* spécialisation de chacun (arbre de skills choisi) */
       const trees = new Map();
       if(p) for(const m of p.members) trees.set(m.account, await game.skillTreeOf?.(m.account) ?? null);
+      /* et son niveau de spécialisation dans cet arbre */
+      const specLv = new Map();
+      if(p) for(const m of p.members) specLv.set(m.account, await game.specLevelOf?.(m.account, trees.get(m.account)) ?? null);
       /* skin de chacun (équipement porté) */
       const looks = new Map();
       if(p) for(const m of p.members) looks.set(m.account, await game.lookFor?.(m.account) ?? {});
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),

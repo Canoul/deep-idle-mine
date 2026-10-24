@@ -488,6 +488,7 @@ let progress = null;
 function setProgress(p){
   const up = levelUpText(progress, p); progress = p ?? null;
   renderLevel($('levelBody'), progress); renderLevel($('stuffLevelBody'), progress);   // lobby et onglet Stuff
+  skills.setSpec(progress?.spec); lobby.update({ mySpec: progress?.spec ?? null });    // niveaux de spécialisation
   return up;
 }
 

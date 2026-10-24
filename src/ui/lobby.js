@@ -35,10 +35,11 @@ export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null)
    envoyé par le serveur (look), revérifié */
 export const portraitLook = (slot, myLook = {}) => slot.me ? myLook : sanitizeLook(slot.look);
 
-/* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien », ou « Sans spécialisation » */
-export function specLabel(tree){
+/* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien (SP lvl : 3) », ou « Sans spécialisation » ;
+   level : son niveau de spécialisation dans cet arbre (absent = pas affiché) */
+export function specLabel(tree, level = null){
   const t = SKILLS.trees.find(x => x.id === tree);
-  return t ? `${t.icon} ${t.label}` : 'Sans spécialisation';
+  return t ? `${t.icon} ${t.label}${Number.isSafeInteger(level) ? ` (SP lvl : ${level})` : ''}` : 'Sans spécialisation';
 }
 
 /* Ce que fait le bouton principal : seul ou chef = Lancer (si tous les autres membres sont prêts) ; membre = se dire
@@ -139,7 +140,7 @@ export function setupLobby(h){
       const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
-             `<span><b>${esc(s.name)}</b><small class="spec">${esc(specLabel(s.me && st.myTree !== undefined ? st.myTree : s.tree))}</small><small>${esc(tags)}</small></span>`+
+             `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+
              (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
                               `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');

@@ -25,7 +25,7 @@ import { createInventory, deserialize, serialize, creditSession, addItem, countO
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality } from '../../src/meta/piece.js';
-import { sanitizeProgress, creditXp, levelOf } from '../../src/meta/level.js';
+import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
@@ -147,7 +147,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
-  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp) });
+  const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
   const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
@@ -254,7 +254,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
         if(rec.mode !== 'mi' && !side) await withLock('xp:' + share.account, async () => {
           const pr = await loadProgress(share.account);
-          if(creditXp(pr, rec.id, share.xp ?? 0)) await store.putProgress(share.account, pr);
+          /* XP de spécialisation : recalculée ici, pour l'arbre figé au lancement (rec.skills, revérifié) */
+          const tree = sanitizeSkills(rec.skills?.[share.account]).tree;
+          if(creditXp(pr, rec.id, share.xp ?? 0, { tree, xp: specXpOf(share.xp) })) await store.putProgress(share.account, pr);
         });
       }
       rec = await store.getGameSession(id);
@@ -722,6 +724,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
+    /* niveau de spécialisation dans cet arbre (null sans arbre) : « Logisticien (SP lvl : 3) » dans le lobby */
+    specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */

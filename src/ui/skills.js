@@ -5,6 +5,7 @@
 import { SKILLS } from '../config.js';
 import { pxi } from './pxicons.js';
 import { blockedReason, rankOf, nodeText, parentsOf } from '../meta/skills.js';
+import { specLevelHtml } from './level.js';
 
 /* icônes pixel (src/ui/pxicons.js) ; sans correspondance, l'émoji de la config */
 const TREE_PX = { mineur:'pickaxe', logisticien:'ladder', barbare:'sword' };
@@ -19,6 +20,7 @@ const WHY = { other_tree:'Autre arbre choisi', needs_previous:'Étape précéden
 /* onOp({ action:'learn', node } | { action:'reset' }) → promesse ; inSession() : une session est en cours */
 export function setupSkills({ onOp, inSession, onChange = () => {} }){
   let st = { tree:null, ranks:{}, points:0, spent:0 }, busy = false, msg = '';
+  let spec = {};   // niveaux de spécialisation (progress.spec du serveur), un par arbre
 
   function render(){
     const free = st.points - st.spent, session = inSession();
@@ -56,6 +58,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {} }){
     }).join('');
     return `<div class="skTree${locked ? ' locked' : ''}${chosen ? ' chosen' : ''}"><h3>${TREE_PX[t.id] ? pxi(TREE_PX[t.id]) : t.icon} ${esc(t.label)}`+
       `${chosen ? ' <span class="mut small">· choisi</span>' : locked ? ' <span class="mut small">· 🔒 bloqué</span>' : ''}</h3>`+
+      specLevelHtml(spec[t.id])+
       `<div class="skGraph" style="height:${h}px"><svg class="skLinks" viewBox="0 0 100 ${h}" preserveAspectRatio="none">${links}</svg>${nodes}</div></div>`;
   }
 
@@ -75,5 +78,7 @@ export function setupSkills({ onOp, inSession, onChange = () => {} }){
   };
 
   render();
-  return { set(s){ if(s){ st = s; render(); onChange(st); } }, refresh: render };
+  return { set(s){ if(s){ st = s; render(); onChange(st); } }, refresh: render,
+           /* niveaux de spécialisation (progression relue au serveur) */
+           setSpec(s){ spec = s ?? {}; render(); } };
 }

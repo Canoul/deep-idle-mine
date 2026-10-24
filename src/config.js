@@ -351,6 +351,12 @@ export const XP = {
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
+  /* XP de spécialisation (24/10/2026, Geoffrey) : pct % de la part d'XP du joueur (après partage et bonus personnel,
+     arrondi vers le bas) va à l'arbre de skills figé au lancement (rien sans arbre). Une XP par arbre, gardée quand
+     on change d'arbre. specCurve : comme curve (100, 150, 225…). Seulement affichée pour l'instant ; elle débloque
+     des sorts (SPELLS). Valeurs provisoires. */
+  specPct: 10,
+  specCurve: { first:100, factor:1.5 },
 };
 
 /* caméra de la session (affichage) : top = ligne la plus haute affichée (le ciel), margin = lignes affichées sous le

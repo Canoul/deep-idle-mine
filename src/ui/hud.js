@@ -1,5 +1,5 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { SESSION_LEN, STATS, BLOCKS, IDS } from '../config.js';
+import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS } from '../config.js';
 import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
@@ -122,6 +122,8 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
     : '';
   const xpRow = mine && s.xp!=null
     ? `<div class="row"><span>XP gagnée</span><b>${mine.left ? 0 : '+'+mine.xp}</b></div>`+
+      /* XP de spécialisation : XP.specPct % de sa part, pour l'arbre choisi au lancement */
+      (!mine.left && mine.specXp > 0 ? `<div class="row"><span>XP de spé (${esc(SKILLS.trees.find(t=>t.id===mine.specTree)?.label ?? mine.specTree)})</span><b>+${mine.specXp}</b></div>` : '')+
       (shares.length>1 ? `<p class="mut small">XP de la session : ${s.xp}, partagée à parts égales entre les ${n} présent${n>1?'s':''}.</p>` : '')+
       (levelUp ? `<p class="lvlUp">⭐ ${esc(levelUp)}</p>` : '')
     : '';
