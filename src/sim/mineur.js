@@ -32,7 +32,7 @@ export function createMiner(id, opts={}){
     xpPct: Number.isFinite(opts.xpPct) && opts.xpPct > 0 ? opts.xpPct : 0,   // % d'XP en plus sur sa part (Anneau du nerd)
     x: opts.x ?? SPAWN_X, y:0, ox:carac.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
     action:null, exploring:false, exploreArea:null, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),
-    digCol:null, galleryRow:null, shiftTo:null,   // réservations visibles des autres mineurs (puits creusé, ligne de galerie)
+    digCol:null, galleryRow:null, shiftTo:null, winchCheck:null,   // réservations visibles des autres mineurs (puits creusé, ligne de galerie)
     homeX: opts.home ?? null,       // en équipe : colonne de départ après le coffre et centre de son secteur
     returnStart:0, lastReturnDur:0, // durée de son dernier retour (sert à juger s'il vaut la peine de repartir)
     torches:carac.torches, bridges:carac.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,

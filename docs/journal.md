@@ -27,11 +27,14 @@ Modèle d'entrée :
   - **Bloqué au coin du donjon** (seed 29823892) : après le minotaure, dans le coin de la salle (sol incassable), il
     montait d'une case pour aller creuser ailleurs, oubliait son idée, redescendait… pendant 2 minutes. Il garde
     maintenant la colonne où il va.
-- **Décisions** : aucune règle nouvelle, à part le focus d'area en fin de session (ci-dessus).
+  - **Treuil en fin de session** (seed 222945787) : quand une area se débloque trop tard pour que le logisticien ait
+    le temps de prolonger le treuil, il n'y va plus et continue de miner au fond (avant : il remontait et creusait
+    jusqu'à la fin un treuil jamais fini).
+- **Décisions** (Geoffrey) : le focus d'area respecte la profondeur maximale de fin de session ; pas de chantier du
+  treuil impossible à finir.
 - **Outil** : on peut sortir de la base l'enregistrement d'une partie (avec sa seed) et la rejouer à l'identique sur
   son ordinateur. Une seed seule ne suffit pas : le stuff, les skills et les préférences des joueurs changent tout.
-- **À suivre** : seed 222945787 (« Plus profond » mais il ne mine pas au fond) : pas de blocage, mais le logisticien
-  quitte le fond à chaque déblocage pour le treuil, même à 3 minutes de la fin. Question posée à Geoffrey.
+- **À suivre** : seed 222945787, le joueur MUS (« Plus profond » mais il ne mine pas au fond) : en cours d'analyse.
 - **État** : 🧪 sur la branche `geoffrey/rejeu-session` (pas en ligne)
 
 

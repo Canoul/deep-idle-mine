@@ -2427,3 +2427,15 @@ Règles (voir CLAUDE.md) :
   `tests/focus.test.js` +1 (focus d'area plafonné par `tripCap`) ; miner, focus, winch, dungeon, team, fall, mule,
   game-replay, session, diagnostics, path, trap, skills, replay-session : 176 ✅.
 - **État** : ✅ vérifié en rejeu des 3 parties (0 blocage, 0 « sur place ») et en simulation.
+
+### Treuil : pas de chantier impossible à finir (Geoffrey, 24/10) — branche `geoffrey/rejeu-session`
+- **Décision** (Geoffrey, option a) : au déblocage, le chantier confié au logisticien est jugé une fois (`m.winchCheck`
+  = le job jugé ; un nouveau déblocage crée un nouveau job, rejugé). `winchDoable` (ai.js) : remonter (`secPerRow`,
+  mesuré) + marche jusqu'au milieu par le coffre + descente du treuil posé + creusage (pierre : `baseMineT(stone)` +
+  chute) jusqu'au bas visé + remontée au seau × 1,25 + `CFG.endStayMin`. Pas assez de temps → `winchJob = null`, log
+  « n'a plus le temps d'installer le treuil ». Pas jugé s'il est déjà en mode `winch`.
+- **Tests** : `tests/winch.test.js` +1 (1 min avant la fin : abandonné, pas de remontée « treuil » ; 30 min : gardé),
+  échoue sans le correctif ✅ ; 177 tests des sujets ✅. Simulation 3 × 5 mixed : areas 3.8, profondeur 206.2, coffre
+  4342 (main : 3.8, 204.4, 4330), 0 blocage. Rejeu 222945787 : area 5 à 53 min, chantier jugé faisable et fini à 57 min.
+- **Point fragile** : estimation en pierre ; en area 4+ (pierre dure), le creusage réel est plus long → un chantier
+  jugé faisable de justesse peut ne pas finir (comme avant, sans dommage : il remonte « fin de session »).

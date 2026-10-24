@@ -1,10 +1,10 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, IDS } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT } from './mineur.js';
+import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, baseMineT } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -519,6 +519,16 @@ function decideWinch(G,m){
   m.winchJob=null; m.mode=m.y>0 ? 'work' : 'surface'; idle(m,0.5);
 }
 
+/* le chantier du treuil tient-il dans le temps restant ? Estimation sans recherche d'itinéraire : remonter (vitesse
+   mesurée), aller au milieu, descendre le treuil déjà posé, creuser jusqu'au bas visé (pierre), remonter par le seau,
+   et CFG.endStayMin de marge */
+function winchDoable(G,m){
+  const bottom=m.winchJob.bottom, top=Math.min(bottom, G.winch?.bottom ?? 0), wt=baseWinchT(G,m);
+  const need = Math.max(0,m.y)*secPerRow(m) + (Math.abs(m.x-CHEST_X)+Math.abs(CHEST_X-WINCH.x))*baseMoveT(m)
+    + top*wt + (bottom-top)*(baseMineT(m,IDS.stone)+1/CFG.fallSpeed) + bottom*wt*1.25;
+  return SESSION_LEN-G.t >= need+CFG.endStayMin;
+}
+
 /* Aider allié (préférence helpAllies) : dès qu'un mob a pris un AUTRE mineur en chasse (état « combat » de la session,
    o.chase), il va tout de suite le combattre, sauf les types de mob qu'il ignore (prefs.helpIgnore). Pas en retour vers
    la surface. Le mob mort, il reprend sa décision normale (sa priorité), sans revenir où il était. */
@@ -705,6 +715,13 @@ export function decide(G,m){
       fight(G,m,th); return;
     }
     if(helpAlly(G,m)) return;
+  }
+  /* chantier du treuil impossible à finir avant la fin de la session : il n'y part pas, il continue de miner (seed
+     222945787, 24/10/2026 : area 5 débloquée à 57 min, il quittait le fond pour creuser jusqu'à la fin un treuil jamais
+     fini). Jugé une fois, quand le chantier lui est confié (un nouveau déblocage en confie un nouveau). */
+  if(m.winchJob && m.winchCheck!==m.winchJob){
+    m.winchCheck=m.winchJob;
+    if(m.mode!=='winch' && !winchDoable(G,m)){ log(G, `🪣 ${m.name} n'a plus le temps d'installer le treuil avant la fin`); m.winchJob=null; }
   }
   /* chantier du treuil : il arrête ce qu'il fait et remonte (le chantier commence toujours d'en haut) */
   if(m.winchJob && (m.mode==='work' || m.mode==='departure' || m.mode==='mule')){

@@ -176,3 +176,25 @@ test('premier treuil : la 1re case du puits déjà ouverte (combat dès l\'entr�
   assert.equal(G.winch.bottom, 12);
   assert.ok(ups <= 1, `remonté ${ups} fois à la surface pendant le chantier`);
 });
+
+/* seed 222945787 (24/10/2026) : area 5 débloquée à 57 min, le logisticien quittait le fond (ligne 213), remontait et
+   creusait jusqu'à la fin un treuil qu'il n'aurait jamais fini. Il n'y part que si le chantier peut être fini à temps. */
+test('déblocage en fin de session : pas de chantier du treuil impossible à finir, il continue de miner', async () => {
+  const { newSession, tick } = await import('../src/sim/session.js');
+  const { tryUnlock } = await import('../src/sim/world.js');
+  const { SESSION_LEN, DT } = await import('../src/config.js');
+  const at = (left) => {
+    const G = newSession(3), m = G.miners[0];
+    m.skill.winch = 1; m.skillTree = 'logisticien';
+    G.ticks = Math.round((SESSION_LEN - left) / DT); G.t = G.ticks * DT;
+    m.x = 10; m.y = 30; m.mode = 'work';
+    G.areas[0].oreMined = G.areas[0].oreTotal; assert.ok(tryUnlock(G));
+    assert.ok(m.winchJob, 'chantier confié au déblocage');
+    m.action = null; tick(G);
+    return m;
+  };
+  const late = at(60);
+  assert.equal(late.winchJob, null, '1 min avant la fin : chantier abandonné');
+  assert.notEqual(late.reason, 'treuil', 'il ne remonte pas pour le treuil');
+  assert.ok(at(1800).winchJob, '30 min avant la fin : il y va');
+});
