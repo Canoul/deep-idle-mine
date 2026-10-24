@@ -661,29 +661,29 @@ export const STUFF = {
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
-    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },
+    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.7 } },   // 24/10 (Geoffrey) : fer × 1,75 (avant 0,4)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
-    'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:11 } },     // remplace les mains nues (5)
-    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:38 } },
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:50 } },   // 23/10 (Geoffrey) : avant 33
-    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:0.6 } },
-    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:0.6 } },
+    'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:14 } },     // remplace les mains nues (5) ; 24/10 : × 1,25 (avant 11)
+    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:67 } },   // 24/10 : avant 38
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33)
+    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
+    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.05 } },   // 24/10 : avant 0,6
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
-    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : acier = pièce en fer × 1,2, arrondi à l'entier pour oxygène et
-       dégâts (45,6 → 46 ; 13,2 → 13) ; sauf le plastron (pods 80, 23/10 : les pods sont le levier de la progression) */
-    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:46 } },
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:80 } },   // 23/10 (Geoffrey) : avant 40 (fer × 1,2)
-    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:0.72 } },
-    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:0.72 } },
-    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.48 } },
-    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:13 } },     // remplace les mains nues (5)
-    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:125, oxygenMax:20, mineSpeedPct:2, damagePct:2,   // pods 125 le 23/10 (avant 60)
-                                   attackSpeed:5, tenacity:2, fortune:1, looting:2, torches:5 } },
+    /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
+       24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
+    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:69 } },   // 24/10 : avant 46
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40)
+    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.08 } },   // 24/10 : avant 0,72
+    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.08 } },   // 24/10 : avant 0,72
+    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.72 } },   // 24/10 : avant 0,48
+    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
+                                   attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },

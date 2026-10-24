@@ -25,10 +25,10 @@ function setup(picks = 2, feathers = 0, stones = feathers){
 
 /* ---------- valeur en x et lignes ---------- */
 
-test('valeur des objets en x : pioche en pierre 260, pioche en fer 520 (pioches ×2 le 21/10), épée en fer 240 (set)', () => {
+test('valeur des objets en x : pioche en pierre 260, pioche en fer 910, épée en fer 360 (set) (fer buffé le 24/10)', () => {
   assert.equal(itemValue(PICK), 260);
-  assert.equal(itemValue('Pioche en fer'), 520);
-  assert.equal(itemValue('Épée en fer'), 240);
+  assert.equal(Math.round(itemValue('Pioche en fer')), 910);   // 0,7 × 1 300
+  assert.equal(itemValue('Épée en fer'), 360);                 // (14 − 5) × 40
   assert.equal(itemValue('Inconnu'), 0);
   assert.notEqual(UPGRADE.worth.mineSpeed, UPGRADE.prices.mineSpeed, 'valeur de l\'objet (catalogue) ≠ conversion d\'une ligne');
 });
@@ -71,7 +71,7 @@ test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus tot
   const p = { item:PICK, uid:1, q:4, lines:[{ stat:'mineSpeed', pct:30 }, { stat:'fortune', pct:33 }] };   // 78 x et 85,8 x
   assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.239, fortune:1.7 });
   assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.214);        // 0,2 × 1,07
-  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 11.4);    // 5 + 6 × 1,07
+  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 14.6);    // 5 + 9 × 1,07
   assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 31);   // 30 × 1,03 = 30,9 → 31
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.2 }, 'un simple nom d\'objet : comme avant');
   assert.equal(statsOf([p]).mineSpeed.total, 1.24);

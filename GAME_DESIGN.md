@@ -282,12 +282,12 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 
 | Stat | Base | Prix d'un point | Exemple |
 |---|---|---|---|
-| Vitesse de minage | 1 | 1 300 x | +0,4 = 520 x (Pioche en fer) |
-| Vitesse (marche) | 3 | 240 x | +0,6 = 144 x (Bottes en fer) |
-| Vitesse de montée | 2,25 | 250 x | +0,6 = 150 x (Jambes en fer) |
-| Pods | 200 | 6 x *(prix « comme frein »)* | +50 = 300 x (Plastron en fer, 23/10 ; avant +33 = 198 x) |
-| Oxygène | 300 | 4 x *(prix « comme frein »)* | +38 = 152 x (Casque en fer) |
-| Dégâts | 5 | 40 x | 11 au lieu de 5 = 240 x (Épée en fer) ; 8 = 120 x (Épée en pierre) |
+| Vitesse de minage | 1 | 1 300 x | +0,7 = 910 x (Pioche en fer, 24/10 ; avant +0,4 = 520 x) |
+| Vitesse (marche) | 3 | 240 x | +1,05 = 252 x (Bottes en fer, 24/10 ; avant +0,6 = 144 x) |
+| Vitesse de montée | 2,25 | 250 x | +1,05 = 262,5 x (Jambes en fer, 24/10 ; avant +0,6 = 150 x) |
+| Pods | 200 | 6 x *(prix « comme frein »)* | +88 = 528 x (Plastron en fer, 24/10 ; avant +50, et +33 avant le 23/10) |
+| Oxygène | 300 | 4 x *(prix « comme frein »)* | +67 = 268 x (Casque en fer, 24/10 ; avant +38 = 152 x) |
+| Dégâts | 5 | 40 x | 14 au lieu de 5 = 360 x (Épée en fer, 24/10 ; avant 11 = 240 x) ; 8 = 120 x (Épée en pierre) |
 | Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
@@ -523,16 +523,18 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
   | Bottes en chitine | 4 lingots de fer + 70 chitine | Vitesse (marche) +0,5 |
 
-  Débloquées par leur blueprint (« Pioche en fer BP »…, Treasure T1) :
+  Débloquées par leur blueprint (« Pioche en fer BP »…, Treasure T1). **Buff du 24/10/2026 (Geoffrey)** : pièces en fer
+  × 1,75, épée × 1,25, arrondi à l'entier pour les stats entières (but : une équipe en fer ≈ 5,4 areas au lieu de 5,0,
+  sans toucher aux équipes moins équipées) :
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,4 *(×2 le 21/10)* |
-  | Épée en fer | 10 Tainted iron | Dégâts 11 (remplace les mains nues : 5) |
-  | Casque en fer | 5 Tainted iron | Oxygène +38 |
-  | Plastron en fer | 8 Tainted iron | Pods +50 *(23/10 ; avant +33)* |
-  | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +0,6 |
-  | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +0,6 |
+  | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,7 *(24/10 ; avant +0,4)* |
+  | Épée en fer | 10 Tainted iron | Dégâts 14 (remplace les mains nues : 5) *(24/10 ; avant 11)* |
+  | Casque en fer | 5 Tainted iron | Oxygène +67 *(24/10 ; avant +38)* |
+  | Plastron en fer | 8 Tainted iron | Pods +88 *(24/10 ; avant +50, et +33 avant le 23/10)* |
+  | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +1,05 *(24/10 ; avant +0,6)* |
+  | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +1,05 *(24/10 ; avant +0,6)* |
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
@@ -545,19 +547,20 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +5 % (≈ 180 x) |
   | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
 
-  Tier 3 (blueprints du Treasure T3, 23/10/2026, Geoffrey). **Acier** = la pièce en fer × 1,2, arrondi à l'entier pour
-  l'oxygène, les pods et les dégâts ; rareté **inhabituel**. Exception : le **Plastron en acier** donne Pods +80
-  (23/10 ; les pods sont le levier de la progression, voir « Pods des plastrons »). **Plastron de l'équilibre** : rareté **épique**.
+  Tier 3 (blueprints du Treasure T3, 23/10/2026, Geoffrey). **Acier** : rareté **inhabituel**. Au départ, la pièce en fer
+  × 1,2 (plastron : Pods +80). **Buff du 24/10/2026 (Geoffrey)** : acier × 1,5, épée × 1,25 ; **Plastron de l'équilibre**
+  × 1,5 ; arrondi à l'entier pour les stats entières. L'acier reste au-dessus du fer sur chaque stat, mais de peu
+  depuis le buff du fer (casque +69 contre +67, pioche +0,72 contre +0,7). **Plastron de l'équilibre** : rareté **épique**.
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Casque en acier | 10 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Oxygène +46 |
-  | Plastron en acier | 16 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Pods +80 *(23/10 ; avant +40)* |
-  | Jambes en acier | 14 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +0,72 |
-  | Bottes en acier | 8 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +0,72 |
-  | Pioche en acier | 20 Steel ingot + 10 Shiny gold + 10 Diamant | Vitesse de minage +0,48 |
-  | Épée en acier | 10 Steel ingot + 10 Shiny gold + 10 Diamant | Dégâts 13 (remplace les mains nues : 5) |
-  | Plastron de l'équilibre (case torse) | 50 Steel ingot + 20 Shiny gold + 1 Rubis, 1 Saphir, 1 Jade inférieurs + 50 Résidus angéliques + 50 Résidus démoniaques | Pods +125 *(23/10 ; avant +60)*, oxygène +20, vitesse de minage +2 %, dégâts +2 %, vitesse d'attaque +5 %, ténacité +2 %, fortune +1 %, butin des mobs +2 %, torches +5 |
+  | Casque en acier | 10 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Oxygène +69 *(24/10 ; avant +46)* |
+  | Plastron en acier | 16 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Pods +120 *(24/10 ; avant +80, et +40 avant le 23/10)* |
+  | Jambes en acier | 14 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +1,08 *(24/10 ; avant +0,72)* |
+  | Bottes en acier | 8 Steel ingot + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +1,08 *(24/10 ; avant +0,72)* |
+  | Pioche en acier | 20 Steel ingot + 10 Shiny gold + 10 Diamant | Vitesse de minage +0,72 *(24/10 ; avant +0,48)* |
+  | Épée en acier | 10 Steel ingot + 10 Shiny gold + 10 Diamant | Dégâts 16 (remplace les mains nues : 5) *(24/10 ; avant 13)* |
+  | Plastron de l'équilibre (case torse) | 50 Steel ingot + 20 Shiny gold + 1 Rubis, 1 Saphir, 1 Jade inférieurs + 50 Résidus angéliques + 50 Résidus démoniaques | Pods +188, oxygène +30, vitesse de minage +3 %, dégâts +3 %, vitesse d'attaque +8 %, ténacité +3 %, fortune +2 %, butin des mobs +3 %, torches +8 *(24/10 : × 1,5 arrondi ; avant pods +125, oxygène +20, 2 %, 2 %, 5 %, 2 %, 1 %, 2 %, torches +5)* |
 
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
@@ -584,8 +587,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Un clic sur une case ouvre la liste des **pièces de l'inventaire qui vont dans cette case** (ex. case pioche → les pioches). Choisir une pièce l'équipe.
 - Une pièce équipée **quitte l'inventaire** ; en équiper une autre dans la même case **renvoie l'ancienne** dans l'inventaire ; « Retirer » la remet aussi. Une pièce n'est jamais à deux endroits à la fois.
 - **Effets en session** : chaque mineur a **ses propres caractéristiques** = stats de base + bonus des pièces qu'il porte. Le stuff est **figé au lancement** de la session (le même que son apparence) : changer de pièce pendant une session compte pour la suivante. C'est le serveur qui les calcule (depuis le stuff enregistré sur le compte).
-- **Pods des plastrons** *(23/10/2026, Geoffrey)* : chitine +30, fer +50, acier +80, équilibre +125 (avant 25 / 33 / 40 / 60). Les stats d'une pièce sont lues dans le catalogue à chaque session : **les plastrons déjà fabriqués ont les nouvelles valeurs**, et comme la valeur d'un objet suit ses stats, les lignes d'identification et les runes posées sur un plastron grandissent aussi. Repère (simulation) : en stuff de base, chaque remontée au coffre coûte cher ; +100 pods sur les 3 mineurs d'une équipe en fer avançaient l'ouverture de l'area 5 de 6 min (dureté de la pierre, oxygène, torches : 0 à 3 min).
-- Une pièce peut **ajouter** à une stat (ex. Pods +30) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 11 au lieu des 5 des mains nues).
+- **Pods des plastrons** *(23/10/2026, Geoffrey)* : chitine +30, fer +50, acier +80, équilibre +125 (avant 25 / 33 / 40 / 60). *(24/10 : fer +88, acier +120, équilibre +188, buff du stuff fer et acier.)* Les stats d'une pièce sont lues dans le catalogue à chaque session : **les plastrons déjà fabriqués ont les nouvelles valeurs**, et comme la valeur d'un objet suit ses stats, les lignes d'identification et les runes posées sur un plastron grandissent aussi. Repère (simulation) : en stuff de base, chaque remontée au coffre coûte cher ; +100 pods sur les 3 mineurs d'une équipe en fer avançaient l'ouverture de l'area 5 de 6 min (dureté de la pierre, oxygène, torches : 0 à 3 min).
+- Une pièce peut **ajouter** à une stat (ex. Pods +30) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 14 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape) ; **pièces en acier** (gris bleuté) et **Plastron de l'équilibre** (moitié blanc, moitié rouge) depuis le 23/10. En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.

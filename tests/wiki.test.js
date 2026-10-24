@@ -28,7 +28,7 @@ test('wiki : sources et usages tirés des recettes, du four, des treasures et de
   assert.ok(!by['Chitine'].uses.some(u => u.includes('Tainted gold')));
   assert.ok(by['Rubis inférieur'].sources.some(s => s === 'Treasure T2 : 1,5 % de chance'));
   assert.deepEqual(by['Gants tactique'].stats, [`Vitesse d'attaque +${ITEMS['Gants tactique'].stats.attackSpeed} %`]);
-  assert.deepEqual(by['Épée en fer'].stats, ['Dégâts 11']);
+  assert.deepEqual(by['Épée en fer'].stats, ['Dégâts 14']);
   assert.equal(by['Tissu sombre'].sources[0], 'Butin des occultistes (1 à 3)');
   for(const [name, r] of Object.entries(RECIPES)) assert.deepEqual(by[name].recipe.cost, r.cost, name);
 });
