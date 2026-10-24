@@ -9,6 +9,7 @@ import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { noEntry } from './dungeon.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
+import { finishDash, finishDynamite, learnOnMine } from './spells.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -67,13 +68,16 @@ function pierce(G,m,x,y){
 export function mineBlock(G,m,x,y){
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
   if(mim){ revealMimic(G,mim,'⚠ Un mimic se cachait dans la roche !'); return; }   // un mimic se combat, il ne se mine pas
-  if(!G.tiles[y][x]) return;
+  const t=G.tiles[y][x];
+  if(!t) return;
   breakBlock(G,m,x,y);
+  learnOnMine(G,m,t);   // sort Fast learner (src/sim/spells.js)
   pierce(G,m,x,y);
 }
 
-/* un bloc cassé par le mineur : il disparaît, son butin va dans le sac (shiny, fortune), minerai compté pour l'area */
-function breakBlock(G,m,x,y){
+/* un bloc cassé par le mineur : il disparaît, son butin va dans le sac (shiny, fortune), minerai compté pour l'area
+   (aussi la dynamite, src/sim/spells.js) */
+export function breakBlock(G,m,x,y){
   const t=G.tiles[y][x];
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   const shiny=shinyOf(G,t);
@@ -166,6 +170,9 @@ export function finishAction(G,m,a){
       if(isCarrier(G,m) && !G.mule.placed && isAir(G,a.data.x,a.data.y)){ placeMule(G,m,a.data.x,a.data.y); m.muleJob=null; }
       break;
     case 'stun': break;   // étourdi : il ne fait rien pendant toute l'action
+    /* sorts (src/sim/spells.js) */
+    case 'dash': finishDash(G,m,a); break;
+    case 'dynamite': finishDynamite(G,m,a); break;
     case 'attack': {
       const o=a.data.mob; if(o.hp>0){
         if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)

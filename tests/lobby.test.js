@@ -45,6 +45,8 @@ test('lobby : spécialisation de chaque joueur (arbre de skills), « Sans spéci
   assert.equal(specLabel('mineur'), '⛏ Mineur');
   assert.equal(specLabel('barbare'), '🪓 Barbare');
   assert.equal(specLabel(null), 'Sans spécialisation');
+  assert.equal(specLabel('logisticien', 3), '🪜 Logisticien (SP lvl : 3)', 'niveau de spécialisation entre parenthèses');
+  assert.equal(specLabel(null, 3), 'Sans spécialisation');
   const solo = lobbySlots({ id:'A', displayId:'A', displayName:'Zoe' }, null, 3, 'barbare');
   assert.equal(solo[0].tree, 'barbare');
 });

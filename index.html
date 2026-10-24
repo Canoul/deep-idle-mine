@@ -129,6 +129,8 @@
   <div id="cvWrap">
     <canvas id="cv" title="Molette, glisser ou flèches ↑ ↓ : se déplacer dans la mine"></canvas>
     <button id="followBtn" hidden><i data-pxi="target"></i>Suivre</button>
+    <!-- sorts équipés du mineur suivi, avec leur recharge en secondes (src/ui/hud.js spellBarHtml) -->
+    <div id="spellBar" class="spellBar" hidden></div>
   </div>
   <!-- jauge de profondeur : surface en haut, fond de la mine ouverte en bas, un repère par mineur (src/ui/hud.js) -->
   <div class="rail" id="depthRail">
@@ -237,6 +239,17 @@
     <div id="skillHead" class="skHead"></div>
     <div id="skillTrees" class="skTrees"></div>
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
+  </div>
+</section>
+<section class="view" data-view="sorts" hidden>
+  <div class="furnWrap spWrap">
+    <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts</h1><span class="mut small">Équipe tes sorts : ils partent tout seuls en session, dès que leur recharge est finie.</span></div>
+    <div class="spGrid">
+      <div class="card"><h3>Emplacements</h3><div id="spellSlots" class="spSlots"></div>
+        <p class="mut small">Clic sur un sort équipé : le retirer. Les sorts sont pris en compte à la prochaine session.</p></div>
+      <div class="card"><h3>Sorts</h3><div id="spellList" class="spList"></div></div>
+    </div>
+    <p id="spellMsg" class="err" hidden></p>
   </div>
 </section>
 <section class="view" data-view="social" hidden>

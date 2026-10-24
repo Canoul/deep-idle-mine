@@ -200,8 +200,10 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
 - **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
 - **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents, comme le coffre (arrondi vers le bas), **par tranches** : l'XP gagnée avant un départ est divisée entre les présents d'alors, la part du partant est perdue. **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
+- **Bonus d'XP personnel** *(24/10/2026)* : un « % XP » (Anneau du nerd) s'applique à la part de son porteur **après** le partage ; il ne gonfle pas le pot des autres.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
 - **Récompense** : **1 point de skill par niveau**, à dépenser dans l'onglet Skills (ci-dessous).
+- **XP de spécialisation** *(24/10/2026, Geoffrey ; valeurs provisoires, `XP.specPct` / `XP.specCurve`)* : le joueur gagne aussi **10 % de sa part d'XP** (après le partage et le bonus personnel, arrondi vers le bas) en **XP de spécialisation**, pour l'**arbre de skills figé au lancement** de la session (aucune sans arbre ; rien pour qui quitte). **Une XP par arbre** (Mineur, Logisticien, Barbare), gardée quand on change d'arbre. Courbe : **100** pour passer au niveau 2, puis **×1,5** (100, 150, 225…) : ≈ 86 XP de spé par session en solo, niveau 2 en 1 à 2 sessions, niveau 5 en ≈ 10. Elle **débloque des sorts** (ci-dessous) ; pas d'autre récompense pour l'instant. Affichée dans l'onglet Skills (niveau « SP lvl » et barre d'XP de chaque arbre), dans le lobby (« 🪜 Logisticien (SP lvl : 3) », aussi pour les membres du groupe) et au bilan (« XP de spé (Logisticien) +12 »).
 - Affichage : carte « Mineur » du lobby et carte « Stats du mineur » de l'onglet Stuff (niveau, barre d'XP avec **pourcentage** et **XP / XP requise** pour le niveau suivant, points de talent ; « Niveau max » au dernier niveau) ; XP de la session pendant la partie ; XP gagnée et montée de niveau au bilan.
 - Repères (simulation, mineur de base) : **≈ 860 XP par session en solo** (60 % minerais, 40 % bestioles) ; **≈ 740 par joueur à 3** (≈ 2220 au total) : les bestioles apparaissent au même rythme quelle que soit la taille de l'équipe, donc à 3 on se les partage. À surveiller : le jeu à 3 rapporte un peu moins d'XP par tête que le solo.
 
@@ -241,6 +243,23 @@ Trois arbres **en étages** (3 étages chacun ; 4 pour le Barbare depuis le 22/1
 - Provocation : un mineur taclé par ce mob est libéré tout de suite et reprend son travail (même s'il est réglé sur « Ignorer les mobs »).
 - **Échelles au retour** *(décision ferme)* : quand plusieurs mineurs remontent au même endroit, c'est le **logisticien** qui pose les échelles. Un autre mineur qui devrait en poser une attend s'il y a un logisticien qui remonte à moins de 5 cases, en dessous de lui ou à sa hauteur ; au-delà de 4 s d'attente, il la pose lui-même (jamais bloqué).
 - Repère (simulation, 3 mineurs × 5 sessions, un arbre complet chacun) : areas 3,6 → 4,0, profondeur 186 → 196.
+
+### Sorts *(24/10/2026, Geoffrey ; valeurs provisoires, `SPELLS` en config)*
+Onglet **Sorts** : **4 emplacements**, dont **2 ouverts** ; les 2 autres sont **verrouillés** (cadenas) en attendant une règle de déblocage. À droite, **tous les sorts** : un sort disponible s'équipe d'un **clic** (premier emplacement libre, sinon celui choisi) ou en le **glissant** sur un emplacement ; clic sur un sort équipé = le retirer. Un sort **verrouillé** est grisé avec un cadenas, son nom et sa condition visibles, pas sélectionnable.
+- **Déblocage** : soit un **niveau de spécialisation** (sorts de classe), soit un **parchemin appris** dans l'onglet Sorts (bouton « Apprendre » quand on l'a : le parchemin est **consommé**, le sort reste acquis pour toujours ; un parchemin d'un sort déjà appris est gardé). **Pas encore de source de parchemins** (à décider ; on peut s'en donner avec l'outil d'administration).
+- **Prérequis** : un sort de classe ne s'équipe qu'avec cette **spécialisation** (arbre de skills choisi). Après un reset des skills, il reste dans son emplacement mais **n'agit pas** (signalé en rouge).
+- **En session** : les sorts équipés sont **figés au lancement** (comme les skills, vérifiés par le serveur). Chacun part **tout seul dès que sa recharge est finie**, mais **seulement s'il peut servir** ; sinon il reste prêt. Tous sont prêts au début de la session. Une **barre des sorts** en bas de la mine montre les sorts du mineur suivi, avec les **secondes restantes** sur un sort en recharge.
+
+| Sort | Déblocage | Prérequis | Effet | Recharge |
+|---|---|---|---|---|
+| **Dash** | Barbare, spé niv. 5 | Barbare | Un pas de marche sur sa ligne devient une course de **6 cases au plus**, à **600 %** de sa vitesse. S'arrête devant un bloc, un trou, au pied d'une échelle qui monte, juste avant le minerai visé, ou devant un mob : il le frappe pour **500 % de ses dégâts** et la recharge est **divisée par 2**. Ne part que pour 2 cases au moins (ou un mob). | 30 s |
+| **Illumination** | Mineur, spé niv. 5 | Mineur | Révèle tous les blocs dans un **rayon de 5** (cercle) ; part dès qu'il y reste un bloc inconnu (pas l'intérieur d'un piège). | 90 s |
+| **Inspiration** | Logisticien, spé niv. 5 | Logisticien | **Tous les mineurs** minent **10 % plus vite** pendant **60 s** ; la recharge commence **à la fin de l'effet**. Plusieurs logisticiens : pas de cumul, le suivant attend la fin de l'effet (ils s'enchaînent). | 180 s |
+| **Ulti shen** | Parchemin « Ulti shen » | aucun | Quand **un autre mineur** du groupe se bat (il frappe un mob ou se fait tacler) : se **téléporte sur sa case**, inflige **20 % des PV max** du mob (**5 % sur un boss** : minotaure, Gallianix), puis se bat avec lui. Inutile en solo. Pas pendant un chantier de treuil, la Mule, une chute ou un étourdissement ; jamais dans un donjon où il n'a pas le droit d'entrer. | 180 s |
+| **Fast learner** | Parchemin « Fast learner » | aucun | Le prochain bloc **miné** (pas la terre ni un trésor, qui ne consomment pas le sort) est « appris » : ce type de bloc se mine **10 % plus vite** jusqu'à la fin de la session, **cumulable** ; la recharge commence une fois le bloc appris. | 300 s |
+| **Dynamite** | Mineur, spé niv. 10 | Mineur | Au lieu d'un coup de pioche, il lance une dynamite dans le sens du coup (2 cases au plus, s'arrête au premier bloc) ; elle casse **tous les blocs minables** dans un **rayon de 2** comme s'il les minait (butin, fortune, shiny, XP, déblocage de l'area, trésors). Jamais une construction (échelle, passerelle), l'incassable, un mimic caché, ni le **bloc sous les pieds d'un mineur**. Ne part que si elle casse au moins 2 blocs. | 150 s |
+
+- **À surveiller** : Fast learner se cumule sans limite (au plus ≈ 12 fois par session) et finit presque toujours sur la pierre ; à mesurer.
 
 ### Oxygène
 - 1 seconde dans la mine = 1 d'oxygène consommé.
@@ -551,8 +570,11 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
     **mine instantanée** (chacun pour soi), l'anneau ne profite qu'à son porteur.
   - **Ni craft, ni identification, ni amélioration (+1 à +3), ni enchantement** : un anneau reste tel qu'il est tombé.
   - « +3 % » d'une stat sans version en % (vitesse, oxygène, pods) = **× 1,03 sur le total** (stuff et skills compris) ;
-    dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2) ; XP = +3 % sur le pot
-    commun de la session.
+    dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2).
+  - **Exception, XP** *(décision du créateur, 24/10/2026)* : le bonus d'XP (Anneau du nerd) est **personnel**. Il
+    s'applique **après** la répartition du pot commun, sur la part de son porteur : seul le bonus n'est pas partagé.
+    Ex. à 3, pot de 1000 XP : 333 chacun, 342 pour le porteur (333 × 1,03, arrondi vers le bas). *(Ancien : +3 % sur
+    le pot, pour tout le groupe.)*
   - Rares : **Anneau du tigre** (vitesse de marche et sur échelle +3 %), **du lion** (dégâts +3 %), **du rat** (vitesse
     de minage +3 %), **de la baleine** (oxygène +3 %), **du cuck** (pods +3 %), **du nerd** (XP +3 %). Épiques :
     **Anneau de Midas** (fortune +2 %), **Anneau du Bouffon** (butin des mobs +2 %).

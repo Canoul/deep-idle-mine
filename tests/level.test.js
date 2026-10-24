@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { XP, IDS } from '../src/config.js';
-import { xpToNext, levelOf, xpForLevel, xpShare, createProgress, sanitizeProgress, creditXp } from '../src/meta/level.js';
+import { xpToNext, levelOf, xpForLevel, xpShare, createProgress, sanitizeProgress, creditXp, specLevelOf, specXpOf, specLevels } from '../src/meta/level.js';
 import { mineBlock, killMob } from '../src/sim/actions.js';
 import { newSession, endSession, leaveSession } from '../src/sim/session.js';
 import { createMemoryGameStore } from '../server/game/store.js';
@@ -59,8 +59,36 @@ test('creditXp : une session n\'est comptée qu\'une fois ; quantités invalides
   for(const bad of [-1, 1.5, NaN, Infinity, '5', null]) assert.equal(creditXp(p, 's2', bad), false);
   assert.equal(creditXp(p, '', 5), false);
   assert.equal(p.xp, 500);
-  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, credited:[] });
-  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, credited:[] });
+  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, spec:{}, credited:[] });
+  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, spec:{}, credited:[] });
+});
+
+/* ---------- XP de spécialisation ---------- */
+
+test('spécialisation : 10 % de la part, arrondi vers le bas ; courbe 100, 150, 225…', () => {
+  assert.equal(specXpOf(865), 86);
+  assert.equal(specXpOf(9), 0);
+  for(const bad of [-10, 1.5, NaN, Infinity, '100', null]) assert.equal(specXpOf(bad), 0);
+  assert.deepEqual(specLevelOf(0), { level:1, into:0, need:100 });
+  assert.deepEqual(specLevelOf(99), { level:1, into:99, need:100 });
+  assert.deepEqual(specLevelOf(250), { level:3, into:0, need:225 });
+});
+
+test("spécialisation : versée avec l'XP, une seule fois, à l'arbre donné ; arbre inconnu ou quantité invalide ignorés", () => {
+  const p = createProgress();
+  assert.equal(creditXp(p, 's1', 500, { tree:'logisticien', xp:50 }), true);
+  assert.equal(creditXp(p, 's1', 500, { tree:'logisticien', xp:50 }), false, 'rejouée : rien');
+  creditXp(p, 's2', 300, { tree:'barbare', xp:30 });
+  creditXp(p, 's3', 300, { tree:'__proto__', xp:30 });
+  creditXp(p, 's4', 300, { tree:'mineur', xp:-5 });
+  creditXp(p, 's5', 300, { tree:'mineur', xp:2.5 });
+  creditXp(p, 's6', 300, null);
+  assert.deepEqual(p.spec, { logisticien:50, barbare:30 });
+  assert.equal(p.xp, 2000);
+  assert.deepEqual(sanitizeProgress({ xp:5, spec:{ mineur:120, inconnu:5, barbare:-1, logisticien:1.5 } }).spec, { mineur:120 });
+  const lv = specLevels(p);
+  assert.equal(lv.logisticien.level, 1); assert.equal(lv.mineur.xp, 0);
+  assert.deepEqual(Object.keys(lv).sort(), ['barbare', 'logisticien', 'mineur']);
 });
 
 /* ---------- XP gagnée pendant la session ---------- */
@@ -115,7 +143,9 @@ const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 
 test('serveur : l\'XP est versée à la fin, une seule fois, et le niveau se lit dans l\'état', async () => {
   const { game, store, advance } = server();
-  assert.deepEqual((await game.state(ME)).progress, { xp:0, level:1, into:0, need:1000, talentPoints:0 });
+  const { spec, ...p0 } = (await game.state(ME)).progress;
+  assert.deepEqual(p0, { xp:0, level:1, into:0, need:1000, talentPoints:0 });
+  assert.deepEqual(spec.mineur, { xp:0, level:1, into:0, need:100 }, 'niveau de spécialisation de chaque arbre');
   for(let i = 0; i < 2; i++){
     await game.start(ME, {});
     advance(realDurationMs());

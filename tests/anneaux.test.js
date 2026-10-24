@@ -91,7 +91,7 @@ test('effets : % du total pour vitesse, oxygène, pods ; points pour dégâts %,
   /* un anneau en double ne compte qu'une fois */
   assert.deepEqual(withRings({ ...STATS }, [TIGRE, TIGRE]), withRings({ ...STATS }, [TIGRE]));
   assert.deepEqual(statLines(TIGRE), ['Groupe · Vitesse (marche) +3 %', 'Groupe · Vitesse (échelle) +3 %']);
-  assert.deepEqual(statLines(NERD), ['Groupe · XP +3 %']);
+  assert.deepEqual(statLines(NERD), ['XP +3 % (porteur seul)']);
 });
 
 test('onglet Stuff : les anneaux portés s\'ajoutent au total (colonne ring)', () => {
@@ -119,13 +119,20 @@ test('mine instantanée : chacun pour soi, l\'anneau ne profite qu\'à son porte
   assert.equal(a.carac.speed, 3.09); assert.equal(b.carac.speed, STATS.speed);
 });
 
-test('Anneau du nerd : +3 % d\'XP sur le pot commun de la session', () => {
+/* 24/10 (Geoffrey) : le bonus d'XP est personnel. Le pot est partagé d'abord, puis le porteur gagne +3 % sur SA part ;
+   seul le bonus n'est pas partagé (avant : +3 % sur le pot, pour tout le groupe) */
+test('Anneau du nerd : +3 % d\'XP pour son porteur seul, sur sa part, après le partage du pot', () => {
   const rec = n => ({ seed:7, id:'s-' + n, players:[{ account:'A', name:'Geo' }, { account:'B', name:'Jules' }],
     gear:{ A: n ? { anneau1:{ item:NERD, uid:1 } } : {}, B: n > 1 ? { anneau1:{ item:NERD, uid:2 } } : {} } });
   const xpOf = r => { const G = buildSession(r); G.stats.xp = 1000; endSession(G); return G.summary.shares.map(s => s.xp); };
   assert.deepEqual(xpOf(rec(0)), [500, 500]);
-  assert.deepEqual(xpOf(rec(1)), [515, 515]);
-  assert.deepEqual(xpOf(rec(2)), [515, 515], 'deux nerds : toujours +3 %');
+  assert.deepEqual(xpOf(rec(1)), [515, 500], 'seul le porteur a son bonus');
+  assert.deepEqual(xpOf(rec(2)), [515, 515], 'chacun le sien');
+  /* à 3 : 1000 / 3 = 333 chacun, puis 333 × 1,03 = 342 pour le porteur (arrondi vers le bas) */
+  const G = buildSession({ seed:7, id:'s-3', players:[{ account:'A', name:'Geo' }, { account:'B', name:'Jules' }, { account:'C', name:'Max' }],
+    gear:{ A:{}, B:{ anneau2:{ item:NERD, uid:1 } }, C:{} } });
+  G.stats.xp = 1000; endSession(G);
+  assert.deepEqual(G.summary.shares.map(s => s.xp), [333, 342, 333]);
 });
 
 test('trésor de tour : rune + au plus un anneau de sa table (≈ 6,5 %) ; jamais dans un Treasure ni un ancien coffre', () => {

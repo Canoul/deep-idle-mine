@@ -30,7 +30,7 @@ export function createRenderer(cv){
   function drawPos(m){
     if(m._to) return shownPos(curG, m, frameNow);
     const a=m.action;
-    if(a&&a.type==='move'){ const p=Math.min(1,a.t/a.dur); return [a.data.fx+(a.data.x-a.data.fx)*p, a.data.fy+(a.data.y-a.data.fy)*p]; }
+    if(a&&(a.type==='move'||a.type==='dash')){ const p=Math.min(1,a.t/a.dur); return [a.data.fx+(a.data.x-a.data.fx)*p, a.data.fy+(a.data.y-a.data.fy)*p]; }
     return [m.x,m.y];
   }
 

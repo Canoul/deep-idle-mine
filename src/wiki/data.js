@@ -68,8 +68,8 @@ export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
 /* ---------- objets ---------- */
 export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', rune:'Rune', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
-  mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau' };
-export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'residu', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'rune', 'blueprint', 'stuff', 'furnace'];
+  mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau', scroll:'Parchemin de sort' };
+export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'residu', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'rune', 'blueprint', 'stuff', 'furnace', 'scroll'];
 const pct = c => Math.round(c * 1000) / 10;
 const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
 const statName = k => STUFF.statLabels[k] ?? k;
@@ -146,6 +146,7 @@ export function usesOf(item){
   for(const a of FURNACE.alloys) if(Object.hasOwn(a.in, item)) out.push(`Alliage → ${a.out}`);
   const crafts = Object.entries(RECIPES).filter(([, r]) => Object.hasOwn(r.cost, item)).map(([n]) => n);
   if(crafts.length) out.push(`Ingrédient : ${crafts.join(', ')}`);
+  if(d?.cat === 'scroll') out.push("S'apprend dans l'onglet Sorts : débloque un sort (le parchemin est consommé)");
   if(d?.cat === 'bloc') out.push(`Se concasse par ${CRUSHER.batch} (onglet Concasseur) : gemmes inférieures, treasure`);
   if(d?.cat === 'ore' && !Object.hasOwn(FURNACE.recipes, item) && !crafts.length) out.push('Aucun pour l\'instant');
   if(d?.cat === 'gem' && !crafts.length) out.push('Aucun pour l\'instant');

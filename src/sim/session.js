@@ -11,8 +11,9 @@ import { updateDungeons } from './dungeon.js';
 import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
+import { afterDecide, updateSpells } from './spells.js';
 import { shareChest } from '../meta/share.js';
-import { xpShare } from '../meta/level.js';
+import { xpShare, specXpOf } from '../meta/level.js';
 
 /* opts.miners : nombre de mineurs (1 = mineur seul ; 2-3 = l'équipe TEAM) ou liste de {name, color, prefs, x}
    opts.accounts : ID de compte de chaque mineur, dans l'ordre (un joueur = un mineur) ; sert au partage du coffre */
@@ -30,7 +31,6 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
-    xpMult: Number.isFinite(opts.xpMult) && opts.xpMult > 0 ? opts.xpMult : 1,   // anneaux du groupe (RINGS) : XP du pot commun
   };
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
@@ -71,7 +71,7 @@ function stepMiner(G,m){
   }
   let budget = DT*(m.ox<=0?CFG.oxygenOutSlow:1), guard=0;
   while(budget>1e-9 && guard++<30){
-    if(!m.action){ decide(G,m); if(!m.action) break; }
+    if(!m.action){ decide(G,m); if(!m.action) break; afterDecide(G,m); }   // sorts : Dash, Dynamite
     const a=m.action, need=a.dur-a.t;
     if(budget>=need){ budget-=need; m.action=null; finishAction(G,m,a); }
     else { a.t+=budget; budget=0; }
@@ -86,6 +86,7 @@ export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners) stepMiner(G,m);
+  updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   for(const m of G.miners){
@@ -140,7 +141,9 @@ export function endSession(G){
   const { bags, xp, segments } = shareBySegments(G, present);
   G.summary.segments = segments;
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
-    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m) }));
+    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m),
+    /* XP de spécialisation : XP.specPct % de sa part, pour l'arbre figé au lancement (rien sans arbre) */
+    specTree: m.skillTree, specXp: m.left!=null || !m.skillTree ? 0 : specXpOf(xp.get(m)) }));
 }
 
 const muleLabel = G => 'Sac de ' + (G.roster.find(m => m.id===G.mule.carrier)?.name ?? 'la Mule');
@@ -158,7 +161,7 @@ function shareBySegments(G, present){
     const delta = {};
     for(const k in mk.chest){ const q = mk.chest[k] - (prevChest[k] || 0); if(q > 0) delta[k] = q; }
     const n = mk.present.length, dxp = Math.max(0, mk.xp - prevXp);
-    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(Math.round(dxp * (G.xpMult ?? 1)), n);
+    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(dxp, n);
     mk.present.forEach((m, j) => {
       if(!bags.has(m)) return;                                       // parti avant la fin : sa part est perdue
       const b = bags.get(m);
@@ -168,6 +171,8 @@ function shareBySegments(G, present){
     segments.push({ until:mk.t, players:n });
     prevChest = mk.chest; prevXp = mk.xp;
   });
+  /* bonus d'XP personnel (Anneau du nerd, m.xpPct) : sur SA part, après le partage ; seul le bonus n'est pas partagé */
+  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100)));
   return { bags, xp, segments };
 }
 
