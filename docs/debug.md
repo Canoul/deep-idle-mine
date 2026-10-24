@@ -2302,7 +2302,7 @@ Règles (voir CLAUDE.md) :
 - **État de vérification** : ⚠️ pas de simulation. Repère des mesures du matin : pioche +0,4 → +0,8 seule = +17 lignes de
   profondeur ; le buff complet avec pioche 0,7 donnait ≈ 5,5 areas en fer. Avec 0,5, attendre un peu moins : à mesurer.
 
-### Mise à jour mineure : dégâts de zone, XP de spé 50 %, cap des jauges 200 (Geoffrey, 24/10) — branche `geoffrey/maj-mineure`, 🧪 pas en ligne
+### Mise à jour mineure : dégâts de zone, XP de spé 50 %, cap des jauges 200 (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Dégâts de zone** : seule source = nœud barbare `damage` (Force brute, `aoe:0.02` par rang) → `aoeOf(m.skill)`
   (`src/meta/skills.js`) → `splash` (`src/sim/actions.js`, mine) et `hitMob` (`src/sim/tower/session.js`). Chaîne
   vérifiée de bout en bout : `buildSession` avec `skills:{A:{tree:'barbare',ranks:{damage:3}}}` → coup 5,75, voisin

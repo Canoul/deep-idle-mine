@@ -30,7 +30,7 @@ Modèle d'entrée :
     **Nouveau** : un petit chiffre orange (« -0,3 ») monte au-dessus de chaque mob touché par la zone (mine et tours).
 - **Décisions** (Geoffrey) : XP de spé 50 %, cap des jauges 200 ; dégâts de zone : valeur inchangée, mais affichés.
 - **À suivre** : ⚠️ le chiffre n'a pas été regardé dans un navigateur.
-- **État** : 🧪 sur la branche `geoffrey/maj-mineure` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Pioches en fer et en acier : buff réduit
 - **Pour le joueur** : le buff des pioches du jour est revu à la baisse : **pioche en fer +0,5** (au lieu de +0,7 ce
