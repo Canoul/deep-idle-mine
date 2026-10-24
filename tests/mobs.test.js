@@ -240,6 +240,38 @@ test('Aider allié : pas au-delà de HELP.range cases (le combat serait fini ava
   assert.ok(!/aide/i.test(alice.status), alice.status);
 });
 
+/* seed 1928461225 (24/10) : un mob chasse le mineur le plus proche. En approchant, l'aidant devenait la proie ; il
+   lâchait (mob hors de sa lumière), s'éloignait, le mob rechassait l'allié, il revenait… sans fin */
+test('Aider allié : le mob se retourne contre lui en route, il va quand même le tuer', () => {
+  const G = corridor(2), [alice, bob] = G.miners;
+  alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;
+  alice.prefs = { ...alice.prefs, helpAllies: true, fightMobs: true }; alice.carac.light = 2;
+  const b = mob(G, { type: 'bestiole', x: 31, y: bob.y, hp: 50, maxhp: 50 });
+  run(G, 20);
+  assert.equal(alice.helpFoe, b.id, 'elle est partie aider');
+  bob.x = 47;                                  // Bob s'éloigne : le mob prend Alice en chasse (la plus proche)
+  b.cd = 1e9;                                  // il ne vient pas à elle (dans la vraie partie, il ne pouvait pas la rejoindre)
+  run(G, 5);
+  assert.equal(b.chase, alice.id, 'le mob la chasse');
+  let t = 0; while(b.hp > 0 && t++ < 600) run(G, 1);
+  assert.ok(b.hp <= 0, 'le mob est mort'); assert.ok(alice.stats.kills >= 1, 'c\'est elle qui l\'a tué');
+});
+
+test('Aider allié : au-delà de HELP.keep, elle abandonne ce mob pour de bon (pas de va-et-vient à la limite)', () => {
+  const G = corridor(2), [alice, bob] = G.miners;
+  alice.x = 14; bob.x = 30; alice.ox = bob.ox = 300; busy(bob); bob.carac.damage = 0;
+  alice.prefs = { ...alice.prefs, helpAllies: true, fightMobs: true }; alice.carac.light = 2;
+  const b = mob(G, { type: 'bestiole', x: 31, y: bob.y, hp: 50, maxhp: 50 });
+  run(G, 20);
+  assert.equal(alice.helpFoe, b.id);
+  alice.x = 0; alice.action = null;            // 31 cases du mob : plus que HELP.keep
+  run(G, 2);
+  assert.equal(alice.helpSkip, b.id, 'aide abandonnée');
+  alice.x = 14; alice.action = null;           // de nouveau à portée : elle n'y retourne pas
+  run(G, 20);
+  assert.ok(!/aide/i.test(alice.status), alice.status);
+});
+
 test('treuil : sorti du puits par un combat, le logisticien y retourne (au lieu de repartir de la surface)', () => {
   const shaft = '#'.repeat(25) + ' ' + '#'.repeat(24);
   const side  = '#'.repeat(22) + '    ' + '#'.repeat(24);   // galerie x 22 à 25 à la ligne 5

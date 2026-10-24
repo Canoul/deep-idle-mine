@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Aider allié : fini les allers-retours sur place
+- **Pour le joueur** : deux mineurs en « Aider allié » ne tournent plus en rond entre « aller aider », « retourner au
+  filon » et « reprendre l'échelle ». Celui qui part aider va jusqu'au bout, même si le mob se retourne contre lui en
+  route. S'il s'éloigne trop (plus de 30 cases, par exemple à cause d'un grand détour), il abandonne ce mob pour de bon.
+- **Décisions** : correctif, pas de nouvelle règle. Valeur provisoire : 30 cases de marge (l'aide démarre toujours à
+  20 cases au plus).
+- **À suivre** : à revoir en jeu sur la seed 1928461225 avec Galia.
+- **État** : ✅ en ligne le 24/10
+
 ## 24/10/2026 — Geoffrey — Les mineurs tuent les canards en remontant
 - **Pour le joueur** : quand un mineur remonte déposer au coffre, il va tuer le Gallianix qui traîne à côté avant de
   redescendre (si « combat » est sur Combattre). Avant, il ne le chassait qu'en toute fin de session, et comme les
