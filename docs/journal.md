@@ -23,7 +23,7 @@ Modèle d'entrée :
   Steel ingot de la recette : casque 5, plastron 8, jambes 7, bottes 4 (24 pour l'armure complète, soit 120 lingots
   d'or et 480 peaux de gobelin au four). Pioche, épée et Plastron de l'équilibre : inchangés.
 - **Décisions** (Geoffrey) : Tainted gold = ½ du Steel ingot sur l'armure en acier.
-- **État** : 🧪 sur la branche `geoffrey/acier-tainted-gold` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Mine instantanée : les mineurs ne foncent plus au fond
 - **Pour le joueur** : dans la mine instantanée, les mineurs creusent davantage sur les côtés au lieu de faire des

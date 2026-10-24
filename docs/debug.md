@@ -2426,7 +2426,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : moins de plumes (zone couverte plus concentrée en haut). Le test « MI descente » a peu de marge
   sur sa première borne (2/12 sans la correction contre ≤ 1,8 permis).
 
-### Armure en acier + Tainted gold (Geoffrey, 24/10) — 🧪 branche `geoffrey/acier-tainted-gold`
+### Armure en acier + Tainted gold (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Quoi** : `src/recipes.js`, casque / plastron / jambes / bottes en acier : + `'Tainted gold'` = ½ du `'Steel ingot'`
   (5 / 8 / 7 / 4). Wiki généré depuis les recettes (rien à faire). GAME_DESIGN : tableau du stuff en acier.
 - **Tests** : `tests/steel-gear.test.js` (coûts attendus), craft, wiki ✅ (20) ; `npm run test:anticheat` ✅ (85).
