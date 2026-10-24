@@ -511,10 +511,20 @@ function helpAlly(G,m){
   const ign=m.prefs.helpIgnore||[];
   let best=null, bd=Infinity;
   for(const o of G.mobs){
-    if(o.hp<=0 || o.chase==null || o.chase===m.id || ign.includes(o.type) || m.ignored.has(o.id) || o.dungeon!=null) continue;
-    const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y); if(d<=HELP.range && d<bd){ bd=d; best=o; }
+    /* le mob qu'il est allé combattre reste sa cible s'il se retourne contre lui : un mob chasse le mineur le plus
+       proche, donc en approchant l'aidant devenait la proie, lâchait (hors de sa lumière), s'éloignait, et le mob
+       rechassait l'allié : aller-retour sans fin (seed 1928461225, deux mineurs en Aider allié, 24/10/2026) */
+    if(o.hp<=0 || o.chase==null || (o.chase===m.id && o.id!==m.helpFoe) || ign.includes(o.type) || m.ignored.has(o.id) || o.dungeon!=null) continue;
+    if(o.id===m.helpSkip) continue;   // aide abandonnée (trop loin) : il ne revient pas sur ce mob
+    const d=Math.abs(o.x-m.x)+Math.abs(o.y-m.y), mine=o.id===m.helpFoe;
+    /* sa cible garde une marge (HELP.keep) ; au-delà, il l'abandonne pour de bon : sinon le chemin (contournement)
+       le fait passer et repasser la limite à chaque pas (seed 7919) */
+    if(mine && d>HELP.keep){ m.helpSkip=o.id; m.helpFoe=null; continue; }
+    if(d<=(mine ? HELP.keep : HELP.range) && (mine || d<bd) && best?.id!==m.helpFoe){ bd=d; best=o; }
   }
   if(!best) return false;
+  // le mob s'est retourné contre lui : c'est son combat, plus une aide
+  if(best.chase===m.id){ m.helping=true; m.target=null; m.galleryRow=null; return goFight(G,m,best,bd,'Combat ('+best.type+')','Combat ('+best.type+')'); }
   const who=(G.miners.find(a=>a.id===best.chase)?.name ?? 'un allié')+' ('+best.type+')';
   m.helping=true; m.helpFoe=best.id;
   /* il lâche sa cible et sa galerie : le mob mort, il choisit son travail là où il est, au lieu de retraverser la mine

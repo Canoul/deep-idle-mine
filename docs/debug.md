@@ -2214,3 +2214,22 @@ Règles (voir CLAUDE.md) :
   189,6, coffre 4 079 ✅.
 - **Point fragile** : un canard qui saute un trou pendant la chasse → `surfaceWalk` faux, le mineur rentre au coffre puis
   repart (pas de boucle : il ne rechasse qu'au prochain passage en mode surface).
+
+### Aider allié : va-et-vient sur place (Geoffrey, 24/10) — branche `geoffrey/fix-aide-allie`, 🧪 pas en ligne
+- **Retour joueur** : seed 1928461225, deux joueurs en Aider allié, « on tournait sur nous-mêmes » (aider, filon, mob,
+  échelle, aider…). Reproduit en simulation (2 et 3 mineurs, `helpAllies` forcé).
+- **Causes** (`helpAlly`, `src/sim/ai.js`) : 1) `o.chase` = mineur le plus proche (`preyOf`, `src/sim/mobs.js`) ; en
+  approchant, l'aidant devient la proie → exclu par `o.chase===m.id` ; mob à 6 cases, hors de sa lumière
+  (`nearestThreat`) → retour au travail → l'allié redevient la proie → aide… (bascule toutes les ~0,5 s). 2) Seuil
+  `HELP.range` : à 20 pile, un pas de contournement → 21 → travail → 20… Même chose à la nouvelle limite (seed 7919).
+- **Correctif** : le mob `m.helpFoe` reste candidat même s'il chasse l'aidant (statut « Combat (type) ») ; sa portée
+  passe à `HELP.keep` (30, config) et il est prioritaire ; au-delà de keep → `m.helpSkip = o.id`, `helpFoe = null` :
+  plus jamais d'aide sur ce mob (nouveau champ `helpSkip` dans `createMiner`).
+- **Mesure** (6 seeds × 2 et 3 mineurs, tous en Aider allié, bascules aide ↔ autre en moins de 6 s) : 1689 → 350 ; ce
+  qui reste = « Va aider » ↔ « Tombe » / « Combat » en avançant vers le même mob (normal). Areas identiques, profondeur
+  ±10.
+- **Tests** : `tests/mobs.test.js` +2 (mob qui se retourne contre l'aidant, immobile : tué ; abandon au-delà de keep),
+  échouent sans le correctif ✅ ; mobs, team, trap, dungeon, miner, skills ✅ (89). Simulation `--miners 3 --count 5` :
+  0 blocage, chiffres inchangés (Aider allié désactivé par défaut).
+- **Point fragile** : `helpSkip` ne garde qu'un mob ; `helpFoe` n'est jamais remis à null à la mort du mob (id unique,
+  sans effet).
