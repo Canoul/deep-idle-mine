@@ -7,6 +7,7 @@ import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
 import { createMinerSprite } from './miner-sprite.js';
 import { createCamera, followedMiner } from './camera.js';
+import { drawSplash } from './splash.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -124,6 +125,7 @@ export function createRenderer(cv){
           ctx.restore(); }
       }
       if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
+      drawSplash(ctx,o,G.t,frameNow,px,py,TILE);   // dégâts de zone reçus (Force brute)
     }
     // mineurs : le suivi en dernier (au-dessus des autres)
     // plusieurs mineurs sur la même case (ils se traversent) : léger décalage pour les distinguer

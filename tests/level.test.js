@@ -65,9 +65,9 @@ test('creditXp : une session n\'est comptée qu\'une fois ; quantités invalides
 
 /* ---------- XP de spécialisation ---------- */
 
-test('spécialisation : 10 % de la part, arrondi vers le bas ; courbe 100, 150, 225…', () => {
-  assert.equal(specXpOf(865), 86);
-  assert.equal(specXpOf(9), 0);
+test('spécialisation : 50 % de la part (24/10 ; ancien 10 %), arrondi vers le bas ; courbe 100, 150, 225…', () => {
+  assert.equal(specXpOf(865), 432);
+  assert.equal(specXpOf(1), 0);
   for(const bad of [-10, 1.5, NaN, Infinity, '100', null]) assert.equal(specXpOf(bad), 0);
   assert.deepEqual(specLevelOf(0), { level:1, into:0, need:100 });
   assert.deepEqual(specLevelOf(99), { level:1, into:99, need:100 });

@@ -194,7 +194,7 @@ function splash(G,m,o,dmg){
   const k=aoeOf(m.skill); if(k<=0) return;
   for(const q of G.mobs){
     if(q===o || q.hp<=0 || (q.type==='mimic' && !q.revealed) || Math.abs(q.x-o.x)+Math.abs(q.y-o.y)>1) continue;
-    q.hp-=dmg*k;
+    q.hp-=dmg*k; q.splash={ v:dmg*k, t:G.t };   // affiché au-dessus du mob (src/render/splash.js)
     if(q.hp<=0) killMob(G,m,q);
   }
 }

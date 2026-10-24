@@ -2302,7 +2302,29 @@ Règles (voir CLAUDE.md) :
 - **État de vérification** : ⚠️ pas de simulation. Repère des mesures du matin : pioche +0,4 → +0,8 seule = +17 lignes de
   profondeur ; le buff complet avec pioche 0,7 donnait ≈ 5,5 areas en fer. Avec 0,5, attendre un peu moins : à mesurer.
 
-### Méphite (Geoffrey, 24/10) — 🧪 branche geoffrey/mephite
+### Mise à jour mineure : dégâts de zone, XP de spé 50 %, cap des jauges 200 (Geoffrey, 24/10) — ✅ en ligne le 24/10
+- **Dégâts de zone** : seule source = nœud barbare `damage` (Force brute, `aoe:0.02` par rang) → `aoeOf(m.skill)`
+  (`src/meta/skills.js`) → `splash` (`src/sim/actions.js`, mine) et `hitMob` (`src/sim/tower/session.js`). Chaîne
+  vérifiée de bout en bout : `buildSession` avec `skills:{A:{tree:'barbare',ranks:{damage:3}}}` → coup 5,75, voisin
+  −0,345 (6 %), mob à 3 cases intact ✅. Mesure (5 seeds × 3 barbares 3/3) : 7350 coups, 20 % avec un mob voisin. Pas
+  de bug ; effet trop faible pour se voir. Aucun retour visuel (pas de chiffre affiché). Test `tests/skills.test.js` (+1).
+- **XP de spé** : `XP.specPct` 10 → 50. Tests `tests/level.test.js` (865 → 432) et `tests/game-service.test.js`
+  (barbare 432, SP lvl 3).
+- **Jauges** : `JUDGMENT.cap` 250 → 200. `sanitizeJudgment` borne `count` à cap : une jauge enregistrée au-dessus de
+  200 est ramenée à 200 et ouvre sa tour au prochain `refresh` (si aucune autre tour n'est ouverte). Test
+  `tests/game-service.test.js` (150 puis 300 ≥ 200).
+- **Tests** : level, spells, judgment, game-service, tower, wiki ✅ (99) ; skills ✅ (21).
+- **Affichage des dégâts de zone** (option 2 choisie) : `splash` (mine) et `hitMob` (tours) posent
+  `q.splash = { v, t: G.t }` sur le mob touché par la zone ; `mobView` (`src/shared/view.js`) et la vue des tours
+  (`src/shared/tower-view.js`) l'envoient ; `src/render/splash.js` (`drawSplash`, `splashText`) dessine « -0,3 » qui
+  monte (`FX.splashRise` px) et s'efface en `FX.splashMs` ms, heure du navigateur (première fois qu'il voit ce coup :
+  fluide entre deux envois) ; ignoré si plus vieux que `FX.splashGame` s de partie (reconnexion). Appelé dans
+  `src/render/canvas.js` et `src/render/tower.js`. Tests `tests/skills.test.js` (+1, et le bout en bout vérifie
+  `splash` et la vue) ; skills, tower, view, mobs, dungeon ✅ (72). ⚠️ pas regardé dans un navigateur.
+- **Incident** : une autre discussion a basculé `F:\idledollexminer` sur `geoffrey/perf-chemin` pendant ce travail ;
+  mes fichiers ont été déplacés dans un worktree séparé (patch), le sien n'a pas été touché (`path.js`).
+
+### Méphite (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Quoi** : `MOBS.spawnTable` (méphite 0,05 / 0,15 / 0,2 en areas 3 / 4 / 5+, gobelin 0,55 / 0,55 / 0,3), `hpBase.mephite`
   70, `minArea.mephite` 3, `MOBS.mephite` { every 2, oxygen 5, flyReach 400, item, loot 1–2 }, `XP.mob.mephite` 12,
   objet `Vésicule de gaz` (material, tex `gas_vesicle`), `MOB_INFO.mephite`, textures `mephite` / `gas_vesicle`
