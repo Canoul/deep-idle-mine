@@ -62,6 +62,8 @@ const MOB_TEXT = {
                     <p><b>Danger :</b> il tacle ton mineur s'il est juste à côté.</p>`,
   occultiste: R => `<p>Un mage noir qui vit au fond de la mine. Toutes les ${R.occult.cooldown} s, il se <b>téléporte</b> à ${R.occult.tpDist} cases de ton mineur et lance un rayon de lumière noire.</p>
                     <p><b>Danger :</b> ton mineur est <b>étourdi ${R.occult.channel} s</b> (il ne peut plus rien faire), et l'occultiste tacle aussi. Un barbare avec <b>Provocation</b> qui le frappe <b>casse</b> le rayon en cours (ton mineur est libéré), mais ne l'empêche pas de relancer son sort plus tard, sur le barbare : le barbare aussi peut se faire étourdir.</p>`,
+  mephite:    R => `<p>Une masse de gaz verdâtre qui <b>vole</b> : pas besoin d'échelle, elle traverse les galeries vides et rejoint ton mineur même en hauteur. Fragile, mais difficile à semer.</p>
+                    <p><b>Danger :</b> le tacle, et l'<b>asphyxie</b> : tant qu'elle le tient, ton mineur perd <b>${R.mephite.oxygen} d'oxygène toutes les ${R.mephite.every} s</b> (plusieurs méphites ne se cumulent pas ; la <b>Ténacité</b> peut ignorer chaque perte).</p>`,
 };
 function mobs(){
   const R = D.MOB_RULES;

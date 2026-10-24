@@ -1,15 +1,20 @@
-/* Mobs (GAME_DESIGN §4) : bestioles, gobelins et occultistes (se déplacent), mimics (immobiles, faux minerais).
+/* Mobs (GAME_DESIGN §4) : bestioles, gobelins, occultistes et méphites (se déplacent), mimics (immobiles, faux minerais).
    Tous les mobs TACLENT : à 1 case ou moins (Manhattan) du mineur qu'ils visent, ils l'immobilisent (un seul mineur
-   par mob) jusqu'à leur mort. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible. */
+   par mob) jusqu'à leur mort. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
+   vole (pas de gravité) et asphyxie le mineur qu'il tacle. */
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
 import { log } from './log.js';
 import { dungeonAt, inRoom, interior } from './dungeon.js';
+import { veiled } from './trap.js';
 import { spawnDucks, updateDuck } from './duck.js';
 
-/* mobs qui marchent (même physique que le mineur) */
-export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste']);
+/* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
+   gravité, les autres ont la même physique que le mineur */
+export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite']);
 export const isWalker = o => WALKERS.has(o.type);
+export const FLYERS = new Set(['mephite']);
+export const isFlyer = o => FLYERS.has(o.type);
 export const MOB_TYPES = Object.keys(MOBS.hpBase);
 
 /* ce que vole un gobelin : les minerais de la mine (blocs de type ore, charbon compris), avec leur poids */
@@ -110,7 +115,7 @@ export function updateMobs(G){
       if(!o.revealed && G.miners.some(m=>m.y>0 && Math.hypot(o.x-m.x,o.y-m.y)<=MOBS.mimicRevealDist)) revealMimic(G,o);
       updateGrab(G,o); o.chase=chaseOf(G,o); continue;
     }
-    if(!supported(G,o.x,o.y)){                      // chute, à la même vitesse que le mineur
+    if(!isFlyer(o) && !supported(G,o.x,o.y)){       // chute, à la même vitesse que le mineur (un volant flotte)
       o.fall=(o.fall||0)+DT*CFG.fallSpeed;
       while(o.fall>=1 && !supported(G,o.x,o.y)){ o.y++; o.fall-=1; }
       if(supported(G,o.x,o.y)) o.fall=0;
@@ -126,10 +131,12 @@ export function updateMobs(G){
     const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y), dist=manhattan(m,o);
     o.cd=stepOf(o);
     if(dist<=1||!inChase(o,m)) continue;
+    if(isFlyer(o)){ const s=flyStep(G,o,m); if(s){ o.x=s.x; o.y=s.y; } continue; }
     if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; o.cd=stepOf(o)/CFG.climbFactor; }   // grimpe
     else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; o.cd=stepOf(o)/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
     else if(dx && isAir(G,o.x+dx,o.y)) o.x+=dx;                                        // marche (et tombera s'il n'y a pas de sol)
   }
+  asphyxia(G);
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
   spawnMobs(G);
   spawnDucks(G);
@@ -154,6 +161,42 @@ function goblinSteal(G,o){
   if(!m.inv[name]) delete m.inv[name];
   G.stats.stolen++; m.stats.stolen++;
   log(G, `👺 Un gobelin vole 1 ${name} à ${m.name}`);
+}
+
+/* ---- méphite ----
+   Vol : à chaque pas, le plus court chemin par les cases vides (4 directions, sans échelle ni gravité) jusqu'à une case
+   voisine de sa proie ; il évite les donjons et l'intérieur caché des pièges. Pas de chemin : il ne bouge pas. */
+function flyStep(G,o,m){
+  const H=maxRow(G), start=o.y*W+o.x, from=new Map([[start,-1]]), q=[start];
+  const ok=(x,y)=>x>=0 && x<W && y>=1 && y<=H && isAir(G,x,y) && !veiled(G,x,y) && !dungeonAt(G,x,y);
+  for(let i=0;i<q.length && i<MOBS.mephite.flyReach;i++){
+    const c=q[i], x=c%W, y=(c-x)/W;
+    if(c!==start && Math.abs(x-m.x)+Math.abs(y-m.y)===1){
+      let s=c; while(from.get(s)!==start) s=from.get(s);   // remonte au premier pas
+      return { x:s%W, y:(s-s%W)/W };
+    }
+    for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){
+      const nx=x+dx, ny=y+dy, n=ny*W+nx;
+      if(!from.has(n) && ok(nx,ny) && !(nx===m.x && ny===m.y)){ from.set(n,c); q.push(n); }
+    }
+  }
+  return null;
+}
+
+/* asphyxie : tant qu'au moins un méphite tacle un mineur, il perd MOBS.mephite.oxygen d'oxygène toutes les
+   MOBS.mephite.every secondes (un seul compteur par mineur : plusieurs méphites ne se cumulent pas). Le compteur repart
+   de zéro quand plus aucun méphite ne le tient. Chaque pulse est ignorable par la ténacité. */
+function asphyxia(G){
+  const C=MOBS.mephite;
+  for(const m of G.miners){
+    if(!G.mobs.some(o=>o.hp>0 && o.type==='mephite' && o.grab===m.id)){ m.choke=0; continue; }
+    m.choke=(m.choke||0)+DT;
+    if(m.choke < C.every-1e-9) continue;
+    m.choke-=C.every;
+    if(resists(G,m)) continue;
+    m.ox=Math.max(0, m.ox-C.oxygen);
+    m.stats.choked=(m.stats.choked||0)+1; G.stats.choked=(G.stats.choked||0)+1;
+  }
 }
 
 /* ---- occultiste ----
@@ -233,7 +276,7 @@ function spawnMobs(G){
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
     if(areaOf(y)<MOBS.minArea[type]) continue;
-    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&supported(G,x,y)&&!dungeonAt(G,x,y)) cand.push([x,y]); }   // jamais dans un donjon
+    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&(FLYERS.has(type)||supported(G,x,y))&&!dungeonAt(G,x,y)) cand.push([x,y]); }   // jamais dans un donjon ; un volant naît aussi en l'air
   }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];
