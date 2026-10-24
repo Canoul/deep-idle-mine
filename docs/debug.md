@@ -2183,7 +2183,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : ⚠️ onglet Stuff à 12 cases et icônes pas regardés dans un navigateur. Les stats affichées dans
   l'onglet Stuff ne montrent que ses propres anneaux (ceux du groupe ne sont connus qu'au lancement).
 
-### Retours du 23/10 au soir : aide sans retour, Logisticien refait, donjon révélé (Geoffrey) — branche `geoffrey/retours-23-10-soir`, 🧪 pas en ligne
+### Retours du 23/10 au soir : aide sans retour, Logisticien refait, donjon révélé (Geoffrey) — ✅ en ligne le 24/10
 - **Aide** : `helpAlly` (`src/sim/ai.js`) remet `m.target` et `m.galleryRow` à null au départ : l'engagement de
   `decideWork` (cible gardée tant qu'elle existe) le renvoyait à son ancien minerai. `m.exploring` est gardé (levé au
   déblocage) : il reprend la galerie la plus proche de là où il est. Test `tests/mobs.test.js` (échouait avant).
@@ -2202,7 +2202,7 @@ Règles (voir CLAUDE.md) :
 - **Coffre traversable** : pas fait. `tiles[0]` est vide partout (le coffre n'est qu'un dessin) ; recherche de chemin
   de x 40 à x 5 sur la surface ✅, mineur Rouge à x 8 sur 3 seeds ✅. En attente d'un exemple (seed, capture).
 
-### Gallianix chassé à chaque passage au coffre (Geoffrey, 24/10) — branche `geoffrey/retours-23-10-soir`, 🧪 pas en ligne
+### Gallianix chassé à chaque passage au coffre (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Panne** : seed 87312228, canards jamais tués (1 mineur : 1/1 en vie à la fin ; 3 mineurs : 2/3). Le combat de
   `decide` (`src/sim/ai.js`) est sous `if(m.y>0)` : rien à la surface ; `huntDuck` n'agissait que si
   `left<CFG.endStayMin || depthCap<3`, or à ce moment les mineurs sont encore en « Retour (fin de session) ».

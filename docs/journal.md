@@ -24,7 +24,7 @@ Modèle d'entrée :
   mineurs sont souvent encore en train de remonter à ce moment-là, les canards restaient en vie (seed 87312228).
 - **Décisions** : aucune nouvelle ; la chasse garde ses limites (temps de revenir au coffre, pas de trou à traverser).
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/retours-23-10-soir` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 23/10/2026 — Geoffrey — Retours du soir : aide sans retour, Logisticien refait, donjon révélé
 - **Pour le joueur** :
@@ -40,7 +40,7 @@ Modèle d'entrée :
 - **À suivre** : ⚠️ **équilibrage** : retirer Bâtisseur coûte cher (simulation, 5 parties à 3, un arbre par mineur au
   max : areas 3,8 → 3,2, coffre −4 %) et Escalateur au max ne le rattrape presque pas. Le coffre « traversable » à la
   surface n'est pas fait : je n'ai pas reproduit de blocage, exemple demandé.
-- **État** : 🧪 sur la branche `geoffrey/retours-23-10-soir` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 23/10/2026 — Geoffrey — Anneaux : 2 cases de stuff, effet pour tout le groupe
 - **Pour le joueur** : deux nouvelles cases **Anneau** dans l'onglet Stuff. Un anneau ne donne rien à son porteur seul :
