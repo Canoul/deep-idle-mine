@@ -24,7 +24,7 @@ Modèle d'entrée :
 - **Décisions** : pioches × 1,25 au lieu de × 1,75 (fer) et × 1,5 (acier). Le reste du buff du jour ne change pas.
 - **À suivre** : l'équipe en fer avancera un peu moins loin que les ~5,5 areas visées par le buff complet (la pioche
   était le plus gros levier) : à mesurer.
-- **État** : 🧪 sur la branche `geoffrey/pioche-x125` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ---
 
