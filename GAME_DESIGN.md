@@ -200,6 +200,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.
 - **Sources d'XP** *(valeurs provisoires, `XP` en config)* : minerai miné, charbon **1**, fer **2**, or **4**, diamant **7** ; mob vaincu, bestiole **5**, gobelin **10**, mimic **5**, occultiste **15** (mob de base, sans XP de minerai en plus).
 - **Pot commun** : toute l'XP de la session (minerais et mobs) va dans un pot, **partagé à parts égales** entre les joueurs présents, comme le coffre (arrondi vers le bas), **par tranches** : l'XP gagnée avant un départ est divisée entre les présents d'alors, la part du partant est perdue. **Qui quitte la session ne reçoit pas d'XP.** Versée par le serveur, une seule fois par session.
+- **Bonus d'XP personnel** *(24/10/2026)* : un « % XP » (Anneau du nerd) s'applique à la part de son porteur **après** le partage ; il ne gonfle pas le pot des autres.
 - **Courbe** : 1000 XP pour passer du niveau 1 au niveau 2, puis **×1,5** à chaque niveau (1000, 1500, 2250, 3375…) ; niveau 5 à 8125 XP au total *(provisoire)*.
 - **Récompense** : **1 point de skill par niveau**, à dépenser dans l'onglet Skills (ci-dessous).
 - Affichage : carte « Mineur » du lobby et carte « Stats du mineur » de l'onglet Stuff (niveau, barre d'XP avec **pourcentage** et **XP / XP requise** pour le niveau suivant, points de talent ; « Niveau max » au dernier niveau) ; XP de la session pendant la partie ; XP gagnée et montée de niveau au bilan.
@@ -551,8 +552,11 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
     **mine instantanée** (chacun pour soi), l'anneau ne profite qu'à son porteur.
   - **Ni craft, ni identification, ni amélioration (+1 à +3), ni enchantement** : un anneau reste tel qu'il est tombé.
   - « +3 % » d'une stat sans version en % (vitesse, oxygène, pods) = **× 1,03 sur le total** (stuff et skills compris) ;
-    dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2) ; XP = +3 % sur le pot
-    commun de la session.
+    dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2).
+  - **Exception, XP** *(décision du créateur, 24/10/2026)* : le bonus d'XP (Anneau du nerd) est **personnel**. Il
+    s'applique **après** la répartition du pot commun, sur la part de son porteur : seul le bonus n'est pas partagé.
+    Ex. à 3, pot de 1000 XP : 333 chacun, 342 pour le porteur (333 × 1,03, arrondi vers le bas). *(Ancien : +3 % sur
+    le pot, pour tout le groupe.)*
   - Rares : **Anneau du tigre** (vitesse de marche et sur échelle +3 %), **du lion** (dégâts +3 %), **du rat** (vitesse
     de minage +3 %), **de la baleine** (oxygène +3 %), **du cuck** (pods +3 %), **du nerd** (XP +3 %). Épiques :
     **Anneau de Midas** (fortune +2 %), **Anneau du Bouffon** (butin des mobs +2 %).

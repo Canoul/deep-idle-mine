@@ -515,7 +515,8 @@ const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([sid
    pour soi), seulement sur son porteur.
    Ni craft, ni identification, ni amélioration, ni enchantement : un anneau ne vient que des trésors des tours.
    Effets : mult = % ajouté au TOTAL de la stat (stuff et skills compris : ×1,03) ; add = points ajoutés à une stat
-   déjà en % (dégâts %, minage %, fortune, butin des mobs) ; xp = % d'XP en plus pour le pot commun de la session.
+   déjà en % (dégâts %, minage %, fortune, butin des mobs) ; xp = % d'XP en plus pour son PORTEUR SEUL, sur sa part,
+   après le partage du pot (24/10/2026, Geoffrey ; ancien : +% sur le pot, pour tout le groupe).
    drops : à l'ouverture d'un trésor de tour (RUNE.treasures), en plus de la rune, un seul tirage : au plus un anneau,
    chance de chacun. Valeurs provisoires (équilibrage). */
 export const RINGS = {

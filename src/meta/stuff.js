@@ -84,7 +84,7 @@ export function ringLines(item){
   return [
     ...Object.entries(d.mult || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)} %`),
     ...Object.entries(d.add || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)}${unitOf(k)}`),
-    ...(d.xp ? [`Groupe · XP +${num(d.xp)} %`] : []),
+    ...(d.xp ? [`XP +${num(d.xp)} % (porteur seul)`] : []),
   ];
 }
 /* anneaux différents parmi des pièces (noms ou pièces), triés : ceux du groupe = ringsOf de toutes ses pièces */
@@ -100,7 +100,8 @@ export function withRings(carac, rings){
   return out;
 }
 /* multiplicateur d'XP du pot commun de la session avec ces anneaux (1 = aucun) */
-export const ringXpMult = rings => 1 + [...new Set(rings || [])].reduce((s, r) => s + (RINGS.items[r]?.xp || 0), 0) / 100;
+/* % d'XP en plus des anneaux d'UN joueur (les siens, pas ceux du groupe) : appliqué à sa part, après le partage du pot */
+export const ringXpPct = rings => [...new Set(rings || [])].reduce((s, r) => s + (RINGS.items[r]?.xp || 0), 0);
 
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');

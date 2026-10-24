@@ -2214,3 +2214,15 @@ Règles (voir CLAUDE.md) :
   189,6, coffre 4 079 ✅.
 - **Point fragile** : un canard qui saute un trou pendant la chasse → `surfaceWalk` faux, le mineur rentre au coffre puis
   repart (pas de boucle : il ne rechasse qu'au prochain passage en mode surface).
+
+### Bonus d'XP personnel, après le partage du pot (Geoffrey, 24/10) — branche `geoffrey/xp-bonus-perso`, 🧪 pas en ligne
+- **Avant** : `buildSession` passait `xpMult = ringXpMult(groupRings)` ; `shareBySegments` multipliait chaque tranche du
+  pot avant `xpShare` → tout le groupe profitait de l'Anneau du nerd.
+- **Maintenant** : `ringXpPct(rings)` (`src/meta/stuff.js`, somme des `RINGS.items[r].xp` des anneaux d'UN joueur) ;
+  `minerSpecs` (`src/shared/game.js`) ajoute `xpPct` par mineur, depuis SON stuff (`ringsOf(gearOf(i))`) ;
+  `createMiner` le garde (`m.xpPct`, fini et > 0 sinon 0) ; `shareBySegments` (`src/sim/session.js`) partage le pot
+  sans bonus puis `floor(part × (1 + xpPct/100))` sur le total du joueur. `G.xpMult` / `opts.xpMult` supprimés.
+  Texte de l'anneau : « XP +3 % (porteur seul) » (`statLines`).
+- **Tests** : `tests/anneaux.test.js` (nerd : [515, 500] à 2 avec un porteur, [333, 342, 333] à 3) ; anneaux, level,
+  session, stuff, wiki, share, party ✅ (92).
+- **Point fragile** : le bonus est calculé sur le total des tranches (un seul arrondi), pas tranche par tranche.

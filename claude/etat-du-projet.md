@@ -61,7 +61,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),
   8 anneaux (6 rares à +3 %, Midas et Bouffon épiques à +2 %). Effet pour **tout le groupe** de la session, une fois
-  par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Ni craft, ni identification,
+  par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Sauf l'**Anneau du nerd** (XP) :
+  bonus personnel, sur la part du porteur après le partage du pot (24/10 ; ancien : +3 % sur le pot, pour le groupe). Ni craft, ni identification,
   amélioration ou enchantement. Butin des **Trésors** des tours à l'ouverture (≈ 6,5 %, un anneau au plus).
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3

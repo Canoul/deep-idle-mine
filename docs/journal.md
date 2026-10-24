@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Bonus d'XP personnel (Anneau du nerd)
+- **Pour le joueur** : le « +3 % d'XP » de l'Anneau du nerd ne profite plus qu'à celui qui le porte. L'XP de la session
+  est d'abord partagée à parts égales, puis le porteur gagne +3 % sur sa part. Ex. à 3 avec 1000 XP : 333 chacun,
+  342 pour le porteur. Avant, le pot entier gagnait +3 % et tout le groupe en profitait.
+- **Décisions** (Geoffrey) : le bonus d'XP est personnel et s'applique après la répartition ; seul le bonus n'est pas
+  partagé. Les autres anneaux restent des effets de groupe.
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/xp-bonus-perso` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Les mineurs tuent les canards en remontant
 - **Pour le joueur** : quand un mineur remonte déposer au coffre, il va tuer le Gallianix qui traîne à côté avant de
   redescendre (si « combat » est sur Combattre). Avant, il ne le chassait qu'en toute fin de session, et comme les

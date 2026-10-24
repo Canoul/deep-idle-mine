@@ -30,7 +30,6 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
-    xpMult: Number.isFinite(opts.xpMult) && opts.xpMult > 0 ? opts.xpMult : 1,   // anneaux du groupe (RINGS) : XP du pot commun
   };
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
@@ -158,7 +157,7 @@ function shareBySegments(G, present){
     const delta = {};
     for(const k in mk.chest){ const q = mk.chest[k] - (prevChest[k] || 0); if(q > 0) delta[k] = q; }
     const n = mk.present.length, dxp = Math.max(0, mk.xp - prevXp);
-    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(Math.round(dxp * (G.xpMult ?? 1)), n);
+    const parts = shareChest(delta, n, (G.seed + i * 0x9e37) | 0), px = xpShare(dxp, n);
     mk.present.forEach((m, j) => {
       if(!bags.has(m)) return;                                       // parti avant la fin : sa part est perdue
       const b = bags.get(m);
@@ -168,6 +167,8 @@ function shareBySegments(G, present){
     segments.push({ until:mk.t, players:n });
     prevChest = mk.chest; prevXp = mk.xp;
   });
+  /* bonus d'XP personnel (Anneau du nerd, m.xpPct) : sur SA part, après le partage ; seul le bonus n'est pas partagé */
+  for(const [m, v] of xp) xp.set(m, Math.floor(v * (1 + (m.xpPct || 0) / 100)));
   return { bags, xp, segments };
 }
 
