@@ -2382,7 +2382,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : un set retient des uid ; une pièce améliorée garde son uid (OK), une pièce recyclée/sacrifiée
   disparaît (case vide). La réponse renvoie tout l'équipement : le navigateur remplace inventaire, stuff, skills, sorts.
 
-### XP de spécialisation : même courbe que le niveau (Geoffrey, 24/10) — 🧪 branche `geoffrey/xp-sp-courbe`
+### XP de spécialisation : même courbe que le niveau (Geoffrey, 24/10) — ✅ en ligne le 24/10
 - **Quoi** : `XP.specCurve` passe de `{ first:100, factor:1.5 }` à `{ first:1000, factor:1.5 }` (= `XP.curve`) ;
   `XP.specPct` reste 50. Aucun code changé (`src/meta/level.js` lit déjà la config).
 - **Tests** : `tests/level.test.js` (besoins 1000 / 2250 + test « même courbe que `levelOf` »),

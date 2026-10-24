@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : courbe de l'XP de spé = courbe du niveau (avant : 10 fois moins chère, 100 ×1,5).
 - **À suivre** : les sorts de classe deviennent lointains (Dynamite ≈ 174 sessions) : revoir leurs niveaux de
   déblocage si c'est trop. Les comptes qui avaient déjà de l'XP de spé gardent leur XP, mais leur niveau baisse.
-- **État** : 🧪 sur la branche `geoffrey/xp-sp-courbe` (pas en ligne)
+- **État** : ✅ en ligne le 24/10
 
 ## 24/10/2026 — Geoffrey — Nouveau mob : le Méphite
 - **Pour le joueur** : un nouveau mob à partir de l'**area 3**, le **Méphite**, une masse de gaz verte aux yeux jaunes.

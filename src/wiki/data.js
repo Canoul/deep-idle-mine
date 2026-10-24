@@ -56,7 +56,7 @@ export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
   loot: {
     bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
     gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
-    occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }],
+    occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }, { item: MOBS.bugItem, ...mm(range(r => MOBS.occult.chitin(r))) }],
     mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
     mimic:      [],
   }[m] ?? [],

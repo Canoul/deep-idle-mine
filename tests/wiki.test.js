@@ -74,7 +74,7 @@ test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris
     assert.equal(r.types[m].hp, r.k >= MOBS.minArea[m] ? mobHp(m, r.k) : null);
   }
   assert.ok(D.MOB_TYPES.includes('occultiste'));
-  assert.deepEqual(D.MOB_INFO.occultiste.loot, [{ item:'Tissu sombre', min:1, max:3 }]);
+  assert.deepEqual(D.MOB_INFO.occultiste.loot, [{ item:'Tissu sombre', min:1, max:3 }, { item:'Chitine', min:1, max:2 }]);
   assert.deepEqual(D.MOB_INFO.bestiole.loot, [{ item:'Chitine', min:1, max:2 }]);
   for(const r of rows) assert.ok(r.spawn[0] < r.spawn[1]);
 });

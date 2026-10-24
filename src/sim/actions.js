@@ -125,9 +125,9 @@ export function killMob(G,m,o){
     if(r() < h.chance){ collect(m,h.item,ITEMS[h.item].w ?? 1,1); log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu (+1 ${h.item.toLowerCase()})`); }
     else log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu`);
   } else if(o.type==='occultiste'){
-    const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n);
-    log(G, `🗡 ${m.name} : occultiste vaincu (+${n} ${it.toLowerCase()})`);
+    const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng)), c=lootOf(G,m,MOBS.occult.chitin(G.rng));
+    collect(m,it,ITEMS[it].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    log(G, `🗡 ${m.name} : occultiste vaincu (+${n} ${it.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='mephite'){
     const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);

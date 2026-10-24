@@ -164,7 +164,7 @@ export function plan(G, m){
       done[k] = 1;
       /* tas découvert : creuser droit vers lui (foule et cap ignorés) ; sinon cap du mineur + foule */
       let cost = chase ? d + 4*(Math.abs(x-chase.x) + Math.abs(y-chase.y))
-        : d + crowd(G, m, x, y) + headPenalty(head, x-cx, y-cy);
+        : d + crowd(G, m, x, y) + headPenalty(head, x-cx, y-cy) + (dy === 1 ? MI.downWeight*mv : 0);
       cost += G.rng()*0.01;                                // un soupçon de hasard départage les égalités
       const fled = flee && Math.abs(x-flee.x) + Math.abs(y-flee.y) < MI.fleeDist;
       const cand = { x, y, from:c, cost };
