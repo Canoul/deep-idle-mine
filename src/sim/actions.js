@@ -3,7 +3,7 @@ import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, buildT, winchT } from './mineur.js';
+import { startAction, collect, mineT, moveT, climbT, winchT } from './mineur.js';
 import { provoke, revealMimic } from './mobs.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
@@ -208,19 +208,19 @@ export function stepDir(G,m,dx,dy,opt){
   /* trou connu trop profond : par-dessus avec une passerelle s'il peut (même si on lui demandait de ne pas en poser),
      sinon il refuse le pas (celui qui l'a demandé choisit autre chose) */
   if(!(m.winchJob && dx===0) && deepFall(G,m,dx,dy)){   // en chantier de treuil, il creuse tout droit, trou ou pas
-    if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', buildT(m,CFG.bridgeTime), {x:nx,y:ny+1}); return true; }
+    if(dy===0 && m.bridges>0 && supported(G,m.x,m.y)){ startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true; }
     return false;
   }
   // trou à traverser horizontalement : une passerelle (1 s) vaut mieux que tomber puis poser des échelles (2 s chacune)
   // règle : on ne pose une passerelle que s'il tient lui-même (sol ou échelle), jamais dans le vide
   if(dy===0 && m.bridges>0 && !(opt&&opt.noBridge) && supported(G,m.x,m.y) && isAir(G,nx,ny) && !supported(G,nx,ny)){
-    startAction(m,'bridge', buildT(m,CFG.bridgeTime), {x:nx,y:ny+1}); return true;
+    startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true;
   }
   if(!isAir(G,nx,ny)){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
     startAction(m,'mine', mineDuration(G,m,t), {x:nx,y:ny}); return true;
   }
-  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', buildT(m,CFG.ladderTime), {}); return true; }
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', CFG.ladderTime, {}); return true; }
   const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau
   startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y,winch:seau});
   return true;

@@ -32,6 +32,9 @@ export function newSession(seed, opts={}){
     noResidues: !!opts.noResidues,
     xpMult: Number.isFinite(opts.xpMult) && opts.xpMult > 0 ? opts.xpMult : 1,   // anneaux du groupe (RINGS) : XP du pot commun
   };
+  /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
+     présents au lancement compte, sans cumul (figé, comme le stuff) */
+  G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));
   /* id unique de la session (distinct de la seed : rejouer une seed = une autre session) ; sert à ne créditer
      qu'une seule fois le coffre d'une session dans un inventaire */
   G.id = opts.id ?? `${seed}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;

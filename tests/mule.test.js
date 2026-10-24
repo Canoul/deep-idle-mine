@@ -30,15 +30,15 @@ function bag(G, carrier, x, y, inv = {}, by = carrier){
 }
 const give = (m, inv) => { m.inv = { ...inv }; m.load = Object.entries(inv).reduce((s, [k, n]) => s + n*itemW(k), 0); };
 
-test('config : Mule 0/1 au 4e étage du Logisticien ; Navette exige Échelle de 2 ET Treuil', () => {
+test('config : Mule 0/1 au 4e étage du Logisticien ; Escalateur exige Échelle de 2 ET Treuil', () => {
   const n = SKILLS.trees.find(t => t.id === 'logisticien').nodes.find(x => x.id === 'mule');
   assert.deepEqual([n.row, n.max, n.per], [4, 1, 1]);
   assert.equal(MULE.capacityPct, 2);
   const st = createSkills(), learn = id => skillOp(st, { action:'learn', node:id, opId:Math.random().toString(36) }, 20);
-  for(const id of ['build_time', 'build_time', 'build_time', 'winch', 'travel_rush']) learn(id);
-  assert.equal(st.ranks.travel_rush ?? 0, 0, 'Treuil seul : pas de Navette');
-  for(const id of ['tall_ladder', 'travel_rush', 'travel_rush', 'travel_rush', 'travel_rush', 'travel_rush']) learn(id);
-  assert.equal(blockedReason(st, 'mule', 20), null, 'Navette 5/5 ouvre Mule');
+  for(const id of ['travel_rush', 'travel_rush', 'travel_rush', 'winch', 'winch_speed']) learn(id);
+  assert.equal(st.ranks.winch_speed ?? 0, 0, 'Treuil seul : pas d\'Escalateur');
+  for(const id of ['tall_ladder', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed']) learn(id);
+  assert.equal(blockedReason(st, 'mule', 20), null, 'Escalateur 5/5 ouvre Mule');
   assert.ok(learn('mule').ok); assert.equal(st.ranks.winch, 1, 'qui a Mule a le Treuil');
 });
 

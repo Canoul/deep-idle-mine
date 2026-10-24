@@ -7,7 +7,8 @@ import { worldFrom, run } from './helpers.js';
 import { supported, isWinch } from '../src/sim/world.js';
 import { search } from '../src/sim/path.js';
 import { stepDir, finishAction } from '../src/sim/actions.js';
-import { winchT, climbT, baseLadderT } from '../src/sim/mineur.js';
+import { winchT, climbT, baseLadderT, baseWinchT, dk } from '../src/sim/mineur.js';
+import { newSession } from '../src/sim/session.js';
 import { createViewer, emptyView, applyView } from '../src/shared/view.js';
 
 const X = WINCH.x;
@@ -61,8 +62,16 @@ test('échelle de 2 de haut : l\'itinéraire compte moitié moins d\'échelles �
   const base = baseLadderT(m);
   m.skill.tall_ladder = 1;
   assert.equal(baseLadderT(m), base / 2);
-  m.skill.build_time = 0.15;
-  assert.ok(Math.abs(baseLadderT(m) - CFG.ladderTime * 0.85 / 2) < 1e-12);
+  assert.equal(baseLadderT(m), CFG.ladderTime / 2, 'plus de Bâtisseur (23/10 soir)');
+});
+
+test('Escalateur : le seau va +5 %/rang plus vite pour tout le groupe ; plusieurs logisticiens : le meilleur rang, sans cumul', () => {
+  const G = newSession(3, { miners:[{ skills:{ winch_speed:0.15 } }, { skills:{ winch_speed:0.25 } }, {}] });
+  assert.equal(G.winchBoost, 0.25);
+  const [a, , c] = G.miners;
+  assert.ok(Math.abs(baseWinchT(G, c) - 1 / (c.carac.climbSpeed * WINCH.speedFactor * 1.25)) < 1e-12, 'même un mineur sans le skill');
+  assert.ok(Math.abs(winchT(G, a) - baseWinchT(G, a) / dk(G, a)) < 1e-12);
+  assert.equal(newSession(3, { miners:2 }).winchBoost, 0, 'sans le skill : vitesse normale');
 });
 
 test('chantier : le logisticien creuse au milieu depuis la surface et pose tout le treuil d\'un coup, sans être étourdi', () => {

@@ -86,6 +86,19 @@ test('déclencheur : voir un bloc du donjon le rend « découvert » (avant : au
   assert.equal(noEntry(G,m,d.hx,d.hy), true, 'sans barbare : interdit');
 });
 
+test('un mineur entre dans le donjon : toute la structure est découverte d\'un coup (23/10 soir)', () => {
+  const { G, d } = scene();
+  const hidden = () => { let n=0; for(let y=d.y0;y<d.y0+S;y++) for(let x=d.x0;x<d.x0+S;x++) if(!G.seen[y][x]) n++; return n; };
+  for(let y=d.y0;y<d.y0+S;y++) for(let x=d.x0;x<d.x0+S;x++) G.seen[y][x]=0;
+  const m=G.miners[0];
+  m.x=d.hx; m.y=d.hy; m.action={ type:'wait', dur:1e9, t:0, data:{} };   // sur le seuil (l'entrée) : pas encore dedans
+  run(G,1);
+  assert.ok(hidden() > 0, 'sur le seuil, rien de plus');
+  m.x=d.hx-1; run(G,1);                                                     // un pas : dans la salle
+  assert.equal(hidden(), 0, 'murs, intérieur et boss découverts');
+  assert.equal(d.revealed, true);
+});
+
 test('sans barbare : personne n\'entre, aucun itinéraire ne passe par le donjon', () => {
   const { G, d } = scene({ miners:3 });
   run(G,1);

@@ -101,6 +101,12 @@ export function forbidMask(G,m){
 /* ---------- à chaque tick : découverte, barbare entré, effroi, boss vaincu ---------- */
 export function updateDungeons(G){
   for(const d of G.dungeons || []){
+    /* un mineur entre dans le donjon : toute la structure (murs, intérieur, boss) est découverte d'un coup
+       (23/10/2026 soir, Geoffrey) */
+    if(!d.revealed && G.miners.some(m => interior(d,m.x,m.y))){
+      d.revealed=true;
+      for(let y=d.y0; y<d.y0+S; y++) for(let x=d.x0; x<d.x0+S; x++) if(G.seen[y]) G.seen[y][x]=1;
+    }
     if(d.cleared) continue;
     const boss = bossOf(G,d);
     if(!boss){ d.cleared=true; if(d.found) log(G, `🏆 Le ${DUNGEON.boss.name.toLowerCase()} est vaincu : le donjon est libre`); continue; }

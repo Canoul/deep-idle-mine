@@ -112,7 +112,6 @@ export const towerSupported = (G, x, y) =>
 const mineT = (m, t) => BLOCKS[t].hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
-const buildT = (m, t) => t * (1 - (m.skill.build_time || 0));
 const fallT = () => 1 / CFG.fallSpeed;
 const hitT = m => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100);
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
@@ -227,7 +226,7 @@ export function planTo(G, m, goals){
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
   const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x]){ y++; n++; } return { y, n }; };
-  const ladT = buildT(m, CFG.ladderTime);
+  const ladT = CFG.ladderTime;
   while(heap.length){
     const [d, c] = pop();
     if(d > dist[c]) continue;
@@ -265,7 +264,7 @@ export function decide(G, m){
   if(tk){ m.face = Math.sign(tk.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: tk.id }, `Taclé par un ${mobName}`); }
   /* dans le noir (dans la tour) : une torche */
   if(inTower(G, m.x, m.y) && towerLum(G, m.x, m.y) < CFG.torchThreshold && !torchByOther(G, m))
-    return act(m, 'torch', buildT(m, CFG.torchTime), {}, 'Pose une torche');
+    return act(m, 'torch', CFG.torchTime, {}, 'Pose une torche');
   /* des mobs réveillés : on les tue (la porte de leur étage reste fermée sinon) */
   const mobs = liveMobs(G);
   if(mobs.length){
@@ -299,7 +298,7 @@ function follow(G, m, path, status){
   if(ny < m.y){
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
     if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
-    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', buildT(m, CFG.ladderTime), { x: m.x, y: m.y }, 'Pose une échelle');
+    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', CFG.ladderTime, { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
   const lad = G.ladder[m.y][m.x] || G.ladder[m.y + 1]?.[m.x];

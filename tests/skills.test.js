@@ -20,7 +20,7 @@ test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le B
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
   for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1], logisticien:[3, 1, 1, 5, 1], barbare:[3, 1, 5, 3] }[t.id]);   // 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
-  assert.deepEqual(lg.map(n => [n.id, n.row]), [['build_time', 1], ['tall_ladder', 2], ['winch', 2], ['travel_rush', 3], ['mule', 4]]);
+  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4]]);   // 23/10 soir : Bâtisseur supprimé
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
   assert.equal(nodeText('mine_speed', 3), 'Vitesse de minage +6 %');
   assert.equal(nodeText('ore_rush', 0).startsWith('Vitesse de marche +3 %'), true);
@@ -43,33 +43,43 @@ test('règles : points du niveau, étape précédente au rang max, un seul arbre
   assert.equal(skillOp(st, { action:'pirater', opId:id() }, 9).error, 'bad_request');
 });
 
-test('étage à deux cases : chacune exige l\'étage 1 au max ; l\'étage 3 (Navette) exige les deux (23/10/2026)', () => {
+test('étage à deux cases : chacune exige l\'étage 1 (Navette) au max ; l\'étage 3 (Escalateur) exige les deux (23/10/2026)', () => {
   const st = createSkills();
   assert.equal(skillOp(st, { action:'learn', node:'winch', opId:id() }, 9).error, 'needs_previous');
-  learnAll(st, ['build_time', 'build_time', 'build_time']);
+  learnAll(st, ['travel_rush', 'travel_rush', 'travel_rush']);
   assert.equal(blockedReason(st, 'tall_ladder', 9), null);
   assert.equal(blockedReason(st, 'winch', 9), null);
-  assert.equal(blockedReason(st, 'travel_rush', 9), 'needs_previous', 'aucune case de l\'étage 2');
+  assert.equal(blockedReason(st, 'winch_speed', 9), 'needs_previous', 'aucune case de l\'étage 2');
   learnAll(st, ['winch']);
-  assert.equal(blockedReason(st, 'travel_rush', 9), 'needs_previous', 'le Treuil seul ne suffit plus');
-  const other = learnAll(createSkills(), ['build_time', 'build_time', 'build_time', 'tall_ladder']);
-  assert.equal(blockedReason(other, 'travel_rush', 9), 'needs_previous', 'Échelle de 2 seule non plus');
+  assert.equal(blockedReason(st, 'winch_speed', 9), 'needs_previous', 'le Treuil seul ne suffit plus');
+  const other = learnAll(createSkills(), ['travel_rush', 'travel_rush', 'travel_rush', 'tall_ladder']);
+  assert.equal(blockedReason(other, 'winch_speed', 9), 'needs_previous', 'Échelle de 2 seule non plus');
   learnAll(st, ['tall_ladder']);
-  assert.equal(blockedReason(st, 'travel_rush', 9), null, 'les deux cases ouvrent l\'étage 3');
-  learnAll(st, ['travel_rush']);
-  assert.deepEqual(st.ranks, { build_time:3, winch:1, tall_ladder:1, travel_rush:1 });
+  assert.equal(blockedReason(st, 'winch_speed', 9), null, 'les deux cases ouvrent l\'étage 3');
+  learnAll(st, ['winch_speed']);
+  assert.deepEqual(st.ranks, { travel_rush:3, winch:1, tall_ladder:1, winch_speed:1 });
   const eff = skillEffects(st);
   assert.deepEqual([eff.winch, eff.tall_ladder], [1, 1]);
   assert.equal(blockedReason(learnAll(createSkills(), ['damage', 'damage', 'damage', 'taunt']), 'loot', 9), null, 'les autres arbres : inchangés');
 });
 
 test('relecture : l\'étage 3 du Logisticien exige les deux cases de l\'étage 2 ; une ancienne sauvegarde avec une seule les perd (points rendus)', () => {
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, winch:1, travel_rush:5 } }, 99).ranks,
-    { build_time:3, tall_ladder:1, winch:1, travel_rush:5 });
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, winch:1, travel_rush:2 } }, 99).ranks, { build_time:3, winch:1 }, 'Treuil seul');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, travel_rush:5 } }, 9).ranks, { build_time:3, tall_ladder:1 }, 'Échelle de 2 seule');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, travel_rush:2 } }, 99).ranks, { build_time:3 }, 'étage 3 sans étage 2');
-  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:2, winch:1 } }, 99).ranks, { build_time:2 });
+  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:5 } }, 99).ranks,
+    { travel_rush:3, tall_ladder:1, winch:1, winch_speed:5 });
+  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, winch:1, winch_speed:2 } }, 99).ranks, { travel_rush:3, winch:1 }, 'Treuil seul');
+  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch_speed:5 } }, 9).ranks, { travel_rush:3, tall_ladder:1 }, 'Échelle de 2 seule');
+  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, winch_speed:2 } }, 99).ranks, { travel_rush:3 }, 'étage 3 sans étage 2');
+  assert.deepEqual(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:2, winch:1 } }, 99).ranks, { travel_rush:2 });
+});
+
+test('Logisticien refait (23/10 soir) : une sauvegarde de l\'ancien arbre garde ce qui tient, le reste est rendu', () => {
+  /* ancien chemin complet : Bâtisseur 3, Échelle de 2, Treuil, Navette 5, Mule = 11 points */
+  const old = sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, winch:1, travel_rush:5, mule:1 } }, 11);
+  assert.deepEqual(old.ranks, { travel_rush:3, tall_ladder:1, winch:1 }, 'Bâtisseur disparu, Navette ramenée à 3, Mule sans Escalateur : perdue');
+  assert.equal(spentPoints(old), 5, '6 points rendus');
+  /* le nouveau chemin complet coûte autant : 3 + 1 + 1 + 5 + 1 = 11 */
+  const all = learnAll(old, ['winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'winch_speed', 'mule'], 11);
+  assert.deepEqual(all.ranks, { travel_rush:3, tall_ladder:1, winch:1, winch_speed:5, mule:1 });
 });
 
 test('demande rejouée (double clic) : un seul rang', () => {
@@ -115,12 +125,12 @@ test('Mineur : un minerai rend 1 d\'oxygène (tout court) et donne +3 %/rang de 
   assert.equal(moveT(G, m), t0, 'bonus fini après 3 s');
 });
 
-test('Logisticien : constructions −5 %/rang, échelle de 2 de haut, marche +3 %/rang au retour et en redescente', () => {
+test('Logisticien : échelle de 2 de haut (temps normal : plus de Bâtisseur), marche +3 %/rang au retour et en redescente', () => {
   const G = worldFrom(['', '##### ####', '##### ####', '#####@####']), m = G.miners[0];
-  m.skill.build_time = 0.15; m.skill.tall_ladder = 1; m.skill.travel_rush = 0.15;
+  m.skill.tall_ladder = 1; m.skill.travel_rush = 0.15;
   m.mode = 'return';
   assert.ok(stepDir(G, m, 0, -1));
-  assert.ok(Math.abs(m.action.dur - CFG.ladderTime * 0.85) < 1e-9);
+  assert.ok(Math.abs(m.action.dur - CFG.ladderTime) < 1e-9);
   finishAction(G, m, m.action);
   assert.deepEqual([G.ladder[3][5], G.ladder[2][5]], [1, 1], 'deux cases d\'échelle');
   const back = moveT(G, m); m.mode = 'work'; const work = moveT(G, m);
@@ -209,10 +219,10 @@ test('stats : Pillage s\'ajoute au butin des mobs (3 rangs → +9 %), les skills
   const row = minerStats({}, barb).find(s => s.key === 'looting');
   assert.equal(row.add, 9); assert.equal(row.total, 9); assert.equal(row.mult, 1, 'pas un multiplicateur');
   assert.deepEqual(behaviourSkills(barb).map(k => k.id), ['taunt'], 'Force brute et Pillage sont déjà dans les stats');
-  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ build_time:3, tall_ladder:1, winch:1, travel_rush:2 } }));
+  const log = skillEffects(sanitizeSkills({ tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:2 } }));
   const list = behaviourSkills(log);
-  assert.deepEqual(list.map(k => k.id), ['build_time', 'tall_ladder', 'winch', 'travel_rush']);
-  assert.match(list[0].text, /−15 %/); assert.match(list[3].text, /\+6 %/);
+  assert.deepEqual(list.map(k => k.id), ['travel_rush', 'tall_ladder', 'winch', 'winch_speed']);
+  assert.match(list[0].text, /\+9 %/); assert.match(list[3].text, /\+10 %/);
   assert.deepEqual(behaviourSkills({}), [], 'aucun skill : rien');
 });
 
