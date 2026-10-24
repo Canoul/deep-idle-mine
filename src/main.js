@@ -44,6 +44,7 @@ import { setupCrusher } from './ui/crusher.js';
 import { setupResearch } from './ui/research.js';
 import { setupSkills } from './ui/skills.js';
 import { setupSpells } from './ui/spells.js';
+import { setupSets } from './ui/sets.js';
 import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
@@ -166,6 +167,13 @@ const spells = setupSpells({
   onInventory: inv => setInventory(inv),
 });
 
+/* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
+const setsUI = setupSets({
+  onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
+  onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
+  inSession: () => !!rec,
+});
+
 applyRarityColors();   // couleurs des raretés (config)
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
 
@@ -242,6 +250,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
+  setsUI.refresh();   // sets de nouveau disponibles
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('noSession').hidden = false;
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
@@ -377,6 +386,7 @@ function applyClock(c){
 
 function enterSession(session){
   rec = session; waiting = false;
+  setsUI.refresh();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
   const mi = session.mode === 'mi', tw = isTowerMode(session.mode);
   G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
@@ -468,6 +478,7 @@ function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false; chat.stop();
+  setsUI.refresh();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
@@ -510,6 +521,7 @@ async function refresh(){
   stuff.set(st.stuff);
   skills.set(st.skills);
   spells.set(st.spells);
+  setsUI.set(st.sets);
   lobby.update({ prefs: st.prefs });
   if(st.session) enterSession(st.session);
   else showNoSession();

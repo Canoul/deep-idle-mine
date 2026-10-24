@@ -598,6 +598,19 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.
 
+### Sets (onglets Stuff, Skills et Sorts) *(24/10/2026, Geoffrey ; garde-fou provisoire, `SETS` en config)*
+Un **set** enregistre l'équipement complet du moment : le **stuff porté** (les pièces exactes, avec leur qualité, leur niveau et leur rune), les **skills** (arbre et rangs) et les **sorts** (emplacements). **Une seule liste**, la même à gauche des onglets Stuff, Skills et Sorts :
+```
+Set 1  [Équiper] [Enregistrer] [✎] [×]
+Set 2  [Équiper] [Enregistrer] [✎] [×]
+[+ Nouveau set]
+```
+- **+ Nouveau set** : crée « Set n » (premier numéro libre) avec l'équipement actuel. **Enregistrer** : remplace le set par l'équipement actuel (confirmation). **✎** renommer (1 à 24 caractères), **×** supprimer (confirmation).
+- **Équiper** agit toujours sur **tout le set** : tout le stuff porté revient dans l'inventaire puis chaque pièce du set retourne dans sa case ; une pièce **introuvable** (sacrifiée, recyclée…) laisse sa **case vide**, avec un message « n pièce(s) introuvable(s) » ; reset gratuit des skills puis les rangs du set, revérifiés avec les points du niveau ; les sorts du set qui sont encore équipables (débloqués, bonne spécialisation), les autres emplacements restent vides.
+- **Pas pendant une session** (Enregistrer, Équiper, Nouveau set : comme le reset des skills) ; renommer et supprimer restent possibles.
+- **Pas de limite voulue** pour le joueur ; garde-fou technique de **20 sets** (taille de la sauvegarde).
+- Le serveur fait tout en une seule écriture (inventaire, stuff, skills, sorts) ; une demande renvoyée n'agit qu'une fois.
+
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
 Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
 

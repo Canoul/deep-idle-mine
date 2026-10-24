@@ -20,6 +20,7 @@ export function createMemoryGameStore(initial = {}){
   const progress = new Map(Object.entries(initial.progress ?? {}));   // { xp, credited } (src/meta/level.js)
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const spells = new Map(Object.entries(initial.spells ?? {}));       // { learned, slots, ops } (src/meta/spells.js)
+  const sets = new Map(Object.entries(initial.sets ?? {}));           // { list, nextId, ops } (src/meta/sets.js)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
@@ -63,6 +64,17 @@ export function createMemoryGameStore(initial = {}){
     /* sorts : un parchemin appris passe de l'inventaire aux sorts, en une seule écriture (comme les fours) */
     async getSpells(accountId){ return copy(spells.get(accountId)) ?? null; },
     async putSpells(accountId, s){ spells.set(accountId, copy(s)); await store.changed([{ ns: 'spells', key: accountId, value: s }]); },
+    /* sets : la liste seule, ou un set équipé (inventaire, stuff, skills, sorts et sets en une seule écriture : une pièce
+       passe de l'inventaire au stuff, un arrêt entre deux écritures la dupliquerait ou la perdrait) */
+    async getSets(accountId){ return copy(sets.get(accountId)) ?? null; },
+    async putSets(accountId, s){ sets.set(accountId, copy(s)); await store.changed([{ ns: 'sets', key: accountId, value: s }]); },
+    async putLoadout(accountId, { inventory, stuff: st, skills: sk, spells: sp, sets: se }){
+      inventories.set(accountId, copy(inventory)); stuff.set(accountId, copy(st)); skills.set(accountId, copy(sk));
+      spells.set(accountId, copy(sp)); sets.set(accountId, copy(se));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inventory }, { ns: 'stuff', key: accountId, value: st },
+                           { ns: 'skills', key: accountId, value: sk }, { ns: 'spells', key: accountId, value: sp },
+                           { ns: 'sets', key: accountId, value: se }]);
+    },
     async putInventoryAndSpells(accountId, inv, s){
       inventories.set(accountId, copy(inv)); spells.set(accountId, copy(s));
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'spells', key: accountId, value: s }]);
@@ -108,7 +120,7 @@ export function createMemoryGameStore(initial = {}){
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          crushers: Object.fromEntries(crushers),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
-                         spells: Object.fromEntries(spells),
+                         spells: Object.fromEntries(spells), sets: Object.fromEntries(sets),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
@@ -142,9 +154,9 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'game_session', 'party', 'mi_signup', 'social', 'judgment']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
-                                        progress: rows.progress, skills: rows.skills, spells: rows.spells,
+                                        progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment });
   store.changed = changes => db.write(changes);

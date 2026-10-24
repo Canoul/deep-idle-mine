@@ -89,6 +89,16 @@ Modèle d'entrée :
 
 ---
 
+## 24/10/2026 — Geoffrey — Sets (stuff, skills et sorts)
+- **Pour le joueur** : à gauche des onglets Stuff, Skills et Sorts, une liste de **sets**. « + Nouveau set » enregistre
+  ton stuff porté, tes skills et tes sorts ; « Équiper » remet tout d'un coup, « Enregistrer » remplace le set par ton
+  équipement du moment ; on peut renommer (✎) et supprimer (×). Pratique pour passer d'un équipement « farm » à un
+  équipement « donjon ».
+- **Décisions** (Geoffrey) : une seule liste, qui agit toujours sur tout (stuff + skills + sorts) ; une pièce disparue
+  laisse sa case vide ; impossible pendant une session ; pas de limite (garde-fou technique : 20).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 24/10
+
 ## 24/10/2026 — Geoffrey — XP de spécialisation et Sorts
 - **Pour le joueur** :
   - **XP de spécialisation** : chaque session rapporte aussi 10 % de ton XP à ta spécialisation (Mineur,

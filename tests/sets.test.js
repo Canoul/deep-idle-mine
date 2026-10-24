@@ -1,0 +1,144 @@
+/* Sets : enregistrer, équiper (stuff, skills, sorts d'un coup), renommer, supprimer ; serveur et affichage.
+   GAME_DESIGN §6 « Sets ». */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { SETS } from '../src/config.js';
+import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName } from '../src/meta/sets.js';
+import { createStuff, stuffOp } from '../src/meta/stuff.js';
+import { createSkills } from '../src/meta/skills.js';
+import { createSpells } from '../src/meta/spells.js';
+import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
+
+const PICK = 'Pioche en fer', HELM = 'Casque en fer';
+/* inventaire avec deux pioches et un casque (pièces : uid), stuff vide */
+function kit(){
+  const inv = createInventory(); addItem(inv, PICK, 2); addItem(inv, HELM, 1);
+  const uid = item => inv.slots.filter(s => s?.item === item).map(s => s.uid);
+  return { inv, stuff:createStuff(), skills:createSkills(), spells:createSpells(), uid };
+}
+const wear = (k, slot, uid, opId) => assert.ok(stuffOp(k.inv, k.stuff, { action:'equip', slot, uid, opId }).ok);
+
+test('noms : texte de 1 à 24 caractères, espaces resserrés', () => {
+  assert.equal(cleanName('  Farm   fer '), 'Farm fer');
+  for(const bad of ['', '   ', 'x'.repeat(SETS.max + 5), 42, null, ['a']]) assert.equal(cleanName(bad), null);
+});
+
+test('créer, enregistrer, renommer, supprimer ; « Set n » libre ; garde-fou du nombre ; double clic sans effet', () => {
+  const k = kit(), sets = createSets();
+  const cur = () => snapshot(k.stuff, k.skills, k.spells);
+  assert.deepEqual(setOp(sets, { action:'create', opId:'c1' }, cur()), { ok:true, repeated:false, id:1 });
+  assert.deepEqual(setOp(sets, { action:'create', opId:'c1' }, cur()), { ok:true, repeated:true });
+  setOp(sets, { action:'create', opId:'c2' }, cur());
+  assert.deepEqual(sets.list.map(s => s.name), ['Set 1', 'Set 2']);
+  wear(k, 'pioche', k.uid(PICK)[0], 'w1');
+  setOp(sets, { action:'save', id:1, opId:'s1' }, cur());
+  assert.equal(typeof sets.list[0].stuff.pioche, 'number');
+  assert.deepEqual(sets.list[1].stuff, {}, 'l\'autre set ne bouge pas');
+  setOp(sets, { action:'rename', id:2, name:'Farm fer', opId:'r1' });
+  assert.deepEqual(setOp(sets, { action:'rename', id:2, name:'', opId:'r2' }), { error:'bad_name' });
+  setOp(sets, { action:'delete', id:1, opId:'d1' });
+  setOp(sets, { action:'create', opId:'c3' }, cur());
+  assert.deepEqual(sets.list.map(s => [s.id, s.name]), [[2, 'Farm fer'], [3, 'Set 1']]);
+  for(const id of [1, 99, '2', null]) assert.ok(setOp(sets, { action:'save', id, opId:'x' + id }, cur()).error);
+  for(let i = sets.list.length; i < SETS.max; i++) setOp(sets, { action:'create', opId:'m' + i }, cur());
+  assert.deepEqual(setOp(sets, { action:'create', opId:'trop' }, cur()), { error:'too_many' });
+});
+
+test('équiper : les pièces du set reviennent dans leurs cases, le reste à l\'inventaire ; pièce disparue = case vide', () => {
+  const k = kit(), sets = createSets(), [p1, p2] = k.uid(PICK), [h] = k.uid(HELM);
+  wear(k, 'pioche', p1, 'w1'); wear(k, 'casque', h, 'w2');
+  setOp(sets, { action:'create', opId:'c1' }, snapshot(k.stuff, k.skills, k.spells));
+  wear(k, 'pioche', p2, 'w3');                                          // on change de pioche, on retire le casque
+  stuffOp(k.inv, k.stuff, { action:'unequip', slot:'casque', opId:'w4' });
+  const r = applySet(sets, { id:1, opId:'e1' }, { ...k, points:0, spec:{} });
+  assert.deepEqual(r, { ok:true, repeated:false, missing:0 });
+  assert.deepEqual([k.stuff.worn.pioche.uid, k.stuff.worn.casque.uid], [p1, h]);
+  assert.deepEqual(k.uid(PICK), [p2], 'l\'autre pioche est dans l\'inventaire');
+  assert.deepEqual(applySet(sets, { id:1, opId:'e1' }, { ...k, points:0, spec:{} }), { ok:true, repeated:true, missing:0 });
+  /* la pioche du set disparaît (sacrifiée…) : case vide, rien d'autre */
+  stuffOp(k.inv, k.stuff, { action:'unequip', slot:'pioche', opId:'w5' });
+  k.inv.slots = k.inv.slots.map(s => s?.uid === p1 ? null : s);
+  const r2 = applySet(sets, { id:1, opId:'e2' }, { ...k, points:0, spec:{} });
+  assert.equal(r2.missing, 1);
+  assert.equal(k.stuff.worn.pioche, null);
+  assert.equal(k.stuff.worn.casque.uid, h);
+  const pieces = k.inv.slots.filter(Boolean).length + Object.values(k.stuff.worn).filter(Boolean).length;
+  assert.equal(pieces, 2, 'aucune pièce créée ni perdue');
+});
+
+test('équiper : skills remis (revérifiés avec les points) et sorts encore équipables', () => {
+  const k = kit(), sets = createSets();
+  k.skills.tree = 'barbare'; k.skills.ranks = { damage:3, taunt:1 };
+  k.spells.learned = ['ulti_shen']; k.spells.slots = ['dash', 'ulti_shen'];
+  setOp(sets, { action:'create', opId:'c1' }, snapshot(k.stuff, k.skills, k.spells));
+  k.skills.tree = null; k.skills.ranks = {}; k.spells.slots = [null, null];
+  applySet(sets, { id:1, opId:'e1' }, { ...k, points:4, spec:{ barbare:5 } });
+  assert.deepEqual([k.skills.tree, k.skills.ranks], ['barbare', { damage:3, taunt:1 }]);
+  assert.deepEqual(k.spells.slots, ['dash', 'ulti_shen']);
+  applySet(sets, { id:1, opId:'e2' }, { ...k, points:2, spec:{ barbare:4 } });
+  assert.deepEqual(k.skills.ranks, { damage:2 }, 'pas assez de points : les rangs en trop sont rendus');
+  assert.deepEqual(k.spells.slots, [null, 'ulti_shen'], 'Dash pas débloqué : retiré');
+});
+
+test('relecture : sets invalides, doublons et cases inconnues retirés ; nom par défaut', () => {
+  const s = sanitizeSets({ nextId:2, ops:['a', 3], list:[
+    { id:1, name:'A', stuff:{ pioche:5, inconnu:3, casque:-1 }, skills:{ tree:'barbare', ranks:{ damage:9 } }, spells:['dash', 'x', 'ulti_shen'] },
+    { id:1, name:'doublon' }, { id:'7' }, null, { id:4, name:'' } ] });
+  assert.deepEqual(s.list.map(x => [x.id, x.name]), [[1, 'A'], [4, 'Set 4']]);
+  assert.deepEqual(s.list[0].stuff, { pioche:5 });
+  assert.deepEqual(s.list[0].skills, { tree:'barbare', ranks:{ damage:3 } });
+  assert.deepEqual(s.list[0].spells, ['dash', null]);
+  assert.equal(s.nextId, 5); assert.deepEqual(s.ops, ['a']);
+  assert.deepEqual(sanitizeSets('n\'importe quoi'), createSets());
+});
+
+/* ---------- serveur ---------- */
+
+async function server(){
+  const { createMemoryGameStore } = await import('../server/game/store.js');
+  const { createGameService } = await import('../server/game/service.js');
+  const { fakeLive } = await import('./helpers.js');
+  const store = createMemoryGameStore();
+  const k = kit();
+  await store.putInventory('AAAA1111', JSON.parse(serialize(k.inv)));
+  await store.putProgress('AAAA1111', { xp:2600, spec:{ barbare:813 }, credited:[] });
+  const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1e6, randomSeed:() => 1 });
+  return { game, store, uid:k.uid };
+}
+const ME = { id:'AAAA1111', name:'Zoe' };
+
+test('serveur : un set enregistre et remet stuff, skills et sorts ; refusé pendant une session', async () => {
+  const { game, uid } = await server(), [p1] = uid(PICK);
+  await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-set-w1' });
+  await game.skills(ME, { action:'learn', node:'damage', opId:'op-set-k1' });
+  await game.spells(ME, { action:'equip', spell:'dash', slot:0, opId:'op-set-p1' });
+  let r = await game.sets(ME, { action:'create', opId:'op-set-c1' });
+  assert.deepEqual(r.sets.list[0].skills, { tree:'barbare', ranks:{ damage:1 } });
+  await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-set-w2' });
+  await game.skills(ME, { action:'reset', opId:'op-set-k2' });
+  r = await game.sets(ME, { action:'equip', id:1, opId:'op-set-e1' });
+  assert.equal(r.stuff.pioche.uid, p1);
+  assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null]]);
+  assert.equal(r.missing, 0);
+  assert.deepEqual((await game.state(ME)).sets.list.map(s => s.name), ['Set 1']);
+  await game.start(ME, {});
+  for(const action of ['equip', 'save', 'create'])
+    await assert.rejects(game.sets(ME, { action, id:1, opId:'op-set-s-' + action }), { code:'session_running' });
+  r = await game.sets(ME, { action:'rename', id:1, name:'Barbare', opId:'op-set-rn1' });
+  assert.equal(r.sets.list[0].name, 'Barbare', 'renommer reste possible');
+  await assert.rejects(game.sets(ME, { action:'bidule', opId:'op-set-bad1' }), { code:'bad_request' });
+  await assert.rejects(game.sets(ME, { action:'equip', id:1, opId:'x' }), { code:'bad_request' });
+});
+
+/* ---------- affichage ---------- */
+
+test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jusqu\'au garde-fou, grisé en session', async () => {
+  const { setsHtml } = await import('../src/ui/sets.js');
+  const list = [{ id:1, name:'Set 1' }, { id:2, name:'<b>' }];
+  const h = setsHtml({ list, max:20 });
+  assert.equal((h.match(/data-act="equip"/g) || []).length, 2);
+  assert.equal((h.match(/data-act="save"/g) || []).length, 2);
+  assert.match(h, /\+ Nouveau set/); assert.match(h, /&lt;b&gt;/);
+  assert.doesNotMatch(setsHtml({ list, max:2 }), /Nouveau set/);
+  assert.match(setsHtml({ list, max:20 }, { locked:true }), /data-act="equip" disabled/);
+});

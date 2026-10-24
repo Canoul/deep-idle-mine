@@ -202,12 +202,14 @@
   <div id="loot" hidden><div class="box"></div></div>
 </section>
 <section class="view" data-view="stuff" hidden>
-  <div class="furnWrap">
+  <div class="furnWrap setWrap">
     <div class="invHead"><h1><i data-pxi="helmet"></i>Stuff</h1><span class="mut small">Clique une case pour équiper une pièce de ton inventaire.</span></div>
+    <div class="setLay"><aside class="card setsCard"><h2>Sets</h2><div id="setsStuff" class="setsBody"></div></aside><div>
     <div id="stuffGrid" class="stuffGrid"></div>
     <div class="card stuffStatsCard"><h2>Stats du mineur</h2>
       <div id="stuffLevelBody" class="stuffLevel"></div><div id="stuffStatsBody"></div>
       <p class="mut small">En <span class="stuffStats">vert</span> : bonus du stuff. En <span class="skillStats">bleu</span> : bonus des skills. Pris en compte à la prochaine session.</p></div>
+    </div></div>
   </div>
   <!-- choix de la pièce à équiper dans une case -->
   <div id="spick" hidden><div class="box"></div></div>
@@ -237,14 +239,14 @@
   <div class="furnWrap skWrap">
     <div class="invHead"><h1><i data-pxi="sparkle"></i>Skills</h1><span class="mut small">Choisis un arbre : chaque étape demande la précédente au rang max.</span></div>
     <div id="skillHead" class="skHead"></div>
-    <div id="skillTrees" class="skTrees"></div>
+    <div class="setLay"><aside class="card setsCard"><h2>Sets</h2><div id="setsSkills" class="setsBody"></div></aside><div id="skillTrees" class="skTrees"></div></div>
     <p class="mut small">Les skills sont pris en compte à la prochaine session.</p>
   </div>
 </section>
 <section class="view" data-view="sorts" hidden>
   <div class="furnWrap spWrap">
     <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts</h1><span class="mut small">Équipe tes sorts : ils partent tout seuls en session, dès que leur recharge est finie.</span></div>
-    <div class="spGrid">
+    <div class="spGrid"><aside class="card setsCard"><h2>Sets</h2><div id="setsSpells" class="setsBody"></div></aside>
       <div class="card"><h3>Emplacements</h3><div id="spellSlots" class="spSlots"></div>
         <p class="mut small">Clic sur un sort équipé : le retirer. Les sorts sont pris en compte à la prochaine session.</p></div>
       <div class="card"><h3>Sorts</h3><div id="spellList" class="spList"></div></div>

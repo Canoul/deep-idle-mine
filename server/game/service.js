@@ -28,6 +28,7 @@ import { rollChestQuality } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
+import { sanitizeSets, setOp, applySet, snapshot, publicSets } from '../../src/meta/sets.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
@@ -58,6 +59,9 @@ const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas enc
                        wrong_tree: 'Ce sort est réservé à une autre spécialisation.', slot_locked: 'Cet emplacement est verrouillé.',
                        not_scroll: 'Cet objet n\'est pas un parchemin de sort.', already_learned: 'Tu connais déjà ce sort : ton parchemin est gardé.',
                        not_owned: 'Tu n\'as pas ce parchemin.', bad_request: 'Demande invalide.' };
+const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
+                     bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
+                     bad_request: 'Demande invalide.' };
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
@@ -159,6 +163,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st) });
   /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
   const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
+  /* réponse d'une opération de set : la liste, et tout l'équipement relu (équiper change tout d'un coup) */
+  const setsReply = async (accountId, sets) => {
+    const inv = await loadInventory(accountId);
+    return { sets: publicSets(sets), inventory: publicInventory(inv), stuff: (await loadStuff(accountId, inv)).worn,
+             skills: publicSkills(await loadSkills(accountId), await pointsOf(accountId)),
+             spells: publicSpells(await loadSpells(accountId), await spellCtx(accountId)) };
+  };
   const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
     spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
 
@@ -302,6 +313,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                progress: publicProgress(await loadProgress(me.id)),
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
+               sets: publicSets(sanitizeSets(await store.getSets(me.id))),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended) };
     },
@@ -644,6 +656,35 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) err(r.error);
         if(!r.repeated) await store.putSpells(me.id, st);
         return { spells: publicSpells(st, ctx) };
+      });
+    },
+
+    /* sets : { action:'create' } | { action:'save', id } | { action:'rename', id, name } | { action:'delete', id } |
+       { action:'equip', id }. Enregistrer et équiper : refusés pendant une session (les skills seraient remis à zéro).
+       Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
+       renvoyée n'agit qu'une fois. */
+    async sets(me, body = {}){
+      const { action, opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      if(!['create', 'save', 'rename', 'delete', 'equip'].includes(action)) fail('bad_request', 400, 'Demande invalide.');
+      const err = e => fail(e, e === 'bad_request' ? 400 : e === 'unknown' ? 404 : 409, SET_ERRORS[e] ?? 'Demande invalide.');
+      return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
+        const sets = sanitizeSets(await store.getSets(me.id));
+        if(sets.ops.includes(opId)) return await setsReply(me.id, sets);
+        if(['create', 'save', 'equip'].includes(action) && await activeOf(me.id)) err('session_running');
+        const inv = await loadInventory(me.id), stuff = await loadStuff(me.id, inv);
+        const skills = await loadSkills(me.id), spells = await loadSpells(me.id);
+        if(action === 'equip'){
+          const ctx = await spellCtx(me.id);
+          const r = applySet(sets, { id: body.id, opId }, { inv, stuff, skills, spells, points: await pointsOf(me.id), spec: ctx.spec });
+          if(r.error) err(r.error);
+          await store.putLoadout(me.id, { inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets });
+          return { ...await setsReply(me.id, sets), missing: r.missing };
+        }
+        const r = setOp(sets, { action, id: body.id, name: body.name, opId }, snapshot(stuff, skills, spells));
+        if(r.error) err(r.error);
+        await store.putSets(me.id, sets);
+        return await setsReply(me.id, sets);
       });
     },
 
