@@ -10,6 +10,7 @@
 import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
+import { forceKhole } from '../sim/khole.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
@@ -144,7 +145,15 @@ export function applyDueFocus(G, record){
 }
 
 /* tout ce qui arrive en cours de partie (départs, focus) : appelé avant chaque tick, des deux côtés */
-export function applyDueEvents(G, record){ applyDueLeaves(G, record); applyDueFocus(G, record); }
+/* k holes imposés par l'administration (scripts/force-khole.js) dont le moment est venu, dans l'ordre ; G.kholeDone
+   retient ceux déjà appliqués (un k hole refusé au moment voulu ne fait rien, à l'identique au rejeu) */
+export function applyDueKholes(G, record){
+  const list = record.kholes || [];
+  G.kholeDone ??= 0;
+  while(G.kholeDone < list.length && list[G.kholeDone].tick <= G.ticks) forceKhole(G, list[G.kholeDone++].map);
+}
+
+export function applyDueEvents(G, record){ applyDueLeaves(G, record); applyDueFocus(G, record); applyDueKholes(G, record); }
 
 /* Rejoue une session entière (serveur). maxTicks : réservé aux tests (session raccourcie). */
 export function replayRecord(record, { maxTicks = Infinity } = {}){

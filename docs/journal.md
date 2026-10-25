@@ -26,7 +26,16 @@ Modèle d'entrée :
   logisticien, 3 % pour un barbare.
 - **Décisions** (Geoffrey) : 0,07 % par échelle posée ; « pas débloqué » = pas possédé ; mine classique ; pour lui seul.
 - **À suivre** : le barbare en trouve 2 à 3 fois moins que le mineur (taux à revoir si besoin, `GLYPHS.drop`).
-- **État** : 🧪 sur la branche `geoffrey/glyphes-drop` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Commande d'admin : ouvrir un k hole chez un joueur
+- **Pour le joueur** : rien de nouveau, sauf si un créateur du jeu le décide : un k hole peut s'ouvrir dans sa mine.
+- **Pour l'équipe** : sur le VPS, `sudo node /opt/deep-idle-mine/scripts/force-khole.js --name PSEUDO --map 2` ouvre un
+  k hole dans la session en cours de ce joueur (mine classique) : « Un k hole s'ouvre… », puis le groupe est aspiré 3 s
+  plus tard. `--map` : 0 au hasard, 1 Filons, 2 Arène, 3 Salle au trésor, 4 Vagues. Enregistré dans la session : un
+  redémarrage du serveur rejoue la partie à l'identique.
+- **État** : ✅ en ligne le 25/10
+
 
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il

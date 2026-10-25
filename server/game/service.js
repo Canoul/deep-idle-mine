@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, treasureItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -831,6 +831,27 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
     async judgment(me){
       return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+    },
+
+    /* administration : ouvrir un k hole dans la session en cours d'un joueur (route /api/admin/khole,
+       scripts/force-khole.js). Mine classique seulement. map : 0 = carte tirée, 1 à KHOLE.maps.length = imposée.
+       Appliqué tout de suite dans la partie et enregistré avec son tick, comme un choix de joueur : la partie se rejoue
+       à l'identique après un redémarrage. */
+    async adminKhole(accountId, map = 0){
+      if(!Number.isSafeInteger(map) || map < 0 || map > KHOLE.maps.length) fail('bad_request', 400, `Carte : un entier de 0 à ${KHOLE.maps.length}.`);
+      const rec0 = await activeOf(accountId);
+      if(!rec0) fail('no_session', 404, 'Ce joueur n\'a pas de session en cours.');
+      return withLock('sess:' + rec0.id, async () => {
+        const rec = await store.getGameSession(rec0.id);
+        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
+        if(rec.mode === 'mi' || isTowerMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée ni une tour).');
+        if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
+        const r = await live.khole(rec.id, map);
+        if(!r.ok) fail('khole_refused', 409, 'Impossible maintenant : déjà dans un k hole (ou un k hole s\'ouvre), ou fin de session trop proche.');
+        (rec.kholes ??= []).push({ tick: r.tick, map, at: clock() });
+        await store.putGameSession(rec);
+        return { session: rec.id, tick: r.tick, map: map ? KHOLE.maps[map - 1].label : 'au hasard', players: rec.players.map(p => p.name) };
+      });
     },
 
     /* administration : régler la jauge d'un camp (route /api/admin/judgment), mémoire et base ensemble */
