@@ -151,7 +151,8 @@
   <div id="w-mobs-list"></div>
   <h2>Qui apparaît où ?</h2>
   <div id="w-mobs-table"></div>
-  <p class="tip">💡 Le <b>tacle</b> : un mob qui arrive <b>juste à côté</b> de ton mineur le bloque sur place jusqu'à ce qu'il l'ait tué (un mob ne tacle qu'un mineur à la fois). Meilleurs dégâts et vitesse d'attaque = moins de temps perdu.</p>
+  <p class="tip">💡 Le <b>tacle</b> : un mob qui arrive <b>à portée</b> de ton mineur (un demi-bloc ou moins) l'oblige à le combattre jusqu'à ce qu'il l'ait tué : il peut bouger, mais seulement pour le frapper (un mob ne tacle qu'un mineur à la fois). Meilleurs dégâts et vitesse d'attaque = moins de temps perdu.</p>
+  <p class="tip">💥 Le <b>recul</b> : chaque coup de ton mineur repousse le mob d'un quart de bloc ; il revient aussitôt au contact. Le minotaure et les mobs des tours repoussent aussi ton mineur (la stat <b>Résistance au recul</b> réduit ce recul).</p>
   <p class="tip">🤝 <b>Aider allié</b> (option du lobby) : ton mineur file aider un coéquipier attaqué par un mob, s'il est à <span id="w-help-range"></span> cases ou moins. Tu peux choisir les mobs pour lesquels il ne se dérange pas. Une fois parti, il <b>garde ce mob</b> même s'il se retourne contre lui, jusqu'à <span id="w-help-keep"></span> cases.</p>
 </section>
 
@@ -245,6 +246,7 @@
   <h2>Enchantement</h2>
   <p>Une pièce de stuff + une <b>Rune</b> (dans un trésor des <a href="#ange">tours</a>) : la rune disparaît et <b>ses lignes de stats s'ajoutent à la pièce</b>. <b>Une seule rune par pièce, c'est définitif.</b> L'écran montre ce que la rune donnera sur cette pièce avant de valider. <b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> : une pièce R6 peut recevoir une rune R1 à R6, pas une R7. Une pièce non identifiée n'a pas de qualité : identifie-la d'abord.</p>
   <p>Chaque ligne d'une rune est une stat tirée au hasard (minage, dégâts, vitesse d'attaque, critique, fortune, coup unique, perçage, butin des mobs, marche, montée, pods, oxygène…), qui vaut un <b>% de la valeur de la pièce</b> enchantée : une rune donne donc plus sur une pièce de haut niveau.</p>
+  <p><b>Aura</b> : une pièce visible sur le mineur (casque, torse, ceinture, jambes, bottes) identifiée <b>R4 ou plus</b> et enchantée avec une <b>rune R4 ou plus</b> s'entoure d'un halo de la couleur de la qualité la plus basse des deux (donc celle de la rune) : <b>faible</b> en R4 et R5, <b>moyen</b> en R6, <b>fort</b> en R7. Tout le monde le voit, en session comme dans le lobby. Un fragment de rune ne donne pas d'aura. C'est purement visuel.</p>
   <div id="w-runes"></div>
 </section>
 
@@ -256,7 +258,7 @@
 
 <section id="treasures">
   <h1>Les treasures</h1>
-  <p>Un <b>treasure</b> est un coffre enfoui dans la roche. Il y a <b>30 % de chance</b> qu'une area en cache un. Ton mineur le vise dès qu'il le voit. En le cassant, il obtient un objet <b>Treasure TX</b> (X = son niveau), que tu ouvres ensuite dans l'inventaire (bouton « Ouvrir »).</p>
+  <p>Un <b>treasure</b> est un coffre enfoui dans la roche. Il y a <b><span id="w-treasure-chance"></span> de chance</b> qu'une area en cache un. Ton mineur le vise dès qu'il le voit. En le cassant, il obtient un objet <b>Treasure TX</b> (X = son niveau), que tu ouvres ensuite dans l'inventaire (bouton « Ouvrir »).</p>
   <div id="w-treasure-tiers"></div>
   <p>Contenu : certains objets sont <b>toujours</b> là (quantité au hasard entre le min et le max), d'autres sont des <b>bonus rares</b>. Il y a au plus <b>un</b> objet de chaque famille de bonus (un blueprint, une gemme, un Cristal de pleine lune) par treasure.</p>
   <div id="w-loot"></div>

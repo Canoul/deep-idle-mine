@@ -175,3 +175,35 @@ test('partie en direct du serveur : une tour se joue jusqu\'au bout, le rejeu (r
   assert.equal(a.summary.shares.find(s => s.account === 'A2').left, true);
   assert.equal(a.view().mode, 'tower');
 });
+
+test('recul (25/10) : un coup repousse le Séraphin de 0,25 ; il repousse le mineur qu\'il tacle de 0,25 par seconde', () => {
+  const G = newTower(3, { side: 'angel', miners: team(1) });
+  const k = G.kinds.indexOf('mobs'), m = G.miners[0];
+  revealFloor(G, k);
+  const o = G.mobs.find(q => q.floor === k);
+  for(const q of G.mobs) if(q !== o) q.awake = false;
+  o.x = G.x0 + 8; o.cd = 1e9;   // il ne marche pas
+  Object.assign(m, { x: o.x - 1, y: o.y, action: { type: 'stun', dur: 1e9, t: 0, data: {} } });
+  tickTower(G); assert.equal(o.grab, m.id, 'taclé à portée');
+  for(let i = 0; i < Math.round(TOWER.mobs.hitEvery / 0.1) + 1; i++) tickTower(G);
+  assert.equal(m.kx, -TOWER.mobs.knock, 'le mineur est repoussé (du côté opposé au mob)');
+  m.kx = 0; m.action = null; o.hp = 1e9;
+  const x0 = o.x;
+  for(let i = 0; i < 200; i++) tickTower(G);
+  assert.ok(o.hp < 1e9, 'il frappe le mob');
+  assert.ok(o.x > x0 || (o.kx ?? 0) > 0, 'le mob a reculé');
+  assert.equal(o.grab, m.id, 'toujours taclé : il revient au contact');
+});
+
+test('recul : le boss repousse le mineur de 0,25 quand il ne le projette pas ; lui ne recule pas', () => {
+  const G = newTower(5, { side: 'demon', miners: team(1) });
+  const m = G.miners[0], [cx, cy] = contactCells(G)[0];
+  Object.assign(m, { x: cx, y: cy, action: { type: 'stun', dur: 1e9, t: 0, data: {} } });
+  G.fightRng = () => 0.99;   // jamais de projection
+  G.arrivals = [m.id]; G.boss.engaged = true; G.boss.cd = 0.05;
+  const bx = G.boss.x;
+  tickTower(G); tickTower(G);
+  assert.equal(Math.abs(m.kx), TOWER.boss.push, 'repoussé de 0,25');
+  assert.ok(Math.sign(m.kx) === Math.sign(m.x + 0.5 - (G.boss.x + TOWER.boss.w / 2)), 'vers l\'extérieur');
+  assert.equal(G.boss.x, bx);
+});

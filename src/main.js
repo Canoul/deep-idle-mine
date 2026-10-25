@@ -28,6 +28,7 @@ import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
+import { aurasOf } from './meta/aura.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
@@ -237,6 +238,7 @@ const accountUI = createAccountUI($('account'), acct, {
 const lobby = setupLobby({
   party: partyApi,
   look: () => lookOf(stuff.worn()),
+  auras: () => aurasOf(stuff.worn()),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
@@ -585,7 +587,7 @@ function frame(now){
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');
-    if(face) drawPortrait(face, lookOf(stuff.worn()));                  // portrait : le mineur avec son stuff
+    if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff
     navSession.classList.toggle('live', !!rec);
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`

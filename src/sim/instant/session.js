@@ -39,7 +39,7 @@ export function newInstant(seed, opts={}){
 
 function createInstantMiner(id, s, x){
   return {
-    id, name:s.name || ('Mineur '+(id+1)), color:s.color || null, look:s.look || {}, account:s.account ?? null,
+    id, name:s.name || ('Mineur '+(id+1)), color:s.color || null, look:s.look || {}, auras:s.auras || {}, account:s.account ?? null,
     carac:{ ...STATS, ...(s.carac||{}) }, skill:{ ...(s.skills||{}) }, skillTree:s.skillTree ?? null,
     x, y:0, face:1, action:null, status:'Départ', inv:{}, rushUntil:-1,
     target:null, path:[],               // bloc visé et cases vides à traverser pour l'atteindre

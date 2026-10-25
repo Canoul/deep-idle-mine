@@ -1,6 +1,7 @@
 /* Dessin d'un mineur (partagé par la mine normale et la mine instantanée) : même corps pour tous, son équipement
-   par-dessus (src/skins.js), sa pioche quand il mine ou frappe, et son pseudo au-dessus de la tête. Lit, ne modifie rien. */
-import { SKIN, armorLayers, toolOf } from '../skins.js';
+   par-dessus (src/skins.js) avec l'aura de ses pièces (src/render/aura.js), sa pioche quand il mine ou frappe, et son pseudo au-dessus de la tête. Lit, ne modifie rien. */
+import { SKIN, armorPieces, toolOf } from '../skins.js';
+import { drawAura } from './aura.js';
 
 /* ctx : contexte canvas ; TEX : textures chargées ; TILE : taille d'une case (px) */
 export function createMinerSprite(ctx, TEX, TILE){
@@ -14,8 +15,11 @@ export function createMinerSprite(ctx, TEX, TILE){
     ctx.save();
     let bx=px;   // dessiné en miroir quand il regarde à gauche
     if(m.face<0){ ctx.translate(px+TILE,0); ctx.scale(-1,1); bx=0; }
+    /* l'aura des pièces d'abord, derrière tout : elle déborde autour de la silhouette sans rien masquer */
+    const pieces=armorPieces(m.look);
+    for(const [slot,l] of pieces) if(m.auras?.[slot]) drawAura(ctx,TEX[l],m.auras[slot],bx,py,TILE,now);
     blit(SKIN.body,bx,py,'#3f5f8a');
-    for(const l of armorLayers(m.look)) blit(l,bx,py);
+    for(const [,l] of pieces) blit(l,bx,py);
     const a=m.action;
     if(a&&(a.type==='mine'||a.type==='attack')){
       /* l'outil tenu à la main, animé à l'horloge de la page (fluide entre deux envois du serveur) : la pioche se

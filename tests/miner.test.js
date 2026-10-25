@@ -58,7 +58,7 @@ test('passerelle : posée pour franchir un trou quand il tient debout', () => {
   assert.deepEqual([m.action.data.x, m.action.data.y], [2,2]);
 });
 
-test('tacle : immobilisé tant que la bestiole n\'est pas morte, même avec « combat » sur non', () => {
+test('tacle : il ne fait que combattre la bestiole jusqu\'à sa mort, même avec « combat » sur non (même case : il ne bouge pas)', () => {
   const G=worldFrom([
     '',
     'd'.repeat(50),

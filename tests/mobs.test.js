@@ -21,11 +21,12 @@ test('PV : formules du créateur (k = area où naît le mob)', () => {
   assert.equal(mobHp('occultiste', 4), 150); assert.equal(mobHp('occultiste', 5), 173);   // 150 depuis le 23/10
 });
 
-test('tacle : à 1 case du mineur, le mob s\'arrête à côté de lui et l\'immobilise', () => {
+test('tacle : le mob vient au contact du mineur (jamais sur sa case) et le tacle', () => {
   const G = corridor(), m = G.miners[0]; busy(m);
   const b = mob(G, { type: 'bestiole', x: m.x + 4, y: m.y, cd: 0 });
   run(G, 60);
-  assert.equal(dist(b, m), 1, 'il s\'arrête à côté (pas sur lui)');
+  // le mineur le frappe et le repousse (recul, 25/10) : il revient au contact, à 1 ou 2 cases
+  assert.ok(dist(b, m) >= 1 && dist(b, m) <= 2, 'il reste au contact (pas sur lui)');
   assert.equal(tackler(G, m), b);
   assert.equal(G.combat, true, 'état « combat » de la session');
 });
