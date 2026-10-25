@@ -1,7 +1,7 @@
 /* Donjon (areas 4 et 5, 33 % chacune) : génération, minotaure enfermé, déclencheur, barbare d'abord, Fuir, effroi, butin. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, DUNGEON, DUNGEON_WALL, BLOCKS, IDS, XP, SHARE, ITEMS, WINCH, CHEST_X, PREF_OPTIONS } from '../src/config.js';
+import { W, AREA_H, DUNGEON, DUNGEON_WALL, BLOCKS, IDS, XP, SHARE, ITEMS, WINCH, CHEST_X, PREF_OPTIONS, SESSION_LEN } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { genArea, areaTop } from '../src/sim/world.js';
 import { search } from '../src/sim/path.js';
@@ -86,17 +86,98 @@ test('déclencheur : voir un bloc du donjon le rend « découvert » (avant : au
   assert.equal(noEntry(G,m,d.hx,d.hy), true, 'sans barbare : interdit');
 });
 
-test('un mineur entre dans le donjon : toute la structure est découverte d\'un coup (23/10 soir)', () => {
+test('un mineur entre dans le donjon, seuil compris : toute la structure est découverte d\'un coup (23/10 soir, seuil : 25/10)', () => {
   const { G, d } = scene();
   const hidden = () => { let n=0; for(let y=d.y0;y<d.y0+S;y++) for(let x=d.x0;x<d.x0+S;x++) if(!G.seen[y][x]) n++; return n; };
   for(let y=d.y0;y<d.y0+S;y++) for(let x=d.x0;x<d.x0+S;x++) G.seen[y][x]=0;
   const m=G.miners[0];
-  m.x=d.hx; m.y=d.hy; m.action={ type:'wait', dur:1e9, t:0, data:{} };   // sur le seuil (l'entrée) : pas encore dedans
+  m.x=d.hx+1; m.y=d.hy; m.action={ type:'wait', dur:1e9, t:0, data:{} };  // devant l'entrée : dehors
   run(G,1);
-  assert.ok(hidden() > 0, 'sur le seuil, rien de plus');
-  m.x=d.hx-1; run(G,1);                                                     // un pas : dans la salle
+  assert.ok(hidden() > 0, 'devant l\'entrée, rien de plus');
+  m.x=d.hx; run(G,1);                                                       // sur le seuil (l'entrée) : dans la salle
   assert.equal(hidden(), 0, 'murs, intérieur et boss découverts');
   assert.equal(d.revealed, true);
+});
+
+test('combat au seuil (boss contre l\'entrée), barbare seul : la structure est découverte (25/10)', () => {
+  const rows=['', ...Array(24).fill('#'.repeat(W))];
+  const G=worldFrom(rows, { miners:1 });
+  const d=addDungeon(G, { x0:5, y0:6, side:'R', hy:14 });
+  for(let x=15;x<=34;x++){ G.tiles[14][x]=0; G.seen[14][x]=1; }
+  const m=G.miners[0]; m.x=30; m.y=14; m.skillTree='barbare'; m.ox=1e9; m.carac.oxygenMax=1e9;
+  const boss=G.mobs.find(o=>o.id===d.boss); boss.x=13;
+  let fought=false;
+  for(let i=0;i<3000 && !fought;i++){ run(G,1); fought = m.status==='Combat le '+boss.type; }
+  assert.ok(fought, 'le barbare combat');
+  assert.ok(!interior(d,m.x,m.y), 'depuis le seuil');
+  run(G,1);
+  assert.equal(d.revealed, true);
+});
+
+/* ---------- oxygène pendant le donjon (25/10, Geoffrey) ---------- */
+
+const noAir = (m, max=100) => { m.ox=0; m.carac.oxygenMax=max; };
+/* le donjon est découvert (premier tick de la scène), puis ils n'ont plus d'oxygène */
+const foundThen = (G, d, ...ms) => { run(G,1); assert.ok(d.found, 'donjon découvert'); for(const m of ms) noAir(m); };
+
+test('oxygène à 0 : le barbare va quand même combattre le boss, et ne remonte qu\'une fois le boss mort', () => {
+  const { G, d, boss } = scene({ miners:1, trees:['barbare'] });
+  const m=G.miners[0]; foundThen(G, d, m);
+  let returnedEarly=false;
+  for(let i=0;i<6000 && boss.hp>0;i++){ run(G,1); if(boss.hp>0 && m.mode==='return') returnedEarly=true; }
+  assert.equal(returnedEarly, false, 'il n\'a pas remonté');
+  assert.ok(boss.hp<=0 && d.barbIn, 'boss vaincu');
+  for(let i=0;i<1200 && m.mode!=='return';i++) run(G,1);   // (un mob qui le tacle d'abord : le tacle oblige)
+  assert.equal(m.mode, 'return');
+  assert.equal(m.reason, 'oxygène');
+});
+
+test('oxygène à 0, pods pleins, plus de torches : les autres attendent le barbare puis le rejoignent', () => {
+  const { G, d, boss } = scene({ miners:3, trees:['mineur','barbare','logisticien'] });
+  const [a,, c]=G.miners; foundThen(G, d, a); c.load=c.carac.pods; c.torches=0;
+  let waited=false, returned=false;
+  for(let i=0;i<6000 && boss.hp>0;i++){
+    run(G,1);
+    if(a.status==='Attend le barbare devant le donjon' || c.status==='Attend le barbare devant le donjon') waited=true;
+    if(boss.hp>0 && (a.mode==='return' || c.mode==='return')) returned=true;   // le boss mort, ils remontent
+  }
+  assert.equal(returned, false, 'personne n\'est remonté');
+  assert.ok(waited && boss.hp<=0);
+});
+
+test('oxygène à 0 : « Fuir » attend avec les autres, puis remonte quand le barbare est entré', () => {
+  const { G, d } = scene({ miners:2, trees:['barbare', null], prefs:[{}, { fightMobs:'flee' }] });
+  const runner=G.miners[1]; foundThen(G, d, runner);
+  for(let i=0;i<6000 && !d.barbIn;i++){ run(G,1); assert.notEqual(runner.mode, 'return', 'remonté avant l\'entrée du barbare'); }
+  run(G,20);
+  assert.equal(runner.mode, 'return');
+  assert.equal(runner.reason, 'oxygène');
+});
+
+test('oxygène à 0 : sortir du donjon (sans le droit d\'y être) ne compte pas, il remonte', () => {
+  const { G, d } = scene({ miners:2, trees:['barbare','mineur'] });
+  const [barb, m]=G.miners;
+  barb.action={ type:'wait', dur:1e9, t:0, data:{} };                        // le barbare n'est pas encore entré
+  m.x=d.hx-2; m.y=d.hy; noAir(m);                                           // dedans avant lui
+  run(G,5);
+  assert.equal(m.mode, 'return');
+});
+
+test('fin de session : elle passe avant le donjon', () => {
+  const { G, boss } = scene({ miners:1, trees:['barbare'] });
+  const m=G.miners[0]; noAir(m);
+  G.t=SESSION_LEN-5;
+  run(G,3);
+  assert.equal(m.mode, 'return', 'il remonte (la raison affichée reste « oxygène », vérifiée en premier)');
+  assert.ok(boss.hp>0);
+});
+
+test('déjà en train de remonter pour l\'oxygène quand le donjon est découvert : il finit sa remontée', () => {
+  const { G, d } = scene({ miners:1, trees:['barbare'] });
+  const m=G.miners[0]; noAir(m);
+  m.mode='return'; m.reason='oxygène'; m.returnStart=0;
+  for(let i=0;i<300;i++){ run(G,1); assert.ok(m.mode==='return' || m.mode==='surface', m.mode); }
+  assert.ok(d.found && !d.barbIn);
 });
 
 test('sans barbare : personne n\'entre, aucun itinéraire ne passe par le donjon', () => {

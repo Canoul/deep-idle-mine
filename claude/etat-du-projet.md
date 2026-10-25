@@ -122,7 +122,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,
   6 cases). Ancien (21/10) : tacle à 1 case, mineur immobilisé tant que le mob reste à côté. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
-  option « Fuir ».
+  option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe
+  avant ; pas la sortie du donjon) ; la structure se révèle dès le seuil ou dès qu'on combat le boss.
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
   un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).
