@@ -498,6 +498,21 @@ def main():
     rect(scr, 10, 9, 3, 3, seal); rect(scr, 10, 9, 1, 1, seal_l)    # sceau
     tex['scroll'] = scr
 
+    # glyphe (objet, onglet Skills, 25/10/2026) : parchemin bleu nuit roulé, une rune lumineuse cyan au milieu
+    gly = blank()
+    gp, gp_l, gp_d, rune, rune_l = hexc('#2e3a6b'), hexc('#4a5a9a'), hexc('#1a2244'), hexc('#3fd6e8'), hexc('#c8f7ff')
+    rect(gly, 3, 3, 10, 10, gp)                                     # feuille
+    rect(gly, 3, 3, 10, 1, gp_l)
+    rect(gly, 2, 2, 12, 2, gp_d); rect(gly, 2, 2, 12, 1, gp)        # rouleau du haut
+    rect(gly, 2, 12, 12, 2, gp_d); rect(gly, 2, 13, 12, 1, gp)      # rouleau du bas
+    rect(gly, 1, 2, 1, 2, gp_d); rect(gly, 14, 2, 1, 2, gp_d)
+    rect(gly, 1, 12, 1, 2, gp_d); rect(gly, 14, 12, 1, 2, gp_d)
+    rect(gly, 7, 5, 2, 6, rune)                                     # rune : barre verticale…
+    rect(gly, 5, 7, 6, 2, rune)                                     # … et horizontale (une croix)
+    rect(gly, 6, 6, 1, 1, rune); rect(gly, 9, 6, 1, 1, rune); rect(gly, 6, 9, 1, 1, rune); rect(gly, 9, 9, 1, 1, rune)
+    rect(gly, 7, 7, 2, 2, rune_l)                                   # cœur lumineux
+    tex['glyph'] = gly
+
     # lingots (four) : barre trapézoïdale, reflet clair en haut, ombre en bas
     for name, base, light, dark in [('ingot_iron', '#c9cdd4', '#eef0f3', '#8a8f98'),
                                     ('ingot_gold', '#f2c230', '#fff1a8', '#b8871a'),
