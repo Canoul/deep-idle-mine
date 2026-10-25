@@ -24,7 +24,7 @@ const STEEL = {
   'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, 'Tainted gold':8,  ...ARMOR } },
   'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.6 },   cost:{ 'Steel ingot':14, 'Tainted gold':7,  ...ARMOR } },
   'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.67 },       cost:{ 'Steel ingot':8,  'Tainted gold':4,  ...ARMOR } },
-  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.6 },    cost:{ 'Steel ingot':20, ...TOOL } },
+  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.5 },    cost:{ 'Steel ingot':20, ...TOOL } },
   'Épée en acier':     { iron:'Épée en fer',     set:{ damage:16 },          cost:{ 'Steel ingot':10, ...TOOL } },
 };
 const BALANCE = 'Plastron de l\'équilibre';
@@ -118,7 +118,7 @@ test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lign
                  epee:{ item:'Épée en fer', uid:9 }, casque:{ item:'Casque en acier', uid:10 } };
   const [m] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:gear } });
   assert.equal(m.carac.pods, STATS.pods + 88 + lineValue('Plastron en fer', line));
-  assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.6);
+  assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.5);
   assert.equal(m.carac.damage, 14);
   assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 100);
   /* la ligne suit la valeur de l'objet : 20 % de 528 x (88 pods) = 21 pods ; elle en valait 12 avec 50 pods */

@@ -22,7 +22,8 @@ Modèle d'entrée :
 - **Pour le joueur** : le casque en acier donne +100 d'oxygène (avant +69), les jambes +1,6 de montée (avant +1,08) et
   les bottes +1,67 de marche (avant +1,08). Avant, ils valaient à peine 3 % de plus que le fer ; maintenant environ
   50 % de plus. Les pièces déjà fabriquées en profitent tout de suite, et les runes posées dessus grandissent aussi.
-- **Décisions** (Geoffrey) : ces trois pièces valent environ 400 x chacune (valeur d'équilibrage, ajustable).
+- **Nerf des pioches** : pioche en fer +0,4 de vitesse de minage (avant +0,5), pioche en acier +0,5 (avant +0,6).
+- **Décisions** (Geoffrey) : ces trois pièces valent environ 400 x chacune (valeur d'équilibrage, ajustable) ; pioches nerfées.
 - **État** : 🧪 sur la branche `geoffrey/acier-400x` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil

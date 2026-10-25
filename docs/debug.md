@@ -2686,3 +2686,5 @@ Règles (voir CLAUDE.md) :
   Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
 - **Tests** : `tests/steel-gear.test.js` (valeurs + nouveau test 390-410 x et > fer × 1,4) ✅, wiki, amelioration ✅.
   Pas de simulation : les mineurs simulés n'ont pas de stuff en acier. Pas d'anti-triche : aucune ressource ne bouge.
+- **Nerf des pioches** (même branche) : fer mineSpeed 0,5 → 0,4 (520 x), acier 0,6 → 0,5 (650 x) ; valeurs attendues de
+  `tests/steel-gear.test.js` mises à jour. ⚠️ Tests pas relancés (demande de Geoffrey : « juste update »).
