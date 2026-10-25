@@ -18,6 +18,22 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Combats plus vivants : portée, recul, tacle refondu
+- **Pour le joueur** : les combats bougent. Chaque coup du mineur **repousse le mob d'un quart de bloc** ; le mob
+  revient au contact, le mineur le suit. On frappe dès qu'on est à **un demi-bloc** (plus besoin d'être collé), jamais
+  en diagonale. **Le tacle ne bloque plus le mineur sur place** : il peut bouger, mais seulement pour combattre le mob
+  qui le tient, jusqu'à sa mort (ou une provocation du barbare). Le **minotaure**, les **Séraphins / Diablotins** et le
+  **boss des tours** repoussent aussi le mineur (le boss garde sa projection de 6 blocs). Nouvelle stat **Résistance
+  au recul** (0 de base, aucune pièce ne la donne encore). Le wiki est à jour.
+- **Décisions** (Geoffrey) : recul 0,25 pour le mineur, 0 pour les mobs sauf minotaure / mobs et boss des tours
+  (0,25) ; portée 0,5 bord à bord, sans diagonale ; recul sur l'axe du coup, bloqué par un bloc ; résistance en % ;
+  tacle jusqu'à la mort du mob ou une provocation, avec une soupape anti-blocage (5 s sans pouvoir frapper, ou mob à
+  plus de 6 cases) ; cadence de coup des mobs 1 s (le gobelin, le méphite et l'occultiste gardent la leur).
+- **À suivre** : les **tours sont plus dures** (compo forte : 2 victoires sur 5 → 0 sur 5, ≈ 8 % de dégâts en
+  moins) : à rééquilibrer si besoin (recul du boss, PV). Où donner la Résistance au recul. Le boss des tours ne recule
+  pas sous les coups (choix de Claude, à valider). Regarder un combat en vrai dans le navigateur.
+- **État** : 🧪 sur la branche `geoffrey/combat-recul` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en
