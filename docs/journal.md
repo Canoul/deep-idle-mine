@@ -25,7 +25,13 @@ Modèle d'entrée :
 - **Chiffres** (20 tours par équipe) : les étages se vident plus vite, le toit est atteint 25 à 45 s plus tôt (3 mineurs
   de base 9:30 → 8:46 ; barbares 7:30 → 7:05) ; PV du boss restants 1 327 → 1 113 (2 barbares). Toujours 0 victoire sur
   ces équipes de test (déjà le cas avant). Aucun blocage.
-- **État** : 🧪 sur la branche `geoffrey/tour-combat-continu` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Moins de Treasure T1, recyclage des plans T1 réduit
+- **Pour le joueur** : un treasure a maintenant 50 % de chance d'être enfoui dans les areas 0 à 2 (avant 60 %), et
+  recycler un blueprint du tier 1 rend 15 à 30 Blueprint parts (avant 30 à 60). Les tiers 2 et 3 ne changent pas.
+- **Décisions** (Geoffrey) : valeurs d'équilibrage, ajustables.
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Combat : mouvement continu, le recul casse le tacle, Lance en fer
 - **Pour le joueur** : les mobs avancent en continu (plus de saut de case en case). Le coup du mineur part tout de

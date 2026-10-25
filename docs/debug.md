@@ -2810,7 +2810,14 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : solo : coffre −4,5 %, vols +37 % (5 seeds, à revoir sur plus). Tours non touchées (combat
   ancien). En session la lance ne réduit pas le temps taclé (le duel, si) : à surveiller.
 
-### Tours : mouvement continu, coup immédiat, le recul casse le tacle (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-combat-continu`
+### Treasure 50 % en areas 0-2, recyclage BP T1 15-30 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` : `AREAS[0..2].chestChance` 0,6 → 0,5 ; `RESEARCH.tiers[0].recycle` { 30, 60 } → { 15, 30 }.
+  Wiki : chance lue dans la config (« 40 à 50 % »), recyclage lu dans la config.
+- **Tests** : `tests/research.test.js`, `tests/game-service.test.js`, `tests/wiki.test.js` (valeurs attendues) ;
+  research, game-service, wiki, treasure, world ✅ (95). `npm run test:anticheat` ✅ (89) : `tests/anticheat/research.test.js`
+  avait 30-60 en dur, il lit maintenant `RESEARCH.tiers[0].recycle`.
+
+### Tours : mouvement continu, coup immédiat, le recul casse le tacle (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/sim/tower/session.js` : `walkMob` (glisse de DT/MB.step blocs par tick sur la ligne du bas de l'étage,
   `mobFits`, arrêt au contact mesuré depuis `mobCell` ; remplace le saut de case tous les MB.step s et le recentrage) ;
   `hitMob` : recul seulement sans `o.knockLock`, verrou posé sur un recul effectif, tacle lâché si le mob n'est plus à SA

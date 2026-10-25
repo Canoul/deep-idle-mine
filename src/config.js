@@ -149,12 +149,13 @@ export const BUILDS = {
 
 /* composition en % par area (la dernière est répétée au-delà). Comptes exacts, pas probabilistes.
    air = cases déjà vides à la génération (poches naturelles), cachées tant qu'elles ne sont pas découvertes.
-   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed) : 0,6 dans les
-   areas 0 à 2 (celles du Treasure T1, 25/10/2026, Geoffrey ; avant 0,4), 0,4 au-delà (24/10/2026 ; avant 0,3). */
+   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed) : 0,5 dans les
+   areas 0 à 2 (celles du Treasure T1, 25/10/2026 au soir, Geoffrey ; avant 0,6, encore avant 0,4), 0,4 au-delà
+   (24/10/2026 ; avant 0,3). */
 export const AREAS = [
-  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.6 },
-  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.6 },
-  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.6 },
+  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.5 },
+  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.5 },
+  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.5 },
   { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.4 },
   { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.4 },
   /* areas 5 et 6 : décision du 23/10 (Geoffrey), graphite et plus de charbon ; ancien area 5 :
@@ -278,7 +279,7 @@ export const CRUSHER = {
 export const RESEARCH = {
   parts: 'Blueprint parts',
   tiers: [
-    { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:30, max:60 } },
+    { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:15, max:30 } },   // 25/10 au soir : avant 30 à 60
     { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
     /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 (même prix). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */

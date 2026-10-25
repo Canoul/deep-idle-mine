@@ -1,5 +1,5 @@
 /* Table de recherche : 100 Blueprint parts → un blueprint du tier 1 pas encore appris ; recycler un blueprint →
-   30 à 60 parts. Le hasard vient du serveur ; une demande renvoyée rend le même résultat. */
+   15 à 30 parts (tier 1, 25/10 au soir ; avant 30 à 60). Le hasard vient du serveur ; une demande renvoyée rend le même résultat. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH, LOOT } from '../src/config.js';
@@ -14,11 +14,11 @@ let n = 0; const id = () => 'op-rs-' + (++n);
 const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
-test('config : tier 1 = 100 parts (recycle 30 à 60), tiers 2 et 3 = 150 parts (recycle 40 à 70) ; onglet présent', () => {
+test('config : tier 1 = 100 parts (recycle 15 à 30), tiers 2 et 3 = 150 parts (recycle 40 à 70) ; onglet présent', () => {
   assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 150]]);
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 10);   // + Lance en fer BP (25/10)
-  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:30, max:60 }, { min:40, max:70 }, { min:40, max:70 }]);
+  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:15, max:30 }, { min:40, max:70 }, { min:40, max:70 }]);
   assert.ok(TABS.some(t => t.id === 'recherche' && t.ready));
 });
 
@@ -65,11 +65,11 @@ test('recherche : demande rejouée (double clic) → même blueprint, payé une 
   assert.equal(countOf(back, PARTS), 200);
 });
 
-test('recycle : un blueprint détruit rend 30 à 60 parts ; seulement des blueprints possédés', () => {
+test('recycle : un blueprint détruit rend 15 à 30 parts (tier 1) ; seulement des blueprints possédés', () => {
   const inv = invWith({ 'Four en fer BP':2, Charbon:5 });
-  assert.deepEqual(recycle(inv, 'Four en fer BP', id(), fixed(0)), { ok:true, item:'Four en fer BP', parts:30, repeated:false });
-  assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0.9999999)).parts, 60);
-  assert.equal(countOf(inv, 'Four en fer BP'), 0); assert.equal(countOf(inv, PARTS), 90);
+  assert.deepEqual(recycle(inv, 'Four en fer BP', id(), fixed(0)), { ok:true, item:'Four en fer BP', parts:15, repeated:false });
+  assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0.9999999)).parts, 30);
+  assert.equal(countOf(inv, 'Four en fer BP'), 0); assert.equal(countOf(inv, PARTS), 45);
   assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0)).error, 'not_owned');
   assert.equal(recycle(inv, 'Charbon', id(), fixed(0)).error, 'bad_item');
   assert.equal(recycle(inv, PARTS, id(), fixed(0)).error, 'bad_item', 'les parts ne se recyclent pas');

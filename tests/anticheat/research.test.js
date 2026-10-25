@@ -1,11 +1,14 @@
 /* Anti-duplication de la table de recherche : aucune suite d'actions (rejouées, trafiquées) ne crée de parts ni de
    blueprints hors règle : chaque recherche coûte exactement 100 parts pour 1 blueprint, chaque recyclage détruit
-   1 blueprint pour 30 à 60 parts. */
+   1 blueprint pour la fourchette de son tier (RESEARCH.tiers, tier 1 : 15 à 30 parts depuis le 25/10 au soir). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mulberry32 } from '../../src/core/rng.js';
 import { createInventory, addAll, countOf, serialize, deserialize } from '../../src/meta/inventory.js';
 import { research, recycle, isBlueprint, PARTS } from '../../src/meta/research.js';
+import { RESEARCH } from '../../src/config.js';
+
+const T1 = RESEARCH.tiers[0].recycle;   // seuls des blueprints du tier 1 sont en jeu ici
 
 const BAD = [0, -1, 2, '1', 1.5, NaN, Infinity, null, undefined, {}, [], 'Charbon', 'Blueprint parts', '__proto__'];
 
@@ -23,7 +26,7 @@ test('recherche + recycle : 400 suites au hasard (opId rejoués, valeurs trafiqu
         const bps = inv.slots.filter(s => s && isBlueprint(s.item)).map(s => s.item);
         res = recycle(inv, bps.length && r() < 0.8 ? pick(bps) : pick(BAD), opId, r);
       }
-      if(res.ok && !res.repeated){ if(res.parts === undefined) searches++; else { recycles++; partsBack += res.parts; assert.ok(res.parts >= 30 && res.parts <= 60); } }
+      if(res.ok && !res.repeated){ if(res.parts === undefined) searches++; else { recycles++; partsBack += res.parts; assert.ok(res.parts >= T1.min && res.parts <= T1.max); } }
       Object.assign(inv, deserialize(serialize(inv)));
     }
     const bps = inv.slots.filter(s => s && isBlueprint(s.item)).reduce((s, x) => s + x.qty, 0);
