@@ -30,7 +30,7 @@ import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../..
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
-import { canOpen, openTreasure } from '../../src/meta/loot.js';
+import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
@@ -589,10 +589,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // une rune reçoit un uid neuf : jamais celui d'une pièce portée
-        const res = openTreasure(inv, item, opId, random);
+        /* all : « Ouvrir tout » (tous les exemplaires, au plus TREASURE.openAllMax) */
+        const res = body.all === true ? openAll(inv, item, opId, random) : openTreasure(inv, item, opId, random);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, loot: res.loot, inventory: publicInventory(inv) };
+        return { item, count: res.count ?? 1, loot: res.loot, inventory: publicInventory(inv) };
       });
     },
 

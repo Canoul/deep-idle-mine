@@ -2895,3 +2895,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/amelioration.test.js` (valeurs recalculées par le code : pioche +3 0,23, épée +3 15,4, plastron
   chitine +1 32, lignes +3 0,8 et 0,6, minage % 1,1) ; `tests/rune.test.js` lit le % dans la config (il passait par
   hasard d'arrondi avec 1,07 en dur) ; rune, stuff, lance, wiki, aura, anneaux ✅ (82).
+
+### Inventaire : « Ouvrir tout » (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/meta/loot.js` : `openOne` (un exemplaire, sans mémoire) ; `openTreasure` l'utilise ; `openAll(inv, item, opId,
+  rng)` ouvre min(nombre, `TREASURE.openAllMax` = 100) exemplaires, butin additionné, UNE entrée `inv.opened` { id, item,
+  loot, count } (relue par `deserialize`). Serveur : `POST /api/game/open` avec `all:true` → `openAll`, réponse avec `count`.
+  Navigateur : bouton « Ouvrir tout (N) » si N ≥ 2 (`src/ui/inventory.js`), `gameApi.open(item, opId, all)`, `showLoot(…, count)`
+  (« 6 × Treasure T1 ouverts ! »).
+- **Tests** : `tests/loot.test.js` +2 (7 ouverts, chacun son tirage, renvoi = même butin, relu ; plafond 100 ; objet qui
+  ne s'ouvre pas) ; `tests/anticheat/open.test.js` +1 (rafale de 5 avec le même opId : une seule ouverture ; plus rien :
+  refusé) ✅ ; anticheat ✅ (90). ⚠️ Bouton pas vu dans un vrai navigateur.

@@ -1,8 +1,8 @@
 /* Onglet Inventaire : affiche la grille de slots. Lit l'inventaire, ne le modifie jamais : ouvrir un treasure
    (onOpen), utiliser un blueprint (onLearn), équiper une pièce (onEquip), trier (onSort) ou glisser un objet dans un
    autre slot (onMove) est demandé au serveur, qui renvoie le nouvel inventaire. */
-import { INVENTORY, STUFF } from '../config.js';
-import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
+import { INVENTORY, STUFF, TREASURE } from '../config.js';
+import { itemDef, isStackable, usedSlots, gridSize, countOf } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
 import { unlockOf, unlockError } from '../meta/furnace.js';
 import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund } from '../meta/craft.js';
@@ -87,7 +87,9 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(piece && !piece.q) bits.push('<span class="mut">non identifiée</span>');
   if(statsText(piece ?? s.item)) bits.push(`<span class="stuffStats">${esc(statsText(piece ?? s.item))}</span>`);
-  const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>` : '';
+  const n = inv ? countOf(inv, s.item) : 0;
+  const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>`+
+    (n > 1 ? ` <button class="on invOpen" data-item="${esc(s.item)}" data-all="1" title="Ouvre tous tes ${esc(s.item)} d'un coup">Ouvrir tout (${fullQty(Math.min(n, TREASURE.openAllMax))})</button>` : '') : '';
   const learn = pinned && inv ? blueprintHtml(inv, s) : '';
   const equip = pinned && worn ? equipHtml(s, worn) : '';
   const unlock = pinned ? unlockHtml(s, furn) : '';
@@ -150,7 +152,7 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
       return;
     }
     b.disabled = true;               // un clic = une demande
-    if(b.classList.contains('invOpen')) actions.onOpen?.(b.dataset.item);
+    if(b.classList.contains('invOpen')) actions.onOpen?.(b.dataset.item, !!b.dataset.all);
     else if(b.classList.contains('invLearn')) actions.onLearn?.(b.dataset.item);
     else if(b.classList.contains('invUnlock')) actions.onUnlock?.(b.dataset.item);
     else actions.onEquip?.(b.dataset.slot, +b.dataset.uid);
@@ -183,12 +185,12 @@ export function showRecycle(piece, sets, onOk){
 }
 
 /* fenêtre « treasure ouvert » : le butin, objets rares en tête */
-export function showLoot(item, loot, onClose){
+export function showLoot(item, loot, onClose, count = 1){
   const names = Object.keys(loot).sort((a, b) => isRare(b) - isRare(a));
   const rows = names.map(n => `<div class="lootRow${isRare(n)?' rare':''}">${iconHtml(n)}${rname(n)}`+
                               `<b>× ${fullQty(loot[n])}</b></div>`).join('');
   const box = $('loot');
-  box.querySelector('.box').innerHTML = `<h3>${iconHtml(item)} ${rname(item)} ouvert !</h3>`+
+  box.querySelector('.box').innerHTML = `<h3>${iconHtml(item)} ${count > 1 ? `${fullQty(count)} × ${rname(item)} ouverts !` : `${rname(item)} ouvert !`}</h3>`+
     (names.some(isRare) ? '<div class="lootRare">✨ Objet rare !</div>' : '') +
     `<div class="lootList">${rows}</div><p style="text-align:right"><button class="on" id="lootOk">OK</button></p>`;
   box.hidden = false;

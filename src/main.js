@@ -85,12 +85,12 @@ const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openT
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
 
 /* ouvrir un treasure : le serveur tire le butin et renvoie l'inventaire à jour */
-async function openTreasure(item){
+async function openTreasure(item, all = false){   // all : « Ouvrir tout », le butin de tous les exemplaires additionné
   try {
-    const r = await gameApi.open(item, newOpId());
+    const r = await gameApi.open(item, newOpId(), all);
     ui.fresh.clear();
     setInventory(r.inventory, r.loot);
-    showLoot(item, r.loot);
+    showLoot(item, r.loot, undefined, r.count ?? 1);
   } catch(e){ lootError(e.message); }
 }
 
