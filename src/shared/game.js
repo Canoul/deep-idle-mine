@@ -7,7 +7,7 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, STATS, CFG, GAME, SESSION_LEN, DT } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { aurasOf } from '../meta/aura.js';
@@ -46,6 +46,21 @@ export function sanitizeOverrides(input){
   return Object.keys(out).length ? out : null;
 }
 
+/* spécialisations imposées (mode dev, DEV_SPEC) : une entrée par place de mineur (joueurs puis mineurs de test),
+   { tree, level } ou null (ses propres skills). Tout le reste est refusé. */
+export function sanitizeDevSpecs(input){
+  if(!Array.isArray(input)) return null;
+  const out = input.slice(0, GAME.maxPlayers).map(s => s && SKILLS.trees.some(t => t.id === s.tree)
+    && Number.isSafeInteger(s.level) && s.level >= DEV_SPEC.minLevel && s.level <= DEV_SPEC.maxLevel ? { tree: s.tree, level: s.level } : null);
+  return out.some(Boolean) ? out : null;
+}
+/* skills d'une spécialisation imposée : tous les nœuds de l'arbre demandés au maximum, puis revérifiés avec les points
+   de talent du niveau (niveau − 1) : l'arbre se remplit étage par étage, comme un joueur qui monte de niveau */
+export function devSkills({ tree, level }){
+  const t = SKILLS.trees.find(x => x.id === tree);
+  return sanitizeSkills({ tree, ranks: Object.fromEntries(t.nodes.map(n => [n.id, n.max])) }, level - 1);
+}
+
 /* valeurs de base, figées au chargement du module : appliquer des réglages repart toujours d'elles */
 const BASE = Object.fromEntries(DEV_TUNABLES.map(([obj, key]) => [obj+'.'+key, TARGETS[obj][key]]));
 
@@ -70,12 +85,14 @@ export function minerSpecs(record){
      revérifié) ; une session plus ancienne n'a que les noms (record.looks) */
   const gearOf = i => i < players.length && record.gear?.[players[i].account]
     ? Object.values(sanitizeGear(record.gear[players[i].account])) : Object.values(lookOf(i));
-  /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats */
-  const skillsOf = i => skillEffects(sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null));
+  /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats ; en mode
+     dev, une spécialisation imposée à cette place (record.devSpecs[i]) les remplace, mineurs de test compris */
+  const rawSkills = i => record.devSpecs?.[i] ? devSkills(record.devSpecs[i]) : i < players.length ? record.skills?.[players[i].account] : null;
+  const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
   const rings = groupRings(record);
   const caracOf = i => withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings);
-  const treeOf = i => sanitizeSkills(i < players.length ? record.skills?.[players[i].account] : null).tree;
+  const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
   const spellsOf = i => i < players.length ? sessionSpells(record.spells?.[players[i].account], treeOf(i)) : [];

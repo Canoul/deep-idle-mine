@@ -133,3 +133,13 @@ test('Jugement (25/10) : jauges à gauche ET équipe à droite, comme pour la Mi
   const mi = lobbyCards({ view:null, mode:'mi' });
   assert.equal(mi.mi, true); assert.equal(mi.team, false);
 });
+
+test('chef (25/10) : il peut nommer un autre chef même pendant une session ; retirer, seulement hors session', async () => {
+  const { slotButtons } = await import('../src/ui/lobby.js');
+  const party = { leader:'AAAA1111' }, account = { id:'AAAA1111' }, other = { kind:'member' }, me = { kind:'member', me:true };
+  assert.deepEqual(slotButtons({ account, party, session:{ id:'s1' } }, other), { promote:true, kick:false });
+  assert.deepEqual(slotButtons({ account, party, session:null }, other), { promote:true, kick:true });
+  assert.deepEqual(slotButtons({ account, party, session:null }, me), { promote:false, kick:false });
+  assert.deepEqual(slotButtons({ account, party, session:null }, { kind:'invited' }), { promote:false, kick:true });
+  assert.deepEqual(slotButtons({ account:{ id:'BBBB2222' }, party, session:null }, other), { promote:false, kick:false }, 'pas chef');
+});

@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -279,7 +279,8 @@ export const instantInfo = () => ({ every: INSTANT_MINE.everyHours, game: INSTAN
 
 /* ---------- Ange contre Démon : jauges, tours, runes ---------- */
 export const judgmentInfo = () => ({ fromArea: JUDGMENT.fromArea, pct: JUDGMENT.pct, cap: JUDGMENT.cap, hours: JUDGMENT.openHours,
-  sides: JUDGMENT.sides, tower: TOWER, residues: Math.round(JUDGMENT.pct * CELLS / 100) });
+  sides: JUDGMENT.sides, tower: TOWER, residues: Math.round(JUDGMENT.pct * CELLS / 100),
+  brick: BLOCKS[TOWER.sides.angel.brick].hard, reach: COMBAT.reach });
 /* lignes d'une rune selon sa qualité : nombre, fourchette d'une ligne (% de la valeur de la pièce enchantée) */
 export const runeRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance, lines: q.lines,
   min: q.min, max: q.max, total: q.lines * q.max, discover: UPGRADE.discover.qualities.includes(q.q) }));
