@@ -2440,7 +2440,7 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
-### Don d'administration avec qualité (Geoffrey, 25/10) — 🧪 branche `geoffrey/give-qualite`
+### Don d'administration avec qualité (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `server/game/service.js` `adminGive(accountId, item, qty, quality)` : `quality` facultative, entier 1 à 7
   (`qualityDef`), seulement pour une pièce de stuff hors anneau (`isStuff && !isRing`) ; les slots créés reçoivent
   `q` (identifiée, qualité seule, comme une identification depuis le 22/10). `server/admin/routes.js` lit `quality`
