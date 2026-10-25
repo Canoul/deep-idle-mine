@@ -72,7 +72,16 @@ export function addResidues(j, bag, now){
   return refresh(j, now) || changed;
 }
 
-export const hasDone = (j, side, account) => j.done[side].opening === j[side].opening && j.done[side].accounts.includes(account);
+/* administration (25/10/2026, Geoffrey) : règle la jauge d'un camp à count (0 à cap), même en pause ; pleine, la tour
+   ouvre comme d'habitude (refresh). false si le camp ou la valeur est invalide (rien ne change). */
+export function setCount(j, side, count, now){
+  if(!SIDES.includes(side) || !Number.isSafeInteger(count) || count < 0 || count > JUDGMENT.cap) return false;
+  j[side].count = count;
+  refresh(j, now);
+  return true;
+}
+
+export const hasDone =(j, side, account) => j.done[side].opening === j[side].opening && j.done[side].accounts.includes(account);
 /* note qu'un joueur a gagné le coffre de l'ouverture en cours ; false s'il l'avait déjà */
 export function markDone(j, side, account){
   if(hasDone(j, side, account)) return false;

@@ -7,7 +7,7 @@ import { targetVal, setFocus } from '../src/sim/focus.js';
 import { decide } from '../src/sim/ai.js';
 import { updateLight } from '../src/sim/light.js';
 import { worldFrom } from './helpers.js';
-import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone, paused, anyOpen } from '../src/meta/judgment.js';
+import { createJudgment, sanitizeJudgment, addResidues, refresh, isOpen, publicJudgment, markDone, hasDone, paused, anyOpen, setCount } from '../src/meta/judgment.js';
 
 const H = 3600e3, CAP = JUDGMENT.cap, OPEN = JUDGMENT.openHours * H;
 const A = JUDGMENT.sides.angel.item, D = JUDGMENT.sides.demon.item;
@@ -62,6 +62,38 @@ test('une tour à la fois (23/10) : l\'autre jauge est en pause pendant l\'ouver
   assert.equal(k.demon.count, 12);
   refresh(j, OPEN + 1);
   assert.equal(isOpen(j, 'demon', OPEN + 2), true, 'le Démon ouvre quand l\'Ange ferme'); assert.equal(isOpen(j, 'angel', OPEN + 2), false);
+});
+
+test('pause (25/10, Geoffrey) : à 100 quand l\'Ange ouvre, le Démon est toujours à 100 à la fermeture, et vice versa', () => {
+  for(const [open, other, item, otherItem] of [['angel', 'demon', A, D], ['demon', 'angel', D, A]]){
+    const j = createJudgment();
+    addResidues(j, { [otherItem]: 100 }, 0);
+    addResidues(j, { [item]: CAP }, 0);
+    assert.equal(isOpen(j, open, 1), true);
+    addResidues(j, { [otherItem]: 60 }, H);                              // versés pendant la pause : ignorés
+    assert.equal(j[other].count, 100, `${other} en pause : ne bouge pas`);
+    refresh(j, OPEN + 1);
+    assert.equal(isOpen(j, open, OPEN + 1), false);
+    assert.equal(j[other].count, 100, `${other} à la fermeture : toujours 100, pas d'ouverture`);
+    assert.equal(isOpen(j, other, OPEN + 1), false);
+    addResidues(j, { [otherItem]: 5 }, OPEN + 2);
+    assert.equal(j[other].count, 105, 'reprend depuis 100');
+  }
+});
+
+test('setCount (administration) : règle une jauge, même en pause ; pleine, la tour ouvre ; valeurs invalides refusées', () => {
+  const j = createJudgment();
+  assert.equal(setCount(j, 'demon', 175, 0), true);
+  assert.equal(j.demon.count, 175); assert.equal(isOpen(j, 'demon', 1), false);
+  addResidues(j, { [A]: CAP }, 0);                                       // l'Ange ouvre : le Démon en pause
+  assert.equal(setCount(j, 'demon', 150, H), true);
+  assert.equal(j.demon.count, 150, 'réglable même en pause');
+  for(const [side, n] of [['demon', -1], ['demon', 1.5], ['demon', CAP + 1], ['demon', '10'], ['demon', NaN], ['diable', 10], [undefined, 10]])
+    assert.equal(setCount(j, side, n, H), false, `${side} ${n}`);
+  assert.equal(j.demon.count, 150, 'refus : rien ne change');
+  const k = createJudgment();
+  assert.equal(setCount(k, 'angel', CAP, 0), true);
+  assert.equal(isOpen(k, 'angel', 1), true, 'pleine : la tour ouvre'); assert.equal(k.angel.count, 0);
 });
 
 test('« déjà fait » : par compte et par ouverture ; une nouvelle ouverture efface la liste', () => {
