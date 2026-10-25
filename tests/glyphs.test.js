@@ -211,3 +211,24 @@ test('Braum : +30 % de l\'oxygène max à chaque entrée dans un donjon ; rester
   m.ox = 290; Object.assign(m, { x:20, y:13 }); run(G, 1); Object.assign(m, { x:d.hx, y:d.hy }); run(G, 1);
   assert.equal(m.ox, 300, 'plafonné au max');
 });
+
+/* ---------- onglet Skills : état de la case de glyphe ---------- */
+
+test('case de glyphe : none sans glyphe, can_pose (skill au max et glyphe possédé), empty, posed, inactive', async () => {
+  const { glyphSlot } = await import('../src/ui/skills.js');
+  const inv = { slots:[{ item:RUSH, qty:1 }] }, none = { slots:[] };
+  const max = { tree:'mineur', ranks:{ mine_speed:3, ore_oxygen:1, ore_rush:5 }, glyphs:{} };
+  assert.equal(glyphSlot(max, 'taunt', inv), 'none');
+  assert.equal(glyphSlot(max, 'lazy_legend', inv), 'none');
+  assert.equal(glyphSlot(max, 'ore_rush', inv), 'can_pose');
+  assert.equal(glyphSlot(max, 'ore_rush', none), 'empty', 'pas de glyphe dans l\'inventaire');
+  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:4 } }, 'ore_rush', inv), 'empty', 'skill pas au max');
+  assert.equal(glyphSlot({ ...max, glyphs:{ ore_rush:RUSH } }, 'ore_rush', none), 'posed');
+  assert.equal(glyphSlot({ ...max, ranks:{ ...max.ranks, ore_rush:4 }, glyphs:{ ore_rush:RUSH } }, 'ore_rush', none), 'inactive');
+});
+
+test('fiche d\'un glyphe (inventaire) : skill visé, effet, où le poser ; rien pour un autre objet', async () => {
+  const { glyphInfo } = await import('../src/meta/glyphs.js');
+  assert.equal(glyphInfo(RUSH), `Skill « Ruée » : ${GLYPHS.desc.ore_rush}. À poser dans l'onglet Skills (skill au rang max).`);
+  assert.equal(glyphInfo('Charbon'), null);
+});

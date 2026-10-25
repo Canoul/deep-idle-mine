@@ -16,6 +16,11 @@ export const glyphOf = node => typeof node === 'string' && Object.hasOwn(GLYPHS.
 export const nodeOfGlyph = item => NODE_OF.get(item) ?? null;
 /* le glyphe de ce nœud est-il posé et son skill au rang max ? */
 export const isActive = (st, node) => !!glyphOf(node) && st.glyphs?.[node] === glyphOf(node) && rankOf(st, node) >= NODES[node].max;
+/* fiche d'un glyphe (inventaire) : skill visé, effet, où le poser ; null si ce n'est pas un glyphe */
+export function glyphInfo(item){
+  const node = nodeOfGlyph(item);
+  return node ? `Skill « ${NODES[node].name} » : ${GLYPHS.desc[node]}. À poser dans l'onglet Skills (skill au rang max).` : null;
+}
 /* glyphes actifs { nœud: nom } : ce qui est figé dans l'enregistrement d'une session */
 export const activeGlyphs = st => Object.fromEntries(Object.keys(st.glyphs || {}).filter(n => isActive(st, n)).map(n => [n, GLYPHS.items[n]]));
 /* skills figés au lancement d'une session : rangs + glyphes actifs (les sets n'enregistrent que skillRanks) */
