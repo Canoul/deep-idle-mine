@@ -152,6 +152,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
   Repère (5 parties) : solo de base, area 1 ouverte (avant : 2) ; à 3 avec skills, area 4 (avant : la 5 dans
   4 parties sur 5).
+- **Glyphes** (25/10, Geoffrey ; `GLYPHS`, `src/meta/glyphs.js`, spec `docs/superpowers/specs/2026-10-25-glyphes-design.md`) :
+  parchemin lié à un skill, posé dans l'onglet Skills (skill au rang max), retirable hors session ; état dans les skills
+  (`st.glyphs`), figé au lancement (`sessionSkills`), effets via `m.skill.glyph_<nœud>`. 9 glyphes (étape 1) ; Glyphe Treuil
+  (ascenseur) à faire (étape 2). Pas de source en jeu (outil d'admin).
 - **Mule** (23/10, Geoffrey ; en ligne le 23/10 ; spec `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE`
   en config, `src/sim/mule.js`) : Logisticien étage 4, sac posé à côté du bas du treuil (2 × pods des logisticiens
   avec Mule), les mineurs aux pods pleins y déposent s'il est plus près que la surface, vidé au coffre seulement à la

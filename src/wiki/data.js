@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -69,7 +69,7 @@ export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
 /* ---------- objets ---------- */
 export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', rune:'Rune', ore:'Minerai', combustible:'Combustible', ingot:'Lingot', treasure:'Treasure',
-  mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau', scroll:'Parchemin de sort' };
+  mob:'Butin de mob', blueprint:'Blueprint', gem:'Gemme', stuff:'Équipement', furnace:'Four', material:'Matériau', scroll:'Parchemin de sort', glyph:'Glyphe' };
 export const CAT_ORDER = ['ore', 'combustible', 'bloc', 'residu', 'terrain', 'ingot', 'mob', 'material', 'gem', 'treasure', 'rune', 'blueprint', 'stuff', 'furnace', 'scroll'];
 const pct = c => Math.round(c * 1000) / 10;
 const SLOT_LABEL = Object.fromEntries(STUFF.slots.map(s => [s.id, s.label]));
@@ -148,6 +148,7 @@ export function usesOf(item){
   const crafts = Object.entries(RECIPES).filter(([, r]) => Object.hasOwn(r.cost, item)).map(([n]) => n);
   if(crafts.length) out.push(`Ingrédient : ${crafts.join(', ')}`);
   if(d?.cat === 'scroll') out.push("S'apprend dans l'onglet Sorts : débloque un sort (le parchemin est consommé)");
+  if(d?.cat === 'glyph') out.push(`Se pose sur le skill « ${skillName(d.glyph)} » (onglet Skills, skill au rang max) : ${GLYPHS.desc[d.glyph]}`);
   if(d?.cat === 'bloc') out.push(`Se concasse par ${CRUSHER.batch} (onglet Concasseur) : gemmes inférieures, treasure`);
   if(d?.cat === 'ore' && !Object.hasOwn(FURNACE.recipes, item) && !crafts.length) out.push('Aucun pour l\'instant');
   if(d?.cat === 'gem' && !crafts.length) out.push('Aucun pour l\'instant');
@@ -304,3 +305,12 @@ export const ringDrop = () => Object.fromEntries(Object.entries(RINGS.drops).map
 export const treasureChanceText = () => { const c = [...new Set(AREAS.map(a => Math.round(a.chestChance * 100)))].sort((a, b) => a - b);
   return c.length === 1 ? `${c[0]} %` : `${c[0]} à ${c.at(-1)} %`; };
 export const helpInfo = () => ({ range: HELP.range, keep: HELP.keep });
+
+/* ---------- glyphes (25/10/2026, GLYPHS) ---------- */
+const skillNode = id => SKILLS.trees.flatMap(t => t.nodes.map(n => ({ ...n, tree:t }))).find(n => n.id === id);
+const skillName = id => skillNode(id)?.name ?? id;
+/* une ligne par glyphe : objet, skill visé, son arbre, effet */
+export const glyphRows = () => Object.entries(GLYPHS.items).map(([node, item]) => {
+  const n = skillNode(node);
+  return { node, item, skill:n.name, tree:`${n.tree.icon} ${n.tree.label}`, desc:GLYPHS.desc[node] };
+});

@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Glyphes (étape 1 : 9 glyphes)
+- **Pour le joueur** : nouvel objet, le **glyphe** : un parchemin lié à un skill. Dans l'onglet Skills, une petite case
+  sous chaque skill permet d'y poser son glyphe quand le skill est au rang max ; il ajoute un effet (Pioche aiguisée,
+  Second souffle, Ruée, Navette, Échelle de 2, Mule, Force brute, Pillage, Braum). On le retire quand on veut hors
+  session, il revient dans l'inventaire ; un reset ou un set ne le retire pas (il devient inactif). Le wiki a une
+  section « Les glyphes ». Pas encore obtenable en jeu (on les donne avec l'outil d'admin).
+- **Décisions** (Geoffrey) : skill au rang max ; un glyphe par skill ; retirable sans perte ; Braum à chaque entrée ;
+  Pillage plafonné à +25 % ; Force brute sur les dégâts totaux ; Glyphe Treuil (ascenseur) à part, étape 2.
+- **À suivre** : la source des glyphes en jeu ; le Glyphe Treuil.
+- **État** : 🧪 sur la branche `geoffrey/glyphes` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la
   nouvelle **double attaque** (chance qu'un coup frappe deux fois). Sur une rune R6 ou R7, la Découverte est aussi

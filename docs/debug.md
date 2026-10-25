@@ -2917,3 +2917,23 @@ Règles (voir CLAUDE.md) :
   autre stat (écart < 12 %), une au plus, jamais en R5 ; double attaque 0 % / 100 % : 1 / 2 coups, un seul recul) ✅ ;
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
+
+### Glyphes, étape 1 (Geoffrey, 25/10) — 🧪 branche `geoffrey/glyphes`
+- **Spec / plan** : `docs/superpowers/specs/2026-10-25-glyphes-design.md`, `docs/superpowers/plans/2026-10-25-glyphes.md`.
+- **Quoi** : `GLYPHS` + 9 objets `cat:'glyph'` (épiques, texture `glyph`). `src/meta/glyphs.js` : `glyphOf`, `nodeOfGlyph`,
+  `glyphOp` (pose / retrait, idempotent via `st.ops`), `isActive`, `activeGlyphs`, `sessionSkills`, `withGlyphStats`,
+  `glyphInfo`. `src/meta/skills.js` : `st.glyphs` relu par `sanitizeSkills` (nœud + nom exact, rang NON vérifié),
+  `skillEffects` ajoute `glyph_<nœud>: 1` si actif. Serveur : route `skills` actions `glyph_pose` / `glyph_remove`
+  (verrous inv + skills, refus en session, `store.putInventoryAndSkills`) ; `publicSkills.glyphs = { nœud: objet }` ;
+  lancement mine / tour / MI : `sessionSkills` (glyphes actifs figés). Stats : `withGlyphStats` en dernier
+  (game.js, instant.js, onglet Stuff). Partie : Second souffle et Ruée (`actions.js` `oreSkills`, `rushTime`), Navette
+  (`session.js`, oxygène), Échelle de 2 (`ladderTime` : actions, instant, tower, `baseLadderT`), Pillage (`killMob`,
+  `m.pillage`, `hitDamage`), Braum (`session.js` `braumGlyph`, `m.braumIn`). UI : case `glyphSlot` dans `skills.js`,
+  fiche inventaire, section wiki `#glyphes`.
+- **Tests** : `tests/glyphs.test.js` (25), `tests/anticheat/glyphs.test.js`, `tests/game-service.test.js` (+1),
+  `tests/wiki.test.js` (+1), `tests/rarity.test.js` (glyphes épiques). Simulation `--miners 3 --count 5` : 0 bloquée,
+  **identique** avec et sans les effets (sans glyphe posé, rien ne change). Rendu vérifié dans Edge sans fenêtre :
+  onglet Skills (posé, à poser, inactif, sans case) et tableau du wiki (le premier rendu affichait les cellules
+  séparées par des virgules : corrigé avec `tr()`).
+- **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
+  parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).
