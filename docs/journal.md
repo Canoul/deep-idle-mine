@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Groupe : donner le lead même en session
+- **Pour le joueur** : le chef peut donner sa place de chef (★) même pendant une session. Retirer un membre (×) reste
+  impossible pendant une session.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
 - **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
   serveur, sans le redémarrer : `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175`.

@@ -2616,3 +2616,10 @@ Règles (voir CLAUDE.md) :
   n'acceptait que 404 / 405. Test élargi à 400 (l'inventaire reste vide, vérifié juste après). Pas un trou.
 - **Point fragile** : pas d'opId, mais rejouer la même commande donne le même résultat (on règle une valeur, on n'ajoute
   pas). `--count 200` ouvre la tour tout de suite (ou dès la fermeture de l'autre).
+
+### Groupe : ★ nommer chef pendant une session (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Cause** : `src/ui/lobby.js` cachait ★ et × avec le même drapeau `lead` (faux pendant une session). Le serveur
+  (`server/party/service.js` `promote`) acceptait déjà, sauf pendant le lancement (`noChange`).
+- **Correction** : fonction pure `slotButtons({ account, party, session }, slot)` → `{ promote, kick }` : ★ pour le chef
+  sur un autre membre, même en session ; × hors session seulement (membre ou invité).
+- **Tests** : `tests/lobby.test.js` +1 ✅ (15), `tests/party.test.js` ✅. ⚠️ Pas regardé dans un vrai navigateur.
