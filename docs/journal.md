@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
+- **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
+  était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques
+  secondes et retournait miner.
+
 ## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
 - **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres
   attendent, le rejoignent et se battent sans remonter, même sans oxygène, le sac plein ou sans torches. Seule la fin

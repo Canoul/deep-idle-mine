@@ -189,3 +189,21 @@ test('sans barbare : personne ne vient (Fuir, sans Aider allié)', () => {
   for(let i=0; i<100; i++){ tick(G); assert.ok(!/rescousse|piège/i.test(bob.status), bob.status); }
   assert.equal(bob.stats.kills, 0);
 });
+
+test('barbare juste au-dessus du piège (Combattre) : il ne lâche pas les mobs qu\'il ne peut pas atteindre d\'un pas (25/10)', () => {
+  /* il les voit sous lui ; un pas droit vers eux est impossible (paroi puis chute de plus de 3 cases) : avant le 25/10
+     il les ignorait pour de bon, et la rescousse les sautait ensuite (seed 23757) */
+  const { G, t } = scene({ miners:2 });
+  const [alice, bob] = G.miners;
+  alice.carac.damage = 0; busy(alice);
+  bob.skillTree = 'barbare'; bob.x = 23; bob.y = 7; G.tiles[7][23] = 0;   // debout sur la paroi du plafond
+  G.torches.push({ x:23, y:7 }); updateLight(G);
+  busy(bob);
+  breach(G); bob.action = null;
+  const ids = G.mobs.filter(o => o.trap===t.id).map(o => o.id);
+  assert.equal(ids.length, TRAP.mobs);
+  run(G, 6000);
+  assert.equal(ids.filter(id => bob.ignored.has(id)).length, 0, 'il n\'en ignore aucun');
+  assert.equal(G.mobs.filter(o => o.trap===t.id && o.hp>0).length, 0, 'tous les mobs du piège sont morts');
+  assert.ok(bob.stats.kills >= 1, 'le barbare en a tué');
+});

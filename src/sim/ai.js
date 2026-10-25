@@ -133,7 +133,11 @@ function fight(G,m,o){
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(ok) return;
   /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : il le laisse tout de suite, sinon
-     il attendait foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838) */
+     il attendait foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838). Un barbare, lui, doit
+     les tuer (trapGoal) : il prend le vrai chemin (en minant, en posant des échelles) et ne les laisse que s'ils sont
+     vraiment inatteignables (goFight) ; avant le 25/10, il les ignorait pour de bon et la rescousse les sautait
+     (seed 23757 : barbare juste au-dessus de la salle) */
+  if(o.trap!=null && isBarbarian(m)){ goFight(G,m,o,Math.abs(dx)+Math.abs(dy),m.status,'Va au piège'); return; }
   if(o.trap!=null){ m.ignored.add(o.id); m.foe=null; }
   idle(m,0.3);
 }
@@ -687,10 +691,12 @@ export function decide(G,m){
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
   if(m.y>0){
     /* engagement : une fois déclenché, le combat continue même si le mob sort du champ de vision.
-       On lâche s'il s'éloigne trop ; on l'ignore si aucun coup n'a porté depuis foeGiveUp secondes. */
+       On lâche s'il s'éloigne trop ; on l'ignore si aucun coup n'a porté depuis foeGiveUp secondes. Sauf un barbare
+       face à un mob de piège : il le lâche sans l'ignorer, la rescousse (trapGoal) le reprend par le vrai chemin
+       (25/10/2026 : en creusant jusqu'à la salle, il les ignorait un par un, seed 39595) */
     let th=null;
     const foe=m.foe && G.mobs.find(o=>o.id===m.foe && o.hp>0 && o.dungeon==null);   // le boss : voir dungeonGoal
-    if(foe && G.t-m.foeHit>CFG.foeGiveUp){ m.ignored.add(foe.id); m.foe=null; }
+    if(foe && G.t-m.foeHit>CFG.foeGiveUp){ if(!(foe.trap!=null && isBarbarian(m))) m.ignored.add(foe.id); m.foe=null; }
     else if(foe && Math.hypot(foe.x-m.x,foe.y-m.y)<=CFG.foeLeash) th=foe;
     else m.foe=null;
     m.helping = !!th && th.id===m.helpFoe;   // il continue le combat commencé pour un allié
