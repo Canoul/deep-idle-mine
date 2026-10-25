@@ -18,6 +18,20 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Combat : mouvement continu, le recul casse le tacle, Lance en fer
+- **Pour le joueur** : les mobs avancent en continu (plus de saut de case en case). Le coup du mineur part tout de
+  suite, et il s'arrête net pour frapper un mob qui entre dans sa portée. Un coup qui repousse un mob au-delà d'un
+  demi-bloc lui fait **lâcher son tacle** ; repoussé une fois, il ne peut plus l'être avant d'être revenu : impossible
+  de le tenir à distance pour toujours, même avec beaucoup de vitesse d'attaque. Nouvelle arme **Lance en fer** (BP 2 %
+  dans le Treasure T1, 10 Tainted iron) : dégâts +8, vitesse d'attaque −10 %, recul +0,5, portée +0,25. Elle tue moins
+  vite que l'épée mais fait lâcher les tacles.
+- **Décisions** (Geoffrey) : règle C (le recul casse le tacle) ; la lance tue moins vite mais subit moins. Choix de
+  Claude : le verrou anti-boucle ; recette et rareté comme l'épée en fer (provisoire).
+- **Chiffres** : en duel contre 4 mobs, la lance tue 16 % moins vite et fait passer 36 % de temps en moins taclé, sans
+  vol du gobelin. En sessions (3 mineurs en fer) : 4 % de mobs tués en moins, 19 % de vols en moins, temps taclé égal.
+  Toute la mine (20 sessions) : coffre stable, moins de tacles, aucun blocage.
+- **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Lance en fer (en test, pas en ligne)
 - **Pour le joueur** : nouvel objet **Lance en fer** (case épée), BP à 2 % dans le Treasure T1, recette provisoire
   10 Tainted iron (comme l'épée). Dégâts +10, vitesse d'attaque −10 %, recul +0,25, portée d'attaque +0,25. Deux

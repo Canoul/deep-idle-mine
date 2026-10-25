@@ -720,9 +720,12 @@ export const STUFF = {
     'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },   // 25/10 (Geoffrey) : nerf, avant 0,5 (24/10 : 0,4 × 1,25 ; le × 1,75 du fer, 0,7, était trop fort)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:14 } },     // remplace les mains nues (5) ; 24/10 : × 1,25 (avant 11)
-    /* variante de l'épée (25/10/2026, Geoffrey) : moins de dégâts par seconde, mais elle repousse plus et frappe de plus
-       loin, pour subir moins de coups ; dégâts +10 sur les mains nues (15), vitesse d'attaque −10 % */
-    'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:10, attackSpeed:-10, knockback:0.25, reach:0.25 } },
+    /* variante de l'épée (25/10/2026, Geoffrey) : elle tue moins vite, mais repousse assez (0,25 + 0,5 = 0,75 bloc, plus
+       que la portée de tacle d'un mob, 0,5) pour lui faire lâcher son tacle. Équilibrage (duels contre 4 mobs, vs épée) :
+       temps pour tuer +16 %, temps taclé −36 %, plus de vol du gobelin (3 → 0). Avant (+10 dégâts, recul +0,25) : égale à
+       l'épée, aucun tacle évité. Dégâts +8 sur les mains nues (13), vitesse d'attaque −10 % (idée de Geoffrey ; le verrou
+       du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
+    'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:67 } },   // 24/10 : avant 38
     'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33)
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
@@ -812,7 +815,7 @@ export const UPGRADE = {
   tiers: {
     1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
-    2: { x:250, items:['Pioche en fer','Épée en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
+    2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
                        'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre'] },

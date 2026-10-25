@@ -2775,3 +2775,23 @@ Règles (voir CLAUDE.md) :
   7,0 / 6,7, 8,6 / 8,5, 4,7 / 5,2 ; la lance frappe en premier (écart 0,67), repousse à 1,06, le mob tacle 0,5 s après.
   C (B + recul qui casse le tacle) : 3,6 / 3,2, 6,8 / 5,9 (vols 3 / 2), 8,4 / 7,7, 4,3 / 4,8 ; temps pour tuer ≈ égal.
   ⚠️ En B et C, un méphite contre un mineur à mains nues n'est jamais tué (595 s, blocage du prototype à comprendre).
+- **Règle C (25/10, même branche)** : `src/sim/actions.js` `landHit` (coup du mineur, exporté) : recul puis, si le mob tacle ce
+  mineur et n'est plus à SA portée (`inReach(G,o,m)`), `o.grab = null` ; verrou `o.knockLock` posé à chaque recul effectif,
+  levé dans `updateGrab` (`src/sim/mobs.js`) quand le mob est revenu à portée de sa cible. `src/sim/ai.js` `fight` : coup
+  immédiat (`m.atkReady`, action `attack` `done:true` qui ne fait qu'attendre) ; barbare + mob de piège à plus d'une case :
+  toujours `goFight` (corrige des allers-retours entre pas droit et chemin, seed 23757 arbres mixtes, défaut probable aussi
+  sur main). `src/sim/session.js` : arrêt net (pas vers m.foe coupé dès qu'il est à portée) ; `stopAction` (`knock.js`) : un
+  pas coupé garde son avancée (sinon oscillation, seed 7919 mimic). Volants : au contact, ils reviennent en glissant.
+  Lance : damage 8, attackSpeed −10, knockback 0,5, reach 0,25 ; dans `UPGRADE.tiers[2]` (runes). Tests : `tests/lance.test.js`
+  (3 : stats, tacle lâché depuis le contact, +300 % de vitesse d'attaque et mob lent : il retacle), combat réécrits (verrou ;
+  tacle gardé si le mob s'éloigne seul, lâché sur un coup), research (pioche +0,4, déjà rouge sur main) ; 344 tests liés ✅.
+- **Balayage** (`sweep.mjs`, 4 mobs × 2 côtés × 3 départs, vs épée ; temps pour tuer / temps taclé) : actuelle (recul
+  +0,25) +2 % / +3 % ; recul +0,5 +3 % / −46 % ; **retenue (dégâts +8, vit. −10 %, recul +0,5)** +16 % / −36 %, 0 vol
+  (épée 3) ; dégâts +7, vit. 0 +14 % / −44 %. Portée +0,25 ou +0,5 : sans effet mesurable. Stress : +100 % de vit. att.
+  +37 % / −65 % ; +300 % +58 % / −2 % (le mob tacle toujours : verrou ✅).
+- **Sessions** (référence → final) : 3 sans skills (5) coffre 4 105 → 4 155, tacles 36 → 32, volés 172 → 157 ; arbres
+  mixtes (10) 4 419 → 4 553, tacles 37 → 28, volés 179 → 160 ; solo (5) 1 641 → 1 567, tacles 26 → 23, volés 41 → 56.
+  0 bloquée sur 20. Stuff fer complet (5, 3 mineurs, lance vs épée) : tués 94 / 98, temps taclé 490 / 496 s (beaucoup de
+  tacles courts : 264 / 90), temps à frapper 684 / 589 s, volés 102 / 126, coffre 3 182 / 3 263.
+- **Points fragiles** : solo : coffre −4,5 %, vols +37 % (5 seeds, à revoir sur plus). Tours non touchées (combat
+  ancien). En session la lance ne réduit pas le temps taclé (le duel, si) : à surveiller.

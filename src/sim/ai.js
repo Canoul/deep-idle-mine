@@ -137,15 +137,18 @@ function fight(G,m,o){
     const k=Math.max(Math.abs(m.kx||0), Math.abs(m.ky||0));
     startAction(m,'move', k*(dy ? climbT(G,m) : moveT(G,m)), {x:m.x,y:m.y,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0)}); return;
   }
+  /* mob de piège : un barbare doit les tuer (trapGoal). Il prend TOUJOURS le vrai chemin (en minant, en posant des
+     échelles ; goFight, qui ne les laisse que s'ils sont vraiment inatteignables), jamais le pas droit vers le mob :
+     les deux se contredisaient (pas droit vers la colonne du mob, puis chemin qui repart à côté : allers-retours sans
+     fin, seed 23757 arbres mixtes, 25/10/2026). Avant le 25/10, il les ignorait pour de bon (barbare juste au-dessus
+     de la salle). Pas sur une case voisine : goFight y rappellerait fight. */
+  const d=Math.abs(dx)+Math.abs(dy);
+  if(o.trap!=null && isBarbarian(m) && d>1){ goFight(G,m,o,d,m.status,'Va au piège'); return; }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(ok) return;
-  /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : il le laisse tout de suite, sinon
-     il attendait foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838). Un barbare, lui, doit
-     les tuer (trapGoal) : il prend le vrai chemin (en minant, en posant des échelles) et ne les laisse que s'ils sont
-     vraiment inatteignables (goFight) ; avant le 25/10, il les ignorait pour de bon et la rescousse les sautait
-     (seed 23757 : barbare juste au-dessus de la salle) */
-  if(o.trap!=null && isBarbarian(m)){ goFight(G,m,o,Math.abs(dx)+Math.abs(dy),m.status,'Va au piège'); return; }
-  if(o.trap!=null){ m.ignored.add(o.id); m.foe=null; }
+  /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : les autres le laissent tout de
+     suite, sinon ils attendaient foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838) */
+  if(o.trap!=null && !isBarbarian(m)){ m.ignored.add(o.id); m.foe=null; }
   idle(m,0.3);
 }
 

@@ -209,7 +209,7 @@ const STAT_HELP = {
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
   reach:      "Portée de ses coups, en blocs, en plus de la portée de base (0,5) : il frappe un mob avant que celui-ci soit au contact, et il le touche encore après l'avoir repoussé. La Lance en fer en donne +0,25.",
-  knockback:  "Recul qu'il inflige, en blocs, en plus du recul de base (0,25) : chaque coup repousse le mob plus loin, qui doit revenir avant de frapper. La Lance en fer en donne +0,25.",
+  knockback:  "Recul qu'il inflige, en blocs, en plus du recul de base (0,25). Un coup qui repousse un mob au-delà de sa portée de tacle (0,5) lui fait lâcher le mineur ; repoussé une fois, il ne peut plus l'être avant d'être revenu à portée. La Lance en fer en donne +0,5.",
   knockRes:   "Réduit le recul subi quand un mob le frappe (minotaure, mobs et boss des tours) : à 50 %, il recule deux fois moins ; à 100 %, plus du tout. Aucune pièce ne la donne pour l'instant.",
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
