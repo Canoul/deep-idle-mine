@@ -2809,3 +2809,17 @@ Règles (voir CLAUDE.md) :
   tacles courts : 264 / 90), temps à frapper 684 / 589 s, volés 102 / 126, coffre 3 182 / 3 263.
 - **Points fragiles** : solo : coffre −4,5 %, vols +37 % (5 seeds, à revoir sur plus). Tours non touchées (combat
   ancien). En session la lance ne réduit pas le temps taclé (le duel, si) : à surveiller.
+
+### Tours : mouvement continu, coup immédiat, le recul casse le tacle (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-combat-continu`
+- **Quoi** : `src/sim/tower/session.js` : `walkMob` (glisse de DT/MB.step blocs par tick sur la ligne du bas de l'étage,
+  `mobFits`, arrêt au contact mesuré depuis `mobCell` ; remplace le saut de case tous les MB.step s et le recentrage) ;
+  `hitMob` : recul seulement sans `o.knockLock`, verrou posé sur un recul effectif, tacle lâché si le mob n'est plus à SA
+  portée ; verrou levé dans `stepMobs` quand le mob est revenu à portée de sa cible ; `strike` (coup immédiat, `m.atkReady`,
+  attack `done`) pour le mob qui tacle et le mob proche ; arrêt net dans `tickTower` (pas horizontal coupé si un mob réveillé
+  est à portée) ; interruption par un tacle → `stopAction` (le pas garde son avancée). Boss inchangé.
+- **Tests** : `tests/tower.test.js` +2 (glisse et s'arrête au contact ; recul +0,5 : tacle lâché, retacle ≥ 2 fois en 15 s ;
+  les deux échouent sans la modification) ✅ ; tower, knock, combat, view, lance ✅ (62).
+- **Simulation** `npm run simulate:tower -- --count 20` (main → branche) : a) toit 18/20 à 9:30 → 20/20 à 8:46, PV boss
+  restants 3 251 → 3 021 ; b) 7:31 → 7:05, 1 545 → 1 569 ; c) 7:29 → 7:05, 1 327 → 1 113 ; d) 7:31 → 7:05, 1 328 → 1 110 ;
+  0 victoire partout (déjà 0 sur main) ; attentes « bloqué » 0 ; projections un peu plus nombreuses (on reste plus
+  longtemps sur le toit).

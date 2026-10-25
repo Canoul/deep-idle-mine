@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tours : le nouveau combat aussi
+- **Pour le joueur** : dans les tours, les Séraphins et les Diablotins avancent en glissant, le coup du mineur part tout
+  de suite, il s'arrête net pour frapper le premier, et un coup qui repousse assez un mob lui fait lâcher son tacle
+  (jamais en boucle). La Lance en fer marche aussi dans les tours. Le boss ne change pas.
+- **Chiffres** (20 tours par équipe) : les étages se vident plus vite, le toit est atteint 25 à 45 s plus tôt (3 mineurs
+  de base 9:30 → 8:46 ; barbares 7:30 → 7:05) ; PV du boss restants 1 327 → 1 113 (2 barbares). Toujours 0 victoire sur
+  ces équipes de test (déjà le cas avant). Aucun blocage.
+- **État** : 🧪 sur la branche `geoffrey/tour-combat-continu` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Combat : mouvement continu, le recul casse le tacle, Lance en fer
 - **Pour le joueur** : les mobs avancent en continu (plus de saut de case en case). Le coup du mineur part tout de
   suite, et il s'arrête net pour frapper un mob qui entre dans sa portée. Un coup qui repousse un mob au-delà d'un

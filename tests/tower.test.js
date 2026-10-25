@@ -342,3 +342,37 @@ test('regroupement : projeté hors du toit, il est marqué tombé ; remonté sur
   Object.assign(a, { x: G.x0, y: G.roof - 1, action: null }); tickTower(G);
   assert.equal(a.fell, false);
 });
+
+/* mouvement continu et recul qui casse le tacle (25/10/2026, comme dans la mine) */
+function oneMob(seed = 3){
+  const G = newTower(seed, { side: 'angel', miners: team(1) });
+  const k = G.kinds.indexOf('mobs'), m = G.miners[0];
+  revealFloor(G, k);
+  const o = G.mobs.find(q => q.floor === k);
+  for(const q of G.mobs) if(q !== o) q.awake = false;
+  return { G, m, o };
+}
+
+test('mouvement continu : le Séraphin glisse vers le mineur (il est entre deux cases) et s\'arrête au contact', () => {
+  const { G, m, o } = oneMob();
+  o.x = G.x0 + 10; o.kx = 0;
+  Object.assign(m, { x: G.x0 + 4, y: o.y, action: { type: 'stun', dur: 1e9, t: 0, data: {} } });
+  let between = false;
+  for(let i = 0; i < 3; i++){ tickTower(G); if(Math.abs(o.kx || 0) > 1e-9 && Math.abs(o.kx) < 0.5) between = true; }
+  assert.ok(between, 'il avance par petits bouts');
+  for(let i = 0; i < 100; i++) tickTower(G);
+  const ecart = o.x + (o.kx || 0) - (m.x + (m.kx || 0)) - 1;   // le Séraphin qui tacle repousse aussi le mineur : on mesure l'écart
+  assert.ok(Math.abs(ecart) < 1e-6, `au contact, pas sur le mineur (écart ${ecart})`);
+});
+
+test('recul : repoussé au-delà de sa portée de tacle, le Séraphin lâche le mineur ; verrou : pas de recul en boucle', () => {
+  const { G, m, o } = oneMob();
+  Object.assign(m, { x: o.x - 1, y: o.y, action: { type: 'stun', dur: 1e9, t: 0, data: {} } });
+  m.carac.knockback = 0.5;                                                 // 0,25 + 0,5 : plus que la portée (0,5)
+  tickTower(G); assert.equal(o.grab, m.id, 'taclé');
+  m.action = null; o.hp = 1e9;
+  let freed = false, regrabs = 0, was = true;
+  for(let i = 0; i < 150; i++){ tickTower(G); const g = o.grab === m.id; if(!g) freed = true; if(g && !was) regrabs++; was = g; }
+  assert.ok(freed, 'il lâche le tacle');
+  assert.ok(regrabs >= 2, `il revient tacler à chaque cycle (${regrabs})`);
+});
