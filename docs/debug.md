@@ -2586,3 +2586,33 @@ Règles (voir CLAUDE.md) :
 - **Fusion avec le combat dynamique (25/10)** : `finishDash` remet `kx`/`ky` à 0 comme un pas, et `fx`/`fy` partent du
   décalage. Le coup du Dash ne passe pas par `inReach` (contact en cases, comme avant). Tests spells, dungeon, mobs, combat,
   knock, trap, help, goblin, wiki ✅ (101) ; simulation normale et `--skills mixed --spells dash` : 0 bloquée.
+
+### Aura des outils en main (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Symptôme** (retour de Geoffrey) : la pioche n'a pas d'aura quand le mineur mine. Pas un bug : la première version
+  limitait l'aura aux calques du corps (`SKIN.layers`).
+- **Quoi** : `src/meta/aura.js` (`SLOT_TEX` : armure + `pioche` → `SKIN.pickaxe`, `epee` → `SKIN.sword` ; `aurasOf` et
+  `sanitizeAuras` lisent ces cases, jamais la pioche en bois `base`) ; `src/skins.js` `toolSlotOf(look, action)` (même
+  choix que `toolOf`) ; `src/render/miner-sprite.js` : `drawAura` dans le repère tourné de l'outil, avant l'outil.
+  Les données (`auras`) passaient déjà : rien à changer côté serveur ni vues.
+- **Tests** : `tests/aura.test.js` (11 : cases dessinées avec pioche / épée, anneau exclu, `toolSlotOf`) ✅ ; skins,
+  lobby ✅. Rendu vérifié ✅ dans Edge sans fenêtre (vrai `createMinerSprite` : pioche R5 / R7 en miroir, épée R6, bois).
+- **Point fragile** : l'outil fait 13 px ; le halo faible (1 px × 13/16) est discret.
+
+### Administration : régler une jauge du Jugement (Geoffrey, 25/10) — branche `geoffrey/admin-jauge`, ✅ en ligne le 25/10
+- **Contexte** : la jauge du Démon était à 0 ce matin. Seule cause possible dans le code : la tour du Démon s'est
+  ouverte (`refresh`, `src/meta/judgment.js`, seul endroit qui remet `count` à 0). En pause (tour de l'Ange ouverte),
+  les résidus démoniaques versés sont ignorés et la jauge garde sa valeur ; pleine pendant la pause, elle attend la
+  fermeture de l'Ange et s'ouvre à la première lecture (`withJudgment` appelle `refresh` à chaque lecture du lobby).
+- **Quoi** : `setCount(j, side, count, now)` (`src/meta/judgment.js` : camp connu, entier 0..cap, même en pause, puis
+  `refresh` → pleine = ouverture) ; `game.adminJudgment(side, count)` (`server/game/service.js`, sous le verrou
+  `judgment`, enregistré) ; route `POST /api/admin/judgment` (`server/admin/routes.js`, même garde que `/give`, journal
+  « Admin : jauge demon a → b / cap ») ; `scripts/set-judgment.js`. Lecture de la clé et appel mis en commun dans
+  `scripts/admin-client.js` (`give-item.js` l'utilise, messages inchangés).
+- **Tests** : `tests/judgment.test.js` (+2 : pause « 100 reste 100 » dans les deux sens, `setCount`), `tests/admin.test.js`
+  (+1 : route, vue du lobby, relais refusé, 7 corps invalides), `tests/give-item.test.js` (+1 : script, refus avant
+  l'appel) ✅ ; game-http ✅ ; anticheat 89/89 ✅.
+- **Au passage** : `tests/game-http.test.js` « aucune route ne permet d'écrire dans un inventaire » échouait sur `main`
+  depuis la route `POST /api/game/inventory` (trier / déplacer, 25/10) : elle répond 400 au corps piégé, le test
+  n'acceptait que 404 / 405. Test élargi à 400 (l'inventaire reste vide, vérifié juste après). Pas un trou.
+- **Point fragile** : pas d'opId, mais rejouer la même commande donne le même résultat (on règle une valeur, on n'ajoute
+  pas). `--count 200` ouvre la tour tout de suite (ou dès la fermeture de l'autre).

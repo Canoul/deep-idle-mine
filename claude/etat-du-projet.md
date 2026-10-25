@@ -37,7 +37,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
   - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,
-    la jauge de l'autre est en pause et les mines lancées pendant ce temps n'ont pas de résidus (`residues:false` dans
+    la jauge de l'autre est en pause (elle garde sa valeur, rien n'y entre ; confirmé le 25/10) et les mines lancées pendant ce temps n'ont pas de résidus (`residues:false` dans
     la session). Ancien : les deux tours pouvaient être ouvertes ensemble.
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 : **0,5 % au total** (13 par area, moitié chacun), à la place de pierre normale (23/10 ; ancien : 0,5 % chacun, pris sur tout terrain), poids 6, visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 200 depuis le 24/10 ; ancien 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
@@ -56,10 +56,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
     couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.
-    **Aura du stuff** (25/10, Geoffrey ; `AURA`, `src/meta/aura.js`, `src/render/aura.js`) : pièce visible identifiée R4+ avec une vraie rune R4+ (pas un fragment) → halo pulsant de la couleur de la plus basse des deux (faible R4-R5, moyenne R6, forte R7), derrière le mineur, partout (mine, MI, tours, portraits). Le serveur envoie `auras: { case: qualité }` à côté de `look`.
+    **Aura du stuff** (25/10, Geoffrey ; `AURA`, `src/meta/aura.js`, `src/render/aura.js`) : pièce visible identifiée R4+ (armure ; pioche et épée seulement en main, en session) avec une vraie rune R4+ (pas un fragment) → halo pulsant de la couleur de la plus basse des deux (faible R4-R5, moyenne R6, forte R7), derrière le mineur, partout (mine, MI, tours, portraits). Le serveur envoie `auras: { case: qualité }` à côté de `look`.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. 
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
+  - Régler une jauge en ligne (25/10) : `sudo node scripts/set-judgment.js --side demon --count 175` sur le VPS (route
+    `/api/admin/judgment`, même clé que give-item, sans redémarrage).
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),
   8 anneaux (6 rares à +3 %, Midas et Bouffon épiques à +2 %). Effet pour **tout le groupe** de la session, une fois
   par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Sauf l'**Anneau du nerd** (XP) :

@@ -11,10 +11,11 @@ import { createGameService } from '../server/game/service.js';
 import { adminAllowed } from '../server/admin/routes.js';
 import { ROOT, SERVER } from '../server/config.js';
 import { deserialize, countOf } from '../src/meta/inventory.js';
+import { JUDGMENT } from '../src/config.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
 const TOKEN = 'k'.repeat(40);
-let base, servers = [], gameStore;
+let base, servers = [], gameStore, gameService;
 async function start(token){
   const store = createMemoryStore();
   await store.insertAccount({ id: 'C1', name: 'Crousti', nameKey: 'crousti', guest: false });
@@ -26,7 +27,7 @@ async function start(token){
   servers.push(server);
   return { url: `http://127.0.0.1:${server.address().port}`, gs, game };
 }
-before(async () => { const s = await start(TOKEN); base = s.url; gameStore = s.gs; });
+before(async () => { const s = await start(TOKEN); base = s.url; gameStore = s.gs; gameService = s.game; });
 after(() => { for(const s of servers) s.close(); });
 
 const give = (body, headers = {}, url = base) => fetch(url + '/api/admin/give', { method: 'POST',
@@ -77,6 +78,23 @@ test('adminAllowed : seulement depuis la machine elle-même', () => {
   const req = (ip, headers = {}) => ({ socket: { remoteAddress: ip }, headers: { authorization: `Bearer ${TOKEN}`, ...headers } });
   for(const ip of ['127.0.0.1', '::1', '::ffff:127.0.0.1']) assert.equal(adminAllowed(req(ip), TOKEN), true, ip);
   for(const ip of ['10.0.0.2', '1.2.3.4', '::ffff:1.2.3.4', '', undefined]) assert.equal(adminAllowed(req(ip), TOKEN), false, String(ip));
+});
+
+test('jauge du Jugement : réglée par la route, visible tout de suite par les joueurs ; fermée sans clé ; valeurs invalides refusées', async () => {
+  const post = (body, headers = {}) => fetch(base + '/api/admin/judgment', { method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${TOKEN}`, ...headers }, body: JSON.stringify(body) })
+    .then(async r => ({ status: r.status, data: await r.json().catch(() => null) }));
+  const demon = async () => (await gameService.judgment({ id: 'C1' })).sides.demon.count;
+  const r = await post({ side: 'demon', count: 175 });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.deepEqual(r.data, { side: 'demon', before: 0, after: 175, cap: JUDGMENT.cap, open: false });
+  assert.equal(await demon(), 175, 'ce que voit le lobby');
+  assert.equal((await gameStore.getJudgment()).demon.count, 175, 'enregistrée');
+  assert.equal((await post({ side: 'demon', count: 10 }, { 'x-forwarded-for': '1.2.3.4' })).status, 404);
+  for(const body of [{ side: 'demon', count: -1 }, { side: 'demon', count: 2.5 }, { side: 'demon', count: JUDGMENT.cap + 1 },
+                     { side: 'demon', count: '10' }, { side: 'diable', count: 10 }, { count: 10 }, {}])
+    assert.equal((await post(body)).status, 400, JSON.stringify(body));
+  assert.equal(await demon(), 175, 'refus : rien ne change');
 });
 
 test('quality : une pièce de stuff déjà identifiée dans cette qualité ; refusée hors stuff, sur un anneau ou invalide', async () => {

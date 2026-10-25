@@ -33,9 +33,9 @@ before(async () => {
 after(() => server.close());
 
 /* sans DIM_ADMIN_TOKEN dans l'environnement : la clé vient du fichier */
-const run = args => new Promise(res => {
+const run = (args, script = 'scripts/give-item.js') => new Promise(res => {
   const env = { ...process.env }; delete env.DIM_ADMIN_TOKEN;
-  execFile(process.execPath, ['scripts/give-item.js', '--url', url, ...args], { env, encoding: 'utf8' },
+  execFile(process.execPath, [script, '--url', url, ...args], { env, encoding: 'utf8' },
     (err, out, errOut) => res({ ok: !err, out: out + errOut }));
 });
 const t3 = async () => { const raw = await gs.getInventory('C1'); return raw ? countOf(deserialize(JSON.stringify(raw)), 'Treasure T3') : 0; };
@@ -74,4 +74,18 @@ test('--quality : un Plastron en fer R5 déjà identifié ; --quality invalide r
     const bad = await run(['--env', envFile, '--name', 'crousti', '--item', 'Plastron en fer', '--quality', q]);
     assert.ok(!bad.ok && /--quality/.test(bad.out), bad.out);
   }
+});
+
+/* scripts/set-judgment.js (25/10) : même chemin (admin-client.js), route /api/admin/judgment */
+test('set-judgment : jauge du Démon à 175 par le serveur qui tourne ; --side / --count invalides refusés avant l\'appel', async () => {
+  const r = await run(['--env', envFile, '--side', 'demon', '--count', '175'], 'scripts/set-judgment.js');
+  assert.ok(r.ok, r.out);
+  assert.match(r.out, /Jauge Démon : 0 → 175 \/ 200/);
+  assert.equal((await gs.getJudgment()).demon.count, 175);
+  for(const args of [['--side', 'diable', '--count', '10'], ['--side', 'demon', '--count', '-1'], ['--side', 'demon', '--count', '2.5'],
+                     ['--side', 'demon', '--count', '999'], ['--side', 'demon']]){
+    const bad = await run(['--env', envFile, ...args], 'scripts/set-judgment.js');
+    assert.ok(!bad.ok && /--(side|count)/.test(bad.out), bad.out);
+  }
+  assert.equal((await gs.getJudgment()).demon.count, 175);
 });

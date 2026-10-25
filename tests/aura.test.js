@@ -34,7 +34,7 @@ test('aura : valeurs absurdes refusées', () => {
     assert.equal(auraQ(p), 0, JSON.stringify(p));
 });
 
-test('aura : seulement les pièces visibles sur le corps (pas la pioche, l\'épée ni les anneaux)', () => {
+test('aura : seulement les pièces dessinées (corps, pioche, épée ; pas les anneaux)', () => {
   const worn = {
     torse: piece(6, 6),
     casque: { item: 'Casque en fer', uid: 2, q: 7, rune: rune(7) },
@@ -42,13 +42,14 @@ test('aura : seulement les pièces visibles sur le corps (pas la pioche, l\'ép�
     pioche: { item: 'Pioche en fer', uid: 4, q: 7, rune: rune(7) },
     epee: { item: 'Épée en fer', uid: 5, q: 7, rune: rune(7) },
     pieds: null,
+    anneau1: { item: 'Anneau du tigre', uid: 6, q: 7, rune: rune(7) },
   };
-  assert.deepEqual(aurasOf(worn), { torse: 6, casque: 7 });
+  assert.deepEqual(aurasOf(worn), { torse: 6, casque: 7, pioche: 7, epee: 7 });
   assert.deepEqual(aurasOf(null), {});
 });
 
 test('aura : relue côté navigateur (cases visibles, qualités R4 à R7 entières)', () => {
-  assert.deepEqual(sanitizeAuras({ torse: 5, casque: 7, pioche: 7, jambes: 3, pieds: 6.5, ceinture: '6', bidon: 7 }), { torse: 5, casque: 7 });
+  assert.deepEqual(sanitizeAuras({ torse: 5, casque: 7, pioche: 7, epee: 4, anneau1: 7, jambes: 3, pieds: 6.5, ceinture: '6', bidon: 7 }), { torse: 5, casque: 7, pioche: 7, epee: 4 });
   assert.deepEqual(sanitizeAuras('x'), {});
 });
 
@@ -87,6 +88,16 @@ test('aura : les tours la donnent aussi', async () => {
 test('aura : portrait du lobby (le sien : son stuff ; les autres : envoyé par le serveur, revérifié)', async () => {
   const { portraitAuras } = await import('../src/ui/lobby.js');
   assert.deepEqual(portraitAuras({ me: true, auras: { torse: 7 } }, { casque: 5 }), { casque: 5 });
-  assert.deepEqual(portraitAuras({ me: false, auras: { torse: 6, pioche: 7 } }, {}), { torse: 6 });
+  assert.deepEqual(portraitAuras({ me: false, auras: { torse: 6, anneau1: 7 } }, {}), { torse: 6 });
   assert.deepEqual(portraitAuras({ me: false }, {}), {}, 'serveur ancien : pas d\'aura');
+});
+
+test('aura : l\'outil en main (épée pour frapper si équipée, sinon la pioche ; pioche en bois de base : aucune)', async () => {
+  const { toolSlotOf } = await import('../src/skins.js');
+  const look = { pioche: 'Pioche en fer', epee: 'Épée en fer' };
+  assert.equal(toolSlotOf(look, 'mine'), 'pioche');
+  assert.equal(toolSlotOf(look, 'attack'), 'epee');
+  assert.equal(toolSlotOf({ pioche: 'Pioche en fer' }, 'attack'), 'pioche');
+  assert.equal(toolSlotOf({}, 'mine'), null);
+  assert.equal(toolSlotOf({ epee: 'Épée en fer' }, 'mine'), null);
 });

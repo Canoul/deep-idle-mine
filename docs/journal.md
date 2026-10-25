@@ -18,6 +18,20 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
+- **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
+  serveur, sans le redémarrer : `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175`.
+- **Décisions** : confirmé, une jauge en pause garde sa valeur : à 100 quand la tour de l'Ange s'ouvre, celle du Démon
+  est toujours à 100 à la fermeture, et vice versa. C'était déjà le cas, c'est maintenant testé noir sur blanc. Si une
+  jauge revient à 0, c'est que sa tour s'est ouverte.
+- **À suivre** : une fois en ligne, mettre la jauge du Démon à 175 / 200 (demande de Geoffrey).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Aura aussi sur la pioche et l'épée
+- **Pour le joueur** : une pioche ou une épée R4+ runée R4+ a aussi son aura, quand le mineur s'en sert en session (la
+  pioche quand il mine, l'épée quand il frappe). La pioche en bois de base n'en a jamais. Les portraits ne montrent
+  pas les outils, donc pas d'aura d'outil dessus.
+
 ## 25/10/2026 — Geoffrey — Dash : il suit le terrain, vise juste, étourdit
 - **Pour le joueur** : le Dash du barbare n'est plus une ligne droite : il descend, et saute un bloc qui lui barre la
   route. Quand le barbare va combattre ou aider un allié, il garde son Dash jusqu'à ce que le mob soit à 6 cases ou moins,
@@ -32,6 +46,7 @@ Modèle d'entrée :
 - **Pour le joueur** : quand le minotaure attend juste derrière l'entrée, le barbare se bat sur le seuil. Avant, les
   autres mineurs restaient dehors à « attendre le barbare » jusqu'à la fin du combat ; maintenant ils viennent taper
   le boss avec lui (sauf ceux réglés sur « Fuir »).
+
 - **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Inventaire : recycler une pièce de stuff
@@ -76,6 +91,7 @@ Modèle d'entrée :
   et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
   équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
 - **État** : ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`, puis 60 % en areas 0 à 2)
+
 
 ## 25/10/2026 — Geoffrey — Aura du stuff runé
 - **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
