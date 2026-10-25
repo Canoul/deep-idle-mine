@@ -2918,7 +2918,7 @@ Règles (voir CLAUDE.md) :
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
 
-### Glyphes, étape 1 (Geoffrey, 25/10) — 🧪 branche `geoffrey/glyphes`
+### Glyphes, étape 1 (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Spec / plan** : `docs/superpowers/specs/2026-10-25-glyphes-design.md`, `docs/superpowers/plans/2026-10-25-glyphes.md`.
 - **Quoi** : `GLYPHS` + 9 objets `cat:'glyph'` (épiques, texture `glyph`). `src/meta/glyphs.js` : `glyphOf`, `nodeOfGlyph`,
   `glyphOp` (pose / retrait, idempotent via `st.ops`), `isActive`, `activeGlyphs`, `sessionSkills`, `withGlyphStats`,
@@ -2941,7 +2941,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
   parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).
 
-### Glyphe Treuil, étape 2 (Geoffrey, 25/10) — 🧪 branche `geoffrey/glyphe-treuil`
+### Glyphe Treuil, étape 2 (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `GLYPHS.items.winch`, `liftSpeed` (3), `liftEvery` (2), textures `lift_rail`, `lift_top`, `lift_cabin` (cabine
   vide au milieu : on voit le mineur). `src/sim/world.js` `tryUnlock` : porteur du glyphe prioritaire, `winchJob.lift`,
   `return` sans chantier aux déblocages k impair ; `ai.js` `decideWinch` : `G.winch.lift = true` (une fois posé, reste) ;

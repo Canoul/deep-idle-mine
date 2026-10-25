@@ -26,7 +26,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : 1er, 3e, 5e déblocages ; Escalateur compris ; son porteur construit en priorité ; Mule
   inchangée ; aussi dans les tours ; nouvelles textures.
 - **À suivre** : c'est un glyphe fort (une area de plus) : à surveiller quand les glyphes auront une source en jeu.
-- **État** : 🧪 sur la branche `geoffrey/glyphe-treuil` (pas en ligne ; contient aussi l'étape 1)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Glyphes (étape 1 : 9 glyphes)
 - **Pour le joueur** : nouvel objet, le **glyphe** : un parchemin lié à un skill. Dans l'onglet Skills, une petite case
@@ -37,7 +37,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : skill au rang max ; un glyphe par skill ; retirable sans perte ; Braum à chaque entrée ;
   Pillage plafonné à +25 % ; Force brute sur les dégâts totaux ; Glyphe Treuil (ascenseur) à part, étape 2.
 - **À suivre** : la source des glyphes en jeu ; le Glyphe Treuil.
-- **État** : 🧪 sur la branche `geoffrey/glyphes` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la
