@@ -225,19 +225,3 @@ test('étage de blocs : on avance depuis l\'entrée, les blocs au-dessus de l\'e
     for(const x of gate) assert.ok(colEnd(x) < colEnd(far), `${n} mineur(s) : colonne ${x} (entrée) finie avant la plus lointaine`);
   }
 });
-
-test('recul des mobs : repoussé, le Séraphin reste sur place un instant avant de revenir (sinon le recul ne se voyait pas)', () => {
-  const G = newTower(3, { side: 'angel', miners: team(1) });
-  const k = G.kinds.indexOf('mobs'), m = G.miners[0];
-  G.floorSeen.fill(true); for(const o of G.mobs) o.awake = false;
-  const o = G.mobs.find(q => q.floor === k); o.awake = true; o.hp = 1e9; o.x = G.x0 + 8;
-  Object.assign(m, { x: o.x - 1, y: o.y, action: null });
-  let pushedAt = null, pos = null;
-  for(let i = 0; i < 30 && pushedAt == null; i++){ tickTower(G); if((o.kx || 0) > 0){ pushedAt = G.t; pos = o.x + o.kx; } }
-  assert.ok(pushedAt != null, 'repoussé');
-  hold(m);
-  for(let i = 0; i < Math.round(TOWER.mobs.knockStun / DT) - 1; i++) tickTower(G);
-  assert.equal(o.x + o.kx, pos, 'encore sur place juste avant la fin du temps sonné');
-  for(let i = 0; i < 10; i++) tickTower(G);
-  assert.ok(o.x + (o.kx || 0) < pos, 'puis il revient vers le mineur');
-});

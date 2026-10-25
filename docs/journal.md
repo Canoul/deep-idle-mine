@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tour : les mobs reculent deux fois plus, sans temps sonné
+- **Pour le joueur** : un Séraphin ou un Diablotin frappé recule de 0,5 bloc (avant 0,25) et revient aussitôt au
+  contact : plus de pause de 0,5 s après un recul.
+- **Décisions** (Geoffrey) : résistance au recul des mobs de la tour à −100 % ; temps sonné retiré. Mis en ligne sans
+  relancer les tests (demande de Geoffrey).
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Tour : étages de blocs sans retour en arrière, recul des mobs visible, mesures ?perf
 - **Pour le joueur** : dans un étage de briques, les mineurs avancent maintenant depuis l'entrée, colonne par colonne :
   ils ne laissent plus les briques du haut au-dessus de l'entrée pour revenir les chercher à la fin. Un Séraphin ou un

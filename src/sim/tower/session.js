@@ -188,9 +188,7 @@ function stepMobs(G){
     /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, hitMob) */
     const t = v ?? preyOf(G, o);
     if(o.knockLock && t && mobReach(G, o, t)) o.knockLock = false;
-    /* il tacle : il suit son mineur pour rester au contact ; repoussé, il reste sonné MB.knockStun s (sinon la marche
-       continue effaçait le recul en 0,2 s : on ne le voyait pas, 25/10) */
-    if(t && !(o.stagger > G.t)) walkMob(G, o, t);
+    if(t) walkMob(G, o, t);   // il tacle : il suit son mineur pour rester au contact
   }
 }
 
@@ -220,9 +218,10 @@ function hitMob(G, m, o){
      ce mineur ; verrou : repoussé une fois, il ne peut plus l'être avant d'être revenu à portée (stepMobs) */
   if(o.hp > 0 && !o.knockLock){
     const x0 = o.x, k0 = o.kx || 0;
-    push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));
+    /* résistance au recul des mobs de la tour : MB.knockRes % (négative = ils reculent plus : −100 % = le double) */
+    push(o, m, knockbackOf(m) * (1 - MB.knockRes / 100), (x, y) => y === o.y && mobFits(G, o, x));
     if(o.x !== x0 || (o.kx || 0) !== k0){
-      o.knockLock = true; o.stagger = G.t + MB.knockStun;
+      o.knockLock = true;
       if(o.grab === m.id && !mobReach(G, o, m)) o.grab = null;
     }
   }
