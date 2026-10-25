@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Glyphe Treuil : l'ascenseur
+- **Pour le joueur** : 10ᵉ glyphe. Posé sur le skill Treuil (au max), le logisticien construit un **ascenseur** au lieu
+  du treuil : 3 fois plus rapide (Escalateur compris), avec rails, machinerie et cabine. Il ne le pose ou ne le
+  prolonge qu'une nouvelle area sur deux (1re, 3e, 5e…), donc il s'interrompt deux fois moins pour creuser. Dans les
+  tours aussi. En simulation, une équipe mixte descend d'une area de plus (3,2 → 4,0) et rapporte 9 % de plus.
+- **Décisions** (Geoffrey) : 1er, 3e, 5e déblocages ; Escalateur compris ; son porteur construit en priorité ; Mule
+  inchangée ; aussi dans les tours ; nouvelles textures.
+- **À suivre** : c'est un glyphe fort (une area de plus) : à surveiller quand les glyphes auront une source en jeu.
+- **État** : 🧪 sur la branche `geoffrey/glyphe-treuil` (pas en ligne ; contient aussi l'étape 1)
+
 ## 25/10/2026 — Geoffrey — Glyphes (étape 1 : 9 glyphes)
 - **Pour le joueur** : nouvel objet, le **glyphe** : un parchemin lié à un skill. Dans l'onglet Skills, une petite case
   sous chaque skill permet d'y poser son glyphe quand le skill est au rang max ; il ajoute un effet (Pioche aiguisée,

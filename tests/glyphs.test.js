@@ -289,3 +289,20 @@ test('Glyphe Treuil : le chantier pose un ascenseur ; le seau va 3 fois plus vit
   assert.ok(Math.abs(baseWinchT(G, m) / lift - GLYPHS.liftSpeed) < 1e-9, 'treuil 3 fois plus lent');
   assert.ok(Math.abs(lift - 1 / (m.carac.climbSpeed * WINCH.speedFactor * 1.25 * GLYPHS.liftSpeed)) < 1e-12, 'Escalateur compris');
 });
+
+test('Glyphe Treuil dans les tours : le logisticien porteur installe un ascenseur ; même vitesse que dans la mine (× 3)', async () => {
+  const { newTower, tickTower, towerWinchT } = await import('../src/sim/tower/session.js');
+  const { winchMult } = await import('../src/sim/mineur.js');
+  const G = newTower(3, { side:'angel', miners:[{ name:'L', account:'L', skillTree:'logisticien', skills:{ winch:1, glyph_winch:1, winch_speed:0.25 } }] });
+  const m = G.miners[0]; G.boss.engaged = false;
+  Object.assign(m, { x:G.x0 - 3, y:G.roof - 1, knocked:true, action:null });
+  for(let i = 0; i < 3000 && !G.winch; i++) tickTower(G);
+  assert.equal(G.winch?.lift, true, 'un ascenseur');
+  assert.equal(winchMult(G), 1.25 * GLYPHS.liftSpeed);
+  assert.ok(Math.abs(towerWinchT(G, m) - 1 / (m.carac.climbSpeed * WINCH.speedFactor * winchMult(G))) < 1e-12);
+  const H = newTower(3, { side:'angel', miners:[{ name:'L', account:'L', skillTree:'logisticien', skills:{ winch:1 } }] });
+  const n = H.miners[0]; H.boss.engaged = false;
+  Object.assign(n, { x:H.x0 - 3, y:H.roof - 1, knocked:true, action:null });
+  for(let i = 0; i < 3000 && !H.winch; i++) tickTower(H);
+  assert.equal(H.winch.lift, undefined, 'sans glyphe : un treuil');
+});

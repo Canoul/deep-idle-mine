@@ -813,8 +813,7 @@ def main():
     rect(ltop, 7, 12, 2, 4, steel_d)                                        # câble
     tex['lift_top'] = ltop
     cab = blank()
-    rect(cab, 2, 1, 12, 14, steel_d)                                        # cadre
-    rect(cab, 3, 2, 10, 12, hexc('#2c3138'))                                # intérieur
+    rect(cab, 2, 1, 1, 14, steel_d); rect(cab, 13, 1, 1, 14, steel_d)      # cadre (intérieur vide : on voit le mineur)
     for x in range(4, 13, 3):
         rect(cab, x, 2, 1, 12, steel)                                       # grille
     rect(cab, 2, 1, 12, 1, steel_l); rect(cab, 2, 14, 12, 1, steel_l)

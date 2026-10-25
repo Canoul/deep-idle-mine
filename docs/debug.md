@@ -2940,3 +2940,17 @@ Règles (voir CLAUDE.md) :
   dans la mine classique » rouge puis vert ; 313/313 + anti-triche 91/91.
 - **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
   parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).
+
+### Glyphe Treuil, étape 2 (Geoffrey, 25/10) — 🧪 branche `geoffrey/glyphe-treuil`
+- **Quoi** : `GLYPHS.items.winch`, `liftSpeed` (3), `liftEvery` (2), textures `lift_rail`, `lift_top`, `lift_cabin` (cabine
+  vide au milieu : on voit le mineur). `src/sim/world.js` `tryUnlock` : porteur du glyphe prioritaire, `winchJob.lift`,
+  `return` sans chantier aux déblocages k impair ; `ai.js` `decideWinch` : `G.winch.lift = true` (une fois posé, reste) ;
+  `mineur.js` `winchMult` × `liftSpeed` si `G.winch.lift` (tous les calculs du seau : déplacement, chemins, Mule).
+  Tours : `towerWinchT` = même `winchMult`, `winchSetup` pose `lift` si `glyph_winch`. Rendu `canvas.js` / `tower.js`.
+  `scripts/simulate.js` : option `--glyphs`.
+- **Tests** : `tests/glyphs.test.js` (+4 : priorité et rythme, sans glyphe inchangé, chantier + vitesse Escalateur
+  compris, tours) ; glyphs, tower, winch, mule, focus, duck, treasure ✅. Simulation `--miners 3 --skills mixed --count 5` :
+  sans glyphe areas 3,2 / prof 201 / coffre 4 510 ; `--glyphs winch` areas 4,0 / prof 226 / coffre 4 926 ; 0 bloquée.
+  Rendu des textures vérifié dans Edge (rails, machinerie, cabine, à côté du treuil).
+- **Point fragile** : `G.winch.lift` reste vrai une fois posé (un treuil prolongé ensuite par un logisticien sans glyphe,
+  s'il quitte, resterait un ascenseur) ; sans glyphe, `G.winch` n'a pas de clé `lift` (tests du treuil inchangés).

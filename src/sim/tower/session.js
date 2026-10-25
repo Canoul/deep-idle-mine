@@ -12,7 +12,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
-import { ladderTime } from '../mineur.js';
+import { ladderTime, winchMult } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -131,7 +131,9 @@ export const towerSupported = (G, x, y) => isWinch(G, x, y) ||
 const mineT = (m, t) => BLOCKS[t].hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
-const winchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * (1 + (G.winchBoost || 0)));   // seau, comme dans la mine
+/* seau, comme dans la mine (winchMult : Escalateur, et × liftSpeed pour l'ascenseur du Glyphe Treuil) */
+export const towerWinchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * winchMult(G));
+const winchT = towerWinchT;
 const fallT = () => 1 / CFG.fallSpeed;
 const hitT = m => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100);
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
@@ -538,9 +540,10 @@ function finishAction(G, m, a){
     put(m.x, m.y);
     if(m.skill.tall_ladder && towerAir(G, m.x, m.y - 1)) put(m.x, m.y - 1);
   } else if(a.type === 'winchSetup'){
-    G.winch ??= { x: m.x, top: G.roof - 1, bottom: G.floor };
+    G.winch ??= { x: m.x, top: G.roof - 1, bottom: G.floor, ...(m.skill.glyph_winch ? { lift: true } : {}) };   // Glyphe Treuil : ascenseur
     m.winchJob = null;
-    log(G, `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
+    log(G, G.winch.lift ? `🛗 ${m.name} a installé un ascenseur au pied de la tour : on remonte au sommet en cabine`
+                        : `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
   } else if(a.type === 'torch'){
     if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y }); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
