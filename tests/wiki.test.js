@@ -84,7 +84,7 @@ test('wiki : stats, treasures, niveaux, format français', () => {
   assert.deepEqual(st.map(s => s.key).sort(), Object.keys(STATS).sort());
   assert.ok(st.every(s => s.help), 'chaque stat a son explication');
   assert.deepEqual(D.lootTables().map(t => t.name), Object.keys(LOOT));
-  assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.09');
+  assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.15');   // 6 BP en fer à 2 % + 3 à 1 % (25/10)
   assert.deepEqual(D.levelRows(4), [{ level:2, need:1000, total:1000 }, { level:3, need:1500, total:2500 }, { level:4, need:2250, total:4750 }]);
   assert.equal(D.fmt(1234.5), '1 234,5');
   assert.equal(D.fmt(2.25), '2,25');
@@ -112,4 +112,9 @@ test('wiki : sorts, XP de spécialisation, anneaux et date de mise à jour (24/1
   assert.match(html, /class="maj"[^>]*>🗓 Mis à jour le \d{2}\/\d{2}\/\d{4}</, 'date de mise à jour dans le bandeau');
   for(const id of ['sorts', 'spe', 'anneaux', 'sets', 'w-spells', 'w-spec']) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(!/Il en porte 10/.test(html), 'passerelles illimitées');
+});
+
+test('wiki : chance de treasure par area lue dans la config (60 % en areas 0 à 2, 40 % au-delà, 25/10)', () => {
+  assert.equal(D.treasureChanceText(), '40 à 60 %');
+  assert.deepEqual(AREAS.map(a => a.chestChance), [0.6, 0.6, 0.6, 0.4, 0.4, 0.4, 0.4]);
 });

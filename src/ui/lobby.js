@@ -9,6 +9,7 @@ import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
+import { sanitizeAuras } from '../meta/aura.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -34,6 +35,8 @@ export function lobbySlots(account, party, max = GAME.maxPlayers, myTree = null)
 /* skin d'une place : le sien = son stuff actuel (à jour sans attendre le serveur) ; les autres = l'équipement porté
    envoyé par le serveur (look), revérifié */
 export const portraitLook = (slot, myLook = {}) => slot.me ? myLook : sanitizeLook(slot.look);
+/* et son aura (src/meta/aura.js), de la même façon */
+export const portraitAuras = (slot, mine = {}) => slot.me ? mine : sanitizeAuras(slot.auras);
 
 /* spécialisation d'un joueur (arbre de skills choisi) : « 🪜 Logisticien (SP lvl : 3) », ou « Sans spécialisation » ;
    level : son niveau de spécialisation dans cet arbre (absent = pas affiché) */
@@ -155,7 +158,7 @@ export function setupLobby(h){
                               `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
     /* sprite de chaque joueur, avec son équipement */
-    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {})));
+    $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {}), portraitAuras(slots[+c.dataset.slot], h.auras?.() ?? {})));
 
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');

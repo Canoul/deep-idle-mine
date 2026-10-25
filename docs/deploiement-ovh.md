@@ -109,7 +109,7 @@ Ensuite, Render peut être supprimé (Settings → Delete Web Service) quand tou
 | Redémarrer le jeu | `sudo systemctl restart deep-idle-mine` |
 | Changer un réglage | `sudo nano /etc/deep-idle-mine.env` (Ctrl+O Entrée pour enregistrer, Ctrl+X pour sortir), puis redémarrer |
 | Redémarrer tout le VPS | `sudo reboot` (le jeu repart tout seul) |
-| Donner un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/give-item.js --name PSEUDO --item "Treasure T3" --qty 1` (nom exact de l'objet ; **sans redémarrer** : le joueur le voit tout de suite ; il faut la clé `DIM_ADMIN_TOKEN`, voir plus bas) |
+| Donner un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/give-item.js --name PSEUDO --item "Treasure T3" --qty 1` (nom exact de l'objet ; `--quality 5` : une pièce de stuff déjà identifiée R5 ; **sans redémarrer** : le joueur le voit tout de suite ; il faut la clé `DIM_ADMIN_TOKEN`, voir plus bas) |
 
 **Clé d'administration (une seule fois)** : pour donner des objets sans redémarrer, le jeu a besoin d'une clé secrète
 de 64 caractères dans ses réglages. Sur le VPS :

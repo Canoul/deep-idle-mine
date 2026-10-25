@@ -19,18 +19,19 @@ const dec36 = c => parseInt(c, 36);
 function minerView(m){
   const a = m.action, d = a?.data || {};
   return {
-    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, face: m.face,
+    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
     status: m.status, mode: m.mode, reason: m.reason, ox: m.ox, load: m.load, inv: m.inv,
     torches: m.torches, bridges: m.bridges, prefs: m.prefs, focusNotice: m.focusNotice ?? null, stats: m.stats,
     pings: (m.pings || []).map(({ x, y, t }) => ({ x, y, t })),     // minerais signalés par la boussole (cadres jaunes)
     look: m.look || {},                                              // équipement visible (skin, src/skins.js)
+    auras: m.auras || {},                                            // aura des pièces visibles (src/meta/aura.js)
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },          // sorts équipés et recharges (barre des sorts)
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
+const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
   channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null });   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */
@@ -93,10 +94,10 @@ export function createViewer(G){
    mineur et chaque mob glisse de la position où il est affiché quand l'envoi arrive (jamais de saut) vers sa
    nouvelle position, sur la durée moyenne entre deux envois. L'image a ainsi ~un envoi de retard sur la partie. */
 const TELEPORT = 6;            // au-delà de cette distance (cases), pas de glissade : il apparaît directement
-const minerPos = m => {        // position exacte au moment de l'envoi (un pas en cours compte pour sa part faite)
+const minerPos = m => {        // position exacte au moment de l'envoi (un pas en cours compte pour sa part faite ; recul : kx, ky)
   const a = m.action;
   if(a && a.type === 'move'){ const p = Math.min(1, a.t / a.dur); return [a.data.fx + (a.data.x - a.data.fx) * p, a.data.fy + (a.data.y - a.data.fy) * p]; }
-  return [m.x, m.y];
+  return [m.x + (m.kx || 0), m.y + (m.ky || 0)];
 };
 /* position affichée de o (mineur ou mob de la copie M) à l'instant now (ms, horloge de la page) */
 export function shownPos(M, o, now = performance.now()){
@@ -144,7 +145,7 @@ export function applyView(M, v, now = performance.now()){
   if(v.log) M.log = v.log;
   /* glissades : depuis la position affichée maintenant (calculée avec l'envoi précédent), vers la nouvelle */
   glide(M, M.miners, v.miners, minerPos, now);
-  glide(M, M.mobs, v.mobs, o => [o.x, o.y], now);
+  glide(M, M.mobs, v.mobs, o => [o.x + (o.kx || 0), o.y + (o.ky || 0)], now);
   M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
   M._at = now;
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
