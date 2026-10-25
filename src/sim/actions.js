@@ -198,6 +198,13 @@ export function landHit(G,m,o){
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
   if(o.hp<=0){ killMob(G,m,o); return; }
+  /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
+  if(gearChance(G,m.carac.doubleAttack||0)){
+    const d2=hitDamage(G,m);
+    o.hp-=d2; splash(G,m,o,d2);
+    m.stats.doubleHits=(m.stats.doubleHits||0)+1;
+    if(o.hp<=0){ killMob(G,m,o); return; }
+  }
   if(o.knockLock) return;
   const k=o.kx||0, ky=o.ky||0, x0=o.x, y0=o.y;
   push(o, m, knockbackOf(m), mobCanEnter(G,o));

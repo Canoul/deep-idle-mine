@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
+- **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la
+  nouvelle **double attaque** (chance qu'un coup frappe deux fois). Sur une rune R6 ou R7, la Découverte est aussi
+  probable que n'importe quelle autre stat (avant : 25 % de chance par ligne, bien plus fréquente).
+- **Décisions** (Geoffrey) : les 5 stats dans la banque ; Découverte au même rang que les autres ; double attaque.
+  Choix de Claude à valider : leur valeur pour 100 x (ténacité +10 %, résistance au recul +20 %, portée +0,1, recul
+  +0,1, double attaque +20 %).
+- **État** : 🧪 sur la branche `geoffrey/runes-stats` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Inventaire : « Ouvrir tout »
 - **Pour le joueur** : quand on a plusieurs treasures du même type (ou plusieurs trésors de tour identiques), un bouton
   **Ouvrir tout (N)** apparaît à côté de « Ouvrir ». Il les ouvre tous d'un coup (100 au plus par clic), chacun avec son
