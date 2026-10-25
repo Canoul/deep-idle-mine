@@ -25,7 +25,7 @@ Modèle d'entrée :
   donné par l'admin n'est jamais annoncé ; personne n'est mentionné (un « @everyone » dans un pseudo ne sonne pas).
 - **À suivre** : avant la mise en ligne, créer le webhook dans Discord et mettre son adresse dans les réglages du
   serveur OVH (`DIM_DISCORD_WEBHOOK`, voir `docs/deploiement-ovh.md`). Sans ça, rien ne casse, mais rien n'est annoncé.
-- **État** : 🧪 sur la branche `geoffrey/discord-r7` (pas en ligne)
+- **État** : ✅ en ligne le 25/10 (webhook vérifié sur le VPS : message de test reçu)
 
 ## 25/10/2026 — Geoffrey — Tours : le nouveau combat aussi
 - **Pour le joueur** : dans les tours, les Séraphins et les Diablotins avancent en glissant, le coup du mineur part tout

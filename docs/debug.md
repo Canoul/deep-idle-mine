@@ -2831,7 +2831,7 @@ Règles (voir CLAUDE.md) :
   0 victoire partout (déjà 0 sur main) ; attentes « bloqué » 0 ; projections un peu plus nombreuses (on reste plus
   longtemps sur le toit).
 
-### Annonces Discord R7 : trésor de tour et identification (Geoffrey, 25/10) — 🧪 branche `geoffrey/discord-r7`
+### Annonces Discord R7 : trésor de tour et identification (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `server/social/discord.js` (nouveau) : `treasureMessage(pseudo, item)` (objet `ITEMS[item].treasure` avec
   `chest.q >= ANNOUNCE.minQuality`, sinon null), `identifyMessage(pseudo, piece)`, `escapeMarkdown`, et
   `createDiscordAnnouncer({ url, fetch, log, timeoutMs })` : POST JSON `{ content, allowed_mentions:{ parse:[] } }`,
@@ -2845,7 +2845,7 @@ Règles (voir CLAUDE.md) :
   + fin rejouée par `recover` = pas de doublon, tour R6 = rien, `announce` qui lève = tour quand même versée,
   identification R7 + double clic = une annonce, R6 et don admin R7 = rien) ✅ ; avec game-service, anticheat/upgrade,
   admin, boot-check, amelioration, rune ✅ (109).
-- **Pas vérifié** : un vrai envoi vers Discord (il faut le webhook sur le VPS). Les emoji sont envoyés en Unicode (un
+- **Vérifié** : webhook sur le VPS, message de test (curl) reçu dans #général ✅. Pas encore vu : une vraie annonce R7 en jeu. Les emoji sont envoyés en Unicode (un
   `:rotating_light:` envoyé par webhook pourrait rester en texte).
 - **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
   le salon peut devenir bruyant.
