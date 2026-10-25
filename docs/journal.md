@@ -31,8 +31,8 @@ Modèle d'entrée :
   parfois un diamant ou un treasure. Un tick dans la dimension coûte 0,05 ms contre 0,55 ms dans la mine.
 - **Fin de session** : à 30 s de la fin, le k hole se referme et le groupe revient à la surface, le temps de tout déposer
   au coffre (rien de perdu sur 5 essais) ; un k hole découvert dans les 30 dernières secondes ne s'ouvre pas.
-- **À suivre** : le tester en vrai (mode dev : « Chance de k hole par area » à 1) ; décider quoi faire du « jackpot » en
-  area 0 (même contenu riche quelle que soit l'area) ; nom affiché.
+- **Décision (jackpot)** : même contenu riche quelle que soit l'area, même en area 0 ; assumé parce que c'est rare.
+- **À suivre** : le tester en vrai (mode dev : « Chance de k hole par area » à 1) ; nom affiché.
 - **État** : 🧪 sur la branche `geoffrey/k-hole` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
