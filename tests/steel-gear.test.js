@@ -20,11 +20,11 @@ const ARMOR = { 'Shiny iron':10, 'Tissu sombre':10 }, TOOL = { 'Shiny gold':10, 
 /* demandé par le créateur : au départ pièce en fer × 1,2 ; le 24/10, acier × 1,5, épée et pioche × 1,25 (entier le plus proche
    pour oxygène, pods, dégâts). L'acier reste au-dessus du fer sur chaque stat. */
 const STEEL = {
-  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:69 },     cost:{ 'Steel ingot':10, 'Tainted gold':5,  ...ARMOR } },
+  'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:100 },    cost:{ 'Steel ingot':10, 'Tainted gold':5,  ...ARMOR } },
   'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, 'Tainted gold':8,  ...ARMOR } },
-  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.08 },  cost:{ 'Steel ingot':14, 'Tainted gold':7,  ...ARMOR } },
-  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.08 },       cost:{ 'Steel ingot':8,  'Tainted gold':4,  ...ARMOR } },
-  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.6 },    cost:{ 'Steel ingot':20, ...TOOL } },
+  'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.6 },   cost:{ 'Steel ingot':14, 'Tainted gold':7,  ...ARMOR } },
+  'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.67 },       cost:{ 'Steel ingot':8,  'Tainted gold':4,  ...ARMOR } },
+  'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.5 },    cost:{ 'Steel ingot':20, ...TOOL } },
   'Épée en acier':     { iron:'Épée en fer',     set:{ damage:16 },          cost:{ 'Steel ingot':10, ...TOOL } },
 };
 const BALANCE = 'Plastron de l\'équilibre';
@@ -118,12 +118,21 @@ test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lign
                  epee:{ item:'Épée en fer', uid:9 }, casque:{ item:'Casque en acier', uid:10 } };
   const [m] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:gear } });
   assert.equal(m.carac.pods, STATS.pods + 88 + lineValue('Plastron en fer', line));
-  assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.6);
+  assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.5);
   assert.equal(m.carac.damage, 14);
-  assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 69);
+  assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 100);
   /* la ligne suit la valeur du tier (25/10) : 20 % de 250 x (T2) = 10 pods ; avant, 20 % de la valeur de l'objet */
   assert.equal(lineValue('Plastron en fer', line), 10);
   const [b] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:{ torse:{ item:BALANCE, uid:11 } } } });
   assert.equal(b.carac.pods, STATS.pods + 188);
   assert.equal(b.carac.torches, STATS.torches + 8);
+});
+
+test('casque, jambes et bottes en acier : environ 400 x chacun, bien au-dessus du fer (25/10)', async () => {
+  const { itemValue } = await import('../src/meta/piece.js');
+  for(const name of ['Casque en acier', 'Jambes en acier', 'Bottes en acier']){
+    const v = itemValue(name);
+    assert.ok(v >= 390 && v <= 410, `${name} : ${v} x`);
+    assert.ok(v > itemValue(STEEL[name].iron) * 1.4, `${name} : au moins 40 % de plus que le fer`);
+  }
 });

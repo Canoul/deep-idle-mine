@@ -2693,7 +2693,16 @@ Règles (voir CLAUDE.md) :
 - **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
   à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
 
-### Runes : un % du tier de la pièce (Geoffrey, 25/10) — 🧪 branche `geoffrey/runes-tier`
+### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` ITEMS : casque en acier oxygenMax 69 → 100 (400 x), jambes climbSpeed 1,08 → 1,6 (400 x),
+  bottes speed 1,08 → 1,67 (400,8 x), avec `UPGRADE.worth` (4 / 250 / 240 x par point). Fer : 268 / 262,5 / 252 x.
+  Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
+- **Tests** : `tests/steel-gear.test.js` (valeurs + nouveau test 390-410 x et > fer × 1,4) ✅, wiki, amelioration ✅.
+  Pas de simulation : les mineurs simulés n'ont pas de stuff en acier. Pas d'anti-triche : aucune ressource ne bouge.
+- **Nerf des pioches** (même branche) : fer mineSpeed 0,5 → 0,4 (520 x), acier 0,6 → 0,5 (650 x) ; valeurs attendues de
+  `tests/steel-gear.test.js` mises à jour. ⚠️ Tests pas relancés (demande de Geoffrey : « juste update »).
+
+### Runes : un % du tier de la pièce (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `UPGRADE.tiers` (config : { 1:{ x:100, items }, 2:{ x:250 }, 3:{ x:400 } }) ; `src/meta/piece.js` : `tierOf`,
   `lineBase` (x du tier ; sans tier : `itemValue`, ancien calcul), `linePoints` lit `lineBase`. Un seul point de calcul :
   runes, fragments et lignes d'identification d'avant le 22/10, en session comme à l'affichage (stuff.js, upgrade.js).
