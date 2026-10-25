@@ -12,7 +12,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
-import { inReach, push, recenter, driftsAway, reachOf, knockbackOf } from '../knock.js';
+import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
 export const TOWER_TICKS = Math.round(TOWER.duration / DT);
@@ -185,16 +185,27 @@ function stepMobs(G){
     const v = byId(G, o.grab);
     o.hit = v ? (o.hit ?? MB.hitEvery) - DT : MB.hitEvery;
     if(v && o.hit <= 1e-9 && mobReach(G, o, v)){ o.hit += MB.hitEvery; pushMiner(G, v, mobCell(o, v), MB.knock); }
-    o.cd -= DT;
-    if(o.cd > 1e-9) continue;
-    o.cd = MB.step;
-    const p = v ?? preyOf(G, o); if(!p) continue;   // il tacle : il suit son mineur pour rester au contact
-    if(mobReach(G, o, p)) continue;
-    if(mobDist(o, p) <= 1){ if(driftsAway(mobCell(o, p), p)){ recenter(o); o.cd = MB.step / 2; } continue; }
-    const dx = Math.sign(p.x - o.x), nx = o.x + dx;
-    /* il marche sur la ligne du bas de son étage, sans tomber dans le trou d'entrée */
-    if(dx && mobFits(G, o, nx)){ o.x = nx; recenter(o); }
+    /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, hitMob) */
+    const t = v ?? preyOf(G, o);
+    if(o.knockLock && t && mobReach(G, o, t)) o.knockLock = false;
+    if(t) walkMob(G, o, t);   // il tacle : il suit son mineur pour rester au contact
   }
+}
+
+/* Marche d'un mob (25/10/2026, mouvement continu, comme dans la mine) : sur la ligne du bas de son étage, il GLISSE vers
+   sa proie à 1/MB.step blocs par seconde (décalage kx, case voisine au-delà d'une demi-case) et s'arrête au contact ; il
+   ne tombe jamais dans le trou d'entrée (mobFits). Sous ou sur sa proie : il se recentre. Avant : un saut de case toutes
+   les MB.step s. */
+function walkMob(G, o, p){
+  const v = DT / MB.step, k = o.kx || 0, dx = Math.sign(p.x - o.x), c = mobCell(o, p);
+  const g = c.y === p.y ? gap(c, p) : Infinity;
+  if(g <= 1e-9) return;                                                    // au contact
+  if(!dx){ o.kx = Math.abs(k) <= v ? 0 : k - Math.sign(k) * v; return; }
+  const fits = mobFits(G, o, o.x + dx);
+  let nk = k + dx * Math.min(v, g);
+  if(!fits && nk * dx > 0) nk = k * dx > 0 ? k : 0;                         // pas de case devant : pas au-delà du centre
+  if(nk * dx > 0.5 + 1e-9 && fits){ o.x += dx; nk -= dx; }
+  o.kx = nk;
 }
 
 function hitMob(G, m, o){
@@ -203,7 +214,16 @@ function hitMob(G, m, o){
   o.hp = Math.max(0, o.hp - dmg); G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
   if(o.grab === m.id) o.grabHit = G.t;   // soupape du tacle
   if(m.skill.taunt) o.taunt = m.id;
-  if(o.hp > 0) push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));   // recul (horizontal : il reste au sol)
+  /* recul (horizontal : il reste au sol). Comme dans la mine (25/10/2026) : repoussé au-delà de SA portée de tacle, il lâche
+     ce mineur ; verrou : repoussé une fois, il ne peut plus l'être avant d'être revenu à portée (stepMobs) */
+  if(o.hp > 0 && !o.knockLock){
+    const x0 = o.x, k0 = o.kx || 0;
+    push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));
+    if(o.x !== x0 || (o.kx || 0) !== k0){
+      o.knockLock = true;
+      if(o.grab === m.id && !mobReach(G, o, m)) o.grab = null;
+    }
+  }
   /* dégâts de zone (Force brute) : les mobs voisins de la cible prennent une part du coup */
   const k = aoeOf(m.skill);
   if(k > 0) for(const q of G.mobs) if(q !== o && q.hp > 0 && q.awake && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) <= 1){
@@ -323,6 +343,13 @@ function blockFloorFor(G, m){
 
 /* ---------- décision ---------- */
 function act(m, type, dur, data, status){ m.action = { type, dur: Math.max(0.05, dur), t: 0, data }; m.status = status; }
+/* coup sur un mob (25/10/2026, comme dans la mine) : il part tout de suite, puis le mineur attend son intervalle
+   (m.atkReady) ; l'action « attack » done ne fait qu'attendre */
+function strike(G, m, o, status){
+  m.face = Math.sign(o.x - m.x) || m.face;
+  if(G.t + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = G.t + hitT(m) / dk(G, m); }
+  return act(m, 'attack', Math.max(DT, m.atkReady - G.t), { mob: o.id, done: true }, status);
+}
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
 
 export function decide(G, m){
@@ -341,7 +368,7 @@ export function decide(G, m){
   const tk = tackler(G, m);
   if(tk){
     const st = `Taclé par un ${mobName}`;
-    if(hitReach(G, m, tk)){ m.face = Math.sign(tk.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: tk.id }, st); }
+    if(hitReach(G, m, tk)) return strike(G, m, tk, st);
     if(driftsAway(m, mobCell(tk, m))) return act(m, 'move', moveT(m) * Math.abs(m.kx || 0), { x: m.x, y: m.y, fight: true }, st);
     const path = planTo(G, m, [[tk.x - 1, tk.y], [tk.x + 1, tk.y]]);
     if(path?.length){ follow(G, m, path, st); m.action.data.fight = true; return; }
@@ -354,7 +381,7 @@ export function decide(G, m){
   const mobs = liveMobs(G);
   if(mobs.length){
     const near = mobs.filter(o => hitReach(G, m, o)).sort((a, b) => a.hp - b.hp)[0];
-    if(near){ m.face = Math.sign(near.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: near.id }, `Combat un ${mobName}`); }
+    if(near) return strike(G, m, near, `Combat un ${mobName}`);
     /* à côté d'un mob mais repoussé hors de portée : il se recentre (sa case est déjà une case d'arrivée du chemin) */
     const back = mobs.find(o => mobDist(o, m) <= 1 && driftsAway(m, mobCell(o, m)));
     if(back) return act(m, 'move', moveT(m) * Math.abs(m.kx || 0), { x: m.x, y: m.y }, `Combat un ${mobName}`);
@@ -458,6 +485,11 @@ export function tickTower(G){
   if(G.over) return;
   G.ticks++; G.t = G.ticks * DT;
   stepMobs(G);
+  /* arrêt net (25/10/2026) : en marche, il s'arrête dès qu'un mob réveillé entre dans sa portée, pour frapper le premier */
+  for(const m of G.miners){
+    const a = m.action;
+    if(a?.type === 'move' && a.data.y === m.y && a.data.x !== m.x && !a.data.fall && !a.data.winch && liveMobs(G).some(o => hitReach(G, m, o))) stopAction(m);
+  }
   for(const m of [...G.miners]) if(G.miners.includes(m)) stepMiner(G, m);
   checkFloors(G);
   updateArrivals(G);
@@ -468,7 +500,7 @@ export function tickTower(G){
 function stepMiner(G, m){
   /* un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, un coup) */
   const a0 = m.action;
-  if(a0 && a0.type !== 'attack' && a0.type !== 'stun' && !a0.data.fall && !a0.data.fight && towerSupported(G, m.x, m.y) && tackler(G, m)) m.action = null;
+  if(a0 && a0.type !== 'attack' && a0.type !== 'stun' && !a0.data.fall && !a0.data.fight && towerSupported(G, m.x, m.y) && tackler(G, m)) stopAction(m);   // un pas coupé garde son avancée
   if(!G.ladder[m.y]?.[m.x]) m.ky = 0;   // poussé vers le haut hors d'une échelle : il retombe
   let budget = DT, guard = 0;
   while(budget > 1e-9 && guard++ < 30 && !G.over){
@@ -497,7 +529,7 @@ function finishAction(G, m, a){
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
   else if(a.type === 'attack'){
     if(a.data.boss) hitBoss(G, m);
-    else { const o = G.mobs.find(q => q.id === a.data.mob); if(o) hitMob(G, m, o); }
+    else if(!a.data.done){ const o = G.mobs.find(q => q.id === a.data.mob); if(o) hitMob(G, m, o); }
   }
 }
 
