@@ -2849,3 +2849,10 @@ Règles (voir CLAUDE.md) :
   `:rotating_light:` envoyé par webhook pourrait rester en texte).
 - **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
   le salon peut devenir bruyant.
+
+### Armure en fer + 20 peaux de gobelin (Geoffrey, 25/10) — 🧪 branche `geoffrey/fer-peau-gobelin`
+- **Quoi** : `src/recipes.js` : casque / plastron / jambes en fer + `'Peau de gobelin': 20` ; bottes 5 → 20. GAME_DESIGN
+  (tableau du stuff en fer). Wiki : recettes générées depuis `RECIPES` (date du bandeau déjà au 25/10).
+- **Tests** : `tests/blueprint.test.js` (recettes ; et pioche en fer 0,4 / 1,4 : **déjà rouge sur main** depuis le nerf du
+  25/10), `tests/recycle.test.js` (bottes : 12 peaux) ; admin, anneaux, aura, discord, give-item, research, rune, craft,
+  wiki, steel-gear ✅ (105) ; `npm run test:anticheat` ✅ (89).

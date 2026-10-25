@@ -7,7 +7,7 @@ import { inSomeSet } from '../src/meta/sets.js';
 import { RECIPES } from '../src/recipes.js';
 
 test('recycler : rend 60 % de chaque ingrédient, arrondi vers le bas ; un ingrédient à 1 ne rend rien', () => {
-  assert.deepEqual(recycleRefund('Bottes en fer'), { 'Tainted iron':2, 'Peau de gobelin':3 });        // 4, 5, 1 lingot d'or
+  assert.deepEqual(recycleRefund('Bottes en fer'), { 'Tainted iron':2, 'Peau de gobelin':12 });       // 4, 20, 1 lingot d'or
   assert.deepEqual(recycleRefund('Pioche en pierre'), { 'Lingot de fer':18 });                       // 30
   assert.deepEqual(recycleRefund('Cape de Naingui'), { 'Tissu sombre':12 });                         // 20, gemmes à 1
   for(const [item, r] of Object.entries(RECIPES)) if(recyclable(item))

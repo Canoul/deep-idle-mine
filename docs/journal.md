@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Armure en fer : 20 peaux de gobelin
+- **Pour le joueur** : casque, plastron, jambes et bottes en fer demandent **20 peaux de gobelin** chacun en plus de
+  leurs Tainted iron (les bottes : 20 au lieu de 5, toujours avec leur lingot d'or). L'armure complète coûte donc 80
+  peaux. Recycler des bottes en fer rend 12 peaux (avant 3).
+- **État** : 🧪 sur la branche `geoffrey/fer-peau-gobelin` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Annonces Discord des R7
 - **Pour le joueur** : quand quelqu'un loot un trésor de tour R7 ou identifie une pièce R7, un message part dans le
   salon #général du Discord : « 🚨 Zoe a loot un trésor démoniaque R7 🚨 », « 🚨 Zoe a identifié Plastron en fer R7 🚨 ».
