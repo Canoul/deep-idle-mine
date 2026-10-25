@@ -90,7 +90,7 @@ export const BLOCKS = {
   2:{name:'Pierre',  type:'terrain', tex:'stone',   w:2, hard:1.2, color:'#7d828c', dot:'#9298a3', family:'bloc'},
   3:{name:'Charbon', type:'ore',     tex:'coal',    w:2, hard:1.6, color:'#7d828c', dot:'#1b1b1f', val:1, family:'combustible'},
   4:{name:'Fer',     type:'ore',     tex:'iron',    w:3, hard:2.4, color:'#7d828c', dot:'#d9a67f', val:2},
-  5:{name:'Or',      type:'ore',     tex:'gold',    w:4, hard:3.5, color:'#7d828c', dot:'#ffd23f', val:4},
+  5:{name:'Or',      type:'ore',     tex:'gold',    w:3, hard:3.5, color:'#7d828c', dot:'#ffd23f', val:4},   // poids 3 depuis le 25/10/2026 (Geoffrey ; avant 4)
   6:{name:'Diamant', type:'ore',     tex:'diamond', w:5, hard:5.0, color:'#7d828c', dot:'#4de8f0', val:8},
   /* délimite deux areas tant que la suivante est verrouillée ; infranchissable et incassable */
   7:{name:'Barrière', type:'special', tex:'barrier', w:0, hard:Infinity, color:'#34344a', dot:'#4a4a66', unbreakable:true},

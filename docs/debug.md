@@ -2458,3 +2458,6 @@ Règles (voir CLAUDE.md) :
   présents dans les areas ouvertes 2,0, ouverts 0,4.
 - **Point fragile** : la hausse ne se voit presque pas en simulation (ouverts 0,4 à 30, 40 et 60 %) : c'est la
   découverte qui limite, pas la chance.
+- **Ajout (25/10)** : `BLOCKS[5]` (Or) `w` 4 → 3 ; GAME_DESIGN §Poids. Tests level, steel-gear, tier2, wiki, inventory,
+  share ✅ (78). Simulation `--count 5` : 0 bloquée, coffre 4 040 pods (4 063 avant) : l'or n'apparaît qu'en area 3,
+  à peine atteinte sans stuff ; l'effet se verra sur les équipes équipées.

@@ -269,7 +269,7 @@ Onglet **Sorts** : **4 emplacements**, dont **2 ouverts** ; les 2 autres sont **
 - **Il n'a pas besoin d'oxygène pour remonter** : à 0, il n'est ni mort ni ralenti, la remontée se fait à vitesse normale. L'oxygène mesure donc exactement son temps de travail sous terre.
 
 ### Pods (inventaire)
-- Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 4, diamant 5, Treasure TX 2 *(provisoire)*).
+- Chaque bloc a un poids (terre 1, pierre 2, pierre dure 3, charbon 2, fer 3, or 3 *(25/10/2026 ; avant 4)*, diamant 5, Treasure TX 2 *(provisoire)*).
 - Inventaire plein : remontée **automatique**, dépôt dans le coffre, puis retour au front.
 
 ### Valeur des stats : unité x *(méthode ferme, chiffres provisoires)*

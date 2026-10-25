@@ -22,7 +22,7 @@ Modèle d'entrée :
 - **Pour le joueur** : dans les areas 0 à 2 (celles du Treasure T1), **60 %** de chance de trouver un treasure (40 %
   au-delà). Dans un Treasure T1 : les blueprints des 6 pièces en fer (pioche, épée, casque, plastron, jambes, bottes)
   tombent à **2 %** chacun (avant 1 %) ; four en fer, boussole en or et ceinture gobelin restent à 1 %. Les
-  Blueprint parts passent à **5 à 10** (avant 5 à 15). Wiki à jour.
+  Blueprint parts passent à **5 à 10** (avant 5 à 15). Le minerai d'**or** pèse **3** dans le sac (avant 4). Wiki à jour.
 - **Décisions** (Geoffrey) : valeurs ci-dessus.
 - **À suivre** : en simulation (3 mineurs sans stuff), 2 treasures par partie dans les areas ouvertes mais toujours
   0,4 ramené : les mineurs ne trouvent pas ceux qui sont loin de leurs galeries.
