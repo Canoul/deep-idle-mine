@@ -108,17 +108,19 @@ function goOre(G,m,o,r,bn){
   idle(m,0.3);
 }
 
+/* un mob (bestiole ou mimic dévoilé) ne déclenche le combat que dans le champ de vision. Salle du k hole (seeAll) :
+   s'il n'en voit aucun, il va vers le plus proche de la salle (le premier à égalité : le groupe tape le même) */
 function nearestThreat(G,m){
-  const R=lightR(G,m); let best=null,bd=1e9;
+  const R=lightR(G,m); let best=null,bd=1e9,far=null,fd=1e9;
   for(const o of G.mobs){
     if(o.hp<=0 || m.ignored.has(o.id) || o.dungeon!=null) continue;   // boss de donjon : voir dungeonGoal
     const d=Math.hypot(o.x-m.x,o.y-m.y);
     if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist) revealMimic(G,o);
     if(o.type==='mimic' && !o.revealed) continue;
-    if(d>R) continue;   // un mob (bestiole ou mimic dévoilé) ne déclenche le combat que dans le champ de vision
+    if(d>R){ if(d<fd){fd=d;far=o;} continue; }
     if(d<bd){bd=d;best=o;}
   }
-  return best;
+  return best ?? (G.khole?.map.seeAll ? far : null);
 }
 
 /* combat : il frappe le mob s'il est à portée (COMBAT.reach) ; repoussé par un coup, il revient au contact (il se

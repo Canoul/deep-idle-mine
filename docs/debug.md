@@ -3082,3 +3082,16 @@ Règles (voir CLAUDE.md) :
   game-replay, khole, session, game-http, instant-server, give-item ✅ (117) ; `npm run test:anticheat` ✅ (91).
 - **Point fragile** : à la case du mineur visé, le k hole « disparaît » au retour (case mise à vide) : c'est sa propre
   case (déjà vide), sans effet.
+
+### Correctif : arène du k hole, mineurs qui ne tapent pas (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Symptôme** (en ligne, capture) : arène, un minotaure tient un joueur au bout gauche ; deux joueurs au milieu ne
+  font rien. **Cause** : `nearestThreat` (`src/sim/ai.js`) n'engage qu'un mob à moins de `lightR` (2,2 à 5,4 cases dans le
+  noir) ; rien d'autre à faire dans la salle → attente. Reproduit (sonde : mineur à 7 cases, vision 5,4 → `wait`).
+- **Premier essai** (seeAll seul : toute distance) : régression, 1 minotaure tué au lieu de 2 : les mineurs foncent au
+  combat sans poser de torche → coups ralentis dans le noir (`CFG.darkSlow`), vision 2,2.
+- **Correctif** : `nearestThreat` : un mob vu d'abord ; sinon, si `G.khole.map.seeAll`, le plus proche de la salle (le
+  premier à égalité : tout le groupe tape le même). `seeAll` sur arene et vagues. `torchEvery: 5` sur arene, tresor,
+  vagues : torches posées par `buildRoom` (rayon STATS.torchRadius, ligne du milieu) + `updateLight`.
+- **Tests** : `tests/khole.test.js` +3 (mineur loin qui vient aider : échouait avant ; « Ignorer » respecté ; sol des
+  salles éclairé) ✅ (20) ; combat, mobs, session, team, admin-khole, trap, dungeon, light, live ✅ (95). Sonde : arène
+  108 s / 2 tués (avant 117 s), vagues 66 tués ; simulation `--khole 1` : 10 pris, 0 bloquée.

@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Correctif : l'arène du k hole (mineurs qui ne tapent pas)
+- **Pour le joueur** : dans l'Arène des minotaures (et les Vagues), un mineur loin du combat restait planté au milieu
+  sans taper : il ne voyait pas le minotaure, dans le noir. Maintenant, dans ces salles, les mineurs voient toute la salle
+  et vont aider (sauf s'ils sont réglés sur « Ignorer » ou « Fuir »), et les trois salles (arène, trésor, vagues) sont
+  éclairées dès l'arrivée (une torche toutes les 5 cases).
+- **Chiffres** (3 mineurs, 3 seeds) : arène finie en 108 s, 2 minotaures tués (avant : 117 s) ; vagues : 66 mobs tués
+  (avant : 41 à 63).
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Commande d'admin : ouvrir un k hole chez un joueur
 - **Pour le joueur** : rien de nouveau, sauf si un créateur du jeu le décide : un k hole peut s'ouvrir dans sa mine.
 - **Pour l'équipe** : sur le VPS, `sudo node /opt/deep-idle-mine/scripts/force-khole.js --name PSEUDO --map 2` ouvre un
