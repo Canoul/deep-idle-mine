@@ -25,6 +25,12 @@ Modèle d'entrée :
 - **À décider** : avec les règles de combat actuelles, la lance ne remplit pas son but (le mob tacle toujours en
   premier et garde son tacle même repoussé) : en duel, elle tue moins vite que l'épée et ne réduit ni le tacle ni les
   vols. Voir les chiffres dans `docs/debug.md`.
+- **Mouvement continu** (25/10, même branche) : les mobs avancent en glissant sur leur ligne (ils sont vraiment entre
+  deux cases) et la portée d'un mineur suit son pas. En simulation, l'économie ne bouge pas, mais on se fait un peu plus
+  tacler (les mobs attrapent dès 0,5 bloc en arrivant). Avec ça seul, la lance vaut l'épée, sans faire mieux.
+- **À décider** : pour que la portée et le recul protègent vraiment, il faut aussi changer le coup du mineur (il part
+  tout de suite, et le mineur s'arrête net pour frapper un mob qui entre dans sa portée), et peut-être que le recul
+  casse le tacle. Prototypes mesurés, pas gardés : chiffres dans `docs/debug.md`.
 - **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil

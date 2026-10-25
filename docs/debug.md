@@ -2758,3 +2758,20 @@ Règles (voir CLAUDE.md) :
   556-627 s, volés 124-143 par partie, épée et lance mélangées).
 - **À trancher** : la règle du tacle ; la recette ; la rareté. **À vérifier** : pourquoi le recul double le temps contre
   l'occultiste.
+- **Mouvement continu (25/10, même branche)** : `src/sim/mobs.js` `walk()` : sur sa ligne, un mob glisse de DT/stepOf blocs
+  par tick (`kx`), change de case au-delà d'une demi-case, s'arrête au contact (écart 0) ; bloc devant : pas au-delà du
+  centre ; échelles : recentré puis case par case (cd) ; volants inchangés (case par case). `src/sim/knock.js` `offX` :
+  un mineur en plein pas horizontal est à `fx + (x − fx) × avancée` pour la portée (sa case ne change qu'à la fin du pas).
+  Tours inchangées. Tests adaptés : mobs « figés » par `speed: 1e-9` (cd ne bloque plus la marche) dans combat et
+  mobs ; trap (vitesse mesurée en blocs/s) ; combat réel (repoussé = décalé). **Deux tests déjà rouges sur main corrigés** :
+  `skills.test.js` (pioche en fer +0,4 depuis le nerf du 25/10 : 1,48) et `mule.test.js` (or poids 3 : sac 15, oubli de
+  ma part le 25/10). 252 tests liés ✅.
+- **Sessions** (5 seeds, moyenne ; référence → mouvement continu) : à 3 sans skills coffre 4 105 → 4 100 pods, profondeur
+  195 → 188, tacles 36 → 43, tués 78 → 83 ; arbres mixtes 4 419 → 4 407, 200 → 204, tacles 37 → 43 ; solo 1 641 → 1 589,
+  tacles 26 → 35, volés 41 → 51. 0 bloquée partout.
+- **Duel corrigé** (couloir incassable : avant, le mineur creusait sous le couloir et le duel mesurait autre chose) —
+  temps taclé (s), épée / lance : A (branche) bestiole 4,5 / 4,9, gobelin 7,7 / 7,6 (3 vols chacun), occultiste 9,3 / 9,4,
+  méphite 5,6 / 6,5. B (+ coup au début de l'attaque + arrêt net du pas quand le mob entre dans sa portée) : 3,8 / 4,0,
+  7,0 / 6,7, 8,6 / 8,5, 4,7 / 5,2 ; la lance frappe en premier (écart 0,67), repousse à 1,06, le mob tacle 0,5 s après.
+  C (B + recul qui casse le tacle) : 3,6 / 3,2, 6,8 / 5,9 (vols 3 / 2), 8,4 / 7,7, 4,3 / 4,8 ; temps pour tuer ≈ égal.
+  ⚠️ En B et C, un méphite contre un mineur à mains nues n'est jamais tué (595 s, blocage du prototype à comprendre).
