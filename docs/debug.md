@@ -2630,3 +2630,34 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/furnace.test.js` adapté (recette 15 ; chitine chargée 30 → 25 pour garder « la chitine limite à
   1 alliage » ; 20 → 15 pour finir les cases vides) ✅ (21) ; anticheat furnace, game-service, wiki ✅ ; `npm run
   test:anticheat` ✅ (89).
+
+### Tour céleste : boss, étages de blocs, affichage fluide, mode dev (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Affichage** : la tour remplaçait sa copie à chaque envoi (250 ms) sans interpolation → sauts. `applyTowerView(v, prev,
+  now)` (`src/shared/tower-view.js`) réutilise `glide` (exporté de `src/shared/view.js`) pour mineurs, mobs et boss
+  (`lift`, `kx`) ; `src/main.js` passe la copie précédente ; `src/render/tower.js` lit `shownPos` ; arc du recul :
+  `m.hop` (tick du coup) → `_hopAt` côté navigateur, `TOWER.boss.arcHigh/arcMs`.
+- **Simulation** (`src/sim/tower/session.js`) : `G.blocksLeft[k]` (compteur, décrémenté dans `mineCell`) ; `sealedFloor`
+  couvre « blocs » ; IA `blockFloorFor` (plus bas étage « blocs » pas vidé, à son étage ou au-dessus) + réservation
+  `m.blockGoal` / `reservedBlocks` (avant : 12-16 s d'attente par étage à viser le même bloc ; 0 bloc partagé après) ;
+  `planTo(..., avoid)`. `mobFits` sans mob ni mineur (empilement ; pareil pour `mobCanEnter` de la mine). Boss :
+  `focusOf` (taunt sur le toit > focus sur le toit > 1er arrivé au contact > 1er arrivé sur le toit), marche vers le
+  focus (`speedMul`), `contactSide` renvoie aussi `'in'` (dans sa hitbox : il frappe), `pushBoss` (seulement par le
+  focus, `knockRes` 25), projection `knock(G, m, n)` 5 cases à `knockChance/knockBarb` (rage `rageKnock/rageKnockBarb`),
+  sinon `pushMiner(..., B.push, arc)`. Saut : `startJump/stepJump/landBoss` (`jumpEvery` 0,25 → `phase` 0-3, `jumpFly`,
+  `jumpHover` 3, `jumpFall`, `jumpKnock` 3 pour tous les mineurs du toit puis `jumpStun` 3 s, ténacité). IA pendant le
+  saut : `landCells` (s'écarter, attendre à côté). Config : `TOWER.floors` 6, stonebrick `hard` 4, `TOWER.boss.*`.
+- **Mode dev** : `DEV_SPEC`, `sanitizeDevSpecs` / `devSkills` (`src/shared/game.js`, arbre rempli avec niveau − 1 points),
+  `rec.devSpecs` (serveur, dev seulement), `towerSpecs` garde `bots` (le serveur les met à 0 hors dev) ; lobby :
+  `#devSpecs` ; `.speedBtns` / `.pauseBtn` (`src/ui/controls.js`) aussi dans `#twRun` ; `mineModes(..., dev)` et
+  `start()` sautent `tower_closed` / `tower_done` en dev.
+- **Tests** : `tests/tower-boss.test.js` (nouveau, 15), `tests/dev-spec.test.js` (nouveau, 7), `tests/controls.test.js`
+  (nouveau, 2), `tests/tower.test.js` adapté (valeurs, focus). tower, tower-boss, dev-spec, controls, combat, mobs, view,
+  live, game-replay, game-service, game-http, lobby, boot-check, team, skills, party, wiki ✅.
+- **Mesures (avant les derniers réglages de Geoffrey, compo forte du test)** : toit ≈ 530 s (7 étages, briques 4 s) ;
+  dégâts au boss 9 à 14 PV/s selon les versions (≈ 44 possibles) ; cause principale : le boss marche après son focus
+  (25 PV/s s'il ne marche pas), croisements focus / boss. Le test « compo forte » repasse depuis projection 4 cases et
+  chances 25 / 10 %. Simulation de la mine (5 × 3 mineurs, après l'empilement) : coffre 4 105, 0 blocage.
+- **Points fragiles** : `contactSide` 'in' compte comme contact pour le focus (le boss ne marche pas s'il est dedans) ;
+  un mineur dans la hitbox ne peut pas être « derrière » : la projection part du centre du boss. L'occultiste n'existe
+  pas dans la tour. ⚠️ Pas regardé dans un vrai navigateur par Claude (Geoffrey l'a lancé en local).
+

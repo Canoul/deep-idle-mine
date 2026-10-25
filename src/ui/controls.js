@@ -7,7 +7,7 @@ const $ = id => document.getElementById(id);
 
 /* ui : état de l'interface ({ speed, paused, follow }) ; h : { onLeave(), onClock({ speed?, paused? }), onFollow(id) } */
 export function setupRunControls(ui, h){
-  $('pauseBtn').onclick = () => h.onClock({ paused: !ui.paused });
+  for(const b of document.querySelectorAll('.pauseBtn')) b.onclick = () => h.onClock({ paused: !ui.paused });
   $('leaveBtn').onclick = () => h.onLeave();
   /* appui sur un mineur de l'équipe : la caméra le suit. Sur l'appui et pas sur le clic : la liste est redessinée
      plusieurs fois par seconde, et un clic dont l'appui et le relâchement tombent sur deux versions de la liste
@@ -47,15 +47,16 @@ export function setupCamera(cv, cam, isActive){
 
 /* boutons de vitesse : en dev, toutes les vitesses (onSpeed : demandée au serveur) ; en normal, l'unique vitesse
    affichée pour information. À rappeler quand le serveur annonce une autre vitesse ou la pause. */
+/* boutons de vitesse et pause : la barre de la mine et celle de la tour (25/10 : la tour n'en avait pas en dev) */
 export function renderSpeeds(ui, info, onSpeed){
-  $('pauseBtn').textContent = ui.paused ? '▶ Reprendre' : '⏸ Pause';
-  const box = $('speedBtns');
-  box.innerHTML = '';
-  $('pauseBtn').hidden = !info.dev;
-  if(!info.dev){ box.innerHTML = `<span class="mut">Vitesse ×${info.speed}</span>`; return; }
-  for(const s of info.speeds){
-    const b = document.createElement('button'); b.textContent = 'x'+s; b.dataset.s = s; if(s === ui.speed) b.className = 'on';
-    b.onclick = () => onSpeed?.(s);
-    box.appendChild(b);
+  for(const p of document.querySelectorAll('.pauseBtn')){ p.textContent = ui.paused ? '▶ Reprendre' : '⏸ Pause'; p.hidden = !info.dev; }
+  for(const box of document.querySelectorAll('.speedBtns')){
+    box.innerHTML = '';
+    if(!info.dev){ box.innerHTML = `<span class="mut">Vitesse ×${info.speed}</span>`; continue; }
+    for(const s of info.speeds){
+      const b = document.createElement('button'); b.textContent = 'x'+s; b.dataset.s = s; if(s === ui.speed) b.className = 'on';
+      b.onclick = () => onSpeed?.(s);
+      box.appendChild(b);
+    }
   }
 }

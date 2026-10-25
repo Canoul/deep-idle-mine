@@ -12,10 +12,11 @@ export const isTowerMode = mode => !!towerSide(mode);
 export const towerDurationMs = speed => TOWER.duration / speed * 1000;
 export { TOWER_TICKS };
 
-/* mineurs : un par joueur, stuff (qualité, niveau, rune) et skills figés au lancement, comme une session normale */
+/* mineurs : un par joueur, stuff (qualité, niveau, rune) et skills figés au lancement, comme une session normale ; les
+   mineurs de test (mode dev seulement : le serveur met bots à 0 sinon) viennent ensuite, sans compte (25/10) */
 export function towerSpecs(record){
   const players = record.players || [];
-  return minerSpecs({ ...record, bots: 0 }).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
+  return minerSpecs(record).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
 }
 
 export const buildTower = record => newTower(record.seed, { side: towerSide(record.mode), miners: towerSpecs(record), id: record.id });
