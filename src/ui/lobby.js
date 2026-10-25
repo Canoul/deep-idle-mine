@@ -103,6 +103,14 @@ export function mineModes(cur, locked = false, judgment = null){
   });
 }
 
+/* Cartes visibles du lobby. view 'jugement' : les jauges à gauche, l'équipe à droite comme pour la Mine (25/10), mais
+   rien ne se lance d'ici (pas de Lancer, de préférences ni de réglages dev). Mine instantanée : sa carte d'inscription
+   à la place de l'équipe. dev : réglages dev permis (mode dev, celui qui lance, hors session). */
+export function lobbyCards({ view, mode, dev = false }){
+  const jv = view === 'jugement', def = MINE_MODES.find(m => m.id === mode), mi = !!def?.scheduled, tower = !!def?.tower;
+  return { judgment:jv, mi:!jv && mi, team:!mi || jv, launch:!jv, prefs:!jv && !mi && !tower, dev:!jv && !mi && dev };
+}
+
 /* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
@@ -124,9 +132,11 @@ export function setupLobby(h){
     const modes = mineModes(st.mode, locked, st.judgment);
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
     const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
-    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges, rien ne se lance d'ici
-    $('judgmentCard').hidden = !jv;
-    $('miCard').hidden = jv || !mi; $('teamCard').hidden = jv || !!mi; $('prefsCard').hidden = jv || !!mi || !!tower;
+    const jv = st.view === 'jugement';   // Jugement : on regarde les jauges (et son équipe), rien ne se lance d'ici
+    const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
+    $('judgmentCard').hidden = !cards.judgment;
+    $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
+    $('launchBtn').hidden = !cards.launch;
     const btn = m => `<button data-mode="${m.id}" class="${m.on && !jv ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : m.done ? ' title="Déjà faite pendant cette ouverture"' : ''}>${esc(m.label)}`+
       `${m.soon ? ' <small>(bientôt)</small>' : m.done ? ' <small>(déjà faite)</small>' : ''}</button>`;
     const judge = `<button data-view="jugement" class="${jv ? 'on' : ''}" title="Jauges Ange contre Démon et tours">⚖ Jugement${st.judgmentPending ? ' <small class="jnew">● tour ouverte</small>' : ''}</button>`;
@@ -166,13 +176,14 @@ export function setupLobby(h){
     const dev = !!info?.dev, n = party?.members.length ?? 1;
     $('lobbyInfo').innerHTML = offline ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
+      : jv ? 'Pour lancer, choisis la Mine ou une tour ouverte dans « Où miner ».'
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
                 `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = jv || !dev || locked || !!mi || (party && party.leader !== account?.id);   // seuls les réglages de celui qui lance comptent ; rien pour la MI
+    $('devCard').hidden = !cards.dev;   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
     renderInvites();
     renderPrefs();

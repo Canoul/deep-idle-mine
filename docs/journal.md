@@ -22,7 +22,51 @@ Modèle d'entrée :
 - **Pour le joueur** : une pioche ou une épée R4+ runée R4+ a aussi son aura, quand le mineur s'en sert en session (la
   pioche quand il mine, l'épée quand il frappe). La pioche en bois de base n'en a jamais. Les portraits ne montrent
   pas les outils, donc pas d'aura d'outil dessus.
-- **État** : 🧪 sur la branche `geoffrey/aura-outils` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Inventaire : recycler une pièce de stuff
+- **Pour le joueur** : clique une pièce fabriquée dans l'inventaire, bouton **♻ Recycler** ; une fenêtre montre ce que
+  tu récupères. La pièce est détruite et rend **60 %** de sa recette, arrondi vers le bas (un ingrédient demandé à 1
+  ne rend rien). Son amélioration et sa rune sont perdues. Impossible pour une pièce portée ou enregistrée dans un set :
+  la fenêtre le dit.
+- **Décisions** (Geoffrey) : seulement le stuff fabriqué avec une recette ; seulement la recette (pas le coût
+  d'amélioration) ; interdit si la pièce est portée ou dans un set.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Inventaire : trier et déplacer les objets
+- **Pour le joueur** : bouton **Trier** en haut de l'inventaire. Il range par type (blocs, minerais, matériaux,
+  stuff, puis treasures, blueprints…), du plus rare au plus commun, et bouche les trous. On peut aussi **glisser un
+  objet** dans un autre slot ; si le slot est pris, les deux objets échangent leur place.
+- **Décisions** (Geoffrey) : le tri suit la rareté de l'objet (commun, inhabituel…), pas la qualité R1-R7.
+  Choix de Claude à valider : treasures, blueprints, four et parchemins viennent après le stuff ; la plus rare d'abord.
+- **À suivre** : le glisser-déposer ne marche qu'à la souris (pas au doigt sur téléphone).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Lobby : l'équipe reste visible sur Jugement
+- **Pour le joueur** : en choisissant « ⚖ Jugement » dans « Où miner », on voit toujours son groupe à droite (comme pour
+  la Mine) : inviter, quitter, voir qui est prêt. Le bouton Lancer n'y est pas : on lance depuis la Mine ou une tour.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Treasure T1 : plus de treasures, plus de blueprints, moins de parts
+- **Pour le joueur** : dans les areas 0 à 2 (celles du Treasure T1), **60 %** de chance de trouver un treasure (40 %
+  au-delà). Dans un Treasure T1 : les blueprints des 6 pièces en fer (pioche, épée, casque, plastron, jambes, bottes)
+  tombent à **2 %** chacun (avant 1 %) ; four en fer, boussole en or et ceinture gobelin restent à 1 %. Les
+  Blueprint parts passent à **5 à 10** (avant 5 à 15). Le minerai d'**or** pèse **3** dans le sac (avant 4). Wiki à jour.
+- **Décisions** (Geoffrey) : valeurs ci-dessus.
+- **À suivre** : en simulation (3 mineurs sans stuff), 2 treasures par partie dans les areas ouvertes mais toujours
+  0,4 ramené : les mineurs ne trouvent pas ceux qui sont loin de leurs galeries.
+- **État** : ✅ en ligne le 25/10
+
+## 24/10/2026 — Geoffrey — Plus de treasures : 40 % par area
+- **Pour le joueur** : chaque area a maintenant **40 %** de chance de cacher un treasure (avant 30 %), dans toutes
+  les areas. Le wiki suit tout seul (le chiffre est lu dans le jeu).
+- **Décisions** (Geoffrey) : chance de treasure 30 % → 40 %.
+- **À suivre** : en simulation (équipe de 3 sans stuff, 5 parties), il y a plus de treasures dans les areas ouvertes
+  (1,2 → 1,6 par partie), mais les mineurs en ouvrent autant (0,4) : un treasure n'est visé qu'une fois découvert,
+  et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
+  équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
+- **État** : ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`, puis 60 % en areas 0 à 2)
+
 
 ## 25/10/2026 — Geoffrey — Aura du stuff runé
 - **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+

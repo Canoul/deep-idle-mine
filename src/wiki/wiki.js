@@ -214,6 +214,7 @@ function stats(){
 
 /* ---------- treasures ---------- */
 function treasures(){
+  $('w-treasure-chance').textContent = D.treasureChanceText();
   $('w-treasure-tiers').innerHTML = table(['Objet obtenu', 'Treasure enfoui dans les areas'], D.treasureTierRows().map(t => tr([item(t.item), t.areas])));
   $('w-loot').innerHTML = D.lootTables().map(t => `<h2>${item(t.name)}</h2>` + table(['Objet', '#Quantité', '#Chance'], [
     ...t.always.map(a => tr([item(a.item), num(`${f(a.min)} à ${f(a.max)}`), num('<b>toujours</b>')])),

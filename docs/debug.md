@@ -2510,7 +2510,57 @@ Règles (voir CLAUDE.md) :
 - **Mise en ligne** : simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,2, prof 193). Pas d'anti-triche :
   aucune ressource ne bouge.
 
-### Aura des outils en main (Geoffrey, 25/10) — 🧪 branche `geoffrey/aura-outils`
+### Treasures : 40 % par area (Geoffrey, 24/10) — ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`)
+- **Quoi** : `AREAS[*].chestChance` 0,3 → 0,4 (les 7 areas). Wiki : `D.treasureChanceText()` remplace le « 30 % »
+  écrit à la main (`#w-treasure-chance`). GAME_DESIGN §2 Treasures.
+- **Tests** : wiki (9, dont 1 nouveau), treasure, world, loot, game-replay ✅ (54).
+- **Simulation** `--miners 3 --count 5`, mêmes seeds : 0 bloquée ✅ ; areas 3,2, profondeur 193,4, coffre 4 075 pods :
+  identiques à 0,3 (le tirage du treasure ne change pas le reste de l'area) ; treasures présents dans les areas
+  ouvertes 1,2 → 1,6, ouverts 0,4 → 0,4 (seed 7919 : 2/2 → 2/3).
+
+### Treasure T1 : 60 % en areas 0-2, BP en fer 2 %, parts 5-10 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` : `AREAS[0..2].chestChance` 0,4 → 0,6 (areas 3+ : 0,4, de `geoffrey/tresor-40`, inclus) ;
+  `LOOT['Treasure T1']` : Blueprint parts 5-15 → 5-10, BP pioche / épée / casque / plastron / jambes / bottes en
+  fer 0,01 → 0,02 (four, boussole, ceinture : 0,01). Total famille blueprint 9 % → 15 %. GAME_DESIGN §2 Treasures ;
+  wiki : date du bandeau 25/10, « 40 à 60 % » vient de `treasureChanceText()`.
+- **Tests** : wiki (chance par area, total blueprint 0,15), loot, treasure, world ✅ (46) ; `npm run test:anticheat` ✅ (85).
+- **Simulation** `--miners 3 --count 5` : 0 bloquée ✅ ; areas 3,0, profondeur 190,2, coffre 4 063 pods ; treasures
+  présents dans les areas ouvertes 2,0, ouverts 0,4.
+- **Point fragile** : la hausse ne se voit presque pas en simulation (ouverts 0,4 à 30, 40 et 60 %) : c'est la
+  découverte qui limite, pas la chance.
+- **Ajout (25/10)** : `BLOCKS[5]` (Or) `w` 4 → 3 ; GAME_DESIGN §Poids. Tests level, steel-gear, tier2, wiki, inventory,
+  share ✅ (78). Simulation `--count 5` : 0 bloquée, coffre 4 040 pods (4 063 avant) : l'or n'apparaît qu'en area 3,
+  à peine atteinte sans stuff ; l'effet se verra sur les équipes équipées.
+
+### Lobby : équipe visible sur Jugement (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/ui/lobby.js` : nouvelle fonction pure `lobbyCards({ view, mode, dev })` (cartes visibles : judgment, mi,
+  team, launch, prefs, dev) ; `render()` l'utilise. Vue Jugement : `teamCard` visible, `launchBtn` caché, texte
+  « choisis la Mine ou une tour ». GAME_DESIGN §Jugement.
+- **Tests** : `tests/lobby.test.js` +1 ✅ (14). ⚠️ Pas regardé dans un vrai navigateur.
+
+### Inventaire : trier et déplacer (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/meta/inventory.js` : `sortInventory(inv)` (clé : groupe `INVENTORY.sortGroups` par `ITEMS[].cat`, puis
+  `-rarityDef().rank`, puis ordre de `ITEMS`, puis ordre actuel ; tassé, sans trous) et `moveSlot(inv, { from, to, item, uid })`
+  (échange ; `to` < `gridSize` ; refuse si `slots[from]` n'est pas l'item/uid annoncé : un renvoi ne ré-échange pas).
+  Serveur : `POST /api/game/inventory` `{ action:'sort' }` | `{ action:'move', … }` (`server/game/service.js` `inventory()`, verrou
+  `inv:`). Navigateur : `gameApi.inventory`, bouton `#invSort`, glisser-déposer HTML5 dans `src/ui/inventory.js`, `arrangeInventory`
+  dans `src/main.js` (refus → inventaire relu). Familles réelles : `bloc`, `combustible` (charbon), `ore`, `residu`…
+- **Tests** : `tests/inventory-arrange.test.js` (6), `tests/inventory.test.js` ✅ ; `tests/anticheat/arrange.test.js` (300
+  demandes en rafale / trafiquées : mêmes objets, mêmes quantités, mêmes uid) ✅.
+- **⚠️ À vérifier** : pas essayé dans un vrai navigateur (glisser-déposer, bouton). Pas de tactile (le drag HTML5 ne
+  marche pas au doigt).
+
+### Recycler une pièce de stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `RECYCLE.share` 0,6 (config). `src/meta/craft.js` : `recyclable(item)` (`isStuff` + recette), `recycleRefund(item)`
+  (`floor(n × share / qty + 1e-9)`, les 0 retirés ; le 1e-9 évite 62,999… → 62), `recycleStuff(inv, uid, locked)`.
+  `src/meta/sets.js` `inSomeSet`. Serveur `POST /api/game/recycle { uid }` (verrous `inv:` + `sets:`, sets relus). Pas d'opId :
+  la pièce est unique, un renvoi tombe sur `not_owned`. Navigateur : bouton `.invRecycle`, fenêtre `showRecycle` (réutilise
+  `#loot`), `setsUI.setsOf(uid)` pour prévenir avant d'envoyer, `recyclePiece` dans `src/main.js`. Wiki : carte Inventaire, date.
+- **Tests** : `tests/recycle.test.js` (4) ✅ ; `tests/anticheat/recycle.test.js` (rafale de 8 → 1 seul versement ; portée,
+  set, uid trafiqués refusés) ✅ ; suite anti-triche ✅ (89).
+- **⚠️ À vérifier** : fenêtre et bouton pas vus dans un vrai navigateur.
+
+### Aura des outils en main (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Symptôme** (retour de Geoffrey) : la pioche n'a pas d'aura quand le mineur mine. Pas un bug : la première version
   limitait l'aura aux calques du corps (`SKIN.layers`).
 - **Quoi** : `src/meta/aura.js` (`SLOT_TEX` : armure + `pioche` → `SKIN.pickaxe`, `epee` → `SKIN.sword` ; `aurasOf` et
