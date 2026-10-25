@@ -2906,7 +2906,7 @@ Règles (voir CLAUDE.md) :
   ne s'ouvre pas) ; `tests/anticheat/open.test.js` +1 (rafale de 5 avec le même opId : une seule ouverture ; plus rien :
   refusé) ✅ ; anticheat ✅ (90). ⚠️ Bouton pas vu dans un vrai navigateur.
 
-### Runes : banque + 5 stats, Découverte équiprobable, Double attaque (Geoffrey, 25/10) — 🧪 branche `geoffrey/runes-stats`
+### Runes : banque + 5 stats, Découverte équiprobable, Double attaque (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/config.js` : `UPGRADE.pool` + tenacity, knockRes, reach, knockback, doubleAttack ; `UPGRADE.prices` (10, 5,
   1000, 1000, 20 : double attaque +5 % pour 100 x, Geoffrey ; d'abord 5) et `steps` (0,1 / 0,1 / 0,01 / 0,01 / 0,1) ; `UPGRADE.discover.chance` retirée ; `STATS.doubleAttack = 0`,
   label, unité, `shownStats`. `src/meta/piece.js` `rollLines` : en R6/R7, `discoverMax` est une entrée de plus du tirage

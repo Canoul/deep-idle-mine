@@ -25,7 +25,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : les 5 stats dans la banque ; Découverte au même rang que les autres ; double attaque.
   Choix de Claude à valider : leur valeur pour 100 x (ténacité +10 %, résistance au recul +20 %, portée +0,1, recul
   +0,1) ; double attaque +5 % pour 100 x (Geoffrey).
-- **État** : 🧪 sur la branche `geoffrey/runes-stats` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Inventaire : « Ouvrir tout »
 - **Pour le joueur** : quand on a plusieurs treasures du même type (ou plusieurs trésors de tour identiques), un bouton
