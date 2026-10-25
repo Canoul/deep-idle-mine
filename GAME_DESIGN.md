@@ -567,10 +567,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Casque en acier | 10 Steel ingot + 5 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Oxygène +69 *(24/10 ; avant +46)* |
+  | Casque en acier | 10 Steel ingot + 5 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Oxygène +100 *(25/10, ≈ 400 x ; avant +69, 24/10 : avant +46)* |
   | Plastron en acier | 16 Steel ingot + 8 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Pods +120 *(24/10 ; avant +80, et +40 avant le 23/10)* |
-  | Jambes en acier | 14 Steel ingot + 7 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +1,08 *(24/10 ; avant +0,72)* |
-  | Bottes en acier | 8 Steel ingot + 4 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +1,08 *(24/10 ; avant +0,72)* |
+  | Jambes en acier | 14 Steel ingot + 7 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +1,6 *(25/10, ≈ 400 x ; avant +1,08, 24/10 : avant +0,72)* |
+  | Bottes en acier | 8 Steel ingot + 4 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +1,67 *(25/10, ≈ 400 x ; avant +1,08, 24/10 : avant +0,72)* |
   | Pioche en acier | 20 Steel ingot + 10 Shiny gold + 10 Diamant | Vitesse de minage +0,6 *(24/10 : × 1,25 ; avant +0,48 ; +0,72 pendant quelques heures le 24/10)* |
   | Épée en acier | 10 Steel ingot + 10 Shiny gold + 10 Diamant | Dégâts 16 (remplace les mains nues : 5) *(24/10 ; avant 13)* |
   | Plastron de l'équilibre (case torse) | 50 Steel ingot + 20 Shiny gold + 1 Rubis, 1 Saphir, 1 Jade inférieurs + 50 Résidus angéliques + 50 Résidus démoniaques | Pods +188, oxygène +30, vitesse de minage +3 %, dégâts +3 %, vitesse d'attaque +8 %, ténacité +3 %, fortune +2 %, butin des mobs +3 %, torches +8 *(24/10 : × 1,5 arrondi ; avant pods +125, oxygène +20, 2 %, 2 %, 5 %, 2 %, 1 %, 2 %, torches +5)* |

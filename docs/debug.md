@@ -2679,3 +2679,10 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : la raison affichée reste « oxygène » quand l'oxygène et la fin de session tombent ensemble
   (vérifiée en premier). Un boss qu'on ne peut pas atteindre (toutes les cases autour prises) : `goTo` peut échouer et
   le mineur remonter.
+
+### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — 🧪 branche `geoffrey/acier-400x`
+- **Quoi** : `src/config.js` ITEMS : casque en acier oxygenMax 69 → 100 (400 x), jambes climbSpeed 1,08 → 1,6 (400 x),
+  bottes speed 1,08 → 1,67 (400,8 x), avec `UPGRADE.worth` (4 / 250 / 240 x par point). Fer : 268 / 262,5 / 252 x.
+  Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
+- **Tests** : `tests/steel-gear.test.js` (valeurs + nouveau test 390-410 x et > fer × 1,4) ✅, wiki, amelioration ✅.
+  Pas de simulation : les mineurs simulés n'ont pas de stuff en acier. Pas d'anti-triche : aucune ressource ne bouge.

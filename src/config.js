@@ -729,10 +729,10 @@ export const STUFF = {
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
-    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:69 } },   // 24/10 : avant 46
+    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
     'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40)
-    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.08 } },   // 24/10 : avant 0,72
-    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.08 } },   // 24/10 : avant 0,72
+    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
+    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.6 } },   // 24/10 : 0,48 × 1,25 (pas × 1,5 : 0,72)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,

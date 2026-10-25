@@ -113,6 +113,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   dans le catalogue). But : une équipe en fer (mineur, logisticien, barbare, skills complets) ≈ 5,4 areas au lieu de
   5,0 ; sans stuff (4,0) et en chitine (4,1) inchangés. Ancien : fer pioche +0,4, épée 11, casque +38, plastron +50,
   jambes et bottes +0,6 ; acier +0,48, 13, +46, +80, +0,72.
+- **Casque, jambes et bottes en acier ≈ 400 x** (25/10, Geoffrey) : oxygène +100, montée +1,6, marche +1,67 (ancien : +69,
+  +1,08, +1,08, soit 276 / 270 / 259 x, à peine 3 % au-dessus du fer). Valeur en x = `itemValue` (`UPGRADE.worth`).
   Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par

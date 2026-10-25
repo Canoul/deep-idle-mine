@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Casque, jambes et bottes en acier renforcés
+- **Pour le joueur** : le casque en acier donne +100 d'oxygène (avant +69), les jambes +1,6 de montée (avant +1,08) et
+  les bottes +1,67 de marche (avant +1,08). Avant, ils valaient à peine 3 % de plus que le fer ; maintenant environ
+  50 % de plus. Les pièces déjà fabriquées en profitent tout de suite, et les runes posées dessus grandissent aussi.
+- **Décisions** (Geoffrey) : ces trois pièces valent environ 400 x chacune (valeur d'équilibrage, ajustable).
+- **État** : 🧪 sur la branche `geoffrey/acier-400x` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
 - **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres
   attendent, le rejoignent et se battent sans remonter, même sans oxygène, le sac plein ou sans torches. Seule la fin
