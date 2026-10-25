@@ -12,7 +12,7 @@ function minerView(m){
   const a = m.action, d = a?.data || {};
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, face: m.face, status: m.status,
-    stats: m.stats, look: m.look || {}, skillTree: m.skillTree,
+    stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y } } : null,
   };
 }

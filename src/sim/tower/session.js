@@ -49,7 +49,7 @@ export function newTower(seed, opts = {}){
 
 function createMiner(id, s, x, y){
   return {
-    id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, account: s.account ?? null,
+    id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null,
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
     x, y, face: 1, action: null, status: 'Départ', fallN: 0, knocked: false,
     stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0 },

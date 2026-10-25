@@ -9,6 +9,7 @@ import { icon } from './craft.js';
 import { rcls, pname } from './rarity.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait, lookOf } from '../render/portrait.js';
+import { aurasOf } from '../meta/aura.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -25,7 +26,7 @@ export function renderSlots(el, worn, tag = 'button'){
            `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</${tag}>`;
   }).join('');
   el.insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
-  drawPortrait(el.querySelector('.stuffHero canvas'), lookOf(worn));
+  drawPortrait(el.querySelector('.stuffHero canvas'), lookOf(worn), aurasOf(worn));
 }
 
 /* stats du mineur : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu) ;

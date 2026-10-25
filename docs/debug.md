@@ -2439,3 +2439,24 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/wiki.test.js` (8, dont 1 nouveau : sorts, XP de spé, anneaux, date du bandeau) ✅. Rendu vérifié
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
+
+### Aura du stuff (Geoffrey, 25/10) — 🧪 branche `geoffrey/aura-stuff`
+- **Quoi** : `AURA` (config : seuil R4, paliers, rayon / opacité / pulsation) ; `src/meta/aura.js` (`auraQ`, `aurasOf`,
+  `sanitizeAuras`, `auraLook`, pur) ; `src/render/aura.js` (halo pixel art calculé depuis les pixels de la texture,
+  gardé en cache par texture + couleur + rayon ; `drawAura`). Dessiné **avant le corps** (`miner-sprite.js`,
+  `portrait.js`) : un premier essai par-dessus le corps recouvrait le visage en R7. `skins.js` : `armorPieces`.
+- **Données** : champ `auras: { case: qualité }` à côté de `look` (format de `look` inchangé). Calculé depuis
+  `record.gear` : `minerSpecs` (session + tours), `instantSpecs` ; le record de la **MI enregistre maintenant `gear`**
+  (`server/game/service.js`, seulement pour l'aura : les caractéristiques de la MI restent calculées depuis `look`).
+  Sessions anciennes sans `gear` : pas d'aura. Copié dans le mineur (`mineur.js`, `instant/session.js`,
+  `tower/session.js`) et envoyé par `view.js`, `instant-view.js`, `tower-view.js`. Lobby : `game.aurasFor` →
+  `publicParty` (`auras`) → `portraitAuras` (revérifié par `sanitizeAuras`). Portrait : boucle `requestAnimationFrame`
+  seulement s'il y a une aura, arrêtée quand le canvas change ou quitte la page.
+- **Tests** : `tests/aura.test.js` (10 : seuils, plus basse des deux, fragment refusé, valeurs absurdes, cases
+  visibles, palier/couleur, session → vue, MI, tours, lobby) ; `tests/party.test.js` +1. aura, party, lobby,
+  instant-server, game-service, game-replay, view, skins, tower, instant-mine, session, miner, stuff, amelioration,
+  anneaux ✅. Rendu vérifié ✅ dans Edge sans fenêtre (page d'aperçu temporaire, avec le vrai `createMinerSprite`,
+  miroir compris). ⚠️ Pas vu dans une vraie partie (il faut une pièce R4+ runée sur un compte de test).
+- **Points fragiles** : le halo lit les pixels de la texture (`getImageData`) : les textures doivent rester servies par
+  le même site. Le portrait du haut est redemandé à chaque mise à jour du HUD : la clé (pièces + qualités d'aura) évite
+  de relancer la boucle.

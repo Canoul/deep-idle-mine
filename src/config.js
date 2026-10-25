@@ -567,6 +567,22 @@ export const RUNE = {
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
   rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
 };
+
+/* ---- Aura du stuff (src/meta/aura.js, dessin : src/render/aura.js) ----
+   25/10/2026 (Geoffrey) : une pièce visible sur le corps (calques de src/skins.js), identifiée R`minQ`+ ET portant une
+   vraie rune R`minQ`+ (un fragment ne compte pas), émet une aura : un halo de la couleur de la police de la qualité la
+   plus basse des deux (UPGRADE.qualities), qui pulse. Visuel seulement. Ex. plastron R6 + rune R5 : halo orange faible.
+   looks : radius = largeur du halo en pixels de texture (16×16) ; alpha = opacité au plus fort ; pulse = part de
+   l'opacité qui respire ; period = durée d'une respiration (s). */
+export const AURA = {
+  minQ: 4,
+  tiers: { 4:'faible', 5:'faible', 6:'moyenne', 7:'forte' },
+  looks: {
+    faible:  { radius:1, alpha:0.45, pulse:0.45, period:2.6 },
+    moyenne: { radius:2, alpha:0.65, pulse:0.40, period:2.0 },
+    forte:   { radius:2, alpha:0.95, pulse:0.35, period:1.4 },
+  },
+};
 const QUALITY_NUMS = [1,2,3,4,5,6,7];
 /* nom interne du trésor d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) : « Trésor démoniaque R5 » */
 export const treasureItem = (side, q) => `${RUNE.treasures[side].name} R${q}`;

@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Aura du stuff runé
+- **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
+  s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en
+  R4-R5, moyen en R6, fort en R7. On le voit dans la mine, la mine instantanée, les tours, et sur les portraits (barre
+  du haut, lobby, onglet Stuff). Purement visuel.
+- **Décisions** (Geoffrey) : pièce ET rune R4+, la plus basse des deux donne couleur et force (en pratique la rune,
+  qui ne dépasse jamais la pièce) ; un fragment de rune ne compte pas ; halo dessiné derrière le mineur pour ne jamais
+  cacher sa texture ; visible partout.
+- **À suivre** : regarder en vrai en jeu si le halo « faible » se voit assez à la taille de la mine (réglable en
+  config, `AURA.looks`).
+- **État** : 🧪 sur la branche `geoffrey/aura-stuff` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en
