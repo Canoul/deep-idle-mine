@@ -1095,14 +1095,15 @@ export const TOWER = {
      l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
      le taclent à portée (COMBAT, 25/10) ; toutes les hitEvery s ils repoussent le mineur taclé de knock blocs. La porte
      du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
-  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25 },
+  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25, knockRes: -100 },   // knockRes : résistance au recul en % (−100 = le double : 0,5 bloc par coup normal ; 25/10 soir, remplace le temps sonné de 0,5 s)
+  blockFront: 1,      // étage « blocs » : les mineurs ne visent que les blocs des colonnes pas encore vidées les plus proches de l'entrée, blockFront par mineur (25/10)
   /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
      personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de
      base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
      vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). Sinon, le coup le repousse
      de push blocs (recul). En rage, les chances passent à rageKnock / rageKnockBarb. Le boss résiste à 100 % au recul.
-     25/10 au soir (Geoffrey) : projection 6 → 4 → 5 cases, chances 35 / 20 % → 25 / 10 %, en rage 50 / 25 % → 35 / 20 % ;
+     25/10 au soir (Geoffrey) : projection 6 → 4 → 5 → 4 cases, chances 35 / 20 % → 25 / 10 %, en rage 50 / 25 % → 35 / 20 % ;
      saut : jumpHover 5 → 3 s, et l'atterrissage projette TOUS les mineurs du toit de jumpKnock cases (avant : seulement
      ceux qui étaient sous lui, de knock cases).
      Recul du boss (25/10 au soir) : seuls les coups de son focus le repoussent (COMBAT.knock), avec knockRes % de
@@ -1117,7 +1118,7 @@ export const TOWER = {
      du toit sont étourdis jumpStun s (la ténacité peut l'ignorer) ; ceux qui étaient sous lui sont projetés de knock
      cases sur le côté le plus proche. Valeurs provisoires. */
   boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.25, knockBarb: 0.10,
-          rageKnock: 0.35, rageKnockBarb: 0.20, knock: 5, push: 0.5, knockRes: 25, speedMul: 2, arcHigh: 0.5, arcMs: 350,
+          rageKnock: 0.35, rageKnockBarb: 0.20, knock: 4, push: 0.5, knockRes: 25, speedMul: 2, arcHigh: 0.5, arcMs: 350,
           jumpEvery: 0.25, jumpHigh: 5, jumpFly: 0.6, jumpHover: 3, jumpFall: 0.3, jumpStun: 3, jumpKnock: 3 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },

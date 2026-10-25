@@ -22,7 +22,31 @@ Modèle d'entrée :
 - **Pour le joueur** : casque, plastron, jambes et bottes en fer demandent **20 peaux de gobelin** chacun en plus de
   leurs Tainted iron (les bottes : 20 au lieu de 5, toujours avec leur lingot d'or). L'armure complète coûte donc 80
   peaux. Recycler des bottes en fer rend 12 peaux (avant 3).
-- **État** : 🧪 sur la branche `geoffrey/fer-peau-gobelin` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Tour : plus étourdi en tombant, projection du boss à 4 cases
+- **Pour le joueur** : un mineur projeté hors de la tour tombe jusqu'en bas mais n'est plus étourdi : il remonte tout
+  de suite. Le boss projette de 4 cases au lieu de 5. Wiki à jour.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Tour : les mobs reculent deux fois plus, sans temps sonné
+- **Pour le joueur** : un Séraphin ou un Diablotin frappé recule de 0,5 bloc (avant 0,25) et revient aussitôt au
+  contact : plus de pause de 0,5 s après un recul.
+- **Décisions** (Geoffrey) : résistance au recul des mobs de la tour à −100 % ; temps sonné retiré. Mis en ligne sans
+  relancer les tests (demande de Geoffrey).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Tour : étages de blocs sans retour en arrière, recul des mobs visible, mesures ?perf
+- **Pour le joueur** : dans un étage de briques, les mineurs avancent maintenant depuis l'entrée, colonne par colonne :
+  ils ne laissent plus les briques du haut au-dessus de l'entrée pour revenir les chercher à la fin. Un Séraphin ou un
+  Diablotin repoussé reste un instant sur place (0,5 s) : le recul se voit enfin.
+- **Outil** : en ouvrant le jeu avec `?perf` (https://deepmineidle.fr/?perf), la barre du haut affiche les images par
+  seconde, le délai entre deux envois du serveur, le temps de réponse et les ticks par envoi (pour comprendre la
+  fluidité en ligne). Invisible sans `?perf`.
+- **À suivre** : regarder les mesures `?perf` en ligne pendant une tour. Boss qui ne saute pas : il descend rarement
+  sous 75 % avec l'équilibrage actuel (à confirmer). Treuil « sans texture » : pas reproduit (dessiné dans le test),
+  capture attendue.
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Annonces Discord des R7
 - **Pour le joueur** : quand quelqu'un loot un trésor de tour R7 ou identifie une pièce R7, un message part dans le

@@ -1,5 +1,5 @@
 /* Tour céleste (25/10, Geoffrey) : boss qui focus et suit sa cible, la traverse des autres, recul 0,5 avec arc,
-   projection de 5 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
+   projection de 4 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
    et projette ceux qui sont dessous), étages de blocs à vider entièrement, mobs qui partagent une case, affichage fluide. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -205,4 +205,23 @@ test('étage de blocs : deux mineurs ne visent jamais le même bloc (chacun rés
   }
   assert.equal(G.blocksLeft[k], 0);
   assert.equal(shared, 0, 'jamais deux mineurs sur le même bloc visé');
+});
+
+test('étage de blocs : on avance depuis l\'entrée, les blocs au-dessus de l\'entrée ne restent pas pour la fin (solo et à 3)', async () => {
+  const { gateCols } = await import('../src/sim/tower/world.js');
+  for(const n of [1, 3]){
+    const G = newTower(3, { side: 'angel', miners: team(n) });
+    const k = G.kinds.indexOf('blocks'), gate = gateCols(G, k - 1), cx = gate.reduce((s, x) => s + x, 0) / gate.length;
+    const when = new Map(); let guard = 0;
+    while(G.blocksLeft[k] > 0 && guard++ < ticks(600)){
+      const before = blockCells(G, k).map(([x, y]) => y * G.w + x);
+      tickTower(G);
+      const now = new Set(blockCells(G, k).map(([x, y]) => y * G.w + x));
+      for(const c of before) if(!now.has(c)) when.set(c, G.t);
+    }
+    assert.equal(G.blocksLeft[k], 0);
+    const colEnd = x => Math.max(...[...when].filter(([c]) => c % G.w === x).map(([, t]) => t));
+    const far = Math.abs(G.x0 + 1 - cx) > Math.abs(G.x1 - 1 - cx) ? G.x0 + 1 : G.x1 - 1;   // colonne la plus loin de l'entrée
+    for(const x of gate) assert.ok(colEnd(x) < colEnd(far), `${n} mineur(s) : colonne ${x} (entrée) finie avant la plus lointaine`);
+  }
 });

@@ -218,7 +218,8 @@ function hitMob(G, m, o){
      ce mineur ; verrou : repoussé une fois, il ne peut plus l'être avant d'être revenu à portée (stepMobs) */
   if(o.hp > 0 && !o.knockLock){
     const x0 = o.x, k0 = o.kx || 0;
-    push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));
+    /* résistance au recul des mobs de la tour : MB.knockRes % (négative = ils reculent plus : −100 % = le double) */
+    push(o, m, knockbackOf(m) * (1 - MB.knockRes / 100), (x, y) => y === o.y && mobFits(G, o, x));
     if(o.x !== x0 || (o.kx || 0) !== k0){
       o.knockLock = true;
       if(o.grab === m.id && !mobReach(G, o, m)) o.grab = null;
@@ -334,6 +335,19 @@ function reservedBlocks(G, m, k){
   return out;
 }
 
+/* front de l'étage k (25/10, Geoffrey : les blocs du haut au-dessus de l'entrée restaient pour la fin, les mineurs
+   revenaient les chercher) : on vide l'étage en avançant depuis l'entrée (la porte du plancher, dessous). Seuls comptent
+   les blocs libres (cand) des colonnes pas encore vidées les plus proches de l'entrée : TOWER.blockFront par mineur (une
+   en solo, trois à trois) ; une colonne est donc finie, haut compris, avant qu'on s'en éloigne. Rien de libre dans le
+   front : les autres blocs libres. */
+function blockFront(G, k, cells, cand){
+  const gate = gateCols(G, k - 1), cx = gate.reduce((s, x) => s + x, 0) / gate.length;
+  const width = Math.max(1, Math.round(TOWER.blockFront * G.miners.length));
+  const cols = [...new Set(cells.map(([x]) => x))].sort((a, b) => Math.abs(a - cx) - Math.abs(b - cx)).slice(0, width);
+  const front = cand.filter(([x]) => cols.includes(x));
+  return front.length ? front : cand;
+}
+
 /* étage « blocs » à vider pour ce mineur : le plus bas pas encore vidé, à son étage ou au-dessus ; -1 sinon */
 function blockFloorFor(G, m){
   const here = floorOf(G, m.y);
@@ -398,7 +412,7 @@ export function decide(G, m){
     const st = `Vide l'étage ${kb}`, key = ([x, y]) => y * G.w + x;
     const cells = blockCells(G, kb), free = cells.filter(([x, y]) => !busy(G, m, 'mine', x, y));
     const res = reservedBlocks(G, m, kb);
-    const left = free.filter(c => !res.has(key(c)));
+    const left = blockFront(G, kb, cells, free.filter(c => !res.has(key(c))));
     const adj = left.find(([x, y]) => Math.abs(x - m.x) + Math.abs(y - m.y) === 1 && (y >= m.y || towerSupported(G, m.x, m.y)));
     if(adj){ m.blockGoal = key(adj); m.face = Math.sign(adj[0] - m.x) || m.face; return startMine(G, m, adj[0], adj[1], st); }
     const path = left.length ? planTo(G, m, left, res) : null;
@@ -533,13 +547,11 @@ function finishAction(G, m, a){
   }
 }
 
-/* fin d'une chute : une chute imprévue (projeté par le boss) d'au moins CFG.stunFall cases étourdit */
+/* fin d'une chute imprévue (projeté par le boss) : plus d'étourdissement à l'arrivée (25/10 au soir, Geoffrey ; avant :
+   étourdi CFG.stunTime s après CFG.stunFall cases ou plus) ; il remonte tout de suite */
 function land(G, m){
   if(m.knocked){
-    if(m.fallN >= CFG.stunFall){
-      m.action = { type: 'stun', dur: CFG.stunTime, t: 0, data: {} }; m.status = 'Étourdi';
-      log(G, `💫 ${m.name} s'écrase ${m.y >= G.floor ? 'au pied de la tour' : 'plus bas'} (${m.fallN} cases) : étourdi ${CFG.stunTime} s`);
-    }
+    if(m.fallN >= CFG.stunFall) log(G, `💫 ${m.name} tombe ${m.y >= G.floor ? "jusqu'au pied de la tour" : 'plus bas'} (${m.fallN} cases)`);
     if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; m.fell = true; }   // tombé : regroupement en remontant
     /* logisticien (skill Treuil) tombé au pied de la tour, dehors : il installera le treuil (un seul par partie) */
     if(m.skill.winch && !G.winch && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))

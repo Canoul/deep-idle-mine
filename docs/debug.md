@@ -2850,7 +2850,38 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
   le salon peut devenir bruyant.
 
-### Armure en fer + 20 peaux de gobelin (Geoffrey, 25/10) — 🧪 branche `geoffrey/fer-peau-gobelin`
+### Tour : étages de blocs en front, mob sonné après un recul, mesures ?perf (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
+- **Contexte** : le dossier local était resté sur `cd6f90a` ; ensuite `tour-regroupe`, `lance-en-fer`,
+  `tour-combat-continu` (marche continue `walkMob`, `knockLock`, `stopAction`) et `fdebd2d` (treuil de tour) ont
+  changé la tour en ligne : d'où des écarts entre le local et le live.
+- **Étages de blocs** (`src/sim/tower/session.js`, `blockFront`) : les candidats sont filtrés aux colonnes pas encore
+  vidées les plus proches du centre de la porte d'entrée (`gateCols(G, k − 1)`), `TOWER.blockFront` (1) × nombre de
+  mineurs. Avant (seed 3, 3 mineurs) : blocs du haut au-dessus de l'entrée minés à 100-104 s sur 104 (coût d'échelle :
+  toujours repoussés) ; après : front régulier, 105 s ; solo 277 → 276 s, colonne par colonne.
+- **Recul des mobs** : il marchait (+0,25) mais `walkMob` le ramenait au contact en ≈ 0,2 s. `o.stagger = G.t +
+  MB.knockStun` (0,5 s) dans `hitMob` quand le push a bougé le mob ; `stepMobs` ne fait pas marcher un mob sonné.
+- **Mesures** : `src/ui/perf.js` (`createPerf`, `perfText`, fenêtre 2 s) ; `src/main.js` (`?perf` : `perf.view` autour
+  de `gameApi.view`, `perf.frame` dans `frame`, texte toutes les 120 ms) ; `.perfBox` (cachées) dans `#run` et `#twRun`.
+- **Vérifié, pas un bug** : retour du boss au centre (fonctionne dès que personne n'est sur le toit et qu'il est
+  engagé) ; saut à 74 % (se déclenche) ; treuil : textures présentes, servies en ligne (mêmes fichiers que `main`,
+  `Cache-Control: no-store`) et dessinées (rendu sans navigateur : corde sur toute la hauteur, poulie, seau).
+- **Tests** : `tests/tower-boss.test.js` (+2 : front depuis l'entrée en solo et à 3, mob sonné), `tests/perf.test.js`
+  (nouveau, 3) ; tower, tower-boss, perf, boot-check, controls ✅. Pas de simulation (demande de Geoffrey).
+
+### Tour : recul des mobs ×2, temps sonné retiré (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10 (tests relancés ensuite : ✅, voir l'entrée suivante)
+- `TOWER.mobs.knockRes: -100` (remplace `knockStun`) ; `hitMob` pousse de `knockbackOf(m) × (1 − MB.knockRes/100)`
+  (la résistance n'est pas posée sur le mob : `knockOf` borne la résistance à 0–100) ; `o.stagger` et son test
+  (`tests/tower-boss.test.js`, « mob sonné ») retirés. ⚠️ Tests non relancés à la demande de Geoffrey : à relancer
+  (tower, tower-boss) à la prochaine modification de la tour.
+
+### Tour : plus d'étourdissement à l'arrivée d'une chute, projection 4 cases (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
+- `land()` (`src/sim/tower/session.js`) : plus d'action `stun` après une chute de `CFG.stunFall` cases ou plus (le
+  message du journal reste) ; `fell`, chutes comptées et treuil du logisticien inchangés. `TOWER.boss.knock` 5 → 4.
+- Tests adaptés (`tests/tower.test.js`) : l'arrivée en bas se repère à `!m.knocked` au lieu de l'étourdissement
+  (treuil, regroupement), le treuil s'installe en 10 s sans les 5 s d'étourdissement, projection 4. tower,
+  tower-boss ✅ (37) : ils couvrent aussi l'entrée précédente, mise en ligne sans tests.
+
+### Armure en fer + 20 peaux de gobelin (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/recipes.js` : casque / plastron / jambes en fer + `'Peau de gobelin': 20` ; bottes 5 → 20. GAME_DESIGN
   (tableau du stuff en fer). Wiki : recettes générées depuis `RECIPES` (date du bandeau déjà au 25/10).
 - **Tests** : `tests/blueprint.test.js` (recettes ; et pioche en fer 0,4 / 1,4 : **déjà rouge sur main** depuis le nerf du
