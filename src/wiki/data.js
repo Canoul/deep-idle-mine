@@ -208,6 +208,7 @@ const STAT_HELP = {
   torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
+  knockRes:   "Réduit le recul subi quand un mob le frappe (minotaure, mobs et boss des tours) : à 50 %, il recule deux fois moins ; à 100 %, plus du tout. Aucune pièce ne la donne pour l'instant.",
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
   crit:       'Chance qu\'un coup contre un mob fasse le double de dégâts.',
@@ -215,7 +216,7 @@ const STAT_HELP = {
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
   looting:    "Chance, en %, d'un butin en plus à chaque mob tué (comme le skill Pillage).",
 };
-const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', discoverMax:' blocs',
+const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', discoverMax:' blocs',
   mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };
 export function statRows(){
