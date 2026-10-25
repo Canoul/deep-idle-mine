@@ -137,10 +137,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   repoussent le mineur de 0,25 ; stat **Résistance au recul** (%, 0, sans source). **Tacle refondu** : à portée, le
   mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,
   6 cases). Ancien (21/10) : tacle à 1 case, mineur immobilisé tant que le mob reste à côté. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **K hole** (25/10, Geoffrey, branche `geoffrey/k-hole`, mise en place) : portail enfoui (1 % par area), découvert →
-  3 s → tout le groupe dans une autre dimension 1 min (pris sur l'heure), puis retour à sa place, mine figée entre-temps.
-  Technique : échange de carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). Contenu de la
-  dimension à décider (pour l'instant terre et pierre, sans mobs). GAME_DESIGN §2.
+- **K hole** (25/10, Geoffrey, branche `geoffrey/k-hole`) : portail enfoui (1 % par area), découvert → 3 s → tout le
+  groupe dans une autre dimension 5 min (pris sur l'heure) : 25 × 25 à la profondeur de l'area, 5 colonnes d'arrivée vides,
+  37 % pierre dure, 30 % fer, 20 % or, 8 % graphite, 3 % diamant, 1 donjon, 5 pièges, 1 % de treasures (de l'area) ; pas
+  d'oxygène consommé, pods sans limite, aucune remontée ; retour à la surface de la mine, mine figée entre-temps.
+  Technique : échange de carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe
   avant ; pas la sortie du donjon) ; la structure se révèle dès le seuil ou dès qu'on combat le boss.

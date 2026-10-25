@@ -29,6 +29,11 @@ function pick(table, r){
   return types[types.length-1];
 }
 
+/* mobs d'un piège de l'area k (même tirage que dans la mine) ; sert aussi à la dimension du k hole */
+export const trapMobs = (k, r) => { const table = trapTable(k); return Array.from({ length:TRAP.mobs }, () => pick(table, r)); };
+/* taille d'un piège, paroi comprise */
+export const TRAP_BOX = { w:OW, h:OH };
+
 /* deux rectangles (paroi comprise) se touchent-ils, à gap cases près ? */
 const near = (a,b,gap) => a.x0 < b.x0+b.w+gap && b.x0 < a.x0+a.w+gap && a.ry0 < b.ry0+b.h+gap && b.ry0 < a.ry0+a.h+gap;
 

@@ -1,10 +1,12 @@
-/* K hole (src/sim/khole.js) : placement dans les areas, découverte → aspiration du groupe dans la dimension, mine figée,
-   retour de chacun à sa place, fin de session et départ pendant le k hole, déterminisme, envoi au navigateur. */
+/* K hole (src/sim/khole.js) : placement dans les areas, découverte → aspiration du groupe dans la dimension (contenu,
+   règles : oxygène, pods, pas de remontée), mine figée, retour à la surface, fin de session et départ pendant le k hole, déterminisme, envoi au navigateur. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, TOP_DIRT_ROWS, KHOLE, KHOLE_BLOCK, DT, DUNGEON } from '../src/config.js';
+import { W, AREA_H, KHOLE, KHOLE_BLOCK, DT, DUNGEON, TRAP, BARRIER, TREASURE_BLOCK, SPAWN_X } from '../src/config.js';
 import { newSession, tick, leaveSession, endSession } from '../src/sim/session.js';
-import { genArea, tryUnlock, areaTop } from '../src/sim/world.js';
+import { genArea, tryUnlock, areaTop, treasureItem } from '../src/sim/world.js';
+import { buildDimension } from '../src/sim/khole.js';
+import { mobHp } from '../src/config.js';
 import { createViewer } from '../src/shared/view.js';
 
 /* lance fn avec KHOLE.chance = c (remis ensuite) */
@@ -52,52 +54,76 @@ test('placement : tirage à part (le reste de l\'area ne change pas) et détermi
 
 /* ---------- aller et retour ---------- */
 
-test('découvert : il s\'ouvre, KHOLE.warn s plus tard tout le groupe est dans la dimension', () => {
-  const { G } = opened();
+test('découvert : il s\'ouvre, KHOLE.warn s plus tard tout le groupe est en bas à gauche de la dimension', () => {
+  const { G, h } = opened();
   run(G, KHOLE.warn - 0.5);
   assert.equal(G.khole ?? null, null, 'pas encore');
   run(G, 1);
   assert.ok(G.khole);
-  assert.equal(G.tiles.length, 1 + TOP_DIRT_ROWS + AREA_H, 'la carte est celle de la dimension');
-  assert.equal(G.unlockedAreas, 1); assert.equal(G.mobs.length, 0);
-  assert.ok(G.miners.every(m => m.y <= 1), 'tout le groupe arrive à la surface de la dimension');
+  const bottom = areaTop(h.k) + KHOLE.h - 1;
+  assert.equal(G.tiles.length, bottom + 1, 'la carte est celle de la dimension, à la profondeur de l\'area du k hole');
+  assert.ok(G.miners.every(m => m.x < KHOLE.spawnCols && m.y === bottom), 'arrivée en bas des colonnes vides de gauche');
   assert.ok(G.log.some(l => /aspiré par le k hole/.test(l.msg)));
 });
 
-test('retour : chacun à sa place, mine figée (blocs, mobs, areas), le portail a disparu ; ce qu\'il porte est gardé', () => {
+test('la dimension : 25 × 25 au fond de la mine, arrivée vide, composition, 1 donjon, 5 pièges et treasures de l\'area', () => {
+  const G = newSession(5, { miners: 1 }), k = 4;
+  const bottom = buildDimension(G, 0, k), top = areaTop(k);
+  assert.equal(bottom, top + KHOLE.h - 1);
+  for(let y=0; y<G.tiles.length; y++) for(let x=0; x<W; x++){
+    const inside = y >= top && x < KHOLE.w;
+    if(!inside) assert.equal(G.tiles[y][x], BARRIER, `barrière autour (${x},${y})`);
+    else if(x < KHOLE.spawnCols) assert.equal(G.tiles[y][x], 0, 'colonnes d\'arrivée vides');
+  }
+  assert.equal(G.dungeons.length, KHOLE.dungeons); assert.equal(G.traps.length, KHOLE.traps);
+  assert.ok(G.mobs.some(o => o.type === DUNGEON.boss.type));
+  for(const t of G.traps) for(const o of t.mobs) assert.equal(o.hp, Math.round(mobHp(o.type, k)*TRAP.hpMul), 'PV des mobs de l\'area');
+  const zone = (KHOLE.w - KHOLE.spawnCols) * KHOLE.h;
+  assert.equal(G.treasures.size, Math.round(zone * KHOLE.treasurePct / 100));
+  for(const t of G.treasures.values()){ assert.equal(t.item, treasureItem(k)); assert.equal(G.tiles[t.y][t.x], TREASURE_BLOCK); }
+  const c = G.areas[k].counts;
+  /* le donjon et l'intérieur des pièges prennent des cases : les % se retrouvent parmi les blocs restants */
+  const blocks = Object.keys(KHOLE.comp).reduce((s, key) => s + (c[key] || 0), 0);
+  for(const ore of ['iron', 'gold', 'graphite', 'diamond'])
+    assert.ok(Math.abs(100*c[ore]/blocks - KHOLE.comp[ore]) <= 5, `${ore} : ${c[ore]} sur ${blocks} (≈ ${KHOLE.comp[ore]} %)`);
+  assert.equal(G.unlockedAreas, k + 1);
+});
+
+test('dans la dimension : pas d\'oxygène consommé, pods sans limite (il ne remonte jamais), rien à débloquer, pas d\'autres mobs', () => {
+  const { G } = opened();
+  run(G, KHOLE.warn + DT);
+  const m = G.miners[0], ox = m.ox, depth = G.stats.maxDepth, k = G.khole.k, since = G.t;
+  m.load = m.carac.pods + 50;                       // pods pleins (et plus)
+  G.areas[k].oreMined = G.areas[k].oreTotal;
+  assert.equal(tryUnlock(G), false);
+  run(G, 60);
+  assert.equal(m.ox, ox);
+  assert.ok(G.miners.every(q => q.mode !== 'return' && q.mode !== 'surface'), 'personne ne remonte');
+  assert.ok(!G.log.some(l => /remonte/.test(l.msg) && l.t > since));
+  assert.ok(G.stats.mined > 0, 'ils minent');
+  assert.ok(G.mobs.every(o => o.dungeon != null || o.trap != null), 'seulement le boss et les mobs des pièges');
+  assert.equal(G.stats.maxDepth, depth, 'la profondeur de la dimension ne compte pas');
+});
+
+test('retour : tout le groupe à la surface de la mine, mine figée, le portail a disparu ; ce qu\'il porte est gardé', () => {
   const { G, h } = opened();
   run(G, KHOLE.warn + DT);
   const K = G.khole; assert.ok(K);
-  /* photo de la mine et des mineurs au départ (ce qui est mis de côté) */
   const tiles = K.world.tiles.map(r => r.slice()), mobs = JSON.stringify(K.world.mobs), areas = JSON.stringify(K.world.areas);
-  const spots = G.miners.map(m => ({ ...K.spots.get(m.id) }));
-  run(G, KHOLE.duration / 2);
-  const mined = G.stats.mined;
-  assert.ok(mined > 0, 'ils minent dans la dimension');
-  G.miners[0].inv.Pierre = (G.miners[0].inv.Pierre || 0) + 1;   // ce qu'il porte revient avec lui
-  run(G, KHOLE.duration / 2 + DT);
+  run(G, KHOLE.duration - 1);
+  const carried = G.miners.map(m => ({ ...m.inv }));
+  assert.ok(carried.some(inv => Object.keys(inv).length > 0), 'ils portent ce qu\'ils ont miné');
+  run(G, 1 + DT);
   assert.equal(G.khole, null);
-  G.miners.forEach((m, i) => { assert.equal(m.x, spots[i].x); assert.equal(m.y, spots[i].y); });
+  assert.ok(G.miners.every(m => m.y === 0 && Math.abs(m.x - SPAWN_X) <= 1), 'à la surface');
+  G.miners.forEach((m, i) => assert.deepEqual(m.inv, carried[i], 'ce qu\'il porte est gardé'));
   assert.equal(JSON.stringify(G.areas), areas, 'rien n\'a été débloqué ni compté dans la mine');
-  assert.ok(G.miners[0].inv.Pierre >= 1);
   assert.equal(G.tiles[h.y][h.x], 0, 'le portail a disparu');
   tiles[h.y][h.x] = 0;
-  /* la mine reprend au tick du retour : seules ses propres actions du tick ont pu changer quelques cases */
   let diff = 0;
   for(let y=0; y<tiles.length; y++) for(let x=0; x<W; x++) if(tiles[y][x] !== G.tiles[y][x]) diff++;
-  assert.ok(diff <= G.miners.length, `mine figée (${diff} cases changées)`);
+  assert.equal(diff, 0, 'mine figée');
   assert.ok(JSON.parse(mobs).every(o => G.mobs.some(q => q.id === o.id)), 'les mobs de la mine sont toujours là');
-});
-
-test('dans la dimension : rien à débloquer, pas de mobs, la profondeur ne compte pas', () => {
-  const { G } = opened();
-  run(G, KHOLE.warn + DT);
-  const depth = G.stats.maxDepth;
-  G.areas[0].oreMined = G.areas[0].oreTotal;
-  assert.equal(tryUnlock(G), false);
-  run(G, KHOLE.duration - 1);
-  assert.equal(G.mobs.length, 0);
-  assert.equal(G.stats.maxDepth, depth);
 });
 
 test('fin de session pendant le k hole : retour dans la mine d\'abord, bilan de la mine', () => {
@@ -107,23 +133,22 @@ test('fin de session pendant le k hole : retour dans la mine d\'abord, bilan de 
   endSession(G);
   assert.equal(G.khole, null);
   assert.equal(G.summary.areasUnlocked, areas - 1);
-  assert.ok(G.tiles.length > 1 + TOP_DIRT_ROWS + AREA_H || areas === 1);
 });
 
-test('un joueur part pendant le k hole : les autres reviennent normalement ; le dernier qui part termine la session', () => {
+test('un joueur part pendant le k hole : les autres reviennent à la surface ; le dernier qui part termine la session', () => {
   const { G } = opened();
   run(G, KHOLE.warn + DT);
-  const stay = G.miners[1], spot = { ...G.khole.spots.get(stay.id) };
+  const stay = G.miners[1];
   assert.equal(leaveSession(G, G.miners[0]), true);
   run(G, KHOLE.duration);
   assert.equal(G.khole, null);
-  assert.deepEqual([stay.x, stay.y], [spot.x, spot.y]);
+  assert.equal(stay.y, 0);
   assert.equal(leaveSession(G, stay), true);
   assert.equal(G.over, true);
 });
 
 test('déterministe : même seed, même partie (aller, dimension, retour)', () => {
-  const play = () => { const { G } = opened(); run(G, KHOLE.warn + KHOLE.duration + 20);
+  const play = () => { const { G } = opened(); run(G, KHOLE.warn + 60);
     return JSON.stringify({ chest: G.chest, stats: G.stats, miners: G.miners.map(m => [m.x, m.y, m.inv]), log: G.log }); };
   assert.equal(play(), play());
 });

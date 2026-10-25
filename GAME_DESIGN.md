@@ -127,10 +127,11 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 
 - Un **k hole** est un portail en forme de trou noir, enfoui dans une area à la place d'un bloc de terrain : **1 % de chance par area** *(provisoire)*, tirage à part de la seed (le reste de l'area ne change pas), jamais dans un donjon ni un piège. Incassable.
 - **Déclenchement : dès qu'un mineur le découvre** (pas de réglage dans le lobby). Le journal annonce « Un k hole s'ouvre… » ; **3 s** plus tard *(provisoire)*, **tout le groupe** est aspiré, où que soit chacun.
-- **La dimension** : une autre carte (une surface avec un coffre, celui de la session, puis une area), même seed → même dimension. **Pas de mobs**, rien à débloquer, la profondeur n'y compte pas. **Contenu à décider** : une ressource qu'on ne trouve que là (décision de principe, la ressource viendra plus tard) ; en attendant, terre et pierre.
-- **Durée : 1 min** *(provisoire)*, **prise sur l'heure de session** (vrai arbitrage : du temps de minage en moins).
-- **Retour** : chacun revient **exactement à sa place** dans la mine, avec ce qu'il porte ; ce qu'il a déposé au coffre de la dimension est dans le coffre de la session. Pendant ce temps, **la mine est figée** (rien n'y bouge : mobs, seau, sac de la Mule). Une action en cours au départ (combat, chute…) reprend au retour. Le portail disparaît (case vide).
-- Fin de session ou départ d'un joueur pendant le k hole : on revient d'abord dans la mine, puis la règle normale s'applique.
+- **La dimension** (« comme au fond d'une mine ») : **25 × 25 cases**, à la profondeur de l'area du k hole. Les mineurs arrivent **en bas à gauche** ; les **5 colonnes de gauche sont vides**. Le reste : **37 % pierre dure, 30 % fer, 20 % or, 8 % graphite, 3 % diamant**, puis **1 donjon** (minotaure, mêmes règles que dans la mine), **5 pièges** (toujours posés, mobs et PV de l'area du k hole) et **1 % de treasures** (≈ 5, du tier de l'area du k hole). Le donjon et l'intérieur des pièges prennent de la place : les % se retrouvent parmi les blocs restants. **Pas d'autres mobs.** Même seed → même dimension.
+- **Durée : 5 min** *(provisoire)*, **prise sur l'heure de session**.
+- **Règles dans la dimension** : l'oxygène **ne baisse pas** ; les pods **n'ont pas de limite** ; les mineurs **ne remontent jamais** (il n'y a pas de surface) : ils minent jusqu'à la fin du compteur. Rien ne s'y débloque, la profondeur atteinte ne compte pas, pas de focus d'area.
+- **Retour** : tout le groupe est **téléporté à la surface de la mine**, avec ce qu'il porte (il le dépose ensuite au coffre comme d'habitude). Pendant le k hole, **la mine est figée** (rien n'y bouge : mobs, seau, sac de la Mule) ; les mobs qui tenaient un mineur le lâchent. Le portail disparaît (case vide).
+- Fin de session ou départ d'un joueur pendant le k hole : on revient d'abord dans la mine, puis la règle normale s'applique (ce qu'on porte à la fin de la session est perdu).
 
 ## 3. Le mineur
 

@@ -68,7 +68,7 @@ function stepMiner(G,m){
   if(m.y===0){
     m.ox=Math.min(m.carac.oxygenMax, m.ox+CFG.refillRate*DT);
     m.torches=m.carac.torches; m.bridges=m.carac.bridges;
-  } else {
+  } else if(!G.khole){   // dans la dimension du k hole, l'oxygène ne baisse pas
     m.ox=Math.max(0,m.ox-DT);
   }
   let budget = DT*(m.ox<=0?CFG.oxygenOutSlow:1), guard=0;

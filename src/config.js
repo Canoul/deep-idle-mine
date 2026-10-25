@@ -1055,13 +1055,19 @@ export const DUNGEON = {
 /* ---- K hole (src/sim/khole.js) — décisions du créateur, 25/10/2026 ; valeurs provisoires ----
    Un portail (bloc KHOLE_BLOCK, incassable) enfoui dans une area avec la chance `chance` (un tirage par area, à part de
    la seed : le reste de l'area ne change pas), à la place d'un bloc de terrain, hors donjon et piège. Dès qu'un mineur
-   le découvre, il s'ouvre : `warn` s plus tard, TOUT le groupe est aspiré dans une autre dimension (une carte de W × AREA_H
-   sous une surface avec son coffre, celui de la session), pendant `duration` s, pris sur l'heure de session. La mine est
-   figée pendant ce temps (rien n'y bouge), puis chacun revient à sa place, avec ce qu'il porte ; le portail disparaît.
-   comp : composition de la dimension (comme une area) ; contenu à décider (ressource propre, plus tard). Pas de mobs. */
+   le découvre, il s'ouvre : `warn` s plus tard, TOUT le groupe est aspiré dans une autre dimension pendant `duration` s,
+   pris sur l'heure de session. La mine est figée pendant ce temps (rien n'y bouge) ; à la fin, tout le groupe est
+   téléporté à la SURFACE de la mine, avec ce qu'il porte ; le portail disparaît.
+   La dimension (« comme au fond d'une mine ») : w × h cases, à la profondeur de l'area du k hole (les mobs des pièges
+   et les treasures sont ceux de cette area) ; les spawnCols colonnes de gauche sont vides (arrivée, en bas à gauche) ;
+   le reste suit comp (% des cases hors arrivée), puis 1 donjon (DUNGEON, minotaure), `traps` pièges (TRAP, mobs et PV de
+   l'area, toujours posés) et treasurePct % de treasures (tier de l'area), sans mobs ailleurs. Pas d'oxygène consommé,
+   pods sans limite, aucune remontée : on attend la fin du compteur. */
 export const KHOLE = {
-  chance: 0.01, fromArea: 0, warn: 3, duration: 60,
-  comp: { dirt:20, stone:70, air:10 },
+  chance: 0.01, fromArea: 0, warn: 3, duration: 300,
+  w: 25, h: 25, spawnCols: 5,
+  comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 },
+  traps: 5, dungeons: 1, treasurePct: 1, attempts: 20,
   salt: 0x6b401e,
 };
 

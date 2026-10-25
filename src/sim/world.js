@@ -50,17 +50,17 @@ export const rowDone = (G,y) => { const row=G.tiles[y]; if(!row) return false; f
 
 /* filons / poches : `count` cases de `id` en groupes d'un seul tenant de 1 à `maxSize` cases, sur des cases libres */
 const FREE = 255;   // case pas encore attribuée pendant la génération (0 = air est une vraie valeur)
-function placeClusters(grid, r, id, count, maxSize, out){
+function placeClusters(grid, r, id, count, maxSize, out, w=W, h=AREA_H){
   const N = grid.length; let rem = count;
   while(rem>0){
     let c; do{ c=Math.floor(r()*N); }while(grid[c]!==FREE);
     const size = Math.min(rem, 1+Math.floor(r()*maxSize));
     const cells=[c]; grid[c]=id; let g=0;
     while(cells.length<size && g++<30){
-      const b=cells[Math.floor(r()*cells.length)], bx=b%W, by=(b/W)|0, d=DIRS[Math.floor(r()*4)];
+      const b=cells[Math.floor(r()*cells.length)], bx=b%w, by=(b/w)|0, d=DIRS[Math.floor(r()*4)];
       const nx=bx+d[0], ny=by+d[1];
-      if(nx<0||nx>=W||ny<0||ny>=AREA_H) continue;
-      const ni=ny*W+nx; if(grid[ni]!==FREE) continue;
+      if(nx<0||nx>=w||ny<0||ny>=h) continue;
+      const ni=ny*w+nx; if(grid[ni]!==FREE) continue;
       grid[ni]=id; cells.push(ni);
     }
     if(out) cells.forEach(ci=>out.push(ci));
@@ -68,11 +68,11 @@ function placeClusters(grid, r, id, count, maxSize, out){
   }
 }
 
-/* Remplit une grille W × AREA_H selon une composition en % (comptes exacts) : minerais en filons, vide en poches, puis
-   le reste (terrain) mélangé. Renvoie { grid, counts, big (terrain le plus présent), oreTotal }. Sert aux areas et à la
-   dimension du k hole (src/sim/khole.js). */
-export function fillComp(r, comp){
-  const N = W*AREA_H;
+/* Remplit une grille w × h (par défaut une area : W × AREA_H) selon une composition en % (comptes exacts) : minerais en
+   filons, vide en poches, puis le reste (terrain) mélangé. Renvoie { grid, counts, big (terrain le plus présent),
+   oreTotal }. Sert aux areas et à la dimension du k hole (src/sim/khole.js). */
+export function fillComp(r, comp, w=W, h=AREA_H){
+  const N = w*h;
   const counts = {}; let sum = 0;
   for(const n in comp){ counts[n]=Math.round(comp[n]*N/100); sum+=counts[n]; }
   // l'arrondi est absorbé par le terrain le plus présent
@@ -83,9 +83,9 @@ export function fillComp(r, comp){
   for(const n in counts){
     const id = IDS[n]; if(!isOre(id)) continue;
     oreTotal += counts[n];
-    placeClusters(grid, r, id, counts[n], GEN.veinMax, oreCells);
+    placeClusters(grid, r, id, counts[n], GEN.veinMax, oreCells, w, h);
   }
-  if(counts.air) placeClusters(grid, r, IDS.air, counts.air, GEN.airPocketMax);
+  if(counts.air) placeClusters(grid, r, IDS.air, counts.air, GEN.airPocketMax, null, w, h);
   const filler=[];
   for(const n in counts) if(typeOf(IDS[n])==='terrain') for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;

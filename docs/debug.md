@@ -2947,3 +2947,27 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : un nouveau champ de position ajouté au mineur doit aller dans `SPOT`, un nouveau champ du monde
   dans `WORLD`, sinon il fuit entre mine et dimension. Une Mule posée dans la dimension est perdue au retour (sac de la
   dimension jeté). Une action en cours au départ (pas, coup) reprend telle quelle au retour.
+
+### K hole : la vraie dimension (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+- **Quoi** (remplace la dimension provisoire de l'entrée précédente) : `buildDimension(G, n, k)` dans `src/sim/khole.js` :
+  carte de `areaTop(k) + KHOLE.h` lignes, tout en barrière sauf KHOLE.w × KHOLE.h dans le coin gauche (lignes de l'area
+  k : areaOf donne k, donc PV des mobs, table des pièges, tier des treasures de l'area) ; `areas` = k+1 areas vides + la
+  dimension en k, `unlockedAreas` = k+1 ; arrivée = spawnCols colonnes vides (vues), mineurs en bas à gauche ; zone :
+  `fillComp(r, comp, w, h)` (world.js : `fillComp` et `placeClusters` acceptent w, h ; valeurs par défaut = area, cartes
+  inchangées), puis `layout` (donjons puis pièges, toutes les places essayées dans un ordre tiré, jusqu'à
+  KHOLE.attempts dispositions : 200 seeds × 6 areas → toujours complète, 78 ms), `carve` / `carveTrap` (mobs :
+  `trapMobs(k, r)`, nouvel export de trap.js avec `TRAP_BOX`), puis treasurePct % de treasures (G.treasures, item
+  `treasureItem(k)`). Retour : `exitKhole` met tout le groupe à la surface (SPOT remis à zéro, x autour de SPAWN_X), lâche
+  les tacles des mobs de la mine. Le portail ne garde plus les places (plus de `spots`).
+- Règles de la dimension : `session.js` stepMiner (pas d'oxygène consommé si `G.khole`), `ai.js` decideWork (pas de
+  `planReturn`, aucune raison de remonter : oxygène, pods, fin de session, torches), `focus.js` focusArea (null).
+- **Tests** : `tests/khole.test.js` (10 : + contenu de la dimension (barrière autour, arrivée vide, 1 donjon, 5 pièges,
+  PV de l'area, treasures du tier, % parmi les blocs restants à ±5), règles (oxygène, pods au-delà de la limite sans
+  remontée, pas d'autres mobs), retour à la surface avec l'inventaire, mine figée à 0 case près) ✅ ; session, live,
+  game-replay, dungeon, trap, world, view, focus, mule, fall, mobs, team, spells, treasure, lobby, miner, diagnostics,
+  winch ✅ (249).
+- **Simulation** `--miners 3 --count 5 --khole 1` : 9 pris, 0 bloquée, 140 à 269 blocs minés dans la dimension, coffre
+  4 151 pods (4 140 sans k hole), treasures ouverts 2,8 (0,2 sans), tick 0,048 ms (dimension) / 0,552 ms (mine). Dans la
+  dimension, les mineurs suivent des filons et combattent les mobs des pièges ; sans barbare, personne n'entre au donjon.
+- **Points fragiles** : fin de session pendant un k hole = ce qu'ils portent est perdu (règle normale, à confirmer par
+  l'équipe). Un mineur peut finir coincé (tout miné autour) : il attend, sans conséquence (retour au bout du compteur).

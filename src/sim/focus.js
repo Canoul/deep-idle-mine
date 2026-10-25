@@ -32,7 +32,7 @@ export function sanitizeFocus(input){
    Une area pas encore débloquée ne compte pas. */
 export function focusArea(G,m){
   const a = m.prefs.focus?.area;
-  return Number.isSafeInteger(a) && a < G.unlockedAreas ? a : null;
+  return Number.isSafeInteger(a) && a < G.unlockedAreas && !G.khole ? a : null;   // pas de focus d'area dans le k hole
 }
 /* « Plus profond » : l'area la plus profonde débloquée, où il travaille comme avec un focus d'area (il ne finit plus
    les filons des areas du dessus). null quand il ne s'applique pas : focus d'area choisi, focus minerai (l'area la
