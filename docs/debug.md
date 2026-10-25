@@ -3108,7 +3108,7 @@ Règles (voir CLAUDE.md) :
   salles éclairé) ✅ (20) ; combat, mobs, session, team, admin-khole, trap, dungeon, light, live ✅ (95). Sonde : arène
   108 s / 2 tués (avant 117 s), vagues 66 tués ; simulation `--khole 1` : 10 pris, 0 bloquée.
 
-### Recherche : un tier demande tous les tiers inférieurs (Geoffrey, 25/10) — 🧪 branche `geoffrey/recherche-t3`
+### Recherche : un tier demande tous les tiers inférieurs (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/meta/research.js` `tierUnlocked(inv, t)` = toutes les recettes des tiers < t apprises (avant : tier
   t - 1 seulement) ; `tiersBlocking(inv, t)` (nouveau) : tiers inférieurs incomplets et recettes manquantes. Onglet
   (`src/ui/research.js`) : le message 🔒 liste chaque tier incomplet. Serveur : message `tier_locked` (« des tiers
