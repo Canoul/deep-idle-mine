@@ -2692,3 +2692,12 @@ Règles (voir CLAUDE.md) :
   échoue sans la correction) ✅ ; trap, combat, mobs, dungeon, spells, help, goblin, knock ✅ (93).
 - **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
   à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
+
+### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` ITEMS : casque en acier oxygenMax 69 → 100 (400 x), jambes climbSpeed 1,08 → 1,6 (400 x),
+  bottes speed 1,08 → 1,67 (400,8 x), avec `UPGRADE.worth` (4 / 250 / 240 x par point). Fer : 268 / 262,5 / 252 x.
+  Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
+- **Tests** : `tests/steel-gear.test.js` (valeurs + nouveau test 390-410 x et > fer × 1,4) ✅, wiki, amelioration ✅.
+  Pas de simulation : les mineurs simulés n'ont pas de stuff en acier. Pas d'anti-triche : aucune ressource ne bouge.
+- **Nerf des pioches** (même branche) : fer mineSpeed 0,5 → 0,4 (520 x), acier 0,6 → 0,5 (650 x) ; valeurs attendues de
+  `tests/steel-gear.test.js` mises à jour. ⚠️ Tests pas relancés (demande de Geoffrey : « juste update »).
