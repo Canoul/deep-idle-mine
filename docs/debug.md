@@ -3066,3 +3066,16 @@ Règles (voir CLAUDE.md) :
 - **Vérifié après fusion** : khole + 20 sujets voisins ✅ (303), tests ajoutés par main ✅ (101), `npm run test:anticheat`
   ✅ (91), simulation `--miners 3 --count 5` (0 bloquée, chiffres identiques : aucun k hole sur ces seeds) et
   `--khole 1` (10 pris, 0 bloquée, tick dimension 0,030 ms).
+
+### Drop des glyphes (Geoffrey, 25/10) — 🧪 branche `geoffrey/glyphes-drop`
+- **Quoi** : `GLYPHS.drop` ({ arbre: { event, chance } }), `GLYPHS.dropSalt`. `src/meta/glyphs.js` : `ownedGlyphs(st, inv)`,
+  `glyphsOfTree(tree)`. Serveur (lancement mine / tour) : `record.skills[compte].owned = ownedGlyphs(...)`. `game.js` :
+  `spec.glyphsOwned` (revérifié : noms de glyphes). `mineur.js` : `glyphsOwned`, `glyphFound`. `session.js` :
+  `G.glyphRng` (hasard à part) ; `endSession` ajoute `glyphFound` à la part du mineur présent (`withFound`), pas au coffre.
+  `actions.js` `glyphDrop(G,m,event)` : `breakBlock` ('block'), pose d'échelle ('ladder'), `killMob` ('kill') ; rien tiré
+  sans spécialisation ni glyphe à trouver. Crédit : `creditSession` habituel (idempotent). Wiki : source générée.
+  `scripts/simulate.js` : « glyphes trouvés » au résumé.
+- **Tests** : `tests/glyph-drop.test.js` (7), `tests/game-service.test.js` (+1, owned figé ; attente du test des skills
+  avec `owned`), `tests/wiki.test.js` (+1). Simulation `--miners 3 --count 5` **identique** avec et sans le drop ;
+  `--skills mixed --count 5` : 0 glyphe (attendu ≈ 0,9 sur 5 sessions). Anti-triche 91/91.
+- **Point fragile** : la tour et la mine instantanée ne tirent jamais (leurs simulations n'appellent pas `glyphDrop`).

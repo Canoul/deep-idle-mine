@@ -491,7 +491,7 @@ test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé e
   await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-4' }), { code:'no_points' });
   assert.deepEqual((await game.state(ME)).skills, { tree:'barbare', ranks:{ damage:2 }, points:2, spent:2, glyphs:{} });
   const { session } = await game.start(ME, {});
-  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 }, glyphs:{} });
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 }, glyphs:{}, owned:[] });
   await assert.rejects(game.skills(ME, { action:'reset', opId:'op-skill-5' }), { code:'session_running' });
   await game.leave(ME);
   r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
@@ -675,4 +675,13 @@ test('sorts par le serveur : parchemin appris (consommé, une fois), équiper v�
   await game.skills(A, { action:'reset', opId:'op-spell-08' });                              // plus barbare : Dash ne part pas
   const { session } = await game.start(A, {});
   assert.deepEqual((await store.getGameSession(session.id)).spells[A.id], ['ulti_shen']);
+});
+
+test('drop des glyphes : au lancement, les glyphes possédés (inventaire + posés) sont figés dans l\'enregistrement', async () => {
+  const { game, store } = setup();
+  await store.putProgress(ME.id, { xp:100000, credited:[] });
+  await store.putSkills(ME.id, { tree:'barbare', ranks:{ damage:3 }, glyphs:{ damage:'Glyphe Force brute' } });
+  await store.putInventory(ME.id, { slots:[{ item:'Glyphe Pillage', qty:1 }, { item:'Charbon', qty:5 }], nextUid:1, credited:[] });
+  const { session } = await game.start(ME, {});
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].owned.sort(), ['Glyphe Force brute', 'Glyphe Pillage']);
 });

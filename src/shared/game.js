@@ -13,7 +13,7 @@ import { setFocus } from '../sim/focus.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
-import { withGlyphStats } from '../meta/glyphs.js';
+import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 
 /* ---------- préférences ---------- */
@@ -100,7 +100,9 @@ export function minerSpecs(record){
   const spellsOf = i => i < players.length ? sessionSpells(record.spells?.[players[i].account], treeOf(i)) : [];
   /* aura des pièces visibles (src/meta/aura.js) : seulement avec les pièces complètes (record.gear) */
   const aurasAt = i => i < players.length ? aurasOf(sanitizeGear(record.gear?.[players[i].account])) : {};
-  const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i),
+  /* glyphes possédés au lancement (drop : on ne trouve que les autres), figés par le serveur, revérifiés */
+  const ownedOf = i => { const o = i < players.length ? record.skills?.[players[i].account]?.owned : null; return Array.isArray(o) ? o.filter(n => nodeOfGlyph(n)) : []; };
+  const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i), glyphsOwned: ownedOf(i),
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i) });
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
   return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));

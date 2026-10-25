@@ -132,3 +132,11 @@ test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des 
   const html = fs.readFileSync('wiki.html', 'utf8');
   assert.match(html, /id="glyphes"/); assert.match(html, /id="w-glyphs"/);
 });
+
+test('wiki : source des glyphes lue dans GLYPHS.drop (par spécialisation)', () => {
+  const g = D.itemGroups().find(x => x.cat === 'glyph');
+  const rush = g.items.find(i => i.name === 'Glyphe Ruée'), braum = g.items.find(i => i.name === 'Glyphe Braum'), lad = g.items.find(i => i.name === 'Glyphe Échelle de 2');
+  assert.match(rush.sources.join(' '), /0,01 % de chance par bloc/);
+  assert.match(lad.sources.join(' '), /0,07 % de chance par échelle/);
+  assert.match(braum.sources.join(' '), /0,1 % de chance par mob/);
+});

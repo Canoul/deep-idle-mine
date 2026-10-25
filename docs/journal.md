@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — On trouve des glyphes en minant
+- **Pour le joueur** : dans la mine, ton mineur peut trouver un glyphe de sa spécialisation, parmi ceux que tu n'as
+  pas encore : spé Mineur 0,01 % par bloc cassé, spé Logisticien 0,07 % par échelle posée, spé Barbare 0,1 % par mob
+  tué. Il est à toi seul, annoncé dans le journal de la partie, et arrive dans ton inventaire à la fin de la session
+  (perdu si tu quittes avant). En moyenne : environ 8 % de chance par session pour un mineur, 6 % pour un
+  logisticien, 3 % pour un barbare.
+- **Décisions** (Geoffrey) : 0,07 % par échelle posée ; « pas débloqué » = pas possédé ; mine classique ; pour lui seul.
+- **À suivre** : le barbare en trouve 2 à 3 fois moins que le mineur (taux à revoir si besoin, `GLYPHS.drop`).
+- **État** : 🧪 sur la branche `geoffrey/glyphes-drop` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
   s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension, une carte tirée au hasard parmi 4 :

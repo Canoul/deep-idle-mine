@@ -28,7 +28,7 @@ import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
-import { glyphOp, sessionSkills } from '../../src/meta/glyphs.js';
+import { glyphOp, sessionSkills, ownedGlyphs } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
@@ -390,7 +390,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
-          skills[p.account] = sessionSkills(await loadSkills(p.account));   // figés pour toute la session (glyphes actifs compris)
+          /* figés pour toute la session (glyphes actifs compris) ; owned : glyphes possédés, pour le drop (on trouve les autres) */
+          { const sk = await loadSkills(p.account); skills[p.account] = { ...sessionSkills(sk), owned: ownedGlyphs(sk, await loadInventory(p.account)) }; }
           /* sorts équipés encore valides (débloqués, bonne spécialisation), figés eux aussi */
           spells[p.account] = equippedSpells(await loadSpells(p.account), await spellCtx(p.account));
           /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) ; ses caractéristiques :

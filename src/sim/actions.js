@@ -8,6 +8,7 @@ import { provoke, revealMimic, mobCanEnter } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
+import { glyphsOfTree } from '../meta/glyphs.js';
 import { noEntry } from './dungeon.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
@@ -81,8 +82,23 @@ export function mineBlock(G,m,x,y){
 
 /* un bloc cassé par le mineur : il disparaît, son butin va dans le sac (shiny, fortune), minerai compté pour l'area
    (aussi la dynamite, src/sim/spells.js) */
+/* drop d'un glyphe (GLYPHS.drop) : à un événement de sa spécialisation ('block', 'ladder', 'kill'), une chance de trouver un
+   glyphe de son arbre qu'il ne possède pas encore (ni au lancement, ni trouvé dans la session). Hasard à part (glyphRng) :
+   sans spécialisation ou sans glyphe à trouver, rien n'est tiré. */
+function glyphDrop(G,m,event){
+  const d=GLYPHS.drop[m?.skillTree];
+  if(!d || d.event!==event || !G.glyphRng) return;
+  m.glyphFound ??= [];
+  const have=new Set([...(m.glyphsOwned||[]), ...m.glyphFound]), left=glyphsOfTree(m.skillTree).filter(n => !have.has(n));
+  if(!left.length || !(G.glyphRng() < d.chance)) return;
+  const g=left[Math.floor(G.glyphRng()*left.length)];
+  m.glyphFound.push(g); G.stats.glyphs=(G.stats.glyphs||0)+1;
+  log(G, `✨ ${m.name} trouve un ${g} !`);
+}
+
 export function breakBlock(G,m,x,y){
   const t=G.tiles[y][x];
+  glyphDrop(G,m,'block');   // Glyphe (spé Mineur)
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
   const shiny=shinyOf(G,t);
   let got=null;
@@ -111,6 +127,7 @@ function openTreasure(G,m,x,y){
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
+  glyphDrop(G,m,'kill');   // Glyphe (spé Barbare)
   if(o.type==='mimic'){
     G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
     collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
@@ -159,6 +176,7 @@ export function finishAction(G,m,a){
       if(!isWinch(G,m.x,m.y)) G.ladder[m.y][m.x]=1;       // jamais d'échelle dans le puits du treuil
       // skill tall_ladder : une échelle de 2 de haut si la case du dessus est vide (pas dans le puits du treuil)
       if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0 && !isWinch(G,m.x,m.y-1)) G.ladder[m.y-1][m.x]=1;
+      glyphDrop(G,m,'ladder');   // Glyphe (spé Logisticien)
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
     case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y,r:m.carac.torchRadius}); updateLight(G); break;   // r : son rayon (Lampe à incandescence)
