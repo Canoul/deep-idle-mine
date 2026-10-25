@@ -550,10 +550,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,4 *(25/10 : nerf, avant +0,5 ; 24/10 : × 1,25, avant +0,4 ; +0,7 pendant quelques heures le 24/10)* |
   | Épée en fer | 10 Tainted iron | Dégâts 14 (remplace les mains nues : 5) *(24/10 ; avant 11)* |
   | Lance en fer *(25/10/2026, Geoffrey)* | 10 Tainted iron *(provisoire)* | Dégâts +8 (13), vitesse d'attaque −10 %, **recul +0,5**, **portée d'attaque +0,25**. Variante de l'épée : elle **tue moins vite** (≈ +16 % de temps par mob) mais repousse assez pour faire **lâcher son tacle** au mob (≈ −36 % de temps taclé, plus de vol du gobelin). Case épée. |
-  | Casque en fer | 5 Tainted iron | Oxygène +67 *(24/10 ; avant +38)* |
-  | Plastron en fer | 8 Tainted iron | Pods +88 *(24/10 ; avant +50, et +33 avant le 23/10)* |
-  | Jambes en fer | 7 Tainted iron | Vitesse (échelle) +1,05 *(24/10 ; avant +0,6)* |
-  | Bottes en fer | 4 Tainted iron + 5 peau de gobelin + 1 lingot d'or | Vitesse (marche) +1,05 *(24/10 ; avant +0,6)* |
+  | Casque en fer | 5 Tainted iron + 20 peau de gobelin *(25/10)* | Oxygène +67 *(24/10 ; avant +38)* |
+  | Plastron en fer | 8 Tainted iron + 20 peau de gobelin *(25/10)* | Pods +88 *(24/10 ; avant +50, et +33 avant le 23/10)* |
+  | Jambes en fer | 7 Tainted iron + 20 peau de gobelin *(25/10)* | Vitesse (échelle) +1,05 *(24/10 ; avant +0,6)* |
+  | Bottes en fer | 4 Tainted iron + 20 peau de gobelin *(25/10 ; avant 5)* + 1 lingot d'or | Vitesse (marche) +1,05 *(24/10 ; avant +0,6)* |
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |

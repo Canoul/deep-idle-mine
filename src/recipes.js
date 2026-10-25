@@ -20,10 +20,11 @@ export const RECIPES = {
   'Pioche en fer':       { cost: { 'Tainted iron': 20 },                 qty: 1, unlock: 'Pioche en fer BP' },
   'Épée en fer':         { cost: { 'Tainted iron': 10 },                 qty: 1, unlock: 'Épée en fer BP' },
   'Lance en fer':        { cost: { 'Tainted iron': 10 },                 qty: 1, unlock: 'Lance en fer BP' },   // 25/10 : même prix que l'épée (provisoire)
-  'Casque en fer':       { cost: { 'Tainted iron': 5 },                  qty: 1, unlock: 'Casque en fer BP' },
-  'Plastron en fer':     { cost: { 'Tainted iron': 8 },                  qty: 1, unlock: 'Plastron en fer BP' },
-  'Jambes en fer':       { cost: { 'Tainted iron': 7 },                  qty: 1, unlock: 'Jambes en fer BP' },
-  'Bottes en fer':       { cost: { 'Tainted iron': 4, 'Peau de gobelin': 5, 'Lingot d\'or': 1 }, qty: 1, unlock: 'Bottes en fer BP' },
+  /* armure en fer : + 20 peaux de gobelin chacune (25/10/2026, Geoffrey ; avant : aucune, 5 pour les bottes) */
+  'Casque en fer':       { cost: { 'Tainted iron': 5, 'Peau de gobelin': 20 },  qty: 1, unlock: 'Casque en fer BP' },
+  'Plastron en fer':     { cost: { 'Tainted iron': 8, 'Peau de gobelin': 20 },  qty: 1, unlock: 'Plastron en fer BP' },
+  'Jambes en fer':       { cost: { 'Tainted iron': 7, 'Peau de gobelin': 20 },  qty: 1, unlock: 'Jambes en fer BP' },
+  'Bottes en fer':       { cost: { 'Tainted iron': 4, 'Peau de gobelin': 20, 'Lingot d\'or': 1 }, qty: 1, unlock: 'Bottes en fer BP' },
   'Ceinture en peau de gobelin': { cost: { 'Peau de gobelin': 20, 'Lingot d\'or': 20 }, qty: 1, unlock: 'Ceinture en peau de gobelin BP' },
 
   /* débloquées par un blueprint (Treasure T1) : le four se pose avec « Utiliser » (2e four), la boussole s'équipe */
