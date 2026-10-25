@@ -354,13 +354,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       const side = modeDef.tower ?? null;
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
-        /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture */
+        /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
+           ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
         let opening = null;
         if(side){
           const t = await withJudgment(j => ({ value: { open: towerOpen(j, side, clock()), opening: j[side].opening,
                                                          done: players.filter(p => hasDone(j, side, p.account)) } }));
-          if(!t.open) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
-          if(t.done.length) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
+          if(!t.open && !dev) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
+          if(t.done.length && !dev) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */

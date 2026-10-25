@@ -57,3 +57,26 @@ test('serveur : acceptée en mode dev (revérifiée), ignorée en mode normal', 
     assert.deepEqual(rec.devSpecs, dev ? [{ tree:'barbare', level:13 }, null] : null);
   }
 });
+
+test('mode dev : la tour se lance sans jauge pleine et autant de fois qu\'on veut ; en jeu normal, non', async () => {
+  const store = createMemoryGameStore();
+  await store.putJudgment({ angel:{ count:0, openUntil:0, opening:1 }, demon:{ count:0, openUntil:0, opening:0 },
+                            done:{ angel:{ opening:1, accounts:[ME.id] }, demon:{ opening:0, accounts:[] } } });   // fermée, et déjà faite
+  const make = dev => createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock:() => 1_000_000, dev, randomSeed:() => 4242 });
+  await assert.rejects(make(false).start(ME, { mode:'tower_angel' }), { code:'tower_closed' });
+  const game = make(true);
+  for(let i = 0; i < 2; i++){
+    const { session } = await game.start(ME, { mode:'tower_angel' });
+    assert.equal(session.mode, 'tower_angel');
+    await game.leave(ME, {});
+  }
+});
+
+test('lobby, mode dev : les tours sont toujours dans « Où miner » et jamais grisées', async () => {
+  const { mineModes } = await import('../src/ui/lobby.js');
+  const j = { sides: { angel: { open: false, done: true }, demon: { open: true, done: true } } };
+  const dev = mineModes('mine', false, j, true);
+  assert.deepEqual(dev.map(m => m.id), ['mine', 'mi', 'tower_angel', 'tower_demon']);
+  assert.ok(dev.filter(m => m.id.startsWith('tower')).every(m => !m.disabled));
+  assert.deepEqual(mineModes('mine', false, j).map(m => m.id), ['mine', 'mi', 'tower_demon'], 'jeu normal : inchangé');
+});

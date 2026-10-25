@@ -94,10 +94,10 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
 
 /* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session.
    Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
-   si le joueur les a déjà faites pendant cette ouverture. */
-export function mineModes(cur, locked = false, judgment = null){
-  return MINE_MODES.filter(m => !m.tower || judgment?.sides?.[m.tower]?.open).map(m => {
-    const done = !!m.tower && !!judgment?.sides?.[m.tower]?.done;
+   si le joueur les a déjà faites pendant cette ouverture. Mode dev : toujours là et jamais grisées (illimitées). */
+export function mineModes(cur, locked = false, judgment = null, dev = false){
+  return MINE_MODES.filter(m => !m.tower || dev || judgment?.sides?.[m.tower]?.open).map(m => {
+    const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;
     /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10) */
     return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled) || !m.ready || done };
   });
@@ -129,7 +129,7 @@ export function setupLobby(h){
     $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
     /* Mine instantanée : pas d'équipe ni de Lancer (elle s'ouvre à heure fixe), sa carte d'inscription à la place */
     /* une tour choisie qui vient de fermer (ou déjà faite) : retour à la Mine */
-    const modes = mineModes(st.mode, locked, st.judgment);
+    const modes = mineModes(st.mode, locked, st.judgment, !!st.info?.dev);
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
     const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
     const jv = st.view === 'jugement';   // Jugement : on regarde les jauges (et son équipe), rien ne se lance d'ici
@@ -387,7 +387,7 @@ export function setupLobby(h){
     /* afficher les jauges du Jugement (ancien onglet, lien #jugement) */
     showJudgment(){ st.view = 'jugement'; render(); h.onJudgment?.(); },
     /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
-    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment).some(m => m.id === mode && !m.disabled)) pick(mode); },
+    pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev).some(m => m.id === mode && !m.disabled)) pick(mode); },
     error,
   };
 }
