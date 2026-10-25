@@ -819,8 +819,8 @@ export const UPGRADE = {
   prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
             piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300,
             /* 25/10/2026 (provisoire, choix de Claude) : pour 100 x, ténacité +10 %, résistance au recul +20 %, portée +0,1,
-               recul +0,1, double attaque +20 % (comme la vitesse d'attaque : +20 % de coups) */
-            tenacity:10, knockRes:5, reach:1000, knockback:1000, doubleAttack:5 },
+               recul +0,1 ; double attaque +5 % (Geoffrey, 25/10 ; d'abord +20 % comme la vitesse d'attaque) */
+            tenacity:10, knockRes:5, reach:1000, knockback:1000, doubleAttack:20 },
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron

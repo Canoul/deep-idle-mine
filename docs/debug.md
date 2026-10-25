@@ -2908,7 +2908,7 @@ Règles (voir CLAUDE.md) :
 
 ### Runes : banque + 5 stats, Découverte équiprobable, Double attaque (Geoffrey, 25/10) — 🧪 branche `geoffrey/runes-stats`
 - **Quoi** : `src/config.js` : `UPGRADE.pool` + tenacity, knockRes, reach, knockback, doubleAttack ; `UPGRADE.prices` (10, 5,
-  1000, 1000, 5) et `steps` (0,1 / 0,1 / 0,01 / 0,01 / 0,1) ; `UPGRADE.discover.chance` retirée ; `STATS.doubleAttack = 0`,
+  1000, 1000, 20 : double attaque +5 % pour 100 x, Geoffrey ; d'abord 5) et `steps` (0,1 / 0,1 / 0,01 / 0,01 / 0,1) ; `UPGRADE.discover.chance` retirée ; `STATS.doubleAttack = 0`,
   label, unité, `shownStats`. `src/meta/piece.js` `rollLines` : en R6/R7, `discoverMax` est une entrée de plus du tirage
   (une au plus). Double attaque : `landHit` (`src/sim/actions.js`, second coup avec `gearChance`, son propre critique, un seul
   recul, `m.stats.doubleHits`) ; tours : `strikeDmg` (`hitMob` et `hitBoss`). Wiki : aide de la stat. La validation des

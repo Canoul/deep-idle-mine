@@ -16,7 +16,7 @@ test('banque : les 5 nouvelles stats y sont, chacune avec un prix, un pas, un no
   }
   assert.equal(STATS.doubleAttack, 0);
   assert.equal(linePoints('Épée en fer', 'reach', 40), 0.1, 'T2 (250 x) × 40 % = 100 x = +0,1 bloc');
-  assert.equal(linePoints('Épée en fer', 'doubleAttack', 40), 20, '100 x = +20 %');
+  assert.equal(linePoints('Épée en fer', 'doubleAttack', 40), 5, '100 x = +5 %');
 });
 
 test('Découverte : en R6/R7, aussi probable qu\'une autre stat, une fois au plus par rune ; jamais en R1-R5', () => {
