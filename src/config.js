@@ -454,11 +454,13 @@ export const SPELLS = {
   slots: 4, openSlots: 2,
   opMemory: 50,
   list: [
-    /* avance de range cases au plus sur sa ligne (sens de son pas), à speed × sa vitesse de marche ; s'arrête devant un
-       bloc, un trou ou un mob. Mob heurté : dmg × ses dégâts, recharge × hitCd */
+    /* course de range cases au plus, à speed × sa vitesse de marche, qui suit le terrain (marche, descend, saute un bloc) ;
+       vers un mob qu'il va combattre (un mob qui tacle un allié d'abord), seulement s'il est à portée : sinon il le
+       garde. Mob heurté : dmg × ses dégâts, recharge × hitCd, sa canalisation coupée, étourdi stun s (25/10/2026,
+       Geoffrey ; avant : ligne droite seulement, sans étourdissement) */
     { id:'dash', name:'Dash', icon:'💨', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
-      range:6, speed:6, dmg:5, hitCd:0.5, minCells:2,
-      desc:'Fonce de 6 cases au plus sur son chemin (600 % de vitesse), s\'arrête devant un bloc, un trou ou un mob. Mob heurté : 500 % de ses dégâts et recharge réduite de moitié' },
+      range:6, speed:6, dmg:5, hitCd:0.5, minCells:2, stun:2,
+      desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 500 % de ses dégâts, recharge réduite de moitié, son sort est coupé et il est étourdi 2 s' },
     /* révèle les blocs à radius cases (cercle) ; part s'il en reste au moins un inconnu */
     { id:'illumination', name:'Illumination', icon:'💡', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
       radius:5,

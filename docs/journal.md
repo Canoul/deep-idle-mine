@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Dash : il suit le terrain, vise juste, étourdit
+- **Pour le joueur** : le Dash du barbare n'est plus une ligne droite : il descend, et saute un bloc qui lui barre la
+  route. Quand le barbare va combattre ou aider un allié, il garde son Dash jusqu'à ce que le mob soit à 6 cases ou moins,
+  puis fonce dessus ; un mob qui tacle un allié passe en priorité. Le mob touché perd son sort en cours (l'occultiste
+  arrête sa canalisation) et il est étourdi 2 s, boss compris.
+- **Décisions** (Geoffrey) : étourdissement 2 s ; priorité au mob qui tacle un allié à 6 cases ou moins. Choix de Claude
+  à valider : en simple trajet, il ne descend qu'une marche (pas de chute), pour ne pas quitter le chemin de l'IA ;
+  l'étourdissement vaut aussi pour les boss.
+- **État** : 🧪 sur la branche `geoffrey/dash-donjon` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Donjon : les mineurs aident vraiment le barbare
 - **Pour le joueur** : quand le minotaure attend juste derrière l'entrée, le barbare se bat sur le seuil. Avant, les
   autres mineurs restaient dehors à « attendre le barbare » jusqu'à la fin du combat ; maintenant ils viennent taper

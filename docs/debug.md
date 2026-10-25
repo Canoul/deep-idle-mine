@@ -2447,3 +2447,19 @@ Règles (voir CLAUDE.md) :
   les autres restent « Attend le barbare devant le donjon » tout le combat.
 - **Correction** : `barbIn` dès qu'un barbare `isIn` (intérieur ou seuil). La découverte de la structure reste sur l'intérieur.
 - **Tests** : `tests/dungeon.test.js` +1 (seuil, boss en x 13 : les 2 autres combattent ; échouait avant) ✅ (14).
+
+### Dash : chemin, visée, étourdissement (Geoffrey, 25/10) — 🧪 branche `geoffrey/dash-donjon`
+- **Quoi** : `src/sim/spells.js` (bloc Dash réécrit) : `dashStep` (marche ; chute ≤ fallMax ; saut d'1 bloc si les deux cases
+  du dessus sont libres ; jamais en case inconnue, piège caché, donjon interdit, ni à travers un mob), `aimOf` (helpFoe si
+  helping, sinon foe, sinon boss du donjon rejoint), `dashTo` (Dijkstra ≤ range cases jusqu'au contact, chute ≤ CFG.maxFall),
+  `tryDash` (tacleurs d'alliés d'abord, puis la cible ; rien à portée → sort gardé ; sans cible : course de terrain dans
+  le sens du pas, marche d'1 vers le bas seulement), `finishDash` (pose aussi `m.y` ; coupe `o.channel` ; `o.stunUntil`).
+  `src/sim/mobs.js` : un mob `stunUntil > G.t` est sauté dans `updateMobs` (grab = null), boss et Gallianix compris.
+  Config `SPELLS.list.dash.stun = 2`, desc. `data.path` gardé dans l'action (pas envoyé au navigateur : le rendu reste
+  linéaire, un Dash dure ≈ 0,3 s).
+- **Tests** : `tests/spells.test.js` 18 ✅ (4 nouveaux : saut + marche, visée en contrebas / hors de portée gardé,
+  priorité au tacleur, canalisation coupée + étourdi ; l'ancien test du trou utilise un trou de 2). dungeon, mobs, ai,
+  trap, help, combat ✅ (67).
+- **Simulation** `--miners 3 --count 5 --skills mixed --spells dash` : 0 bloquée ✅ ; areas 3,6 = 3,6, profondeur 194 → 202,
+  coffre 4 449 → 4 468 pods ; sorts du barbare ≈ 59 → 57 par session ; mobs tués 432 → 434 au total.
+- **⚠️ À vérifier** : nombre de Dash qui touchent un mob pas mesuré ; rendu d'un saut pas vu en vrai.
