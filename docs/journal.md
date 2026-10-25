@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Nouvelle case Torche et Lampe à incandescence
+- **Pour le joueur** : une 13e case dans l'onglet Stuff, **Torche**. Premier objet : la **Lampe à incandescence**,
+  fabricable sans blueprint (200 vésicules de gaz, 2 000 charbon, 20 fragments de cœur) : +10 torches, ses torches
+  éclairent à 8 cases au lieu de 5, et il les pose deux fois plus vite. Chaque torche garde le rayon de celui qui l'a
+  posée. Deux nouvelles stats dans l'onglet Stuff : Rayon des torches et Pose d'une torche. Wiki à jour (tableaux).
+- **Décisions** (Geoffrey) : l'objet, sa recette et ses effets ; rareté **rare**.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Glyphe Treuil : l'ascenseur
 - **Pour le joueur** : 10ᵉ glyphe. Posé sur le skill Treuil (au max), le logisticien construit un **ascenseur** au lieu
   du treuil : 3 fois plus rapide (Escalateur compris), avec rails, machinerie et cabine. Il ne le pose ou ne le
@@ -38,6 +46,7 @@ Modèle d'entrée :
   Pillage plafonné à +25 % ; Force brute sur les dégâts totaux ; Glyphe Treuil (ascenseur) à part, étape 2.
 - **À suivre** : la source des glyphes en jeu ; le Glyphe Treuil.
 - **État** : ✅ en ligne le 25/10
+
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la

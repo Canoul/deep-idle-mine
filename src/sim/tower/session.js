@@ -395,7 +395,7 @@ export function decide(G, m){
   }
   /* dans le noir (dans la tour) : une torche */
   if(inTower(G, m.x, m.y) && towerLum(G, m.x, m.y) < CFG.torchThreshold && !torchByOther(G, m))
-    return act(m, 'torch', CFG.torchTime, {}, 'Pose une torche');
+    return act(m, 'torch', m.carac.torchTime, {}, 'Pose une torche');
   /* des mobs réveillés : on les tue (la porte de leur étage reste fermée sinon) */
   const mobs = liveMobs(G);
   if(mobs.length){
@@ -545,7 +545,7 @@ function finishAction(G, m, a){
     log(G, G.winch.lift ? `🛗 ${m.name} a installé un ascenseur au pied de la tour : on remonte au sommet en cabine`
                         : `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
   } else if(a.type === 'torch'){
-    if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y }); G.stats.torches++; updateTowerLight(G); }
+    if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y, r: m.carac.torchRadius }); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
   else if(a.type === 'attack'){
     if(a.data.boss) hitBoss(G, m);

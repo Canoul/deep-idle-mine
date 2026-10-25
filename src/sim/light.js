@@ -1,11 +1,13 @@
 /* Lumière des torches : se propage de proche en proche dans les cases creusées (air), jamais à travers les murs.
-   Torches infinies. Intensité = 1 - distance/(rayon+1). Recalculée à la pose d'une torche et quand un bloc change. */
+   Torches infinies. Intensité = 1 - distance/(rayon+1) ; rayon = celui du mineur qui l'a posée (T.r, stat torchRadius ;
+   STATS.torchRadius pour une torche plus ancienne). Recalculée à la pose d'une torche et quand un bloc change. */
 import { W, STATS } from '../config.js';
 import { DIRS, isAir } from './world.js';
 
 export function updateLight(G){
-  const map=new Map(), R=STATS.torchRadius;
+  const map=new Map();
   for(const T of G.torches){
+    const R=T.r ?? STATS.torchRadius;
     const dist=new Map([[T.y*W+T.x,0]]), q=[[T.x,T.y]];
     for(let qi=0;qi<q.length;qi++){
       const [x,y]=q[qi], k=y*W+x, d=dist.get(k), v=1-d/(R+1);

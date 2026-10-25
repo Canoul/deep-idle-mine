@@ -76,9 +76,10 @@ export function genTower(seed, side){
 /* lumière des torches (G.torches) : comme dans la mine (src/sim/light.js), de proche en proche dans les cases vides de
    l'intérieur, jamais à travers un bloc ; intensité 1 - distance / (rayon + 1). Renvoie une Map (y × w + x → 0..1). */
 export function towerLight(G){
-  const map = new Map(), R = STATS.torchRadius;
+  const map = new Map();
   const air = (x, y) => inTower(G, x, y) && G.tiles[y][x] === 0;
   for(const T of G.torches || []){
+    const R = T.r ?? STATS.torchRadius;   // rayon de celui qui l'a posée (Lampe à incandescence)
     const dist = new Map([[T.y * G.w + T.x, 0]]), q = [[T.x, T.y]];
     for(let i = 0; i < q.length; i++){
       const [x, y] = q[i], k = y * G.w + x, d = dist.get(k), v = 1 - d / (R + 1);

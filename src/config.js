@@ -14,6 +14,9 @@ export const SPAWN_X = 25, CHEST_X = 22;
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
 /* tenacity = chance, en %, d'ignorer un sort de mob qui le vise (vol du gobelin, canalisation de l'occultiste) : un tirage
    par sort (décision du 21/10, Geoffrey) ; 0 de base */
+/* torchRadius = rayon de la lumière d'une torche (cases), torchTime = temps pour en poser une (s) : stats du MINEUR depuis
+   le 25/10/2026 (Geoffrey, Lampe à incandescence) ; chaque torche garde le rayon de celui qui l'a posée. Avant :
+   STATS.torchRadius pour toutes les torches de la partie et CFG.torchTime. */
 /* knockRes = résistance au recul, en % : un coup qui le pousse de k blocs ne le pousse que de k × (1 − knockRes/100)
    (25/10/2026, Geoffrey) ; 0 de base, aucune pièce ne la donne pour l'instant (voir COMBAT) */
 /* reach / knockback = portée d'attaque et recul du mineur, en blocs, AJOUTÉS à COMBAT.reach (0,5) et COMBAT.knock (0,25)
@@ -23,7 +26,7 @@ export const SPAWN_X = 25, CHEST_X = 22;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
+  compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0,
   doubleAttack:0 };   // double attaque (25/10/2026, Geoffrey) : chance, en %, qu'un coup du mineur frappe deux fois
@@ -33,7 +36,6 @@ export const CFG = {
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
   oreReach:12, bridgeTime:1,
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
-  torchTime:1,            // s pour poser une torche
   attackInterval:0.8,     // s entre deux coups à 100 % de vitesse d'attaque
   torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
   maxFall:3,              // chute la plus haute (cases) que le mineur accepte de faire en connaissance de cause
@@ -556,7 +558,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
-  'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
+  'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
@@ -720,6 +722,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
+    'Lampe à incandescence':'rare',   // 25/10 (Geoffrey)
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
@@ -752,6 +755,7 @@ export const STUFF = {
     { id:'cape',     label:'Cape',     icon:'🧣' }, { id:'boussole', label:'Boussole', icon:'🧭' },
     /* deux cases pour le même genre de pièce : `fits` = la case des objets qu'elles acceptent (RINGS) */
     { id:'anneau1',  label:'Anneau',   icon:'💍', fits:'anneau' }, { id:'anneau2',  label:'Anneau',   icon:'💍', fits:'anneau' },
+    { id:'torche',   label:'Torche',   icon:'🔦' },   // 25/10/2026 (Geoffrey) : change l'effet des torches (Lampe à incandescence)
   ],
   /* stats : bonus ajoutés aux STATS du mineur (clé de STATS → valeur) ; set : valeur qui REMPLACE la base (ex. l'épée
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
@@ -777,6 +781,8 @@ export const STUFF = {
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.05 } },   // 24/10 : avant 0,6
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
+    /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
+    'Lampe à incandescence': { slot:'torche', tex:'lamp_incandescent', stats:{ torches:10 }, set:{ torchRadius:8, torchTime:0.5 } },
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
@@ -796,14 +802,14 @@ export const STUFF = {
   },
   statLabels: { oxygenMax:'Oxygène', pods:'Pods', climbSpeed:'Vitesse (échelle)', speed:'Vitesse (marche)',
                 mineSpeed:'Vitesse de minage', damage:'Dégâts', light:'Vision', compass:'Portée boussole', compassRows:'Lignes boussole (dessus/dessous)',
-                torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
+                torches:'Torches', torchRadius:'Rayon des torches', torchTime:'Pose d\'une torche', bridges:'Passerelles', discoverMax:'Découverte',
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
                 piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul' },
-  statUnits: { reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+  statUnits: { torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
-               'discoverMax','light','compass','compassRows','torches'],
+               'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 

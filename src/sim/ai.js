@@ -302,7 +302,7 @@ function decideWork(G,m){
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
-    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',CFG.torchTime,{}); return; }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',m.carac.torchTime,{}); return; }
   }
   if(trapGoal(G,m)) return;
   if(dungeonGoal(G,m)) return;
@@ -521,7 +521,7 @@ function decideWinch(G,m){
       m.muleJob=muleAfterWinch(G,m);   // Mule : il pose son sac à côté du bas du treuil (null : pas de sac à poser)
       return m.muleJob ? decideMulePlace(G,m) : decideWork(G,m);
     }
-    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',CFG.torchTime,{}); return; }
+    if(curLum(G,m)<CFG.torchThreshold && m.torches>0 && !torchByOther(G,m)){ m.status='Pose une torche'; startAction(m,'torch',m.carac.torchTime,{}); return; }
     m.status='Creuse le puits du treuil';
   }
   if(stepDir(G,m,0,1)) return;

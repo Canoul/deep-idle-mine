@@ -571,6 +571,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
+  | Lampe à incandescence (case torche, **sans blueprint**, 25/10) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
 
   Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
 
@@ -599,7 +600,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
 ### Stuff (onglet Stuff)
-- **12 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, et **2 cases d'anneau** (23/10/2026).
+- **13 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, **2 cases d'anneau** (23/10/2026) et **torche** (25/10/2026).
+- **Case Torche** *(25/10/2026, Geoffrey)* : elle change l'effet des torches. **Lampe à incandescence** (rare) : **+10 torches**, **rayon des torches 8** (au lieu de 5), **pose en 0,5 s** (au lieu de 1). Le rayon et le temps de pose sont devenus des **stats du mineur** (« Rayon des torches », « Pose d'une torche », affichées dans l'onglet Stuff) : **chaque torche garde le rayon de celui qui l'a posée** (avant : un seul rayon pour toutes les torches de la partie), dans la mine comme dans les tours. Elle s'identifie et s'améliore comme les autres pièces (l'amélioration rapproche encore rayon et temps de pose de leur effet).
 - **Anneaux** *(décisions du créateur, 23/10/2026 ; valeurs provisoires, `RINGS` en config)* :
   - Leur effet va à **tout le groupe de la session** (porteur compris), figé au lancement comme le reste du stuff. **Pas
     cumulable** : si deux joueurs du groupe portent le même anneau, l'effet ne compte qu'une fois. Un joueur ne peut pas

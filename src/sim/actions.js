@@ -160,7 +160,7 @@ export function finishAction(G,m,a){
       if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0 && !isWinch(G,m.x,m.y-1)) G.ladder[m.y-1][m.x]=1;
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
-    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y}); updateLight(G); break;
+    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y,r:m.carac.torchRadius}); updateLight(G); break;   // r : son rayon (Lampe à incandescence)
     case 'deposit': {
       const parts=[];
       for(const k in m.inv){

@@ -17,7 +17,7 @@ test('rareté : les 6 raretés dans l\'ordre, chacune avec sa couleur', () => {
 
 test('rareté : la liste du créateur est inhabituelle, tout le reste du catalogue est commun', () => {
   for(const n of UNCOMMON) assert.equal(rarityOf(n), 'inhabituel', n);
-  const TIER2 = ['Gants tactique', 'Gants tactique BP', 'Gants d\'ouvrier', 'Gants d\'ouvrier BP'], RARE = ['Cape de Naingui', 'Cape de Naingui BP', 'Cristal de pleine lune', 'Plume d\'ange'];
+  const TIER2 = ['Gants tactique', 'Gants tactique BP', 'Gants d\'ouvrier', 'Gants d\'ouvrier BP'], RARE = ['Cape de Naingui', 'Cape de Naingui BP', 'Cristal de pleine lune', 'Plume d\'ange', 'Lampe à incandescence'];   // lampe : 25/10
   for(const n of ['Résidu angélique', 'Résidu démoniaque']) assert.equal(rarityOf(n), 'commun', n);   // 22/10 : communs (avant : rares)
   for(const n of TIER2) assert.equal(rarityOf(n), 'inhabituel', n);
   for(const n of RARE) assert.equal(rarityOf(n), 'rare', n);
