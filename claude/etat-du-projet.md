@@ -113,7 +113,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
   pris sur le gobelin). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, mimics créés en jeu (un minerai devient mimic) et jamais minés.
-  **Combat dynamique** (25/10, Geoffrey ; branche `geoffrey/combat-recul`) : portée 0,5 bord à bord (sans diagonale),
+  **Combat dynamique** (25/10, Geoffrey ; en ligne le 25/10) : portée 0,5 bord à bord (sans diagonale),
   chaque coup du mineur repousse le mob de 0,25 (`src/sim/knock.js`, `COMBAT`), minotaure et mobs / boss des tours
   repoussent le mineur de 0,25 ; stat **Résistance au recul** (%, 0, sans source). **Tacle refondu** : à portée, le
   mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,

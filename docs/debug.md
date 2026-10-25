@@ -2440,7 +2440,16 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
-### Combat dynamique : portée, recul, tacle refondu (Geoffrey, 25/10) — 🧪 branche `geoffrey/combat-recul`
+### Don d'administration avec qualité (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `server/game/service.js` `adminGive(accountId, item, qty, quality)` : `quality` facultative, entier 1 à 7
+  (`qualityDef`), seulement pour une pièce de stuff hors anneau (`isStuff && !isRing`) ; les slots créés reçoivent
+  `q` (identifiée, qualité seule, comme une identification depuis le 22/10). `server/admin/routes.js` lit `quality`
+  dans le corps ; `scripts/give-item.js` option `--quality` (vérifiée avant l'appel). Sans `quality` : inchangé.
+- **Tests** : `tests/admin.test.js` +1 (R5 et R7 donnés et relus, refus : Treasure, anneau, 0, 8, 4.5, '5'),
+  `tests/give-item.test.js` +1 (`--quality 5`, refus 0 / 8 / R5) : 9/9 ✅.
+- **Point fragile** : `give-admin.js` (hors ligne, avec redémarrage) reste l'outil pour R1 à R7 d'un coup.
+
+### Combat dynamique : portée, recul, tacle refondu (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/sim/knock.js` (nouveau : `gap`, `inReach`, `push`, `knockOf`, `driftsAway`, `recenter`) : chaque
   entité garde un décalage `kx`/`ky` (−0,5…+0,5) dans sa case ; `push` passe sur la case voisine au-delà d'une
   demi-case si `canEnter`, sinon décalage remis à 0 (jamais à cheval sur un bloc). Config : `COMBAT` (reach 0,5,
@@ -2477,3 +2486,4 @@ Règles (voir CLAUDE.md) :
   l'étourdissement (il se reprend aussitôt si le mob est à portée). Le coup du mineur est perdu si le mob a été
   repoussé hors de portée pendant l'élan (par un autre mineur). Le recentrage est une action `move` sur sa propre case
   (durée |k| × pas). ⚠️ Pas regardé dans un vrai navigateur.
+

@@ -32,7 +32,13 @@ Modèle d'entrée :
 - **À suivre** : les **tours sont plus dures** (compo forte : 2 victoires sur 5 → 0 sur 5, ≈ 8 % de dégâts en
   moins) : à rééquilibrer si besoin (recul du boss, PV). Où donner la Résistance au recul. Le boss des tours ne recule
   pas sous les coups (choix de Claude, à valider). Regarder un combat en vrai dans le navigateur.
-- **État** : 🧪 sur la branche `geoffrey/combat-recul` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Don d'administration : choisir la qualité d'une pièce
+- **Pour le joueur** : rien. Outil des créateurs : `give-item.js` peut maintenant donner une pièce de stuff déjà
+  identifiée dans la qualité voulue (`--quality 5` → un Plastron en fer R5), toujours sans redémarrer le jeu.
+- **État** : ✅ en ligne le 25/10
+
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
