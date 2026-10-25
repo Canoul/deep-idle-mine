@@ -220,6 +220,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   objet dans un autre slot (échange). **Recycler** une pièce de stuff fabriquée (recette de craft) : détruite, rend
   **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
   dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`).
+- **Rejeu d'une session de joueur** (outil d'équipe, 24-25/10, Geoffrey) : `scripts/export-session.js --seed X` sort
+  l'enregistrement de la base en ligne (lecture seule) ; `scripts/replay-session.js` le rejoue en texte ; en **mode dev**,
+  le lobby a un bouton **Rejouer un enregistrement** (`POST /api/game/replay`, `server/game/replay.js`) : même partie à
+  l'écran, à la vitesse voulue, celui qui regarde à la place du premier joueur, **rien de versé**. Exact seulement avec
+  la version du jeu de ce jour-là (le bilan dit « même coffre » ou « coffre différent »).
 
 ## Hébergement
 

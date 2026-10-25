@@ -14,6 +14,7 @@ export function gameRoutes(game){
     'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
     'POST /api/game/prefs':  async ctx => { needMe(ctx); return game.setPrefs(ctx.me, obj(ctx.body)); },
     'POST /api/game/start':  async ctx => { needMe(ctx); return [201, await game.start(ctx.me, obj(ctx.body))]; },
+    'POST /api/game/replay': async ctx => { needMe(ctx); return [201, await game.replay(ctx.me, obj(ctx.body))]; },   // mode dev
     'POST /api/game/leave':  async ctx => { needMe(ctx); return game.leave(ctx.me, obj(ctx.body)); },
     'GET /api/game/view':    async ctx => { needMe(ctx);
       const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');

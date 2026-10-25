@@ -46,6 +46,7 @@ export const gameApi = {
   judgment: ()         => request('GET', '/api/game/judgment'),  // jauges Ange / Démon (onglet Jugement)   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
   start:  (opts = {})  => request('POST', '/api/game/start', opts),
+  replay: record       => request('POST', '/api/game/replay', { record }),   // mode dev : rejouer une session exportée
   leave:  (opts = {})  => request('POST', '/api/game/leave', opts),
   finish: ()           => request('POST', '/api/game/finish', {}),
   focus:  focus        => request('POST', '/api/game/focus', { focus }),

@@ -43,6 +43,7 @@ import { GAME_SERVER } from '../config.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
+import { replayFields, sameAsOriginal } from './replay.js';
 
 export class GameError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -182,7 +183,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   function publicSession(rec){
     if(!rec) return null;
     return { id: rec.id, mode: rec.mode ?? 'mine', seed: rec.seed, players: rec.players, bots: rec.bots, prefs: rec.prefs, looks: rec.looks ?? {}, overrides: rec.overrides,
-             dev: rec.dev, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
+             dev: rec.dev, replay: !!rec.replay, speed: rec.speed, startedAt: rec.startedAt, finishAt: rec.finishAt, now: clock(),
              tick: live.tickOf(rec.id), clock: rec.dev ? rec.clock : null,
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
@@ -190,7 +191,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   }
   const isDue = rec => rec.status === 'running' && !rec.dev && clock() >= rec.finishAt;
   const inSession = (rec, accountId) => rec.players.some(p => p.account === accountId);
-  const hasLeft = (rec, accountId) => rec.leaves.some(l => l.account === accountId);
+  /* rejeu (server/game/replay.js) : les départs venus de l'enregistrement (sans heure `at`) font partir le mineur dans la
+     partie, pas celui qui regarde ; seul son « Quitter » à lui (avec heure) compte */
+  const hasLeft = (rec, accountId) => rec.leaves.some(l => l.account === accountId && (!rec.replay || l.at != null));
 
   async function activeOf(accountId){
     return (await store.sessionsOf(accountId)).find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId)) ?? null;
@@ -258,6 +261,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
+      /* rejeu : rien n'est versé (ni coffre, ni XP, ni jauges) ; on note seulement si la partie retombe sur le même coffre */
+      if(rec.replay){
+        const same = sameAsOriginal(rec, summary);
+        console.log(`Rejeu de ${rec.replay.of ?? '?'} (seed ${rec.seed}) : ${same === null ? 'pas de résultat d\'origine à comparer' : same ? 'même coffre que l\'original' : 'coffre DIFFÉRENT de l\'original'}`);
+        rec.status = 'done'; rec.result = { ...summary, replay: { same } }; rec.endedAt = clock();
+        chat.drop(id);
+        await store.putGameSession(rec);
+        return;
+      }
       /* tour réussie : chaque joueur encore présent reçoit un trésor de la tour, qualité tirée par le serveur (RUNE) */
       const side = towerSide(rec.mode);
       if(side) for(const share of summary.shares || [])
@@ -410,6 +422,24 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       });
     },
 
+    /* mode dev : rejouer à l'écran une session enregistrée par le serveur en ligne (body.record : le fichier de
+       scripts/export-session.js). Celui qui regarde prend la place du premier joueur ; rien n'est versé à la fin. */
+    async replay(me, body = {}){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      const f = replayFields(body.record, me.id);
+      if(f.error) fail('bad_request', 400, f.error);
+      return withLock('acct:' + me.id, async () => {
+        if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        const now = clock();
+        const rec = { id: crypto.randomUUID(), ...f, dev: true, speed: null, startedAt: now, finishAt: null,
+                      status: 'running', result: null, seen: [],
+                      clock: { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } };
+        await store.putGameSession(rec);
+        ensureLive(rec);
+        return { session: publicSession(rec) };
+      });
+    },
+
     /* mine instantanée : ouvre une mine pour ces joueurs [{account, name}] à l'heure slot (ms). id = id de la mine,
        choisi par le service des inscriptions (le même pour la même ouverture) : une mine déjà ouverte ne l'est pas
        deux fois (redémarrage pendant l'ouverture). Un joueur déjà en session est écarté. Pas de limite de places :
@@ -451,8 +481,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const rec = await store.getGameSession(rec0.id);
           if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
           const now = clock();
-          if(rec.players.every(p => p.account === me.id || hasLeft(rec, p.account))){
-            /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
+          if(rec.replay || rec.players.every(p => p.account === me.id || hasLeft(rec, p.account))){
+            /* plus aucun joueur (ou fin d'un rejeu) : personne ne reçoit rien, la partie s'arrête */
             live.close(rec.id);
             rec.leaves.push({ account: me.id, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
             rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);

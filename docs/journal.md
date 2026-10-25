@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Revoir à l'écran la partie d'un joueur
+- **Pour le joueur** : rien, c'est un outil d'équipe. Quand un joueur signale un souci avec sa seed, on peut sortir sa
+  session de la base en ligne (`scripts/export-session.js`, sans rien y modifier), puis la revoir à l'écran en mode
+  développeur : bouton **Rejouer un enregistrement** du lobby. Même mine, mêmes joueurs, même stuff, mêmes skills, mêmes
+  préférences, mêmes départs et changements de focus, à la vitesse voulue (×1 à ×300, pause). On prend la place du
+  premier joueur ; rien n'est versé à la fin.
+- **À savoir** : le rejeu n'est exact qu'avec la version du jeu du jour de la session. Le bilan dit « même coffre ✅ »
+  ou « coffre différent ⚠️ » (le jeu a changé depuis). Essai sur la seed 222945787 d'hier : coffre différent, normal
+  (combat et Dash refaits ce matin).
+- **État** : 🧪 sur la branche `geoffrey/rejeu-visuel` (pas en ligne ; ça ne sert qu'en local de toute façon)
+
 ## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
 - **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil
   est projeté hors de la tour, il installe au pied du mur (10 s) un treuil qui monte jusqu'au toit. Ensuite, tous ceux

@@ -126,7 +126,9 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - **Bug signalé avec une seed** (mine normale) : `DATABASE_URL=… node scripts/export-session.js --seed <seed>` sort
   l'enregistrement de la session de la base en ligne (lecture seule, gardé 30 jours) dans `data/replays/` ; puis
   `node scripts/replay-session.js <fichier>` la rejoue à l'identique (blocages, mineurs sur place, `--miner Nom --from s
-  --to s` pour suivre un mineur). Une seed seule ne suffit pas : stuff, skills et préférences changent tout.
+  --to s` pour suivre un mineur). Une seed seule ne suffit pas : stuff, skills et préférences changent tout. Pour la
+  **voir** : `npm run dev`, lobby → panneau Mode développeur → « Rejouer un enregistrement » (rien n'est versé). Exact
+  seulement avec la version du jeu de ce jour-là : sinon `git switch --detach $(git rev-list -1 --before="<date>" origin/main)`.
 - `npm run stat-values` : tableau standard des stats en unité x (1 x = 1 s de travail), ~1 min.
 - `npm run weights` : poids des stats (secondes de travail gagnées par session pour +1 point), ~6 min.
 - `npm run textures` : régénère `textures/` (Python).

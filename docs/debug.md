@@ -2748,3 +2748,32 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/replay-session.test.js` (2 : même résumé que `replayRecord` avec départ et focus ; suivi limité à
   la période) ✅.
 - **État** : ⚠️ export pas encore lancé sur la vraie base (il faut `DATABASE_URL`). Mise à jour 25/10 : lancé (3 sessions dans `data/replays`) ✅ ; repris dans `geoffrey/rejeu-visuel` (commit seul, sans les correctifs d'IA de la branche).
+
+### Rejeu à l'écran d'une session exportée (Geoffrey, 25/10) — branche `geoffrey/rejeu-visuel`
+- **Quoi** : `server/game/replay.js` (pur) : `replayFields(raw, viewer)` vérifie le fichier (seed entier 0..2³¹, 1 à
+  maxPlayers joueurs à comptes distincts, mode connu), **renomme les comptes** (1er joueur → celui qui regarde, les
+  autres → `rejeu-2`, `rejeu-3`) dans players, prefs, looks, gear, skills, spells, leaves, focus (événements mal formés
+  ou d'inconnus ignorés, `at` retiré), garde `replay: { of, bags }` (parts du coffre d'origine). `sameAsOriginal(rec,
+  summary)` compare les parts dans l'ordre (null sans résultat d'origine). Service `replay(me, { record })` : dev
+  seulement (403), pas de session en cours (409), session dev normale (horloge, pump, `ensureLive`). Route
+  `POST /api/game/replay`. `publicSession.replay`.
+- **Rien n'est versé** : `settleWith` sort tout de suite pour `rec.replay` (ni coffre, ni XP, ni jauges du Jugement) et
+  écrit `result.replay = { same }` + une ligne dans le journal du serveur. `leave` d'un rejeu = fin du rejeu.
+- **Piège évité** : `hasLeft` ne compte, pour un rejeu, que les départs avec heure `at` (le « Quitter » de celui qui
+  regarde) ; les départs de l'enregistrement (heure retirée) font partir le mineur dans la partie, pas le spectateur
+  (sinon, si le 1er joueur d'origine était parti, le rejeu disparaissait au lancement).
+- **Navigateur** : panneau Mode développeur du lobby → bouton + `<input type=file>` ; `compactRecord` (`src/ui/lobby.js`,
+  exporté) ne garde que les champs lus et les parts du coffre (3,6 Ko pour une session à 3 ; limite 16 Ko,
+  `SERVER.maxBodyBytes`). `main.js` `onReplay` → `enterSession` ; HUD « rejeu · seed X » ; bilan « Rejeu terminé » +
+  « Comparé à l'original » ; pas de surbrillance « nouveau » dans l'inventaire.
+- **Repris** : le commit de l'outil d'export (026cc49 de `geoffrey/rejeu-session`, sans les correctifs d'IA de cette
+  branche) ; conflit de fin de `docs/debug.md` résolu en gardant les deux entrées.
+- **Tests** : `tests/dev-replay.test.js` (7 : renommage, refus, **même partie avec comptes renommés** (4000 ticks, seuls
+  `account` diffèrent), `compactRecord`, dev seulement, rien de versé même si le 1er joueur était parti, same:true,
+  Quitter) ✅ ; game-service, game-replay, game-http, lobby, replay-session ✅ (80 + 2) ; anticheat 89/89 ✅.
+- **Vérifié en vrai** ✅ : serveur dev (fil d'exécution réel), enregistrement 222945787 exporté le 24/10 : rejeu lancé,
+  3 joueurs et 8 focus, ×300, fin, inventaire vide et 0 XP ; « coffre différent » (attendu : combat dynamique et Dash
+  en ligne depuis). Page chargée dans Edge sans fenêtre : pas d'erreur. ⚠️ Le clic sur le bouton (choix de fichier) n'a
+  pas été fait à la main.
+- **Points fragiles** : exact seulement avec le code du jour de la session ; un enregistrement très long (beaucoup de
+  focus) pourrait dépasser 16 Ko (message « Requête trop grosse »).
