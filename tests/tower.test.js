@@ -77,9 +77,9 @@ test('mobs : la porte du plafond reste scellée tant qu\'il en reste un ; ils ta
   assert.equal(mobDist({ x: 5, y: 10 }, { x: 6, y: 9 }), 1);
 });
 
-test('boss : 3500 PV ; projection de 4 cases, 25 % (10 % barbare), 35 / 20 % en rage ; son focus tombé, il marche vers un autre', () => {
+test('boss : 3500 PV ; projection de 5 cases, 25 % (10 % barbare), 35 / 20 % en rage ; son focus tombé, il marche vers un autre', () => {
   assert.equal(TOWER.boss.hp, 3500); assert.equal(TOWER.boss.knockChance, 0.25); assert.equal(TOWER.boss.knockBarb, 0.1);
-  assert.equal(TOWER.boss.rageKnock, 0.35); assert.equal(TOWER.boss.rageKnockBarb, 0.2); assert.equal(TOWER.boss.knock, 4);
+  assert.equal(TOWER.boss.rageKnock, 0.35); assert.equal(TOWER.boss.rageKnockBarb, 0.2); assert.equal(TOWER.boss.knock, 5);
   const G = newTower(5, { side: 'angel', miners: team(2) });
   for(const o of G.mobs) o.hp = 0;
   const [a, b] = G.miners, y = G.roof - 1;
@@ -93,7 +93,7 @@ test('boss : 3500 PV ; projection de 4 cases, 25 % (10 % barbare), 35 / 20 % en 
   for(let i = 0; i < 20; i++) tickTower(G);
   assert.ok(G.boss.x > G.bx, 'il s\'est déplacé vers le mineur le plus proche');
   assert.ok(G.boss.x + TOWER.boss.w - 1 <= G.x1, 'il reste sur le toit');
-  /* projection depuis le milieu : 4 cases, il reste sur le toit */
+  /* projection depuis le milieu : 5 cases, il reste sur le toit */
   assert.equal(G.boss.focus, b.id, 'son focus (a) est tombé du toit : il focus b');
   G.boss.x = G.bx; a.x = G.boss.x - 1; a.y = y; b.x = G.x1;
   G.boss.focus = a.id;   // il ignore les autres : on lui redonne a comme focus

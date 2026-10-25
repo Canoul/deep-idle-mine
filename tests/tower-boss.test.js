@@ -1,5 +1,5 @@
 /* Tour céleste (25/10, Geoffrey) : boss qui focus et suit sa cible, la traverse des autres, recul 0,5 avec arc,
-   projection de 4 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
+   projection de 5 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
    et projette ceux qui sont dessous), étages de blocs à vider entièrement, mobs qui partagent une case, affichage fluide. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -107,7 +107,7 @@ test('rage : chances de projection 35 % (au lieu de 25 %)', () => {
   }
 });
 
-test('saut à 75 % : au centre, en l\'air, intouchable, ne frappe plus ; atterrissage : étourdis 3 s, dessous : projeté', () => {
+test('saut à 75 % : au centre, 3 s en l\'air, intouchable, ne frappe plus ; atterrissage : tous projetés de 3, étourdis 3 s', () => {
   const G = roof(3), [a, b, c] = G.miners, y = G.roof - 1;
   G.boss.x = G.bx + 2;
   Object.assign(a, { x: G.boss.x - 1, y }); hold(a);
@@ -129,8 +129,11 @@ test('saut à 75 % : au centre, en l\'air, intouchable, ne frappe plus ; atterri
   b.x = G.bx + 1;
   for(let i = 0; i < ticks(B.jumpHover + B.jumpFall) + 2 && G.boss.air; i++) tickTower(G);
   assert.equal(G.boss.air, null, 'atterri'); assert.equal(G.boss.lift, 0);
+  assert.equal(B.jumpHover, 3); assert.equal(B.jumpKnock, 3);
   assert.equal(b.stats.knocked, 1, 'b était dessous : projeté');
-  assert.ok(b.x < G.bx || b.x >= G.bx + B.w);
+  assert.equal(b.x, G.bx + 1 + B.jumpKnock); assert.ok(b.x >= G.bx + B.w, 'hors du boss');
+  assert.equal(a.stats.knocked, 1, 'a aussi (tous les mineurs du toit)'); assert.equal(a.x, G.bx - 1 - B.jumpKnock);
+  assert.equal(c.stats.knocked, 1, 'c aussi : poussé hors du toit, il tombe');
   assert.equal(a.action?.type, 'stun'); assert.equal(a.action.dur, B.jumpStun);
   assert.notEqual(c.action?.data?.hex, true); assert.equal(c.stats.stunned ?? 0, 0, 'ténacité 100 % : il résiste');
   assert.equal(G.boss.phase, 1);

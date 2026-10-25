@@ -545,8 +545,9 @@ function stepBoss(G){
 
 /* ---------- saut du boss (25/10, Geoffrey) ----------
    Il file au centre du toit (G.bx) en jumpFly s en montant à jumpHigh blocs, reste jumpHover s en l'air (intouchable,
-   il ne frappe plus), puis retombe en jumpFall s : les mineurs du toit qui étaient sous lui sont projetés de B.knock
-   cases sur le côté le plus proche, et tous ceux du toit sont étourdis jumpStun s (la ténacité peut l'ignorer). */
+   il ne frappe plus), puis retombe en jumpFall s : tous les mineurs du toit sont projetés de B.jumpKnock cases vers
+   l'extérieur (le côté le plus proche ; 25/10 au soir, avant : seulement ceux qui étaient sous lui), puis étourdis
+   jumpStun s s'ils sont restés sur le toit (la ténacité peut l'ignorer). */
 const landCells = G => [[G.bx - 1, G.roof - 1, 'L'], [G.bx + B.w, G.roof - 1, 'R']].filter(([x]) => x >= G.x0 && x <= G.x1 && towerSupported(G, x, G.roof - 1));
 const underLanding = (G, m) => underBoss(G, m, G.bx);
 function startJump(G, level){
@@ -575,7 +576,7 @@ function landBoss(G){
   log(G, `💥 ${G.boss.name} retombe sur le toit !`);
   for(const m of [...G.miners]){
     if(!onTop(G, m)) continue;
-    if(underBoss(G, m)) knock(G, m);
+    knock(G, m, B.jumpKnock);
     if(!towerSupported(G, m.x, m.y)) continue;   // projeté hors du toit : il tombe
     if((m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
     m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: {} }; m.status = 'Étourdi (atterrissage)';
@@ -583,12 +584,12 @@ function landBoss(G){
   }
 }
 
-/* projection : la cible part de B.knock cases vers l'extérieur (elle s'arrête contre un bloc), puis tombe si elle n'a
+/* projection : la cible part de n cases (B.knock par défaut) vers l'extérieur (elle s'arrête contre un bloc), puis tombe si elle n'a
    plus d'appui (au-delà du bord de la tour : jusqu'au sol) ; petit arc à l'affichage */
-function knock(G, m){
+function knock(G, m, n = B.knock){
   const dir = m.x + 0.5 < bossMid(G) ? -1 : 1;
   let x = m.x;
-  for(let i = 0; i < B.knock && towerAir(G, x + dir, m.y); i++) x += dir;
+  for(let i = 0; i < n && towerAir(G, x + dir, m.y); i++) x += dir;
   m.x = x; m.kx = 0; m.action = null; m.knocked = true; m.fallN = 0; m.hop = G.ticks;
   G.stats.knocks++; m.stats.knocked++;
   const off = x < G.x0 || x > G.x1;
