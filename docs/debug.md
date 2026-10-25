@@ -2810,7 +2810,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : solo : coffre −4,5 %, vols +37 % (5 seeds, à revoir sur plus). Tours non touchées (combat
   ancien). En session la lance ne réduit pas le temps taclé (le duel, si) : à surveiller.
 
-### Treasure 50 % en areas 0-2, recyclage BP T1 15-30 (Geoffrey, 25/10) — 🧪 branche `geoffrey/tresor-50-recyclage`
+### Treasure 50 % en areas 0-2, recyclage BP T1 15-30 (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/config.js` : `AREAS[0..2].chestChance` 0,6 → 0,5 ; `RESEARCH.tiers[0].recycle` { 30, 60 } → { 15, 30 }.
   Wiki : chance lue dans la config (« 40 à 50 % »), recyclage lu dans la config.
 - **Tests** : `tests/research.test.js`, `tests/game-service.test.js`, `tests/wiki.test.js` (valeurs attendues) ;
