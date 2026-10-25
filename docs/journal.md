@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Correctif : l'arène du k hole (mineurs qui ne tapent pas)
+- **Pour le joueur** : dans l'Arène des minotaures (et les Vagues), un mineur loin du combat restait planté au milieu
+  sans taper : il ne voyait pas le minotaure, dans le noir. Maintenant, dans ces salles, les mineurs voient toute la salle
+  et vont aider (sauf s'ils sont réglés sur « Ignorer » ou « Fuir »), et les trois salles (arène, trésor, vagues) sont
+  éclairées dès l'arrivée (une torche toutes les 5 cases).
+- **Chiffres** (3 mineurs, 3 seeds) : arène finie en 108 s, 2 minotaures tués (avant : 117 s) ; vagues : 66 mobs tués
+  (avant : 41 à 63).
 ## 25/10/2026 — Geoffrey — On trouve des glyphes en minant
 - **Pour le joueur** : dans la mine, ton mineur peut trouver un glyphe de sa spécialisation, parmi ceux que tu n'as
   pas encore : spé Mineur 0,01 % par bloc cassé, spé Logisticien 0,07 % par échelle posée, spé Barbare 0,1 % par mob

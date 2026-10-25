@@ -1121,6 +1121,8 @@ export const DUNGEON = {
    - arene : vide, un minotaure (DUNGEON.boss, à découvert) à chaque bout ; fin quand ils sont tous vaincus ;
    - tresor : vide, `treasures` treasures sur la droite, d'un tier tiré au hasard (TREASURE.tiers) ; fin quand ils sont
      tous ouverts ;
+   torchEvery : salle éclairée dès l'arrivée, une torche (rayon STATS.torchRadius) toutes les torchEvery colonnes.
+   seeAll : les mineurs voient toute la salle (ils combattent un mob hors de leur vision ; « Face aux mobs » respecté).
    - vagues : vide, des vagues de wave mobs (table de l'area, sans mimic : comme un piège), posés au sol à une colonne au
      hasard ; une vague vaincue → la suivante, jusqu'à la fin du compteur. */
 export const KHOLE = {
@@ -1128,9 +1130,9 @@ export const KHOLE = {
   maps: [
     { id:'filons', label:'Filons', weight:1, duration:300, w:25, h:25, spawn:'left', spawnCols:5,
       comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 }, traps:5, dungeons:1, treasurePct:1 },
-    { id:'arene',  label:'Arène des minotaures', weight:1, duration:120, w:15, h:3, spawn:'middle', minotaurs:2, end:'bosses' },
-    { id:'tresor', label:'Salle au trésor', weight:1, duration:120, w:5, h:3, spawn:'left', treasures:2, end:'treasures' },
-    { id:'vagues', label:'Vagues', weight:1, duration:180, w:15, h:3, spawn:'middle', wave:5 },
+    { id:'arene',  label:'Arène des minotaures', weight:1, duration:120, w:15, h:3, spawn:'middle', minotaurs:2, end:'bosses', seeAll:true, torchEvery:5 },
+    { id:'tresor', label:'Salle au trésor', weight:1, duration:120, w:5, h:3, spawn:'left', treasures:2, end:'treasures', torchEvery:5 },
+    { id:'vagues', label:'Vagues', weight:1, duration:180, w:15, h:3, spawn:'middle', wave:5, seeAll:true, torchEvery:5 },
   ],
   salt: 0x6b401e,
 };

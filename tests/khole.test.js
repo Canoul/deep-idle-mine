@@ -8,6 +8,8 @@ import { genArea, tryUnlock, areaTop, treasureItem } from '../src/sim/world.js';
 import { buildDimension, pickMap } from '../src/sim/khole.js';
 import { mobHp, TREASURE } from '../src/config.js';
 import { createViewer } from '../src/shared/view.js';
+import { lumAt } from '../src/sim/light.js';
+import { CFG } from '../src/config.js';
 
 /* les tests d'ici portent sur la carte « filons » (imposée comme en mode dev) ; les autres cartes plus bas */
 const FIL = KHOLE.maps.find(m => m.id === 'filons'), mapNo = id => KHOLE.maps.findIndex(m => m.id === id) + 1;
@@ -267,4 +269,30 @@ test('vagues : wave mobs de l\'area (sans mimic) ; une vague vaincue → la suiv
   assert.equal(G.khole.waves, 2);
   run(G, M.duration);
   assert.equal(G.khole, null, 'fin au bout du compteur');
+});
+
+test('arène : un mineur loin du combat (hors de sa vision) vient quand même aider : toute la salle est visible', () => {
+  const G = enterWith('arene'), [a, b] = G.mobs, [r, bl, v] = G.miners;
+  a.hp = 0;                                         // un minotaure vaincu ; l'autre tient Rouge au bout à gauche
+  r.x = 1; b.x = 0; b.grab = r.id;
+  bl.x = 8; v.x = mapOf('arene').w - 1;
+  for(const m of G.miners){ m.action = null; m.foe = null; }
+  run(G, 10);
+  assert.ok(G.miners.every(m => m.foe === b.id), G.miners.map(m => `${m.name}@${m.x} foe=${m.foe}`).join(' '));
+});
+
+test('arène : un mineur réglé sur « Ignorer » ne vient pas se battre (réglage respecté)', () => {
+  const G = enterWith('arene'), [a, b] = G.mobs, [r, , v] = G.miners;
+  a.hp = 0; r.x = 1; b.x = 0; b.grab = r.id;
+  v.x = mapOf('arene').w - 1; v.prefs.fightMobs = false;
+  for(const m of G.miners){ m.action = null; m.foe = null; }
+  run(G, 10);
+  assert.equal(v.foe, null);
+});
+
+test('salles (arène, trésor, vagues) : éclairées dès l\'arrivée, sur tout le sol', () => {
+  for(const id of ['arene', 'tresor', 'vagues']){
+    const G = enterWith(id), M = mapOf(id), floor = G.tiles.length - 1;
+    for(let x=0; x<M.w; x++) assert.ok(lumAt(G, x, floor) >= CFG.torchThreshold, `${id} : sol (${x}) éclairé (${lumAt(G, x, floor).toFixed(2)})`);
+  }
 });
