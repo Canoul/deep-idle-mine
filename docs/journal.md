@@ -27,10 +27,40 @@ Modèle d'entrée :
   vols. Voir les chiffres dans `docs/debug.md`.
 - **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
 
+## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
+- **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil
+  est projeté hors de la tour, il installe au pied du mur (10 s) un treuil qui monte jusqu'au toit. Ensuite, tous ceux
+  qui tombent le prennent : environ 18 s pour revenir au combat au lieu de 28 à 43 s.
+- **Décisions** (Geoffrey) : il faut le skill Treuil ; un seul treuil par partie, du côté de sa chute ; même vitesse et
+  mêmes règles que le treuil de la mine.
+- **À suivre** : le toit est atteint vers 8 min, donc le treuil arrive tard (7 min 30 à 9 min 40) et ne change pas
+  encore l'issue des tours simulées (0 victoire sur 5 avec ou sans, boss à ≈ 1 650 PV au lieu de ≈ 1 820).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Runes : un % du tier de la pièce
+- **Pour le joueur** : une ligne de rune ne vaut plus un % de la valeur de la pièce, mais un % de son **tier** : T1
+  (pierre, chitine, ceinture en peau de gobelin, boussole en or) = 100 x, T2 (fer, gants, cape) = 250 x, T3 (acier,
+  Plastron de l'équilibre) = 400 x. Toutes les pièces d'un même tier donnent la même chose pour une même rune. Les
+  runes déjà posées (et les lignes des pièces identifiées avant le 22/10) passent tout de suite à cette règle. Les
+  runes sur le stuff en fer et en acier valent moins qu'avant, celles sur les gants et la cape plus.
+- **Décisions** (Geoffrey) : le fer est T2 même si ses plans tombent dans le Treasure T1 ; le Plastron de l'équilibre
+  est T3 ; les anciennes lignes d'identification suivent la même règle.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Casque, jambes et bottes en acier renforcés
+- **Pour le joueur** : le casque en acier donne +100 d'oxygène (avant +69), les jambes +1,6 de montée (avant +1,08) et
+  les bottes +1,67 de marche (avant +1,08). Avant, ils valaient à peine 3 % de plus que le fer ; maintenant environ
+  50 % de plus. Les pièces déjà fabriquées en profitent tout de suite, et les runes posées dessus grandissent aussi.
+- **Nerf des pioches** : pioche en fer +0,4 de vitesse de minage (avant +0,5), pioche en acier +0,5 (avant +0,6).
+- **Décisions** (Geoffrey) : ces trois pièces valent environ 400 x chacune (valeur d'équilibrage, ajustable) ; pioches nerfées.
+- **État** : ✅ en ligne le 25/10
+
+
 ## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
 - **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
   était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques
   secondes et retournait miner.
+
 
 ## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
 - **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres

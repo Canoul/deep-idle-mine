@@ -70,12 +70,12 @@ export function statLines(entry){
       `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
   ];
 }
-/* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur de la pièce qu'elle enchantera */
+/* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur du tier de la pièce qu'elle enchantera */
 export function runeLines(p){
   const label = k => STUFF.statLabels[k] ?? k;
   const f = runeFactor(p);
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-    : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % de la valeur de la pièce`);
+    : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % du tier de la pièce`);
 }
 /* effet de groupe d'un anneau : ['Groupe · Vitesse (marche) +3 %', …] */
 export function ringLines(item){

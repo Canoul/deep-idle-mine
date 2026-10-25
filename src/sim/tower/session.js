@@ -8,7 +8,7 @@
    aux autres mineurs) et le frappent. Le boss frappe le premier arrivé parmi ceux à son contact ; chaque coup peut le
    projeter : s'il passe le bord, il tombe jusqu'en bas et remonte. Boss mort = fin (réussite) ; temps écoulé = échec.
    Pas de butin dans la partie : le serveur donne les trésors à la fin (server/game/service.js). */
-import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT } from '../../config.js';
+import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
@@ -38,6 +38,7 @@ export function newTower(seed, opts = {}){
             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
+    winch: null,                          // treuil du logisticien : { x, top, bottom } (colonne contre le mur extérieur)
     log: [], timeline: { floors: [0], roof: null, engaged: null },
     stats: { mined: 0, ladders: 0, torches: 0, hits: 0, knocks: 0, falls: 0, dmg: 0, kills: 0, blocked: 0 }, summary: null,
     miners: specs.map((s, i) => createMiner(i, s, world.x0 + 1 + Math.floor((i + 0.5) * inner / specs.length), world.floor)),
@@ -45,6 +46,7 @@ export function newTower(seed, opts = {}){
   G.blocksLeft = world.kinds.map((k, f) => k === 'blocks' ? blockCells(G, f).length : 0);
   G.id = opts.id ?? `tower-${seed}-${Date.now().toString(36)}`;
   G.roster = [...G.miners];
+  G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));   // Escalateur : le meilleur rang du groupe
   revealFloor(G, 0);
   log(G, `${TOWER.sides[side].tower} : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} au pied de la tour. ${G.boss.name} attend au sommet.`);
   return G;
@@ -117,14 +119,18 @@ export function updateTowerLight(G){ G.light = towerLight(G); }
 export const towerLum = (G, x, y) => inTower(G, x, y) ? (G.light.get(y * G.w + x) || 0) : 1;
 const dk = (G, m) => towerLum(G, m.x, m.y) >= CFG.darkLum ? 1 : CFG.darkSlow;
 
-/* appui : comme dans la mine (vide dessous sans échelle ni sur la case ni juste dessous = chute) ; le sol porte */
-export const towerSupported = (G, x, y) =>
+/* case du treuil du logisticien (TOWER.winch) : on y tient, et on y monte et descend au seau */
+export const isWinch = (G, x, y) => !!G.winch && x === G.winch.x && y >= G.winch.top && y <= G.winch.bottom;
+/* appui : comme dans la mine (vide dessous sans échelle ni sur la case ni juste dessous = chute) ; le sol porte ; le
+   treuil aussi */
+export const towerSupported = (G, x, y) => isWinch(G, x, y) ||
   !(y + 1 <= G.h && towerAir(G, x, y + 1) && !G.ladder[y + 1][x] && !(y > 0 && G.ladder[y][x]));
 
 /* durées (sans lumière : ralenti comme dans la mine) */
 const mineT = (m, t) => BLOCKS[t].hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
+const winchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * (1 + (G.winchBoost || 0)));   // seau, comme dans la mine
 const fallT = () => 1 / CFG.fallSpeed;
 const hitT = m => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100);
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
@@ -269,7 +275,7 @@ export function planTo(G, m, goals, avoid = null){
     : breakable(G, x, y) ? mineT(m, G.tiles[y][x]) + (taken.has(y * w + x) ? 8 : 0) : Infinity;
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
-  const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x]){ y++; n++; } return { y, n }; };
+  const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x] && !isWinch(G, x, y)){ y++; n++; } return { y, n }; };
   const ladT = CFG.ladderTime;
   while(heap.length){
     const [d, c] = pop();
@@ -286,12 +292,13 @@ export function planTo(G, m, goals, avoid = null){
       const l = fallFrom(x, cy); if(l.n > CFG.maxFall) continue;
       relax(c, d, x, l.y, dg + moveT(m) + l.n * fallT());
     }
-    if(cy - 1 >= 0){                                                            // monter
-      const dg = dig(cx, cy - 1), lad = G.ladder[cy][cx];
-      if(dg < Infinity && (lad || inTower(G, cx, cy))) relax(c, d, cx, cy - 1, dg + (lad ? 0 : ladT) + climbT(m));
+    if(cy - 1 >= 0){                                                            // monter (échelle, ou seau du treuil)
+      const dg = dig(cx, cy - 1), lad = G.ladder[cy][cx], wn = isWinch(G, cx, cy) && isWinch(G, cx, cy - 1);
+      if(dg < Infinity && (lad || wn || inTower(G, cx, cy))) relax(c, d, cx, cy - 1, dg + (lad || wn ? 0 : ladT) + (wn ? winchT(G, m) : climbT(m)));
     }
-    /* descendre : par une échelle */
-    if(cy + 1 <= G.h && airK(cx, cy + 1) && (G.ladder[cy][cx] || G.ladder[cy + 1][cx])) relax(c, d, cx, cy + 1, climbT(m));
+    /* descendre : par une échelle, ou le treuil */
+    const wd = isWinch(G, cx, cy) && isWinch(G, cx, cy + 1);
+    if(cy + 1 <= G.h && airK(cx, cy + 1) && (G.ladder[cy][cx] || G.ladder[cy + 1][cx] || wd)) relax(c, d, cx, cy + 1, wd ? winchT(G, m) : climbT(m));
   }
   return null;
 }
@@ -320,6 +327,14 @@ const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 
 
 export function decide(G, m){
   if(!towerSupported(G, m.x, m.y)) return act(m, 'move', fallT(), { x: m.x, y: m.y + 1, fall: true }, 'Tombe');
+  /* treuil à installer (logisticien tombé au pied de la tour) : contre le mur, de son côté, puis TOWER.winch.setup s */
+  if(m.winchJob){
+    const tx = m.winchJob === 'L' ? G.x0 - 1 : G.x1 + 1;
+    if(m.x === tx && m.y === G.floor) return act(m, 'winchSetup', TOWER.winch.setup, {}, 'Installe le treuil');
+    const path = planTo(G, m, [[tx, G.floor]]);
+    if(path?.length) return follow(G, m, path, 'Va installer le treuil');
+    m.winchJob = null;                                    // pas de chemin : il remonte comme d'habitude
+  }
   const mobName = TOWER.sides[G.side].mob;
   /* taclé : il ne fait que combattre le mob qui le tient ; repoussé, il revient au contact (pas marqués data.fight :
      le tacle ne les interrompt pas) */
@@ -396,11 +411,13 @@ function follow(G, m, path, status){
     return act(m, 'move', moveT(m) / slow, { x: nx, y: m.y }, status);
   }
   if(ny < m.y){
+    if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y - 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y - 1, winch: true }, 'Monte par le treuil');
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
     if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
     if(!G.ladder[m.y][m.x]) return act(m, 'ladder', CFG.ladderTime, { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
+  if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y + 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y + 1, winch: true }, status);
   const lad = G.ladder[m.y][m.x] || G.ladder[m.y + 1]?.[m.x];
   return act(m, 'move', lad ? climbT(m) / slow : fallT(), { x: m.x, y: m.y + 1 }, status);
 }
@@ -450,6 +467,10 @@ function finishAction(G, m, a){
     const put = (x, y) => { if(!G.ladder[y][x] && inTower(G, x, y)){ G.ladder[y][x] = 1; G.stats.ladders++; m.stats.ladders++; } };
     put(m.x, m.y);
     if(m.skill.tall_ladder && towerAir(G, m.x, m.y - 1)) put(m.x, m.y - 1);
+  } else if(a.type === 'winchSetup'){
+    G.winch ??= { x: m.x, top: G.roof - 1, bottom: G.floor };
+    m.winchJob = null;
+    log(G, `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
   } else if(a.type === 'torch'){
     if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y }); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
@@ -467,6 +488,9 @@ function land(G, m){
       log(G, `💫 ${m.name} s'écrase ${m.y >= G.floor ? 'au pied de la tour' : 'plus bas'} (${m.fallN} cases) : étourdi ${CFG.stunTime} s`);
     }
     if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; }
+    /* logisticien (skill Treuil) tombé au pied de la tour, dehors : il installera le treuil (un seul par partie) */
+    if(m.skill.winch && !G.winch && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))
+      m.winchJob = m.x < G.x0 ? 'L' : 'R';
   }
   m.fallN = 0; m.knocked = false;
 }

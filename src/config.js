@@ -439,7 +439,7 @@ export const SKILLS = {
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
       { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
-      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
+      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle. Dans les tours, la première fois qu\'il tombe au pied de la tour, il installe un treuil jusqu\'au toit (10 s)' },
       /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
       { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
@@ -717,7 +717,7 @@ export const STUFF = {
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
-    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.5 } },   // 24/10 (Geoffrey) : 0,4 × 1,25 (le × 1,75 du fer, 0,7, était trop fort)
+    'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },   // 25/10 (Geoffrey) : nerf, avant 0,5 (24/10 : 0,4 × 1,25 ; le × 1,75 du fer, 0,7, était trop fort)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:14 } },     // remplace les mains nues (5) ; 24/10 : × 1,25 (avant 11)
     /* variante de l'épée (25/10/2026, Geoffrey) : moins de dégâts par seconde, mais elle repousse plus et frappe de plus
@@ -735,11 +735,11 @@ export const STUFF = {
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
-    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:69 } },   // 24/10 : avant 46
+    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
     'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40)
-    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.08 } },   // 24/10 : avant 0,72
-    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.08 } },   // 24/10 : avant 0,72
-    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.6 } },   // 24/10 : 0,48 × 1,25 (pas × 1,5 : 0,72)
+    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
+    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
+    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.5 } },   // 25/10 : nerf, avant 0,6 (24/10 : 0,48 × 1,25 ; pas × 1,5 : 0,72)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
@@ -804,6 +804,19 @@ export const UPGRADE = {
      prix = 100 ÷ valeur pour 100 x. Les pièces gardent leur %, elles suivent donc ce tableau sans migration. */
   prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
             piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300 },
+  /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
+     du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
+     (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
+     de l'équilibre compris). Lignes gardées en % : les pièces déjà runées suivent sans migration. Une pièce absente des
+     listes garderait sa propre valeur (tests/rune.test.js vérifie qu'il n'y en a pas). */
+  tiers: {
+    1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
+                       'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
+    2: { x:250, items:['Pioche en fer','Épée en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
+                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
+    3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
+                       'Bottes en acier','Plastron de l\'équilibre'] },
+  },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
@@ -1058,6 +1071,11 @@ export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
   width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7)
   sky: 4, margin: 8, doorH: 2,
+  /* treuil du logisticien (25/10/2026, Geoffrey) : le premier logisticien qui a le skill Treuil et qui tombe au pied de
+     la tour (dehors) va contre le mur, de son côté, et l'installe en setup s ; une colonne contre le mur extérieur, du
+     sol jusqu'à la hauteur du toit, comme le puits de la mine (on y tient, seau à la vitesse WINCH, Escalateur compris,
+     sans capacité). Un seul par partie. */
+  winch: { setup: 10 },
   /* vue (navigateur) : caméra qui suit le mineur, aussi large que la tour (avant : 19 × 15) */
   view: { cols: 22, rows: 16 },
   /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans

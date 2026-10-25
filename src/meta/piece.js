@@ -10,7 +10,7 @@
      l'identification ne donne QUE la qualité : plus de lignes de stats (une pièce identifiée depuis : { q }, sans lines).
    - lines [{ stat, pct }] : seulement sur les pièces identifiées AVANT le 22/10 (elles les gardent, revérifiées).
      Une ligne garde son %
-     tiré (de la valeur de l'objet), pas sa valeur : la valeur se recalcule depuis la config, donc un rééquilibrage
+     tiré (de la valeur du tier de l'objet, UPGRADE.tiers, depuis le 25/10 ; avant : de la valeur de l'objet), pas sa valeur : la valeur se recalcule depuis la config, donc un rééquilibrage
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
    Les nombres viennent de UPGRADE (config) : qualités, prix des stats en x, pas d'arrondi, paliers. */
@@ -46,8 +46,14 @@ export function itemValue(item){
   return Math.max(0, x);
 }
 
-/* points d'une ligne de `pct` % de la valeur de l'objet, sur cette stat (au moins un pas) */
-export const linePoints = (item, stat, pct) => Math.max(stepOf(stat), roundStat(stat, itemValue(item) * pct / 100 / UPGRADE.prices[stat]));
+/* tier de l'objet (1 à 3, UPGRADE.tiers), null s'il n'en a pas */
+const TIER_OF = new Map(Object.entries(UPGRADE.tiers).flatMap(([t, d]) => d.items.map(i => [i, +t])));
+export const tierOf = item => TIER_OF.get(item) ?? null;
+/* base d'une ligne en x : la valeur du tier de l'objet (25/10/2026) ; sans tier, sa propre valeur (ancien calcul) */
+export const lineBase = item => { const t = tierOf(item); return t ? UPGRADE.tiers[t].x : itemValue(item); };
+
+/* points d'une ligne de `pct` % de la valeur du tier de l'objet, sur cette stat (au moins un pas) */
+export const linePoints = (item, stat, pct) => Math.max(stepOf(stat), roundStat(stat, lineBase(item) * pct / 100 / UPGRADE.prices[stat]));
 
 /* qualité tirée selon les chances (rnd : hasard dans [0, 1[) */
 export function rollQuality(rnd){

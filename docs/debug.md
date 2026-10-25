@@ -2693,6 +2693,47 @@ Règles (voir CLAUDE.md) :
 - **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
   à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
 
+### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` ITEMS : casque en acier oxygenMax 69 → 100 (400 x), jambes climbSpeed 1,08 → 1,6 (400 x),
+  bottes speed 1,08 → 1,67 (400,8 x), avec `UPGRADE.worth` (4 / 250 / 240 x par point). Fer : 268 / 262,5 / 252 x.
+  Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
+- **Tests** : `tests/steel-gear.test.js` (valeurs + nouveau test 390-410 x et > fer × 1,4) ✅, wiki, amelioration ✅.
+  Pas de simulation : les mineurs simulés n'ont pas de stuff en acier. Pas d'anti-triche : aucune ressource ne bouge.
+- **Nerf des pioches** (même branche) : fer mineSpeed 0,5 → 0,4 (520 x), acier 0,6 → 0,5 (650 x) ; valeurs attendues de
+  `tests/steel-gear.test.js` mises à jour. ⚠️ Tests pas relancés (demande de Geoffrey : « juste update »).
+
+### Runes : un % du tier de la pièce (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `UPGRADE.tiers` (config : { 1:{ x:100, items }, 2:{ x:250 }, 3:{ x:400 } }) ; `src/meta/piece.js` : `tierOf`,
+  `lineBase` (x du tier ; sans tier : `itemValue`, ancien calcul), `linePoints` lit `lineBase`. Un seul point de calcul :
+  runes, fragments et lignes d'identification d'avant le 22/10, en session comme à l'affichage (stuff.js, upgrade.js).
+  Lignes gardées en % : les pièces existantes suivent sans migration. `itemValue` reste exporté (plus utilisé par les
+  lignes).
+- **Textes** : onglet Amélioration (`upgrade.js`), rune seule (`stuff.js`), wiki (`wiki.html`, `wiki.js`).
+- **Tests** : `tests/rune.test.js` +2 (chaque pièce runable a un tier, une seule fois ; valeurs T1/T2/T3, fragment) ;
+  `tests/amelioration.test.js` et `tests/steel-gear.test.js` : valeurs attendues recalculées au tier. rune, amelioration,
+  steel-gear, stuff, wiki, sets, treasure, aura, social ✅ (110). Pas d'anti-triche : aucune ressource ne bouge.
+- **Point fragile** : une nouvelle pièce de stuff doit être ajoutée à `UPGRADE.tiers` (sinon elle garde sa propre
+  valeur) ; le test « chaque pièce qu'on peut runer a un tier » échoue tant qu'elle n'y est pas.
+
+### Tours : treuil du logisticien (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `TOWER.winch.setup` (10 s). `src/sim/tower/session.js` : `G.winch` ({ x, top: roof − 1, bottom: floor }),
+  `G.winchBoost` (Escalateur), `isWinch`, `winchT` (comme la mine : climbSpeed × WINCH.speedFactor × (1 + boost)) ;
+  `towerSupported` vrai sur le treuil ; `planTo` (monter / descendre par le treuil, `fallFrom` s'y arrête) ; `follow`
+  (pas d'échelle à poser, action `move` avec `data.winch`). Déclenchement dans `land` : logisticien `skill.winch`,
+  pas de treuil, au sol hors de la tour, personne d'autre en chantier → `m.winchJob = 'L' | 'R'` ; `decide` : aller à
+  (x0 − 1 ou x1 + 1, floor) puis action `winchSetup` (pas de chemin : il abandonne). `finishAction` pose le treuil.
+  Vue (`tower-view.js` : `winch`, `data.winch`), rendu (`render/tower.js` : corde, poulie, seau ; textures existantes).
+  Skill Treuil : description complétée. Wiki : phrase dans la section des tours.
+- **Tests** : `tests/tower.test.js` +4 (installation en 10 s après l'étourdissement, colonne et hauteur ; sans skill /
+  seconde chute : rien de plus ; on y tient, remontée 12,9 s avec contre 101 s sans dans une tour vidée sans échelles ;
+  vue) ✅ 16/16. `npm run simulate:tower -- --count 5` (+ compo d) : 0 « bloqué », treuil posé dans 10/10 tours de d),
+  retours après chute 28-43 s → 18 s ; d) boss 1 648 PV contre 1 824 en b).
+- **Points fragiles** : le treuil n'a pas de chantier visible pendant les 10 s (seulement le statut « Installe le
+  treuil »). Si le logisticien quitte la partie pendant l'installation, son chantier part avec lui : un autre
+  logisticien pourra en poser un à sa propre chute. Le wiki lit `T.winch.setup` (T = TOWER via `judgmentInfo`).
+- ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/skills.test.js` « onglet Stuff : les stats montrent aussi les bonus
+  des skills » (échoue aussi sans ce chantier).
+
 ### Lance en fer, stats Portée et Recul (Geoffrey, 25/10) — 🧪 branche `geoffrey/lance-en-fer`, ⚠️ design à trancher
 - **Quoi** : `STATS.reach` / `STATS.knockback` (0 de base, ajoutés à `COMBAT.reach` / `COMBAT.knock` par `reachOf` /
   `knockbackOf`, `src/sim/knock.js`) : coups du mineur en mine (`actions.js` attaque, `ai.js` fight / goFight / boss /

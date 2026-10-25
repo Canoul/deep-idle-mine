@@ -14,7 +14,7 @@ function minerView(m){
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y } } : null,
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, winch: d.winch } } : null,
     hop: m.hop ?? null,                                              // petit arc quand le boss le repousse (affichage)
   };
 }
@@ -35,6 +35,7 @@ export function createTowerViewer(G){
       mode: 'tower', side: G.side, tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
       x0: G.x0, x1: G.x1, roof: G.roof, floor: G.floor, bx: G.bx, by: G.by,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')), ladders: ladderList(G),
+      winch: G.winch ?? null,                                          // treuil du logisticien
       seen: G.seen.map(r => r.join('')),
       boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air },
       torches: G.torches.map(t => t.y * G.w + t.x),
@@ -58,7 +59,7 @@ export function applyTowerView(v, prev = null, now = performance.now()){
     seen: (v.seen || []).map(s => Uint8Array.from(s, c => +c)),
     boss: v.boss, miners: v.miners, stats: v.stats, log: v.log,
     torches: (v.torches || []).map(k => ({ x: k % v.w, y: (k - k % v.w) / v.w })), mobs: v.mobs || [],
-    reached: v.reached ?? 0, mobsLeft: v.mobsLeft ?? 0,
+    reached: v.reached ?? 0, mobsLeft: v.mobsLeft ?? 0, winch: v.winch ?? null,
   };
   G.light = towerLight(G);
   if(G.boss) G.boss.id = 'boss';

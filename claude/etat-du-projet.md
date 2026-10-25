@@ -67,6 +67,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.
     **Aura du stuff** (25/10, Geoffrey ; `AURA`, `src/meta/aura.js`, `src/render/aura.js`) : pièce visible identifiée R4+ (armure ; pioche et épée seulement en main, en session) avec une vraie rune R4+ (pas un fragment) → halo pulsant de la couleur de la plus basse des deux (faible R4-R5, moyenne R6, forte R7), derrière le mineur, partout (mine, MI, tours, portraits). Le serveur envoie `auras: { case: qualité }` à côté de `look`.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
+  - **Treuil du logisticien dans les tours** (25/10, Geoffrey ; `TOWER.winch`) : le premier logisticien (skill Treuil) tombé au pied de
+    la tour installe en 10 s, contre le mur de son côté, un treuil jusqu'au toit (un seul par partie, comme le puits de la mine).
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. 
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
   - Régler une jauge en ligne (25/10) : `sudo node scripts/set-judgment.js --side demon --count 175` sur le VPS (route
@@ -113,6 +115,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   dans le catalogue). But : une équipe en fer (mineur, logisticien, barbare, skills complets) ≈ 5,4 areas au lieu de
   5,0 ; sans stuff (4,0) et en chitine (4,1) inchangés. Ancien : fer pioche +0,4, épée 11, casque +38, plastron +50,
   jambes et bottes +0,6 ; acier +0,48, 13, +46, +80, +0,72.
+- **Casque, jambes et bottes en acier ≈ 400 x** (25/10, Geoffrey) : oxygène +100, montée +1,6, marche +1,67 (ancien : +69,
+  +1,08, +1,08, soit 276 / 270 / 259 x, à peine 3 % au-dessus du fer). Valeur en x = `itemValue` (`UPGRADE.worth`).
+- **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
   Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
@@ -178,8 +183,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   qualité R1 Utile à R7 Légendaire, définitive ; **depuis le 22/10, la qualité seule, sans aucune stat en plus**
   (décision de Geoffrey ; ancien : des lignes de stats, que les pièces identifiées avant **gardent**, revérifiées au
   barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
-  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10) ; la valeur
-  d'un objet reste celle du catalogue (`UPGRADE.worth`). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
+  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10), appliqué à la
+  **valeur du tier de la pièce** (25/10, Geoffrey ; `UPGRADE.tiers` : T1 pierre/chitine/plans T1 100 x, T2 fer/plans T2 250 x,
+  T3 acier/équilibre/plans T3 400 x ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
   réussite 100/95/90 %, plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les
   matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
   lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce

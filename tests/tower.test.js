@@ -210,3 +210,75 @@ test('recul : le boss repousse le mineur de 0,25 quand il ne le projette pas ; l
   assert.ok(Math.sign(m.kx) === Math.sign(m.x + 0.5 - (G.boss.x + TOWER.boss.w / 2)), 'vers l\'extérieur');
   assert.equal(G.boss.x, bx);
 });
+
+/* ---------- treuil du logisticien (25/10/2026, Geoffrey) ---------- */
+
+const LOGI = { name: 'L', account: 'L', skillTree: 'logisticien', skills: { winch: 1 } };
+/* tour déjà franchie (comme après une montée) : étages « blocs » vidés, mobs morts, portes ouvertes, tout découvert */
+function cleared(G){
+  for(let k = 0; k < TOWER.floors; k++){
+    if(G.kinds[k] === 'blocks') for(let y = floorTop(G, k); y <= floorBottom(G, k); y++) for(let x = G.x0 + 1; x < G.x1; x++) G.tiles[y][x] = 0;
+    for(const x of gateCols(G, k)) G.tiles[floorCeil(G, k)][x] = 0;
+    revealFloor(G, k);
+  }
+  G.blocksLeft = G.blocksLeft.map(() => 0);
+  for(const o of G.mobs) o.hp = 0;
+}
+/* il tombe du haut, dehors, à gauche de la tour (comme projeté par le boss) */
+const dropLeft = (G, m) => { Object.assign(m, { x: G.x0 - 3, y: G.roof - 1, knocked: true, action: null }); };
+const ticksUntil = (G, ok, max = 3000) => { let n = 0; while(!ok() && n < max){ tickTower(G); n++; } return n; };
+
+test('treuil : le logisticien (skill Treuil) tombé au pied de la tour installe le treuil contre le mur, en 10 s', () => {
+  const G = newTower(3, { side: 'angel', miners: [LOGI] });
+  const m = G.miners[0]; cleared(G); G.boss.engaged = false;
+  assert.equal(TOWER.winch.setup, 10);
+  dropLeft(G, m);
+  ticksUntil(G, () => m.y === G.floor && m.action?.type === 'stun');
+  assert.equal(G.winch, null, 'pas encore');
+  const n = ticksUntil(G, () => G.winch);
+  assert.ok(G.winch, 'treuil installé');
+  assert.deepEqual({ x: G.winch.x, top: G.winch.top, bottom: G.winch.bottom }, { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor });
+  assert.ok(n * 0.1 >= CFG.stunTime + TOWER.winch.setup - 0.2, `étourdi puis 10 s d'installation (${n * 0.1} s)`);
+  assert.ok(n * 0.1 <= CFG.stunTime + TOWER.winch.setup + 5, `pas de détour (${n * 0.1} s)`);
+  assert.ok(G.log.some(l => /treuil/i.test(l.msg ?? l.text ?? String(l))), 'annoncé au journal');
+});
+
+test('treuil : sans le skill Treuil, rien ; une seconde chute n\'en installe pas un autre', () => {
+  const G = newTower(3, { side: 'angel', miners: [{ ...LOGI, skills: {} }] });
+  const m = G.miners[0]; cleared(G);
+  dropLeft(G, m); ticksUntil(G, () => m.y < G.floor - 2, 600);
+  assert.equal(G.winch, null);
+  const H = newTower(3, { side: 'angel', miners: [LOGI] });
+  const l = H.miners[0]; cleared(H);
+  dropLeft(H, l); ticksUntil(H, () => H.winch);
+  const first = H.winch;
+  Object.assign(l, { x: H.x1 + 3, y: H.roof - 1, knocked: true, action: null });   // de l'autre côté
+  ticksUntil(H, () => l.y === H.floor && l.action?.type === 'stun');
+  ticksUntil(H, () => l.y < H.floor - 2, 400);
+  assert.equal(H.winch, first, 'toujours le même treuil');
+  assert.notEqual(l.action?.type, 'winchSetup');
+});
+
+test('treuil : on y tient sans tomber, et un mineur tombé le prend pour remonter (bien plus vite)', () => {
+  const climb = withWinch => {
+    const G = newTower(3, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
+    const m = G.miners[0]; cleared(G);
+    if(withWinch) G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
+    Object.assign(m, { x: G.x0 - 2, y: G.floor, action: null });
+    return ticksUntil(G, () => m.y === G.roof - 1, 6000) * 0.1;
+  };
+  const G = newTower(3, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
+  G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
+  assert.ok(towerSupported(G, G.x0 - 1, G.roof + 3), 'dans le treuil : il ne tombe pas');
+  assert.ok(!towerSupported(G, G.x0 - 2, G.roof + 3), 'à côté : il tombe');
+  const fast = climb(true), slow = climb(false);
+  console.log(`remontée du pied de la tour au toit : ${slow.toFixed(1)} s sans treuil, ${fast.toFixed(1)} s avec`);
+  assert.ok(fast < slow * 0.6, `avec treuil ${fast} s, sans ${slow} s`);
+});
+
+test('treuil : envoyé au navigateur', () => {
+  const G = newTower(3, { side: 'angel', miners: [LOGI] });
+  assert.equal(createTowerViewer(G)().winch, null);
+  G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
+  assert.deepEqual(createTowerViewer(G)().winch, G.winch);
+});
