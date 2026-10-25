@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Lance en fer (en test, pas en ligne)
+- **Pour le joueur** : nouvel objet **Lance en fer** (case épée), BP à 2 % dans le Treasure T1, recette provisoire
+  10 Tainted iron (comme l'épée). Dégâts +10, vitesse d'attaque −10 %, recul +0,25, portée d'attaque +0,25. Deux
+  nouvelles stats : **Portée d'attaque** et **Recul**.
+- **À décider** : avec les règles de combat actuelles, la lance ne remplit pas son but (le mob tacle toujours en
+  premier et garde son tacle même repoussé) : en duel, elle tue moins vite que l'épée et ne réduit ni le tacle ni les
+  vols. Voir les chiffres dans `docs/debug.md`.
+- **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
 - **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
   était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques

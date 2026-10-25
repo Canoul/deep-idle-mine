@@ -5,7 +5,7 @@ import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnloc
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, winchT } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
-import { inReach, push } from './knock.js';
+import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { noEntry } from './dungeon.js';
@@ -180,14 +180,14 @@ export function finishAction(G,m,a){
     case 'dynamite': finishDynamite(G,m,a); break;
     case 'attack': {
       /* le coup ne porte que si le mob est encore à portée (COMBAT.reach) ; il le repousse de COMBAT.knock blocs */
-      const o=a.data.mob; if(o.hp>0 && inReach(G,m,o)){
+      const o=a.data.mob; if(o.hp>0 && inReach(G,m,o,reachOf(m))){
         if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
         const dmg=hitDamage(G,m);
         o.hp-=dmg; m.foeHit=G.t;
         if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
         splash(G,m,o,dmg);
         if(o.hp<=0) killMob(G,m,o);
-        else push(o, m, COMBAT.knock, mobCanEnter(G,o));
+        else push(o, m, knockbackOf(m), mobCanEnter(G,o));
       } break; }
   }
 }

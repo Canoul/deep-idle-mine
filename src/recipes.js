@@ -19,6 +19,7 @@ export const RECIPES = {
   /* débloquées par un blueprint (Treasure T1) */
   'Pioche en fer':       { cost: { 'Tainted iron': 20 },                 qty: 1, unlock: 'Pioche en fer BP' },
   'Épée en fer':         { cost: { 'Tainted iron': 10 },                 qty: 1, unlock: 'Épée en fer BP' },
+  'Lance en fer':        { cost: { 'Tainted iron': 10 },                 qty: 1, unlock: 'Lance en fer BP' },   // 25/10 : même prix que l'épée (provisoire)
   'Casque en fer':       { cost: { 'Tainted iron': 5 },                  qty: 1, unlock: 'Casque en fer BP' },
   'Plastron en fer':     { cost: { 'Tainted iron': 8 },                  qty: 1, unlock: 'Plastron en fer BP' },
   'Jambes en fer':       { cost: { 'Tainted iron': 7 },                  qty: 1, unlock: 'Jambes en fer BP' },

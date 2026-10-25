@@ -84,7 +84,7 @@ test('wiki : stats, treasures, niveaux, format français', () => {
   assert.deepEqual(st.map(s => s.key).sort(), Object.keys(STATS).sort());
   assert.ok(st.every(s => s.help), 'chaque stat a son explication');
   assert.deepEqual(D.lootTables().map(t => t.name), Object.keys(LOOT));
-  assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.15');   // 6 BP en fer à 2 % + 3 à 1 % (25/10)
+  assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.17');   // 7 BP en fer à 2 % (lance comprise) + 3 à 1 % (25/10)
   assert.deepEqual(D.levelRows(4), [{ level:2, need:1000, total:1000 }, { level:3, need:1500, total:2500 }, { level:4, need:2250, total:4750 }]);
   assert.equal(D.fmt(1234.5), '1 234,5');
   assert.equal(D.fmt(2.25), '2,25');

@@ -2692,3 +2692,28 @@ Règles (voir CLAUDE.md) :
   échoue sans la correction) ✅ ; trap, combat, mobs, dungeon, spells, help, goblin, knock ✅ (93).
 - **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
   à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
+
+### Lance en fer, stats Portée et Recul (Geoffrey, 25/10) — 🧪 branche `geoffrey/lance-en-fer`, ⚠️ design à trancher
+- **Quoi** : `STATS.reach` / `STATS.knockback` (0 de base, ajoutés à `COMBAT.reach` / `COMBAT.knock` par `reachOf` /
+  `knockbackOf`, `src/sim/knock.js`) : coups du mineur en mine (`actions.js` attaque, `ai.js` fight / goFight / boss /
+  canard) et en tour (`tower/session.js` `hitReach`, recul des mobs et du boss). Les mobs gardent `COMBAT.reach` pour
+  tacler. Objet `STUFF.items['Lance en fer']` (epee, `stats` damage 10, attackSpeed −10, knockback 0,25, reach 0,25), recette
+  10 Tainted iron (provisoire), BP 2 % dans `LOOT['Treasure T1']` (tier 1 de la recherche : 10 BP), skin `skins/spear_iron`,
+  textures `spear_iron` (gen_textures.py), labels, unités, `shownStats`, aide du wiki. Premier malus du jeu : un malus
+  n'empire plus avec l'amélioration (`pieceBonus`) et s'affiche « −10 % » (`statLines`).
+- **Tests** : 171 ✅ (tower, combat, knock, stuff, amelioration, craft, research (T1 = 10 BP), loot, wiki (total BP 17 %),
+  spells, mobs, skins, rune).
+- **Duel** (`duel.mjs` du scratchpad : 1 mineur sans autre stuff, couloir plat, mob qui arrive, 2 côtés) — temps pour
+  tuer / temps taclé / vols :
+  bestiole (66 PV) épée 5,1 s / 4,5 s, lance 5,8 / 5,2 ; gobelin (115) épée 8,6 / 8,0 / 3 vols, lance 8,8 / 8,2 / 4 ;
+  occultiste (150) épée 10,2 / 9,6, lance 17,0 / 10,8 ; méphite (81) épée 5,9 / 5,3, lance 6,7 / 6,1. Le mob tacle
+  toujours (2/2), au bout de 0,7 s. « Épée + portée seule » = épée ; « épée + recul seul » ≈ lance (le recul ralentit).
+- **Pourquoi** : déplacements case par case → deux voisins sont à 0 d'écart, une portée de 0,75 ne frappe jamais avant
+  le contact ; le tacle tient jusqu'à la mort du mob (soupapes 5 s / 6 cases) et le vol du gobelin marche à distance :
+  repousser ne libère rien, ça oblige seulement à se recaler.
+- **Prototype testé (non gardé)** : « un coup qui repousse le mob hors de SA portée lui fait lâcher le tacle ». Duel :
+  vols du gobelin lance 0 (épée 2), temps taclé −10 à −20 % ; vitesse pour tuer inchangée (occultiste toujours 17 s
+  avec du recul). Sessions (3 mineurs stuff fer, 5 seeds) : écarts dans le bruit (mobs tués 92-98, temps taclé
+  556-627 s, volés 124-143 par partie, épée et lance mélangées).
+- **À trancher** : la règle du tacle ; la recette ; la rareté. **À vérifier** : pourquoi le recul double le temps contre
+  l'occultiste.

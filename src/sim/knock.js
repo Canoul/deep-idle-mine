@@ -28,6 +28,10 @@ export function inReach(G, a, b, range = COMBAT.reach, open = isAir){
   return true;
 }
 
+/* portée d'attaque et recul d'un mineur : COMBAT + sa stat (reach, knockback ; Lance en fer, 25/10/2026) */
+export const reachOf = m => COMBAT.reach + (m.carac?.reach || 0);
+export const knockbackOf = m => COMBAT.knock + (m.carac?.knockback || 0);
+
 /* décalage qui éloigne a de b sur leur axe (a doit se recentrer pour se rapprocher) */
 export const driftsAway = (a, b) => a.y === b.y ? offX(a) * Math.sign(b.x - a.x) < -EPS
                                    : a.x === b.x ? offY(a) * Math.sign(b.y - a.y) < -EPS : false;
