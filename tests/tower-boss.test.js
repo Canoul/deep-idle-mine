@@ -58,16 +58,17 @@ test('focus tombé du toit : il en prend un autre ; plus personne sur le toit : 
   assert.equal(G.boss.x, G.bx, 'revenu au centre');
 });
 
-test('il traverse les mineurs ; arrêté, ceux qui sont sur lui ressortent dans son dos', () => {
+test('il traverse les mineurs ; ceux qui se retrouvent sur lui restent où ils sont (25/10)', () => {
   const G = roof(2), [a, b] = G.miners, y = G.roof - 1;
   G.boss.x = G.bx;
   Object.assign(a, { x: G.boss.x - 4, y }); hold(a);              // son focus, à gauche
   Object.assign(b, { x: G.boss.x - 2, y }); hold(b);              // sur son chemin
   G.boss.focus = a.id; G.arrivals = [a.id, b.id];
+  const bx = b.x;
   for(let i = 0; i < ticks(3); i++) tickTower(G);
   assert.equal(G.boss.x - 1, a.x, 'arrivé au contact de son focus');
-  assert.ok(b.x < G.boss.x || b.x >= G.boss.x + B.w, 'b n\'est plus dans le boss');
-  assert.equal(b.x, G.boss.x + B.w, 'dans son dos (il marchait vers la gauche)');
+  assert.equal(b.x, bx, 'b n\'a pas bougé');
+  assert.ok(b.x >= G.boss.x && b.x < G.boss.x + B.w, 'b est dans le boss, et y reste');
 });
 
 test('le boss résiste à 100 % au recul', () => {

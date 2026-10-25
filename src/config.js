@@ -1067,7 +1067,7 @@ export const TOWER = {
      de push blocs (recul). En rage, les chances passent à rageKnock / rageKnockBarb. Le boss résiste à 100 % au recul.
      Refonte du 25/10 (Geoffrey ; avant : 20 / 10 %, push 0,25, il ne frappait que s'il n'avait personne à son contact
      pour marcher) : il FOCUS le premier arrivé à son contact (le barbare qui le provoque, s'il est sur le toit) et le
-     suit quand il le repousse, à travers les autres mineurs (arrêté, il les remet hors de lui, dans son dos) ; son focus
+     suit quand il le repousse, à travers les autres mineurs (qui restent où ils sont, même sur lui) ; son focus
      tombé du toit, il en prend un autre ; plus personne sur le toit : il retourne au centre. Un mineur repoussé fait un
      petit arc (arcHigh blocs en arcMs ms, affichage seulement).
      Saut : à chaque tranche de jumpEvery de ses PV (75, 50, 25 %), il file au centre du toit (jumpFly s), jumpHigh

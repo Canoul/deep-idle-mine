@@ -35,7 +35,7 @@ export function newTower(seed, opts = {}){
     torches: [], light: new Map(),
     mobs: placeMobs(world, seed),
     boss: { name: TOWER.sides[side].boss, hp: B.hp, maxhp: B.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
-            target: null, focus: null, taunt: null, engaged: false, moveCd: 0, dir: 0, knockRes: B.knockRes,
+            target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
     log: [], timeline: { floors: [0], roof: null, engaged: null },
@@ -504,18 +504,6 @@ function focusOf(G){
 }
 /* mineurs sur la terrasse dans le boss (sa largeur) */
 const underBoss = (G, m, bx = G.boss.x) => onTop(G, m) && m.x >= bx && m.x < bx + B.w;
-/* arrêté, il remet hors de lui les mineurs qui sont sur lui (ils ne restent jamais dans le boss) : dans son dos (à
-   l'opposé de sa dernière marche), sinon de l'autre côté ; un mineur qui le traverse en marchant n'est pas touché */
-function expel(G){
-  const b = G.boss, back = b.dir > 0 ? -1 : 1;
-  for(const m of G.miners){
-    if(!underBoss(G, m) || m.action?.type === 'move') continue;
-    const sides = [back, -back].map(d => d < 0 ? b.x - 1 : b.x + B.w);
-    const x = sides.find(x => x >= G.x0 && x <= G.x1 && towerAir(G, x, m.y) && towerSupported(G, x, m.y)) ?? sides[0];
-    m.x = x; m.kx = 0; m.action = null;
-  }
-}
-
 function stepBoss(G){
   const b = G.boss;
   if(G.over || b.hp <= 0) return;
@@ -525,15 +513,14 @@ function stepBoss(G){
   if(level > b.phase) return startJump(G, level);
   const focus = focusOf(G), contact = !!focus && !!contactSide(G, focus);
   b.target = focus?.id ?? null;
-  /* il suit son focus (à travers les autres mineurs) ; plus personne sur le toit : il retourne au centre */
+  /* il suit son focus (à travers les autres mineurs, qui restent où ils sont, même sur lui : 25/10, Geoffrey) ; plus
+     personne sur le toit : il retourne au centre */
   b.moveCd = Math.max(0, b.moveCd - DT);
-  let walked = false;
   if(b.engaged && b.moveCd <= 1e-9){
     const dir = focus ? (contact || underBoss(G, focus) ? 0 : Math.sign(focus.x + 0.5 - bossMid(G)))
               : G.miners.some(m => onTop(G, m)) ? 0 : Math.sign(G.bx - b.x);
-    if(dir && bossFits(G, b.x + dir)){ b.x += dir; b.dir = dir; b.moveCd = 1 / (STATS.speed * B.speedMul); walked = true; }
+    if(dir && bossFits(G, b.x + dir)){ b.x += dir; b.moveCd = 1 / (STATS.speed * B.speedMul); }
   }
-  if(!walked && b.moveCd <= 1e-9) expel(G);
   b.cd -= DT;
   if(b.cd > 1e-9) return;
   const rage = b.hp < b.maxhp * B.rageBelow;
