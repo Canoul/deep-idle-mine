@@ -2874,7 +2874,7 @@ Règles (voir CLAUDE.md) :
   (`tests/tower-boss.test.js`, « mob sonné ») retirés. ⚠️ Tests non relancés à la demande de Geoffrey : à relancer
   (tower, tower-boss) à la prochaine modification de la tour.
 
-### Tour : plus d'étourdissement à l'arrivée d'une chute, projection 4 cases (Geoffrey, 25/10 soir) — 🧪 branche `geoffrey/tour-chute-projection`
+### Tour : plus d'étourdissement à l'arrivée d'une chute, projection 4 cases (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
 - `land()` (`src/sim/tower/session.js`) : plus d'action `stun` après une chute de `CFG.stunFall` cases ou plus (le
   message du journal reste) ; `fell`, chutes comptées et treuil du logisticien inchangés. `TOWER.boss.knock` 5 → 4.
 - Tests adaptés (`tests/tower.test.js`) : l'arrivée en bas se repère à `!m.knocked` au lieu de l'étourdissement
