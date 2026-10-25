@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Commande d'admin : ouvrir un k hole chez un joueur
+- **Pour le joueur** : rien de nouveau, sauf si un créateur du jeu le décide : un k hole peut s'ouvrir dans sa mine.
+- **Pour l'équipe** : sur le VPS, `sudo node /opt/deep-idle-mine/scripts/force-khole.js --name PSEUDO --map 2` ouvre un
+  k hole dans la session en cours de ce joueur (mine classique) : « Un k hole s'ouvre… », puis le groupe est aspiré 3 s
+  plus tard. `--map` : 0 au hasard, 1 Filons, 2 Arène, 3 Salle au trésor, 4 Vagues. Enregistré dans la session : un
+  redémarrage du serveur rejoue la partie à l'identique.
+- **État** : 🧪 sur la branche `geoffrey/admin-khole` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
   s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension, une carte tirée au hasard parmi 4 :

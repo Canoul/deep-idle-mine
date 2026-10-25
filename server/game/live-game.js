@@ -24,7 +24,7 @@ const KINDS = {
 };
 
 export function createLiveGame(record){
-  const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])] };
+  const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])], kholes: [...(record.kholes || [])] };
   const K = KINDS[rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : 'session'];
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => K.build(rec));
@@ -41,6 +41,8 @@ export function createLiveGame(record){
     advance(target){ withOverrides(() => step(target)); },
     leave(account){ return now(rec.leaves, { account }); },
     focus(account, focus){ return now(rec.focus, { account, focus }); },
+    /* k hole imposé (administration) : { tick, ok } (ok : il va bien s'ouvrir) */
+    khole(map){ const n = (G.kholes || []).length, tick = now(rec.kholes, { map }); return { tick, ok: (G.kholes || []).length > n }; },
     /* l'affichage pour un navigateur qui a déjà la partie au tick since */
     view(since){ return viewer(since); },
     /* fin immédiate (mode dev : « fin libre ») : la partie est jouée jusqu'au bout */

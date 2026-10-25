@@ -58,6 +58,7 @@ export function fakeLive(summaryOf){
         return g.tick;
       },
       async focus(id, account, focus){ const g = get(id); g.rec.focus.push({ account, tick:g.tick, focus }); return g.tick; },
+      async khole(id, map){ const g = get(id); (g.rec.kholes ??= []).push({ map, tick:g.tick }); return { tick:g.tick, ok:true }; },
       async finish(id){ get(id); end(id); },
     };
   };
