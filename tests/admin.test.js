@@ -78,3 +78,19 @@ test('adminAllowed : seulement depuis la machine elle-même', () => {
   for(const ip of ['127.0.0.1', '::1', '::ffff:127.0.0.1']) assert.equal(adminAllowed(req(ip), TOKEN), true, ip);
   for(const ip of ['10.0.0.2', '1.2.3.4', '::ffff:1.2.3.4', '', undefined]) assert.equal(adminAllowed(req(ip), TOKEN), false, String(ip));
 });
+
+test('quality : une pièce de stuff déjà identifiée dans cette qualité ; refusée hors stuff, sur un anneau ou invalide', async () => {
+  const pieces = async () => deserialize(JSON.stringify(await gameStore.getInventory('C1'))).slots.filter(s => s?.item === 'Plastron en fer');
+  for(const q of [5, 7]){
+    const r = await give({ name: 'crousti', item: 'Plastron en fer', quality: q });
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    assert.equal(r.data.quality, q);
+  }
+  assert.deepEqual((await pieces()).map(p => p.q), [5, 7]);           // relues par l'inventaire : qualité gardée
+  const ring = Object.keys((await import('../src/config.js')).RINGS.items)[0];
+  for(const body of [{ item: 'Treasure T3', quality: 5 }, { item: ring, quality: 5 }, { item: 'Plastron en fer', quality: 0 },
+                     { item: 'Plastron en fer', quality: 8 }, { item: 'Plastron en fer', quality: 4.5 }, { item: 'Plastron en fer', quality: '5' }]){
+    assert.equal((await give({ name: 'crousti', ...body })).status, 400, JSON.stringify(body));
+  }
+  assert.equal((await pieces()).length, 2);
+});

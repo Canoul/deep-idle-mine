@@ -63,3 +63,15 @@ test('refus clairs : mauvaise clé, objet inconnu, quantité invalide, compte in
   assert.ok(!noKey.ok && /DIM_ADMIN_TOKEN/.test(noKey.out), noKey.out);
   assert.equal(await t3(), before);
 });
+
+test('--quality : un Plastron en fer R5 déjà identifié ; --quality invalide refusé avant d\'appeler le serveur', async () => {
+  const r = await run(['--env', envFile, '--name', 'crousti', '--item', 'Plastron en fer', '--quality', '5']);
+  assert.ok(r.ok, r.out);
+  assert.match(r.out, /\+1 Plastron en fer R5 pour « Crousti »/);
+  const inv = deserialize(JSON.stringify(await gs.getInventory('C1')));
+  assert.deepEqual(inv.slots.filter(s => s?.item === 'Plastron en fer').map(s => s.q), [5]);
+  for(const q of ['0', '8', 'R5']){
+    const bad = await run(['--env', envFile, '--name', 'crousti', '--item', 'Plastron en fer', '--quality', q]);
+    assert.ok(!bad.ok && /--quality/.test(bad.out), bad.out);
+  }
+});
