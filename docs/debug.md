@@ -3067,7 +3067,7 @@ Règles (voir CLAUDE.md) :
   ✅ (91), simulation `--miners 3 --count 5` (0 bloquée, chiffres identiques : aucun k hole sur ces seeds) et
   `--khole 1` (10 pris, 0 bloquée, tick dimension 0,030 ms).
 
-### Admin : k hole imposé dans une session en cours (Geoffrey, 25/10) — 🧪 branche `geoffrey/admin-khole`
+### Admin : k hole imposé dans une session en cours (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `forceKhole(G, map)` (`src/sim/khole.js`) : pousse dans `G.kholes` un k hole à la case du premier mineur
   (`opensAt = t + warn`, `map` imposée 1-N ou 0), même log ; refusé si fini, déjà dans un k hole ou un k hole en attente,
   sans mineur, ou à moins de endMargin + warn de la fin. `enterKhole` : `h.map` impose la carte. Événement rejoué

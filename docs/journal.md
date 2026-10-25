@@ -24,7 +24,7 @@ Modèle d'entrée :
   k hole dans la session en cours de ce joueur (mine classique) : « Un k hole s'ouvre… », puis le groupe est aspiré 3 s
   plus tard. `--map` : 0 au hasard, 1 Filons, 2 Arène, 3 Salle au trésor, 4 Vagues. Enregistré dans la session : un
   redémarrage du serveur rejoue la partie à l'identique.
-- **État** : 🧪 sur la branche `geoffrey/admin-khole` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
