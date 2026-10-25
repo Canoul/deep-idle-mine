@@ -18,6 +18,22 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tour céleste : boss refait, étages de blocs à vider, affichage fluide
+- **Pour le joueur** : la tour s'affiche **sans saccades**. Elle a **6 étages** (avant 7) et les briques se cassent en
+  4 s. Un **étage de briques** doit être **entièrement vidé** pour ouvrir la porte du dessus (les mineurs se répartissent
+  les briques). Les mobs peuvent être plusieurs sur la même case. Le **boss** vise un seul mineur (le premier arrivé, ou
+  le barbare qui le provoque) et ignore les autres ; il le repousse (petit saut à l'écran) ou le projette de 5 cases
+  (25 %, 10 % sur un barbare, plus en rage), puis le **suit** en traversant les autres mineurs. On peut le frapper à côté
+  de lui ou dans lui ; seul le mineur qu'il vise le fait reculer un peu. À 75, 50 et 25 % de ses PV, il **s'envole** 3 s
+  au centre du toit (intouchable), puis retombe : tout le monde est repoussé de 3 cases et étourdi 3 s. Le wiki est à jour.
+- **Mode développeur** : spécialisation imposée à chaque mineur (mineurs de test compris) avec un niveau, mineurs de test
+  dans les tours, vitesse et pause dans la barre de la tour, tours toujours ouvertes et sans limite.
+- **Décisions** (Geoffrey) : toutes les valeurs ci-dessus ; règle « le boss remet hors de lui les mineurs sur sa hitbox »
+  essayée puis retirée.
+- **À suivre** : l'**équilibrage** de la tour (Geoffrey fait ses simulations). La stat Résistance au recul n'a toujours
+  aucune source.
+- **État** : 🧪 sur la branche `geoffrey/tour-boss` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
 - **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
   serveur, sans le redémarrer : `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175`.

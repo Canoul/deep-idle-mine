@@ -42,7 +42,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 : **0,5 % au total** (13 par area, moitié chacun), à la place de pierre normale (23/10 ; ancien : 0,5 % chacun, pris sur tout terrain), poids 6, visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 200 depuis le 24/10 ; ancien 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
-    Lobby (« Où miner », visible seulement si ouverte), 1 à 3 joueurs, **10 min de jeu**. **Refonte du 23/10** (en ligne) : tour 20 × 32, **7 étages** de 3 séparés par des planchers
+    Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
+    **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28), stonebrick **4 s** ; un étage
+    « blocs » doit être **entièrement vidé** pour ouvrir sa porte (chaque mineur réserve son bloc) ; mobs empilables ;
+    boss qui **focus** (premier arrivé au contact, ou barbare qui le provoque), le **suit** à travers les autres
+    (mineurs dans sa hitbox : ils y restent et frappent de là), recul **0,5** avec arc, projection **25 % / 10 %** barbare
+    (rage 35 / 20 %) de **5 cases**, recul subi seulement de son focus (25 % de résistance) ; **saut** à 75 / 50 / 25 % :
+    3 s en l'air intouchable, atterrissage = tous repoussés de 3 cases + étourdis 3 s. Affichage fluide (glissade).
+    Équilibrage en cours (Geoffrey fait ses propres simulations). Mode dev : spé imposée par mineur (+ niveau), mineurs de
+    test dans les tours, vitesse et pause dans la barre de la tour.
+    **Ancien (refonte du 23/10)** : tour 20 × 32, **7 étages** de 3 séparés par des planchers
     indestructibles percés d'une porte de 3 cases au bord, alternée gauche / droite (**serpentin**) ; étage 0 vide, puis
     en alternance (tirée par la seed) **plein de stonebrick** (6 s) ou **5 Séraphins / Diablotins** (200 PV, taclent,
     porte du plafond scellée tant qu'il en reste) ; découverte **étage par étage**, lumière et torches illimitées ;
