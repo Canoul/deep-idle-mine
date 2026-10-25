@@ -22,6 +22,7 @@ import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { createTowerRenderer } from './render/tower.js';
 import { applyTowerView } from './shared/tower-view.js';
+import { createPerf, perfText } from './ui/perf.js';
 import { isTowerMode } from './shared/tower.js';
 import { tickAt, resultChoice } from './shared/game.js';
 import { joinCodeFromHash } from './shared/party.js';
@@ -428,12 +429,17 @@ function enterSession(session){
 /* reçoit la partie du serveur : la première fois en entier, ensuite seulement ce qui a changé */
 const VIEW_EVERY = 250, VIEW_HIDDEN = 1500;   // ms (onglet caché : moins souvent)
 let viewTimer = null, lastView = 0;
+/* mesures d'affichage, seulement avec ?perf dans l'adresse (src/ui/perf.js) */
+const perf = createPerf(), perfOn = new URLSearchParams(location.search).has('perf');
+for(const el of document.querySelectorAll('.perfBox')) el.hidden = !perfOn;
 async function pollView(){
   clearTimeout(viewTimer);
   if(!G || !rec || waiting) return;
   const id = rec.id;
   try {
+    const t0 = performance.now();
     const r = await gameApi.view(G.ready ? G.ticks : null);
+    if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
@@ -567,10 +573,12 @@ if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/b
 let last = performance.now(), lastHud = 0;
 function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
+  if(perfOn) perf.frame(now);
   smooth(dtr);
   const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower';
   if(shown && ui.tab==='session') tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
+    if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
     if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
     else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
     else if(shown && ui.tab==='session'){

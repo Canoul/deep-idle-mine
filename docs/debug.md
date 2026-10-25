@@ -2849,3 +2849,21 @@ Règles (voir CLAUDE.md) :
   `:rotating_light:` envoyé par webhook pourrait rester en texte).
 - **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
   le salon peut devenir bruyant.
+
+### Tour : étages de blocs en front, mob sonné après un recul, mesures ?perf (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
+- **Contexte** : le dossier local était resté sur `cd6f90a` ; ensuite `tour-regroupe`, `lance-en-fer`,
+  `tour-combat-continu` (marche continue `walkMob`, `knockLock`, `stopAction`) et `fdebd2d` (treuil de tour) ont
+  changé la tour en ligne : d'où des écarts entre le local et le live.
+- **Étages de blocs** (`src/sim/tower/session.js`, `blockFront`) : les candidats sont filtrés aux colonnes pas encore
+  vidées les plus proches du centre de la porte d'entrée (`gateCols(G, k − 1)`), `TOWER.blockFront` (1) × nombre de
+  mineurs. Avant (seed 3, 3 mineurs) : blocs du haut au-dessus de l'entrée minés à 100-104 s sur 104 (coût d'échelle :
+  toujours repoussés) ; après : front régulier, 105 s ; solo 277 → 276 s, colonne par colonne.
+- **Recul des mobs** : il marchait (+0,25) mais `walkMob` le ramenait au contact en ≈ 0,2 s. `o.stagger = G.t +
+  MB.knockStun` (0,5 s) dans `hitMob` quand le push a bougé le mob ; `stepMobs` ne fait pas marcher un mob sonné.
+- **Mesures** : `src/ui/perf.js` (`createPerf`, `perfText`, fenêtre 2 s) ; `src/main.js` (`?perf` : `perf.view` autour
+  de `gameApi.view`, `perf.frame` dans `frame`, texte toutes les 120 ms) ; `.perfBox` (cachées) dans `#run` et `#twRun`.
+- **Vérifié, pas un bug** : retour du boss au centre (fonctionne dès que personne n'est sur le toit et qu'il est
+  engagé) ; saut à 74 % (se déclenche) ; treuil : textures présentes, servies en ligne (mêmes fichiers que `main`,
+  `Cache-Control: no-store`) et dessinées (rendu sans navigateur : corde sur toute la hauteur, poulie, seau).
+- **Tests** : `tests/tower-boss.test.js` (+2 : front depuis l'entrée en solo et à 3, mob sonné), `tests/perf.test.js`
+  (nouveau, 3) ; tower, tower-boss, perf, boot-check, controls ✅. Pas de simulation (demande de Geoffrey).
