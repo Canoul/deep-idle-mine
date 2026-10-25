@@ -60,7 +60,7 @@ export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m)));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens), × l'Escalateur
    du groupe (winchMult) */
-export const winchMult = G => 1 + (G.winchBoost || 0);
+export const winchMult = G => (1 + (G.winchBoost || 0))*(G.winch?.lift ? GLYPHS.liftSpeed : 1);   // ascenseur (Glyphe Treuil) : × liftSpeed
 export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m)));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);

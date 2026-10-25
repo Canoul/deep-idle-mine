@@ -245,3 +245,47 @@ test('Glyphe Mule : seulement dans la mine classique (son skill n\'agit pas en m
   assert.equal(instantSpecs(rec)[0].carac.speed, STATS.speed, 'mine instantanée : rien');
   assert.equal(towerSpecs({ ...rec, mode:'tower_angel' })[0].carac.speed, STATS.speed, 'tour : rien');
 });
+
+/* ---------- Glyphe Treuil : ascenseur (étape 2) ---------- */
+import { WINCH } from '../src/config.js';
+import { newSession } from '../src/sim/session.js';
+import { tryUnlock, areaTop } from '../src/sim/world.js';
+import { baseWinchT } from '../src/sim/mineur.js';
+
+const unlockNext = G => { const a = G.areas[G.unlockedAreas - 1]; a.oreMined = a.oreTotal; assert.ok(tryUnlock(G)); };
+
+test('Glyphe Treuil : le porteur du glyphe construit, aux 1er et 3e déblocages, pas au 2e', () => {
+  const G = newSession(3, { miners:3 });
+  G.miners[1].skill.winch = 1; G.miners[2].skill.winch = 1; G.miners[2].skill.glyph_winch = 1;
+  unlockNext(G);
+  assert.equal(G.miners[1].winchJob, null, 'pas le premier logisticien');
+  assert.deepEqual(G.miners[2].winchJob, { bottom:areaTop(1), lift:true });
+  G.miners[2].winchJob = null;
+  unlockNext(G);
+  assert.equal(G.miners[2].winchJob, null, '2e déblocage : pas de chantier');
+  assert.equal(G.miners[1].winchJob, null, 'ni pour l\'autre logisticien');
+  unlockNext(G);
+  assert.deepEqual(G.miners[2].winchJob, { bottom:areaTop(3), lift:true }, '3e déblocage : jusqu\'à l\'area 3');
+});
+
+test('Glyphe Treuil : sans glyphe, le treuil est posé à chaque déblocage (inchangé)', () => {
+  const G = newSession(3, { miners:2 });
+  G.miners[1].skill.winch = 1;
+  unlockNext(G); assert.deepEqual(G.miners[1].winchJob, { bottom:areaTop(1) });
+  G.miners[1].winchJob = null;
+  unlockNext(G); assert.deepEqual(G.miners[1].winchJob, { bottom:areaTop(2) });
+});
+
+test('Glyphe Treuil : le chantier pose un ascenseur ; le seau va 3 fois plus vite, Escalateur compris', () => {
+  const G = worldFrom(['', ...Array.from({ length:20 }, () => '#'.repeat(W))]), m = G.miners[0];
+  Object.assign(m, { x:WINCH.x, y:0, mode:'surface', skillTree:'logisticien' });
+  Object.assign(m.skill, { winch:1, glyph_winch:1 });
+  m.winchJob = { bottom:14, lift:true };
+  for(let i = 0; i < 3000 && m.winchJob; i++) run(G, 1);
+  assert.deepEqual(G.winch, { x:WINCH.x, bottom:14, lift:true });
+  G.winchBoost = 0.25;
+  const lift = baseWinchT(G, m);
+  delete G.winch.lift;
+  assert.ok(Math.abs(baseWinchT(G, m) / lift - GLYPHS.liftSpeed) < 1e-9, 'treuil 3 fois plus lent');
+  assert.ok(Math.abs(lift - 1 / (m.carac.climbSpeed * WINCH.speedFactor * 1.25 * GLYPHS.liftSpeed)) < 1e-12, 'Escalateur compris');
+});
