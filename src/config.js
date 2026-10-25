@@ -830,9 +830,9 @@ export const UPGRADE = {
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
   levels: [
-    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey)
-    { pct:5, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
-    { pct:7, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
+    { pct:5, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey) ; bonus 5 / 10 / 15 % (25/10/2026, Geoffrey ; avant 3 / 5 / 7 %)
+    { pct:10, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
+    { pct:15, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

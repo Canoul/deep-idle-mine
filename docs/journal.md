@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Amélioration : +5 / +10 / +15 %
+- **Pour le joueur** : améliorer une pièce rapporte plus : +1 = **+5 %** de toutes ses stats (avant +3 %), +2 = **+10 %**
+  (avant +5 %), +3 = **+15 %** (avant +7 %). Coûts et chances de réussite inchangés. Les pièces déjà améliorées en
+  profitent tout de suite.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Armure en fer : 20 peaux de gobelin
 - **Pour le joueur** : casque, plastron, jambes et bottes en fer demandent **20 peaux de gobelin** chacun en plus de
   leurs Tainted iron (les bottes : 20 au lieu de 5, toujours avec leur lingot d'or). L'armure complète coûte donc 80

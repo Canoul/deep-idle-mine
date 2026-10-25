@@ -2887,3 +2887,11 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/blueprint.test.js` (recettes ; et pioche en fer 0,4 / 1,4 : **déjà rouge sur main** depuis le nerf du
   25/10), `tests/recycle.test.js` (bottes : 12 peaux) ; admin, anneaux, aura, discord, give-item, research, rune, craft,
   wiki, steel-gear ✅ (105) ; `npm run test:anticheat` ✅ (89).
+
+### Amélioration : paliers 5 / 10 / 15 % (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `UPGRADE.levels[].pct` 3 / 5 / 7 → 5 / 10 / 15 (`src/config.js`) ; GAME_DESIGN (tableau des niveaux) ; wiki :
+  tableau généré (`upgradeRows`). Le % est lu à l'affichage et en session (`plusMult`) : les pièces déjà améliorées
+  suivent sans migration ; un malus (Lance) n'est pas multiplié.
+- **Tests** : `tests/amelioration.test.js` (valeurs recalculées par le code : pioche +3 0,23, épée +3 15,4, plastron
+  chitine +1 32, lignes +3 0,8 et 0,6, minage % 1,1) ; `tests/rune.test.js` lit le % dans la config (il passait par
+  hasard d'arrondi avec 1,07 en dur) ; rune, stuff, lance, wiki, aura, anneaux ✅ (82).

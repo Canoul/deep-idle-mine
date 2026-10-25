@@ -658,9 +658,9 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10
 
 | Niveau | Stats | Réussite | Coût |
 |---|---|---|---|
-| +1 | +3 % | 100 % | 20 Plumes d'ange, 3 Cristaux de pleine lune |
-| +2 | +5 % | 95 % | 30 plumes + 5 cristaux |
-| +3 | +7 % | 90 % | 50 plumes + 7 cristaux |
+| +1 | +5 % *(25/10/2026 ; avant +3 %)* | 100 % | 20 Plumes d'ange, 3 Cristaux de pleine lune |
+| +2 | +10 % *(avant +5 %)* | 95 % | 30 plumes + 5 cristaux |
+| +3 | +15 % *(avant +7 %)* | 90 % | 50 plumes + 7 cristaux |
 
 *(Plumes relevées le 22/10/2026 : 3 / 5 / 7 → 20 / 30 / 50.)*
 
