@@ -65,7 +65,9 @@ export function createTowerRenderer(cv){
       if(t === 0) blit(inside(x, y) ? 'tunnel' : 'sky', px, py, inside(x, y) ? '#2a1f18' : (G.side === 'demon' ? '#3a1530' : '#8fd8ff'));
       else blit(BLOCKS[t].tex, px, py, BLOCKS[t].color);
       if(G.ladder?.[y]?.[x] && t === 0) blit('ladder', px, py);
+      if(G.winch && x === G.winch.x && y > G.winch.top && y <= G.winch.bottom) blit('winch_rope', px, py);   // treuil du logisticien
     }
+    if(G.winch) blit('winch_top', G.winch.x * T, (G.winch.top - 1) * T);   // sa poulie, au-dessus du dernier palier
     /* torches, puis l'ombre de l'intérieur découvert selon la lumière (comme dans la mine) */
     for(const tc of G.torches || []) if(G.seen?.[tc.y]?.[tc.x]) blit('torch', tc.x * T, tc.y * T);
     for(let y = y0; y <= Math.min(G.h, y0 + rows); y++) for(let x = x0; x <= Math.min(G.w - 1, x0 + cols); x++){
@@ -110,6 +112,7 @@ export function createTowerRenderer(cv){
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
       const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);
       sprite(m, x * T, y * T, m === mine, now);
+      if(m.action?.data?.winch) blit('bucket', x * T, y * T + 4);   // dans le seau du treuil
       if(m.id === b.target && b.hp > 0){                     // cible du boss : petit marqueur au-dessus
         ctx.fillStyle = '#ff3b3b'; ctx.fillRect(x * T + T / 2 - 2, y * T - 6, 4, 4);
       }

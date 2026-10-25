@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
+- **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil
+  est projeté hors de la tour, il installe au pied du mur (10 s) un treuil qui monte jusqu'au toit. Ensuite, tous ceux
+  qui tombent le prennent : environ 18 s pour revenir au combat au lieu de 28 à 43 s.
+- **Décisions** (Geoffrey) : il faut le skill Treuil ; un seul treuil par partie, du côté de sa chute ; même vitesse et
+  mêmes règles que le treuil de la mine.
+- **À suivre** : le toit est atteint vers 8 min, donc le treuil arrive tard (7 min 30 à 9 min 40) et ne change pas
+  encore l'issue des tours simulées (0 victoire sur 5 avec ou sans, boss à ≈ 1 650 PV au lieu de ≈ 1 820).
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Runes : un % du tier de la pièce
 - **Pour le joueur** : une ligne de rune ne vaut plus un % de la valeur de la pièce, mais un % de son **tier** : T1
   (pierre, chitine, ceinture en peau de gobelin, boussole en or) = 100 x, T2 (fer, gants, cape) = 250 x, T3 (acier,

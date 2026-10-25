@@ -67,6 +67,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.
     **Aura du stuff** (25/10, Geoffrey ; `AURA`, `src/meta/aura.js`, `src/render/aura.js`) : pièce visible identifiée R4+ (armure ; pioche et épée seulement en main, en session) avec une vraie rune R4+ (pas un fragment) → halo pulsant de la couleur de la plus basse des deux (faible R4-R5, moyenne R6, forte R7), derrière le mineur, partout (mine, MI, tours, portraits). Le serveur envoie `auras: { case: qualité }` à côté de `look`.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
+  - **Treuil du logisticien dans les tours** (25/10, Geoffrey ; `TOWER.winch`) : le premier logisticien (skill Treuil) tombé au pied de
+    la tour installe en 10 s, contre le mur de son côté, un treuil jusqu'au toit (un seul par partie, comme le puits de la mine).
   - Vocabulaire : **tour** = « donjon » du Jugement ; **donjon** = structure du minotaure dans la mine classique. 
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
   - Régler une jauge en ligne (25/10) : `sudo node scripts/set-judgment.js --side demon --count 175` sur le VPS (route
