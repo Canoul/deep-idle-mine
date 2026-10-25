@@ -219,8 +219,10 @@ export function contactCells(G){
   const b = G.boss, y = G.roof - 1;
   return [[b.x - 1, y, 'L'], [b.x + B.w, y, 'R']].filter(([x]) => x >= G.x0 && x <= G.x1 && towerSupported(G, x, y));
 }
+/* d'où il frappe le boss : 'L' / 'R' (case à côté de lui), 'in' (sur la terrasse dans sa largeur : il peut frapper
+   aussi, 25/10, Geoffrey), null sinon */
 const contactSide = (G, m) => m.y === G.roof - 1 && towerSupported(G, m.x, m.y)
-  ? (m.x === G.boss.x - 1 ? 'L' : m.x === G.boss.x + B.w ? 'R' : null) : null;
+  ? (m.x === G.boss.x - 1 ? 'L' : m.x === G.boss.x + B.w ? 'R' : m.x >= G.boss.x && m.x < G.boss.x + B.w ? 'in' : null) : null;
 const bossMid = G => G.boss.x + B.w / 2;
 /* côté où arrivent les autres : celui de la porte du toit tant qu'ils sont dans la tour, sinon leur position */
 const sideOfMiner = (G, m) => m.y < G.roof ? (m.x + 0.5 < bossMid(G) ? 'L' : 'R') : (gateCols(G, TOWER.floors - 1)[0] < bossMid(G) ? 'L' : 'R');
@@ -355,8 +357,8 @@ export function decide(G, m){
     return act(m, 'wait', 0.3, {}, `Attend ${G.boss.name}`);
   }
   const want = wantedSide(G, m), here = contactSide(G, m);
-  if(here && (!want || want === here)){
-    m.face = here === 'L' ? 1 : -1;
+  if(here === 'in' || (here && (!want || want === here))){   // dans le boss : il frappe d'où il est
+    m.face = here === 'L' ? 1 : here === 'R' ? -1 : (Math.sign(bossMid(G) - (m.x + 0.5)) || m.face);
     return act(m, 'attack', hitT(m), { boss: true }, `Combat ${G.boss.name}`);
   }
   const cells = contactCells(G), goals = cells.filter(c => !want || c[2] === want);

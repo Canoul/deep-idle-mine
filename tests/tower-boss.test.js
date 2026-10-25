@@ -71,6 +71,16 @@ test('il traverse les mineurs ; ceux qui se retrouvent sur lui restent où ils s
   assert.ok(b.x >= G.boss.x && b.x < G.boss.x + B.w, 'b est dans le boss, et y reste');
 });
 
+test('un mineur dans le boss peut le frapper', () => {
+  const G = roof(1), [a] = G.miners;
+  Object.assign(a, { x: G.boss.x + 1, y: G.roof - 1, action: null });
+  G.boss.cd = 1e9;   // il ne frappe pas
+  const hp = G.boss.hp;
+  for(let i = 0; i < ticks(3); i++) tickTower(G);
+  assert.ok(G.boss.hp < hp, 'il l\'a frappé');
+  assert.equal(a.x, G.boss.x + 1, 'sans bouger');
+});
+
 test('le boss résiste à 100 % au recul', () => {
   assert.equal(B.knockRes, 100);
   assert.equal(newTower(1).boss.knockRes, 100);
