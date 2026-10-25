@@ -75,15 +75,25 @@ test('un mineur dans le boss peut le frapper', () => {
   const G = roof(1), [a] = G.miners;
   Object.assign(a, { x: G.boss.x + 1, y: G.roof - 1, action: null });
   G.boss.cd = 1e9;   // il ne frappe pas
-  const hp = G.boss.hp;
+  const hp = G.boss.hp, x0 = a.x;
   for(let i = 0; i < ticks(3); i++) tickTower(G);
   assert.ok(G.boss.hp < hp, 'il l\'a frappé');
-  assert.equal(a.x, G.boss.x + 1, 'sans bouger');
+  assert.equal(a.x, x0, 'sans bouger (son focus : ses coups repoussent le boss)');
 });
 
-test('le boss résiste à 100 % au recul', () => {
-  assert.equal(B.knockRes, 100);
-  assert.equal(newTower(1).boss.knockRes, 100);
+test('recul du boss : seul son focus le repousse (25 % de résistance) ; les coups des autres, non', () => {
+  assert.equal(B.knockRes, 25);
+  const G = roof(2), [a, b] = G.miners, y = G.roof - 1;
+  Object.assign(a, { x: G.boss.x - 1, y }); Object.assign(b, { x: G.boss.x + B.w, y });
+  G.boss.focus = a.id; G.boss.cd = 1e9; G.boss.moveCd = 1e9;
+  const hit = m => { m.action = { type: 'attack', dur: 0.05, t: 0, data: { boss: true } }; tickTower(G); hold(m); };
+  hold(a); hold(b);
+  hit(b);
+  assert.equal(G.boss.kx ?? 0, 0, 'b n\'est pas son focus : rien');
+  hit(a);
+  assert.ok(Math.abs(G.boss.kx - 0.25 * 0.75) < 1e-9, 'repoussé de 0,25 × 75 %, loin de a');
+  for(let i = 0; i < 3; i++) hit(a);
+  assert.equal(G.boss.x, G.bx + 1, 'au-delà d\'une demi-case, il passe sur la case suivante');
 });
 
 test('rage : chances de projection 35 % (au lieu de 25 %)', () => {

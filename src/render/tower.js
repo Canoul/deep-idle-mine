@@ -50,7 +50,7 @@ export function createTowerRenderer(cv){
     if(cv.width !== cols * T || cv.height !== rows * T){ cv.width = cols * T; cv.height = rows * T; }
     ctx.imageSmoothingEnabled = false;
     const mine = G.miners.find(m => m.account === me), fol = mine ?? G.miners[0];
-    const [bx0, by0] = G.boss ? (G.boss._to ? shownPos(G, G.boss, now) : [G.boss.x, G.boss.y - (G.boss.lift || 0)]) : [G.bx, G.by];
+    const [bx0, by0] = G.boss ? (G.boss._to ? shownPos(G, G.boss, now) : [G.boss.x + (G.boss.kx || 0), G.boss.y - (G.boss.lift || 0)]) : [G.bx, G.by];
     const [fx, fy] = fol ? posOf(G, fol, now) : [bx0 + 1, G.roof];
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const want = { x: clamp(fx + 0.5 - cols / 2, 0, G.w - cols), y: clamp(fy + 0.5 - rows / 2, 0, G.h + 1 - rows) };

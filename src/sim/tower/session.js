@@ -470,11 +470,20 @@ function hitBoss(G, m){
   const dmg = hitDmg(G, m);
   G.boss.hp = Math.max(0, G.boss.hp - dmg);
   G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
+  if(G.boss.focus === m.id && G.boss.hp > 0) pushBoss(G, m);   // seul son focus le repousse
   if(!G.boss.engaged){ G.boss.engaged = true; G.timeline.engaged = G.t; log(G, `⚔ ${m.name} engage le combat contre ${G.boss.name}`); }
   if(G.boss.hp <= 0){
     log(G, `🏆 ${G.boss.name} est vaincu ! Coup final de ${m.name}.`);
     endTower(G, true);
   }
+}
+
+/* recul du boss sous les coups de son focus (25/10 au soir) : COMBAT.knock × (1 − B.knockRes %), horizontal, à l'opposé
+   du mineur (vu depuis le centre du boss) ; il reste sur le toit (bossFits). Coup reçu en l'air : rien. */
+function pushBoss(G, m){
+  const b = G.boss; if(b.air) return;
+  const from = { x: m.x + 0.5 < bossMid(G) ? b.x - 1 : b.x + B.w, y: b.y };
+  push(b, from, COMBAT.knock, (x, y) => y === b.y && bossFits(G, x));
 }
 
 /* ordre d'arrivée sur le toit : on y entre en s'y tenant, on en sort en le quittant (chute) */
@@ -521,7 +530,7 @@ function stepBoss(G){
   if(b.engaged && b.moveCd <= 1e-9){
     const dir = focus ? (contact || underBoss(G, focus) ? 0 : Math.sign(focus.x + 0.5 - bossMid(G)))
               : G.miners.some(m => onTop(G, m)) ? 0 : Math.sign(G.bx - b.x);
-    if(dir && bossFits(G, b.x + dir)){ b.x += dir; b.moveCd = 1 / (STATS.speed * B.speedMul); }
+    if(dir && bossFits(G, b.x + dir)){ b.x += dir; b.kx = 0; b.moveCd = 1 / (STATS.speed * B.speedMul); }   // un pas le recentre
   }
   b.cd -= DT;
   if(b.cd > 1e-9) return;
@@ -542,7 +551,7 @@ const landCells = G => [[G.bx - 1, G.roof - 1, 'L'], [G.bx + B.w, G.roof - 1, 'R
 const underLanding = (G, m) => underBoss(G, m, G.bx);
 function startJump(G, level){
   const b = G.boss;
-  b.phase = level; b.air = { stage: 'fly', t: 0, x0: b.x }; b.target = null;
+  b.phase = level; b.air = { stage: 'fly', t: 0, x0: b.x }; b.target = null; b.kx = 0;
   log(G, `🦅 ${G.boss.name} s'envole au-dessus du toit !`);
 }
 function stepJump(G){

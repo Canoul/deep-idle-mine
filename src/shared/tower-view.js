@@ -36,7 +36,7 @@ export function createTowerViewer(G){
       x0: G.x0, x1: G.x1, roof: G.roof, floor: G.floor, bx: G.bx, by: G.by,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')), ladders: ladderList(G),
       seen: G.seen.map(r => r.join('')),
-      boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air },
+      boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air },
       torches: G.torches.map(t => t.y * G.w + t.x),
       mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
@@ -65,7 +65,7 @@ export function applyTowerView(v, prev = null, now = performance.now()){
   if(prev?._at != null){
     glide(prev, prev.miners, G.miners, minerPos, now);
     glide(prev, prev.mobs, G.mobs, o => [o.x + (o.kx || 0), o.y], now);
-    if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x, b.y - (b.lift || 0)], now);
+    if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], now);
     /* arc du recul : heure de la page où il a commencé (un nouvel arc = une nouvelle valeur de hop) */
     const was = new Map(prev.miners.map(m => [m.id, m]));
     for(const m of G.miners){ const p = was.get(m.id); m._hopAt = m.hop == null ? null : p?.hop === m.hop ? p._hopAt : now; }
