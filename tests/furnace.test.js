@@ -179,8 +179,8 @@ test('conservation : sur 300 suites d\'actions au hasard, rien n\'est créé ni 
 const TAINTED = FURNACE.alloys.find(r => r.out === 'Tainted iron');
 const alloySetup = () => setup({ 'Lingot de fer':20, Chitine:100, Charbon:300, Fer:50 });
 
-test('alliage : la recette du créateur (Tainted iron = 5 lingots de fer + 20 chitine + 50 charbons, 3 min)', () => {
-  assert.deepEqual(TAINTED.in, { 'Lingot de fer':5, 'Chitine':20 });
+test('alliage : la recette du créateur (Tainted iron = 5 lingots de fer + 15 chitine + 50 charbons, 3 min)', () => {
+  assert.deepEqual(TAINTED.in, { 'Lingot de fer':5, 'Chitine':15 });
   assert.equal(TAINTED.fuel, 50); assert.equal(TAINTED.time, 180);
   assert.equal(ITEMS['Tainted iron'].cat, 'ingot');
 });
@@ -191,7 +191,7 @@ test('alliage : changer de mode, poser les deux ingrédients et le charbon, 1 Ta
   assert.ok(op(st, inv, { action:'mode', mode:'alloy' }).ok);
   assert.equal(f.mode, 'alloy');
   assert.ok(op(st, inv, { action:'load', slot:'a', item:'Lingot de fer', qty:10 }).ok);
-  assert.ok(op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:30 }).ok);
+  assert.ok(op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:25 }).ok);
   assert.ok(op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:120 }).ok);
   assert.ok(canRun(f));
   advance(f, T0 + 3*MIN - 1);
@@ -213,7 +213,7 @@ test('alliage : ingrédients dans n\'importe quel ordre ; mauvaises cases et mé
   op(st, inv, { action:'mode', mode:'alloy' });
   assert.equal(op(st, inv, { action:'load', slot:'ore', item:'Fer', qty:10 }).error, 'bad_slot', 'pas de case minerai en Alliage');
   assert.equal(op(st, inv, { action:'load', slot:'a', item:'Fer', qty:10 }).error, 'bad_item', 'le fer brut n\'entre dans aucun alliage');
-  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Chitine', qty:20 }).ok);
+  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Chitine', qty:15 }).ok);
   assert.equal(op(st, inv, { action:'load', slot:'b', item:'Chitine', qty:20 }).error, 'no_recipe', 'deux fois le même ingrédient');
   assert.ok(op(st, inv, { action:'load', slot:'b', item:'Lingot de fer', qty:5 }).ok);
   op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:50 });

@@ -34,6 +34,17 @@ Modèle d'entrée :
   aucune source.
 - **État** : 🧪 sur la branche `geoffrey/tour-boss` (pas en ligne)
 
+## 25/10/2026 — Geoffrey — Tainted iron : 15 chitine au lieu de 20
+- **Pour le joueur** : l'alliage Tainted iron demande **15 chitine** (avant 20), toujours avec 5 lingots de fer,
+  50 charbons et 3 min. Toutes les pièces en fer coûtent donc un quart de chitine en moins.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Groupe : donner le lead même en session
+- **Pour le joueur** : le chef peut donner sa place de chef (★) même pendant une session. Retirer un membre (×) reste
+  impossible pendant une session.
+- **État** : ✅ en ligne le 25/10
+
+
 ## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
 - **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
   serveur, sans le redémarrer : `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175`.

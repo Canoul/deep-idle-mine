@@ -111,6 +111,13 @@ export function lobbyCards({ view, mode, dev = false }){
   return { judgment:jv, mi:!jv && mi, team:!mi || jv, launch:!jv, prefs:!jv && !mi && !tower, dev:!jv && !mi && dev };
 }
 
+/* boutons du chef sur la place d'un autre membre : nommer chef (★) même pendant une session (25/10/2026 ; le serveur
+   l'accepte, sauf pendant le lancement), retirer (×) seulement hors session */
+export function slotButtons({ account, party, session }, slot){
+  const leader = !!party && party.leader === account?.id && !slot.me && slot.kind !== 'free';
+  return { promote: leader && slot.kind !== 'invited', kick: leader && !session };
+}
+
 /* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
@@ -123,7 +130,6 @@ export function setupLobby(h){
     const { account, offline, info, party } = st;
     const locked = !!st.session;
     if(locked) st.inviteOpen = false;
-    const lead = party && party.leader === account?.id && !locked;      // retirer / annuler : pas pendant une session
     $('lobby').classList.toggle('locked', locked);
     $('lobbySession').hidden = !locked;
     $('teamTitle').textContent = locked ? 'Ton groupe' : 'Équipe de la prochaine session';
@@ -149,13 +155,13 @@ export function setupLobby(h){
         return `<div class="pslot free"><span class="av">${pxi('person')}</span><span><b>Place libre</b><small>Invite un ami</small></span></div>`;
       if(s.kind === 'invited')
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
-               (lead ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
+               (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
       const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+
-             (lead && !s.me ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>`+
-                              `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
+             (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
+             (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Retirer du groupe">×</button>` : '')+`</div>`;
     }).join('');
     /* sprite de chaque joueur, avec son équipement */
     $('lobbySlots').querySelectorAll('canvas').forEach(c => drawPortrait(c, portraitLook(slots[+c.dataset.slot], h.look?.() ?? {}), portraitAuras(slots[+c.dataset.slot], h.auras?.() ?? {})));

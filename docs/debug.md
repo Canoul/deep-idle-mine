@@ -2617,6 +2617,20 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : pas d'opId, mais rejouer la même commande donne le même résultat (on règle une valeur, on n'ajoute
   pas). `--count 200` ouvre la tour tout de suite (ou dès la fermeture de l'autre).
 
+### Groupe : ★ nommer chef pendant une session (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Cause** : `src/ui/lobby.js` cachait ★ et × avec le même drapeau `lead` (faux pendant une session). Le serveur
+  (`server/party/service.js` `promote`) acceptait déjà, sauf pendant le lancement (`noChange`).
+- **Correction** : fonction pure `slotButtons({ account, party, session }, slot)` → `{ promote, kick }` : ★ pour le chef
+  sur un autre membre, même en session ; × hors session seulement (membre ou invité).
+- **Tests** : `tests/lobby.test.js` +1 ✅ (15), `tests/party.test.js` ✅. ⚠️ Pas regardé dans un vrai navigateur.
+
+### Tainted iron : 15 chitine (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `FURNACE.alloys` Tainted iron `in.Chitine` 20 → 15 (`src/config.js`) ; GAME_DESIGN (tableau des alliages) ;
+  commentaire de `src/meta/furnace.js` ; wiki (tableau généré, date du bandeau).
+- **Tests** : `tests/furnace.test.js` adapté (recette 15 ; chitine chargée 30 → 25 pour garder « la chitine limite à
+  1 alliage » ; 20 → 15 pour finir les cases vides) ✅ (21) ; anticheat furnace, game-service, wiki ✅ ; `npm run
+  test:anticheat` ✅ (89).
+
 ### Tour céleste : boss, étages de blocs, affichage fluide, mode dev (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-boss`
 - **Affichage** : la tour remplaçait sa copie à chaque envoi (250 ms) sans interpolation → sauts. `applyTowerView(v, prev,
   now)` (`src/shared/tower-view.js`) réutilise `glide` (exporté de `src/shared/view.js`) pour mineurs, mobs et boss
@@ -2646,3 +2660,4 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `contactSide` 'in' compte comme contact pour le focus (le boss ne marche pas s'il est dedans) ;
   un mineur dans la hitbox ne peut pas être « derrière » : la projection part du centre du boss. L'occultiste n'existe
   pas dans la tour. ⚠️ Pas regardé dans un vrai navigateur par Claude (Geoffrey l'a lancé en local).
+

@@ -542,7 +542,7 @@ export const FURNACE = {
     'Graphite ore': { out:'Graphite ingot', time:60, tex:'ingot_graphite' },        // 23/10, Geoffrey
   },
   alloys: [
-    { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':20 }, fuel:50, time:180, tex:'ingot_tainted' },
+    { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
     { out:'Tainted gold', in:{ 'Lingot d\'or':5,  'Peau de gobelin':20 }, fuel:50, time:180, tex:'ingot_tainted_gold' },
     { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':10 },  fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey
   ],
