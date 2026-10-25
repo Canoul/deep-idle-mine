@@ -2935,5 +2935,8 @@ Règles (voir CLAUDE.md) :
   **identique** avec et sans les effets (sans glyphe posé, rien ne change). Rendu vérifié dans Edge sans fenêtre :
   onglet Skills (posé, à poser, inactif, sans case) et tableau du wiki (le premier rendu affichait les cellules
   séparées par des virgules : corrigé avec `tr()`).
+- **Relecture finale** (auto-relecture, pas de relecteur indépendant) : Glyphe Mule appliqué en mine instantanée et dans
+  les tours → corrigé (`withGlyphStats(carac, effects, mine)` : `false` en MI et en tour) ; test « Glyphe Mule : seulement
+  dans la mine classique » rouge puis vert ; 313/313 + anti-triche 91/91.
 - **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
   parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).

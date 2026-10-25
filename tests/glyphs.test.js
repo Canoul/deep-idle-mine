@@ -232,3 +232,14 @@ test('fiche d\'un glyphe (inventaire) : skill visé, effet, où le poser ; rien 
   assert.equal(glyphInfo(RUSH), `Skill « Ruée » : ${GLYPHS.desc.ore_rush}. À poser dans l'onglet Skills (skill au rang max).`);
   assert.equal(glyphInfo('Charbon'), null);
 });
+
+test('Glyphe Mule : seulement dans la mine classique (son skill n\'agit pas en mine instantanée ni dans les tours)', async () => {
+  const { instantSpecs } = await import('../src/shared/instant.js');
+  const { towerSpecs } = await import('../src/shared/tower.js');
+  const skills = { tree:'logisticien', ranks:{ travel_rush:3, tall_ladder:1, winch:1, winch_speed:5, mule:1 }, glyphs:{ mule:'Glyphe Mule' } };
+  const rec = { seed:1, players:[{ account:'A', name:'Geo' }], skills:{ A:skills } };
+  const k = 1 + GLYPHS.oxygenToSpeed * STATS.oxygenMax;
+  assert.ok(Math.abs(minerSpecs(rec)[0].carac.speed - STATS.speed * k) < 1e-9, 'mine classique : bonus');
+  assert.equal(instantSpecs(rec)[0].carac.speed, STATS.speed, 'mine instantanée : rien');
+  assert.equal(towerSpecs({ ...rec, mode:'tower_angel' })[0].carac.speed, STATS.speed, 'tour : rien');
+});

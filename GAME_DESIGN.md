@@ -228,7 +228,7 @@ Trois arbres **en étages** (3 étages chacun ; 4 pour le Barbare depuis le 22/1
   | Ruée | Le bonus de marche dure 5 s au lieu de 3 |
   | Navette | Pas d'oxygène consommé en redescendant au front après une remontée |
   | Échelle de 2 | Poser une échelle prend 2 fois moins de temps (mine, mine instantanée, tours) |
-  | Mule | Marche et montée + 3 % de l'oxygène max, en % (300 → +9 %) |
+  | Mule | Marche et montée + 3 % de l'oxygène max, en % (300 → +9 %) ; mine classique seulement (comme le skill) |
   | Force brute | Pods + 3 × les dégâts totaux, stuff et skills compris (14 → +42) |
   | Pillage | +1 % de dégâts par mob tué pour la session, au plus +25 % (mine classique) |
   | Braum | +30 % de l'oxygène max à **chaque entrée** dans un piège ou un donjon (seuil compris), sans limite |
