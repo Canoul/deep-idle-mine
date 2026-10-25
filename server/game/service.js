@@ -35,6 +35,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
+import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
@@ -415,13 +416,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const ok = [];
         for(const p of players) if(!await activeOf(p.account)) ok.push(p);
         if(!ok.length) return null;
-        const looks = {}, skills = {};
+        const looks = {}, gear = {}, skills = {};
         for(const p of ok){
           skills[p.account] = skillRanks(await loadSkills(p.account));
-          looks[p.account] = lookOf(await loadStuff(p.account, await loadInventory(p.account)));
+          const st = await loadStuff(p.account, await loadInventory(p.account));
+          looks[p.account] = lookOf(st);
+          gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
         }
         const rec = {
-          id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, skills, overrides: null,
+          id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, gear, skills, overrides: null,
           dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [], clock: null,
         };
@@ -810,6 +813,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
+    aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
       .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),

@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Aura du stuff runé
+- **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
+  s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en
+  R4-R5, moyen en R6, fort en R7. On le voit dans la mine, la mine instantanée, les tours, et sur les portraits (barre
+  du haut, lobby, onglet Stuff). Purement visuel.
+- **Décisions** (Geoffrey) : pièce ET rune R4+, la plus basse des deux donne couleur et force (en pratique la rune,
+  qui ne dépasse jamais la pièce) ; un fragment de rune ne compte pas ; halo dessiné derrière le mineur pour ne jamais
+  cacher sa texture ; visible partout.
+- **À suivre** : regarder en vrai en jeu si le halo « faible » se voit assez à la taille de la mine (réglable en
+  config, `AURA.looks`).
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Combats plus vivants : portée, recul, tacle refondu
 - **Pour le joueur** : les combats bougent. Chaque coup du mineur **repousse le mob d'un quart de bloc** ; le mob
   revient au contact, le mineur le suit. On frappe dès qu'on est à **un demi-bloc** (plus besoin d'être collé), jamais
@@ -38,7 +50,6 @@ Modèle d'entrée :
 - **Pour le joueur** : rien. Outil des créateurs : `give-item.js` peut maintenant donner une pièce de stuff déjà
   identifiée dans la qualité voulue (`--quality 5` → un Plastron en fer R5), toujours sans redémarrer le jeu.
 - **État** : ✅ en ligne le 25/10
-
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
