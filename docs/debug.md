@@ -2917,3 +2917,20 @@ Règles (voir CLAUDE.md) :
   autre stat (écart < 12 %), une au plus, jamais en R5 ; double attaque 0 % / 100 % : 1 / 2 coups, un seul recul) ✅ ;
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
+
+### Case Torche, Lampe à incandescence (Geoffrey, 25/10 soir) — 🧪 branche `geoffrey/lampe-incandescence`
+- **Config** : `STUFF.slots` + `torche` ; `STUFF.items['Lampe à incandescence']` (`stats.torches` 10, `set` torchRadius 8 et
+  torchTime 0,5 : l'amélioration agit sur `set` comme sur les autres pièces) ; `STATS.torchTime` (1 s) remplace
+  `CFG.torchTime` ; libellés, unités, `shownStats` (+ torchRadius, torchTime) ; rareté épique ; `TEXTURES` +
+  `lamp_incandescent` (`scripts/gen_textures.py`, seule texture nouvelle, les autres inchangées). Recette
+  `src/recipes.js`, `unlock: null`.
+- **Rayon par torche** : `G.torches[i].r` = `m.carac.torchRadius` à la pose (`src/sim/actions.js`, tour
+  `src/sim/tower/session.js`) ; `src/sim/light.js` et `towerLight` (`src/sim/tower/world.js`) lisent `T.r ??
+  STATS.torchRadius` (anciennes parties). Vue de la tour : `torchR` à côté de `torches` (`src/shared/tower-view.js`) ;
+  la mine envoie les objets torche tels quels. Temps de pose : `m.carac.torchTime` (IA mine x2, tour).
+- **Interface** : grille du Stuff sur 7 rangées (`.stuffGrid`, `.stuffHero` 1/8) ; wiki : textes des 2 stats.
+- **Tests** : `tests/lamp.test.js` (nouveau, 5 : case, recette sans BP, stats, mine 0,5 s et rayon 8 vs 5, tour + vue),
+  `tests/stuff.test.js` (13 cases), `tests/rarity.test.js` (épique) ; lamp, wiki, stuff, carac, craft, light, tower,
+  tower-boss, view, skins, sets, rarity, amelioration, boot-check, miner, session, game-service, inventory,
+  give-item ✅ (210) ; `npm run test:anticheat` ✅ (90) ; simulation 5 sessions solo : coffre 1 598, 0 blocage.
+- ⚠️ Pas vu dans un vrai navigateur (13e case dans la grille, icône de la lampe).

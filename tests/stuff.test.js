@@ -13,9 +13,9 @@ function setup(picks = 1){
 }
 const uids = inv => inv.slots.filter(s => s?.item === PICK).map(s => s.uid);
 
-test('les 12 cases demandées (dont 2 d\'anneau, 23/10)', () => {
-  assert.deepEqual(SLOT_IDS, ['casque','torse','jambes','pieds','gants','ceinture','pioche','epee','cape','boussole','anneau1','anneau2']);
-  assert.equal(STUFF.slots.length, 12);
+test('les 13 cases demandées (dont 2 d\'anneau, 23/10 ; torche, 25/10)', () => {
+  assert.deepEqual(SLOT_IDS, ['casque','torse','jambes','pieds','gants','ceinture','pioche','epee','cape','boussole','anneau1','anneau2','torche']);
+  assert.equal(STUFF.slots.length, 13);
 });
 
 test('la case pioche propose les pioches de l\'inventaire, les autres cases rien', () => {

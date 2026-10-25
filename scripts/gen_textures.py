@@ -541,6 +541,21 @@ def main():
     rect(cmp, 5, 4, 2, 1, hexc('#ffffff'))                            # reflet
     tex['compass_gold'] = cmp
 
+    # lampe à incandescence (25/10/2026) : ampoule de verre, filament orange qui brille, halo, culot en laiton
+    lamp = blank()
+    for y in range(S):
+        for x in range(S):
+            d = (x - 7.5) ** 2 + (y - 6) ** 2
+            if d <= 30: lamp[y * S + x] = hexc('#ffe9a8', 110)                # halo
+            if d <= 18: lamp[y * S + x] = hexc('#fff6d6')                     # verre
+    rect(lamp, 6, 10, 4, 1, hexc('#fff6d6'))                          # col de l'ampoule
+    rect(lamp, 6, 5, 1, 4, hexc('#ff8a1a')); rect(lamp, 9, 5, 1, 4, hexc('#ff8a1a'))   # filament
+    rect(lamp, 7, 4, 2, 1, hexc('#ffd447')); rect(lamp, 7, 5, 2, 1, hexc('#fff1a8'))
+    rect(lamp, 5, 4, 1, 2, hexc('#ffffff'))                           # reflet
+    rect(lamp, 6, 11, 4, 3, hexc('#b8862b')); rect(lamp, 6, 12, 4, 1, hexc('#7a5a1c'))   # culot en laiton
+    rect(lamp, 7, 14, 2, 1, hexc('#4a3a1a'))                          # plot
+    tex['lamp_incandescent'] = lamp
+
     # shiny (lingot déjà cuit tombé à la mine) : le lingot plus clair, une étincelle à 4 branches et deux éclats
     for name, base, light, dark in [('shiny_iron', '#dfe3ea', '#ffffff', '#9aa0aa'),
                                     ('shiny_gold', '#ffd447', '#fffbe0', '#c9961f')]:

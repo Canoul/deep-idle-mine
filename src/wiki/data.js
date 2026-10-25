@@ -205,7 +205,8 @@ const STAT_HELP = {
   compass:    'Portée de la boussole : elle repère les minerais à gauche et à droite, sur sa ligne.',
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
-  torchRadius:'Distance éclairée par une torche (le long des galeries creusées).',
+  torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
+  torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
   reach:      "Portée de ses coups, en blocs, en plus de la portée de base (0,5) : il frappe un mob avant que celui-ci soit au contact, et il le touche encore après l'avoir repoussé. La Lance en fer en donne +0,25.",
@@ -219,7 +220,7 @@ const STAT_HELP = {
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
   looting:    "Chance, en %, d'un butin en plus à chaque mob tué (comme le skill Pillage).",
 };
-const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', doubleAttack:' %', reach:' bloc', knockback:' bloc', discoverMax:' blocs',
+const STAT_UNIT = { torchTime:' s', oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', doubleAttack:' %', reach:' bloc', knockback:' bloc', discoverMax:' blocs',
   mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };
 export function statRows(){
