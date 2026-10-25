@@ -1,7 +1,7 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
-import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH } from '../config.js';
+import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS } from '../config.js';
 import { lumAt } from './light.js';
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
@@ -60,7 +60,7 @@ export const moveT  = (G,m) => 1/(m.carac.speed*dk(G,m)*walkBoost(G,m));
 export const climbT = (G,m) => 1/(m.carac.climbSpeed*dk(G,m)*(1+helpBoost(m)));
 /* dans le puits du treuil : le seau, à WINCH.speedFactor × la vitesse de montée (dans les deux sens), × l'Escalateur
    du groupe (winchMult) */
-export const winchMult = G => 1 + (G.winchBoost || 0);
+export const winchMult = G => (1 + (G.winchBoost || 0))*(G.winch?.lift ? GLYPHS.liftSpeed : 1);   // ascenseur (Glyphe Treuil) : × liftSpeed
 export const winchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G)*dk(G,m)*(1+helpBoost(m)));
 /* vitesse de minage : (base + bonus fixes) × (1 + bonus en %) (stats d'amélioration, src/meta/piece.js) */
 export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100);
@@ -77,7 +77,11 @@ export const baseClimbT = m => 1/m.carac.climbSpeed;
 export const baseWinchT = (G,m) => 1/(m.carac.climbSpeed*WINCH.speedFactor*winchMult(G));
 /* temps de PLANIFICATION d'une nouvelle échelle : une sur deux est déjà posée avec l'échelle de 2
    de haut (tall_ladder : en moyenne moitié moins d'échelles à poser pour monter) */
-export const baseLadderT = m => CFG.ladderTime*(m.skill.tall_ladder ? 0.5 : 1);
+/* pose d'une échelle (s) : Glyphe Échelle de 2 → × GLYPHS.ladderMult (mine, mine instantanée, tours) */
+export const ladderTime = m => CFG.ladderTime*(m.skill?.glyph_tall_ladder ? GLYPHS.ladderMult : 1);
+/* durée du bonus de Ruée (s) : Glyphe Ruée → GLYPHS.rushTime */
+export const rushTime = m => m.skill?.glyph_ore_rush ? GLYPHS.rushTime : SKILLS.rushTime;
+export const baseLadderT = m => ladderTime(m)*(m.skill.tall_ladder ? 0.5 : 1);
 export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 
 /* ---- actions ---- */

@@ -242,6 +242,9 @@ function level(){
     t.nodes.map(n => `<div class="node"><span class="i">${n.icon}</span><span><b>${esc(n.name)}</b> <span class="mut small">· étage ${n.row} · ${n.max} rang${n.max > 1 ? 's' : ''}${n.needsAll ? ' · exige toutes les cases de l\'étage d\'avant' : ''}</span></span>` +
       `<small>${esc(n.desc.replace('{v}', n.perText ? `${f(Math.round(n.per * 1000) / 10)} %` : '').replace(/\s+/g, ' '))}${n.perText && n.max > 1 ? ` par rang (max : ${esc(n.maxText.match(/[+−-]?\d+(,\d+)? %/)?.[0] ?? '')})` : ''}</small></div>`).join('') +
     '</div>').join('')}</div>`;
+  /* glyphes (GLYPHS, 25/10) : un par skill visé */
+  $('w-glyphs').innerHTML = table(['Glyphe', 'Skill', 'Arbre', 'Effet'],
+    D.glyphRows().map(r => tr([`<img src="textures/glyph.png" alt=""> ${esc(r.item)}`, `<b>${esc(r.skill)}</b>`, esc(r.tree), esc(r.desc)])));
 }
 
 /* ---------- sorts ---------- */

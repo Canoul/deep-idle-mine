@@ -1,6 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
@@ -8,8 +8,8 @@ import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
 import { updateMobs, tackler, channeler } from './mobs.js';
-import { updateDungeons } from './dungeon.js';
-import { updateTraps, veiled } from './trap.js';
+import { updateDungeons, isIn } from './dungeon.js';
+import { updateTraps, veiled, inTrapRoom } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
 import { afterDecide, updateSpells } from './spells.js';
@@ -68,7 +68,8 @@ function stepMiner(G,m){
     m.ox=Math.min(m.carac.oxygenMax, m.ox+CFG.refillRate*DT);
     m.torches=m.carac.torches; m.bridges=m.carac.bridges;
   } else {
-    m.ox=Math.max(0,m.ox-DT);
+    /* Glyphe Navette : pas d'oxygène consommé quand il redescend au front après être remonté */
+    if(!(m.skill.glyph_travel_rush && (m.mode==='departure' || m.goingDown))) m.ox=Math.max(0,m.ox-DT);
   }
   let budget = DT*(m.ox<=0?CFG.oxygenOutSlow:1), guard=0;
   while(budget>1e-9 && guard++<30){
@@ -83,10 +84,23 @@ function stepMiner(G,m){
    (36 000 additions de 0,1 donnent 3599,9999999978 : la session ne se terminait jamais au dernier tick) */
 export const SESSION_TICKS = Math.round(SESSION_LEN/DT);
 
+/* Glyphe Braum : à chaque entrée (dehors → dedans) dans la salle d'un piège ou un donjon (seuil compris), il regagne
+   GLYPHS.braumOxygen de son oxygène max (plafonné). m.braumIn : où il était au tick d'avant (rester dedans : rien). */
+function braumGlyph(G){
+  for(const m of G.miners){
+    if(!m.skill.glyph_braum) continue;
+    const d=G.dungeons?.find(o => isIn(o,m)), t=d ? null : G.traps?.find(o => inTrapRoom(o,m.x,m.y));
+    const at=d ? 'd'+d.id : t ? 't'+t.id : null;
+    if(at && at!==m.braumIn) m.ox=Math.min(m.carac.oxygenMax, m.ox+GLYPHS.braumOxygen*m.carac.oxygenMax);
+    m.braumIn=at;
+  }
+}
+
 export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners) stepMiner(G,m);
+  braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);

@@ -6,6 +6,7 @@ import { INSTANT_MINE as MI, DT } from '../config.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
+import { withGlyphStats } from '../meta/glyphs.js';
 import { newInstant, leaveInstant, INSTANT_TICKS } from '../sim/instant/session.js';
 
 const HOUR = 3600e3;
@@ -66,7 +67,7 @@ export function instantSpecs(record){
     const st = sanitizeSkills(record.skills?.[p.account]), skills = skillEffects(st);
     return { name: String(p.name || '').slice(0, 24) || 'Joueur ' + (i + 1), account: p.account, look,
              auras: aurasOf(sanitizeGear(record.gear?.[p.account])),
-             carac: withRings(withSkillStats(equippedStats(Object.values(look)), skills), ringsOf(Object.values(look))), skills, skillTree: st.tree };
+             carac: withGlyphStats(withRings(withSkillStats(equippedStats(Object.values(look)), skills), ringsOf(Object.values(look))), skills, false), skills, skillTree: st.tree };   // pas de Glyphe Mule ici
   });
 }
 

@@ -65,7 +65,7 @@ export function createRenderer(cv){
           if(y===1&&t!==1){ ctx.fillStyle='#4caf50'; ctx.fillRect(px,py,TILE,3); }
         }
         if(G.ladder[y][x]&&t===0) blit('ladder',px,py);
-        if(t===0 && G.winch && x===G.winch.x && y>=1 && y<=G.winch.bottom) blit('winch_rope',px,py);   // puits du treuil
+        if(t===0 && G.winch && x===G.winch.x && y>=1 && y<=G.winch.bottom) blit(G.winch.lift ? 'lift_rail' : 'winch_rope',px,py);   // puits du treuil (ou rails de l'ascenseur)
         if(y>1){
           const al = 0.72*(1-Math.min(1,lightShown(G,x,y)));
           if(al>0.005){ ctx.fillStyle='rgba(0,0,0,'+al.toFixed(2)+')'; ctx.fillRect(px,py,TILE,TILE); }
@@ -77,7 +77,7 @@ export function createRenderer(cv){
     ctx.strokeStyle='rgba(255,215,64,.9)'; ctx.lineWidth=1;
     for(const o of fm.pings){ if(G.tiles[o.y]&&G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
     blit('chest',CHEST_X*TILE,sy(0));
-    if(G.winch) blit('winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil en surface
+    if(G.winch) blit(G.winch.lift ? 'lift_top' : 'winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil (machinerie de l'ascenseur) en surface
     if(G.mule){                                            // sac de la Mule : sur sa case, jauge de remplissage au-dessus
       const px=G.mule.x*TILE, py=sy(G.mule.y), f=G.mule.cap>0 ? Math.min(1,G.mule.load/G.mule.cap) : 1;
       blit('backpack',px,py);
@@ -135,7 +135,7 @@ export function createRenderer(cv){
     for(const g of groups.values()) g.forEach((m,i)=>shift.set(m,(i-(g.length-1)/2)*5));
     const order=G.miners.filter(m=>m!==fm).concat([fm]);
     for(const m of order){ const [mx,my]=pos.get(m);
-      if(m.action?.data?.winch) blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // dans le seau du treuil
+      if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
   }
 

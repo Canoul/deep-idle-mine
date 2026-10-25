@@ -422,6 +422,42 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
    Un nœud : id, max (rangs), per (valeur par rang ; 1 = interrupteur), desc (texte, {v} = valeur au rang actuel).
    adds (facultatif) : { stat: points par rang } ajoutés aux STATS du mineur (ex. ténacité en %) ; {stat} dans desc.
    Les effets sont figés au lancement de la session (comme le stuff). Valeurs provisoires. */
+/* ---- Glyphes (src/meta/glyphs.js ; spec docs/superpowers/specs/2026-10-25-glyphes-design.md) ----
+   25/10/2026 (Geoffrey) : un glyphe est un parchemin lié à un skill (items : nœud → nom de l'objet). Posé à côté de ce skill
+   dans l'onglet Skills (skill au rang max), il ajoute un effet. Retirable hors session (il revient dans l'inventaire) ; un
+   reset ou un set ne le retire pas (il reste posé, inactif tant que le skill n'est pas au max). Pas encore de source en jeu
+   (outil d'admin). Valeurs provisoires :
+   attackToMine : Pioche aiguisée, minage % += attackToMine × (vitesse d'attaque − 100) ; torchChance : Second souffle,
+   chance qu'un minerai rende une torche (jamais au-delà du max) ; rushTime : Ruée, durée du bonus (s) ; Navette : pas
+   d'oxygène consommé en redescendant au front ; ladderMult : Échelle de 2, temps de pose × ; oxygenToSpeed : Mule, marche
+   et montée × (1 + oxygenToSpeed × oxygène max) ; damageToPods : Force brute, pods += × dégâts (totaux) ;
+   killDamagePct / killDamageMax : Pillage, dégâts % par mob tué, plafond ; braumOxygen : Braum, part de l'oxygène max
+   regagnée à chaque entrée dans un piège ou un donjon. */
+export const GLYPHS = {
+  items: { mine_speed:'Glyphe Pioche aiguisée', ore_oxygen:'Glyphe Second souffle', ore_rush:'Glyphe Ruée',
+           travel_rush:'Glyphe Navette', tall_ladder:'Glyphe Échelle de 2', mule:'Glyphe Mule', damage:'Glyphe Force brute',
+           loot:'Glyphe Pillage', braum:'Glyphe Braum', winch:'Glyphe Treuil' },
+  attackToMine:0.1, torchChance:0.05, rushTime:5, ladderMult:0.5, oxygenToSpeed:0.0003, damageToPods:3,
+  killDamagePct:1, killDamageMax:25, braumOxygen:0.3, rarity:'epique', tex:'glyph',
+  /* Glyphe Treuil (étape 2) : un ascenseur liftSpeed × plus rapide que le treuil (Escalateur compris), posé / prolongé
+     un déblocage d'area sur liftEvery (1er, 3e, 5e…) ; dans les tours, un ascenseur au lieu du treuil */
+  liftSpeed:3, liftEvery:2,
+  desc: {
+    mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',
+    ore_oxygen:  'Miner un minerai a 5 % de chance de lui rendre une torche (jamais au-delà de son maximum)',
+    ore_rush:    'Le bonus de marche de Ruée dure 5 s au lieu de 3',
+    travel_rush: 'Il ne consomme pas d\'oxygène quand il redescend au front après être remonté',
+    tall_ladder: 'Poser une échelle lui prend 2 fois moins de temps',
+    mule:        '3 % de son oxygène max s\'ajoute en % à sa vitesse de marche et de montée (300 d\'oxygène = +9 %)',
+    damage:      'Ses dégâts (stuff et skills compris) s\'ajoutent 3 fois à ses pods (14 dégâts = +42 pods)',
+    loot:        'Chaque mob tué ajoute 1 % à ses dégâts pour la session (au plus +25 %)',
+    braum:       'À chaque entrée dans un piège ou un donjon, il regagne 30 % de son oxygène max',
+    winch:       'Il pose un ascenseur au lieu d\'un treuil : 3 fois plus rapide, posé ou prolongé une nouvelle area sur deux (1re, 3e, 5e…) ; dans les tours aussi',
+  },
+};
+const GLYPH_ITEMS = Object.fromEntries(Object.entries(GLYPHS.items).map(([node, name]) =>
+  [name, { cat:'glyph', tex:GLYPHS.tex, w:1, stack:true, glyph:node }]));
+
 export const SKILLS = {
   /* Arbres en étages : chaque nœud a son étage (row, 1 = en haut). Plusieurs nœuds d'un même étage sont côte à côte.
      Un nœud de l'étage r > 1 exige qu'AU MOINS UN nœud de l'étage r−1 de son arbre soit au rang max (les lignes de
@@ -525,7 +561,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack','scroll'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -674,6 +710,7 @@ export const RARITY = {
   ],
   default: 'commun',
   items: {
+    ...Object.fromEntries(Object.values(GLYPHS.items).map(n => [n, GLYPHS.rarity])),   // glyphes (25/10)
     [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
@@ -870,6 +907,7 @@ export const ITEMS = {
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },
   /* parchemins de sorts (SPELLS) : appris dans l'onglet Sorts (consommés) ; aucune source pour l'instant (24/10) */
   ...Object.fromEntries(SPELLS.list.filter(s => s.unlock.scroll).map(s => [s.unlock.scroll, { cat:'scroll', tex:'scroll', w:1, stack:true }])),
+  ...GLYPH_ITEMS,                                                                       // glyphes (GLYPHS, 25/10)
   [DUCK.heart.item]: { cat:'material',  tex:DUCK.heart.tex, w:1, stack:true },             // laissé par le Gallianix (DUCK)              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)

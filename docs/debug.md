@@ -2917,3 +2917,40 @@ Règles (voir CLAUDE.md) :
   autre stat (écart < 12 %), une au plus, jamais en R5 ; double attaque 0 % / 100 % : 1 / 2 coups, un seul recul) ✅ ;
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
+
+### Glyphes, étape 1 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Spec / plan** : `docs/superpowers/specs/2026-10-25-glyphes-design.md`, `docs/superpowers/plans/2026-10-25-glyphes.md`.
+- **Quoi** : `GLYPHS` + 9 objets `cat:'glyph'` (épiques, texture `glyph`). `src/meta/glyphs.js` : `glyphOf`, `nodeOfGlyph`,
+  `glyphOp` (pose / retrait, idempotent via `st.ops`), `isActive`, `activeGlyphs`, `sessionSkills`, `withGlyphStats`,
+  `glyphInfo`. `src/meta/skills.js` : `st.glyphs` relu par `sanitizeSkills` (nœud + nom exact, rang NON vérifié),
+  `skillEffects` ajoute `glyph_<nœud>: 1` si actif. Serveur : route `skills` actions `glyph_pose` / `glyph_remove`
+  (verrous inv + skills, refus en session, `store.putInventoryAndSkills`) ; `publicSkills.glyphs = { nœud: objet }` ;
+  lancement mine / tour / MI : `sessionSkills` (glyphes actifs figés). Stats : `withGlyphStats` en dernier
+  (game.js, instant.js, onglet Stuff). Partie : Second souffle et Ruée (`actions.js` `oreSkills`, `rushTime`), Navette
+  (`session.js`, oxygène), Échelle de 2 (`ladderTime` : actions, instant, tower, `baseLadderT`), Pillage (`killMob`,
+  `m.pillage`, `hitDamage`), Braum (`session.js` `braumGlyph`, `m.braumIn`). UI : case `glyphSlot` dans `skills.js`,
+  fiche inventaire, section wiki `#glyphes`.
+- **Tests** : `tests/glyphs.test.js` (25), `tests/anticheat/glyphs.test.js`, `tests/game-service.test.js` (+1),
+  `tests/wiki.test.js` (+1), `tests/rarity.test.js` (glyphes épiques). Simulation `--miners 3 --count 5` : 0 bloquée,
+  **identique** avec et sans les effets (sans glyphe posé, rien ne change). Rendu vérifié dans Edge sans fenêtre :
+  onglet Skills (posé, à poser, inactif, sans case) et tableau du wiki (le premier rendu affichait les cellules
+  séparées par des virgules : corrigé avec `tr()`).
+- **Relecture finale** (auto-relecture, pas de relecteur indépendant) : Glyphe Mule appliqué en mine instantanée et dans
+  les tours → corrigé (`withGlyphStats(carac, effects, mine)` : `false` en MI et en tour) ; test « Glyphe Mule : seulement
+  dans la mine classique » rouge puis vert ; 313/313 + anti-triche 91/91.
+- **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
+  parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).
+
+### Glyphe Treuil, étape 2 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `GLYPHS.items.winch`, `liftSpeed` (3), `liftEvery` (2), textures `lift_rail`, `lift_top`, `lift_cabin` (cabine
+  vide au milieu : on voit le mineur). `src/sim/world.js` `tryUnlock` : porteur du glyphe prioritaire, `winchJob.lift`,
+  `return` sans chantier aux déblocages k impair ; `ai.js` `decideWinch` : `G.winch.lift = true` (une fois posé, reste) ;
+  `mineur.js` `winchMult` × `liftSpeed` si `G.winch.lift` (tous les calculs du seau : déplacement, chemins, Mule).
+  Tours : `towerWinchT` = même `winchMult`, `winchSetup` pose `lift` si `glyph_winch`. Rendu `canvas.js` / `tower.js`.
+  `scripts/simulate.js` : option `--glyphs`.
+- **Tests** : `tests/glyphs.test.js` (+4 : priorité et rythme, sans glyphe inchangé, chantier + vitesse Escalateur
+  compris, tours) ; glyphs, tower, winch, mule, focus, duck, treasure ✅. Simulation `--miners 3 --skills mixed --count 5` :
+  sans glyphe areas 3,2 / prof 201 / coffre 4 510 ; `--glyphs winch` areas 4,0 / prof 226 / coffre 4 926 ; 0 bloquée.
+  Rendu des textures vérifié dans Edge (rails, machinerie, cabine, à côté du treuil).
+- **Point fragile** : `G.winch.lift` reste vrai une fois posé (un treuil prolongé ensuite par un logisticien sans glyphe,
+  s'il quitte, resterait un ascenseur) ; sans glyphe, `G.winch` n'a pas de clé `lift` (tests du treuil inchangés).

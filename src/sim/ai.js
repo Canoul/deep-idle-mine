@@ -512,10 +512,11 @@ function decideWinch(G,m){
     if(isCarrier(G,m) && mulePlaced(G) && nearMule(G,m.x,m.y) && G.mule.y<job.bottom){ m.status='Ramasse son sac'; startAction(m,'mulePick',MULE.pickTime,{}); return; }
     if(m.y>=job.bottom){
       G.winch={ x:WINCH.x, bottom:Math.max(G.winch?.bottom ?? 0, m.y) };
+      if(job.lift || G.winch.lift) G.winch.lift=true;   // Glyphe Treuil : un ascenseur (une fois posé, il le reste)
       /* il retire les échelles du puits : le treuil prend toute la colonne, de la surface jusqu'en bas */
       let removed=0;
       for(let y=1;y<=G.winch.bottom;y++) if(G.ladder[y][WINCH.x]){ G.ladder[y][WINCH.x]=0; removed++; }
-      log(G, `🪣 ${m.name} a posé le treuil : de la surface jusqu'à la couche ${G.winch.bottom}`+(removed ? ` (${removed} échelle${removed>1?'s':''} retirée${removed>1?'s':''})` : ''));
+      log(G, `🪣 ${m.name} a posé ${G.winch.lift ? 'l\'ascenseur' : 'le treuil'} : de la surface jusqu'à la couche ${G.winch.bottom}`+(removed ? ` (${removed} échelle${removed>1?'s':''} retirée${removed>1?'s':''})` : ''));
       m.winchJob=null; m.winchDepth=null; m.mode='work';
       m.muleJob=muleAfterWinch(G,m);   // Mule : il pose son sac à côté du bas du treuil (null : pas de sac à poser)
       return m.muleJob ? decideMulePlace(G,m) : decideWork(G,m);

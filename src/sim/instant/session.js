@@ -7,6 +7,7 @@
 import { INSTANT_MINE as MI, DT, STATS, BLOCKS, ITEMS, SHINY, FORTUNE, SKILLS } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { shinyOf, fortuneExtra } from '../actions.js';
+import { rushTime } from '../mineur.js';
 import { log } from '../log.js';
 import { genInstantMine, spawnColumns } from './world.js';
 import { decide, miSupported } from './ai.js';
@@ -113,7 +114,7 @@ function mineCell(G, m, x, y){
   if(shiny){ G.stats.shiny++; m.stats.shiny++; log(G, `✨ ${m.name} trouve un ${shiny} !`); }
   const extra = fortuneExtra(G, m);
   collect(m, got, 1 + extra); m.stats.fortune += extra;
-  if(m.skill.ore_rush) m.rushUntil = G.t + SKILLS.rushTime;
+  if(m.skill.ore_rush) m.rushUntil = G.t + rushTime(m);   // Glyphe Ruée compris
   if(m.target && m.target.x === x && m.target.y === y) m.target = null;
   for(const o of G.miners) if(o !== m && o.action?.type === 'mine' && o.action.data.x === x && o.action.data.y === y) blockLost(G, o);
   /* le bloc portait quelqu'un (posé dessus, ou en train de poser une échelle) : il perd son action et tombe */
