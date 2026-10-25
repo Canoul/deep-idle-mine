@@ -18,7 +18,7 @@
 import crypto from 'node:crypto';
 import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
-import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
+import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
@@ -394,6 +394,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
+          devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
           ...(residues === false ? { residues: false } : {}),

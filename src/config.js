@@ -1104,6 +1104,11 @@ export const MOB_INFO = {
    viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
 export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
 
+/* Spécialisation imposée aux mineurs en mode développeur (25/10/2026, Geoffrey) : pour chaque place (les joueurs du
+   groupe dans l'ordre, puis les mineurs de test), un arbre de skills et un niveau ; l'arbre est rempli étage par étage
+   avec les points de talent de ce niveau (niveau − 1). Ne touche ni aux skills du compte ni à l'XP. Bornes du niveau. */
+export const DEV_SPEC = { minLevel:1, maxLevel:30 };
+
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
 export const DEV_TUNABLES = [

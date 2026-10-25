@@ -3,7 +3,7 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_SPEC, STATS, CFG, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
@@ -347,13 +347,23 @@ export function setupLobby(h){
   /* panneau dev : réglages appliqués à la session lancée (le serveur les vérifie et les borne) */
   $('devStats').innerHTML = DEV_TUNABLES.map(([obj, key, label, min, max]) =>
     `<span>${esc(label)}</span><input type="number" step="any" min="${min}" max="${max}" data-obj="${obj}" data-key="${key}" data-base="${TARGETS[obj][key]}" value="${TARGETS[obj][key]}">`).join('');
+  /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
+  $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
+    `<span>Spé du mineur ${i + 1}</span><span class="devSpec"><select data-spec="${i}"><option value="">La sienne</option>${
+      SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(t.label)}</option>`).join('')}</select>` +
+    `<input type="number" data-level="${i}" min="${DEV_SPEC.minLevel}" max="${DEV_SPEC.maxLevel}" step="1" value="${DEV_SPEC.maxLevel}" title="Niveau (points de talent = niveau − 1)"></span>`).join('') +
+    `<p class="mut small devNote">Dans l'ordre : les joueurs du groupe, puis les mineurs de test. Le niveau remplit l'arbre étage par étage (points = niveau − 1).</p>`;
+  const devSpecs = () => Array.from({ length: GAME.maxPlayers }, (_, i) => {
+    const tree = $('devSpecs').querySelector(`[data-spec="${i}"]`).value, level = parseInt($('devSpecs').querySelector(`[data-level="${i}"]`).value, 10);
+    return tree ? { tree, level: Math.max(DEV_SPEC.minLevel, Math.min(DEV_SPEC.maxLevel, Number.isSafeInteger(level) ? level : DEV_SPEC.maxLevel)) } : null;
+  });
   function devOptions(){
     const seed = parseInt($('devSeed').value, 10), overrides = {};
     for(const i of $('devStats').querySelectorAll('input')){
       const v = parseFloat(i.value);
       if(Number.isFinite(v) && v !== +i.dataset.base) (overrides[i.dataset.obj] ??= {})[i.dataset.key] = v;   // seulement ce qui change
     }
-    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides };
+    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs() };
   }
 
   $('launchBtn').onclick = async () => {
