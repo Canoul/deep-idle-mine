@@ -29,8 +29,10 @@ Modèle d'entrée :
 - **Chiffres** (5 sessions à 3 mineurs, k hole forcé à chaque area) : 9 k holes pris, 0 blocage ; 140 à 270 blocs minés
   dans la dimension par session ; par k hole, chaque mineur rapporte ≈ 15 à 20 fers et 13 à 20 ors, quelques graphites,
   parfois un diamant ou un treasure. Un tick dans la dimension coûte 0,05 ms contre 0,55 ms dans la mine.
-- **À suivre** : le tester en vrai (mode dev : « Chance de k hole par area » à 1) ; décider si ce qu'on porte est perdu
-  quand la session se termine pendant un k hole (règle actuelle) ; nom affiché.
+- **Fin de session** : à 30 s de la fin, le k hole se referme et le groupe revient à la surface, le temps de tout déposer
+  au coffre (rien de perdu sur 5 essais) ; un k hole découvert dans les 30 dernières secondes ne s'ouvre pas.
+- **À suivre** : le tester en vrai (mode dev : « Chance de k hole par area » à 1) ; décider quoi faire du « jackpot » en
+  area 0 (même contenu riche quelle que soit l'area) ; nom affiché.
 - **État** : 🧪 sur la branche `geoffrey/k-hole` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque

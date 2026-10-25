@@ -131,7 +131,8 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 - **Durée : 5 min** *(provisoire)*, **prise sur l'heure de session**.
 - **Règles dans la dimension** : l'oxygène **ne baisse pas** ; les pods **n'ont pas de limite** ; les mineurs **ne remontent jamais** (il n'y a pas de surface) : ils minent jusqu'à la fin du compteur. Rien ne s'y débloque, la profondeur atteinte ne compte pas, pas de focus d'area.
 - **Retour** : tout le groupe est **téléporté à la surface de la mine**, avec ce qu'il porte (il le dépose ensuite au coffre comme d'habitude). Pendant le k hole, **la mine est figée** (rien n'y bouge : mobs, seau, sac de la Mule) ; les mobs qui tenaient un mineur le lâchent. Le portail disparaît (case vide).
-- Fin de session ou départ d'un joueur pendant le k hole : on revient d'abord dans la mine, puis la règle normale s'applique (ce qu'on porte à la fin de la session est perdu).
+- **Fin de session** *(25/10/2026, Geoffrey)* : quand il reste **30 s** de session, le k hole se referme : le groupe est téléporté à la surface et a le temps de déposer son butin au coffre. Un k hole découvert dans les 30 dernières secondes ne s'ouvre pas.
+- Départ d'un joueur pendant le k hole : les autres continuent ; le dernier qui part termine la session (règle normale).
 
 ## 3. Le mineur
 

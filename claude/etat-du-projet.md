@@ -140,7 +140,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **K hole** (25/10, Geoffrey, branche `geoffrey/k-hole`) : portail enfoui (1 % par area), découvert → 3 s → tout le
   groupe dans une autre dimension 5 min (pris sur l'heure) : 25 × 25 à la profondeur de l'area, 5 colonnes d'arrivée vides,
   37 % pierre dure, 30 % fer, 20 % or, 8 % graphite, 3 % diamant, 1 donjon, 5 pièges, 1 % de treasures (de l'area) ; pas
-  d'oxygène consommé, pods sans limite, aucune remontée ; retour à la surface de la mine, mine figée entre-temps.
+  d'oxygène consommé, pods sans limite, aucune remontée ; retour à la surface de la mine, mine figée entre-temps ; à 30 s
+  de la fin de session, il se referme (le temps de déposer au coffre).
   Technique : échange de carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe

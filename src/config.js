@@ -1062,9 +1062,11 @@ export const DUNGEON = {
    et les treasures sont ceux de cette area) ; les spawnCols colonnes de gauche sont vides (arrivée, en bas à gauche) ;
    le reste suit comp (% des cases hors arrivée), puis 1 donjon (DUNGEON, minotaure), `traps` pièges (TRAP, mobs et PV de
    l'area, toujours posés) et treasurePct % de treasures (tier de l'area), sans mobs ailleurs. Pas d'oxygène consommé,
-   pods sans limite, aucune remontée : on attend la fin du compteur. */
+   pods sans limite, aucune remontée : on attend la fin du compteur.
+   endMargin (25/10, Geoffrey) : quand il reste endMargin s de session, le k hole se referme (retour à la surface, le
+   temps de déposer au coffre) ; un k hole découvert dans ces dernières secondes ne s'ouvre pas. */
 export const KHOLE = {
-  chance: 0.01, fromArea: 0, warn: 3, duration: 300,
+  chance: 0.01, fromArea: 0, warn: 3, duration: 300, endMargin: 30,
   w: 25, h: 25, spawnCols: 5,
   comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 },
   traps: 5, dungeons: 1, treasurePct: 1, attempts: 20,

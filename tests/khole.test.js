@@ -2,8 +2,8 @@
    règles : oxygène, pods, pas de remontée), mine figée, retour à la surface, fin de session et départ pendant le k hole, déterminisme, envoi au navigateur. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, KHOLE, KHOLE_BLOCK, DT, DUNGEON, TRAP, BARRIER, TREASURE_BLOCK, SPAWN_X } from '../src/config.js';
-import { newSession, tick, leaveSession, endSession } from '../src/sim/session.js';
+import { W, AREA_H, SESSION_LEN, KHOLE, KHOLE_BLOCK, DT, DUNGEON, TRAP, BARRIER, TREASURE_BLOCK, SPAWN_X } from '../src/config.js';
+import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../src/sim/session.js';
 import { genArea, tryUnlock, areaTop, treasureItem } from '../src/sim/world.js';
 import { buildDimension } from '../src/sim/khole.js';
 import { mobHp } from '../src/config.js';
@@ -167,4 +167,19 @@ test('envoi au navigateur : au changement de carte, la carte entière (à l\'all
   run(G, KHOLE.duration);
   v = view(v.tick);
   assert.equal(v.full, true); assert.equal(v.khole, null);
+});
+
+test('fin de session proche : le k hole se referme à endMargin s de la fin, le groupe dépose tout au coffre ; trop tard, il ne s\'ouvre pas', () => {
+  const { G } = opened();
+  G.ticks = SESSION_TICKS - Math.round((KHOLE.warn + 120) / DT); G.t = G.ticks * DT;
+  let until = null;
+  while(!G.over){ tick(G); if(G.khole && until == null) until = G.khole.until; }
+  assert.ok(Math.abs(until - (SESSION_LEN - KHOLE.endMargin)) < 1e-6);
+  assert.deepEqual(G.summary.lostBags, [], 'rien de perdu : tout est au coffre');
+  assert.ok(G.chest.Fer > 0 || G.chest.Or > 0, 'le butin de la dimension est au coffre');
+  const late = opened().G;
+  late.ticks = SESSION_TICKS - Math.round((KHOLE.endMargin - 5) / DT); late.t = late.ticks * DT;
+  run(late, KHOLE.warn + 1);
+  assert.equal(late.khole ?? null, null);
+  assert.equal(late.kholes[0].used, false);
 });

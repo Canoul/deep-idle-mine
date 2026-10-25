@@ -2971,3 +2971,11 @@ Règles (voir CLAUDE.md) :
   dimension, les mineurs suivent des filons et combattent les mobs des pièges ; sans barbare, personne n'entre au donjon.
 - **Points fragiles** : fin de session pendant un k hole = ce qu'ils portent est perdu (règle normale, à confirmer par
   l'équipe). Un mineur peut finir coincé (tout miné autour) : il attend, sans conséquence (retour au bout du compteur).
+
+### K hole : fin de session (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+- **Quoi** : `KHOLE.endMargin` (30 s) ; `enterKhole` : `until = min(t + duration, SESSION_LEN - endMargin)` ;
+  `updateKhole` : plus d'ouverture à partir de `SESSION_LEN - endMargin`. Remplace le point fragile de l'entrée précédente
+  (« fin de session pendant un k hole = ce qu'ils portent est perdu »).
+- **Tests** : `tests/khole.test.js` +1 (k hole ouvert 2 min avant la fin : retour à 3 570 s, `lostBags` vide, butin au
+  coffre ; découvert à 25 s de la fin : ne s'ouvre pas) ✅ (11). Sonde 5 seeds × 3 mineurs : 49 à 58 objets portés au
+  retour, rien de perdu.

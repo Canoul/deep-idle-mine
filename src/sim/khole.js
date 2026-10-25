@@ -14,7 +14,7 @@
    cases dans le coin gauche de la grille, entourées de barrière. Dans la dimension (G.khole), l'oxygène ne baisse pas,
    les pods n'ont pas de limite et l'IA ne remonte jamais (src/sim/session.js, src/sim/ai.js), rien ne se débloque
    (tryUnlock), pas d'apparition de mobs, pas de focus d'area, la profondeur ne compte pas. */
-import { W, IDS, BARRIER, SPAWN_X, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE_BLOCK } from '../config.js';
+import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE_BLOCK } from '../config.js';
 import { mulberry32, hash } from '../core/rng.js';
 import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, treasureItem } from './world.js';
 import { carve, registerDungeon } from './dungeon.js';
@@ -155,7 +155,9 @@ function placeMiner(m, x, y, status){
 export function enterKhole(G, h){
   h.used = true;
   const n = G.kholes.indexOf(h);
-  G.khole = { n, k: h.k, x: h.x, y: h.y, until: G.t + KHOLE.duration, world: take(G, WORLD) };
+  /* retour au bout de duration, ou quand il ne reste que endMargin s de session (le temps de déposer au coffre) */
+  const until = Math.min(G.t + KHOLE.duration, SESSION_LEN - KHOLE.endMargin);
+  G.khole = { n, k: h.k, x: h.x, y: h.y, until, world: take(G, WORLD) };
   const y = buildDimension(G, n, h.k);
   G.miners.forEach((m, i) => placeMiner(m, Math.min(i, KHOLE.spawnCols-1), y, 'Aspiré par le k hole'));
   G.realm = (G.realm || 0) + 1;            // la carte a changé : l'envoi suivant au navigateur est la carte entière
@@ -187,6 +189,7 @@ export function inMine(G, fn){
 /* à chaque tick : découverte d'un k hole (il s'ouvre), aspiration au bout de KHOLE.warn s, retour au bout de duration */
 export function updateKhole(G){
   if(G.khole){ if(G.t >= G.khole.until - 1e-9) exitKhole(G); return; }
+  if(G.t >= SESSION_LEN - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
   for(const h of G.kholes || []){
     if(h.used) continue;
     if(h.opensAt == null){
