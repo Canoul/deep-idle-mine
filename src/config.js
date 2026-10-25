@@ -1095,7 +1095,7 @@ export const TOWER = {
      l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
      le taclent à portée (COMBAT, 25/10) ; toutes les hitEvery s ils repoussent le mineur taclé de knock blocs. La porte
      du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
-  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25, knockStun: 0.5 },   // knockStun : repoussé, il reste sur place ce temps (s) avant de revenir (25/10)
+  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25, knockRes: -100 },   // knockRes : résistance au recul en % (−100 = le double : 0,5 bloc par coup normal ; 25/10 soir, remplace le temps sonné de 0,5 s)
   blockFront: 1,      // étage « blocs » : les mineurs ne visent que les blocs des colonnes pas encore vidées les plus proches de l'entrée, blockFront par mineur (25/10)
   /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
      personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de

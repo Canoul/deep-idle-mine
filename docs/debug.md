@@ -2867,3 +2867,9 @@ Règles (voir CLAUDE.md) :
   `Cache-Control: no-store`) et dessinées (rendu sans navigateur : corde sur toute la hauteur, poulie, seau).
 - **Tests** : `tests/tower-boss.test.js` (+2 : front depuis l'entrée en solo et à 3, mob sonné), `tests/perf.test.js`
   (nouveau, 3) ; tower, tower-boss, perf, boot-check, controls ✅. Pas de simulation (demande de Geoffrey).
+
+### Tour : recul des mobs ×2, temps sonné retiré (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10 (⚠️ tests non relancés)
+- `TOWER.mobs.knockRes: -100` (remplace `knockStun`) ; `hitMob` pousse de `knockbackOf(m) × (1 − MB.knockRes/100)`
+  (la résistance n'est pas posée sur le mob : `knockOf` borne la résistance à 0–100) ; `o.stagger` et son test
+  (`tests/tower-boss.test.js`, « mob sonné ») retirés. ⚠️ Tests non relancés à la demande de Geoffrey : à relancer
+  (tower, tower-boss) à la prochaine modification de la tour.
