@@ -9,6 +9,7 @@ import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mul
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
+import { inReach, driftsAway } from './knock.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
@@ -119,10 +120,16 @@ function nearestThreat(G,m){
   return best;
 }
 
+/* combat : il frappe le mob s'il est à portée (COMBAT.reach) ; repoussé par un coup, il revient au contact (il se
+   recentre dans sa case, ou fait un pas vers le mob) */
 function fight(G,m,o){
   const dx=o.x-m.x, dy=o.y-m.y;
   m.status='Combat ('+o.type+')';
-  if(Math.abs(dx)+Math.abs(dy)<=1){ if(dx) m.face=Math.sign(dx); startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
+  if(inReach(G,m,o)){ if(dx) m.face=Math.sign(dx); startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
+  if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
+    const k=Math.max(Math.abs(m.kx||0), Math.abs(m.ky||0));
+    startAction(m,'move', k*(dy ? climbT(G,m) : moveT(G,m)), {x:m.x,y:m.y,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0)}); return;
+  }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(ok) return;
   /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : il le laisse tout de suite, sinon
@@ -182,7 +189,7 @@ function huntDuck(G,m,left){
     best=o; bd=d;
   }
   if(!best) return false;
-  if(bd<=1){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
+  if(bd<=1 || inReach(G,m,best)){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
   m.status=`Chasse le Gallianix ${best.name}`;
   if(stepDir(G,m,Math.sign(best.x-m.x),0,{noBridge:true})) return true;
   idle(m,0.3); return true;
@@ -430,7 +437,7 @@ function dungeonGoal(G,m){
     m.helping=true;   // il va au boss (ou attend le barbare devant l'entrée)
     const boss=bossOf(G,d);
     if(may){
-      if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
+      if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1 || inReach(G,m,boss)){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
       if(goTo(G,m,(x,y)=>inRoom(d,x,y) && Math.abs(x-boss.x)+Math.abs(y-boss.y)<=1, isBarbarian(m) ? 'Entre dans le donjon' : 'Rejoint le barbare dans le donjon')) return true;
       continue;
     }
@@ -536,7 +543,7 @@ function helpAlly(G,m){
 /* va frapper le mob o (à d cases, Manhattan) : il frappe s'il est au contact, sinon il fait un pas vers lui (en minant
    s'il le faut). Inatteignable : il l'ignore désormais et renvoie false. */
 function goFight(G,m,o,d,fighting,going){
-  if(d<=1){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
+  if(d<=1 || inReach(G,m,o)){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
   const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-o.x)+Math.abs(y-o.y)<=1 && !(x===o.x && y===o.y && !isAir(G,x,y)));
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)){ m.ignored.add(o.id); m.foe=null; return false; }   // inatteignable : il le laisse
@@ -667,8 +674,10 @@ export function decide(G,m){
   }
   // canalisation d'un occultiste sur lui : étourdi tant qu'elle dure (il ne peut ni bouger, ni miner, ni frapper)
   { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true}); return; } }
-  // taclé : il ne peut plus bouger, il doit tuer le mob (même si « combat » est sur non, même en retour)
-  { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); m.status='Taclé ! ('+tk.type+')'; return; } }
+  /* taclé : il ne peut rien faire d'autre que combattre ce mob (même si « combat » est sur non, même en retour) ; il peut
+     bouger pour rester à portée (25/10 ; avant : immobilisé). Ses pas sont marqués (data.fight) : le tacle ne les
+     interrompt pas (src/sim/session.js) */
+  { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); if(m.action) m.action.data.fight=true; m.status='Taclé ! ('+tk.type+')'; return; } }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
   if(m.y>0){

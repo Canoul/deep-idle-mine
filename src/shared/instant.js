@@ -3,7 +3,8 @@
    - répartition des inscrits en mines d'au plus MI.maxPerMine joueurs, de tailles égales ;
    - construction et rejeu de la partie depuis l'enregistrement du serveur (seed, joueurs, stuff, skills, départs). */
 import { INSTANT_MINE as MI, DT } from '../config.js';
-import { sanitizeLook, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
+import { aurasOf } from '../meta/aura.js';
+import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
 import { newInstant, leaveInstant, INSTANT_TICKS } from '../sim/instant/session.js';
 
@@ -64,6 +65,7 @@ export function instantSpecs(record){
     const look = sanitizeLook(record.looks?.[p.account]);
     const st = sanitizeSkills(record.skills?.[p.account]), skills = skillEffects(st);
     return { name: String(p.name || '').slice(0, 24) || 'Joueur ' + (i + 1), account: p.account, look,
+             auras: aurasOf(sanitizeGear(record.gear?.[p.account])),
              carac: withRings(withSkillStats(equippedStats(Object.values(look)), skills), ringsOf(Object.values(look))), skills, skillTree: st.tree };
   });
 }

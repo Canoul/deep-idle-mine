@@ -69,7 +69,7 @@ export function createTowerRenderer(cv){
     /* mobs des étages (2 cases de haut) et leur vie */
     const mobTex = TOWER.sides[G.side]?.mobTex;
     for(const o of G.mobs || []){
-      const px = o.x * T, py = (o.y - 1) * T;
+      const px = (o.x + (o.kx || 0)) * T, py = (o.y - 1) * T;   // recul : décalage dans sa case
       blit(mobTex, px, py, G.side === 'demon' ? '#8a1f2a' : '#e8f0ff', T, 2 * T);
       if(o.awake && o.hp < o.maxhp){
         ctx.fillStyle = '#000'; ctx.fillRect(px + 1, py - 4, T - 2, 3);

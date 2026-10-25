@@ -26,7 +26,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : valeurs ci-dessus.
 - **À suivre** : en simulation (3 mineurs sans stuff), 2 treasures par partie dans les areas ouvertes mais toujours
   0,4 ramené : les mineurs ne trouvent pas ceux qui sont loin de leurs galeries.
-- **État** : 🧪 sur la branche `geoffrey/tresor-60` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 24/10/2026 — Geoffrey — Plus de treasures : 40 % par area
 - **Pour le joueur** : chaque area a maintenant **40 %** de chance de cacher un treasure (avant 30 %), dans toutes
@@ -36,7 +36,40 @@ Modèle d'entrée :
   (1,2 → 1,6 par partie), mais les mineurs en ouvrent autant (0,4) : un treasure n'est visé qu'une fois découvert,
   et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
   équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
-- **État** : 🧪 repris dans la branche `geoffrey/tresor-60` (entrée du 25/10 ci-dessus)
+- **État** : ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`, puis 60 % en areas 0 à 2)
+
+## 25/10/2026 — Geoffrey — Aura du stuff runé
+- **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
+  s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en
+  R4-R5, moyen en R6, fort en R7. On le voit dans la mine, la mine instantanée, les tours, et sur les portraits (barre
+  du haut, lobby, onglet Stuff). Purement visuel.
+- **Décisions** (Geoffrey) : pièce ET rune R4+, la plus basse des deux donne couleur et force (en pratique la rune,
+  qui ne dépasse jamais la pièce) ; un fragment de rune ne compte pas ; halo dessiné derrière le mineur pour ne jamais
+  cacher sa texture ; visible partout.
+- **À suivre** : regarder en vrai en jeu si le halo « faible » se voit assez à la taille de la mine (réglable en
+  config, `AURA.looks`).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Combats plus vivants : portée, recul, tacle refondu
+- **Pour le joueur** : les combats bougent. Chaque coup du mineur **repousse le mob d'un quart de bloc** ; le mob
+  revient au contact, le mineur le suit. On frappe dès qu'on est à **un demi-bloc** (plus besoin d'être collé), jamais
+  en diagonale. **Le tacle ne bloque plus le mineur sur place** : il peut bouger, mais seulement pour combattre le mob
+  qui le tient, jusqu'à sa mort (ou une provocation du barbare). Le **minotaure**, les **Séraphins / Diablotins** et le
+  **boss des tours** repoussent aussi le mineur (le boss garde sa projection de 6 blocs). Nouvelle stat **Résistance
+  au recul** (0 de base, aucune pièce ne la donne encore). Le wiki est à jour.
+- **Décisions** (Geoffrey) : recul 0,25 pour le mineur, 0 pour les mobs sauf minotaure / mobs et boss des tours
+  (0,25) ; portée 0,5 bord à bord, sans diagonale ; recul sur l'axe du coup, bloqué par un bloc ; résistance en % ;
+  tacle jusqu'à la mort du mob ou une provocation, avec une soupape anti-blocage (5 s sans pouvoir frapper, ou mob à
+  plus de 6 cases) ; cadence de coup des mobs 1 s (le gobelin, le méphite et l'occultiste gardent la leur).
+- **À suivre** : les **tours sont plus dures** (compo forte : 2 victoires sur 5 → 0 sur 5, ≈ 8 % de dégâts en
+  moins) : à rééquilibrer si besoin (recul du boss, PV). Où donner la Résistance au recul. Le boss des tours ne recule
+  pas sous les coups (choix de Claude, à valider). Regarder un combat en vrai dans le navigateur.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Don d'administration : choisir la qualité d'une pièce
+- **Pour le joueur** : rien. Outil des créateurs : `give-item.js` peut maintenant donner une pièce de stuff déjà
+  identifiée dans la qualité voulue (`--quality 5` → un Plastron en fer R5), toujours sans redémarrer le jeu.
+- **État** : ✅ en ligne le 25/10
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
