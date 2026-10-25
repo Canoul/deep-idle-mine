@@ -2715,7 +2715,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : une nouvelle pièce de stuff doit être ajoutée à `UPGRADE.tiers` (sinon elle garde sa propre
   valeur) ; le test « chaque pièce qu'on peut runer a un tier » échoue tant qu'elle n'y est pas.
 
-### Tours : treuil du logisticien (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-treuil`
+### Tours : treuil du logisticien (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `TOWER.winch.setup` (10 s). `src/sim/tower/session.js` : `G.winch` ({ x, top: roof − 1, bottom: floor }),
   `G.winchBoost` (Escalateur), `isWinch`, `winchT` (comme la mine : climbSpeed × WINCH.speedFactor × (1 + boost)) ;
   `towerSupported` vrai sur le treuil ; `planTo` (monter / descendre par le treuil, `fallFrom` s'y arrête) ; `follow`

@@ -26,7 +26,7 @@ Modèle d'entrée :
   mêmes règles que le treuil de la mine.
 - **À suivre** : le toit est atteint vers 8 min, donc le treuil arrive tard (7 min 30 à 9 min 40) et ne change pas
   encore l'issue des tours simulées (0 victoire sur 5 avec ou sans, boss à ≈ 1 650 PV au lieu de ≈ 1 820).
-- **État** : 🧪 sur la branche `geoffrey/tour-treuil` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Runes : un % du tier de la pièce
 - **Pour le joueur** : une ligne de rune ne vaut plus un % de la valeur de la pièce, mais un % de son **tier** : T1
