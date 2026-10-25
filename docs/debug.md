@@ -2955,7 +2955,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : `G.winch.lift` reste vrai une fois posé (un treuil prolongé ensuite par un logisticien sans glyphe,
   s'il quitte, resterait un ascenseur) ; sans glyphe, `G.winch` n'a pas de clé `lift` (tests du treuil inchangés).
 
-### Case Torche, Lampe à incandescence (Geoffrey, 25/10 soir) — 🧪 branche `geoffrey/lampe-incandescence`
+### Case Torche, Lampe à incandescence (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
 - **Config** : `STUFF.slots` + `torche` ; `STUFF.items['Lampe à incandescence']` (`stats.torches` 10, `set` torchRadius 8 et
   torchTime 0,5 : l'amélioration agit sur `set` comme sur les autres pièces) ; `STATS.torchTime` (1 s) remplace
   `CFG.torchTime` ; libellés, unités, `shownStats` (+ torchRadius, torchTime) ; rareté rare ; `TEXTURES` +

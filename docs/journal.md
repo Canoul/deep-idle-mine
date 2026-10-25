@@ -24,7 +24,7 @@ Modèle d'entrée :
   éclairent à 8 cases au lieu de 5, et il les pose deux fois plus vite. Chaque torche garde le rayon de celui qui l'a
   posée. Deux nouvelles stats dans l'onglet Stuff : Rayon des torches et Pose d'une torche. Wiki à jour (tableaux).
 - **Décisions** (Geoffrey) : l'objet, sa recette et ses effets ; rareté **rare**.
-- **État** : 🧪 sur la branche `geoffrey/lampe-incandescence` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Glyphe Treuil : l'ascenseur
 - **Pour le joueur** : 10ᵉ glyphe. Posé sur le skill Treuil (au max), le logisticien construit un **ascenseur** au lieu
