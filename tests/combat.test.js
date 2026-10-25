@@ -6,20 +6,21 @@ import assert from 'node:assert/strict';
 import { W, COMBAT, MOBS } from '../src/config.js';
 import { addDungeon } from '../src/sim/dungeon.js';
 import { tackler } from '../src/sim/ai.js';
-import { finishAction } from '../src/sim/actions.js';
+import { finishAction, landHit } from '../src/sim/actions.js';
 import { worldFrom, run } from './helpers.js';
 
 const corridor = (miners = 1) => worldFrom(['', 'd'.repeat(50), '#@' + ' '.repeat(40) + '#', '#'.repeat(50)], { miners });
 const mob = (G, o) => { const x = { id: G.mobId++, type: 'bestiole', hp: 1e9, maxhp: 1e9, cd: 5, ...o }; G.mobs.push(x); return x; };
 const hit = (G, m, o) => finishAction(G, m, { type: 'attack', data: { mob: o } });
 
-test('coup du mineur : il repousse le mob de 0,25 ; au 3e coup, le mob passe sur la case suivante', () => {
+test('coup du mineur : il repousse le mob de 0,25 ; verrou : pas de nouveau recul tant que le mob n\'est pas revenu à portée de tacle (25/10)', () => {
   const G = corridor(), m = G.miners[0];
-  const b = mob(G, { x: m.x + 1, y: m.y });
-  hit(G, m, b); assert.equal(b.kx, COMBAT.knock);
-  hit(G, m, b); assert.equal(b.kx, 0.5); assert.equal(b.x, m.x + 1);
-  hit(G, m, b); assert.equal(b.x, m.x + 2, 'repoussé d\'une case');
-  assert.ok(b.hp < 1e9);
+  const b = mob(G, { x: m.x + 1, y: m.y, speed: 1e-9 });
+  hit(G, m, b); assert.equal(b.kx, COMBAT.knock); assert.equal(b.knockLock, true);
+  const hp = b.hp;
+  hit(G, m, b); assert.equal(b.kx, COMBAT.knock, 'verrouillé : pas de recul'); assert.ok(b.hp < hp, 'mais le coup fait ses dégâts');
+  b.x = m.x + 3; b.kx = 0; run(G, 1); assert.equal(b.knockLock, true, 'loin : toujours verrouillé');
+  b.x = m.x + 1; run(G, 1); assert.equal(b.knockLock, false, 'revenu à portée de tacle : le verrou saute');
 });
 
 test('coup du mineur : hors de portée, le coup ne porte pas', () => {
@@ -60,16 +61,17 @@ test('tacle : il commence à portée (0,5), sans être collé', () => {
   assert.equal(tackler(G, m), b);
 });
 
-test('tacle : il dure même quand le mob est repoussé hors de portée, et le mineur ne fait que le poursuivre', () => {
+test('tacle : il dure si le mob s\'éloigne sans être frappé ; un coup qui le repousse hors de SA portée le lui fait lâcher (25/10)', () => {
   const G = corridor(), m = G.miners[0]; m.ox = 300;
-  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9, speed: 1e-9 });   // immobile   // il ne bouge pas : seul le mineur doit revenir au contact
+  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9, speed: 1e-9 });   // immobile : seul le mineur bouge
+  m.action = { type: 'wait', dur: 1e9, t: 0, data: {} };
   run(G, 1); assert.equal(tackler(G, m), b);
-  b.x = m.x + 3; b.kx = 0;   // repoussé loin
-  const x0 = m.x;
-  run(G, 20);
-  assert.equal(tackler(G, m), b, 'toujours taclé');
-  assert.ok(m.x > x0, 'il bouge vers le mob');
-  assert.match(m.status, /Taclé/);
+  b.x = m.x + 3; b.kx = 0;                                              // déplacé (pas un coup) : le tacle tient
+  run(G, 1); assert.equal(tackler(G, m), b, 'toujours taclé');
+  m.action = null; b.x = m.x + 1; b.kx = 0.5;                            // au bord de la portée (0,5)
+  landHit(G, m, b);
+  assert.ok(b.kx + (b.x - m.x - 1) > COMBAT.reach, 'repoussé hors de portée');
+  assert.equal(tackler(G, m), null, 'il lâche le tacle');
 });
 
 test('tacle : soupape, il saute si le mineur ne peut pas le frapper pendant 5 s', () => {

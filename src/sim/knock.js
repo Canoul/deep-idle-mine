@@ -37,6 +37,19 @@ export function inReach(G, a, b, range = COMBAT.reach, open = isAir){
   return true;
 }
 
+/* interrompt l'action du mineur m ; un pas horizontal interrompu GARDE son avancée (mouvement continu, 25/10/2026) :
+   il reste là où il en est (décalage kx), et passe sur la case d'arrivée s'il en a fait plus de la moitié. Sans ça, un
+   pas coupé le ramenait au centre de sa case : hors de portée, il repartait, était recoupé… (oscillation, seed 7919) */
+export function stopAction(m){
+  const a = m.action;
+  if(a?.type === 'move' && a.data.y === m.y && a.data.x !== m.x && !a.data.fall){
+    const pos = m.x + offX(m), dir = Math.sign(a.data.x - m.x);
+    if((pos - m.x) * dir > 0.5){ m.x = a.data.x; m.face = dir; }
+    m.kx = Math.max(-0.5, Math.min(0.5, pos - m.x));
+  }
+  m.action = null;
+}
+
 /* portée d'attaque et recul d'un mineur : COMBAT + sa stat (reach, knockback ; Lance en fer, 25/10/2026) */
 export const reachOf = m => COMBAT.reach + (m.carac?.reach || 0);
 export const knockbackOf = m => COMBAT.knock + (m.carac?.knockback || 0);

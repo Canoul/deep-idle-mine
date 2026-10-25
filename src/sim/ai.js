@@ -1,6 +1,6 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
@@ -10,6 +10,7 @@ import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
 import { inReach, driftsAway, reachOf } from './knock.js';
+import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
@@ -125,7 +126,13 @@ function nearestThreat(G,m){
 function fight(G,m,o){
   const dx=o.x-m.x, dy=o.y-m.y;
   m.status='Combat ('+o.type+')';
-  if(inReach(G,m,o,reachOf(m))){ if(dx) m.face=Math.sign(dx); startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
+  /* à portée : le coup part tout de suite, puis il attend son intervalle (m.atkReady) avant le suivant (25/10/2026 :
+     avant, le coup partait à la fin de l'élan, et un mob arrivé à portée avait le temps de tacler le premier) */
+  if(inReach(G,m,o,reachOf(m))){
+    if(dx) m.face=Math.sign(dx);
+    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)); }
+    startAction(m,'attack', Math.max(DT, m.atkReady-G.t), {mob:o, done:true}); return;
+  }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
     const k=Math.max(Math.abs(m.kx||0), Math.abs(m.ky||0));
     startAction(m,'move', k*(dy ? climbT(G,m) : moveT(G,m)), {x:m.x,y:m.y,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0)}); return;

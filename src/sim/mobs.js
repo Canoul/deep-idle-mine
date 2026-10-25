@@ -90,8 +90,10 @@ function grab(G,o,p){
 }
 function updateGrab(G,o){
   if(o.channel || (o.type==='mimic' && !o.revealed)){ o.grab=null; return; }
-  if(keepsGrab(G,o,byId(G,o.grab))) return;
-  grab(G,o,preyOf(G,o));
+  if(!keepsGrab(G,o,byId(G,o.grab))) grab(G,o,preyOf(G,o));
+  /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, src/sim/actions.js landHit) */
+  const t=byId(G,o.grab) ?? preyOf(G,o);
+  if(o.knockLock && t && inReach(G,o,t)) o.knockLock=false;
 }
 
 /* coup d'un mob qui tacle (MOBS.hitEvery) : il repousse sa cible de MOBS.knock[type] blocs s'il est à portée (les
@@ -171,7 +173,13 @@ export function updateMobs(G){
     o.cd=(o.cd||0)-DT;
     const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) continue;   // il tacle : il suit son mineur pour rester au contact
     if(o.grab==null && !inChase(o,m)) continue;
-    if(isFlyer(o)){                                   // volant : case par case, comme avant
+    if(isFlyer(o)){                                   // volant : case par case, comme avant…
+      /* …sauf au contact : repoussé, il revient en glissant vers sa case (sinon les reculs s'empilaient et il sortait de
+         portée, 25/10/2026) */
+      if(manhattan(m,o)<=1 && (Math.abs(o.kx||0)>1e-9 || Math.abs(o.ky||0)>1e-9)){
+        const v=DT/stepOf(o), back=k => Math.abs(k||0)<=v ? 0 : k-Math.sign(k)*v;
+        o.kx=back(o.kx); o.ky=back(o.ky); continue;
+      }
       if(o.cd>0) continue;
       o.cd=stepOf(o);
       if(closeIn(G,o,m)) continue;

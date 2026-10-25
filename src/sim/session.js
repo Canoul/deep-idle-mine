@@ -1,6 +1,7 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG } from '../config.js';
+import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
 import { createMiner, curLum } from './mineur.js';
@@ -89,13 +90,19 @@ export function tick(G){
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
+  /* arrêt net (25/10/2026) : en marche vers le mob qu'il combat, il s'arrête dès que celui-ci entre dans sa portée, pour
+     frapper le premier (sa portée peut dépasser celle du mob : stat reach, Lance en fer) */
+  for(const m of G.miners){
+    const a=m.action, o=m.foe!=null && a?.type==='move' && !a.data.fall ? G.mobs.find(q=>q.id===m.foe && q.hp>0) : null;
+    if(o && inReach(G,m,o,reachOf(m))) stopAction(m);
+  }
   for(const m of G.miners){
     // un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe
     // déjà ou s'approche du mob pour le frapper, data.fight)
-    if(m.action && m.action.type!=='attack' && m.action.type!=='stun' && !m.action.data.fall && !m.action.data.fight && tackler(G,m)){ m.action=null; m.stats.tackled++; }
+    if(m.action && m.action.type!=='attack' && m.action.type!=='stun' && !m.action.data.fall && !m.action.data.fight && tackler(G,m)){ stopAction(m); m.stats.tackled++; }
     if(!G.ladder[m.y]?.[m.x]) m.ky=0;   // poussé vers le haut hors d'une échelle : il retombe
     // un occultiste canalise sur lui : tout s'arrête (même un coup), sauf une chute ; il est étourdi pendant la canalisation
-    if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) m.action=null;
+    if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) stopAction(m);
     // canalisation arrêtée avant la fin (occultiste provoqué ou tué) : il est libéré tout de suite
     if(m.action?.data.hex && !channeler(G,m)) m.action=null;
     revealAround(G,m);
