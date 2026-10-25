@@ -689,7 +689,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
 
   | Produit | Ingrédients | Combustible | Durée |
   |---|---|---|---|
-  | **Tainted iron** | 5 lingots de fer + 20 chitine | 50 charbons | 3 min |
+  | **Tainted iron** | 5 lingots de fer + 15 chitine *(25/10/2026 ; avant 20)* | 50 charbons | 3 min |
   | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
   | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 10 Graphite ingot | 50 charbons | 3 min |
 

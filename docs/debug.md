@@ -2623,3 +2623,10 @@ Règles (voir CLAUDE.md) :
 - **Correction** : fonction pure `slotButtons({ account, party, session }, slot)` → `{ promote, kick }` : ★ pour le chef
   sur un autre membre, même en session ; × hors session seulement (membre ou invité).
 - **Tests** : `tests/lobby.test.js` +1 ✅ (15), `tests/party.test.js` ✅. ⚠️ Pas regardé dans un vrai navigateur.
+
+### Tainted iron : 15 chitine (Geoffrey, 25/10) — 🧪 branche `geoffrey/tainted-iron-chitine`
+- **Quoi** : `FURNACE.alloys` Tainted iron `in.Chitine` 20 → 15 (`src/config.js`) ; GAME_DESIGN (tableau des alliages) ;
+  commentaire de `src/meta/furnace.js` ; wiki (tableau généré, date du bandeau).
+- **Tests** : `tests/furnace.test.js` adapté (recette 15 ; chitine chargée 30 → 25 pour garder « la chitine limite à
+  1 alliage » ; 20 → 15 pour finir les cases vides) ✅ (21) ; anticheat furnace, game-service, wiki ✅ ; `npm run
+  test:anticheat` ✅ (89).
