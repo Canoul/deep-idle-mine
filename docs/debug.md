@@ -2714,3 +2714,22 @@ Règles (voir CLAUDE.md) :
   steel-gear, stuff, wiki, sets, treasure, aura, social ✅ (110). Pas d'anti-triche : aucune ressource ne bouge.
 - **Point fragile** : une nouvelle pièce de stuff doit être ajoutée à `UPGRADE.tiers` (sinon elle garde sa propre
   valeur) ; le test « chaque pièce qu'on peut runer a un tier » échoue tant qu'elle n'y est pas.
+
+### Tours : treuil du logisticien (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-treuil`
+- **Quoi** : `TOWER.winch.setup` (10 s). `src/sim/tower/session.js` : `G.winch` ({ x, top: roof − 1, bottom: floor }),
+  `G.winchBoost` (Escalateur), `isWinch`, `winchT` (comme la mine : climbSpeed × WINCH.speedFactor × (1 + boost)) ;
+  `towerSupported` vrai sur le treuil ; `planTo` (monter / descendre par le treuil, `fallFrom` s'y arrête) ; `follow`
+  (pas d'échelle à poser, action `move` avec `data.winch`). Déclenchement dans `land` : logisticien `skill.winch`,
+  pas de treuil, au sol hors de la tour, personne d'autre en chantier → `m.winchJob = 'L' | 'R'` ; `decide` : aller à
+  (x0 − 1 ou x1 + 1, floor) puis action `winchSetup` (pas de chemin : il abandonne). `finishAction` pose le treuil.
+  Vue (`tower-view.js` : `winch`, `data.winch`), rendu (`render/tower.js` : corde, poulie, seau ; textures existantes).
+  Skill Treuil : description complétée. Wiki : phrase dans la section des tours.
+- **Tests** : `tests/tower.test.js` +4 (installation en 10 s après l'étourdissement, colonne et hauteur ; sans skill /
+  seconde chute : rien de plus ; on y tient, remontée 12,9 s avec contre 101 s sans dans une tour vidée sans échelles ;
+  vue) ✅ 16/16. `npm run simulate:tower -- --count 5` (+ compo d) : 0 « bloqué », treuil posé dans 10/10 tours de d),
+  retours après chute 28-43 s → 18 s ; d) boss 1 648 PV contre 1 824 en b).
+- **Points fragiles** : le treuil n'a pas de chantier visible pendant les 10 s (seulement le statut « Installe le
+  treuil »). Si le logisticien quitte la partie pendant l'installation, son chantier part avec lui : un autre
+  logisticien pourra en poser un à sa propre chute. Le wiki lit `T.winch.setup` (T = TOWER via `judgmentInfo`).
+- ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/skills.test.js` « onglet Stuff : les stats montrent aussi les bonus
+  des skills » (échoue aussi sans ce chantier).

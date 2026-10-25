@@ -1,20 +1,25 @@
 /* Simulation des tours de l'Ange et du Démon : taux de victoire par composition d'équipe.
    Usage : npm run simulate:tower -- [--count 20] [--seed 1] [--verbose]
    Compositions (demande de Geoffrey, 23/10) : stats de base ; minage 1,1 + 10 dégâts avec un barbare ; deux barbares
-   à 15 dégâts et un mineur à 1,3 de minage. Les barbares n'ont aucun rang de skill (arbre seulement). */
+   à 15 dégâts et un mineur à 1,3 de minage. Les barbares n'ont aucun rang de skill (arbre seulement). d) : b) avec un
+   logisticien qui a le skill Treuil (treuil de la tour, 25/10). */
 import { runTower } from '../src/sim/tower/session.js';
 import { TOWER } from '../src/config.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i < 0 ? d : (process.argv[i + 1] ?? true); };
 const COUNT = +arg('count', 20), SEED0 = +arg('seed', 1), VERBOSE = process.argv.includes('--verbose');
 
-const M = (name, carac = {}, skillTree = null) => ({ name, account: name, carac, skillTree });
+const M = (name, carac = {}, skillTree = null, skills = {}) => ({ name, account: name, carac, skillTree, skills });
 export const COMPOS = {
   'a) 3 mineurs de base': [M('A'), M('B'), M('C')],
   'b) 2 mineurs 1,1/10 + 1 barbare 1,1/10': [M('A', { mineSpeed: 1.1, damage: 10 }), M('B', { mineSpeed: 1.1, damage: 10 }),
                                               M('Barb', { mineSpeed: 1.1, damage: 10 }, 'barbare')],
   'c) 2 barbares 15 dégâts + 1 mineur 1,3': [M('Barb1', { damage: 15 }, 'barbare'), M('Barb2', { damage: 15 }, 'barbare'),
                                               M('Min', { mineSpeed: 1.3 })],
+  /* comme b), un logisticien (skill Treuil) à la place d'un mineur : l'écart avec b) = le treuil de la tour (25/10) */
+  'd) b) avec un logisticien (Treuil) à la place d’un mineur': [M('A', { mineSpeed: 1.1, damage: 10 }),
+                                              M('Logi', { mineSpeed: 1.1, damage: 10 }, 'logisticien', { winch: 1 }),
+                                              M('Barb', { mineSpeed: 1.1, damage: 10 }, 'barbare')],
 };
 
 const fmt = s => s == null ? '—' : `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;

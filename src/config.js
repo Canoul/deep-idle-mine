@@ -436,7 +436,7 @@ export const SKILLS = {
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
       { id:'tall_ladder', row:2, max:1, per:1,    icon:'🪜', name:'Échelle de 2',    desc:'Pose des échelles de 2 de haut (si la case du dessus est vide)' },
-      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle' },
+      { id:'winch',       row:2, max:1, per:1,    icon:'🪣', name:'Treuil',          desc:'À chaque nouvelle area, il creuse le puits au milieu de la mine et pose un treuil de la surface jusqu\'à elle. Dans les tours, la première fois qu\'il tombe au pied de la tour, il installe un treuil jusqu\'au toit (10 s)' },
       /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
       { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
@@ -1065,6 +1065,11 @@ export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
   width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7)
   sky: 4, margin: 8, doorH: 2,
+  /* treuil du logisticien (25/10/2026, Geoffrey) : le premier logisticien qui a le skill Treuil et qui tombe au pied de
+     la tour (dehors) va contre le mur, de son côté, et l'installe en setup s ; une colonne contre le mur extérieur, du
+     sol jusqu'à la hauteur du toit, comme le puits de la mine (on y tient, seau à la vitesse WINCH, Escalateur compris,
+     sans capacité). Un seul par partie. */
+  winch: { setup: 10 },
   /* vue (navigateur) : caméra qui suit le mineur, aussi large que la tour (avant : 19 × 15) */
   view: { cols: 22, rows: 16 },
   /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans
