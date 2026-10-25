@@ -9,7 +9,7 @@ import { log } from './log.js';
 import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
 import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
-import { inReach, push, recenter, driftsAway } from './knock.js';
+import { inReach, push, recenter, driftsAway, gap } from './knock.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
@@ -90,8 +90,10 @@ function grab(G,o,p){
 }
 function updateGrab(G,o){
   if(o.channel || (o.type==='mimic' && !o.revealed)){ o.grab=null; return; }
-  if(keepsGrab(G,o,byId(G,o.grab))) return;
-  grab(G,o,preyOf(G,o));
+  if(!keepsGrab(G,o,byId(G,o.grab))) grab(G,o,preyOf(G,o));
+  /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, src/sim/actions.js landHit) */
+  const t=byId(G,o.grab) ?? preyOf(G,o);
+  if(o.knockLock && t && inReach(G,o,t)) o.knockLock=false;
 }
 
 /* coup d'un mob qui tacle (MOBS.hitEvery) : il repousse sa cible de MOBS.knock[type] blocs s'il est à portée (les
@@ -169,20 +171,51 @@ export function updateMobs(G){
     strike(G,o);
     o.chase=chaseOf(G,o);
     o.cd=(o.cd||0)-DT;
-    if(o.cd>0) continue;
     const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) continue;   // il tacle : il suit son mineur pour rester au contact
-    const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y);
-    o.cd=stepOf(o);
-    if(closeIn(G,o,m) || (o.grab==null && !inChase(o,m))) continue;
-    if(isFlyer(o)){ const s=flyStep(G,o,m); if(s){ o.x=s.x; o.y=s.y; recenter(o); } continue; }
-    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; recenter(o); o.cd=stepOf(o)/CFG.climbFactor; }   // grimpe
-    else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; recenter(o); o.cd=stepOf(o)/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
-    else if(dx && isAir(G,o.x+dx,o.y)){ o.x+=dx; recenter(o); }                                  // marche (et tombera s'il n'y a pas de sol)
+    if(o.grab==null && !inChase(o,m)) continue;
+    if(isFlyer(o)){                                   // volant : case par case, comme avant…
+      /* …sauf au contact : repoussé, il revient en glissant vers sa case (sinon les reculs s'empilaient et il sortait de
+         portée, 25/10/2026) */
+      if(manhattan(m,o)<=1 && (Math.abs(o.kx||0)>1e-9 || Math.abs(o.ky||0)>1e-9)){
+        const v=DT/stepOf(o), back=k => Math.abs(k||0)<=v ? 0 : k-Math.sign(k)*v;
+        o.kx=back(o.kx); o.ky=back(o.ky); continue;
+      }
+      if(o.cd>0) continue;
+      o.cd=stepOf(o);
+      if(closeIn(G,o,m)) continue;
+      const s=flyStep(G,o,m); if(s){ o.x=s.x; o.y=s.y; recenter(o); } continue;
+    }
+    walk(G,o,m);
   }
   asphyxia(G);
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
   spawnMobs(G);
   spawnDucks(G);
+}
+
+/* Marche d'un mob (25/10/2026, Geoffrey : mouvement continu). Sur sa ligne, il GLISSE vers sa proie à 1/stepOf blocs
+   par seconde (son décalage kx avance un peu à chaque tick, il passe sur la case voisine au-delà d'une demi-case) et
+   s'arrête au contact (écart 0) : il est donc vraiment entre deux cases pendant qu'il avance, et la portée d'attaque
+   (COMBAT.reach, stat reach du mineur) se mesure en continu. Les échelles restent case par case (stepOf / climbFactor),
+   après s'être recentré dans sa case. Avant le 25/10 : un saut d'une case toutes les stepOf s. */
+function walk(G,o,m){
+  const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y), v=DT/stepOf(o), k=o.kx||0;
+  if(o.y===m.y && gap(o,m)<=1e-9) return;                                   // au contact
+  const climb = dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1);
+  const down = dy>0 && isAir(G,o.x,o.y+1);
+  if(climb || down){
+    if(Math.abs(k)>1e-9){ o.kx = Math.abs(k)<=v ? 0 : k-Math.sign(k)*v; return; }   // d'abord au centre de sa case
+    if(o.cd>0) return;
+    o.y += climb ? -1 : 1; recenter(o); o.cd=stepOf(o)/CFG.climbFactor;       // grimpe / descend l'échelle
+    return;
+  }
+  if(!dx){ o.kx = Math.abs(k)<=v ? 0 : k-Math.sign(k)*v; return; }          // sous / sur sa proie : il se recentre
+  const step = o.y===m.y ? Math.min(v, gap(o,m)) : v;                       // jamais plus près que le contact
+  let nk = k + dx*step;
+  const open = isAir(G,o.x+dx,o.y);
+  if(!open && nk*dx>0) nk = Math.max(0, k*dx) === 0 ? 0 : k;                 // un bloc devant : il ne dépasse pas le centre
+  if(nk*dx > 0.5+1e-9 && open){ o.x += dx; nk -= dx; }                      // marche (et tombera s'il n'y a pas de sol)
+  o.kx = nk;
 }
 
 /* vol du gobelin : tant qu'il tacle un mineur, un minerai toutes les goblinStealEvery secondes, tiré au hasard parmi

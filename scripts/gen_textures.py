@@ -636,6 +636,17 @@ def main():
     rect(sword, 1, 14, 2, 1, hexc('#ffd23f'))      # pommeau
     tex['sword_iron'] = sword
 
+    # lance en fer (stuff, 25/10/2026) : longue hampe de bois en diagonale, pointe de fer en losange
+    spear = blank()
+    for i in range(11):
+        rect(spear, 1 + i, 14 - i, 2, 1, hexc('#8a5a2b'))
+    for x, y in [(11, 4), (12, 3), (13, 2), (14, 1), (12, 4), (13, 3), (11, 3), (12, 2)]:
+        rect(spear, x, y, 1, 1, hexc('#c9cdd4'))
+    for x, y in [(12, 3), (13, 2)]:
+        rect(spear, x, y, 1, 1, hexc('#eef0f3'))
+    rect(spear, 10, 5, 2, 1, hexc('#6b4f3a'))      # ligature
+    tex['spear_iron'] = spear
+
     # pioche et épée en acier (stuff) : mêmes formes que le fer, métal gris bleuté, pommeau diamant
     pick = blank()
     for i in range(10):
@@ -853,6 +864,14 @@ def main():
     rect(sk_sword, 3, 10, 5, 2, hexc('#6b4f3a'))
     rect(sk_sword, 2, 12, 2, 3, hexc('#8a5a2b'))
     tex['skins/sword_iron'] = sk_sword
+    # lance tenue en main : même repère (hampe en bas à gauche, pointe en haut à droite)
+    sk_spear = blank()
+    for i in range(11):
+        rect(sk_spear, 2 + i, 14 - i, 1, 1, hexc('#8a5a2b'))
+    for x, y in [(12, 4), (13, 3), (14, 2), (13, 4), (12, 3)]:
+        rect(sk_spear, x, y, 1, 1, hexc('#c9cdd4'))
+    rect(sk_spear, 13, 3, 1, 1, hexc('#eef0f3'))
+    tex['skins/spear_iron'] = sk_spear
     sk_sword_st = blank()
     for i in range(9):
         rect(sk_sword_st, 5 + i, 10 - i, 2, 2, hexc('#8d939c'))

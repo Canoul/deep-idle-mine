@@ -7,7 +7,16 @@ import { COMBAT } from '../config.js';
 import { isAir } from './world.js';
 
 const EPS = 1e-9;
-export const offX = e => e.kx || 0;
+/* décalage horizontal ; un mineur en plein pas sur sa ligne est entre ses deux cases (mouvement continu, 25/10/2026) :
+   il reste sur sa case de départ pour le chemin et la gravité, mais la portée se mesure là où il en est de son pas */
+export function offX(e){
+  const a = e.action;
+  if(a?.type === 'move' && a.data.y === e.y && a.data.x !== e.x && a.dur > 0){
+    const fx = a.data.fx ?? e.x;
+    return fx - e.x + (a.data.x - fx) * Math.min(1, a.t / a.dur);
+  }
+  return e.kx || 0;
+}
 export const offY = e => e.ky || 0;
 export const recenter = e => { e.kx = 0; e.ky = 0; };
 
@@ -27,6 +36,23 @@ export function inReach(G, a, b, range = COMBAT.reach, open = isAir){
   for(let x = a.x + dx, y = a.y + dy; x !== b.x || y !== b.y; x += dx, y += dy) if(!open(G, x, y)) return false;
   return true;
 }
+
+/* interrompt l'action du mineur m ; un pas horizontal interrompu GARDE son avancée (mouvement continu, 25/10/2026) :
+   il reste là où il en est (décalage kx), et passe sur la case d'arrivée s'il en a fait plus de la moitié. Sans ça, un
+   pas coupé le ramenait au centre de sa case : hors de portée, il repartait, était recoupé… (oscillation, seed 7919) */
+export function stopAction(m){
+  const a = m.action;
+  if(a?.type === 'move' && a.data.y === m.y && a.data.x !== m.x && !a.data.fall){
+    const pos = m.x + offX(m), dir = Math.sign(a.data.x - m.x);
+    if((pos - m.x) * dir > 0.5){ m.x = a.data.x; m.face = dir; }
+    m.kx = Math.max(-0.5, Math.min(0.5, pos - m.x));
+  }
+  m.action = null;
+}
+
+/* portée d'attaque et recul d'un mineur : COMBAT + sa stat (reach, knockback ; Lance en fer, 25/10/2026) */
+export const reachOf = m => COMBAT.reach + (m.carac?.reach || 0);
+export const knockbackOf = m => COMBAT.knock + (m.carac?.knockback || 0);
 
 /* décalage qui éloigne a de b sur leur axe (a doit se recentrer pour se rapprocher) */
 export const driftsAway = (a, b) => a.y === b.y ? offX(a) * Math.sign(b.x - a.x) < -EPS

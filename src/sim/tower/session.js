@@ -12,7 +12,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
-import { inReach, push, recenter, driftsAway } from '../knock.js';
+import { inReach, push, recenter, driftsAway, reachOf, knockbackOf } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
 export const TOWER_TICKS = Math.round(TOWER.duration / DT);
@@ -154,7 +154,9 @@ const canTackle = (o, m) => o.taunt == null || o.taunt === m.id;
 /* portée (combat dynamique, 25/10 ; src/sim/knock.js) : un mob fait 2 cases de haut, on mesure depuis sa case la plus
    proche du mineur (sa tête si le mineur est à hauteur de sa tête ou au-dessus) */
 const mobCell = (o, m) => ({ x: o.x, y: m.y <= o.y - 1 ? o.y - 1 : o.y, kx: o.kx });
-export const mobReach = (G, o, m) => inReach(G, mobCell(o, m), m, COMBAT.reach, towerAir);
+export const mobReach = (G, o, m, range = COMBAT.reach) => inReach(G, mobCell(o, m), m, range, towerAir);
+/* le mineur m peut-il frapper o ? sa portée (reachOf : COMBAT + stat reach, Lance en fer) */
+const hitReach = (G, m, o) => mobReach(G, o, m, reachOf(m));
 /* case où un mob peut marcher ou être repoussé : la ligne du bas de son étage, sans trou dessous. Les mobs ne
    s'entassent pas : ils peuvent partager une case entre eux et avec un mineur (25/10, Geoffrey). */
 const mobFits = (G, o, nx) => towerAir(G, nx, o.y) && towerAir(G, nx, o.y - 1) && inTower(G, nx, o.y) && !towerAir(G, nx, o.y + 1);
@@ -196,12 +198,12 @@ function stepMobs(G){
 }
 
 function hitMob(G, m, o){
-  if(o.hp <= 0 || !mobReach(G, o, m)) return;
+  if(o.hp <= 0 || !hitReach(G, m, o)) return;
   const dmg = hitDmg(G, m);
   o.hp = Math.max(0, o.hp - dmg); G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
   if(o.grab === m.id) o.grabHit = G.t;   // soupape du tacle
   if(m.skill.taunt) o.taunt = m.id;
-  if(o.hp > 0) push(o, m, COMBAT.knock, (x, y) => y === o.y && mobFits(G, o, x));   // recul (horizontal : il reste au sol)
+  if(o.hp > 0) push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));   // recul (horizontal : il reste au sol)
   /* dégâts de zone (Force brute) : les mobs voisins de la cible prennent une part du coup */
   const k = aoeOf(m.skill);
   if(k > 0) for(const q of G.mobs) if(q !== o && q.hp > 0 && q.awake && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) <= 1){
@@ -339,7 +341,7 @@ export function decide(G, m){
   const tk = tackler(G, m);
   if(tk){
     const st = `Taclé par un ${mobName}`;
-    if(mobReach(G, tk, m)){ m.face = Math.sign(tk.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: tk.id }, st); }
+    if(hitReach(G, m, tk)){ m.face = Math.sign(tk.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: tk.id }, st); }
     if(driftsAway(m, mobCell(tk, m))) return act(m, 'move', moveT(m) * Math.abs(m.kx || 0), { x: m.x, y: m.y, fight: true }, st);
     const path = planTo(G, m, [[tk.x - 1, tk.y], [tk.x + 1, tk.y]]);
     if(path?.length){ follow(G, m, path, st); m.action.data.fight = true; return; }
@@ -351,7 +353,7 @@ export function decide(G, m){
   /* des mobs réveillés : on les tue (la porte de leur étage reste fermée sinon) */
   const mobs = liveMobs(G);
   if(mobs.length){
-    const near = mobs.filter(o => mobReach(G, o, m)).sort((a, b) => a.hp - b.hp)[0];
+    const near = mobs.filter(o => hitReach(G, m, o)).sort((a, b) => a.hp - b.hp)[0];
     if(near){ m.face = Math.sign(near.x - m.x) || m.face; return act(m, 'attack', hitT(m) / dk(G, m), { mob: near.id }, `Combat un ${mobName}`); }
     /* à côté d'un mob mais repoussé hors de portée : il se recentre (sa case est déjà une case d'arrivée du chemin) */
     const back = mobs.find(o => mobDist(o, m) <= 1 && driftsAway(m, mobCell(o, m)));
@@ -546,7 +548,7 @@ function hitBoss(G, m){
 function pushBoss(G, m){
   const b = G.boss; if(b.air) return;
   const from = { x: m.x + 0.5 < bossMid(G) ? b.x - 1 : b.x + B.w, y: b.y };
-  push(b, from, COMBAT.knock, (x, y) => y === b.y && bossFits(G, x));
+  push(b, from, knockbackOf(m), (x, y) => y === b.y && bossFits(G, x));
 }
 
 /* ordre d'arrivée sur le toit : on y entre en s'y tenant, on en sort en le quittant (chute) */

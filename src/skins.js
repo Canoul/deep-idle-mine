@@ -36,6 +36,7 @@ export const SKIN = {
   sword: {
     'Épée en pierre':   'skins/sword_stone',
     'Épée en fer':      'skins/sword_iron',
+    'Lance en fer':     'skins/spear_iron',
     'Épée en acier':    'skins/sword_steel',
   },
 };

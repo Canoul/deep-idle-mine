@@ -1,6 +1,6 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK } from '../config.js';
+import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
@@ -9,7 +9,8 @@ import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mul
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
-import { inReach, driftsAway } from './knock.js';
+import { inReach, driftsAway, reachOf } from './knock.js';
+import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
@@ -125,20 +126,29 @@ function nearestThreat(G,m){
 function fight(G,m,o){
   const dx=o.x-m.x, dy=o.y-m.y;
   m.status='Combat ('+o.type+')';
-  if(inReach(G,m,o)){ if(dx) m.face=Math.sign(dx); startAction(m,'attack', CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)), {mob:o}); return; }
+  /* à portée : le coup part tout de suite, puis il attend son intervalle (m.atkReady) avant le suivant (25/10/2026 :
+     avant, le coup partait à la fin de l'élan, et un mob arrivé à portée avait le temps de tacler le premier) */
+  if(inReach(G,m,o,reachOf(m))){
+    if(dx) m.face=Math.sign(dx);
+    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)); }
+    startAction(m,'attack', Math.max(DT, m.atkReady-G.t), {mob:o, done:true}); return;
+  }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
     const k=Math.max(Math.abs(m.kx||0), Math.abs(m.ky||0));
     startAction(m,'move', k*(dy ? climbT(G,m) : moveT(G,m)), {x:m.x,y:m.y,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0)}); return;
   }
+  /* mob de piège : un barbare doit les tuer (trapGoal). Il prend TOUJOURS le vrai chemin (en minant, en posant des
+     échelles ; goFight, qui ne les laisse que s'ils sont vraiment inatteignables), jamais le pas droit vers le mob :
+     les deux se contredisaient (pas droit vers la colonne du mob, puis chemin qui repart à côté : allers-retours sans
+     fin, seed 23757 arbres mixtes, 25/10/2026). Avant le 25/10, il les ignorait pour de bon (barbare juste au-dessus
+     de la salle). Pas sur une case voisine : goFight y rappellerait fight. */
+  const d=Math.abs(dx)+Math.abs(dy);
+  if(o.trap!=null && isBarbarian(m) && d>1){ goFight(G,m,o,d,m.status,'Va au piège'); return; }
   const ok = dx!==0 ? stepDir(G,m,Math.sign(dx),0) : stepDir(G,m,0,Math.sign(dy));
   if(ok) return;
-  /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : il le laisse tout de suite, sinon
-     il attendait foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838). Un barbare, lui, doit
-     les tuer (trapGoal) : il prend le vrai chemin (en minant, en posant des échelles) et ne les laisse que s'ils sont
-     vraiment inatteignables (goFight) ; avant le 25/10, il les ignorait pour de bon et la rescousse les sautait
-     (seed 23757 : barbare juste au-dessus de la salle) */
-  if(o.trap!=null && isBarbarian(m)){ goFight(G,m,o,Math.abs(dx)+Math.abs(dy),m.status,'Va au piège'); return; }
-  if(o.trap!=null){ m.ignored.add(o.id); m.foe=null; }
+  /* mob de piège resté dans sa salle (il ne grimpe pas) qu'il ne peut pas approcher : les autres le laissent tout de
+     suite, sinon ils attendaient foeGiveUp s par mob (5 mobs : plus d'une minute sans rien faire ; seed 15838) */
+  if(o.trap!=null && !isBarbarian(m)){ m.ignored.add(o.id); m.foe=null; }
   idle(m,0.3);
 }
 
@@ -193,7 +203,7 @@ function huntDuck(G,m,left){
     best=o; bd=d;
   }
   if(!best) return false;
-  if(bd<=1 || inReach(G,m,best)){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
+  if(bd<=1 || inReach(G,m,best,reachOf(m))){ fight(G,m,best); m.status=`Combat (Gallianix ${best.name})`; return true; }
   m.status=`Chasse le Gallianix ${best.name}`;
   if(stepDir(G,m,Math.sign(best.x-m.x),0,{noBridge:true})) return true;
   idle(m,0.3); return true;
@@ -446,7 +456,7 @@ function dungeonGoal(G,m,duty=false){
     m.helping=true;   // il va au boss (ou attend le barbare devant l'entrée)
     const boss=bossOf(G,d);
     if(may){
-      if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1 || inReach(G,m,boss)){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
+      if(Math.abs(boss.x-m.x)+Math.abs(boss.y-m.y)<=1 || inReach(G,m,boss,reachOf(m))){ m.foe=boss.id; m.foeHit=G.t; fight(G,m,boss); m.status='Combat le '+boss.type; return true; }
       if(goTo(G,m,(x,y)=>inRoom(d,x,y) && Math.abs(x-boss.x)+Math.abs(y-boss.y)<=1, isBarbarian(m) ? 'Entre dans le donjon' : 'Rejoint le barbare dans le donjon')) return true;
       continue;
     }
@@ -552,7 +562,7 @@ function helpAlly(G,m){
 /* va frapper le mob o (à d cases, Manhattan) : il frappe s'il est au contact, sinon il fait un pas vers lui (en minant
    s'il le faut). Inatteignable : il l'ignore désormais et renvoie false. */
 function goFight(G,m,o,d,fighting,going){
-  if(d<=1 || inReach(G,m,o)){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
+  if(d<=1 || inReach(G,m,o,reachOf(m))){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
   const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-o.x)+Math.abs(y-o.y)<=1 && !(x===o.x && y===o.y && !isAir(G,x,y)));
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)){ m.ignored.add(o.id); m.foe=null; return false; }   // inatteignable : il le laisse

@@ -16,12 +16,14 @@ export const SPAWN_X = 25, CHEST_X = 22;
    par sort (décision du 21/10, Geoffrey) ; 0 de base */
 /* knockRes = résistance au recul, en % : un coup qui le pousse de k blocs ne le pousse que de k × (1 − knockRes/100)
    (25/10/2026, Geoffrey) ; 0 de base, aucune pièce ne la donne pour l'instant (voir COMBAT) */
+/* reach / knockback = portée d'attaque et recul du mineur, en blocs, AJOUTÉS à COMBAT.reach (0,5) et COMBAT.knock (0,25)
+   (25/10/2026, Geoffrey : Lance en fer) ; 0 de base. Les mobs gardent COMBAT.reach pour tacler. */
 /* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
    mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0, knockRes:0,
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
@@ -194,6 +196,7 @@ export const LOOT = {
       { family:'blueprint', tex:'blueprint', items:[
         { item:'Pioche en fer BP',             chance:0.02 },
         { item:'Épée en fer BP',               chance:0.02 },
+        { item:'Lance en fer BP',              chance:0.02 },   // 25/10/2026 (Geoffrey)
         { item:'Casque en fer BP',             chance:0.02 },
         { item:'Plastron en fer BP',           chance:0.02 },
         { item:'Jambes en fer BP',             chance:0.02 },
@@ -513,7 +516,7 @@ export const SPELLS = {
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
-  'pickaxe_iron','sword_stone','sword_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
+  'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
@@ -717,6 +720,12 @@ export const STUFF = {
     'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },   // 25/10 (Geoffrey) : nerf, avant 0,5 (24/10 : 0,4 × 1,25 ; le × 1,75 du fer, 0,7, était trop fort)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
     'Épée en fer':         { slot:'epee',   tex:'sword_iron',    set:{ damage:14 } },     // remplace les mains nues (5) ; 24/10 : × 1,25 (avant 11)
+    /* variante de l'épée (25/10/2026, Geoffrey) : elle tue moins vite, mais repousse assez (0,25 + 0,5 = 0,75 bloc, plus
+       que la portée de tacle d'un mob, 0,5) pour lui faire lâcher son tacle. Équilibrage (duels contre 4 mobs, vs épée) :
+       temps pour tuer +16 %, temps taclé −36 %, plus de vol du gobelin (3 → 0). Avant (+10 dégâts, recul +0,25) : égale à
+       l'épée, aucun tacle évité. Dégâts +8 sur les mains nues (13), vitesse d'attaque −10 % (idée de Geoffrey ; le verrou
+       du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
+    'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:67 } },   // 24/10 : avant 38
     'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33)
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
@@ -745,10 +754,10 @@ export const STUFF = {
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
-                piercing:'Perçage', looting:'Butin des mobs' },
-  statUnits: { attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+                piercing:'Perçage', looting:'Butin des mobs', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul' },
+  statUnits: { reach:' bloc', knockback:' bloc', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -806,7 +815,7 @@ export const UPGRADE = {
   tiers: {
     1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
-    2: { x:250, items:['Pioche en fer','Épée en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
+    2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
                        'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre'] },

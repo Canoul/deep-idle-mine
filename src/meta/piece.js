@@ -127,7 +127,7 @@ export function pieceBonus(entry){
   const m = plusMult(p.plus | 0), stats = { ...(d.stats || {}) }, set = {};
   for(const l of p.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
   for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l, runeFactor(p.rune));
-  for(const k in stats) stats[k] = m === 1 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);
+  for(const k in stats) stats[k] = m === 1 || stats[k] < 0 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);   // un malus n'empire pas (Lance, 25/10)
   for(const [k, v] of Object.entries(d.set || {})) set[k] = m === 1 ? v : roundStat(k, STATS[k] + (v - STATS[k]) * m);
   return { stats, set };
 }

@@ -63,7 +63,7 @@ export function statLines(entry){
   const label = k => STUFF.statLabels[k] ?? k;
   return [
     ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${num(v)}${unitOf(k)}`),
-    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} +${num(v)}${unitOf(k)}`),
+    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + num(-v) : '+' + num(v)}${unitOf(k)}`),
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
       `${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>

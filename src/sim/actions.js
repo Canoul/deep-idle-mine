@@ -5,7 +5,7 @@ import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnloc
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, winchT } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
-import { inReach, push } from './knock.js';
+import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { noEntry } from './dungeon.js';
@@ -178,18 +178,32 @@ export function finishAction(G,m,a){
     /* sorts (src/sim/spells.js) */
     case 'dash': finishDash(G,m,a); break;
     case 'dynamite': finishDynamite(G,m,a); break;
-    case 'attack': {
-      /* le coup ne porte que si le mob est encore à portée (COMBAT.reach) ; il le repousse de COMBAT.knock blocs */
-      const o=a.data.mob; if(o.hp>0 && inReach(G,m,o)){
-        if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-        const dmg=hitDamage(G,m);
-        o.hp-=dmg; m.foeHit=G.t;
-        if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
-        splash(G,m,o,dmg);
-        if(o.hp<=0) killMob(G,m,o);
-        else push(o, m, COMBAT.knock, mobCanEnter(G,o));
-      } break; }
+    case 'attack':
+      if(!a.data.done) landHit(G,m,a.data.mob);   // done : le coup est déjà parti au début de l'attaque (fight, src/sim/ai.js)
+      break;
   }
+}
+
+/* un coup du mineur m sur le mob o : seulement s'il est à portée (COMBAT.reach + stat reach). Il le repousse
+   (COMBAT.knock + stat knockback). Combat du 25/10/2026 (Geoffrey) :
+   - un mob repoussé hors de SA portée de tacle lâche son tacle : il doit revenir pour reprendre le mineur ;
+   - verrou (o.knockLock) : un mob repoussé ne peut plus l'être tant qu'il n'est pas revenu à portée de tacle (levé dans
+     src/sim/mobs.js). Le mineur ne peut donc jamais le repousser en boucle, quelle que soit sa vitesse d'attaque :
+     le mob revient au contact à chaque fois. Les coups suivants font leurs dégâts, sans recul. */
+export function landHit(G,m,o){
+  if(!(o.hp>0) || !inReach(G,m,o,reachOf(m))) return;
+  if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
+  const dmg=hitDamage(G,m);
+  o.hp-=dmg; m.foeHit=G.t;
+  if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
+  splash(G,m,o,dmg);
+  if(o.hp<=0){ killMob(G,m,o); return; }
+  if(o.knockLock) return;
+  const k=o.kx||0, ky=o.ky||0, x0=o.x, y0=o.y;
+  push(o, m, knockbackOf(m), mobCanEnter(G,o));
+  if(o.x===x0 && o.y===y0 && (o.kx||0)===k && (o.ky||0)===ky) return;   // contre un mur : il n'a pas bougé
+  o.knockLock=true;
+  if(o.grab===m.id && !inReach(G,o,m)){ o.grab=null; m.stats.untackled=(m.stats.untackled||0)+1; }
 }
 
 /* dégâts de zone (Force brute, 23/10) : une part du coup touche aussi les mobs vivants à 1 case (Manhattan) de la

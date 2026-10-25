@@ -18,6 +18,35 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Combat : mouvement continu, le recul casse le tacle, Lance en fer
+- **Pour le joueur** : les mobs avancent en continu (plus de saut de case en case). Le coup du mineur part tout de
+  suite, et il s'arrête net pour frapper un mob qui entre dans sa portée. Un coup qui repousse un mob au-delà d'un
+  demi-bloc lui fait **lâcher son tacle** ; repoussé une fois, il ne peut plus l'être avant d'être revenu : impossible
+  de le tenir à distance pour toujours, même avec beaucoup de vitesse d'attaque. Nouvelle arme **Lance en fer** (BP 2 %
+  dans le Treasure T1, 10 Tainted iron) : dégâts +8, vitesse d'attaque −10 %, recul +0,5, portée +0,25. Elle tue moins
+  vite que l'épée mais fait lâcher les tacles.
+- **Décisions** (Geoffrey) : règle C (le recul casse le tacle) ; la lance tue moins vite mais subit moins. Choix de
+  Claude : le verrou anti-boucle ; recette et rareté comme l'épée en fer (provisoire).
+- **Chiffres** : en duel contre 4 mobs, la lance tue 16 % moins vite et fait passer 36 % de temps en moins taclé, sans
+  vol du gobelin. En sessions (3 mineurs en fer) : 4 % de mobs tués en moins, 19 % de vols en moins, temps taclé égal.
+  Toute la mine (20 sessions) : coffre stable, moins de tacles, aucun blocage.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Lance en fer (première version, remplacée par l'entrée ci-dessus)
+- **Pour le joueur** : nouvel objet **Lance en fer** (case épée), BP à 2 % dans le Treasure T1, recette provisoire
+  10 Tainted iron (comme l'épée). Dégâts +10, vitesse d'attaque −10 %, recul +0,25, portée d'attaque +0,25. Deux
+  nouvelles stats : **Portée d'attaque** et **Recul**.
+- **À décider** : avec les règles de combat actuelles, la lance ne remplit pas son but (le mob tacle toujours en
+  premier et garde son tacle même repoussé) : en duel, elle tue moins vite que l'épée et ne réduit ni le tacle ni les
+  vols. Voir les chiffres dans `docs/debug.md`.
+- **Mouvement continu** (25/10, même branche) : les mobs avancent en glissant sur leur ligne (ils sont vraiment entre
+  deux cases) et la portée d'un mineur suit son pas. En simulation, l'économie ne bouge pas, mais on se fait un peu plus
+  tacler (les mobs attrapent dès 0,5 bloc en arrivant). Avec ça seul, la lance vaut l'épée, sans faire mieux.
+- **À décider** : pour que la portée et le recul protègent vraiment, il faut aussi changer le coup du mineur (il part
+  tout de suite, et le mineur s'arrête net pour frapper un mob qui entre dans sa portée), et peut-être que le recul
+  casse le tacle. Prototypes mesurés, pas gardés : chiffres dans `docs/debug.md`.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Tours : on remonte au sommet ensemble
 - **Pour le joueur** : dans les tours, un mineur tombé qui remonte et trouve le toit vide attend les autres juste
   avant le toit (sous la porte, ou dans le seau du treuil). Quand tout le groupe est là, ils montent ensemble. Si

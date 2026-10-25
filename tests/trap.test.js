@@ -135,9 +135,11 @@ test('mobs du piège : vitesse ×1,5 ; ils chassent le mineur visé au-delà de 
   const hunter = { id:G.mobId++, type:'bestiole', x:m.x+far, y:m.y, hp:1e9, maxhp:1e9, cd:0, trap:0, hunt:m.id, speed:TRAP.speedMul };
   const plain  = { id:G.mobId++, type:'bestiole', x:m.x+far, y:m.y, hp:1e9, maxhp:1e9, cd:0 };
   G.mobs.push(hunter, plain);
-  let step=null, prev=hunter.cd;
-  for(let i=0; i<40; i++){ tick(G); if(hunter.cd > prev) step ??= hunter.cd; prev = hunter.cd; }
-  assert.ok(Math.abs(step - CFG.mobStep/TRAP.speedMul) < 1e-9, `pas de ${step} s`);
+  /* marche continue (25/10) : il avance de TRAP.speedMul / mobStep blocs par seconde */
+  const x0 = hunter.x + (hunter.kx || 0);
+  for(let i=0; i<40; i++) tick(G);
+  const speed = (x0 - hunter.x - (hunter.kx || 0)) / (40 * DT);
+  assert.ok(Math.abs(speed - TRAP.speedMul/CFG.mobStep) < 0.05, `${speed} blocs/s`);
   assert.ok(hunter.x < m.x+far-3, 'le chasseur avance');
   assert.equal(plain.x, m.x+far, 'un mob ordinaire, trop loin, ne bouge pas');
 });

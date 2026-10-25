@@ -2747,3 +2747,65 @@ Règles (voir CLAUDE.md) :
   d'attente par tour (mineur-secondes), 8 regroupements complets, boss moyen 1 492 → 1 412.
 - **Point fragile** : un mineur qui ne passe par aucun point d'attente (chemin qui arriverait au toit autrement) ne
   serait jamais attendu comme « là » ; aujourd'hui tout chemin passe par la porte du toit ou par le treuil.
+
+### Lance en fer, stats Portée et Recul (Geoffrey, 25/10) — ✅ en ligne le 25/10 (règle C, lance équilibrée : voir la suite)
+- **Quoi** : `STATS.reach` / `STATS.knockback` (0 de base, ajoutés à `COMBAT.reach` / `COMBAT.knock` par `reachOf` /
+  `knockbackOf`, `src/sim/knock.js`) : coups du mineur en mine (`actions.js` attaque, `ai.js` fight / goFight / boss /
+  canard) et en tour (`tower/session.js` `hitReach`, recul des mobs et du boss). Les mobs gardent `COMBAT.reach` pour
+  tacler. Objet `STUFF.items['Lance en fer']` (epee, `stats` damage 10, attackSpeed −10, knockback 0,25, reach 0,25), recette
+  10 Tainted iron (provisoire), BP 2 % dans `LOOT['Treasure T1']` (tier 1 de la recherche : 10 BP), skin `skins/spear_iron`,
+  textures `spear_iron` (gen_textures.py), labels, unités, `shownStats`, aide du wiki. Premier malus du jeu : un malus
+  n'empire plus avec l'amélioration (`pieceBonus`) et s'affiche « −10 % » (`statLines`).
+- **Tests** : 171 ✅ (tower, combat, knock, stuff, amelioration, craft, research (T1 = 10 BP), loot, wiki (total BP 17 %),
+  spells, mobs, skins, rune).
+- **Duel** (`duel.mjs` du scratchpad : 1 mineur sans autre stuff, couloir plat, mob qui arrive, 2 côtés) — temps pour
+  tuer / temps taclé / vols :
+  bestiole (66 PV) épée 5,1 s / 4,5 s, lance 5,8 / 5,2 ; gobelin (115) épée 8,6 / 8,0 / 3 vols, lance 8,8 / 8,2 / 4 ;
+  occultiste (150) épée 10,2 / 9,6, lance 17,0 / 10,8 ; méphite (81) épée 5,9 / 5,3, lance 6,7 / 6,1. Le mob tacle
+  toujours (2/2), au bout de 0,7 s. « Épée + portée seule » = épée ; « épée + recul seul » ≈ lance (le recul ralentit).
+- **Pourquoi** : déplacements case par case → deux voisins sont à 0 d'écart, une portée de 0,75 ne frappe jamais avant
+  le contact ; le tacle tient jusqu'à la mort du mob (soupapes 5 s / 6 cases) et le vol du gobelin marche à distance :
+  repousser ne libère rien, ça oblige seulement à se recaler.
+- **Prototype testé (non gardé)** : « un coup qui repousse le mob hors de SA portée lui fait lâcher le tacle ». Duel :
+  vols du gobelin lance 0 (épée 2), temps taclé −10 à −20 % ; vitesse pour tuer inchangée (occultiste toujours 17 s
+  avec du recul). Sessions (3 mineurs stuff fer, 5 seeds) : écarts dans le bruit (mobs tués 92-98, temps taclé
+  556-627 s, volés 124-143 par partie, épée et lance mélangées).
+- **À trancher** : la règle du tacle ; la recette ; la rareté. **À vérifier** : pourquoi le recul double le temps contre
+  l'occultiste.
+- **Mouvement continu (25/10, même branche)** : `src/sim/mobs.js` `walk()` : sur sa ligne, un mob glisse de DT/stepOf blocs
+  par tick (`kx`), change de case au-delà d'une demi-case, s'arrête au contact (écart 0) ; bloc devant : pas au-delà du
+  centre ; échelles : recentré puis case par case (cd) ; volants inchangés (case par case). `src/sim/knock.js` `offX` :
+  un mineur en plein pas horizontal est à `fx + (x − fx) × avancée` pour la portée (sa case ne change qu'à la fin du pas).
+  Tours inchangées. Tests adaptés : mobs « figés » par `speed: 1e-9` (cd ne bloque plus la marche) dans combat et
+  mobs ; trap (vitesse mesurée en blocs/s) ; combat réel (repoussé = décalé). **Deux tests déjà rouges sur main corrigés** :
+  `skills.test.js` (pioche en fer +0,4 depuis le nerf du 25/10 : 1,48) et `mule.test.js` (or poids 3 : sac 15, oubli de
+  ma part le 25/10). 252 tests liés ✅.
+- **Sessions** (5 seeds, moyenne ; référence → mouvement continu) : à 3 sans skills coffre 4 105 → 4 100 pods, profondeur
+  195 → 188, tacles 36 → 43, tués 78 → 83 ; arbres mixtes 4 419 → 4 407, 200 → 204, tacles 37 → 43 ; solo 1 641 → 1 589,
+  tacles 26 → 35, volés 41 → 51. 0 bloquée partout.
+- **Duel corrigé** (couloir incassable : avant, le mineur creusait sous le couloir et le duel mesurait autre chose) —
+  temps taclé (s), épée / lance : A (branche) bestiole 4,5 / 4,9, gobelin 7,7 / 7,6 (3 vols chacun), occultiste 9,3 / 9,4,
+  méphite 5,6 / 6,5. B (+ coup au début de l'attaque + arrêt net du pas quand le mob entre dans sa portée) : 3,8 / 4,0,
+  7,0 / 6,7, 8,6 / 8,5, 4,7 / 5,2 ; la lance frappe en premier (écart 0,67), repousse à 1,06, le mob tacle 0,5 s après.
+  C (B + recul qui casse le tacle) : 3,6 / 3,2, 6,8 / 5,9 (vols 3 / 2), 8,4 / 7,7, 4,3 / 4,8 ; temps pour tuer ≈ égal.
+  ⚠️ En B et C, un méphite contre un mineur à mains nues n'est jamais tué (595 s, blocage du prototype à comprendre).
+- **Règle C (25/10, même branche)** : `src/sim/actions.js` `landHit` (coup du mineur, exporté) : recul puis, si le mob tacle ce
+  mineur et n'est plus à SA portée (`inReach(G,o,m)`), `o.grab = null` ; verrou `o.knockLock` posé à chaque recul effectif,
+  levé dans `updateGrab` (`src/sim/mobs.js`) quand le mob est revenu à portée de sa cible. `src/sim/ai.js` `fight` : coup
+  immédiat (`m.atkReady`, action `attack` `done:true` qui ne fait qu'attendre) ; barbare + mob de piège à plus d'une case :
+  toujours `goFight` (corrige des allers-retours entre pas droit et chemin, seed 23757 arbres mixtes, défaut probable aussi
+  sur main). `src/sim/session.js` : arrêt net (pas vers m.foe coupé dès qu'il est à portée) ; `stopAction` (`knock.js`) : un
+  pas coupé garde son avancée (sinon oscillation, seed 7919 mimic). Volants : au contact, ils reviennent en glissant.
+  Lance : damage 8, attackSpeed −10, knockback 0,5, reach 0,25 ; dans `UPGRADE.tiers[2]` (runes). Tests : `tests/lance.test.js`
+  (3 : stats, tacle lâché depuis le contact, +300 % de vitesse d'attaque et mob lent : il retacle), combat réécrits (verrou ;
+  tacle gardé si le mob s'éloigne seul, lâché sur un coup), research (pioche +0,4, déjà rouge sur main) ; 344 tests liés ✅.
+- **Balayage** (`sweep.mjs`, 4 mobs × 2 côtés × 3 départs, vs épée ; temps pour tuer / temps taclé) : actuelle (recul
+  +0,25) +2 % / +3 % ; recul +0,5 +3 % / −46 % ; **retenue (dégâts +8, vit. −10 %, recul +0,5)** +16 % / −36 %, 0 vol
+  (épée 3) ; dégâts +7, vit. 0 +14 % / −44 %. Portée +0,25 ou +0,5 : sans effet mesurable. Stress : +100 % de vit. att.
+  +37 % / −65 % ; +300 % +58 % / −2 % (le mob tacle toujours : verrou ✅).
+- **Sessions** (référence → final) : 3 sans skills (5) coffre 4 105 → 4 155, tacles 36 → 32, volés 172 → 157 ; arbres
+  mixtes (10) 4 419 → 4 553, tacles 37 → 28, volés 179 → 160 ; solo (5) 1 641 → 1 567, tacles 26 → 23, volés 41 → 56.
+  0 bloquée sur 20. Stuff fer complet (5, 3 mineurs, lance vs épée) : tués 94 / 98, temps taclé 490 / 496 s (beaucoup de
+  tacles courts : 264 / 90), temps à frapper 684 / 589 s, volés 102 / 126, coffre 3 182 / 3 263.
+- **Points fragiles** : solo : coffre −4,5 %, vols +37 % (5 seeds, à revoir sur plus). Tours non touchées (combat
+  ancien). En session la lance ne réduit pas le temps taclé (le duel, si) : à surveiller.
