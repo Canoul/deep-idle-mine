@@ -204,7 +204,7 @@ test('affichage : le navigateur reçoit le sac posé (case, remplissage, capacit
   bag(G, lg, X + 1, 10, { 'Or':5 });
   const view = createViewer(G);
   let M = applyView(emptyView(), view(null), 0);
-  assert.deepEqual(M.mule, { x:X + 1, y:10, load:20, cap:2*lg.carac.pods });
+  assert.deepEqual(M.mule, { x:X + 1, y:10, load:15, cap:2*lg.carac.pods });   // 5 or × poids 3 (25/10 ; avant 4)
   G.mule.placed = false;
   M = applyView(M, view(M.ticks), 0);
   assert.equal(M.mule, null);

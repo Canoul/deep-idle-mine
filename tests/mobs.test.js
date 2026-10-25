@@ -289,9 +289,9 @@ test('Force brute : chaque coup touche aussi les mobs à 1 case de la cible (2 %
   const G = corridor(1), m = G.miners[0];
   m.x = 5; m.ox = 1e6; m.skillTree = 'barbare';
   m.skill = { ...m.skill, ...skillEffects(sanitizeSkills({ tree:'barbare', ranks:{ damage:3 } })) };
-  const o = mob(G, { type:'gobelin', x:6, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
-  const q = mob(G, { type:'gobelin', x:7, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
-  const far = mob(G, { type:'gobelin', x:8, y:m.y, hp:1000, maxhp:1000, cd:1e9 });
+  const o = mob(G, { type:'gobelin', x:6, y:m.y, hp:1000, maxhp:1000, cd:1e9, speed:1e-9 });
+  const q = mob(G, { type:'gobelin', x:7, y:m.y, hp:1000, maxhp:1000, cd:1e9, speed:1e-9 });
+  const far = mob(G, { type:'gobelin', x:8, y:m.y, hp:1000, maxhp:1000, cd:1e9, speed:1e-9 });
   run(G, 30);
   const hit = 1000 - o.hp;
   assert.ok(hit > 0, 'il frappe sa cible');

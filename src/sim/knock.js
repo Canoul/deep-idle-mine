@@ -7,7 +7,16 @@ import { COMBAT } from '../config.js';
 import { isAir } from './world.js';
 
 const EPS = 1e-9;
-export const offX = e => e.kx || 0;
+/* décalage horizontal ; un mineur en plein pas sur sa ligne est entre ses deux cases (mouvement continu, 25/10/2026) :
+   il reste sur sa case de départ pour le chemin et la gravité, mais la portée se mesure là où il en est de son pas */
+export function offX(e){
+  const a = e.action;
+  if(a?.type === 'move' && a.data.y === e.y && a.data.x !== e.x && a.dur > 0){
+    const fx = a.data.fx ?? e.x;
+    return fx - e.x + (a.data.x - fx) * Math.min(1, a.t / a.dur);
+  }
+  return e.kx || 0;
+}
 export const offY = e => e.ky || 0;
 export const recenter = e => { e.kx = 0; e.ky = 0; };
 

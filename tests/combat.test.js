@@ -44,7 +44,7 @@ test('combat réel : repoussé, le mob revient au contact ; le mineur le suit et
   const x0 = m.x; let far = 0, pushed = false;
   for(let i = 0; i < 600 && b.hp > 0; i++){
     run(G, 1);
-    if(b.x > x0 + 1) pushed = true;
+    if(b.x + (b.kx || 0) > x0 + 1 + 1e-9) pushed = true;   // marche continue (25/10) : repoussé = décalé, même sans changer de case
     if(Math.abs(b.x - m.x) > 2) far++;
   }
   assert.ok(b.hp <= 0, 'il finit par le tuer');
@@ -62,7 +62,7 @@ test('tacle : il commence à portée (0,5), sans être collé', () => {
 
 test('tacle : il dure même quand le mob est repoussé hors de portée, et le mineur ne fait que le poursuivre', () => {
   const G = corridor(), m = G.miners[0]; m.ox = 300;
-  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9 });   // il ne bouge pas : seul le mineur doit revenir au contact
+  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9, speed: 1e-9 });   // immobile   // il ne bouge pas : seul le mineur doit revenir au contact
   run(G, 1); assert.equal(tackler(G, m), b);
   b.x = m.x + 3; b.kx = 0;   // repoussé loin
   const x0 = m.x;
@@ -75,7 +75,7 @@ test('tacle : il dure même quand le mob est repoussé hors de portée, et le mi
 test('tacle : soupape, il saute si le mineur ne peut pas le frapper pendant 5 s', () => {
   const G = worldFrom(['', 'd'.repeat(50), '#@ ' + ' '.repeat(10) + '#', '#'.repeat(50)]), m = G.miners[0];
   m.action = { type: 'wait', dur: 1e9, t: 0, data: {} };   // occupé pour toujours : il ne frappe jamais
-  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9 });
+  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9, speed: 1e-9 });   // immobile
   b.grab = null; run(G, 1); assert.equal(tackler(G, m), b);
   m.action = { type: 'stun', dur: 1e9, t: 0, data: {} };
   b.x = m.x + 3;   // hors de portée : il ne pourra pas le reprendre tout de suite
@@ -86,7 +86,7 @@ test('tacle : soupape, il saute si le mineur ne peut pas le frapper pendant 5 s'
 
 test('tacle : soupape, il saute si le mob est à plus de 6 cases', () => {
   const G = corridor(), m = G.miners[0];
-  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9 });
+  const b = mob(G, { x: m.x + 1, y: m.y, cd: 1e9, speed: 1e-9 });   // immobile
   run(G, 1); assert.equal(tackler(G, m), b);
   b.x = m.x + COMBAT.tackleLeash + 1;
   run(G, 1); assert.equal(tackler(G, m), null);
