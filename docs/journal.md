@@ -32,7 +32,7 @@ Modèle d'entrée :
   essayée puis retirée.
 - **À suivre** : l'**équilibrage** de la tour (Geoffrey fait ses simulations). La stat Résistance au recul n'a toujours
   aucune source.
-- **État** : 🧪 sur la branche `geoffrey/tour-boss` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Tainted iron : 15 chitine au lieu de 20
 - **Pour le joueur** : l'alliage Tainted iron demande **15 chitine** (avant 20), toujours avec 5 lingots de fer,

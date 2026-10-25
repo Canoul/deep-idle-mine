@@ -2631,7 +2631,7 @@ Règles (voir CLAUDE.md) :
   1 alliage » ; 20 → 15 pour finir les cases vides) ✅ (21) ; anticheat furnace, game-service, wiki ✅ ; `npm run
   test:anticheat` ✅ (89).
 
-### Tour céleste : boss, étages de blocs, affichage fluide, mode dev (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-boss`
+### Tour céleste : boss, étages de blocs, affichage fluide, mode dev (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Affichage** : la tour remplaçait sa copie à chaque envoi (250 ms) sans interpolation → sauts. `applyTowerView(v, prev,
   now)` (`src/shared/tower-view.js`) réutilise `glide` (exporté de `src/shared/view.js`) pour mineurs, mobs et boss
   (`lift`, `kx`) ; `src/main.js` passe la copie précédente ; `src/render/tower.js` lit `shownPos` ; arc du recul :
