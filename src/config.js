@@ -1020,14 +1020,16 @@ export const TOWER = {
   view: { cols: 22, rows: 16 },
   /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans
      l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
-     le taclent au contact (rien d'autre). La porte du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
-  mobs: { count: 5, hp: 200, step: 0.9 },
+     le taclent à portée (COMBAT, 25/10) ; toutes les hitEvery s ils repoussent le mineur taclé de knock blocs. La porte
+     du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
+  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25 },
   /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
      personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de
      base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
-     vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). */
-  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, speedMul: 2 },
+     vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). Sinon, le coup le repousse
+     de push blocs (recul, 25/10). Le boss, lui, ne recule pas sous les coups. */
+  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, push: 0.25, speedMul: 2 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },
