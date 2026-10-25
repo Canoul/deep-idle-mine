@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tour : plus étourdi en tombant, projection du boss à 4 cases
+- **Pour le joueur** : un mineur projeté hors de la tour tombe jusqu'en bas mais n'est plus étourdi : il remonte tout
+  de suite. Le boss projette de 4 cases au lieu de 5. Wiki à jour.
+- **État** : 🧪 sur la branche `geoffrey/tour-chute-projection` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Tour : les mobs reculent deux fois plus, sans temps sonné
 - **Pour le joueur** : un Séraphin ou un Diablotin frappé recule de 0,5 bloc (avant 0,25) et revient aussitôt au
   contact : plus de pause de 0,5 s après un recul.

@@ -2868,8 +2868,15 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/tower-boss.test.js` (+2 : front depuis l'entrée en solo et à 3, mob sonné), `tests/perf.test.js`
   (nouveau, 3) ; tower, tower-boss, perf, boot-check, controls ✅. Pas de simulation (demande de Geoffrey).
 
-### Tour : recul des mobs ×2, temps sonné retiré (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10 (⚠️ tests non relancés)
+### Tour : recul des mobs ×2, temps sonné retiré (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10 (tests relancés ensuite : ✅, voir l'entrée suivante)
 - `TOWER.mobs.knockRes: -100` (remplace `knockStun`) ; `hitMob` pousse de `knockbackOf(m) × (1 − MB.knockRes/100)`
   (la résistance n'est pas posée sur le mob : `knockOf` borne la résistance à 0–100) ; `o.stagger` et son test
   (`tests/tower-boss.test.js`, « mob sonné ») retirés. ⚠️ Tests non relancés à la demande de Geoffrey : à relancer
   (tower, tower-boss) à la prochaine modification de la tour.
+
+### Tour : plus d'étourdissement à l'arrivée d'une chute, projection 4 cases (Geoffrey, 25/10 soir) — 🧪 branche `geoffrey/tour-chute-projection`
+- `land()` (`src/sim/tower/session.js`) : plus d'action `stun` après une chute de `CFG.stunFall` cases ou plus (le
+  message du journal reste) ; `fell`, chutes comptées et treuil du logisticien inchangés. `TOWER.boss.knock` 5 → 4.
+- Tests adaptés (`tests/tower.test.js`) : l'arrivée en bas se repère à `!m.knocked` au lieu de l'étourdissement
+  (treuil, regroupement), le treuil s'installe en 10 s sans les 5 s d'étourdissement, projection 4. tower,
+  tower-boss ✅ (37) : ils couvrent aussi l'entrée précédente, mise en ligne sans tests.

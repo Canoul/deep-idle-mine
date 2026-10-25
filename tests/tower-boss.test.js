@@ -1,5 +1,5 @@
 /* Tour céleste (25/10, Geoffrey) : boss qui focus et suit sa cible, la traverse des autres, recul 0,5 avec arc,
-   projection de 5 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
+   projection de 4 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
    et projette ceux qui sont dessous), étages de blocs à vider entièrement, mobs qui partagent une case, affichage fluide. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

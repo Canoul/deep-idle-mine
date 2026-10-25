@@ -77,9 +77,9 @@ test('mobs : la porte du plafond reste scellée tant qu\'il en reste un ; ils ta
   assert.equal(mobDist({ x: 5, y: 10 }, { x: 6, y: 9 }), 1);
 });
 
-test('boss : 3500 PV ; projection de 5 cases, 25 % (10 % barbare), 35 / 20 % en rage ; son focus tombé, il marche vers un autre', () => {
+test('boss : 3500 PV ; projection de 4 cases, 25 % (10 % barbare), 35 / 20 % en rage ; son focus tombé, il marche vers un autre', () => {
   assert.equal(TOWER.boss.hp, 3500); assert.equal(TOWER.boss.knockChance, 0.25); assert.equal(TOWER.boss.knockBarb, 0.1);
-  assert.equal(TOWER.boss.rageKnock, 0.35); assert.equal(TOWER.boss.rageKnockBarb, 0.2); assert.equal(TOWER.boss.knock, 5);
+  assert.equal(TOWER.boss.rageKnock, 0.35); assert.equal(TOWER.boss.rageKnockBarb, 0.2); assert.equal(TOWER.boss.knock, 4);
   const G = newTower(5, { side: 'angel', miners: team(2) });
   for(const o of G.mobs) o.hp = 0;
   const [a, b] = G.miners, y = G.roof - 1;
@@ -93,7 +93,7 @@ test('boss : 3500 PV ; projection de 5 cases, 25 % (10 % barbare), 35 / 20 % en 
   for(let i = 0; i < 20; i++) tickTower(G);
   assert.ok(G.boss.x > G.bx, 'il s\'est déplacé vers le mineur le plus proche');
   assert.ok(G.boss.x + TOWER.boss.w - 1 <= G.x1, 'il reste sur le toit');
-  /* projection depuis le milieu : 5 cases, il reste sur le toit */
+  /* projection depuis le milieu : 4 cases, il reste sur le toit */
   assert.equal(G.boss.focus, b.id, 'son focus (a) est tombé du toit : il focus b');
   G.boss.x = G.bx; a.x = G.boss.x - 1; a.y = y; b.x = G.x1;
   G.boss.focus = a.id;   // il ignore les autres : on lui redonne a comme focus
@@ -109,7 +109,7 @@ test('boss : 3500 PV ; projection de 5 cases, 25 % (10 % barbare), 35 / 20 % en 
   let guard = 0;
   while(!towerSupported(G, a.x, a.y) || a.action?.type === 'move'){ tickTower(G); if(guard++ > 300) break; }
   assert.equal(a.y, G.floor, 'au pied de la tour');
-  assert.equal(a.action?.type, 'stun', 'étourdi');
+  assert.notEqual(a.action?.type, 'stun', "plus étourdi à l'arrivée (25/10 au soir)");
 });
 
 test('barbare : du côté opposé aux autres ; deux barbares sans autre mineur se répartissent', () => {
@@ -233,13 +233,13 @@ test('treuil : le logisticien (skill Treuil) tombé au pied de la tour installe 
   const m = G.miners[0]; cleared(G); G.boss.engaged = false;
   assert.equal(TOWER.winch.setup, 10);
   dropLeft(G, m);
-  ticksUntil(G, () => m.y === G.floor && m.action?.type === 'stun');
+  ticksUntil(G, () => m.y === G.floor && !m.knocked);   // arrivé en bas (plus d'étourdissement depuis le 25/10 au soir)
   assert.equal(G.winch, null, 'pas encore');
   const n = ticksUntil(G, () => G.winch);
   assert.ok(G.winch, 'treuil installé');
   assert.deepEqual({ x: G.winch.x, top: G.winch.top, bottom: G.winch.bottom }, { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor });
-  assert.ok(n * 0.1 >= CFG.stunTime + TOWER.winch.setup - 0.2, `étourdi puis 10 s d'installation (${n * 0.1} s)`);
-  assert.ok(n * 0.1 <= CFG.stunTime + TOWER.winch.setup + 5, `pas de détour (${n * 0.1} s)`);
+  assert.ok(n * 0.1 >= TOWER.winch.setup - 0.2, `10 s d'installation (${n * 0.1} s)`);
+  assert.ok(n * 0.1 <= TOWER.winch.setup + 5, `pas de détour (${n * 0.1} s)`);
   assert.ok(G.log.some(l => /treuil/i.test(l.msg ?? l.text ?? String(l))), 'annoncé au journal');
 });
 
@@ -253,7 +253,7 @@ test('treuil : sans le skill Treuil, rien ; une seconde chute n\'en installe pas
   dropLeft(H, l); ticksUntil(H, () => H.winch);
   const first = H.winch;
   Object.assign(l, { x: H.x1 + 3, y: H.roof - 1, knocked: true, action: null });   // de l'autre côté
-  ticksUntil(H, () => l.y === H.floor && l.action?.type === 'stun');
+  ticksUntil(H, () => l.y === H.floor && !l.knocked);
   ticksUntil(H, () => l.y < H.floor - 2, 400);
   assert.equal(H.winch, first, 'toujours le même treuil');
   assert.notEqual(l.action?.type, 'winchSetup');
@@ -337,7 +337,7 @@ test('regroupement : projeté hors du toit, il est marqué tombé ; remonté sur
   cleared(G); G.boss.engaged = false;
   const a = G.miners[0];
   Object.assign(a, { x: G.x0 - 3, y: G.roof - 1, knocked: true, action: null });
-  ticksUntil(G, () => a.y === G.floor && a.action?.type === 'stun');
+  ticksUntil(G, () => a.y === G.floor && !a.knocked);
   assert.equal(a.fell, true);
   Object.assign(a, { x: G.x0, y: G.roof - 1, action: null }); tickTower(G);
   assert.equal(a.fell, false);
