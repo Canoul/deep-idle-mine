@@ -119,10 +119,10 @@ test('wiki : chance de treasure par area lue dans la config (50 % en areas 0 à 
   assert.deepEqual(AREAS.map(a => a.chestChance), [0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4]);
 });
 
-test('wiki : glyphes — tableau généré depuis GLYPHS (9 lignes), usage des objets, section dans la page', async () => {
+test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des objets, section dans la page', async () => {
   const { GLYPHS } = await import('../src/config.js');
   const rows = D.glyphRows();
-  assert.equal(rows.length, 9);
+  assert.equal(rows.length, 10);
   const rush = rows.find(r => r.node === 'ore_rush');
   assert.deepEqual({ item:rush.item, skill:rush.skill, desc:rush.desc }, { item:'Glyphe Ruée', skill:'Ruée', desc:GLYPHS.desc.ore_rush });
   assert.ok(rush.tree, 'arbre du skill');

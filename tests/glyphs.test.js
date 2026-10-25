@@ -20,9 +20,9 @@ import { worldFrom, run } from './helpers.js';
 import { sanitizeSets, applySet } from '../src/meta/sets.js';
 import { createSpells } from '../src/meta/spells.js';
 
-test('glyphes : 9 objets, un par skill visé, catégorie glyph, épiques, texture présente', () => {
+test('glyphes : 10 objets, un par skill visé, catégorie glyph, épiques, texture présente', () => {
   const entries = Object.entries(GLYPHS.items);
-  assert.equal(entries.length, 9);
+  assert.equal(entries.length, 10);
   for(const [node, name] of entries){
     assert.ok(NODES[node], `${node} : skill connu`);
     assert.equal(ITEMS[name]?.cat, 'glyph', name);
@@ -31,7 +31,9 @@ test('glyphes : 9 objets, un par skill visé, catégorie glyph, épiques, textur
     assert.equal(rarityOf(name), 'epique', name);
     assert.ok(GLYPHS.desc[node], `${node} : texte joueur`);
   }
-  for(const node of ['lazy_legend', 'winch_speed', 'taunt', 'winch']) assert.equal(GLYPHS.items[node], undefined, `${node} : pas de glyphe`);
+  for(const node of ['lazy_legend', 'winch_speed', 'taunt']) assert.equal(GLYPHS.items[node], undefined, `${node} : pas de glyphe`);
+  assert.equal(GLYPHS.items.winch, 'Glyphe Treuil'); assert.equal(GLYPHS.liftSpeed, 3); assert.equal(GLYPHS.liftEvery, 2);
+  for(const t of ['lift_rail', 'lift_top', 'lift_cabin']) assert.ok(existsSync(`textures/${t}.png`), t);
   assert.ok(existsSync('textures/glyph.png'));
   assert.equal(GLYPHS.rushTime, 5); assert.equal(GLYPHS.killDamageMax, 25); assert.equal(GLYPHS.braumOxygen, 0.3);
   assert.equal(GLYPHS.attackToMine, 0.1); assert.equal(GLYPHS.torchChance, 0.05); assert.equal(GLYPHS.ladderMult, 0.5);

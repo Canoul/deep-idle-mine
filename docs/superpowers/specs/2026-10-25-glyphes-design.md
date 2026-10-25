@@ -110,3 +110,21 @@ Pas de glyphe : Légende de la flemme, Escalateur, Provocation (pas de case).
 
 - Glyphe Treuil (ascenseur 3× plus rapide, posé tous les 2 déblocages d'area) : étape 2, spec à part.
 - Source des glyphes en jeu : à décider plus tard.
+
+---
+
+# Étape 2 : Glyphe Treuil (ascenseur) — 25/10/2026, validé en discussion
+
+| Sujet | Décision (Geoffrey) |
+|---|---|
+| Objet | « Glyphe Treuil », 10ᵉ glyphe, skill `winch` (épique, comme les autres). |
+| Qui construit | Un logisticien du groupe avec le glyphe actif passe avant la règle actuelle (porteur du sac, Mule, premier). |
+| Rythme | Avec le glyphe : pose / prolongement aux 1er, 3e, 5e… déblocages (`GLYPHS.liftEvery = 2`), jusqu'en haut de la dernière area débloquée ; rien aux 2e, 4e… |
+| Vitesse | × `GLYPHS.liftSpeed = 3` sur le seau, Escalateur compris (2,55 × la montée ; 3,19 × avec Escalateur 5/5). |
+| Mule | Même règle : sac en bas de l'ascenseur, vidé aux prolongements. |
+| Tours | Le logisticien qui a le glyphe installe un ascenseur (× 3) au lieu du treuil ; installation 10 s. |
+| Apparence | Nouvelles textures : `lift_rail` (rail), `lift_top` (machinerie en surface), `lift_cabin` (cabine). |
+
+Code : `G.winch.lift = true` quand l'ascenseur est posé par un porteur du glyphe ; `winchT` / `baseWinchT` (mine) et `winchT`
+(tours) × `liftSpeed` si `G.winch.lift` ; `tryUnlock` (`src/sim/world.js`) choisit le porteur du glyphe et saute les
+déblocages pairs ; rendu `canvas.js` / `tower.js` selon `lift`. Sans glyphe : rien ne change (`G.winch` sans `lift`).

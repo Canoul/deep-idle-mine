@@ -436,9 +436,12 @@ export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
 export const GLYPHS = {
   items: { mine_speed:'Glyphe Pioche aiguisée', ore_oxygen:'Glyphe Second souffle', ore_rush:'Glyphe Ruée',
            travel_rush:'Glyphe Navette', tall_ladder:'Glyphe Échelle de 2', mule:'Glyphe Mule', damage:'Glyphe Force brute',
-           loot:'Glyphe Pillage', braum:'Glyphe Braum' },
+           loot:'Glyphe Pillage', braum:'Glyphe Braum', winch:'Glyphe Treuil' },
   attackToMine:0.1, torchChance:0.05, rushTime:5, ladderMult:0.5, oxygenToSpeed:0.0003, damageToPods:3,
   killDamagePct:1, killDamageMax:25, braumOxygen:0.3, rarity:'epique', tex:'glyph',
+  /* Glyphe Treuil (étape 2) : un ascenseur liftSpeed × plus rapide que le treuil (Escalateur compris), posé / prolongé
+     un déblocage d'area sur liftEvery (1er, 3e, 5e…) ; dans les tours, un ascenseur au lieu du treuil */
+  liftSpeed:3, liftEvery:2,
   desc: {
     mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',
     ore_oxygen:  'Miner un minerai a 5 % de chance de lui rendre une torche (jamais au-delà de son maximum)',
@@ -449,6 +452,7 @@ export const GLYPHS = {
     damage:      'Ses dégâts (stuff et skills compris) s\'ajoutent 3 fois à ses pods (14 dégâts = +42 pods)',
     loot:        'Chaque mob tué ajoute 1 % à ses dégâts pour la session (au plus +25 %)',
     braum:       'À chaque entrée dans un piège ou un donjon, il regagne 30 % de son oxygène max',
+    winch:       'Il pose un ascenseur au lieu d\'un treuil : 3 fois plus rapide, posé ou prolongé une nouvelle area sur deux (1re, 3e, 5e…) ; dans les tours aussi',
   },
 };
 const GLYPH_ITEMS = Object.fromEntries(Object.entries(GLYPHS.items).map(([node, name]) =>
@@ -557,7 +561,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','backpack','scroll','glyph'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).

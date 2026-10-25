@@ -793,6 +793,33 @@ def main():
     rect(bucket, 2, 12, 12, 1, hexc('#5a6069'))
     rect(bucket, 3, 6, 2, 9, hexc('#b8854a'))
     tex['bucket'] = bucket
+    # ascenseur (Glyphe Treuil, 25/10/2026) : deux rails d'acier riveté, machinerie en fer avec roue dentée, cabine grillagée
+    steel, steel_l, steel_d, rivet = hexc('#7d8794'), hexc('#b4bec9'), hexc('#4a525c'), hexc('#d8dee5')
+    rail = blank()
+    rect(rail, 3, 0, 2, 16, steel); rect(rail, 11, 0, 2, 16, steel)        # rails
+    rect(rail, 3, 0, 1, 16, steel_l); rect(rail, 11, 0, 1, 16, steel_l)
+    for y in range(1, 16, 5):
+        rect(rail, 4, y, 8, 1, steel_d)                                     # traverses
+        rect(rail, 4, y, 1, 1, rivet); rect(rail, 11, y, 1, 1, rivet)
+    tex['lift_rail'] = rail
+    ltop = blank()
+    rect(ltop, 1, 3, 2, 13, steel_d); rect(ltop, 13, 3, 2, 13, steel_d)    # montants
+    rect(ltop, 1, 2, 14, 2, steel)                                          # poutre
+    rect(ltop, 1, 2, 14, 1, steel_l)
+    rect(ltop, 5, 5, 6, 6, hexc('#3a3f47'))                                 # roue dentée
+    rect(ltop, 6, 6, 4, 4, hexc('#c9a227')); rect(ltop, 7, 7, 2, 2, hexc('#3a3f47'))
+    for x, y in [(7, 4), (11, 7), (7, 11), (4, 7)]:
+        rect(ltop, x, y, 2, 1 if y in (4, 11) else 2, hexc('#3a3f47'))     # dents
+    rect(ltop, 7, 12, 2, 4, steel_d)                                        # câble
+    tex['lift_top'] = ltop
+    cab = blank()
+    rect(cab, 2, 1, 12, 14, steel_d)                                        # cadre
+    rect(cab, 3, 2, 10, 12, hexc('#2c3138'))                                # intérieur
+    for x in range(4, 13, 3):
+        rect(cab, x, 2, 1, 12, steel)                                       # grille
+    rect(cab, 2, 1, 12, 1, steel_l); rect(cab, 2, 14, 12, 1, steel_l)
+    rect(cab, 7, 0, 2, 1, steel_d)                                          # attache du câble
+    tex['lift_cabin'] = cab
     # sac de la Mule (skill Logisticien) : sac à dos en cuir, rabat, sangles et boucle en fer
     backpack = blank()
     rect(backpack, 5, 1, 6, 2, hexc('#5c3a1a'))   # poignée
