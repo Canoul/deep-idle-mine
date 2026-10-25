@@ -2440,10 +2440,21 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
-### Treasures : 40 % par area (Geoffrey, 24/10) — 🧪 branche `geoffrey/tresor-40`
+### Treasures : 40 % par area (Geoffrey, 24/10) — 🧪 repris dans `geoffrey/tresor-60` (25/10)
 - **Quoi** : `AREAS[*].chestChance` 0,3 → 0,4 (les 7 areas). Wiki : `D.treasureChanceText()` remplace le « 30 % »
   écrit à la main (`#w-treasure-chance`). GAME_DESIGN §2 Treasures.
 - **Tests** : wiki (9, dont 1 nouveau), treasure, world, loot, game-replay ✅ (54).
 - **Simulation** `--miners 3 --count 5`, mêmes seeds : 0 bloquée ✅ ; areas 3,2, profondeur 193,4, coffre 4 075 pods :
   identiques à 0,3 (le tirage du treasure ne change pas le reste de l'area) ; treasures présents dans les areas
   ouvertes 1,2 → 1,6, ouverts 0,4 → 0,4 (seed 7919 : 2/2 → 2/3).
+
+### Treasure T1 : 60 % en areas 0-2, BP en fer 2 %, parts 5-10 (Geoffrey, 25/10) — 🧪 branche `geoffrey/tresor-60`
+- **Quoi** : `src/config.js` : `AREAS[0..2].chestChance` 0,4 → 0,6 (areas 3+ : 0,4, de `geoffrey/tresor-40`, inclus) ;
+  `LOOT['Treasure T1']` : Blueprint parts 5-15 → 5-10, BP pioche / épée / casque / plastron / jambes / bottes en
+  fer 0,01 → 0,02 (four, boussole, ceinture : 0,01). Total famille blueprint 9 % → 15 %. GAME_DESIGN §2 Treasures ;
+  wiki : date du bandeau 25/10, « 40 à 60 % » vient de `treasureChanceText()`.
+- **Tests** : wiki (chance par area, total blueprint 0,15), loot, treasure, world ✅ (46) ; `npm run test:anticheat` ✅ (85).
+- **Simulation** `--miners 3 --count 5` : 0 bloquée ✅ ; areas 3,0, profondeur 190,2, coffre 4 063 pods ; treasures
+  présents dans les areas ouvertes 2,0, ouverts 0,4.
+- **Point fragile** : la hausse ne se voit presque pas en simulation (ouverts 0,4 à 30, 40 et 60 %) : c'est la
+  découverte qui limite, pas la chance.

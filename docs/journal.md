@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Treasure T1 : plus de treasures, plus de blueprints, moins de parts
+- **Pour le joueur** : dans les areas 0 à 2 (celles du Treasure T1), **60 %** de chance de trouver un treasure (40 %
+  au-delà). Dans un Treasure T1 : les blueprints des 6 pièces en fer (pioche, épée, casque, plastron, jambes, bottes)
+  tombent à **2 %** chacun (avant 1 %) ; four en fer, boussole en or et ceinture gobelin restent à 1 %. Les
+  Blueprint parts passent à **5 à 10** (avant 5 à 15). Wiki à jour.
+- **Décisions** (Geoffrey) : valeurs ci-dessus.
+- **À suivre** : en simulation (3 mineurs sans stuff), 2 treasures par partie dans les areas ouvertes mais toujours
+  0,4 ramené : les mineurs ne trouvent pas ceux qui sont loin de leurs galeries.
+- **État** : 🧪 sur la branche `geoffrey/tresor-60` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Plus de treasures : 40 % par area
 - **Pour le joueur** : chaque area a maintenant **40 %** de chance de cacher un treasure (avant 30 %), dans toutes
   les areas. Le wiki suit tout seul (le chiffre est lu dans le jeu).
@@ -26,7 +36,7 @@ Modèle d'entrée :
   (1,2 → 1,6 par partie), mais les mineurs en ouvrent autant (0,4) : un treasure n'est visé qu'une fois découvert,
   et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
   équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
-- **État** : 🧪 sur la branche `geoffrey/tresor-40` (pas en ligne)
+- **État** : 🧪 repris dans la branche `geoffrey/tresor-60` (entrée du 25/10 ci-dessus)
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**

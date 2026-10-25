@@ -76,7 +76,7 @@ au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide
 
 ### Treasures
 Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appeler « coffre » à l'oral, c'est bien un treasure, pas le coffre de dépôt de la surface) ; l'**objet** qu'il donne s'appelle **Treasure TX**, X étant son tier.
-- Chaque area a une **probabilité** qu'un treasure y soit enfoui : **40 %** par défaut *(24/10/2026, Geoffrey ; avant 30 % ; provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même treasure.
+- Chaque area a une **probabilité** qu'un treasure y soit enfoui : **60 %** dans les areas 0 à 2 (celles du Treasure T1) et **40 %** au-delà *(25/10/2026, Geoffrey ; avant 40 % partout, et 30 % avant le 24/10 ; provisoire, réglable area par area)*. Le tirage dépend de la seed : même seed, même treasure.
 - Le treasure remplace un bloc de terrain au hasard dans l'area.
 - **Butin** *(décision ferme)* : **1 objet Treasure TX**, **aucun minerai**. Le tier dépend de l'area où le treasure est enfoui :
 
@@ -92,10 +92,10 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 
   | Objet | Quantité | Chance |
   |---|---|---|
-  | Blueprint parts | 5 à 15 | 100 % |
+  | Blueprint parts | 5 à 10 *(25/10 ; avant 5 à 15)* | 100 % |
   | Charbon | 100 à 150 | 100 % |
   | Fer | 50 à 80 | 100 % |
-  | **Un blueprint** parmi : Pioche en fer, Épée en fer, Casque en fer, Plastron en fer, Jambes en fer, Bottes en fer, Four en fer, Boussole en or, Ceinture en peau de gobelin | 1 | 1 % chacun (9 % au total) |
+  | **Un blueprint** parmi : Pioche en fer, Épée en fer, Casque en fer, Plastron en fer, Jambes en fer, Bottes en fer, Four en fer, Boussole en or, Ceinture en peau de gobelin | 1 | 2 % chacun pour les 6 pièces en fer, 1 % pour le four, la boussole et la ceinture (15 % au total) *(25/10 ; avant 1 % chacun)* |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1 % chacune (3 % au total) |
 
   *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints : débloquer une recette (§6, Craft). Usage des gemmes : défini plus tard.

@@ -135,12 +135,12 @@ export const BUILDS = {
 
 /* composition en % par area (la dernière est répétée au-delà). Comptes exacts, pas probabilistes.
    air = cases déjà vides à la génération (poches naturelles), cachées tant qu'elles ne sont pas découvertes.
-   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed) ; 0,4 partout depuis
-   le 24/10/2026 (Geoffrey ; avant 0,3). */
+   chestChance = probabilité qu'un treasure soit enfoui dans l'area (0 à 1, tirée depuis la seed) : 0,6 dans les
+   areas 0 à 2 (celles du Treasure T1, 25/10/2026, Geoffrey ; avant 0,4), 0,4 au-delà (24/10/2026 ; avant 0,3). */
 export const AREAS = [
-  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.4 },
-  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.4 },
-  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.4 },
+  { comp:{dirt:52, stone:33,                coal:10,                                 air:5}, chestChance:0.6 },
+  { comp:{dirt:30, stone:49,                coal:15, iron:1,                         air:5}, chestChance:0.6 },
+  { comp:{dirt:20, stone:55,                coal:10, iron:10,                        air:5}, chestChance:0.6 },
   { comp:{dirt:10, stone:60, hardstone:5,   coal:7,  iron:10, gold:3,                air:5}, chestChance:0.4 },
   { comp:{         stone:60, hardstone:15,  coal:5,  iron:10, gold:5,                air:5}, chestChance:0.4 },
   /* areas 5 et 6 : décision du 23/10 (Geoffrey), graphite et plus de charbon ; ancien area 5 :
@@ -173,18 +173,19 @@ const gems = chance => [
 export const LOOT = {
   'Treasure T1': {
     always: [
-      { item:'Blueprint parts', min:5,   max:15  },
+      { item:'Blueprint parts', min:5,   max:10  },   // 25/10/2026 (Geoffrey) ; avant 5 à 15
       { item:'Charbon',         min:100, max:150 },
       { item:'Fer',             min:50,  max:80  },
     ],
+    /* BP des 6 pièces en fer à 2 % (25/10/2026, Geoffrey ; avant 1 %) ; four, boussole et ceinture restent à 1 % */
     oneOf: [
       { family:'blueprint', tex:'blueprint', items:[
-        { item:'Pioche en fer BP',             chance:0.01 },
-        { item:'Épée en fer BP',               chance:0.01 },
-        { item:'Casque en fer BP',             chance:0.01 },
-        { item:'Plastron en fer BP',           chance:0.01 },
-        { item:'Jambes en fer BP',             chance:0.01 },
-        { item:'Bottes en fer BP',             chance:0.01 },
+        { item:'Pioche en fer BP',             chance:0.02 },
+        { item:'Épée en fer BP',               chance:0.02 },
+        { item:'Casque en fer BP',             chance:0.02 },
+        { item:'Plastron en fer BP',           chance:0.02 },
+        { item:'Jambes en fer BP',             chance:0.02 },
+        { item:'Bottes en fer BP',             chance:0.02 },
         { item:'Four en fer BP',               chance:0.01 },
         { item:'Boussole en or BP',            chance:0.01 },
         { item:'Ceinture en peau de gobelin BP', chance:0.01 },
