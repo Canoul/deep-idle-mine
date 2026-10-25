@@ -1,6 +1,6 @@
 /* Onglet Inventaire : affiche la grille de slots. Lit l'inventaire, ne le modifie jamais : ouvrir un treasure
-   (onOpen), utiliser un blueprint (onLearn) ou équiper une pièce (onEquip) est demandé au serveur, qui renvoie le
-   nouvel inventaire. */
+   (onOpen), utiliser un blueprint (onLearn), équiper une pièce (onEquip), trier (onSort) ou glisser un objet dans un
+   autre slot (onMove) est demandé au serveur, qui renvoie le nouvel inventaire. */
 import { INVENTORY, STUFF } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
@@ -39,7 +39,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
-  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
@@ -92,7 +92,9 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
    actions : sur l'objet sélectionné (chacune a son bouton) : onOpen(item) ouvrir un treasure, onLearn(item) utiliser
-   un blueprint, onEquip(slot, uid) équiper une pièce de stuff ; worn() : pièces portées (pour dire ce qui est remplacé) */
+   un blueprint, onEquip(slot, uid) équiper une pièce de stuff, onSort() trier, onMove({ from, to, item, uid }) déplacer
+   (glisser-déposer : l'objet en to, s'il y en a un, prend la place de from) ; worn() : pièces portées (pour dire ce qui
+   est remplacé) */
 export function renderInventory(inv, fresh=new Set(), actions={}){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
   grid.style.setProperty('--cols', INVENTORY.cols);
@@ -114,6 +116,25 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
     $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.());
+  };
+  $('invSort').disabled = !used;
+  $('invSort').onclick = () => { $('invSort').disabled = true; actions.onSort?.(); };
+  /* glisser-déposer : on lâche sur n'importe quel slot de la grille (vide ou non) */
+  let drag = null;
+  const over = (c, on) => c?.classList.toggle('dropTo', on);
+  grid.ondragstart = e => { const c = e.target.closest('.slot'); drag = c && inv.slots[+c.dataset.i] ? +c.dataset.i : null;
+                            if(drag === null) return e.preventDefault(); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(drag)); };
+  grid.ondragover = e => { if(drag !== null && e.target.closest('.slot')) e.preventDefault(); };
+  grid.ondragenter = e => { if(drag !== null) over(e.target.closest('.slot'), true); };
+  grid.ondragleave = e => { const c = e.target.closest('.slot'); if(c && !c.contains(e.relatedTarget)) over(c, false); };
+  grid.ondragend = () => { drag = null; grid.querySelectorAll('.dropTo').forEach(c => over(c, false)); };
+  grid.ondrop = e => {
+    e.preventDefault();
+    const c = e.target.closest('.slot'), from = drag; drag = null;
+    grid.querySelectorAll('.dropTo').forEach(x => over(x, false));
+    if(!c || from === null || +c.dataset.i === from) return;
+    const s = inv.slots[from];
+    actions.onMove?.({ from, to: +c.dataset.i, item: s.item, ...(s.uid != null ? { uid: s.uid } : {}) });
   };
   $('invInfo').onclick = e => {
     const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock');

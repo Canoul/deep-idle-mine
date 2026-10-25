@@ -498,6 +498,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Les objets de **stuff ne s'empilent pas** : chaque exemplaire prend son propre slot (chaque pièce pourra avoir ses propres stats).
 - **Capacité illimitée** pour l'instant : au moins 48 slots affichés (8 colonnes), une ligne s'ajoute quand la grille est pleine. Une limite pourra devenir une amélioration plus tard *(valeur de config)*.
 - Un slot vidé (objet consommé par le craft) reste un trou, réutilisé par le prochain nouvel objet.
+- **Trier** *(25/10/2026, Geoffrey)* : un bouton range tout l'inventaire, une fois (les objets qui arrivent ensuite prennent le premier slot libre), et le tasse au début. Ordre : par **type** (**blocs** : terre, pierres, résidus ; **minerais** : charbon et minerais ; **matériaux** : lingots, butin de mob, matériaux, gemmes ; **stuff** : pièces et runes ; puis le reste : treasures, blueprints, four, parchemins), puis par **rareté** de l'objet (la plus rare d'abord). La qualité d'identification (R1 à R7) ne compte pas. *(Groupes : `INVENTORY.sortGroups`, provisoires.)*
+- **Déplacer** *(25/10/2026, Geoffrey)* : on glisse un objet sur un autre slot ; s'il est occupé, les deux objets échangent leur place.
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
 - Un blueprint sélectionné peut s'**utiliser** : il débloque sa recette (voir Craft).

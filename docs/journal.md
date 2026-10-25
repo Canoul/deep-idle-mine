@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Inventaire : trier et déplacer les objets
+- **Pour le joueur** : bouton **Trier** en haut de l'inventaire. Il range par type (blocs, minerais, matériaux,
+  stuff, puis treasures, blueprints…), du plus rare au plus commun, et bouche les trous. On peut aussi **glisser un
+  objet** dans un autre slot ; si le slot est pris, les deux objets échangent leur place.
+- **Décisions** (Geoffrey) : le tri suit la rareté de l'objet (commun, inhabituel…), pas la qualité R1-R7.
+  Choix de Claude à valider : treasures, blueprints, four et parchemins viennent après le stuff ; la plus rare d'abord.
+- **À suivre** : le glisser-déposer ne marche qu'à la souris (pas au doigt sur téléphone).
+- **État** : 🧪 sur la branche `geoffrey/inventaire` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en

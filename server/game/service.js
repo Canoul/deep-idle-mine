@@ -21,7 +21,7 @@ import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession, addItem, countOf } from '../../src/meta/inventory.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality } from '../../src/meta/piece.js';
@@ -65,6 +65,7 @@ const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nom
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
+const ARRANGE_ERRORS = { not_owned: 'Cet objet n\'est plus à cette place : l\'inventaire a été rechargé.', bad_request: 'Demande invalide.' };
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
 const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
@@ -715,6 +716,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(r.error) fail(r.error, r.error === 'no_use' ? 400 : 409, LEARN_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, recipe: r.recipe, inventory: publicInventory(inv) };
+      });
+    },
+
+    /* ranger l'inventaire : { action:'sort' } trie tout, { action:'move', from, to, item, uid? } déplace un objet (échange
+       avec celui qui est en to). Rien n'est créé ni retiré ; un déplacement renvoyé ne ré-échange pas (src/meta/inventory.js). */
+    async inventory(me, body = {}){
+      const { action } = body;
+      if(action !== 'sort' && action !== 'move') fail('bad_request', 400, ARRANGE_ERRORS.bad_request);
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        if(action === 'sort') sortInventory(inv);
+        else {
+          const r = moveSlot(inv, { from: body.from, to: body.to, item: body.item, uid: body.uid });
+          if(r.error) fail(r.error, r.error === 'not_owned' ? 409 : 400, ARRANGE_ERRORS[r.error]);
+        }
+        await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { inventory: publicInventory(inv) };
       });
     },
 

@@ -2439,3 +2439,15 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/wiki.test.js` (8, dont 1 nouveau : sorts, XP de spé, anneaux, date du bandeau) ✅. Rendu vérifié
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
+
+### Inventaire : trier et déplacer (Geoffrey, 25/10) — 🧪 branche `geoffrey/inventaire`
+- **Quoi** : `src/meta/inventory.js` : `sortInventory(inv)` (clé : groupe `INVENTORY.sortGroups` par `ITEMS[].cat`, puis
+  `-rarityDef().rank`, puis ordre de `ITEMS`, puis ordre actuel ; tassé, sans trous) et `moveSlot(inv, { from, to, item, uid })`
+  (échange ; `to` < `gridSize` ; refuse si `slots[from]` n'est pas l'item/uid annoncé : un renvoi ne ré-échange pas).
+  Serveur : `POST /api/game/inventory` `{ action:'sort' }` | `{ action:'move', … }` (`server/game/service.js` `inventory()`, verrou
+  `inv:`). Navigateur : `gameApi.inventory`, bouton `#invSort`, glisser-déposer HTML5 dans `src/ui/inventory.js`, `arrangeInventory`
+  dans `src/main.js` (refus → inventaire relu). Familles réelles : `bloc`, `combustible` (charbon), `ore`, `residu`…
+- **Tests** : `tests/inventory-arrange.test.js` (6), `tests/inventory.test.js` ✅ ; `tests/anticheat/arrange.test.js` (300
+  demandes en rafale / trafiquées : mêmes objets, mêmes quantités, mêmes uid) ✅.
+- **⚠️ À vérifier** : pas essayé dans un vrai navigateur (glisser-déposer, bouton). Pas de tactile (le drag HTML5 ne
+  marche pas au doigt).
