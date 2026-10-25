@@ -284,7 +284,7 @@ function decideWork(G,m){
   m.goingDown=false;   // redescend au front par l'existant (skill Logisticien) : remis à vrai par digDown
   m.digCol=null;   // réservations rafraîchies à chaque décision
   if(!m.exploring) m.galleryRow=null;
-  const rp=m.y>0 ? planReturn(G,m) : null;
+  const rp=m.y>0 && !G.khole ? planReturn(G,m) : null;
   let tRet = rp ? rp.cost*1.25 : 0;
   /* Mule : en fin de session, le porteur passe d'abord par son sac ; son retour compte ce détour */
   /* (seulement si c'est encore possible : sinon le sac est perdu, et compter ce détour le faisait remonter aussitôt
@@ -292,7 +292,8 @@ function decideWork(G,m){
   if(rp && isCarrier(G,m) && mulePlaced(G) && G.mule.load>0){ const via=muleEstT(G,m); if(left>=via) tRet=Math.max(tRet, via); }
   if(m.y>0){
     let reason=null;
-    if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
+    if(G.khole);                    // dimension du k hole : pas de surface, aucune remontée (il attend la fin du compteur)
+    else if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';

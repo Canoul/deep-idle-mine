@@ -3,6 +3,7 @@
 Usage : python scripts/gen_textures.py
 Les textures sont ensuite chargées par le jeu (voir deep-idle-mine.html).
 """
+import math
 import os
 import random
 import struct
@@ -339,6 +340,23 @@ def main():
         for xx in range(off + 1, 16, 8):
             rect(brick, xx, yy, 6, 1, hexc('#5a4473'))        # arête claire en haut de chaque brique
     tex['dungeon_brick'] = brick
+
+    # k hole : trou noir dans la roche, anneau violet lumineux en spirale autour d'un cœur noir
+    kh = noisy(hexc('#7d828c'), 20, 0.12)
+    for yy in range(S):
+        for xx in range(S):
+            dx, dy = xx - 7.5, yy - 7.5
+            d = (dx * dx + dy * dy) ** 0.5
+            if d < 2.6:
+                kh[yy * S + xx] = hexc('#000000')
+            elif d < 4.2:
+                kh[yy * S + xx] = hexc('#12001f')
+            elif d < 6.4:
+                swirl = (int((math.atan2(dy, dx) * 3 / math.pi + d) * 2) % 3)
+                kh[yy * S + xx] = hexc(('#9b4dff', '#5b1f9e', '#c792ff')[swirl])
+            elif d < 7.6:
+                kh[yy * S + xx] = shade(hexc('#3a1466'), 1)
+    tex['khole'] = kh
 
     # résidus (Ange vs Démon) : pierre sombre, fissures lumineuses qui serpentent, halo plus pâle autour
     def residue(seed, glow, halo, core):

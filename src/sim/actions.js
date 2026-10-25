@@ -119,8 +119,9 @@ export function killMob(G,m,o){
     const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
     collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
-  } else if(o.dungeon!=null){
-    /* boss de donjon : 1 à 3 Cristaux de pleine lune (Pillage compris) ; chaque joueur en recevra la quantité entière */
+  } else if(o.dungeon!=null || o.type===DUNGEON.boss.type){
+    /* boss de donjon (et minotaure à découvert d'un k hole, src/sim/khole.js) : 1 à 3 Cristaux de pleine lune (Pillage
+       compris) ; chaque joueur en recevra la quantité entière */
     const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     collect(m,L.item,ITEMS[L.item].w ?? 1,n);
     log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item})`);
@@ -149,8 +150,8 @@ export function finishAction(G,m,a){
     case 'move':
       m.face = Math.sign(a.data.x-m.x)||m.face;
       m.x=a.data.x; m.y=a.data.y; m.kx=0; m.ky=0;   // un pas le recentre dans sa case (recul : src/sim/knock.js)
-      if(m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;
-      if(m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
+      if(!G.khole && m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;   // la dimension du k hole ne compte pas
+      if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
       { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea) m.lastArea=ai; }   // pas de ligne au journal (trop fréquent)
       break;
     case 'mine': mineBlock(G,m,a.data.x,a.data.y); break;

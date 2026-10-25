@@ -137,6 +137,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   repoussent le mineur de 0,25 ; stat **Résistance au recul** (%, 0, sans source). **Tacle refondu** : à portée, le
   mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,
   6 cases). Ancien (21/10) : tacle à 1 case, mineur immobilisé tant que le mob reste à côté. Préférence **« Aider allié »** + mobs ignorés (lobby).
+- **K hole** (25/10, Geoffrey, en ligne) : portail enfoui (2 % par area ; ancien : 1 %), découvert → 3 s → tout le
+  groupe dans une dimension tirée parmi 4 cartes (`KHOLE.maps`) : Filons (25 × 25 très riche, 5 min), Arène des minotaures
+  (2 min, fin quand ils sont morts), Salle au trésor (2 treasures de tier au hasard, 2 min, fin à l'ouverture), Vagues
+  (vagues de 5 mobs, 3 min) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour
+  à la surface de la mine, mine figée entre-temps ; à 30 s de la fin de session, il se referme. Technique : échange de
+  carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe
   avant ; pas la sortie du donjon) ; la structure se révèle dès le seuil ou dès qu'on combat le boss.

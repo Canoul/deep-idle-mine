@@ -48,7 +48,10 @@ export function createViewer(G){
 
   /* enregistre ce qui a changé depuis le dernier passage (une fois par tick au plus) */
   function record(){
-    if(!prev){ prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; logHead = G.log[0]; return; }
+    /* k hole (src/sim/khole.js) : la carte a changé (aller ou retour) ; les changements d'avant ne servent plus, le
+       prochain envoi est la carte entière */
+    if(prev && prev.realm !== (G.realm || 0)){ prev = null; frames = []; }
+    if(!prev){ prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; prev.realm = G.realm || 0; logHead = G.log[0]; return; }
     if(prev.tick === G.ticks) return;
     const cells = [];
     const H = prev.tiles.length;
@@ -60,7 +63,7 @@ export function createViewer(G){
     }
     frames.push({ from: prev.tick, to: G.ticks, H, cells, torches: prev.torches, log: G.log[0] !== logHead });
     if(frames.length > HISTORY) frames.shift();
-    prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; logHead = G.log[0];
+    prev = snapshotRows(); prev.torches = G.torches.length; prev.tick = G.ticks; prev.realm = G.realm || 0; logHead = G.log[0];
   }
 
   /* l'envoi pour un navigateur qui a déjà la partie au tick since (absent : rien) */
@@ -71,6 +74,7 @@ export function createViewer(G){
       miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
       chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
       mule: muleView(G),
+      khole: G.khole ? { until: G.khole.until, label: G.khole.map.label } : null,   // dimension du k hole : carte, heure du retour
     };
     /* changements depuis since : le navigateur est à jour, ou on a tous les lots depuis son tick */
     if(since === G.ticks) return { ...base, cells: [], torches: [], torchesFrom: G.torches.length };
@@ -120,7 +124,7 @@ const muleView = G => G.mule?.placed ? { x: G.mule.x, y: G.mule.y, load: Math.ro
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
   return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], chest: {}, chestBy: {},
-           stats: {}, areas: [], unlockedAreas: 0, winch: null, mule: null, log: [], t: 0, ticks: -1, over: false, ready: false };
+           stats: {}, areas: [], unlockedAreas: 0, winch: null, mule: null, khole: null, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
 /* applique un envoi du serveur ; now : heure de la page (ms) à son arrivée. Renvoie M (modifié). */
@@ -149,6 +153,6 @@ export function applyView(M, v, now = performance.now()){
   M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
   M._at = now;
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, chest: v.chest, chestBy: v.chestBy,
-                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, ready: true });
+                     stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
   return M;
 }

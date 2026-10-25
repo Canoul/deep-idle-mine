@@ -2972,3 +2972,97 @@ Règles (voir CLAUDE.md) :
   give-item ✅ (210) ; `npm run test:anticheat` ✅ (90) ; simulation 5 sessions solo : coffre 1 598, 0 blocage.
 - ⚠️ Pas vu dans un vrai navigateur (13e case dans la grille, icône de la lampe).
 
+### K hole : mise en place (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/sim/khole.js` (nouveau). Principe : **échange de carte** dans la même partie. `enterKhole` met de côté
+  dans `G.khole.world` les champs du monde (`WORLD` : tiles, ladder, seen, areas, unlockedAreas, winch, treasures,
+  dungeons, traps, veil, mobs, torches, light, mimicCells, mule, ducks, duckBase, spawnTimer, spawnTurn, combat) et pour
+  chaque mineur `SPOT` (position, action, cibles, chantiers… : liste tirée de tous les `m.x = …` de src/sim), remet ces
+  champs à leur valeur de `createMiner`, pose la dimension (`dimension(seed, n)` : surface + coffre + `fillComp` de
+  `KHOLE.comp`, `spawnTimer: Infinity`, pas de mobs) ; `exitKhole` remet tout, case du portail → 0, `updateLight`.
+  `G.realm` change à chaque passage. `inMine(G, fn)` : exécute fn sur la mine pendant un k hole (Mule d'un partant).
+- `src/sim/world.js` : `fillComp` extrait de `genArea` (même ordre de tirage : cartes inchangées) ; `placeKhole` en
+  dernier (tirage `hash(seed ^ KHOLE.salt, k+1)`, terrain non résidu, hors boîtes donjon/piège + pourtour) ;
+  `tryUnlock` refusé pendant un k hole. `src/sim/session.js` : `updateKhole` à chaque tick (après `updateDungeons`),
+  `exitKhole` au début d'`endSession`, `leaveSession` → `inMine(muleOnLeave)`. `actions.js`, `spells.js` : maxDepth pas
+  compté dans la dimension. `src/shared/view.js` : `prev.realm` différent → historique vidé, carte entière ; `khole:
+  { until }` dans l'envoi. `src/render/canvas.js` : ciel violet, voile, compte à rebours. Config : bloc 20 `KHOLE_BLOCK`,
+  `KHOLE`, texture `khole` (gen_textures.py, `import math`), `DEV_TUNABLES` + `KHOLE.chance` (TARGETS de
+  src/shared/game.js). `scripts/simulate.js --khole <chance>` (k holes pris, blocs minés, coût d'un tick).
+- **Tests** : `tests/khole.test.js` (9 : placement, tirage à part, aspiration, retour à la place exacte + mine figée,
+  dimension sans déblocage ni mobs ni profondeur, fin et départ pendant le k hole, déterminisme, carte entière à
+  l'aller et au retour) ✅ ; session, live, game-replay, dungeon, blocks, fall, focus, mule, duck, mobs, light, path,
+  miner, diagnostics, dev-spec, world, view, trap, treasure, winch, team, spells, wiki, shiny, instant-mine, tower,
+  lobby, game-service ✅ (391).
+- **Simulation** `--miners 3 --count 5` : `--khole 1` : 10 pris (sur 20 enfouis : les autres jamais vus), 0 bloquée,
+  135 à 318 blocs minés dans la dimension par session, tick 0,197 ms (dimension) / 0,560 ms (mine) ; `--khole 0` :
+  coffre 4 140 → 4 330 pods avec k holes, étourdissements 9,6 → 16.
+- **Pas vérifié** : en vrai dans le navigateur (transition, caméra, compte à rebours) ; reprise après redémarrage du
+  serveur en plein k hole (déterministe, donc devrait se rejouer à l'identique ; pas de test serveur).
+- **Points fragiles** : un nouveau champ de position ajouté au mineur doit aller dans `SPOT`, un nouveau champ du monde
+  dans `WORLD`, sinon il fuit entre mine et dimension. Une Mule posée dans la dimension est perdue au retour (sac de la
+  dimension jeté). Une action en cours au départ (pas, coup) reprend telle quelle au retour.
+
+### K hole : la vraie dimension (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** (remplace la dimension provisoire de l'entrée précédente) : `buildDimension(G, n, k)` dans `src/sim/khole.js` :
+  carte de `areaTop(k) + KHOLE.h` lignes, tout en barrière sauf KHOLE.w × KHOLE.h dans le coin gauche (lignes de l'area
+  k : areaOf donne k, donc PV des mobs, table des pièges, tier des treasures de l'area) ; `areas` = k+1 areas vides + la
+  dimension en k, `unlockedAreas` = k+1 ; arrivée = spawnCols colonnes vides (vues), mineurs en bas à gauche ; zone :
+  `fillComp(r, comp, w, h)` (world.js : `fillComp` et `placeClusters` acceptent w, h ; valeurs par défaut = area, cartes
+  inchangées), puis `layout` (donjons puis pièges, toutes les places essayées dans un ordre tiré, jusqu'à
+  KHOLE.attempts dispositions : 200 seeds × 6 areas → toujours complète, 78 ms), `carve` / `carveTrap` (mobs :
+  `trapMobs(k, r)`, nouvel export de trap.js avec `TRAP_BOX`), puis treasurePct % de treasures (G.treasures, item
+  `treasureItem(k)`). Retour : `exitKhole` met tout le groupe à la surface (SPOT remis à zéro, x autour de SPAWN_X), lâche
+  les tacles des mobs de la mine. Le portail ne garde plus les places (plus de `spots`).
+- Règles de la dimension : `session.js` stepMiner (pas d'oxygène consommé si `G.khole`), `ai.js` decideWork (pas de
+  `planReturn`, aucune raison de remonter : oxygène, pods, fin de session, torches), `focus.js` focusArea (null).
+- **Tests** : `tests/khole.test.js` (10 : + contenu de la dimension (barrière autour, arrivée vide, 1 donjon, 5 pièges,
+  PV de l'area, treasures du tier, % parmi les blocs restants à ±5), règles (oxygène, pods au-delà de la limite sans
+  remontée, pas d'autres mobs), retour à la surface avec l'inventaire, mine figée à 0 case près) ✅ ; session, live,
+  game-replay, dungeon, trap, world, view, focus, mule, fall, mobs, team, spells, treasure, lobby, miner, diagnostics,
+  winch ✅ (249).
+- **Simulation** `--miners 3 --count 5 --khole 1` : 9 pris, 0 bloquée, 140 à 269 blocs minés dans la dimension, coffre
+  4 151 pods (4 140 sans k hole), treasures ouverts 2,8 (0,2 sans), tick 0,048 ms (dimension) / 0,552 ms (mine). Dans la
+  dimension, les mineurs suivent des filons et combattent les mobs des pièges ; sans barbare, personne n'entre au donjon.
+- **Points fragiles** : fin de session pendant un k hole = ce qu'ils portent est perdu (règle normale, à confirmer par
+  l'équipe). Un mineur peut finir coincé (tout miné autour) : il attend, sans conséquence (retour au bout du compteur).
+
+### K hole : fin de session (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `KHOLE.endMargin` (30 s) ; `enterKhole` : `until = min(t + duration, SESSION_LEN - endMargin)` ;
+  `updateKhole` : plus d'ouverture à partir de `SESSION_LEN - endMargin`. Remplace le point fragile de l'entrée précédente
+  (« fin de session pendant un k hole = ce qu'ils portent est perdu »).
+- **Tests** : `tests/khole.test.js` +1 (k hole ouvert 2 min avant la fin : retour à 3 570 s, `lostBags` vide, butin au
+  coffre ; découvert à 25 s de la fin : ne s'ouvre pas) ✅ (11). Sonde 5 seeds × 3 mineurs : 49 à 58 objets portés au
+  retour, rien de perdu.
+- **Correctif (25/10)** : l'option « Chance de k hole par area » n'apparaissait pas : `src/ui/lobby.js` avait sa propre
+  liste `TARGETS = { STATS, CFG }` (sans KHOLE) → erreur en construisant le panneau dev. Liste unique `DEV_TARGETS` dans
+  `src/config.js`, lue par le lobby et `src/shared/game.js`. Test : chaque ligne de `DEV_TUNABLES` pointe vers un nombre
+  de `DEV_TARGETS` (`tests/khole.test.js`, 12) ✅.
+
+### K hole : plusieurs cartes (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `KHOLE.maps` (config) : filons (l'ancienne dimension), arene, tresor, vagues ; chaque carte : w, h,
+  duration, spawn ('left' | 'middle'), weight, et son contenu (comp/traps/dungeons/treasurePct, minotaurs, treasures,
+  wave) ; `end` : 'bosses' | 'treasures'. `KHOLE.map` (réglage dev, `DEV_TUNABLES`) : 0 = tirage, 1-4 = imposée.
+  `src/sim/khole.js` : `pickMap(seed, n)` (tirage à part, selon weight), `buildDimension(G, n, k, map)` → cadre commun
+  puis `buildVeins` (filons) ou `buildRoom` (salle vide, toute vue ; minotaures `addMob` aux bouts, à découvert :
+  `dungeon` absent, logique de mob normale, `hunt` = premier mineur ; treasures tier `TREASURE.tiers` au hasard) ; renvoie
+  la case d'arrivée par rang. `updateKhole` : `finished` (fin anticipée), `updateWaves` (vague suivante quand aucun mob
+  vivant ; types `trapMobs(k, G.rng, wave)`, hasard live G.rng). `G.khole.map` ; envoi `khole.label` ; rendu : nom de la
+  carte dans le compte à rebours. `src/sim/actions.js` killMob : un minotaure à découvert (`type === DUNGEON.boss.type`)
+  laisse le butin du donjon. `trap.js` : `trapMobs(k, r, n)`.
+- **Tests** : `tests/khole.test.js` (17 : les anciens sur la carte filons imposée ; + tirage/poids/mode dev, arène
+  (contenu, fin quand les minotaures meurent, cristaux), salle au trésor (contenu, tier au hasard, fin à l'ouverture),
+  vagues (5 mobs de l'area sans mimic, vague suivante, fin au compteur)) ✅ ; session, live, dungeon, trap, world, view,
+  mobs, combat, treasure, lobby, spells, team ✅ (154).
+- **Sonde** (3 seeds × chaque carte, 3 mineurs, area 0) : filons 300 s, 133-154 blocs ; arène 117 s (2 minotaures
+  tués, juste sous les 120 s : à 1 ou 2 mineurs, ils ne finiront sans doute pas) ; trésor 3 s ; vagues 180 s, 11-13
+  vagues. Simulation `--miners 3 --count 5 --khole 1` (carte au hasard) : 10 pris, 0 bloquée, tick dimension 0,032 ms.
+- **Points fragiles** : dans l'arène et les vagues, un mineur réglé sur « Ignorer » / « Fuir » ne se bat que s'il est
+  taclé. Salle au trésor : 3 s pour 2 treasures possiblement T3, quelle que soit l'area.
+
+### K hole : mise en ligne (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- `KHOLE.chance` 0,01 → 0,02. Section « Le k hole » du wiki (textes à la main, sans tableau généré).
+- Fusion de main (Glyphes, Glyphe Treuil, Lampe) : conflits résolus (oxygène : k hole + Glyphe Navette ; imports ;
+  simulate --khole et --glyphs). `m.braumIn` (Glyphe Braum, position) ajouté à `SPOT` ; `m.pillage` gardé (bonus gagné).
+- **Vérifié après fusion** : khole + 20 sujets voisins ✅ (303), tests ajoutés par main ✅ (101), `npm run test:anticheat`
+  ✅ (91), simulation `--miners 3 --count 5` (0 bloquée, chiffres identiques : aucun k hole sur ces seeds) et
+  `--khole 1` (10 pris, 0 bloquée, tick dimension 0,030 ms).

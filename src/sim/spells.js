@@ -132,7 +132,7 @@ function startDash(G,m,path,cells,mob){
 export function finishDash(G,m,a){
   const d = a.data, S = SPELL.dash;
   m.face = d.dir; m.x = d.x; m.y = d.y; m.kx = 0; m.ky = 0;   // comme un pas : recentré dans sa case (src/sim/knock.js)
-  if(m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
+  if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
   const o = d.mob!=null ? G.mobs.find(q => q.id===d.mob && q.hp>0) : null;
   const hit = o && near(m,o);
   cast(G,m,'dash',G.t,hit ? S.hitCd : 1);
@@ -229,7 +229,7 @@ function ulti(G,m){
     if(!foe || noEntry(G,m,o.x,o.y)) continue;
     m.x = o.x; m.y = o.y; m.action = null; m.fall = null;
     m.target = null; m.exploring = false; m.digCol = null; m.galleryRow = null; m.goingDown = false;
-    if(m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
+    if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
     cast(G,m,'ulti_shen');
     foe.hp -= foe.maxhp*(isBoss(foe) ? S.bossPct : S.hpPct);
     log(G, `🌀 ${m.name} : Ulti shen, rejoint ${o.name} contre un ${foe.type}`);

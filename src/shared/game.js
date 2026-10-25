@@ -7,7 +7,7 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, STATS, CFG, GAME, SESSION_LEN, DT, MINE_MODES } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { aurasOf } from '../meta/aura.js';
@@ -34,7 +34,7 @@ export function sanitizePrefs(input){
 
 /* ---------- réglages du mode développeur ---------- */
 
-const TARGETS = { STATS, CFG };
+const TARGETS = DEV_TARGETS;
 
 /* ne garde que les réglages autorisés (DEV_TUNABLES), nombres finis dans leurs bornes ; null s'il n'y en a aucun */
 export function sanitizeOverrides(input){

@@ -52,7 +52,7 @@ export function createRenderer(cv){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
-        if(y<=0){ blit('sky',px,py,'#6cc3ee'); continue; }
+        if(y<=0){ if(G.khole){ ctx.fillStyle='#1a0630'; ctx.fillRect(px,py,TILE,TILE); } else blit('sky',px,py,'#6cc3ee'); continue; }   // ciel de la dimension du k hole
         if(y===mr+1){ if(G.seen[mr][x]) blit('barrier',px,py,'#34344a'); continue; }
         if(y>mr) continue;
         if(!G.seen[y][x]){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
@@ -137,6 +137,17 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m);
       if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
+    if(G.khole) drawKhole(G);
+  }
+
+  /* dans la dimension du k hole : voile violet qui respire, et le temps avant le retour dans la mine */
+  function drawKhole(G){
+    const a=0.16+0.06*Math.sin(frameNow/400);
+    ctx.fillStyle=`rgba(110,40,190,${a.toFixed(3)})`; ctx.fillRect(0,0,cv.width,cv.height);
+    const left=Math.max(0,Math.ceil(G.khole.until-G.t)), txt=`🌀 ${G.khole.label ?? "Autre dimension"} : retour dans ${left} s`;
+    ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(txt,cv.width/2,6);
+    ctx.fillStyle='#e2c8ff'; ctx.fillText(txt,cv.width/2,6);
   }
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
