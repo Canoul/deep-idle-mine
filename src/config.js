@@ -14,12 +14,14 @@ export const SPAWN_X = 25, CHEST_X = 22;
 /* compassRows = lignes vues par la boussole au-dessus ET en dessous de celle du mineur (0 de base : sa ligne seulement) */
 /* tenacity = chance, en %, d'ignorer un sort de mob qui le vise (vol du gobelin, canalisation de l'occultiste) : un tirage
    par sort (décision du 21/10, Geoffrey) ; 0 de base */
+/* knockRes = résistance au recul, en % : un coup qui le pousse de k blocs ne le pousse que de k × (1 − knockRes/100)
+   (25/10/2026, Geoffrey) ; 0 de base, aucune pièce ne la donne pour l'instant (voir COMBAT) */
 /* stats d'amélioration (onglet Amélioration, lignes tirées à l'identification ; 0 de base, en %) :
    mineSpeedPct / damagePct = bonus en % : vitesse de minage = mineSpeed × (1 + mineSpeedPct/100), pareil pour les dégâts ;
    crit = chance qu'un coup fasse le double de dégâts ; oneTap = chance de casser un bloc instantanément ;
    piercing = chance de casser aussi le bloc juste derrière celui miné ; looting = butin des mobs en plus (comme Pillage) */
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
-  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0,
+  compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0, knockRes:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
 
@@ -66,6 +68,16 @@ export const DEFAULT_MINERS = 3;
 /* préférences de l'IA par défaut (chaque mineur en reçoit une copie) */
 /* helpAllies : aide ses alliés pris en chasse par un mob (option « Aider allié ») ; helpIgnore : types de mob pour
    lesquels il ne va pas aider (liste de clés de MOBS.hpBase) */
+/* combat dynamique (25/10/2026, Geoffrey) : portée et recul (src/sim/knock.js).
+   - reach : écart (bord à bord, en blocs) en dessous duquel une entité frappe, ou tacle, une autre ; jamais en diagonale ni
+     à travers un bloc. Au contact, l'écart vaut 0.
+   - knock : recul infligé par un coup du mineur (blocs, sur l'axe du coup) ; la cible garde un décalage dans sa case et
+     passe sur la case voisine quand il dépasse une demi-case ; contre un bloc, elle reste sur place.
+   - tackleGiveUp / tackleLeash : soupape du tacle (qui dure jusqu'à la mort du mob ou une provocation) : il saute si le
+     mineur taclé n'a pas frappé ce mob depuis tackleGiveUp s, ou si le mob est à plus de tackleLeash cases (Manhattan).
+   Valeurs provisoires. Les mobs poussent avec MOBS.knock (0 de base). */
+export const COMBAT = { reach:0.5, knock:0.25, tackleGiveUp:5, tackleLeash:6 };
+
 export const PREFS = { priority:'minerais', fightMobs:true, helpAllies:false, helpIgnore:[] };
 /* Aider allié : il ne part aider que si le mob est à helpRange cases ou moins (Manhattan). Au-delà, le combat est fini
    avant son arrivée et il traverse la mine pour rien (allers-retours mesurés en simulation). Provisoire.
@@ -319,6 +331,11 @@ export const MOBS = {
   /* méphite (24/10/2026, Geoffrey) : il VOLE (pas de gravité, il traverse les cases vides sans échelle, flyReach = cases
      explorées au plus pour trouver son chemin). Asphyxie : tant qu'au moins un méphite tacle un mineur, il perd oxygen
      d'oxygène toutes les every secondes (non cumulable entre méphites ; chaque pulse est ignorable par la ténacité). */
+  /* coups des mobs (25/10/2026, Geoffrey) : un mob qui tacle frappe sa cible toutes les hitEvery s, s'il est à portée
+     (COMBAT.reach), et la repousse de knock[type] blocs (0 pour les autres). Les effets du gobelin (vol), du méphite
+     (asphyxie) et de l'occultiste (sort) gardent leur propre cadence (goblinStealEvery, mephite.every, occult.cooldown). */
+  hitEvery: 1,
+  knock: { minotaure:0.25 },
   mephite: { every:2, oxygen:5, flyReach:400, item:'Vésicule de gaz', loot: rng => 1 + Math.floor(rng()*2) },
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
@@ -708,9 +725,9 @@ export const STUFF = {
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
                 piercing:'Perçage', looting:'Butin des mobs' },
-  statUnits: { attackSpeed:' %', fortune:' %', tenacity:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+  statUnits: { attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','tenacity','oneTap','piercing','looting',
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -1003,14 +1020,16 @@ export const TOWER = {
   view: { cols: 22, rows: 16 },
   /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans
      l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
-     le taclent au contact (rien d'autre). La porte du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
-  mobs: { count: 5, hp: 200, step: 0.9 },
+     le taclent à portée (COMBAT, 25/10) ; toutes les hitEvery s ils repoussent le mineur taclé de knock blocs. La porte
+     du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
+  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25 },
   /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
      personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de
      base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
-     vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). */
-  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, speedMul: 2 },
+     vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). Sinon, le coup le repousse
+     de push blocs (recul, 25/10). Le boss, lui, ne recule pas sous les coups. */
+  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, push: 0.25, speedMul: 2 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },
@@ -1045,6 +1064,6 @@ export const DEV_TUNABLES = [
   ['STATS','oxygenMax','Oxygène max',1,1e5], ['STATS','speed','Vitesse (blocs/s)',0.1,100], ['STATS','mineSpeed','Vitesse de minage',0.1,100],
   ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (%)',10,10000], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50], ['STATS','compassRows','Lignes boussole (±)',0,5],
-  ['STATS','torches','Torches',0,1000], ['CFG','ladderTime','Temps échelle (s)',0,60],
+  ['STATS','torches','Torches',0,1000], ['STATS','knockRes','Résistance au recul (%)',0,100], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],
 ];

@@ -11,7 +11,7 @@ const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((
 function minerView(m){
   const a = m.action, d = a?.data || {};
   return {
-    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, face: m.face, status: m.status,
+    id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, skillTree: m.skillTree,
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y } } : null,
   };
@@ -27,7 +27,7 @@ export function createTowerViewer(G){
       seen: G.seen.map(r => r.join('')),
       boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, y: G.boss.y },
       torches: G.torches.map(t => t.y * G.w + t.x),
-      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
+      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
       miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
     };

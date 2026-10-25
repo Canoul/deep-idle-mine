@@ -13,10 +13,10 @@ const DARK = '#060608';
 export function instantPos(m){
   const a = m.action;
   if(a?.type === 'move' && a.data && Number.isFinite(a.data.x)){
-    const p = Math.min(1, a.dur > 0 ? a.t / a.dur : 1);
-    return [m.x + (a.data.x - m.x) * p, m.y + (a.data.y - m.y) * p];
+    const p = Math.min(1, a.dur > 0 ? a.t / a.dur : 1), x0 = m.x + (m.kx || 0), y0 = m.y + (m.ky || 0);
+    return [x0 + (a.data.x - x0) * p, y0 + (a.data.y - y0) * p];
   }
-  return [m.x, m.y];
+  return [m.x + (m.kx || 0), m.y + (m.ky || 0)];   // recul (tours) : décalage dans sa case
 }
 
 /* Cadrage (logique pure, testée) : coin haut-gauche (en cases) d'une vue de cols × rows centrée sur (fx, fy), sans
