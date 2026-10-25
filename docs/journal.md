@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tours : on remonte au sommet ensemble
+- **Pour le joueur** : dans les tours, un mineur tombé qui remonte et trouve le toit vide attend les autres juste
+  avant le toit (sous la porte, ou dans le seau du treuil). Quand tout le groupe est là, ils montent ensemble. Si
+  quelqu'un se bat déjà sur le toit, il y va directement. Il n'attend jamais plus de 45 s.
+- **Décisions** (Geoffrey) : on attend tous les mineurs encore dans la tour ; limite de 45 s (ajustable).
+- **État** : 🧪 sur la branche `geoffrey/tour-regroupe` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
 - **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil
   est projeté hors de la tour, il installe au pied du mur (10 s) un treuil qui monte jusqu'au toit. Ensuite, tous ceux

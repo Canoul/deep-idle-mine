@@ -1070,6 +1070,10 @@ export const TOWER = {
      sol jusqu'à la hauteur du toit, comme le puits de la mine (on y tient, seau à la vitesse WINCH, Escalateur compris,
      sans capacité). Un seul par partie. */
   winch: { setup: 10 },
+  /* regroupement (25/10/2026, Geoffrey) : un mineur tombé qui remonte et trouve le toit vide attend au dernier pas avant
+     le toit (sous la porte du toit, ou dans le seau du treuil, une case sous l'arrivée) ; ils repartent ensemble quand
+     chaque mineur de la tour est à un point d'attente ou sur le toit. Au plus maxWait s chacun, puis il monte seul. */
+  regroup: { maxWait: 45 },
   /* vue (navigateur) : caméra qui suit le mineur, aussi large que la tour (avant : 19 × 15) */
   view: { cols: 22, rows: 16 },
   /* mobs des étages « mobs » (Séraphins / Diablotins, 2 cases de haut) : réveillés quand un mineur entre dans

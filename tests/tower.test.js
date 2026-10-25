@@ -282,3 +282,63 @@ test('treuil : envoyé au navigateur', () => {
   G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
   assert.deepEqual(createTowerViewer(G)().winch, G.winch);
 });
+
+/* ---------- regroupement après une chute (25/10/2026, Geoffrey) ---------- */
+
+/* deux mineurs dans une tour franchie ; a est tombé et remonte, sous la porte du toit (sur une échelle) */
+function regroupScene(){
+  const G = newTower(3, { side: 'angel', miners: team(2) });
+  cleared(G); G.boss.engaged = false;
+  const [a, b] = G.miners, gx = gateCols(G, TOWER.floors - 1)[0];
+  G.ladder[G.roof + 1][gx] = 1;
+  Object.assign(a, { x: gx, y: G.roof + 1, fell: true, action: null });
+  Object.assign(b, { x: G.x0 + 3, y: G.floor }); hold(b);
+  return { G, a, b, gx };
+}
+
+test('regroupement : tombé, toit vide : il attend sous la porte du toit ; il monte si quelqu\'un est sur le toit', () => {
+  assert.equal(TOWER.regroup.maxWait, 45);
+  const { G, a, b } = regroupScene();
+  for(let i = 0; i < 100; i++) tickTower(G);
+  assert.equal(a.y, G.roof + 1, 'il attend'); assert.equal(a.status, 'Attend les autres');
+  Object.assign(b, { x: G.x0, y: G.roof - 1 });                        // b sur le toit
+  ticksUntil(G, () => a.y === G.roof - 1, 200);
+  assert.equal(a.y, G.roof - 1, 'il monte');
+});
+
+test('regroupement : tout le monde là (porte ou treuil) : ils montent ensemble', () => {
+  const { G, a, b } = regroupScene();
+  G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
+  for(let i = 0; i < 30; i++) tickTower(G);
+  assert.equal(a.status, 'Attend les autres');
+  Object.assign(b, { x: G.x0 - 1, y: G.roof, fell: true, action: null }); // b arrive dans le seau, une case sous l'arrivée
+  ticksUntil(G, () => a.y === G.roof - 1 && b.y === G.roof - 1, 300);
+  assert.deepEqual([a.y, b.y], [G.roof - 1, G.roof - 1], 'les deux sur le toit');
+  assert.ok(G.log.some(l => /ensemble/.test(l.msg ?? l.text ?? String(l))));
+});
+
+test('regroupement : au plus 45 s d\'attente ; seul, il n\'attend jamais', () => {
+  const { G, a } = regroupScene();
+  for(let i = 0; i < 400; i++) tickTower(G);
+  assert.equal(a.status, 'Attend les autres', '40 s : il attend encore');
+  ticksUntil(G, () => a.y === G.roof - 1, 150);
+  assert.equal(a.y, G.roof - 1, 'au-delà de 45 s, il monte seul');
+  const H = newTower(3, { side: 'angel', miners: team(1) });
+  cleared(H); H.boss.engaged = false;
+  const m = H.miners[0], gx = gateCols(H, TOWER.floors - 1)[0];
+  H.ladder[H.roof + 1][gx] = 1;
+  Object.assign(m, { x: gx, y: H.roof + 1, fell: true, action: null });
+  ticksUntil(H, () => m.y === H.roof - 1, 100);
+  assert.equal(m.y, H.roof - 1, 'seul : il monte tout de suite');
+});
+
+test('regroupement : projeté hors du toit, il est marqué tombé ; remonté sur le toit, la marque s\'efface', () => {
+  const G = newTower(3, { side: 'angel', miners: team(2) });
+  cleared(G); G.boss.engaged = false;
+  const a = G.miners[0];
+  Object.assign(a, { x: G.x0 - 3, y: G.roof - 1, knocked: true, action: null });
+  ticksUntil(G, () => a.y === G.floor && a.action?.type === 'stun');
+  assert.equal(a.fell, true);
+  Object.assign(a, { x: G.x0, y: G.roof - 1, action: null }); tickTower(G);
+  assert.equal(a.fell, false);
+});

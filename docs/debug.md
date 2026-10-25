@@ -2733,3 +2733,17 @@ Règles (voir CLAUDE.md) :
   logisticien pourra en poser un à sa propre chute. Le wiki lit `T.winch.setup` (T = TOWER via `judgmentInfo`).
 - ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/skills.test.js` « onglet Stuff : les stats montrent aussi les bonus
   des skills » (échoue aussi sans ce chantier).
+
+### Tours : regroupement après une chute (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-regroupe`
+- **Quoi** : `TOWER.regroup.maxWait` (45 s). `src/sim/tower/session.js` : `m.fell` posé dans `land` (projeté, atterri
+  sous le toit), effacé dans `updateArrivals` (sur le toit) ; `waitPoint` (y = roof + 1 sous une colonne de la porte
+  du toit, ou treuil à y = top + 1) ; `mustWait` appelé dans `decide` juste avant le boss : tombé, à un point
+  d'attente, ≥ 2 mineurs, personne sur le toit. Tous à un point d'attente → on efface `fell` de tous (sinon le premier
+  qui part casse la condition pour les autres) ; `waitSince` + maxWait → il part seul. Wiki : une phrase (lit
+  `T.regroup.maxWait`).
+- **Tests** : `tests/tower.test.js` +4 (attente sous la porte / montée si quelqu'un est sur le toit ; tous là, porte
+  + seau : montent ensemble ; 45 s ; seul ; marque posée et effacée) ✅ 20/20. `npm run simulate:tower -- --count 5` :
+  0 « bloqué » ; b 1 824 → 1 702, c 1 292 → 1 404, d 1 648 → 1 598 PV (bruit). Sur 10 tours de d : ≈ 24 s
+  d'attente par tour (mineur-secondes), 8 regroupements complets, boss moyen 1 492 → 1 412.
+- **Point fragile** : un mineur qui ne passe par aucun point d'attente (chemin qui arriverait au toit autrement) ne
+  serait jamais attendu comme « là » ; aujourd'hui tout chemin passe par la porte du toit ou par le treuil.
