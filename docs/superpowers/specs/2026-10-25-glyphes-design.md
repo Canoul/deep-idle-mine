@@ -13,7 +13,9 @@ une raison de plus de construire son personnage.
 | Sujet | Décision |
 |---|---|
 | Obtention | **Pas encore décidée.** Aucune source en jeu ; donnés par l'outil d'admin (`scripts/give-item.js`). |
-| Pose | Retirable à tout moment hors session : le glyphe revient dans l'inventaire, sans perte. |
+| Pose | Retirable à tout moment hors session : le glyphe revient dans l'inventaire, sans perte. Reset et sets ne retirent pas les glyphes (inactifs tant que le skill n'est pas au max). |
+| Braum | À chaque entrée dans un piège ou un donjon, sans limite. |
+| Force brute | « Dégâts totaux » = stuff **et** skills compris (bonus du skill Force brute inclus). |
 | Condition | Le skill doit être **au rang max** pour poser le glyphe, et pour qu'il agisse. |
 | Limite | Un glyphe par skill, rien d'autre (un seul arbre → au plus 4 glyphes posés). |
 | Où | Là où le skill agit déjà (mine classique, mine instantanée, tours, selon le skill). |
@@ -33,7 +35,7 @@ Valeurs provisoires, toutes dans `GLYPHS` (`src/config.js`).
 | Glyphe Mule | `mule` | Marche et montée (échelle) + 3 % de l'oxygène max, en % | × (1 + 0,0003 × oxygène max) : 300 → +9 % |
 | Glyphe Force brute | `damage` | Pods + 300 % des dégâts totaux | pods += round(3 × dégâts) (stuff et skills compris) : 14 → +42 |
 | Glyphe Pillage | `loot` | Tuer un mob donne +1 % de dégâts pour la session, au plus +25 % | cumul par mineur, mine classique |
-| Glyphe Braum | `braum` | En entrant dans un piège ou un donjon, il regagne 30 % de son oxygène max | **une fois par piège / donjon** (supposition, à confirmer), plafonné au max |
+| Glyphe Braum | `braum` | En entrant dans un piège ou un donjon, il regagne 30 % de son oxygène max | **à chaque entrée** (passage de dehors à dedans), sans limite (Geoffrey, 25/10) ; plafonné au max |
 
 Pas de glyphe : Légende de la flemme, Escalateur, Provocation (pas de case).
 
@@ -81,8 +83,9 @@ Pas de glyphe : Légende de la flemme, Escalateur, Provocation (pas de case).
   - Navette : `session.js` (consommation d'oxygène sautée) ;
   - Échelle de 2 : durée de pose dans `actions.js`, `instant/`, `tower/session.js`, et `baseLadderT` (planification) ;
   - Pillage : `killMob` (compteur `m.pillage`, plafonné), lu dans `hitDamage` ;
-  - Braum : entrée dans une salle de piège (`inTrapRoom`) ou un donjon (`isIn`) : +30 % de l'oxygène max, une fois par
-    piège / donjon (`m.braumDone`).
+  - Braum : entrée dans une salle de piège (`inTrapRoom`) ou un donjon (`isIn`) : +30 % de l'oxygène max à **chaque
+    entrée** (passage de dehors à dedans d'un tick à l'autre, `m.braumIn` = où il était), sans limite. L'IA n'entre et ne
+    sort jamais exprès pour recharger : un test vérifie qu'un barbare ne fait pas d'allers-retours sur le seuil.
 
 ## Interface (onglet Skills, `src/ui/skills.js`)
 
