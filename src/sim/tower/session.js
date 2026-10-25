@@ -547,13 +547,11 @@ function finishAction(G, m, a){
   }
 }
 
-/* fin d'une chute : une chute imprévue (projeté par le boss) d'au moins CFG.stunFall cases étourdit */
+/* fin d'une chute imprévue (projeté par le boss) : plus d'étourdissement à l'arrivée (25/10 au soir, Geoffrey ; avant :
+   étourdi CFG.stunTime s après CFG.stunFall cases ou plus) ; il remonte tout de suite */
 function land(G, m){
   if(m.knocked){
-    if(m.fallN >= CFG.stunFall){
-      m.action = { type: 'stun', dur: CFG.stunTime, t: 0, data: {} }; m.status = 'Étourdi';
-      log(G, `💫 ${m.name} s'écrase ${m.y >= G.floor ? 'au pied de la tour' : 'plus bas'} (${m.fallN} cases) : étourdi ${CFG.stunTime} s`);
-    }
+    if(m.fallN >= CFG.stunFall) log(G, `💫 ${m.name} tombe ${m.y >= G.floor ? "jusqu'au pied de la tour" : 'plus bas'} (${m.fallN} cases)`);
     if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; m.fell = true; }   // tombé : regroupement en remontant
     /* logisticien (skill Treuil) tombé au pied de la tour, dehors : il installera le treuil (un seul par partie) */
     if(m.skill.winch && !G.winch && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))
