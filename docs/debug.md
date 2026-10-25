@@ -2439,3 +2439,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/wiki.test.js` (8, dont 1 nouveau : sorts, XP de spé, anneaux, date du bandeau) ✅. Rendu vérifié
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
+
+### Lobby : équipe visible sur Jugement (Geoffrey, 25/10) — 🧪 branche `geoffrey/lobby-jugement-equipe`
+- **Quoi** : `src/ui/lobby.js` : nouvelle fonction pure `lobbyCards({ view, mode, dev })` (cartes visibles : judgment, mi,
+  team, launch, prefs, dev) ; `render()` l'utilise. Vue Jugement : `teamCard` visible, `launchBtn` caché, texte
+  « choisis la Mine ou une tour ». GAME_DESIGN §Jugement.
+- **Tests** : `tests/lobby.test.js` +1 ✅ (14). ⚠️ Pas regardé dans un vrai navigateur.

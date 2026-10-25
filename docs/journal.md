@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Lobby : l'équipe reste visible sur Jugement
+- **Pour le joueur** : en choisissant « ⚖ Jugement » dans « Où miner », on voit toujours son groupe à droite (comme pour
+  la Mine) : inviter, quitter, voir qui est prêt. Le bouton Lancer n'y est pas : on lance depuis la Mine ou une tour.
+- **État** : 🧪 sur la branche `geoffrey/lobby-jugement-equipe` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en
