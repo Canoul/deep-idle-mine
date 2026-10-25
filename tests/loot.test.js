@@ -85,3 +85,31 @@ test('même demande rejouée : même butin, aucun second treasure ouvert, même 
   assert.equal(countOf(inv, 'Treasure T1'), 1);
   assert.equal(countOf(inv, 'Charbon'), a.loot['Charbon']);
 });
+
+/* « Ouvrir tout » (25/10/2026) */
+test('ouvrir tout : tous les exemplaires, chacun son tirage, butin additionné ; une demande renvoyée ne rouvre rien', async () => {
+  const { openAll } = await import('../src/meta/loot.js');
+  const inv = createInventory(); addItem(inv, 'Treasure T1', 7); addItem(inv, 'Fer', 3);
+  const r = openAll(inv, 'Treasure T1', 'op-all-1', mulberry32(9));
+  assert.equal(r.count, 7); assert.equal(r.repeated, false);
+  assert.equal(countOf(inv, 'Treasure T1'), 0);
+  const parts = LOOT['Treasure T1'].always.find(a => a.item === 'Blueprint parts');
+  assert.ok(r.loot['Blueprint parts'] >= 7 * parts.min && r.loot['Blueprint parts'] <= 7 * parts.max, 'chacun son tirage');
+  assert.equal(countOf(inv, 'Fer'), 3 + r.loot.Fer);
+  const again = openAll(inv, 'Treasure T1', 'op-all-1', mulberry32(9));
+  assert.deepEqual([again.repeated, again.count, again.loot], [true, 7, r.loot]);
+  assert.equal(openAll(inv, 'Treasure T1', 'op-all-2', mulberry32(9)), null, 'plus rien à ouvrir');
+  const back = deserialize(serialize(inv));
+  assert.equal(back.opened.find(o => o.id === 'op-all-1').count, 7, 'relu avec la sauvegarde');
+});
+
+test('ouvrir tout : au plus TREASURE.openAllMax par demande ; objet qui ne s\'ouvre pas refusé', async () => {
+  const { openAll } = await import('../src/meta/loot.js');
+  const { TREASURE } = await import('../src/config.js');
+  const inv = createInventory(); addItem(inv, 'Treasure T1', TREASURE.openAllMax + 5);
+  assert.equal(openAll(inv, 'Treasure T1', 'op-all-3', mulberry32(1)).count, TREASURE.openAllMax);
+  assert.equal(countOf(inv, 'Treasure T1'), 5);
+  const other = createInventory(); addItem(other, 'Fer', 10);
+  assert.equal(openAll(other, 'Fer', 'op-all-4', mulberry32(1)), null);
+  assert.equal(countOf(other, 'Fer'), 10);
+});

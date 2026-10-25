@@ -52,7 +52,7 @@ export const gameApi = {
   chat:   after        => request('GET', '/api/game/chat?after=' + (after | 0)),   // messages du chat de la session
   say:    text         => request('POST', '/api/game/chat', { text }),
   ack:    id           => request('POST', '/api/game/ack', { id }),
-  open:   (item, opId) => request('POST', '/api/game/open', { item, opId }),
+  open:   (item, opId, all = false) => request('POST', '/api/game/open', { item, opId, ...(all ? { all:true } : {}) }),   // all : « Ouvrir tout »
   furnace: op          => request('POST', '/api/game/furnace', op),
   crusher: op          => request('POST', '/api/game/crusher', op),   // { action:'load'|'unload'|'collect', slot, item, qty, opId }
   crusherState: ()     => request('GET', '/api/game/crusher'),

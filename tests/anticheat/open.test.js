@@ -67,3 +67,12 @@ test('l\'opId d\'un autre joueur ne donne rien', async () => {
   await assert.rejects(game.open(OTHER, { item:'Treasure T1', opId:'op-00000001' }), { code:'not_owned' });
   assert.equal(await qty(game, 'Charbon', OTHER), 0);
 });
+
+test('ouvrir tout : en rafale (double clic, onglets) avec le même opId, une seule ouverture ; sans exemplaire, refusé', async () => {
+  const { game } = await setup(6);
+  const res = await Promise.all(Array.from({ length:5 }, () => game.open(ME, { item:'Treasure T1', opId:'all-burst-01', all:true })));
+  assert.ok(res.every(r => r.count === 6 && JSON.stringify(r.loot) === JSON.stringify(res[0].loot)), 'même butin pour toutes');
+  assert.equal(await qty(game, 'Treasure T1'), 0);
+  await assert.rejects(game.open(ME, { item:'Treasure T1', opId:'all-burst-02', all:true }), { code:'not_owned' });
+  await assert.rejects(game.open(ME, { item:'Fer', opId:'all-burst-03', all:true }), { code:'bad_item' });
+});

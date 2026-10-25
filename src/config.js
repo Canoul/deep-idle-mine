@@ -167,8 +167,9 @@ export const AREAS = [
 /* butin d'un treasure : un objet « Treasure TX » dont le tier dépend de l'area où le treasure est enfoui
    (usage défini plus tard avec le craft). Plus aucun minerai. Le dernier tier vaut aussi pour les areas au-delà.
    tiers : chaque entrée couvre les areas jusqu'à maxArea (incluse), à partir de la fin de la précédente. */
+/* openAllMax : « Ouvrir tout » (inventaire, 25/10/2026, Geoffrey) ouvre au plus ce nombre d'exemplaires par demande */
 export const TREASURE = {
-  itemWeight:2, itemCount:1,
+  itemWeight:2, itemCount:1, openAllMax:100,
   tiers: [
     { item:'Treasure T1', maxArea:2, tex:'treasure_t1' },   // areas 0 à 2
     { item:'Treasure T2', maxArea:4, tex:'treasure_t2' },   // areas 3 et 4 (avant le 23/10 : 3 à 5 et au-delà)

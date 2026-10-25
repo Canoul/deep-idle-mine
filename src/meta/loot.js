@@ -1,8 +1,8 @@
 /* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
    pure (le hasard est passé en paramètre). Un trésor de tour (RUNE.treasures) peut aussi donner un anneau (RINGS.drops).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT, ITEMS, RUNE, RINGS } from '../config.js';
-import { removeItem, addAll, addItem, OPEN_MEMORY } from './inventory.js';
+import { LOOT, ITEMS, RUNE, RINGS, TREASURE } from '../config.js';
+import { removeItem, addAll, addItem, countOf, OPEN_MEMORY } from './inventory.js';
 import { rollRune } from './piece.js';
 
 /* coffre de tour (RUNE) : { side, q } ou null */
@@ -32,6 +32,38 @@ export function rollLoot(table, rng){
 export function openTreasure(inv, item, opId, rng){
   const prev = inv.opened.find(o => o.id === opId);
   if(prev) return prev.item === item ? { loot:{ ...prev.loot }, repeated:true } : null;
+  const loot = openOne(inv, item, rng);
+  if(!loot) return null;
+  remember(inv, { id:opId, item, loot });
+  return { loot, repeated:false };
+}
+
+/* « Ouvrir tout » (25/10/2026) : ouvre tous les exemplaires de item (au plus TREASURE.openAllMax), chacun avec son propre
+   tirage, en une seule demande. Butin additionné. Même opId : même butin, rien n'est rouvert.
+   Renvoie { loot, count, repeated } ou null (objet qui ne s'ouvre pas, ou aucun exemplaire). */
+export function openAll(inv, item, opId, rng){
+  const prev = inv.opened.find(o => o.id === opId);
+  if(prev) return prev.item === item ? { loot:{ ...prev.loot }, count:prev.count ?? 1, repeated:true } : null;
+  if(!canOpen(item)) return null;
+  const n = Math.min(countOf(inv, item), TREASURE.openAllMax), loot = {};
+  let count = 0;
+  for(let k = 0; k < n; k++){
+    const l = openOne(inv, item, rng); if(!l) break;
+    for(const [name, q] of Object.entries(l)) loot[name] = (loot[name] || 0) + q;
+    count++;
+  }
+  if(!count) return null;
+  remember(inv, { id:opId, item, loot, count });
+  return { loot, count, repeated:false };
+}
+
+const remember = (inv, rec) => {
+  inv.opened.push({ ...rec, loot:{ ...rec.loot } });
+  if(inv.opened.length > OPEN_MEMORY) inv.opened.splice(0, inv.opened.length - OPEN_MEMORY);
+};
+
+/* ouvre UN exemplaire (retiré de l'inventaire, butin versé) ; renvoie son butin ou null */
+function openOne(inv, item, rng){
   if(!canOpen(item) || !removeItem(inv, item, 1)) return null;
   let loot;
   const chest = chestOf(item);
@@ -48,7 +80,5 @@ export function openTreasure(inv, item, opId, rng){
     loot = rollLoot(LOOT[item], rng);
     addAll(inv, loot);
   }
-  inv.opened.push({ id:opId, item, loot:{ ...loot } });
-  if(inv.opened.length > OPEN_MEMORY) inv.opened.splice(0, inv.opened.length - OPEN_MEMORY);
-  return { loot, repeated:false };
+  return loot;
 }

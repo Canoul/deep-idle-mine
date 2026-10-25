@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Inventaire : « Ouvrir tout »
+- **Pour le joueur** : quand on a plusieurs treasures du même type (ou plusieurs trésors de tour identiques), un bouton
+  **Ouvrir tout (N)** apparaît à côté de « Ouvrir ». Il les ouvre tous d'un coup (100 au plus par clic), chacun avec son
+  propre tirage, et la fenêtre montre tout le butin additionné.
+- **État** : 🧪 sur la branche `geoffrey/ouvrir-tout` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Amélioration : +5 / +10 / +15 %
 - **Pour le joueur** : améliorer une pièce rapporte plus : +1 = **+5 %** de toutes ses stats (avant +3 %), +2 = **+10 %**
   (avant +5 %), +3 = **+15 %** (avant +7 %). Coûts et chances de réussite inchangés. Les pièces déjà améliorées en

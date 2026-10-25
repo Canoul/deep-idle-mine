@@ -182,7 +182,7 @@ export function deserialize(json){
   inv.credited = Array.isArray(d.credited) ? d.credited.filter(x => typeof x === 'string').slice(-CREDIT_MEMORY) : [];
   inv.opened = Array.isArray(d.opened)
     ? d.opened.filter(o => o && typeof o.id === 'string' && typeof o.item === 'string' && validBag(o.loot))
-        .map(o => ({ id:o.id, item:o.item, loot:{ ...o.loot } })).slice(-OPEN_MEMORY)
+        .map(o => ({ id:o.id, item:o.item, loot:{ ...o.loot }, ...(Number.isSafeInteger(o.count) && o.count > 0 ? { count:o.count } : {}) })).slice(-OPEN_MEMORY)
     : [];
   inv.crafted = Array.isArray(d.crafted) ? d.crafted.filter(x => typeof x === 'string').slice(-CRAFT_MEMORY) : [];
   /* recettes débloquées : seulement des recettes à blueprint existantes, chacune une fois */
