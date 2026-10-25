@@ -2,7 +2,7 @@
    règles : oxygène, pods, pas de remontée), mine figée, retour à la surface, fin de session et départ pendant le k hole, déterminisme, envoi au navigateur. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, SESSION_LEN, KHOLE, KHOLE_BLOCK, DT, DUNGEON, TRAP, BARRIER, TREASURE_BLOCK, SPAWN_X } from '../src/config.js';
+import { W, AREA_H, SESSION_LEN, DEV_TUNABLES, DEV_TARGETS, KHOLE, KHOLE_BLOCK, DT, DUNGEON, TRAP, BARRIER, TREASURE_BLOCK, SPAWN_X } from '../src/config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../src/sim/session.js';
 import { genArea, tryUnlock, areaTop, treasureItem } from '../src/sim/world.js';
 import { buildDimension } from '../src/sim/khole.js';
@@ -182,4 +182,9 @@ test('fin de session proche : le k hole se referme à endMargin s de la fin, le 
   run(late, KHOLE.warn + 1);
   assert.equal(late.khole ?? null, null);
   assert.equal(late.kholes[0].used, false);
+});
+
+test('mode dev : chaque réglage (DEV_TUNABLES) pointe vers une vraie valeur, dont la chance de k hole', () => {
+  for(const [obj, key] of DEV_TUNABLES) assert.equal(typeof DEV_TARGETS[obj]?.[key], 'number', `${obj}.${key}`);
+  assert.ok(DEV_TUNABLES.some(([obj, key]) => obj === 'KHOLE' && key === 'chance'));
 });

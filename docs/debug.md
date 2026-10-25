@@ -2979,3 +2979,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/khole.test.js` +1 (k hole ouvert 2 min avant la fin : retour à 3 570 s, `lostBags` vide, butin au
   coffre ; découvert à 25 s de la fin : ne s'ouvre pas) ✅ (11). Sonde 5 seeds × 3 mineurs : 49 à 58 objets portés au
   retour, rien de perdu.
+- **Correctif (25/10)** : l'option « Chance de k hole par area » n'apparaissait pas : `src/ui/lobby.js` avait sa propre
+  liste `TARGETS = { STATS, CFG }` (sans KHOLE) → erreur en construisant le panneau dev. Liste unique `DEV_TARGETS` dans
+  `src/config.js`, lue par le lobby et `src/shared/game.js`. Test : chaque ligne de `DEV_TUNABLES` pointe vers un nombre
+  de `DEV_TARGETS` (`tests/khole.test.js`, 12) ✅.

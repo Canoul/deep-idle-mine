@@ -1195,3 +1195,5 @@ export const DEV_TUNABLES = [
   ['STATS','torches','Torches',0,1000], ['STATS','knockRes','Résistance au recul (%)',0,100], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1], ['KHOLE','chance','Chance de k hole par area (0-1)',0,1],
 ];
+/* objets que les réglages dev modifient (premier élément de chaque ligne de DEV_TUNABLES) : lobby et serveur */
+export const DEV_TARGETS = { STATS, CFG, KHOLE };
