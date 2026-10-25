@@ -193,3 +193,16 @@ test('affichage : les mineurs, les mobs et le boss glissent entre deux envois', 
   assert.deepEqual(m._from, [a.x - 1, a.y]); assert.deepEqual(m._to, [a.x, a.y]);
   assert.deepEqual(next.boss._from, [G.boss.x + 1, G.boss.y]); assert.deepEqual(next.boss._to, [G.boss.x, G.boss.y]);
 });
+
+test('étage de blocs : deux mineurs ne visent jamais le même bloc (chacun réserve le sien)', () => {
+  const G = newTower(3, { side: 'angel', miners: team(3) });
+  const k = G.kinds.indexOf('blocks');
+  let guard = 0, shared = 0;
+  while(G.blocksLeft[k] > 0 && guard++ < ticks(400)){
+    tickTower(G);
+    const goals = G.miners.map(m => m.blockGoal).filter(g => g != null);
+    shared += goals.length - new Set(goals).size;
+  }
+  assert.equal(G.blocksLeft[k], 0);
+  assert.equal(shared, 0, 'jamais deux mineurs sur le même bloc visé');
+});

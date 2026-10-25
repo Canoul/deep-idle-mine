@@ -240,15 +240,16 @@ export function wantedSide(G, m){
    Arêtes depuis (x, y) : à côté (creuser la case si besoin ; s'il n'y a pas d'appui, il tombe : au plus CFG.maxFall
    cases), monter (creuser au-dessus, poser une échelle sur sa case si besoin : dans la tour seulement), descendre par
    une échelle. Une case pas encore découverte de l'intérieur est supposée de la stonebrick. Un bloc qu'un autre mineur
-   creuse déjà coûte plus cher (on se répartit le travail). Renvoie le chemin (liste de cases) vers la case d'arrivée
-   la moins chère, ou null. */
-export function planTo(G, m, goals){
+   creuse déjà coûte plus cher (on se répartit le travail), comme un bloc de avoid (clés y × w + x : blocs réservés par
+   les autres, étage « blocs »). Renvoie le chemin (liste de cases) vers la case d'arrivée la moins chère, ou null. */
+export function planTo(G, m, goals, avoid = null){
   const { w } = G, N = w * (G.h + 1);
   const goal = new Set(goals.map(([x, y]) => y * w + x));
   const dist = new Float64Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
   const start = m.y * w + m.x;
   dist[start] = 0;
   const taken = new Set(G.miners.filter(o => o !== m && o.action?.type === 'mine').map(o => o.action.data.y * w + o.action.data.x));
+  for(const k of avoid ?? []) taken.add(k);
   const heap = [[0, start]];
   const push = (d, n) => { heap.push([d, n]); let i = heap.length - 1;
     while(i > 0){ const p = (i - 1) >> 1; if(heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
@@ -293,6 +294,17 @@ export function planTo(G, m, goals){
   return null;
 }
 
+/* blocs de l'étage k réservés par les autres mineurs (celui qu'ils visent, celui qu'ils minent), clés y × w + x */
+function reservedBlocks(G, m, k){
+  const out = new Set();
+  for(const o of G.miners){
+    if(o === m) continue;
+    if(o.blockGoal != null){ const x = o.blockGoal % G.w, y = (o.blockGoal - x) / G.w; if(inBlockFloor(G, x, y) === k && G.tiles[y][x] !== 0) out.add(o.blockGoal); }
+    if(o.action?.type === 'mine') out.add(o.action.data.y * G.w + o.action.data.x);
+  }
+  return out;
+}
+
 /* étage « blocs » à vider pour ce mineur : le plus bas pas encore vidé, à son étage ou au-dessus ; -1 sinon */
 function blockFloorFor(G, m){
   const here = floorOf(G, m.y);
@@ -334,17 +346,23 @@ export function decide(G, m){
     if(path?.length) return follow(G, m, path, `Va combattre les ${mobName}s`);
   }
   /* étage « blocs » pas encore vidé (le plus bas, au niveau du mineur ou au-dessus) : il mine ses blocs, le plus proche
-     d'abord, en laissant ceux qu'un autre mine déjà ; la porte du plafond ne s'ouvre qu'une fois l'étage vide */
+     d'abord ; la porte du plafond ne s'ouvre qu'une fois l'étage vide. Chacun RÉSERVE le bloc qu'il vise (m.blockGoal) :
+     les autres en choisissent un autre et évitent de passer par lui (25/10 : avant, ils visaient souvent le même bloc et
+     le second attendait). Tous les blocs réservés (fin de l'étage) : il attend qu'un bloc se libère. */
   const kb = blockFloorFor(G, m);
   if(kb >= 0){
-    const st = `Vide l'étage ${kb}`;
-    const left = blockCells(G, kb).filter(([x, y]) => !busy(G, m, 'mine', x, y));
+    const st = `Vide l'étage ${kb}`, key = ([x, y]) => y * G.w + x;
+    const cells = blockCells(G, kb), free = cells.filter(([x, y]) => !busy(G, m, 'mine', x, y));
+    const res = reservedBlocks(G, m, kb);
+    const left = free.filter(c => !res.has(key(c)));
     const adj = left.find(([x, y]) => Math.abs(x - m.x) + Math.abs(y - m.y) === 1 && (y >= m.y || towerSupported(G, m.x, m.y)));
-    if(adj){ m.face = Math.sign(adj[0] - m.x) || m.face; return startMine(G, m, adj[0], adj[1], st); }
-    const path = left.length ? planTo(G, m, left) : null;
-    if(path?.length) return follow(G, m, path, st);
+    if(adj){ m.blockGoal = key(adj); m.face = Math.sign(adj[0] - m.x) || m.face; return startMine(G, m, adj[0], adj[1], st); }
+    const path = left.length ? planTo(G, m, left, res) : null;
+    if(path?.length){ m.blockGoal = key(path.at(-1)); return follow(G, m, path, st); }
+    m.blockGoal = null;
     return act(m, 'wait', 0.3, {}, st);
   }
+  m.blockGoal = null;
   /* le boss */
   if(G.boss.hp <= 0) return act(m, 'wait', 0.5, {}, 'Victoire');
   /* boss en l'air (saut) : on s'écarte de sa zone d'atterrissage et on l'attend juste à côté */
