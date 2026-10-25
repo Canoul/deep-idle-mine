@@ -239,7 +239,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
 .grow{flex:1;min-width:calc(60*var(--u))}
-#speedBtns{display:flex;gap:var(--u)}
+.speedBtns{display:flex;gap:var(--u)}
 .runGrid{flex:1;min-height:0;display:grid;grid-template-columns:calc(125*var(--u)) minmax(0,1fr) calc(24*var(--u)) calc(125*var(--u));
   gap:calc(6*var(--u));padding:calc(12*var(--u)) calc(6*var(--u)) calc(3*var(--u))}
 .runGrid.mi{grid-template-columns:minmax(0,1fr) calc(150*var(--u))}
