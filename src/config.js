@@ -685,7 +685,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
-    'Lampe à incandescence':'epique',   // 25/10 : provisoire (20 Fragments de cœur)
+    'Lampe à incandescence':'rare',   // 25/10 (Geoffrey)
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
@@ -743,9 +743,9 @@ export const STUFF = {
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.05 } },   // 24/10 : avant 0,6
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
-    'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },
+    'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
-    'Lampe à incandescence': { slot:'torche', tex:'lamp_incandescent', stats:{ torches:10 }, set:{ torchRadius:8, torchTime:0.5 } },   // voit 1 ligne au-dessus et en dessous
+    'Lampe à incandescence': { slot:'torche', tex:'lamp_incandescent', stats:{ torches:10 }, set:{ torchRadius:8, torchTime:0.5 } },
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
     'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },

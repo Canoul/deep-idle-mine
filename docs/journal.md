@@ -23,7 +23,7 @@ Modèle d'entrée :
   fabricable sans blueprint (200 vésicules de gaz, 2 000 charbon, 20 fragments de cœur) : +10 torches, ses torches
   éclairent à 8 cases au lieu de 5, et il les pose deux fois plus vite. Chaque torche garde le rayon de celui qui l'a
   posée. Deux nouvelles stats dans l'onglet Stuff : Rayon des torches et Pose d'une torche. Wiki à jour (tableaux).
-- **Décisions** (Geoffrey) : l'objet, sa recette et ses effets ; rareté **épique** (choix de Claude, provisoire).
+- **Décisions** (Geoffrey) : l'objet, sa recette et ses effets ; rareté **rare**.
 - **État** : 🧪 sur la branche `geoffrey/lampe-incandescence` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
