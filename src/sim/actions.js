@@ -115,8 +115,9 @@ export function killMob(G,m,o){
     const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
     collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
-  } else if(o.dungeon!=null){
-    /* boss de donjon : 1 à 3 Cristaux de pleine lune (Pillage compris) ; chaque joueur en recevra la quantité entière */
+  } else if(o.dungeon!=null || o.type===DUNGEON.boss.type){
+    /* boss de donjon (et minotaure à découvert d'un k hole, src/sim/khole.js) : 1 à 3 Cristaux de pleine lune (Pillage
+       compris) ; chaque joueur en recevra la quantité entière */
     const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     collect(m,L.item,ITEMS[L.item].w ?? 1,n);
     log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item})`);

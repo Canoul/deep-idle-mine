@@ -144,7 +144,7 @@ export function createRenderer(cv){
   function drawKhole(G){
     const a=0.16+0.06*Math.sin(frameNow/400);
     ctx.fillStyle=`rgba(110,40,190,${a.toFixed(3)})`; ctx.fillRect(0,0,cv.width,cv.height);
-    const left=Math.max(0,Math.ceil(G.khole.until-G.t)), txt=`🌀 Autre dimension : retour dans ${left} s`;
+    const left=Math.max(0,Math.ceil(G.khole.until-G.t)), txt=`🌀 ${G.khole.label ?? "Autre dimension"} : retour dans ${left} s`;
     ctx.font='bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(txt,cv.width/2,6);
     ctx.fillStyle='#e2c8ff'; ctx.fillText(txt,cv.width/2,6);

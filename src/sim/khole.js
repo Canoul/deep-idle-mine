@@ -1,6 +1,7 @@
 /* K hole (KHOLE en config ; décisions du créateur, 25/10/2026) : un portail enfoui dans une area. Dès qu'un mineur le
-   découvre, il s'ouvre ; KHOLE.warn s plus tard, tout le groupe est aspiré dans une autre dimension pendant
-   KHOLE.duration s (pris sur l'heure de session), puis il est téléporté à la surface de la mine, avec ce qu'il porte.
+   découvre, il s'ouvre ; KHOLE.warn s plus tard, tout le groupe est aspiré dans une autre dimension, une carte tirée
+   parmi KHOLE.maps, pendant la durée de cette carte (prise sur l'heure de session), puis il est téléporté à la surface
+   de la mine, avec ce qu'il porte. Certaines cartes finissent plus tôt (end : minotaures vaincus, treasures ouverts).
 
    Principe : c'est la même partie, on échange la carte. Tout ce qui appartient à la mine (WORLD : blocs, échelles,
    découverte, areas, mobs, torches, treuil, Mule, donjons, pièges…) est mis de côté et la dimension prend sa place. La
@@ -9,12 +10,13 @@
    l'inventaire porté, les stats, les recharges de sorts. Chez chaque mineur, sa position et son travail en cours (SPOT)
    repartent de zéro à l'aller comme au retour.
 
-   La dimension dépend uniquement de seed + numéro du k hole + son area (déterministe) : « au fond d'une mine », à la
-   profondeur de l'area k du k hole (areaOf donne k : PV des mobs, table des pièges, tier des treasures), KHOLE.w × KHOLE.h
-   cases dans le coin gauche de la grille, entourées de barrière. Dans la dimension (G.khole), l'oxygène ne baisse pas,
-   les pods n'ont pas de limite et l'IA ne remonte jamais (src/sim/session.js, src/sim/ai.js), rien ne se débloque
-   (tryUnlock), pas d'apparition de mobs, pas de focus d'area, la profondeur ne compte pas. */
-import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE_BLOCK } from '../config.js';
+   La dimension dépend uniquement de seed + numéro du k hole + son area (déterministe ; les vagues de mobs utilisent le
+   hasard « live » G.rng, comme les apparitions normales) : « au fond d'une mine », à la profondeur de l'area k du k hole
+   (areaOf donne k : PV des mobs, table des pièges et des vagues, tier des treasures), w × h cases dans le coin gauche de
+   la grille, entourées de barrière. Dans la dimension (G.khole), l'oxygène ne baisse pas, les pods n'ont pas de limite
+   et l'IA ne remonte jamais (src/sim/session.js, src/sim/ai.js), rien ne se débloque (tryUnlock), pas d'apparition de
+   mobs normale, pas de focus d'area, la profondeur ne compte pas. */
+import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE, TREASURE_BLOCK, MOBS, mobHp } from '../config.js';
 import { mulberry32, hash } from '../core/rng.js';
 import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, treasureItem } from './world.js';
 import { carve, registerDungeon } from './dungeon.js';
@@ -60,17 +62,25 @@ export function registerKhole(G, k, p){
   (G.kholes ??= []).push({ k, x: p.x, y: areaTop(k)+p.ry, opensAt: null, used: false });
 }
 
+/* carte du n-ième k hole : imposée en mode dev (KHOLE.map, 1 à maps.length), sinon tirée selon weight */
+export function pickMap(seed, n){
+  const forced = Math.round(KHOLE.map);
+  if(forced >= 1 && forced <= KHOLE.maps.length) return KHOLE.maps[forced-1];
+  const total = KHOLE.maps.reduce((s, m) => s + m.weight, 0);
+  let x = mulberry32(hash(seed ^ KHOLE.salt ^ 0x4a7, n+1))() * total;
+  for(const m of KHOLE.maps){ x -= m.weight; if(x < 0) return m; }
+  return KHOLE.maps.at(-1);
+}
+
 /* ---------- la dimension ---------- */
 
 const emptyArea = k => ({ k, comp: {}, counts: {}, oreTotal: 0, oreMined: 0, ores: {}, chestChance: 0, treasure: null });
-/* terrain le plus présent de la composition : il bouche les trous d'une paroi de piège */
-const filler = () => IDS[Object.keys(KHOLE.comp).filter(n => typeOf(IDS[n])==='terrain').sort((a, b) => KHOLE.comp[b]-KHOLE.comp[a])[0]];
 
-/* pose une boîte w × h dans la zone de minage (colonnes spawnCols à KHOLE.w - 1), à une case au moins des autres
-   boîtes : toutes les places sont essayées dans un ordre tiré au hasard ; null si aucune ne convient */
-function placeBox(r, w, h, taken){
+/* pose une boîte w × h dans la zone de minage (colonnes x0min à map.w - 1), à une case au moins des autres boîtes :
+   toutes les places sont essayées dans un ordre tiré au hasard ; null si aucune ne convient */
+function placeBox(r, map, w, h, taken){
   const spots = [];
-  for(let x0=KHOLE.spawnCols; x0<=KHOLE.w-w; x0++) for(let ry0=0; ry0<=KHOLE.h-h; ry0++) spots.push({ x0, ry0, w, h });
+  for(let x0=map.spawnCols; x0<=map.w-w; x0++) for(let ry0=0; ry0<=map.h-h; ry0++) spots.push({ x0, ry0, w, h });
   for(let j=0; j<spots.length; j++){
     const s = j + Math.floor(r()*(spots.length-j)); [spots[j], spots[s]] = [spots[s], spots[j]];
     const b = spots[j];
@@ -81,22 +91,82 @@ function placeBox(r, w, h, taken){
 }
 /* place les donjons puis les pièges ; si tout ne tient pas, recommence (KHOLE.attempts fois au plus) et garde la
    disposition qui en place le plus */
-function layout(r){
+function layout(r, map){
   let best = null;
   for(let a=0; a<KHOLE.attempts; a++){
     const taken = [], dungeons = [], traps = [];
-    for(let i=0; i<KHOLE.dungeons; i++){ const b = placeBox(r, DUNGEON.size, DUNGEON.size, taken); if(b) dungeons.push(b); }
-    for(let i=0; i<KHOLE.traps; i++){ const b = placeBox(r, TRAP_BOX.w, TRAP_BOX.h, taken); if(b) traps.push(b); }
+    for(let i=0; i<(map.dungeons || 0); i++){ const b = placeBox(r, map, DUNGEON.size, DUNGEON.size, taken); if(b) dungeons.push(b); }
+    for(let i=0; i<(map.traps || 0); i++){ const b = placeBox(r, map, TRAP_BOX.w, TRAP_BOX.h, taken); if(b) traps.push(b); }
     if(!best || dungeons.length + traps.length > best.dungeons.length + best.traps.length) best = { taken, dungeons, traps };
-    if(dungeons.length === KHOLE.dungeons && traps.length === KHOLE.traps) break;
+    if(dungeons.length === (map.dungeons || 0) && traps.length === (map.traps || 0)) break;
   }
   return best;
 }
 
-/* remplace la carte de G par la dimension n (n-ième k hole), à la profondeur de l'area k ; renvoie la ligne d'arrivée */
-export function buildDimension(G, n, k){
+/* carte « filons » : spawnCols colonnes vides à gauche (vues), puis comp, donjons, pièges et treasures */
+function buildVeins(G, r, map, k, top){
+  const S0 = map.spawnCols, zw = map.w - S0, { grid, counts, oreTotal } = fillComp(r, map.comp, zw, map.h);
+  const at = (x, ry) => ry*zw + x - S0;
+  const get = (x, ry) => grid[at(x, ry)];
+  const put = (x, ry, id) => { const i = at(x, ry), key = oreKey(grid[i]); if(grid[i] === id) return;
+    if(key && counts[key]) counts[key]--; grid[i] = id; };
+  const filler = IDS[Object.keys(map.comp).filter(n => typeOf(IDS[n])==='terrain').sort((a, b) => map.comp[b]-map.comp[a])[0]];
+  const L = layout(r, map), taken = L.taken;
+  const dungeons = L.dungeons.map(b => ({ x0: b.x0, ry0: b.ry0, side: r() < 0.5 ? 'L' : 'R',
+    hry: b.ry0 + DUNGEON.size - 2 - Math.floor(r()*DUNGEON.holeRows) }));
+  const traps = L.traps.map(b => ({ x0: b.x0, ry0: b.ry0, mobs: trapMobs(k, r) }));
+  for(const p of dungeons) carve(p, put);
+  for(const p of traps) carveTrap(p, get, put, filler);
+  /* treasures : treasurePct % des cases de la zone, à la place de terrain hors donjon et pièges (tier de l'area k) */
+  const spots = [];
+  for(let i=0; i<grid.length; i++) if(typeOf(grid[i])==='terrain' && !taken.some(b => inBox(b, S0 + i%zw, (i/zw)|0, 0))) spots.push(i);
+  const chests = [];
+  for(let j=0, want=Math.min(spots.length, Math.round(zw*map.h*map.treasurePct/100)); j<want; j++){
+    const s = j + Math.floor(r()*(spots.length-j)); [spots[j], spots[s]] = [spots[s], spots[j]];
+    put(S0 + spots[j]%zw, (spots[j]/zw)|0, TREASURE_BLOCK); chests.push(spots[j]);
+  }
+  for(let ry=0; ry<map.h; ry++){
+    const y = top + ry;
+    for(let x=0; x<S0; x++){ G.tiles[y][x] = 0; G.seen[y][x] = 1; }
+    for(let x=S0; x<map.w; x++) G.tiles[y][x] = get(x, ry);
+  }
+  for(const p of dungeons) registerDungeon(G, k, p, top + p.ry0);
+  for(const p of traps) registerTrap(G, k, p, top + p.ry0);
+  for(const i of chests){ const x = S0 + i%zw, y = top + ((i/zw)|0); G.treasures.set(y*W + x, { k, x, y, item: treasureItem(k), opened: false }); }
+  const ores = {};
+  for(const key in counts) if(isOre(IDS[key])) ores[key] = { total: counts[key], left: counts[key] };
+  G.areas[k] = { k, comp: map.comp, counts, oreTotal, oreMined: 0, ores, chestChance: 0, treasure: null };
+}
+
+/* un mob posé au sol de la dimension (PV de l'area k), qui chasse le groupe */
+function addMob(G, type, x, y, k, extra = {}){
+  const hp = type === DUNGEON.boss.type ? DUNGEON.boss.hp : mobHp(type, k);
+  const o = { id: G.mobId++, type, x, y, hp, maxhp: hp, cd: 1, hunt: G.miners[0]?.id ?? null, ...extra };
+  if(type === 'occultiste') o.cast = MOBS.occult.cooldown;
+  G.mobs.push(o);
+  return o;
+}
+
+/* salle vide (arene, tresor, vagues) : toute vue ; minotaures aux deux bouts, treasures sur la droite */
+function buildRoom(G, r, map, k, top){
+  const floor = top + map.h - 1;
+  for(let ry=0; ry<map.h; ry++) for(let x=0; x<map.w; x++){ G.tiles[top+ry][x] = 0; G.seen[top+ry][x] = 1; }
+  if(map.minotaurs){
+    const xs = map.minotaurs === 1 ? [map.w-1] : Array.from({ length: map.minotaurs }, (_, i) => Math.round(i*(map.w-1)/(map.minotaurs-1)));
+    for(const x of xs) addMob(G, DUNGEON.boss.type, x, floor, k, { name: DUNGEON.boss.name });
+  }
+  for(let i=0; i<(map.treasures || 0); i++){
+    const x = map.w-1-i, item = TREASURE.tiers[Math.floor(r()*TREASURE.tiers.length)].item;   // tier tiré au hasard
+    G.tiles[floor][x] = TREASURE_BLOCK;
+    G.treasures.set(floor*W + x, { k, x, y: floor, item, opened: false });
+  }
+}
+
+/* remplace la carte de G par la dimension n (n-ième k hole, carte map), à la profondeur de l'area k ; renvoie la case
+   d'arrivée de chaque mineur (par son rang) */
+export function buildDimension(G, n, k, map = pickMap(G.seed, n)){
   const r = mulberry32(hash(G.seed ^ KHOLE.salt ^ 0x2d1e, n+1));
-  const top = areaTop(k), rows = top + KHOLE.h, S0 = KHOLE.spawnCols;
+  const top = areaTop(k), rows = top + map.h, floor = rows - 1;
   const row = fill => new Uint8Array(W).fill(fill);
   Object.assign(G, {
     tiles: Array.from({ length: rows }, () => row(BARRIER)), ladder: Array.from({ length: rows }, () => row(0)),
@@ -104,41 +174,27 @@ export function buildDimension(G, n, k){
     unlockedAreas: k+1, winch: null, treasures: new Map(), dungeons: [], traps: [], veil: new Set(), mobs: [], torches: [],
     light: new Map(), mimicCells: new Set(), mule: null, ducks: 0, duckBase: k+1, spawnTimer: Infinity, spawnTurn: 0, combat: false,
   });
-  /* zone de minage (à droite de l'arrivée) : comp, comptes exacts ; x de la grille, ry ligne locale */
-  const zw = KHOLE.w - S0, { grid, counts, oreTotal } = fillComp(r, KHOLE.comp, zw, KHOLE.h);
-  const at = (x, ry) => ry*zw + x - S0;
-  const get = (x, ry) => grid[at(x, ry)];
-  const put = (x, ry, id) => { const i = at(x, ry), key = oreKey(grid[i]); if(grid[i] === id) return;
-    if(key && counts[key]) counts[key]--; grid[i] = id; };
-  /* donjon(s), puis pièges (toujours posés, mobs et PV de l'area k), sans se toucher */
-  const L = layout(r), taken = L.taken;
-  const dungeons = L.dungeons.map(b => ({ x0: b.x0, ry0: b.ry0, side: r() < 0.5 ? 'L' : 'R',
-    hry: b.ry0 + DUNGEON.size - 2 - Math.floor(r()*DUNGEON.holeRows) }));
-  const traps = L.traps.map(b => ({ x0: b.x0, ry0: b.ry0, mobs: trapMobs(k, r) }));
-  for(const p of dungeons) carve(p, put);
-  for(const p of traps) carveTrap(p, get, put, filler());
-  /* treasures : treasurePct % des cases de la zone, à la place de terrain hors donjon et pièges (tier de l'area k) */
-  const spots = [];
-  for(let i=0; i<grid.length; i++) if(typeOf(grid[i])==='terrain' && !taken.some(b => inBox(b, S0 + i%zw, (i/zw)|0, 0))) spots.push(i);
-  const chests = [];
-  for(let j=0, want=Math.min(spots.length, Math.round(zw*KHOLE.h*KHOLE.treasurePct/100)); j<want; j++){
-    const s = j + Math.floor(r()*(spots.length-j)); [spots[j], spots[s]] = [spots[s], spots[j]];
-    put(S0 + spots[j]%zw, (spots[j]/zw)|0, TREASURE_BLOCK); chests.push(spots[j]);
-  }
-  /* la grille dans la carte : arrivée (S0 colonnes vides, vues) puis la zone */
-  for(let ry=0; ry<KHOLE.h; ry++){
-    const y = top + ry;
-    for(let x=0; x<S0; x++){ G.tiles[y][x] = 0; G.seen[y][x] = 1; }
-    for(let x=S0; x<KHOLE.w; x++) G.tiles[y][x] = get(x, ry);
-  }
-  for(const p of dungeons) registerDungeon(G, k, p, top + p.ry0);
-  for(const p of traps) registerTrap(G, k, p, top + p.ry0);
-  for(const i of chests){ const x = S0 + i%zw, y = top + ((i/zw)|0);
-    G.treasures.set(y*W + x, { k, x, y, item: treasureItem(k), opened: false }); }
-  const ores = {};
-  for(const key in counts) if(isOre(IDS[key])) ores[key] = { total: counts[key], left: counts[key] };
-  G.areas[k] = { k, comp: KHOLE.comp, counts, oreTotal, oreMined: 0, ores, chestChance: 0, treasure: null };
-  return top + KHOLE.h - 1;                          // arrivée : en bas à gauche, « au fond de la mine »
+  if(map.comp) buildVeins(G, r, map, k, top); else buildRoom(G, r, map, k, top);
+  /* arrivée, regroupés : en bas à gauche (un par colonne d'arrivée s'il y en a), ou au milieu */
+  return i => ({ x: map.spawn === 'middle' ? Math.floor(map.w/2) : Math.min(i, Math.max(0, (map.spawnCols || 1) - 1)), y: floor });
+}
+
+/* vagues : la suivante dès que la précédente est vaincue (map.wave mobs, table de l'area sans mimic, colonne au hasard) */
+function updateWaves(G){
+  const K = G.khole, map = K.map;
+  if(G.mobs.some(o => o.hp > 0)) return;
+  const floor = G.tiles.length - 1;
+  for(const type of trapMobs(K.k, G.rng, map.wave)) addMob(G, type, Math.floor(G.rng()*map.w), floor, K.k);
+  K.waves = (K.waves || 0) + 1;
+  log(G, `🌀 Vague ${K.waves} : ${map.wave} mobs`);
+}
+
+/* fin anticipée de la carte : minotaures vaincus, ou treasures ouverts */
+function finished(G){
+  const end = G.khole.map.end;
+  if(end === 'bosses') return !G.mobs.some(o => o.type === DUNGEON.boss.type && o.hp > 0);
+  if(end === 'treasures') return [...G.treasures.values()].every(t => t.opened);
+  return false;
 }
 
 /* ---------- aller et retour ---------- */
@@ -154,14 +210,15 @@ function placeMiner(m, x, y, status){
 /* aspire le groupe dans la dimension du k hole h */
 export function enterKhole(G, h){
   h.used = true;
-  const n = G.kholes.indexOf(h);
-  /* retour au bout de duration, ou quand il ne reste que endMargin s de session (le temps de déposer au coffre) */
-  const until = Math.min(G.t + KHOLE.duration, SESSION_LEN - KHOLE.endMargin);
-  G.khole = { n, k: h.k, x: h.x, y: h.y, until, world: take(G, WORLD) };
-  const y = buildDimension(G, n, h.k);
-  G.miners.forEach((m, i) => placeMiner(m, Math.min(i, KHOLE.spawnCols-1), y, 'Aspiré par le k hole'));
+  const n = G.kholes.indexOf(h), map = pickMap(G.seed, n);
+  /* retour au bout de la durée de la carte, ou quand il ne reste que endMargin s de session (le temps de déposer) */
+  const until = Math.min(G.t + map.duration, SESSION_LEN - KHOLE.endMargin);
+  G.khole = { n, k: h.k, x: h.x, y: h.y, map, until, world: take(G, WORLD) };
+  const spawn = buildDimension(G, n, h.k, map);
+  G.miners.forEach((m, i) => { const p = spawn(i); placeMiner(m, p.x, p.y, 'Aspiré par le k hole'); });
+  for(const o of G.mobs) if(o.hunt != null) o.hunt = G.miners[0]?.id ?? null;
   G.realm = (G.realm || 0) + 1;            // la carte a changé : l'envoi suivant au navigateur est la carte entière
-  log(G, `🌀 Le groupe est aspiré par le k hole ! (${Math.round(KHOLE.duration/60)} min dans une autre dimension)`);
+  log(G, `🌀 Le groupe est aspiré par le k hole : ${map.label} ! (${Math.round(map.duration/60)} min)`);
 }
 
 /* ramène le groupe dans la mine, à la surface (autour du point de départ) ; le portail a disparu (case vide) ; les mobs
@@ -186,9 +243,14 @@ export function inMine(G, fn){
   try { return fn(); } finally { K.world = take(G, WORLD); Object.assign(G, dim); }
 }
 
-/* à chaque tick : découverte d'un k hole (il s'ouvre), aspiration au bout de KHOLE.warn s, retour au bout de duration */
+/* à chaque tick : découverte d'un k hole (il s'ouvre), aspiration au bout de KHOLE.warn s ; dans la dimension, vagues,
+   retour au bout de la durée ou dès que la carte est finie */
 export function updateKhole(G){
-  if(G.khole){ if(G.t >= G.khole.until - 1e-9) exitKhole(G); return; }
+  if(G.khole){
+    if(G.t >= G.khole.until - 1e-9 || finished(G)) return exitKhole(G);
+    if(G.khole.map.wave) updateWaves(G);
+    return;
+  }
   if(G.t >= SESSION_LEN - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
   for(const h of G.kholes || []){
     if(h.used) continue;

@@ -18,21 +18,22 @@ Modèle d'entrée :
 
 ---
 
-## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension
+## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : très rarement (1 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
-  s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension pendant 5 min : une petite mine de 25 × 25
-  très riche (30 % fer, 20 % or, 8 % graphite, 3 % diamant), avec un donjon, 5 pièges et quelques treasures. Pas besoin
-  d'oxygène, pas de limite de pods, on ne remonte pas : on mine jusqu'à la fin du compteur, puis tout le groupe revient à
-  la surface de la mine avec son butin. Voile violet et compte à rebours à l'écran.
+  s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension, une carte tirée au hasard parmi 4 :
+  **Filons** (petite mine très riche, 5 min), **Arène des minotaures** (2 minotaures à tuer, 2 min), **Salle au trésor**
+  (2 treasures de tier au hasard, 2 min) et **Vagues** (vagues de 5 mobs, 3 min). Pas besoin d'oxygène, pas de limite de
+  pods, on ne remonte pas ; à la fin (ou quand l'arène / la salle au trésor est finie), tout le groupe revient à la
+  surface de la mine avec son butin. Voile violet et compte à rebours (avec le nom de la carte) à l'écran.
 - **Décisions** : la durée compte dans l'heure de session ; tout le groupe part ; déclenchement à la découverte, sans
-  réglage ; mobs, pièges et treasures de l'area où était le k hole ; pas d'autres mobs.
-- **Chiffres** (5 sessions à 3 mineurs, k hole forcé à chaque area) : 9 k holes pris, 0 blocage ; 140 à 270 blocs minés
-  dans la dimension par session ; par k hole, chaque mineur rapporte ≈ 15 à 20 fers et 13 à 20 ors, quelques graphites,
-  parfois un diamant ou un treasure. Un tick dans la dimension coûte 0,05 ms contre 0,55 ms dans la mine.
-- **Fin de session** : à 30 s de la fin, le k hole se referme et le groupe revient à la surface, le temps de tout déposer
-  au coffre (rien de perdu sur 5 essais) ; un k hole découvert dans les 30 dernières secondes ne s'ouvre pas.
-- **Décision (jackpot)** : même contenu riche quelle que soit l'area, même en area 0 ; assumé parce que c'est rare.
-- **À suivre** : le tester en vrai (mode dev : « Chance de k hole par area » à 1) ; nom affiché.
+  réglage ; même contenu quelle que soit l'area (jackpot assumé, c'est rare) ; à 30 s de la fin de session, retour à la
+  surface pour tout déposer.
+- **Chiffres** (3 mineurs, k hole en area 0) : Filons ≈ 45-50 fers, 30-47 ors, 2 à 10 diamants ; Arène : minotaures tués
+  en 117 s (sur 120), 4 à 6 cristaux ; Salle au trésor : finie en 3 s ; Vagues : 11 à 13 vagues, 54 à 63 mobs. 5 sessions
+  simulées, k hole à chaque area : 0 blocage. Un tick dans la dimension coûte 0,03 à 0,2 ms contre 0,55 ms dans la mine.
+- **Choix de Claude à valider** : le minotaure de l'arène laisse 1 à 3 Cristaux de pleine lune (comme au donjon) ; les 4
+  cartes ont la même chance (poids modifiables).
+- **À suivre** : nom affiché ; mode dev : « Carte de k hole » (0 = au hasard, 1 à 4) pour tester chaque carte.
 - **État** : 🧪 sur la branche `geoffrey/k-hole` (pas en ligne)
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque

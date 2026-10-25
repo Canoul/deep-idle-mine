@@ -2983,3 +2983,24 @@ Règles (voir CLAUDE.md) :
   liste `TARGETS = { STATS, CFG }` (sans KHOLE) → erreur en construisant le panneau dev. Liste unique `DEV_TARGETS` dans
   `src/config.js`, lue par le lobby et `src/shared/game.js`. Test : chaque ligne de `DEV_TUNABLES` pointe vers un nombre
   de `DEV_TARGETS` (`tests/khole.test.js`, 12) ✅.
+
+### K hole : plusieurs cartes (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+- **Quoi** : `KHOLE.maps` (config) : filons (l'ancienne dimension), arene, tresor, vagues ; chaque carte : w, h,
+  duration, spawn ('left' | 'middle'), weight, et son contenu (comp/traps/dungeons/treasurePct, minotaurs, treasures,
+  wave) ; `end` : 'bosses' | 'treasures'. `KHOLE.map` (réglage dev, `DEV_TUNABLES`) : 0 = tirage, 1-4 = imposée.
+  `src/sim/khole.js` : `pickMap(seed, n)` (tirage à part, selon weight), `buildDimension(G, n, k, map)` → cadre commun
+  puis `buildVeins` (filons) ou `buildRoom` (salle vide, toute vue ; minotaures `addMob` aux bouts, à découvert :
+  `dungeon` absent, logique de mob normale, `hunt` = premier mineur ; treasures tier `TREASURE.tiers` au hasard) ; renvoie
+  la case d'arrivée par rang. `updateKhole` : `finished` (fin anticipée), `updateWaves` (vague suivante quand aucun mob
+  vivant ; types `trapMobs(k, G.rng, wave)`, hasard live G.rng). `G.khole.map` ; envoi `khole.label` ; rendu : nom de la
+  carte dans le compte à rebours. `src/sim/actions.js` killMob : un minotaure à découvert (`type === DUNGEON.boss.type`)
+  laisse le butin du donjon. `trap.js` : `trapMobs(k, r, n)`.
+- **Tests** : `tests/khole.test.js` (17 : les anciens sur la carte filons imposée ; + tirage/poids/mode dev, arène
+  (contenu, fin quand les minotaures meurent, cristaux), salle au trésor (contenu, tier au hasard, fin à l'ouverture),
+  vagues (5 mobs de l'area sans mimic, vague suivante, fin au compteur)) ✅ ; session, live, dungeon, trap, world, view,
+  mobs, combat, treasure, lobby, spells, team ✅ (154).
+- **Sonde** (3 seeds × chaque carte, 3 mineurs, area 0) : filons 300 s, 133-154 blocs ; arène 117 s (2 minotaures
+  tués, juste sous les 120 s : à 1 ou 2 mineurs, ils ne finiront sans doute pas) ; trésor 3 s ; vagues 180 s, 11-13
+  vagues. Simulation `--miners 3 --count 5 --khole 1` (carte au hasard) : 10 pris, 0 bloquée, tick dimension 0,032 ms.
+- **Points fragiles** : dans l'arène et les vagues, un mineur réglé sur « Ignorer » / « Fuir » ne se bat que s'il est
+  taclé. Salle au trésor : 3 s pour 2 treasures possiblement T3, quelle que soit l'area.

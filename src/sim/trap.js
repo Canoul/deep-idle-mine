@@ -30,7 +30,7 @@ function pick(table, r){
 }
 
 /* mobs d'un piège de l'area k (même tirage que dans la mine) ; sert aussi à la dimension du k hole */
-export const trapMobs = (k, r) => { const table = trapTable(k); return Array.from({ length:TRAP.mobs }, () => pick(table, r)); };
+export const trapMobs = (k, r, n = TRAP.mobs) => { const table = trapTable(k); return Array.from({ length:n }, () => pick(table, r)); };
 /* taille d'un piège, paroi comprise */
 export const TRAP_BOX = { w:OW, h:OH };
 

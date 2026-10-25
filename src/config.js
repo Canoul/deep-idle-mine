@@ -1055,21 +1055,33 @@ export const DUNGEON = {
 /* ---- K hole (src/sim/khole.js) — décisions du créateur, 25/10/2026 ; valeurs provisoires ----
    Un portail (bloc KHOLE_BLOCK, incassable) enfoui dans une area avec la chance `chance` (un tirage par area, à part de
    la seed : le reste de l'area ne change pas), à la place d'un bloc de terrain, hors donjon et piège. Dès qu'un mineur
-   le découvre, il s'ouvre : `warn` s plus tard, TOUT le groupe est aspiré dans une autre dimension pendant `duration` s,
-   pris sur l'heure de session. La mine est figée pendant ce temps (rien n'y bouge) ; à la fin, tout le groupe est
-   téléporté à la SURFACE de la mine, avec ce qu'il porte ; le portail disparaît.
-   La dimension (« comme au fond d'une mine ») : w × h cases, à la profondeur de l'area du k hole (les mobs des pièges
-   et les treasures sont ceux de cette area) ; les spawnCols colonnes de gauche sont vides (arrivée, en bas à gauche) ;
-   le reste suit comp (% des cases hors arrivée), puis 1 donjon (DUNGEON, minotaure), `traps` pièges (TRAP, mobs et PV de
-   l'area, toujours posés) et treasurePct % de treasures (tier de l'area), sans mobs ailleurs. Pas d'oxygène consommé,
-   pods sans limite, aucune remontée : on attend la fin du compteur.
+   le découvre, il s'ouvre : `warn` s plus tard, TOUT le groupe est aspiré dans une autre dimension, une carte tirée
+   parmi `maps` (selon weight ; même seed → même carte), pendant sa `duration` (s), prise sur l'heure de session. La mine
+   est figée pendant ce temps (rien n'y bouge) ; à la fin, tout le groupe est téléporté à la SURFACE de la mine, avec ce
+   qu'il porte ; le portail disparaît.
+   Partout dans la dimension : pas d'oxygène consommé, pods sans limite, aucune remontée (on attend la fin), pas
+   d'apparition de mobs normale. Chaque carte fait w × h cases, à la profondeur de l'area du k hole (les mobs et les
+   treasures sont ceux de cette area), entourées de barrière.
    endMargin (25/10, Geoffrey) : quand il reste endMargin s de session, le k hole se referme (retour à la surface, le
-   temps de déposer au coffre) ; un k hole découvert dans ces dernières secondes ne s'ouvre pas. */
+   temps de déposer au coffre) ; un k hole découvert dans ces dernières secondes ne s'ouvre pas.
+   map (mode dev) : 0 = carte tirée au hasard ; 1 à maps.length = cette carte à chaque fois.
+   Les cartes (spawn : 'left' = en bas à gauche, 'middle' = au milieu, regroupés ; end : fin anticipée) :
+   - filons : spawnCols colonnes de gauche vides, puis comp (% des cases hors arrivée), 1 donjon (DUNGEON), `traps`
+     pièges (TRAP, toujours posés) et treasurePct % de treasures (tier de l'area) ;
+   - arene : vide, un minotaure (DUNGEON.boss, à découvert) à chaque bout ; fin quand ils sont tous vaincus ;
+   - tresor : vide, `treasures` treasures sur la droite, d'un tier tiré au hasard (TREASURE.tiers) ; fin quand ils sont
+     tous ouverts ;
+   - vagues : vide, des vagues de wave mobs (table de l'area, sans mimic : comme un piège), posés au sol à une colonne au
+     hasard ; une vague vaincue → la suivante, jusqu'à la fin du compteur. */
 export const KHOLE = {
-  chance: 0.01, fromArea: 0, warn: 3, duration: 300, endMargin: 30,
-  w: 25, h: 25, spawnCols: 5,
-  comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 },
-  traps: 5, dungeons: 1, treasurePct: 1, attempts: 20,
+  chance: 0.01, fromArea: 0, warn: 3, endMargin: 30, map: 0, attempts: 20,
+  maps: [
+    { id:'filons', label:'Filons', weight:1, duration:300, w:25, h:25, spawn:'left', spawnCols:5,
+      comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 }, traps:5, dungeons:1, treasurePct:1 },
+    { id:'arene',  label:'Arène des minotaures', weight:1, duration:120, w:15, h:3, spawn:'middle', minotaurs:2, end:'bosses' },
+    { id:'tresor', label:'Salle au trésor', weight:1, duration:120, w:5, h:3, spawn:'left', treasures:2, end:'treasures' },
+    { id:'vagues', label:'Vagues', weight:1, duration:180, w:15, h:3, spawn:'middle', wave:5 },
+  ],
   salt: 0x6b401e,
 };
 
@@ -1194,6 +1206,7 @@ export const DEV_TUNABLES = [
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50], ['STATS','compassRows','Lignes boussole (±)',0,5],
   ['STATS','torches','Torches',0,1000], ['STATS','knockRes','Résistance au recul (%)',0,100], ['CFG','ladderTime','Temps échelle (s)',0,60],
   ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1], ['KHOLE','chance','Chance de k hole par area (0-1)',0,1],
+  ['KHOLE','map','Carte de k hole (0 = au hasard, 1-4)',0,4],
 ];
 /* objets que les réglages dev modifient (premier élément de chaque ligne de DEV_TUNABLES) : lobby et serveur */
 export const DEV_TARGETS = { STATS, CFG, KHOLE };

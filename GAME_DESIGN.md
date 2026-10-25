@@ -127,13 +127,21 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 
 - Un **k hole** est un portail en forme de trou noir, enfoui dans une area à la place d'un bloc de terrain : **1 % de chance par area** *(provisoire)*, tirage à part de la seed (le reste de l'area ne change pas), jamais dans un donjon ni un piège. Incassable.
 - **Déclenchement : dès qu'un mineur le découvre** (pas de réglage dans le lobby). Le journal annonce « Un k hole s'ouvre… » ; **3 s** plus tard *(provisoire)*, **tout le groupe** est aspiré, où que soit chacun.
-- **La dimension** (« comme au fond d'une mine ») : **25 × 25 cases**, à la profondeur de l'area du k hole. Les mineurs arrivent **en bas à gauche** ; les **5 colonnes de gauche sont vides**. Le reste : **37 % pierre dure, 30 % fer, 20 % or, 8 % graphite, 3 % diamant**, puis **1 donjon** (minotaure, mêmes règles que dans la mine), **5 pièges** (toujours posés, mobs et PV de l'area du k hole) et **1 % de treasures** (≈ 5, du tier de l'area du k hole). Le donjon et l'intérieur des pièges prennent de la place : les % se retrouvent parmi les blocs restants. **Pas d'autres mobs.** Même seed → même dimension.
-- **Jackpot assumé** *(décision du créateur, 25/10/2026)* : le contenu de la dimension est le même quelle que soit l'area (seuls les mobs des pièges et le tier des treasures suivent l'area). Un k hole trouvé tôt (area 0 : pas de fer ni d'or dans la mine) fait sauter plusieurs sessions de progression ; c'est voulu, l'événement étant rare (1 % par area). Écartés : pas de k hole avant l'area 2, contenu indexé sur l'area.
-- **Durée : 5 min** *(provisoire)*, **prise sur l'heure de session**.
-- **Règles dans la dimension** : l'oxygène **ne baisse pas** ; les pods **n'ont pas de limite** ; les mineurs **ne remontent jamais** (il n'y a pas de surface) : ils minent jusqu'à la fin du compteur. Rien ne s'y débloque, la profondeur atteinte ne compte pas, pas de focus d'area.
+- **La dimension : une carte tirée au hasard parmi celles enregistrées** (même chance pour chacune, *provisoire* ; même seed → même carte). Chaque carte est « au fond d'une mine », à la profondeur de l'area du k hole (mobs, PV et treasures de cette area, sauf mention contraire), entourée de murs. Sa durée est **prise sur l'heure de session**.
+- **Règles communes à toutes les cartes** : l'oxygène **ne baisse pas** ; les pods **n'ont pas de limite** ; les mineurs **ne remontent jamais** (il n'y a pas de surface) : ils restent jusqu'à la fin du compteur (ou la fin de la carte). Pas d'apparition de mobs normale, rien ne se débloque, la profondeur atteinte ne compte pas, pas de focus d'area.
+
+| Carte | Taille (l × h) | Arrivée | Contenu | Durée | Fin anticipée |
+|---|---|---|---|---|---|
+| **Filons** | 25 × 25 | en bas à gauche (5 colonnes vides) | 37 % pierre dure, 30 % fer, 20 % or, 8 % graphite, 3 % diamant ; 1 donjon (minotaure) ; 5 pièges (mobs et PV de l'area) ; 1 % de treasures (tier de l'area) | 5 min | — |
+| **Arène des minotaures** | 15 × 3 | au milieu, regroupés | vide ; un minotaure (1000 PV, à découvert) à chaque bout ; vaincu, il laisse 1 à 3 Cristaux de pleine lune (comme au donjon) | 2 min | les 2 minotaures vaincus |
+| **Salle au trésor** | 5 × 3 | à gauche | vide ; 2 treasures à droite, d'un **tier tiré au hasard** (T1 à T3) | 2 min | les 2 treasures ouverts |
+| **Vagues** | 15 × 3 | au milieu, regroupés | vagues de 5 mobs (types selon l'area, sans mimic, PV de l'area), posés au sol à une colonne au hasard ; une vague vaincue → la suivante | 3 min | — |
+
+- **Jackpot assumé** *(décision du créateur, 25/10/2026)* : le contenu des cartes est le même quelle que soit l'area (seuls les mobs, leurs PV et le tier des treasures des Filons suivent l'area). Un k hole trouvé tôt fait sauter plusieurs sessions de progression ; c'est voulu, l'événement étant rare. Écartés : pas de k hole avant l'area 2, contenu indexé sur l'area.
 - **Retour** : tout le groupe est **téléporté à la surface de la mine**, avec ce qu'il porte (il le dépose ensuite au coffre comme d'habitude). Pendant le k hole, **la mine est figée** (rien n'y bouge : mobs, seau, sac de la Mule) ; les mobs qui tenaient un mineur le lâchent. Le portail disparaît (case vide).
 - **Fin de session** *(25/10/2026, Geoffrey)* : quand il reste **30 s** de session, le k hole se referme : le groupe est téléporté à la surface et a le temps de déposer son butin au coffre. Un k hole découvert dans les 30 dernières secondes ne s'ouvre pas.
 - Départ d'un joueur pendant le k hole : les autres continuent ; le dernier qui part termine la session (règle normale).
+- Mode dev : « Chance de k hole par area » et « Carte de k hole » (0 = au hasard, 1 à 4 = cette carte).
 
 ## 3. Le mineur
 

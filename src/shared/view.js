@@ -74,7 +74,7 @@ export function createViewer(G){
       miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
       chest: G.chest, chestBy: G.chestBy, stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
       mule: muleView(G),
-      khole: G.khole ? { until: G.khole.until } : null,   // dans la dimension du k hole : heure du retour
+      khole: G.khole ? { until: G.khole.until, label: G.khole.map.label } : null,   // dimension du k hole : carte, heure du retour
     };
     /* changements depuis since : le navigateur est à jour, ou on a tous les lots depuis son tick */
     if(since === G.ticks) return { ...base, cells: [], torches: [], torchesFrom: G.torches.length };
