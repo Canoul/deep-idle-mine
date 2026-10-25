@@ -18,6 +18,24 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Inventaire : recycler une pièce de stuff
+- **Pour le joueur** : clique une pièce fabriquée dans l'inventaire, bouton **♻ Recycler** ; une fenêtre montre ce que
+  tu récupères. La pièce est détruite et rend **60 %** de sa recette, arrondi vers le bas (un ingrédient demandé à 1
+  ne rend rien). Son amélioration et sa rune sont perdues. Impossible pour une pièce portée ou enregistrée dans un set :
+  la fenêtre le dit.
+- **Décisions** (Geoffrey) : seulement le stuff fabriqué avec une recette ; seulement la recette (pas le coût
+  d'amélioration) ; interdit si la pièce est portée ou dans un set.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Inventaire : trier et déplacer les objets
+- **Pour le joueur** : bouton **Trier** en haut de l'inventaire. Il range par type (blocs, minerais, matériaux,
+  stuff, puis treasures, blueprints…), du plus rare au plus commun, et bouche les trous. On peut aussi **glisser un
+  objet** dans un autre slot ; si le slot est pris, les deux objets échangent leur place.
+- **Décisions** (Geoffrey) : le tri suit la rareté de l'objet (commun, inhabituel…), pas la qualité R1-R7.
+  Choix de Claude à valider : treasures, blueprints, four et parchemins viennent après le stuff ; la plus rare d'abord.
+- **À suivre** : le glisser-déposer ne marche qu'à la souris (pas au doigt sur téléphone).
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Lobby : l'équipe reste visible sur Jugement
 - **Pour le joueur** : en choisissant « ⚖ Jugement » dans « Où miner », on voit toujours son groupe à droite (comme pour
   la Mine) : inviter, quitter, voir qui est prêt. Le bouton Lancer n'y est pas : on lance depuis la Mine ou une tour.

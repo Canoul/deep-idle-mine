@@ -197,6 +197,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   vers le bas coûte un pas (`downWeight`) : ils ne foncent plus au fond (ancien : descente gratuite, puits jusqu'au fond) ; ≈ 2 à 5 plumes par joueur et par MI (moins à 20). Côté serveur, c'est une session `mode: 'mi'` (même vie
   qu'une session : partie en direct, Quitter = rien, versement unique), sans XP. Rappels à 30, 15, 5 min et 30 s.
   Équilibrage à surveiller : ≈ 40 fers et 39 ors par joueur et par MI.
+- **Inventaire : trier, déplacer, recycler** (25/10, Geoffrey). Bouton **Trier** (une fois : par type blocs → minerais →
+  matériaux → stuff → le reste, puis rareté du catalogue, la plus rare d'abord ; pas la qualité R1-R7), **glisser** un
+  objet dans un autre slot (échange). **Recycler** une pièce de stuff fabriquée (recette de craft) : détruite, rend
+  **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
+  dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`).
 
 ## Hébergement
 

@@ -15,6 +15,8 @@ import { sanitizeSkills, skillRanks } from './skills.js';
 import { spellOf, equipBlocked } from './spells.js';
 
 export const createSets = () => ({ list:[], nextId:1, ops:[] });
+/* cette pièce (uid) est-elle enregistrée dans un set ? (elle ne se recycle pas) */
+export const inSomeSet = (sets, uid) => sets.list.some(s => Object.values(s.stuff ?? {}).includes(uid));
 const setOf = (sets, id) => Number.isSafeInteger(id) ? sets.list.find(s => s.id === id) ?? null : null;
 /* nom proposé pour un nouveau set : « Set n », n = le plus petit numéro libre */
 const freeName = sets => { let n = 1; while(sets.list.some(s => s.name === 'Set ' + n)) n++; return 'Set ' + n; };

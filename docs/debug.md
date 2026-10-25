@@ -2537,3 +2537,25 @@ Règles (voir CLAUDE.md) :
   team, launch, prefs, dev) ; `render()` l'utilise. Vue Jugement : `teamCard` visible, `launchBtn` caché, texte
   « choisis la Mine ou une tour ». GAME_DESIGN §Jugement.
 - **Tests** : `tests/lobby.test.js` +1 ✅ (14). ⚠️ Pas regardé dans un vrai navigateur.
+
+### Inventaire : trier et déplacer (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/meta/inventory.js` : `sortInventory(inv)` (clé : groupe `INVENTORY.sortGroups` par `ITEMS[].cat`, puis
+  `-rarityDef().rank`, puis ordre de `ITEMS`, puis ordre actuel ; tassé, sans trous) et `moveSlot(inv, { from, to, item, uid })`
+  (échange ; `to` < `gridSize` ; refuse si `slots[from]` n'est pas l'item/uid annoncé : un renvoi ne ré-échange pas).
+  Serveur : `POST /api/game/inventory` `{ action:'sort' }` | `{ action:'move', … }` (`server/game/service.js` `inventory()`, verrou
+  `inv:`). Navigateur : `gameApi.inventory`, bouton `#invSort`, glisser-déposer HTML5 dans `src/ui/inventory.js`, `arrangeInventory`
+  dans `src/main.js` (refus → inventaire relu). Familles réelles : `bloc`, `combustible` (charbon), `ore`, `residu`…
+- **Tests** : `tests/inventory-arrange.test.js` (6), `tests/inventory.test.js` ✅ ; `tests/anticheat/arrange.test.js` (300
+  demandes en rafale / trafiquées : mêmes objets, mêmes quantités, mêmes uid) ✅.
+- **⚠️ À vérifier** : pas essayé dans un vrai navigateur (glisser-déposer, bouton). Pas de tactile (le drag HTML5 ne
+  marche pas au doigt).
+
+### Recycler une pièce de stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `RECYCLE.share` 0,6 (config). `src/meta/craft.js` : `recyclable(item)` (`isStuff` + recette), `recycleRefund(item)`
+  (`floor(n × share / qty + 1e-9)`, les 0 retirés ; le 1e-9 évite 62,999… → 62), `recycleStuff(inv, uid, locked)`.
+  `src/meta/sets.js` `inSomeSet`. Serveur `POST /api/game/recycle { uid }` (verrous `inv:` + `sets:`, sets relus). Pas d'opId :
+  la pièce est unique, un renvoi tombe sur `not_owned`. Navigateur : bouton `.invRecycle`, fenêtre `showRecycle` (réutilise
+  `#loot`), `setsUI.setsOf(uid)` pour prévenir avant d'envoyer, `recyclePiece` dans `src/main.js`. Wiki : carte Inventaire, date.
+- **Tests** : `tests/recycle.test.js` (4) ✅ ; `tests/anticheat/recycle.test.js` (rafale de 8 → 1 seul versement ; portée,
+  set, uid trafiqués refusés) ✅ ; suite anti-triche ✅ (89).
+- **⚠️ À vérifier** : fenêtre et bouton pas vus dans un vrai navigateur.

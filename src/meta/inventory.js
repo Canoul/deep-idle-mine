@@ -11,6 +11,7 @@
 import { ITEMS, INVENTORY, RESEARCH, UPGRADE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { sanitizePiece } from './piece.js';
+import { rarityDef } from './rarity.js';
 
 export const SAVE_VERSION = 1;
 
@@ -112,6 +113,40 @@ export const usedSlots = inv => inv.slots.filter(Boolean).length;
 /* nombre de cases à afficher : lignes complètes, au moins minSlots, et toujours au moins une case libre */
 export function gridSize(inv, cols, minSlots){
   return Math.max(minSlots, Math.ceil((inv.slots.length + 1) / cols) * cols);
+}
+
+/* ---------- ranger (bouton « Trier », glisser un objet ; 25/10/2026) ----------
+   Ni l'un ni l'autre ne crée ni ne retire rien : les slots sont seulement remis dans un autre ordre. */
+
+const CATALOG = new Map(Object.keys(ITEMS).map((n, i) => [n, i]));
+const GROUP = new Map(INVENTORY.sortGroups.flatMap((g, i) => g.cats.map(c => [c, i])));
+/* clé de tri : type (INVENTORY.sortGroups, les autres après), rareté du catalogue (la plus rare d'abord), ordre du catalogue */
+const sortKey = s => [GROUP.get(ITEMS[s.item]?.cat) ?? INVENTORY.sortGroups.length, -rarityDef(s.item).rank, CATALOG.get(s.item) ?? Infinity];
+
+/* trie l'inventaire et le tasse au début (plus de trous) ; à égalité (deux pièces du même objet), l'ordre actuel est
+   gardé. Rejouer le tri ne change rien. */
+export function sortInventory(inv){
+  const keyed = inv.slots.filter(Boolean).map((s, i) => ({ s, k:[...sortKey(s), i] }));
+  keyed.sort((a, b) => { for(let j=0; j<a.k.length; j++) if(a.k[j] !== b.k[j]) return a.k[j] - b.k[j]; return 0; });
+  inv.slots = keyed.map(x => x.s);
+}
+
+/* déplace l'objet du slot from vers le slot to (une case de la grille affichée) ; un objet déjà en to prend la place
+   de from (échange). item (et uid pour une pièce) : ce que le joueur croit déplacer ; si ce n'est plus ce qui est en
+   from (requête renvoyée après coup, inventaire changé entre-temps), rien ne bouge : un double envoi ne ré-échange pas.
+   Renvoie { ok, slots:[from, to] } ou { error } (bad_request, not_owned). */
+export function moveSlot(inv, { from, to, item, uid } = {}){
+  const max = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
+  if(!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || from < 0 || to < 0 || from >= max || to >= max || typeof item !== 'string')
+    return { error:'bad_request' };
+  const s = inv.slots[from];
+  if(!s || s.item !== item || (s.uid ?? null) !== (uid ?? null)) return { error:'not_owned' };
+  if(from === to) return { ok:true, slots:[from, to] };
+  while(inv.slots.length <= to) inv.slots.push(null);
+  inv.slots[from] = inv.slots[to] ?? null;
+  inv.slots[to] = s;
+  while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
+  return { ok:true, slots:[from, to] };
 }
 
 /* Verse le coffre d'une session (sa part pour ce joueur) une seule fois : un second versement de la même

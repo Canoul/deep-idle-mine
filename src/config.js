@@ -845,7 +845,21 @@ export const ITEMS = {
    capacité illimitée pour l'instant (une ligne s'ajoute quand la grille est pleine) */
 /* maxUniqueAdd : nombre max de pièces non empilables ajoutées en une fois (chacune prend un slot) : protège d'une
    quantité aberrante (bug ou triche) qui créerait des millions de slots */
-export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000 };
+/* sortGroups (bouton « Trier », 25/10/2026, Geoffrey) : ordre des types, chacun une liste de familles (ITEMS[].cat) ;
+   dans un type, du plus rare au plus commun (RARITY, la rareté du catalogue, PAS la qualité d'identification R1-R7),
+   puis l'ordre du catalogue. Les familles absentes d'ici viennent après, dans l'ordre du catalogue. */
+export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
+  sortGroups: [
+    { label:'Blocs',     cats:['bloc', 'residu'] },
+    { label:'Minerais',  cats:['combustible', 'ore'] },
+    { label:'Matériaux', cats:['ingot', 'material', 'mob', 'gem'] },
+    { label:'Stuff',     cats:['stuff', 'rune'] },
+  ] };
+
+/* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)
+   est détruite et rend share de chaque ingrédient de sa recette, arrondi vers le bas (1 ingrédient → 0). Amélioration
+   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire. */
+export const RECYCLE = { share:0.6 };
 
 /* ---- Comptes joueur (règles partagées par le jeu et le serveur) ----
    Pas d'adresse e-mail : un pseudo + un mot de passe, ou un compte invité à sécuriser plus tard.
