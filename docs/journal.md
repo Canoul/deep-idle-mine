@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Moins de Treasure T1, recyclage des plans T1 réduit
+- **Pour le joueur** : un treasure a maintenant 50 % de chance d'être enfoui dans les areas 0 à 2 (avant 60 %), et
+  recycler un blueprint du tier 1 rend 15 à 30 Blueprint parts (avant 30 à 60). Les tiers 2 et 3 ne changent pas.
+- **Décisions** (Geoffrey) : valeurs d'équilibrage, ajustables.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Combat : mouvement continu, le recul casse le tacle, Lance en fer
 - **Pour le joueur** : les mobs avancent en continu (plus de saut de case en case). Le coup du mineur part tout de
   suite, et il s'arrête net pour frapper un mob qui entre dans sa portée. Un coup qui repousse un mob au-delà d'un
