@@ -106,7 +106,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | Or (minerai) | 20 à 40 | 100 % |
   | Peau de gobelin | 3 à 10 | 100 % |
   | Blueprint parts | 8 à 18 | 100 % |
-  | **Un blueprint** parmi : Gants tactique, Gants d'ouvrier, Cape de Naingui | 1 | 2 % chacun (6 % au total) |
+  | **Un blueprint** parmi : Gants tactique, Gants d'ouvrier, Lampe à incandescence *(25/10/2026)*, Cape de Naingui | 1 | 2 % chacun (8 % au total ; 6 % avant la lampe) |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1,5 % chacune (4,5 % au total) |
 
 - **Contenu du Treasure T3** *(23/10/2026, Geoffrey ; mêmes principes)* :
@@ -592,9 +592,9 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
-  | Lampe à incandescence (case torche, **sans blueprint**, 25/10) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
+  | Lampe à incandescence (case torche, **blueprint du Treasure T2** depuis le 25/10 ; avant : sans blueprint) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
 
-  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
+  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Lampe à incandescence BP » (depuis le 25/10/2026), « Cape de Naingui BP ») :
 
   | Objet | Recette | Effet |
   |---|---|---|

@@ -227,6 +227,7 @@ export const LOOT = {
       { family:'blueprint', tex:'blueprint', items:[
         { item:'Gants tactique BP',     chance:0.02 },
         { item:'Gants d\'ouvrier BP',   chance:0.02 },
+        { item:'Lampe à incandescence BP', chance:0.02 },   // 25/10 (Geoffrey) : avant, la lampe se craftait sans blueprint
         { item:'Cape de Naingui BP',    chance:0.02 },
       ]},
       { family:'gem', items:gems(0.015) },
@@ -731,7 +732,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
-    'Lampe à incandescence':'rare',   // 25/10 (Geoffrey)
+    'Lampe à incandescence':'rare', 'Lampe à incandescence BP':'rare',   // 25/10 (Geoffrey)
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',

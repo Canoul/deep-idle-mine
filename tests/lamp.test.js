@@ -1,11 +1,11 @@
-/* Case Torche et Lampe à incandescence (25/10) : +10 torches, rayon 8, pose en 0,5 s ; craft sans blueprint ;
+/* Case Torche et Lampe à incandescence (25/10) : +10 torches, rayon 8, pose en 0,5 s ; craft débloqué par son blueprint (Treasure T2, depuis le 25/10 ; avant : sans blueprint) ;
    chaque torche garde le rayon de celui qui l'a posée (mine et tour). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STATS, STUFF } from '../src/config.js';
+import { STATS, STUFF, LOOT, ITEMS } from '../src/config.js';
 import { RECIPES } from '../src/recipes.js';
 import { createInventory, addAll, countOf } from '../src/meta/inventory.js';
-import { craft } from '../src/meta/craft.js';
+import { craft, learn } from '../src/meta/craft.js';
 import { equippedStats, slotsFor } from '../src/meta/stuff.js';
 import { minerSpecs } from '../src/shared/game.js';
 import { finishAction } from '../src/sim/actions.js';
@@ -22,10 +22,15 @@ test('case Torche : la lampe y va, et seulement là', () => {
   assert.ok(!slotsFor('Pioche en pierre').includes('torche'));
 });
 
-test('recette : 200 vésicules de gaz, 2 000 charbon, 20 fragments de cœur, sans blueprint', () => {
-  assert.deepEqual(RECIPES[LAMP], { cost: { 'Vésicule de gaz': 200, 'Charbon': 2000, 'Fragment de cœur': 20 }, qty: 1, unlock: null });
+test('recette : 200 vésicules de gaz, 2 000 charbon, 20 fragments de cœur, débloquée par son blueprint (Treasure T2)', () => {
+  assert.deepEqual(RECIPES[LAMP], { cost: { 'Vésicule de gaz': 200, 'Charbon': 2000, 'Fragment de cœur': 20 }, qty: 1, unlock: LAMP + ' BP' });
+  assert.ok(LOOT['Treasure T2'].oneOf.find(f => f.family === 'blueprint').items.some(i => i.item === LAMP + ' BP'), 'BP dans le Treasure T2');
+  assert.equal(ITEMS[LAMP + ' BP']?.cat, 'blueprint');
   const inv = createInventory();
   addAll(inv, { 'Vésicule de gaz': 200, 'Charbon': 2000, 'Fragment de cœur': 20 });
+  assert.equal(craft(inv, LAMP, 'op0').error, 'locked', 'plus disponible de base');
+  addAll(inv, { [LAMP + ' BP']: 1 });
+  assert.equal(learn(inv, LAMP + ' BP', 'op-l').ok, true);
   assert.equal(craft(inv, LAMP, 'op1').ok, true);
   assert.equal(countOf(inv, LAMP), 1);
   assert.equal(countOf(inv, 'Charbon'), 0);

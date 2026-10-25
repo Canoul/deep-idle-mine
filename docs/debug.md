@@ -3117,3 +3117,14 @@ Règles (voir CLAUDE.md) :
   avant) ✅. `tests/tier2.test.js` : 2 tests en retard sur main (T1 à 10 recettes depuis la Lance en fer, recyclage T1
   15-30) remis à jour (ils échouaient déjà sur main). research, tier2, anticheat/research, game-service, wiki, craft,
   blueprint ✅ (109) ; `npm run test:anticheat` ✅ (91).
+
+### Lampe à incandescence : blueprint du Treasure T2 (Geoffrey, 25/10) — 🧪 branche `geoffrey/lampe-bp`
+- **Quoi** : `src/recipes.js` : `unlock: 'Lampe à incandescence BP'` (avant `null`) ; `src/config.js` : BP dans
+  `LOOT['Treasure T2']` (famille blueprint, chance 0,02, avant la cape : l'objet BP est créé depuis la table de butin),
+  rareté `rare`. Le BP entre aussi dans la recherche du tier 2 (`tierBlueprints(2)` lit la table) et dans les recettes
+  du T2 (`recipesLeft`) : un joueur qui avait tout le T2 voit le T3 se refermer jusqu'à ce qu'il l'apprenne.
+  Personne n'avait la recette dans `inv.unlocked` (elle était sans blueprint) : tout le monde doit trouver le BP ; les
+  lampes déjà fabriquées restent.
+- **Tests** : `tests/lamp.test.js` (craft refusé sans BP, appris → craft OK), `tests/tier2.test.js` (4 BP, tranches de
+  tirage, fréquence 8 %, « tout appris »), `tests/rarity.test.js` (BP rare) ✅ ; lamp, tier2, research, loot, craft,
+  blueprint, wiki, rarity, inventory ✅ (93) ; `npm run test:anticheat` ✅ (91).

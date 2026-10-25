@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Lampe à incandescence : il faut maintenant son blueprint
+- **Pour le joueur** : la Lampe à incandescence ne se crafte plus de base : il faut d'abord apprendre « Lampe à
+  incandescence BP », un nouveau blueprint du Treasure T2 (2 % de chance, comme les trois autres : 8 % d'avoir un
+  blueprint par Treasure T2 au lieu de 6 %). On peut aussi le tirer à la table de recherche (tier 2). Les lampes déjà
+  fabriquées sont gardées.
+- **Conséquence** : la recette compte désormais dans le tier 2 : un joueur qui avait fini le tier 2 doit apprendre ce BP
+  pour (ré)ouvrir la recherche du tier 3.
+- **État** : 🧪 sur la branche `geoffrey/lampe-bp` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Recherche : le tier 3 demande tout le T1 et tout le T2
 - **Pour le joueur** : la recherche du tier 3 reste fermée tant qu'il manque une recette du tier 1 **ou** du tier 2.
   Avant, seul le tier 2 comptait : en apprenant des BP du T2 trouvés dans des Treasures, on ouvrait le T3 avec un T1
