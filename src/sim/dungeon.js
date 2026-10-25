@@ -115,9 +115,12 @@ export function updateDungeons(G){
       log(G, hasBarbarian(G) ? '🏰 Un donjon est découvert ! Tout le monde se rassemble devant l\'entrée, le barbare entrera le premier'
                              : '🏰 Un donjon est découvert ! Sans barbare, personne n\'y entre');
     }
-    if(!d.barbIn && G.miners.some(m => isBarbarian(m) && interior(d,m.x,m.y))){
+    /* barbare entré : à l'intérieur OU sur le seuil (l'entrée). Un boss déjà contre l'entrée s'y bat avec lui sans qu'il
+       passe jamais à l'intérieur : les autres doivent venir l'aider quand même (25/10/2026, Geoffrey ; avant : intérieur
+       seulement, ils attendaient dehors jusqu'à la fin) */
+    if(!d.barbIn && G.miners.some(m => isBarbarian(m) && isIn(d,m))){
       d.barbIn=true;
-      const b=G.miners.find(m => isBarbarian(m) && interior(d,m.x,m.y));
+      const b=G.miners.find(m => isBarbarian(m) && isIn(d,m));
       log(G, `⚔ ${b.name} entre dans le donjon`);
     }
     for(const m of G.miners){

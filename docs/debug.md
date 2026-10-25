@@ -2439,3 +2439,11 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/wiki.test.js` (8, dont 1 nouveau : sorts, XP de spé, anneaux, date du bandeau) ✅. Rendu vérifié
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
+
+### Donjon : barbare sur le seuil = entré (Geoffrey, 25/10) — 🧪 branche `geoffrey/dash-donjon`
+- **Cause** : `d.barbIn` (`updateDungeons`, `src/sim/dungeon.js`) n'était vrai qu'avec un barbare à l'**intérieur**. Entrée sur
+  la ligne du boss (`hry` = ligne du bas, 1 fois sur 3) et boss déjà contre l'entrée (`updateBoss` le fait marcher vers
+  le barbare dès qu'il est sur le seuil) : le barbare se bat depuis la case d'entrée, n'entre jamais, `barbIn` reste faux,
+  les autres restent « Attend le barbare devant le donjon » tout le combat.
+- **Correction** : `barbIn` dès qu'un barbare `isIn` (intérieur ou seuil). La découverte de la structure reste sur l'intérieur.
+- **Tests** : `tests/dungeon.test.js` +1 (seuil, boss en x 13 : les 2 autres combattent ; échouait avant) ✅ (14).

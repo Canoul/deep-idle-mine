@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Donjon : les mineurs aident vraiment le barbare
+- **Pour le joueur** : quand le minotaure attend juste derrière l'entrée, le barbare se bat sur le seuil. Avant, les
+  autres mineurs restaient dehors à « attendre le barbare » jusqu'à la fin du combat ; maintenant ils viennent taper
+  le boss avec lui (sauf ceux réglés sur « Fuir »).
+- **État** : 🧪 sur la branche `geoffrey/dash-donjon` (pas en ligne)
+
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
   (tableau des 6 sorts : déblocage, spécialisation, effet, recharge), **l'XP de spécialisation** (50 % de ta part en
