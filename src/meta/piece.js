@@ -67,13 +67,15 @@ const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
 export const lineValue = (item, l, f = 1) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct * f);
 
-/* lignes d'une qualité : nombre de lignes, stat et % tirés (Découverte possible en R6/R7, une au plus) */
+/* lignes d'une qualité : nombre de lignes, stat et % tirés. Découverte : en R6/R7, une au plus, tirée comme une stat de
+   plus de la banque (même chance que les autres, 25/10/2026 ; avant : 25 % par ligne) */
 function rollLines(d, rnd){
   const D = UPGRADE.discover, lines = [];
   let discover = false;
   for(let i = 0; i < d.lines; i++){
-    if(!discover && D.qualities.includes(d.q) && rnd() < D.chance){ discover = true; lines.push({ stat:'discoverMax' }); continue; }
-    const stat = UPGRADE.pool[Math.floor(rnd() * UPGRADE.pool.length)];
+    const pool = !discover && D.qualities.includes(d.q) ? [...UPGRADE.pool, 'discoverMax'] : UPGRADE.pool;
+    const stat = pool[Math.floor(rnd() * pool.length)];
+    if(stat === 'discoverMax'){ discover = true; lines.push({ stat }); continue; }
     lines.push({ stat, pct: pct1(d.min + rnd() * (d.max - d.min)) });
   }
   return lines;

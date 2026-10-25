@@ -208,9 +208,11 @@ function walkMob(G, o, p){
   o.kx = nk;
 }
 
+/* dégâts d'un coup, double attaque comprise (stat doubleAttack, % : un second coup avec son propre critique) */
+const strikeDmg = (G, m) => { let d = hitDmg(G, m); if(chance(G, m.carac.doubleAttack || 0)){ d += hitDmg(G, m); m.stats.doubleHits = (m.stats.doubleHits || 0) + 1; } return d; };
 function hitMob(G, m, o){
   if(o.hp <= 0 || !hitReach(G, m, o)) return;
-  const dmg = hitDmg(G, m);
+  const dmg = strikeDmg(G, m);
   o.hp = Math.max(0, o.hp - dmg); G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
   if(o.grab === m.id) o.grabHit = G.t;   // soupape du tacle
   if(m.skill.taunt) o.taunt = m.id;
@@ -576,7 +578,7 @@ function mineCell(G, m, x, y){
 function hitBoss(G, m){
   if(G.boss.hp <= 0 || G.boss.air || !contactSide(G, m)) return;   // en l'air : intouchable
   if(m.skill.taunt) G.boss.taunt = m.id;   // provocation du barbare : il le focus (25/10)
-  const dmg = hitDmg(G, m);
+  const dmg = strikeDmg(G, m);
   G.boss.hp = Math.max(0, G.boss.hp - dmg);
   G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
   if(G.boss.focus === m.id && G.boss.hp > 0) pushBoss(G, m);   // seul son focus le repousse

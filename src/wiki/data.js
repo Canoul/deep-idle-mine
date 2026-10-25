@@ -210,6 +210,7 @@ const STAT_HELP = {
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",
   reach:      "Portée de ses coups, en blocs, en plus de la portée de base (0,5) : il frappe un mob avant que celui-ci soit au contact, et il le touche encore après l'avoir repoussé. La Lance en fer en donne +0,25.",
   knockback:  "Recul qu'il inflige, en blocs, en plus du recul de base (0,25). Un coup qui repousse un mob au-delà de sa portée de tacle (0,5) lui fait lâcher le mineur ; repoussé une fois, il ne peut plus l'être avant d'être revenu à portée. La Lance en fer en donne +0,5.",
+  doubleAttack: "Chance, en %, qu'un coup frappe deux fois au lieu d'une (le second coup a son propre critique ; le mob n'est repoussé qu'une fois). Vient des runes.",
   knockRes:   "Réduit le recul subi quand un mob le frappe (minotaure, mobs et boss des tours) : à 50 %, il recule deux fois moins ; à 100 %, plus du tout. Aucune pièce ne la donne pour l'instant.",
   mineSpeedPct:'Bonus de vitesse de minage en %, sur certaines pièces identifiées : vitesse = (base + bonus fixes) × (1 + ce %).',
   damagePct:  'Bonus de dégâts en %, sur certaines pièces identifiées : dégâts = (base + bonus fixes) × (1 + ce %).',
@@ -218,7 +219,7 @@ const STAT_HELP = {
   piercing:   'Chance de casser aussi le bloc juste derrière celui qu\'il mine.',
   looting:    "Chance, en %, d'un butin en plus à chaque mob tué (comme le skill Pillage).",
 };
-const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', reach:' bloc', knockback:' bloc', discoverMax:' blocs',
+const STAT_UNIT = { oxygenMax:' s', speed:' blocs/s', climbSpeed:' blocs/s', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', doubleAttack:' %', reach:' bloc', knockback:' bloc', discoverMax:' blocs',
   mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %',
   light:' blocs', compass:' blocs', torchRadius:' blocs' };
 export function statRows(){

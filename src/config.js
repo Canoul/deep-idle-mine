@@ -25,7 +25,8 @@ export const SPAWN_X = 25, CHEST_X = 22;
 export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, damage:5, attackSpeed:100, fortune:0, pods:200, light:6, compass:8,
   compassRows:0, torches:20, torchRadius:5, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
-  mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0 };
+  mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0,
+  doubleAttack:0 };   // double attaque (25/10/2026, Geoffrey) : chance, en %, qu'un coup du mineur frappe deux fois
 
 export const CFG = {
   ladderTime:2, refillRate:30, unlockRatio:0.6,
@@ -761,10 +762,10 @@ export const STUFF = {
                 torches:'Torches', bridges:'Passerelles', discoverMax:'Découverte',
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
-                piercing:'Perçage', looting:'Butin des mobs', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul' },
-  statUnits: { reach:' bloc', knockback:' bloc', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+                piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul' },
+  statUnits: { reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
-  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
+  shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -800,10 +801,13 @@ export const UPGRADE = {
   oldScales: {
     1: { 1:[10,30], 2:[20,40], 3:[30,60], 4:[25,40], 5:[35,50], 6:[30,50], 7:[35,55] },   // jusqu'au 22/10/2026
   },
-  discover: { qualities:[6, 7], chance:0.25, value:1 },
+  /* Découverte : sur une rune R6 ou R7 seulement, une fois au plus ; aussi probable qu'une autre stat (25/10/2026, Geoffrey ;
+     avant : 25 % de chance par ligne) */
+  discover: { qualities:[6, 7], value:1 },
   /* stats qui peuvent tomber sur une ligne (toutes celles qui ont une valeur en x ; pas la Découverte, à part) */
   pool: ['mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','crit','fortune','oneTap','piercing','looting',
-         'speed','climbSpeed','pods','oxygenMax'],
+         'speed','climbSpeed','pods','oxygenMax',
+         'tenacity','knockRes','reach','knockback','doubleAttack'],   // 25/10/2026 (Geoffrey) : ténacité, résistance au recul, portée, recul, double attaque
   /* VALEUR d'un objet en x = somme de ses stats × worth (catalogue mesuré de GAME_DESIGN §3, mineur de base) :
      pioche en pierre 0,1 × 1300 = 130 x, épée en fer (11 − 5) × 40 = 240 x. */
   worth: { mineSpeed:1300, speed:240, climbSpeed:250, pods:6, oxygenMax:4, damage:40, attackSpeed:1.96, fortune:36,
@@ -813,7 +817,10 @@ export const UPGRADE = {
      fortune +2, coup unique +7, perçage +10, butin des mobs +10, marche +0,4, montée +0,3, pods +20, oxygène +25.
      prix = 100 ÷ valeur pour 100 x. Les pièces gardent leur %, elles suivent donc ce tableau sans migration. */
   prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
-            piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300 },
+            piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300,
+            /* 25/10/2026 (provisoire, choix de Claude) : pour 100 x, ténacité +10 %, résistance au recul +20 %, portée +0,1,
+               recul +0,1 ; double attaque +5 % (Geoffrey, 25/10 ; d'abord +20 % comme la vitesse d'attaque) */
+            tenacity:10, knockRes:5, reach:1000, knockback:1000, doubleAttack:20 },
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
@@ -829,7 +836,8 @@ export const UPGRADE = {
   },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
-           discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },
+           discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1,
+           tenacity:0.1, knockRes:0.1, reach:0.01, knockback:0.01, doubleAttack:0.1 },
   levels: [
     { pct:5, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey) ; bonus 5 / 10 / 15 % (25/10/2026, Geoffrey ; avant 3 / 5 / 7 %)
     { pct:10, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
