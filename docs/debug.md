@@ -2598,7 +2598,7 @@ Règles (voir CLAUDE.md) :
   lobby ✅. Rendu vérifié ✅ dans Edge sans fenêtre (vrai `createMinerSprite` : pioche R5 / R7 en miroir, épée R6, bois).
 - **Point fragile** : l'outil fait 13 px ; le halo faible (1 px × 13/16) est discret.
 
-### Administration : régler une jauge du Jugement (Geoffrey, 25/10) — branche `geoffrey/admin-jauge`
+### Administration : régler une jauge du Jugement (Geoffrey, 25/10) — branche `geoffrey/admin-jauge`, ✅ en ligne le 25/10
 - **Contexte** : la jauge du Démon était à 0 ce matin. Seule cause possible dans le code : la tour du Démon s'est
   ouverte (`refresh`, `src/meta/judgment.js`, seul endroit qui remet `count` à 0). En pause (tour de l'Ange ouverte),
   les résidus démoniaques versés sont ignorés et la jauge garde sa valeur ; pleine pendant la pause, elle attend la

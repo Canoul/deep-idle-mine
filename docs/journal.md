@@ -25,7 +25,7 @@ Modèle d'entrée :
   est toujours à 100 à la fermeture, et vice versa. C'était déjà le cas, c'est maintenant testé noir sur blanc. Si une
   jauge revient à 0, c'est que sa tour s'est ouverte.
 - **À suivre** : une fois en ligne, mettre la jauge du Démon à 175 / 200 (demande de Geoffrey).
-- **État** : 🧪 sur la branche `geoffrey/admin-jauge` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Aura aussi sur la pioche et l'épée
 - **Pour le joueur** : une pioche ou une épée R4+ runée R4+ a aussi son aura, quand le mineur s'en sert en session (la
