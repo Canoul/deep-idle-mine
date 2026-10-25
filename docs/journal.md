@@ -21,7 +21,7 @@ Modèle d'entrée :
 ## 25/10/2026 — Geoffrey — Tainted iron : 15 chitine au lieu de 20
 - **Pour le joueur** : l'alliage Tainted iron demande **15 chitine** (avant 20), toujours avec 5 lingots de fer,
   50 charbons et 3 min. Toutes les pièces en fer coûtent donc un quart de chitine en moins.
-- **État** : 🧪 sur la branche `geoffrey/tainted-iron-chitine` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Groupe : donner le lead même en session
 - **Pour le joueur** : le chef peut donner sa place de chef (★) même pendant une session. Retirer un membre (×) reste
