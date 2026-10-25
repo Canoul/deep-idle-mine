@@ -1065,6 +1065,7 @@ export const TOWER = {
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
      vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). Sinon, le coup le repousse
      de push blocs (recul). En rage, les chances passent à rageKnock / rageKnockBarb. Le boss résiste à 100 % au recul.
+     25/10 au soir (Geoffrey) : projection 6 → 4 cases, chances 35 / 20 % → 25 / 10 %, en rage 50 / 25 % → 35 / 20 %.
      Refonte du 25/10 (Geoffrey ; avant : 20 / 10 %, push 0,25, il ne frappait que s'il n'avait personne à son contact
      pour marcher) : il FOCUS le premier arrivé à son contact (le barbare qui le provoque, s'il est sur le toit) et le
      suit quand il le repousse, à travers les autres mineurs (qui restent où ils sont, même sur lui) ; son focus
@@ -1074,8 +1075,8 @@ export const TOWER = {
      blocs en l'air, y reste jumpHover s (intouchable, il ne frappe plus), puis retombe (jumpFall s) : tous les mineurs
      du toit sont étourdis jumpStun s (la ténacité peut l'ignorer) ; ceux qui étaient sous lui sont projetés de knock
      cases sur le côté le plus proche. Valeurs provisoires. */
-  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.35, knockBarb: 0.20,
-          rageKnock: 0.50, rageKnockBarb: 0.25, knock: 6, push: 0.5, knockRes: 100, speedMul: 2, arcHigh: 0.5, arcMs: 350,
+  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.25, knockBarb: 0.10,
+          rageKnock: 0.35, rageKnockBarb: 0.20, knock: 4, push: 0.5, knockRes: 100, speedMul: 2, arcHigh: 0.5, arcMs: 350,
           jumpEvery: 0.25, jumpHigh: 5, jumpFly: 0.6, jumpHover: 5, jumpFall: 0.3, jumpStun: 3 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },

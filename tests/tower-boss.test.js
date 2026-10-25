@@ -1,5 +1,5 @@
 /* Tour céleste (25/10, Geoffrey) : boss qui focus et suit sa cible, la traverse des autres, recul 0,5 avec arc,
-   projection 35 / 20 % (rage 50 / 25 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
+   projection de 4 cases à 25 / 10 % (rage 35 / 20 %), saut à chaque tranche de 25 % de PV (intouchable, atterrissage qui étourdit
    et projette ceux qui sont dessous), étages de blocs à vider entièrement, mobs qui partagent une case, affichage fluide. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -86,8 +86,8 @@ test('le boss résiste à 100 % au recul', () => {
   assert.equal(newTower(1).boss.knockRes, 100);
 });
 
-test('rage : chances de projection 50 % (25 % barbare)', () => {
-  for(const [hp, r, want] of [[3500, 0.4, 'push'], [1000, 0.4, 'knock']]){
+test('rage : chances de projection 35 % (au lieu de 25 %)', () => {
+  for(const [hp, r, want] of [[3500, 0.3, 'push'], [1000, 0.3, 'knock']]){
     const G = roof(1), [a] = G.miners;
     G.boss.hp = hp; G.boss.phase = 3;   // pas de saut
     Object.assign(a, { x: G.boss.x - 1, y: G.roof - 1 }); hold(a);
