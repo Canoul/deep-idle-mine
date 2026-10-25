@@ -23,7 +23,7 @@ Modèle d'entrée :
   avant le toit (sous la porte, ou dans le seau du treuil). Quand tout le groupe est là, ils montent ensemble. Si
   quelqu'un se bat déjà sur le toit, il y va directement. Il n'attend jamais plus de 45 s.
 - **Décisions** (Geoffrey) : on attend tous les mineurs encore dans la tour ; limite de 45 s (ajustable).
-- **État** : 🧪 sur la branche `geoffrey/tour-regroupe` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
 - **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil

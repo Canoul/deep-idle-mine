@@ -2734,7 +2734,7 @@ Règles (voir CLAUDE.md) :
 - ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/skills.test.js` « onglet Stuff : les stats montrent aussi les bonus
   des skills » (échoue aussi sans ce chantier).
 
-### Tours : regroupement après une chute (Geoffrey, 25/10) — 🧪 branche `geoffrey/tour-regroupe`
+### Tours : regroupement après une chute (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `TOWER.regroup.maxWait` (45 s). `src/sim/tower/session.js` : `m.fell` posé dans `land` (projeté, atterri
   sous le toit), effacé dans `updateArrivals` (sur le toit) ; `waitPoint` (y = roof + 1 sous une colonne de la porte
   du toit, ou treuil à y = top + 1) ; `mustWait` appelé dans `decide` juste avant le boss : tombé, à un point
