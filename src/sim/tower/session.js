@@ -12,6 +12,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
+import { ladderTime, winchMult } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -130,7 +131,9 @@ export const towerSupported = (G, x, y) => isWinch(G, x, y) ||
 const mineT = (m, t) => BLOCKS[t].hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
-const winchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * (1 + (G.winchBoost || 0)));   // seau, comme dans la mine
+/* seau, comme dans la mine (winchMult : Escalateur, et × liftSpeed pour l'ascenseur du Glyphe Treuil) */
+export const towerWinchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * winchMult(G));
+const winchT = towerWinchT;
 const fallT = () => 1 / CFG.fallSpeed;
 const hitT = m => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100);
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
@@ -299,7 +302,7 @@ export function planTo(G, m, goals, avoid = null){
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
   const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x] && !isWinch(G, x, y)){ y++; n++; } return { y, n }; };
-  const ladT = CFG.ladderTime;
+  const ladT = ladderTime(m);   // Glyphe Échelle de 2 compris
   while(heap.length){
     const [d, c] = pop();
     if(d > dist[c]) continue;
@@ -478,7 +481,7 @@ function follow(G, m, path, status){
     if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y - 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y - 1, winch: true }, 'Monte par le treuil');
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
     if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
-    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', CFG.ladderTime, { x: m.x, y: m.y }, 'Pose une échelle');
+    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
   if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y + 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y + 1, winch: true }, status);
@@ -537,9 +540,10 @@ function finishAction(G, m, a){
     put(m.x, m.y);
     if(m.skill.tall_ladder && towerAir(G, m.x, m.y - 1)) put(m.x, m.y - 1);
   } else if(a.type === 'winchSetup'){
-    G.winch ??= { x: m.x, top: G.roof - 1, bottom: G.floor };
+    G.winch ??= { x: m.x, top: G.roof - 1, bottom: G.floor, ...(m.skill.glyph_winch ? { lift: true } : {}) };   // Glyphe Treuil : ascenseur
     m.winchJob = null;
-    log(G, `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
+    log(G, G.winch.lift ? `🛗 ${m.name} a installé un ascenseur au pied de la tour : on remonte au sommet en cabine`
+                        : `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
   } else if(a.type === 'torch'){
     if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y, r: m.carac.torchRadius }); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);

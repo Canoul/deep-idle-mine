@@ -10,13 +10,14 @@ import { statsText, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname } from './rarity.js';
+import { glyphInfo } from '../meta/glyphs.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 export const CAT_LABEL = { terrain:'Terrain', bloc:'Bloc', residu:'Résidu', rune:'Rune', ore:'Minerai', treasure:'Treasure', blueprint:'Blueprint', gem:'Gemme',
                            mob:'Butin de mob', stuff:'Équipement',
-                           combustible:'Combustible', ingot:'Lingot', material:'Matériau', furnace:'Four', scroll:'Parchemin de sort' };
+                           combustible:'Combustible', ingot:'Lingot', material:'Matériau', furnace:'Four', scroll:'Parchemin de sort', glyph:'Glyphe' };
 /* objets rares du butin : mis en avant dans la fenêtre d'ouverture */
 const RARE = new Set(['blueprint', 'gem']);
 const isRare = item => RARE.has(itemDef(item)?.cat) && item !== 'Blueprint parts';
@@ -87,6 +88,7 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(piece && !piece.q) bits.push('<span class="mut">non identifiée</span>');
   if(statsText(piece ?? s.item)) bits.push(`<span class="stuffStats">${esc(statsText(piece ?? s.item))}</span>`);
+  if(glyphInfo(s.item)) bits.push(`<span class="stuffStats">${esc(glyphInfo(s.item))}</span>`);   // glyphe : skill visé, effet
   const n = inv ? countOf(inv, s.item) : 0;
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>`+
     (n > 1 ? ` <button class="on invOpen" data-item="${esc(s.item)}" data-all="1" title="Ouvre tous tes ${esc(s.item)} d'un coup">Ouvrir tout (${fullQty(Math.min(n, TREASURE.openAllMax))})</button>` : '') : '';

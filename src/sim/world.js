@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
@@ -173,6 +173,15 @@ export function tryUnlock(G){
   log(G, `🔓 Area ${k+1} débloquée !`);
   /* treuil (skill Logisticien) : un logisticien qui a le skill (le premier) va le prolonger jusqu'au haut de la nouvelle
      area ; de préférence le porteur du sac (Mule), sinon le premier qui a Mule, sinon le premier qui a le Treuil */
+  /* Glyphe Treuil : son porteur passe avant tout le monde et pose un ascenseur, un déblocage sur GLYPHS.liftEvery
+     (1er, 3e, 5e… : k = 0, 2, 4…) ; aux autres déblocages, personne ne part creuser */
+  const lift=G.miners.find(m=>m.skill?.winch && m.skill?.glyph_winch);
+  if(lift){
+    if(k % GLYPHS.liftEvery !== 0) return true;
+    lift.winchJob={ bottom:Math.max(lift.winchJob?.bottom ?? 0, areaTop(k+1)), lift:true };
+    log(G, `🛗 ${lift.name} part installer l'ascenseur jusqu'à l'area ${k+1}`);
+    return true;
+  }
   const lg=G.miners.find(m=>m.skill?.winch && G.mule?.carrier===m.id) ?? G.miners.find(m=>m.skill?.winch && m.skill?.mule) ?? G.miners.find(m=>m.skill?.winch);
   if(lg){ lg.winchJob={ bottom:Math.max(lg.winchJob?.bottom ?? 0, areaTop(k+1)) }; log(G, `🪣 ${lg.name} part installer le treuil jusqu'à l'area ${k+1}`); }
   return true;

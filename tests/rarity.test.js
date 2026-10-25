@@ -32,7 +32,10 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   /* anneaux (23/10) : rares, Midas et Bouffon épiques */
   const RINGS_ = Object.keys(RINGS.items);
   for(const n of RINGS_) assert.equal(rarityOf(n), /Midas|Bouffon/.test(n) ? 'epique' : 'rare', n);
-  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_].includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* glyphes (25/10) : épiques */
+  const GLYPH = Object.keys(ITEMS).filter(n => ITEMS[n].cat === 'glyph');
+  for(const n of GLYPH) assert.equal(rarityOf(n), 'epique', n);
+  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

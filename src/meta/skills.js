@@ -7,7 +7,7 @@
    - un nœud de l'étage r > 1 exige qu'au moins un nœud de l'étage r−1 de son arbre soit au rang max (tous, si le
      nœud a needsAll : Navette exige Échelle de 2 et Treuil) ;
    - reset : tout est rendu (gratuit), refusé pendant une session (vérifié par le serveur). */
-import { SKILLS, STUFF } from '../config.js';
+import { SKILLS, STUFF, GLYPHS } from '../config.js';
 
 export const NODES = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map((n, i) => [n.id, { ...n, tree:t.id, index:i }])));
 /* nœuds de l'étage d'avant (ceux qui débloquent ce nœud) ; vide pour l'étage 1 */
@@ -16,7 +16,7 @@ export const parentsOf = id => { const n = NODES[id]; return SKILLS.trees.find(t
 const nodeOf = id => typeof id === 'string' && Object.hasOwn(NODES, id) ? NODES[id] : null;
 const treeOf = id => SKILLS.trees.find(t => t.id === id) ?? null;
 
-export const createSkills = () => ({ tree:null, ranks:{}, ops:[] });
+export const createSkills = () => ({ tree:null, ranks:{}, glyphs:{}, ops:[] });   // glyphs : src/meta/glyphs.js
 export const spentPoints = st => Object.values(st.ranks).reduce((s, r) => s + r, 0);
 export const rankOf = (st, id) => (Object.hasOwn(st.ranks, id) ? st.ranks[id] : 0);
 
@@ -62,6 +62,10 @@ export function sanitizeSkills(raw, points = Infinity){
       for(let k = 0; k < Math.min(want, n.max); k++){ if(blockedReason(st, n.id, points)) break; st.ranks[n.id] = rankOf(st, n.id) + 1; st.tree = tree.id; }
     }
   }
+  /* glyphes posés (src/meta/glyphs.js) : nœud qui a un glyphe et nom exact de son objet ; le rang n'est PAS vérifié ici
+     (un glyphe sur un skill qui n'est plus au max reste posé, inactif) */
+  if(raw?.glyphs && typeof raw.glyphs === 'object')
+    for(const [node, item] of Object.entries(GLYPHS.items)) if(Object.hasOwn(raw.glyphs, node) && raw.glyphs[node] === item) st.glyphs[node] = item;
   st.ops = Array.isArray(raw?.ops) ? raw.ops.filter(o => typeof o === 'string').slice(-SKILLS.opMemory) : [];
   return st;
 }
@@ -103,7 +107,11 @@ export const skillRanks = st => ({ tree:st.tree, ranks:{ ...st.ranks } });
 
 /* effets pour la partie : { id de nœud: rang × per } (0 si pas appris) */
 export function skillEffects(st){
-  return Object.fromEntries(Object.values(NODES).map(n => [n.id, Math.round(rankOf(st, n.id) * n.per * 1e6) / 1e6]));
+  const out = Object.fromEntries(Object.values(NODES).map(n => [n.id, Math.round(rankOf(st, n.id) * n.per * 1e6) / 1e6]));
+  /* glyphes actifs (posés, skill au rang max) : glyph_<nœud> = 1 (src/meta/glyphs.js ; lus par la partie) */
+  for(const [node, item] of Object.entries(GLYPHS.items))
+    if(st?.glyphs?.[node] === item && rankOf(st, node) >= NODES[node].max) out['glyph_' + node] = 1;
+  return out;
 }
 
 /* texte d'un nœud avec la valeur au rang r (au moins 1, pour montrer ce que donne le premier rang) */

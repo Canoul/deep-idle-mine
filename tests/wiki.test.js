@@ -118,3 +118,17 @@ test('wiki : chance de treasure par area lue dans la config (50 % en areas 0 à 
   assert.equal(D.treasureChanceText(), '40 à 50 %');
   assert.deepEqual(AREAS.map(a => a.chestChance), [0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4]);
 });
+
+test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des objets, section dans la page', async () => {
+  const { GLYPHS } = await import('../src/config.js');
+  const rows = D.glyphRows();
+  assert.equal(rows.length, 10);
+  const rush = rows.find(r => r.node === 'ore_rush');
+  assert.deepEqual({ item:rush.item, skill:rush.skill, desc:rush.desc }, { item:'Glyphe Ruée', skill:'Ruée', desc:GLYPHS.desc.ore_rush });
+  assert.ok(rush.tree, 'arbre du skill');
+  const g = D.itemGroups().find(x => x.cat === 'glyph');
+  assert.equal(g.label, 'Glyphe');
+  for(const it of g.items) assert.match(it.uses.join(' '), /onglet Skills/, it.name);
+  const html = fs.readFileSync('wiki.html', 'utf8');
+  assert.match(html, /id="glyphes"/); assert.match(html, /id="w-glyphs"/);
+});
