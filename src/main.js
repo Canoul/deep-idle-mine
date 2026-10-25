@@ -77,7 +77,7 @@ const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : m�
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), worn:() => stuff.worn(), furnaces:() => furnace.state() });
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -92,7 +92,6 @@ async function openTreasure(item){
   } catch(e){ lootError(e.message); }
 }
 
-/* utiliser un blueprint : le serveur le consomme et débloque sa recette (onglet Craft) */
 /* ranger l'inventaire (trier, glisser un objet) : le serveur range et renvoie l'inventaire ; s'il refuse (l'objet n'était
    plus à sa place), on recharge l'inventaire du serveur */
 async function arrangeInventory(op){
@@ -101,6 +100,18 @@ async function arrangeInventory(op){
   catch(e){ try { setInventory((await gameApi.state()).inventory); } catch(_){} lootError(e.message); }
 }
 
+/* recycler une pièce (confirmée dans la fenêtre de l'inventaire) : le serveur la détruit et rend les ingrédients */
+async function recyclePiece(uid){
+  try {
+    const r = await gameApi.recycle(uid);
+    ui.fresh.clear();
+    setInventory(r.inventory, r.refund);
+    const got = Object.entries(r.refund).map(([k, n]) => `${n} ${k}`).join(', ').replace(/[&<>]/g, '');
+    $('invInfo').innerHTML = `<span class="okmsg">♻ ${r.item.replace(/[&<>]/g, '')} recyclé${got ? ` : ${got}` : ' (rien à récupérer)'}.</span>`;
+  } catch(e){ lootError(e.message); }
+}
+
+/* utiliser un blueprint : le serveur le consomme et débloque sa recette (onglet Craft) */
 async function useBlueprint(item){
   try {
     const r = await gameApi.learn(item, newOpId());

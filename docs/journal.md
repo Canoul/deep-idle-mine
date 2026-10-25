@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Inventaire : recycler une pièce de stuff
+- **Pour le joueur** : clique une pièce fabriquée dans l'inventaire, bouton **♻ Recycler** ; une fenêtre montre ce que
+  tu récupères. La pièce est détruite et rend **60 %** de sa recette, arrondi vers le bas (un ingrédient demandé à 1
+  ne rend rien). Son amélioration et sa rune sont perdues. Impossible pour une pièce portée ou enregistrée dans un set :
+  la fenêtre le dit.
+- **Décisions** (Geoffrey) : seulement le stuff fabriqué avec une recette ; seulement la recette (pas le coût
+  d'amélioration) ; interdit si la pièce est portée ou dans un set.
+- **État** : 🧪 sur la branche `geoffrey/inventaire` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Inventaire : trier et déplacer les objets
 - **Pour le joueur** : bouton **Trier** en haut de l'inventaire. Il range par type (blocs, minerais, matériaux,
   stuff, puis treasures, blueprints…), du plus rare au plus commun, et bouche les trous. On peut aussi **glisser un

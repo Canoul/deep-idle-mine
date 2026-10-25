@@ -503,6 +503,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - Les objets arrivés en fin de session sont mis en évidence jusqu'à la prochaine visite de l'onglet (pastille sur l'onglet).
 - Un Treasure TX sélectionné peut s'ouvrir (voir §2, Treasures) ; les objets reçus sont mis en évidence de la même façon.
 - Un blueprint sélectionné peut s'**utiliser** : il débloque sa recette (voir Craft).
+- **Recycler** *(25/10/2026, Geoffrey)* : une pièce de stuff **fabriquée** (qui a une recette de craft ; pas un objet du four, ni un anneau, ni une rune) sélectionnée a un bouton **Recycler**. Une fenêtre de confirmation montre ce qu'on récupère. La pièce est détruite et rend **60 %** de chaque ingrédient de sa recette, **arrondi vers le bas** (1 ingrédient → 0 ; ex. Bottes en fer : 2 Tainted iron et 3 peaux de gobelin). Son amélioration, sa rune et sa qualité sont perdues, sans compensation. **Interdit** pour une pièce portée ou enregistrée dans un set : la fenêtre prévient. *(60 % : `RECYCLE.share`, provisoire.)*
 - Une pièce de stuff sélectionnée peut s'**équiper** directement (bouton **Équiper**, avec sa case et la pièce qu'elle remplace) : même effet que depuis l'onglet Stuff, la pièce remplacée revient dans l'inventaire.
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).

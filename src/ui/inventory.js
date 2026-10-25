@@ -5,7 +5,7 @@ import { INVENTORY, STUFF } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
 import { unlockOf, unlockError } from '../meta/furnace.js';
-import { recipeOfBlueprint, isUnlocked } from '../meta/craft.js';
+import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund } from '../meta/craft.js';
 import { statsText, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
@@ -72,6 +72,10 @@ function unlockHtml(s, furn){
          ` <span class="mut small">ouvre le four ${d.slot + 1}</span>`;
 }
 
+/* pièce de stuff fabriquée : bouton « Recycler » (une fenêtre demande de confirmer) */
+const recycleHtml = s => s.uid != null && recyclable(s.item)
+  ? ` <button class="invRecycle" data-uid="${s.uid}" title="Détruit la pièce et rend une partie de sa recette">♻ Recycler</button>` : '';
+
 function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
   const d = itemDef(s.item);
@@ -87,7 +91,8 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   const learn = pinned && inv ? blueprintHtml(inv, s) : '';
   const equip = pinned && worn ? equipHtml(s, worn) : '';
   const unlock = pinned ? unlockHtml(s, furn) : '';
-  return bits.join(' <span class="mut">·</span> ') + open + learn + equip + unlock;
+  const recycle = pinned ? recycleHtml(s) : '';
+  return bits.join(' <span class="mut">·</span> ') + open + learn + equip + unlock + recycle;
 }
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
@@ -137,14 +142,44 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     actions.onMove?.({ from, to: +c.dataset.i, item: s.item, ...(s.uid != null ? { uid: s.uid } : {}) });
   };
   $('invInfo').onclick = e => {
-    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock');
+    const b = e.target.closest('.invOpen, .invLearn, .invEquip, .invUnlock, .invRecycle');
     if(!b) return;
+    if(b.classList.contains('invRecycle')){         // rien n'est envoyé avant la confirmation
+      const s = inv.slots.find(x => x?.uid === +b.dataset.uid);
+      if(s) showRecycle(s, actions.setsOf?.(s.uid) ?? [], () => actions.onRecycle?.(s.uid));
+      return;
+    }
     b.disabled = true;               // un clic = une demande
     if(b.classList.contains('invOpen')) actions.onOpen?.(b.dataset.item);
     else if(b.classList.contains('invLearn')) actions.onLearn?.(b.dataset.item);
     else if(b.classList.contains('invUnlock')) actions.onUnlock?.(b.dataset.item);
     else actions.onEquip?.(b.dataset.slot, +b.dataset.uid);
   };
+}
+
+/* fenêtre de recyclage : ce que la pièce rend (60 % de sa recette, arrondi vers le bas) et ce qui est perdu ; si elle
+   est dans un set, on prévient seulement (le serveur refuserait de toute façon) */
+export function showRecycle(piece, sets, onOk){
+  const box = $('loot'), close = () => { box.hidden = true; };
+  const title = `<h3>${iconHtml(piece.item)} ${pname(piece)}</h3>`;
+  if(sets.length){
+    box.querySelector('.box').innerHTML = title +
+      `<p>Impossible de recycler cette pièce : elle est enregistrée dans ${sets.length > 1 ? 'les sets' : 'le set'} ${sets.map(n => `« ${esc(n)} »`).join(', ')}.</p>`+
+      `<p class="mut small">Enregistre ce set avec une autre pièce, ou supprime-le (onglet Stuff), puis recycle-la.</p>`+
+      `<p style="text-align:right"><button class="on" id="recOk">OK</button></p>`;
+    box.hidden = false; $('recOk').onclick = close;
+    return;
+  }
+  const refund = recycleRefund(piece.item), names = Object.keys(refund);
+  const lost = [piece.plus > 0 && `son amélioration +${piece.plus}`, piece.rune && 'sa rune', piece.q && 'sa qualité'].filter(Boolean);
+  box.querySelector('.box').innerHTML = title + '<p>Recycler cette pièce ? Elle sera <b>détruite</b>. Tu récupères :</p>'+
+    (names.length ? `<div class="lootList">${names.map(n => `<div class="lootRow">${iconHtml(n)}${rname(n)}<b>× ${fullQty(refund[n])}</b></div>`).join('')}</div>`
+                  : '<p class="mut">rien (chaque ingrédient de sa recette ne rend que 60 %, arrondi vers le bas)</p>')+
+    (lost.length ? `<p class="err small">Perdu avec elle : ${lost.join(', ')}.</p>` : '')+
+    `<p style="text-align:right"><button id="recNo">Annuler</button> <button class="on" id="recYes">♻ Recycler</button></p>`;
+  box.hidden = false;
+  $('recNo').onclick = close;
+  $('recYes').onclick = () => { $('recYes').disabled = true; close(); onOk(); };
 }
 
 /* fenêtre « treasure ouvert » : le butin, objets rares en tête */

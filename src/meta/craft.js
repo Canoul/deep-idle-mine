@@ -6,7 +6,9 @@
    l'inventaire. Le blueprint est consommé et le nom de la recette rejoint inv.unlocked : débloquée pour toujours.
    Les deux changent ensemble (même inventaire, une seule écriture) : rien ne se perd, rien ne se duplique. */
 import { RECIPES } from '../recipes.js';
-import { countOf, removeItem, addItem, CRAFT_MEMORY } from './inventory.js';
+import { RECYCLE } from '../config.js';
+import { countOf, removeItem, addItem, takePiece, CRAFT_MEMORY } from './inventory.js';
+import { isStuff } from './piece.js';
 
 export const recipeOf = item => (typeof item === 'string' && Object.hasOwn(RECIPES, item)) ? RECIPES[item] : null;
 /* recette disponible pour ce joueur : de base (unlock null), ou débloquée par son blueprint */
@@ -42,6 +44,34 @@ export function craft(inv, item, opId){
   addItem(inv, item, r.qty);
   remember(inv, opId);
   return { ok:true, repeated:false };
+}
+
+/* ---------- recycler (25/10/2026) ----------
+   Une pièce de stuff fabriquée est détruite et rend RECYCLE.share de sa recette, arrondi vers le bas. */
+
+/* l'objet se recycle-t-il ? du stuff qui a une recette de craft (pas un objet du four, ni un anneau, ni une rune) */
+export const recyclable = item => isStuff(item) && !!recipeOf(item);
+/* ce que rend le recyclage de cet objet : { ingrédient: quantité } (les ingrédients qui rendraient 0 sont absents) */
+export function recycleRefund(item){
+  if(!recyclable(item)) return {};
+  const r = recipeOf(item);
+  /* + 1e-9 : un produit juste à l'entier (ex. 90 × 0,7 = 62,999… en virgule flottante) ne perd pas une unité */
+  return Object.fromEntries(Object.entries(r.cost).map(([k, n]) => [k, Math.floor(n * RECYCLE.share / r.qty + 1e-9)]).filter(([, n]) => n > 0));
+}
+
+/* recycle la pièce uid de l'inventaire. locked(uid) : vrai si elle est enregistrée dans un set (refusé). La pièce n'existe
+   qu'une fois : une demande renvoyée la trouve déjà détruite (not_owned), rien n'est rendu deux fois.
+   Renvoie { ok, item, refund } ou { error } (bad_request, not_owned, not_recyclable, in_set). */
+export function recycleStuff(inv, uid, locked = () => false){
+  if(!Number.isSafeInteger(uid)) return { error:'bad_request' };
+  const s = inv.slots.find(x => x && x.uid === uid);
+  if(!s) return { error:'not_owned' };
+  if(!recyclable(s.item)) return { error:'not_recyclable' };
+  if(locked(uid)) return { error:'in_set' };
+  const refund = recycleRefund(s.item);
+  takePiece(inv, uid);
+  for(const [k, n] of Object.entries(refund)) addItem(inv, k, n);
+  return { ok:true, item:s.item, refund };
 }
 
 /* utilise un blueprint : il est consommé, sa recette est débloquée. Renvoie { ok, repeated, recipe } ou { error }

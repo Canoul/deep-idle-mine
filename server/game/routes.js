@@ -37,6 +37,7 @@ export function gameRoutes(game){
     'POST /api/game/spells': async ctx => { needMe(ctx); return game.spells(ctx.me, obj(ctx.body)); },
     'POST /api/game/upgrade': async ctx => { needMe(ctx); return game.upgrade(ctx.me, obj(ctx.body)); },
     'POST /api/game/inventory': async ctx => { needMe(ctx); return game.inventory(ctx.me, obj(ctx.body)); },
+    'POST /api/game/recycle': async ctx => { needMe(ctx); return game.recycle(ctx.me, obj(ctx.body)); },
     'POST /api/game/stuff':  async ctx => { needMe(ctx); return game.stuff(ctx.me, obj(ctx.body)); },
     'POST /api/game/ack':    async ctx => { needMe(ctx); await game.ack(ctx.me, obj(ctx.body).id); return [204]; },
   };

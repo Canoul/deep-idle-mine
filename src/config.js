@@ -821,6 +821,11 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
     { label:'Stuff',     cats:['stuff', 'rune'] },
   ] };
 
+/* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)
+   est détruite et rend share de chaque ingrédient de sa recette, arrondi vers le bas (1 ingrédient → 0). Amélioration
+   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire. */
+export const RECYCLE = { share:0.6 };
+
 /* ---- Comptes joueur (règles partagées par le jeu et le serveur) ----
    Pas d'adresse e-mail : un pseudo + un mot de passe, ou un compte invité à sécuriser plus tard.
    Chaque compte a un ID public, court et lisible (ex. 7K3Q-9XHP) : c'est lui qu'on donnera à un ami.

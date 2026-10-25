@@ -2451,3 +2451,13 @@ Règles (voir CLAUDE.md) :
   demandes en rafale / trafiquées : mêmes objets, mêmes quantités, mêmes uid) ✅.
 - **⚠️ À vérifier** : pas essayé dans un vrai navigateur (glisser-déposer, bouton). Pas de tactile (le drag HTML5 ne
   marche pas au doigt).
+
+### Recycler une pièce de stuff (Geoffrey, 25/10) — 🧪 branche `geoffrey/inventaire`
+- **Quoi** : `RECYCLE.share` 0,6 (config). `src/meta/craft.js` : `recyclable(item)` (`isStuff` + recette), `recycleRefund(item)`
+  (`floor(n × share / qty + 1e-9)`, les 0 retirés ; le 1e-9 évite 62,999… → 62), `recycleStuff(inv, uid, locked)`.
+  `src/meta/sets.js` `inSomeSet`. Serveur `POST /api/game/recycle { uid }` (verrous `inv:` + `sets:`, sets relus). Pas d'opId :
+  la pièce est unique, un renvoi tombe sur `not_owned`. Navigateur : bouton `.invRecycle`, fenêtre `showRecycle` (réutilise
+  `#loot`), `setsUI.setsOf(uid)` pour prévenir avant d'envoyer, `recyclePiece` dans `src/main.js`. Wiki : carte Inventaire, date.
+- **Tests** : `tests/recycle.test.js` (4) ✅ ; `tests/anticheat/recycle.test.js` (rafale de 8 → 1 seul versement ; portée,
+  set, uid trafiqués refusés) ✅ ; suite anti-triche ✅ (89).
+- **⚠️ À vérifier** : fenêtre et bouton pas vus dans un vrai navigateur.
