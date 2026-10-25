@@ -16,13 +16,14 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, treasureItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
+         setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
@@ -801,6 +802,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* onglet Jugement : les deux jauges, les tours ouvertes et ce que ce joueur a déjà fait */
     async judgment(me){
       return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
+    },
+
+    /* administration : régler la jauge d'un camp (route /api/admin/judgment), mémoire et base ensemble */
+    async adminJudgment(side, count){
+      return withJudgment(j => {
+        const before = JUDGMENT_SIDES.includes(side) ? j[side].count : null;
+        if(!setJudgmentCount(j, side, count, clock()))
+          fail('bad_request', 400, `side : ${JUDGMENT_SIDES.join(' ou ')} · count : un entier de 0 à ${JUDGMENT.cap}.`);
+        return { save: true, value: { side, before, after: j[side].count, cap: JUDGMENT.cap, open: towerOpen(j, side, clock()) } };
+      });
     },
 
     async history(me){

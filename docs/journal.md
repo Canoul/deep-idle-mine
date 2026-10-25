@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
+- **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
+  serveur, sans le redémarrer : `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175`.
+- **Décisions** : confirmé, une jauge en pause garde sa valeur : à 100 quand la tour de l'Ange s'ouvre, celle du Démon
+  est toujours à 100 à la fermeture, et vice versa. C'était déjà le cas, c'est maintenant testé noir sur blanc. Si une
+  jauge revient à 0, c'est que sa tour s'est ouverte.
+- **À suivre** : une fois en ligne, mettre la jauge du Démon à 175 / 200 (demande de Geoffrey).
+- **État** : 🧪 sur la branche `geoffrey/admin-jauge` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Aura aussi sur la pioche et l'épée
 - **Pour le joueur** : une pioche ou une épée R4+ runée R4+ a aussi son aura, quand le mineur s'en sert en session (la
   pioche quand il mine, l'épée quand il frappe). La pioche en bois de base n'en a jamais. Les portraits ne montrent

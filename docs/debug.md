@@ -2597,3 +2597,22 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/aura.test.js` (11 : cases dessinées avec pioche / épée, anneau exclu, `toolSlotOf`) ✅ ; skins,
   lobby ✅. Rendu vérifié ✅ dans Edge sans fenêtre (vrai `createMinerSprite` : pioche R5 / R7 en miroir, épée R6, bois).
 - **Point fragile** : l'outil fait 13 px ; le halo faible (1 px × 13/16) est discret.
+
+### Administration : régler une jauge du Jugement (Geoffrey, 25/10) — branche `geoffrey/admin-jauge`
+- **Contexte** : la jauge du Démon était à 0 ce matin. Seule cause possible dans le code : la tour du Démon s'est
+  ouverte (`refresh`, `src/meta/judgment.js`, seul endroit qui remet `count` à 0). En pause (tour de l'Ange ouverte),
+  les résidus démoniaques versés sont ignorés et la jauge garde sa valeur ; pleine pendant la pause, elle attend la
+  fermeture de l'Ange et s'ouvre à la première lecture (`withJudgment` appelle `refresh` à chaque lecture du lobby).
+- **Quoi** : `setCount(j, side, count, now)` (`src/meta/judgment.js` : camp connu, entier 0..cap, même en pause, puis
+  `refresh` → pleine = ouverture) ; `game.adminJudgment(side, count)` (`server/game/service.js`, sous le verrou
+  `judgment`, enregistré) ; route `POST /api/admin/judgment` (`server/admin/routes.js`, même garde que `/give`, journal
+  « Admin : jauge demon a → b / cap ») ; `scripts/set-judgment.js`. Lecture de la clé et appel mis en commun dans
+  `scripts/admin-client.js` (`give-item.js` l'utilise, messages inchangés).
+- **Tests** : `tests/judgment.test.js` (+2 : pause « 100 reste 100 » dans les deux sens, `setCount`), `tests/admin.test.js`
+  (+1 : route, vue du lobby, relais refusé, 7 corps invalides), `tests/give-item.test.js` (+1 : script, refus avant
+  l'appel) ✅ ; game-http ✅ ; anticheat 89/89 ✅.
+- **Au passage** : `tests/game-http.test.js` « aucune route ne permet d'écrire dans un inventaire » échouait sur `main`
+  depuis la route `POST /api/game/inventory` (trier / déplacer, 25/10) : elle répond 400 au corps piégé, le test
+  n'acceptait que 404 / 405. Test élargi à 400 (l'inventaire reste vide, vérifié juste après). Pas un trou.
+- **Point fragile** : pas d'opId, mais rejouer la même commande donne le même résultat (on règle une valeur, on n'ajoute
+  pas). `--count 200` ouvre la tour tout de suite (ou dès la fermeture de l'autre).

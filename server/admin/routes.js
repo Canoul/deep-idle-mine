@@ -3,6 +3,7 @@
      curl -X POST http://127.0.0.1:8000/api/admin/give -H "Authorization: Bearer CLÉ" \
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
+   POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -34,7 +35,7 @@ export function adminAllowed(req, token){
   return !!m && sameToken(m[1], token);
 }
 
-/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive) */
+/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminJudgment) */
 export function adminRoutes({ accounts, game, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   return {
@@ -47,6 +48,12 @@ export function adminRoutes({ accounts, game, token }){
       const r = await game.adminGive(acc.id, item, qty, quality);
       console.log(`Admin : +${r.qty} ${r.item}${r.quality ? ` R${r.quality}` : ''} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
       return { account: acc.name, ...r };
+    },
+    'POST /api/admin/judgment': async ctx => {
+      guard(ctx);
+      const r = await game.adminJudgment(ctx.body?.side, ctx.body?.count);
+      console.log(`Admin : jauge ${r.side} ${r.before} → ${r.after} / ${r.cap}${r.open ? ' (tour ouverte)' : ''}`);
+      return r;
     },
   };
 }
