@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Aura aussi sur la pioche et l'épée
+- **Pour le joueur** : une pioche ou une épée R4+ runée R4+ a aussi son aura, quand le mineur s'en sert en session (la
+  pioche quand il mine, l'épée quand il frappe). La pioche en bois de base n'en a jamais. Les portraits ne montrent
+  pas les outils, donc pas d'aura d'outil dessus.
+- **État** : 🧪 sur la branche `geoffrey/aura-outils` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Aura du stuff runé
 - **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
   s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en

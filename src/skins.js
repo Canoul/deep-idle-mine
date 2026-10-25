@@ -50,3 +50,6 @@ export const armorPieces = look => SKIN.layers.filter(slot => SKIN.armor[look?.[
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);
+/* case de cet outil en main (pour son aura, src/meta/aura.js) : 'epee', 'pioche', ou null (pioche en bois de base) */
+export const toolSlotOf = (look, action) => action === 'attack' && SKIN.sword[look?.epee] ? 'epee'
+  : look?.pioche !== 'base' && SKIN.pickaxe[look?.pioche] ? 'pioche' : null;

@@ -2509,3 +2509,14 @@ Règles (voir CLAUDE.md) :
   de relancer la boucle.
 - **Mise en ligne** : simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,2, prof 193). Pas d'anti-triche :
   aucune ressource ne bouge.
+
+### Aura des outils en main (Geoffrey, 25/10) — 🧪 branche `geoffrey/aura-outils`
+- **Symptôme** (retour de Geoffrey) : la pioche n'a pas d'aura quand le mineur mine. Pas un bug : la première version
+  limitait l'aura aux calques du corps (`SKIN.layers`).
+- **Quoi** : `src/meta/aura.js` (`SLOT_TEX` : armure + `pioche` → `SKIN.pickaxe`, `epee` → `SKIN.sword` ; `aurasOf` et
+  `sanitizeAuras` lisent ces cases, jamais la pioche en bois `base`) ; `src/skins.js` `toolSlotOf(look, action)` (même
+  choix que `toolOf`) ; `src/render/miner-sprite.js` : `drawAura` dans le repère tourné de l'outil, avant l'outil.
+  Les données (`auras`) passaient déjà : rien à changer côté serveur ni vues.
+- **Tests** : `tests/aura.test.js` (11 : cases dessinées avec pioche / épée, anneau exclu, `toolSlotOf`) ✅ ; skins,
+  lobby ✅. Rendu vérifié ✅ dans Edge sans fenêtre (vrai `createMinerSprite` : pioche R5 / R7 en miroir, épée R6, bois).
+- **Point fragile** : l'outil fait 13 px ; le halo faible (1 px × 13/16) est discret.

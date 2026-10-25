@@ -1,6 +1,6 @@
 /* Dessin d'un mineur (partagé par la mine normale et la mine instantanée) : même corps pour tous, son équipement
    par-dessus (src/skins.js) avec l'aura de ses pièces (src/render/aura.js), sa pioche quand il mine ou frappe, et son pseudo au-dessus de la tête. Lit, ne modifie rien. */
-import { SKIN, armorPieces, toolOf } from '../skins.js';
+import { SKIN, armorPieces, toolOf, toolSlotOf } from '../skins.js';
 import { drawAura } from './aura.js';
 
 /* ctx : contexte canvas ; TEX : textures chargées ; TILE : taille d'une case (px) */
@@ -27,7 +27,9 @@ export function createMinerSprite(ctx, TEX, TILE){
       const ph=now/1000 + (m.id||0)*0.37, i=TEX[toolOf(m.look, a.type)];
       const swing = a.type==='attack' ? -1.25 + 2.1*Math.pow((ph*2.2)%1, 0.45) : Math.sin(ph*18)*0.7;
       if(i && i.complete && i.naturalWidth){
+        const q=m.auras?.[toolSlotOf(m.look, a.type)];   // aura de l'outil en main (pioche ou épée runée R4+)
         ctx.save(); ctx.translate(bx+11,py+10); ctx.rotate(swing-0.35);
+        if(q) drawAura(ctx,i,q,-3,-12,13,now);
         ctx.drawImage(i,-3,-12,13,13); ctx.restore();
       }
     }
