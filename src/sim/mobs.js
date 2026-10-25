@@ -45,15 +45,15 @@ export function resists(G,m){
   return true;
 }
 
-/* cases où ce mob peut être repoussé : vide, dans la mine, ni dans un piège encore caché, ni sur un mineur ; le boss
-   reste dans sa salle, les autres n'entrent pas dans un donjon ; le Gallianix reste sur le sol de la surface ; un mimic
-   ne bouge jamais */
+/* cases où ce mob peut être repoussé : vide, dans la mine, pas dans un piège encore caché ; le boss reste dans sa
+   salle, les autres n'entrent pas dans un donjon ; le Gallianix reste sur le sol de la surface ; un mimic ne bouge
+   jamais. Les mobs ne s'entassent pas : ils peuvent partager une case avec un autre mob ou un mineur (25/10). */
 export function mobCanEnter(G,o){
   if(o.type==='mimic') return () => false;
   if(o.type===DUCK.type) return (x,y) => y===o.y && duckCanEnter(G,x);
   const d=o.dungeon!=null ? G.dungeons.find(q=>q.id===o.dungeon) : null;
   return (x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !veiled(G,x,y)
-    && (d ? interior(d,x,y) : !dungeonAt(G,x,y)) && !G.miners.some(m=>m.x===x && m.y===y);
+    && (d ? interior(d,x,y) : !dungeonAt(G,x,y));
 }
 
 /* tacle : le mob qui immobilise ce mineur (o.grab = id du mineur), ou null */

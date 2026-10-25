@@ -105,7 +105,7 @@ export function shownPos(M, o, now = performance.now()){
   const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
   return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
 }
-function glide(M, oldList, newList, target, now){
+export function glide(M, oldList, newList, target, now){
   const old = new Map(oldList.map(o => [o.id, o]));
   for(const o of newList){
     const to = target(o), was = old.get(o.id), from = was ? shownPos(M, was, now) : to;

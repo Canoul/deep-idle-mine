@@ -10,11 +10,11 @@ import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
 const team = n => Array.from({ length: n }, (_, i) => ({ name: 'M' + i, account: 'A' + i }));
 const hold = m => { m.action = { type: 'wait', dur: 1e9, t: 0, data: {} }; };
 
-test('carte : 20 de large, 7 étages de 3 + séparations, toit, portes de 3 au bord en alternance, étages en alternance', () => {
+test('carte : 20 de large, 6 étages de 3 + séparations, toit, portes de 3 au bord en alternance, étages en alternance', () => {
   for(const [seed, side] of [[7, 'angel'], [8, 'demon'], [9, 'angel'], [10, 'demon']]){
     const T = genTower(seed, side), S = TOWER.sides[side];
     assert.equal(T.x1 - T.x0 + 1, TOWER.width);
-    assert.equal(T.floor - T.roof + 1, TOWER.floors * (TOWER.floorH + 1), '28 lignes du rez-de-chaussée au toit');
+    assert.equal(T.floor - T.roof + 1, TOWER.floors * (TOWER.floorH + 1), '24 lignes du rez-de-chaussée au toit');
     assert.equal(floorCeil(T, TOWER.floors - 1), T.roof, 'la séparation du dernier étage est le toit');
     for(let x = 0; x < T.w; x++) assert.ok(BLOCKS[T.tiles[T.h][x]].unbreakable, 'sol');
     for(let y = T.roof; y <= T.floor - TOWER.doorH; y++){ assert.equal(T.tiles[y][T.x0], S.hard); assert.equal(T.tiles[y][T.x1], S.hard); }
@@ -77,8 +77,9 @@ test('mobs : la porte du plafond reste scellée tant qu\'il en reste un ; ils ta
   assert.equal(mobDist({ x: 5, y: 10 }, { x: 6, y: 9 }), 1);
 });
 
-test('boss : 3500 PV ; projection 20 % (10 % barbare) ; il marche vers le plus proche quand personne n\'est à son contact', () => {
-  assert.equal(TOWER.boss.hp, 3500); assert.equal(TOWER.boss.knockChance, 0.2); assert.equal(TOWER.boss.knockBarb, 0.1);
+test('boss : 3500 PV ; projection de 5 cases, 25 % (10 % barbare), 35 / 20 % en rage ; son focus tombé, il marche vers un autre', () => {
+  assert.equal(TOWER.boss.hp, 3500); assert.equal(TOWER.boss.knockChance, 0.25); assert.equal(TOWER.boss.knockBarb, 0.1);
+  assert.equal(TOWER.boss.rageKnock, 0.35); assert.equal(TOWER.boss.rageKnockBarb, 0.2); assert.equal(TOWER.boss.knock, 5);
   const G = newTower(5, { side: 'angel', miners: team(2) });
   for(const o of G.mobs) o.hp = 0;
   const [a, b] = G.miners, y = G.roof - 1;
@@ -92,8 +93,10 @@ test('boss : 3500 PV ; projection 20 % (10 % barbare) ; il marche vers le plus p
   for(let i = 0; i < 20; i++) tickTower(G);
   assert.ok(G.boss.x > G.bx, 'il s\'est déplacé vers le mineur le plus proche');
   assert.ok(G.boss.x + TOWER.boss.w - 1 <= G.x1, 'il reste sur le toit');
-  /* projection depuis le milieu : 6 cases, il reste sur le toit */
+  /* projection depuis le milieu : 5 cases, il reste sur le toit */
+  assert.equal(G.boss.focus, b.id, 'son focus (a) est tombé du toit : il focus b');
   G.boss.x = G.bx; a.x = G.boss.x - 1; a.y = y; b.x = G.x1;
+  G.boss.focus = a.id;   // il ignore les autres : on lui redonne a comme focus
   G.fightRng = () => 0; G.boss.cd = 0;
   tickTower(G);
   assert.equal(a.stats.knocked, 1); assert.equal(a.x, G.bx - 1 - TOWER.boss.knock); assert.ok(a.x >= G.x0);

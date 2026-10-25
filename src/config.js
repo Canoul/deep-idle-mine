@@ -121,11 +121,11 @@ export const BLOCKS = {
      jauges de l'onglet Jugement. */
   12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu', val:TREASURE_VAL},
   13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu', val:TREASURE_VAL},
-  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (6 s, ne rapporte rien) et sa version
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (4 s depuis le 25/10, avant 6 ; ne rapporte rien) et sa version
      indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
-  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:6, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:4, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
   15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
-  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:6, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:4, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
   17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
   /* socle du coffre (23/10, Geoffrey) : la case sous le coffre de la surface, incassable (le pathfinder ne creuse plus
      sous le coffre) */
@@ -1038,10 +1038,11 @@ export const JUDGMENT = {
    Ouvertes par le Jugement (JUDGMENT) ; lancées depuis le Lobby (« Où miner »), groupe de 1 à maxPlayers.
    Refonte du 23/10 (Geoffrey ; avant : 15 × 30 pleine de stonebrick en labyrinthe, boss 1000 PV immobile) :
    tour de `width` colonnes (murs compris) × 32 lignes : `floors` étages de floorH lignes, chacun surmonté d'une ligne de
-   séparation indestructible percée d'une porte de `gate` cases en stonebrick (6 s), collée à gauche ou à droite en
+   séparation indestructible percée d'une porte de `gate` cases en stonebrick (4 s), collée à gauche ou à droite en
    alternance (serpentin : on traverse chaque étage). La séparation du dernier étage est le toit (porte au bord aussi) ;
    au-dessus (roofH lignes, à ciel ouvert), le boss. Étage 0 vide ; étages 1 à floors-1 en alternance « blocs » (plein
-   de stonebrick) / « mobs » (vide, mobs.count mobs), le premier tiré par la seed.
+   de stonebrick) / « mobs » (vide, mobs.count mobs), le premier tiré par la seed. La porte du plafond d'un étage reste
+   scellée tant qu'il reste un mob vivant (étage « mobs ») ou un bloc (étage « blocs », 25/10, Geoffrey).
    Découverte étage par étage (un mineur entre dans un étage : tout l'étage et son plafond se découvrent) ; lumière
    comme dans la mine (torches illimitées, rayon STATS.torchRadius, ralenti dans le noir). Gravité, échelles
    illimitées et partagées dans la tour ; ni oxygène, ni pods, ni butin. Boss mort = fin : un trésor par présent (RUNE).
@@ -1049,7 +1050,7 @@ export const JUDGMENT = {
    portes d'entrée : les doorH lignes du bas des deux murs. */
 export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
-  width: 20, floors: 7, floorH: 3, gate: 3,      // 7 × (3 + 1) = 28 lignes + 4 de toit = 32
+  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7)
   sky: 4, margin: 8, doorH: 2,
   /* vue (navigateur) : caméra qui suit le mineur, aussi large que la tour (avant : 19 × 15) */
   view: { cols: 22, rows: 16 },
@@ -1063,8 +1064,24 @@ export const TOWER = {
      base), sans quitter le toit. Il frappe toutes les hitEvery s (rageEvery sous rageBelow de ses PV) le premier arrivé
      parmi ceux à son contact ; chaque coup a knockChance (knockBarb pour un barbare) de le projeter de knock cases
      vers l'extérieur : il tombe s'il passe le bord de la tour (jusqu'au sol, puis il remonte). Sinon, le coup le repousse
-     de push blocs (recul, 25/10). Le boss, lui, ne recule pas sous les coups. */
-  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.20, knockBarb: 0.10, knock: 6, push: 0.25, speedMul: 2 },
+     de push blocs (recul). En rage, les chances passent à rageKnock / rageKnockBarb. Le boss résiste à 100 % au recul.
+     25/10 au soir (Geoffrey) : projection 6 → 4 → 5 cases, chances 35 / 20 % → 25 / 10 %, en rage 50 / 25 % → 35 / 20 % ;
+     saut : jumpHover 5 → 3 s, et l'atterrissage projette TOUS les mineurs du toit de jumpKnock cases (avant : seulement
+     ceux qui étaient sous lui, de knock cases).
+     Recul du boss (25/10 au soir) : seuls les coups de son focus le repoussent (COMBAT.knock), avec knockRes % de
+     résistance ; les coups des autres mineurs ne le poussent pas (100 %). Avant : il ne reculait jamais.
+     Refonte du 25/10 (Geoffrey ; avant : 20 / 10 %, push 0,25, il ne frappait que s'il n'avait personne à son contact
+     pour marcher) : il FOCUS le premier arrivé à son contact (le barbare qui le provoque, s'il est sur le toit) et le
+     suit quand il le repousse, à travers les autres mineurs (qui restent où ils sont, même sur lui) ; son focus
+     tombé du toit, il en prend un autre ; plus personne sur le toit : il retourne au centre. Un mineur repoussé fait un
+     petit arc (arcHigh blocs en arcMs ms, affichage seulement).
+     Saut : à chaque tranche de jumpEvery de ses PV (75, 50, 25 %), il file au centre du toit (jumpFly s), jumpHigh
+     blocs en l'air, y reste jumpHover s (intouchable, il ne frappe plus), puis retombe (jumpFall s) : tous les mineurs
+     du toit sont étourdis jumpStun s (la ténacité peut l'ignorer) ; ceux qui étaient sous lui sont projetés de knock
+     cases sur le côté le plus proche. Valeurs provisoires. */
+  boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.25, knockBarb: 0.10,
+          rageKnock: 0.35, rageKnockBarb: 0.20, knock: 5, push: 0.5, knockRes: 25, speedMul: 2, arcHigh: 0.5, arcMs: 350,
+          jumpEvery: 0.25, jumpHigh: 5, jumpFly: 0.6, jumpHover: 3, jumpFall: 0.3, jumpStun: 3, jumpKnock: 3 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },
@@ -1092,6 +1109,11 @@ export const MOB_INFO = {
    Focus d'area (même enregistrement, clé « area ») : le mineur travaille dans cette area, sans descendre plus bas ni
    viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
 export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
+
+/* Spécialisation imposée aux mineurs en mode développeur (25/10/2026, Geoffrey) : pour chaque place (les joueurs du
+   groupe dans l'ordre, puis les mineurs de test), un arbre de skills et un niveau ; l'arbre est rempli étage par étage
+   avec les points de talent de ce niveau (niveau − 1). Ne touche ni aux skills du compte ni à l'XP. Bornes du niveau. */
+export const DEV_SPEC = { minLevel:1, maxLevel:30 };
 
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */

@@ -102,8 +102,9 @@ export function forbidMask(G,m){
 export function updateDungeons(G){
   for(const d of G.dungeons || []){
     /* un mineur entre dans le donjon : toute la structure (murs, intérieur, boss) est découverte d'un coup
-       (23/10/2026 soir, Geoffrey) */
-    if(!d.revealed && G.miners.some(m => interior(d,m.x,m.y))){
+       (23/10/2026 soir, Geoffrey). Le seuil compte, et combattre le boss aussi (25/10) : un boss contre l'entrée se bat
+       avec le barbare sur le seuil, sans que personne passe à l'intérieur (la salle restait noire) */
+    if(!d.revealed && G.miners.some(m => isIn(d,m) || m.foe===d.boss)){
       d.revealed=true;
       for(let y=d.y0; y<d.y0+S; y++) for(let x=d.x0; x<d.x0+S; x++) if(G.seen[y]) G.seen[y][x]=1;
     }

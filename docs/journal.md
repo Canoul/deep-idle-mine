@@ -22,6 +22,31 @@ Modèle d'entrée :
 - **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
   était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques
   secondes et retournait miner.
+
+## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
+- **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres
+  attendent, le rejoignent et se battent sans remonter, même sans oxygène, le sac plein ou sans torches. Seule la fin
+  de session les fait remonter. Le boss mort, ils remontent. Corrigé : quand le minotaure est collé contre l'entrée,
+  on se battait sur le seuil et la salle restait noire ; elle apparaît maintenant dès qu'un mineur passe l'entrée ou
+  frappe le boss.
+- **Décisions** (Geoffrey) : seule la fin de session passe avant le donjon ; sortir du donjon (effrayé) et les « Fuir »
+  une fois le barbare entré remontent normalement ; un mineur déjà en train de remonter finit sa remontée.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Tour céleste : boss refait, étages de blocs à vider, affichage fluide
+- **Pour le joueur** : la tour s'affiche **sans saccades**. Elle a **6 étages** (avant 7) et les briques se cassent en
+  4 s. Un **étage de briques** doit être **entièrement vidé** pour ouvrir la porte du dessus (les mineurs se répartissent
+  les briques). Les mobs peuvent être plusieurs sur la même case. Le **boss** vise un seul mineur (le premier arrivé, ou
+  le barbare qui le provoque) et ignore les autres ; il le repousse (petit saut à l'écran) ou le projette de 5 cases
+  (25 %, 10 % sur un barbare, plus en rage), puis le **suit** en traversant les autres mineurs. On peut le frapper à côté
+  de lui ou dans lui ; seul le mineur qu'il vise le fait reculer un peu. À 75, 50 et 25 % de ses PV, il **s'envole** 3 s
+  au centre du toit (intouchable), puis retombe : tout le monde est repoussé de 3 cases et étourdi 3 s. Le wiki est à jour.
+- **Mode développeur** : spécialisation imposée à chaque mineur (mineurs de test compris) avec un niveau, mineurs de test
+  dans les tours, vitesse et pause dans la barre de la tour, tours toujours ouvertes et sans limite.
+- **Décisions** (Geoffrey) : toutes les valeurs ci-dessus ; règle « le boss remet hors de lui les mineurs sur sa hitbox »
+  essayée puis retirée.
+- **À suivre** : l'**équilibrage** de la tour (Geoffrey fait ses simulations). La stat Résistance au recul n'a toujours
+  aucune source.
 - **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Tainted iron : 15 chitine au lieu de 20
