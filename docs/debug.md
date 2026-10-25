@@ -3066,3 +3066,19 @@ Règles (voir CLAUDE.md) :
 - **Vérifié après fusion** : khole + 20 sujets voisins ✅ (303), tests ajoutés par main ✅ (101), `npm run test:anticheat`
   ✅ (91), simulation `--miners 3 --count 5` (0 bloquée, chiffres identiques : aucun k hole sur ces seeds) et
   `--khole 1` (10 pris, 0 bloquée, tick dimension 0,030 ms).
+
+### Admin : k hole imposé dans une session en cours (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `forceKhole(G, map)` (`src/sim/khole.js`) : pousse dans `G.kholes` un k hole à la case du premier mineur
+  (`opensAt = t + warn`, `map` imposée 1-N ou 0), même log ; refusé si fini, déjà dans un k hole ou un k hole en attente,
+  sans mineur, ou à moins de endMargin + warn de la fin. `enterKhole` : `h.map` impose la carte. Événement rejoué
+  `record.kholes` [{ tick, map, at }] : `applyDueKholes` (`src/shared/game.js`, `G.kholeDone`, dans `applyDueEvents`) ;
+  `live-game.js` `khole(map)` → `{ tick, ok }` ; `live-worker.js`, `live.js` (runner + inline). `service.adminKhole`
+  (mine classique, session en cours, carte entière 0-N ; refus `khole_refused` → rien n'est enregistré). Route
+  `POST /api/admin/khole` { name, map } (mêmes garde-fous que /give) ; `scripts/force-khole.js`. `tests/helpers.js`
+  fakeLive : `khole`.
+- **Tests** : `tests/admin-khole.test.js` (5 : ouverture et carte imposée, refus si déjà dedans, rejeu identique avec
+  l'événement enregistré, refus près de la fin, carte invalide → tirée, service (enregistrement, refus sans session / mi /
+  tour / carte invalide), route fermée sans clé, pseudo inconnu, pas de session) ✅ ; admin, live, game-service,
+  game-replay, khole, session, game-http, instant-server, give-item ✅ (117) ; `npm run test:anticheat` ✅ (91).
+- **Point fragile** : à la case du mineur visé, le k hole « disparaît » au retour (case mise à vide) : c'est sa propre
+  case (déjà vide), sans effet.

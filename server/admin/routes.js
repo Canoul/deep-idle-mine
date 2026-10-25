@@ -4,6 +4,7 @@
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
+   POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -47,6 +48,16 @@ export function adminRoutes({ accounts, game, token }){
       if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
       const r = await game.adminGive(acc.id, item, qty, quality);
       console.log(`Admin : +${r.qty} ${r.item}${r.quality ? ` R${r.quality}` : ''} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
+      return { account: acc.name, ...r };
+    },
+    'POST /api/admin/khole': async ctx => {
+      guard(ctx);
+      const { name } = ctx.body ?? {}, map = ctx.body?.map ?? 0;
+      if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', 'name : le pseudo du joueur.');
+      const acc = await accounts.findAccountByName(nameKey(name));
+      if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
+      const r = await game.adminKhole(acc.id, map);
+      console.log(`Admin : k hole (${r.map}) dans la session ${r.session} de ${acc.name} (${acc.id}), tick ${r.tick}`);
       return { account: acc.name, ...r };
     },
     'POST /api/admin/judgment': async ctx => {

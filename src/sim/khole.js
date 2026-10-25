@@ -18,7 +18,7 @@
    mobs normale, pas de focus d'area, la profondeur ne compte pas. */
 import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE, TREASURE_BLOCK, MOBS, mobHp } from '../config.js';
 import { mulberry32, hash } from '../core/rng.js';
-import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, treasureItem } from './world.js';
+import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, areaOf, treasureItem } from './world.js';
 import { carve, registerDungeon } from './dungeon.js';
 import { carveTrap, registerTrap, trapMobs, TRAP_BOX } from './trap.js';
 import { createMiner } from './mineur.js';
@@ -210,7 +210,7 @@ function placeMiner(m, x, y, status){
 /* aspire le groupe dans la dimension du k hole h */
 export function enterKhole(G, h){
   h.used = true;
-  const n = G.kholes.indexOf(h), map = pickMap(G.seed, n);
+  const n = G.kholes.indexOf(h), map = KHOLE.maps[h.map - 1] ?? pickMap(G.seed, n);   // h.map : carte imposée (admin)
   /* retour au bout de la durée de la carte, ou quand il ne reste que endMargin s de session (le temps de déposer) */
   const until = Math.min(G.t + map.duration, SESSION_LEN - KHOLE.endMargin);
   G.khole = { n, k: h.k, x: h.x, y: h.y, map, until, world: take(G, WORLD) };
@@ -233,6 +233,20 @@ export function exitKhole(G){
   updateLight(G);
   G.realm++;
   log(G, '🌀 Retour à la surface de la mine : le k hole s\'est refermé');
+}
+
+/* k hole imposé (administration, scripts/force-khole.js) : il s'ouvre sous les pieds du premier mineur du groupe,
+   comme s'il venait de le découvrir (même message, aspiration KHOLE.warn s plus tard) ; map : 1 à maps.length pour
+   imposer la carte, 0 = tirée comme d'habitude. Refusé (false) si la partie est finie, déjà dans un k hole (ou un k hole
+   va s'ouvrir), vide, ou trop près de la fin (KHOLE.endMargin). Rejoué au même tick, il donne la même partie. */
+export function forceKhole(G, map = 0){
+  const m = G.miners[0];
+  if(G.over || G.khole || !m || G.t >= SESSION_LEN - KHOLE.endMargin - KHOLE.warn) return false;
+  if((G.kholes || []).some(h => !h.used && h.opensAt != null)) return false;
+  (G.kholes ??= []).push({ k: Math.max(0, areaOf(m.y)), x: m.x, y: m.y, opensAt: G.t + KHOLE.warn, used: false,
+    map: Number.isSafeInteger(map) && map >= 1 && map <= KHOLE.maps.length ? map : 0 });
+  log(G, '🌀 Un k hole s\'ouvre…');
+  return true;
 }
 
 /* exécute fn sur la mine (pas la dimension) : ex. le sac de la Mule d'un joueur qui part pendant le k hole */

@@ -9,6 +9,7 @@ const OPS = {
   advance: target => game.advance(target),
   leave:   account => game.leave(account),
   focus:   (account, focus) => game.focus(account, focus),
+  khole:   map => game.khole(map),
   finish:  () => game.finish(),
   view:    since => game.view(since),
 };
