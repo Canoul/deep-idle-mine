@@ -178,8 +178,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   qualité R1 Utile à R7 Légendaire, définitive ; **depuis le 22/10, la qualité seule, sans aucune stat en plus**
   (décision de Geoffrey ; ancien : des lignes de stats, que les pièces identifiées avant **gardent**, revérifiées au
   barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
-  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10) ; la valeur
-  d'un objet reste celle du catalogue (`UPGRADE.worth`). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
+  (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10), appliqué à la
+  **valeur du tier de la pièce** (25/10, Geoffrey ; `UPGRADE.tiers` : T1 pierre/chitine/plans T1 100 x, T2 fer/plans T2 250 x,
+  T3 acier/équilibre/plans T3 400 x ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
   réussite 100/95/90 %, plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les
   matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
   lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce

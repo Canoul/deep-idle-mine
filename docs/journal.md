@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Runes : un % du tier de la pièce
+- **Pour le joueur** : une ligne de rune ne vaut plus un % de la valeur de la pièce, mais un % de son **tier** : T1
+  (pierre, chitine, ceinture en peau de gobelin, boussole en or) = 100 x, T2 (fer, gants, cape) = 250 x, T3 (acier,
+  Plastron de l'équilibre) = 400 x. Toutes les pièces d'un même tier donnent la même chose pour une même rune. Les
+  runes déjà posées (et les lignes des pièces identifiées avant le 22/10) passent tout de suite à cette règle. Les
+  runes sur le stuff en fer et en acier valent moins qu'avant, celles sur les gants et la cape plus.
+- **Décisions** (Geoffrey) : le fer est T2 même si ses plans tombent dans le Treasure T1 ; le Plastron de l'équilibre
+  est T3 ; les anciennes lignes d'identification suivent la même règle.
+- **État** : 🧪 sur la branche `geoffrey/runes-tier` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
 - **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
   était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques

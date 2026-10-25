@@ -144,7 +144,7 @@ function upgrade(){
   $('w-runes').innerHTML = table(['Qualité de la rune', '#Lignes', '#Chaque ligne vaut', '#Total au mieux'], D.runeRows().map(r =>
     tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
         num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
-    `<p class="small mut">En % de la valeur de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>` +
+    `<p class="small mut">En % de la valeur du tier de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>` +
     `<p>On peut <b>retirer une rune</b> d'une pièce (onglet Amélioration, gratuit) : elle revient dans l'inventaire en <b>Fragment de rune</b>, même qualité et mêmes lignes, mais <b>chaque % est divisé par 2</b> (la ligne +1 Découverte ne change pas). Un fragment se pose comme une rune ; une fois posé, il ne se retire plus.</p>`;
   const total = D.upgradeTotal();
   $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>

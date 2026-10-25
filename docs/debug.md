@@ -2692,3 +2692,16 @@ Règles (voir CLAUDE.md) :
   échoue sans la correction) ✅ ; trap, combat, mobs, dungeon, spells, help, goblin, knock ✅ (93).
 - **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
   à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
+
+### Runes : un % du tier de la pièce (Geoffrey, 25/10) — 🧪 branche `geoffrey/runes-tier`
+- **Quoi** : `UPGRADE.tiers` (config : { 1:{ x:100, items }, 2:{ x:250 }, 3:{ x:400 } }) ; `src/meta/piece.js` : `tierOf`,
+  `lineBase` (x du tier ; sans tier : `itemValue`, ancien calcul), `linePoints` lit `lineBase`. Un seul point de calcul :
+  runes, fragments et lignes d'identification d'avant le 22/10, en session comme à l'affichage (stuff.js, upgrade.js).
+  Lignes gardées en % : les pièces existantes suivent sans migration. `itemValue` reste exporté (plus utilisé par les
+  lignes).
+- **Textes** : onglet Amélioration (`upgrade.js`), rune seule (`stuff.js`), wiki (`wiki.html`, `wiki.js`).
+- **Tests** : `tests/rune.test.js` +2 (chaque pièce runable a un tier, une seule fois ; valeurs T1/T2/T3, fragment) ;
+  `tests/amelioration.test.js` et `tests/steel-gear.test.js` : valeurs attendues recalculées au tier. rune, amelioration,
+  steel-gear, stuff, wiki, sets, treasure, aura, social ✅ (110). Pas d'anti-triche : aucune ressource ne bouge.
+- **Point fragile** : une nouvelle pièce de stuff doit être ajoutée à `UPGRADE.tiers` (sinon elle garde sa propre
+  valeur) ; le test « chaque pièce qu'on peut runer a un tier » échoue tant qu'elle n'y est pas.
