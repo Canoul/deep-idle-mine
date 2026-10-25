@@ -188,7 +188,9 @@ function stepMobs(G){
     /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, hitMob) */
     const t = v ?? preyOf(G, o);
     if(o.knockLock && t && mobReach(G, o, t)) o.knockLock = false;
-    if(t) walkMob(G, o, t);   // il tacle : il suit son mineur pour rester au contact
+    /* il tacle : il suit son mineur pour rester au contact ; repoussé, il reste sonné MB.knockStun s (sinon la marche
+       continue effaçait le recul en 0,2 s : on ne le voyait pas, 25/10) */
+    if(t && !(o.stagger > G.t)) walkMob(G, o, t);
   }
 }
 
@@ -220,7 +222,7 @@ function hitMob(G, m, o){
     const x0 = o.x, k0 = o.kx || 0;
     push(o, m, knockbackOf(m), (x, y) => y === o.y && mobFits(G, o, x));
     if(o.x !== x0 || (o.kx || 0) !== k0){
-      o.knockLock = true;
+      o.knockLock = true; o.stagger = G.t + MB.knockStun;
       if(o.grab === m.id && !mobReach(G, o, m)) o.grab = null;
     }
   }
@@ -334,6 +336,19 @@ function reservedBlocks(G, m, k){
   return out;
 }
 
+/* front de l'étage k (25/10, Geoffrey : les blocs du haut au-dessus de l'entrée restaient pour la fin, les mineurs
+   revenaient les chercher) : on vide l'étage en avançant depuis l'entrée (la porte du plancher, dessous). Seuls comptent
+   les blocs libres (cand) des colonnes pas encore vidées les plus proches de l'entrée : TOWER.blockFront par mineur (une
+   en solo, trois à trois) ; une colonne est donc finie, haut compris, avant qu'on s'en éloigne. Rien de libre dans le
+   front : les autres blocs libres. */
+function blockFront(G, k, cells, cand){
+  const gate = gateCols(G, k - 1), cx = gate.reduce((s, x) => s + x, 0) / gate.length;
+  const width = Math.max(1, Math.round(TOWER.blockFront * G.miners.length));
+  const cols = [...new Set(cells.map(([x]) => x))].sort((a, b) => Math.abs(a - cx) - Math.abs(b - cx)).slice(0, width);
+  const front = cand.filter(([x]) => cols.includes(x));
+  return front.length ? front : cand;
+}
+
 /* étage « blocs » à vider pour ce mineur : le plus bas pas encore vidé, à son étage ou au-dessus ; -1 sinon */
 function blockFloorFor(G, m){
   const here = floorOf(G, m.y);
@@ -398,7 +413,7 @@ export function decide(G, m){
     const st = `Vide l'étage ${kb}`, key = ([x, y]) => y * G.w + x;
     const cells = blockCells(G, kb), free = cells.filter(([x, y]) => !busy(G, m, 'mine', x, y));
     const res = reservedBlocks(G, m, kb);
-    const left = free.filter(c => !res.has(key(c)));
+    const left = blockFront(G, kb, cells, free.filter(c => !res.has(key(c))));
     const adj = left.find(([x, y]) => Math.abs(x - m.x) + Math.abs(y - m.y) === 1 && (y >= m.y || towerSupported(G, m.x, m.y)));
     if(adj){ m.blockGoal = key(adj); m.face = Math.sign(adj[0] - m.x) || m.face; return startMine(G, m, adj[0], adj[1], st); }
     const path = left.length ? planTo(G, m, left, res) : null;
