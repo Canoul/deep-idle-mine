@@ -2531,3 +2531,9 @@ Règles (voir CLAUDE.md) :
 - **Ajout (25/10)** : `BLOCKS[5]` (Or) `w` 4 → 3 ; GAME_DESIGN §Poids. Tests level, steel-gear, tier2, wiki, inventory,
   share ✅ (78). Simulation `--count 5` : 0 bloquée, coffre 4 040 pods (4 063 avant) : l'or n'apparaît qu'en area 3,
   à peine atteinte sans stuff ; l'effet se verra sur les équipes équipées.
+
+### Lobby : équipe visible sur Jugement (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/ui/lobby.js` : nouvelle fonction pure `lobbyCards({ view, mode, dev })` (cartes visibles : judgment, mi,
+  team, launch, prefs, dev) ; `render()` l'utilise. Vue Jugement : `teamCard` visible, `launchBtn` caché, texte
+  « choisis la Mine ou une tour ». GAME_DESIGN §Jugement.
+- **Tests** : `tests/lobby.test.js` +1 ✅ (14). ⚠️ Pas regardé dans un vrai navigateur.

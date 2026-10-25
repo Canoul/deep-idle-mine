@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Lobby : l'équipe reste visible sur Jugement
+- **Pour le joueur** : en choisissant « ⚖ Jugement » dans « Où miner », on voit toujours son groupe à droite (comme pour
+  la Mine) : inviter, quitter, voir qui est prêt. Le bouton Lancer n'y est pas : on lance depuis la Mine ou une tour.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Treasure T1 : plus de treasures, plus de blueprints, moins de parts
 - **Pour le joueur** : dans les areas 0 à 2 (celles du Treasure T1), **60 %** de chance de trouver un treasure (40 %
   au-delà). Dans un Treasure T1 : les blueprints des 6 pièces en fer (pioche, épée, casque, plastron, jambes, bottes)
