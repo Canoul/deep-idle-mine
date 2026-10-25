@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Recherche : le tier 3 demande tout le T1 et tout le T2
+- **Pour le joueur** : la recherche du tier 3 reste fermée tant qu'il manque une recette du tier 1 **ou** du tier 2.
+  Avant, seul le tier 2 comptait : en apprenant des BP du T2 trouvés dans des Treasures, on ouvrait le T3 avec un T1
+  incomplet. L'onglet Recherche dit ce qui manque, tier par tier (« apprends encore 2 recettes du Tier 1 »).
+- **État** : 🧪 sur la branche `geoffrey/recherche-t3` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Correctif : l'arène du k hole (mineurs qui ne tapent pas)
 - **Pour le joueur** : dans l'Arène des minotaures (et les Vagues), un mineur loin du combat restait planté au milieu
   sans taper : il ne voyait pas le minotaure, dans le noir. Maintenant, dans ces salles, les mineurs voient toute la salle

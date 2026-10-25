@@ -4,7 +4,7 @@
      tiré au hasard parmi ceux du Treasure du tier dont la recette n'est pas encore apprise (un BP déjà en stock peut
      ressortir ; un BP qui ne débloque encore rien reste toujours dans le tirage). Tirage pondéré par
      RESEARCH.tiers[t].weights (1 par défaut ; ex. tier 3 : le plan épique pèse 0,25).
-   - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes du tier d'avant (tierUnlocked). Les blueprints
+   - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes de tous les tiers inférieurs (tierUnlocked). Les blueprints
      qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas.
    - Recycle : un blueprint (n'importe lequel) est détruit et rend entre min et max Blueprint parts, selon le tier du
      blueprint (RESEARCH.tiers[].recycle).
@@ -43,8 +43,13 @@ function pick(pool, t, rng){
 export const tierOfBlueprint = bp => RESEARCH.tiers.find(d => tierBlueprints(d.tier).includes(bp)) ?? null;
 /* recettes du tier que le joueur n'a pas encore apprises (les blueprints sans recette ne comptent pas) */
 export const recipesLeft = (inv, t) => tierBlueprints(t).map(recipeOfBlueprint).filter(r => r && !isUnlocked(r, inv));
-/* tier ouvert : le premier toujours ; les suivants quand toutes les recettes du tier d'avant sont apprises */
-export const tierUnlocked = (inv, t) => !tierOf(t - 1) || recipesLeft(inv, t - 1).length === 0;
+/* tier ouvert : le premier toujours ; les suivants quand toutes les recettes de TOUS les tiers inférieurs sont apprises
+   (25/10, Geoffrey : avant, seulement le tier juste d'avant ; des BP du T2 trouvés dans des Treasures ouvraient le T3
+   avec un T1 incomplet) */
+export const tierUnlocked = (inv, t) => RESEARCH.tiers.every(d => d.tier >= t || recipesLeft(inv, d.tier).length === 0);
+/* tiers inférieurs à t dont il reste des recettes à apprendre : [{ tier, label, left }] (ce qui bloque le tier t) */
+export const tiersBlocking = (inv, t) => RESEARCH.tiers.filter(d => d.tier < t)
+  .map(d => ({ tier: d.tier, label: d.label, left: recipesLeft(inv, d.tier).length })).filter(d => d.left > 0);
 /* un blueprint (pas les parts) */
 export const isBlueprint = item => typeof item === 'string' && ITEMS[item]?.cat === 'blueprint' && item !== PARTS;
 export const canResearch = (inv, t) => !!tierOf(t) && tierUnlocked(inv, t) && researchPool(inv, t).length > 0 && countOf(inv, PARTS) >= tierOf(t).cost;

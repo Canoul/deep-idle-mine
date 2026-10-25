@@ -3107,3 +3107,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/khole.test.js` +3 (mineur loin qui vient aider : échouait avant ; « Ignorer » respecté ; sol des
   salles éclairé) ✅ (20) ; combat, mobs, session, team, admin-khole, trap, dungeon, light, live ✅ (95). Sonde : arène
   108 s / 2 tués (avant 117 s), vagues 66 tués ; simulation `--khole 1` : 10 pris, 0 bloquée.
+
+### Recherche : un tier demande tous les tiers inférieurs (Geoffrey, 25/10) — 🧪 branche `geoffrey/recherche-t3`
+- **Quoi** : `src/meta/research.js` `tierUnlocked(inv, t)` = toutes les recettes des tiers < t apprises (avant : tier
+  t - 1 seulement) ; `tiersBlocking(inv, t)` (nouveau) : tiers inférieurs incomplets et recettes manquantes. Onglet
+  (`src/ui/research.js`) : le message 🔒 liste chaque tier incomplet. Serveur : message `tier_locked` (« des tiers
+  inférieurs »). Le serveur appelle `research()` qui vérifie `tierUnlocked` : rien d'autre à changer.
+- **Tests** : `tests/research.test.js` +1 (tout le T2 appris, une recette du T1 manque : T3 fermé, rien payé ; échouait
+  avant) ✅. `tests/tier2.test.js` : 2 tests en retard sur main (T1 à 10 recettes depuis la Lance en fer, recyclage T1
+  15-30) remis à jour (ils échouaient déjà sur main). research, tier2, anticheat/research, game-service, wiki, craft,
+  blueprint ✅ (109) ; `npm run test:anticheat` ✅ (91).

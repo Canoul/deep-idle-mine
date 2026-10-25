@@ -134,3 +134,14 @@ test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 40 à 70
   const r = recycle(inv, 'Casque en acier BP', id(), fixed(0.9999999));
   assert.equal(r.parts, 70);
 });
+
+test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tout le T2 appris mais une recette du T1 manque)', () => {
+  const inv = knowsTiers(T1.slice(1), T2); addAll(inv, { [PARTS]:500 });
+  assert.equal(tierUnlocked(inv, 2), false, 'le T2 aussi reste fermé (une recette du T1 manque)');
+  assert.equal(tierUnlocked(inv, 3), false);
+  assert.equal(canResearch(inv, 3), false);
+  assert.equal(research(inv, 3, id(), fixed(0)).error, 'tier_locked');
+  assert.equal(countOf(inv, PARTS), 500, 'rien payé');
+  const all = knowsTiers(T1, T2);
+  assert.equal(tierUnlocked(all, 3), true);
+});
