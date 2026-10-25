@@ -11,6 +11,12 @@ import { glyphOf, nodeOfGlyph, glyphOp, isActive, activeGlyphs, sessionSkills, w
 import { STATS } from '../src/config.js';
 import { minerSpecs } from '../src/shared/game.js';
 import { minerStats } from '../src/meta/stuff.js';
+import { W } from '../src/config.js';
+import { mineBlock, killMob, hitDamage } from '../src/sim/actions.js';
+import { ladderTime } from '../src/sim/mineur.js';
+import { miLadderT } from '../src/sim/instant/ai.js';
+import { addDungeon } from '../src/sim/dungeon.js';
+import { worldFrom, run } from './helpers.js';
 import { sanitizeSets, applySet } from '../src/meta/sets.js';
 import { createSpells } from '../src/meta/spells.js';
 
@@ -131,4 +137,77 @@ test('stats des glyphes : en session (glyphes figés) et dans l\'onglet Stuff', 
   assert.equal(n.carac.pods, STATS.pods);
   const shown = minerStats({}, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'pods');
   assert.equal(shown.total, m.carac.pods);
+});
+
+/* ---------- effets en partie : Second souffle, Ruée, Navette, Échelle de 2, Pillage, Braum ---------- */
+
+const hold = m => { m.action = { type:'wait', dur:1e9, t:0, data:{} }; };
+const coalScene = skill => { const G = worldFrom(['', '', '  @c']), m = G.miners[0]; Object.assign(m.skill, skill); return { G, m }; };
+
+test('Second souffle : 5 % de chance qu\'un minerai rende une torche, jamais au-delà du max', () => {
+  let { G, m } = coalScene({ ore_oxygen:1, glyph_ore_oxygen:1 });
+  m.torches = 10; G.rng = () => 0; mineBlock(G, m, 3, 2);
+  assert.equal(m.torches, 11, 'tirage gagnant');
+  ({ G, m } = coalScene({ ore_oxygen:1, glyph_ore_oxygen:1 }));
+  m.torches = 10; G.rng = () => 0.99; mineBlock(G, m, 3, 2);
+  assert.equal(m.torches, 10, 'tirage perdant');
+  ({ G, m } = coalScene({ ore_oxygen:1, glyph_ore_oxygen:1 }));
+  m.torches = m.carac.torches; G.rng = () => 0; mineBlock(G, m, 3, 2);
+  assert.equal(m.torches, m.carac.torches, 'stock plein');
+  ({ G, m } = coalScene({ ore_oxygen:1 }));
+  m.torches = 10; G.rng = () => 0; mineBlock(G, m, 3, 2);
+  assert.equal(m.torches, 10, 'sans glyphe : rien');
+});
+
+test('Ruée : le bonus de marche dure 5 s au lieu de 3', () => {
+  let { G, m } = coalScene({ ore_rush:0.15, glyph_ore_rush:1 });
+  mineBlock(G, m, 3, 2); assert.equal(m.rushUntil - G.t, 5);
+  ({ G, m } = coalScene({ ore_rush:0.15 }));
+  mineBlock(G, m, 3, 2); assert.equal(m.rushUntil - G.t, 3);
+});
+
+test('Navette : pas d\'oxygène consommé en redescendant au front après une remontée', () => {
+  const G = worldFrom(['', '', '', '  @']), m = G.miners[0];
+  Object.assign(m.skill, { travel_rush:0.09, glyph_travel_rush:1 }); hold(m);
+  m.ox = 100; m.mode = 'departure'; run(G, 10);
+  assert.equal(m.ox, 100, 'en redescente');
+  m.mode = 'work'; run(G, 10);
+  assert.ok(m.ox < 100, 'au travail : il respire');
+});
+
+test('Échelle de 2 : poser une échelle prend 2 fois moins de temps (mine, mine instantanée, tours)', () => {
+  const m = { skill:{ tall_ladder:1, glyph_tall_ladder:1 } }, n = { skill:{ tall_ladder:1 } };
+  assert.equal(ladderTime(m), 1); assert.equal(ladderTime(n), 2);
+  assert.equal(miLadderT(m), 1); assert.equal(miLadderT(n), 2);
+});
+
+test('Pillage : chaque mob tué ajoute 1 % aux dégâts, au plus 25 %', () => {
+  const G = worldFrom(['', '  @']), m = G.miners[0];
+  Object.assign(m.skill, { loot:0.15, glyph_loot:1 }); m.carac.crit = 0;
+  const base = hitDamage(G, m);
+  for(let i = 0; i < 30; i++) killMob(G, m, { id:1000 + i, type:'bestiole', hp:1, x:5, y:1 });
+  assert.equal(m.pillage, 25);
+  assert.ok(Math.abs(hitDamage(G, m) - base * 1.25) < 1e-9);
+  const H = worldFrom(['', '  @']), n = H.miners[0]; n.skill.loot = 0.15;
+  killMob(H, n, { id:1, type:'bestiole', hp:1, x:5, y:1 });
+  assert.equal(n.pillage ?? 0, 0, 'sans glyphe : rien');
+});
+
+test('Braum : +30 % de l\'oxygène max à chaque entrée dans un donjon ; rester dedans ne recharge pas', () => {
+  const rows = ['', ...Array(24).fill('#'.repeat(W))];
+  const G = worldFrom(rows), m = G.miners[0];
+  const d = addDungeon(G, { x0:5, y0:6, side:'R', hy:13 });
+  for(let x = 15; x <= 30; x++) G.tiles[13][x] = 0;
+  Object.assign(m.skill, { braum:0.3, glyph_braum:1 }); m.skillTree = 'barbare';
+  m.carac.oxygenMax = 300; m.ox = 100; Object.assign(m, { x:20, y:13 }); hold(m);
+  run(G, 1); const out = m.ox;
+  Object.assign(m, { x:d.hx, y:d.hy }); run(G, 1);
+  assert.ok(Math.abs(m.ox - (out - 0.1 + 90)) < 1e-6, `entrée : +90 (${m.ox})`);
+  const inside = m.ox; run(G, 50);
+  assert.ok(m.ox < inside, 'rester dedans ne recharge pas');
+  Object.assign(m, { x:20, y:13 }); run(G, 1);
+  const before = m.ox; Object.assign(m, { x:d.hx, y:d.hy }); run(G, 1);
+  assert.ok(Math.abs(m.ox - (before - 0.1 + 90)) < 1e-6, 'seconde entrée : encore +90');
+  m.ox = 290; Object.assign(m, { x:20, y:13 }); run(G, 1); Object.assign(m, { x:d.hx, y:d.hy }); run(G, 1);
+  assert.equal(m.ox, 300, 'plafonné au max');
 });

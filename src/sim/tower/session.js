@@ -12,6 +12,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
+import { ladderTime } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -299,7 +300,7 @@ export function planTo(G, m, goals, avoid = null){
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
   const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x] && !isWinch(G, x, y)){ y++; n++; } return { y, n }; };
-  const ladT = CFG.ladderTime;
+  const ladT = ladderTime(m);   // Glyphe Échelle de 2 compris
   while(heap.length){
     const [d, c] = pop();
     if(d > dist[c]) continue;
@@ -478,7 +479,7 @@ function follow(G, m, path, status){
     if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y - 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y - 1, winch: true }, 'Monte par le treuil');
     if(!towerAir(G, m.x, m.y - 1)) return startMine(G, m, m.x, m.y - 1, status);
     if(!G.ladder[m.y][m.x] && busy(G, m, 'ladder', m.x, m.y)) return act(m, 'wait', 0.2, {}, 'Attend l\'échelle');
-    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', CFG.ladderTime, { x: m.x, y: m.y }, 'Pose une échelle');
+    if(!G.ladder[m.y][m.x]) return act(m, 'ladder', ladderTime(m), { x: m.x, y: m.y }, 'Pose une échelle');
     return act(m, 'move', climbT(m) / slow, { x: m.x, y: m.y - 1 }, 'Grimpe');
   }
   if(isWinch(G, m.x, m.y) && isWinch(G, m.x, m.y + 1)) return act(m, 'move', winchT(G, m), { x: m.x, y: m.y + 1, winch: true }, status);
