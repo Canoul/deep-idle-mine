@@ -75,6 +75,10 @@ export function createMemoryGameStore(initial = {}){
                            { ns: 'skills', key: accountId, value: sk }, { ns: 'spells', key: accountId, value: sp },
                            { ns: 'sets', key: accountId, value: se }]);
     },
+    async putInventoryAndSkills(accountId, inv, s){                     // glyphes (src/meta/glyphs.js)
+      inventories.set(accountId, copy(inv)); skills.set(accountId, copy(s));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'skills', key: accountId, value: s }]);
+    },
     async putInventoryAndSpells(accountId, inv, s){
       inventories.set(accountId, copy(inv)); spells.set(accountId, copy(s));
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'spells', key: accountId, value: s }]);

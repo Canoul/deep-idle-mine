@@ -28,6 +28,7 @@ import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
+import { glyphOp, isActive, sessionSkills } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
@@ -57,7 +58,9 @@ const LEARN_ERRORS = { no_use: 'Ce blueprint ne débloque rien pour l\'instant.'
                        not_owned: 'Tu n\'as pas ce blueprint.' };
 const SKILL_ERRORS = { unknown: 'Skill inconnu.', other_tree: 'Tu as choisi un autre arbre : fais un reset pour changer.',
                        maxed: 'Ce skill est déjà au rang max.', needs_previous: 'Monte d\'abord l\'étape précédente au rang max.',
-                       no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.' };
+                       no_points: 'Plus de points de skill : gagne un niveau.', bad_request: 'Demande invalide.',
+                       not_max: 'Le skill doit être au rang max pour recevoir son glyphe.', occupied: 'Un glyphe est déjà posé sur ce skill.',
+                       not_owned: 'Tu n\'as pas ce glyphe.', empty: 'Aucun glyphe sur ce skill.', inventory_full: 'Plus de place dans l\'inventaire.' };
 const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas encore débloqué.',
                        wrong_tree: 'Ce sort est réservé à une autre spécialisation.', slot_locked: 'Cet emplacement est verrouillé.',
                        not_scroll: 'Cet objet n\'est pas un parchemin de sort.', already_learned: 'Tu connais déjà ce sort : ton parchemin est gardé.',
@@ -170,7 +173,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
   const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
-  const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st) });
+  /* glyphes posés (src/meta/glyphs.js) : { nœud: { item, active } } (inactif : skill pas au rang max) */
+  const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st),
+    glyphs: Object.fromEntries(Object.entries(st.glyphs || {}).map(([n, item]) => [n, { item, active: isActive(st, n) }])) });
   /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
   const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
   /* réponse d'une opération de set : la liste, et tout l'équipement relu (équiper change tout d'un coup) */
@@ -387,7 +392,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
-          skills[p.account] = skillRanks(await loadSkills(p.account));   // figés pour toute la session
+          skills[p.account] = sessionSkills(await loadSkills(p.account));   // figés pour toute la session (glyphes actifs compris)
           /* sorts équipés encore valides (débloqués, bonne spécialisation), figés eux aussi */
           spells[p.account] = equippedSpells(await loadSpells(p.account), await spellCtx(p.account));
           /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) ; ses caractéristiques :
@@ -432,7 +437,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!ok.length) return null;
         const looks = {}, gear = {}, skills = {};
         for(const p of ok){
-          skills[p.account] = skillRanks(await loadSkills(p.account));
+          skills[p.account] = sessionSkills(await loadSkills(p.account));
           const st = await loadStuff(p.account, await loadInventory(p.account));
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
@@ -650,6 +655,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async skills(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      const skillErr = e => fail(e, e === 'unknown' || e === 'bad_request' ? 400 : 409, SKILL_ERRORS[e] ?? 'Demande invalide.');
+      /* glyphes : { action:'glyph_pose' | 'glyph_remove', node } ; l'objet quitte ou rejoint l'inventaire, refusé en session
+         (les glyphes de la session en cours sont figés au lancement) ; inventaire et skills enregistrés ensemble */
+      if(action === 'glyph_pose' || action === 'glyph_remove') return withLock('inv:' + me.id, () => withLock('skills:' + me.id, async () => {
+        const inv = await loadInventory(me.id), points = await pointsOf(me.id), st = await loadSkills(me.id);
+        if(st.ops.includes(opId)) return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
+        if(await activeOf(me.id)) fail('session_running', 409, 'Impossible pendant une session : termine-la d\'abord.');
+        const r = glyphOp(st, inv, { action: action === 'glyph_pose' ? 'pose' : 'remove', node: body.node, opId });
+        if(r.error) skillErr(r.error);
+        if(!r.repeated) await store.putInventoryAndSkills(me.id, JSON.parse(serialize(inv)), st);
+        return { skills: publicSkills(st, points), inventory: publicInventory(inv) };
+      }));
       return withLock('skills:' + me.id, async () => {
         if(action === 'reset' && await activeOf(me.id)) fail('session_running', 409, 'Reset impossible pendant une session : termine-la d\'abord.');
         const points = await pointsOf(me.id), st = await loadSkills(me.id);

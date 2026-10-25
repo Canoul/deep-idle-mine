@@ -489,13 +489,34 @@ test('skills par le serveur : points = niveau, rangs vérifiés, reset refusé e
   await assert.rejects(game.skills(ME, { action:'learn', node:'mine_speed', opId:'op-skill-2' }), { code:'other_tree' });
   r = await game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-3' });
   await assert.rejects(game.skills(ME, { action:'learn', node:'damage', opId:'op-skill-4' }), { code:'no_points' });
-  assert.deepEqual((await game.state(ME)).skills, { tree:'barbare', ranks:{ damage:2 }, points:2, spent:2 });
+  assert.deepEqual((await game.state(ME)).skills, { tree:'barbare', ranks:{ damage:2 }, points:2, spent:2, glyphs:{} });
   const { session } = await game.start(ME, {});
-  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 } });
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id], { tree:'barbare', ranks:{ damage:2 }, glyphs:{} });
   await assert.rejects(game.skills(ME, { action:'reset', opId:'op-skill-5' }), { code:'session_running' });
   await game.leave(ME);
   r = await game.skills(ME, { action:'reset', opId:'op-skill-6' });
   assert.deepEqual([r.skills.tree, r.skills.spent], [null, 0]);
+});
+
+test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), demande rejouée, refusés en session, figés au lancement', async () => {
+  const { game, store } = setup();
+  const G = 'Glyphe Force brute', count = r => r.inventory.slots.find(s => s?.item === G)?.qty ?? 0;
+  await store.putProgress(ME.id, { xp:100000, credited:[] });
+  await store.putSkills(ME.id, { tree:'barbare', ranks:{ damage:3 } });
+  await store.putInventory(ME.id, { slots:[{ item:G, qty:1 }], nextUid:1, credited:[] });
+  const o = { action:'glyph_pose', node:'damage', opId:'op-glyph-srv-1' };
+  let r = await game.skills(ME, o);
+  r = await game.skills(ME, o);                                                       // double clic
+  assert.deepEqual(r.skills.glyphs, { damage:{ item:G, active:true } }); assert.equal(count(r), 0);
+  assert.equal((await store.getInventory(ME.id)).slots.filter(Boolean).length, 0, 'enregistré');
+  await assert.rejects(game.skills(ME, { action:'glyph_pose', node:'taunt', opId:'op-glyph-srv-2' }), { code:'unknown', status:400 });
+  const { session } = await game.start(ME, {});
+  assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].glyphs, { damage:G });
+  await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-3' }), { code:'session_running' });
+  await game.leave(ME);
+  r = await game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-4' });
+  assert.deepEqual(r.skills.glyphs, {}); assert.equal(count(r), 1);
+  await assert.rejects(game.skills(ME, { action:'glyph_remove', node:'damage', opId:'op-glyph-srv-5' }), { code:'empty' });
 });
 
 test('historique : sessions terminées du joueur, plus récentes d\'abord, avec la seed et SA part (rien s\'il est parti)', async () => {
