@@ -2680,7 +2680,20 @@ Règles (voir CLAUDE.md) :
   (vérifiée en premier). Un boss qu'on ne peut pas atteindre (toutes les cases autour prises) : `goTo` peut échouer et
   le mineur remonter.
 
-### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — 🧪 branche `geoffrey/acier-400x`
+### Piège : le barbare n'ignore plus les mobs (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Causes** (`src/sim/ai.js`, sonde sur 10 seeds à 3, arbres mixtes) : les mobs de piège entraient dans `m.ignored` (pour
+  toute la session), et `trapGoal` saute les ignorés : le barbare retournait miner.
+  1. `fight` (combat « Combattre ») ne fait qu'un pas droit vers le mob ; barbare debout sur la paroi du plafond (seed
+     23757, 39595) : pas impossible → règle « mob de piège inapprochable : ignoré » (faite pour les autres, seed 15838).
+  2. `decide`, `foeGiveUp` : en creusant vers la salle (« Va au piège »), aucun coup pendant 5 s → ignoré (seed 39595).
+- **Correction** : barbare + mob de piège : `fight` passe par `goFight` (vrai chemin, minage, échelles ; ignore seulement
+  si inatteignable) ; `foeGiveUp` lâche le mob sans l'ignorer (trapGoal le reprend). Les autres mineurs : inchangé.
+- **Tests** : `tests/trap.test.js` +1 (barbare debout sur le plafond de la salle : aucun mob ignoré, tous morts ;
+  échoue sans la correction) ✅ ; trap, combat, mobs, dungeon, spells, help, goblin, knock ✅ (93).
+- **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
+  à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
+
+### Casque, jambes et bottes en acier ≈ 400 x (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/config.js` ITEMS : casque en acier oxygenMax 69 → 100 (400 x), jambes climbSpeed 1,08 → 1,6 (400 x),
   bottes speed 1,08 → 1,67 (400,8 x), avec `UPGRADE.worth` (4 / 250 / 240 x par point). Fer : 268 / 262,5 / 252 x.
   Stats relues dans le catalogue : les pièces déjà fabriquées et leurs runes suivent.
