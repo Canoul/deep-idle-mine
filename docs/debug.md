@@ -2850,7 +2850,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
   le salon peut devenir bruyant.
 
-### Tour : étages de blocs en front, mob sonné après un recul, mesures ?perf (Geoffrey, 25/10 soir) — 🧪 branche `geoffrey/fix-tour-jugement`
+### Tour : étages de blocs en front, mob sonné après un recul, mesures ?perf (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
 - **Contexte** : le dossier local était resté sur `cd6f90a` ; ensuite `tour-regroupe`, `lance-en-fer`,
   `tour-combat-continu` (marche continue `walkMob`, `knockLock`, `stopAction`) et `fdebd2d` (treuil de tour) ont
   changé la tour en ligne : d'où des écarts entre le local et le live.

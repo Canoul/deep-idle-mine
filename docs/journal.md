@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **À suivre** : regarder les mesures `?perf` en ligne pendant une tour. Boss qui ne saute pas : il descend rarement
   sous 75 % avec l'équilibrage actuel (à confirmer). Treuil « sans texture » : pas reproduit (dessiné dans le test),
   capture attendue.
-- **État** : 🧪 sur la branche `geoffrey/fix-tour-jugement` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Annonces Discord des R7
 - **Pour le joueur** : quand quelqu'un loot un trésor de tour R7 ou identifie une pièce R7, un message part dans le
