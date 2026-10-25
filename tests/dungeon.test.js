@@ -143,6 +143,27 @@ test('avec un barbare : « Fuir » attend avec les autres mais n\'entre jamais',
 
 /* ---------- minotaure ---------- */
 
+test("le barbare se bat sur le seuil (boss contre l'entrée) : les autres viennent quand même l'aider (25/10)", () => {
+  /* entrée sur la ligne du boss (1 fois sur 3 en jeu) et boss déjà contre elle : le barbare combat depuis l'entrée sans
+     jamais passer à l'intérieur ; avant le 25/10, les autres l'attendaient dehors jusqu'à la fin */
+  const rows=['', ...Array(24).fill('#'.repeat(W))];
+  const G=worldFrom(rows, { miners:3 });
+  const d=addDungeon(G, { x0:5, y0:6, side:'R', hy:14 });
+  for(let x=15;x<=34;x++) G.tiles[14][x]=0;
+  const trees=['mineur','barbare','logisticien'];
+  G.miners.forEach((m,i) => { m.x=34-2*i; m.y=14; m.skillTree=trees[i]; m.ox=1e9; m.carac.oxygenMax=1e9; });
+  const boss=G.mobs.find(o=>o.id===d.boss), barb=G.miners[1], others=G.miners.filter(m=>m!==barb);
+  boss.x=13;
+  const hits=new Set();
+  for(let i=0;i<6000 && boss.hp>0;i++){
+    run(G,1);
+    for(const m of others) if(m.action?.type==='attack' || m.status==='Combat le '+boss.type) hits.add(m.id);
+  }
+  assert.ok(d.barbIn, 'barbare sur le seuil = entré');
+  assert.equal(hits.size, 2, 'les deux autres ont combattu le boss');
+  assert.ok(boss.hp<=0);
+});
+
 test('minotaure : il reste enfermé dans sa salle et ne vise que ceux qui y sont', () => {
   const { G, d, boss } = scene({ miners:1, trees:['mineur'] });
   G.miners[0].x=15; G.miners[0].y=13;                       // juste devant l'entrée, dehors

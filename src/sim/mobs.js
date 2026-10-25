@@ -149,6 +149,7 @@ function updateBoss(G,o){
 export function updateMobs(G){
   for(const o of G.mobs){
     if(o.hp<=0) continue;
+    if(o.stunUntil>G.t){ o.grab=null; continue; }   // étourdi (Dash) : il ne tacle pas, ne bouge pas, ne lance rien
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
     if(o.type==='mimic'){
