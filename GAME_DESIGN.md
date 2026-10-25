@@ -240,6 +240,20 @@ Trois arbres **en étages** (3 étages chacun ; 4 pour le Barbare depuis le 22/1
 - **Barbare, étage 4 : Braum** *(22/10/2026, Geoffrey ; valeur provisoire)* : 0/3, exige Pillage 5/5. Vitesse de **marche et de montée** (échelle **et seau du treuil**) **+10 % par rang** (+30 % à 3/3) quand il **va aider un allié** et pendant le combat qui suit : un mob qui a pris un allié en chasse (préférence « Aider allié »), le boss d'un donjon découvert, les mobs sortis d'un piège. Le bonus s'arrête dès qu'il reprend son travail. Pas de nouvelle stat : c'est un bonus de skill, comme Ruée et Navette.
 - **Mineur, étage 4 : Légende de la flemme** *(23/10/2026, Geoffrey ; valeur provisoire)* : 0/1, exige Ruée 5/5 (donc 10 points, niveau 11). Quand le mineur doit remonter à la surface (oxygène, pods pleins, plus de torches, chute en rejoignant le coffre ; **pas en fin de session**), **5 % de chance** de se **téléporter au-dessus du coffre commun**, sur la surface : il dépose et repart comme après une remontée normale. **Un seul tirage par remontée**, au moment où il part : s'il est taclé ou étourdi, il finit d'abord (le tirage vient après). Mine classique seulement (la mine instantanée et les tours n'ont ni coffre commun ni remontée). Hasard à part (même seed, même résultat).
 
+- **Glyphes** *(décision du créateur, 25/10/2026 ; `GLYPHS` en config ; spec `docs/superpowers/specs/2026-10-25-glyphes-design.md`)* : un **glyphe** est un parchemin (objet, épique, empilable) lié à un skill. Dans l'onglet Skills, une case sous chaque skill qui en a un : on y **pose** son glyphe si le skill est **au rang max** (il quitte l'inventaire) ; on le **retire** à tout moment hors session (il revient dans l'inventaire). **Un par skill.** Un **reset** ou un **set** ne retire pas les glyphes : un glyphe posé sur un skill qui n'est plus au max reste posé, **inactif** (case grisée). Les glyphes actifs sont **figés au lancement** de la session, comme les skills, et agissent là où leur skill agit. **Pas encore de source en jeu** (outil d'admin `scripts/give-item.js`). Valeurs provisoires :
+  | Glyphe | Effet |
+  |---|---|
+  | Pioche aiguisée | Minage % + 10 % du **bonus** de vitesse d'attaque au-dessus de 100 % (+20 % → +2 %) |
+  | Second souffle | Un minerai a 5 % de chance de rendre une torche (jamais au-delà du max) |
+  | Ruée | Le bonus de marche dure 5 s au lieu de 3 |
+  | Navette | Pas d'oxygène consommé en redescendant au front après une remontée |
+  | Échelle de 2 | Poser une échelle prend 2 fois moins de temps (mine, mine instantanée, tours) |
+  | Mule | Marche et montée + 3 % de l'oxygène max, en % (300 → +9 %) ; mine classique seulement (comme le skill) |
+  | Force brute | Pods + 3 × les dégâts totaux, stuff et skills compris (14 → +42) |
+  | Pillage | +1 % de dégâts par mob tué pour la session, au plus +25 % (mine classique) |
+  | Braum | +30 % de l'oxygène max à **chaque entrée** dans un piège ou un donjon (seuil compris), sans limite |
+  | Treuil *(étape 2, 25/10)* | Il pose un **ascenseur** au lieu d'un treuil : **3 × plus rapide** (Escalateur compris : 2,55 × la montée, 3,19 × avec Escalateur 5/5), posé / prolongé aux **1er, 3e, 5e… déblocages** (jusqu'en haut de la dernière area débloquée ; rien aux autres). Son porteur passe avant les autres logisticiens. Sac de la Mule : même règle (en bas, vidé aux prolongements). Dans les tours aussi (installation 10 s). Rails, machinerie et cabine dessinés à part |
+  Pas de glyphe pour Légende de la flemme, Escalateur, Provocation. Repère (simulation, 3 mineurs aux arbres complets mineur / logisticien / barbare, 5 sessions) : **sans glyphe** areas 3,2, profondeur 201, coffre 4 510 pods ; **avec le Glyphe Treuil** areas 4,0, profondeur 226, coffre 4 926 pods.
 - **Logisticien refait** *(23/10/2026 au soir, Geoffrey)* : **Bâtisseur** (ancien étage 1, temps de construction −5 %/rang) est **supprimé** ; **Navette** passe à l'étage 1 (**max 3**, avant 5 à l'étage 3) ; nouvel étage 3 : **Escalateur**. Le chemin jusqu'à Mule coûte toujours 11 points. Les sauvegardes de l'ancien arbre gardent ce qui tient encore (Navette ramenée à 3, Échelle de 2, Treuil) ; le reste (Bâtisseur, Navette au-delà de 3, Mule faute d'Escalateur) est rendu en points, à redépenser.
 - **Logisticien, étage 4 : Mule** *(23/10/2026, Geoffrey ; capacité provisoire ; spec `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE` en config)* : 0/1, exige Escalateur 5/5 (donc le Treuil ; avant : Navette 5/5). Mine classique uniquement.
   - **Le sac** : quand le logisticien finit de poser ou de prolonger le treuil, il mine la case **à droite du bas du treuil** (à gauche si elle est incassable) et y pose un **sac** : pas de collision (on passe à travers), pas de gravité, ignoré des mobs, avec une **jauge de remplissage** au-dessus. Un seul sac par partie ; sa **capacité** = **2 × la somme des pods réels** des logisticiens présents qui ont Mule (un logisticien de base : 400).
@@ -577,6 +591,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
+  | Lampe à incandescence (case torche, **sans blueprint**, 25/10) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
 
   Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
 
@@ -605,7 +620,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
 ### Stuff (onglet Stuff)
-- **12 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, et **2 cases d'anneau** (23/10/2026).
+- **13 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, **2 cases d'anneau** (23/10/2026) et **torche** (25/10/2026).
+- **Case Torche** *(25/10/2026, Geoffrey)* : elle change l'effet des torches. **Lampe à incandescence** (rare) : **+10 torches**, **rayon des torches 8** (au lieu de 5), **pose en 0,5 s** (au lieu de 1). Le rayon et le temps de pose sont devenus des **stats du mineur** (« Rayon des torches », « Pose d'une torche », affichées dans l'onglet Stuff) : **chaque torche garde le rayon de celui qui l'a posée** (avant : un seul rayon pour toutes les torches de la partie), dans la mine comme dans les tours. Elle s'identifie et s'améliore comme les autres pièces (l'amélioration rapproche encore rayon et temps de pose de leur effet).
 - **Anneaux** *(décisions du créateur, 23/10/2026 ; valeurs provisoires, `RINGS` en config)* :
   - Leur effet va à **tout le groupe de la session** (porteur compris), figé au lancement comme le reste du stuff. **Pas
     cumulable** : si deux joueurs du groupe portent le même anneau, l'effet ne compte qu'une fois. Un joueur ne peut pas

@@ -2918,7 +2918,61 @@ Règles (voir CLAUDE.md) :
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
 
-### K hole : mise en place (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+### Glyphes, étape 1 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Spec / plan** : `docs/superpowers/specs/2026-10-25-glyphes-design.md`, `docs/superpowers/plans/2026-10-25-glyphes.md`.
+- **Quoi** : `GLYPHS` + 9 objets `cat:'glyph'` (épiques, texture `glyph`). `src/meta/glyphs.js` : `glyphOf`, `nodeOfGlyph`,
+  `glyphOp` (pose / retrait, idempotent via `st.ops`), `isActive`, `activeGlyphs`, `sessionSkills`, `withGlyphStats`,
+  `glyphInfo`. `src/meta/skills.js` : `st.glyphs` relu par `sanitizeSkills` (nœud + nom exact, rang NON vérifié),
+  `skillEffects` ajoute `glyph_<nœud>: 1` si actif. Serveur : route `skills` actions `glyph_pose` / `glyph_remove`
+  (verrous inv + skills, refus en session, `store.putInventoryAndSkills`) ; `publicSkills.glyphs = { nœud: objet }` ;
+  lancement mine / tour / MI : `sessionSkills` (glyphes actifs figés). Stats : `withGlyphStats` en dernier
+  (game.js, instant.js, onglet Stuff). Partie : Second souffle et Ruée (`actions.js` `oreSkills`, `rushTime`), Navette
+  (`session.js`, oxygène), Échelle de 2 (`ladderTime` : actions, instant, tower, `baseLadderT`), Pillage (`killMob`,
+  `m.pillage`, `hitDamage`), Braum (`session.js` `braumGlyph`, `m.braumIn`). UI : case `glyphSlot` dans `skills.js`,
+  fiche inventaire, section wiki `#glyphes`.
+- **Tests** : `tests/glyphs.test.js` (25), `tests/anticheat/glyphs.test.js`, `tests/game-service.test.js` (+1),
+  `tests/wiki.test.js` (+1), `tests/rarity.test.js` (glyphes épiques). Simulation `--miners 3 --count 5` : 0 bloquée,
+  **identique** avec et sans les effets (sans glyphe posé, rien ne change). Rendu vérifié dans Edge sans fenêtre :
+  onglet Skills (posé, à poser, inactif, sans case) et tableau du wiki (le premier rendu affichait les cellules
+  séparées par des virgules : corrigé avec `tr()`).
+- **Relecture finale** (auto-relecture, pas de relecteur indépendant) : Glyphe Mule appliqué en mine instantanée et dans
+  les tours → corrigé (`withGlyphStats(carac, effects, mine)` : `false` en MI et en tour) ; test « Glyphe Mule : seulement
+  dans la mine classique » rouge puis vert ; 313/313 + anti-triche 91/91.
+- **Points fragiles** : Second souffle tire `G.rng` (seulement si glyphe et torches < max) : décale le hasard des
+  parties qui l'ont. Braum compte le seuil du donjon comme « dedans » (comme la révélation du donjon).
+
+### Glyphe Treuil, étape 2 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `GLYPHS.items.winch`, `liftSpeed` (3), `liftEvery` (2), textures `lift_rail`, `lift_top`, `lift_cabin` (cabine
+  vide au milieu : on voit le mineur). `src/sim/world.js` `tryUnlock` : porteur du glyphe prioritaire, `winchJob.lift`,
+  `return` sans chantier aux déblocages k impair ; `ai.js` `decideWinch` : `G.winch.lift = true` (une fois posé, reste) ;
+  `mineur.js` `winchMult` × `liftSpeed` si `G.winch.lift` (tous les calculs du seau : déplacement, chemins, Mule).
+  Tours : `towerWinchT` = même `winchMult`, `winchSetup` pose `lift` si `glyph_winch`. Rendu `canvas.js` / `tower.js`.
+  `scripts/simulate.js` : option `--glyphs`.
+- **Tests** : `tests/glyphs.test.js` (+4 : priorité et rythme, sans glyphe inchangé, chantier + vitesse Escalateur
+  compris, tours) ; glyphs, tower, winch, mule, focus, duck, treasure ✅. Simulation `--miners 3 --skills mixed --count 5` :
+  sans glyphe areas 3,2 / prof 201 / coffre 4 510 ; `--glyphs winch` areas 4,0 / prof 226 / coffre 4 926 ; 0 bloquée.
+  Rendu des textures vérifié dans Edge (rails, machinerie, cabine, à côté du treuil).
+- **Point fragile** : `G.winch.lift` reste vrai une fois posé (un treuil prolongé ensuite par un logisticien sans glyphe,
+  s'il quitte, resterait un ascenseur) ; sans glyphe, `G.winch` n'a pas de clé `lift` (tests du treuil inchangés).
+
+### Case Torche, Lampe à incandescence (Geoffrey, 25/10 soir) — ✅ en ligne le 25/10
+- **Config** : `STUFF.slots` + `torche` ; `STUFF.items['Lampe à incandescence']` (`stats.torches` 10, `set` torchRadius 8 et
+  torchTime 0,5 : l'amélioration agit sur `set` comme sur les autres pièces) ; `STATS.torchTime` (1 s) remplace
+  `CFG.torchTime` ; libellés, unités, `shownStats` (+ torchRadius, torchTime) ; rareté rare ; `TEXTURES` +
+  `lamp_incandescent` (`scripts/gen_textures.py`, seule texture nouvelle, les autres inchangées). Recette
+  `src/recipes.js`, `unlock: null`.
+- **Rayon par torche** : `G.torches[i].r` = `m.carac.torchRadius` à la pose (`src/sim/actions.js`, tour
+  `src/sim/tower/session.js`) ; `src/sim/light.js` et `towerLight` (`src/sim/tower/world.js`) lisent `T.r ??
+  STATS.torchRadius` (anciennes parties). Vue de la tour : `torchR` à côté de `torches` (`src/shared/tower-view.js`) ;
+  la mine envoie les objets torche tels quels. Temps de pose : `m.carac.torchTime` (IA mine x2, tour).
+- **Interface** : grille du Stuff sur 7 rangées (`.stuffGrid`, `.stuffHero` 1/8) ; wiki : textes des 2 stats.
+- **Tests** : `tests/lamp.test.js` (nouveau, 5 : case, recette sans BP, stats, mine 0,5 s et rayon 8 vs 5, tour + vue),
+  `tests/stuff.test.js` (13 cases), `tests/rarity.test.js` (rare) ; lamp, wiki, stuff, carac, craft, light, tower,
+  tower-boss, view, skins, sets, rarity, amelioration, boot-check, miner, session, game-service, inventory,
+  give-item ✅ (210) ; `npm run test:anticheat` ✅ (90) ; simulation 5 sessions solo : coffre 1 598, 0 blocage.
+- ⚠️ Pas vu dans un vrai navigateur (13e case dans la grille, icône de la lampe).
+
+### K hole : mise en place (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/sim/khole.js` (nouveau). Principe : **échange de carte** dans la même partie. `enterKhole` met de côté
   dans `G.khole.world` les champs du monde (`WORLD` : tiles, ladder, seen, areas, unlockedAreas, winch, treasures,
   dungeons, traps, veil, mobs, torches, light, mimicCells, mule, ducks, duckBase, spawnTimer, spawnTurn, combat) et pour
@@ -2948,7 +3002,7 @@ Règles (voir CLAUDE.md) :
   dans `WORLD`, sinon il fuit entre mine et dimension. Une Mule posée dans la dimension est perdue au retour (sac de la
   dimension jeté). Une action en cours au départ (pas, coup) reprend telle quelle au retour.
 
-### K hole : la vraie dimension (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+### K hole : la vraie dimension (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** (remplace la dimension provisoire de l'entrée précédente) : `buildDimension(G, n, k)` dans `src/sim/khole.js` :
   carte de `areaTop(k) + KHOLE.h` lignes, tout en barrière sauf KHOLE.w × KHOLE.h dans le coin gauche (lignes de l'area
   k : areaOf donne k, donc PV des mobs, table des pièges, tier des treasures de l'area) ; `areas` = k+1 areas vides + la
@@ -2972,7 +3026,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : fin de session pendant un k hole = ce qu'ils portent est perdu (règle normale, à confirmer par
   l'équipe). Un mineur peut finir coincé (tout miné autour) : il attend, sans conséquence (retour au bout du compteur).
 
-### K hole : fin de session (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+### K hole : fin de session (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `KHOLE.endMargin` (30 s) ; `enterKhole` : `until = min(t + duration, SESSION_LEN - endMargin)` ;
   `updateKhole` : plus d'ouverture à partir de `SESSION_LEN - endMargin`. Remplace le point fragile de l'entrée précédente
   (« fin de session pendant un k hole = ce qu'ils portent est perdu »).
@@ -2984,7 +3038,7 @@ Règles (voir CLAUDE.md) :
   `src/config.js`, lue par le lobby et `src/shared/game.js`. Test : chaque ligne de `DEV_TUNABLES` pointe vers un nombre
   de `DEV_TARGETS` (`tests/khole.test.js`, 12) ✅.
 
-### K hole : plusieurs cartes (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+### K hole : plusieurs cartes (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `KHOLE.maps` (config) : filons (l'ancienne dimension), arene, tresor, vagues ; chaque carte : w, h,
   duration, spawn ('left' | 'middle'), weight, et son contenu (comp/traps/dungeons/treasurePct, minotaurs, treasures,
   wave) ; `end` : 'bosses' | 'treasures'. `KHOLE.map` (réglage dev, `DEV_TUNABLES`) : 0 = tirage, 1-4 = imposée.
@@ -3004,3 +3058,11 @@ Règles (voir CLAUDE.md) :
   vagues. Simulation `--miners 3 --count 5 --khole 1` (carte au hasard) : 10 pris, 0 bloquée, tick dimension 0,032 ms.
 - **Points fragiles** : dans l'arène et les vagues, un mineur réglé sur « Ignorer » / « Fuir » ne se bat que s'il est
   taclé. Salle au trésor : 3 s pour 2 treasures possiblement T3, quelle que soit l'area.
+
+### K hole : mise en ligne (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- `KHOLE.chance` 0,01 → 0,02. Section « Le k hole » du wiki (textes à la main, sans tableau généré).
+- Fusion de main (Glyphes, Glyphe Treuil, Lampe) : conflits résolus (oxygène : k hole + Glyphe Navette ; imports ;
+  simulate --khole et --glyphs). `m.braumIn` (Glyphe Braum, position) ajouté à `SPOT` ; `m.pillage` gardé (bonus gagné).
+- **Vérifié après fusion** : khole + 20 sujets voisins ✅ (303), tests ajoutés par main ✅ (101), `npm run test:anticheat`
+  ✅ (91), simulation `--miners 3 --count 5` (0 bloquée, chiffres identiques : aucun k hole sur ces seeds) et
+  `--khole 1` (10 pris, 0 bloquée, tick dimension 0,030 ms).

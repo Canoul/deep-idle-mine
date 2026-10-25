@@ -14,6 +14,7 @@
      node scripts/simulate.js --skills mixed --no-mule → pareil, sans le skill Mule (comparer le sac)
      node scripts/simulate.js --khole 1           → chance de k hole par area (KHOLE.chance) : nombre de k holes,
                                                     blocs minés dans la dimension, coût d'un tick (mine / dimension)
+     node scripts/simulate.js --skills mixed --glyphs winch → avec le Glyphe Treuil (ascenseur) sur le logisticien
      node scripts/simulate.js --skills mineur --spells illumination,dynamite → sorts équipés (SPELLS) : ceux de la
                                                     spécialisation du mineur, 2 au plus (comme en session)
    Affiche : areas débloquées, profondeur max, coffre, allers-retours, coffres au trésor ouverts / enfouis
@@ -39,12 +40,15 @@ if(opt('khole', null) != null) KHOLE.chance = +opt('khole');
 /* k hole : temps de calcul d'un tick dans la mine et dans la dimension (ms), cumulés sur toutes les sessions */
 const cost = { mine: { ms:0, n:0 }, khole: { ms:0, n:0 } };
 let tickStart = 0;
+/* --glyphs winch,mule… : glyphes posés (GLYPHS) sur les mineurs dont l'arbre (--skills) a ce skill, au rang max */
+const glyphs = opt('glyphs', null) ? String(opt('glyphs')).split(',') : [];
 /* arbre de skills complet (tous les rangs) pour un mineur : mêmes effets qu'en session (src/shared/game.js) */
 function giveTree(m, tree){
   const t = SKILLS.trees.find(x => x.id === tree); if(!t) throw new Error('arbre inconnu : ' + tree);
   const st = sanitizeSkills({ tree, ranks:Object.fromEntries(t.nodes.map(n => [n.id, n.max])) });
   m.skill = { ...m.skill, ...skillEffects(st) }; m.skillTree = tree;
   if(noMule) m.skill.mule = 0;
+  for(const g of glyphs) if(t.nodes.some(n => n.id === g)) m.skill['glyph_' + g] = 1;
   m.carac = withSkillStats(m.carac, m.skill);   // mêmes stats qu'en session (multiplicateurs, ténacité…)
 }
 const focus  = opt('focus', null) ? Object.fromEntries(String(opt('focus')).split(',').map(p => p.split(':'))

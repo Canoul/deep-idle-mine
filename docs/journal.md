@@ -34,7 +34,36 @@ Modèle d'entrée :
 - **Choix de Claude à valider** : le minotaure de l'arène laisse 1 à 3 Cristaux de pleine lune (comme au donjon) ; les 4
   cartes ont la même chance (poids modifiables).
 - **À suivre** : nom affiché ; mode dev : « Carte de k hole » (0 = au hasard, 1 à 4) pour tester chaque carte.
-- **État** : 🧪 sur la branche `geoffrey/k-hole` (pas en ligne)
+- **État** : ✅ en ligne le 25/10 (2 % par area)
+## 25/10/2026 — Geoffrey — Nouvelle case Torche et Lampe à incandescence
+- **Pour le joueur** : une 13e case dans l'onglet Stuff, **Torche**. Premier objet : la **Lampe à incandescence**,
+  fabricable sans blueprint (200 vésicules de gaz, 2 000 charbon, 20 fragments de cœur) : +10 torches, ses torches
+  éclairent à 8 cases au lieu de 5, et il les pose deux fois plus vite. Chaque torche garde le rayon de celui qui l'a
+  posée. Deux nouvelles stats dans l'onglet Stuff : Rayon des torches et Pose d'une torche. Wiki à jour (tableaux).
+- **Décisions** (Geoffrey) : l'objet, sa recette et ses effets ; rareté **rare**.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Glyphe Treuil : l'ascenseur
+- **Pour le joueur** : 10ᵉ glyphe. Posé sur le skill Treuil (au max), le logisticien construit un **ascenseur** au lieu
+  du treuil : 3 fois plus rapide (Escalateur compris), avec rails, machinerie et cabine. Il ne le pose ou ne le
+  prolonge qu'une nouvelle area sur deux (1re, 3e, 5e…), donc il s'interrompt deux fois moins pour creuser. Dans les
+  tours aussi. En simulation, une équipe mixte descend d'une area de plus (3,2 → 4,0) et rapporte 9 % de plus.
+- **Décisions** (Geoffrey) : 1er, 3e, 5e déblocages ; Escalateur compris ; son porteur construit en priorité ; Mule
+  inchangée ; aussi dans les tours ; nouvelles textures.
+- **À suivre** : c'est un glyphe fort (une area de plus) : à surveiller quand les glyphes auront une source en jeu.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Glyphes (étape 1 : 9 glyphes)
+- **Pour le joueur** : nouvel objet, le **glyphe** : un parchemin lié à un skill. Dans l'onglet Skills, une petite case
+  sous chaque skill permet d'y poser son glyphe quand le skill est au rang max ; il ajoute un effet (Pioche aiguisée,
+  Second souffle, Ruée, Navette, Échelle de 2, Mule, Force brute, Pillage, Braum). On le retire quand on veut hors
+  session, il revient dans l'inventaire ; un reset ou un set ne le retire pas (il devient inactif). Le wiki a une
+  section « Les glyphes ». Pas encore obtenable en jeu (on les donne avec l'outil d'admin).
+- **Décisions** (Geoffrey) : skill au rang max ; un glyphe par skill ; retirable sans perte ; Braum à chaque entrée ;
+  Pillage plafonné à +25 % ; Force brute sur les dégâts totaux ; Glyphe Treuil (ascenseur) à part, étape 2.
+- **À suivre** : la source des glyphes en jeu ; le Glyphe Treuil.
+- **État** : ✅ en ligne le 25/10
+
 
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la

@@ -33,7 +33,7 @@ const SPOT = ['x', 'y', 'kx', 'ky', 'face', 'dir', 'action', 'mode', 'status', '
   'exploreArea', 'skipRows', 'ignored', 'digCol', 'galleryRow', 'returnStart', 'lastReturnDur', 'returnFromY', 'yieldSince',
   'scaredIn', 'scaredUntil', 'muleJob', 'muleFetch', 'helping', 'helpFoe', 'helpSkip', 'goingDown', 'choke', 'winchJob',
   'winchDepth', 'pickPlan', 'pickPlanEmpty', 'pickPlanAt', 'pickFail', 'tripCap', 'secPerRow', 'lazyTry', 'lastArea', 'pings',
-  'fall', 'atkReady'];
+  'fall', 'atkReady', 'braumIn'];
 
 /* ---------- le portail, dans la mine ---------- */
 

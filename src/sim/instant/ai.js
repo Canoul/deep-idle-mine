@@ -10,6 +10,7 @@
    Pour monter, il pose une échelle sur sa case (échelles illimitées, partagées : tout le monde peut prendre celles des
    autres). Différence avec la mine normale : pas de limite de hauteur de chute ni d'étourdissement (mine de 5 min). */
 import { INSTANT_MINE as MI, BLOCKS, CFG } from '../../config.js';
+import { ladderTime } from '../mineur.js';
 
 /* durées (pas de lumière ni d'oxygène ici) ; Ruée (skill ore_rush) comme dans la mine normale */
 export const miMoveT = (G,m) => 1/(m.carac.speed*(1 + (G.t < m.rushUntil ? (m.skill.ore_rush||0) : 0)));
@@ -17,7 +18,7 @@ export const miMineT = (m,t) => BLOCKS[t].hard/(m.carac.mineSpeed*(1 + (m.carac.
 export const miClimbT = m => 1/m.carac.climbSpeed;
 export const miFallT = () => 1/CFG.fallSpeed;
 /* pose d'une échelle ; en planification, l'échelle de 2 (tall_ladder) en pose une sur deux */
-export const miLadderT = () => CFG.ladderTime;
+export const miLadderT = m => ladderTime(m);   // Glyphe Échelle de 2 compris
 const planLadderT = m => miLadderT(m)*(m.skill.tall_ladder ? 0.5 : 1);
 
 const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];

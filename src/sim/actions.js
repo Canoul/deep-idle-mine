@@ -1,9 +1,9 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, winchT } from './mineur.js';
+import { startAction, collect, mineT, moveT, climbT, winchT, ladderTime, rushTime } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
@@ -19,7 +19,9 @@ function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=
    remis à zéro à chaque minerai : ne se cumule pas) */
 function oreSkills(G,m){
   if(m.skill.ore_oxygen) m.ox=Math.min(m.carac.oxygenMax, m.ox+m.skill.ore_oxygen);   // +1 d'oxygène par minerai
-  if(m.skill.ore_rush) m.rushUntil=G.t+SKILLS.rushTime;
+  /* Glyphe Second souffle : une chance de rendre une torche, jamais au-delà du max */
+  if(m.skill.glyph_ore_oxygen && m.torches<m.carac.torches && G.rng()<GLYPHS.torchChance) m.torches++;
+  if(m.skill.ore_rush) m.rushUntil=G.t+rushTime(m);   // Glyphe Ruée : plus long
 }
 /* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
    (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
@@ -50,7 +52,8 @@ export function fortuneExtra(G,m){
    la stat est au-dessus de 0 (sans elles, la partie est identique) */
 const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
-export const hitDamage = (G,m) => m.carac.damage*(1+(m.carac.damagePct||0)/100)*(gearChance(G,m.carac.crit||0) ? 2 : 1);
+/* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
+export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(gearChance(G,m.carac.crit||0) ? 2 : 1);
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
@@ -107,6 +110,7 @@ function openTreasure(G,m,x,y){
 
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
+  if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
   if(o.type==='mimic'){
     G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
     collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
@@ -157,7 +161,7 @@ export function finishAction(G,m,a){
       if(m.skill.tall_ladder && m.y-1>=1 && G.tiles[m.y-1][m.x]===0 && !isWinch(G,m.x,m.y-1)) G.ladder[m.y-1][m.x]=1;
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
-    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y}); updateLight(G); break;
+    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y,r:m.carac.torchRadius}); updateLight(G); break;   // r : son rayon (Lampe à incandescence)
     case 'deposit': {
       const parts=[];
       for(const k in m.inv){
@@ -257,7 +261,7 @@ export function stepDir(G,m,dx,dy,opt){
     const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
     startAction(m,'mine', mineDuration(G,m,t), {x:nx,y:ny}); return true;
   }
-  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', CFG.ladderTime, {}); return true; }
+  if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', ladderTime(m), {}); return true; }
   const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau
   startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0),winch:seau});
   return true;

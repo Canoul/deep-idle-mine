@@ -7,12 +7,13 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, DEV_TARGETS } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
+import { withGlyphStats } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 
 /* ---------- préférences ---------- */
@@ -91,7 +92,8 @@ export function minerSpecs(record){
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
   const rings = groupRings(record);
-  const caracOf = i => withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings);
+  const mine = !MINE_MODES.find(m => m.id === record.mode)?.tower;   // tour : pas de Glyphe Mule (son skill n'y agit pas)
+  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
