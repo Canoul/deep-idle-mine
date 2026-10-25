@@ -2830,3 +2830,22 @@ Règles (voir CLAUDE.md) :
   restants 3 251 → 3 021 ; b) 7:31 → 7:05, 1 545 → 1 569 ; c) 7:29 → 7:05, 1 327 → 1 113 ; d) 7:31 → 7:05, 1 328 → 1 110 ;
   0 victoire partout (déjà 0 sur main) ; attentes « bloqué » 0 ; projections un peu plus nombreuses (on reste plus
   longtemps sur le toit).
+
+### Annonces Discord R7 : trésor de tour et identification (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `server/social/discord.js` (nouveau) : `treasureMessage(pseudo, item)` (objet `ITEMS[item].treasure` avec
+  `chest.q >= ANNOUNCE.minQuality`, sinon null), `identifyMessage(pseudo, piece)`, `escapeMarkdown`, et
+  `createDiscordAnnouncer({ url, fetch, log, timeoutMs })` : POST JSON `{ content, allowed_mentions:{ parse:[] } }`,
+  `AbortSignal.timeout`, ne lève jamais (erreur → `console.error`). `src/config.js` : `ANNOUNCE = { minQuality:7, emoji:'🚨',
+  timeoutMs:5000 }`. `server/config.js` : `SERVER.discordWebhook` = `DIM_DISCORD_WEBHOOK` (vide = aucune annonce).
+  `server/main.js` : passe `announce` à `createGameService`. `server/game/service.js` : option `announce` (défaut : rien),
+  helper `shout` (tâche de fond, une exception de `announce` est avalée) ; `settleWith` : après un `creditSession` réussi,
+  une annonce par objet du sac (pseudo = `rec.players[].name`, donc `displayName` au lancement) ; `upgrade` : après une
+  identification non rejouée (`!r.repeated`), `displayName(me)` + `r.piece`. `adminGive` n'annonce rien.
+- **Tests** : `tests/discord.test.js` (11 : messages, échappement, envoi, pas de webhook, panne / 429, tour R7 à deux
+  + fin rejouée par `recover` = pas de doublon, tour R6 = rien, `announce` qui lève = tour quand même versée,
+  identification R7 + double clic = une annonce, R6 et don admin R7 = rien) ✅ ; avec game-service, anticheat/upgrade,
+  admin, boot-check, amelioration, rune ✅ (109).
+- **Vérifié** : webhook sur le VPS, message de test (curl) reçu dans #général ✅. Pas encore vu : une vraie annonce R7 en jeu. Les emoji sont envoyés en Unicode (un
+  `:rotating_light:` envoyé par webhook pourrait rester en texte).
+- **Points fragiles** : le webhook limite à ~30 messages/min (largement assez pour du R7). Si on baisse le seuil (R5),
+  le salon peut devenir bruyant.

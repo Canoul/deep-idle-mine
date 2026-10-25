@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Annonces Discord des R7
+- **Pour le joueur** : quand quelqu'un loot un trésor de tour R7 ou identifie une pièce R7, un message part dans le
+  salon #général du Discord : « 🚨 Zoe a loot un trésor démoniaque R7 🚨 », « 🚨 Zoe a identifié Plastron en fer R7 🚨 ».
+- **Décisions** : pseudo visible en jeu ; nom de la pièce dans le message ; seuil R7 réglable dans la config ; un objet
+  donné par l'admin n'est jamais annoncé ; personne n'est mentionné (un « @everyone » dans un pseudo ne sonne pas).
+- **À suivre** : avant la mise en ligne, créer le webhook dans Discord et mettre son adresse dans les réglages du
+  serveur OVH (`DIM_DISCORD_WEBHOOK`, voir `docs/deploiement-ovh.md`). Sans ça, rien ne casse, mais rien n'est annoncé.
+- **État** : ✅ en ligne le 25/10 (webhook vérifié sur le VPS : message de test reçu)
+
 ## 25/10/2026 — Geoffrey — Tours : le nouveau combat aussi
 - **Pour le joueur** : dans les tours, les Séraphins et les Diablotins avancent en glissant, le coup du mineur part tout
   de suite, il s'arrête net pour frapper le premier, et un coup qui repousse assez un mob lui fait lâcher son tacle
