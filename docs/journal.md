@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Piège : le barbare vient vraiment aider
+- **Pour le joueur** : quand un allié déclenche un piège, le barbare vient tuer les mobs jusqu'au bout. Avant, s'il
+  était juste au-dessus de la salle ou devait creuser pour y arriver, il « oubliait » les mobs au bout de quelques
+  secondes et retournait miner.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Tainted iron : 15 chitine au lieu de 20
 - **Pour le joueur** : l'alliage Tainted iron demande **15 chitine** (avant 20), toujours avec 5 lingots de fer,
   50 charbons et 3 min. Toutes les pièces en fer coûtent donc un quart de chitine en moins.

@@ -2630,3 +2630,16 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/furnace.test.js` adapté (recette 15 ; chitine chargée 30 → 25 pour garder « la chitine limite à
   1 alliage » ; 20 → 15 pour finir les cases vides) ✅ (21) ; anticheat furnace, game-service, wiki ✅ ; `npm run
   test:anticheat` ✅ (89).
+
+### Piège : le barbare n'ignore plus les mobs (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Causes** (`src/sim/ai.js`, sonde sur 10 seeds à 3, arbres mixtes) : les mobs de piège entraient dans `m.ignored` (pour
+  toute la session), et `trapGoal` saute les ignorés : le barbare retournait miner.
+  1. `fight` (combat « Combattre ») ne fait qu'un pas droit vers le mob ; barbare debout sur la paroi du plafond (seed
+     23757, 39595) : pas impossible → règle « mob de piège inapprochable : ignoré » (faite pour les autres, seed 15838).
+  2. `decide`, `foeGiveUp` : en creusant vers la salle (« Va au piège »), aucun coup pendant 5 s → ignoré (seed 39595).
+- **Correction** : barbare + mob de piège : `fight` passe par `goFight` (vrai chemin, minage, échelles ; ignore seulement
+  si inatteignable) ; `foeGiveUp` lâche le mob sans l'ignorer (trapGoal le reprend). Les autres mineurs : inchangé.
+- **Tests** : `tests/trap.test.js` +1 (barbare debout sur le plafond de la salle : aucun mob ignoré, tous morts ;
+  échoue sans la correction) ✅ ; trap, combat, mobs, dungeon, spells, help, goblin, knock ✅ (93).
+- **Sonde** (`trapprobe`, 10 seeds) : mobs de piège ignorés par le barbare 9 → 0. **Simulation** `--count 5` : 0 bloquée ;
+  à 3 sans skills : identique (4 132 pods) ; arbres mixtes : coffre 4 380 pods, profondeur 200.
