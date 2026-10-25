@@ -3,7 +3,7 @@
    Un four a un MODE, choisi par le joueur :
    - smelt (Fondre)  : cases ore (minerai), fuel (combustible), out (sortie). 10 minerais + 10 charbons = 1 lingot ;
    - alloy (Alliage) : cases a et b (les deux ingrédients d'un alliage), fuel, out. Recettes dans FURNACE.alloys
-     (ex. Tainted iron = 5 lingots de fer + 20 chitine + 50 charbons, 3 min).
+     (ex. Tainted iron = 5 lingots de fer + 15 chitine + 50 charbons, 3 min).
    Chaque case contient null ou { item, qty }. since = heure (ms) où le produit en cours a commencé, null à l'arrêt.
    La fonte avance en temps réel : advance(f, now) calcule d'un coup tout ce qui a été produit depuis since, même page
    fermée. Un produit ne consomme ses ingrédients et son combustible qu'une fois fini : retirer une case pendant la
