@@ -30,9 +30,9 @@ Modèle d'entrée :
 - **Chiffres** : en duel contre 4 mobs, la lance tue 16 % moins vite et fait passer 36 % de temps en moins taclé, sans
   vol du gobelin. En sessions (3 mineurs en fer) : 4 % de mobs tués en moins, 19 % de vols en moins, temps taclé égal.
   Toute la mine (20 sessions) : coffre stable, moins de tacles, aucun blocage.
-- **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
-## 25/10/2026 — Geoffrey — Lance en fer (en test, pas en ligne)
+## 25/10/2026 — Geoffrey — Lance en fer (première version, remplacée par l'entrée ci-dessus)
 - **Pour le joueur** : nouvel objet **Lance en fer** (case épée), BP à 2 % dans le Treasure T1, recette provisoire
   10 Tainted iron (comme l'épée). Dégâts +10, vitesse d'attaque −10 %, recul +0,25, portée d'attaque +0,25. Deux
   nouvelles stats : **Portée d'attaque** et **Recul**.
@@ -45,7 +45,14 @@ Modèle d'entrée :
 - **À décider** : pour que la portée et le recul protègent vraiment, il faut aussi changer le coup du mineur (il part
   tout de suite, et le mineur s'arrête net pour frapper un mob qui entre dans sa portée), et peut-être que le recul
   casse le tacle. Prototypes mesurés, pas gardés : chiffres dans `docs/debug.md`.
-- **État** : 🧪 sur la branche `geoffrey/lance-en-fer` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Tours : on remonte au sommet ensemble
+- **Pour le joueur** : dans les tours, un mineur tombé qui remonte et trouve le toit vide attend les autres juste
+  avant le toit (sous la porte, ou dans le seau du treuil). Quand tout le groupe est là, ils montent ensemble. Si
+  quelqu'un se bat déjà sur le toit, il y va directement. Il n'attend jamais plus de 45 s.
+- **Décisions** (Geoffrey) : on attend tous les mineurs encore dans la tour ; limite de 45 s (ajustable).
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Tours : le logisticien installe un treuil
 - **Pour le joueur** : dans les tours de l'Ange et du Démon, la première fois qu'un logisticien qui a le skill Treuil

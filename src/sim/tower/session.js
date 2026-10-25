@@ -382,6 +382,9 @@ export function decide(G, m){
   m.blockGoal = null;
   /* le boss */
   if(G.boss.hp <= 0) return act(m, 'wait', 0.5, {}, 'Victoire');
+  /* regroupement (TOWER.regroup) : tombé, il attend les autres au dernier pas avant le toit si celui-ci est vide */
+  if(mustWait(G, m)){ m.waitSince ??= G.t; return act(m, 'wait', 0.3, {}, 'Attend les autres'); }
+  m.waitSince = null;
   /* boss en l'air (saut) : on s'écarte de sa zone d'atterrissage et on l'attend juste à côté */
   if(G.boss.air){
     const want = wantedSide(G, m), cells = landCells(G), goals = cells.filter(c => !want || c[2] === want);
@@ -401,6 +404,24 @@ export function decide(G, m){
   const path = planTo(G, m, goals.length ? goals : cells);
   if(!path?.length){ G.stats.blocked++; return act(m, 'wait', 0.5, {}, mobs.length ? `Attend (${mobName}s)` : 'Bloqué'); }
   return follow(G, m, path, m.y >= G.roof ? 'Monte vers le sommet' : `Va au contact de ${G.boss.name}`);
+}
+
+/* ---------- regroupement après une chute (TOWER.regroup, 25/10/2026) ---------- */
+/* dernier pas avant le toit : sous la porte du toit (intérieur), ou dans le seau du treuil, une case sous l'arrivée */
+export const waitPoint = (G, m) => (m.y === G.roof + 1 && gateCols(G, TOWER.floors - 1).includes(m.x))
+  || (isWinch(G, m.x, m.y) && m.y === G.winch.top + 1);
+const anyOnRoof = G => G.miners.some(o => onRoof(G, o.x, o.y));
+/* doit-il attendre ? tombé, à un point d'attente, toit vide, pas seul, pas encore tout le monde là, moins de maxWait s.
+   Tout le monde là (ou délai passé) : on lève la marque « tombé » de ceux qui attendent : ils montent ensemble. */
+function mustWait(G, m){
+  if(!m.fell || !waitPoint(G, m) || G.miners.length < 2 || anyOnRoof(G)) return false;
+  if(G.miners.every(o => waitPoint(G, o))){
+    for(const o of G.miners) o.fell = false;
+    log(G, '🤝 Tout le monde est là : ils montent ensemble au sommet');
+    return false;
+  }
+  if(m.waitSince != null && G.t - m.waitSince >= TOWER.regroup.maxWait){ m.fell = false; return false; }
+  return true;
 }
 
 function follow(G, m, path, status){
@@ -487,7 +508,7 @@ function land(G, m){
       m.action = { type: 'stun', dur: CFG.stunTime, t: 0, data: {} }; m.status = 'Étourdi';
       log(G, `💫 ${m.name} s'écrase ${m.y >= G.floor ? 'au pied de la tour' : 'plus bas'} (${m.fallN} cases) : étourdi ${CFG.stunTime} s`);
     }
-    if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; }
+    if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; m.fell = true; }   // tombé : regroupement en remontant
     /* logisticien (skill Treuil) tombé au pied de la tour, dehors : il installera le treuil (un seul par partie) */
     if(m.skill.winch && !G.winch && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))
       m.winchJob = m.x < G.x0 ? 'L' : 'R';
@@ -534,7 +555,7 @@ function pushBoss(G, m){
 function updateArrivals(G){
   G.arrivals = G.arrivals.filter(id => { const m = G.miners.find(x => x.id === id); return m && m.y < G.roof; });
   for(const m of G.miners) if(onRoof(G, m.x, m.y) && towerSupported(G, m.x, m.y) && !G.arrivals.includes(m.id)){
-    G.arrivals.push(m.id);
+    G.arrivals.push(m.id); m.fell = false; m.waitSince = null;
     if(G.timeline.roof == null){ G.timeline.roof = G.t; log(G, `⛰ ${m.name} arrive au sommet`); }
   }
 }
