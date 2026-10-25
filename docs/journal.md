@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Amélioration : +5 / +10 / +15 %
+- **Pour le joueur** : améliorer une pièce rapporte plus : +1 = **+5 %** de toutes ses stats (avant +3 %), +2 = **+10 %**
+  (avant +5 %), +3 = **+15 %** (avant +7 %). Coûts et chances de réussite inchangés. Les pièces déjà améliorées en
+  profitent tout de suite.
+- **État** : 🧪 sur la branche `geoffrey/amelioration-ratios` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Tour : plus étourdi en tombant, projection du boss à 4 cases
 - **Pour le joueur** : un mineur projeté hors de la tour tombe jusqu'en bas mais n'est plus étourdi : il remonte tout
   de suite. Le boss projette de 4 cases au lieu de 5. Wiki à jour.

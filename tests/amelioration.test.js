@@ -70,9 +70,9 @@ test('identification (22/10) : seulement la qualité, aucune ligne de stats ; la
 test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus total du palier', () => {
   const p = { item:PICK, uid:1, q:4, lines:[{ stat:'mineSpeed', pct:30 }, { stat:'fortune', pct:33 }] };   // T1 : 30 x et 33 x
   assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.215, fortune:0.7 });
-  assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.214);        // 0,2 × 1,07
-  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 14.6);    // 5 + 9 × 1,07
-  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 31);   // 30 × 1,03 = 30,9 → 31
+  assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.23);         // 0,2 × 1,15 (paliers 5 / 10 / 15 %, 25/10)
+  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 15.4);    // 5 + 9 × 1,15 = 15,35 → 15,4
+  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 32);   // 30 × 1,05 = 31,5 → 32
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.2 }, 'un simple nom d\'objet : comme avant');
   assert.equal(statsOf([p]).mineSpeed.total, 1.22);
   /* affichage : l'effet de l'objet, puis chaque ligne tirée à part, même sur la même stat (22/10) */
@@ -80,7 +80,7 @@ test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus tot
   const twice = { item:PICK, uid:1, q:4, lines:[{ stat:'fortune', pct:33 }, { stat:'fortune', pct:25 }] };   // 33 x et 25 x
   assert.deepEqual(statLines(twice), ['Vitesse de minage +0,2', 'Fortune +0,7 %', 'Fortune +0,5 %']);
   assert.equal(pieceBonus(twice).stats.fortune, 1.2, 'en session : la somme');
-  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,214', 'Fortune +0,7 %', 'Fortune +0,5 %'], 'niveau compris');
+  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,23', 'Fortune +0,8 %', 'Fortune +0,6 %'], 'niveau compris');
 });
 
 test('nom affiché : « Excellent : Pioche en pierre +2 », couleur de la qualité ; non identifiée : le nom seul', () => {
@@ -188,9 +188,9 @@ test('session : les caractéristiques viennent des pièces portées (lignes et n
   const piece = { item:PICK, uid:5, q:5, s:UPGRADE.scale, lines:[{ stat:'mineSpeedPct', pct:20 }, { stat:'crit', pct:25 }], plus:1 }   // 2 % et 2,5 %
   const rec = { players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } }, gear:{ A:{ pioche:piece } } };
   const [spec] = minerSpecs(rec);
-  assert.equal(spec.carac.mineSpeed, 1.21);                               // 1 + 0,2 × 1,03, arrondi à 2 décimales
-  assert.equal(spec.carac.mineSpeedPct, 1);                               // T1 : 20 x ÷ 20 = 1 × 1,03 = 1,03 → 1
-  assert.equal(spec.carac.crit, 1.9);                                     // 25 x × 7 % = 1,75 → 1,8, × 1,03 → 1,9
+  assert.equal(spec.carac.mineSpeed, 1.21);                               // 1 + 0,2 × 1,05, arrondi à 2 décimales
+  assert.equal(spec.carac.mineSpeedPct, 1.1);                             // T1 : 20 x ÷ 20 = 1 × 1,05 = 1,05 → 1,1
+  assert.equal(spec.carac.crit, 1.9);                                     // 25 x × 7 % = 1,75 → 1,8, × 1,05 → 1,9
   const old = minerSpecs({ players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } } })[0];
   assert.equal(old.carac.mineSpeed, 1.2, 'une session sans gear : les noms suffisent, comme avant');
   assert.equal(old.carac.crit, 0);

@@ -91,7 +91,7 @@ test('enchanter : niveau compris ; les lignes d\'une ancienne identification et 
   piece.plus = 3; piece.q = 1; piece.lines = [{ stat: 'pods', pct: 20 }]; piece.s = UPGRADE.scale;
   enchant(inv, { uid: piece.uid, rune: rune.uid, opId: id() });
   const one = lineValue(PICK, { stat: 'pods', pct: 20 });
-  assert.equal(pieceBonus(piece).stats.pods, Math.round(2 * one * 1.07));
+  assert.equal(pieceBonus(piece).stats.pods, Math.round(2 * one * (1 + UPGRADE.levels[2].pct / 100)));   // +3 : bonus lu dans la config
 });
 
 test('enchanter (22/10) : une pièce n\'accepte qu\'une rune de qualité égale ou inférieure à la sienne ; non identifiée = refusée', () => {

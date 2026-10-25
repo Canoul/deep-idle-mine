@@ -2880,3 +2880,11 @@ Règles (voir CLAUDE.md) :
 - Tests adaptés (`tests/tower.test.js`) : l'arrivée en bas se repère à `!m.knocked` au lieu de l'étourdissement
   (treuil, regroupement), le treuil s'installe en 10 s sans les 5 s d'étourdissement, projection 4. tower,
   tower-boss ✅ (37) : ils couvrent aussi l'entrée précédente, mise en ligne sans tests.
+
+### Amélioration : paliers 5 / 10 / 15 % (Geoffrey, 25/10) — 🧪 branche `geoffrey/amelioration-ratios`
+- **Quoi** : `UPGRADE.levels[].pct` 3 / 5 / 7 → 5 / 10 / 15 (`src/config.js`) ; GAME_DESIGN (tableau des niveaux) ; wiki :
+  tableau généré (`upgradeRows`). Le % est lu à l'affichage et en session (`plusMult`) : les pièces déjà améliorées
+  suivent sans migration ; un malus (Lance) n'est pas multiplié.
+- **Tests** : `tests/amelioration.test.js` (valeurs recalculées par le code : pioche +3 0,23, épée +3 15,4, plastron
+  chitine +1 32, lignes +3 0,8 et 0,6, minage % 1,1) ; `tests/rune.test.js` lit le % dans la config (il passait par
+  hasard d'arrondi avec 1,07 en dur) ; rune, stuff, lance, wiki, aura, anneaux ✅ (82).
