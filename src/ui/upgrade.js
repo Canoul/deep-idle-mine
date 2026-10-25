@@ -108,7 +108,7 @@ export function setupUpgrade({ onOp }){
   }
 
   /* Enchantement : la pièce + une rune. Même principe de cases que l'identification. Aperçu : ce que la rune donnera
-     sur CETTE pièce (ses lignes valent un % de la valeur de la pièce, niveau compris). */
+     sur CETTE pièce (ses lignes valent un % de la valeur du tier de la pièce, niveau compris). */
   /* pourquoi la rune ne peut pas aller sur la pièce (même règle que le serveur, src/meta/upgrade.js enchantError) */
   const enchantWhy = (t, r) => !t ? '' : t.rune ? (t.rune.frag ? 'Cette pièce porte déjà un fragment de rune (définitif).' : 'Cette pièce porte déjà une rune : retire-la d\'abord (elle redevient un fragment).')
     : !isIdentified(t) ? 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.'
@@ -125,7 +125,7 @@ export function setupUpgrade({ onOp }){
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
       `<p class="mut small">Une rune (gagnée dans les trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
-      `chaque ligne vaut un % de la valeur de la pièce. Une seule rune par pièce. `+
+      `chaque ligne vaut un % du <b>tier</b> de la pièce (T1 pierre et chitine : 100 x, T2 fer : 250 x, T3 acier : 400 x). Une seule rune par pièce. `+
       `<b>Retirer une rune</b> est gratuit, mais elle revient en <b>Fragment de rune</b> : mêmes lignes, % divisés par 2. `+
       `Un fragment se repose comme une rune, et une fois posé, il ne se retire plus. `+
       `<b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> (une pièce R6 accepte une rune R1 à R6) : `+

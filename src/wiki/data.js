@@ -281,7 +281,7 @@ export const instantInfo = () => ({ every: INSTANT_MINE.everyHours, game: INSTAN
 export const judgmentInfo = () => ({ fromArea: JUDGMENT.fromArea, pct: JUDGMENT.pct, cap: JUDGMENT.cap, hours: JUDGMENT.openHours,
   sides: JUDGMENT.sides, tower: TOWER, residues: Math.round(JUDGMENT.pct * CELLS / 100),
   brick: BLOCKS[TOWER.sides.angel.brick].hard, reach: COMBAT.reach });
-/* lignes d'une rune selon sa qualité : nombre, fourchette d'une ligne (% de la valeur de la pièce enchantée) */
+/* lignes d'une rune selon sa qualité : nombre, fourchette d'une ligne (% de la valeur du tier de la pièce enchantée) */
 export const runeRows = () => UPGRADE.qualities.map(q => ({ q: q.q, label: q.label, color: q.color, chance: q.chance, lines: q.lines,
   min: q.min, max: q.max, total: q.lines * q.max, discover: UPGRADE.discover.qualities.includes(q.q) }));
 

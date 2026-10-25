@@ -121,8 +121,8 @@ test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lign
   assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.5);
   assert.equal(m.carac.damage, 14);
   assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 100);
-  /* la ligne suit la valeur de l'objet : 20 % de 528 x (88 pods) = 21 pods ; elle en valait 12 avec 50 pods */
-  assert.equal(lineValue('Plastron en fer', line), 21);
+  /* la ligne suit la valeur du tier (25/10) : 20 % de 250 x (T2) = 10 pods ; avant, 20 % de la valeur de l'objet */
+  assert.equal(lineValue('Plastron en fer', line), 10);
   const [b] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:{ torse:{ item:BALANCE, uid:11 } } } });
   assert.equal(b.carac.pods, STATS.pods + 188);
   assert.equal(b.carac.torches, STATS.torches + 8);

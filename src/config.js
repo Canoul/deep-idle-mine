@@ -798,6 +798,19 @@ export const UPGRADE = {
      prix = 100 ÷ valeur pour 100 x. Les pièces gardent leur %, elles suivent donc ce tableau sans migration. */
   prices: { mineSpeed:2000, mineSpeedPct:20, damage:40, damagePct:5, attackSpeed:5, crit:100/7, fortune:50, oneTap:100/7,
             piercing:10, looting:10, speed:250, climbSpeed:1000/3, pods:5, oxygenMax:4, discoverMax:190, compassRows:300 },
+  /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
+     du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
+     (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
+     de l'équilibre compris). Lignes gardées en % : les pièces déjà runées suivent sans migration. Une pièce absente des
+     listes garderait sa propre valeur (tests/rune.test.js vérifie qu'il n'y en a pas). */
+  tiers: {
+    1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
+                       'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
+    2: { x:250, items:['Pioche en fer','Épée en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
+                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
+    3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
+                       'Bottes en acier','Plastron de l\'équilibre'] },
+  },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1 },

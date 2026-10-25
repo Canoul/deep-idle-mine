@@ -33,10 +33,10 @@ test('valeur des objets en x : pioche en pierre 260, pioche en fer 520 (nerf du 
   assert.notEqual(UPGRADE.worth.mineSpeed, UPGRADE.prices.mineSpeed, 'valeur de l\'objet (catalogue) ≠ conversion d\'une ligne');
 });
 
-test('une ligne = % de la valeur de l\'objet, ÷ prix de la stat, arrondie au pas (au moins un pas)', () => {
-  assert.equal(linePoints(PICK, 'mineSpeed', 32), 0.042);   // 260 × 32 % = 83,2 x ÷ 2000 (tableau du 22/10)
-  assert.equal(linePoints(PICK, 'fortune', 32), 1.7);       // 83,2 / 50 = 1,66 → 1,7 %
-  assert.equal(linePoints(PICK, 'pods', 32), 17);           // 83,2 / 5 = 16,6 → 17
+test('une ligne = % de la valeur du tier de l\'objet, ÷ prix de la stat, arrondie au pas (au moins un pas) (tier : 25/10)', () => {
+  assert.equal(linePoints(PICK, 'mineSpeed', 32), 0.016);   // T1 : 100 × 32 % = 32 x ÷ 2000 (tableau du 22/10)
+  assert.equal(linePoints(PICK, 'fortune', 32), 0.6);       // 32 / 50 = 0,64 → 0,6 %
+  assert.equal(linePoints(PICK, 'pods', 32), 6);            // 32 / 5 = 6,4 → 6
   assert.equal(linePoints('Gants tactique', 'pods', 1), 1); // presque rien : au moins un pas
 });
 
@@ -68,19 +68,19 @@ test('identification (22/10) : seulement la qualité, aucune ligne de stats ; la
 /* ---------- stats d'une pièce, nom ---------- */
 
 test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus total du palier', () => {
-  const p = { item:PICK, uid:1, q:4, lines:[{ stat:'mineSpeed', pct:30 }, { stat:'fortune', pct:33 }] };   // 78 x et 85,8 x
-  assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.239, fortune:1.7 });
+  const p = { item:PICK, uid:1, q:4, lines:[{ stat:'mineSpeed', pct:30 }, { stat:'fortune', pct:33 }] };   // T1 : 30 x et 33 x
+  assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.215, fortune:0.7 });
   assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.214);        // 0,2 × 1,07
   assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 14.6);    // 5 + 9 × 1,07
   assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 31);   // 30 × 1,03 = 30,9 → 31
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.2 }, 'un simple nom d\'objet : comme avant');
-  assert.equal(statsOf([p]).mineSpeed.total, 1.24);
+  assert.equal(statsOf([p]).mineSpeed.total, 1.22);
   /* affichage : l'effet de l'objet, puis chaque ligne tirée à part, même sur la même stat (22/10) */
-  assert.deepEqual(statLines(p), ['Vitesse de minage +0,2', 'Vitesse de minage +0,039', 'Fortune +1,7 %']);
-  const twice = { item:PICK, uid:1, q:4, lines:[{ stat:'fortune', pct:33 }, { stat:'fortune', pct:25 }] };   // 85,8 x et 65 x
-  assert.deepEqual(statLines(twice), ['Vitesse de minage +0,2', 'Fortune +1,7 %', 'Fortune +1,3 %']);
-  assert.equal(pieceBonus(twice).stats.fortune, 3, 'en session : la somme');
-  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,214', 'Fortune +1,8 %', 'Fortune +1,4 %'], 'niveau compris');
+  assert.deepEqual(statLines(p), ['Vitesse de minage +0,2', 'Vitesse de minage +0,015', 'Fortune +0,7 %']);
+  const twice = { item:PICK, uid:1, q:4, lines:[{ stat:'fortune', pct:33 }, { stat:'fortune', pct:25 }] };   // 33 x et 25 x
+  assert.deepEqual(statLines(twice), ['Vitesse de minage +0,2', 'Fortune +0,7 %', 'Fortune +0,5 %']);
+  assert.equal(pieceBonus(twice).stats.fortune, 1.2, 'en session : la somme');
+  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,214', 'Fortune +0,7 %', 'Fortune +0,5 %'], 'niveau compris');
 });
 
 test('nom affiché : « Excellent : Pioche en pierre +2 », couleur de la qualité ; non identifiée : le nom seul', () => {
@@ -189,8 +189,8 @@ test('session : les caractéristiques viennent des pièces portées (lignes et n
   const rec = { players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } }, gear:{ A:{ pioche:piece } } };
   const [spec] = minerSpecs(rec);
   assert.equal(spec.carac.mineSpeed, 1.21);                               // 1 + 0,2 × 1,03, arrondi à 2 décimales
-  assert.equal(spec.carac.mineSpeedPct, 2.7);                             // 52 x ÷ 20 = 2,6 × 1,03 = 2,68
-  assert.equal(spec.carac.crit, 4.6);                                     // 65 x × 7 % = 4,55 → 4,5, × 1,03 → 4,6
+  assert.equal(spec.carac.mineSpeedPct, 1);                               // T1 : 20 x ÷ 20 = 1 × 1,03 = 1,03 → 1
+  assert.equal(spec.carac.crit, 1.9);                                     // 25 x × 7 % = 1,75 → 1,8, × 1,03 → 1,9
   const old = minerSpecs({ players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } } })[0];
   assert.equal(old.carac.mineSpeed, 1.2, 'une session sans gear : les noms suffisent, comme avant');
   assert.equal(old.carac.crit, 0);
@@ -202,9 +202,9 @@ test('session : les caractéristiques viennent des pièces portées (lignes et n
 test('rééquilibrage : une ligne garde son %, sa valeur suit la config (la pièce reste valide)', async () => {
   const { UPGRADE:U } = await import('../src/config.js');
   const p = { item:PICK, uid:1, q:1, lines:[{ stat:'fortune', pct:20 }] };
-  assert.equal(pieceBonus(p).stats.fortune, 1);                         // 52 x / 50
+  assert.equal(pieceBonus(p).stats.fortune, 0.4);                       // T1 : 20 x / 50
   const old = U.prices.fortune; U.prices.fortune = 13;
-  try { assert.equal(pieceBonus(p).stats.fortune, 4); assert.equal(sanitizePiece(p).q, 1); }
+  try { assert.equal(pieceBonus(p).stats.fortune, 1.5); assert.equal(sanitizePiece(p).q, 1); }
   finally { U.prices.fortune = old; }
 });
 

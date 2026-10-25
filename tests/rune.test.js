@@ -204,3 +204,31 @@ test('fragment : mêmes règles qu\'une rune (qualité ≤ pièce), relu et rev�
   assert.equal(sanitizePiece(bad), null, 'fragment trafiqué : refusé');
   assert.equal(lineValue(PICK, { stat: 'discoverMax' }, 0.5), lineValue(PICK, { stat: 'discoverMax' }));
 });
+
+/* ---------- valeur d'une ligne : le tier de la pièce (25/10/2026, Geoffrey) ---------- */
+
+test('tier : chaque pièce qu\'on peut runer a un tier (T1 100 x, T2 250 x, T3 400 x)', async () => {
+  const { ITEMS, RINGS, UPGRADE } = await import('../src/config.js');
+  const { tierOf, lineBase } = await import('../src/meta/piece.js');
+  assert.deepEqual(Object.fromEntries(Object.entries(UPGRADE.tiers).map(([t, d]) => [t, d.x])), { 1:100, 2:250, 3:400 });
+  for(const [name, d] of Object.entries(ITEMS)) if(d.cat === 'stuff' && !Object.hasOwn(RINGS.items, name)){
+    assert.ok(tierOf(name), `${name} sans tier`);
+    assert.equal(lineBase(name), UPGRADE.tiers[tierOf(name)].x);
+  }
+  const all = Object.values(UPGRADE.tiers).flatMap(d => d.items);
+  assert.equal(new Set(all).size, all.length, 'une pièce dans un seul tier');
+  for(const name of all) assert.equal(ITEMS[name]?.cat, 'stuff', `${name} : pièce inconnue`);
+  assert.equal(tierOf('Pioche en pierre'), 1); assert.equal(tierOf('Plastron en fer'), 2);
+  assert.equal(tierOf('Gants d\'ouvrier'), 2); assert.equal(tierOf('Boussole en or'), 1);
+  assert.equal(tierOf('Plastron de l\'équilibre'), 3);
+});
+
+test('tier : une ligne vaut un % du tier, pas de la valeur de la pièce ; les pièces déjà runées suivent', async () => {
+  const { lineValue } = await import('../src/meta/piece.js');
+  const line = { stat:'pods', pct:20 };                     // 20 % de 250 x = 50 x ; 5 x par pod → 10 pods
+  assert.equal(lineValue('Plastron en fer', line), 10);
+  assert.equal(lineValue('Casque en fer', line), 10, 'même tier, même valeur, quelle que soit la pièce');
+  assert.equal(lineValue('Plastron en chitine', line), 4);  // 20 % de 100 x
+  assert.equal(lineValue('Plastron de l\'équilibre', line), 16);  // 20 % de 400 x (avant : 20 % de 1 411 x)
+  assert.equal(lineValue('Plastron en fer', line, 0.5), 5, 'fragment : moitié');
+});
