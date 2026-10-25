@@ -7,7 +7,10 @@ import { GLYPHS, ITEMS } from '../src/config.js';
 import { NODES, sanitizeSkills, skillOp, skillEffects } from '../src/meta/skills.js';
 import { rarityOf } from '../src/meta/rarity.js';
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
-import { glyphOf, nodeOfGlyph, glyphOp, isActive, activeGlyphs, sessionSkills } from '../src/meta/glyphs.js';
+import { glyphOf, nodeOfGlyph, glyphOp, isActive, activeGlyphs, sessionSkills, withGlyphStats } from '../src/meta/glyphs.js';
+import { STATS } from '../src/config.js';
+import { minerSpecs } from '../src/shared/game.js';
+import { minerStats } from '../src/meta/stuff.js';
 import { sanitizeSets, applySet } from '../src/meta/sets.js';
 import { createSpells } from '../src/meta/spells.js';
 
@@ -105,4 +108,27 @@ test('effets en partie et enregistrement de session : seulement les glyphes acti
   assert.equal(skillEffects(st).glyph_ore_rush, undefined);
   assert.deepEqual(sessionSkills(st).glyphs, { ore_oxygen:'Glyphe Second souffle' });
   assert.equal(skillEffects(sanitizeSkills(JSON.parse(JSON.stringify(sessionSkills(st))))).glyph_ore_oxygen, 1, 'relu depuis l\'enregistrement');
+});
+
+/* ---------- stats : Pioche aiguisée, Mule, Force brute ---------- */
+
+test('stats des glyphes : minage % (bonus de vitesse d\'attaque), marche et montée (oxygène max), pods (dégâts)', () => {
+  const base = { ...STATS };
+  assert.deepEqual(withGlyphStats(base, {}), base, 'sans glyphe : identique');
+  assert.equal(withGlyphStats({ ...base, attackSpeed:120 }, { glyph_mine_speed:1 }).mineSpeedPct, 2);
+  assert.equal(withGlyphStats({ ...base, attackSpeed:100 }, { glyph_mine_speed:1 }).mineSpeedPct, 0);
+  const mule = withGlyphStats({ ...base, oxygenMax:300 }, { glyph_mule:1 });
+  assert.ok(Math.abs(mule.speed - base.speed * 1.09) < 1e-9); assert.ok(Math.abs(mule.climbSpeed - base.climbSpeed * 1.09) < 1e-9);
+  assert.equal(withGlyphStats({ ...base, damage:14 }, { glyph_damage:1 }).pods, base.pods + 42);
+  assert.equal(base.pods, STATS.pods, 'copie : l\'objet reçu n\'est pas modifié');
+});
+
+test('stats des glyphes : en session (glyphes figés) et dans l\'onglet Stuff', () => {
+  const skills = { tree:'barbare', ranks:{ damage:3 }, glyphs:{ damage:'Glyphe Force brute' } };
+  const [m] = minerSpecs({ seed:1, players:[{ account:'A', name:'Geo' }], skills:{ A:skills } });
+  assert.equal(m.carac.pods, STATS.pods + Math.round(3 * m.carac.damage), 'dégâts skills compris');
+  const [n] = minerSpecs({ seed:1, players:[{ account:'A', name:'Geo' }], skills:{ A:{ tree:'barbare', ranks:{ damage:3 } } } });
+  assert.equal(n.carac.pods, STATS.pods);
+  const shown = minerStats({}, skillEffects(sanitizeSkills(skills))).find(s => s.key === 'pods');
+  assert.equal(shown.total, m.carac.pods);
 });

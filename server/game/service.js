@@ -28,7 +28,7 @@ import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
-import { glyphOp, isActive, sessionSkills } from '../../src/meta/glyphs.js';
+import { glyphOp, sessionSkills } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
@@ -173,9 +173,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
   const loadSkills = async accountId => sanitizeSkills(await store.getSkills(accountId), await pointsOf(accountId));
-  /* glyphes posés (src/meta/glyphs.js) : { nœud: { item, active } } (inactif : skill pas au rang max) */
-  const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st),
-    glyphs: Object.fromEntries(Object.entries(st.glyphs || {}).map(([n, item]) => [n, { item, active: isActive(st, n) }])) });
+  const publicSkills = (st, points) => ({ ...skillRanks(st), points, spent: spentPoints(st), glyphs: { ...st.glyphs } });   // glyphes posés { nœud: objet }
   /* sorts : relus et revérifiés ; ctx = arbre de skills choisi et niveaux de spécialisation (déblocage, needTree) */
   const loadSpells = async accountId => sanitizeSpells(await store.getSpells(accountId));
   /* réponse d'une opération de set : la liste, et tout l'équipement relu (équiper change tout d'un coup) */

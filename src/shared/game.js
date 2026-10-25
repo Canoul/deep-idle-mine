@@ -13,6 +13,7 @@ import { setFocus } from '../sim/focus.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
+import { withGlyphStats } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 
 /* ---------- préférences ---------- */
@@ -91,7 +92,7 @@ export function minerSpecs(record){
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
   const rings = groupRings(record);
-  const caracOf = i => withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings);
+  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings), skillsOf(i));   // glyphes en dernier
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */

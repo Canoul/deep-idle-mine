@@ -10,6 +10,7 @@
 import { STUFF, ITEMS, STATS, RINGS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
+import { withGlyphStats } from './glyphs.js';
 import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
@@ -134,9 +135,14 @@ export function minerStats(worn, effects = {}){
   /* anneaux de ce joueur (en session, ceux du reste du groupe s'ajoutent) : ring = ce qu'ils ajoutent au total */
   const before = Object.fromEntries(STUFF.shownStats.map(k => [k, r2(all[k] + addOf(k))]));
   const after = withRings(before, ringsOf(pieces));
+  /* glyphes actifs, en dernier (comme en session) : sur toutes les stats (ils lisent la vitesse d'attaque, l'oxygène, les
+     dégâts), leur apport compte dans la colonne des skills */
+  const full = withRings(Object.fromEntries(Object.keys(all).map(k => [k, all[k] + addOf(k)])), ringsOf(pieces));
+  const glyphed = withGlyphStats(full, effects);
+  const glyph = key => r2((glyphed[key] ?? 0) - (full[key] ?? 0));
   return STUFF.shownStats.map(key => ({ key, label:STUFF.statLabels[key] ?? key, ...s[key],
-    mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key)),
-    ring:r2(after[key] - before[key]), total:after[key] }));
+    mult:r2(multOf(key)), add:r2(addOf(key)), skill:r2(all[key] - withStuff[key] + addOf(key) + glyph(key)),
+    ring:r2(after[key] - before[key]), total:r2(after[key] + glyph(key)) }));
 }
 
 /* bulle d'info d'une pièce de stuff (nom d'objet ou pièce) : son nom, puis un effet par ligne (null si ce n'est pas du stuff) */

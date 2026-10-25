@@ -43,3 +43,15 @@ export function glyphOp(st, inv, op){
   if(st.ops.length > SKILLS.opMemory) st.ops.splice(0, st.ops.length - SKILLS.opMemory);
   return { ok:true, repeated:false };
 }
+
+/* stats changées par les glyphes actifs (effects = skillEffects : glyph_<nœud> = 1), appliquées EN DERNIER (après stuff,
+   skills et anneaux) : Pioche aiguisée (minage % += attackToMine × bonus de vitesse d'attaque au-dessus de 100), Mule
+   (marche et montée × (1 + oxygenToSpeed × oxygène max)), Force brute (pods += damageToPods × dégâts, arrondi).
+   Renvoie une copie. Même calcul en session (src/shared/game.js, instant.js) et dans l'onglet Stuff. */
+export function withGlyphStats(carac, effects){
+  const out = { ...carac };
+  if(effects?.glyph_mine_speed) out.mineSpeedPct = (out.mineSpeedPct || 0) + GLYPHS.attackToMine * Math.max(0, (out.attackSpeed ?? 100) - 100);
+  if(effects?.glyph_mule){ const k = 1 + GLYPHS.oxygenToSpeed * (out.oxygenMax || 0); out.speed *= k; out.climbSpeed *= k; }
+  if(effects?.glyph_damage) out.pods = (out.pods || 0) + Math.round(GLYPHS.damageToPods * (out.damage || 0));
+  return out;
+}

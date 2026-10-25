@@ -507,7 +507,7 @@ test('glyphes par le serveur : pose et retrait (inventaire et skills ensemble), 
   const o = { action:'glyph_pose', node:'damage', opId:'op-glyph-srv-1' };
   let r = await game.skills(ME, o);
   r = await game.skills(ME, o);                                                       // double clic
-  assert.deepEqual(r.skills.glyphs, { damage:{ item:G, active:true } }); assert.equal(count(r), 0);
+  assert.deepEqual(r.skills.glyphs, { damage:G }); assert.equal(count(r), 0);
   assert.equal((await store.getInventory(ME.id)).slots.filter(Boolean).length, 0, 'enregistré');
   await assert.rejects(game.skills(ME, { action:'glyph_pose', node:'taunt', opId:'op-glyph-srv-2' }), { code:'unknown', status:400 });
   const { session } = await game.start(ME, {});
