@@ -26,13 +26,89 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : étourdissement 2 s ; priorité au mob qui tacle un allié à 6 cases ou moins. Choix de Claude
   à valider : en simple trajet, il ne descend qu'une marche (pas de chute), pour ne pas quitter le chemin de l'IA ;
   l'étourdissement vaut aussi pour les boss.
-- **État** : 🧪 sur la branche `geoffrey/dash-donjon` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Donjon : les mineurs aident vraiment le barbare
 - **Pour le joueur** : quand le minotaure attend juste derrière l'entrée, le barbare se bat sur le seuil. Avant, les
   autres mineurs restaient dehors à « attendre le barbare » jusqu'à la fin du combat ; maintenant ils viennent taper
   le boss avec lui (sauf ceux réglés sur « Fuir »).
-- **État** : 🧪 sur la branche `geoffrey/dash-donjon` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Inventaire : recycler une pièce de stuff
+- **Pour le joueur** : clique une pièce fabriquée dans l'inventaire, bouton **♻ Recycler** ; une fenêtre montre ce que
+  tu récupères. La pièce est détruite et rend **60 %** de sa recette, arrondi vers le bas (un ingrédient demandé à 1
+  ne rend rien). Son amélioration et sa rune sont perdues. Impossible pour une pièce portée ou enregistrée dans un set :
+  la fenêtre le dit.
+- **Décisions** (Geoffrey) : seulement le stuff fabriqué avec une recette ; seulement la recette (pas le coût
+  d'amélioration) ; interdit si la pièce est portée ou dans un set.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Inventaire : trier et déplacer les objets
+- **Pour le joueur** : bouton **Trier** en haut de l'inventaire. Il range par type (blocs, minerais, matériaux,
+  stuff, puis treasures, blueprints…), du plus rare au plus commun, et bouche les trous. On peut aussi **glisser un
+  objet** dans un autre slot ; si le slot est pris, les deux objets échangent leur place.
+- **Décisions** (Geoffrey) : le tri suit la rareté de l'objet (commun, inhabituel…), pas la qualité R1-R7.
+  Choix de Claude à valider : treasures, blueprints, four et parchemins viennent après le stuff ; la plus rare d'abord.
+- **À suivre** : le glisser-déposer ne marche qu'à la souris (pas au doigt sur téléphone).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Lobby : l'équipe reste visible sur Jugement
+- **Pour le joueur** : en choisissant « ⚖ Jugement » dans « Où miner », on voit toujours son groupe à droite (comme pour
+  la Mine) : inviter, quitter, voir qui est prêt. Le bouton Lancer n'y est pas : on lance depuis la Mine ou une tour.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Treasure T1 : plus de treasures, plus de blueprints, moins de parts
+- **Pour le joueur** : dans les areas 0 à 2 (celles du Treasure T1), **60 %** de chance de trouver un treasure (40 %
+  au-delà). Dans un Treasure T1 : les blueprints des 6 pièces en fer (pioche, épée, casque, plastron, jambes, bottes)
+  tombent à **2 %** chacun (avant 1 %) ; four en fer, boussole en or et ceinture gobelin restent à 1 %. Les
+  Blueprint parts passent à **5 à 10** (avant 5 à 15). Le minerai d'**or** pèse **3** dans le sac (avant 4). Wiki à jour.
+- **Décisions** (Geoffrey) : valeurs ci-dessus.
+- **À suivre** : en simulation (3 mineurs sans stuff), 2 treasures par partie dans les areas ouvertes mais toujours
+  0,4 ramené : les mineurs ne trouvent pas ceux qui sont loin de leurs galeries.
+- **État** : ✅ en ligne le 25/10
+
+## 24/10/2026 — Geoffrey — Plus de treasures : 40 % par area
+- **Pour le joueur** : chaque area a maintenant **40 %** de chance de cacher un treasure (avant 30 %), dans toutes
+  les areas. Le wiki suit tout seul (le chiffre est lu dans le jeu).
+- **Décisions** (Geoffrey) : chance de treasure 30 % → 40 %.
+- **À suivre** : en simulation (équipe de 3 sans stuff, 5 parties), il y a plus de treasures dans les areas ouvertes
+  (1,2 → 1,6 par partie), mais les mineurs en ouvrent autant (0,4) : un treasure n'est visé qu'une fois découvert,
+  et les nouveaux tombent souvent dans des coins qu'ils ne fouillent pas. L'effet sera plus net pour une équipe
+  équipée qui explore plus. Si ça ne se sent pas, le levier est la découverte, pas la chance.
+- **État** : ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`, puis 60 % en areas 0 à 2)
+
+## 25/10/2026 — Geoffrey — Aura du stuff runé
+- **Pour le joueur** : une pièce visible (casque, torse, ceinture, jambes, bottes) identifiée R4+ avec une rune R4+
+  s'entoure d'un halo qui pulse, de la couleur de la qualité (magenta R4, orange R5, rouge R6, jaune R7) : faible en
+  R4-R5, moyen en R6, fort en R7. On le voit dans la mine, la mine instantanée, les tours, et sur les portraits (barre
+  du haut, lobby, onglet Stuff). Purement visuel.
+- **Décisions** (Geoffrey) : pièce ET rune R4+, la plus basse des deux donne couleur et force (en pratique la rune,
+  qui ne dépasse jamais la pièce) ; un fragment de rune ne compte pas ; halo dessiné derrière le mineur pour ne jamais
+  cacher sa texture ; visible partout.
+- **À suivre** : regarder en vrai en jeu si le halo « faible » se voit assez à la taille de la mine (réglable en
+  config, `AURA.looks`).
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Combats plus vivants : portée, recul, tacle refondu
+- **Pour le joueur** : les combats bougent. Chaque coup du mineur **repousse le mob d'un quart de bloc** ; le mob
+  revient au contact, le mineur le suit. On frappe dès qu'on est à **un demi-bloc** (plus besoin d'être collé), jamais
+  en diagonale. **Le tacle ne bloque plus le mineur sur place** : il peut bouger, mais seulement pour combattre le mob
+  qui le tient, jusqu'à sa mort (ou une provocation du barbare). Le **minotaure**, les **Séraphins / Diablotins** et le
+  **boss des tours** repoussent aussi le mineur (le boss garde sa projection de 6 blocs). Nouvelle stat **Résistance
+  au recul** (0 de base, aucune pièce ne la donne encore). Le wiki est à jour.
+- **Décisions** (Geoffrey) : recul 0,25 pour le mineur, 0 pour les mobs sauf minotaure / mobs et boss des tours
+  (0,25) ; portée 0,5 bord à bord, sans diagonale ; recul sur l'axe du coup, bloqué par un bloc ; résistance en % ;
+  tacle jusqu'à la mort du mob ou une provocation, avec une soupape anti-blocage (5 s sans pouvoir frapper, ou mob à
+  plus de 6 cases) ; cadence de coup des mobs 1 s (le gobelin, le méphite et l'occultiste gardent la leur).
+- **À suivre** : les **tours sont plus dures** (compo forte : 2 victoires sur 5 → 0 sur 5, ≈ 8 % de dégâts en
+  moins) : à rééquilibrer si besoin (recul du boss, PV). Où donner la Résistance au recul. Le boss des tours ne recule
+  pas sous les coups (choix de Claude, à valider). Regarder un combat en vrai dans le navigateur.
+- **État** : ✅ en ligne le 25/10
+
+## 25/10/2026 — Geoffrey — Don d'administration : choisir la qualité d'une pièce
+- **Pour le joueur** : rien. Outil des créateurs : `give-item.js` peut maintenant donner une pièce de stuff déjà
+  identifiée dans la qualité voulue (`--quality 5` → un Plastron en fer R5), toujours sans redémarrer le jeu.
+- **État** : ✅ en ligne le 25/10
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**

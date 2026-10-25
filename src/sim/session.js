@@ -90,8 +90,10 @@ export function tick(G){
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
   for(const m of G.miners){
-    // un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe déjà)
-    if(m.action && m.action.type!=='attack' && m.action.type!=='stun' && !m.action.data.fall && tackler(G,m)){ m.action=null; m.stats.tackled++; }
+    // un mob vient de le tacler : l'action en cours est interrompue (sauf une chute, un étourdissement, et sauf s'il frappe
+    // déjà ou s'approche du mob pour le frapper, data.fight)
+    if(m.action && m.action.type!=='attack' && m.action.type!=='stun' && !m.action.data.fall && !m.action.data.fight && tackler(G,m)){ m.action=null; m.stats.tackled++; }
+    if(!G.ladder[m.y]?.[m.x]) m.ky=0;   // poussé vers le haut hors d'une échelle : il retombe
     // un occultiste canalise sur lui : tout s'arrête (même un coup), sauf une chute ; il est étourdi pendant la canalisation
     if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) m.action=null;
     // canalisation arrêtée avant la fin (occultiste provoqué ou tué) : il est libéré tout de suite

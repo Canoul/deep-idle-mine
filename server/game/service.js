@@ -21,20 +21,21 @@ import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession, addItem, countOf } from '../../src/meta/inventory.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
-import { rollChestQuality } from '../../src/meta/piece.js';
+import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
-import { sanitizeSets, setOp, applySet, snapshot, publicSets } from '../../src/meta/sets.js';
+import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure } from '../../src/meta/loot.js';
 import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js';
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
-import { craft, learn } from '../../src/meta/craft.js';
+import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
+import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
@@ -65,6 +66,9 @@ const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nom
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
+const RECYCLE_ERRORS = { not_owned: 'Cette pièce n\'est plus dans ton inventaire.', not_recyclable: 'Seul le stuff fabriqué avec une recette se recycle.',
+                         in_set: 'Cette pièce est dans un set : retire-la du set (ou supprime le set) avant de la recycler.', bad_request: 'Demande invalide.' };
+const ARRANGE_ERRORS = { not_owned: 'Cet objet n\'est plus à cette place : l\'inventaire a été rechargé.', bad_request: 'Demande invalide.' };
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */
 const publicInventory = inv => ({ slots: inv.slots, unlocked: inv.unlocked });
 const STUFF_ERRORS = { bad_slot: 'Case inconnue.', not_owned: 'Cette pièce n\'est pas dans ton inventaire.',
@@ -415,13 +419,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const ok = [];
         for(const p of players) if(!await activeOf(p.account)) ok.push(p);
         if(!ok.length) return null;
-        const looks = {}, skills = {};
+        const looks = {}, gear = {}, skills = {};
         for(const p of ok){
           skills[p.account] = skillRanks(await loadSkills(p.account));
-          looks[p.account] = lookOf(await loadStuff(p.account, await loadInventory(p.account)));
+          const st = await loadStuff(p.account, await loadInventory(p.account));
+          looks[p.account] = lookOf(st);
+          gear[p.account] = gearOf(st);      // pièces complètes : seulement pour l'aura (src/meta/aura.js)
         }
         const rec = {
-          id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, skills, overrides: null,
+          id, mode: 'mi', seed: randomSeed(), players: ok, bots: 0, prefs: {}, looks, gear, skills, overrides: null,
           dev: false, speed: GAME.speed, startedAt: slot, finishAt: slot + instantDurationMs(GAME.speed),
           leaves: [], focus: [], status: 'running', result: null, seen: [], clock: null,
         };
@@ -544,16 +550,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* administration (server/admin/routes.js, jamais appelée par un joueur) : donne qty exemplaires d'un objet du jeu à
        un compte, sous le verrou de son inventaire (comme une action du joueur : mémoire et base changent ensemble, aucun
        redémarrage). Nom exact d'ITEMS, qty entier de 1 à ADMIN_MAX_QTY. */
-    async adminGive(accountId, item, qty){
+    /* quality (facultative, 1 à 7) : la pièce de stuff arrive déjà identifiée dans cette qualité */
+    async adminGive(accountId, item, qty, quality){
       if(typeof item !== 'string' || !Object.hasOwn(ITEMS, item)) fail('bad_item', 400, `« ${item} » n'est pas un objet du jeu (nom exact).`);
       if(!Number.isSafeInteger(qty) || qty < 1 || qty > ADMIN_MAX_QTY) fail('bad_request', 400, `Quantité : un entier de 1 à ${ADMIN_MAX_QTY}.`);
+      if(quality !== undefined){
+        if(!Number.isSafeInteger(quality) || !qualityDef(quality)) fail('bad_request', 400, 'Qualité : un entier de 1 à 7.');
+        if(!isStuff(item) || isRing(item)) fail('bad_item', 400, `« ${item} » n'a pas de qualité (seulement les pièces de stuff, hors anneaux).`);
+      }
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);
         if(ITEMS[item].cat === 'stuff' || ITEMS[item].stack === false) await loadStuff(accountId, inv);   // uid neufs
         const before = countOf(inv, item);
-        addItem(inv, item, qty);
+        const touched = addItem(inv, item, qty);
+        if(quality !== undefined) for(const i of touched) inv.slots[i].q = quality;
         await store.putInventory(accountId, JSON.parse(serialize(inv)));
-        return { item, qty, before, after: countOf(inv, item) };
+        return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });
     },
 
@@ -718,6 +730,39 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       });
     },
 
+    /* ranger l'inventaire : { action:'sort' } trie tout, { action:'move', from, to, item, uid? } déplace un objet (échange
+       avec celui qui est en to). Rien n'est créé ni retiré ; un déplacement renvoyé ne ré-échange pas (src/meta/inventory.js). */
+    async inventory(me, body = {}){
+      const { action } = body;
+      if(action !== 'sort' && action !== 'move') fail('bad_request', 400, ARRANGE_ERRORS.bad_request);
+      return withLock('inv:' + me.id, async () => {
+        const inv = await loadInventory(me.id);
+        if(action === 'sort') sortInventory(inv);
+        else {
+          const r = moveSlot(inv, { from: body.from, to: body.to, item: body.item, uid: body.uid });
+          if(r.error) fail(r.error, r.error === 'not_owned' ? 409 : 400, ARRANGE_ERRORS[r.error]);
+        }
+        await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { inventory: publicInventory(inv) };
+      });
+    },
+
+    /* recycler une pièce de stuff fabriquée { uid } : détruite, elle rend RECYCLE.share de sa recette (src/meta/craft.js).
+       Refusé si elle est dans un set (relu sous son verrou) ; une pièce portée n'est pas dans l'inventaire. Une demande
+       renvoyée ne trouve plus la pièce : rien n'est rendu deux fois. */
+    async recycle(me, body = {}){
+      if(!isInt(body.uid)) fail('bad_request', 400, RECYCLE_ERRORS.bad_request);
+      return withLock.many(['inv:' + me.id, 'sets:' + me.id], async () => {
+        const inv = await loadInventory(me.id);
+        await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
+        const sets = sanitizeSets(await store.getSets(me.id));
+        const r = recycleStuff(inv, body.uid, uid => inSomeSet(sets, uid));
+        if(r.error) fail(r.error, r.error === 'bad_request' || r.error === 'not_recyclable' ? 400 : 409, RECYCLE_ERRORS[r.error]);
+        await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        return { item: r.item, refund: r.refund, inventory: publicInventory(inv) };
+      });
+    },
+
     /* stuff : équiper une pièce de l'inventaire dans une case, ou la retirer. Inventaire et stuff changent ensemble. */
     /* amélioration : { action:'identify', uid, sacrifice } ou { action:'upgrade', uid }, opId. Le serveur tire le hasard ;
        une demande renvoyée retrouve son résultat (rien n'est tiré ni consommé deux fois). */
@@ -804,6 +849,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
+    aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))
       .filter(s => s.status === 'done' && !hasLeft(s, accountId)).map(s => s.endedAt || 0)),

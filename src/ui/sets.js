@@ -48,5 +48,7 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false 
   for(const h of HOSTS) if($(h)) $(h).onclick = onClick;
 
   render();
-  return { set(s){ if(s){ st = s; render(); } }, refresh: render };
+  /* setsOf(uid) : noms des sets qui retiennent cette pièce (elle ne se recycle pas) */
+  return { set(s){ if(s){ st = s; render(); } }, refresh: render,
+           setsOf: uid => st.list.filter(s => Object.values(s.stuff ?? {}).includes(uid)).map(s => s.name) };
 }

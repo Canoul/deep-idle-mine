@@ -45,6 +45,8 @@ export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object
 
 /* calques à dessiner pour un mineur d'après son équipement (look : { case: objet }) */
 export const armorLayers = look => SKIN.layers.map(slot => SKIN.armor[look?.[slot]]).filter(Boolean);
+/* les mêmes calques avec leur case : [[case, texture]…] (l'aura d'une pièce se lit par case, src/meta/aura.js) */
+export const armorPieces = look => SKIN.layers.filter(slot => SKIN.armor[look?.[slot]]).map(slot => [slot, SKIN.armor[look[slot]]]);
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);

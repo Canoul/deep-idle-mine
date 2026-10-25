@@ -71,6 +71,8 @@ select option{background:var(--panel)}
 .slot.empty{cursor:default;opacity:.6}
 .slot:not(.empty):hover{outline:var(--u) solid var(--acc-lt);outline-offset:var(--u)}
 .slot.sel{border-image-source:url(../../textures/ui/slot_sel.png)}
+.slot.dropTo{outline:var(--u) dashed var(--acc-lt);outline-offset:calc(-2*var(--u))}
+.invHead #invSort{margin-left:auto}
 .slot img{width:70%;height:70%;pointer-events:none}
 .slot .noicon{color:var(--mut);text-transform:uppercase}
 .slot .q{position:absolute;right:var(--u);bottom:0;font-size:var(--fs-s);font-variant-numeric:tabular-nums;pointer-events:none;

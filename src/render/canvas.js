@@ -32,7 +32,7 @@ export function createRenderer(cv){
     if(m._to) return shownPos(curG, m, frameNow);
     const a=m.action;
     if(a&&(a.type==='move'||a.type==='dash')){ const p=Math.min(1,a.t/a.dur); return [a.data.fx+(a.data.x-a.data.fx)*p, a.data.fy+(a.data.y-a.data.fy)*p]; }
-    return [m.x,m.y];
+    return [m.x+(m.kx||0),m.y+(m.ky||0)];   // recul : décalage dans sa case
   }
 
   /* le mineur (src/render/miner-sprite.js), animé à l'heure de l'image en cours */
@@ -92,7 +92,7 @@ export function createRenderer(cv){
     }
     for(const o of G.mobs){
       if(o.hp<=0) continue;
-      const [ox,oy]=o._to ? shownPos(G,o,frameNow) : [o.x,o.y], px=ox*TILE, py=sy(oy);
+      const [ox,oy]=o._to ? shownPos(G,o,frameNow) : [o.x+(o.kx||0),o.y+(o.ky||0)], px=ox*TILE, py=sy(oy);
       if(o.type===DUCK.type){
         /* Gallianix : à la surface, toujours visible ; il sautille (plus haut quand il saute un trou) ; pseudo au-dessus,
            en jaune pour ne pas le confondre avec un joueur */

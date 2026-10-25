@@ -28,6 +28,7 @@ import { joinCodeFromHash } from './shared/party.js';
 import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
+import { aurasOf } from './meta/aura.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
@@ -77,7 +78,7 @@ const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : m�
 try { for(const k of Object.keys(localStorage)) if(k.startsWith('deepIdleMine.inventory') || k === 'deepIdleMine.global') localStorage.removeItem(k); } catch {}
 
 /* ---------- inventaire ---------- */
-const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, worn:() => stuff.worn(), furnaces:() => furnace.state() });
+const renderInventory = (inv, fresh) => drawInventory(inv, fresh, { onOpen:openTreasure, onLearn:useBlueprint, onEquip:equipFromInventory, onUnlock:unlockFurnace, onSort:() => arrangeInventory({ action:'sort' }), onMove:op => arrangeInventory({ action:'move', ...op }), onRecycle:recyclePiece, setsOf:uid => setsUI.setsOf(uid), worn:() => stuff.worn(), furnaces:() => furnace.state() });
 
 /* identifiant de demande (getRandomValues : randomUUID n'existe pas hors HTTPS / localhost) */
 const newOpId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -89,6 +90,25 @@ async function openTreasure(item){
     ui.fresh.clear();
     setInventory(r.inventory, r.loot);
     showLoot(item, r.loot);
+  } catch(e){ lootError(e.message); }
+}
+
+/* ranger l'inventaire (trier, glisser un objet) : le serveur range et renvoie l'inventaire ; s'il refuse (l'objet n'était
+   plus à sa place), on recharge l'inventaire du serveur */
+async function arrangeInventory(op){
+  ui.fresh.clear();                // les slots changent de place : plus rien à mettre en évidence
+  try { setInventory((await gameApi.inventory(op)).inventory); }
+  catch(e){ try { setInventory((await gameApi.state()).inventory); } catch(_){} lootError(e.message); }
+}
+
+/* recycler une pièce (confirmée dans la fenêtre de l'inventaire) : le serveur la détruit et rend les ingrédients */
+async function recyclePiece(uid){
+  try {
+    const r = await gameApi.recycle(uid);
+    ui.fresh.clear();
+    setInventory(r.inventory, r.refund);
+    const got = Object.entries(r.refund).map(([k, n]) => `${n} ${k}`).join(', ').replace(/[&<>]/g, '');
+    $('invInfo').innerHTML = `<span class="okmsg">♻ ${r.item.replace(/[&<>]/g, '')} recyclé${got ? ` : ${got}` : ' (rien à récupérer)'}.</span>`;
   } catch(e){ lootError(e.message); }
 }
 
@@ -218,6 +238,7 @@ const accountUI = createAccountUI($('account'), acct, {
 const lobby = setupLobby({
   party: partyApi,
   look: () => lookOf(stuff.worn()),
+  auras: () => aurasOf(stuff.worn()),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
@@ -566,7 +587,7 @@ function frame(now){
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');
-    if(face) drawPortrait(face, lookOf(stuff.worn()));                  // portrait : le mineur avec son stuff
+    if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff
     navSession.classList.toggle('live', !!rec);
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`

@@ -27,6 +27,7 @@ export function createMiner(id, opts={}){
     helpSkip: null,                 // mob dont il a abandonné l'aide (trop loin, HELP.keep) : il n'y retourne pas
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
+    auras: opts.auras || {},        // aura des pièces visibles ({ case: qualité }, src/meta/aura.js), visuel seulement
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
     carac,                          // caractéristiques du mineur (oxygène max, vitesses, pods, dégâts…)
     xpPct: Number.isFinite(opts.xpPct) && opts.xpPct > 0 ? opts.xpPct : 0,   // % d'XP en plus sur sa part (Anneau du nerd)

@@ -123,3 +123,13 @@ test('prêt tout le temps (23/10) : le bouton principal ne permet pas de l\'annu
   assert.deepEqual(launchState({ account:{ id:'BBBB2222' }, party:p }), { can:false, label:'✔ Prêt tout le temps' });
 });
 
+
+test('Jugement (25/10) : jauges à gauche ET équipe à droite, comme pour la Mine ; sans Lancer ni préférences', async () => {
+  const { lobbyCards } = await import('../src/ui/lobby.js');
+  const j = lobbyCards({ view:'jugement', mode:'mine' });
+  assert.deepEqual(j, { judgment:true, mi:false, team:true, launch:false, prefs:false, dev:false });
+  const m = lobbyCards({ view:null, mode:'mine', dev:true });
+  assert.deepEqual(m, { judgment:false, mi:false, team:true, launch:true, prefs:true, dev:true });
+  const mi = lobbyCards({ view:null, mode:'mi' });
+  assert.equal(mi.mi, true); assert.equal(mi.team, false);
+});

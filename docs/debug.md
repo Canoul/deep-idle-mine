@@ -2440,7 +2440,127 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
-### Donjon : barbare sur le seuil = entré (Geoffrey, 25/10) — 🧪 branche `geoffrey/dash-donjon`
+### Don d'administration avec qualité (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `server/game/service.js` `adminGive(accountId, item, qty, quality)` : `quality` facultative, entier 1 à 7
+  (`qualityDef`), seulement pour une pièce de stuff hors anneau (`isStuff && !isRing`) ; les slots créés reçoivent
+  `q` (identifiée, qualité seule, comme une identification depuis le 22/10). `server/admin/routes.js` lit `quality`
+  dans le corps ; `scripts/give-item.js` option `--quality` (vérifiée avant l'appel). Sans `quality` : inchangé.
+- **Tests** : `tests/admin.test.js` +1 (R5 et R7 donnés et relus, refus : Treasure, anneau, 0, 8, 4.5, '5'),
+  `tests/give-item.test.js` +1 (`--quality 5`, refus 0 / 8 / R5) : 9/9 ✅.
+- **Point fragile** : `give-admin.js` (hors ligne, avec redémarrage) reste l'outil pour R1 à R7 d'un coup.
+
+### Combat dynamique : portée, recul, tacle refondu (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/sim/knock.js` (nouveau : `gap`, `inReach`, `push`, `knockOf`, `driftsAway`, `recenter`) : chaque
+  entité garde un décalage `kx`/`ky` (−0,5…+0,5) dans sa case ; `push` passe sur la case voisine au-delà d'une
+  demi-case si `canEnter`, sinon décalage remis à 0 (jamais à cheval sur un bloc). Config : `COMBAT` (reach 0,5,
+  knock 0,25, tackleGiveUp 5 s, tackleLeash 6), `STATS.knockRes` (0), `MOBS.hitEvery` (1) / `MOBS.knock`
+  ({ minotaure: 0,25 }), `TOWER.mobs.hitEvery/knock`, `TOWER.boss.push` ; stat ajoutée à `statLabels`, `statUnits`,
+  `shownStats`, `DEV_TUNABLES`, wiki (`src/wiki/data.js`).
+- **Mine** : `src/sim/mobs.js` : `mobCanEnter` (mimic jamais, canard sur le sol de sa zone via `duckCanEnter`, boss
+  dans sa salle, pas sur un mineur), `keepsGrab`/`grab` (tacle à portée, gardé jusqu'à mort / provocation / soupape ;
+  `o.grabHit` = dernier coup du mineur taclé, posé à la prise), `strike` (coups qui poussent), `closeIn` (le mob
+  revient à portée : recentrage s'il est à côté, sinon un pas). Le mob garde son tacle en tombant ; `ky` remis à 0 hors
+  échelle (il retombe). `src/sim/actions.js` : coup seulement si `inReach`, puis `push` du mob ; `o.grabHit` ; un pas
+  remet `kx/ky` à 0 ; `fx/fy` d'un pas partent du décalage (affichage). `src/sim/ai.js` : `fight` frappe à portée,
+  sinon se recentre (action `move` sur sa case) ou avance ; taclé → `data.fight` sur l'action, que
+  `src/sim/session.js` n'interrompt plus. `goFight`, chasse au canard et boss du donjon : `|| inReach`.
+- **Tours** : `src/sim/tower/session.js` : `mobReach` (depuis la case du mob la plus proche : 2 cases de haut),
+  `mobFits`, `pushMiner` (jamais en plein pas), tacle comme dans la mine, mob qui suit, `hitMob` pousse, boss : recul
+  0,25 quand il ne projette pas (projection 6 cases gardée), lui ne recule pas. IA : taclé → frappe / se recentre /
+  `planTo` vers le mob ; un mineur repoussé à côté d'un mob se recentre (sinon `planTo` renvoyait un chemin vide :
+  « Attend », compté dans `G.stats.blocked`, vu sur les seeds 11 et 15).
+- **Affichage** : `kx/ky` dans `src/shared/view.js` et `tower-view.js` ; `src/render/canvas.js`, `tower.js`,
+  `instant.js` (`instantPos`) les dessinent.
+- **Tests** : `tests/knock.test.js` (7, nouveau), `tests/combat.test.js` (11, nouveau : recul, mur, mimic, combat réel
+  sans séparation > 2 cases, tacle à portée, tacle qui dure, soupapes 5 s et 6 cases, vol du gobelin à distance,
+  minotaure + résistance 100 %, vue), `tests/tower.test.js` (+2). Adaptés : `mobs.test.js` (le mob reste à 1 ou 2 cases
+  au lieu d'exactement 1), `miner.test.js` (nom). Lancés : knock, combat, mobs, miner, goblin, mephite, skills, duck,
+  dungeon, trap, spells, winch, mule, team, fall, session, tower, view, instant-ui, live, game-replay, carac, stuff,
+  lobby, wiki, sets, steel-gear, amelioration, rune, anneaux, game-service ✅. Treuil, Mule, effroi au donjon :
+  leurs tests passent sans changement.
+- **Simulation** (5 sessions, branche / main) : solo coffre 1 623 / 1 703 pods, profondeur 99,6 / 99 ; à 3 coffre
+  4 161 / 4 075, profondeur 196 / 193, mobs tués 398 / 422, tacles 173 / 187, vols 820 / 832 ; **0 blocage**.
+  Tours (compo forte du test, seeds 11-15) : victoires 0/5 (main 2/5), PV du boss restants 45-1 350 (main 0-450),
+  dégâts ≈ −8 %, toit atteint ≈ 15 s plus tard ; 0 blocage.
+- **Points fragiles** : l'occultiste canalise 5 s = la soupape 5 s : un tacle d'un autre mob peut sauter pendant
+  l'étourdissement (il se reprend aussitôt si le mob est à portée). Le coup du mineur est perdu si le mob a été
+  repoussé hors de portée pendant l'élan (par un autre mineur). Le recentrage est une action `move` sur sa propre case
+  (durée |k| × pas). ⚠️ Pas regardé dans un vrai navigateur.
+
+### Aura du stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `AURA` (config : seuil R4, paliers, rayon / opacité / pulsation) ; `src/meta/aura.js` (`auraQ`, `aurasOf`,
+  `sanitizeAuras`, `auraLook`, pur) ; `src/render/aura.js` (halo pixel art calculé depuis les pixels de la texture,
+  gardé en cache par texture + couleur + rayon ; `drawAura`). Dessiné **avant le corps** (`miner-sprite.js`,
+  `portrait.js`) : un premier essai par-dessus le corps recouvrait le visage en R7. `skins.js` : `armorPieces`.
+- **Données** : champ `auras: { case: qualité }` à côté de `look` (format de `look` inchangé). Calculé depuis
+  `record.gear` : `minerSpecs` (session + tours), `instantSpecs` ; le record de la **MI enregistre maintenant `gear`**
+  (`server/game/service.js`, seulement pour l'aura : les caractéristiques de la MI restent calculées depuis `look`).
+  Sessions anciennes sans `gear` : pas d'aura. Copié dans le mineur (`mineur.js`, `instant/session.js`,
+  `tower/session.js`) et envoyé par `view.js`, `instant-view.js`, `tower-view.js`. Lobby : `game.aurasFor` →
+  `publicParty` (`auras`) → `portraitAuras` (revérifié par `sanitizeAuras`). Portrait : boucle `requestAnimationFrame`
+  seulement s'il y a une aura, arrêtée quand le canvas change ou quitte la page.
+- **Tests** : `tests/aura.test.js` (10 : seuils, plus basse des deux, fragment refusé, valeurs absurdes, cases
+  visibles, palier/couleur, session → vue, MI, tours, lobby) ; `tests/party.test.js` +1. aura, party, lobby,
+  instant-server, game-service, game-replay, view, skins, tower, instant-mine, session, miner, stuff, amelioration,
+  anneaux ✅. Rendu vérifié ✅ dans Edge sans fenêtre (page d'aperçu temporaire, avec le vrai `createMinerSprite`,
+  miroir compris). ⚠️ Pas vu dans une vraie partie (il faut une pièce R4+ runée sur un compte de test).
+- **Points fragiles** : le halo lit les pixels de la texture (`getImageData`) : les textures doivent rester servies par
+  le même site. Le portrait du haut est redemandé à chaque mise à jour du HUD : la clé (pièces + qualités d'aura) évite
+  de relancer la boucle.
+- **Mise en ligne** : simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,2, prof 193). Pas d'anti-triche :
+  aucune ressource ne bouge.
+
+### Treasures : 40 % par area (Geoffrey, 24/10) — ✅ en ligne le 25/10 (avec `geoffrey/tresor-60`)
+- **Quoi** : `AREAS[*].chestChance` 0,3 → 0,4 (les 7 areas). Wiki : `D.treasureChanceText()` remplace le « 30 % »
+  écrit à la main (`#w-treasure-chance`). GAME_DESIGN §2 Treasures.
+- **Tests** : wiki (9, dont 1 nouveau), treasure, world, loot, game-replay ✅ (54).
+- **Simulation** `--miners 3 --count 5`, mêmes seeds : 0 bloquée ✅ ; areas 3,2, profondeur 193,4, coffre 4 075 pods :
+  identiques à 0,3 (le tirage du treasure ne change pas le reste de l'area) ; treasures présents dans les areas
+  ouvertes 1,2 → 1,6, ouverts 0,4 → 0,4 (seed 7919 : 2/2 → 2/3).
+
+### Treasure T1 : 60 % en areas 0-2, BP en fer 2 %, parts 5-10 (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/config.js` : `AREAS[0..2].chestChance` 0,4 → 0,6 (areas 3+ : 0,4, de `geoffrey/tresor-40`, inclus) ;
+  `LOOT['Treasure T1']` : Blueprint parts 5-15 → 5-10, BP pioche / épée / casque / plastron / jambes / bottes en
+  fer 0,01 → 0,02 (four, boussole, ceinture : 0,01). Total famille blueprint 9 % → 15 %. GAME_DESIGN §2 Treasures ;
+  wiki : date du bandeau 25/10, « 40 à 60 % » vient de `treasureChanceText()`.
+- **Tests** : wiki (chance par area, total blueprint 0,15), loot, treasure, world ✅ (46) ; `npm run test:anticheat` ✅ (85).
+- **Simulation** `--miners 3 --count 5` : 0 bloquée ✅ ; areas 3,0, profondeur 190,2, coffre 4 063 pods ; treasures
+  présents dans les areas ouvertes 2,0, ouverts 0,4.
+- **Point fragile** : la hausse ne se voit presque pas en simulation (ouverts 0,4 à 30, 40 et 60 %) : c'est la
+  découverte qui limite, pas la chance.
+- **Ajout (25/10)** : `BLOCKS[5]` (Or) `w` 4 → 3 ; GAME_DESIGN §Poids. Tests level, steel-gear, tier2, wiki, inventory,
+  share ✅ (78). Simulation `--count 5` : 0 bloquée, coffre 4 040 pods (4 063 avant) : l'or n'apparaît qu'en area 3,
+  à peine atteinte sans stuff ; l'effet se verra sur les équipes équipées.
+
+### Lobby : équipe visible sur Jugement (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/ui/lobby.js` : nouvelle fonction pure `lobbyCards({ view, mode, dev })` (cartes visibles : judgment, mi,
+  team, launch, prefs, dev) ; `render()` l'utilise. Vue Jugement : `teamCard` visible, `launchBtn` caché, texte
+  « choisis la Mine ou une tour ». GAME_DESIGN §Jugement.
+- **Tests** : `tests/lobby.test.js` +1 ✅ (14). ⚠️ Pas regardé dans un vrai navigateur.
+
+### Inventaire : trier et déplacer (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/meta/inventory.js` : `sortInventory(inv)` (clé : groupe `INVENTORY.sortGroups` par `ITEMS[].cat`, puis
+  `-rarityDef().rank`, puis ordre de `ITEMS`, puis ordre actuel ; tassé, sans trous) et `moveSlot(inv, { from, to, item, uid })`
+  (échange ; `to` < `gridSize` ; refuse si `slots[from]` n'est pas l'item/uid annoncé : un renvoi ne ré-échange pas).
+  Serveur : `POST /api/game/inventory` `{ action:'sort' }` | `{ action:'move', … }` (`server/game/service.js` `inventory()`, verrou
+  `inv:`). Navigateur : `gameApi.inventory`, bouton `#invSort`, glisser-déposer HTML5 dans `src/ui/inventory.js`, `arrangeInventory`
+  dans `src/main.js` (refus → inventaire relu). Familles réelles : `bloc`, `combustible` (charbon), `ore`, `residu`…
+- **Tests** : `tests/inventory-arrange.test.js` (6), `tests/inventory.test.js` ✅ ; `tests/anticheat/arrange.test.js` (300
+  demandes en rafale / trafiquées : mêmes objets, mêmes quantités, mêmes uid) ✅.
+- **⚠️ À vérifier** : pas essayé dans un vrai navigateur (glisser-déposer, bouton). Pas de tactile (le drag HTML5 ne
+  marche pas au doigt).
+
+### Recycler une pièce de stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `RECYCLE.share` 0,6 (config). `src/meta/craft.js` : `recyclable(item)` (`isStuff` + recette), `recycleRefund(item)`
+  (`floor(n × share / qty + 1e-9)`, les 0 retirés ; le 1e-9 évite 62,999… → 62), `recycleStuff(inv, uid, locked)`.
+  `src/meta/sets.js` `inSomeSet`. Serveur `POST /api/game/recycle { uid }` (verrous `inv:` + `sets:`, sets relus). Pas d'opId :
+  la pièce est unique, un renvoi tombe sur `not_owned`. Navigateur : bouton `.invRecycle`, fenêtre `showRecycle` (réutilise
+  `#loot`), `setsUI.setsOf(uid)` pour prévenir avant d'envoyer, `recyclePiece` dans `src/main.js`. Wiki : carte Inventaire, date.
+- **Tests** : `tests/recycle.test.js` (4) ✅ ; `tests/anticheat/recycle.test.js` (rafale de 8 → 1 seul versement ; portée,
+  set, uid trafiqués refusés) ✅ ; suite anti-triche ✅ (89).
+- **⚠️ À vérifier** : fenêtre et bouton pas vus dans un vrai navigateur.
+
+### Donjon : barbare sur le seuil = entré (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Cause** : `d.barbIn` (`updateDungeons`, `src/sim/dungeon.js`) n'était vrai qu'avec un barbare à l'**intérieur**. Entrée sur
   la ligne du boss (`hry` = ligne du bas, 1 fois sur 3) et boss déjà contre l'entrée (`updateBoss` le fait marcher vers
   le barbare dès qu'il est sur le seuil) : le barbare se bat depuis la case d'entrée, n'entre jamais, `barbIn` reste faux,
@@ -2448,7 +2568,7 @@ Règles (voir CLAUDE.md) :
 - **Correction** : `barbIn` dès qu'un barbare `isIn` (intérieur ou seuil). La découverte de la structure reste sur l'intérieur.
 - **Tests** : `tests/dungeon.test.js` +1 (seuil, boss en x 13 : les 2 autres combattent ; échouait avant) ✅ (14).
 
-### Dash : chemin, visée, étourdissement (Geoffrey, 25/10) — 🧪 branche `geoffrey/dash-donjon`
+### Dash : chemin, visée, étourdissement (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `src/sim/spells.js` (bloc Dash réécrit) : `dashStep` (marche ; chute ≤ fallMax ; saut d'1 bloc si les deux cases
   du dessus sont libres ; jamais en case inconnue, piège caché, donjon interdit, ni à travers un mob), `aimOf` (helpFoe si
   helping, sinon foe, sinon boss du donjon rejoint), `dashTo` (Dijkstra ≤ range cases jusqu'au contact, chute ≤ CFG.maxFall),
@@ -2463,3 +2583,6 @@ Règles (voir CLAUDE.md) :
 - **Simulation** `--miners 3 --count 5 --skills mixed --spells dash` : 0 bloquée ✅ ; areas 3,6 = 3,6, profondeur 194 → 202,
   coffre 4 449 → 4 468 pods ; sorts du barbare ≈ 59 → 57 par session ; mobs tués 432 → 434 au total.
 - **⚠️ À vérifier** : nombre de Dash qui touchent un mob pas mesuré ; rendu d'un saut pas vu en vrai.
+- **Fusion avec le combat dynamique (25/10)** : `finishDash` remet `kx`/`ky` à 0 comme un pas, et `fx`/`fy` partent du
+  décalage. Le coup du Dash ne passe pas par `inReach` (contact en cases, comme avant). Tests spells, dungeon, mobs, combat,
+  knock, trap, help, goblin, wiki ✅ (101) ; simulation normale et `--skills mixed --spells dash` : 0 bloquée.

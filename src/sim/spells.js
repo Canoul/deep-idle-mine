@@ -125,13 +125,13 @@ function tryDash(G,m,a){
 }
 function startDash(G,m,path,cells,mob){
   const [x, y] = path.at(-1) ?? [m.x, m.y];
-  startAction(m,'dash', cells*moveT(G,m)/SPELL.dash.speed, { x, y, fx:m.x, fy:m.y, path:[[m.x, m.y], ...path],
+  startAction(m,'dash', cells*moveT(G,m)/SPELL.dash.speed, { x, y, fx:m.x+(m.kx||0), fy:m.y+(m.ky||0), path:[[m.x, m.y], ...path],
     dir: Math.sign(x-m.x) || Math.sign((mob?.x ?? m.x)-m.x) || m.face || 1, mob:mob?.id ?? null });
   m.status = 'Dash';
 }
 export function finishDash(G,m,a){
   const d = a.data, S = SPELL.dash;
-  m.face = d.dir; m.x = d.x; m.y = d.y;
+  m.face = d.dir; m.x = d.x; m.y = d.y; m.kx = 0; m.ky = 0;   // comme un pas : recentré dans sa case (src/sim/knock.js)
   if(m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
   const o = d.mob!=null ? G.mobs.find(q => q.id===d.mob && q.hp>0) : null;
   const hit = o && near(m,o);
