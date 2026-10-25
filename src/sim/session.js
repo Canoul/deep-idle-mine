@@ -24,7 +24,7 @@ export function newSession(seed, opts={}){
   const n = opts.miners ?? 1;
   const specs = Array.isArray(n) ? n : (n>1 ? TEAM.slice(0,n) : [{}]);
   const G = {
-    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt),
+    seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt), glyphRng:mulberry32(seed^GLYPHS.dropSalt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
     areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,
@@ -167,10 +167,13 @@ export function endSession(G){
   const { bags, xp, segments } = shareBySegments(G, present);
   G.summary.segments = segments;
   G.summary.shares = G.roster.map(m => ({ miner:m.name, color:m.color, account:m.account,
-    left: m.left!=null, bag: m.left!=null ? {} : bags.get(m), xp: m.left!=null ? 0 : xp.get(m),
+    left: m.left!=null, bag: m.left!=null ? {} : withFound(bags.get(m), m), xp: m.left!=null ? 0 : xp.get(m),
     /* XP de spécialisation : XP.specPct % de sa part, pour l'arbre figé au lancement (rien sans arbre) */
     specTree: m.skillTree, specXp: m.left!=null || !m.skillTree ? 0 : specXpOf(xp.get(m)) }));
 }
+
+/* glyphes trouvés par ce mineur (drop) : ajoutés à SA part, pas au coffre commun */
+const withFound = (bag, m) => { const b = { ...bag }; for(const g of m.glyphFound || []) b[g] = (b[g] || 0) + 1; return b; };
 
 const muleLabel = G => 'Sac de ' + (G.roster.find(m => m.id===G.mule.carrier)?.name ?? 'la Mule');
 
