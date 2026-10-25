@@ -590,7 +590,8 @@ export const RUNE = {
 };
 
 /* ---- Aura du stuff (src/meta/aura.js, dessin : src/render/aura.js) ----
-   25/10/2026 (Geoffrey) : une pièce visible sur le corps (calques de src/skins.js), identifiée R`minQ`+ ET portant une
+   25/10/2026 (Geoffrey) : une pièce dessinée sur le mineur (calques du corps de src/skins.js ; la pioche et l'épée
+   quand il les a en main, ajoutées le même jour), identifiée R`minQ`+ ET portant une
    vraie rune R`minQ`+ (un fragment ne compte pas), émet une aura : un halo de la couleur de la police de la qualité la
    plus basse des deux (UPGRADE.qualities), qui pulse. Visuel seulement. Ex. plastron R6 + rune R5 : halo orange faible.
    looks : radius = largeur du halo en pixels de texture (16×16) ; alpha = opacité au plus fort ; pulse = part de

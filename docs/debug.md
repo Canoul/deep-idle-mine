@@ -2586,3 +2586,14 @@ Règles (voir CLAUDE.md) :
 - **Fusion avec le combat dynamique (25/10)** : `finishDash` remet `kx`/`ky` à 0 comme un pas, et `fx`/`fy` partent du
   décalage. Le coup du Dash ne passe pas par `inReach` (contact en cases, comme avant). Tests spells, dungeon, mobs, combat,
   knock, trap, help, goblin, wiki ✅ (101) ; simulation normale et `--skills mixed --spells dash` : 0 bloquée.
+
+### Aura des outils en main (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Symptôme** (retour de Geoffrey) : la pioche n'a pas d'aura quand le mineur mine. Pas un bug : la première version
+  limitait l'aura aux calques du corps (`SKIN.layers`).
+- **Quoi** : `src/meta/aura.js` (`SLOT_TEX` : armure + `pioche` → `SKIN.pickaxe`, `epee` → `SKIN.sword` ; `aurasOf` et
+  `sanitizeAuras` lisent ces cases, jamais la pioche en bois `base`) ; `src/skins.js` `toolSlotOf(look, action)` (même
+  choix que `toolOf`) ; `src/render/miner-sprite.js` : `drawAura` dans le repère tourné de l'outil, avant l'outil.
+  Les données (`auras`) passaient déjà : rien à changer côté serveur ni vues.
+- **Tests** : `tests/aura.test.js` (11 : cases dessinées avec pioche / épée, anneau exclu, `toolSlotOf`) ✅ ; skins,
+  lobby ✅. Rendu vérifié ✅ dans Edge sans fenêtre (vrai `createMinerSprite` : pioche R5 / R7 en miroir, épée R6, bois).
+- **Point fragile** : l'outil fait 13 px ; le halo faible (1 px × 13/16) est discret.
