@@ -72,8 +72,9 @@ test('parcours : invité, préférences, lancement, fin refusée avant l\'heure,
 test('aucune route ne permet d\'écrire dans un inventaire', async () => {
   const b = browser();
   await b('POST', '/api/account/guest', {});
+  /* /api/game/inventory existe depuis le 25/10 (trier, déplacer : src/meta/inventory.js) : il refuse ce corps (400) */
   for(const p of ['/api/game/inventory', '/api/game/credit', '/api/game/state'])
-    assert.ok([404, 405].includes((await b('POST', p, { slots:[{ item:'Diamant', qty:1e6 }] })).status), p);
+    assert.ok([400, 404, 405].includes((await b('POST', p, { slots:[{ item:'Diamant', qty:1e6 }] })).status), p);
   assert.deepEqual((await b('GET', '/api/game/state')).data.inventory.slots, []);
 });
 
