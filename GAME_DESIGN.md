@@ -125,7 +125,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 
 ### K hole *(décisions du créateur, 25/10/2026 ; valeurs provisoires, `KHOLE` en config)*
 
-- Un **k hole** est un portail en forme de trou noir, enfoui dans une area à la place d'un bloc de terrain : **1 % de chance par area** *(provisoire)*, tirage à part de la seed (le reste de l'area ne change pas), jamais dans un donjon ni un piège. Incassable.
+- Un **k hole** est un portail en forme de trou noir, enfoui dans une area à la place d'un bloc de terrain : **2 % de chance par area** *(provisoire ; 1 % jusqu'au 25/10/2026)*, tirage à part de la seed (le reste de l'area ne change pas), jamais dans un donjon ni un piège. Incassable.
 - **Déclenchement : dès qu'un mineur le découvre** (pas de réglage dans le lobby). Le journal annonce « Un k hole s'ouvre… » ; **3 s** plus tard *(provisoire)*, **tout le groupe** est aspiré, où que soit chacun.
 - **La dimension : une carte tirée au hasard parmi celles enregistrées** (même chance pour chacune, *provisoire* ; même seed → même carte). Chaque carte est « au fond d'une mine », à la profondeur de l'area du k hole (mobs, PV et treasures de cette area, sauf mention contraire), entourée de murs. Sa durée est **prise sur l'heure de session**.
 - **Règles communes à toutes les cartes** : l'oxygène **ne baisse pas** ; les pods **n'ont pas de limite** ; les mineurs **ne remontent jamais** (il n'y a pas de surface) : ils restent jusqu'à la fin du compteur (ou la fin de la carte). Pas d'apparition de mobs normale, rien ne se débloque, la profondeur atteinte ne compte pas, pas de focus d'area.

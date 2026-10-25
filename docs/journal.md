@@ -19,7 +19,7 @@ Modèle d'entrée :
 ---
 
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
-- **Pour le joueur** : très rarement (1 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
+- **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
   s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension, une carte tirée au hasard parmi 4 :
   **Filons** (petite mine très riche, 5 min), **Arène des minotaures** (2 minotaures à tuer, 2 min), **Salle au trésor**
   (2 treasures de tier au hasard, 2 min) et **Vagues** (vagues de 5 mobs, 3 min). Pas besoin d'oxygène, pas de limite de

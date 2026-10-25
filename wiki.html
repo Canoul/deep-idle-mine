@@ -24,6 +24,7 @@
   <a href="#blocs">Les blocs</a>
   <a href="#mobs">Les mobs</a>
   <a href="#donjon">Le donjon</a>
+  <a href="#khole">Le k hole</a>
   <a href="#mi">La mine instantanée</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
@@ -159,6 +160,29 @@
 <section id="donjon">
   <h1>Le donjon</h1>
   <div id="w-dungeon"></div>
+</section>
+
+<section id="khole">
+  <h1>Le k hole</h1>
+  <p class="lead">Un trou noir enfoui dans la roche, rare (environ <b>2 % de chance par area</b>). Dès qu'un mineur le découvre, il s'ouvre : <b>3 secondes</b> plus tard, <b>tout le groupe</b> est aspiré dans une autre dimension, où qu'il soit.</p>
+  <h2>Dans la dimension</h2>
+  <ul>
+    <li>Une carte tirée au hasard parmi quatre (voir ci-dessous). Le temps passé là-bas <b>compte dans l'heure de session</b>.</li>
+    <li>Pas besoin d'oxygène, <b>pas de limite de pods</b>, et pas de surface : les mineurs ne remontent pas, ils restent jusqu'à la fin du compteur (affiché en haut de l'écran).</li>
+    <li>Les mobs et les treasures sont ceux de l'area où était le k hole.</li>
+  </ul>
+  <table>
+    <tr><th>Carte</th><th>Ce qu'on y trouve</th><th>Durée</th></tr>
+    <tr><td><b>Filons</b></td><td>une petite mine très riche : fer, or, graphite, diamant, un donjon, 5 pièges et quelques treasures</td><td>5 min</td></tr>
+    <tr><td><b>Arène des minotaures</b></td><td>un couloir avec un minotaure à chaque bout ; vaincus, ils laissent des Cristaux de pleine lune. Fini quand les deux sont morts</td><td>2 min</td></tr>
+    <tr><td><b>Salle au trésor</b></td><td>2 treasures d'un tier au hasard (T1 à T3). Fini dès qu'ils sont ouverts</td><td>2 min</td></tr>
+    <tr><td><b>Vagues</b></td><td>des vagues de 5 mobs ; une vague vaincue, la suivante arrive</td><td>3 min</td></tr>
+  </table>
+  <h2>Le retour</h2>
+  <ul>
+    <li>À la fin, tout le groupe revient <b>à la surface de la mine</b>, avec tout ce qu'il porte : il n'y a plus qu'à le déposer au coffre. Pendant ce temps, la mine n'a pas bougé.</li>
+    <li>S'il ne reste que <b>30 secondes</b> de session, le k hole se referme pour laisser le temps de tout déposer.</li>
+  </ul>
 </section>
 
 <section id="mi">

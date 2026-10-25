@@ -137,7 +137,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   repoussent le mineur de 0,25 ; stat **Résistance au recul** (%, 0, sans source). **Tacle refondu** : à portée, le
   mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,
   6 cases). Ancien (21/10) : tacle à 1 case, mineur immobilisé tant que le mob reste à côté. Préférence **« Aider allié »** + mobs ignorés (lobby).
-- **K hole** (25/10, Geoffrey, branche `geoffrey/k-hole`) : portail enfoui (1 % par area), découvert → 3 s → tout le
+- **K hole** (25/10, Geoffrey, branche `geoffrey/k-hole`) : portail enfoui (2 % par area ; ancien : 1 %), découvert → 3 s → tout le
   groupe dans une dimension tirée parmi 4 cartes (`KHOLE.maps`) : Filons (25 × 25 très riche, 5 min), Arène des minotaures
   (2 min, fin quand ils sont morts), Salle au trésor (2 treasures de tier au hasard, 2 min, fin à l'ouverture), Vagues
   (vagues de 5 mobs, 3 min) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour

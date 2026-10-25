@@ -1074,7 +1074,7 @@ export const DUNGEON = {
    - vagues : vide, des vagues de wave mobs (table de l'area, sans mimic : comme un piège), posés au sol à une colonne au
      hasard ; une vague vaincue → la suivante, jusqu'à la fin du compteur. */
 export const KHOLE = {
-  chance: 0.01, fromArea: 0, warn: 3, endMargin: 30, map: 0, attempts: 20,
+  chance: 0.02, fromArea: 0, warn: 3, endMargin: 30, map: 0, attempts: 20,   // chance : 2 % depuis le 25/10 (Geoffrey ; avant 1 %)
   maps: [
     { id:'filons', label:'Filons', weight:1, duration:300, w:25, h:25, spawn:'left', spawnCols:5,
       comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 }, traps:5, dungeons:1, treasurePct:1 },
