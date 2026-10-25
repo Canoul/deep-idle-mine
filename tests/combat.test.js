@@ -117,3 +117,13 @@ test('minotaure : il repousse le mineur de 0,25 par coup (1 par seconde) ; rési
     assert.ok(m.stats.knocked >= 1);
   }
 });
+
+test('affichage : le décalage du recul part au navigateur (mineur et mob)', async () => {
+  const { createViewer } = await import('../src/shared/view.js');
+  const G = corridor(), m = G.miners[0];
+  const b = mob(G, { x: m.x + 1, y: m.y });
+  hit(G, m, b); m.kx = -0.25;
+  const v = createViewer(G)();
+  assert.equal(v.mobs.find(o => o.id === b.id).kx, COMBAT.knock);
+  assert.equal(v.miners[0].kx, -0.25);
+});
