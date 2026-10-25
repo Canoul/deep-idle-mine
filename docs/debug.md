@@ -2440,7 +2440,7 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
-### Aura du stuff (Geoffrey, 25/10) — 🧪 branche `geoffrey/aura-stuff`
+### Aura du stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `AURA` (config : seuil R4, paliers, rayon / opacité / pulsation) ; `src/meta/aura.js` (`auraQ`, `aurasOf`,
   `sanitizeAuras`, `auraLook`, pur) ; `src/render/aura.js` (halo pixel art calculé depuis les pixels de la texture,
   gardé en cache par texture + couleur + rayon ; `drawAura`). Dessiné **avant le corps** (`miner-sprite.js`,
@@ -2460,3 +2460,5 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le halo lit les pixels de la texture (`getImageData`) : les textures doivent rester servies par
   le même site. Le portrait du haut est redemandé à chaque mise à jour du HUD : la clé (pièces + qualités d'aura) évite
   de relancer la boucle.
+- **Mise en ligne** : simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,2, prof 193). Pas d'anti-triche :
+  aucune ressource ne bouge.

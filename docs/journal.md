@@ -28,7 +28,7 @@ Modèle d'entrée :
   cacher sa texture ; visible partout.
 - **À suivre** : regarder en vrai en jeu si le halo « faible » se voit assez à la taille de la mine (réglable en
   config, `AURA.looks`).
-- **État** : 🧪 sur la branche `geoffrey/aura-stuff` (pas en ligne)
+- **État** : ✅ en ligne le 25/10
 
 ## 24/10/2026 — Geoffrey — Wiki à jour, avec sa date
 - **Pour le joueur** : le wiki affiche en haut « 🗓 Mis à jour le 24/10/2026 ». Nouveau : une section **Les sorts**
