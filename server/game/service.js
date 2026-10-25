@@ -68,7 +68,7 @@ const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas enc
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
-const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes du tier précédent.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
+const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
 const RECYCLE_ERRORS = { not_owned: 'Cette pièce n\'est plus dans ton inventaire.', not_recyclable: 'Seul le stuff fabriqué avec une recette se recycle.',

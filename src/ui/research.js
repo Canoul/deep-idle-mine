@@ -10,7 +10,7 @@ import { rcls, rname } from './rarity.js';
 import { tipAttr } from './tooltip.js';
 import { recipeOfBlueprint } from '../meta/craft.js';
 import { statLines } from '../meta/stuff.js';
-import { PARTS, tierOf, researchPool, isBlueprint, tierOfBlueprint, tierUnlocked, recipesLeft } from '../meta/research.js';
+import { PARTS, tierOf, researchPool, isBlueprint, tierOfBlueprint, tierUnlocked, tiersBlocking } from '../meta/research.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -40,8 +40,8 @@ export function setupResearch({ onOp }){
            (found ? `<div class="slot rsSlot${rcls(found)}"${tipAttr(found)}>${icon(found)}</div>` : `<div class="slot rsSlot empty"><span class="fhint">?</span></div>`)+`</div>`+
            (found ? bpInfoHtml(found) : '')+
            `<p class="mut small">${icon(PARTS)} ${esc(PARTS)} : ${num(have)} / ${def.cost}${have < def.cost ? ' <span class="err">(pas assez)</span>' : ''}</p>`+
-           lockedBy.map(t => { const p = tierOf(t.tier - 1), n = recipesLeft(inv, p.tier).length;
-             return `<p class="mut small">🔒 ${esc(t.label)} : apprends encore ${n} recette${n > 1 ? 's' : ''} du ${esc(p.label)} pour l'ouvrir.</p>`; }).join('')+
+           lockedBy.map(t => `<p class="mut small">🔒 ${esc(t.label)} : apprends encore ${tiersBlocking(inv, t.tier)
+             .map(b => `${b.left} recette${b.left > 1 ? 's' : ''} du ${esc(b.label)}`).join(' et ')} pour l'ouvrir.</p>`).join('')+
            `<p><button class="on" id="rsGo"${ok ? '' : ' disabled'}>🔬 Rechercher</button></p>`;
   }
 

@@ -230,7 +230,7 @@ test('recherche T2 : verrouillée tant qu\'une recette du tier 1 manque ; les BP
   const inv = invWith({ [PARTS]:1000 });
   assert.equal(tierUnlocked(inv, 1), true);
   assert.equal(tierUnlocked(inv, 2), false);
-  assert.equal(recipesLeft(inv, 1).length, 9, '9 recettes du tier 1 (Four en fer et Boussole en or compris)');
+  assert.equal(recipesLeft(inv, 1).length, 10, '10 recettes du tier 1 (Four en fer, Boussole en or et Lance en fer compris)');
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'tier_locked');
   assert.equal(countOf(inv, PARTS), 1000, 'rien n\'est dépensé');
   assert.equal(canResearch(inv, 2), false);
@@ -269,13 +269,14 @@ test('recherche T2 : tout appris → nothing_left', () => {
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'nothing_left');
   assert.equal(countOf(inv, PARTS), 1000);
 });
-test('recycle : un BP du T2 rend 40 à 70 parts, un BP du T1 reste à 30 à 60', () => {
+test('recycle : un BP du T2 rend 40 à 70 parts, un BP du T1 15 à 30 (RESEARCH.tiers[0].recycle)', () => {
   assert.equal(tierOfBlueprint('Gants tactique BP').tier, 2); assert.equal(tierOfBlueprint('Pioche en fer BP').tier, 1);
   const inv = invWith({ 'Gants tactique BP':3, 'Pioche en fer BP':3 });
   assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0)).parts, 40);
   assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0.9999999)).parts, 70);
-  assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0)).parts, 30);
-  assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0.9999999)).parts, 60);
+  const T1R = RESEARCH.tiers[0].recycle;
+  assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0)).parts, T1R.min);
+  assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0.9999999)).parts, T1R.max);
   const rng = mulberry32(8);
   for(let k = 0; k < 500; k++){ addItem(inv, 'Cape de Naingui BP', 1); const p = recycle(inv, 'Cape de Naingui BP', id(), rng).parts; assert.ok(p >= 40 && p <= 70); }
 });
