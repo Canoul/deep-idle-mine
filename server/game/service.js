@@ -24,7 +24,7 @@ import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, countOf } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
-import { rollChestQuality } from '../../src/meta/piece.js';
+import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
@@ -544,16 +544,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* administration (server/admin/routes.js, jamais appelée par un joueur) : donne qty exemplaires d'un objet du jeu à
        un compte, sous le verrou de son inventaire (comme une action du joueur : mémoire et base changent ensemble, aucun
        redémarrage). Nom exact d'ITEMS, qty entier de 1 à ADMIN_MAX_QTY. */
-    async adminGive(accountId, item, qty){
+    /* quality (facultative, 1 à 7) : la pièce de stuff arrive déjà identifiée dans cette qualité */
+    async adminGive(accountId, item, qty, quality){
       if(typeof item !== 'string' || !Object.hasOwn(ITEMS, item)) fail('bad_item', 400, `« ${item} » n'est pas un objet du jeu (nom exact).`);
       if(!Number.isSafeInteger(qty) || qty < 1 || qty > ADMIN_MAX_QTY) fail('bad_request', 400, `Quantité : un entier de 1 à ${ADMIN_MAX_QTY}.`);
+      if(quality !== undefined){
+        if(!Number.isSafeInteger(quality) || !qualityDef(quality)) fail('bad_request', 400, 'Qualité : un entier de 1 à 7.');
+        if(!isStuff(item) || isRing(item)) fail('bad_item', 400, `« ${item} » n'a pas de qualité (seulement les pièces de stuff, hors anneaux).`);
+      }
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);
         if(ITEMS[item].cat === 'stuff' || ITEMS[item].stack === false) await loadStuff(accountId, inv);   // uid neufs
         const before = countOf(inv, item);
-        addItem(inv, item, qty);
+        const touched = addItem(inv, item, qty);
+        if(quality !== undefined) for(const i of touched) inv.slots[i].q = quality;
         await store.putInventory(accountId, JSON.parse(serialize(inv)));
-        return { item, qty, before, after: countOf(inv, item) };
+        return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });
     },
 

@@ -2,6 +2,7 @@
    Exemple sur le VPS (la clé est dans /etc/deep-idle-mine.env, DIM_ADMIN_TOKEN) :
      curl -X POST http://127.0.0.1:8000/api/admin/give -H "Authorization: Bearer CLÉ" \
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
+     (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -39,12 +40,12 @@ export function adminRoutes({ accounts, game, token }){
   return {
     'POST /api/admin/give': async ctx => {
       guard(ctx);
-      const { name, item } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;
+      const { name, item, quality } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;
       if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', 'name : le pseudo du joueur.');
       const acc = await accounts.findAccountByName(nameKey(name));
       if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
-      const r = await game.adminGive(acc.id, item, qty);
-      console.log(`Admin : +${r.qty} ${r.item} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
+      const r = await game.adminGive(acc.id, item, qty, quality);
+      console.log(`Admin : +${r.qty} ${r.item}${r.quality ? ` R${r.quality}` : ''} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
       return { account: acc.name, ...r };
     },
   };

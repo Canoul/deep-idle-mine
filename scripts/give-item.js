@@ -5,7 +5,8 @@
      sudo node /opt/deep-idle-mine/scripts/give-item.js --name crousti --item "Treasure T3" --qty 1
 
    --name : pseudo du compte (majuscules et accents ignorés) · --item : nom exact d'un objet du jeu ·
-   --qty : 1 à 1000 (1 par défaut) · --env : fichier de réglages (défaut /etc/deep-idle-mine.env, lisible avec sudo),
+   --qty : 1 à 1000 (1 par défaut) · --quality : 1 à 7, facultatif (pièce de stuff déjà identifiée dans cette
+   qualité, ex. --item "Plastron en fer" --quality 5) · --env : fichier de réglages (défaut /etc/deep-idle-mine.env, lisible avec sudo),
    d'où viennent la clé DIM_ADMIN_TOKEN et le port PORT (8000 par défaut) · --url : adresse du jeu (défaut
    http://127.0.0.1:PORT, la machine elle-même : la route refuse tout le reste). */
 import fs from 'node:fs';
@@ -26,9 +27,11 @@ function readEnv(file){
 }
 
 const name = arg('name'), item = arg('item'), qty = Number(arg('qty', '1'));
+const quality = arg('quality') === undefined ? undefined : Number(arg('quality'));
 if(!name) fail('--name : le pseudo du joueur.');
 if(!item) fail('--item : le nom exact de l\'objet (ex. "Treasure T3").');
 if(!Number.isSafeInteger(qty) || qty < 1 || qty > 1000) fail('--qty : un entier de 1 à 1000.');
+if(quality !== undefined && (!Number.isSafeInteger(quality) || quality < 1 || quality > 7)) fail('--quality : un entier de 1 à 7.');
 const envFile = arg('env', '/etc/deep-idle-mine.env');
 let env;
 try { env = { ...readEnv(envFile), ...process.env }; }
@@ -40,10 +43,10 @@ const url = arg('url', `http://127.0.0.1:${env.PORT || 8000}`);
 let res;
 try {
   res = await fetch(url + '/api/admin/give', { method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ name, item, qty }) });
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` }, body: JSON.stringify({ name, item, qty, quality }) });
 } catch(e){ fail(`Le jeu ne répond pas sur ${url} (${e.cause?.code ?? e.message}). Est-il lancé ?`); }
 const data = await res.json().catch(() => null);
-if(res.ok) console.log(`+${data.qty} ${data.item} pour « ${data.account} » (${data.before} → ${data.after}). Aucun redémarrage nécessaire.`);
+if(res.ok) console.log(`+${data.qty} ${data.item}${data.quality ? ` R${data.quality}` : ''} pour « ${data.account} » (${data.before} → ${data.after}). Aucun redémarrage nécessaire.`);
 else if(res.status === 404 && data?.error?.code === 'not_found')
   fail('Administration fermée : la clé ne correspond pas, ou le jeu n\'a pas été redémarré depuis l\'ajout de DIM_ADMIN_TOKEN.');
 else fail(data?.error?.message ?? `Erreur ${res.status}.`);
