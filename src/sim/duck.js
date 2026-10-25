@@ -11,6 +11,8 @@ const rngOf = G => (G.duckRng ??= mulberry32(G.seed ^ DUCK.salt));
 /* sol sous la case (x, 0) de la surface : la couche 1 est pleine, ou une échelle y monte */
 const ground = (G, x) => x >= 0 && x < W && (G.tiles[1]?.[x] > 0 || !!G.ladder[1]?.[x]);
 const inRange = x => Math.abs(x - CHEST_X) <= DUCK.range;
+/* case de la surface où un coup peut le repousser (recul, src/sim/knock.js) : avec du sol, dans sa zone */
+export const duckCanEnter = (G, x) => ground(G, x) && inRange(x);
 /* nom du n-ième canard de la session (0 = le premier) : la liste dans l'ordre, puis on recommence */
 export const duckName = n => DUCK.names[((n % DUCK.names.length) + DUCK.names.length) % DUCK.names.length];
 
@@ -37,13 +39,13 @@ export function updateDuck(G, o){
   o.cd = DUCK.step;
   /* plus de sol sous lui (les mineurs ont creusé la couche du dessous) : il s'envole vers la case avec du sol la plus
      proche, dans sa zone de préférence (sinon il resterait en l'air au-dessus d'un trou trop large) */
-  if(!ground(G, o.x)){ const to = nearestGround(G, o.x); if(to != null){ o.hop = true; o.dir = Math.sign(to - o.x) || o.dir; o.x = to; } return; }
+  if(!ground(G, o.x)){ const to = nearestGround(G, o.x); if(to != null){ o.hop = true; o.dir = Math.sign(to - o.x) || o.dir; o.x = to; o.kx = 0; } return; }
   if(r() < DUCK.pause) return;
   if(r() < 0.25) o.dir = -o.dir;
   for(const dir of [o.dir, -o.dir]){
     const to = landing(G, o.x, dir);
     if(to == null) continue;
-    o.hop = Math.abs(to - o.x) > 1; o.x = to; o.dir = dir;
+    o.hop = Math.abs(to - o.x) > 1; o.x = to; o.dir = dir; o.kx = 0;
     return;
   }
 }
