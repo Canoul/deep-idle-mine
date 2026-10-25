@@ -40,6 +40,7 @@ import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
+import { treasureMessage, identifyMessage } from '../social/discord.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
@@ -122,8 +123,12 @@ export const ADMIN_MAX_QTY = 1000;
 export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
                                     config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
-                                    random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
+                                    random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
+                                    /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
+                                    announce = () => {} }){
   const withLock = createLocks();
+  /* une annonce ne bloque ni ne fait jamais échouer l'action qui la déclenche */
+  const shout = text => { if(text) Promise.resolve().then(() => announce(text)).catch(console.error); };
   const settling = new Map();      // id → promesse du versement en cours
   /* les parties en direct ; à la fin de l'une d'elles, son coffre est partagé et versé */
   const live = liveRunner({ onEnd: (id, summary) => { settleWith(id, summary).catch(console.error); } });
@@ -270,6 +275,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const inv = await loadInventory(share.account);
           if(!creditSession(inv, rec.id, share.bag)) return;
           await store.putInventory(share.account, JSON.parse(serialize(inv)));
+          /* trésor de tour très rare : annoncé sur Discord, une seule fois (comme le versement) */
+          const who = rec.players.find(p => p.account === share.account)?.name;
+          for(const item of Object.keys(share.bag || {})) shout(treasureMessage(who, item));
           /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
           await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
           /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
@@ -783,6 +791,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                 : action === 'unenchant' ? unenchant(inv, { uid: body.uid, opId }) : { error: 'bad_request' };
         if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        /* identification très rare : annoncée sur Discord (pas une demande renvoyée) */
+        if(action === 'identify' && !r.repeated) shout(identifyMessage(displayName(me), r.piece));
         return { piece: r.piece, fragment: r.fragment, success: r.success ?? true, inventory: publicInventory(inv) };
       });
     },

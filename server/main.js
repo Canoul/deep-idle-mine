@@ -14,6 +14,7 @@ import { createGameService } from './game/service.js';
 import { createPartyService } from './party/service.js';
 import { createInstantService } from './instant/service.js';
 import { createSocialService } from './social/service.js';
+import { createDiscordAnnouncer } from './social/discord.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -21,7 +22,8 @@ const db = process.env.DATABASE_URL ? await openDatabase(process.env.DATABASE_UR
 const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDir);
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
-const game = createGameService({ store: gameStore });
+/* annonces Discord (trésor ou identification R7) : seulement si DIM_DISCORD_WEBHOOK est défini */
+const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }) });
 const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 /* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */

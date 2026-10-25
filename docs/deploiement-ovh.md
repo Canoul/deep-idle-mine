@@ -123,7 +123,18 @@ sudo systemctl restart deep-idle-mine
 La clé ne sort jamais du VPS (elle n'est **jamais** dans git : le dépôt est public). La route d'administration refuse
 toute requête qui ne vient pas du VPS lui-même ou qui passe par Caddy (donc depuis internet), même avec la clé.
 
-Réglages (`/etc/deep-idle-mine.env`) : `DATABASE_URL` (Neon), `DIM_ADMIN_TOKEN` (clé d'administration, ci-dessus), `DIM_MAX_LIVE` (sessions en même temps, 24),
+**Annonces Discord (une seule fois)** : pour que le jeu écrive dans #général quand un joueur obtient un R7 (trésor de
+tour ou identification), créer un webhook dans Discord (salon → Modifier le salon → Intégrations → Webhooks →
+Nouveau webhook → Copier l'URL), puis sur le VPS (remplacer l'adresse par la vraie) :
+
+```
+echo "DIM_DISCORD_WEBHOOK=https://discord.com/api/webhooks/XXXX/YYYY" | sudo tee -a /etc/deep-idle-mine.env > /dev/null
+sudo systemctl restart deep-idle-mine
+```
+
+Comme la clé d'administration, cette adresse est secrète et ne va **jamais** dans git. Sans elle, rien n'est annoncé.
+
+Réglages (`/etc/deep-idle-mine.env`) : `DATABASE_URL` (Neon), `DIM_ADMIN_TOKEN` (clé d'administration, ci-dessus), `DIM_DISCORD_WEBHOOK` (annonces Discord, ci-dessus), `DIM_MAX_LIVE` (sessions en même temps, 24),
 `DIM_HOST=127.0.0.1`, `DIM_TRUST_PROXY=1`, `DIM_SECURE_COOKIE=1` (ces trois-là ne se changent pas).
 
 Le script de mise à jour (`/usr/local/sbin/deep-idle-mine-update`) est une copie fixe : un push ne peut pas

@@ -580,6 +580,11 @@ export const SHINY = {
    (« Antique Trésor démoniaque ») dans la couleur de sa qualité (UPGRADE.qualities). Nom interne : « Trésor
    démoniaque R5 ». Les anciens « Coffre démoniaque R5 » (chests) restent dans le catalogue, empilables et ouvrables
    (décision : pas de conversion), mais ne sont plus donnés. */
+/* ---- Annonces Discord (server/social/discord.js) ----
+   25/10/2026 (Geoffrey) : un message dans le salon #général quand un joueur loot un trésor de tour (RUNE.treasures)
+   ou identifie une pièce de qualité minQuality ou plus. timeoutMs : délai max d'un envoi (il part en tâche de fond). */
+export const ANNOUNCE = { minQuality: 7, emoji: '🚨', timeoutMs: 5000 };
+
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,
   /* Fragment de rune (23/10/2026, Geoffrey) : une rune retirée d'une pièce (gratuit) devient un fragment, de la même
