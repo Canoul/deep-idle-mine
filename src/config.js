@@ -135,8 +135,11 @@ export const BLOCKS = {
   18:{name:'Socle du coffre', type:'special', tex:'chest_base', w:0, hard:Infinity, color:'#5a5a62', dot:'#b0b0b8', unbreakable:true, noDrop:true},
   /* graphite (23/10, Geoffrey) : minerai des areas 5 et 6 ; fondu en Graphite ingot, qui sert au Steel ingot */
   19:{name:'Graphite ore', type:'ore', tex:'graphite', w:3, hard:4.0, color:'#7d828c', dot:'#2f3b4d', val:4},
+  /* k hole (25/10, Geoffrey, KHOLE) : portail en trou noir, incassable ; dès qu'un mineur le découvre, il aspire tout le
+     groupe dans une autre dimension, puis disparaît */
+  20:{name:'K hole', type:'special', tex:'khole', w:0, hard:Infinity, color:'#12001f', dot:'#9b4dff', unbreakable:true, noDrop:true},
 };
-export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18;
+export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
 export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19 };
 
@@ -516,7 +519,7 @@ export const SPELLS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -1049,6 +1052,19 @@ export const DUNGEON = {
    vitesse × hpMul / speedMul) prennent en chasse le mineur le plus proche, sans limite de distance. Un barbare dans la
    partie vient tuer ces mobs, quels que soient ses réglages (comme au donjon ; les raisons de remonter passent avant).
    Les mobs du piège ne comptent pas dans le plafond de mobs (walkerCap) et ne touchent pas au rythme des apparitions. */
+/* ---- K hole (src/sim/khole.js) — décisions du créateur, 25/10/2026 ; valeurs provisoires ----
+   Un portail (bloc KHOLE_BLOCK, incassable) enfoui dans une area avec la chance `chance` (un tirage par area, à part de
+   la seed : le reste de l'area ne change pas), à la place d'un bloc de terrain, hors donjon et piège. Dès qu'un mineur
+   le découvre, il s'ouvre : `warn` s plus tard, TOUT le groupe est aspiré dans une autre dimension (une carte de W × AREA_H
+   sous une surface avec son coffre, celui de la session), pendant `duration` s, pris sur l'heure de session. La mine est
+   figée pendant ce temps (rien n'y bouge), puis chacun revient à sa place, avec ce qu'il porte ; le portail disparaît.
+   comp : composition de la dimension (comme une area) ; contenu à décider (ressource propre, plus tard). Pas de mobs. */
+export const KHOLE = {
+  chance: 0.01, fromArea: 0, warn: 3, duration: 60,
+  comp: { dirt:20, stone:70, air:10 },
+  salt: 0x6b401e,
+};
+
 export const TRAP = {
   fromArea: 1, chance: 0.25, tries: 2, w: 5, h: 3, mobs: 5, hpMul: 1.5, speedMul: 1.5,
   margin: 2, winchGap: 2, attempts: 30,
@@ -1169,5 +1185,5 @@ export const DEV_TUNABLES = [
   ['STATS','damage','Dégâts',0,1e4], ['STATS','attackSpeed','Vitesse d\'attaque (%)',10,10000], ['STATS','fortune','Fortune (%)',0,1000], ['STATS','pods','Pods',1,1e5], ['STATS','torchRadius','Rayon torche (blocs creusés)',0,50],
   ['STATS','discoverMax','Découverte max (blocs)',0,20], ['STATS','light','Vision mobs max',0,50], ['STATS','compass','Portée boussole',0,50], ['STATS','compassRows','Lignes boussole (±)',0,5],
   ['STATS','torches','Torches',0,1000], ['STATS','knockRes','Résistance au recul (%)',0,100], ['CFG','ladderTime','Temps échelle (s)',0,60],
-  ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1],
+  ['CFG','unlockRatio','Seuil déblocage (0-1)',0,1], ['KHOLE','chance','Chance de k hole par area (0-1)',0,1],
 ];

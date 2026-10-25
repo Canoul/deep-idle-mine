@@ -1,9 +1,10 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, DUNGEON, TRAP } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
 import { planTraps, carveTrap, registerTrap } from './trap.js';
+import { placeKhole, registerKhole } from './khole.js';
 
 export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 
@@ -67,11 +68,11 @@ function placeClusters(grid, r, id, count, maxSize, out){
   }
 }
 
-/* Génère l'area k uniquement depuis seed + k (déterministe). Comptes exacts :
-   minerais en filons, vide en poches, puis le reste (terrain) mélangé. */
-export function genArea(G,k){
-  const r = mulberry32(hash(G.seed, k+1));
-  const comp = areaComp(k), N = W*AREA_H;
+/* Remplit une grille W × AREA_H selon une composition en % (comptes exacts) : minerais en filons, vide en poches, puis
+   le reste (terrain) mélangé. Renvoie { grid, counts, big (terrain le plus présent), oreTotal }. Sert aux areas et à la
+   dimension du k hole (src/sim/khole.js). */
+export function fillComp(r, comp){
+  const N = W*AREA_H;
   const counts = {}; let sum = 0;
   for(const n in comp){ counts[n]=Math.round(comp[n]*N/100); sum+=counts[n]; }
   // l'arrondi est absorbé par le terrain le plus présent
@@ -89,6 +90,16 @@ export function genArea(G,k){
   for(const n in counts) if(typeOf(IDS[n])==='terrain') for(let i=0;i<counts[n];i++) filler.push(IDS[n]);
   shuffle(filler, r); let fi=0;
   for(let i=0;i<N;i++) if(grid[i]===FREE) grid[i]=filler[fi++];
+  return { grid, counts, big, oreTotal };
+}
+
+/* Génère l'area k uniquement depuis seed + k (déterministe), comptes exacts (fillComp), puis donjon, pièges, treasure,
+   résidus et k hole par-dessus. */
+export function genArea(G,k){
+  const r = mulberry32(hash(G.seed, k+1));
+  const comp = areaComp(k);
+  const filled = fillComp(r, comp), { grid, counts, big } = filled;
+  let { oreTotal } = filled;
   /* donjon (DUNGEON) et pièges (TRAP) : tirages à part, posés par-dessus ; les comptes de l'area suivent les blocs
      remplacés (un mur de donjon n'y entre pas) */
   const put = (x, ry, id) => { const i=ry*W+x, old=grid[i]; if(old===id) return;
@@ -101,6 +112,9 @@ export function genArea(G,k){
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
   if(!G.noResidues) placeResidues(G.seed, k, grid, counts);   // pas de résidus si une tour était ouverte au lancement (23/10)
+  /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
+  const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
+    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))]);
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -108,6 +122,7 @@ export function genArea(G,k){
   }
   if(dp) registerDungeon(G, k, dp, areaTop(k)+dp.ry0);
   for(const p of traps) registerTrap(G, k, p, areaTop(k)+p.ry0);
+  if(kh) registerKhole(G, k, kh);
   // les mimics ne sont plus placés ici : ils naissent pendant la partie (un minerai de la roche devient un mimic, src/sim/mobs.js)
   /* ores : pour chaque minerai de l'area, le nombre initial et ce qu'il en reste dans la roche (focus minerai) */
   const ores = {};
@@ -166,6 +181,7 @@ export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);
 
 /* Débloque l'area suivante si le seuil de minerais de la dernière area est atteint. Renvoie true si débloquée. */
 export function tryUnlock(G){
+  if(G.khole) return false;   // dans la dimension du k hole : rien à débloquer (ce n'est pas la mine)
   const k = G.unlockedAreas-1, a = G.areas[k];
   if(a.oreMined < unlockNeed(a)) return false;
   genArea(G, G.unlockedAreas); G.unlockedAreas++;

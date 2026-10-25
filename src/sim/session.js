@@ -12,6 +12,7 @@ import { updateDungeons } from './dungeon.js';
 import { updateTraps, veiled } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
+import { updateKhole, exitKhole, inMine } from './khole.js';
 import { afterDecide, updateSpells } from './spells.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare, specXpOf } from '../meta/level.js';
@@ -108,6 +109,7 @@ export function tick(G){
     revealAround(G,m);
   }
   updateDungeons(G);   // découverte d'un donjon, barbare entré, effroi, boss vaincu
+  updateKhole(G);      // k hole découvert : le groupe part dans la dimension ; au bout du temps, il revient
   if(G.ticks>=SESSION_TICKS) endSession(G);
 }
 
@@ -120,7 +122,7 @@ export function leaveSession(G, who){
   if(!m || m.left!=null || !G.miners.includes(m)) return false;
   /* anti-boosting : le butin déposé jusqu'ici se partage entre les joueurs présents jusqu'ici (lui compris : sa part
      de cette tranche est perdue, elle ne revient pas aux autres) */
-  muleOnLeave(G, m);   // Mule : le contenu du sac part au coffre AVANT la photo du partage (miné pendant sa présence)
+  inMine(G, () => muleOnLeave(G, m));   // Mule (pendant un k hole : le sac est resté dans la mine) : le contenu du sac part au coffre AVANT la photo du partage (miné pendant sa présence)
   G.shareMarks.push({ t:G.t, chest:{ ...G.chest }, xp:G.stats.xp||0, present:G.roster.filter(x => x.left==null) });
   m.left = G.t; m.action = null; m.status = 'A quitté la session';
   G.miners = G.miners.filter(x => x!==m);
@@ -135,6 +137,7 @@ export function leaveSession(G, who){
    Idempotent : un second appel ne recalcule rien. */
 export function endSession(G){
   if(G.summary) return;
+  exitKhole(G);   // fin pendant un k hole : retour dans la mine d'abord (les areas, le bilan sont ceux de la mine)
   G.over=true;
   G.summary = {
     seed:G.seed, maxDepth:G.stats.maxDepth, areasUnlocked:G.unlockedAreas-1, mined:G.stats.mined,

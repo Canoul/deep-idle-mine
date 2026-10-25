@@ -18,6 +18,20 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (mise en place)
+- **Pour le joueur** : très rarement (1 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il
+  s'ouvre, et 3 s plus tard tout le groupe est aspiré dans une autre dimension pendant 1 min, avec un voile violet et un
+  compte à rebours à l'écran. Ensuite, chacun revient exactement là où il était, avec ce qu'il a ramassé ; la mine n'a pas
+  bougé pendant ce temps.
+- **Décisions** : la minute compte dans l'heure de session ; tout le groupe part ; déclenchement à la découverte, sans
+  réglage ; contenu de la dimension à décider (une ressource à elle, plus tard) : pour l'instant terre et pierre, sans mobs.
+- **Chiffres** (5 sessions à 3 mineurs, k hole forcé à chaque area) : 10 k holes pris, 0 blocage ; un tick dans la
+  dimension coûte 0,2 ms contre 0,56 ms dans la mine (le serveur ne travaille pas plus). Coffre +5 % (on mine près du
+  coffre dans la dimension), étourdissements 9,6 → 16 par session (chutes dans les poches d'air).
+- **À suivre** : choisir le contenu de la dimension, la durée, le nom affiché. Mode dev : « Chance de k hole par area »
+  à 1 pour en avoir un à chaque fois.
+- **État** : 🧪 sur la branche `geoffrey/k-hole` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Runes : 5 stats de plus, Découverte, Double attaque
 - **Pour le joueur** : une rune peut maintenant tomber sur **ténacité, résistance au recul, portée d'attaque, recul** et la
   nouvelle **double attaque** (chance qu'un coup frappe deux fois). Sur une rune R6 ou R7, la Découverte est aussi

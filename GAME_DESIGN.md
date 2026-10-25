@@ -123,6 +123,15 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
 
+### K hole *(décisions du créateur, 25/10/2026 ; valeurs provisoires, `KHOLE` en config)*
+
+- Un **k hole** est un portail en forme de trou noir, enfoui dans une area à la place d'un bloc de terrain : **1 % de chance par area** *(provisoire)*, tirage à part de la seed (le reste de l'area ne change pas), jamais dans un donjon ni un piège. Incassable.
+- **Déclenchement : dès qu'un mineur le découvre** (pas de réglage dans le lobby). Le journal annonce « Un k hole s'ouvre… » ; **3 s** plus tard *(provisoire)*, **tout le groupe** est aspiré, où que soit chacun.
+- **La dimension** : une autre carte (une surface avec un coffre, celui de la session, puis une area), même seed → même dimension. **Pas de mobs**, rien à débloquer, la profondeur n'y compte pas. **Contenu à décider** : une ressource qu'on ne trouve que là (décision de principe, la ressource viendra plus tard) ; en attendant, terre et pierre.
+- **Durée : 1 min** *(provisoire)*, **prise sur l'heure de session** (vrai arbitrage : du temps de minage en moins).
+- **Retour** : chacun revient **exactement à sa place** dans la mine, avec ce qu'il porte ; ce qu'il a déposé au coffre de la dimension est dans le coffre de la session. Pendant ce temps, **la mine est figée** (rien n'y bouge : mobs, seau, sac de la Mule). Une action en cours au départ (combat, chute…) reprend au retour. Le portail disparaît (case vide).
+- Fin de session ou départ d'un joueur pendant le k hole : on revient d'abord dans la mine, puis la règle normale s'applique.
+
 ## 3. Le mineur
 
 ### Déplacement

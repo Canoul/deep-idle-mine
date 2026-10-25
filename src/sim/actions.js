@@ -145,8 +145,8 @@ export function finishAction(G,m,a){
     case 'move':
       m.face = Math.sign(a.data.x-m.x)||m.face;
       m.x=a.data.x; m.y=a.data.y; m.kx=0; m.ky=0;   // un pas le recentre dans sa case (recul : src/sim/knock.js)
-      if(m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;
-      if(m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
+      if(!G.khole && m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;   // la dimension du k hole ne compte pas
+      if(!G.khole && m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
       { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea) m.lastArea=ai; }   // pas de ligne au journal (trop fréquent)
       break;
     case 'mine': mineBlock(G,m,a.data.x,a.data.y); break;

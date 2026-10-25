@@ -2917,3 +2917,33 @@ Règles (voir CLAUDE.md) :
   autre stat (écart < 12 %), une au plus, jamais en R5 ; double attaque 0 % / 100 % : 1 / 2 coups, un seul recul) ✅ ;
   rune, amelioration, stuff, wiki, lance, combat, tower, mobs, skills, aura, anneaux, give-item, admin ✅ (185).
 - **⚠️** Tirage des runes changé (banque plus grande) : même seed ≠ même rune qu'avant (pas de conséquence : hasard serveur).
+
+### K hole : mise en place (Geoffrey, 25/10) — 🧪 branche `geoffrey/k-hole`
+- **Quoi** : `src/sim/khole.js` (nouveau). Principe : **échange de carte** dans la même partie. `enterKhole` met de côté
+  dans `G.khole.world` les champs du monde (`WORLD` : tiles, ladder, seen, areas, unlockedAreas, winch, treasures,
+  dungeons, traps, veil, mobs, torches, light, mimicCells, mule, ducks, duckBase, spawnTimer, spawnTurn, combat) et pour
+  chaque mineur `SPOT` (position, action, cibles, chantiers… : liste tirée de tous les `m.x = …` de src/sim), remet ces
+  champs à leur valeur de `createMiner`, pose la dimension (`dimension(seed, n)` : surface + coffre + `fillComp` de
+  `KHOLE.comp`, `spawnTimer: Infinity`, pas de mobs) ; `exitKhole` remet tout, case du portail → 0, `updateLight`.
+  `G.realm` change à chaque passage. `inMine(G, fn)` : exécute fn sur la mine pendant un k hole (Mule d'un partant).
+- `src/sim/world.js` : `fillComp` extrait de `genArea` (même ordre de tirage : cartes inchangées) ; `placeKhole` en
+  dernier (tirage `hash(seed ^ KHOLE.salt, k+1)`, terrain non résidu, hors boîtes donjon/piège + pourtour) ;
+  `tryUnlock` refusé pendant un k hole. `src/sim/session.js` : `updateKhole` à chaque tick (après `updateDungeons`),
+  `exitKhole` au début d'`endSession`, `leaveSession` → `inMine(muleOnLeave)`. `actions.js`, `spells.js` : maxDepth pas
+  compté dans la dimension. `src/shared/view.js` : `prev.realm` différent → historique vidé, carte entière ; `khole:
+  { until }` dans l'envoi. `src/render/canvas.js` : ciel violet, voile, compte à rebours. Config : bloc 20 `KHOLE_BLOCK`,
+  `KHOLE`, texture `khole` (gen_textures.py, `import math`), `DEV_TUNABLES` + `KHOLE.chance` (TARGETS de
+  src/shared/game.js). `scripts/simulate.js --khole <chance>` (k holes pris, blocs minés, coût d'un tick).
+- **Tests** : `tests/khole.test.js` (9 : placement, tirage à part, aspiration, retour à la place exacte + mine figée,
+  dimension sans déblocage ni mobs ni profondeur, fin et départ pendant le k hole, déterminisme, carte entière à
+  l'aller et au retour) ✅ ; session, live, game-replay, dungeon, blocks, fall, focus, mule, duck, mobs, light, path,
+  miner, diagnostics, dev-spec, world, view, trap, treasure, winch, team, spells, wiki, shiny, instant-mine, tower,
+  lobby, game-service ✅ (391).
+- **Simulation** `--miners 3 --count 5` : `--khole 1` : 10 pris (sur 20 enfouis : les autres jamais vus), 0 bloquée,
+  135 à 318 blocs minés dans la dimension par session, tick 0,197 ms (dimension) / 0,560 ms (mine) ; `--khole 0` :
+  coffre 4 140 → 4 330 pods avec k holes, étourdissements 9,6 → 16.
+- **Pas vérifié** : en vrai dans le navigateur (transition, caméra, compte à rebours) ; reprise après redémarrage du
+  serveur en plein k hole (déterministe, donc devrait se rejouer à l'identique ; pas de test serveur).
+- **Points fragiles** : un nouveau champ de position ajouté au mineur doit aller dans `SPOT`, un nouveau champ du monde
+  dans `WORLD`, sinon il fuit entre mine et dimension. Une Mule posée dans la dimension est perdue au retour (sac de la
+  dimension jeté). Une action en cours au départ (pas, coup) reprend telle quelle au retour.
