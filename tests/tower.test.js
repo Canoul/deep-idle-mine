@@ -10,11 +10,11 @@ import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
 const team = n => Array.from({ length: n }, (_, i) => ({ name: 'M' + i, account: 'A' + i }));
 const hold = m => { m.action = { type: 'wait', dur: 1e9, t: 0, data: {} }; };
 
-test('carte : 20 de large, 7 étages de 3 + séparations, toit, portes de 3 au bord en alternance, étages en alternance', () => {
+test('carte : 20 de large, 6 étages de 3 + séparations, toit, portes de 3 au bord en alternance, étages en alternance', () => {
   for(const [seed, side] of [[7, 'angel'], [8, 'demon'], [9, 'angel'], [10, 'demon']]){
     const T = genTower(seed, side), S = TOWER.sides[side];
     assert.equal(T.x1 - T.x0 + 1, TOWER.width);
-    assert.equal(T.floor - T.roof + 1, TOWER.floors * (TOWER.floorH + 1), '28 lignes du rez-de-chaussée au toit');
+    assert.equal(T.floor - T.roof + 1, TOWER.floors * (TOWER.floorH + 1), '24 lignes du rez-de-chaussée au toit');
     assert.equal(floorCeil(T, TOWER.floors - 1), T.roof, 'la séparation du dernier étage est le toit');
     for(let x = 0; x < T.w; x++) assert.ok(BLOCKS[T.tiles[T.h][x]].unbreakable, 'sol');
     for(let y = T.roof; y <= T.floor - TOWER.doorH; y++){ assert.equal(T.tiles[y][T.x0], S.hard); assert.equal(T.tiles[y][T.x1], S.hard); }
