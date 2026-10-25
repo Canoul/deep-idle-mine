@@ -94,7 +94,7 @@ function dungeon(){
       <p><b>PV :</b> ${f(g.boss.hp)} (${f(g.hits)} coups avec les dégâts de base, environ ${Math.round(g.fightSec / 60)} min seul) · <b>${g.bossXp} XP</b></p>
       <p><b>Butin :</b> ${g.loot.min} à ${g.loot.max} ${item(g.loot.item)}. Il n'est <b>pas partagé</b> : comme un treasure, <b>chaque joueur en reçoit autant</b> (s'il est encore là à la fin).</p></div>
     <div class="mob"><h3>🏰 Quand un mineur le découvre</h3>
-      <p><b>Avec un barbare dans le groupe</b> (un joueur qui a choisi l'arbre Barbare) : tous les mineurs le rejoignent et creusent autour du donjon jusqu'à trouver l'entrée, puis <b>attendent devant</b>. Le <b>barbare entre le premier</b> ; ensuite les autres viennent l'aider (sauf ceux réglés sur <b>Fuir</b>, qui retournent miner).</p>
+      <p><b>Avec un barbare dans le groupe</b> (un joueur qui a choisi l'arbre Barbare) : tous les mineurs le rejoignent et creusent autour du donjon jusqu'à trouver l'entrée, puis <b>attendent devant</b>. Le <b>barbare entre le premier</b> ; ensuite les autres viennent l'aider (sauf ceux réglés sur <b>Fuir</b>, qui retournent miner). Tant que le minotaure vit, ils <b>restent même sans oxygène</b>, le sac plein ou sans torches : seule la fin de session les fait remonter. Dès qu'un mineur passe l'entrée, toute la salle apparaît.</p>
       <p><b>Sans barbare</b> : personne n'y entre, chacun mine comme d'habitude. Un mineur qui s'y retrouve par accident est <b>effrayé ${g.scared} s</b> : si le minotaure l'attaque pendant ce temps, il <b>s'enfuit d'un coup à la surface</b> (il garde son sac).</p></div>
   </div>
   <p class="tip">💡 Les murs ne bloquent pas que les mineurs : le treuil ne passe jamais par un donjon, et aucun autre monstre n'apparaît dedans.</p>

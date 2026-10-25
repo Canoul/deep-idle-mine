@@ -282,6 +282,9 @@ function decideWork(G,m){
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
     else if(left<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
+    /* donjon (25/10/2026, Geoffrey) : aller au donjon, attendre le barbare, le rejoindre et combattre le boss passent
+       avant l'oxygène, les pods et les torches ; seule la fin de session passe avant (sortir du donjon : non) */
+    if(reason && reason!=='fin de session' && left>tRet+12 && dungeonGoal(G,m,true)) return;
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
@@ -426,12 +429,14 @@ function shiftColumn(G,m,ok=null){
    - un barbare dans la partie : le barbare va combattre le boss ; les autres se rassemblent devant l'entrée et
      attendent ; quand le barbare est entré, ils entrent combattre aussi, sauf « Fuir » (ils reprennent leur travail) ;
    - pas de barbare : rien (il mine comme d'habitude, sans jamais y entrer).
+   duty : appelé alors qu'il devrait remonter (oxygène, pods, torches) : seulement son rôle au donjon, pas la sortie.
    Renvoie true s'il a choisi une action. */
-function dungeonGoal(G,m){
+function dungeonGoal(G,m,duty=false){
   if(m.y<=0 || m.mode==='winch' || m.winchJob) return false;
   for(const d of G.dungeons){
     if(!active(G,d)) continue;
     const inside=isIn(d,m), may=mayEnter(G,m,d);
+    if(inside && !may && duty) continue;
     if(inside && !may) return goTo(G,m,(x,y)=>!inRoom(d,x,y), m.scaredUntil>G.t ? 'Effrayé ! Sort du donjon' : 'Sort du donjon');
     if(!hasBarbarian(G)) continue;
     m.helping=true;   // il va au boss (ou attend le barbare devant l'entrée)

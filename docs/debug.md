@@ -2661,3 +2661,21 @@ Règles (voir CLAUDE.md) :
   un mineur dans la hitbox ne peut pas être « derrière » : la projection part du centre du boss. L'occultiste n'existe
   pas dans la tour. ⚠️ Pas regardé dans un vrai navigateur par Claude (Geoffrey l'a lancé en local).
 
+### Donjon : rôle avant l'oxygène, révélation au seuil (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Bug « salle pas découverte »** : `updateDungeons` (`src/sim/dungeon.js`) ne révélait qu'avec un mineur à
+  l'**intérieur**. Depuis le 25/10 (seuil = barbare entré), un boss contre l'entrée se bat avec le barbare sur le seuil :
+  reproduit (scène de test, boss en x 13) : 2 s de combat sans révélation, jamais si personne d'autre n'entre.
+  Correction : `isIn(d,m) || m.foe===d.boss`.
+- **Oxygène** : `decideWork` (`src/sim/ai.js`) : une raison de remonter autre que la fin de session (oxygène, pods,
+  torches), et pas la fin de session proche (`left>tRet+12`) → `dungeonGoal(G,m,true)` d'abord. `duty` saute la branche
+  « sortir du donjon ». Pas de chemin (goTo échoue) → false → il remonte. Mode `return` déjà pris : inchangé (il finit).
+  Mule : le donjon passe avant le sac.
+- **Tests** : `tests/dungeon.test.js` (21 : seuil, combat au seuil barbare seul, barbare à 0 d'oxygène, attente avec
+  oxygène 0 / pods pleins / sans torches, Fuir, sortie, fin de session, déjà en remontée) ✅. miner, mobs, combat, trap,
+  spells, winch, session, skills, team, focus, wiki ✅. Simulation `--miners 3 --count 5` : 0 bloquée ✅ (areas 3,0,
+  prof 194 ; donjons en areas 4-5, rarement atteintes).
+- ⚠️ **Déjà cassé sur `main`, pas touché** : `tests/mule.test.js` « affichage : le navigateur reçoit le sac posé »
+  (attend load 20, reçoit 15 ; sans doute l'or passé de poids 4 à 3, branche `geoffrey/tresor-60`).
+- **Points fragiles** : la raison affichée reste « oxygène » quand l'oxygène et la fin de session tombent ensemble
+  (vérifiée en premier). Un boss qu'on ne peut pas atteindre (toutes les cases autour prises) : `goTo` peut échouer et
+  le mineur remonter.

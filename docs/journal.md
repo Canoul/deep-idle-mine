@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Donjon : on reste même sans oxygène, la salle se révèle au seuil
+- **Pour le joueur** : quand un donjon est découvert, le barbare y va même s'il n'a plus d'oxygène, et les autres
+  attendent, le rejoignent et se battent sans remonter, même sans oxygène, le sac plein ou sans torches. Seule la fin
+  de session les fait remonter. Le boss mort, ils remontent. Corrigé : quand le minotaure est collé contre l'entrée,
+  on se battait sur le seuil et la salle restait noire ; elle apparaît maintenant dès qu'un mineur passe l'entrée ou
+  frappe le boss.
+- **Décisions** (Geoffrey) : seule la fin de session passe avant le donjon ; sortir du donjon (effrayé) et les « Fuir »
+  une fois le barbare entré remontent normalement ; un mineur déjà en train de remonter finit sa remontée.
+- **État** : ✅ en ligne le 25/10
+
 ## 25/10/2026 — Geoffrey — Tour céleste : boss refait, étages de blocs à vider, affichage fluide
 - **Pour le joueur** : la tour s'affiche **sans saccades**. Elle a **6 étages** (avant 7) et les briques se cassent en
   4 s. Un **étage de briques** doit être **entièrement vidé** pour ouvrir la porte du dessus (les mineurs se répartissent
@@ -43,7 +53,6 @@ Modèle d'entrée :
 - **Pour le joueur** : le chef peut donner sa place de chef (★) même pendant une session. Retirer un membre (×) reste
   impossible pendant une session.
 - **État** : ✅ en ligne le 25/10
-
 
 ## 25/10/2026 — Geoffrey — Régler une jauge Ange / Démon à la main
 - **Pour le joueur** : rien de nouveau en jeu. Les créateurs peuvent maintenant régler une jauge du Jugement depuis le
