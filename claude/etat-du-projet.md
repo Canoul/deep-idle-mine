@@ -113,8 +113,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, 70 PV, **vole** sans gravité ni
   échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
   pris sur le gobelin). PV ×5 à ×10 (k = area où naît le mob),
-  table d'apparition par area, tacle à 1 case (un mineur par mob), mimics créés en jeu (un minerai devient mimic)
-  et jamais minés. Préférence **« Aider allié »** + mobs ignorés (lobby).
+  table d'apparition par area, mimics créés en jeu (un minerai devient mimic) et jamais minés.
+  **Combat dynamique** (25/10, Geoffrey ; en ligne le 25/10) : portée 0,5 bord à bord (sans diagonale),
+  chaque coup du mineur repousse le mob de 0,25 (`src/sim/knock.js`, `COMBAT`), minotaure et mobs / boss des tours
+  repoussent le mineur de 0,25 ; stat **Résistance au recul** (%, 0, sans source). **Tacle refondu** : à portée, le
+  mineur peut bouger mais ne fait que combattre ce mob, jusqu'à sa mort ou une provocation (soupape : 5 s sans coup,
+  6 cases). Ancien (21/10) : tacle à 1 case, mineur immobilisé tant que le mob reste à côté. Préférence **« Aider allié »** + mobs ignorés (lobby).
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ».
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),

@@ -2440,6 +2440,53 @@ Règles (voir CLAUDE.md) :
   avec un faux DOM (aucune erreur, aucun bloc `w-*` vide) ; ⚠️ pas regardé dans un vrai navigateur.
 - **Point fragile** : la date du bandeau est écrite à la main dans `wiki.html` (pas de date de commit côté navigateur).
 
+### Don d'administration avec qualité (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `server/game/service.js` `adminGive(accountId, item, qty, quality)` : `quality` facultative, entier 1 à 7
+  (`qualityDef`), seulement pour une pièce de stuff hors anneau (`isStuff && !isRing`) ; les slots créés reçoivent
+  `q` (identifiée, qualité seule, comme une identification depuis le 22/10). `server/admin/routes.js` lit `quality`
+  dans le corps ; `scripts/give-item.js` option `--quality` (vérifiée avant l'appel). Sans `quality` : inchangé.
+- **Tests** : `tests/admin.test.js` +1 (R5 et R7 donnés et relus, refus : Treasure, anneau, 0, 8, 4.5, '5'),
+  `tests/give-item.test.js` +1 (`--quality 5`, refus 0 / 8 / R5) : 9/9 ✅.
+- **Point fragile** : `give-admin.js` (hors ligne, avec redémarrage) reste l'outil pour R1 à R7 d'un coup.
+
+### Combat dynamique : portée, recul, tacle refondu (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/sim/knock.js` (nouveau : `gap`, `inReach`, `push`, `knockOf`, `driftsAway`, `recenter`) : chaque
+  entité garde un décalage `kx`/`ky` (−0,5…+0,5) dans sa case ; `push` passe sur la case voisine au-delà d'une
+  demi-case si `canEnter`, sinon décalage remis à 0 (jamais à cheval sur un bloc). Config : `COMBAT` (reach 0,5,
+  knock 0,25, tackleGiveUp 5 s, tackleLeash 6), `STATS.knockRes` (0), `MOBS.hitEvery` (1) / `MOBS.knock`
+  ({ minotaure: 0,25 }), `TOWER.mobs.hitEvery/knock`, `TOWER.boss.push` ; stat ajoutée à `statLabels`, `statUnits`,
+  `shownStats`, `DEV_TUNABLES`, wiki (`src/wiki/data.js`).
+- **Mine** : `src/sim/mobs.js` : `mobCanEnter` (mimic jamais, canard sur le sol de sa zone via `duckCanEnter`, boss
+  dans sa salle, pas sur un mineur), `keepsGrab`/`grab` (tacle à portée, gardé jusqu'à mort / provocation / soupape ;
+  `o.grabHit` = dernier coup du mineur taclé, posé à la prise), `strike` (coups qui poussent), `closeIn` (le mob
+  revient à portée : recentrage s'il est à côté, sinon un pas). Le mob garde son tacle en tombant ; `ky` remis à 0 hors
+  échelle (il retombe). `src/sim/actions.js` : coup seulement si `inReach`, puis `push` du mob ; `o.grabHit` ; un pas
+  remet `kx/ky` à 0 ; `fx/fy` d'un pas partent du décalage (affichage). `src/sim/ai.js` : `fight` frappe à portée,
+  sinon se recentre (action `move` sur sa case) ou avance ; taclé → `data.fight` sur l'action, que
+  `src/sim/session.js` n'interrompt plus. `goFight`, chasse au canard et boss du donjon : `|| inReach`.
+- **Tours** : `src/sim/tower/session.js` : `mobReach` (depuis la case du mob la plus proche : 2 cases de haut),
+  `mobFits`, `pushMiner` (jamais en plein pas), tacle comme dans la mine, mob qui suit, `hitMob` pousse, boss : recul
+  0,25 quand il ne projette pas (projection 6 cases gardée), lui ne recule pas. IA : taclé → frappe / se recentre /
+  `planTo` vers le mob ; un mineur repoussé à côté d'un mob se recentre (sinon `planTo` renvoyait un chemin vide :
+  « Attend », compté dans `G.stats.blocked`, vu sur les seeds 11 et 15).
+- **Affichage** : `kx/ky` dans `src/shared/view.js` et `tower-view.js` ; `src/render/canvas.js`, `tower.js`,
+  `instant.js` (`instantPos`) les dessinent.
+- **Tests** : `tests/knock.test.js` (7, nouveau), `tests/combat.test.js` (11, nouveau : recul, mur, mimic, combat réel
+  sans séparation > 2 cases, tacle à portée, tacle qui dure, soupapes 5 s et 6 cases, vol du gobelin à distance,
+  minotaure + résistance 100 %, vue), `tests/tower.test.js` (+2). Adaptés : `mobs.test.js` (le mob reste à 1 ou 2 cases
+  au lieu d'exactement 1), `miner.test.js` (nom). Lancés : knock, combat, mobs, miner, goblin, mephite, skills, duck,
+  dungeon, trap, spells, winch, mule, team, fall, session, tower, view, instant-ui, live, game-replay, carac, stuff,
+  lobby, wiki, sets, steel-gear, amelioration, rune, anneaux, game-service ✅. Treuil, Mule, effroi au donjon :
+  leurs tests passent sans changement.
+- **Simulation** (5 sessions, branche / main) : solo coffre 1 623 / 1 703 pods, profondeur 99,6 / 99 ; à 3 coffre
+  4 161 / 4 075, profondeur 196 / 193, mobs tués 398 / 422, tacles 173 / 187, vols 820 / 832 ; **0 blocage**.
+  Tours (compo forte du test, seeds 11-15) : victoires 0/5 (main 2/5), PV du boss restants 45-1 350 (main 0-450),
+  dégâts ≈ −8 %, toit atteint ≈ 15 s plus tard ; 0 blocage.
+- **Points fragiles** : l'occultiste canalise 5 s = la soupape 5 s : un tacle d'un autre mob peut sauter pendant
+  l'étourdissement (il se reprend aussitôt si le mob est à portée). Le coup du mineur est perdu si le mob a été
+  repoussé hors de portée pendant l'élan (par un autre mineur). Le recentrage est une action `move` sur sa propre case
+  (durée |k| × pas). ⚠️ Pas regardé dans un vrai navigateur.
+
 ### Aura du stuff (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `AURA` (config : seuil R4, paliers, rayon / opacité / pulsation) ; `src/meta/aura.js` (`auraQ`, `aurasOf`,
   `sanitizeAuras`, `auraLook`, pur) ; `src/render/aura.js` (halo pixel art calculé depuis les pixels de la texture,

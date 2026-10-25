@@ -1,13 +1,15 @@
 /* Mobs (GAME_DESIGN §4) : bestioles, gobelins, occultistes et méphites (se déplacent), mimics (immobiles, faux minerais).
-   Tous les mobs TACLENT : à 1 case ou moins (Manhattan) du mineur qu'ils visent, ils l'immobilisent (un seul mineur
-   par mob) jusqu'à leur mort. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
+   Tous les mobs TACLENT : à portée d'attaque (COMBAT.reach) du mineur qu'ils visent, ils le forcent à les combattre
+   (un seul mineur par mob) jusqu'à leur mort ou une provocation ; le mineur taclé peut bouger, mais seulement pour les
+   frapper (25/10, avant : immobilisé). Recul et portée : src/sim/knock.js. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
    vole (pas de gravité) et asphyxie le mineur qu'il tacle. */
-import { W, DT, CFG, MOBS, BLOCKS, DUCK, mobHp } from '../config.js';
+import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
 import { log } from './log.js';
-import { dungeonAt, inRoom, interior } from './dungeon.js';
+import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
-import { spawnDucks, updateDuck } from './duck.js';
+import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
+import { inReach, push, recenter, driftsAway } from './knock.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
@@ -43,6 +45,17 @@ export function resists(G,m){
   return true;
 }
 
+/* cases où ce mob peut être repoussé : vide, dans la mine, ni dans un piège encore caché, ni sur un mineur ; le boss
+   reste dans sa salle, les autres n'entrent pas dans un donjon ; le Gallianix reste sur le sol de la surface ; un mimic
+   ne bouge jamais */
+export function mobCanEnter(G,o){
+  if(o.type==='mimic') return () => false;
+  if(o.type===DUCK.type) return (x,y) => y===o.y && duckCanEnter(G,x);
+  const d=o.dungeon!=null ? G.dungeons.find(q=>q.id===o.dungeon) : null;
+  return (x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !veiled(G,x,y)
+    && (d ? interior(d,x,y) : !dungeonAt(G,x,y)) && !G.miners.some(m=>m.x===x && m.y===y);
+}
+
 /* tacle : le mob qui immobilise ce mineur (o.grab = id du mineur), ou null */
 export const tackler = (G,m) => G.mobs.find(o=>o.hp>0 && o.grab===m.id) || null;
 /* occultiste qui canalise sur ce mineur (il est étourdi tant que dure la canalisation), ou null */
@@ -65,13 +78,41 @@ function preyOf(G,o){
   return best;
 }
 
-/* tacle d'un mob : il garde son mineur tant qu'il est à côté ; sinon il prend sa cible si elle est à 1 case ou moins */
+/* tacle d'un mob (25/10) : il prend sa cible dès qu'elle est à portée d'attaque, et la garde jusqu'à sa mort ou une
+   provocation (le mineur peut bouger, mais seulement pour le frapper). Soupape contre les blocages : le tacle saute si
+   le mineur taclé ne l'a pas frappé depuis COMBAT.tackleGiveUp s, ou s'il est à plus de COMBAT.tackleLeash cases. */
+const keepsGrab = (G,o,m,stay=()=>true) => m && m.y>0 && stay(m) && canTackle(G,o,m)
+  && manhattan(m,o)<=COMBAT.tackleLeash && G.t-(o.grabHit ?? G.t)<=COMBAT.tackleGiveUp+1e-9;
+function grab(G,o,p){
+  const id = p && inReach(G,o,p) && canTackle(G,o,p) ? p.id : null;
+  if(id!=null && id!==o.grab) o.grabHit=G.t;   // nouveau tacle : la soupape part de maintenant
+  o.grab=id;
+}
 function updateGrab(G,o){
   if(o.channel || (o.type==='mimic' && !o.revealed)){ o.grab=null; return; }
-  const held=byId(G,o.grab);
-  if(held && held.y>0 && manhattan(held,o)<=1 && canTackle(G,o,held)) return;
-  const p=preyOf(G,o);
-  o.grab = p && manhattan(p,o)<=1 && canTackle(G,o,p) ? p.id : null;
+  if(keepsGrab(G,o,byId(G,o.grab))) return;
+  grab(G,o,preyOf(G,o));
+}
+
+/* coup d'un mob qui tacle (MOBS.hitEvery) : il repousse sa cible de MOBS.knock[type] blocs s'il est à portée (les
+   autres mobs ont 0 de poussée : leur coup, c'est leur effet, vol ou asphyxie) */
+function strike(G,o){
+  const k=MOBS.knock[o.type] || 0, m=byId(G,o.grab);
+  if(!(k>0) || !m){ o.hit=MOBS.hitEvery; return; }
+  o.hit=(o.hit ?? MOBS.hitEvery)-DT;
+  if(o.hit>1e-9 || !inReach(G,o,m)) return;
+  o.hit+=MOBS.hitEvery;
+  if(m.action?.type==='move') return;   // en plein pas (ou en chute) : le coup ne le déplace pas
+  push(m, o, k, (x,y) => isAir(G,x,y) && !noEntry(G,m,x,y));
+  m.stats.knocked=(m.stats.knocked||0)+1;
+}
+
+/* pas d'un mob vers sa cible quand elle n'est plus à portée (après un recul, il revient au contact) : s'il est déjà à
+   côté, il se recentre dans sa case ; renvoie true s'il n'a pas à bouger plus loin */
+function closeIn(G,o,m){
+  if(inReach(G,o,m)) return true;
+  if(manhattan(m,o)<=1){ if(driftsAway(o,m)){ recenter(o); o.cd=stepOf(o)/2; } return true; }
+  return false;
 }
 
 /* mineur que ce mob a pris en chasse (état « combat » de la session, que suivent les mineurs qui aident leurs alliés) */
@@ -94,16 +135,15 @@ function updateBoss(G,o){
   const inside=m => m.y>0 && d && inRoom(d,m.x,m.y);
   const prey=()=>{ const t=tauntedBy(G,o); if(t && inside(t)) return t;
     let best=null, bd=Infinity; for(const m of G.miners){ if(!inside(m)) continue; const k=manhattan(m,o); if(k<bd){ bd=k; best=m; } } return best; };
-  const held=byId(G,o.grab);
-  if(!(held && inside(held) && manhattan(held,o)<=1 && canTackle(G,o,held))){
-    const p=prey(); o.grab = p && manhattan(p,o)<=1 && canTackle(G,o,p) ? p.id : null;
-  }
-  const p=prey(); o.chase = o.grab ?? p?.id ?? null;
+  if(!keepsGrab(G,o,byId(G,o.grab),inside)) grab(G,o,prey());
+  strike(G,o);
+  const p=byId(G,o.grab) ?? prey(); o.chase = p?.id ?? null;
   o.cd=(o.cd||0)-DT;
-  if(o.cd>0 || o.grab!=null || !p) return;
+  if(o.cd>0 || !p) return;
   o.cd=CFG.mobStep;
+  if(closeIn(G,o,p)) return;
   const dx=Math.sign(p.x-o.x);
-  if(dx && interior(d,o.x+dx,o.y) && isAir(G,o.x+dx,o.y)) o.x+=dx;   // il marche sur le sol de sa salle, sans en sortir
+  if(dx && interior(d,o.x+dx,o.y) && isAir(G,o.x+dx,o.y)){ o.x+=dx; recenter(o); }   // il marche sur le sol de sa salle, sans en sortir
 }
 
 export function updateMobs(G){
@@ -119,22 +159,24 @@ export function updateMobs(G){
       o.fall=(o.fall||0)+DT*CFG.fallSpeed;
       while(o.fall>=1 && !supported(G,o.x,o.y)){ o.y++; o.fall-=1; }
       if(supported(G,o.x,o.y)) o.fall=0;
-      o.grab=null; o.chase=chaseOf(G,o); continue;
+      o.ky=0; updateGrab(G,o); o.chase=chaseOf(G,o); continue;   // il garde son tacle en tombant (soupape : tackleLeash)
     }
+    if(!isFlyer(o) && !G.ladder[o.y]?.[o.x]) o.ky=0;   // poussé vers le haut hors d'une échelle : il retombe
     if(o.type==='occultiste' && occult(G,o)){ o.grab=null; o.chase=chaseOf(G,o); continue; }
     updateGrab(G,o);
     if(o.type==='gobelin') goblinSteal(G,o);
+    strike(G,o);
     o.chase=chaseOf(G,o);
     o.cd=(o.cd||0)-DT;
-    if(o.cd>0 || o.grab!=null) continue;           // il tacle : il ne bouge plus
-    const m=preyOf(G,o); if(!m) continue;
-    const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y), dist=manhattan(m,o);
+    if(o.cd>0) continue;
+    const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) continue;   // il tacle : il suit son mineur pour rester au contact
+    const dx=Math.sign(m.x-o.x), dy=Math.sign(m.y-o.y);
     o.cd=stepOf(o);
-    if(dist<=1||!inChase(o,m)) continue;
-    if(isFlyer(o)){ const s=flyStep(G,o,m); if(s){ o.x=s.x; o.y=s.y; } continue; }
-    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; o.cd=stepOf(o)/CFG.climbFactor; }   // grimpe
-    else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; o.cd=stepOf(o)/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
-    else if(dx && isAir(G,o.x+dx,o.y)) o.x+=dx;                                        // marche (et tombera s'il n'y a pas de sol)
+    if(closeIn(G,o,m) || (o.grab==null && !inChase(o,m))) continue;
+    if(isFlyer(o)){ const s=flyStep(G,o,m); if(s){ o.x=s.x; o.y=s.y; recenter(o); } continue; }
+    if(dy<0 && o.y-1>=1 && G.ladder[o.y][o.x] && isAir(G,o.x,o.y-1)){ o.y--; recenter(o); o.cd=stepOf(o)/CFG.climbFactor; }   // grimpe
+    else if(dy>0 && isAir(G,o.x,o.y+1)){ o.y++; recenter(o); o.cd=stepOf(o)/CFG.climbFactor; }   // descend l'échelle (sinon la gravité s'en charge)
+    else if(dx && isAir(G,o.x+dx,o.y)){ o.x+=dx; recenter(o); }                                  // marche (et tombera s'il n'y a pas de sol)
   }
   asphyxia(G);
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse

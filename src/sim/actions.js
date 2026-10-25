@@ -1,10 +1,11 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, mineT, moveT, climbT, winchT } from './mineur.js';
-import { provoke, revealMimic } from './mobs.js';
+import { provoke, revealMimic, mobCanEnter } from './mobs.js';
+import { inReach, push } from './knock.js';
 import { log } from './log.js';
 import { aoeOf } from '../meta/skills.js';
 import { noEntry } from './dungeon.js';
@@ -143,7 +144,7 @@ export function finishAction(G,m,a){
   switch(a.type){
     case 'move':
       m.face = Math.sign(a.data.x-m.x)||m.face;
-      m.x=a.data.x; m.y=a.data.y;
+      m.x=a.data.x; m.y=a.data.y; m.kx=0; m.ky=0;   // un pas le recentre dans sa case (recul : src/sim/knock.js)
       if(m.y>G.stats.maxDepth) G.stats.maxDepth=m.y;
       if(m.y>m.stats.maxDepth) m.stats.maxDepth=m.y;
       { const ai=areaOf(m.y); if(ai>=0 && ai!==m.lastArea) m.lastArea=ai; }   // pas de ligne au journal (trop fréquent)
@@ -178,12 +179,15 @@ export function finishAction(G,m,a){
     case 'dash': finishDash(G,m,a); break;
     case 'dynamite': finishDynamite(G,m,a); break;
     case 'attack': {
-      const o=a.data.mob; if(o.hp>0){
+      /* le coup ne porte que si le mob est encore à portée (COMBAT.reach) ; il le repousse de COMBAT.knock blocs */
+      const o=a.data.mob; if(o.hp>0 && inReach(G,m,o)){
         if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
         const dmg=hitDamage(G,m);
         o.hp-=dmg; m.foeHit=G.t;
+        if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
         splash(G,m,o,dmg);
         if(o.hp<=0) killMob(G,m,o);
+        else push(o, m, COMBAT.knock, mobCanEnter(G,o));
       } break; }
   }
 }
@@ -233,6 +237,6 @@ export function stepDir(G,m,dx,dy,opt){
   }
   if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', CFG.ladderTime, {}); return true; }
   const seau = dy && (isWinch(G,m.x,m.y) || isWinch(G,nx,ny));   // dans le puits du treuil : le seau
-  startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x,fy:m.y,winch:seau});
+  startAction(m,'move', seau ? winchT(G,m) : dy ? climbT(G,m) : moveT(G,m), {x:nx,y:ny,down:dy===1,fx:m.x+(m.kx||0),fy:m.y+(m.ky||0),winch:seau});
   return true;
 }
