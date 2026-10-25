@@ -2881,7 +2881,14 @@ Règles (voir CLAUDE.md) :
   (treuil, regroupement), le treuil s'installe en 10 s sans les 5 s d'étourdissement, projection 4. tower,
   tower-boss ✅ (37) : ils couvrent aussi l'entrée précédente, mise en ligne sans tests.
 
-### Amélioration : paliers 5 / 10 / 15 % (Geoffrey, 25/10) — 🧪 branche `geoffrey/amelioration-ratios`
+### Armure en fer + 20 peaux de gobelin (Geoffrey, 25/10) — ✅ en ligne le 25/10
+- **Quoi** : `src/recipes.js` : casque / plastron / jambes en fer + `'Peau de gobelin': 20` ; bottes 5 → 20. GAME_DESIGN
+  (tableau du stuff en fer). Wiki : recettes générées depuis `RECIPES` (date du bandeau déjà au 25/10).
+- **Tests** : `tests/blueprint.test.js` (recettes ; et pioche en fer 0,4 / 1,4 : **déjà rouge sur main** depuis le nerf du
+  25/10), `tests/recycle.test.js` (bottes : 12 peaux) ; admin, anneaux, aura, discord, give-item, research, rune, craft,
+  wiki, steel-gear ✅ (105) ; `npm run test:anticheat` ✅ (89).
+
+### Amélioration : paliers 5 / 10 / 15 % (Geoffrey, 25/10) — ✅ en ligne le 25/10
 - **Quoi** : `UPGRADE.levels[].pct` 3 / 5 / 7 → 5 / 10 / 15 (`src/config.js`) ; GAME_DESIGN (tableau des niveaux) ; wiki :
   tableau généré (`upgradeRows`). Le % est lu à l'affichage et en session (`plusMult`) : les pièces déjà améliorées
   suivent sans migration ; un malus (Lance) n'est pas multiplié.
