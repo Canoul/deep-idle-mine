@@ -111,8 +111,8 @@ test('Dash : s\'arrête devant un mob et le frappe (500 % des dégâts, recharge
   assert.equal(m.x, 4);
   assert.equal(G.mobs[0].hp, 1000 - STATS.damage * 5);
   assert.equal(m.spellCd.dash, G.t + 15);
-  G = corridor(); m = G.miners[0]; m.spells = ['dash'];
-  G.tiles[2][5] = 0;                                   // trou en x = 5
+  G = worldFrom(['', '#@          ####', '#'.repeat(50), '#'.repeat(50), '#'.repeat(50)]); m = G.miners[0]; m.spells = ['dash'];
+  G.tiles[2][5] = 0; G.tiles[3][5] = 0;                // trou de 2 en x = 5 (25/10 : un trou de 1 se descend)
   startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
   afterDecide(G, m);
   assert.equal(m.action.data.x, 4);
@@ -121,6 +121,64 @@ test('Dash : s\'arrête devant un mob et le frappe (500 % des dégâts, recharge
   startAction(m, 'move', moveT(G, m), { x:2, y:1, fx:1, fy:1 });
   afterDecide(G, m);
   assert.equal(m.action.type, 'move', '1 case seulement : il attend mieux');
+});
+
+/* Dash, refonte du 25/10/2026 : il suit le terrain, vise les mobs à portée, étourdit */
+const dashWorld = rows => { const G = worldFrom(rows), m = G.miners[0]; m.spells = ['dash']; return { G, m }; };
+
+test('Dash (25/10) : il saute un bloc qui barre la route et descend une marche ; jamais au-delà de 6 cases', () => {
+  const { G, m } = dashWorld(['', '#'.repeat(50), '#           ####', '#@  #       ####', '#'.repeat(50)]);
+  startAction(m, 'move', moveT(G, m), { x:2, y:3, fx:1, fy:3 });
+  afterDecide(G, m);
+  assert.equal(m.action.type, 'dash');
+  assert.deepEqual(m.action.data.path, [[1,3], [2,3], [3,3], [4,2], [5,3], [6,3]], 'saut sur le bloc en x 4, puis redescente');
+  finishAction(G, m, m.action);
+  assert.deepEqual([m.x, m.y], [6, 3]);
+});
+
+test('Dash (25/10) : vers le mob qu\'il va combattre, même en contrebas (chute ≤ 3) ; hors de portée, il le garde', () => {
+  let { G, m } = dashWorld(['', '#'.repeat(50), '#@   #########', '#### #########', '#### #########', '####      ####', '#'.repeat(50)]);
+  G.mobs.push({ id:7, type:'bestiole', x:5, y:5, hp:1000, maxhp:1000, cd:1 });
+  m.foe = 7;
+  startAction(m, 'move', moveT(G, m), { x:2, y:2, fx:1, fy:2 });
+  afterDecide(G, m);
+  assert.equal(m.action.type, 'dash');
+  assert.deepEqual([m.action.data.x, m.action.data.y, m.action.data.mob], [4, 5, 7], 'il descend le puits et finit au contact');
+  ({ G, m } = dashWorld(['', '#'.repeat(50), '#@                  ####', '#'.repeat(50)]));
+  G.mobs.push({ id:8, type:'bestiole', x:15, y:2, hp:1000, maxhp:1000, cd:1 });
+  m.foe = 8;
+  startAction(m, 'move', moveT(G, m), { x:2, y:2, fx:1, fy:2 });
+  afterDecide(G, m);
+  assert.equal(m.action.type, 'move', 'mob à 14 cases : pas de Dash pour rien');
+  m.x = 9; startAction(m, 'move', moveT(G, m), { x:10, y:2, fx:9, fy:2 });
+  afterDecide(G, m);
+  assert.deepEqual([m.action.type, m.action.data.x], ['dash', 14], 'à portée : il fonce');
+});
+
+test('Dash (25/10) : un mob qui tacle un allié passe avant le sien', () => {
+  const G = worldFrom(['', '#'.repeat(50), '#          @           ####', '#'.repeat(50)], { miners:2 });
+  const [m, ally] = G.miners;
+  m.spells = ['dash']; ally.x = 7; ally.y = 2;
+  G.mobs.push({ id:1, type:'bestiole', x:15, y:2, hp:1000, maxhp:1000, cd:1 });
+  G.mobs.push({ id:2, type:'gobelin', x:8, y:2, hp:1000, maxhp:1000, cd:1, grab:ally.id });
+  m.foe = 1;
+  startAction(m, 'move', moveT(G, m), { x:12, y:2, fx:11, fy:2 });
+  afterDecide(G, m);
+  assert.deepEqual([m.action.type, m.action.data.mob, m.action.data.x], ['dash', 2, 9]);
+});
+
+test('Dash (25/10) : le mob heurté perd sa canalisation et est étourdi 2 s (il lâche son tacle)', () => {
+  const { G, m } = dashWorld(['', '#'.repeat(50), '#@         ####', '#'.repeat(50)]);
+  G.miners.push({ ...m, id:99, name:'Allié', x:30, y:2 });
+  const oc = { id:5, type:'occultiste', x:5, y:2, hp:1000, maxhp:1000, cd:1, cast:30, channel:{ target:99, left:5 } };
+  G.mobs.push(oc);
+  startAction(m, 'move', moveT(G, m), { x:2, y:2, fx:1, fy:2 });
+  afterDecide(G, m); finishAction(G, m, m.action); m.action = null;
+  assert.equal(oc.channel, null, 'canalisation coupée');
+  assert.equal(oc.stunUntil, G.t + SPELLS.list.find(x => x.id === 'dash').stun);
+  const at = [oc.x, oc.y];
+  for(let i = 0; i < 15; i++) tick(G);
+  assert.deepEqual([oc.x, oc.y, oc.grab ?? null], [...at, null], 'étourdi : il ne bouge ni ne tacle');
 });
 
 test('Illumination : révèle le cercle de rayon 5, seulement s\'il reste une case inconnue ; recharge 90 s', () => {

@@ -7,13 +7,13 @@
      Dynamite ;
    - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen ;
    - learnOnMine : un bloc miné (Fast learner). */
-import { W, IDS, DUCK, BLOCKS } from '../config.js';
+import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
 import { SPELL } from '../meta/spells.js';
 import { isAir, supported, typeOf, maxRow } from './world.js';
 import { startAction, moveT } from './mineur.js';
 import { breakBlock, hitDamage, killMob } from './actions.js';
 import { tackler } from './mobs.js';
-import { noEntry } from './dungeon.js';
+import { noEntry, active, mayEnter, bossOf } from './dungeon.js';
 import { veiled } from './trap.js';
 import { updateLight } from './light.js';
 import { log } from './log.js';
@@ -39,42 +39,110 @@ export function afterDecide(G,m){
   else if(a.type==='mine' && spellReady(G,m,'dynamite')) tryDynamite(G,m,a);
 }
 
-/* Dash : un pas de marche sur sa ligne devient une course de SPELL.dash.range cases au plus, dans le même sens. Il
-   s'arrête devant un bloc, un trou, l'entrée d'un donjon interdit, au pied d'une échelle qui monte, ou juste avant
-   l'objectif de l'IA (m.target, pour ne pas le dépasser) ; devant un mob, il le frappe en arrivant. Il ne part que
-   s'il fait au moins minCells cases, ou s'il frappe un mob. */
+/* Dash (25/10/2026, Geoffrey : refonte). Une course de SPELL.dash.range cases au plus à speed × sa vitesse de marche,
+   qui suit le terrain : il marche, descend (une marche de 1 en simple trajet ; une chute jusqu'à CFG.maxFall vers un
+   mob) et SAUTE un bloc qui lui barre la route s'il y a de la place au-dessus. Jamais dans une case inconnue, l'intérieur
+   d'un piège caché ou un donjon interdit ; il ne traverse pas un mob.
+   - Vers un mob : quand il va combattre ou aider (aimOf), il cherche le plus court Dash (≤ range cases) qui finit au
+     contact du mob ; un mob qui tacle un allié passe avant. Rien à portée : il GARDE son sort (pas de Dash « pour
+     rien » pendant qu'il approche).
+   - En simple trajet : la course continue dans le sens de son pas ; elle s'arrête devant ce qu'elle ne peut pas
+     franchir, au pied d'une échelle qui monte, ou juste avant l'objectif de l'IA (m.target). Au moins minCells cases.
+   Mob heurté : dmg × ses dégâts, recharge × hitCd, sa canalisation (occultiste) est coupée et il est étourdi stun s
+   (il lâche son tacle, ne bouge plus). */
+const free = (G,m,x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !!G.seen[y]?.[x] && !veiled(G,x,y)
+                           && !noEntry(G,m,x,y) && !mobAt(G,x,y);
+/* un pas de Dash depuis (x,y) dans le sens dx : { x, y, cells } ou null. fallMax : chute acceptée (cases) */
+function dashStep(G,m,x,y,dx,fallMax){
+  const nx = x+dx;
+  if(free(G,m,nx,y)){
+    let ly = y;
+    while(!supported(G,nx,ly)){ if(ly-y>=fallMax || !free(G,m,nx,ly+1)) return null; ly++; }
+    return { x:nx, y:ly, cells:1+(ly-y) };
+  }
+  if(nx>=0 && nx<W && !isAir(G,nx,y) && free(G,m,x,y-1) && free(G,m,nx,y-1)) return { x:nx, y:y-1, cells:1 };   // il saute
+  return null;
+}
+const near = (a,o) => Math.abs(a.x-o.x)+Math.abs(a.y-o.y)<=1;
+/* mob qu'il va combattre : celui qu'il aide, celui qu'il combat, ou le boss du donjon qu'il rejoint ; sinon null */
+function aimOf(G,m){
+  const id = m.helping && m.helpFoe!=null ? m.helpFoe : m.foe;
+  const o = id!=null ? G.mobs.find(q => q.id===id && q.hp>0) : null;
+  if(o || !m.helping) return o;
+  const d = G.dungeons?.find(d => active(G,d) && mayEnter(G,m,d));
+  return d ? bossOf(G,d) : null;
+}
+/* plus court Dash (en cases) qui finit au contact d'un des mobs foes : { path, cells, mob } ou null */
+function dashTo(G,m,foes){
+  if(!foes.length) return null;
+  const key = (x,y) => y*W+x, best = new Map([[key(m.x,m.y), 0]]);
+  const open = [{ x:m.x, y:m.y, cells:0, path:[] }];
+  let found = null;
+  while(open.length){
+    open.sort((a,b) => a.cells-b.cells);
+    const n = open.shift();
+    if(found && n.cells>=found.cells) break;
+    for(const dx of [-1, 1]){
+      const s = dashStep(G,m,n.x,n.y,dx,CFG.maxFall);
+      if(!s || n.cells+s.cells>SPELL.dash.range) continue;
+      const c = n.cells+s.cells, k = key(s.x,s.y);
+      if(best.has(k) && best.get(k)<=c) continue;
+      best.set(k, c);
+      const next = { x:s.x, y:s.y, cells:c, path:[...n.path, [s.x, s.y]] };
+      const mob = foes.find(o => near(next,o));
+      if(mob && (!found || c<found.cells)) found = { path:next.path, cells:c, mob };
+      open.push(next);
+    }
+  }
+  return found;
+}
 function tryDash(G,m,a){
   const S = SPELL.dash, d = a.data;
-  if(d.fall || d.winch || d.y!==m.y || Math.abs(d.x-m.x)!==1) return;
-  const dir = d.x-m.x, y = m.y;
+  if(d.fall || d.winch) return;
+  const aim = aimOf(G,m);
+  if(aim){
+    const tacklers = G.miners.filter(o => o!==m && o.y>0).map(o => tackler(G,o)).filter(Boolean);
+    if(near(m,aim) && !tacklers.length) return;        // déjà au contact : il frappe
+    const r = dashTo(G,m,tacklers) || (near(m,aim) ? null : dashTo(G,m,[aim]));
+    if(r) startDash(G,m,r.path,r.cells,r.mob);        // sinon pas à portée : il garde son Dash
+    return;
+  }
+  if(d.y!==m.y || Math.abs(d.x-m.x)!==1) return;
+  const dir = d.x-m.x;
   let max = S.range;
-  if(m.target && m.target.y===y && Math.sign(m.target.x-m.x)===dir) max = Math.min(max, Math.abs(m.target.x-m.x)-1);
-  let n = 0, hit = null;
-  for(let k=1; k<=max; k++){
-    const x = m.x+dir*k;
-    if(x<0 || x>=W) break;
-    const o = mobAt(G,x,y);
+  if(m.target && Math.sign(m.target.x-m.x)===dir) max = Math.min(max, Math.abs(m.target.x-m.x)-1);
+  const path = []; let x = m.x, y = m.y, cells = 0, hit = null;
+  while(path.length<max){
+    const o = mobAt(G,x+dir,y);
     if(o){ hit = o; break; }
-    if(!isAir(G,x,y) || noEntry(G,m,x,y) || !supported(G,x,y)) break;
-    n = k;
+    const s = dashStep(G,m,x,y,dir,1);
+    if(!s || cells+s.cells>S.range) break;
+    x = s.x; y = s.y; cells += s.cells; path.push([x, y]);
     if(G.ladder[y-1]?.[x]) break;                     // une échelle monte ici : son chemin tourne peut-être
   }
-  if(!hit && n<S.minCells) return;
-  startAction(m,'dash', Math.max(1,n)*moveT(G,m)/S.speed, { x:m.x+dir*n, y, fx:m.x, fy:y, dir, mob:hit?.id ?? null });
+  if(!hit && path.length<S.minCells) return;
+  startDash(G,m,path,Math.max(1,cells),hit);
+}
+function startDash(G,m,path,cells,mob){
+  const [x, y] = path.at(-1) ?? [m.x, m.y];
+  startAction(m,'dash', cells*moveT(G,m)/SPELL.dash.speed, { x, y, fx:m.x+(m.kx||0), fy:m.y+(m.ky||0), path:[[m.x, m.y], ...path],
+    dir: Math.sign(x-m.x) || Math.sign((mob?.x ?? m.x)-m.x) || m.face || 1, mob:mob?.id ?? null });
   m.status = 'Dash';
 }
 export function finishDash(G,m,a){
-  const d = a.data;
-  m.face = d.dir; m.x = d.x;
+  const d = a.data, S = SPELL.dash;
+  m.face = d.dir; m.x = d.x; m.y = d.y; m.kx = 0; m.ky = 0;   // comme un pas : recentré dans sa case (src/sim/knock.js)
   if(m.y>m.stats.maxDepth) m.stats.maxDepth = m.y;
   const o = d.mob!=null ? G.mobs.find(q => q.id===d.mob && q.hp>0) : null;
-  const hit = o && Math.abs(o.x-m.x)+Math.abs(o.y-m.y)<=1;
-  cast(G,m,'dash',G.t,hit ? SPELL.dash.hitCd : 1);
+  const hit = o && near(m,o);
+  cast(G,m,'dash',G.t,hit ? S.hitCd : 1);
   if(!hit) return;
-  o.hp -= hitDamage(G,m)*SPELL.dash.dmg;
+  o.hp -= hitDamage(G,m)*S.dmg;
   m.foe = o.id; m.foeHit = G.t;
   log(G, `💨 ${m.name} : Dash dans un ${o.type}`);
-  if(o.hp<=0) killMob(G,m,o);
+  if(o.hp<=0) return killMob(G,m,o);
+  if(o.channel){ o.channel = null; log(G, `💨 ${m.name} coupe la canalisation de l'occultiste`); }
+  o.stunUntil = G.t+S.stun; o.grab = null;
 }
 
 /* cases cassables par la dynamite autour de (cx,cy), rayon SPELL.dynamite.radius (cercle) : un bloc que le mineur peut
