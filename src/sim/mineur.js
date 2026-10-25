@@ -28,6 +28,8 @@ export function createMiner(id, opts={}){
     id, name: opts.name || ('Mineur '+(id+1)), color: opts.color || null,
     look: opts.look || {},          // équipement porté (src/skins.js pour l'apparence ; ses effets sont dans carac)
     auras: opts.auras || {},        // aura des pièces visibles ({ case: qualité }, src/meta/aura.js), visuel seulement
+    glyphsOwned: Array.isArray(opts.glyphsOwned) ? [...opts.glyphsOwned] : [],   // glyphes possédés au lancement (drop)
+    glyphFound: [],                 // glyphes trouvés pendant la session (versés à la fin dans sa part)
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
     carac,                          // caractéristiques du mineur (oxygène max, vitesses, pods, dégâts…)
     xpPct: Number.isFinite(opts.xpPct) && opts.xpPct > 0 ? opts.xpPct : 0,   // % d'XP en plus sur sa part (Anneau du nerd)

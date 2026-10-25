@@ -72,7 +72,7 @@ for(const seed of seeds){
   } });
   rows.push({
     seed, khole: { ...kh, hidden: (G.kholes || []).length }, areas: G.unlockedAreas, depth: G.stats.maxDepth, trips: G.stats.trips, falls: G.stats.falls, stuns: G.stats.stuns,
-    mined: G.stats.mined, kills: G.stats.kills, treasures: G.stats.treasures,
+    mined: G.stats.mined, kills: G.stats.kills, treasures: G.stats.treasures, glyphs: G.stats.glyphs || 0,   // glyphes trouvés (drop)
     treasuresHidden: G.areas.filter(a=>a.treasure).length,
     ore: G.areas.map(a=>a.oreMined+'/'+a.oreTotal), chest: G.chest,
     chestPods: Math.round(Object.entries(G.chest).reduce((s,[k,n])=>s+n*itemW(k),0)),   // poids total rapporté au coffre
@@ -99,6 +99,6 @@ for(const r of rows){
 }
 const avg = k => (rows.reduce((s,r)=>s+r[k],0)/rows.length).toFixed(1);
 const stuck = rows.filter(r=>r.stuck.length).length;
-console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')}, coffre ${avg('chestPods')} pods, étourdissements ${avg('stuns')} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
+console.log(`\n${rows.length} sessions, ${miners} mineur(s) | moyenne : areas ${(avg('areas')-1).toFixed(1)}, profondeur ${avg('depth')}, allers-retours ${avg('trips')}, treasures ouverts ${avg('treasures')}/${avg('treasuresHidden')}, coffre ${avg('chestPods')} pods, étourdissements ${avg('stuns')}, glyphes trouvés ${rows.reduce((s, r) => s + r.glyphs, 0)} | bloquées : ${stuck} | ${((Date.now()-t0)/1000).toFixed(1)} s`);
 process.exitCode = stuck ? 1 : 0;
 if(cost.khole.n) console.log(`k hole : ${rows.reduce((s, r) => s + r.khole.entered, 0)} pris | coût d'un tick : mine ${(cost.mine.ms/cost.mine.n).toFixed(3)} ms, dimension ${(cost.khole.ms/cost.khole.n).toFixed(3)} ms`);

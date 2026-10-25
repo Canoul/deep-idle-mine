@@ -120,6 +120,12 @@ export function sourcesOf(item){
   for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
   for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
   if(Object.hasOwn(RECIPES, item)) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
+  /* glyphes (drop, GLYPHS.drop) : trouvés par un mineur de la bonne spécialisation */
+  if(ITEMS[item]?.cat === 'glyph'){
+    const tree = skillNode(ITEMS[item].glyph)?.tree, d = tree && GLYPHS.drop[tree.id];
+    const ev = { block:'bloc qu\'il casse', ladder:'échelle qu\'il pose', kill:'mob qu\'il tue' };
+    if(d) out.push(`Mine : un mineur spécialisé ${tree.label} a ${fmt(d.chance * 100)} % de chance par ${ev[d.event]} d'en trouver un de son arbre qu'il n'a pas encore`);
+  }
   if(!out.length) out.push('Pas encore obtenable');
   return out;
 }

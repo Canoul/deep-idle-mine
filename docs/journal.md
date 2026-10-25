@@ -25,6 +25,14 @@ Modèle d'entrée :
   éclairées dès l'arrivée (une torche toutes les 5 cases).
 - **Chiffres** (3 mineurs, 3 seeds) : arène finie en 108 s, 2 minotaures tués (avant : 117 s) ; vagues : 66 mobs tués
   (avant : 41 à 63).
+## 25/10/2026 — Geoffrey — On trouve des glyphes en minant
+- **Pour le joueur** : dans la mine, ton mineur peut trouver un glyphe de sa spécialisation, parmi ceux que tu n'as
+  pas encore : spé Mineur 0,01 % par bloc cassé, spé Logisticien 0,07 % par échelle posée, spé Barbare 0,1 % par mob
+  tué. Il est à toi seul, annoncé dans le journal de la partie, et arrive dans ton inventaire à la fin de la session
+  (perdu si tu quittes avant). En moyenne : environ 8 % de chance par session pour un mineur, 6 % pour un
+  logisticien, 3 % pour un barbare.
+- **Décisions** (Geoffrey) : 0,07 % par échelle posée ; « pas débloqué » = pas possédé ; mine classique ; pour lui seul.
+- **À suivre** : le barbare en trouve 2 à 3 fois moins que le mineur (taux à revoir si besoin, `GLYPHS.drop`).
 - **État** : ✅ en ligne le 25/10
 
 ## 25/10/2026 — Geoffrey — Commande d'admin : ouvrir un k hole chez un joueur
@@ -34,6 +42,7 @@ Modèle d'entrée :
   plus tard. `--map` : 0 au hasard, 1 Filons, 2 Arène, 3 Salle au trésor, 4 Vagues. Enregistré dans la session : un
   redémarrage du serveur rejoue la partie à l'identique.
 - **État** : ✅ en ligne le 25/10
+
 
 ## 25/10/2026 — Geoffrey — K hole : le portail vers une autre dimension (4 cartes)
 - **Pour le joueur** : rarement (2 % par area), un trou noir est enfoui dans la mine. Dès qu'un mineur le voit, il

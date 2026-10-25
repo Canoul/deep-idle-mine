@@ -447,6 +447,12 @@ export const GLYPHS = {
   /* Glyphe Treuil (étape 2) : un ascenseur liftSpeed × plus rapide que le treuil (Escalateur compris), posé / prolongé
      un déblocage d'area sur liftEvery (1er, 3e, 5e…) ; dans les tours, un ascenseur au lieu du treuil */
   liftSpeed:3, liftEvery:2,
+  /* drop (25/10/2026, Geoffrey) : un mineur avec une spécialisation (arbre figé au lancement) peut trouver un glyphe de SON
+     arbre, tiré parmi ceux qu'il ne possède pas au lancement (inventaire + posés), à chaque événement de sa spé :
+     bloc cassé (mineur), échelle posée (logisticien), mob tué (barbare). Mine classique ; pour lui seul, versé à la fin
+     (perdu s'il quitte). Hasard à part (dropSalt). */
+  drop: { mineur:{ event:'block', chance:0.0001 }, logisticien:{ event:'ladder', chance:0.0007 }, barbare:{ event:'kill', chance:0.001 } },
+  dropSalt: 0x61f7d3,
   desc: {
     mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',
     ore_oxygen:  'Miner un minerai a 5 % de chance de lui rendre une torche (jamais au-delà de son maximum)',

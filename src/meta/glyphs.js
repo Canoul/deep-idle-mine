@@ -61,3 +61,8 @@ export function withGlyphStats(carac, effects, mine = true){
   if(effects?.glyph_damage) out.pods = (out.pods || 0) + Math.round(GLYPHS.damageToPods * (out.damage || 0));
   return out;
 }
+
+/* glyphes possédés (inventaire + posés) : ce que le serveur fige au lancement pour le drop (on ne trouve que les autres) */
+export const ownedGlyphs = (st, inv) => Object.values(GLYPHS.items).filter(n => countOf(inv, n) > 0 || Object.values(st?.glyphs || {}).includes(n));
+/* glyphes d'un arbre de skills (noms d'objets, dans l'ordre de GLYPHS.items) */
+export const glyphsOfTree = tree => Object.entries(GLYPHS.items).filter(([node]) => NODES[node]?.tree === tree).map(([, n]) => n);
