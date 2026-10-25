@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 25/10/2026 — Geoffrey — Tour : étages de blocs sans retour en arrière, recul des mobs visible, mesures ?perf
+- **Pour le joueur** : dans un étage de briques, les mineurs avancent maintenant depuis l'entrée, colonne par colonne :
+  ils ne laissent plus les briques du haut au-dessus de l'entrée pour revenir les chercher à la fin. Un Séraphin ou un
+  Diablotin repoussé reste un instant sur place (0,5 s) : le recul se voit enfin.
+- **Outil** : en ouvrant le jeu avec `?perf` (https://deepmineidle.fr/?perf), la barre du haut affiche les images par
+  seconde, le délai entre deux envois du serveur, le temps de réponse et les ticks par envoi (pour comprendre la
+  fluidité en ligne). Invisible sans `?perf`.
+- **À suivre** : regarder les mesures `?perf` en ligne pendant une tour. Boss qui ne saute pas : il descend rarement
+  sous 75 % avec l'équilibrage actuel (à confirmer). Treuil « sans texture » : pas reproduit (dessiné dans le test),
+  capture attendue.
+- **État** : 🧪 sur la branche `geoffrey/fix-tour-jugement` (pas en ligne)
+
 ## 25/10/2026 — Geoffrey — Annonces Discord des R7
 - **Pour le joueur** : quand quelqu'un loot un trésor de tour R7 ou identifie une pièce R7, un message part dans le
   salon #général du Discord : « 🚨 Zoe a loot un trésor démoniaque R7 🚨 », « 🚨 Zoe a identifié Plastron en fer R7 🚨 ».
