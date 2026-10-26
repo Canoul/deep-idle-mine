@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 26/10/2026 (Lampe à incandescence par blueprint T2, recherche T3 à 200 parts ; membre absent mais prêt gardé dans le groupe).*
+*Dernière mise à jour : 26/10/2026 (amélioration +1 à +9).*
 
 ---
 

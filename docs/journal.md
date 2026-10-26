@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Amélioration jusqu'à +9
+- **Pour le joueur** : on peut améliorer une pièce jusqu'à **+9** (avant +3). Chaque rang donne +3 % de toutes les
+  stats (+27 % au +9) ; la réussite baisse de 5 % par rang (100 % au +1, 60 % au +9). Les premiers rangs coûtent
+  beaucoup moins de plumes (6 au lieu de 20 pour le +1).
+- **Décisions** : coût 3 cristaux / 6 plumes au +1, puis ×1,5 (+2, +3), ×1,33 (+4 à +6), ×1,25 (+7 à +9), arrondi au
+  dessus : 129 cristaux et 256 plumes pour un +9. Le bonus passe de 5 / 10 / 15 % à 3 / 6 / 9 % pour +1 à +3 : les
+  pièces déjà améliorées perdent un peu.
+- **À suivre** : les cristaux (minotaure) risquent d'être le vrai frein à partir de +6.
+- **État** : 🧪 sur la branche `geoffrey/amelioration-plus9` (pas en ligne)
+
 ## 26/10/2026 — Geoffrey — Lampe à incandescence par blueprint, recherche tier 3 à 200 parts
 - **Pour le joueur** : la **Lampe à incandescence** ne se fabrique plus de base : il faut d'abord trouver son
   **blueprint** dans un **Treasure T2** (2 %, comme les autres plans du T2) ou l'obtenir à la **table de recherche
