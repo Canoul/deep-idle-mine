@@ -25,7 +25,7 @@ const count = async (store, id, item) => countOf(deserialize(JSON.stringify(awai
 test('récompense : 5 demandes en même temps → versée une seule fois', async () => {
   const { store, giant, clock, advance } = setup();
   await giant.enter(A); await advance(VISIT + 1000);
-  const d = await store.getGiantDay('2026-10-26'); d.total = 10000;
+  const d = await store.getGiantDay('2026-10-26'); d.total = 20000;
   await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
   clock.now = dayEnd(clock.now) + VISIT + 1;
   const all = await Promise.all(Array.from({ length: 5 }, () => giant.claim(A)));
