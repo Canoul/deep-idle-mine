@@ -14,7 +14,7 @@ import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { log } from '../log.js';
-import { ladderTime, winchMult } from '../mineur.js';
+import { ladderTime, winchMult, placedTorch } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -563,7 +563,7 @@ function finishAction(G, m, a){
     log(G, G.winch.lift ? `🛗 ${m.name} a installé un ascenseur au pied de la tour : on remonte au sommet en cabine`
                         : `🪣 ${m.name} a installé un treuil au pied de la tour : on remonte au sommet par le seau`);
   } else if(a.type === 'torch'){
-    if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push({ x: m.x, y: m.y, r: m.carac.torchRadius }); G.stats.torches++; updateTowerLight(G); }
+    if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push(placedTorch(m)); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
   else if(a.type === 'deposit') deposit(G, m);
   else if(a.type === 'attack'){

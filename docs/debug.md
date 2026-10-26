@@ -3453,6 +3453,19 @@ Règles (voir CLAUDE.md) :
 
 ---
 
+## 26/10/2026 — Apparence des torches de la Lampe à incandescence (branche `geoffrey/skin-lampe`) — ✅ en ligne le 26/10
+- **Quoi** : `src/sim/mineur.js` `placedTorch(m)` = { x, y, r, item? } (item = `m.look.torche`), utilisé par
+  `src/sim/actions.js` (mine) et `src/sim/tower/session.js` (tour). `src/skins.js` : `SKIN.torch` (base 'torch', lampe
+  'torch_lamp'), `torchTexOf(torche)`, ajouté à `SKIN_TEXTURES`. Rendu `src/render/canvas.js` et `src/render/tower.js`.
+  Vue de la tour `src/shared/tower-view.js` : liste `torchItem` (seulement si une torche a un item). Vue de la mine :
+  torches envoyées entières, rien à changer. Texture `torch_lamp` dans `scripts/gen_textures.py`.
+- **Tests** : `tests/lamp.test.js` ✅ (item et apparence en mine et en tour, vue navigateur comprise) ; tours, k hole,
+  lumière, vues ✅ (86). Simulation 5 sessions ✅ 0 bloquée, mêmes chiffres qu'avant (champ en plus, aucun hasard).
+- **Points fragiles** : l'apparence suit `look` (équipement figé au lancement), le rayon suit `carac` : les deux
+  viennent du même stuff. Torches du k hole (salle éclairée) : sans item, torches de base.
+
+---
+
 ## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`) — ✅ en ligne le 26/10
 - **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
   (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).

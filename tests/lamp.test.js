@@ -1,5 +1,5 @@
 /* Case Torche et Lampe à incandescence (25/10) : +10 torches, rayon 8, pose en 0,5 s ; craft débloqué par un blueprint du Treasure T2 (26/10 ; avant : sans blueprint) ;
-   chaque torche garde le rayon de celui qui l'a posée (mine et tour). */
+   chaque torche garde le rayon de celui qui l'a posée (mine et tour), et son apparence (26/10 : lampe de mine). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STATS, STUFF, LOOT } from '../src/config.js';
@@ -13,6 +13,8 @@ import { decide } from '../src/sim/ai.js';
 import { newTower, tickTower } from '../src/sim/tower/session.js';
 import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
 import { worldFrom } from './helpers.js';
+import { existsSync } from 'node:fs';
+import { torchTexOf, SKIN_TEXTURES } from '../src/skins.js';
 
 const LAMP = 'Lampe à incandescence';
 
@@ -46,24 +48,35 @@ test('effet : torches +10, rayon 8 (au lieu de 5), pose en 0,5 s (au lieu de 1)'
 test('mine : avec la lampe, il pose une torche en 0,5 s et elle éclaire à 8 cases ; sans, 5', () => {
   for(const [gear, r, t] of [[[{ item: LAMP }], 8, 0.5], [[], 5, 1]]){
     const G = worldFrom(['', 'd'.repeat(50), '#@' + ' '.repeat(30) + '#', '#'.repeat(50)]), m = G.miners[0];
-    m.carac = equippedStats(gear); m.torches = m.carac.torches;
+    m.carac = equippedStats(gear); m.torches = m.carac.torches; m.look = gear.length ? { torche: LAMP } : {};
     G.light = new Map(); G.torches = [];
     decide(G, m);
     assert.equal(m.action.type, 'torch'); assert.equal(m.action.dur, t);
     finishAction(G, m, m.action);
     assert.equal(G.torches.at(-1).r, r);
+    assert.equal(G.torches.at(-1).item, gear.length ? LAMP : undefined);
+    assert.equal(torchTexOf(G.torches.at(-1)), gear.length ? 'torch_lamp' : 'torch', 'apparence de la torche');
     assert.ok((G.light.get(m.y * 50 + m.x + r) || 0) > 0, `éclairé à ${r} cases`);
     assert.equal(G.light.get(m.y * 50 + m.x + r + 1) || 0, 0, `pas à ${r + 1}`);
   }
 });
 
 test('tour : la torche garde son rayon, aussi dans ce que reçoit le navigateur', () => {
-  const [spec] = minerSpecs({ players: [{ account: 'A', name: 'Zoe' }], gear: { A: { torche: { item: LAMP, q: 1, lines: [], uid: 1 } } } });
+  const [spec] = minerSpecs({ players: [{ account: 'A', name: 'Zoe' }], looks: { A: { torche: LAMP } }, gear: { A: { torche: { item: LAMP, q: 1, lines: [], uid: 1 } } } });
   assert.equal(spec.carac.torchRadius, 8);
   const G = newTower(3, { side: 'angel', miners: [{ ...spec, account: 'A' }] });
   let guard = 0;
   while(!G.torches.length && guard++ < 3000) tickTower(G);
   assert.equal(G.torches[0].r, 8);
+  assert.equal(G.torches[0].item, LAMP);
   const V = applyTowerView(createTowerViewer(G)(), null, 0);
   assert.equal(V.torches[0].r, 8);
+  assert.equal(torchTexOf(V.torches[0]), 'torch_lamp');
+});
+
+test('apparence : la torche posée avec la lampe est une lampe de mine ; texture chargée ; torches de base et du k hole inchangées', () => {
+  assert.equal(torchTexOf({ x: 0, y: 0, r: 5 }), 'torch');
+  assert.equal(torchTexOf({ x: 0, y: 0, r: 8, item: LAMP }), 'torch_lamp');
+  assert.equal(torchTexOf({ item: 'Pioche en pierre' }), 'torch', 'pièce sans apparence de torche');
+  assert.ok(SKIN_TEXTURES.includes('torch_lamp') && existsSync('textures/torch_lamp.png'));
 });
