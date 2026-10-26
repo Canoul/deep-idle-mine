@@ -220,7 +220,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts ; Équiper remet tout d'un coup
   (pièce introuvable = case vide), hors session ; garde-fou 20 sets.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
-  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
+  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur, et ses torches dessinées en lampe de mine depuis le 26/10 ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
   pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →

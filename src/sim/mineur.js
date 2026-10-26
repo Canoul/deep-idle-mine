@@ -91,3 +91,7 @@ export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 export function startAction(m,type,dur,data){ m.action={type, dur:Math.max(0.05,dur), t:0, data:data||{}}; }
 export function idle(m,t){ if(!m.action) startAction(m,'wait', t||0.5, {}); }
 export function collect(m,name,w,n){ m.inv[name]=(m.inv[name]||0)+n; m.load+=w*n; }
+
+/* torche posée par m : r = son rayon, item = la pièce de sa case torche s'il en a une (Lampe à incandescence : rayon, et
+   apparence de la torche, src/skins.js torchTexOf) */
+export const placedTorch = m => ({ x:m.x, y:m.y, r:m.carac.torchRadius, ...(m.look?.torche ? { item:m.look.torche } : {}) });

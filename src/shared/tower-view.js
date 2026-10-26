@@ -39,6 +39,7 @@ export function createTowerViewer(G){
       seen: G.seen.map(r => r.join('')),
       boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air },
       torches: G.torches.map(t => t.y * G.w + t.x), torchR: G.torches.map(t => t.r ?? null),   // rayon de chaque torche
+      ...(G.torches.some(t => t.item) ? { torchItem: G.torches.map(t => t.item ?? null) } : {}),   // pièce de la case torche (apparence)
       mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
       miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
@@ -58,7 +59,8 @@ export function applyTowerView(v, prev = null, now = performance.now()){
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))), ladder,
     seen: (v.seen || []).map(s => Uint8Array.from(s, c => +c)),
     boss: v.boss, miners: v.miners, stats: v.stats, log: v.log,
-    torches: (v.torches || []).map((k, i) => ({ x: k % v.w, y: (k - k % v.w) / v.w, ...(v.torchR?.[i] != null ? { r: v.torchR[i] } : {}) })), mobs: v.mobs || [],
+    torches: (v.torches || []).map((k, i) => ({ x: k % v.w, y: (k - k % v.w) / v.w, ...(v.torchR?.[i] != null ? { r: v.torchR[i] } : {}),
+                                                    ...(typeof v.torchItem?.[i] === 'string' ? { item: v.torchItem[i] } : {}) })), mobs: v.mobs || [],
     reached: v.reached ?? 0, mobsLeft: v.mobsLeft ?? 0, winch: v.winch ?? null,
   };
   G.light = towerLight(G);

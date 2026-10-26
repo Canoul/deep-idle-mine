@@ -3,7 +3,7 @@ import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, winchT, ladderTime, rushTime } from './mineur.js';
+import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
@@ -197,7 +197,7 @@ export function finishAction(G,m,a){
       glyphDrop(G,m,'ladder');   // Glyphe (spé Logisticien)
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
-    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y,r:m.carac.torchRadius}); updateLight(G); break;   // r : son rayon (Lampe à incandescence)
+    case 'torch': m.torches--; G.torches.push(placedTorch(m)); updateLight(G); break;
     case 'deposit': {
       const parts=[];
       for(const k in m.inv){

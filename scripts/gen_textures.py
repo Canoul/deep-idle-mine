@@ -860,6 +860,22 @@ def main():
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))
     rect(torch, 7, 2, 2, 3, hexc('#ffd23f'))
     tex['torch'] = torch
+    # torche posée avec la Lampe à incandescence (26/10/2026) : lampe de mine suspendue à un câble, chapeau de métal,
+    # ampoule chaude dans sa cage de fils
+    tlamp = blank()
+    rect(tlamp, 7, 0, 2, 3, hexc('#6a707a'))               # câble
+    rect(tlamp, 5, 3, 6, 2, hexc('#4a4f57'))               # chapeau
+    rect(tlamp, 4, 4, 8, 1, hexc('#6a707a'))
+    rect(tlamp, 5, 5, 6, 6, hexc('#fff1a8'))               # ampoule
+    rect(tlamp, 6, 6, 4, 4, hexc('#ffd447'))
+    rect(tlamp, 7, 7, 2, 2, hexc('#ff8a1a'))               # filament
+    rect(tlamp, 6, 6, 1, 1, hexc('#ffffff'))               # reflet
+    for x in (5, 10):
+        rect(tlamp, x, 5, 1, 7, hexc('#3a3f46'))           # cage : montants
+    rect(tlamp, 5, 8, 6, 1, hexc('#3a3f46'))               # cage : cerceau
+    rect(tlamp, 6, 11, 4, 1, hexc('#3a3f46'))              # fond de la cage
+    rect(tlamp, 7, 12, 2, 1, hexc('#2b2b2b'))
+    tex['torch_lamp'] = tlamp
 
     # treuil (skill Logisticien) : corde au milieu du puits, poulie en bois en surface, seau en bois
     rope = blank()
