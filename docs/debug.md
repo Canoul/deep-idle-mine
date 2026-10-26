@@ -3453,7 +3453,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`)
+## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`) — ✅ en ligne le 26/10
 - **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
   (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).
   `src/sim/tower/session.js` : `m.inv` / `m.load` ; `mineCell` met la brique du camp dans le sac (`G.bricks--`) ;

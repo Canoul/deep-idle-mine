@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **À suivre** : en simulation (2 mineurs + 1 barbare, 20 tours), tout fer 10/20 → **4/20** victoires, tout acier
   17/20 → **16/20** (≈ 51 briques par joueur). Les vidages coûtent ≈ 1 min 15 de montée. Pas encore vérifié dans un
   vrai navigateur.
-- **État** : 🧪 sur la branche `geoffrey/tour-pods` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
 
 
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
