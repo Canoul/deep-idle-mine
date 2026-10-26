@@ -3450,3 +3450,12 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : un joueur qui garde le jeu ouvert sans recharger a un lastSeenAt de connexion jusqu'à 1 h en
   retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
   tous les joueurs (comme l'onglet Online), pas seulement les amis.
+
+---
+
+## 26/10/2026 — Butin rare des mobs : `MOB_DROPS` 0,5 % → 0,1 %, minotaure 1 % / 2 % → 0,5 % / 1 % (branche `geoffrey/nerf-drops`)
+- **Quoi** : `src/config.js` `MOB_DROPS.items` ; `GAME_DESIGN.md` (tableau du butin des mobs), `claude/etat-du-projet.md`.
+  Wiki : tableaux et « d'où ça tombe » lus dans la config.
+- **Tests** : `tests/mob-drops.test.js` : valeurs et textes du wiki mis à jour, N = 200 000 tirages (à 0,1 %, 40 000 ne
+  suffisaient plus pour la marge de 25 %) ; le test du multiplicateur de butin lit la config. mob-drops, wiki 18/18 ✅.
+

@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Butin rare des mobs : chances baissées
+- **Pour le joueur** : les pièces lâchées par les mobs tombent bien moins souvent. Lanières en cuir du gobelin, Capuche
+  sombre et Nuage magique : **0,1 %** (avant 0,5 %) ; Ceinture du Géant : **0,5 %** sur le minotaure (avant 1 %), **1 %**
+  dans un k hole (avant 2 %). Le butin du mineur (stat Butin, Pillage) multiplie toujours ces chances. Le wiki suit tout
+  seul.
+- **Décisions** (Geoffrey) ; choix de Claude à valider : la chance en k hole reste le double de la chance normale.
+- **État** : 🔧 branche `geoffrey/nerf-drops`, pas en ligne
+
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
   venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour
