@@ -130,6 +130,7 @@ function mine(G, m){
   while(m.hitAcc >= 1 && !m.fly){
     m.hitAcc -= 1;
     m.stats.hits++; G.stats.hits++;
+    m.ox = Math.max(0, m.ox - GIANT.oxygenPerHit);
     if(G.rng() < GIANT.knock.chance) knock(G, m);
   }
 }

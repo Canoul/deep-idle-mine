@@ -71,6 +71,15 @@ test('oxygène : il baisse de 2/s, la fontaine recharge 30/s ; jamais à court a
   assert.equal(big.refills, 0, 'assez d\'oxygène pour 3 min : pas de fontaine');
 });
 
+test('oxygène : chaque coup sur le bloc coûte oxygenPerHit en plus de la baisse par seconde (26/10)', () => {
+  const G = newGiant(5);
+  const m = joinGiant(G, spec('A', { tenacity: 100, oxygenMax: 1e6 }).spec);   // sans recul ni fontaine
+  for(let i = 0; i < 600; i++) tickGiant(G);
+  assert.ok(m.stats.hits > 20, `coups ${m.stats.hits}`);
+  const lost = 1e6 - m.ox, expected = GIANT.oxygenDrain * 600 * DT + GIANT.oxygenPerHit * m.stats.hits;
+  assert.ok(Math.abs(lost - expected) < 1e-6, `perdu ${lost}, attendu ${expected}`);
+});
+
 test('sorts : Dynamite = +1 point par lancer (2 par visite), Inspiration pour tous les présents, Fast learner +10 %', () => {
   const big = { oxygenMax: 1e6, tenacity: 100 };
   const base = runGiant(1, [spec('A', big)]).done[0].points;

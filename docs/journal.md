@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Bloc géant : chaque coup coûte 1 oxygène
+- **Pour le joueur** : au Bloc géant, chaque coup sur le bloc coûte **1 oxygène** en plus de la baisse habituelle
+  (2 par seconde). Sans stuff ou avec une pioche en fer / acier, ça ne change presque rien (toujours une recharge
+  par visite, mêmes points) ; un mineur très rapide (vitesse 2) va boire deux fois et fait ≈ 262 points au lieu de 277.
+  Wiki à jour.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Glyphe Treuil : ascenseur 1,5 fois plus rapide (avant 3)
 - **Pour le joueur** : l'ascenseur du Glyphe Treuil monte et descend **1,5 fois** plus vite que le treuil (avant 3 fois),
   toujours posé une nouvelle area sur deux, et pareil dans les tours. Le wiki suit tout seul (texte lu dans la config).
