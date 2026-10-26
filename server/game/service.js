@@ -904,6 +904,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const rec = await activeOf(accountId);
       return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : null;
     },
+    /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
+    playersInSession: async () => {
+      const ids = new Set();
+      for(const status of ACTIVE) for(const rec of await store.sessionsWithStatus(status))
+        for(const p of rec.players) if(!hasLeft(rec, p.account)) ids.add(p.account);
+      return [...ids];
+    },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,
     /* niveau de spécialisation dans cet arbre (null sans arbre) : « Logisticien (SP lvl : 3) » dans le lobby */

@@ -291,7 +291,7 @@ test('Online : tous les joueurs en ligne (amis ou non), pas en session d\'abord,
   assert.match(b.name, /^Invité/, 'un invité garde son nom d\'invité');
   advance(SOCIAL_SERVER.onlineFor + 1);
   r = await social.online(A);
-  assert.deepEqual(r.players.map(p => p.id), [A.id], 'les autres ne donnent plus signe de vie : plus en ligne');
+  assert.deepEqual(r.players.map(p => p.id), [A.id, D.id], 'B et C ne donnent plus signe de vie ; D reste : en session');
 });
 
 test('Online : la liste est bornée, le compteur compte tout le monde', async () => {
@@ -300,4 +300,15 @@ test('Online : la liste est bornée, le compteur compte tout le monde', async ()
   const r = await social.online(A);
   assert.equal(r.count, 4); assert.equal(r.players.length, 2);
   assert.equal(onlineCountText(1), '1 joueur en ligne'); assert.equal(onlineCountText(4), '4 joueurs en ligne');
+});
+
+test('Online : un joueur en session compte même navigateur fermé (comme dans la liste d\'amis)', async () => {
+  const { social, game, advance } = setup();
+  await social.state(D); await game.start(D, {});
+  advance(SOCIAL_SERVER.onlineFor + 1);                     // D a fermé son navigateur, sa session tourne
+  await friends(social, A, D);
+  assert.equal(friend(await social.state(A), D).status, 'session');
+  const r = await social.online(A);
+  assert.equal(r.count, 2);
+  assert.deepEqual(r.players.map(p => [p.id, p.status]), [[A.id, 'online'], [D.id, 'session']]);
 });
