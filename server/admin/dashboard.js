@@ -53,7 +53,18 @@ export function meanBy(rows, key, value){
   return [...g].sort((a, b) => a[0] - b[0]).map(([x, a]) => ({ x, y: Math.round(a.s / a.n * 10) / 10, n: a.n }));
 }
 
-const bucket = r => Math.floor(r.ilvl / DASHBOARD.ilvlStep) * DASHBOARD.ilvlStep;
+const step = v => Math.floor(v / DASHBOARD.ilvlStep) * DASHBOARD.ilvlStep;
+const bucket = r => step(r.ilvl);
+
+/* ilvl du groupe : moyenne des ilvl des joueurs présents de la même session (comparable entre solo et groupe de 3),
+   ajouté à chaque ligne (groupIlvl) */
+export function withGroupIlvl(rows){
+  const g = new Map();
+  for(const r of rows){ const a = g.get(r.session) ?? { s: 0, n: 0 }; a.s += r.ilvl; a.n++; g.set(r.session, a); }
+  return rows.map(r => { const a = g.get(r.session); return { ...r, groupIlvl: Math.round(a.s / a.n) }; });
+}
+/* une ligne par session (la profondeur est celle du groupe : ne la compter qu'une fois) */
+const perSession = rows => [...new Map(rows.map(r => [r.session, r])).values()];
 
 /* toutes les courbes pour un ensemble de lignes */
 export function charts(rows){
@@ -71,12 +82,15 @@ export function charts(rows){
       series: [{ name: 'Profondeur', points: meanBy(rows, lvl, r => r.depth) }] },
     { id: 'depth_ilvl', title: 'Tous : profondeur par ilvl', unit: 'profondeur (groupe)', xLabel: `ilvl (tranches de ${DASHBOARD.ilvlStep} x)`,
       series: [{ name: 'Profondeur', points: meanBy(rows, bucket, r => r.depth) }] },
+    { id: 'depth_group_ilvl', title: 'Groupe : profondeur par ilvl du groupe', unit: 'profondeur (une fois par session)',
+      xLabel: `ilvl moyen du groupe (tranches de ${DASHBOARD.ilvlStep} x)`,
+      series: [{ name: 'Profondeur', points: meanBy(perSession(rows), r => step(r.groupIlvl ?? r.ilvl), r => r.depth) }] },
   ];
 }
 
 /* données de la page : courbes pour tous et pour chaque joueur, et l'historique (le plus récent d'abord) */
 export function dashboardData(rows, now = Date.now()){
-  const sorted = [...rows].sort((a, b) => b.at - a.at);
+  const sorted = withGroupIlvl(rows).sort((a, b) => b.at - a.at);
   const players = [...new Map(sorted.map(r => [r.account, r.name])).entries()].map(([account, name]) => ({ account, name }))
     .sort((a, b) => a.name.localeCompare(b.name));
   const views = { all: charts(sorted) };
@@ -118,8 +132,8 @@ th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}th{color:var(--mut);font-w
 <label class="small mut">Joueur <select id="who"></select></label></header>
 <div class="kpis" id="kpis"></div>
 <div class="grid" id="charts"></div>
-<section class="card"><h2>Historique des sessions</h2><div class="mut small">Mine classique, une ligne par joueur. ilvl = somme des valeurs en x des pièces portées au lancement.</div>
-<div class="scroll"><table><thead><tr><th>Date</th><th>Joueur</th><th>Arbre</th><th>Niveau</th><th>ilvl</th><th>Blocs</th><th>Frappe (min)</th><th>Profondeur</th><th>Areas</th><th>Joueurs</th></tr></thead><tbody id="hist"></tbody></table></div></section>
+<section class="card"><h2>Historique des sessions</h2><div class="mut small">Mine classique, une ligne par joueur. ilvl = somme des valeurs en x des pièces portées au lancement ; ilvl groupe = moyenne des joueurs présents.</div>
+<div class="scroll"><table><thead><tr><th>Date</th><th>Joueur</th><th>Arbre</th><th>Niveau</th><th>ilvl</th><th>ilvl groupe</th><th>Blocs</th><th>Frappe (min)</th><th>Profondeur</th><th>Areas</th><th>Joueurs</th></tr></thead><tbody id="hist"></tbody></table></div></section>
 </main><script>
 const D=/*DATA*/null;
 const $=id=>document.getElementById(id);
@@ -129,7 +143,7 @@ const two=n=>String(n).padStart(2,'0');
 const when=ms=>{const d=new Date(ms);return two(d.getDate())+'/'+two(d.getMonth()+1)+' '+two(d.getHours())+':'+two(d.getMinutes());};
 $('meta').textContent='Généré le '+when(D.generatedAt)+' · '+D.history.length+' lignes · '+D.players.length+' joueurs';
 $('who').innerHTML='<option value="all">Tous les joueurs</option>'+D.players.map(p=>'<option value="'+esc(p.account)+'">'+esc(p.name)+'</option>').join('');
-function nice(max){if(max<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(max)));for(const m of[1,2,2.5,5,10])if(m*p>=max)return m*p;return 10*p;}
+function nice(max){if(max<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(max)));for(const m of[1,1.2,1.6,2,2.4,3,4,5,6,8,10])if(m*p>=max)return m*p;return 10*p;}
 function chart(c){
   const pts=c.series[0].points;
   if(!pts.length)return '<div class="card"><h2>'+esc(c.title)+'</h2><div class="empty">Pas encore de session</div></div>';
@@ -153,8 +167,8 @@ function show(){
   $('kpis').innerHTML=[['Sessions',rows.length],['Niveau moyen',avg(r=>r.level)],['ilvl moyen',avg(r=>r.ilvl)],['Profondeur moyenne',avg(r=>r.depth)],['Blocs moyens',avg(r=>r.mined)]]
     .map(([k,v])=>'<div class="kpi"><span class="mut small">'+k+'</span><b>'+v+'</b></div>').join('');
   $('charts').innerHTML=D.views[who].map(chart).join('');
-  $('hist').innerHTML=rows.slice(0,500).map(r=>'<tr><td>'+when(r.at)+'</td><td>'+esc(r.name)+'</td><td>'+esc(D.trees[r.tree]||'—')+'</td><td>'+r.level+'</td><td>'+r.ilvl+'</td><td>'+r.mined+'</td><td>'+fr(Math.round(r.hitTime/6)/10)+'</td><td>'+r.depth+'</td><td>'+r.areas+'</td><td>'+r.players+'</td></tr>').join('')
-    ||'<tr><td colspan="10" class="mut">Aucune session enregistrée pour l\\'instant.</td></tr>';
+  $('hist').innerHTML=rows.slice(0,500).map(r=>'<tr><td>'+when(r.at)+'</td><td>'+esc(r.name)+'</td><td>'+esc(D.trees[r.tree]||'—')+'</td><td>'+r.level+'</td><td>'+r.ilvl+'</td><td>'+r.groupIlvl+'</td><td>'+r.mined+'</td><td>'+fr(Math.round(r.hitTime/6)/10)+'</td><td>'+r.depth+'</td><td>'+r.areas+'</td><td>'+r.players+'</td></tr>').join('')
+    ||'<tr><td colspan="11" class="mut">Aucune session enregistrée pour l\\'instant.</td></tr>';
 }
 $('who').onchange=show;show();
 </script></body></html>`;

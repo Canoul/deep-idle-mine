@@ -243,7 +243,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Tableau de bord de l'équipe** (26/10, Geoffrey ; `server/admin/dashboard.js`, `scripts/dashboard.js`, `DASHBOARD`) :
   page HTML générée sur le VPS (route admin `/api/admin/stats`) : courbes par niveau (Mineur : blocs ; Logisticien :
   profondeur ; Barbare : blocs et temps à frapper), profondeur par niveau et par **ilvl** (somme des valeurs en x des
-  pièces portées au lancement), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
+  pièces portées au lancement), par ilvl du groupe (moyenne des présents, une fois par session), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
 ## Hébergement

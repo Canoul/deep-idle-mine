@@ -3148,3 +3148,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `hitTime` compte la durée des actions `attack` au début de chaque tick (≈ au dixième de
   seconde près). Une session en cours au moment de la mise en ligne n'a pas de `statsAt` : pas de ligne (voulu).
   La profondeur est celle du groupe : dans un groupe de niveaux différents, chacun y contribue à son niveau.
+- **Ajout (26/10, 9 h 50)** : courbe « profondeur par ilvl du groupe » (`depth_group_ilvl`) : `withGroupIlvl` (moyenne
+  des ilvl des lignes de la même session = joueurs présents), calculé sur toutes les lignes avant le filtre par joueur ;
+  une seule ligne par session (`perSession`), la profondeur étant celle du groupe. Colonne « ilvl groupe » dans
+  l'historique. Test +1 (9) ✅ ; page revérifiée dans Chromium ✅.

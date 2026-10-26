@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DASHBOARD } from '../src/config.js';
 import { itemValue } from '../src/meta/piece.js';
-import { ilvlOf, launchSnapshot, statRows, meanBy, charts, dashboardData, renderDashboard } from '../server/admin/dashboard.js';
+import { ilvlOf, launchSnapshot, statRows, meanBy, charts, dashboardData, renderDashboard, withGroupIlvl } from '../server/admin/dashboard.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
@@ -104,4 +104,20 @@ test('serveur : photo au lancement, une ligne par joueur à la fin, une seule fo
   const devGame = createGameService({ store: createMemoryGameStore(), liveRunner: fakeLive(sum), clock: () => now, dev: true, randomSeed: () => 1 });
   await devGame.start(A, {});
   assert.equal((await devGame.state(A)).session.statsAt, undefined);
+});
+
+test('profondeur par ilvl du groupe : ilvl moyen des présents, une seule fois par session, aussi dans la vue d\'un joueur', () => {
+  const st = DASHBOARD.ilvlStep;
+  const rows = [
+    { session: 'S1', account: 'A', name: 'Zoe', tree: 'mineur', level: 1, ilvl: 0, depth: 100, mined: 1, hitTime: 0, at: 2 },
+    { session: 'S1', account: 'B', name: 'Max', tree: 'barbare', level: 1, ilvl: 2 * st, depth: 100, mined: 1, hitTime: 0, at: 2 },
+    { session: 'S2', account: 'A', name: 'Zoe', tree: 'mineur', level: 1, ilvl: 0, depth: 60, mined: 1, hitTime: 0, at: 1 },
+  ];
+  assert.deepEqual(withGroupIlvl(rows).map(r => r.groupIlvl), [st, st, 0]);
+  const d = dashboardData(rows, 1);
+  const pts = v => d.views[v].find(c => c.id === 'depth_group_ilvl').series[0].points;
+  assert.deepEqual(pts('all'), [{ x: 0, y: 60, n: 1 }, { x: st, y: 100, n: 1 }], 'S1 comptée une fois');
+  assert.deepEqual(pts('A'), [{ x: 0, y: 60, n: 1 }, { x: st, y: 100, n: 1 }], 'ilvl de tout le groupe, pas seulement de Zoe');
+  assert.deepEqual(pts('B'), [{ x: st, y: 100, n: 1 }]);
+  assert.equal(d.history[0].groupIlvl, st);
 });
