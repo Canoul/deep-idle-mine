@@ -161,8 +161,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Glyphes** (25/10, Geoffrey ; `GLYPHS`, `src/meta/glyphs.js`, spec `docs/superpowers/specs/2026-10-25-glyphes-design.md`) :
   parchemin lié à un skill, posé dans l'onglet Skills (skill au rang max), retirable hors session ; état dans les skills
   (`st.glyphs`), figé au lancement (`sessionSkills`), effets via `m.skill.glyph_<nœud>`. 10 glyphes, dont le Glyphe Treuil
-  (étape 2 : ascenseur × 3, une area sur deux, `G.winch.lift`, aussi dans les tours). Source (25/10 au soir, `GLYPHS.drop`) : mine classique, glyphe de sa spé pas encore possédé, mineur 0,01 %/bloc,
-  logisticien 0,07 %/échelle posée, barbare 0,1 %/mob ; pour lui seul, versé à la fin (perdu s'il quitte).
+  (étape 2 : ascenseur × 3, une area sur deux, `G.winch.lift`, aussi dans les tours). Source (`GLYPHS.drop`) : mine classique, glyphes de sa spé pas encore possédés ; **chance par glyphe manquant,
+  ≈ 3 % par glyphe et par session à 3** (26/10) : mineur 0,00383 %/bloc, logisticien 0,0335 %/échelle posée, barbare
+  0,101 %/mob (ancien, 25/10 : 0,01 / 0,07 / 0,1 % pour tous les glyphes manquants ensemble) ; pour lui seul, versé à
+  la fin (perdu s'il quitte).
 - **Mule** (23/10, Geoffrey ; en ligne le 23/10 ; spec `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE`
   en config, `src/sim/mule.js`) : Logisticien étage 4, sac posé à côté du bas du treuil (2 × pods des logisticiens
   avec Mule), les mineurs aux pods pleins y déposent s'il est plus près que la surface, vidé au coffre seulement à la
