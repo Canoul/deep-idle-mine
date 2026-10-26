@@ -18,7 +18,16 @@ Modèle d'entrée :
 
 ---
 
-## 26/10/2026 — Geoffrey — Glyphes : chaque glyphe à 3 % par session
+## 26/10/2026 — Geoffrey — Glyphes : 3 % de trouver un glyphe par session (correction)
+- **Pour le joueur** : **≈ 3 % de chance de trouver un glyphe par session** (groupe de 3), peu importe lequel ; il est
+  tiré au hasard parmi ceux qui manquent. La chance ne dépend plus du nombre de glyphes déjà trouvés.
+- **Décisions** (Geoffrey) : 3 % pour « un glyphe », pas par glyphe (la version de 9 h, 3 % par glyphe, était un
+  malentendu : ≈ 9 à 11 % d'en trouver un). Mêmes chances par événement : 0,00383 % par bloc, 0,0335 % par échelle,
+  0,101 % par mob.
+- **À suivre** : compléter un arbre de 3 glyphes ≈ 100 sessions en moyenne (4 : ≈ 130).
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Glyphes : chaque glyphe à 3 % par session (ancien, remplacé à 9 h 15)
 - **Pour le joueur** : chaque glyphe qui manque a maintenant **≈ 3 % de chance par session** (groupe de 3), quelle que
   soit la spécialisation et le nombre de glyphes déjà trouvés. Tant qu'on n'en a aucun : ≈ 8,7 % d'en trouver un
   (Mineur, Barbare) ou ≈ 11,5 % (Logisticien). Avant : ≈ 7,6 % (Mineur), 6,2 % (Logisticien), 2,9 % (Barbare) pour

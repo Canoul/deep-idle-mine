@@ -3127,3 +3127,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** : glyph-drop (valeurs, ≈ 3 % par session, chance × manquants), wiki ✅. Pas de nouvelle simulation (demande de Geoffrey : même E).
 - **Points fragiles** : E dépend du stuff et des skills (plus de blocs = plus de chances) ; en solo, ≈ 1030 blocs /
   107 échelles / 52 mobs → ≈ 4 % / 3,5 % / 5 % par glyphe.
+
+### Glyphes : 3 % pour UN glyphe par session (Geoffrey) — branche `geoffrey/glyphes-3pct`, ✅ en ligne le 26/10
+- **Quoi** : `glyphDrop` revient à une seule chance `d.chance` pour tous les glyphes manquants (plus de × glyphes
+  restants) ; valeurs inchangées (1 − 0,97^(1/E)) : ≈ 3 % d'en trouver un par session à 3. L'entrée précédente
+  (« 3 % par glyphe ») est remplacée : malentendu, ≈ 9 à 11 % par session.
+- **Tests** : glyph-drop (valeurs, chance unique quel que soit le nombre de manquants), wiki ✅.
