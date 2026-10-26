@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
+- **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
+  restant, scores, classement, récompenses à réclamer). Le bouton « Entrer » reste grisé (« Termine d'abord ta
+  session ») ; le temps d'attente de 3 h et les autres activités bloquent toujours l'entrée, côté serveur aussi.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Skin de la Cape de Naingui
 - **Pour le joueur** : la Cape de Naingui se voit sur le mineur (dans la mine, la mine instantanée, le lobby, la barre
   du haut et l'onglet Stuff) : une cape violet sombre qui flotte dans son dos jusqu'aux chevilles, avec un col et un

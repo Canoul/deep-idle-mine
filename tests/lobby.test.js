@@ -67,7 +67,7 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
   assert.equal(launchState({ account:me, party:p, session:null }).can, true, 'session finie : on peut relancer');
 });
 
-test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seule la MI reste choisissable', async () => {
+test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seuls la MI et le Bloc géant restent choisissables', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
   assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false], ['giant', false, false, false]]);
@@ -75,7 +75,7 @@ test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable
   const locked = mineModes('mine', true);
   assert.ok(locked.find(x => x.id === 'mine').disabled, 'lecture seule pendant la session');
   assert.equal(locked.find(x => x.id === 'mi').disabled, false, 'mais la mine instantanée reste choisissable (inscription en session, 22/10)');
-  assert.ok(locked.find(x => x.id === 'giant').disabled, 'Bloc géant : pas pendant une session');
+  assert.equal(locked.find(x => x.id === 'giant').disabled, false, 'Bloc géant : on regarde sa carte en session (Entrer y est grisé, 26/10)');
 });
 
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
