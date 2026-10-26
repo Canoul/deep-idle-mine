@@ -3349,7 +3349,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Skin de la Cape de Naingui : calques derrière le corps (branche `geoffrey/skin-cape`)
+## 26/10/2026 — Skin de la Cape de Naingui : calques derrière le corps (branche `geoffrey/skin-cape`) — ✅ en ligne le 26/10
 - **Quoi** : `src/skins.js` : case `cape` ajoutée à `SKIN.layers` (entre torse et casque : le col) ; nouveau `SKIN.back`
   (calques dessinés derrière le corps : le dos de la cape) ; `backPieces(look)`, `auraPieces(look)` (l'aura d'une case se
   dessine sur son calque de dos s'il existe, sinon sur celui de devant). `src/render/miner-sprite.js` et
