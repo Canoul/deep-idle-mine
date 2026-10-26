@@ -3255,3 +3255,28 @@ Règles (voir CLAUDE.md) :
 - **Limites** : la liste suit `SOCIAL_SERVER.onlineListMax` (comme l'onglet Online) ; pas rafraîchie toute seule
   (reclic pour la mettre à jour).
 
+### Tableau de bord des joueurs (Geoffrey, 26/10) — branche `geoffrey/tableau-de-bord`, ✅ en ligne le 26/10
+- **Quoi** : `src/sim/mineur.js` + `src/sim/session.js` : `m.stats.hitTime` (+DT par tick où l'action est `attack`,
+  compté avant `stepMiner`). `server/game/service.js` : au lancement d'une mine classique hors dev, `rec.statsAt[compte]
+  = launchSnapshot({xp, tree, gear})` ; dans `settleWith`, après `status = 'done'`, `store.putSessionStats(statRows(…))`.
+  `server/game/store.js` : ns `session_stat` (clé `session:compte`), jamais remplacée (idempotent), jamais effacée ;
+  ajoutée au chargement PostgreSQL et au snapshot. `server/admin/dashboard.js` (logique pure + page HTML autonome,
+  données en JSON échappé `<`). Route `POST /api/admin/stats` (mêmes gardes que les autres routes admin).
+  `scripts/dashboard.js` (stdout ou `--out`). Config `DASHBOARD.ilvlStep` (250 x).
+- **Tests** : `tests/dashboard.test.js` (8) ✅ ; game-service (48), live, admin, admin-khole, postgres ✅.
+  Simulation 3 mineurs × 5 : 0 blocage, prof. 182, identique à avant ✅. Temps à frapper mesuré : 4 à 7 min par mineur
+  et par session (20 à 35 mobs tués). Page vérifiée dans Chromium (données fictives, filtre joueur, aucune erreur JS).
+- **Points fragiles** : `hitTime` compte la durée des actions `attack` au début de chaque tick (≈ au dixième de
+  seconde près). Une session en cours au moment de la mise en ligne n'a pas de `statsAt` : pas de ligne (voulu).
+  La profondeur est celle du groupe : dans un groupe de niveaux différents, chacun y contribue à son niveau.
+- **Ajout (26/10, 9 h 50)** : courbe « profondeur par ilvl du groupe » (`depth_group_ilvl`) : `withGroupIlvl` (moyenne
+  des ilvl des lignes de la même session = joueurs présents), calculé sur toutes les lignes avant le filtre par joueur ;
+  une seule ligne par session (`perSession`), la profondeur étant celle du groupe. Colonne « ilvl groupe » dans
+  l'historique. Test +1 (9) ✅ ; page revérifiée dans Chromium ✅.
+- **Ajout (26/10, 10 h 20)** : prédiction sur `depth_group_ilvl` : `forecast(points)` = moindres carrés sur les sessions
+  une par une (ilvl de groupe exact, pas les moyennes par tranche), ilvl où la droite atteint `DASHBOARD.forecastDepth`
+  (350) ; null si moins de `forecastMin` (3) sessions, un seul ilvl ou pente ≤ 0 (la page l'écrit). Dessin : droite en
+  pointillés décalée de `shift` = ilvlStep / 2 (un point de tranche est placé au début de sa tranche mais vaut pour son
+  milieu), ligne de 350, cercle et étiquette « 350 ≈ ilvl N » (N en ilvl réel). Test +1 (10) ✅ ; Chromium ✅.
+- **Point fragile** : une droite ; si la courbe réelle s'aplatit (rendement décroissant du stuff), la prédiction sera
+  trop optimiste. À relire quand il y aura des sessions réelles sur plusieurs tranches d'ilvl.

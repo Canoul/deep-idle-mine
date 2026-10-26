@@ -45,6 +45,7 @@ import { treasureMessage, identifyMessage } from '../social/discord.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
+import { launchSnapshot, statRows } from '../admin/dashboard.js';
 
 export class GameError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -303,6 +304,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       rec.status = 'done'; rec.result = summary; rec.endedAt = clock();
       chat.drop(id);
       await store.putGameSession(rec);
+      /* tableau de bord : une ligne par joueur présent (écrite une seule fois, même si la fin est rejouée) */
+      await store.putSessionStats(statRows(rec, summary, a => hasLeft(rec, a)));
     }).finally(() => settling.delete(id));
     settling.set(id, p);
     return p;
@@ -394,7 +397,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
         const now = clock();
-        const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {};
+        const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
         for(const p of players){
           prefs[p.account] = await loadPrefs(p.account);
           /* figés pour toute la session (glyphes actifs compris) ; owned : glyphes possédés, pour le drop (on trouve les autres) */
@@ -406,6 +409,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const st = await loadStuff(p.account, await loadInventory(p.account));
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);
+          /* tableau de bord de l'équipe : niveau, arbre et ilvl au lancement (mine classique, server/admin/dashboard.js) */
+          if(mode === 'mine') statsAt[p.account] = launchSnapshot({ xp: (await loadProgress(p.account)).xp,
+                                                                    tree: skills[p.account].tree, gear: gear[p.account] });
         }
         const rec = {
           id: crypto.randomUUID(),
@@ -419,6 +425,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
           ...(residues === false ? { residues: false } : {}),
+          ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
@@ -876,6 +883,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         return { save: true, value: { side, before, after: j[side].count, cap: JUDGMENT.cap, open: towerOpen(j, side, clock()) } };
       });
     },
+
+    /* administration : toutes les lignes du tableau de bord (route /api/admin/stats, scripts/dashboard.js) */
+    adminStats: () => store.allSessionStats(),
 
     async history(me){
       const list = (await store.sessionsOf(me.id)).filter(s => s.status === 'done' && s.result).slice(0, 50);
