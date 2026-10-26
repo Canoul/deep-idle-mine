@@ -22,12 +22,12 @@ const scene = (tree, owned = []) => {
 const bug = id => ({ id, type:'bestiole', hp:1, x:9, y:2 });
 
 test('drop : taux par spécialisation (bloc, échelle, mob)', () => {
-  assert.deepEqual(GLYPHS.drop, { mineur:{ event:'block', chance:0.0000126 }, logisticien:{ event:'ladder', chance:0.00011 },
-                                  barbare:{ event:'kill', chance:0.000335 } });
-  /* chaque glyphe ≈ 1 % par session à 3 (événements mesurés : 795 blocs, 91 échelles, 30 mobs par mineur) */
+  assert.deepEqual(GLYPHS.drop, { mineur:{ event:'block', chance:0.0000383 }, logisticien:{ event:'ladder', chance:0.000335 },
+                                  barbare:{ event:'kill', chance:0.00101 } });
+  /* chaque glyphe ≈ 3 % par session à 3 (événements mesurés : 795 blocs, 91 échelles, 30 mobs par mineur) */
   for(const [tree, E] of [['mineur', 795], ['logisticien', 91], ['barbare', 30]]){
     const p = 1 - (1 - GLYPHS.drop[tree].chance) ** E;
-    assert.ok(Math.abs(p - 0.01) < 0.0005, `${tree} : ${(p * 100).toFixed(3)} %`);
+    assert.ok(Math.abs(p - 0.03) < 0.0005, `${tree} : ${(p * 100).toFixed(3)} %`);
   }
   assert.ok(typeof newSession(1).glyphRng === 'function', 'hasard à part');
 });

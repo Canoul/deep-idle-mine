@@ -136,8 +136,8 @@ test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des 
 test('wiki : source des glyphes lue dans GLYPHS.drop (par spécialisation)', () => {
   const g = D.itemGroups().find(x => x.cat === 'glyph');
   const rush = g.items.find(i => i.name === 'Glyphe Ruée'), braum = g.items.find(i => i.name === 'Glyphe Braum'), lad = g.items.find(i => i.name === 'Glyphe Échelle de 2');
-  assert.match(rush.sources.join(' '), /0,00126 % de chance par bloc/);
-  assert.match(lad.sources.join(' '), /0,011 % de chance par échelle/);
-  assert.match(braum.sources.join(' '), /0,0335 % de chance par mob/);
-  assert.match(rush.sources.join(' '), /≈ 1 % par session/);
+  assert.match(rush.sources.join(' '), /0,00383 % de chance par bloc/);
+  assert.match(lad.sources.join(' '), /0,0335 % de chance par échelle/);
+  assert.match(braum.sources.join(' '), /0,101 % de chance par mob/);
+  assert.match(rush.sources.join(' '), /≈ 3 % par session/);
 });
