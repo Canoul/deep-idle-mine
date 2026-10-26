@@ -447,7 +447,7 @@ export const GLYPHS = {
   killDamagePct:1, killDamageMax:25, braumOxygen:0.3, rarity:'epique', tex:'glyph',
   /* Glyphe Treuil (étape 2) : un ascenseur liftSpeed × plus rapide que le treuil (Escalateur compris), posé / prolongé
      un déblocage d'area sur liftEvery (1er, 3e, 5e…) ; dans les tours, un ascenseur au lieu du treuil */
-  liftSpeed:3, liftEvery:2,
+  liftSpeed:1.5, liftEvery:2,   // 26/10/2026, Geoffrey : 1,5 (avant 3)
   /* drop (25/10/2026, Geoffrey) : un mineur avec une spécialisation (arbre figé au lancement) peut trouver un glyphe de SON
      arbre qu'il ne possède pas au lancement (inventaire + posés), à chaque événement de sa spé : bloc cassé (mineur),
      échelle posée (logisticien), mob tué (barbare). Mine classique ; pour lui seul, versé à la fin (perdu s'il quitte).
@@ -467,7 +467,7 @@ export const GLYPHS = {
     damage:      'Ses dégâts (stuff et skills compris) s\'ajoutent 3 fois à ses pods (14 dégâts = +42 pods)',
     loot:        'Chaque mob tué ajoute 1 % à ses dégâts pour la session (au plus +25 %)',
     braum:       'À chaque entrée dans un piège ou un donjon, il regagne 30 % de son oxygène max',
-    winch:       'Il pose un ascenseur au lieu d\'un treuil : 3 fois plus rapide, posé ou prolongé une nouvelle area sur deux (1re, 3e, 5e…) ; dans les tours aussi',
+    winch:       'Il pose un ascenseur au lieu d\'un treuil : 1,5 fois plus rapide, posé ou prolongé une nouvelle area sur deux (1re, 3e, 5e…) ; dans les tours aussi',
   },
 };
 const GLYPH_ITEMS = Object.fromEntries(Object.entries(GLYPHS.items).map(([node, name]) =>
@@ -1095,6 +1095,7 @@ export const GIANT = {
   w: 15, h: 7, block: 5, spawnX: 0, fountainX: 1, fountainRange: 1,   // 15 de large (26/10, Geoffrey ; avant 10) : plus de chemin jusqu'au bloc
   knock: { chance: 0.10, min: 1, max: 3, flight: 0.4 },
   oxygenDrain: 2, fountainRefill: 30, oxygenMargin: 3,
+  oxygenPerHit: 1,   // chaque coup sur le bloc coûte aussi cet oxygène (26/10/2026, Geoffrey)
   dynamitePoints: 1,
   tiers: [
     { min: 1000,  items: { 'Treasure T1': 1 } },

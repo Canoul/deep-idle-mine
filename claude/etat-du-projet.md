@@ -177,7 +177,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Glyphes** (25/10, Geoffrey ; `GLYPHS`, `src/meta/glyphs.js`, spec `docs/superpowers/specs/2026-10-25-glyphes-design.md`) :
   parchemin lié à un skill, posé dans l'onglet Skills (skill au rang max), retirable hors session ; état dans les skills
   (`st.glyphs`), figé au lancement (`sessionSkills`), effets via `m.skill.glyph_<nœud>`. 10 glyphes, dont le Glyphe Treuil
-  (étape 2 : ascenseur × 3, une area sur deux, `G.winch.lift`, aussi dans les tours). Source (`GLYPHS.drop`) : mine classique, glyphes de sa spé pas encore possédés ; **≈ 3 % d'en trouver un par session
+  (étape 2 : ascenseur × 1,5 (26/10, avant × 3), une area sur deux, `G.winch.lift`, aussi dans les tours). Source (`GLYPHS.drop`) : mine classique, glyphes de sa spé pas encore possédés ; **≈ 3 % d'en trouver un par session
   à 3** (26/10, tiré au hasard parmi ceux qui manquent) : mineur 0,00383 %/bloc, logisticien 0,0335 %/échelle posée,
   barbare 0,101 %/mob (ancien, 25/10 : 0,01 / 0,07 / 0,1 %, ≈ 7,6 / 6,2 / 2,9 % par session) ; pour lui seul, versé à
   la fin (perdu s'il quitte).

@@ -3320,3 +3320,22 @@ Règles (voir CLAUDE.md) :
   Stuff, tags du lobby dans tous les modes, `gsFor` du groupe) n'est pas touché.
 - **Tests** : `tests/gearscore.test.js` ✅ (refus hors dev, case cachée hors dev) ; lobby, party, tower, tower-who ✅ (82).
 - **Pour rouvrir** : `open: true` ; les tests vérifient la case selon `open`, le test de refus attend `open === false`.
+
+---
+
+## 26/10/2026 — Glyphe Treuil : `GLYPHS.liftSpeed` 3 → 1,5 (branche `geoffrey/nerf-glyphe-treuil`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` `GLYPHS.liftSpeed: 1.5` et texte `GLYPHS.desc.winch` ; `GAME_DESIGN.md` (tableau des
+  glyphes : 1,28 × la montée, 1,59 × avec Escalateur 5/5) ; `claude/etat-du-projet.md` ; `tests/glyphs.test.js` (valeur).
+- **Tests** : glyphs, glyph-drop, tower*, wiki : 82/82 ✅.
+- **Note** : l'ascenseur est posé une area sur deux mais couvre 2 areas à chaque fois (moitié moins de remontées pour le
+  construire) ; à × 1,5 il reste meilleur que le treuil (Geoffrey). Pas mesuré en simulation.
+
+---
+
+## 26/10/2026 — Bloc géant : `GIANT.oxygenPerHit = 1` (branche `geoffrey/nerf-glyphe-treuil`) — ✅ en ligne le 26/10
+- **Quoi** : `src/sim/giant/session.js` `mine()` : chaque coup (`m.stats.hits++`) retire `GIANT.oxygenPerHit` (plancher 0).
+  `oxToFountain` (seuil de départ vers la fontaine) ne compte que la marche : pas de coup en marchant, inchangé.
+- **Tests** : `tests/giant-sim.test.js` +1 (perte = drain × t + coups × oxygenPerHit) ; giant-*, anticheat/giant : 37/37 ✅.
+- **simulate:giant** (20 seeds) : sans stuff 146, fer 184, acier 221, résistance 50 % 189 (inchangés, 1 recharge) ;
+  vitesse 2 + ténacité 20 % : 277 → 262, 2 recharges. Paliers non retouchés.
+
