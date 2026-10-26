@@ -824,7 +824,7 @@ Un effort commun à **tout le serveur**, par petites visites : on frappe ensembl
   - **Fin** : un écran montre les points de la visite, son total du jour et le score collectif. **Quitter** avant la fin : les points faits comptent, l'entrée reste utilisée.
 - **Récompense** : à la fin de la session, **chaque joueur venu au moins une fois** reçoit, selon le **score collectif**, les objets de **tous les paliers atteints** (ils s'additionnent) : ≥ 1 000 : 1 Treasure T1 · ≥ 2 500 : 1 Treasure T1 + 15 Blueprint parts · ≥ 5 000 : 1 Treasure T2 · ≥ 7 500 : 1 Treasure T2 + 30 Blueprint parts · ≥ 10 000 : 1 Treasure T3. Soit à 10 000 : 2 T1, 2 T2, 1 T3 et 45 parts. À **réclamer** avec un bouton de la carte, disponible **tant qu'elle n'est pas réclamée**. Le score personnel ne donne rien de plus pour l'instant.
 - **La carte du Lobby** : temps avant la fin de la session, Entrer (ou temps avant la prochaine entrée), mon score du jour, score collectif et ses paliers, **classement du jour** (top 10 + ma place), récompenses à réclamer.
-- Repères (simulation, `npm run simulate:giant`) : ≈ 150 points par visite sans stuff, ≈ 190 en fer, ≈ 230 en acier ; 1 000 ≈ 7 visites, 10 000 ≈ 50 à 65 visites.
+- Repères (simulation, `npm run simulate:giant`, salle de 15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer, ≈ 221 en acier ; 1 000 ≈ 7 visites, 10 000 ≈ 46 à 69 visites.
 
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.

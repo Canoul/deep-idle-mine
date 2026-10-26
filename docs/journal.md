@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
+- **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
+  s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points
+  (248). Maintenant la visite reste à l'écran jusqu'au bout, et l'écran de fin montre les points comptés par le serveur.
+  Aucun point n'était perdu.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Bloc géant
 - **Pour le joueur** : nouveau mode dans « Où miner » : le **Bloc géant**. Une session commune à tout le serveur, de
   minuit à minuit. On y entre seul, une fois toutes les 3 h, pour 3 min de jeu : son mineur frappe un énorme bloc
