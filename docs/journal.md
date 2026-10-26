@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Modulation cachée (pas encore prête)
+- **Pour le joueur** : la case « Modulation » n'apparaît plus au lancement d'une tour (elle ne donnait encore aucune
+  récompense). Le **gear score reste affiché** : GS de chaque pièce, GS total dans l'onglet Stuff, GS de chaque joueur
+  dans le lobby, quel que soit le mode.
+- **Décision** (Geoffrey) : la modulation revient quand ses récompenses sont décidées. En mode développeur, la case reste
+  là pour tester.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Admin : retirer un objet à un joueur
 - **Pour le joueur** : rien. Nouvel outil sur le serveur : `take-item.js` retire un objet à un joueur sans redémarrer
   le jeu (l'inverse de `give-item.js`). Un glyphe posé sur un skill est retiré de sa case.

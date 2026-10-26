@@ -62,6 +62,13 @@ test('modulation : tour lancée si chacun a moins de 2000 GS ; refusée sinon (a
   assert.equal(await game.gsFor(ME.id), pieceGS('Plastron en fer'));
 });
 
+test('modulation pas encore ouverte : refusée hors mode dev', async () => {
+  assert.equal(TOWER.modulation.open, false);
+  const { store } = setup();
+  const prod = createGameService({ store, liveRunner: fakeLive(), clock: () => Date.UTC(2026, 9, 26, 12), dev: false, randomSeed: () => 1 });
+  await assert.rejects(prod.start(ME, { mode:'mine', modulation:true }), e => e.code === 'bad_request' && /pas encore ouverte/.test(e.message));
+});
+
 test('modulation : sans la case, une tour se lance quel que soit le GS', async () => {
   const { store, game } = setup();
   await wear(store, ME.id, FER);
@@ -73,7 +80,8 @@ test('lobby : case Modulation pour celui qui lance une tour, avec les joueurs au
   const account = { id:'AAAA1111' };
   const slots = [{ kind:'member', me:true, name:'Zoe' }, { kind:'member', name:'Max', gs:2481 }, { kind:'free' }];
   const party = { leader:'AAAA1111', members:[{}, {}] };
-  let m = modulationState({ tower:true, locked:false, party, account, slots, myGs:440 });
+  assert.equal(modulationState({ tower:true, locked:false, party, account, slots, myGs:440 }).show, TOWER.modulation.open, 'hors dev : selon open');
+  let m = modulationState({ tower:true, locked:false, party, account, slots, myGs:440, dev:true });
   assert.equal(m.show, true); assert.deepEqual(m.over.map(o => o.name), ['Max']); assert.match(m.text, /Max : 2/);
   assert.equal(modulationState({ tower:false, locked:false, party, account, slots, myGs:440 }).show, false);
   assert.equal(modulationState({ tower:true, locked:false, party:{ leader:'ZZZZ', members:[{}, {}] }, account, slots }).show, false, 'membre : pas la case');

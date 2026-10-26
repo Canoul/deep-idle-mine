@@ -3312,3 +3312,11 @@ Règles (voir CLAUDE.md) :
   (skills figés au lancement), comme pour un retrait par le joueur.
 - **Tests** : `tests/admin-take.test.js` ✅ 3 (inventaire, tout ou rien, glyphe posé, garde-fous, clé/relais) ;
   admin ✅ 7.
+
+## 26/10/2026 — Modulation cachée (branche `geoffrey/cacher-modulation`) — ✅ en ligne le 26/10
+- **Quoi** : `TOWER.modulation.open = false` (src/config.js). `src/ui/lobby.js` `modulationState` : `show` exige
+  `open || dev` (dev = `st.info.dev`). `server/game/service.js` `start` : `body.modulation === true` refusé
+  (`bad_request`, « pas encore ouverte ») si `!open && !dev`, avant les autres vérifications de modulation. Le GS (pièces,
+  Stuff, tags du lobby dans tous les modes, `gsFor` du groupe) n'est pas touché.
+- **Tests** : `tests/gearscore.test.js` ✅ (refus hors dev, case cachée hors dev) ; lobby, party, tower, tower-who ✅ (82).
+- **Pour rouvrir** : `open: true` ; les tests vérifient la case selon `open`, le test de refus attend `open === false`.

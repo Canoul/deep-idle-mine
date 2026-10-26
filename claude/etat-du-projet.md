@@ -44,6 +44,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - **Gear score et modulation** (26/10, Geoffrey, **en test, en ligne le 26/10**) : GS d'une
     pièce et du joueur en x (`src/meta/gearscore.js`, affiché dans l'onglet Stuff, les bulles des pièces et le lobby) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
+    **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
     **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28), stonebrick **4 s** ; un étage
