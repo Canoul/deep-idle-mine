@@ -3192,7 +3192,7 @@ Règles (voir CLAUDE.md) :
   config), GAME_DESIGN, état du projet.
 - **Tests** : `tests/graphite.test.js`, wiki, craft, anticheat.
 
-### Bloc géant (Geoffrey) — branche `geoffrey/bloc-geant`, 🧪
+### Bloc géant (Geoffrey) — branche `geoffrey/bloc-geant`, ✅ en ligne le 26/10
 - **Quoi** : spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`. Config `GIANT` (+ mode `giant` dans
   `MINE_MODES`, refusé par `game.start` : `mode_giant`). Règles pures `src/shared/giant.js` (jour de Paris : `dayOf`,
   `dayEnd`, délai, paliers cumulés `rewardFor`, `ranking`). Simulation `src/sim/giant/session.js` (salle sans fin :
@@ -3218,3 +3218,6 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : la salle et les visites en mémoire du serveur (un seul serveur) ; les points d'une visite en
   cours depuis le dernier point d'étape sont perdus à un redémarrage (≤ 10 s) ; le jour d'une récompense se lit avec
   `Date.parse(jour + 'T12:00:00Z')`.
+- **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
+  simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
+  (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).

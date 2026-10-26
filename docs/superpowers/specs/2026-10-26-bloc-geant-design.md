@@ -31,7 +31,7 @@ au moins une fois reçoit une récompense qui dépend de ce score.
 
 ## La carte
 
-- **10 de large × 7 de haut**, tout en air, sol et murs indestructibles autour.
+- **15 de large × 7 de haut** (26/10 ; avant 10), tout en air, sol et murs indestructibles autour.
 - **Le bloc géant** : 5 × 5, collé en bas à droite. Indestructible.
 - **Spawn** : en bas à gauche.
 - **Fontaine à oxygène** : près du spawn, en bas à gauche. Un mineur à côté recharge son oxygène.

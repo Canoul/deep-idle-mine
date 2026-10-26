@@ -1086,7 +1086,7 @@ export const MINE_MODES = [
 export const GIANT = {
   timeZone: 'Europe/Paris',
   visit: 180, cooldownMs: 3 * 3600e3, maxPlayers: 30,
-  w: 10, h: 7, block: 5, spawnX: 0, fountainX: 1, fountainRange: 1,
+  w: 15, h: 7, block: 5, spawnX: 0, fountainX: 1, fountainRange: 1,   // 15 de large (26/10, Geoffrey ; avant 10) : plus de chemin jusqu'au bloc
   knock: { chance: 0.10, min: 1, max: 3, flight: 0.4 },
   oxygenDrain: 2, fountainRefill: 30, oxygenMargin: 3,
   dynamitePoints: 1,

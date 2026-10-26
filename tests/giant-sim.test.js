@@ -9,9 +9,9 @@ const spec = (account, carac = {}, extra = {}) => ({ spec: { account, name: acco
 const walkIn = (G) => (G.contact - G.spawn) / STATS.speed;          // secondes pour aller du spawn au bloc
 const run = (G, seconds) => { for(let i = 0; i < Math.round(seconds / DT); i++) tickGiant(G); };
 
-test('carte : 10 × 7, bloc 5 × 5 en bas à droite, on le frappe depuis la colonne 4 (ligne du bas)', () => {
+test('carte : 15 × 7, bloc 5 × 5 en bas à droite, on le frappe depuis la colonne 9 (ligne du bas)', () => {
   const G = newGiant(1);
-  assert.deepEqual([G.w, G.h, G.bx, G.by, G.bw, G.contact, G.row, G.spawn], [10, 7, 5, 2, 5, 4, 6, 0]);
+  assert.deepEqual([G.w, G.h, G.bx, G.by, G.bw, G.contact, G.row, G.spawn], [15, 7, 10, 2, 5, 9, 6, 0]);
   assert.equal(VISIT_TICKS, GIANT.visit / DT);
 });
 

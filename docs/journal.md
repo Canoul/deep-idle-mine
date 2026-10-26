@@ -27,9 +27,10 @@ Modèle d'entrée :
 - **Décisions** : paliers cumulés ; seul le Mineur a une vraie plus-value ; fontaine 30/s ; une visite à cheval sur
   minuit compte pour la session qui se ferme. Choix de Claude à valider : 30 mineurs au plus, la fontaine ne recharge
   que le mineur qui s'y arrête (sinon la résistance au recul faisait perdre des points), quitter garde les points mais
-  consomme l'entrée, la torche posée au sol.
+  consomme l'entrée, la torche posée au sol. Salle de 15 × 7 (Geoffrey, avant 10 × 7) : plus de chemin entre le
+  départ, la fontaine et le bloc.
 - **À suivre** : les paliers (≈ 150 à 230 points par visite : il faut ≈ 50 à 65 visites pour le Treasure T3).
-- **État** : 🧪 sur la branche `geoffrey/bloc-geant` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Steel ingot : 5 Graphite ingot au lieu de 10
 - **Pour le joueur** : un Steel ingot demande **3 Tainted iron + 5 Graphite ingot** (avant 10), toujours 50 charbons et
