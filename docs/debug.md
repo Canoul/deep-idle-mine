@@ -3388,3 +3388,19 @@ Règles (voir CLAUDE.md) :
   sans tier, branche geoffrey/lampe-bp). Simulation 5 sessions ✅ 0 bloquée ; même seed = mêmes chiffres qu'avant.
 - **Points fragiles** : une pièce lâchée suit le sac du mineur, comme le reste du butin. En tour,
   les mobs n'ont pas ces types : pas de drop. Le minotaure de l'arène du k hole compte comme « k hole » (G.khole).
+
+---
+
+## 26/10/2026 — Gear score aux prix mesurés (branche `geoffrey/gs-en-x`) — ✅ en ligne le 26/10
+- **Quoi** : `src/meta/gearscore.js` `priceOf` = `UPGRADE.worth[k] ?? UPGRADE.gs[k] ?? 0` (avant : `UPGRADE.prices`).
+  `src/config.js` `UPGRADE.gs = { doubleAttack:8, tenacity:5, knockRes:0, reach:0, knockback:120, torchRadius:27 }` :
+  stats absentes de `worth`, simulées le 26/10 (script hors dépôt, 24 seeds `(i+1)×7919`, mineur de base, avec / sans,
+  écart de valeur de minerai au coffre × 3 600 ; marges : double attaque +20 % = 162 ± 97 x, ténacité +20 % = 99 ± 72,
+  résistance au recul : parties identiques, portée +0,5 = −60 ± 95, recul +1 = 120 ± 94) ; rayon des torches 27 =
+  GAME_DESIGN §3. `worth` n'est pas modifié : ilvl, valeur des objets et runes inchangés.
+- **Tests** : `tests/gearscore.test.js` +1 (prix = worth puis gs, pas de clé en double, Lance < 600) ; gearscore, stuff,
+  lobby, party, game-service : 116/116 ✅. `gearScore(tout fer) = 2191` reste ≥ 2000 (test de modulation).
+- **Chiffres** : tout fer 2 481 → 2 191, tout acier 3 391 → 3 011, Lance en fer 1 020 → 360, Pioche en acier 1 000 → 650,
+  Plastron de l'équilibre 1 335 → 1 426 (sa ténacité +3 % compte : 15 x), Lampe à incandescence 0 → 81.
+- **Points fragiles** : prix de `UPGRADE.gs` au bruit près (marges ci-dessus, mine classique seulement ; en tour, portée et
+  recul valent sans doute plus). `TOWER.modulation.gsMax` (2000) choisi avec l'ancien barème, pas retouché.

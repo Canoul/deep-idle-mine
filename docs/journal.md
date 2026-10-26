@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Gear score calculé avec les x mesurés
+- **Pour le joueur** : le GS des pièces baisse un peu et colle mieux à ce qu'elles font vraiment gagner en session. Tout
+  fer : 2 481 → 2 191 GS ; tout acier : 3 391 → 3 011. Les plus grosses baisses : Lance en fer 1 020 → 360, Pioche en
+  acier 1 000 → 650, Gants tactique 100 → 39. La Lampe à incandescence compte enfin (81 GS, pour son rayon).
+- **Décisions** : le GS suit la colonne « mesuré » du document « Valeurs en x » (secondes gagnées par session), plus
+  six stats simulées le 26/10. Le tableau « pour 100 x » reste celui des runes. Les anneaux restent à 0 GS.
+- **À suivre** : le plafond de la modulation (2 000 GS) n'a pas bougé ; à revoir quand la case sera ouverte.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
 - **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
   restant, scores, classement, récompenses à réclamer). Le bouton « Entrer » reste grisé (« Termine d'abord ta

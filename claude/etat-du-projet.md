@@ -43,6 +43,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     remplissent deux **jauges communes à tous les joueurs** (cap 200 depuis le 24/10 ; ancien 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - **Gear score et modulation** (26/10, Geoffrey, **en test, en ligne le 26/10**) : GS d'une
     pièce et du joueur en x (`src/meta/gearscore.js`, affiché dans l'onglet Stuff, les bulles des pièces et le lobby) ;
+    **prix du GS depuis le 26/10 au soir : les x mesurés** (`UPGRADE.worth` + `UPGRADE.gs` pour double attaque, ténacité,
+    résistance au recul, portée, recul, rayon des torches, simulés le 26/10 ; ancien : `UPGRADE.prices`, le tableau des runes) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
