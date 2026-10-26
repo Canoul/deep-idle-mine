@@ -363,6 +363,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
+      if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
       const side = modeDef.tower ?? null;
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours

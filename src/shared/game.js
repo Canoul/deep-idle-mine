@@ -93,7 +93,8 @@ export function minerSpecs(record){
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
   const rings = groupRings(record);
-  const mine = !MINE_MODES.find(m => m.id === record.mode)?.tower;   // tour : pas de Glyphe Mule (son skill n'y agit pas)
+  const modeDef = MINE_MODES.find(m => m.id === record.mode);
+  const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
   const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
