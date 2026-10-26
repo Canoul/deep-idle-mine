@@ -3234,3 +3234,9 @@ Règles (voir CLAUDE.md) :
   visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
   `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
 - **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
+
+### Bloc géant : « Cette visite » < points réels, piste onglet en arrière-plan (Geoffrey) — branche `geoffrey/fix-bloc-geant-score`, ✅ en ligne le 26/10
+- Même symptôme que l'entrée au-dessus, autre piste (onglet en arrière-plan : `lastMe` figé). Branche écrite en parallèle
+  de `fix-bloc-geant-fin` ; au merge, **le code de `fix-bloc-geant-fin` est gardé** (`p.last`, `info.lastVisit` nul
+  pendant une visite, qui couvre aussi ce cas). Seul le test « 2e visite seule, jour = somme des visites » est ajouté
+  à `tests/giant-service.test.js`.
