@@ -3451,6 +3451,8 @@ Règles (voir CLAUDE.md) :
   retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
   tous les joueurs (comme l'onglet Online), pas seulement les amis.
 
+---
+
 ## 26/10/2026 — Apparence des torches de la Lampe à incandescence (branche `geoffrey/skin-lampe`) — ✅ en ligne le 26/10
 - **Quoi** : `src/sim/mineur.js` `placedTorch(m)` = { x, y, r, item? } (item = `m.look.torche`), utilisé par
   `src/sim/actions.js` (mine) et `src/sim/tower/session.js` (tour). `src/skins.js` : `SKIN.torch` (base 'torch', lampe
@@ -3461,3 +3463,36 @@ Règles (voir CLAUDE.md) :
   lumière, vues ✅ (86). Simulation 5 sessions ✅ 0 bloquée, mêmes chiffres qu'avant (champ en plus, aucun hasard).
 - **Points fragiles** : l'apparence suit `look` (équipement figé au lancement), le rayon suit `carac` : les deux
   viennent du même stuff. Torches du k hole (salle éclairée) : sans item, torches de base.
+
+---
+
+## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
+  (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).
+  `src/sim/tower/session.js` : `m.inv` / `m.load` ; `mineCell` met la brique du camp dans le sac (`G.bricks--`) ;
+  `decide` : après les mobs, `bagFull` (load > 0 et load + w > pods) et `G.bricks > 0` → chemin vers `G.chestAt`
+  (milieu de l'étage 0, ligne du bas), action `deposit` → `G.chest` ; pas de chemin : il continue (la brique suivante
+  entre quand même : jamais perdue). `towerLoot(G)` = coffre + sacs des mineurs présents ; `summary.loot` (réussite
+  seulement). `leaveTower` : sac perdu. `src/shared/tower.js` `splitTowerLoot(loot, n, side, random)` : parts égales,
+  reste à des joueurs tirés au hasard, seule la brique du camp, entier 1…`TOWER.chest.max`. `server/game/service.js`
+  `settleWith` : héritiers = présents d'une réussite ; bag = trésor + part. Vue (`tower-view.js` : `chestAt`, `chest`,
+  `load`, `pods`), rendu (`render/tower.js` : texture `chest`), HUD (sac de chacun, ligne du coffre), bilan (tout le
+  butin). Wiki (texte de la tour), GAME_DESIGN (Tours).
+- **Tests** : `tests/tower.test.js` +4 (sac, vidage, conservation tick par tick, butin seulement en réussite et sans le
+  sac d'un parti, partage : conservation, égalité à 1 près, quantités invalides et objets étrangers refusés, vue) ;
+  `tests/game-service.test.js` (versement : 7 briques au seul présent, Fer inventé ignoré, rien en échec ni au parti).
+  tower, tower-boss, tower-who, game-service, anticheat/*, inventory, wiki ✅.
+- **Tests modifiés (équilibrage, à relire)** : « compo forte » ne vérifie plus « toit atteint et boss entamé de 20 % »
+  mais « au moins le dernier étage » (seed 13 n'atteint plus le toit). Treuil et regroupement : seed 3 → 7 (avec 7
+  étages, la porte du toit de la seed 3 passe à gauche, à côté du treuil : scène du test plus valable).
+- **Simulation** (20 tours, 2 mineurs + 1 barbare, sans skill) : 1,1 / 10 : toit 5/20 à 9:52, 7 vidages, 0 blocage
+  (sans limite de pods : 20/20 à 8:28 ; en ligne 20/20 à 7:11). Tout fer : 0/20 (en ligne 10/20). Tout acier : 7/20 à
+  9:43, 3 vidages, ≈ 59 briques par joueur (en ligne 17/20).
+- **Pas vérifié** : affichage dans un navigateur (coffre, sac dans le panneau, bilan).
+- **Points fragiles** : le chemin vers le coffre passe par les échelles posées à la montée (planTo) ; un mineur plein
+  pendant un combat de mobs combat d'abord. Rien d'autre ne lit encore les stonebricks (pas de recette).
+- **Mise à jour (26/10, plus tard)** : 7e étage **retiré** à la demande de Geoffrey (`TOWER.floors` 7 → 6). Les trois tests
+  adaptés (compo forte, seeds du treuil et du regroupement) sont revenus à leur version d'origine et passent ✅ (tower,
+  tower-boss, tower-who : 48/48). Simulation 6 étages + pods : tout fer 4/20 à 9:38 (toit 6:38, 4,8 vidages, ≈ 40
+  briques par joueur) ; tout acier 16/20 à 9:07 (toit 5:49, 3 vidages, ≈ 51 briques) ; 1,1 / 10 : toit 8:28 (sans
+  limite de pods 7:11), 6,5 vidages, 0 blocage ; compos de `simulate:tower` 0/20 (d : 2/20 sans les pods).

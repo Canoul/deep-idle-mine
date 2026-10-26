@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Tours : le retour des pods
+- **Pour le joueur** : les **briques minées vont dans le sac** (10 pods chacune) ;
+  sac plein, le mineur redescend le vider au **coffre commun**, au milieu de l'étage 0, puis repart. **Si le boss
+  tombe**, toutes les briques (coffre + sacs) sont partagées **en parts égales** entre les joueurs présents ; un joueur
+  qui part perd son sac. Le panneau de la tour montre le sac de chacun et le coffre.
+- **Décisions** : coffre à l'étage 0 ; durée gardée à 10 min ; sacs comptés à la victoire ; parts égales (reste au hasard).
+  Un 7e étage a été essayé puis **retiré** (trop dur : tout fer 0/20, tout acier 7/20) : la tour garde 6 étages.
+- **À suivre** : en simulation (2 mineurs + 1 barbare, 20 tours), tout fer 10/20 → **4/20** victoires, tout acier
+  17/20 → **16/20** (≈ 51 briques par joueur). Les vidages coûtent ≈ 1 min 15 de montée. Pas encore vérifié dans un
+  vrai navigateur.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Lampe à incandescence : ses torches deviennent des lampes de mine
 - **Pour le joueur** : un mineur qui porte la Lampe à incandescence n'accroche plus des torches mais des **lampes de
   mine** (une ampoule dans sa cage, suspendue à un câble), dans la mine comme dans les tours. Les torches des autres

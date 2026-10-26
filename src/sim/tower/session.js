@@ -7,7 +7,9 @@
    mobs pour que la porte de son plafond s'ouvre. Sur le toit, ils vont au contact du boss (le barbare du côté opposé
    aux autres mineurs) et le frappent. Le boss frappe le premier arrivé parmi ceux à son contact ; chaque coup peut le
    projeter : s'il passe le bord, il tombe jusqu'en bas et remonte. Boss mort = fin (réussite) ; temps écoulé = échec.
-   Pas de butin dans la partie : le serveur donne les trésors à la fin (server/game/service.js). */
+   Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
+   coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
+   présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
@@ -39,12 +41,15 @@ export function newTower(seed, opts = {}){
             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
+    chest: {},                            // coffre commun (TOWER.chest) : stonebricks déposées
+    chestAt: { x: Math.floor((world.x0 + world.x1) / 2), y: floorBottom(world, TOWER.chest.floor) },
     winch: null,                          // treuil du logisticien : { x, top, bottom } (colonne contre le mur extérieur)
     log: [], timeline: { floors: [0], roof: null, engaged: null },
     stats: { mined: 0, ladders: 0, torches: 0, hits: 0, knocks: 0, falls: 0, dmg: 0, kills: 0, blocked: 0 }, summary: null,
     miners: specs.map((s, i) => createMiner(i, s, world.x0 + 1 + Math.floor((i + 0.5) * inner / specs.length), world.floor)),
   };
   G.blocksLeft = world.kinds.map((k, f) => k === 'blocks' ? blockCells(G, f).length : 0);
+  G.bricks = countBricks(G);              // stonebricks encore dans la tour (étages « blocs » et portes)
   G.id = opts.id ?? `tower-${seed}-${Date.now().toString(36)}`;
   G.roster = [...G.miners];
   G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));   // Escalateur : le meilleur rang du groupe
@@ -57,8 +62,8 @@ function createMiner(id, s, x, y){
   return {
     id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null,
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
-    x, y, face: 1, action: null, status: 'Départ', fallN: 0, knocked: false,
-    stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0 },
+    x, y, face: 1, action: null, status: 'Départ', fallN: 0, knocked: false, inv: {}, load: 0,
+    stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0, deposits: 0 },
   };
 }
 const isBarb = m => m.skillTree === 'barbare';
@@ -89,6 +94,11 @@ export function blockCells(G, k){
   for(let y = floorTop(G, k); y <= floorBottom(G, k); y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] !== 0) out.push([x, y]);
   return out;
 }
+/* pods (TOWER.chest) : stonebricks de l'intérieur de la tour, poids d'une brique, sac plein */
+const countBricks = G => { let n = 0; const b = TOWER.sides[G.side].brick;
+  for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] === b) n++; return n; };
+const brickW = G => BLOCKS[TOWER.sides[G.side].brick].w;
+export const bagFull = (G, m) => m.load > 0 && m.load + brickW(G) > m.carac.pods;
 const inBlockFloor = (G, x, y) => { const k = floorOf(G, y);
   return k >= 0 && k < TOWER.floors && G.kinds[k] === 'blocks' && y >= floorTop(G, k) && y <= floorBottom(G, k) && x > G.x0 && x < G.x1 ? k : -1; };
 /* porte d'un plafond scellée : étage « mobs » avec un mob vivant, ou étage « blocs » avec un bloc pas encore miné
@@ -408,6 +418,14 @@ export function decide(G, m){
     const path = planTo(G, m, goals);
     if(path?.length) return follow(G, m, path, `Va combattre les ${mobName}s`);
   }
+  /* sac plein (pods) et encore des briques à miner dans la tour : il redescend vider son sac au coffre commun. Pas de
+     chemin : il continue (la brique suivante ira quand même dans son sac) */
+  if(bagFull(G, m) && G.bricks > 0){
+    const c = G.chestAt;
+    if(m.x === c.x && m.y === c.y) return act(m, 'deposit', TOWER.chest.deposit, {}, 'Vide son sac au coffre');
+    const path = planTo(G, m, [[c.x, c.y]]);
+    if(path?.length){ m.blockGoal = null; return follow(G, m, path, 'Sac plein : descend au coffre'); }
+  }
   /* étage « blocs » pas encore vidé (le plus bas, au niveau du mineur ou au-dessus) : il mine ses blocs, le plus proche
      d'abord ; la porte du plafond ne s'ouvre qu'une fois l'étage vide. Chacun RÉSERVE le bloc qu'il vise (m.blockGoal) :
      les autres en choisissent un autre et évitent de passer par lui (25/10 : avant, ils visaient souvent le même bloc et
@@ -547,6 +565,7 @@ function finishAction(G, m, a){
   } else if(a.type === 'torch'){
     if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push(placedTorch(m)); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
+  else if(a.type === 'deposit') deposit(G, m);
   else if(a.type === 'attack'){
     if(a.data.boss) hitBoss(G, m);
     else if(!a.data.done){ const o = G.mobs.find(q => q.id === a.data.mob); if(o) hitMob(G, m, o); }
@@ -568,8 +587,12 @@ function land(G, m){
 
 function mineCell(G, m, x, y){
   if(!breakable(G, x, y)) return;
-  const kb = inBlockFloor(G, x, y);
+  const kb = inBlockFloor(G, x, y), t = G.tiles[y][x];
   G.tiles[y][x] = 0; G.stats.mined++; m.stats.mined++;
+  if(t === TOWER.sides[G.side].brick){                       // dans son sac (pods : TOWER.chest)
+    const name = BLOCKS[t].name;
+    m.inv[name] = (m.inv[name] || 0) + 1; m.load += BLOCKS[t].w; G.bricks--;
+  }
   if(kb >= 0 && --G.blocksLeft[kb] === 0) log(G, `🚪 Étage ${kb} vidé : la porte du plafond s'ouvre`);
   for(const o of G.miners)                                  // un autre creusait le même bloc : travail perdu
     if(o !== m && o.action?.type === 'mine' && o.action.data.x === x && o.action.data.y === y) o.action = null;
@@ -577,6 +600,14 @@ function mineCell(G, m, x, y){
     if(o.x === x && o.y === y - 1 && o.action && o.action.type !== 'move' && !towerSupported(G, o.x, o.y)) o.action = null;
   if(G.torches.length) updateTowerLight(G);
   if(y === G.roof) log(G, `⛏ ${m.name} perce le toit !`);
+}
+
+/* vide son sac dans le coffre commun */
+function deposit(G, m){
+  const parts = [];
+  for(const [k, n] of Object.entries(m.inv)){ G.chest[k] = (G.chest[k] || 0) + n; parts.push(`${n} ${k}`); }
+  if(parts.length){ log(G, `📦 ${m.name} vide son sac au coffre : ${parts.join(', ')}`); m.stats.deposits++; }
+  m.inv = {}; m.load = 0;
 }
 
 function hitBoss(G, m){
@@ -721,7 +752,7 @@ export function leaveTower(G, who){
   for(const o of G.mobs){ if(o.grab === m.id) o.grab = null; if(o.taunt === m.id) o.taunt = null; }
   if(G.boss.focus === m.id) G.boss.focus = null;
   if(G.boss.taunt === m.id) G.boss.taunt = null;
-  log(G, `${m.name} a quitté la tour (il ne recevra rien)`);
+  log(G, `${m.name} a quitté la tour (il ne recevra rien${m.load ? ', son sac est perdu' : ''})`);
   if(!G.miners.length) endTower(G, false);
   return true;
 }
@@ -729,7 +760,15 @@ export function leaveTower(G, who){
 /* étage le plus haut atteint (floors = le toit) */
 export const reached = G => G.timeline.roof != null ? TOWER.floors : G.floorSeen.lastIndexOf(true);
 
-/* fin : réussite (boss vaincu) ou échec. Les trésors sont donnés par le serveur aux présents si réussite. Idempotent. */
+/* butin de la partie : le coffre commun + les sacs des mineurs encore présents (un départ perd son sac) */
+export function towerLoot(G){
+  const out = { ...G.chest };
+  for(const m of G.miners) for(const [k, n] of Object.entries(m.inv)) out[k] = (out[k] || 0) + n;
+  return out;
+}
+
+/* fin : réussite (boss vaincu) ou échec. Les trésors et le butin (loot, réussite seulement) sont donnés par le serveur
+   aux présents. Idempotent. */
 export function endTower(G, success){
   if(G.summary) return;
   G.over = true;
@@ -737,9 +776,9 @@ export function endTower(G, success){
   G.summary = {
     mode: 'tower', id: G.id, seed: G.seed, side: G.side, success: !!success, t: G.t,
     bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, mined: G.stats.mined, knocks: G.stats.knocks, falls: G.stats.falls,
-    floor: reached(G), kills: G.stats.kills,
+    floor: reached(G), kills: G.stats.kills, loot: success ? towerLoot(G) : {},
     shares: G.roster.map(m => ({ miner: m.name, color: m.color, account: m.account, left: m.left != null, bag: {},
-                                 stats: { mined: m.stats.mined, dmg: Math.round(m.stats.dmg), knocked: m.stats.knocked, kills: m.stats.kills } })),
+                                 stats: { mined: m.stats.mined, dmg: Math.round(m.stats.dmg), knocked: m.stats.knocked, kills: m.stats.kills, deposits: m.stats.deposits } })),
   };
 }
 

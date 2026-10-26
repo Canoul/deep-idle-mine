@@ -126,11 +126,12 @@ export const BLOCKS = {
      jauges de l'onglet Jugement. */
   12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu', val:TREASURE_VAL},
   13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu', val:TREASURE_VAL},
-  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (4 s depuis le 25/10, avant 6 ; ne rapporte rien) et sa version
-     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
-  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:4, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (4 s depuis le 25/10, avant 6) et sa version
+     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. 26/10/2026 (Geoffrey) : une stonebrick minée va
+     dans le sac du mineur (poids w, pods) ; partagée entre les joueurs en cas de victoire (avant : ne rapportait rien). */
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:10, hard:4, color:'#bfe3ff', dot:'#e8f4ff', family:'material'},
   15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
-  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:4, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:10, hard:4, color:'#4a1f3a', dot:'#7a2f5a', family:'material'},
   17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
   /* socle du coffre (23/10, Geoffrey) : la case sous le coffre de la surface, incassable (le pathfinder ne creuse plus
      sous le coffre) */
@@ -1279,7 +1280,12 @@ export const JUDGMENT = {
    portes d'entrée : les doorH lignes du bas des deux murs. */
 export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
-  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7)
+  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7 ; 7 essayés le 26/10 avec les pods, retirés)
+  /* pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (son poids : BLOCKS) ; plein (plus de
+     place pour une brique) et encore des briques dans la tour, il redescend au coffre commun, au milieu de l'étage
+     floor, et le vide en deposit s. Victoire : coffre + sacs des présents, en parts égales (le reste tiré par le
+     serveur) ; échec ou départ : rien. */
+  chest: { floor: 0, deposit: 1, max: 500 },   // max : garde-fou du serveur (briques par objet ; une tour en a ≈ 183)
   sky: 4, margin: 8, doorH: 2,
   /* treuil du logisticien (25/10/2026, Geoffrey) : le premier logisticien qui a le skill Treuil et qui tombe au pied de
      la tour (dehors) va contre le mur, de son côté, et l'installe en setup s ; une colonne contre le mur extérieur, du
