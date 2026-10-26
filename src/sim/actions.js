@@ -82,15 +82,16 @@ export function mineBlock(G,m,x,y){
 
 /* un bloc cassé par le mineur : il disparaît, son butin va dans le sac (shiny, fortune), minerai compté pour l'area
    (aussi la dynamite, src/sim/spells.js) */
-/* drop d'un glyphe (GLYPHS.drop) : à un événement de sa spécialisation ('block', 'ladder', 'kill'), une chance de trouver un
-   glyphe de son arbre qu'il ne possède pas encore (ni au lancement, ni trouvé dans la session). Hasard à part (glyphRng) :
+/* drop d'un glyphe (GLYPHS.drop) : à un événement de sa spécialisation ('block', 'ladder', 'kill'), CHAQUE glyphe de son
+   arbre qu'il ne possède pas encore (ni au lancement, ni trouvé dans la session) a d.chance de tomber (26/10 : chance par
+   glyphe ; un seul tirage, chance × glyphes restants, puis le glyphe au hasard parmi eux). Hasard à part (glyphRng) :
    sans spécialisation ou sans glyphe à trouver, rien n'est tiré. */
 function glyphDrop(G,m,event){
   const d=GLYPHS.drop[m?.skillTree];
   if(!d || d.event!==event || !G.glyphRng) return;
   m.glyphFound ??= [];
   const have=new Set([...(m.glyphsOwned||[]), ...m.glyphFound]), left=glyphsOfTree(m.skillTree).filter(n => !have.has(n));
-  if(!left.length || !(G.glyphRng() < d.chance)) return;
+  if(!left.length || !(G.glyphRng() < d.chance*left.length)) return;
   const g=left[Math.floor(G.glyphRng()*left.length)];
   m.glyphFound.push(g); G.stats.glyphs=(G.stats.glyphs||0)+1;
   log(G, `✨ ${m.name} trouve un ${g} !`);
