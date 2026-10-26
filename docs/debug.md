@@ -3221,23 +3221,22 @@ Règles (voir CLAUDE.md) :
 - **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
   simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
   (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).
+  ✅ Vérifié le 26/10 (branche `geoffrey/fix-bloc-geant-fin`) : giant-sim et giant-rules verts ; simulate:giant à 15 × 7 :
+  146 / 184 / 221 points par visite (sans stuff / fer / acier), une recharge par visite, pas de blocage.
 
----
+### Bloc géant : fin de visite affichée trop tôt (Geoffrey) — branche `geoffrey/fix-bloc-geant-fin`, ✅ en ligne le 26/10
+- **Bug** (signalé par Geoffrey) : écran de fin « Cette visite 91 points, total du jour 248 » pour une seule visite.
+  Cause : après un redémarrage du serveur, `view()` et `leave()` ne reprenaient pas les visites d'avant (seuls `info`,
+  `enter` et `pump` appelaient `restore`) ; si la vue arrivait avant, `me` = null et le navigateur concluait à la fin
+  de la visite (points du dernier envoi), alors que le serveur la reprenait et la comptait en entier. Reproduit
+  (scratch : une vue juste après un redémarrage → `me: null`).
+- **Correction** : `sync()` (restore + advance) au début de chaque demande (`server/giant/service.js`) ; la fin d'une
+  visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
+  `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
+- **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
 
-## 26/10/2026 — Bloc géant : « Cette visite » < points réels (écran de fin)
-- **Symptôme** (Geoffrey, en ligne) : première visite du jour, écran de fin « Cette visite 91 points », « Mon total
-  aujourd'hui 248 ».
-- **Cause probable** : `src/ui/giant.js` `endVisit` prenait `lastMe.points`, le dernier `GET /api/giant/view` reçu.
-  Onglet en arrière-plan : timers ralentis/gelés par le navigateur, `lastMe` reste figé en cours de visite ; au retour,
-  `view.me` est null → `endVisit` avec la valeur périmée. Le serveur, lui, est juste : rejoué (mémoire, horloge
-  simulée) seul, avec un 2e joueur dans la salle, et avec un redémarrage à mi-visite : `mine.points` = points de la
-  visite à 1 près dans les 3 cas.
-- **Correction** : `server/giant/service.js` : `closeVisit` écrit `p.lastVisit = { day, startedAt, endedAt, points }`
-  (même écriture que le jour) ; `info()` renvoie `lastVisit` (points arrondis vers le bas). `endVisit` affiche
-  `info.lastVisit.points` quand il n'y a plus de visite en cours, sinon l'ancien `lastMe`.
-- **Tests** : `tests/giant-service.test.js` (nouveau : lastVisit = 1re visite = total du jour ; 2e visite seule ;
-  jour = somme) ; giant-service, giant-rules, giant-sim : 30/30 ✅.
-- **À vérifier** : ⚠️ la cause n'est pas prouvée en ligne (pas d'accès aux données) ; vérifier en vrai qu'une visite
-  avec l'onglet en arrière-plan affiche le bon chiffre. Les joueurs d'avant la correction n'ont pas de `lastVisit` :
-  repli sur l'ancien affichage jusqu'à leur prochaine visite.
-
+### Bloc géant : « Cette visite » < points réels, piste onglet en arrière-plan (Geoffrey) — branche `geoffrey/fix-bloc-geant-score`, ✅ en ligne le 26/10
+- Même symptôme que l'entrée au-dessus, autre piste (onglet en arrière-plan : `lastMe` figé). Branche écrite en parallèle
+  de `fix-bloc-geant-fin` ; au merge, **le code de `fix-bloc-geant-fin` est gardé** (`p.last`, `info.lastVisit` nul
+  pendant une visite, qui couvre aussi ce cas). Seul le test « 2e visite seule, jour = somme des visites » est ajouté
+  à `tests/giant-service.test.js`.

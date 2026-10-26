@@ -189,18 +189,35 @@ test('routes HTTP : connecté seulement, entrer, voir, sortir, réclamer', async
   } finally { server.close(); }
 });
 
-test('fin de visite : le serveur donne les points de la dernière visite (écran de fin), pas le cumul du jour', async () => {
+test('redémarrage : la première vue de la salle voit déjà la visite reprise (26/10 : le navigateur croyait la visite finie)', async () => {
+  const s = setup();
+  await s.giant.enter(A);
+  await s.advance(30e3);
+  const giant2 = s.make();                                 // redémarrage, et la vue arrive avant toute autre demande
+  const v = await giant2.view(A);
+  assert.ok(v.me, 'visite toujours en cours');
+  assert.ok(v.me.points > 20);
+});
+
+test('fin de visite : le serveur donne les points de la dernière visite (écran de fin)', async () => {
+  const { giant, advance } = setup();
+  await giant.enter(A);
+  assert.equal((await giant.info(A)).lastVisit, null, 'pendant la visite : rien');
+  await advance(VISIT + 1000);
+  const i = await giant.info(A);
+  assert.equal(i.lastVisit.points, i.mine.points);
+  assert.equal(i.lastVisit.day, i.day);
+});
+
+test('fin de visite : deux visites dans la journée, lastVisit = la dernière seule, jour = somme', async () => {
   const { giant, advance, clock } = setup();
   await giant.enter(A);
   await advance(VISIT + 1000);
-  let i = await giant.info(A);
-  assert.ok(i.lastVisit && i.lastVisit.points > 0);
-  assert.equal(i.lastVisit.points, i.mine.points, 'première visite = total du jour');
-  const first = i.lastVisit.points;
+  const first = (await giant.info(A)).lastVisit.points;
   clock.now += 3 * 3600e3;
   await giant.enter(A);
   await advance(VISIT + 1000);
-  i = await giant.info(A);
+  const i = await giant.info(A);
   assert.ok(i.lastVisit.points > 0 && i.lastVisit.points < i.mine.points, 'deuxième visite seule');
   assert.ok(Math.abs(i.mine.points - first - i.lastVisit.points) <= 1, 'jour = somme des visites');
 });

@@ -118,7 +118,12 @@ export function setupGiant(h){
       view = await h.api.view();
       renderer.update(view);
       if(view.me){ lastMe = view.me; renderSide(); }
-      else if(lastMe){ return endVisit(); }
+      else if(lastMe){
+        /* le serveur ne voit plus le mineur : on vérifie que la visite est vraiment finie (après un redémarrage du
+           serveur, elle reprend) avant d'afficher la fin */
+        await refresh();
+        if(!info?.visit) return endVisit();
+      }
     } catch(e){ console.warn(e); }
     viewTimer = setTimeout(pollView, document.hidden ? GIANT.viewPoll * 4 : GIANT.viewPoll);
   }
@@ -136,9 +141,7 @@ export function setupGiant(h){
   async function endVisit(){
     clearTimeout(viewTimer);
     await refresh();
-    /* les points de la visite viennent du serveur : le dernier relevé du navigateur peut dater (onglet en arrière-plan,
-       relevés ralentis par le navigateur) */
-    const pts = !info?.visit && info?.lastVisit ? info.lastVisit.points : (lastMe?.points ?? 0);
+    const pts = info?.lastVisit?.points ?? lastMe?.points ?? 0;   // les points comptés par le serveur
     $('gtRun').hidden = true; $('gtDone').hidden = false; $('noSession').hidden = true;
     $('gtDoneBody').innerHTML = `<div class="gtStats"><span>Cette visite</span><b>${nf(pts)} points</b>`+
       `<span>Mon total aujourd'hui</span><b>${nf(info?.mine.points ?? pts)} points</b>`+

@@ -18,13 +18,13 @@ Modèle d'entrée :
 
 ---
 
-## 26/10/2026 — Geoffrey — Bloc géant : l'écran de fin affichait moins de points que la visite
-- **Pour le joueur** : à la fin d'une visite au Bloc géant, « Cette visite » pouvait afficher bien moins que les points
-  vraiment faits (ex. 91 alors que la visite en avait rapporté 248, première visite du jour). Le score du jour, lui,
-  était juste. L'écran de fin prenait le dernier chiffre reçu par le navigateur, qui peut dater quand l'onglet du jeu
-  passe en arrière-plan (le navigateur ralentit alors les relevés). Il affiche maintenant les points comptés par le
-  serveur.
-- **État** : 🔧 branche `geoffrey/fix-bloc-geant-score`, pas encore en ligne
+## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
+- **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
+  s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points
+  (248). Maintenant la visite reste à l'écran jusqu'au bout, et l'écran de fin montre les points comptés par le serveur.
+  Aucun point n'était perdu. Même chose si l'onglet du jeu passait en arrière-plan pendant la visite (le navigateur
+  ralentit alors les relevés) : l'écran de fin lit maintenant toujours les points du serveur.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant
 - **Pour le joueur** : nouveau mode dans « Où miner » : le **Bloc géant**. Une session commune à tout le serveur, de
