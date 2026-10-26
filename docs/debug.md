@@ -3436,3 +3436,17 @@ Règles (voir CLAUDE.md) :
 - **À vérifier** : ⚠️ pas regardé dans le navigateur (dessin 2 × 2, barre de vie, goutte) ; ⚠️ la simulation standard
   n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
 
+
+## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ✅ en ligne le 26/10
+- **Quoi** : `server/accounts/store.js` `recentlySeen(since)` → { compte: max lastSeenAt } d'après les connexions
+  (lastSeenAt prolongé au plus une fois par heure : à une heure près ; survit aux redémarrages). `server/social/service.js`
+  : map `lastSeen` (signe de vie à la minute, gardée `SOCIAL_SERVER.whoRecentFor` = 24 h, perdue au redémarrage) ;
+  `towerWho` ajoute après les joueurs en ligne les comptes vus depuis 24 h (max des deux sources), sans moi, sans ceux
+  qui ont fait la tour, sans compte supprimé, `status:'offline'`, `lastSeenAt`, triés du plus récent ; renvoie aussi
+  `online`. `src/ui/lobby.js` : `seenText` (« Hors ligne · vu il y a 3 h / 25 min »), pas d'Inviter, en-tête « n joueurs
+  sans cette tour (x en ligne…) ».
+- **Tests** : `tests/tower-who.test.js` ✅ 7 (ordre et filtres, mémoire à la minute puis oubli après 24 h, texte,
+  recentlySeen) ; social, accounts, lobby ✅ (40).
+- **Points fragiles** : un joueur qui garde le jeu ouvert sans recharger a un lastSeenAt de connexion jusqu'à 1 h en
+  retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
+  tous les joueurs (comme l'onglet Online), pas seulement les amis.
