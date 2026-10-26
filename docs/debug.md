@@ -3374,7 +3374,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Golem de sperme : mob 2 × 2 qui creuse (branche `geoffrey/golem`)
+## 26/10/2026 — Golem de sperme : mob 2 × 2 qui creuse (branche `geoffrey/golem`) — ✅ en ligne le 26/10
 - **Quoi** : `src/sim/golem.js` (nouveau) : cases, `breakable`, `smash` (bloc perdu, `oreRemoved`, `updateLight`),
   `standing` (sol sous une colonne OU bloc contre un flanc, bord de la mine compris), `fitsAt`/`clearAt` (naissance),
   `golemFalls`, `golemStep` (escalier vers la proie, cheminée dessous, `o.stair` gardé en salle ouverte, demi-tour

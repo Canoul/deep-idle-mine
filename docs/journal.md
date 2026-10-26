@@ -29,7 +29,7 @@ Modèle d'entrée :
   étourdissements, Ténacité oui. **Choix de Claude à valider** : il monte tout droit une fois sous le mineur et
   s'agrippe à la roche (sinon il tournait en rond dans son propre escalier), il ne se fait pas repousser, pas de golem
   dans les pièges ni dans le k hole.
-- **État** : 🔧 branche `geoffrey/golem`, pas en ligne
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
 - **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
