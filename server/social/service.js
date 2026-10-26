@@ -8,7 +8,8 @@
      La présence vit en mémoire (après un redémarrage, tout le monde réapparaît en quelques secondes).
    - Statut d'un ami : « session » (une session de jeu en cours pour lui), sinon « offline », sinon « lobby » (dans un
      groupe : n/3), sinon « online ».
-   - Joueurs en ligne (onglet Social → Online, 26/10) : tous les comptes en ligne, pas seulement les amis ; ceux qui
+   - Joueurs en ligne (onglet Social → Online, 26/10) : tous les comptes en ligne ou en session (même navigateur
+     fermé), pas seulement les amis ; ceux qui
      ne sont pas en session d'abord (en ligne ou dans un lobby), puis ceux en session, par pseudo. Liste bornée à
      SOCIAL_SERVER.onlineListMax, le compteur donne le vrai total.
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
@@ -162,8 +163,10 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const now = clock();
       for(const [id, t] of seen) if(now - t > config.onlineFor) seen.delete(id);     // oubliés : la Map ne grossit pas
       const mine = new Set((await load(me.id)).friends);
+      /* en ligne = jeu ouvert (signe de vie) OU en session (elle tourne sur le serveur même navigateur fermé, comme chez les amis) */
+      const ids = new Set([...seen.keys(), ...await game.playersInSession()]);
       const players = [];
-      for(const id of seen.keys())
+      for(const id of ids)
         players.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...await statusOf(id), me: id === me.id, friend: mine.has(id) });
       const busy = p => p.status === 'session' ? 1 : 0;                                 // pas en session au-dessus
       players.sort((a, b) => busy(a) - busy(b) || a.name.localeCompare(b.name, 'fr'));

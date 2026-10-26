@@ -3148,7 +3148,7 @@ Règles (voir CLAUDE.md) :
   dizaines de joueurs, à revoir (cache) s'il y en a des centaines. Un joueur en session navigateur fermé n'apparaît
   pas (présence = signe de vie, comme chez les amis).
 
-### Groupe : membre absent mais prêt gardé (Geoffrey) — branche `geoffrey/fix-absent-pret`, 🧪
+### Groupe : membre absent mais prêt gardé (Geoffrey) — branche `geoffrey/fix-absent-pret`, ✅ en ligne le 26/10
 - **Quoi** : le ménage du groupe (`sweep`, `server/party/service.js`) retirait tout membre sans signe de vie depuis
   `memberTimeout` (5 min), même prêt / « prêt tout le temps » : onglet fermé = sorti du groupe, le chef ne pouvait
   plus le lancer. Désormais `sweep` saute un membre **non chef** avec `ready || always`. Rien d'autre ne bloquait :
@@ -3157,3 +3157,13 @@ Règles (voir CLAUDE.md) :
   « prêt tout le temps » gardé et relancé ; chef absent toujours retiré) ✅ 38/38 ; lobby, social, lfg ✅.
 - **Points fragiles** : un « prêt tout le temps » qui ne revient jamais reste dans le groupe (et part en session) tant
   que le chef ne le retire pas ; c'est voulu. Il occupe aussi une place pour la recherche de groupe (LFG).
+
+### Online : joueurs en session navigateur fermé oubliés (Geoffrey) — branche `geoffrey/fix-online-session`, ✅ en ligne le 26/10
+- **Quoi** : bug signalé (plus d'amis en ligne que de joueurs dans Online). `online()` ne prenait que la Map `seen`
+  (signes de vie) alors que `statusOf` (liste d'amis) dit « session » sans signe de vie. Ajout de
+  `game.playersInSession()` (`server/game/service.js` : sessions `running` / `settling`, joueurs pas partis) ;
+  `online()` = union `seen` ∪ en session. Le point fragile noté dans l'entrée précédente est réglé.
+- **Tests** : `tests/social.test.js` +1 (session navigateur fermé comptée) et attente corrigée dans le test d'ordre ;
+  social + game-service ✅ 66/66.
+- **Points fragiles** : à chaque redémarrage du serveur (mise à jour de `main`), `seen` repart de zéro : pendant
+  ~4 s, Online et la liste d'amis ne montrent que les joueurs en session.
