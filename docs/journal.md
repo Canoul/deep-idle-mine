@@ -22,7 +22,7 @@ Modèle d'entrée :
 - **Pour le joueur** : rien. Nouvel outil sur le serveur : `take-item.js` retire un objet à un joueur sans redémarrer
   le jeu (l'inverse de `give-item.js`). Un glyphe posé sur un skill est retiré de sa case.
 - **À suivre** : retirer les glyphes en trop (Infernatiwar : Braum, LeTaz : Échelle de 2, Nbrick : Ruée).
-- **État** : 🧪 sur la branche `geoffrey/admin-retirer` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Gear score et modulation des tours (en test)
 - **Pour le joueur** : chaque pièce de stuff affiche son **GS** (gear score) dans sa bulle et dans la liste de l'onglet
