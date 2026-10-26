@@ -891,6 +891,9 @@ export const UPGRADE = {
             /* 25/10/2026 (provisoire, choix de Claude) : pour 100 x, ténacité +10 %, résistance au recul +20 %, portée +0,1,
                recul +0,1 ; double attaque +5 % (Geoffrey, 25/10 ; d'abord +20 % comme la vitesse d'attaque) */
             tenacity:10, knockRes:5, reach:1000, knockback:1000, doubleAttack:20 },
+  /* GEAR SCORE (26/10/2026, Geoffrey) : x par point = worth (mesuré), plus ces stats simulées le 26/10 (document « Valeurs
+     en x » : 24 sessions, mineur de base, mêmes seeds avec et sans) qui ne sont pas dans worth. Avant : prices. */
+  gs: { doubleAttack:8, tenacity:5, knockRes:0, reach:0, knockback:120, torchRadius:27 },
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
