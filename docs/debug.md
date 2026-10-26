@@ -3313,7 +3313,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/admin-take.test.js` ✅ 3 (inventaire, tout ou rien, glyphe posé, garde-fous, clé/relais) ;
   admin ✅ 7.
 
-## 26/10/2026 — Modulation cachée (branche `geoffrey/cacher-modulation`) — ⏳
+## 26/10/2026 — Modulation cachée (branche `geoffrey/cacher-modulation`) — ✅ en ligne le 26/10
 - **Quoi** : `TOWER.modulation.open = false` (src/config.js). `src/ui/lobby.js` `modulationState` : `show` exige
   `open || dev` (dev = `st.info.dev`). `server/game/service.js` `start` : `body.modulation === true` refusé
   (`bad_request`, « pas encore ouverte ») si `!open && !dev`, avant les autres vérifications de modulation. Le GS (pièces,
