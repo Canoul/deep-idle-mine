@@ -3152,3 +3152,10 @@ Règles (voir CLAUDE.md) :
   des ilvl des lignes de la même session = joueurs présents), calculé sur toutes les lignes avant le filtre par joueur ;
   une seule ligne par session (`perSession`), la profondeur étant celle du groupe. Colonne « ilvl groupe » dans
   l'historique. Test +1 (9) ✅ ; page revérifiée dans Chromium ✅.
+- **Ajout (26/10, 10 h 20)** : prédiction sur `depth_group_ilvl` : `forecast(points)` = moindres carrés sur les sessions
+  une par une (ilvl de groupe exact, pas les moyennes par tranche), ilvl où la droite atteint `DASHBOARD.forecastDepth`
+  (350) ; null si moins de `forecastMin` (3) sessions, un seul ilvl ou pente ≤ 0 (la page l'écrit). Dessin : droite en
+  pointillés décalée de `shift` = ilvlStep / 2 (un point de tranche est placé au début de sa tranche mais vaut pour son
+  milieu), ligne de 350, cercle et étiquette « 350 ≈ ilvl N » (N en ilvl réel). Test +1 (10) ✅ ; Chromium ✅.
+- **Point fragile** : une droite ; si la courbe réelle s'aplatit (rendement décroissant du stuff), la prédiction sera
+  trop optimiste. À relire quand il y aura des sessions réelles sur plusieurs tranches d'ilvl.

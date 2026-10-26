@@ -63,6 +63,18 @@ export function withGroupIlvl(rows){
   for(const r of rows){ const a = g.get(r.session) ?? { s: 0, n: 0 }; a.s += r.ilvl; a.n++; g.set(r.session, a); }
   return rows.map(r => { const a = g.get(r.session); return { ...r, groupIlvl: Math.round(a.s / a.n) }; });
 }
+/* prédiction : droite des moindres carrés y = a + b·x sur les points [{x, y}] et ilvl où elle atteint `target`.
+   null s'il y a moins de DASHBOARD.forecastMin points, un seul x, ou une pente nulle ou négative (jamais atteint). */
+export function forecast(points, target = DASHBOARD.forecastDepth){
+  if(points.length < DASHBOARD.forecastMin) return null;
+  const n = points.length, mx = points.reduce((s, p) => s + p.x, 0) / n, my = points.reduce((s, p) => s + p.y, 0) / n;
+  let sxx = 0, sxy = 0;
+  for(const p of points){ sxx += (p.x - mx) ** 2; sxy += (p.x - mx) * (p.y - my); }
+  if(sxx === 0 || !(sxy > 0)) return null;
+  const b = sxy / sxx, a = my - b * mx;
+  return { a: Math.round(a * 1000) / 1000, b: Math.round(b * 1e6) / 1e6, target, x: Math.round((target - a) / b), n };
+}
+
 /* une ligne par session (la profondeur est celle du groupe : ne la compter qu'une fois) */
 const perSession = rows => [...new Map(rows.map(r => [r.session, r])).values()];
 
@@ -84,7 +96,10 @@ export function charts(rows){
       series: [{ name: 'Profondeur', points: meanBy(rows, bucket, r => r.depth) }] },
     { id: 'depth_group_ilvl', title: 'Groupe : profondeur par ilvl du groupe', unit: 'profondeur (une fois par session)',
       xLabel: `ilvl moyen du groupe (tranches de ${DASHBOARD.ilvlStep} x)`,
-      series: [{ name: 'Profondeur', points: meanBy(perSession(rows), r => step(r.groupIlvl ?? r.ilvl), r => r.depth) }] },
+      series: [{ name: 'Profondeur', points: meanBy(perSession(rows), r => step(r.groupIlvl ?? r.ilvl), r => r.depth) }],
+      /* sur les sessions une par une (ilvl exact), pas sur les moyennes par tranche ; shift : un point de tranche est
+         dessiné au début de sa tranche mais vaut pour son milieu, la droite est décalée d'autant pour passer dessus */
+      forecast: forecast(perSession(rows).map(r => ({ x: r.groupIlvl ?? r.ilvl, y: r.depth }))), shift: DASHBOARD.ilvlStep / 2 },
   ];
 }
 
@@ -148,18 +163,29 @@ function chart(c){
   const pts=c.series[0].points;
   if(!pts.length)return '<div class="card"><h2>'+esc(c.title)+'</h2><div class="empty">Pas encore de session</div></div>';
   const W=420,H=230,L=44,R=24,T=14,B=34,iw=W-L-R,ih=H-T-B;
-  const xs=pts.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs),ymax=nice(Math.max(...pts.map(p=>p.y)));
+  const f=c.forecast,sh=c.shift||0,fy=x=>f.a+f.b*(x+sh);   // prédiction : profondeur à l'abscisse affichée x
+  const xs=pts.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs,f?f.x-sh:-Infinity);
+  const ymax=nice(Math.max(...pts.map(p=>p.y),f?f.target:0));
   const X=x=>L+(x1===x0?iw/2:(x-x0)/(x1-x0)*iw),Y=y=>T+ih-y/ymax*ih;
   let g='';
   for(let i=0;i<=4;i++){const v=ymax*i/4,y=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="var(--grid)"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+fr(+v.toFixed(1))+'</text>';}
   const step=Math.max(1,Math.ceil(pts.length/8));
-  pts.forEach((p,i)=>{if(i%step===0||i===pts.length-1)g+='<text x="'+X(p.x)+'" y="'+(H-B+16)+'" text-anchor="middle">'+p.x+'</text>';});
+  const ticks=f&&x1>Math.max(...xs)?[...new Set(Array.from({length:5},(_,i)=>Math.round((x0+(x1-x0)*i/4)/D.ilvlStep)*D.ilvlStep))].filter(x=>x>=x0&&x<=x1):pts.filter((p,i)=>i%step===0||i===pts.length-1).map(p=>p.x);
+  ticks.forEach(x=>{g+='<text x="'+X(x)+'" y="'+(H-B+16)+'" text-anchor="middle">'+x+'</text>';});
+  if(f){
+    const ty=Y(f.target);
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+ty+'" y2="'+ty+'" stroke="var(--mut)" stroke-dasharray="2 4"/>';
+    g+='<line x1="'+X(x0)+'" y1="'+Y(fy(x0))+'" x2="'+X(x1)+'" y2="'+Y(fy(x1))+'" stroke="var(--acc)" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>';
+    g+='<circle cx="'+X(f.x-sh)+'" cy="'+ty+'" r="5" fill="none" stroke="var(--acc)" stroke-width="2"><title>Prédiction : profondeur '+f.target+' vers ilvl '+f.x+'</title></circle>';
+    g+='<text x="'+(X(f.x-sh)-8)+'" y="'+(ty-8)+'" text-anchor="end" style="fill:var(--ink)">'+f.target+' ≈ ilvl '+f.x+'</text>';
+  }
   g+='<text x="'+(L+iw/2)+'" y="'+(H-4)+'" text-anchor="middle">'+esc(c.xLabel)+'</text>';
   const path=pts.map((p,i)=>(i?'L':'M')+X(p.x).toFixed(1)+' '+Y(p.y).toFixed(1)).join(' ');
   g+='<path d="'+path+'" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round"/>';
   g+=pts.map(p=>'<circle cx="'+X(p.x)+'" cy="'+Y(p.y)+'" r="4" fill="var(--acc)"><title>'+esc(c.xLabel)+' '+p.x+' : '+fr(p.y)+' '+esc(c.unit)+' ('+p.n+' session'+(p.n>1?'s':'')+')</title></circle>').join('');
   const n=pts.reduce((s,p)=>s+p.n,0);
-  return '<div class="card"><h2>'+esc(c.title)+'</h2><div class="mut small">Moyenne en '+esc(c.unit)+' · '+n+' session'+(n>1?'s':'')+'</div><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(c.title)+'">'+g+'</svg></div>';
+  const fnote=c.forecast===undefined?'':f?'<div class="mut small">Pointillés : tendance (droite sur '+f.n+' sessions), +'+fr(Math.round(f.b*1000)/10)+' de profondeur par 100 ilvl.</div>':'<div class="mut small">Prédiction : pas assez de sessions (ou pas de progression) pour tracer une tendance.</div>';
+  return '<div class="card"><h2>'+esc(c.title)+'</h2><div class="mut small">Moyenne en '+esc(c.unit)+' · '+n+' session'+(n>1?'s':'')+'</div>'+fnote+'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(c.title)+'">'+g+'</svg></div>';
 }
 function show(){
   const who=$('who').value,rows=who==='all'?D.history:D.history.filter(r=>r.account===who);

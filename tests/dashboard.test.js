@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DASHBOARD } from '../src/config.js';
 import { itemValue } from '../src/meta/piece.js';
-import { ilvlOf, launchSnapshot, statRows, meanBy, charts, dashboardData, renderDashboard, withGroupIlvl } from '../server/admin/dashboard.js';
+import { ilvlOf, launchSnapshot, statRows, meanBy, charts, dashboardData, renderDashboard, withGroupIlvl, forecast } from '../server/admin/dashboard.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
@@ -120,4 +120,19 @@ test('profondeur par ilvl du groupe : ilvl moyen des présents, une seule fois p
   assert.deepEqual(pts('A'), [{ x: 0, y: 60, n: 1 }, { x: st, y: 100, n: 1 }], 'ilvl de tout le groupe, pas seulement de Zoe');
   assert.deepEqual(pts('B'), [{ x: st, y: 100, n: 1 }]);
   assert.equal(d.history[0].groupIlvl, st);
+});
+
+test('prédiction : droite des moindres carrés, ilvl où elle atteint la profondeur visée ; null sans tendance', () => {
+  assert.equal(DASHBOARD.forecastDepth, 350);
+  const f = forecast([{ x: 0, y: 100 }, { x: 500, y: 150 }, { x: 1000, y: 200 }]);   // +0,1 par ilvl
+  assert.deepEqual([f.a, f.b, f.x, f.n, f.target], [100, 0.1, 2500, 3, 350]);
+  assert.equal(forecast([{ x: 0, y: 100 }, { x: 500, y: 150 }]), null, 'trop peu de sessions');
+  assert.equal(forecast([{ x: 500, y: 100 }, { x: 500, y: 150 }, { x: 500, y: 200 }]), null, 'un seul ilvl');
+  assert.equal(forecast([{ x: 0, y: 200 }, { x: 500, y: 150 }, { x: 1000, y: 100 }]), null, 'profondeur qui baisse');
+  const rows = [0, 1, 2].map(i => ({ session: 'S' + i, account: 'A', name: 'Zoe', tree: 'mineur', level: 1, ilvl: i * 500,
+                                     depth: 100 + i * 50, mined: 1, hitTime: 0, at: i }));
+  const c = dashboardData(rows, 1).views.all.find(x => x.id === 'depth_group_ilvl');
+  assert.equal(c.forecast.x, 2500);
+  assert.equal(c.shift, DASHBOARD.ilvlStep / 2);
+  assert.equal(dashboardData(rows, 1).views.all.find(x => x.id === 'depth_ilvl').forecast, undefined, 'seulement sur la courbe du groupe');
 });
