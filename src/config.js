@@ -1098,11 +1098,12 @@ export const GIANT = {
   oxygenPerHit: 1,   // chaque coup sur le bloc coûte aussi cet oxygène (26/10/2026, Geoffrey)
   dynamitePoints: 1,
   tiers: [
+    /* paliers 26/10/2026, Geoffrey (avant 1 000 / 2 500 / 5 000 / 7 500 / 10 000) */
     { min: 1000,  items: { 'Treasure T1': 1 } },
-    { min: 2500,  items: { 'Treasure T1': 1, 'Blueprint parts': 15 } },
-    { min: 5000,  items: { 'Treasure T2': 1 } },
-    { min: 7500,  items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
-    { min: 10000, items: { 'Treasure T3': 1 } },
+    { min: 5000,  items: { 'Treasure T1': 1, 'Blueprint parts': 15 } },
+    { min: 10000, items: { 'Treasure T2': 1 } },
+    { min: 15000, items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
+    { min: 20000, items: { 'Treasure T3': 1 } },
   ],
   top: 10, poll: 3000, viewPoll: 500,
 };

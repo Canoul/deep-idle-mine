@@ -3339,3 +3339,11 @@ Règles (voir CLAUDE.md) :
 - **simulate:giant** (20 seeds) : sans stuff 146, fer 184, acier 221, résistance 50 % 189 (inchangés, 1 recharge) ;
   vitesse 2 + ténacité 20 % : 277 → 262, 2 recharges. Paliers non retouchés.
 
+---
+
+## 26/10/2026 — Bloc géant : paliers `GIANT.tiers` 1 000 / 5 000 / 10 000 / 15 000 / 20 000 (branche `geoffrey/paliers-bloc-geant`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` `GIANT.tiers[].min` (avant 1 000 / 2 500 / 5 000 / 7 500 / 10 000), mêmes objets ;
+  textes `GAME_DESIGN.md` et `wiki.html`.
+- **Tests** : ⚠️ mis en ligne **sans relancer les tests** (demande de Geoffrey). À vérifier : `node --test
+  tests/giant-*.test.js tests/anticheat/giant*.test.js` (un test peut lire un `min` en dur).
+

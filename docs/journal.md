@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Bloc géant : paliers de récompense relevés
+- **Pour le joueur** : les paliers du score collectif passent à **1 000 / 5 000 / 10 000 / 15 000 / 20 000** (avant
+  1 000 / 2 500 / 5 000 / 7 500 / 10 000), mêmes récompenses. Le Treasure T3 demande donc ≈ 90 à 140 visites dans la
+  journée (≈ 150 à 220 points par visite). Wiki à jour.
+- **État** : ✅ en ligne le 26/10 (mis en ligne sans relancer les tests, demande de Geoffrey)
+
 ## 26/10/2026 — Geoffrey — Bloc géant : chaque coup coûte 1 oxygène
 - **Pour le joueur** : au Bloc géant, chaque coup sur le bloc coûte **1 oxygène** en plus de la baisse habituelle
   (2 par seconde). Sans stuff ou avec une pioche en fer / acier, ça ne change presque rien (toujours une recharge
