@@ -594,9 +594,9 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
-  | Lampe à incandescence (case torche, **sans blueprint**, 25/10) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
+  | Lampe à incandescence (case torche, 25/10 ; **blueprint du Treasure T2** depuis le 26/10, avant : sans blueprint) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
 
-  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
+  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP », « Lampe à incandescence BP » *(26/10/2026, Geoffrey ; 2 % comme les autres ; sa recette est dans le tableau du tier 1 ci-dessus)*) :
 
   | Objet | Recette | Effet |
   |---|---|---|
@@ -762,10 +762,10 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
   | Tier | Prix | Blueprints possibles | Recycler un blueprint du tier |
   |---|---|---|---|
   | 1 | 100 parts | ceux d'un Treasure T1 (les 9) | 15 à 30 parts *(25/10 au soir ; avant 30 à 60)* |
-  | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui) | 40 à 70 parts |
-  | 3 *(23/10/2026)* | 150 parts | ceux d'un Treasure T3 (les six pièces en acier, Plastron de l'équilibre) | 40 à 70 parts *(choix de Claude : comme le tier 2, même prix)* |
+  | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui, Lampe à incandescence *(26/10)*) | 40 à 70 parts |
+  | 3 *(23/10/2026)* | **200 parts** *(26/10/2026, Geoffrey ; avant 150)* | ceux d'un Treasure T3 (les six pièces en acier, Plastron de l'équilibre) | 40 à 70 parts *(choix de Claude : comme le tier 2, même prix)* |
 
-  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes de TOUS les tiers inférieurs** *(décision ferme ; « tous les tiers inférieurs » depuis le 25/10/2026, Geoffrey : avant, seulement le tier d'avant, et des BP du T2 trouvés dans des Treasures ouvraient le T3 avec un T1 incomplet)* : le tier 3 demande tout le T1 et tout le T2. L'option est grisée (🔒) avec le nombre de recettes qui manquent par tier, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026) ; le tier 2 avec ses **3 recettes** ouvre le tier 3.
+  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes de TOUS les tiers inférieurs** *(décision ferme ; « tous les tiers inférieurs » depuis le 25/10/2026, Geoffrey : avant, seulement le tier d'avant, et des BP du T2 trouvés dans des Treasures ouvraient le T3 avec un T1 incomplet)* : le tier 3 demande tout le T1 et tout le T2. L'option est grisée (🔒) avec le nombre de recettes qui manquent par tier, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026) ; le tier 2 avec ses **4 recettes** ouvre le tier 3 *(Lampe à incandescence comprise depuis le 26/10 ; avant : 3)*.
   - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise**. Tirage **pondéré** *(23/10/2026)* : chaque blueprint pèse 1, sauf le **Plastron de l'équilibre BP** (épique) qui pèse **0,25**, soit **4 fois moins** de chance que chaque autre plan (≈ 4 % quand les 7 plans du tier 3 sont possibles ; 100 % s'il est le dernier à apprendre) : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; un blueprint qui ne débloquerait rien resterait toujours possible. Tier entièrement appris : plus rien à tirer.
   - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
 - **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 15 à 30 (tier 1 ; 25/10 au soir, avant 30 à 60), 40 à 70 (tiers 2 et 3) *(provisoire)*.
