@@ -19,8 +19,8 @@ au moins une fois reçoit une récompense qui dépend de ce score.
 
 - Une **session Bloc géant** dure 24 h, de **minuit à minuit, heure de Paris**. Elle est la même pour tout le serveur.
 - À minuit : la session se ferme, les récompenses sont calculées, une nouvelle session commence à 0.
-- Un mineur encore dans la carte à minuit : sa visite s'arrête là, ses coups comptent pour la session qui se ferme.
-  (Claude)
+- Un mineur encore dans la carte à minuit : sa visite s'arrête là, ses coups comptent pour la session qui se ferme
+  (confirmé par Geoffrey).
 
 ## Entrer
 
@@ -53,8 +53,8 @@ au moins une fois reçoit une récompense qui dépend de ce score.
      tant que le recul n'est pas ignoré). (Claude pour l'arrondi)
    - Repoussé, il revient au bloc à pied.
 4. **Oxygène** : il baisse **2 fois plus vite** qu'en mine (2 par seconde ; 300 de base → 150 s). À court, le mineur
-   va à la fontaine, qui recharge **20 par seconde** (voir question 1), puis il revient au bloc. À 0, il ne peut plus
-   miner jusqu'à la recharge. (Claude)
+   va à la fontaine, qui recharge **30 par seconde** (comme la surface ; décision de Geoffrey), puis il revient au bloc.
+   À 0, il ne peut plus miner jusqu'à la recharge. (Claude)
 5. **Pas de pods** (rien à ramasser), **pas d'XP**, pas de glyphe, pas de mob, pas de butin.
 6. Au bout de **3 min**, il sort. Un écran affiche : **ses points de la visite**, **son total sur la session** de 24 h,
    et le score collectif.
@@ -115,9 +115,7 @@ collectif**. **Les paliers s'additionnent** :
 - Config `GIANT` dans `src/config.js` (taille de carte, durée de visite, délai, recul, oxygène, fontaine, paliers,
   maximum de joueurs).
 
-## Questions encore ouvertes
+## Questions tranchées
 
-1. **Fontaine** : en surface, la recharge est de **30 par seconde** (pas 10). « 2 × la surface » ferait **60 par
-   seconde** ; « 20 par seconde » serait plus lent que la surface. Laquelle ?
-2. **Minuit** : un mineur en plein milieu de sa visite à minuit, ses points vont à la session qui se ferme (proposé
-   ci-dessus). OK ?
+- Fontaine : 30 par seconde (26/10, Geoffrey).
+- Minuit : les points d'une visite en cours vont à la session qui se ferme (26/10, Geoffrey).
