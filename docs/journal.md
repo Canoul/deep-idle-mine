@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Tours : bouton « Who ? » pour trouver des alliés
+- **Pour le joueur** : dans le Lobby, une tour ouverte choisie dans « Où miner », un bouton **Who ?** à côté de sa
+  description. Il liste les joueurs **en ligne** qui n'ont **pas encore fait cette tour** pendant cette ouverture (toi
+  exclu), avec ce qu'ils font (en ligne, dans un lobby, en session et le temps qui leur reste) et « ami » si c'en est un.
+  Bouton **Inviter** (par leur ID, ami ou non) pour ceux qui ne sont pas en session ni déjà dans ton groupe. Un second
+  clic sur Who ? ferme la liste. Wiki à jour.
+- **Décisions** : choix de Claude à valider : seulement les joueurs en ligne (ou en session), pas tous les comptes.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
 - **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
   s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points

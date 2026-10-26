@@ -3240,3 +3240,18 @@ Règles (voir CLAUDE.md) :
   de `fix-bloc-geant-fin` ; au merge, **le code de `fix-bloc-geant-fin` est gardé** (`p.last`, `info.lastVisit` nul
   pendant une visite, qui couvre aussi ce cas). Seul le test « 2e visite seule, jour = somme des visites » est ajouté
   à `tests/giant-service.test.js`.
+
+---
+
+## 26/10/2026 — Tours : « Who ? » (branche `geoffrey/tour-who`) — ✅ en ligne le 26/10
+- **Quoi** : `game.towerDone(side)` (`server/game/service.js`) : `{ open, done:Set }` sous le verrou du Jugement (done
+  = comptes de l'ouverture en cours ; mode dev : toujours ouverte, comme au lancement). `social.towerWho(me, side)`
+  (`server/social/service.js`) = `online(me)` moins moi et les `done` ; tour fermée → liste vide. Route
+  `POST /api/social/tower-who { side }`, `socialApi.towerWho`. Lobby (`src/ui/lobby.js`) : bouton `#whoBtn` dans
+  `#lobbyInfo` (tour choisie), liste `#towerWho` (`whoRows` : Inviter si pas en session/hors ligne et pas membre du
+  groupe → `party.invite(displayId)`), refermée en changeant de mode. CSS `.towerWho`.
+- **Tests** : `tests/tower-who.test.js` (nouveau, 3) ; tower-who, lobby, social, game-service, judgment : 97/97 ✅.
+  Vérifié dans Chromium (mode dev, 2 invités) : la liste montre l'autre joueur, Inviter l'ajoute au groupe, 0 erreur JS.
+- **Limites** : la liste suit `SOCIAL_SERVER.onlineListMax` (comme l'onglet Online) ; pas rafraîchie toute seule
+  (reclic pour la mettre à jour).
+

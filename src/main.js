@@ -243,6 +243,7 @@ const lobby = setupLobby({
   party: partyApi,
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
+  towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },

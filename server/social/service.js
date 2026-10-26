@@ -173,6 +173,16 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return { count: players.length, players: players.slice(0, config.onlineListMax) };
     },
 
+    /* « Who ? » (lobby, tour ouverte) : joueurs en ligne qui n'ont pas encore fait la tour de ce camp pendant cette
+       ouverture, pour trouver des alliés. Moi exclu. Tour fermée : liste vide. */
+    async towerWho(me, side){
+      const t = await game.towerDone(side);
+      if(!t.open) return { side, open: false, count: 0, players: [] };
+      const all = await api.online(me);
+      const players = all.players.filter(p => !p.me && !t.done.has(p.id));
+      return { side, open: true, count: players.length, players };
+    },
+
     /* inviter un ami dans mon groupe / rejoindre le sien */
     async invite(me, input){
       const f = await friendOf(me, input);
