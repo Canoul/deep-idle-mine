@@ -3451,7 +3451,7 @@ Règles (voir CLAUDE.md) :
   retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
   tous les joueurs (comme l'onglet Online), pas seulement les amis.
 
-## 26/10/2026 — Apparence des torches de la Lampe à incandescence (branche `geoffrey/skin-lampe`) — ⏳
+## 26/10/2026 — Apparence des torches de la Lampe à incandescence (branche `geoffrey/skin-lampe`) — ✅ en ligne le 26/10
 - **Quoi** : `src/sim/mineur.js` `placedTorch(m)` = { x, y, r, item? } (item = `m.look.torche`), utilisé par
   `src/sim/actions.js` (mine) et `src/sim/tower/session.js` (tour). `src/skins.js` : `SKIN.torch` (base 'torch', lampe
   'torch_lamp'), `torchTexOf(torche)`, ajouté à `SKIN_TEXTURES`. Rendu `src/render/canvas.js` et `src/render/tower.js`.
