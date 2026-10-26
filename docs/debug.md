@@ -3134,7 +3134,7 @@ Règles (voir CLAUDE.md) :
   (« 3 % par glyphe ») est remplacée : malentendu, ≈ 9 à 11 % par session.
 - **Tests** : glyph-drop (valeurs, chance unique quel que soit le nombre de manquants), wiki ✅.
 
-### Social : sous-onglets Amis / Online (Geoffrey) — branche `geoffrey/social-online`, 🧪
+### Social : sous-onglets Amis / Online (Geoffrey) — branche `geoffrey/social-online`, ✅ en ligne le 26/10
 - **Quoi** : `social.online(me)` (`server/social/service.js`) parcourt la Map `seen` (signes de vie), oublie au passage
   les entrées de plus de `onlineFor`, renvoie `{ count, players }` (statut via `statusOf`, `me`, `friend`), tri : pas
   en session d'abord puis session, par pseudo ; bornée à `SOCIAL_SERVER.onlineListMax` (200). Route

@@ -24,7 +24,7 @@ Modèle d'entrée :
   en dessous (avec le temps qu'il leur reste). Bouton **Ajouter** pour demander un joueur en ami.
 - **Décisions** : on se voit soi-même dans la liste (« toi ») ; le bouton Ajouter est un ajout de Claude, à valider.
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/social-online` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Glyphes : 3 % de trouver un glyphe par session (correction)
 - **Pour le joueur** : **≈ 3 % de chance de trouver un glyphe par session** (groupe de 3), peu importe lequel ; il est
