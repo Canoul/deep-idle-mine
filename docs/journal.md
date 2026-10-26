@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Joueur absent mais prêt : le chef peut toujours le lancer
+- **Pour le joueur** : un membre qui ferme l'onglet du jeu est toujours affiché « absent », mais s'il était **prêt** ou
+  **prêt tout le temps**, il n'est plus sorti du groupe au bout de 5 min : le chef peut lancer la session avec lui.
+  Avant, au bout de 5 min, il disparaissait du groupe et le chef ne pouvait plus le lancer.
+- **Décisions** : un simple « prêt » redevient « pas prêt » après la session (comme avant), donc il finit retiré s'il
+  ne revient pas ; un « prêt tout le temps » reste jusqu'à ce que le chef le retire. Le chef absent est toujours
+  retiré (sinon le groupe serait bloqué).
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/fix-absent-pret` (pas en ligne)
+
 ## 26/10/2026 — Geoffrey — Social : sous-onglets Amis et Online
 - **Pour le joueur** : l'onglet Social a deux sous-onglets. **Amis** : comme avant. **Online** : le nombre de joueurs
   en ligne et la liste de tous les joueurs connectés (amis ou non) ; ceux qui ne font rien en haut, ceux en session

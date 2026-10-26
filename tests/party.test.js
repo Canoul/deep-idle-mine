@@ -141,6 +141,32 @@ test('membre sans nouvelles : « absent » puis retiré ; invitation périmée',
   assert.deepEqual(st.party.invited, [], 'invitation périmée');
 });
 
+test('membre prêt ou prêt tout le temps, onglet fermé : « absent » mais gardé, et lancé avec le groupe (26/10)', async () => {
+  const { party, game, advance } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await party.alwaysReady(B, true); await party.ready(C, true);
+  advance(PARTY_SERVER.memberTimeout + PARTY_SERVER.awayAfter);   // B et C ont fermé l'onglet, seul A donne signe de vie
+  const st = (await party.state(A)).party;
+  assert.deepEqual(st.members.map(m => [m.account, m.away, m.ready]), [[A.id, false, false], [B.id, true, true], [C.id, true, true]]);
+  const r = await party.launch(A, {});
+  assert.deepEqual(r.session.players.map(p => p.account), [A.id, B.id, C.id], 'les absents prêts partent en session');
+  /* après la session : C (simple « prêt ») n'est plus prêt, il finit par être retiré ; B (prêt tout le temps) reste */
+  advance(2 * 3600e3); await game.pump();                       // la session se termine
+  advance(PARTY_SERVER.memberTimeout + 1000);
+  await party.state(A);
+  assert.deepEqual((await party.state(A)).party.members.map(m => m.account), [A.id, B.id]);
+  assert.equal((await party.launch(A, {})).session.players.length, 2, 'le chef relance avec B absent');
+});
+
+test('chef absent : jamais gardé, même « prêt tout le temps » (sinon personne ne lance)', async () => {
+  const { party, advance } = setup();
+  await party.create(A); await party.join(B, 'K7Q4P2');
+  await party.alwaysReady(B, true); await party.promote(A, B.id);    // B chef, il garde sa case cochée
+  advance(PARTY_SERVER.memberTimeout + 1000);
+  const st = (await party.state(A)).party;
+  assert.deepEqual(st.members.map(m => m.account), [A.id], 'B retiré, A devient chef');
+});
+
 /* ---------- lancer ---------- */
 
 test('le chef lance : une session pour tous (chef = Rouge), le groupe reste, chacun voit sa session', async () => {
