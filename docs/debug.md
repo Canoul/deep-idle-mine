@@ -3377,7 +3377,8 @@ Règles (voir CLAUDE.md) :
   ceinture 250 x ; champ `recycle` = rendu fixe), `RARITY.items`, `UPGRADE.tiers[2]`, `TEXTURES`, nouveau `MOB_DROPS`
   (après `DUNGEON` : mob, item, chance, kholeChance). `src/sim/actions.js` : `rareDrop` appelé à la fin de `killMob`
   (tous les types), hasard `G.dropRng = mulberry32(seed ^ MOB_DROPS.salt)` créé au premier mob qui a un butin rare,
-  `G.khole` → kholeChance, `collect` d'1 pièce (poids 0), sans `lootOf`. `src/meta/craft.js` : `recyclable` /
+  `G.khole` → kholeChance, `collect` d'1 pièce (poids 0), sans `lootOf` ; chance × (1 + `lootBonus(m)`, même bonus que `lootOf` : skill loot +
+  carac.looting/100), décision de Geoffrey le 26/10 (d'abord chance fixe). `src/meta/craft.js` : `recyclable` /
   `recycleRefund` acceptent un `recycle` fixe quand il n'y a pas de recette. Skins `src/skins.js` + dessins
   `scripts/gen_textures.py` (icônes straps_goblin, hood_dark, cloud_magic, belt_giant ; calques skins/goblin_straps,
   dark_hood, magic_cloud, giant_belt). Wiki : `sourcesOf`, `mobDropRows`, tableau `#w-mob-drops`.

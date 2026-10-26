@@ -1162,8 +1162,9 @@ export const DUNGEON = {
 
 /* ---- Butin rare des mobs (26/10/2026, Geoffrey ; src/sim/actions.js killMob) ----
    Quand un mob de ce type meurt, chance qu'il lâche une pièce de stuff (STUFF.items), dans le sac du mineur qui l'a tué
-   (puis le coffre commun : un seul joueur la reçoit, partage normal). kholeChance : dans un k hole. Le Butin des mobs et
-   le Glyphe Pillage ne changent pas ces chances. Hasard à part (salt) : le reste de la partie ne bouge pas. */
+   (puis le coffre commun : un seul joueur la reçoit, partage normal). kholeChance : dans un k hole. La chance est
+   multipliée par 1 + le butin du mineur (skill Pillage + stat Butin des mobs ; 1 % avec +50 % → 1,5 %), toujours une
+   seule pièce (26/10/2026, Geoffrey). Hasard à part (salt) : le reste de la partie ne bouge pas. */
 export const MOB_DROPS = {
   salt: 0x570ffd,
   items: [

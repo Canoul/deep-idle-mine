@@ -1,5 +1,5 @@
 /* Butin rare des mobs (26/10/2026, Geoffrey) : quatre pièces de stuff non craftables, de la valeur en x de la pièce en
-   fer de leur case (ceinture : x du tier 2), lâchées par un mob avec une chance fixe, recyclées en quantités fixes. */
+   fer de leur case (ceinture : x du tier 2), lâchées par un mob avec une chance × (1 + butin du mineur), recyclées en quantités fixes. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -50,9 +50,10 @@ test('valeur en x (GS) : celle de la pièce en fer de la case (à 1 x près) ; l
 });
 
 /* tue `n` mobs de ce type dans une même partie ; renvoie le nombre de pièces lâchées */
-function drops(type, n, { khole = false, seed = 7 } = {}){
+function drops(type, n, { khole = false, seed = 7, looting = 0 } = {}){
   const G = newSession(seed, { miners: 1 }), m = G.miners[0];
   if(khole) G.khole = {};
+  m.carac.looting = looting;
   const item = MOB_DROPS.items.find(d => d.mob === type).item;
   for(let i = 0; i < n; i++){
     const o = { id: G.mobId++, type, x: m.x, y: m.y, hp: 1, maxhp: 1, cd: 1 };
@@ -72,6 +73,16 @@ test('drop : 0,5 % sur gobelin, occultiste et méphite ; minotaure 1 %, 2 % dans
   const k = drops(DUNGEON.boss.type, N, { khole: true });
   assert.ok(near(k, 0.02), `minotaure en k hole : ${k} sur ${N}`);
   assert.ok(MOB_DROPS.items.filter(d => d.mob !== DUNGEON.boss.type).every(d => d.chance === 0.005));
+});
+
+test('drop : le butin du mineur multiplie la chance (1 % avec +50 % → 1,5 %), une seule pièce à la fois', () => {
+  const N = 40000, near = (got, p) => Math.abs(got / N - p) < p * 0.2;
+  const g = drops(DUNGEON.boss.type, N, { looting: 50 });
+  assert.ok(near(g, 0.015), `minotaure, +50 % : ${g} sur ${N}`);
+  const k = drops(DUNGEON.boss.type, N, { looting: 50, khole: true });
+  assert.ok(near(k, 0.03), `minotaure en k hole, +50 % : ${k} sur ${N}`);
+  /* jamais deux pièces d'un coup, même avec un butin énorme : au plus une par mob */
+  assert.ok(drops('gobelin', 200, { looting: 1000 }) <= 200);
 });
 
 test('drop : hasard à part (le hasard de la partie ne bouge pas) ; rien pour un mob sans butin rare', () => {

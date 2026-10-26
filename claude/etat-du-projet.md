@@ -129,7 +129,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,5 %),
   **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,5 %), **Nuage magique** (jambes, rare ;
   marche +1,4 ; méphite 0,5 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +12,6 % ; minotaure 1 %,
-  2 % en k hole). Chance fixe (ni Butin ni Pillage), hasard à part, un seul joueur la reçoit (partage normal). Tier 2
+  2 % en k hole). Chance × (1 + butin du mineur : stat Butin + skill Pillage ; 1 % à +50 % → 1,5 %), une seule pièce, hasard à part, un seul joueur la reçoit (partage normal). Tier 2
   pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
   nuage, ceinture à cornes).
 - **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5

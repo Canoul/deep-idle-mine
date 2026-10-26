@@ -27,8 +27,9 @@ function oreSkills(G,m){
 /* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
    (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
    la partie entière est sûre (150 % → +1, et 50 % de chance de +2). Tirage G.rng (hasard « live ») */
+const lootBonus=m=>(m.skill.loot||0)+(m.carac.looting||0)/100;
 function lootOf(G,m,n){
-  const b=(m.skill.loot||0)+(m.carac.looting||0)/100; if(!(b>0)) return n;
+  const b=lootBonus(m); if(!(b>0)) return n;
   const sure=Math.floor(b);
   return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
@@ -124,13 +125,14 @@ function openTreasure(G,m,x,y){
   log(G, `💰 ${m.name} ouvre un treasure : +${TREASURE.itemCount} ${item}`);
 }
 
-/* butin rare (MOB_DROPS) : une pièce de stuff, avec sa chance fixe (kholeChance dans un k hole), sans Butin des mobs ni
-   Pillage. Hasard à part (G.dropRng), tiré seulement pour un mob qui a un butin rare : le reste de la partie ne bouge pas. */
+/* butin rare (MOB_DROPS) : une pièce de stuff (une seule), avec sa chance (kholeChance dans un k hole) multipliée par
+   1 + le bonus de butin du mineur (skill Pillage et stat Butin des mobs : 1 % et +50 % → 1,5 %). Hasard à part
+   (G.dropRng), tiré seulement pour un mob qui a un butin rare : le reste de la partie ne bouge pas. */
 function rareDrop(G,m,o){
   for(const d of MOB_DROPS.items){
     if(d.mob!==o.type) continue;
     const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
-    const chance=G.khole && d.kholeChance!=null ? d.kholeChance : d.chance;
+    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)));
     if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
   }
 }

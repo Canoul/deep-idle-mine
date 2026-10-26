@@ -58,7 +58,8 @@ Modèle d'entrée :
   Chacune a son apparence sur le mineur, se recycle en matériaux (ex. Ceinture : 50 chitine + 5 Steel ingot), et
   apparaît dans le wiki (Mobs → Butin rare).
 - **Décisions** (Geoffrey) : ceinture à 250 x (pas de ceinture en fer) ; deux stats moitié / moitié ; en groupe, un seul
-  joueur reçoit la pièce ; la chance est fixe (le Butin des mobs et le Pillage ne l'augmentent pas).
+  joueur reçoit la pièce ; le **Butin des mobs** multiplie la chance (1 % avec +50 % de butin → 1,5 %), toujours une
+  seule pièce.
 - **État** : ⏳ pas encore en ligne
 
 ## 26/10/2026 — Geoffrey — Modulation cachée (pas encore prête)
