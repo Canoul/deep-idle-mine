@@ -3221,3 +3221,16 @@ Règles (voir CLAUDE.md) :
 - **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
   simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
   (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).
+  ✅ Vérifié le 26/10 (branche `geoffrey/fix-bloc-geant-fin`) : giant-sim et giant-rules verts ; simulate:giant à 15 × 7 :
+  146 / 184 / 221 points par visite (sans stuff / fer / acier), une recharge par visite, pas de blocage.
+
+### Bloc géant : fin de visite affichée trop tôt (Geoffrey) — branche `geoffrey/fix-bloc-geant-fin`, ✅ en ligne le 26/10
+- **Bug** (signalé par Geoffrey) : écran de fin « Cette visite 91 points, total du jour 248 » pour une seule visite.
+  Cause : après un redémarrage du serveur, `view()` et `leave()` ne reprenaient pas les visites d'avant (seuls `info`,
+  `enter` et `pump` appelaient `restore`) ; si la vue arrivait avant, `me` = null et le navigateur concluait à la fin
+  de la visite (points du dernier envoi), alors que le serveur la reprenait et la comptait en entier. Reproduit
+  (scratch : une vue juste après un redémarrage → `me: null`).
+- **Correction** : `sync()` (restore + advance) au début de chaque demande (`server/giant/service.js`) ; la fin d'une
+  visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
+  `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
+- **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.

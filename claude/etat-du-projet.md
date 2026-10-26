@@ -82,7 +82,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   10 % de 1 à 3 cases, oxygène × 2, fontaine 30/s), 30 mineurs au plus. Récompense à minuit pour chaque joueur venu,
   paliers cumulés du score collectif (1 000 → 10 000 : Treasures T1 à T3 + Blueprint parts), à réclamer. Salle calculée
   dans le fil principal du serveur ; visites reprises après un redémarrage (points enregistrés toutes les 10 s).
-  Repères : ≈ 150 points par visite sans stuff, ≈ 190 en fer (`npm run simulate:giant`).
+  Repères (15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer (`npm run simulate:giant`).
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),
   8 anneaux (6 rares à +3 %, Midas et Bouffon épiques à +2 %). Effet pour **tout le groupe** de la session, une fois
   par anneau différent, jamais deux fois le même sur un joueur ; en MI, porteur seul. Sauf l'**Anneau du nerd** (XP) :

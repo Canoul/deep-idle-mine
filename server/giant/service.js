@@ -72,6 +72,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     s.points = round(s.points + add); s.name = p.visit.name;
     day.scores[account] = s;
     day.total = round(day.total + add);
+    p.last = { day: p.visit.day, points: round(add), at: p.visit.startedAt };   // l'écran de fin de visite lit ces points
     p.visit = null;
     await store.putGiantDayAndPlayer(day, account, p);
   }
@@ -90,6 +91,10 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       enterRoom(room.G, entry, { ticks: Math.min(VISIT_TICKS, left), points: p.visit.points || 0 });
     }
   }
+  /* toute demande commence ici : visites d'avant un redémarrage reprises, salle à l'heure (26/10 : la vue de la salle
+     arrivait parfois avant la reprise, et le navigateur croyait la visite finie) */
+  const sync = async now => { await restore(now); await advance(now); };
+
   /* points en cours enregistrés de temps en temps (un redémarrage n'en perd que quelques secondes) */
   async function checkpoint(now){
     if(!room || now - lastCheckpoint < server.checkpointEvery) return;
@@ -131,13 +136,14 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
 
   async function info(me){
     const now = clock();
-    await restore(now); await advance(now);
+    await sync(now);
     const day = dayOf(now), d = await dayWithLive(day), p = await loadPlayer(me.id), m = liveOf(me.id);
     const mine = d.scores[me.id];
     return {
       now, day, endsAt: dayEnd(now), cooldownMs: cooldown, visitMs,
       nextEntry: nextEntry(p.lastEntry, { cooldownMs: cooldown }),
       visit: m && p.visit ? { endsAt: p.visit.endsAt, points: shownPoints(m.points) } : null,
+      lastVisit: !m && p.last ? { day: p.last.day, points: shownPoints(p.last.points) } : null,
       present: room?.G.miners.length ?? 0, max: config.maxPlayers,
       total: shownPoints(d.total), mine: { points: shownPoints(mine?.points ?? 0), visits: mine?.visits ?? 0 },
       tiers: config.tiers.map(t => ({ min: t.min, items: t.items, reached: d.total >= t.min })),
@@ -170,7 +176,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     /* entrer au Bloc géant */
     enter: me => serial(async () => {
       const now = clock();
-      await restore(now); await advance(now);
+      await sync(now);
       if(liveOf(me.id)) fail('in_visit', 409, 'Tu es déjà devant le bloc géant.');
       return game.giantEnter(me.id, async snap => {
         const p = await loadPlayer(me.id);
@@ -194,7 +200,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     /* sortir avant la fin : les points faits comptent, l'entrée reste consommée */
     leave: me => serial(async () => {
       const now = clock();
-      await advance(now);
+      await sync(now);
       const m = liveOf(me.id);
       if(!m) fail('no_visit', 404, 'Tu n\'es pas devant le bloc géant.');
       exitRoom(room.G, me.id);
@@ -203,7 +209,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       return { ok: true };
     }),
 
-    view: me => serial(async () => { await advance(clock()); return viewOf(me); }),
+    view: me => serial(async () => { await sync(clock()); return viewOf(me); }),
 
     /* réclamer les récompenses des jours finis (toutes d'un coup) ; rejouée, elle ne donne rien de plus */
     claim: me => serial(async () => {
@@ -224,7 +230,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     }),
 
     /* appelé en continu par le serveur : la salle avance, les visites finies sont closes, les points enregistrés */
-    pump: () => serial(async () => { const now = clock(); await restore(now); await advance(now); await checkpoint(now); }),
+    pump: () => serial(async () => { const now = clock(); await sync(now); await checkpoint(now); }),
 
     /* pour le service de jeu : une visite en cours compte comme une session */
     busy: async account => {

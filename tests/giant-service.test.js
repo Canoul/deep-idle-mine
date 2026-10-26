@@ -188,3 +188,23 @@ test('routes HTTP : connecté seulement, entrer, voir, sortir, réclamer', async
     assert.equal(r.status, 200); assert.deepEqual(r.data.given, {});
   } finally { server.close(); }
 });
+
+test('redémarrage : la première vue de la salle voit déjà la visite reprise (26/10 : le navigateur croyait la visite finie)', async () => {
+  const s = setup();
+  await s.giant.enter(A);
+  await s.advance(30e3);
+  const giant2 = s.make();                                 // redémarrage, et la vue arrive avant toute autre demande
+  const v = await giant2.view(A);
+  assert.ok(v.me, 'visite toujours en cours');
+  assert.ok(v.me.points > 20);
+});
+
+test('fin de visite : le serveur donne les points de la dernière visite (écran de fin)', async () => {
+  const { giant, advance } = setup();
+  await giant.enter(A);
+  assert.equal((await giant.info(A)).lastVisit, null, 'pendant la visite : rien');
+  await advance(VISIT + 1000);
+  const i = await giant.info(A);
+  assert.equal(i.lastVisit.points, i.mine.points);
+  assert.equal(i.lastVisit.day, i.day);
+});
