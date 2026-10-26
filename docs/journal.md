@@ -70,6 +70,21 @@ Modèle d'entrée :
   toujours posé une nouvelle area sur deux, et pareil dans les tours. Le wiki suit tout seul (texte lu dans la config).
 - **État** : ✅ en ligne le 26/10
 
+## 26/10/2026 — Geoffrey — Butin rare des mobs : 4 nouvelles pièces
+- **Pour le joueur** : quatre pièces qu'on ne peut pas fabriquer, lâchées par les mobs. Chacune vaut autant que la pièce
+  en fer de sa case, avec d'autres stats :
+  - **Lanières en cuir du gobelin** (torse, inhabituel) : vitesse d'attaque +44 %, butin des mobs +22 %. Gobelin : 0,5 %.
+  - **Capuche sombre** (casque, rare) : recul +0,13, critique +9,7 %. Occultiste : 0,5 %.
+  - **Nuage magique** (jambes, rare) : vitesse de marche +1,1. Méphite : 0,5 %.
+  - **Ceinture du Géant** (ceinture, épique) : dégâts +3,1, ténacité +25 %. Minotaure : 1 % (2 % dans un k hole).
+  Chacune a son apparence sur le mineur, se recycle en matériaux (ex. Ceinture : 50 chitine + 5 Steel ingot), et
+  apparaît dans le wiki (Mobs → Butin rare).
+- **Décisions** (Geoffrey) : ceinture à 250 x (pas de ceinture en fer) ; Nuage et Ceinture calés sur les nouveaux prix
+  mesurés du gear score, Lanières et Capuche gardées (sinon vitesse d'attaque +135 % et recul +1,1 bloc) ; deux stats moitié / moitié ; en groupe, un seul
+  joueur reçoit la pièce ; le **Butin des mobs** multiplie la chance (1 % avec +50 % de butin → 1,5 %), toujours une
+  seule pièce.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Modulation cachée (pas encore prête)
 - **Pour le joueur** : la case « Modulation » n'apparaît plus au lancement d'une tour (elle ne donnait encore aucune
   récompense). Le **gear score reste affiché** : GS de chaque pièce, GS total dans l'onglet Stuff, GS de chaque joueur

@@ -6,7 +6,7 @@
    l'inventaire. Le blueprint est consommé et le nom de la recette rejoint inv.unlocked : débloquée pour toujours.
    Les deux changent ensemble (même inventaire, une seule écriture) : rien ne se perd, rien ne se duplique. */
 import { RECIPES } from '../recipes.js';
-import { RECYCLE } from '../config.js';
+import { RECYCLE, STUFF } from '../config.js';
 import { countOf, removeItem, addItem, takePiece, CRAFT_MEMORY } from './inventory.js';
 import { isStuff } from './piece.js';
 
@@ -47,14 +47,18 @@ export function craft(inv, item, opId){
 }
 
 /* ---------- recycler (25/10/2026) ----------
-   Une pièce de stuff fabriquée est détruite et rend RECYCLE.share de sa recette, arrondi vers le bas. */
+   Une pièce de stuff fabriquée est détruite et rend RECYCLE.share de sa recette, arrondi vers le bas. Une pièce sans
+   recette mais avec un `recycle` dans STUFF.items (butin des mobs, 26/10/2026) rend ces quantités fixes. */
+const fixedRefund = item => Object.hasOwn(STUFF.items, item) ? STUFF.items[item].recycle ?? null : null;
 
-/* l'objet se recycle-t-il ? du stuff qui a une recette de craft (pas un objet du four, ni un anneau, ni une rune) */
-export const recyclable = item => isStuff(item) && !!recipeOf(item);
+/* l'objet se recycle-t-il ? du stuff qui a une recette de craft, ou des quantités fixes (pas un objet du four, ni un
+   anneau, ni une rune) */
+export const recyclable = item => isStuff(item) && (!!recipeOf(item) || !!fixedRefund(item));
 /* ce que rend le recyclage de cet objet : { ingrédient: quantité } (les ingrédients qui rendraient 0 sont absents) */
 export function recycleRefund(item){
   if(!recyclable(item)) return {};
   const r = recipeOf(item);
+  if(!r) return { ...fixedRefund(item) };
   /* + 1e-9 : un produit juste à l'entier (ex. 90 × 0,7 = 62,999… en virgule flottante) ne perd pas une unité */
   return Object.fromEntries(Object.entries(r.cost).map(([k, n]) => [k, Math.floor(n * RECYCLE.share / r.qty + 1e-9)]).filter(([, n]) => n > 0));
 }

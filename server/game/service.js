@@ -73,7 +73,7 @@ const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nom
 const RESEARCH_ERRORS = { bad_tier: 'Tier de recherche inconnu.', tier_locked: 'Apprends d\'abord toutes les recettes des tiers inférieurs.', nothing_left: 'Tu as appris tous les blueprints de ce tier.',
                           not_enough: 'Il te faut plus de Blueprint parts.', bad_item: 'Seul un blueprint se recycle.',
                           not_owned: 'Tu n\'as pas ce blueprint.', bad_request: 'Demande invalide.' };
-const RECYCLE_ERRORS = { not_owned: 'Cette pièce n\'est plus dans ton inventaire.', not_recyclable: 'Seul le stuff fabriqué avec une recette se recycle.',
+const RECYCLE_ERRORS = { not_owned: 'Cette pièce n\'est plus dans ton inventaire.', not_recyclable: 'Cette pièce ne se recycle pas.',
                          in_set: 'Cette pièce est dans un set : retire-la du set (ou supprime le set) avant de la recycler.', bad_request: 'Demande invalide.' };
 const ARRANGE_ERRORS = { not_owned: 'Cet objet n\'est plus à cette place : l\'inventaire a été rechargé.', bad_request: 'Demande invalide.' };
 /* ce que le navigateur voit de l'inventaire : les slots, et les recettes débloquées par blueprint */

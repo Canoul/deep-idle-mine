@@ -3372,6 +3372,23 @@ Règles (voir CLAUDE.md) :
   `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement. ✅ Après merge de main (9cb496c) : lobby +
   giant-rules + giant-service ✅ 35.
 
+## 26/10/2026 — Butin rare des mobs : 4 pièces de stuff (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` : 4 entrées `STUFF.items` (stats en x = pièce en fer de la case via `UPGRADE.prices`,
+  ceinture 250 x ; champ `recycle` = rendu fixe), `RARITY.items`, `UPGRADE.tiers[2]`, `TEXTURES`, nouveau `MOB_DROPS`
+  (après `DUNGEON` : mob, item, chance, kholeChance). `src/sim/actions.js` : `rareDrop` appelé à la fin de `killMob`
+  (tous les types), hasard `G.dropRng = mulberry32(seed ^ MOB_DROPS.salt)` créé au premier mob qui a un butin rare,
+  `G.khole` → kholeChance, `collect` d'1 pièce (poids 0), sans `lootOf` ; chance × (1 + `lootBonus(m)`, même bonus que `lootOf` : skill loot +
+  carac.looting/100), décision de Geoffrey le 26/10 (d'abord chance fixe). `src/meta/craft.js` : `recyclable` /
+  `recycleRefund` acceptent un `recycle` fixe quand il n'y a pas de recette. Skins `src/skins.js` + dessins
+  `scripts/gen_textures.py` (icônes straps_goblin, hood_dark, cloud_magic, belt_giant ; calques skins/goblin_straps,
+  dark_hood, magic_cloud, giant_belt). Wiki : `sourcesOf`, `mobDropRows`, tableau `#w-mob-drops`.
+- **Tests** : `tests/mob-drops.test.js` ✅ 6 (config, x, fréquences sur 40 000 morts, hasard à part, recyclage
+  idempotent, wiki) ; `tests/anticheat/recycle.test.js` ✅ (rafale sur la Ceinture) ; rareté mise à jour ✅ ; 22 fichiers
+  liés ✅ sauf `rune.test.js` « chaque pièce qu'on peut runer a un tier » ❌ **déjà sur main** (Lampe à incandescence
+  sans tier, branche geoffrey/lampe-bp). Simulation 5 sessions ✅ 0 bloquée ; même seed = mêmes chiffres qu'avant.
+- **Points fragiles** : une pièce lâchée suit le sac du mineur, comme le reste du butin. En tour,
+  les mobs n'ont pas ces types : pas de drop. Le minotaure de l'arène du k hole compte comme « k hole » (G.khole).
+
 ---
 
 ## 26/10/2026 — Gear score aux prix mesurés (branche `geoffrey/gs-en-x`) — ✅ en ligne le 26/10
@@ -3387,6 +3404,12 @@ Règles (voir CLAUDE.md) :
   Plastron de l'équilibre 1 335 → 1 426 (sa ténacité +3 % compte : 15 x), Lampe à incandescence 0 → 81.
 - **Points fragiles** : prix de `UPGRADE.gs` au bruit près (marges ci-dessus, mine classique seulement ; en tour, portée et
   recul valent sans doute plus). `TOWER.modulation.gsMax` (2000) choisi avec l'ancien barème, pas retouché.
+
+## 26/10/2026 — Butin rare des mobs : recalage sur les prix mesurés (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
+- **Quoi** : après le merge de `geoffrey/gs-en-x` (GS aux prix mesurés), Nuage `speed` 1,4 → 1,1
+  (263 x = Jambes en fer) et Ceinture `tenacity` 12,6 → 25 (250 x) ; Lanières et Capuche inchangées (tableau des runes :
+  en prix mesurés, vitesse d'attaque +135 % et recul +1,1). GS : Lanières 306, Capuche 142 (sous le fer en prix mesurés).
+  Test x réécrit en conséquence ✅.
 
 ## 26/10/2026 — Golem de sperme : mob 2 × 2 qui creuse (branche `geoffrey/golem`) — ✅ en ligne le 26/10
 - **Quoi** : `src/sim/golem.js` (nouveau) : cases, `breakable`, `smash` (bloc perdu, `oreRemoved`, `updateLight`),
