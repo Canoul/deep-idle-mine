@@ -3346,4 +3346,19 @@ Règles (voir CLAUDE.md) :
   textes `GAME_DESIGN.md` et `wiki.html`.
 - **Tests** : ⚠️ mis en ligne **sans relancer les tests** (demande de Geoffrey). À vérifier : `node --test
   tests/giant-*.test.js tests/anticheat/giant*.test.js` (un test peut lire un `min` en dur).
+  Vérifié après la mise en ligne (26/10) : 3 tests lisaient les anciens paliers en dur (anticheat/giant, giant-rules,
+  giant-service) ; scores des tests doublés (branche `geoffrey/tests-paliers-bloc-geant`) → giant-*, anticheat/giant 37/37 ✅.
+  Le jeu lui-même n'était pas en cause.
+
+---
+
+## 26/10/2026 — Skin de la Cape de Naingui : calques derrière le corps (branche `geoffrey/skin-cape`) — ✅ en ligne le 26/10
+- **Quoi** : `src/skins.js` : case `cape` ajoutée à `SKIN.layers` (entre torse et casque : le col) ; nouveau `SKIN.back`
+  (calques dessinés derrière le corps : le dos de la cape) ; `backPieces(look)`, `auraPieces(look)` (l'aura d'une case se
+  dessine sur son calque de dos s'il existe, sinon sur celui de devant). `src/render/miner-sprite.js` et
+  `src/render/portrait.js` : aura → dos → corps → devant. Textures `skins/naingui_cape(_front)` dans
+  `scripts/gen_textures.py` (régénéré : seulement ces deux PNG nouveaux). `src/meta/aura.js` lit `SKIN.layers` : la
+  case cape a son aura sans autre changement.
+- **Tests** : `tests/skins.test.js` +1 (ordre des calques, dos, aura) ; skins, aura 19/19 ✅. Aperçu agrandi vérifié
+  (corps seul, avec cape, avec armure en fer). ⚠️ Pas regardé dans le navigateur (mine et portrait).
 

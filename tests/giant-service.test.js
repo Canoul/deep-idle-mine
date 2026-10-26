@@ -107,7 +107,7 @@ test('récompense : jour fini, venu au moins une fois, paliers additionnés, une
   await giant.enter(A);
   await advance(VISIT + 1000);
   const d = await store.getGiantDay('2026-10-26');
-  d.total = 7600;                                          // score collectif du jour (le serveur l'a compté)
+  d.total = 15200;                                          // score collectif du jour (le serveur l'a compté)
   await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
   assert.deepEqual((await giant.info(A)).rewards, [], 'pas avant la fin de la session');
   clock.now = dayEnd(clock.now) + VISIT + 1;

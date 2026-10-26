@@ -7,7 +7,7 @@ export const SKIN = {
   body: 'skins/body',                       // le mineur, sans équipement (tenue de base)
 
   /* armure : un calque par case, dessiné par-dessus le corps dans cet ordre (le casque en dernier) */
-  layers: ['pieds', 'jambes', 'ceinture', 'torse', 'casque'],
+  layers: ['pieds', 'jambes', 'ceinture', 'torse', 'cape', 'casque'],
   armor: {
     'Casque en chitine':   'skins/chitin_helmet',      // chitine : rouge
     'Plastron en chitine': 'skins/chitin_chest',
@@ -23,6 +23,11 @@ export const SKIN = {
     'Bottes en acier':     'skins/steel_boots',
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
+    'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
+  },
+  /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
+  back: {
+    'Cape de Naingui':     'skins/naingui_cape',       // tissu sombre violet, jusqu'aux chevilles
   },
 
   /* outil sorti pour miner (et frapper) : la pioche équipée, sinon la pioche en bois de base */
@@ -42,12 +47,17 @@ export const SKIN = {
 };
 
 /* toutes les textures de skins, à charger avec les autres */
-export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword)];
+export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.back), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword)];
 
 /* calques à dessiner pour un mineur d'après son équipement (look : { case: objet }) */
 export const armorLayers = look => SKIN.layers.map(slot => SKIN.armor[look?.[slot]]).filter(Boolean);
 /* les mêmes calques avec leur case : [[case, texture]…] (l'aura d'une pièce se lit par case, src/meta/aura.js) */
 export const armorPieces = look => SKIN.layers.filter(slot => SKIN.armor[look?.[slot]]).map(slot => [slot, SKIN.armor[look[slot]]]);
+/* calques derrière le corps : [[case, texture]…] ; une pièce qui en a un porte son aura sur ce calque (le plus grand) */
+export const backPieces = look => SKIN.layers.filter(slot => SKIN.back[look?.[slot]]).map(slot => [slot, SKIN.back[look[slot]]]);
+/* les calques qui portent l'aura de leur case : le dos s'il y en a un, sinon le calque de devant */
+export const auraPieces = look => { const back = backPieces(look), has = new Set(back.map(([s]) => s));
+  return [...back, ...armorPieces(look).filter(([s]) => !has.has(s))]; };
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);

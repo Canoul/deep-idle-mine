@@ -931,6 +931,21 @@ def main():
     rect(sk_belt, 5, 10, 6, 1, hexc('#4f7d32'))
     rect(sk_belt, 7, 10, 2, 1, hexc('#ffd23f'))
     tex['skins/goblin_belt'] = sk_belt
+    # cape de Naingui (26/10) : deux calques. Le dos, dessiné DERRIÈRE le corps (regard à droite : elle dépasse à gauche
+    # et entre les jambes), s'évase jusqu'aux chevilles ; devant, le col sur les épaules et le fermoir doré
+    sk_cape = blank()
+    for y in range(7, 15):
+        x0 = 3 if y < 9 else 2
+        rect(sk_cape, x0, y, 11 - x0, 1, hexc('#4a2a6b'))
+        rect(sk_cape, x0, y, 1, 1, hexc('#6a3d92'))            # pli éclairé du bord
+    rect(sk_cape, 2, 14, 9, 1, hexc('#2b1b3d'))                 # ourlet
+    rect(sk_cape, 3, 12, 1, 2, hexc('#3a2455'))                 # pli
+    tex['skins/naingui_cape'] = sk_cape
+    sk_cape_f = blank()
+    rect(sk_cape_f, 4, 7, 7, 1, hexc('#6a3d92'))                # col
+    rect(sk_cape_f, 3, 7, 1, 2, hexc('#4a2a6b'))
+    rect(sk_cape_f, 9, 7, 2, 1, hexc('#ffd23f'))                # fermoir
+    tex['skins/naingui_cape_front'] = sk_cape_f
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):

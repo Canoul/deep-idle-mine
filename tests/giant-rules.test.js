@@ -31,11 +31,11 @@ test('récompense : les paliers s\'additionnent', () => {
   assert.ok(tierItemsKnown(), 'les objets des paliers existent');
   assert.deepEqual(rewardFor(999), {});
   assert.deepEqual(rewardFor(1000), { 'Treasure T1': 1 });
-  assert.deepEqual(rewardFor(2500), { 'Treasure T1': 2, 'Blueprint parts': 15 });
-  assert.deepEqual(rewardFor(5000), { 'Treasure T1': 2, 'Blueprint parts': 15, 'Treasure T2': 1 });
-  assert.deepEqual(rewardFor(9999), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2 });
+  assert.deepEqual(rewardFor(5000), { 'Treasure T1': 2, 'Blueprint parts': 15 });
+  assert.deepEqual(rewardFor(10000), { 'Treasure T1': 2, 'Blueprint parts': 15, 'Treasure T2': 1 });
+  assert.deepEqual(rewardFor(19999), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2 });
   assert.deepEqual(rewardFor(1e9), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, 'Treasure T3': 1 });
-  assert.equal(tiersReached(7500).length, 4);
+  assert.equal(tiersReached(15000).length, 4);
   for(const bad of [NaN, -1, Infinity * -1, undefined]) assert.deepEqual(rewardFor(bad), {});
 });
 
