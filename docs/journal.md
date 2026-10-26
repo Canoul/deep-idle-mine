@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Lampe à incandescence par blueprint, recherche tier 3 à 200 parts
+- **Pour le joueur** : la **Lampe à incandescence** ne se fabrique plus de base : il faut d'abord trouver son
+  **blueprint** dans un **Treasure T2** (2 %, comme les autres plans du T2) ou l'obtenir à la **table de recherche
+  (tier 2)**. La recherche d'un blueprint du **tier 3** coûte **200 parts** (avant 150).
+- **Décisions** : la lampe devient la 4e recette du tier 2 : il faut l'apprendre aussi pour ouvrir la recherche tier 3.
+  Les lampes déjà fabriquées sont gardées.
+- **À suivre** : la lampe n'a pas de tier de rune (valeur propre) ; la passer en T2 (250 x) comme les autres plans du T2 ?
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Joueur absent mais prêt : le chef peut toujours le lancer
 - **Pour le joueur** : un membre qui ferme l'onglet du jeu est toujours affiché « absent », mais s'il était **prêt** ou
   **prêt tout le temps**, il n'est plus sorti du groupe au bout de 5 min : le chef peut lancer la session avec lui.

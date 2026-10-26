@@ -3167,3 +3167,13 @@ Règles (voir CLAUDE.md) :
   social + game-service ✅ 66/66.
 - **Points fragiles** : à chaque redémarrage du serveur (mise à jour de `main`), `seen` repart de zéro : pendant
   ~4 s, Online et la liste d'amis ne montrent que les joueurs en session.
+
+### Lampe à incandescence par BP du T2, recherche T3 à 200 parts (Geoffrey) — branche `geoffrey/bp-lampe`, ✅ en ligne le 26/10
+- **Quoi** : `src/recipes.js` : `unlock: 'Lampe à incandescence BP'` (avant `null`) ; `src/config.js` : BP ajouté au
+  Treasure T2 (famille blueprint, 0,02 ; total BP du T2 6 % → 8 %), rareté `rare` ; `RESEARCH.tiers[2].cost` 150 → 200.
+  La table de recherche lit les plans du Treasure T2 : le BP y entre tout seul, et le tier 3 demande maintenant aussi
+  la recette de la lampe (`tierUnlocked`).
+- **Tests** : lamp (verrouillée sans BP, apprise puis craftée), tier2 (liste et seuils des BP, fréquence 8 %, recherche),
+  research (coûts, tier 3 à 200), rarity ✅ ; wiki, craft, loot, recycle, stuff ✅ ; `npm run test:anticheat` ✅ 91/91.
+- **Points fragiles** : un joueur qui avait déjà tout le T2 appris perd l'accès à la recherche tier 3 jusqu'à ce qu'il
+  apprenne la lampe. La lampe n'est pas dans `UPGRADE.tiers` (ligne de rune sur sa valeur propre).

@@ -228,6 +228,7 @@ export const LOOT = {
         { item:'Gants tactique BP',     chance:0.02 },
         { item:'Gants d\'ouvrier BP',   chance:0.02 },
         { item:'Cape de Naingui BP',    chance:0.02 },
+        { item:'Lampe à incandescence BP', chance:0.02 },   // 26/10/2026 (Geoffrey) : la lampe n'est plus craftable de base
       ]},
       { family:'gem', items:gems(0.015) },
     ],
@@ -288,9 +289,9 @@ export const RESEARCH = {
   tiers: [
     { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:15, max:30 } },   // 25/10 au soir : avant 30 à 60
     { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
-    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 (même prix). weights : poids d'un blueprint dans le
+    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 ; recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
-    { tier:3, label:'Tier 3', from:'Treasure T3', cost:150, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -734,7 +735,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
-    'Lampe à incandescence':'rare',   // 25/10 (Geoffrey)
+    'Lampe à incandescence':'rare', 'Lampe à incandescence BP':'rare',   // 25/10 (Geoffrey) ; BP le 26/10
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',

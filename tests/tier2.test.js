@@ -42,7 +42,7 @@ test('Treasure T2 : toujours Or 20-40, Peau de gobelin 3-10, Blueprint parts 8-1
 });
 
 test('Treasure T2 : blueprints à 2 % chacun, gemmes à 1,5 % chacune, un seul tirage par famille', () => {
-  assert.deepEqual(T2BP, ['Gants tactique BP', 'Gants d\'ouvrier BP', 'Cape de Naingui BP']);
+  assert.deepEqual(T2BP, ['Gants tactique BP', 'Gants d\'ouvrier BP', 'Cape de Naingui BP', 'Lampe à incandescence BP']);   // lampe : 26/10
   const bp = r => Object.keys(rollLoot(T2, seq(0, 0, 0, r, 0.99))).filter(k => k.endsWith(' BP'));
   assert.deepEqual(bp(0.0), ['Gants tactique BP']);
   assert.deepEqual(bp(0.0199), ['Gants tactique BP']);
@@ -50,7 +50,9 @@ test('Treasure T2 : blueprints à 2 % chacun, gemmes à 1,5 % chacune, un seul t
   assert.deepEqual(bp(0.0399), ['Gants d\'ouvrier BP']);
   assert.deepEqual(bp(0.04), ['Cape de Naingui BP']);
   assert.deepEqual(bp(0.0599), ['Cape de Naingui BP']);
-  assert.deepEqual(bp(0.06), []);
+  assert.deepEqual(bp(0.06), ['Lampe à incandescence BP']);
+  assert.deepEqual(bp(0.0799), ['Lampe à incandescence BP']);
+  assert.deepEqual(bp(0.08), []);
   const gem = r => Object.keys(rollLoot(T2, seq(0, 0, 0, 0.99, r))).filter(k => k.endsWith('inférieur'));
   assert.deepEqual(gem(0.0), ['Rubis inférieur']);
   assert.deepEqual(gem(0.0149), ['Rubis inférieur']);
@@ -69,7 +71,7 @@ test('Treasure T2 : blueprints à 2 % chacun, gemmes à 1,5 % chacune, un seul t
 test('Treasure T2 : une fréquence réelle proche de 2 % (BP) et 1,5 % (gemme)', () => {
   const rng = mulberry32(99); let bp = 0, gem = 0; const N = 40000;
   for(let k = 0; k < N; k++){ const l = rollLoot(T2, rng); if(Object.keys(l).some(x => x.endsWith(' BP'))) bp++; if(Object.keys(l).some(x => x.endsWith('inférieur'))) gem++; }
-  assert.ok(Math.abs(bp / N - 0.06) < 0.01, `BP ${bp / N}`);         // 3 blueprints × 2 %
+  assert.ok(Math.abs(bp / N - 0.08) < 0.01, `BP ${bp / N}`);         // 4 blueprints × 2 % (lampe : 26/10)
   assert.ok(Math.abs(gem / N - 0.045) < 0.01, `gemmes ${gem / N}`);  // 3 gemmes × 1,5 %
 });
 
@@ -249,7 +251,7 @@ test('recherche T2 : ouverte quand les 7 recettes du tier 1 sont apprises (150 p
   const r = research(inv, 2, id(), fixed(0));
   assert.deepEqual(r, { ok:true, item:'Gants tactique BP', repeated:false });
   assert.equal(countOf(inv, PARTS), 250, '150 parts dépensées');
-  assert.equal(research(inv, 2, id(), fixed(0.9999)).item, 'Cape de Naingui BP');
+  assert.equal(research(inv, 2, id(), fixed(0.9999)).item, 'Lampe à incandescence BP');
   assert.equal(countOf(inv, PARTS), 100);
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'not_enough', '100 < 150');
   assert.equal(countOf(inv, PARTS), 100);
@@ -264,7 +266,7 @@ test('recherche T2 : le tier 1 ne donne jamais de BP du T2, et inversement', () 
   assert.equal(research(inv, 1, id(), Math.random).error, 'nothing_left', 'tier 1 entièrement appris');
 });
 test('recherche T2 : tout appris → nothing_left', () => {
-  const inv = learnedT1(); addAll(inv, { [PARTS]:1000, 'Gants tactique BP':1, 'Gants d\'ouvrier BP':1, 'Cape de Naingui BP':1 });
+  const inv = learnedT1(); addAll(inv, { [PARTS]:1000, 'Gants tactique BP':1, 'Gants d\'ouvrier BP':1, 'Cape de Naingui BP':1, 'Lampe à incandescence BP':1 });
   for(const bp of T2BP) learn(inv, bp, id());
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'nothing_left');
   assert.equal(countOf(inv, PARTS), 1000);

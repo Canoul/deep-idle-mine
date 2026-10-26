@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 26/10/2026 (membre absent mais prêt gardé dans le groupe).*
+*Dernière mise à jour : 26/10/2026 (Lampe à incandescence par blueprint T2, recherche T3 à 200 parts ; membre absent mais prêt gardé dans le groupe).*
 
 ---
 
@@ -122,7 +122,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Casque, jambes et bottes en acier ≈ 400 x** (25/10, Geoffrey) : oxygène +100, montée +1,6, marche +1,67 (ancien : +69,
   +1,08, +1,08, soit 276 / 270 / 259 x, à peine 3 % au-dessus du fer). Valeur en x = `itemValue` (`UPGRADE.worth`).
 - **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
-  Table de recherche **tier 3** (en ligne le 23/10) : 150 parts, plans du T3, plan
+  Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
@@ -193,7 +193,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts ; Équiper remet tout d'un coup
   (pièce introuvable = case vide), hors session ; garde-fou 20 sets.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
-  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
+  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
   pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →
