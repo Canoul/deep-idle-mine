@@ -24,7 +24,7 @@ const bug = id => ({ id, type:'bestiole', hp:1, x:9, y:2 });
 test('drop : taux par spécialisation (bloc, échelle, mob)', () => {
   assert.deepEqual(GLYPHS.drop, { mineur:{ event:'block', chance:0.0000383 }, logisticien:{ event:'ladder', chance:0.000335 },
                                   barbare:{ event:'kill', chance:0.00101 } });
-  /* chaque glyphe ≈ 3 % par session à 3 (événements mesurés : 795 blocs, 91 échelles, 30 mobs par mineur) */
+  /* un glyphe (n'importe lequel) ≈ 3 % par session à 3 (événements mesurés : 795 blocs, 91 échelles, 30 mobs par mineur) */
   for(const [tree, E] of [['mineur', 795], ['logisticien', 91], ['barbare', 30]]){
     const p = 1 - (1 - GLYPHS.drop[tree].chance) ** E;
     assert.ok(Math.abs(p - 0.03) < 0.0005, `${tree} : ${(p * 100).toFixed(3)} %`);
@@ -83,11 +83,11 @@ test('drop : versé à la fin dans SA part (pas dans le coffre) ; perdu s\'il qu
   assert.equal(G.summary.chest['Glyphe Ruée'], undefined, 'pas dans le coffre commun');
 });
 
-test('drop : la chance est par glyphe manquant (3 manquants = 3 fois la chance, 1 manquant = la chance seule)', () => {
+test('drop : une seule chance pour tous les glyphes manquants (même chance avec 3 ou 1 manquant)', () => {
   const c = GLYPHS.drop.mineur.chance;
   const at = (owned, r) => { const { G, m } = scene('mineur', owned); G.glyphRng = () => r; mineBlock(G, m, 3, 2); return m.glyphFound?.length ?? 0; };
-  assert.equal(at([], c * 3 - 1e-9), 1, 'aucun possédé : 3 × chance');
-  assert.equal(at([], c * 3 + 1e-9), 0);
-  assert.equal(at(['Glyphe Ruée', 'Glyphe Second souffle'], c - 1e-9), 1, 'un seul manquant : chance seule');
+  assert.equal(at([], c - 1e-9), 1);
+  assert.equal(at([], c + 1e-9), 0, 'pas × 3 avec 3 manquants');
+  assert.equal(at(['Glyphe Ruée', 'Glyphe Second souffle'], c - 1e-9), 1);
   assert.equal(at(['Glyphe Ruée', 'Glyphe Second souffle'], c + 1e-9), 0);
 });
