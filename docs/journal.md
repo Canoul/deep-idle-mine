@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Admin : retirer un objet à un joueur
+- **Pour le joueur** : rien. Nouvel outil sur le serveur : `take-item.js` retire un objet à un joueur sans redémarrer
+  le jeu (l'inverse de `give-item.js`). Un glyphe posé sur un skill est retiré de sa case.
+- **À suivre** : retirer les glyphes en trop (Infernatiwar : Braum, LeTaz : Échelle de 2, Nbrick : Ruée).
+- **État** : 🧪 sur la branche `geoffrey/admin-retirer` (pas en ligne)
+
+
 ## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
 - **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
   s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points

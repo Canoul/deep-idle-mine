@@ -3,6 +3,7 @@
      curl -X POST http://127.0.0.1:8000/api/admin/give -H "Authorization: Bearer CLÉ" \
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
+   POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
 
@@ -36,7 +37,7 @@ export function adminAllowed(req, token){
   return !!m && sameToken(m[1], token);
 }
 
-/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminJudgment) */
+/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) */
 export function adminRoutes({ accounts, game, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   return {
@@ -48,6 +49,16 @@ export function adminRoutes({ accounts, game, token }){
       if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
       const r = await game.adminGive(acc.id, item, qty, quality);
       console.log(`Admin : +${r.qty} ${r.item}${r.quality ? ` R${r.quality}` : ''} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
+      return { account: acc.name, ...r };
+    },
+    'POST /api/admin/take': async ctx => {
+      guard(ctx);
+      const { name } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;
+      if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', 'name : le pseudo du joueur.');
+      const acc = await accounts.findAccountByName(nameKey(name));
+      if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
+      const r = await game.adminTake(acc.id, ctx.body?.item, qty);
+      console.log(`Admin : -${r.qty} ${r.item} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}${r.fromSkill ? ' (retiré de son skill)' : ''}`);
       return { account: acc.name, ...r };
     },
     'POST /api/admin/khole': async ctx => {

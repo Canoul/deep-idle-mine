@@ -3234,3 +3234,14 @@ Règles (voir CLAUDE.md) :
   visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
   `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
 - **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
+
+### Admin : retirer un objet (Geoffrey) — branche `geoffrey/admin-retirer`, 🧪 pas en ligne
+- **Quoi** : `POST /api/admin/take {name, item, qty}` (`server/admin/routes.js`, même garde que give) → `adminTake`
+  (`server/game/service.js`), outil `scripts/take-item.js`. Verrous inv puis skills (même ordre que glyph_pose).
+  D'abord l'inventaire ; un glyphe posé (`st.glyphs[nœud]`) compte pour 1 et est retiré de la case s'il en manque.
+  Tout ou rien (409 not_owned sinon). Stuff non empilable : retire les derniers exemplaires de l'inventaire (jamais une
+  pièce portée).
+- **Points fragiles** : un glyphe retiré de sa case pendant une session reste actif jusqu'à la fin de cette session
+  (skills figés au lancement), comme pour un retrait par le joueur.
+- **Tests** : `tests/admin-take.test.js` ✅ 3 (inventaire, tout ou rien, glyphe posé, garde-fous, clé/relais) ;
+  admin ✅ 7.

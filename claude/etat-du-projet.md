@@ -75,6 +75,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Tester sans tour : `node scripts/give-admin.js --name X --chests 1` (un trésor de chaque qualité).
   - Régler une jauge en ligne (25/10) : `sudo node scripts/set-judgment.js --side demon --count 175` sur le VPS (route
     `/api/admin/judgment`, même clé que give-item, sans redémarrage).
+  - Retirer un objet (26/10) : `sudo node scripts/take-item.js --name X --item "Glyphe Ruée"` (route `/api/admin/take` ;
+    inventaire puis glyphe posé, tout ou rien, sans redémarrage).
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes
