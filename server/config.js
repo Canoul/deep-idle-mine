@@ -102,6 +102,10 @@ export const SCRYPT = { N: 16384, r: 8, p: 1, keyLen: 64, saltLen: 16 };
 
 /* Groupes (server/party/) : salle d'attente en mémoire avant une session commune. */
 /* Amis (onglet Social, server/social/service.js) */
+/* Bloc géant (server/giant/service.js) : points des visites en cours enregistrés toutes les checkpointEvery ms (un
+   redémarrage du serveur n'en perd que ce qui a été fait depuis) */
+export const GIANT_SERVER = { checkpointEvery: 10e3 };
+
 export const SOCIAL_SERVER = {
   onlineFor: 45e3,                  // en ligne : a donné signe de vie (onglet ouvert, même caché) depuis ce temps
   maxFriends: 100,                  // amis par compte
