@@ -70,9 +70,9 @@ test('identification (22/10) : seulement la qualité, aucune ligne de stats ; la
 test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus total du palier', () => {
   const p = { item:PICK, uid:1, q:4, lines:[{ stat:'mineSpeed', pct:30 }, { stat:'fortune', pct:33 }] };   // T1 : 30 x et 33 x
   assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.215, fortune:0.7 });
-  assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.23);         // 0,2 × 1,15 (paliers 5 / 10 / 15 %, 25/10)
-  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 15.4);    // 5 + 9 × 1,15 = 15,35 → 15,4
-  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 32);   // 30 × 1,05 = 31,5 → 32
+  assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.218);        // 0,2 × 1,09 (3 % par rang, 26/10)
+  assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 14.8);    // 5 + 9 × 1,09 = 14,81 → 14,8
+  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 31);   // 30 × 1,03 = 30,9 → 31
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.2 }, 'un simple nom d\'objet : comme avant');
   assert.equal(statsOf([p]).mineSpeed.total, 1.22);
   /* affichage : l'effet de l'objet, puis chaque ligne tirée à part, même sur la même stat (22/10) */
@@ -80,7 +80,7 @@ test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus tot
   const twice = { item:PICK, uid:1, q:4, lines:[{ stat:'fortune', pct:33 }, { stat:'fortune', pct:25 }] };   // 33 x et 25 x
   assert.deepEqual(statLines(twice), ['Vitesse de minage +0,2', 'Fortune +0,7 %', 'Fortune +0,5 %']);
   assert.equal(pieceBonus(twice).stats.fortune, 1.2, 'en session : la somme');
-  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,23', 'Fortune +0,8 %', 'Fortune +0,6 %'], 'niveau compris');
+  assert.deepEqual(statLines({ ...twice, plus:3 }), ['Vitesse de minage +0,218', 'Fortune +0,8 %', 'Fortune +0,5 %'], 'niveau compris');
 });
 
 test('nom affiché : « Excellent : Pioche en pierre +2 », couleur de la qualité ; non identifiée : le nom seul', () => {
@@ -137,13 +137,14 @@ test('identifier : une demande renvoyée ne tire pas une seconde fois et ne sacr
 
 /* ---------- améliorer ---------- */
 
-test('améliorer : coût du palier, +1 à +3, puis maximum', () => {
-  const { inv, uids:[a] } = setup(1, 100, 15);
-  for(const lv of [1, 2, 3]){
+test('améliorer : coût du palier, +1 à +9, puis maximum', () => {
+  const { inv, uids:[a] } = setup(1, 256, 129);                       // 26/10 : total des 9 paliers
+  assert.equal(UPGRADE.levels.length, 9);
+  for(let lv = 1; lv <= 9; lv++){
     const r = upgrade(inv, { uid:a, opId:id() }, fixed(0));
     assert.equal(r.success, true); assert.equal(r.piece.plus, lv);
   }
-  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // plumes 20 + 30 + 50, cristaux 3 + 5 + 7
+  assert.equal(countOf(inv, FEATHER), 0); assert.equal(countOf(inv, STONE), 0);   // plumes 6+9+14+18+24+32+40+50+63, cristaux 3+5+7+9+12+16+20+25+32
   assert.equal(nextLevel(inv.slots.find(s => s?.uid === a)), null);
   assert.equal(upgrade(inv, { uid:a, opId:id() }, fixed(0)).error, 'maxed');
 });
@@ -153,7 +154,7 @@ test('améliorer : un échec ne coûte que les matériaux ; sans matériaux, ref
   upgrade(inv, { uid:a, opId:id() }, fixed(0));                       // +1 (100 %)
   const r = upgrade(inv, { uid:a, opId:id() }, fixed(0.97));          // +2 : 95 % → raté
   assert.equal(r.success, false); assert.equal(r.piece.plus, 1);
-  assert.equal(countOf(inv, FEATHER), 0);
+  assert.equal(countOf(inv, FEATHER), 50 - 6 - 9); assert.equal(countOf(inv, STONE), 0);   // l'échec a coûté le palier +2
   assert.equal(upgrade(inv, { uid:a, opId:id() }, fixed(0)).error, 'not_enough');
   assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);
 });
@@ -163,7 +164,7 @@ test('améliorer : une demande renvoyée ne consomme pas deux fois et redonne le
   upgrade(inv, op, fixed(0));
   const again = upgrade(inv, op, fixed(0));
   assert.equal(again.repeated, true); assert.equal(again.piece.plus, 1);
-  assert.equal(countOf(inv, FEATHER), 20);
+  assert.equal(countOf(inv, FEATHER), 40 - UPGRADE.levels[0].cost[FEATHER]);
 });
 
 /* ---------- sauvegarde, stuff, session ---------- */
@@ -188,9 +189,9 @@ test('session : les caractéristiques viennent des pièces portées (lignes et n
   const piece = { item:PICK, uid:5, q:5, s:UPGRADE.scale, lines:[{ stat:'mineSpeedPct', pct:20 }, { stat:'crit', pct:25 }], plus:1 }   // 2 % et 2,5 %
   const rec = { players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } }, gear:{ A:{ pioche:piece } } };
   const [spec] = minerSpecs(rec);
-  assert.equal(spec.carac.mineSpeed, 1.21);                               // 1 + 0,2 × 1,05, arrondi à 2 décimales
-  assert.equal(spec.carac.mineSpeedPct, 1.1);                             // T1 : 20 x ÷ 20 = 1 × 1,05 = 1,05 → 1,1
-  assert.equal(spec.carac.crit, 1.9);                                     // 25 x × 7 % = 1,75 → 1,8, × 1,05 → 1,9
+  assert.equal(spec.carac.mineSpeed, 1.21);                               // 1 + 0,2 × 1,03 = 1,206, arrondi à 2 décimales
+  assert.equal(spec.carac.mineSpeedPct, 1);                               // T1 : 20 x ÷ 20 = 1 × 1,03 = 1,03 → 1
+  assert.equal(spec.carac.crit, 1.9);                                     // 25 x × 7 % = 1,75 → 1,8, × 1,03 → 1,9
   const old = minerSpecs({ players:[{ account:'A', name:'Geo' }], looks:{ A:{ pioche:PICK } } })[0];
   assert.equal(old.carac.mineSpeed, 1.2, 'une session sans gear : les noms suffisent, comme avant');
   assert.equal(old.carac.crit, 0);
@@ -224,9 +225,9 @@ test('relecture : lignes trafiquées → la pièce redevient non identifiée ; n
     { ...ok, q:8 }, { ...ok, q:'1' }, { ...ok, lines:null },
     { item:PICK, uid:1, q:6, lines:[{ stat:'discoverMax' }, { stat:'discoverMax' }, { stat:'pods', pct:40 }] },
   ]) assert.equal(sanitizePiece(bad).q, undefined, JSON.stringify(bad));
-  for(const plus of [4, -1, 1.5, '2', Infinity]) assert.equal(sanitizePiece({ ...ok, plus }).plus, undefined, String(plus));
+  for(const plus of [10, -1, 1.5, '2', Infinity]) assert.equal(sanitizePiece({ ...ok, plus }).plus, undefined, String(plus));
   assert.equal(sanitizePiece({ item:'Charbon', uid:1 }), null);
-  const inv = deserialize(JSON.stringify({ v:1, slots:[{ ...ok, qty:1, lines:[{ stat:'mineSpeed', pct:99 }], plus:9, hack:1 }] }));
+  const inv = deserialize(JSON.stringify({ v:1, slots:[{ ...ok, qty:1, lines:[{ stat:'mineSpeed', pct:99 }], plus:10, hack:1 }] }));
   assert.deepEqual(inv.slots[0], { item:PICK, uid:1, qty:1 });
 });
 

@@ -1,5 +1,5 @@
 /* Une pièce de stuff et ce qu'elle porte (onglet Amélioration) : qualité R1 à R7, lignes de stats tirées à
-   l'identification, niveau d'amélioration (+1 à +3). Logique pure, partagée par le jeu et le serveur (qui fait foi).
+   l'identification, niveau d'amélioration (+1 à +9). Logique pure, partagée par le jeu et le serveur (qui fait foi).
 
    Une pièce : { item, uid, q?, lines?, s?, plus?, rune? }  (s = barème des fourchettes, UPGRADE.scale ; absent = 1)
    - rune : { q, lines, s } posée par l'Enchantement (une seule, définitive) ; ses lignes comptent comme celles de

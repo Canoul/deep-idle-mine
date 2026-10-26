@@ -630,7 +630,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
     cumulable** : si deux joueurs du groupe portent le même anneau, l'effet ne compte qu'une fois. Un joueur ne peut pas
     porter **deux fois le même anneau** (deux anneaux différents, oui). Valable en mine classique et dans les tours ; en
     **mine instantanée** (chacun pour soi), l'anneau ne profite qu'à son porteur.
-  - **Ni craft, ni identification, ni amélioration (+1 à +3), ni enchantement** : un anneau reste tel qu'il est tombé.
+  - **Ni craft, ni identification, ni amélioration (+1 à +9), ni enchantement** : un anneau reste tel qu'il est tombé.
   - « +3 % » d'une stat sans version en % (vitesse, oxygène, pods) = **× 1,03 sur le total** (stuff et skills compris) ;
     dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2).
   - **Exception, XP** *(décision du créateur, 24/10/2026)* : le bonus d'XP (Anneau du nerd) est **personnel**. Il
@@ -694,20 +694,28 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10
 - **Nom** : « Excellent : Pioche en pierre » dans la couleur de la qualité, qui passe avant la couleur de rareté du type. **Le contour de la case garde la rareté du type** (commun, inhabituel…).
 - Une R7 ajoute au plus **+100 % de la valeur de l'objet** (22/10 ; avant +220 %) : une pioche en pierre R7 vaut au plus une pioche en fer brute.
 
-**Amélioration** : +1 à **+3** pour l'instant (la suite viendra). Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
+**Amélioration** : +1 à **+9** *(26/10/2026, Geoffrey ; avant +1 à +3)*. Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
 
-| Niveau | Stats | Réussite | Coût |
-|---|---|---|---|
-| +1 | +5 % *(25/10/2026 ; avant +3 %)* | 100 % | 20 Plumes d'ange, 3 Cristaux de pleine lune |
-| +2 | +10 % *(avant +5 %)* | 95 % | 30 plumes + 5 cristaux |
-| +3 | +15 % *(avant +7 %)* | 90 % | 50 plumes + 7 cristaux |
+Règle *(26/10/2026, Geoffrey)* : **+3 % de stats par rang**, **réussite −5 % par rang**. Coût : 3 cristaux et 6 plumes au +1, puis × 1,5 par rang (+2, +3), × 1,33 (+4 à +6), × 1,25 (+7 à +9), calculé sur la valeur exacte du rang précédent et arrondi à l'entier du dessus.
 
-*(Plumes relevées le 22/10/2026 : 3 / 5 / 7 → 20 / 30 / 50.)*
+| Niveau | Stats | Réussite | Plumes d'ange | Cristaux de pleine lune |
+|---|---|---|---|---|
+| +1 | +3 % | 100 % | 6 | 3 |
+| +2 | +6 % | 95 % | 9 | 5 |
+| +3 | +9 % | 90 % | 14 | 7 |
+| +4 | +12 % | 85 % | 18 | 9 |
+| +5 | +15 % | 80 % | 24 | 12 |
+| +6 | +18 % | 75 % | 32 | 16 |
+| +7 | +21 % | 70 % | 40 | 20 |
+| +8 | +24 % | 65 % | 50 | 25 |
+| +9 | +27 % | 60 % | 63 | 32 |
 
-Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 100 plumes et 15 cristaux pour monter une pièce à +3 (sans échec). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+*(Ancien : +1 à +3 = +5 / +10 / +15 % (25/10 ; avant +3 / +5 / +7 %), 20 / 30 / 50 plumes (22/10 ; avant 3 / 5 / 7) et 3 / 5 / 7 cristaux. Les pièces déjà améliorées gardent leur niveau et prennent le nouveau bonus : une pièce +3 passe de +15 % à +9 %.)*
 
-**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce.** **Retirer une rune** *(décision du créateur, 23/10/2026 ; avant : définitif)* : gratuit ; la rune revient dans l'inventaire en **Fragment de rune** (rareté rare) : même qualité, mêmes lignes, mais **chaque % compte pour moitié** (la ligne « +1 Découverte » n'est pas un % : inchangée). Un fragment se pose **comme une rune** (mêmes règles : une par pièce, qualité ≤ celle de la pièce, pièce identifiée) ; **un fragment posé ne se retire plus**. **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur du tier de la pièce enchantée** (T1 100 x, T2 250 x, T3 400 x, voir Identification ; 25/10/2026, avant : de la valeur de la pièce) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
+Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fer +3 : 5 + 9 × 1,09 = 14,8 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 256 plumes et 129 cristaux pour monter une pièce à +9 (sans échec ; 29 plumes et 15 cristaux pour +3). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+
+**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce.** **Retirer une rune** *(décision du créateur, 23/10/2026 ; avant : définitif)* : gratuit ; la rune revient dans l'inventaire en **Fragment de rune** (rareté rare) : même qualité, mêmes lignes, mais **chaque % compte pour moitié** (la ligne « +1 Découverte » n'est pas un % : inchangée). Un fragment se pose **comme une rune** (mêmes règles : une par pièce, qualité ≤ celle de la pièce, pièce identifiée) ; **un fragment posé ne se retire plus**. **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur du tier de la pièce enchantée** (T1 100 x, T2 250 x, T3 400 x, voir Identification ; 25/10/2026, avant : de la valeur de la pièce) ; le niveau (+1 à +9) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
 - **Trésors des tours** (depuis le 22/10/2026, avant : *Coffres*) : *Trésor angélique* et *Trésor démoniaque* de qualité R1 à R7. **Non empilables** (une case par trésor), **rareté Unique** (contour orange foncé) quelle que soit la qualité ; le nom affiché donne la qualité, dans sa couleur : « Antique Trésor démoniaque » (R5). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
   - *Ancien* : les *Coffre angélique / démoniaque R1 à R7* (empilables, contour selon la qualité) ne sont plus donnés ; ceux déjà gagnés restent tels quels et s'ouvrent comme avant (décision du 22/10 : pas de conversion).
 - Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % du tier de la pièce ».

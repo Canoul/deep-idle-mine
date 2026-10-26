@@ -202,9 +202,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
   (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10), appliqué à la
   **valeur du tier de la pièce** (25/10, Geoffrey ; `UPGRADE.tiers` : T1 pierre/chitine/plans T1 100 x, T2 fer/plans T2 250 x,
-  T3 acier/équilibre/plans T3 400 x ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** +1 à +3 (+3/5/7 % de toutes les stats,
-  réussite 100/95/90 %, plumes 20 / 30 / 50 depuis le 22/10 + cristaux 3 / 5 / 7, un échec ne coûte que les
-  matériaux) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
+  T3 acier/équilibre/plans T3 400 x ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** **+1 à +9** (26/10, Geoffrey : +3 % de
+  toutes les stats par rang, réussite 100 % puis −5 % par rang jusqu'à 60 %, plumes 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63
+  et cristaux 3 / 5 / 7 / 9 / 12 / 16 / 20 / 25 / 32 ; un échec ne coûte que les matériaux ; ancien : +1 à +3, +5 / 10 / 15 %
+  (25/10), plumes 20 / 30 / 50, cristaux 3 / 5 / 7) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
   lignes). Stats : minage % et dégâts % (multiplicatifs), critique, coup unique, perçage, butin des mobs. Une pièce
   porte `q`, `lines` (anciennes seulement), `plus`, `rune`. Plumes d'ange : mine instantanée ; Cristaux de pleine
   lune : minotaure du donjon (`scripts/give-admin.js` pour tester).
