@@ -92,6 +92,7 @@ export const giantApi = {
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
   online:  ()   => request('GET', '/api/social/online'),                // tous les joueurs en ligne (onglet Online)
+  towerWho: side => request('POST', '/api/social/tower-who', { side }), // en ligne, tour de ce camp pas encore faite (« Who ? »)
   request: name => request('POST', '/api/social/request', { name }),   // pseudo (ou ID de compte)
   accept:  id   => request('POST', '/api/social/accept', { id }),
   refuse:  id   => request('POST', '/api/social/refuse', { id }),

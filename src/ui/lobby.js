@@ -3,6 +3,8 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
+import { gearScore } from '../meta/gearscore.js';
+import { statusText } from './social.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
@@ -67,6 +69,27 @@ export function launchState({ account, party, offline, busy, session }){
 
 /* Case « Prêt tout le temps » : seulement pour un membre (pas le chef) d'un groupe ; utilisable aussi pendant une
    session, pour être prêt dès la suivante */
+/* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie ;
+   over : les joueurs au-dessus du plafond (le serveur revérifie au lancement) */
+export function modulationState({ tower, locked, party, account, slots = [], myGs }){
+  const leader = !party || party.members.length < 2 || party.leader === account?.id;
+  const show = !!tower && !locked && !!account && leader;
+  const max = TOWER.modulation.gsMax;
+  const members = slots.filter(s => s.kind === 'member').map(s => ({ name: s.me ? 'Toi' : s.name, gs: s.me ? myGs : s.gs }));
+  const over = members.filter(m => Number.isFinite(m.gs) && m.gs >= max);
+  const esc2 = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const text = `Modulation : moins de ${max.toLocaleString('fr-FR')} GS chacun`+
+    (over.length ? ` <small class="err">(${over.map(m => `${esc2(m.name)} : ${m.gs.toLocaleString('fr-FR')} GS`).join(', ')})</small>` : '');
+  return { show, over, text };
+}
+
+/* « Who ? » (tour ouverte) : une ligne par joueur en ligne qui n'a pas encore fait la tour ; « Inviter » (par son ID)
+   s'il n'est pas en session et pas déjà dans mon groupe. p = { id, displayId, name, status…, friend } */
+export function whoRows(list, party){
+  const inParty = new Set((party?.members ?? []).map(m => m.account));
+  return (list?.players ?? []).map(p => ({ ...p, text: statusText(p), canInvite: p.status !== 'session' && p.status !== 'offline' && !inParty.has(p.id) }));
+}
+
 export function alwaysReadyState({ account, party, offline }){
   if(offline || !account || !party || party.members.length < 2 || party.leader === account.id) return { show:false };
   const me = party.members.find(m => m.account === account.id);
@@ -124,7 +147,7 @@ export function slotButtons({ account, party, session }, slot){
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
-               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false,     // view 'jugement' : jauges à la place de l'équipe
+               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false, who:null,     // view 'jugement' : jauges à la place de l'équipe
                lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null };   // lfgWant : sa recherche, à relancer si le serveur a redémarré
 
   function render(){
@@ -160,7 +183,9 @@ export function setupLobby(h){
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
-      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      const gs = s.me ? h.gs?.() : s.gs;
+      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent',
+                    Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
@@ -172,6 +197,11 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
+    /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
+    const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.() });
+    $('modulationRow').hidden = !mod.show;
+    $('modulationText').innerHTML = mod.text;
+    if(!mod.show) $('modulation').checked = false;
     const ar = alwaysReadyState(st);
     $('alwaysReadyRow').hidden = !ar.show;
     $('alwaysReady').checked = !!ar.checked;
@@ -188,10 +218,12 @@ export function setupLobby(h){
       : jv ? 'Pour lancer, choisis la Mine ou une tour ouverte dans « Où miner ».'
       : def?.giant ? ''
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
-                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
+                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture. `+
+                `<button class="small${st.who?.side === def.tower ? ' on' : ''}" id="whoBtn" title="Joueurs en ligne qui n'ont pas encore fait cette tour">Who ?</button>`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
+    renderWho(tower && !locked && !offline ? def.tower : null);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
     $('devCard').hidden = !cards.dev;   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
@@ -322,6 +354,7 @@ export function setupLobby(h){
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
+  $('modulation').onchange = () => render();
   $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
@@ -367,6 +400,38 @@ export function setupLobby(h){
     const tree = $('devSpecs').querySelector(`[data-spec="${i}"]`).value, level = parseInt($('devSpecs').querySelector(`[data-level="${i}"]`).value, 10);
     return tree ? { tree, level: Math.max(DEV_SPEC.minLevel, Math.min(DEV_SPEC.maxLevel, Number.isSafeInteger(level) ? level : DEV_SPEC.maxLevel)) } : null;
   });
+  /* liste « Who ? » sous l'info de la tour (fermée si on change de mode) */
+  function renderWho(side){
+    const box = $('towerWho');
+    if(!side || st.who?.side !== side){ box.hidden = true; if(st.who && st.who.side !== side) st.who = null; return; }
+    const w = st.who;
+    const rows = whoRows(w.data, st.party);
+    box.hidden = false;
+    box.innerHTML = w.busy && !w.data ? '<p class="mut small">Chargement…</p>'
+      : w.err ? `<p class="err small">${esc(w.err)}</p>`
+      : !rows.length ? '<p class="mut small">Personne d\'autre en ligne n\'a cette tour à faire.</p>'
+      : `<p class="small"><b>${rows.length}</b> joueur${rows.length > 1 ? 's' : ''} en ligne sans cette tour :</p>`+
+        rows.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(p.text)}${p.friend ? ' · ami' : ''}</small></span>`+
+          (p.canInvite ? `<button class="small" data-who-invite="${esc(p.displayId)}">Inviter</button>` : '')+`</div>`).join('');
+  }
+  async function loadWho(side){
+    st.who = { side, busy:true, data:st.who?.side === side ? st.who.data : null }; render();
+    try { st.who = { side, data: await h.towerWho(side) }; }
+    catch(e){ st.who = { side, err: e.message }; }
+    render();
+  }
+  $('lobbyInfo').addEventListener('click', e => {
+    if(!e.target.closest('#whoBtn')) return;
+    const side = MINE_MODES.find(m => m.id === st.mode)?.tower;
+    if(!side) return;
+    if(st.who?.side === side){ st.who = null; render(); return; }   // second clic : fermer
+    loadWho(side);
+  });
+  $('towerWho').addEventListener('click', e => {
+    const b = e.target.closest('[data-who-invite]'); if(!b) return;
+    act(() => h.party.invite(b.dataset.whoInvite));
+  });
+
   function devOptions(){
     const seed = parseInt($('devSeed').value, 10), overrides = {};
     for(const i of $('devStats').querySelectorAll('input')){
@@ -381,7 +446,8 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
-    try { await h.onLaunch({ mode: st.mode, ...(st.info?.dev ? devOptions() : {}) }); }
+    const tw = !!MINE_MODES.find(m => m.id === st.mode)?.tower;
+    try { await h.onLaunch({ mode: st.mode, ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }
   };
 

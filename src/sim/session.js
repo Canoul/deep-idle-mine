@@ -100,7 +100,10 @@ function braumGlyph(G){
 export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
-  for(const m of G.miners) stepMiner(G,m);
+  for(const m of G.miners){
+    if(m.action?.type==='attack') m.stats.hitTime=(m.stats.hitTime||0)+DT;   // temps à frapper (tableau de bord)
+    stepMiner(G,m);
+  }
   braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre

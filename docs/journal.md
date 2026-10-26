@@ -24,12 +24,49 @@ Modèle d'entrée :
 - **À suivre** : retirer les glyphes en trop (Infernatiwar : Braum, LeTaz : Échelle de 2, Nbrick : Ruée).
 - **État** : 🧪 sur la branche `geoffrey/admin-retirer` (pas en ligne)
 
+## 26/10/2026 — Geoffrey — Gear score et modulation des tours (en test)
+- **Pour le joueur** : chaque pièce de stuff affiche son **GS** (gear score) dans sa bulle et dans la liste de l'onglet
+  Stuff, et l'onglet Stuff affiche le **GS total** en haut des stats. Le GS d'une pièce, c'est ce qu'elle ajoute aux
+  stats de base, en x (stats de l'objet, identification, rune, amélioration). Dans le lobby, chaque joueur montre son GS.
+  En lançant une tour, une case **« Modulation »** : cochée, chaque joueur doit avoir **moins de 2000 GS**, sinon le
+  lancement est refusé et le jeu dit qui dépasse, et de combien. Repères : stuff complet T1 ≈ 1 350 GS, tout en fer
+  ≈ 2 480, tout en acier ≈ 3 390.
+- **Décisions** (Geoffrey) : GS = stats (x) − stats de base (x) ; pièce = stats + rune + amélioration ; test à 2000 GS.
+  Choix de Claude à valider : skills, sorts, glyphes et anneaux ne comptent pas ; torches, lumière et boussole non plus
+  (pas de prix en x) ; la Lance en fer vaut ≈ 1 020 GS (portée et recul sont chers en x, prix provisoires du 25/10).
+- **À suivre** : **les meilleures récompenses de la modulation ne sont pas faites** (à décider) ; wiki pas encore mis à jour.
+- **État** : ✅ en ligne le 26/10 (en test : la case est visible des joueurs, sans récompense en plus)
+
+## 26/10/2026 — Geoffrey — Tableau de bord des joueurs (équipe)
+- **Pour le joueur** : rien de visible. Pour l'équipe : une page de courbes sur tous les joueurs (mine classique) :
+  Mineur = blocs récupérés par niveau ; Logisticien = profondeur par niveau ; Barbare = blocs et temps à frapper les
+  mobs par niveau ; tous = profondeur par niveau et par **ilvl** ; groupe = profondeur par **ilvl du groupe** (moyenne des joueurs
+  présents, une fois par session), prolongée par une **prédiction** jusqu'à 350 de profondeur (droite de tendance,
+  avec l'ilvl de groupe estimé pour y arriver) ; plus l'historique, avec un filtre par joueur.
+- **Décisions** (Geoffrey) : réservé à l'équipe ; mine classique seule (pas les tours, la MI ni le mode dev ; un joueur
+  parti avant la fin ne compte pas) ; barbare = temps passé à **frapper** (pas le tacle ni la marche vers le mob).
+  **ilvl** = somme des valeurs en x des pièces portées au lancement (qualité, amélioration et rune non comptées).
+- **Comment l'ouvrir** : sur ton ordinateur, `ssh VPS "sudo node /opt/deep-idle-mine/scripts/dashboard.js" >
+  tableau-de-bord.html`, puis ouvre le fichier.
+- **À suivre** : les courbes partent de zéro à la mise en ligne (les anciennes sessions n'ont ni niveau ni ilvl) ; ces
+  lignes sont gardées sans limite (les sessions, elles, 30 jours).
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Tours : bouton « Who ? » pour trouver des alliés
+- **Pour le joueur** : dans le Lobby, une tour ouverte choisie dans « Où miner », un bouton **Who ?** à côté de sa
+  description. Il liste les joueurs **en ligne** qui n'ont **pas encore fait cette tour** pendant cette ouverture (toi
+  exclu), avec ce qu'ils font (en ligne, dans un lobby, en session et le temps qui leur reste) et « ami » si c'en est un.
+  Bouton **Inviter** (par leur ID, ami ou non) pour ceux qui ne sont pas en session ni déjà dans ton groupe. Un second
+  clic sur Who ? ferme la liste. Wiki à jour.
+- **Décisions** : choix de Claude à valider : seulement les joueurs en ligne (ou en session), pas tous les comptes.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
 - **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
   s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points
   (248). Maintenant la visite reste à l'écran jusqu'au bout, et l'écran de fin montre les points comptés par le serveur.
-  Aucun point n'était perdu.
+  Aucun point n'était perdu. Même chose si l'onglet du jeu passait en arrière-plan pendant la visite (le navigateur
+  ralentit alors les relevés) : l'écran de fin lit maintenant toujours les points du serveur.
 - **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant

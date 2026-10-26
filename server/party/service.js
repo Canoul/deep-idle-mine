@@ -53,7 +53,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map()){
+  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
@@ -63,6 +63,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                             specLevel: specLv.get(m.account) ?? null,
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
+                                            gs: gs.get(m.account) ?? null,              // gear score du stuff porté (src/meta/gearscore.js)
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
   }
@@ -254,8 +255,11 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       /* et l'aura de ses pièces visibles (src/meta/aura.js) */
       const auras = new Map();
       if(p) for(const m of p.members) auras.set(m.account, await game.aurasFor?.(m.account) ?? {});
+      /* et son gear score (modulation des tours) */
+      const gs = new Map();
+      if(p) for(const m of p.members) gs.set(m.account, await game.gsFor?.(m.account) ?? null);
       return {
-        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras) : null,
+        party: p ? publicParty(p, me.id, playing, trees, looks, specLv, auras, gs) : null,
         /* invitations reçues : qui invite, qui est déjà là */
         invites: invitesFor(me.id).map(q => ({ code: q.code, from: q.invites.get(me.id).from,
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),

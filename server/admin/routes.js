@@ -5,6 +5,7 @@
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
    POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
+   POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
@@ -70,6 +71,11 @@ export function adminRoutes({ accounts, game, token }){
       const r = await game.adminKhole(acc.id, map);
       console.log(`Admin : k hole (${r.map}) dans la session ${r.session} de ${acc.name} (${acc.id}), tick ${r.tick}`);
       return { account: acc.name, ...r };
+    },
+    /* tableau de bord de l'équipe : lignes de stats des mines classiques (scripts/dashboard.js) */
+    'POST /api/admin/stats': async ctx => {
+      guard(ctx);
+      return { rows: await game.adminStats() };
     },
     'POST /api/admin/judgment': async ctx => {
       guard(ctx);

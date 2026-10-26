@@ -1,4 +1,5 @@
 /* Stuff : 12 cases, équiper (la pièce quitte l'inventaire), remplacer, retirer, relecture sans duplication. */
+import { pieceGS } from '../src/meta/gearscore.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STUFF } from '../src/config.js';
@@ -84,8 +85,8 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
 
 test('bulle d\'info du stuff : le nom, puis un effet par ligne ; rien pour un objet qui n\'est pas du stuff', async () => {
   const { stuffTip } = await import('../src/meta/stuff.js');
-  assert.equal(stuffTip(PICK), 'Pioche en pierre\nVitesse de minage +0,2');
-  assert.equal(stuffTip('Casque en chitine'), 'Casque en chitine\nOxygène +30');
+  assert.equal(stuffTip(PICK), `Pioche en pierre\nVitesse de minage +0,2\nGS ${pieceGS(PICK)}`);
+  assert.equal(stuffTip('Casque en chitine'), `Casque en chitine\nOxygène +30\nGS ${pieceGS('Casque en chitine')}`);
   assert.equal(stuffTip('Charbon'), null);
   assert.equal(stuffTip('Objet inconnu'), null);
 });

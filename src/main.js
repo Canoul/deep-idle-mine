@@ -37,6 +37,7 @@ import { pxi } from './ui/pxicons.js';
 import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
+import { gearScore } from './meta/gearscore.js';
 import { renderLevel, levelUpText } from './ui/level.js';
 import { setupFocusPanel } from './ui/focus.js';
 import { setupChat } from './ui/chat.js';
@@ -243,6 +244,8 @@ const lobby = setupLobby({
   party: partyApi,
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
+  gs: () => gearScore(stuff.worn()),
+  towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
