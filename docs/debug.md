@@ -3178,7 +3178,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : un joueur qui avait déjà tout le T2 appris perd l'accès à la recherche tier 3 jusqu'à ce qu'il
   apprenne la lampe. La lampe n'est pas dans `UPGRADE.tiers` (ligne de rune sur sa valeur propre).
 
-### Amélioration +1 à +9 (Geoffrey) — branche `geoffrey/amelioration-plus9`, 🧪
+### Amélioration +1 à +9 (Geoffrey) — branche `geoffrey/amelioration-plus9`, ✅ en ligne le 26/10
 - **Quoi** : `UPGRADE.levels` passe de 3 à 9 paliers (`src/config.js`) ; le reste du code lit déjà `levels.length`
   (`MAX_PLUS`, `nextLevel`, `plusMult`, `sanitizePiece`, onglet Amélioration, wiki). Textes : `wiki.html`,
   `src/ui/upgrade.js`, `src/meta/piece.js`, GAME_DESIGN.

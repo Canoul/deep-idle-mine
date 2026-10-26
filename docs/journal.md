@@ -26,7 +26,7 @@ Modèle d'entrée :
   dessus : 129 cristaux et 256 plumes pour un +9. Le bonus passe de 5 / 10 / 15 % à 3 / 6 / 9 % pour +1 à +3 : les
   pièces déjà améliorées perdent un peu.
 - **À suivre** : les cristaux (minotaure) risquent d'être le vrai frein à partir de +6.
-- **État** : 🧪 sur la branche `geoffrey/amelioration-plus9` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Lampe à incandescence par blueprint, recherche tier 3 à 200 parts
 - **Pour le joueur** : la **Lampe à incandescence** ne se fabrique plus de base : il faut d'abord trouver son
