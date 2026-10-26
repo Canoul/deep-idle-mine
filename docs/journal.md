@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Skin de la Cape de Naingui
+- **Pour le joueur** : la Cape de Naingui se voit sur le mineur (dans la mine, la mine instantanée, le lobby, la barre
+  du haut et l'onglet Stuff) : une cape violet sombre qui flotte dans son dos jusqu'aux chevilles, avec un col et un
+  fermoir doré sur l'épaule. Elle reste visible par-dessus une armure complète, et son aura (qualité) l'entoure.
+- **État** : 🔧 branche `geoffrey/skin-cape`, pas en ligne
+
 ## 26/10/2026 — Geoffrey — Bloc géant : paliers de récompense relevés
 - **Pour le joueur** : les paliers du score collectif passent à **1 000 / 5 000 / 10 000 / 15 000 / 20 000** (avant
   1 000 / 2 500 / 5 000 / 7 500 / 10 000), mêmes récompenses. Le Treasure T3 demande donc ≈ 90 à 140 visites dans la
