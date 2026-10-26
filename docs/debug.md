@@ -3453,7 +3453,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Tours : 7 étages et pods (branche `geoffrey/tour-pods`)
+## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`)
 - **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
   (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).
   `src/sim/tower/session.js` : `m.inv` / `m.load` ; `mineCell` met la brique du camp dans le sac (`G.bricks--`) ;
@@ -3478,3 +3478,8 @@ Règles (voir CLAUDE.md) :
 - **Pas vérifié** : affichage dans un navigateur (coffre, sac dans le panneau, bilan).
 - **Points fragiles** : le chemin vers le coffre passe par les échelles posées à la montée (planTo) ; un mineur plein
   pendant un combat de mobs combat d'abord. Rien d'autre ne lit encore les stonebricks (pas de recette).
+- **Mise à jour (26/10, plus tard)** : 7e étage **retiré** à la demande de Geoffrey (`TOWER.floors` 7 → 6). Les trois tests
+  adaptés (compo forte, seeds du treuil et du regroupement) sont revenus à leur version d'origine et passent ✅ (tower,
+  tower-boss, tower-who : 48/48). Simulation 6 étages + pods : tout fer 4/20 à 9:38 (toit 6:38, 4,8 vidages, ≈ 40
+  briques par joueur) ; tout acier 16/20 à 9:07 (toit 5:49, 3 vidages, ≈ 51 briques) ; 1,1 / 10 : toit 8:28 (sans
+  limite de pods 7:11), 6,5 vidages, 0 blocage ; compos de `simulate:tower` 0/20 (d : 2/20 sans les pods).

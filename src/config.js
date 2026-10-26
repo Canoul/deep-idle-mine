@@ -1280,7 +1280,7 @@ export const JUDGMENT = {
    portes d'entrée : les doorH lignes du bas des deux murs. */
 export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
-  width: 20, floors: 7, floorH: 3, gate: 3,      // 7 × (3 + 1) = 28 lignes (26/10/2026, Geoffrey : 7 étages ; 25/10 : 6, avant 7)
+  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7 ; 7 essayés le 26/10 avec les pods, retirés)
   /* pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (son poids : BLOCKS) ; plein (plus de
      place pour une brique) et encore des briques dans la tour, il redescend au coffre commun, au milieu de l'étage
      floor, et le vide en deposit s. Victoire : coffre + sacs des présents, en parts égales (le reste tiré par le

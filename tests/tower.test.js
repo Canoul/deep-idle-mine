@@ -130,15 +130,14 @@ test('lumière : il pose des torches dans le noir (illimitées)', () => {
   assert.ok(G.light.size > 0);
 });
 
-/* 26/10/2026 (7 étages et pods) : le toit est atteint vers 9 min 50, pas toujours (avant : toit atteint et boss entamé
-   de 20 % sur les 5 seeds) ; à revoir avec l'équilibrage des tours */
-test('compo forte (2 barbares 15 dégâts + mineur 1,3) : au moins le dernier étage sur 5 seeds, sans blocage ; stuff de base : échec', () => {
+test('compo forte (2 barbares 15 dégâts + mineur 1,3) : toit atteint et boss entamé sur 5 seeds, sans blocage ; stuff de base : échec', () => {
   const strong = [{ name: 'B1', account: 'B1', skillTree: 'barbare', carac: { damage: 15 } },
                   { name: 'B2', account: 'B2', skillTree: 'barbare', carac: { damage: 15 } },
                   { name: 'M', account: 'M', carac: { mineSpeed: 1.3 } }];
   for(const seed of [11, 12, 13, 14, 15]){
     const G = runTower(seed, { side: seed % 2 ? 'angel' : 'demon', miners: strong });
-    assert.ok(G.summary.floor >= TOWER.floors - 1, `seed ${seed} : dernier étage atteint (étage ${G.summary.floor})`);
+    assert.equal(G.summary.floor, TOWER.floors, `seed ${seed} : toit atteint (étage ${G.summary.floor})`);
+    assert.ok(G.summary.bossHp < TOWER.boss.hp * 0.8, `seed ${seed} : boss entamé (${G.summary.bossHp} PV)`);
     assert.equal(G.stats.blocked, 0, 'jamais bloqué');
     assert.equal(G.summary.kills, G.mobs.length, 'tous les mobs tués');
   }
@@ -262,13 +261,13 @@ test('treuil : sans le skill Treuil, rien ; une seconde chute n\'en installe pas
 
 test('treuil : on y tient sans tomber, et un mineur tombé le prend pour remonter (bien plus vite)', () => {
   const climb = withWinch => {
-    const G = newTower(7, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
+    const G = newTower(3, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
     const m = G.miners[0]; cleared(G);
     if(withWinch) G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
     Object.assign(m, { x: G.x0 - 2, y: G.floor, action: null });
     return ticksUntil(G, () => m.y === G.roof - 1, 6000) * 0.1;
   };
-  const G = newTower(7, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
+  const G = newTower(3, { side: 'angel', miners: [{ name: 'M', account: 'M' }] });
   G.winch = { x: G.x0 - 1, top: G.roof - 1, bottom: G.floor };
   assert.ok(towerSupported(G, G.x0 - 1, G.roof + 3), 'dans le treuil : il ne tombe pas');
   assert.ok(!towerSupported(G, G.x0 - 2, G.roof + 3), 'à côté : il tombe');
@@ -288,7 +287,7 @@ test('treuil : envoyé au navigateur', () => {
 
 /* deux mineurs dans une tour franchie ; a est tombé et remonte, sous la porte du toit (sur une échelle) */
 function regroupScene(){
-  const G = newTower(7, { side: 'angel', miners: team(2) });
+  const G = newTower(3, { side: 'angel', miners: team(2) });
   cleared(G); G.boss.engaged = false;
   const [a, b] = G.miners, gx = gateCols(G, TOWER.floors - 1)[0];
   G.ladder[G.roof + 1][gx] = 1;
@@ -324,7 +323,7 @@ test('regroupement : au plus 45 s d\'attente ; seul, il n\'attend jamais', () =>
   assert.equal(a.status, 'Attend les autres', '40 s : il attend encore');
   ticksUntil(G, () => a.y === G.roof - 1, 150);
   assert.equal(a.y, G.roof - 1, 'au-delà de 45 s, il monte seul');
-  const H = newTower(7, { side: 'angel', miners: team(1) });
+  const H = newTower(3, { side: 'angel', miners: team(1) });
   cleared(H); H.boss.engaged = false;
   const m = H.miners[0], gx = gateCols(H, TOWER.floors - 1)[0];
   H.ladder[H.roof + 1][gx] = 1;
@@ -383,8 +382,8 @@ const brickOf = side => BLOCKS[TOWER.sides[side].brick];
 const bricksIn = G => { let n = 0; for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] === TOWER.sides[G.side].brick) n++; return n; };
 const held = G => [...G.miners].reduce((n, m) => n + (m.inv[brickOf(G.side).name] || 0), 0);
 
-test("pods : 7 étages ; une brique minée va dans le sac (poids 10) ; plein, il redescend la vider au coffre au milieu de l'étage 0", () => {
-  assert.equal(TOWER.floors, 7); assert.equal(brickOf('angel').w, 10); assert.equal(brickOf('demon').w, 10);
+test("pods : une brique minée va dans le sac (poids 10) ; plein, il redescend la vider au coffre au milieu de l'étage 0", () => {
+  assert.equal(brickOf('angel').w, 10); assert.equal(brickOf('demon').w, 10);
   const G = newTower(3, { side: 'angel', miners: [{ name: 'A', account: 'A', carac: { pods: 30, mineSpeed: 3 } }] });
   const start = bricksIn(G), m = G.miners[0], name = brickOf('angel').name;
   assert.equal(G.bricks, start);
