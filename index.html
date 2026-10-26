@@ -262,13 +262,20 @@
 <section class="view" data-view="social" hidden>
   <div class="furnWrap" id="socialBody">
     <div class="invHead"><h1><i data-pxi="group"></i>Social</h1><span class="mut small" id="socialCount"></span></div>
-    <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
-      <button class="on">Ajouter</button></form>
+    <div class="seg rsTabs" id="socialTabs"><button data-stab="friends" class="on">Amis</button><button data-stab="online">Online</button></div>
     <p id="socialMsg" hidden></p>
-    <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
-    <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
-    <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
-    <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. « Stuff » montre son équipement, ses stats et son niveau. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+    <div id="socialFriendsTab">
+      <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
+        <button class="on">Ajouter</button></form>
+      <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
+      <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
+      <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
+      <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. « Stuff » montre son équipement, ses stats et son niveau. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+    </div>
+    <div id="socialOnlineTab" hidden>
+      <div class="card"><h2>Joueurs en ligne <span class="mut" id="socialOnlineCount"></span></h2><div id="socialOnline"><p class="mut small">Chargement…</p></div></div>
+      <p class="mut small">Tous les joueurs connectés, amis ou non : ceux qui ne sont pas en session d'abord, puis ceux en session. « Ajouter » envoie une demande d'ami.</p>
+    </div>
   </div>
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
   <div id="fview" hidden><div class="box"></div></div>

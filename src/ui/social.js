@@ -1,8 +1,11 @@
-/* Onglet Social : ajouter un ami par pseudo, demandes reçues (accepter / refuser) et envoyées, liste d'amis avec ce
+/* Onglet Social, deux sous-onglets (26/10) : « Amis » et « Online ».
+   Amis : ajouter un ami par pseudo, demandes reçues (accepter / refuser) et envoyées, liste d'amis avec ce
    qu'ils font (hors ligne, en ligne, en session, dans le lobby n/3) et les boutons Inviter / Rejoindre / Stuff (sa
    fiche : niveau, spécialisation, pièces portées, stats ; en lecture seule).
+   Online : compteur et liste de tous les joueurs en ligne (pas en session d'abord, puis en session), « Ajouter » pour
+   un non-ami ; demandée au serveur seulement quand ce sous-onglet est à l'écran (SOCIAL.onlinePoll).
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS, MINE_MODES } from '../config.js';
+import { SKILLS, MINE_MODES, SOCIAL } from '../config.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
 import { renderSlots, statsHTML } from './stuff.js';
@@ -32,9 +35,12 @@ export function statusText(f){
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };
 
-/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id) } */
+/* « 12 joueurs en ligne » */
+export const onlineCountText = n => `${n} joueur${n > 1 ? 's' : ''} en ligne`;
+
+/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online() } */
 export function setupSocial(h){
-  let st = null, busy = false;
+  let st = null, busy = false, tab = 'friends', online = null, onlineAt = 0, onlineBusy = false;
 
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
@@ -46,9 +52,49 @@ export function setupSocial(h){
       `<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
   }
 
+  /* une ligne de la liste Online : p = { id, name, status…, me, friend } */
+  function onlineRow(p){
+    const sent = st?.outgoing.some(r => r.id === p.id);
+    const tag = p.me ? ' · toi' : p.friend ? ' · ami' : '';
+    const btn = p.me || p.friend ? '' : sent ? '<button disabled title="Demande déjà envoyée">Demande envoyée</button>'
+      : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
+    return `<div class="frow"><span class="fdot ${STATUS[p.status]?.cls ?? 'on'}"></span>`+
+      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(statusText(p))}${tag}</small></span>`+
+      `<span class="fbtns">${btn}</span></div>`;
+  }
+  function renderOnline(){
+    if(!online) return;
+    $('socialOnlineCount').textContent = `(${online.count})`;
+    const more = online.count - online.players.length;
+    $('socialOnline').innerHTML = online.players.map(onlineRow).join('') +
+      (more > 0 ? `<p class="mut small">… et ${more} autre${more > 1 ? 's' : ''}.</p>` : '');
+  }
+  function renderHead(){
+    $('socialTabs').querySelectorAll('[data-stab]').forEach(b => b.classList.toggle('on', b.dataset.stab === tab));
+    $('socialFriendsTab').hidden = tab !== 'friends';
+    $('socialOnlineTab').hidden = tab !== 'online';
+    if(tab === 'online') $('socialCount').textContent = online ? onlineCountText(online.count) : '';
+    else if(st){ const on = st.friends.filter(f => f.status !== 'offline').length;
+      $('socialCount').textContent = st.friends.length ? `${on} en ligne sur ${st.friends.length}` : ''; }
+  }
+
+  /* liste Online : redemandée seulement quand elle est à l'écran (onglet Social ouvert, sous-onglet Online, page visible) */
+  const onlineShown = () => tab === 'online' && !document.hidden && !$('socialBody').closest('section').hidden;
+  async function loadOnline(){
+    if(onlineBusy) return;
+    onlineBusy = true; onlineAt = Date.now();
+    try { online = await h.online(); renderOnline(); renderHead(); } catch(e){ console.warn(e); }
+    finally { onlineBusy = false; }
+  }
+  setInterval(() => { if(onlineShown() && Date.now() - onlineAt >= SOCIAL.onlinePoll) loadOnline(); }, 1000);
+  $('socialTabs').onclick = e => {
+    const b = e.target.closest('[data-stab]'); if(!b || b.dataset.stab === tab) return;
+    tab = b.dataset.stab; msg(''); renderHead();
+    if(tab === 'online') loadOnline();
+  };
+
   function render(){
     if(!st) return;
-    const on = st.friends.filter(f => f.status !== 'offline').length;
     $('socialReq').innerHTML = st.incoming.length
       ? st.incoming.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">veut devenir ton ami</small></span>`+
           `<span class="fbtns"><button class="on" data-accept="${esc(r.id)}">Accepter</button><button data-refuse="${esc(r.id)}">Refuser</button></span></div>`).join('')
@@ -56,10 +102,10 @@ export function setupSocial(h){
     $('socialReqCard').hidden = !st.incoming.length;
     $('socialFriends').innerHTML = st.friends.length ? st.friends.map(friendRow).join('')
       : '<p class="mut small">Pas encore d\'amis. Ajoute-en un avec son pseudo ci-dessus.</p>';
-    $('socialCount').textContent = st.friends.length ? `${on} en ligne sur ${st.friends.length}` : '';
     $('socialOut').innerHTML = st.outgoing.map(r => `<div class="frow"><span class="fname"><b>${esc(r.name)}</b><small class="mut">demande envoyée · en attente</small></span>`+
       `<span class="fbtns"><button data-remove="${esc(r.id)}">Annuler</button></span></div>`).join('');
     $('socialOutCard').hidden = !st.outgoing.length;
+    renderHead(); renderOnline();          // « Demande envoyée » dans la liste Online
   }
 
   const msg = (text, ok) => { const m = $('socialMsg'); m.textContent = text; m.className = ok ? 'okmsg small' : 'err small'; m.hidden = !text; };
@@ -85,6 +131,7 @@ export function setupSocial(h){
     else if(d.invite) act(() => h.invite(d.invite), '✔ Invitation envoyée.');
     else if(d.join) act(() => h.join(d.join));
     else if(d.profile) act(async () => showProfile(await h.profile(d.profile)));
+    else if(d.add) act(() => h.request(d.add), r => r.friend ? `✔ ${r.friend} et toi êtes maintenant amis.` : `✔ Demande envoyée à ${r.sent}.`);
     else if(d.remove && (!d.name || confirm(`Retirer ${d.name} de tes amis ?`))) act(() => h.remove(d.remove));
   };
 

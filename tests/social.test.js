@@ -14,7 +14,7 @@ import { SERVER, SOCIAL_SERVER, ROOT } from '../server/config.js';
 import { nameKey } from '../src/shared/account.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 import { realDurationMs } from '../src/shared/game.js';
-import { statusText } from '../src/ui/social.js';
+import { statusText, onlineCountText } from '../src/ui/social.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
 const B = { id:'BBBB2222', name:null, guest:true };          // invité : pas de pseudo
@@ -268,7 +268,36 @@ test('HTTP : s\'inscrire, demander en ami par pseudo, accepter, voir l\'ami en l
     r = await max('POST', '/api/social/profile', { id });
     assert.equal(r.status, 200); assert.equal(r.data.name, 'Zoe'); assert.equal(r.data.progress.level, 1);
     assert.equal((await client()('POST', '/api/social/profile', { id })).status, 401);
+    r = await zoe('GET', '/api/social/online');
+    assert.equal(r.status, 200); assert.equal(r.data.count, 2);
+    assert.equal((await client()('GET', '/api/social/online')).status, 401);
     r = await zoe('POST', '/api/social/request', { name:'personne' });
     assert.equal(r.status, 404); assert.equal(r.data.error.code, 'not_found');
   } finally { server.close(); }
+});
+
+test('Online : tous les joueurs en ligne (amis ou non), pas en session d\'abord, puis en session ; hors ligne absents', async () => {
+  const { social, game, advance } = setup();
+  await friends(social, A, C);
+  await social.state(D); await game.start(D, {});           // D : en ligne, en session
+  await social.state(C);                                    // C : ami de A, en ligne
+  await social.state(B);                                    // B : invité, sans pseudo
+  let r = await social.online(A);
+  assert.equal(r.count, 4);
+  assert.deepEqual(r.players.map(p => p.status), ['online', 'online', 'online', 'session'], 'en session tout en bas');
+  assert.equal(r.players.at(-1).id, D.id);
+  const me = r.players.find(p => p.id === A.id), c = r.players.find(p => p.id === C.id), b = r.players.find(p => p.id === B.id);
+  assert.equal(me.me, true); assert.equal(c.friend, true); assert.equal(b.friend, false);
+  assert.match(b.name, /^Invité/, 'un invité garde son nom d\'invité');
+  advance(SOCIAL_SERVER.onlineFor + 1);
+  r = await social.online(A);
+  assert.deepEqual(r.players.map(p => p.id), [A.id], 'les autres ne donnent plus signe de vie : plus en ligne');
+});
+
+test('Online : la liste est bornée, le compteur compte tout le monde', async () => {
+  const { social } = setup({ ...SOCIAL_SERVER, onlineListMax: 2 });
+  for(const x of [A, B, C, D]) await social.state(x);
+  const r = await social.online(A);
+  assert.equal(r.count, 4); assert.equal(r.players.length, 2);
+  assert.equal(onlineCountText(1), '1 joueur en ligne'); assert.equal(onlineCountText(4), '4 joueurs en ligne');
 });

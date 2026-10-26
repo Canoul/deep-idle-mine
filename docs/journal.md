@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Social : sous-onglets Amis et Online
+- **Pour le joueur** : l'onglet Social a deux sous-onglets. **Amis** : comme avant. **Online** : le nombre de joueurs
+  en ligne et la liste de tous les joueurs connectés (amis ou non) ; ceux qui ne font rien en haut, ceux en session
+  en dessous (avec le temps qu'il leur reste). Bouton **Ajouter** pour demander un joueur en ami.
+- **Décisions** : on se voit soi-même dans la liste (« toi ») ; le bouton Ajouter est un ajout de Claude, à valider.
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/social-online` (pas en ligne)
+
 ## 26/10/2026 — Geoffrey — Glyphes : 3 % de trouver un glyphe par session (correction)
 - **Pour le joueur** : **≈ 3 % de chance de trouver un glyphe par session** (groupe de 3), peu importe lequel ; il est
   tiré au hasard parmi ceux qui manquent. La chance ne dépend plus du nombre de glyphes déjà trouvés.

@@ -82,6 +82,7 @@ export const instantApi = {
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
+  online:  ()   => request('GET', '/api/social/online'),                // tous les joueurs en ligne (onglet Online)
   request: name => request('POST', '/api/social/request', { name }),   // pseudo (ou ID de compte)
   accept:  id   => request('POST', '/api/social/accept', { id }),
   refuse:  id   => request('POST', '/api/social/refuse', { id }),
