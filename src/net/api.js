@@ -79,6 +79,15 @@ export const instantApi = {
   devOpen: () => request('POST', '/api/instant/dev-open', {}),   // mode dev : ouvrir tout de suite
 };
 
+/* Bloc géant : panneau du lobby, la salle pendant une visite, entrer / sortir, réclamer les récompenses */
+export const giantApi = {
+  info:  () => request('GET', '/api/giant'),
+  view:  () => request('GET', '/api/giant/view'),
+  enter: () => request('POST', '/api/giant/enter', {}),
+  leave: () => request('POST', '/api/giant/leave', {}),
+  claim: () => request('POST', '/api/giant/claim', {}),
+};
+
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),

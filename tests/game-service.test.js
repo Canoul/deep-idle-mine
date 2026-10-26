@@ -51,6 +51,7 @@ test('lancer : la session est créée par le serveur (seed, joueur, préférence
 test('type de mine : Mine par défaut ; Mine instantanée (à heure fixe) et type inconnu refusés au lancement, sans rien créer', async () => {
   const { game } = setup();
   await assert.rejects(game.start(ME, { mode:'mi' }), { code:'mode_scheduled', status:400 });   // MI : à heure fixe, sur inscription
+  await assert.rejects(game.start(ME, { mode:'giant' }), { code:'mode_giant', status:400 });     // Bloc géant : on y entre seul, depuis son panneau
   for(const mode of ['volcan', 42, null, { id:'mine' }, ['mine']])
     if(mode !== null) await assert.rejects(game.start(ME, { mode }), { code:'bad_request' }, String(mode));
   assert.equal((await game.state(ME)).session, null, 'aucune session créée par un refus');

@@ -138,6 +138,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const startLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);
   const chat = createChat({ clock });   // chat des sessions, en mémoire (effacé à la fin de chaque session)
   const startHooks = [];           // appelés après le lancement d'une session normale (comptes des joueurs)
+  /* Bloc géant (server/giant/service.js) : { busy(compte) → { mode, leftMs } | null, players() → [compte] } ; une visite
+     en cours compte comme une session (une seule à la fois), sans être une session de ce service */
+  let giant = null;
+  const inGiant = async accountId => giant ? await giant.busy(accountId) : null;
 
   /* ---------- lecture ---------- */
 
@@ -363,6 +367,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef) fail('bad_request', 400, 'Type de mine inconnu.');
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
+      if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
       const side = modeDef.tower ?? null;
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
@@ -380,6 +385,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
+        for(const p of players)
+          if(await inGiant(p.account)) fail('in_giant', 409, `${p.account === me.id ? 'Tu es' : (p.name || 'Un joueur') + ' est'} au Bloc géant : attends la fin de la visite.`);
         /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
         if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
           fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
@@ -432,7 +439,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await store.getGameSession(id)) return null;
         const ok = [];
-        for(const p of players) if(!await activeOf(p.account)) ok.push(p);
+        for(const p of players) if(!await activeOf(p.account) && !await inGiant(p.account)) ok.push(p);
         if(!ok.length) return null;
         const looks = {}, gear = {}, skills = {};
         for(const p of ok){
@@ -902,14 +909,40 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* sa session en cours vue par ses amis (onglet Social) : type de mine et temps restant (ms, null en mode dev), ou null */
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
-      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : null;
+      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : await inGiant(accountId);
     },
     /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
     playersInSession: async () => {
       const ids = new Set();
       for(const status of ACTIVE) for(const rec of await store.sessionsWithStatus(status))
         for(const p of rec.players) if(!hasLeft(rec, p.account)) ids.add(p.account);
+      if(giant) for(const a of await giant.players()) ids.add(a);
       return [...ids];
+    },
+
+    /* ---------- Bloc géant (server/giant/service.js) ---------- */
+    useGiant(hooks){ giant = hooks; },
+    /* entrer au Bloc géant : sous le verrou du compte (comme un lancement : jamais en même temps qu'une session) ;
+       fn(fiche) reçoit le stuff, les skills et les sorts figés pour la visite et enregistre l'entrée */
+    async giantEnter(accountId, fn){
+      return withLock('acct:' + accountId, async () => {
+        if(await activeOf(accountId)) fail('session_running', 409, 'Tu as déjà une session en cours.');
+        const inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
+        const sk = await loadSkills(accountId);
+        return fn({ gear: gearOf(st), look: lookOf(st), skills: sessionSkills(sk),
+                    spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)) });
+      });
+    },
+    /* donner une récompense du Bloc géant : sous le verrou de l'inventaire ; fn(inv) ajoute les objets et renvoie
+       { player, … } (état du joueur à écrire AVEC l'inventaire) ou null (rien à donner, rien n'est écrit) */
+    async giantGrant(accountId, fn){
+      return withLock('inv:' + accountId, async () => {
+        const inv = await loadInventory(accountId);
+        await loadStuff(accountId, inv);                 // uid neufs : jamais celui d'une pièce portée
+        const r = await fn(inv);
+        if(r?.player) await store.putInventoryAndGiantPlayer(accountId, JSON.parse(serialize(inv)), r.player);
+        return { ...r, inventory: publicInventory(inv) };
+      });
     },
     /* arbre de skills choisi (mineur, logisticien, barbare) ou null : la spécialisation affichée dans le lobby */
     skillTreeOf: async accountId => (await loadSkills(accountId)).tree ?? null,

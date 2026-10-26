@@ -26,6 +26,7 @@
   <a href="#donjon">Le donjon</a>
   <a href="#khole">Le k hole</a>
   <a href="#mi">La mine instantanée</a>
+  <a href="#bloc">Le Bloc géant</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
   <a href="#craft">Craft, four, concasseur</a>
@@ -117,7 +118,7 @@
   <h1>Les onglets</h1>
   <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, = et ²</b>). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule.</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule.</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun ; tu peux aussi <b>glisser</b> un objet dans un autre slot.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>12 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole et <b>2 <a href="#anneaux">anneaux</a></b>) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session. À gauche, tes <a href="#sets">sets</a>.</p></div>
@@ -205,6 +206,27 @@
     <li>Ce que tu mines est <b>à toi</b> : pas de partage, et <b>pas d'XP</b>. Si deux joueurs minent le même bloc, le premier qui finit l'emporte.</li>
     <li>Fermer la page ne fait rien perdre : ton butin arrive à la fin. ⚠️ Seul le bouton <b>Quitter la mine</b> te fait <b>tout perdre</b>.</li>
   </ul>
+</section>
+
+<section id="bloc">
+  <h1>Le Bloc géant</h1>
+  <p class="lead">Un effort commun à <b>tout le serveur</b> : chacun vient frapper, seul, un bloc géant indestructible ; à minuit, tous ceux qui sont venus reçoivent une récompense selon le score de tous.</p>
+  <h2>Entrer</h2>
+  <ul>
+    <li>Onglet <b>Lobby</b>, « Où miner » → <b>🌈 Bloc géant</b> : le temps avant la fin de la session (elle va de <b>minuit à minuit</b>), le bouton <b>Entrer</b>, ton score du jour, le <b>score collectif</b> avec ses paliers et le <b>classement du jour</b>.</li>
+    <li>On y entre <b>seul</b>, <b>une fois toutes les 3 h</b> (comptées depuis ta dernière entrée), jamais pendant une session. 30 mineurs au plus en même temps.</li>
+  </ul>
+  <h2>Pendant la visite</h2>
+  <ul>
+    <li><b>3 min de jeu</b> dans l'onglet <b>Session</b>. Ton mineur marche au bloc et le frappe par la gauche ; tu vois les autres joueurs présents.</li>
+    <li><b>Chaque seconde à frapper rapporte ta vitesse de minage en points</b> (stuff, skills, anneaux et sorts compris). Ici, c'est la spécialisation <b>Mineur</b> qui brille.</li>
+    <li>Chaque coup a <b>10 %</b> de chance de te repousser de 1 à 3 cases : la <b>ténacité</b> l'évite, la <b>résistance au recul</b> raccourcit le vol.</li>
+    <li>L'oxygène baisse <b>deux fois plus vite</b> qu'en mine : ton mineur va boire à la <b>fontaine</b>, près du départ, quand il le faut.</li>
+    <li>Rien à ramasser, pas d'XP. <b>Dynamite</b> : un point de plus ; <b>Inspiration</b> : tout le monde frappe plus vite ; les anneaux comptent pour tous les présents.</li>
+  </ul>
+  <h2>La récompense</h2>
+  <p>À minuit, chaque joueur venu <b>au moins une fois</b> reçoit les objets de <b>tous les paliers</b> atteints par le score collectif (ils s'additionnent) : <b>1 000</b> : 1 Treasure T1 · <b>2 500</b> : 1 Treasure T1 + 15 Blueprint parts · <b>5 000</b> : 1 Treasure T2 · <b>7 500</b> : 1 Treasure T2 + 30 Blueprint parts · <b>10 000</b> : 1 Treasure T3. Elle t'attend sur la carte du Bloc géant (bouton <b>Réclamer</b>) tant que tu ne l'as pas prise.</p>
+  <p class="tip">💡 Plus il y a de joueurs, plus le palier du Treasure T3 est à portée : passe toutes les 3 h !</p>
 </section>
 
 <section id="ange">

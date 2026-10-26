@@ -3191,3 +3191,33 @@ Règles (voir CLAUDE.md) :
 - **Quoi** : `FURNACE` alliages, `src/config.js` : Steel ingot `'Graphite ingot':10` → `5`. Wiki (tableaux depuis la
   config), GAME_DESIGN, état du projet.
 - **Tests** : `tests/graphite.test.js`, wiki, craft, anticheat.
+
+### Bloc géant (Geoffrey) — branche `geoffrey/bloc-geant`, ✅ en ligne le 26/10
+- **Quoi** : spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`. Config `GIANT` (+ mode `giant` dans
+  `MINE_MODES`, refusé par `game.start` : `mode_giant`). Règles pures `src/shared/giant.js` (jour de Paris : `dayOf`,
+  `dayEnd`, délai, paliers cumulés `rewardFor`, `ranking`). Simulation `src/sim/giant/session.js` (salle sans fin :
+  `joinGiant` / `leaveGiant` / `tickGiant`, visites finies dans `G.done`). `src/shared/giant-room.js` : fiche d'un joueur
+  via `minerSpecs` (un par un ; `record.rings` = anneaux de tous les présents, nouveau paramètre de `minerSpecs`),
+  recalcul des caractéristiques à chaque arrivée / départ. Serveur `server/giant/service.js` + `routes.js` (GET
+  /api/giant, GET /api/giant/view, POST enter / leave / claim), branché dans `server/main.js` (pompe) et `app.js`.
+  Service de jeu : `useGiant` (une visite compte comme une session : `start` refuse `in_giant`, `openInstant` écarte,
+  `activeSessionInfo` et `playersInSession` la voient : Social), `giantEnter` (verrou `acct:`), `giantGrant` (verrou
+  `inv:`, écriture inventaire + joueur). Stockage : ns `giant_day` (scores du jour) et `giant_player` (délai, visite en
+  cours, jours réclamés), écritures groupées. Navigateur : `src/ui/giant.js` (carte du lobby, visite, fin),
+  `src/render/giant.js`, `#giantCard`, `#gtRun`, `#gtDone` ; `lobbyCards` a une clé `giant`. Textures
+  `giant_block` (80 × 80), `giant_fountain`, `giant_torch` (`gen_textures.py` : `giant()`).
+- **Choix techniques** : la salle tourne dans le fil principal (pas de worker : 30 mineurs pendant 1 h de jeu ≈ 50 ms
+  de calcul) ; pas de rejeu après un redémarrage : les visites pas finies reprennent avec le temps restant et les
+  points enregistrés (toutes les `GIANT_SERVER.checkpointEvery` = 10 s), celles finies pendant l'arrêt sont closes avec
+  ces points. Récompense d'un jour disponible à `dayEnd + durée d'une visite`. Mode dev (`npm run dev`) : pas de délai.
+- **Tests** : giant-rules (8), giant-sim (12), giant-service (11), anticheat/giant (4), lobby (mis à jour), game-service
+  (`mode_giant`) ✅. `npm run test:anticheat` ✅ 95. Vérifié dans Chromium (Playwright) à 2 puis 3 comptes : entrée,
+  salle en direct, superposition (un pseudo + « ×3 »), fin de visite (155 points), carte du lobby (classement, paliers),
+  aucune erreur dans la page ✅. `npm run simulate:giant` : 151 / 190 / 228 points par visite (sans stuff / fer /
+  acier), une recharge par visite, pas de blocage.
+- **Points fragiles** : la salle et les visites en mémoire du serveur (un seul serveur) ; les points d'une visite en
+  cours depuis le dernier point d'étape sont perdus à un redémarrage (≤ 10 s) ; le jour d'une récompense se lit avec
+  `Date.parse(jour + 'T12:00:00Z')`.
+- **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
+  simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
+  (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).

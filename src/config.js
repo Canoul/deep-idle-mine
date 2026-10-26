@@ -573,7 +573,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
@@ -1059,10 +1059,46 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
+  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
+
+/* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
+   Une session commune à tout le serveur, de minuit à minuit (timeZone). Chacun y entre seul, une fois toutes les
+   cooldownMs (depuis sa dernière entrée), pour une visite de visit s : son mineur frappe un bloc indestructible.
+   Carte : w × h cases d'air ; bloc block × block collé en bas à droite ; spawn en bas à gauche (spawnX), fontaine en
+   fountainX ; on mine le bloc par la gauche seulement (colonne w - block - 1), les mineurs se superposent.
+   Points : chaque seconde à miner rapporte la vitesse de minage effective (stuff, skills, anneaux, sorts).
+   Recul : chaque coup (vitesse de minage = coups par seconde) a knock.chance de le repousser en arc de knock.min à
+   knock.max cases vers la gauche (vol de knock.flight s) ; la ténacité l'ignore, la résistance au recul réduit la
+   distance (arrondie, knock.min au moins). Oxygène : oxygenDrain par seconde (×2 de la mine) ; la fontaine recharge
+   fountainRefill par seconde au mineur à fountainRange case(s) ou moins ; il y va quand il lui en reste juste assez
+   pour l'aller (oxygenMargin s de marge). Pas de pods, pas d'XP, pas de butin.
+   Dynamite : dynamitePoints point(s) de plus, sans rien casser ; Inspiration : comme en mine (tous les présents) ;
+   Fast learner : le bloc géant est « appris » (+bonus à la vitesse de minage pour la visite). Dash, Illumination, Ulti
+   shen : sans effet. Anneaux : pour tous les joueurs présents, une fois par anneau différent.
+   Récompense : à la fin de la session, à chaque joueur venu au moins une fois, selon le score collectif ; les paliers
+   s'additionnent. maxPlayers : mineurs en même temps dans la carte ; top : lignes du classement. poll : rafraîchissement
+   du panneau (ms). */
+export const GIANT = {
+  timeZone: 'Europe/Paris',
+  visit: 180, cooldownMs: 3 * 3600e3, maxPlayers: 30,
+  w: 15, h: 7, block: 5, spawnX: 0, fountainX: 1, fountainRange: 1,   // 15 de large (26/10, Geoffrey ; avant 10) : plus de chemin jusqu'au bloc
+  knock: { chance: 0.10, min: 1, max: 3, flight: 0.4 },
+  oxygenDrain: 2, fountainRefill: 30, oxygenMargin: 3,
+  dynamitePoints: 1,
+  tiers: [
+    { min: 1000,  items: { 'Treasure T1': 1 } },
+    { min: 2500,  items: { 'Treasure T1': 1, 'Blueprint parts': 15 } },
+    { min: 5000,  items: { 'Treasure T2': 1 } },
+    { min: 7500,  items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
+    { min: 10000, items: { 'Treasure T3': 1 } },
+  ],
+  top: 10, poll: 3000, viewPoll: 500,
+};
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement

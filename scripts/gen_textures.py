@@ -1003,6 +1003,8 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), 24, 40, px)
     for name, px in tower_mobs().items():
         png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
+    for name, (w, h, px) in giant().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 
 
@@ -1111,6 +1113,61 @@ def tower_mobs():
     r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
     r(im, 3, 13, 2, 2, red)
     return {'seraph': sp, 'imp': im}
+
+
+def giant():
+    """Bloc géant (26/10) : le bloc (5 × 5 cases, 80 × 80 pixels) en minerai de toutes les couleurs, sa fontaine à
+    oxygène (1 × 2 cases) et la grande torche qui éclaire la salle (1 × 2 cases). Le jeu fait pulser le bloc."""
+    def canvas(w, h):
+        return [(0, 0, 0, 0)] * (w * h)
+
+    def r(px, w, h, x, y, rw, rh, c):
+        for yy in range(y, y + rh):
+            for xx in range(x, x + rw):
+                if 0 <= xx < w and 0 <= yy < h:
+                    px[yy * w + xx] = c
+
+    # le bloc : roche sombre, filons de toutes les couleurs, bord biseauté
+    W = H = 80
+    rnd = random.Random(2610)
+    blk = [shade(hexc('#2b2436'), 1 + (rnd.random() - 0.5) * 0.25) for _ in range(W * H)]
+    colors = ['#ff3b3b', '#ff8a1f', '#ffd23f', '#5be35b', '#2fe0d0', '#3d8bff', '#9b5bff', '#ff5bd2', '#ffffff']
+    for i in range(130):
+        c = hexc(colors[i % len(colors)])
+        x, y, sz = rnd.randrange(3, W - 8), rnd.randrange(3, H - 8), rnd.choice([3, 4, 4, 5, 6])
+        r(blk, W, H, x, y, sz, sz, c)
+        r(blk, W, H, x, y, sz, 1, shade(c, 1.25))
+        r(blk, W, H, x, y + sz - 1, sz, 1, shade(c, 0.7))
+    for k in range(3):
+        r(blk, W, H, k, k, W - 2 * k, 1, shade(hexc('#8a7aa8'), 1 - k * 0.2))
+        r(blk, W, H, k, k, 1, H - 2 * k, shade(hexc('#8a7aa8'), 1 - k * 0.2))
+        r(blk, W, H, k, H - 1 - k, W - 2 * k, 1, shade(hexc('#120e18'), 1))
+        r(blk, W, H, W - 1 - k, k, 1, H - 2 * k, shade(hexc('#120e18'), 1))
+
+    # la fontaine : vasque de pierre, jet d'eau bleue
+    fw, fh = 16, 32
+    ft = canvas(fw, fh)
+    stone, stone_d, water, water_l = hexc('#8d8a94'), hexc('#5d5a66'), hexc('#3d8bff'), hexc('#bfe3ff')
+    r(ft, fw, fh, 1, 22, 14, 4, stone); r(ft, fw, fh, 1, 25, 14, 1, stone_d)
+    r(ft, fw, fh, 2, 21, 12, 1, water); r(ft, fw, fh, 3, 20, 10, 1, water_l)
+    r(ft, fw, fh, 6, 26, 4, 6, stone_d); r(ft, fw, fh, 4, 30, 8, 2, stone)
+    r(ft, fw, fh, 7, 6, 2, 15, water); r(ft, fw, fh, 7, 6, 1, 15, water_l)
+    for (x, y) in [(5, 5), (10, 5), (4, 8), (11, 8), (3, 12), (12, 12), (3, 16), (12, 16)]:
+        r(ft, fw, fh, x, y, 1, 2, water_l)
+    r(ft, fw, fh, 6, 4, 4, 2, water_l)
+
+    # la grande torche : brasero sur un pied, grande flamme
+    tw, th = 16, 32
+    tc = canvas(tw, th)
+    iron, iron_d = hexc('#6b6b73'), hexc('#3b3b43')
+    r(tc, tw, th, 7, 14, 2, 18, iron_d); r(tc, tw, th, 7, 14, 1, 18, iron)
+    r(tc, tw, th, 3, 12, 10, 3, iron); r(tc, tw, th, 3, 14, 10, 1, iron_d)
+    flame = [('#ff3b1f', 2, 3, 12, 9), ('#ff8a1f', 3, 2, 10, 9), ('#ffd23f', 5, 4, 6, 7), ('#fff6c0', 7, 7, 2, 4)]
+    for c, x, y, w, h in flame:
+        r(tc, tw, th, x, y, w, h, hexc(c))
+    r(tc, tw, th, 6, 0, 3, 2, hexc('#ff8a1f')); r(tc, tw, th, 4, 1, 2, 2, hexc('#ff3b1f')); r(tc, tw, th, 10, 1, 2, 2, hexc('#ff3b1f'))
+
+    return {'giant_block': (W, H, blk), 'giant_fountain': (fw, fh, ft), 'giant_torch': (tw, th, tc)}
 
 
 if __name__ == '__main__':
