@@ -12,6 +12,7 @@ import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
 import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
+import { pieceGS } from './gearscore.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
 /* genre de case où va un objet ('casque', 'anneau'…), null si ce n'est pas une pièce d'équipement */
@@ -151,7 +152,7 @@ export function stuffTip(entry){
   if(ITEMS[item]?.cat === 'rune') return [pieceName(entry), ...statLines(entry), 'À poser sur une pièce : onglet Amélioration, Enchantement'].join('\n');
   if(ITEMS[item]?.cat !== 'stuff') return null;
   const lines = statLines(entry);
-  return [pieceName(entry), ...(lines.length ? lines : ['Aucun effet'])].join('\n');
+  return [pieceName(entry), ...(lines.length ? lines : ['Aucun effet']), ...(isRing(item) ? [] : [`GS ${pieceGS(entry)}`])].join('\n');
 }
 
 export function createStuff(){ return { worn: Object.fromEntries(SLOT_IDS.map(s => [s, null])), ops: [] }; }
