@@ -3308,6 +3308,5 @@ Règles (voir CLAUDE.md) :
 - **Quoi** : `src/config.js` `GLYPHS.liftSpeed: 1.5` et texte `GLYPHS.desc.winch` ; `GAME_DESIGN.md` (tableau des
   glyphes : 1,28 × la montée, 1,59 × avec Escalateur 5/5) ; `claude/etat-du-projet.md` ; `tests/glyphs.test.js` (valeur).
 - **Tests** : glyphs, glyph-drop, tower*, wiki : 82/82 ✅.
-- **Fragile** : ⚠️ pas mesuré en simulation : l'ascenseur n'est posé qu'une area sur deux ; à × 1,5 il n'est plus
-  évident qu'il batte le treuil normal (× 0,85 de la montée, posé à chaque area). À vérifier si le glyphe devient un malus.
-
+- **Note** : l'ascenseur est posé une area sur deux mais couvre 2 areas à chaque fois (moitié moins de remontées pour le
+  construire) ; à × 1,5 il reste meilleur que le treuil (Geoffrey). Pas mesuré en simulation.
