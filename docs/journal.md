@@ -25,13 +25,14 @@ Modèle d'entrée :
   Bouton **Inviter** (par leur ID, ami ou non) pour ceux qui ne sont pas en session ni déjà dans ton groupe. Un second
   clic sur Who ? ferme la liste. Wiki à jour.
 - **Décisions** : choix de Claude à valider : seulement les joueurs en ligne (ou en session), pas tous les comptes.
-- **État** : 🔧 branche `geoffrey/tour-who`, pas en ligne
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
 - **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
   s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points
   (248). Maintenant la visite reste à l'écran jusqu'au bout, et l'écran de fin montre les points comptés par le serveur.
-  Aucun point n'était perdu.
+  Aucun point n'était perdu. Même chose si l'onglet du jeu passait en arrière-plan pendant la visite (le navigateur
+  ralentit alors les relevés) : l'écran de fin lit maintenant toujours les points du serveur.
 - **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant

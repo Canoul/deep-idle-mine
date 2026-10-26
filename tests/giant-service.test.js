@@ -208,3 +208,16 @@ test('fin de visite : le serveur donne les points de la dernière visite (écran
   assert.equal(i.lastVisit.points, i.mine.points);
   assert.equal(i.lastVisit.day, i.day);
 });
+
+test('fin de visite : deux visites dans la journée, lastVisit = la dernière seule, jour = somme', async () => {
+  const { giant, advance, clock } = setup();
+  await giant.enter(A);
+  await advance(VISIT + 1000);
+  const first = (await giant.info(A)).lastVisit.points;
+  clock.now += 3 * 3600e3;
+  await giant.enter(A);
+  await advance(VISIT + 1000);
+  const i = await giant.info(A);
+  assert.ok(i.lastVisit.points > 0 && i.lastVisit.points < i.mine.points, 'deuxième visite seule');
+  assert.ok(Math.abs(i.mine.points - first - i.lastVisit.points) <= 1, 'jour = somme des visites');
+});
