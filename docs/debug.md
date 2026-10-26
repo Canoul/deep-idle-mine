@@ -3302,3 +3302,13 @@ Règles (voir CLAUDE.md) :
   des membres dans le lobby n'est rafraîchi qu'à l'état complet du groupe (les autres réponses du groupe ne le
   renvoient pas, comme le skin). Récompense de la modulation : rien (rec.modulation sert de marqueur pour la suite).
 
+### Admin : retirer un objet (Geoffrey) — branche `geoffrey/admin-retirer`, ✅ en ligne le 26/10
+- **Quoi** : `POST /api/admin/take {name, item, qty}` (`server/admin/routes.js`, même garde que give) → `adminTake`
+  (`server/game/service.js`), outil `scripts/take-item.js`. Verrous inv puis skills (même ordre que glyph_pose).
+  D'abord l'inventaire ; un glyphe posé (`st.glyphs[nœud]`) compte pour 1 et est retiré de la case s'il en manque.
+  Tout ou rien (409 not_owned sinon). Stuff non empilable : retire les derniers exemplaires de l'inventaire (jamais une
+  pièce portée).
+- **Points fragiles** : un glyphe retiré de sa case pendant une session reste actif jusqu'à la fin de cette session
+  (skills figés au lancement), comme pour un retrait par le joueur.
+- **Tests** : `tests/admin-take.test.js` ✅ 3 (inventaire, tout ou rien, glyphe posé, garde-fous, clé/relais) ;
+  admin ✅ 7.
