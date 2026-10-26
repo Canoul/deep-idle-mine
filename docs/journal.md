@@ -30,6 +30,12 @@ Modèle d'entrée :
   toujours posé une nouvelle area sur deux, et pareil dans les tours. Le wiki suit tout seul (texte lu dans la config).
 - **État** : ✅ en ligne le 26/10
 
+## 26/10/2026 — Geoffrey — Admin : retirer un objet à un joueur
+- **Pour le joueur** : rien. Nouvel outil sur le serveur : `take-item.js` retire un objet à un joueur sans redémarrer
+  le jeu (l'inverse de `give-item.js`). Un glyphe posé sur un skill est retiré de sa case.
+- **À suivre** : retirer les glyphes en trop (Infernatiwar : Braum, LeTaz : Échelle de 2, Nbrick : Ruée).
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Gear score et modulation des tours (en test)
 - **Pour le joueur** : chaque pièce de stuff affiche son **GS** (gear score) dans sa bulle et dans la liste de l'onglet
   Stuff, et l'onglet Stuff affiche le **GS total** en haut des stats. Le GS d'une pièce, c'est ce qu'elle ajoute aux

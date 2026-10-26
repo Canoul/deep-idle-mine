@@ -110,6 +110,7 @@ Ensuite, Render peut être supprimé (Settings → Delete Web Service) quand tou
 | Changer un réglage | `sudo nano /etc/deep-idle-mine.env` (Ctrl+O Entrée pour enregistrer, Ctrl+X pour sortir), puis redémarrer |
 | Redémarrer tout le VPS | `sudo reboot` (le jeu repart tout seul) |
 | Donner un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/give-item.js --name PSEUDO --item "Treasure T3" --qty 1` (nom exact de l'objet ; `--quality 5` : une pièce de stuff déjà identifiée R5 ; **sans redémarrer** : le joueur le voit tout de suite ; il faut la clé `DIM_ADMIN_TOKEN`, voir plus bas) |
+| Retirer un objet à un joueur | `sudo node /opt/deep-idle-mine/scripts/take-item.js --name PSEUDO --item "Glyphe Ruée" --qty 1` (nom exact ; d'abord dans l'inventaire, puis un glyphe posé sur son skill ; tout ou rien : s'il en a moins, rien ne change ; **sans redémarrer**, même clé que ci-dessus) |
 | Régler une jauge Ange / Démon | `sudo node /opt/deep-idle-mine/scripts/set-judgment.js --side demon --count 175` (`angel` ou `demon`, 0 à 200 ; pleine = la tour s'ouvre ; **sans redémarrer**, même clé que ci-dessus) |
 | Ouvrir un k hole chez un joueur | `sudo node /opt/deep-idle-mine/scripts/force-khole.js --name PSEUDO --map 2` (dans sa session en cours, mine classique ; `--map` : 0 au hasard, 1 Filons, 2 Arène des minotaures, 3 Salle au trésor, 4 Vagues ; le k hole s'ouvre sous les pieds d'un mineur du groupe, aspiration 3 s plus tard ; **sans redémarrer**, même clé que ci-dessus) |
 

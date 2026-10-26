@@ -21,14 +21,14 @@ import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
-import { createInventory, deserialize, serialize, creditSession, addItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
+import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
-import { glyphOp, sessionSkills, ownedGlyphs } from '../../src/meta/glyphs.js';
+import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
 import { sanitizeSets, setOp, applySet, snapshot, publicSets, inSomeSet } from '../../src/meta/sets.js';
 import { canOpen, openTreasure, openAll } from '../../src/meta/loot.js';
@@ -607,6 +607,25 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         await store.putInventory(accountId, JSON.parse(serialize(inv)));
         return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });
+    },
+
+    /* administration : retire qty exemplaires d'un objet à un compte (ex. un glyphe donné par erreur), sous les verrous
+       de son inventaire et de ses skills (même ordre que glyph_pose). D'abord l'inventaire ; un glyphe posé sur son skill
+       compte pour 1 et est retiré de la case s'il en manque. Tout ou rien : s'il en a moins que qty, rien ne change. */
+    async adminTake(accountId, item, qty){
+      if(typeof item !== 'string' || !Object.hasOwn(ITEMS, item)) fail('bad_item', 400, `« ${item} » n'est pas un objet du jeu (nom exact).`);
+      if(!Number.isSafeInteger(qty) || qty < 1 || qty > ADMIN_MAX_QTY) fail('bad_request', 400, `Quantité : un entier de 1 à ${ADMIN_MAX_QTY}.`);
+      return withLock('inv:' + accountId, () => withLock('skills:' + accountId, async () => {
+        const inv = await loadInventory(accountId), st = await loadSkills(accountId);
+        const node = nodeOfGlyph(item), posed = node && st.glyphs?.[node] === item ? 1 : 0;
+        const inInv = countOf(inv, item), before = inInv + posed;
+        if(before < qty) fail('not_owned', 409, `Il n'en a que ${before} (inventaire ${inInv}, posé ${posed}).`);
+        const fromInv = Math.min(qty, inInv), fromSkill = qty - fromInv;
+        if(fromInv) removeItem(inv, item, fromInv);
+        if(fromSkill){ delete st.glyphs[node]; await store.putInventoryAndSkills(accountId, JSON.parse(serialize(inv)), st); }
+        else await store.putInventory(accountId, JSON.parse(serialize(inv)));
+        return { item, qty, fromInventory: fromInv, fromSkill, before, after: before - qty };
+      }));
     },
 
     /* ouvrir un Treasure TX de son inventaire : le serveur tire le butin. opId (choisi par le navigateur) rend la
