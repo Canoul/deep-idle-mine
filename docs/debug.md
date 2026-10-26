@@ -3410,3 +3410,29 @@ Règles (voir CLAUDE.md) :
   (263 x = Jambes en fer) et Ceinture `tenacity` 12,6 → 25 (250 x) ; Lanières et Capuche inchangées (tableau des runes :
   en prix mesurés, vitesse d'attaque +135 % et recul +1,1). GS : Lanières 306, Capuche 142 (sous le fer en prix mesurés).
   Test x réécrit en conséquence ✅.
+
+## 26/10/2026 — Golem de sperme : mob 2 × 2 qui creuse (branche `geoffrey/golem`) — ✅ en ligne le 26/10
+- **Quoi** : `src/sim/golem.js` (nouveau) : cases, `breakable`, `smash` (bloc perdu, `oreRemoved`, `updateLight`),
+  `standing` (sol sous une colonne OU bloc contre un flanc, bord de la mine compris), `fitsAt`/`clearAt` (naissance),
+  `golemFalls`, `golemStep` (escalier vers la proie, cheminée dessous, `o.stair` gardé en salle ouverte, demi-tour
+  seulement contre un bord ou un incassable ; un bloc toutes les `dig` s via `o.dig`, à part de `o.cd`), `quake`
+  (`m.quakeUntil`). `src/sim/mobs.js` : `updateGolem`, golem dans `WALKERS`, naissance dans `spawnMobs` (`fitsAt`,
+  `clearAt`, `o.size`, `o.knockRes`, `o.speed` depuis `MOBS.speed`), `strike` lit `MOBS.hitEveryBy` et pousse depuis
+  `nearCell`. `src/sim/knock.js` : `nearCell` (case la plus proche d'une entité de plusieurs cases), utilisée par `gap` et
+  `inReach` : tout ce qui mesure la portée (tacle, coups, IA) marche pour le golem sans autre changement. `ai.js` /
+  `session.js` : étourdi tant que `m.quakeUntil`. `actions.js` `killMob` : butin. `trap.js` : `MOBS.noTrap`. Config :
+  `MOBS.golem`, `hpBase`/`minArea`/`spawnTable`/`speed`/`hitEveryBy`/`knock`, `XP.mob.golem`, objet `Pierre glissante`,
+  textures `golem` (32 × 32) et `slippery_stone`. Rendu `src/render/canvas.js` (2 × 2, goutte animée). Wiki : fiche,
+  vitesse de chaque mob (`MOB_INFO.speed`).
+- **Piège évité** : un corps de 2 de large ne peut jamais faire demi-tour en montant un escalier qu'il creuse (la marche
+  qui le porterait est toujours déjà creusée par lui) : il dépassait le mineur, glissait sur son escalier, remontait
+  (boucle). D'où la cheminée et l'agrippement (`standing`).
+- **Tests** : `tests/golem.test.js` (nouveau, 14) ; goblin, mephite : table de l'area 5 mise à jour ; combat, dungeon,
+  goblin, khole, knock, lobby, loot, mephite, mobs, spells, trap, view, wiki, session, skins ✅ ; anticheat 95/95 ✅.
+- **Simulation** : normale (`--miners 3 --count 5`) identique au chiffre près à avant (182,4 de profondeur, 4140 pods,
+  0 bloquée) : rien ne change avant l'area 5. Stress (golem dès l'area 0, 30 % des apparitions, via un script chargé avant
+  `simulate.js`) : 14 à 20 golems par session, tous tués sauf 3 en fin de session, ≈ 90 s de vie, 80 à 200 blocs cassés,
+  0 session bloquée ; le seul golem immobile en chasse attendait devant un donjon où était le mineur (voulu).
+- **À vérifier** : ⚠️ pas regardé dans le navigateur (dessin 2 × 2, barre de vie, goutte) ; ⚠️ la simulation standard
+  n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
+

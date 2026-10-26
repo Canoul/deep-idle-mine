@@ -168,6 +168,10 @@ export function killMob(G,m,o){
     const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);
     log(G, `🗡 ${m.name} : méphite vaincu (+${n} ${it.toLowerCase()})`);
+  } else if(o.type==='golem'){
+    const it=MOBS.golem.item, n=lootOf(G,m,MOBS.golem.loot(G.rng));
+    collect(m,it,ITEMS[it].w ?? 1,n);
+    log(G, `🗡 ${m.name} : golem vaincu (+${n} ${it.toLowerCase()})`);
   } else {
     const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
