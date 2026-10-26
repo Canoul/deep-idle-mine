@@ -28,7 +28,7 @@ Modèle d'entrée :
 ## 26/10/2026 — Geoffrey — Glyphe Treuil : ascenseur 1,5 fois plus rapide (avant 3)
 - **Pour le joueur** : l'ascenseur du Glyphe Treuil monte et descend **1,5 fois** plus vite que le treuil (avant 3 fois),
   toujours posé une nouvelle area sur deux, et pareil dans les tours. Le wiki suit tout seul (texte lu dans la config).
-- **État** : 🔧 branche `geoffrey/nerf-glyphe-treuil`, pas en ligne
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Gear score et modulation des tours (en test)
 - **Pour le joueur** : chaque pièce de stuff affiche son **GS** (gear score) dans sa bulle et dans la liste de l'onglet

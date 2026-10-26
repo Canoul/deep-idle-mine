@@ -3304,7 +3304,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Glyphe Treuil : `GLYPHS.liftSpeed` 3 → 1,5 (branche `geoffrey/nerf-glyphe-treuil`)
+## 26/10/2026 — Glyphe Treuil : `GLYPHS.liftSpeed` 3 → 1,5 (branche `geoffrey/nerf-glyphe-treuil`) — ✅ en ligne le 26/10
 - **Quoi** : `src/config.js` `GLYPHS.liftSpeed: 1.5` et texte `GLYPHS.desc.winch` ; `GAME_DESIGN.md` (tableau des
   glyphes : 1,28 × la montée, 1,59 × avec Escalateur 5/5) ; `claude/etat-du-projet.md` ; `tests/glyphs.test.js` (valeur).
 - **Tests** : glyphs, glyph-drop, tower*, wiki : 82/82 ✅.
@@ -3313,7 +3313,7 @@ Règles (voir CLAUDE.md) :
 
 ---
 
-## 26/10/2026 — Bloc géant : `GIANT.oxygenPerHit = 1` (branche `geoffrey/bloc-geant-oxygene-coup`) — ✅ en ligne le 26/10
+## 26/10/2026 — Bloc géant : `GIANT.oxygenPerHit = 1` (branche `geoffrey/nerf-glyphe-treuil`) — ✅ en ligne le 26/10
 - **Quoi** : `src/sim/giant/session.js` `mine()` : chaque coup (`m.stats.hits++`) retire `GIANT.oxygenPerHit` (plancher 0).
   `oxToFountain` (seuil de départ vers la fontaine) ne compte que la marche : pas de coup en marchant, inchangé.
 - **Tests** : `tests/giant-sim.test.js` +1 (perte = drain × t + coups × oxygenPerHit) ; giant-*, anticheat/giant : 37/37 ✅.
