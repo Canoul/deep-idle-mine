@@ -92,7 +92,7 @@ export function minerSpecs(record){
   const rawSkills = i => record.devSpecs?.[i] ? devSkills(record.devSpecs[i]) : i < players.length ? record.skills?.[players[i].account] : null;
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
-  const rings = groupRings(record);
+  const rings = record.rings ?? groupRings(record);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
   const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier
