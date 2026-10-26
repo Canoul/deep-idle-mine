@@ -3437,7 +3437,7 @@ Règles (voir CLAUDE.md) :
   n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
 
 
-## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ⏳
+## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ✅ en ligne le 26/10
 - **Quoi** : `server/accounts/store.js` `recentlySeen(since)` → { compte: max lastSeenAt } d'après les connexions
   (lastSeenAt prolongé au plus une fois par heure : à une heure près ; survit aux redémarrages). `server/social/service.js`
   : map `lastSeen` (signe de vie à la minute, gardée `SOCIAL_SERVER.whoRecentFor` = 24 h, perdue au redémarrage) ;

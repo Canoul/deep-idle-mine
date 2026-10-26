@@ -22,7 +22,7 @@ Modèle d'entrée :
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
   venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour
   eux (ils ne sont pas là) : c'est pour savoir qui contacter.
-- **État** : ⏳ pas encore en ligne
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Nouveau mob : le golem de sperme (area 5+)
 - **Pour le joueur** : à partir de l'area 5, un golem de pierre qui sue un liquide blanc, **2 × 2 cases**, 300 PV (+15 %
