@@ -2,18 +2,20 @@
    Tous les mobs TACLENT : à portée d'attaque (COMBAT.reach) du mineur qu'ils visent, ils le forcent à les combattre
    (un seul mineur par mob) jusqu'à leur mort ou une provocation ; le mineur taclé peut bouger, mais seulement pour les
    frapper (25/10, avant : immobilisé). Recul et portée : src/sim/knock.js. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
-   vole (pas de gravité) et asphyxie le mineur qu'il tacle. */
+   vole (pas de gravité) et asphyxie le mineur qu'il tacle. Le golem (2 × 2) casse les blocs et ébranle la mine
+   (src/sim/golem.js). */
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
 import { log } from './log.js';
 import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
 import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
-import { inReach, push, recenter, driftsAway, gap } from './knock.js';
+import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
+import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
-export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite']);
+export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite', 'golem']);
 export const isWalker = o => WALKERS.has(o.type);
 export const FLYERS = new Set(['mephite']);
 export const isFlyer = o => FLYERS.has(o.type);
@@ -51,6 +53,7 @@ export function resists(G,m){
 export function mobCanEnter(G,o){
   if(o.type==='mimic') return () => false;
   if(o.type===DUCK.type) return (x,y) => y===o.y && duckCanEnter(G,x);
+  if(o.type==='golem') return golemCanEnter(G);
   const d=o.dungeon!=null ? G.dungeons.find(q=>q.id===o.dungeon) : null;
   return (x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !veiled(G,x,y)
     && (d ? interior(d,x,y) : !dungeonAt(G,x,y));
@@ -99,13 +102,13 @@ function updateGrab(G,o){
 /* coup d'un mob qui tacle (MOBS.hitEvery) : il repousse sa cible de MOBS.knock[type] blocs s'il est à portée (les
    autres mobs ont 0 de poussée : leur coup, c'est leur effet, vol ou asphyxie) */
 function strike(G,o){
-  const k=MOBS.knock[o.type] || 0, m=byId(G,o.grab);
-  if(!(k>0) || !m){ o.hit=MOBS.hitEvery; return; }
-  o.hit=(o.hit ?? MOBS.hitEvery)-DT;
+  const k=MOBS.knock[o.type] || 0, m=byId(G,o.grab), every=MOBS.hitEveryBy[o.type] ?? MOBS.hitEvery;
+  if(!(k>0) || !m){ o.hit=every; return; }
+  o.hit=(o.hit ?? every)-DT;
   if(o.hit>1e-9 || !inReach(G,o,m)) return;
-  o.hit+=MOBS.hitEvery;
+  o.hit+=every;
   if(m.action?.type==='move') return;   // en plein pas (ou en chute) : le coup ne le déplace pas
-  push(m, o, k, (x,y) => isAir(G,x,y) && !noEntry(G,m,x,y));
+  push(m, nearCell(o,m), k, (x,y) => isAir(G,x,y) && !noEntry(G,m,x,y));   // golem : depuis sa case la plus proche
   m.stats.knocked=(m.stats.knocked||0)+1;
 }
 
@@ -129,6 +132,21 @@ function chaseOf(G,o){
 const inChase = (o,p) => p.id===o.hunt || manhattan(p,o)<=CFG.mobChaseRange;
 /* temps d'un pas : mobStep, divisé par la vitesse du mob (mobs de piège : TRAP.speedMul) */
 const stepOf = o => CFG.mobStep/(o.speed||1);
+
+/* ---- golem (src/sim/golem.js) : tacle, coups et poursuite comme les autres ; il tombe, ébranle la mine, et casse les
+   blocs pour rejoindre sa proie (il s'arrête à portée) */
+function updateGolem(G,o){
+  if(golemFalls(G,o)){ updateGrab(G,o); o.chase=chaseOf(G,o); return; }
+  quake(G,o,resists);
+  updateGrab(G,o);
+  strike(G,o);
+  o.chase=chaseOf(G,o);
+  o.cd=(o.cd||0)-DT; o.dig=(o.dig||0)-DT;
+  const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) return;
+  if(o.grab==null && !inChase(o,m)) return;
+  if(inReach(G,o,m)) return;
+  golemStep(G,o,m,stepOf(o));
+}
 
 /* ---- boss de donjon (minotaure) : enfermé dans sa salle, il ne vise que les mineurs qui y sont (intérieur ou entrée),
    marche vers eux sans jamais sortir et les tacle à 1 case. Rien d'autre. */
@@ -154,6 +172,7 @@ export function updateMobs(G){
     if(o.stunUntil>G.t){ o.grab=null; continue; }   // étourdi (Dash) : il ne tacle pas, ne bouge pas, ne lance rien
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
+    if(o.type==='golem'){ updateGolem(G,o); continue; }
     if(o.type==='mimic'){
       if(!o.revealed && G.miners.some(m=>m.y>0 && Math.hypot(o.x-m.x,o.y-m.y)<=MOBS.mimicRevealDist)) revealMimic(G,o);
       updateGrab(G,o); o.chase=chaseOf(G,o); continue;
@@ -352,13 +371,15 @@ function spawnMobs(G){
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
     if(areaOf(y)<MOBS.minArea[type]) continue;
-    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&(FLYERS.has(type)||supported(G,x,y))&&!dungeonAt(G,x,y)) cand.push([x,y]); }   // jamais dans un donjon ; un volant naît aussi en l'air
+    for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&(FLYERS.has(type)||supported(G,x,y))&&!dungeonAt(G,x,y)&&(type!=='golem'||fitsAt(G,x,y))) cand.push([x,y]); }   // jamais dans un donjon ; un volant naît aussi en l'air ; un golem là où il tient (2 × 2)
   }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];
   const hp=mobHp(type, areaOf(y));
   const o={id:G.mobId++,type,x,y,hp,maxhp:hp,cd:1};
+  if(MOBS.speed[type]) o.speed=MOBS.speed[type];
   if(type==='occultiste') o.cast=MOBS.occult.cooldown;
+  if(type==='golem'){ o.size=MOBS.golem.size; o.knockRes=MOBS.golem.knockRes; clearAt(G,x,y); log(G, '🗿 Un golem sort de la roche !'); }
   G.mobs.push(o);
 }
 
