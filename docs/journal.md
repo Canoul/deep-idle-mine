@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Gear score et modulation des tours (en test)
+- **Pour le joueur** : chaque pièce de stuff affiche son **GS** (gear score) dans sa bulle et dans la liste de l'onglet
+  Stuff, et l'onglet Stuff affiche le **GS total** en haut des stats. Le GS d'une pièce, c'est ce qu'elle ajoute aux
+  stats de base, en x (stats de l'objet, identification, rune, amélioration). Dans le lobby, chaque joueur montre son GS.
+  En lançant une tour, une case **« Modulation »** : cochée, chaque joueur doit avoir **moins de 2000 GS**, sinon le
+  lancement est refusé et le jeu dit qui dépasse, et de combien. Repères : stuff complet T1 ≈ 1 350 GS, tout en fer
+  ≈ 2 480, tout en acier ≈ 3 390.
+- **Décisions** (Geoffrey) : GS = stats (x) − stats de base (x) ; pièce = stats + rune + amélioration ; test à 2000 GS.
+  Choix de Claude à valider : skills, sorts, glyphes et anneaux ne comptent pas ; torches, lumière et boussole non plus
+  (pas de prix en x) ; la Lance en fer vaut ≈ 1 020 GS (portée et recul sont chers en x, prix provisoires du 25/10).
+- **À suivre** : **les meilleures récompenses de la modulation ne sont pas faites** (à décider) ; wiki pas encore mis à jour.
+- **État** : 🔧 branche `geoffrey/modulation`, pas en ligne (pour tester en local)
+
 ## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
 - **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
   s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points

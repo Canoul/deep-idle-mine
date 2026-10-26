@@ -3,6 +3,7 @@
    de test et réglages. Pendant une session, il reste visible en LECTURE SEULE (bandeau « En session dans la mine ») :
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
+import { gearScore } from '../meta/gearscore.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
@@ -67,6 +68,20 @@ export function launchState({ account, party, offline, busy, session }){
 
 /* Case « Prêt tout le temps » : seulement pour un membre (pas le chef) d'un groupe ; utilisable aussi pendant une
    session, pour être prêt dès la suivante */
+/* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie ;
+   over : les joueurs au-dessus du plafond (le serveur revérifie au lancement) */
+export function modulationState({ tower, locked, party, account, slots = [], myGs }){
+  const leader = !party || party.members.length < 2 || party.leader === account?.id;
+  const show = !!tower && !locked && !!account && leader;
+  const max = TOWER.modulation.gsMax;
+  const members = slots.filter(s => s.kind === 'member').map(s => ({ name: s.me ? 'Toi' : s.name, gs: s.me ? myGs : s.gs }));
+  const over = members.filter(m => Number.isFinite(m.gs) && m.gs >= max);
+  const esc2 = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const text = `Modulation : moins de ${max.toLocaleString('fr-FR')} GS chacun`+
+    (over.length ? ` <small class="err">(${over.map(m => `${esc2(m.name)} : ${m.gs.toLocaleString('fr-FR')} GS`).join(', ')})</small>` : '');
+  return { show, over, text };
+}
+
 export function alwaysReadyState({ account, party, offline }){
   if(offline || !account || !party || party.members.length < 2 || party.leader === account.id) return { show:false };
   const me = party.members.find(m => m.account === account.id);
@@ -160,7 +175,9 @@ export function setupLobby(h){
         return `<div class="pslot free invited"><span class="av">${pxi('group')}</span><span><b>${esc(s.name)}</b><small>invité · en attente</small></span>`+
                (slotButtons(st, s).kick ? `<button class="x" data-kick="${esc(s.displayId)}" title="Annuler l'invitation">×</button>` : '')+`</div>`;
       const ready = party && !s.leader && !s.playing ? (s.always ? '✔ prêt tout le temps' : s.ready ? '✔ prêt' : 'pas prêt') : null;   // le chef : lancer = prêt
-      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent'].filter(Boolean).join(' · ') || 'Prêt';
+      const gs = s.me ? h.gs?.() : s.gs;
+      const tags = [s.me && 'Toi', s.leader && 'chef', ready, (s.playing || s.me && locked) && 'en session', s.away && 'absent',
+                    Number.isFinite(gs) && `${gs.toLocaleString('fr-FR')} GS`].filter(Boolean).join(' · ') || 'Prêt';
       return `<div class="pslot${s.me ? ' me' : ''}${s.away ? ' away' : ''}"><span class="av"><canvas width="16" height="16" data-slot="${i}"></canvas></span>`+
              `<span><b>${esc(s.name)}</b><small class="spec">${esc(s.me && st.myTree !== undefined ? specLabel(st.myTree, st.mySpec?.[st.myTree]?.level) : specLabel(s.tree, s.specLevel))}</small><small>${esc(tags)}</small></span>`+
              (slotButtons(st, s).promote ? `<button class="x promote" data-promote="${esc(s.displayId)}" title="Nommer chef">★</button>` : '')+
@@ -172,6 +189,11 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
+    /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
+    const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.() });
+    $('modulationRow').hidden = !mod.show;
+    $('modulationText').innerHTML = mod.text;
+    if(!mod.show) $('modulation').checked = false;
     const ar = alwaysReadyState(st);
     $('alwaysReadyRow').hidden = !ar.show;
     $('alwaysReady').checked = !!ar.checked;
@@ -322,6 +344,7 @@ export function setupLobby(h){
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
+  $('modulation').onchange = () => render();
   $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
@@ -381,7 +404,8 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
-    try { await h.onLaunch({ mode: st.mode, ...(st.info?.dev ? devOptions() : {}) }); }
+    const tw = !!MINE_MODES.find(m => m.id === st.mode)?.tower;
+    try { await h.onLaunch({ mode: st.mode, ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }
   };
 

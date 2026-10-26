@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, treasureItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, treasureItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -37,6 +37,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
+import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
@@ -198,6 +199,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              tick: live.tickOf(rec.id), clock: rec.dev ? rec.clock : null,
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
+             ...(rec.modulation ? { modulation: rec.modulation } : {}),
              result: rec.status === 'done' ? rec.result : null };
   }
   const isDue = rec => rec.status === 'running' && !rec.dev && clock() >= rec.finishAt;
@@ -407,6 +409,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           looks[p.account] = lookOf(st);
           gear[p.account] = gearOf(st);
         }
+        /* modulation d'une tour : chaque joueur sous le plafond de gear score, avec le stuff porté au lancement */
+        const modulation = body.modulation === true;
+        if(modulation){
+          if(!side) fail('bad_request', 400, 'La modulation ne concerne que les tours du Jugement.');
+          const over = players.filter(p => gearScore(gear[p.account]) >= TOWER.modulation.gsMax);
+          if(over.length) fail('gs_too_high', 409, `Modulation : il faut moins de ${TOWER.modulation.gsMax} GS chacun. `+
+            over.map(p => `${p.name || 'Un joueur'} a ${gearScore(gear[p.account])} GS`).join(', ') + '.');
+        }
         const rec = {
           id: crypto.randomUUID(),
           mode,
@@ -418,6 +428,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
           dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
+          ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
@@ -950,6 +961,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     specLevelOf: async (accountId, tree) => tree ? specLevels(await loadProgress(accountId))[tree]?.level ?? null : null,
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
+    gsFor: async accountId => gearScore(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))

@@ -3234,3 +3234,25 @@ Règles (voir CLAUDE.md) :
   visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
   `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
 - **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
+
+---
+
+## 26/10/2026 — Gear score (GS) et modulation des tours (branche `geoffrey/modulation`)
+- **Quoi** : `src/meta/gearscore.js` (nouveau) : `pieceGS(entry)` = Σ stats de `pieceBonus` × `UPGRADE.prices` + Σ (set −
+  STATS) × prix, arrondi ; anneau = 0 ; `gearScore(worn)` = somme. `TOWER.modulation.gsMax = 2000` (config).
+  Serveur `server/game/service.js` `start` : `body.modulation === true` → refus `bad_request` hors tour, `gs_too_high`
+  (409, noms et GS) si un joueur ≥ gsMax, GS calculé sur `gear` figé au lancement ; `rec.modulation = { gsMax }`, renvoyé
+  par `publicSession`. `game.gsFor(compte)` ; `server/party/service.js` : `gs` par membre dans `publicParty`.
+  Navigateur : `index.html` case `#modulationRow` ; `src/ui/lobby.js` `modulationState` (visible : tour choisie, pas en
+  session, seul ou chef ; liste ceux qui dépassent), GS dans les tags de chaque place, `modulation:true` envoyé au
+  lancement d'une tour ; `src/main.js` `gs()` ; `src/ui/stuff.js` ligne Gear score + GS dans la liste des pièces ;
+  `src/meta/stuff.js` `stuffTip` : ligne `GS n` (pas pour un anneau).
+- **Tests** : `tests/gearscore.test.js` (nouveau, 5) ; `tests/stuff.test.js` (bulle avec GS) ; gearscore, stuff,
+  amelioration, lobby, party, game-service, tower : 159/159 ✅. Page chargée dans Chromium (onglets Stuff, Lobby) :
+  aucune erreur JS.
+- **Déjà cassé sur main, pas touché** : ❌ `tests/rune.test.js` « tier : chaque pièce qu'on peut runer a un tier »
+  échoue aussi sans cette branche (une pièce sans tier dans `UPGRADE.tiers`).
+- **Points fragiles** : prix en x provisoires de portée / recul (1000 x par point) : la Lance en fer ≈ 1 020 GS. Le GS
+  des membres dans le lobby n'est rafraîchi qu'à l'état complet du groupe (les autres réponses du groupe ne le
+  renvoient pas, comme le skin). Récompense de la modulation : rien (rec.modulation sert de marqueur pour la suite).
+

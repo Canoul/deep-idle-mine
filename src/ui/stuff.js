@@ -10,12 +10,13 @@ import { rcls, pname } from './rarity.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait, lookOf } from '../render/portrait.js';
 import { aurasOf } from '../meta/aura.js';
+import { pieceGS, gearScore } from '../meta/gearscore.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* icône pixel d'une case vide (les autres cases restent sans icône) */
 const SLOT_ICON = { casque:'helmet', torse:'shield', pioche:'pickaxe', epee:'sword', boussole:'target' };
-const statLine = p => statsText(p) ? `<br><small class="stuffStats">${esc(statsText(p))}</small>` : '';
+const statLine = p => `<br><small class="stuffStats">${esc([statsText(p), `GS ${pieceGS(p).toLocaleString('fr-FR')}`].filter(Boolean).join(' · '))}</small>`;
 
 /* les cases du stuff et le portrait au milieu, dans el. tag 'div' : en lecture seule (fiche d'un ami, onglet Social) */
 export function renderSlots(el, worn, tag = 'button'){
@@ -45,7 +46,8 @@ export function statsHTML(worn, effects){
     `</span></div>`); }).join('');
   /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
   const extra = behaviourSkills(effects);
-  return rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
+  const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
+  return gs + rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
     extra.map(k => `<div class="row"><span>${k.icon} ${esc(k.name)}</span><span><small class="skillStats">${esc(k.text)}</small></span></div>`).join('') : '');
 }
 
