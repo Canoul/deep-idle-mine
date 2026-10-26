@@ -895,9 +895,15 @@ export const UPGRADE = {
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1,
            tenacity:0.1, knockRes:0.1, reach:0.01, knockback:0.01, doubleAttack:0.1 },
   levels: [
-    { pct:5, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey) ; bonus 5 / 10 / 15 % (25/10/2026, Geoffrey ; avant 3 / 5 / 7 %)
-    { pct:10, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
-    { pct:15, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':6, 'Cristal de pleine lune':3 } },   // 26/10/2026, Geoffrey : +1 à +9, bonus 3 % par rang, réussite −5 % par rang ; coût 3 cristaux / 6 plumes au +1, puis ×1,5 (+2, +3), ×1,33 (+4 à +6), ×1,25 (+7 à +9) sur la valeur exacte, arrondi au-dessus. Avant : +1 à +3, bonus 5 / 10 / 15 %, 20 / 30 / 50 plumes, 3 / 5 / 7 cristaux
+    { pct:6, chance:0.95, cost:{ 'Plume d\'ange':9, 'Cristal de pleine lune':5 } },
+    { pct:9, chance:0.90, cost:{ 'Plume d\'ange':14, 'Cristal de pleine lune':7 } },
+    { pct:12, chance:0.85, cost:{ 'Plume d\'ange':18, 'Cristal de pleine lune':9 } },
+    { pct:15, chance:0.80, cost:{ 'Plume d\'ange':24, 'Cristal de pleine lune':12 } },
+    { pct:18, chance:0.75, cost:{ 'Plume d\'ange':32, 'Cristal de pleine lune':16 } },
+    { pct:21, chance:0.70, cost:{ 'Plume d\'ange':40, 'Cristal de pleine lune':20 } },
+    { pct:24, chance:0.65, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':25 } },
+    { pct:27, chance:0.60, cost:{ 'Plume d\'ange':63, 'Cristal de pleine lune':32 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

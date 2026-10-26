@@ -3177,3 +3177,12 @@ Règles (voir CLAUDE.md) :
   research (coûts, tier 3 à 200), rarity ✅ ; wiki, craft, loot, recycle, stuff ✅ ; `npm run test:anticheat` ✅ 91/91.
 - **Points fragiles** : un joueur qui avait déjà tout le T2 appris perd l'accès à la recherche tier 3 jusqu'à ce qu'il
   apprenne la lampe. La lampe n'est pas dans `UPGRADE.tiers` (ligne de rune sur sa valeur propre).
+
+### Amélioration +1 à +9 (Geoffrey) — branche `geoffrey/amelioration-plus9`, ✅ en ligne le 26/10
+- **Quoi** : `UPGRADE.levels` passe de 3 à 9 paliers (`src/config.js`) ; le reste du code lit déjà `levels.length`
+  (`MAX_PLUS`, `nextLevel`, `plusMult`, `sanitizePiece`, onglet Amélioration, wiki). Textes : `wiki.html`,
+  `src/ui/upgrade.js`, `src/meta/piece.js`, GAME_DESIGN.
+- **Tests** : `tests/amelioration.test.js` (9 paliers puis maximum, coûts, valeurs à 3 %/rang, plus:10 refusé),
+  `tests/anticheat` (plumes du +1 = 6) ✅ ; amelioration, wiki, rune-pool ✅ 37 ; anticheat ✅ 91.
+  ❌ préexistant sur main au moment du travail, sans lien : `tests/rune.test.js` « tier » (Lampe à incandescence sans tier).
+- **Points fragiles** : pièces déjà +1 à +3 : bonus relu au nouveau barème (baisse : +3 = 9 % au lieu de 15 %).

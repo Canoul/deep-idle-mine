@@ -47,7 +47,7 @@ test('améliorer : matériaux consommés une fois ; une pièce portée ne s\'am�
   const op = { action:'upgrade', uid:a, opId:'op-upgrade-1' };
   await Promise.all([game.upgrade(ME, op), game.upgrade(ME, op)]);
   let inv = (await game.state(ME)).inventory;
-  assert.equal(count(inv, FEATHER), 10); assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);
+  assert.equal(count(inv, FEATHER), 30 - 6); assert.equal(inv.slots.find(s => s?.uid === a).plus, 1);   // +1 = 6 plumes, payé une seule fois (26/10)
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:b, opId:'op-equip-01' });
   await assert.rejects(game.upgrade(ME, { action:'upgrade', uid:b, opId:'op-upgrade-2' }), { code:'not_owned' });
 });
