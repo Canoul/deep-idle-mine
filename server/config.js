@@ -112,6 +112,7 @@ export const SOCIAL_SERVER = {
   maxOutgoing: 20,                  // demandes d'ami envoyées en attente
   maxIncoming: 50,                  // demandes reçues gardées (les plus anciennes tombent)
   onlineListMax: 200,               // joueurs montrés dans l'onglet Online (le compteur, lui, compte tout le monde)
+  whoRecentFor: 24 * HOUR,          // « Who ? » des tours : montre aussi les joueurs hors ligne venus depuis ce temps (26/10/2026)
   requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
 };
 

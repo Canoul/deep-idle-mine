@@ -56,6 +56,13 @@ export function createMemoryStore(initial = {}){
       if(gone.length) await store.changed(gone);
       return gone.length;
     },
+    /* comptes venus depuis `since` (ms) : { compte: dernier passage }, d'après leurs connexions (lastSeenAt, prolongé au
+       plus une fois par heure : à une heure près) */
+    async recentlySeen(since){
+      const out = {};
+      for(const s of sessions.values()) if(s.lastSeenAt >= since && !(out[s.accountId] >= s.lastSeenAt)) out[s.accountId] = s.lastSeenAt;
+      return out;
+    },
     async purgeExpired(now){
       const gone = [];
       for(const [h, s] of sessions) if(s.expiresAt <= now){ sessions.delete(h); gone.push({ ns: 'session', key: h, value: null }); }
