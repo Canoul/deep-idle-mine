@@ -3221,3 +3221,23 @@ Règles (voir CLAUDE.md) :
 - **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
   simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
   (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).
+
+---
+
+## 26/10/2026 — Bloc géant : « Cette visite » < points réels (écran de fin)
+- **Symptôme** (Geoffrey, en ligne) : première visite du jour, écran de fin « Cette visite 91 points », « Mon total
+  aujourd'hui 248 ».
+- **Cause probable** : `src/ui/giant.js` `endVisit` prenait `lastMe.points`, le dernier `GET /api/giant/view` reçu.
+  Onglet en arrière-plan : timers ralentis/gelés par le navigateur, `lastMe` reste figé en cours de visite ; au retour,
+  `view.me` est null → `endVisit` avec la valeur périmée. Le serveur, lui, est juste : rejoué (mémoire, horloge
+  simulée) seul, avec un 2e joueur dans la salle, et avec un redémarrage à mi-visite : `mine.points` = points de la
+  visite à 1 près dans les 3 cas.
+- **Correction** : `server/giant/service.js` : `closeVisit` écrit `p.lastVisit = { day, startedAt, endedAt, points }`
+  (même écriture que le jour) ; `info()` renvoie `lastVisit` (points arrondis vers le bas). `endVisit` affiche
+  `info.lastVisit.points` quand il n'y a plus de visite en cours, sinon l'ancien `lastMe`.
+- **Tests** : `tests/giant-service.test.js` (nouveau : lastVisit = 1re visite = total du jour ; 2e visite seule ;
+  jour = somme) ; giant-service, giant-rules, giant-sim : 30/30 ✅.
+- **À vérifier** : ⚠️ la cause n'est pas prouvée en ligne (pas d'accès aux données) ; vérifier en vrai qu'une visite
+  avec l'onglet en arrière-plan affiche le bon chiffre. Les joueurs d'avant la correction n'ont pas de `lastVisit` :
+  repli sur l'ancien affichage jusqu'à leur prochaine visite.
+

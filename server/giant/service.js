@@ -31,7 +31,7 @@ export class GiantError extends Error {
 const fail = (code, status, message) => { throw new GiantError(code, status, message); };
 
 const emptyDay = day => ({ day, total: 0, scores: {} });
-const emptyPlayer = () => ({ lastEntry: null, visit: null, claimed: [] });
+const emptyPlayer = () => ({ lastEntry: null, visit: null, lastVisit: null, claimed: [] });
 
 export function createGiantService({ store, game, clock = Date.now, config = GIANT, server = GIANT_SERVER, speed = GAME.speed,
                                     randomSeed = () => (Math.random() * 2**31) | 0, dev = false }){
@@ -61,9 +61,9 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
   }
   /* fin de visites : leurs points vont au jour de leur entrée */
   async function closeVisits(done, now){
-    for(const d of done) await closeVisit(d.account, d.points);
+    for(const d of done) await closeVisit(d.account, d.points, now);
   }
-  async function closeVisit(account, points){
+  async function closeVisit(account, points, now = clock()){
     const p = await loadPlayer(account);
     if(!p.visit) return;                             // déjà close
     const day = await loadDay(p.visit.day);
@@ -72,6 +72,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     s.points = round(s.points + add); s.name = p.visit.name;
     day.scores[account] = s;
     day.total = round(day.total + add);
+    p.lastVisit = { day: p.visit.day, startedAt: p.visit.startedAt, endedAt: now, points: round(add) };   // l'écran de fin lit ces points
     p.visit = null;
     await store.putGiantDayAndPlayer(day, account, p);
   }
@@ -83,7 +84,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     restored = true;
     for(const p of await store.listGiantPlayers()){
       if(!p.visit) continue;
-      if(p.visit.endsAt <= now){ await closeVisit(p.account, p.visit.points); continue; }
+      if(p.visit.endsAt <= now){ await closeVisit(p.account, p.visit.points, now); continue; }
       const entry = { account: p.account, name: p.visit.name, ...(p.visit.entry || {}) };
       openRoom(now);
       const left = Math.max(1, Math.round((p.visit.endsAt - now) * speed / 1000 / DT));
@@ -138,6 +139,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       now, day, endsAt: dayEnd(now), cooldownMs: cooldown, visitMs,
       nextEntry: nextEntry(p.lastEntry, { cooldownMs: cooldown }),
       visit: m && p.visit ? { endsAt: p.visit.endsAt, points: shownPoints(m.points) } : null,
+      lastVisit: p.lastVisit ? { startedAt: p.lastVisit.startedAt, endedAt: p.lastVisit.endedAt, points: shownPoints(p.lastVisit.points) } : null,
       present: room?.G.miners.length ?? 0, max: config.maxPlayers,
       total: shownPoints(d.total), mine: { points: shownPoints(mine?.points ?? 0), visits: mine?.visits ?? 0 },
       tiers: config.tiers.map(t => ({ min: t.min, items: t.items, reached: d.total >= t.min })),

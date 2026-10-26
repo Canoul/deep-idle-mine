@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Bloc géant : l'écran de fin affichait moins de points que la visite
+- **Pour le joueur** : à la fin d'une visite au Bloc géant, « Cette visite » pouvait afficher bien moins que les points
+  vraiment faits (ex. 91 alors que la visite en avait rapporté 248, première visite du jour). Le score du jour, lui,
+  était juste. L'écran de fin prenait le dernier chiffre reçu par le navigateur, qui peut dater quand l'onglet du jeu
+  passe en arrière-plan (le navigateur ralentit alors les relevés). Il affiche maintenant les points comptés par le
+  serveur.
+- **État** : 🔧 branche `geoffrey/fix-bloc-geant-score`, pas encore en ligne
+
 ## 26/10/2026 — Geoffrey — Bloc géant
 - **Pour le joueur** : nouveau mode dans « Où miner » : le **Bloc géant**. Une session commune à tout le serveur, de
   minuit à minuit. On y entre seul, une fois toutes les 3 h, pour 3 min de jeu : son mineur frappe un énorme bloc

@@ -188,3 +188,19 @@ test('routes HTTP : connecté seulement, entrer, voir, sortir, réclamer', async
     assert.equal(r.status, 200); assert.deepEqual(r.data.given, {});
   } finally { server.close(); }
 });
+
+test('fin de visite : le serveur donne les points de la dernière visite (écran de fin), pas le cumul du jour', async () => {
+  const { giant, advance, clock } = setup();
+  await giant.enter(A);
+  await advance(VISIT + 1000);
+  let i = await giant.info(A);
+  assert.ok(i.lastVisit && i.lastVisit.points > 0);
+  assert.equal(i.lastVisit.points, i.mine.points, 'première visite = total du jour');
+  const first = i.lastVisit.points;
+  clock.now += 3 * 3600e3;
+  await giant.enter(A);
+  await advance(VISIT + 1000);
+  i = await giant.info(A);
+  assert.ok(i.lastVisit.points > 0 && i.lastVisit.points < i.mine.points, 'deuxième visite seule');
+  assert.ok(Math.abs(i.mine.points - first - i.lastVisit.points) <= 1, 'jour = somme des visites');
+});

@@ -135,8 +135,10 @@ export function setupGiant(h){
   }
   async function endVisit(){
     clearTimeout(viewTimer);
-    const pts = lastMe?.points ?? 0;
     await refresh();
+    /* les points de la visite viennent du serveur : le dernier relevé du navigateur peut dater (onglet en arrière-plan,
+       relevés ralentis par le navigateur) */
+    const pts = !info?.visit && info?.lastVisit ? info.lastVisit.points : (lastMe?.points ?? 0);
     $('gtRun').hidden = true; $('gtDone').hidden = false; $('noSession').hidden = true;
     $('gtDoneBody').innerHTML = `<div class="gtStats"><span>Cette visite</span><b>${nf(pts)} points</b>`+
       `<span>Mon total aujourd'hui</span><b>${nf(info?.mine.points ?? pts)} points</b>`+
