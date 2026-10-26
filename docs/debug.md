@@ -3347,3 +3347,11 @@ Règles (voir CLAUDE.md) :
 - **Tests** : ⚠️ mis en ligne **sans relancer les tests** (demande de Geoffrey). À vérifier : `node --test
   tests/giant-*.test.js tests/anticheat/giant*.test.js` (un test peut lire un `min` en dur).
 
+
+### Bloc géant consultable en session (Geoffrey) — branche `geoffrey/onglet-bloc-geant`, 🧪 pas en ligne
+- **Quoi** : `mineModes` (`src/ui/lobby.js`) grisait tout sauf la MI pendant une session → le bouton Bloc géant
+  aussi (demande de Geoffrey : la carte doit toujours s'ouvrir). Désormais `disabled` = `locked && !scheduled && !giant`.
+  L'entrée reste refusée : carte (`src/ui/giant.js`, Entrer grisé si `h.session()`) et serveur (`game.giantEnter`).
+- **Tests** : lobby ✅ 15 (assertion inversée : giant choisissable en session). giant-rules / giant-service : 2 échecs
+  « récompense : paliers » déjà présents sur main (paliers relevés, d6a2dfa), corrigés par la branche
+  `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement.

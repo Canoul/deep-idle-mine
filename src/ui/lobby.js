@@ -116,14 +116,16 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
   return { show:true, searching:false };
 }
 
-/* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session.
+/* Boutons « Où miner » : le mode choisi, les modes pas encore prêts grisés (« bientôt »), tout grisé pendant une session
+   sauf la mine instantanée et le Bloc géant (on les regarde ; leur carte et le serveur refusent d'y entrer).
    Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
    si le joueur les a déjà faites pendant cette ouverture. Mode dev : toujours là et jamais grisées (illimitées). */
 export function mineModes(cur, locked = false, judgment = null, dev = false){
   return MINE_MODES.filter(m => !m.tower || dev || judgment?.sides?.[m.tower]?.open).map(m => {
     const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;
-    /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10) */
-    return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled) || !m.ready || done };
+    /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10), et regarder le Bloc géant
+       (26/10 : scores, classement, récompenses ; « Entrer » y est grisé) */
+    return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: !m.ready, done, disabled: (locked && !m.scheduled && !m.giant) || !m.ready || done };
   });
 }
 

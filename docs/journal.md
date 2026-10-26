@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
+- **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
+  restant, scores, classement, récompenses à réclamer). Le bouton « Entrer » reste grisé (« Termine d'abord ta
+  session ») ; le temps d'attente de 3 h et les autres activités bloquent toujours l'entrée, côté serveur aussi.
+- **État** : 🧪 sur la branche `geoffrey/onglet-bloc-geant` (pas en ligne)
+
+
 ## 26/10/2026 — Geoffrey — Bloc géant : paliers de récompense relevés
 - **Pour le joueur** : les paliers du score collectif passent à **1 000 / 5 000 / 10 000 / 15 000 / 20 000** (avant
   1 000 / 2 500 / 5 000 / 7 500 / 10 000), mêmes récompenses. Le Treasure T3 demande donc ≈ 90 à 140 visites dans la
