@@ -24,6 +24,11 @@ Modèle d'entrée :
   session ») ; le temps d'attente de 3 h et les autres activités bloquent toujours l'entrée, côté serveur aussi.
 - **État** : 🧪 sur la branche `geoffrey/onglet-bloc-geant` (pas en ligne)
 
+## 26/10/2026 — Geoffrey — Skin de la Cape de Naingui
+- **Pour le joueur** : la Cape de Naingui se voit sur le mineur (dans la mine, la mine instantanée, le lobby, la barre
+  du haut et l'onglet Stuff) : une cape violet sombre qui flotte dans son dos jusqu'aux chevilles, avec un col et un
+  fermoir doré sur l'épaule. Elle reste visible par-dessus une armure complète, et son aura (qualité) l'entoure.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant : paliers de récompense relevés
 - **Pour le joueur** : les paliers du score collectif passent à **1 000 / 5 000 / 10 000 / 15 000 / 20 000** (avant

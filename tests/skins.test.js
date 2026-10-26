@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { STUFF } from '../src/config.js';
-import { SKIN, SKIN_TEXTURES, armorLayers, pickaxeOf } from '../src/skins.js';
+import { SKIN, SKIN_TEXTURES, armorLayers, armorPieces, backPieces, auraPieces, pickaxeOf } from '../src/skins.js';
 import { sanitizeLook } from '../src/meta/stuff.js';
 import { minerSpecs, buildSession } from '../src/shared/game.js';
 import { createViewer, emptyView, applyView } from '../src/shared/view.js';
@@ -14,6 +14,7 @@ import { fakeLive } from './helpers.js';
 test('skins : chaque texture existe dans textures/, chaque pièce d\'armure visible existe dans STUFF', () => {
   for(const n of SKIN_TEXTURES) assert.ok(fs.existsSync(new URL(`../textures/${n}.png`, import.meta.url)), n);
   for(const [item] of Object.entries(SKIN.armor)) assert.ok(STUFF.items[item], item);
+  for(const item of Object.keys(SKIN.back)) assert.ok(SKIN.armor[item] && STUFF.items[item], `${item} : un dos sans devant`);
   for(const item of Object.keys(SKIN.pickaxe).filter(k => k !== 'base')) assert.equal(STUFF.items[item]?.slot, 'pioche', item);
 });
 
@@ -22,6 +23,14 @@ test('calques : dans l\'ordre (pieds → casque), seulement ce qui est porté ; 
   assert.deepEqual(armorLayers({ casque:'Casque en chitine', pieds:'Bottes en chitine' }), [SKIN.armor['Bottes en chitine'], SKIN.armor['Casque en chitine']]);
   assert.equal(pickaxeOf({}), SKIN.pickaxe.base);
   assert.equal(pickaxeOf({ pioche:'Pioche en pierre' }), SKIN.pickaxe['Pioche en pierre']);
+});
+
+test('cape : le dos derrière le corps, le col devant (entre plastron et casque), aura sur le dos', () => {
+  const look = { torse:'Plastron en fer', cape:'Cape de Naingui', casque:'Casque en fer' };
+  assert.deepEqual(backPieces(look), [['cape', 'skins/naingui_cape']]);
+  assert.deepEqual(armorPieces(look).map(([s]) => s), ['torse', 'cape', 'casque']);
+  assert.deepEqual(auraPieces(look), [['cape', 'skins/naingui_cape'], ['torse', 'skins/iron_chest'], ['casque', 'skins/iron_helmet']]);
+  assert.deepEqual(backPieces({}), []);
 });
 
 test('apparence revérifiée : case inconnue ou pièce dans la mauvaise case → ignorée', () => {
