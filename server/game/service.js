@@ -24,7 +24,7 @@ import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
-import { towerSide, isTowerMode, towerDurationMs } from '../../src/shared/tower.js';
+import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -273,11 +273,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const p = withLock('sess:' + id, async () => {
       let rec = await store.getGameSession(id);
       if(!rec || rec.status !== 'running') return;
-      /* tour réussie : chaque joueur encore présent reçoit un trésor de la tour, qualité tirée par le serveur (RUNE) */
+      /* tour réussie : chaque joueur encore présent reçoit un trésor de la tour, qualité tirée par le serveur (RUNE), et
+         sa part égale des stonebricks de la partie (pods, 26/10 : coffre + sacs, splitTowerLoot) */
       const side = towerSide(rec.mode);
-      if(side) for(const share of summary.shares || [])
-        share.bag = summary.success && share.account && !share.left && !hasLeft(rec, share.account)
-          ? { [treasureItem(side, rollChestQuality(random))]: 1 } : {};
+      if(side){
+        const heirs = (summary.shares || []).filter(s => summary.success && s.account && !s.left && !hasLeft(rec, s.account));
+        const parts = splitTowerLoot(summary.loot, heirs.length, side, random);
+        for(const share of summary.shares || []){
+          const i = heirs.indexOf(share);
+          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random))]: 1, ...parts[i] } : {};
+        }
+      }
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
         if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;

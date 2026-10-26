@@ -3450,3 +3450,31 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : un joueur qui garde le jeu ouvert sans recharger a un lastSeenAt de connexion jusqu'à 1 h en
   retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
   tous les joueurs (comme l'onglet Online), pas seulement les amis.
+
+---
+
+## 26/10/2026 — Tours : 7 étages et pods (branche `geoffrey/tour-pods`)
+- **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
+  (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).
+  `src/sim/tower/session.js` : `m.inv` / `m.load` ; `mineCell` met la brique du camp dans le sac (`G.bricks--`) ;
+  `decide` : après les mobs, `bagFull` (load > 0 et load + w > pods) et `G.bricks > 0` → chemin vers `G.chestAt`
+  (milieu de l'étage 0, ligne du bas), action `deposit` → `G.chest` ; pas de chemin : il continue (la brique suivante
+  entre quand même : jamais perdue). `towerLoot(G)` = coffre + sacs des mineurs présents ; `summary.loot` (réussite
+  seulement). `leaveTower` : sac perdu. `src/shared/tower.js` `splitTowerLoot(loot, n, side, random)` : parts égales,
+  reste à des joueurs tirés au hasard, seule la brique du camp, entier 1…`TOWER.chest.max`. `server/game/service.js`
+  `settleWith` : héritiers = présents d'une réussite ; bag = trésor + part. Vue (`tower-view.js` : `chestAt`, `chest`,
+  `load`, `pods`), rendu (`render/tower.js` : texture `chest`), HUD (sac de chacun, ligne du coffre), bilan (tout le
+  butin). Wiki (texte de la tour), GAME_DESIGN (Tours).
+- **Tests** : `tests/tower.test.js` +4 (sac, vidage, conservation tick par tick, butin seulement en réussite et sans le
+  sac d'un parti, partage : conservation, égalité à 1 près, quantités invalides et objets étrangers refusés, vue) ;
+  `tests/game-service.test.js` (versement : 7 briques au seul présent, Fer inventé ignoré, rien en échec ni au parti).
+  tower, tower-boss, tower-who, game-service, anticheat/*, inventory, wiki ✅.
+- **Tests modifiés (équilibrage, à relire)** : « compo forte » ne vérifie plus « toit atteint et boss entamé de 20 % »
+  mais « au moins le dernier étage » (seed 13 n'atteint plus le toit). Treuil et regroupement : seed 3 → 7 (avec 7
+  étages, la porte du toit de la seed 3 passe à gauche, à côté du treuil : scène du test plus valable).
+- **Simulation** (20 tours, 2 mineurs + 1 barbare, sans skill) : 1,1 / 10 : toit 5/20 à 9:52, 7 vidages, 0 blocage
+  (sans limite de pods : 20/20 à 8:28 ; en ligne 20/20 à 7:11). Tout fer : 0/20 (en ligne 10/20). Tout acier : 7/20 à
+  9:43, 3 vidages, ≈ 59 briques par joueur (en ligne 17/20).
+- **Pas vérifié** : affichage dans un navigateur (coffre, sac dans le panneau, bilan).
+- **Points fragiles** : le chemin vers le coffre passe par les échelles posées à la montée (planTo) ; un mineur plein
+  pendant un combat de mobs combat d'abord. Rien d'autre ne lit encore les stonebricks (pas de recette).

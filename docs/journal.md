@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Tours : un 7e étage et le retour des pods
+- **Pour le joueur** : la tour a de nouveau **7 étages**. Les **briques minées vont dans le sac** (10 pods chacune) ;
+  sac plein, le mineur redescend le vider au **coffre commun**, au milieu de l'étage 0, puis repart. **Si le boss
+  tombe**, toutes les briques (coffre + sacs) sont partagées **en parts égales** entre les joueurs présents ; un joueur
+  qui part perd son sac. Le panneau de la tour montre le sac de chacun et le coffre.
+- **Décisions** : coffre à l'étage 0 ; durée gardée à 10 min ; sacs comptés à la victoire ; parts égales (reste au hasard).
+- **À suivre** : **gros nerf** en simulation (2 mineurs + 1 barbare, 20 tours) : tout fer 10/20 → **0/20** victoires,
+  tout acier 17/20 → **7/20**. L'étage de plus coûte ≈ 1 min 15, les vidages ≈ 1 min 30. À rééquilibrer avant la mise
+  en ligne (durée, PV du boss, poids des briques…). Pas encore vérifié dans un vrai navigateur.
+- **État** : 🧪 sur la branche `geoffrey/tour-pods` (pas en ligne)
+
+
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
   venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour

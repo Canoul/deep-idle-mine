@@ -49,7 +49,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
-    **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28), stonebrick **4 s** ; un étage
+    **Pods dans les tours (26/10, Geoffrey, branche `geoffrey/tour-pods`, pas en ligne)** : **7 étages** (avant 6) ; chaque
+    stonebrick minée (poids 10) va dans le sac ; plein, le mineur redescend la vider au coffre commun (milieu de l'étage 0) ;
+    victoire = coffre + sacs des présents en parts égales (`splitTowerLoot`, `TOWER.chest`). Gros nerf mesuré : tout fer
+    10/20 → 0/20, tout acier 17/20 → 7/20 (10 min gardées, à rééquilibrer).
+    **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28 ; **ancien** depuis les pods), stonebrick **4 s** ; un étage
     « blocs » doit être **entièrement vidé** pour ouvrir sa porte (chaque mineur réserve son bloc) ; mobs empilables ;
     boss qui **focus** (premier arrivé au contact, ou barbare qui le provoque), le **suit** à travers les autres
     (mineurs dans sa hitbox : ils y restent et frappent de là), recul **0,5** avec arc, projection **25 % / 10 %** barbare
