@@ -1,5 +1,5 @@
 /* Onglet Amélioration : trois rubriques. Identification (une pièce + un exemplaire sacrifié → qualité R1 à R7 et
-   lignes de stats), Amélioration (+1 à +3, matériaux, peut rater), Enchantement (une pièce + une Rune : les lignes de
+   lignes de stats), Amélioration (+1 à +9, matériaux, peut rater), Enchantement (une pièce + une Rune : les lignes de
    la rune s'ajoutent à la pièce, une rune par pièce ; retirée, elle devient un fragment aux % divisés par 2).
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */

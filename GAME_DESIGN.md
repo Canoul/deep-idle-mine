@@ -69,7 +69,7 @@ La dernière ligne se répète au-delà. Areas 5 et 6 : décision du 23/10/2026 
 au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide.
 - **Graphite** (23/10/2026) : minerai `Graphite ore` des areas 5 et 6 (dureté 4, poids 3, attrait 4, 4 XP *(provisoire)*).
   Au four : **10 Graphite ore → 1 Graphite ingot** (10 charbons, 60 s). Alliage : **Steel ingot = 3 Tainted iron +
-  10 Graphite ingot** (50 charbons, 3 min). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+  5 Graphite ingot** (50 charbons, 3 min ; 26/10/2026, avant 10 Graphite ingot). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
 - Les minerais sont générés en petits filons (1 à 4 blocs).
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
@@ -477,7 +477,7 @@ Une session **ne démarre jamais toute seule** à l'ouverture de la page. Pour e
 ### Jouer à plusieurs (groupe)
 - **Inviter des joueurs** ouvre un panneau avec le **code du groupe** (6 caractères, ex. `K7Q4P2`) et un **lien** à envoyer (`https://deepmineidle.fr/#rejoindre=K7Q4P2`) : l'ami clique, se connecte (invité ou compte) et prend une place. On peut aussi taper un code dans « Tu as un code de groupe ? ».
 - **Inviter par ID** : on tape l'ID de compte d'un ami (`7K3Q-9XHP`) ; il voit l'invitation en haut de son lobby (**Rejoindre** / **Refuser**). Inviter ne fait pas entrer : seul celui qui accepte joue. Une invitation dure 1 h.
-- Places : le **chef** (celui qui a créé le groupe, ★) puis les membres, les invités en attente, les places libres (3 au total). Un membre absent (onglet fermé) est marqué « absent », puis retiré après 5 min sans nouvelles.
+- Places : le **chef** (celui qui a créé le groupe, ★) puis les membres, les invités en attente, les places libres (3 au total). Un membre absent (onglet fermé) est marqué « absent », puis retiré après 5 min sans nouvelles, **sauf s'il est prêt ou « prêt tout le temps »** *(26/10/2026, Geoffrey)* : il reste alors dans le groupe, toujours affiché « absent », et le chef peut le lancer en session avec les autres (il reçoit sa part comme tout joueur présent). Un simple « prêt » redevient « pas prêt » après la session, donc finit retiré ; un « prêt tout le temps » reste jusqu'à ce que le chef le retire. Le **chef** absent, lui, est toujours retiré (sinon personne ne pourrait plus lancer).
 - **Prêt** *(21/10/2026)* : chaque membre (sauf le chef : lancer = prêt) clique « ✋ Je suis prêt » (et peut annuler). Les places affichent « ✔ prêt » / « pas prêt ». **Le chef ne peut lancer que si tous les autres sont prêts** (il voit « ⏳ Pas prêt : Max, Lou »). Au lancement, et quand quelqu'un rejoint le groupe, **tout le monde repasse « pas prêt »** : à la fin d'une session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
 - **Prêt tout le temps** *(23/10/2026, Geoffrey)* : un membre (pas le chef) peut cocher « Prêt tout le temps » dans le lobby, même pendant une session. Coché, il **reste prêt** : ni le lancement, ni la fin d'une session, ni l'arrivée d'un nouveau ne le remettent à « pas prêt » (sa place affiche « ✔ prêt tout le temps »), et le chef peut **enchaîner** sans attendre son clic. **Seul le joueur la décoche, en cliquant dessus** *(23/10 après-midi ; avant : « Prêt (annuler) » la décochait aussi)* : tant qu'elle est cochée, le bouton principal affiche « ✔ Prêt tout le temps » sans action. C'est un réglage du **joueur** : il le garde en changeant de groupe (invitation, code, recherche de groupe) et après un redémarrage du serveur *(s'il était dans un groupe à ce moment-là)*.
 - **Seul le chef lance** (« Lancer à N »). La session est créée pour tous les membres présents dans le groupe ; le chef est le premier mineur (à gauche), puis les autres dans l'ordre d'arrivée. Chacun garde ses propres préférences.
@@ -527,6 +527,8 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; le minuteur de session reste visible dans la barre du haut.
 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
+- **Deux sous-onglets** *(26/10/2026, Geoffrey)* : **Amis** (tout ce qui suit) et **Online**.
+- **Online** *(26/10/2026, Geoffrey)* : un **compteur** de joueurs en ligne et, en dessous, **la liste de tous les joueurs en ligne** (amis ou non), avec ce qu'ils font. Un joueur **en session compte toujours**, même navigateur fermé (sa session tourne sur le serveur), comme dans la liste d'amis *(correction du 26/10/2026)*. **Ceux qui ne sont pas en session sont au-dessus** (en ligne ou dans un lobby), **ceux en session en dessous**, chaque groupe par pseudo. Chaque ligne indique « toi » ou « ami » ; pour les autres, un bouton **Ajouter** envoie une demande d'ami *(ajout de Claude)*. Liste limitée à 200 lignes, le compteur compte tout le monde *(valeur de config)*.
 - **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
 - L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne. **Un ami en session affiche le temps qu'il lui reste** (« En session mine · reste 23 min », arrondi à la minute du dessus ; « En session · Tour de l'Ange · … » pour une tour ou la mine instantanée) *(23/10/2026, Geoffrey)*.
 - Pour chaque ami **en ligne** (en ligne ou dans le lobby) : **Inviter** (invitation dans son groupe, comme l'invitation par ID du lobby) et **Rejoindre** (entrer dans son groupe ; s'il n'en a pas, un groupe est créé avec lui comme chef). Rejoindre est grisé si son groupe est complet ; les deux sont grisés si l'ami est déjà dans ton groupe, ou si toi-même es en session.
@@ -592,9 +594,9 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
-  | Lampe à incandescence (case torche, **sans blueprint**, 25/10) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
+  | Lampe à incandescence (case torche, 25/10 ; **blueprint du Treasure T2** depuis le 26/10, avant : sans blueprint) | 200 vésicules de gaz + 2 000 charbon + 20 fragments de cœur | Torches +10, rayon des torches 8, pose en 0,5 s |
 
-  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP ») :
+  Tier 2 (blueprints du Treasure T2 : « Gants tactique BP », « Gants d'ouvrier BP », « Cape de Naingui BP », « Lampe à incandescence BP » *(26/10/2026, Geoffrey ; 2 % comme les autres ; sa recette est dans le tableau du tier 1 ci-dessus)*) :
 
   | Objet | Recette | Effet |
   |---|---|---|
@@ -628,7 +630,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
     cumulable** : si deux joueurs du groupe portent le même anneau, l'effet ne compte qu'une fois. Un joueur ne peut pas
     porter **deux fois le même anneau** (deux anneaux différents, oui). Valable en mine classique et dans les tours ; en
     **mine instantanée** (chacun pour soi), l'anneau ne profite qu'à son porteur.
-  - **Ni craft, ni identification, ni amélioration (+1 à +3), ni enchantement** : un anneau reste tel qu'il est tombé.
+  - **Ni craft, ni identification, ni amélioration (+1 à +9), ni enchantement** : un anneau reste tel qu'il est tombé.
   - « +3 % » d'une stat sans version en % (vitesse, oxygène, pods) = **× 1,03 sur le total** (stuff et skills compris) ;
     dégâts et minage passent par leurs stats en % (+3), fortune et butin des mobs en points (+2).
   - **Exception, XP** *(décision du créateur, 24/10/2026)* : le bonus d'XP (Anneau du nerd) est **personnel**. Il
@@ -692,20 +694,28 @@ Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10
 - **Nom** : « Excellent : Pioche en pierre » dans la couleur de la qualité, qui passe avant la couleur de rareté du type. **Le contour de la case garde la rareté du type** (commun, inhabituel…).
 - Une R7 ajoute au plus **+100 % de la valeur de l'objet** (22/10 ; avant +220 %) : une pioche en pierre R7 vaut au plus une pioche en fer brute.
 
-**Amélioration** : +1 à **+3** pour l'instant (la suite viendra). Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
+**Amélioration** : +1 à **+9** *(26/10/2026, Geoffrey ; avant +1 à +3)*. Le % est le **bonus total du palier** sur **toutes les stats de la pièce** (de base et identifiées) ; une pièce non identifiée peut être améliorée et garde son niveau quand on l'identifie. **Un échec ne coûte que les matériaux** : la pièce ne perd rien.
 
-| Niveau | Stats | Réussite | Coût |
-|---|---|---|---|
-| +1 | +5 % *(25/10/2026 ; avant +3 %)* | 100 % | 20 Plumes d'ange, 3 Cristaux de pleine lune |
-| +2 | +10 % *(avant +5 %)* | 95 % | 30 plumes + 5 cristaux |
-| +3 | +15 % *(avant +7 %)* | 90 % | 50 plumes + 7 cristaux |
+Règle *(26/10/2026, Geoffrey)* : **+3 % de stats par rang**, **réussite −5 % par rang**. Coût : 3 cristaux et 6 plumes au +1, puis × 1,5 par rang (+2, +3), × 1,33 (+4 à +6), × 1,25 (+7 à +9), calculé sur la valeur exacte du rang précédent et arrondi à l'entier du dessus.
 
-*(Plumes relevées le 22/10/2026 : 3 / 5 / 7 → 20 / 30 / 50.)*
+| Niveau | Stats | Réussite | Plumes d'ange | Cristaux de pleine lune |
+|---|---|---|---|---|
+| +1 | +3 % | 100 % | 6 | 3 |
+| +2 | +6 % | 95 % | 9 | 5 |
+| +3 | +9 % | 90 % | 14 | 7 |
+| +4 | +12 % | 85 % | 18 | 9 |
+| +5 | +15 % | 80 % | 24 | 12 |
+| +6 | +18 % | 75 % | 32 | 16 |
+| +7 | +21 % | 70 % | 40 | 20 |
+| +8 | +24 % | 65 % | 50 | 25 |
+| +9 | +27 % | 60 % | 63 | 32 |
 
-Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fer +3 : 5 + 6 × 1,07 = 11,4 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 100 plumes et 15 cristaux pour monter une pièce à +3 (sans échec). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+*(Ancien : +1 à +3 = +5 / +10 / +15 % (25/10 ; avant +3 / +5 / +7 %), 20 / 30 / 50 plumes (22/10 ; avant 3 / 5 / 7) et 3 / 5 / 7 cristaux. Les pièces déjà améliorées gardent leur niveau et prennent le nouveau bonus : une pièce +3 passe de +15 % à +9 %.)*
 
-**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce.** **Retirer une rune** *(décision du créateur, 23/10/2026 ; avant : définitif)* : gratuit ; la rune revient dans l'inventaire en **Fragment de rune** (rareté rare) : même qualité, mêmes lignes, mais **chaque % compte pour moitié** (la ligne « +1 Découverte » n'est pas un % : inchangée). Un fragment se pose **comme une rune** (mêmes règles : une par pièce, qualité ≤ celle de la pièce, pièce identifiée) ; **un fragment posé ne se retire plus**. **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur du tier de la pièce enchantée** (T1 100 x, T2 250 x, T3 400 x, voir Identification ; 25/10/2026, avant : de la valeur de la pièce) ; le niveau (+1 à +3) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
+Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fer +3 : 5 + 9 × 1,09 = 14,8 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 256 plumes et 129 cristaux pour monter une pièce à +9 (sans échec ; 29 plumes et 15 cristaux pour +3). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+
+**Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce.** **Retirer une rune** *(décision du créateur, 23/10/2026 ; avant : définitif)* : gratuit ; la rune revient dans l'inventaire en **Fragment de rune** (rareté rare) : même qualité, mêmes lignes, mais **chaque % compte pour moitié** (la ligne « +1 Découverte » n'est pas un % : inchangée). Un fragment se pose **comme une rune** (mêmes règles : une par pièce, qualité ≤ celle de la pièce, pièce identifiée) ; **un fragment posé ne se retire plus**. **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur du tier de la pièce enchantée** (T1 100 x, T2 250 x, T3 400 x, voir Identification ; 25/10/2026, avant : de la valeur de la pièce) ; le niveau (+1 à +9) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
 - **Trésors des tours** (depuis le 22/10/2026, avant : *Coffres*) : *Trésor angélique* et *Trésor démoniaque* de qualité R1 à R7. **Non empilables** (une case par trésor), **rareté Unique** (contour orange foncé) quelle que soit la qualité ; le nom affiché donne la qualité, dans sa couleur : « Antique Trésor démoniaque » (R5). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
   - *Ancien* : les *Coffre angélique / démoniaque R1 à R7* (empilables, contour selon la qualité) ne sont plus donnés ; ceux déjà gagnés restent tels quels et s'ouvrent comme avant (décision du 22/10 : pas de conversion).
 - Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % du tier de la pièce ».
@@ -735,7 +745,7 @@ Ex. pioche en pierre +3 : 0,1 × 1,07 = 0,107 de vitesse de minage. Épée en fe
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 15 chitine *(25/10/2026 ; avant 20)* | 50 charbons | 3 min |
   | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
-  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 10 Graphite ingot | 50 charbons | 3 min |
+  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 5 Graphite ingot *(26/10 ; avant 10)* | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
@@ -760,10 +770,10 @@ Elle sert à **dépenser les Blueprint parts** et à **recycler des blueprints**
   | Tier | Prix | Blueprints possibles | Recycler un blueprint du tier |
   |---|---|---|---|
   | 1 | 100 parts | ceux d'un Treasure T1 (les 9) | 15 à 30 parts *(25/10 au soir ; avant 30 à 60)* |
-  | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui) | 40 à 70 parts |
-  | 3 *(23/10/2026)* | 150 parts | ceux d'un Treasure T3 (les six pièces en acier, Plastron de l'équilibre) | 40 à 70 parts *(choix de Claude : comme le tier 2, même prix)* |
+  | 2 | 150 parts | ceux d'un Treasure T2 (Gants tactique, Gants d'ouvrier, Cape de Naingui, Lampe à incandescence *(26/10)*) | 40 à 70 parts |
+  | 3 *(23/10/2026)* | **200 parts** *(26/10/2026, Geoffrey ; avant 150)* | ceux d'un Treasure T3 (les six pièces en acier, Plastron de l'équilibre) | 40 à 70 parts *(choix de Claude : comme le tier 2, même prix)* |
 
-  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes de TOUS les tiers inférieurs** *(décision ferme ; « tous les tiers inférieurs » depuis le 25/10/2026, Geoffrey : avant, seulement le tier d'avant, et des BP du T2 trouvés dans des Treasures ouvraient le T3 avec un T1 incomplet)* : le tier 3 demande tout le T1 et tout le T2. L'option est grisée (🔒) avec le nombre de recettes qui manquent par tier, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026) ; le tier 2 avec ses **3 recettes** ouvre le tier 3.
+  - **Un tier ne s'ouvre que quand le joueur a appris TOUTES les recettes de TOUS les tiers inférieurs** *(décision ferme ; « tous les tiers inférieurs » depuis le 25/10/2026, Geoffrey : avant, seulement le tier d'avant, et des BP du T2 trouvés dans des Treasures ouvraient le T3 avec un T1 incomplet)* : le tier 3 demande tout le T1 et tout le T2. L'option est grisée (🔒) avec le nombre de recettes qui manquent par tier, et le serveur refuse aussi. Les blueprints qui ne débloquent encore rien ne comptent pas. Le tier 1 est « fini » avec ses **9 recettes** (Four en fer et Boussole en or comprises depuis le 21/10/2026) ; le tier 2 avec ses **4 recettes** ouvre le tier 3 *(Lampe à incandescence comprise depuis le 26/10 ; avant : 3)*.
   - Tiré au hasard *(décision ferme)* parmi ceux dont la recette **n'est pas encore apprise**. Tirage **pondéré** *(23/10/2026)* : chaque blueprint pèse 1, sauf le **Plastron de l'équilibre BP** (épique) qui pèse **0,25**, soit **4 fois moins** de chance que chaque autre plan (≈ 4 % quand les 7 plans du tier 3 sont possibles ; 100 % s'il est le dernier à apprendre) : un blueprint déjà en stock (pas encore utilisé) peut ressortir ; un blueprint qui ne débloquerait rien resterait toujours possible. Tier entièrement appris : plus rien à tirer.
   - Les blueprints possibles ne sont pas listés (les recettes restent secrètes) : l'onglet n'affiche que leur nombre.
 - **Recycle** : on pose un blueprint (n'importe lequel) dans la case, **Recycler** : il est détruit et rend des Blueprint parts **selon le tier du blueprint** : 15 à 30 (tier 1 ; 25/10 au soir, avant 30 à 60), 40 à 70 (tiers 2 et 3) *(provisoire)*.
@@ -799,6 +809,22 @@ Un effort commun à tous les joueurs du serveur.
   - **Affichage** : caméra rapprochée **aussi large que la tour** (22 × 16 cases ; avant 19 × 15) qui suit ton mineur ; mineurs, mobs et boss **glissent** entre deux envois du serveur, comme dans la mine (25/10 : avant, ils avançaient par sauts) ; étages non découverts en noir, ombre selon la lumière des torches, mobs avec leur barre de vie.
   - Repères **à 3 500 PV** (23/10, 20 tours, sans skill) : 3 mineurs de base 0/20 ; 2 mineurs + 1 barbare à 1,1 / 10 **0/20** (il reste 10 à 660 PV) ; 2 barbares à 15 dégâts + 1 mineur à 1,3 **12/20** (victoire à 9 min 53). À 5 000 PV : b et c 0/20.
   - Repères à 2 000 PV (simulation `npm run simulate:tower -- --count 20`, 23/10, sans rang de skill) : **3 mineurs de base 0/20** (étage 6 atteint à 8 min 30, jamais le toit) ; **2 mineurs + 1 barbare à minage 1,1 / 10 dégâts : 18/20** (toit à 8 min 12, victoire à 9 min 19) ; **2 barbares à 15 dégâts + 1 mineur à minage 1,3 : 20/20** (toit à 8 min 20, victoire à 9 min 16). ≈ 85 % du temps passe à monter : un étage de blocs ≈ 1 min 40 à 3, un étage de mobs ≈ 1 min en stuff de base, 30 à 40 s avec 10-15 dégâts. *(Ancien, tour en labyrinthe : base 0/10, minage 1,6 + 14 dégâts 10/10 en ≈ 7,5 min.)*
+
+### Bloc géant (Lobby, « Où miner » → Bloc géant) *(concept du créateur, 26/10/2026 ; valeurs provisoires, `GIANT` en config ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`)*
+Un effort commun à **tout le serveur**, par petites visites : on frappe ensemble un bloc indestructible ; à minuit, chacun reçoit une récompense selon le score de tous.
+- **La session** : de **minuit à minuit, heure de Paris**, la même pour tous. Une visite commencée avant minuit compte pour la session qui se ferme *(confirmé par le créateur)*.
+- **Entrer** : **seul**, depuis la carte du Bloc géant du Lobby (pas de groupe ni de Lancer), **une fois toutes les 3 h**, comptées **depuis sa dernière entrée**. Pas pendant une session (mine, MI, tour), et pas de session pendant une visite. **30 mineurs** au plus en même temps *(valeur de config)* ; plein, on réessaie plus tard sans perdre son entrée.
+- **La salle** : 15 × 7 cases d'air (avant 10 × 7) ; le **bloc géant** (5 × 5, minerai de toutes les couleurs, il pulse) en bas à droite ; spawn en bas à gauche ; une **fontaine à oxygène** près du spawn ; une **grosse torche** qui éclaire tout. Tout le monde voit les autres mineurs présents.
+- **Une visite** : **3 min de jeu** (1 min 30 réelle à ×2). Le mineur marche au bloc et le frappe **par la gauche seulement** (les mineurs se superposent).
+  - **Points** : chaque seconde à frapper rapporte sa **vitesse de minage effective** (stuff, skills, anneaux, sorts) : 1,3 de vitesse = 1,3 point par seconde.
+  - **Recul** : chaque coup (vitesse de minage = coups par seconde) a **10 %** de chance de le **repousser en arc de 1 à 3 cases** vers la gauche. La **ténacité** l'ignore ; la **résistance au recul** réduit la distance (arrondie, 1 case au moins).
+  - **Oxygène** : il baisse **2 fois plus vite** qu'en mine (2 par seconde : 300 de base ne suffisent pas pour 3 min). La fontaine recharge **30 par seconde** *(décision du créateur)* le mineur qui **s'y arrête** (pas celui qui passe devant ou qu'un recul y pose : sinon la résistance au recul ferait perdre des points) ; il y va quand il lui reste juste de quoi y aller.
+  - **Pas de pods** (rien à ramasser), **pas d'XP**, pas de mob, pas de butin, pas de glyphe.
+  - **Sorts** : **Dynamite** = 1 point de plus, sans rien casser ; **Inspiration** comme en mine (tous les présents) ; **Fast learner** : le bloc est appris (+10 % pour la visite) ; Dash, Illumination, Ulti shen : sans effet. **Anneaux** : pour **tous les joueurs présents** au même moment, une fois par anneau différent. **Seul le Mineur a une vraie plus-value** ici *(décision du créateur)*.
+  - **Fin** : un écran montre les points de la visite, son total du jour et le score collectif. **Quitter** avant la fin : les points faits comptent, l'entrée reste utilisée.
+- **Récompense** : à la fin de la session, **chaque joueur venu au moins une fois** reçoit, selon le **score collectif**, les objets de **tous les paliers atteints** (ils s'additionnent) : ≥ 1 000 : 1 Treasure T1 · ≥ 2 500 : 1 Treasure T1 + 15 Blueprint parts · ≥ 5 000 : 1 Treasure T2 · ≥ 7 500 : 1 Treasure T2 + 30 Blueprint parts · ≥ 10 000 : 1 Treasure T3. Soit à 10 000 : 2 T1, 2 T2, 1 T3 et 45 parts. À **réclamer** avec un bouton de la carte, disponible **tant qu'elle n'est pas réclamée**. Le score personnel ne donne rien de plus pour l'instant.
+- **La carte du Lobby** : temps avant la fin de la session, Entrer (ou temps avant la prochaine entrée), mon score du jour, score collectif et ses paliers, **classement du jour** (top 10 + ma place), récompenses à réclamer.
+- Repères (simulation, `npm run simulate:giant`, salle de 15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer, ≈ 221 en acier ; 1 000 ≈ 7 visites, 10 000 ≈ 46 à 69 visites.
 
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*
 Un rendez-vous court et compétitif : tous les inscrits dans la même mine, **chacun pour soi**, quelques minutes pour tout piller.

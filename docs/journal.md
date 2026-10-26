@@ -31,7 +31,85 @@ Modèle d'entrée :
   tableau-de-bord.html`, puis ouvre le fichier.
 - **À suivre** : les courbes partent de zéro à la mise en ligne (les anciennes sessions n'ont ni niveau ni ilvl) ; ces
   lignes sont gardées sans limite (les sessions, elles, 30 jours).
-- **État** : 🧪 sur la branche `geoffrey/tableau-de-bord` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Tours : bouton « Who ? » pour trouver des alliés
+- **Pour le joueur** : dans le Lobby, une tour ouverte choisie dans « Où miner », un bouton **Who ?** à côté de sa
+  description. Il liste les joueurs **en ligne** qui n'ont **pas encore fait cette tour** pendant cette ouverture (toi
+  exclu), avec ce qu'ils font (en ligne, dans un lobby, en session et le temps qui leur reste) et « ami » si c'en est un.
+  Bouton **Inviter** (par leur ID, ami ou non) pour ceux qui ne sont pas en session ni déjà dans ton groupe. Un second
+  clic sur Who ? ferme la liste. Wiki à jour.
+- **Décisions** : choix de Claude à valider : seulement les joueurs en ligne (ou en session), pas tous les comptes.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Correction : Bloc géant, fin de visite affichée trop tôt
+- **Pour le joueur** : après un redémarrage du serveur pendant une visite, l'écran « Visite terminée » pouvait
+  s'afficher trop tôt avec les points du moment (91), alors que la visite continuait et comptait tous ses points
+  (248). Maintenant la visite reste à l'écran jusqu'au bout, et l'écran de fin montre les points comptés par le serveur.
+  Aucun point n'était perdu. Même chose si l'onglet du jeu passait en arrière-plan pendant la visite (le navigateur
+  ralentit alors les relevés) : l'écran de fin lit maintenant toujours les points du serveur.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Bloc géant
+- **Pour le joueur** : nouveau mode dans « Où miner » : le **Bloc géant**. Une session commune à tout le serveur, de
+  minuit à minuit. On y entre seul, une fois toutes les 3 h, pour 3 min de jeu : son mineur frappe un énorme bloc
+  multicolore avec les autres joueurs présents. Chaque seconde rapporte sa vitesse de minage en points ; chaque coup
+  peut le repousser ; il va boire à la fontaine quand l'oxygène manque. À minuit, chaque joueur venu reçoit des
+  Treasures (T1 à T3) et des Blueprint parts selon le score de tous, à réclamer sur la carte du Bloc géant.
+- **Décisions** : paliers cumulés ; seul le Mineur a une vraie plus-value ; fontaine 30/s ; une visite à cheval sur
+  minuit compte pour la session qui se ferme. Choix de Claude à valider : 30 mineurs au plus, la fontaine ne recharge
+  que le mineur qui s'y arrête (sinon la résistance au recul faisait perdre des points), quitter garde les points mais
+  consomme l'entrée, la torche posée au sol. Salle de 15 × 7 (Geoffrey, avant 10 × 7) : plus de chemin entre le
+  départ, la fontaine et le bloc.
+- **À suivre** : les paliers (≈ 150 à 230 points par visite : il faut ≈ 50 à 65 visites pour le Treasure T3).
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Steel ingot : 5 Graphite ingot au lieu de 10
+- **Pour le joueur** : un Steel ingot demande **3 Tainted iron + 5 Graphite ingot** (avant 10), toujours 50 charbons et
+  3 min. Les pièces en acier coûtent donc deux fois moins de graphite.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Amélioration jusqu'à +9
+- **Pour le joueur** : on peut améliorer une pièce jusqu'à **+9** (avant +3). Chaque rang donne +3 % de toutes les
+  stats (+27 % au +9) ; la réussite baisse de 5 % par rang (100 % au +1, 60 % au +9). Les premiers rangs coûtent
+  beaucoup moins de plumes (6 au lieu de 20 pour le +1).
+- **Décisions** : coût 3 cristaux / 6 plumes au +1, puis ×1,5 (+2, +3), ×1,33 (+4 à +6), ×1,25 (+7 à +9), arrondi au
+  dessus : 129 cristaux et 256 plumes pour un +9. Le bonus passe de 5 / 10 / 15 % à 3 / 6 / 9 % pour +1 à +3 : les
+  pièces déjà améliorées perdent un peu.
+- **À suivre** : les cristaux (minotaure) risquent d'être le vrai frein à partir de +6.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Lampe à incandescence par blueprint, recherche tier 3 à 200 parts
+- **Pour le joueur** : la **Lampe à incandescence** ne se fabrique plus de base : il faut d'abord trouver son
+  **blueprint** dans un **Treasure T2** (2 %, comme les autres plans du T2) ou l'obtenir à la **table de recherche
+  (tier 2)**. La recherche d'un blueprint du **tier 3** coûte **200 parts** (avant 150).
+- **Décisions** : la lampe devient la 4e recette du tier 2 : il faut l'apprendre aussi pour ouvrir la recherche tier 3.
+  Les lampes déjà fabriquées sont gardées.
+- **À suivre** : la lampe n'a pas de tier de rune (valeur propre) ; la passer en T2 (250 x) comme les autres plans du T2 ?
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Joueur absent mais prêt : le chef peut toujours le lancer
+- **Pour le joueur** : un membre qui ferme l'onglet du jeu est toujours affiché « absent », mais s'il était **prêt** ou
+  **prêt tout le temps**, il n'est plus sorti du groupe au bout de 5 min : le chef peut lancer la session avec lui.
+  Avant, au bout de 5 min, il disparaissait du groupe et le chef ne pouvait plus le lancer.
+- **Décisions** : un simple « prêt » redevient « pas prêt » après la session (comme avant), donc il finit retiré s'il
+  ne revient pas ; un « prêt tout le temps » reste jusqu'à ce que le chef le retire. Le chef absent est toujours
+  retiré (sinon le groupe serait bloqué).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Correction : Online oubliait les joueurs en session
+- **Pour le joueur** : la liste Online compte maintenant tous les joueurs en session, même s'ils ont fermé le jeu
+  (avant, on pouvait voir plus d'amis en ligne que de joueurs dans Online).
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Social : sous-onglets Amis et Online
+- **Pour le joueur** : l'onglet Social a deux sous-onglets. **Amis** : comme avant. **Online** : le nombre de joueurs
+  en ligne et la liste de tous les joueurs connectés (amis ou non) ; ceux qui ne font rien en haut, ceux en session
+  en dessous (avec le temps qu'il leur reste). Bouton **Ajouter** pour demander un joueur en ami.
+- **Décisions** : on se voit soi-même dans la liste (« toi ») ; le bouton Ajouter est un ajout de Claude, à valider.
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Glyphes : 3 % de trouver un glyphe par session (correction)
 - **Pour le joueur** : **≈ 3 % de chance de trouver un glyphe par session** (groupe de 3), peu importe lequel ; il est

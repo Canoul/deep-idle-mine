@@ -79,9 +79,20 @@ export const instantApi = {
   devOpen: () => request('POST', '/api/instant/dev-open', {}),   // mode dev : ouvrir tout de suite
 };
 
+/* Bloc géant : panneau du lobby, la salle pendant une visite, entrer / sortir, réclamer les récompenses */
+export const giantApi = {
+  info:  () => request('GET', '/api/giant'),
+  view:  () => request('GET', '/api/giant/view'),
+  enter: () => request('POST', '/api/giant/enter', {}),
+  leave: () => request('POST', '/api/giant/leave', {}),
+  claim: () => request('POST', '/api/giant/claim', {}),
+};
+
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
+  online:  ()   => request('GET', '/api/social/online'),                // tous les joueurs en ligne (onglet Online)
+  towerWho: side => request('POST', '/api/social/tower-who', { side }), // en ligne, tour de ce camp pas encore faite (« Who ? »)
   request: name => request('POST', '/api/social/request', { name }),   // pseudo (ou ID de compte)
   accept:  id   => request('POST', '/api/social/accept', { id }),
   refuse:  id   => request('POST', '/api/social/refuse', { id }),

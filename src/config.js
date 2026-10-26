@@ -228,6 +228,7 @@ export const LOOT = {
         { item:'Gants tactique BP',     chance:0.02 },
         { item:'Gants d\'ouvrier BP',   chance:0.02 },
         { item:'Cape de Naingui BP',    chance:0.02 },
+        { item:'Lampe à incandescence BP', chance:0.02 },   // 26/10/2026 (Geoffrey) : la lampe n'est plus craftable de base
       ]},
       { family:'gem', items:gems(0.015) },
     ],
@@ -288,9 +289,9 @@ export const RESEARCH = {
   tiers: [
     { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:15, max:30 } },   // 25/10 au soir : avant 30 à 60
     { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
-    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 (même prix). weights : poids d'un blueprint dans le
+    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 ; recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
-    { tier:3, label:'Tier 3', from:'Treasure T3', cost:150, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -572,7 +573,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
@@ -600,7 +601,7 @@ export const FURNACE = {
   alloys: [
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
     { out:'Tainted gold', in:{ 'Lingot d\'or':5,  'Peau de gobelin':20 }, fuel:50, time:180, tex:'ingot_tainted_gold' },
-    { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':10 },  fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey
+    { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':5 },   fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey ; graphite 10 → 5 (26/10)
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -734,7 +735,7 @@ export const RARITY = {
     'Ceinture en peau de gobelin':'inhabituel', 'Ceinture en peau de gobelin BP':'inhabituel',
     'Gants tactique':'inhabituel', 'Gants tactique BP':'inhabituel', 'Gants d\'ouvrier':'inhabituel', 'Gants d\'ouvrier BP':'inhabituel',
     'Cape de Naingui':'rare', 'Cape de Naingui BP':'rare',
-    'Lampe à incandescence':'rare',   // 25/10 (Geoffrey)
+    'Lampe à incandescence':'rare', 'Lampe à incandescence BP':'rare',   // 25/10 (Geoffrey) ; BP le 26/10
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
@@ -894,9 +895,15 @@ export const UPGRADE = {
            discoverMax:1, compassRows:1, mineSpeedPct:0.1, damagePct:0.1, crit:0.1, oneTap:0.1, piercing:0.1, looting:0.1,
            tenacity:0.1, knockRes:0.1, reach:0.01, knockback:0.01, doubleAttack:0.1 },
   levels: [
-    { pct:5, chance:1.00, cost:{ 'Plume d\'ange':20, 'Cristal de pleine lune':3 } },   // plumes : 20 / 30 / 50 (22/10, Geoffrey) ; bonus 5 / 10 / 15 % (25/10/2026, Geoffrey ; avant 3 / 5 / 7 %)
-    { pct:10, chance:0.95, cost:{ 'Plume d\'ange':30, 'Cristal de pleine lune':5 } },
-    { pct:15, chance:0.90, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':7 } },
+    { pct:3, chance:1.00, cost:{ 'Plume d\'ange':6, 'Cristal de pleine lune':3 } },   // 26/10/2026, Geoffrey : +1 à +9, bonus 3 % par rang, réussite −5 % par rang ; coût 3 cristaux / 6 plumes au +1, puis ×1,5 (+2, +3), ×1,33 (+4 à +6), ×1,25 (+7 à +9) sur la valeur exacte, arrondi au-dessus. Avant : +1 à +3, bonus 5 / 10 / 15 %, 20 / 30 / 50 plumes, 3 / 5 / 7 cristaux
+    { pct:6, chance:0.95, cost:{ 'Plume d\'ange':9, 'Cristal de pleine lune':5 } },
+    { pct:9, chance:0.90, cost:{ 'Plume d\'ange':14, 'Cristal de pleine lune':7 } },
+    { pct:12, chance:0.85, cost:{ 'Plume d\'ange':18, 'Cristal de pleine lune':9 } },
+    { pct:15, chance:0.80, cost:{ 'Plume d\'ange':24, 'Cristal de pleine lune':12 } },
+    { pct:18, chance:0.75, cost:{ 'Plume d\'ange':32, 'Cristal de pleine lune':16 } },
+    { pct:21, chance:0.70, cost:{ 'Plume d\'ange':40, 'Cristal de pleine lune':20 } },
+    { pct:24, chance:0.65, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':25 } },
+    { pct:27, chance:0.60, cost:{ 'Plume d\'ange':63, 'Cristal de pleine lune':32 } },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -1058,13 +1065,49 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
+  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
+
+/* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
+   Une session commune à tout le serveur, de minuit à minuit (timeZone). Chacun y entre seul, une fois toutes les
+   cooldownMs (depuis sa dernière entrée), pour une visite de visit s : son mineur frappe un bloc indestructible.
+   Carte : w × h cases d'air ; bloc block × block collé en bas à droite ; spawn en bas à gauche (spawnX), fontaine en
+   fountainX ; on mine le bloc par la gauche seulement (colonne w - block - 1), les mineurs se superposent.
+   Points : chaque seconde à miner rapporte la vitesse de minage effective (stuff, skills, anneaux, sorts).
+   Recul : chaque coup (vitesse de minage = coups par seconde) a knock.chance de le repousser en arc de knock.min à
+   knock.max cases vers la gauche (vol de knock.flight s) ; la ténacité l'ignore, la résistance au recul réduit la
+   distance (arrondie, knock.min au moins). Oxygène : oxygenDrain par seconde (×2 de la mine) ; la fontaine recharge
+   fountainRefill par seconde au mineur à fountainRange case(s) ou moins ; il y va quand il lui en reste juste assez
+   pour l'aller (oxygenMargin s de marge). Pas de pods, pas d'XP, pas de butin.
+   Dynamite : dynamitePoints point(s) de plus, sans rien casser ; Inspiration : comme en mine (tous les présents) ;
+   Fast learner : le bloc géant est « appris » (+bonus à la vitesse de minage pour la visite). Dash, Illumination, Ulti
+   shen : sans effet. Anneaux : pour tous les joueurs présents, une fois par anneau différent.
+   Récompense : à la fin de la session, à chaque joueur venu au moins une fois, selon le score collectif ; les paliers
+   s'additionnent. maxPlayers : mineurs en même temps dans la carte ; top : lignes du classement. poll : rafraîchissement
+   du panneau (ms). */
+export const GIANT = {
+  timeZone: 'Europe/Paris',
+  visit: 180, cooldownMs: 3 * 3600e3, maxPlayers: 30,
+  w: 15, h: 7, block: 5, spawnX: 0, fountainX: 1, fountainRange: 1,   // 15 de large (26/10, Geoffrey ; avant 10) : plus de chemin jusqu'au bloc
+  knock: { chance: 0.10, min: 1, max: 3, flight: 0.4 },
+  oxygenDrain: 2, fountainRefill: 30, oxygenMargin: 3,
+  dynamitePoints: 1,
+  tiers: [
+    { min: 1000,  items: { 'Treasure T1': 1 } },
+    { min: 2500,  items: { 'Treasure T1': 1, 'Blueprint parts': 15 } },
+    { min: 5000,  items: { 'Treasure T2': 1 } },
+    { min: 7500,  items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
+    { min: 10000, items: { 'Treasure T3': 1 } },
+  ],
+  top: 10, poll: 3000, viewPoll: 500,
+};
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
-export const SOCIAL = { poll:4000, hiddenPoll:20000 };
+export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

@@ -8,6 +8,10 @@
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt }
    Inscription à la mine instantanée (server/instant/) : { account, name, at }, par compte.
    Jugement (ns judgment, clé 'state') : jauges Ange / Démon communes à tous (src/meta/judgment.js).
+   Bloc géant (server/giant/service.js) : ns giant_day, clé = jour (« 2026-10-26 ») : { day, total, scores:{ compte:
+   { points, visits, name } } } ; ns giant_player, clé = compte : { lastEntry, visit:{ day, startedAt, endsAt, points,
+   name } | null, claimed:[jour] }. Une entrée et une fin de visite écrivent le jour et le joueur ensemble ; une
+   récompense écrit l'inventaire et le joueur ensemble.
    Stats de session (ns session_stat, clé 'session:compte') : une ligne par joueur et par mine classique terminée, gardée
    sans limite (les sessions, elles, sont effacées après 30 jours) ; lue par le tableau de bord (server/admin/dashboard.js). */
 import fs from 'node:fs/promises';
@@ -29,6 +33,8 @@ export function createMemoryGameStore(initial = {}){
   const socials = new Map(Object.entries(initial.socials ?? {}));     // amis et demandes (server/social/service.js)
   const judgments = new Map(Object.entries(initial.judgments ?? {}));  // jauges de l'onglet Jugement (src/meta/judgment.js), clé 'state'
   const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
+  const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
+  const giantPlayers = new Map(Object.entries(initial.giantPlayers ?? {})); // Bloc géant : délai, visite en cours, récompenses prises
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -130,6 +136,23 @@ export function createMemoryGameStore(initial = {}){
     },
     async allSessionStats(){ return [...sessionStats.values()].map(copy); },
 
+    /* Bloc géant */
+    async getGiantDay(day){ return copy(giantDays.get(day)) ?? null; },
+    async listGiantDays(){ return [...giantDays.values()].map(copy); },
+    async getGiantPlayer(accountId){ return copy(giantPlayers.get(accountId)) ?? null; },
+    async listGiantPlayers(){ return [...giantPlayers.entries()].map(([account, p]) => ({ account, ...copy(p) })); },
+    async putGiantPlayer(accountId, p){ giantPlayers.set(accountId, copy(p)); await store.changed([{ ns: 'giant_player', key: accountId, value: p }]); },
+    /* entrée, fin de visite : le jour et le joueur en une seule écriture (jamais une visite comptée deux fois) */
+    async putGiantDayAndPlayer(d, accountId, p){
+      giantDays.set(d.day, copy(d)); giantPlayers.set(accountId, copy(p));
+      await store.changed([{ ns: 'giant_day', key: d.day, value: d }, { ns: 'giant_player', key: accountId, value: p }]);
+    },
+    /* récompense : l'inventaire et le joueur (jours déjà réclamés) en une seule écriture */
+    async putInventoryAndGiantPlayer(accountId, inv, p){
+      inventories.set(accountId, copy(inv)); giantPlayers.set(accountId, copy(p));
+      await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'giant_player', key: accountId, value: p }]);
+    },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
@@ -140,7 +163,8 @@ export function createMemoryGameStore(initial = {}){
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
-                         judgments: Object.fromEntries(judgments), sessionStats: Object.fromEntries(sessionStats) }; },
+                         judgments: Object.fromEntries(judgments),
+                         giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats) }; },
   };
   return store;
 }
@@ -170,11 +194,11 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'session_stat']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'session_stat']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment, sessionStats: rows.session_stat });
+                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, sessionStats: rows.session_stat });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

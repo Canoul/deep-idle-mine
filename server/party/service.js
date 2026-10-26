@@ -87,6 +87,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const p of [...parties.values()]){
       if(p.launching) continue;
       for(const m of [...p.members]){
+        /* membre prêt (ou « prêt tout le temps ») : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent »
+           mais le chef peut toujours le lancer avec le groupe. Le chef, lui, n'est jamais gardé ainsi (sinon personne
+           ne pourrait plus lancer). Pour l'enlever : le chef le retire. */
+        if(m.account !== p.leader && (m.ready || m.always)) continue;
         if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
         /* … ou fin RÉELLE de sa dernière session (en retard sur l'heure prévue, ou fin libre en dev) */
         if(now - (await game.lastEndedAt?.(m.account) ?? 0) <= config.memberTimeout) continue;

@@ -8,6 +8,10 @@
      La présence vit en mémoire (après un redémarrage, tout le monde réapparaît en quelques secondes).
    - Statut d'un ami : « session » (une session de jeu en cours pour lui), sinon « offline », sinon « lobby » (dans un
      groupe : n/3), sinon « online ».
+   - Joueurs en ligne (onglet Social → Online, 26/10) : tous les comptes en ligne ou en session (même navigateur
+     fermé), pas seulement les amis ; ceux qui
+     ne sont pas en session d'abord (en ligne ou dans un lobby), puis ceux en session, par pseudo. Liste bornée à
+     SOCIAL_SERVER.onlineListMax, le compteur donne le vrai total.
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
      dans le groupe de l'ami (créé s'il n'en a pas), seulement s'il est en ligne et pas en session.
 
@@ -153,6 +157,31 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       await save([[me.id, a], [id, b]]);
       return view(me);
     }),
+
+    /* joueurs en ligne (tous, amis ou non) : { count, players:[{ id, displayId, name, status…, me, friend }] } */
+    async online(me){
+      const now = clock();
+      for(const [id, t] of seen) if(now - t > config.onlineFor) seen.delete(id);     // oubliés : la Map ne grossit pas
+      const mine = new Set((await load(me.id)).friends);
+      /* en ligne = jeu ouvert (signe de vie) OU en session (elle tourne sur le serveur même navigateur fermé, comme chez les amis) */
+      const ids = new Set([...seen.keys(), ...await game.playersInSession()]);
+      const players = [];
+      for(const id of ids)
+        players.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...await statusOf(id), me: id === me.id, friend: mine.has(id) });
+      const busy = p => p.status === 'session' ? 1 : 0;                                 // pas en session au-dessus
+      players.sort((a, b) => busy(a) - busy(b) || a.name.localeCompare(b.name, 'fr'));
+      return { count: players.length, players: players.slice(0, config.onlineListMax) };
+    },
+
+    /* « Who ? » (lobby, tour ouverte) : joueurs en ligne qui n'ont pas encore fait la tour de ce camp pendant cette
+       ouverture, pour trouver des alliés. Moi exclu. Tour fermée : liste vide. */
+    async towerWho(me, side){
+      const t = await game.towerDone(side);
+      if(!t.open) return { side, open: false, count: 0, players: [] };
+      const all = await api.online(me);
+      const players = all.players.filter(p => !p.me && !t.done.has(p.id));
+      return { side, open: true, count: players.length, players };
+    },
 
     /* inviter un ami dans mon groupe / rejoindre le sien */
     async invite(me, input){

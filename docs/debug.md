@@ -3134,7 +3134,128 @@ Règles (voir CLAUDE.md) :
   (« 3 % par glyphe ») est remplacée : malentendu, ≈ 9 à 11 % par session.
 - **Tests** : glyph-drop (valeurs, chance unique quel que soit le nombre de manquants), wiki ✅.
 
-### Tableau de bord des joueurs (Geoffrey, 26/10) — branche `geoffrey/tableau-de-bord`, 🧪 pas en ligne
+### Social : sous-onglets Amis / Online (Geoffrey) — branche `geoffrey/social-online`, ✅ en ligne le 26/10
+- **Quoi** : `social.online(me)` (`server/social/service.js`) parcourt la Map `seen` (signes de vie), oublie au passage
+  les entrées de plus de `onlineFor`, renvoie `{ count, players }` (statut via `statusOf`, `me`, `friend`), tri : pas
+  en session d'abord puis session, par pseudo ; bornée à `SOCIAL_SERVER.onlineListMax` (200). Route
+  `GET /api/social/online` (appeler la route est aussi un signe de vie). Navigateur (`src/ui/social.js`) : sous-onglets
+  `#socialTabs`, liste demandée seulement quand le sous-onglet Online est à l'écran (vérifié chaque seconde, rechargé
+  toutes les `SOCIAL.onlinePoll` = 5 s) ; le signe de vie habituel (`GET /api/social`, 4 s) n'est pas alourdi.
+  « Ajouter » = `h.request(id)` (le serveur accepte l'ID de compte).
+- **Tests** : `tests/social.test.js` +2 (liste, ordre, hors ligne absents, borne + compteur) et route HTTP (200, 401)
+  ✅ 17/17. Vérifié dans Chromium (Playwright) à 3 comptes, dont un en session : ordre, compteur, Ajouter ✅.
+- **Points fragiles** : `online()` fait un `activeSessionInfo` par joueur en ligne (lecture du store) ; OK à quelques
+  dizaines de joueurs, à revoir (cache) s'il y en a des centaines. Un joueur en session navigateur fermé n'apparaît
+  pas (présence = signe de vie, comme chez les amis).
+
+### Groupe : membre absent mais prêt gardé (Geoffrey) — branche `geoffrey/fix-absent-pret`, ✅ en ligne le 26/10
+- **Quoi** : le ménage du groupe (`sweep`, `server/party/service.js`) retirait tout membre sans signe de vie depuis
+  `memberTimeout` (5 min), même prêt / « prêt tout le temps » : onglet fermé = sorti du groupe, le chef ne pouvait
+  plus le lancer. Désormais `sweep` saute un membre **non chef** avec `ready || always`. Rien d'autre ne bloquait :
+  le lancement (`launch`, `game.start`) et `launchState` (lobby) ignorent `away`, qui reste un simple affichage.
+- **Tests** : `tests/party.test.js` +2 (absents prêts lancés avec le groupe, « prêt » retiré après la session,
+  « prêt tout le temps » gardé et relancé ; chef absent toujours retiré) ✅ 38/38 ; lobby, social, lfg ✅.
+- **Points fragiles** : un « prêt tout le temps » qui ne revient jamais reste dans le groupe (et part en session) tant
+  que le chef ne le retire pas ; c'est voulu. Il occupe aussi une place pour la recherche de groupe (LFG).
+
+### Online : joueurs en session navigateur fermé oubliés (Geoffrey) — branche `geoffrey/fix-online-session`, ✅ en ligne le 26/10
+- **Quoi** : bug signalé (plus d'amis en ligne que de joueurs dans Online). `online()` ne prenait que la Map `seen`
+  (signes de vie) alors que `statusOf` (liste d'amis) dit « session » sans signe de vie. Ajout de
+  `game.playersInSession()` (`server/game/service.js` : sessions `running` / `settling`, joueurs pas partis) ;
+  `online()` = union `seen` ∪ en session. Le point fragile noté dans l'entrée précédente est réglé.
+- **Tests** : `tests/social.test.js` +1 (session navigateur fermé comptée) et attente corrigée dans le test d'ordre ;
+  social + game-service ✅ 66/66.
+- **Points fragiles** : à chaque redémarrage du serveur (mise à jour de `main`), `seen` repart de zéro : pendant
+  ~4 s, Online et la liste d'amis ne montrent que les joueurs en session.
+
+### Lampe à incandescence par BP du T2, recherche T3 à 200 parts (Geoffrey) — branche `geoffrey/bp-lampe`, ✅ en ligne le 26/10
+- **Quoi** : `src/recipes.js` : `unlock: 'Lampe à incandescence BP'` (avant `null`) ; `src/config.js` : BP ajouté au
+  Treasure T2 (famille blueprint, 0,02 ; total BP du T2 6 % → 8 %), rareté `rare` ; `RESEARCH.tiers[2].cost` 150 → 200.
+  La table de recherche lit les plans du Treasure T2 : le BP y entre tout seul, et le tier 3 demande maintenant aussi
+  la recette de la lampe (`tierUnlocked`).
+- **Tests** : lamp (verrouillée sans BP, apprise puis craftée), tier2 (liste et seuils des BP, fréquence 8 %, recherche),
+  research (coûts, tier 3 à 200), rarity ✅ ; wiki, craft, loot, recycle, stuff ✅ ; `npm run test:anticheat` ✅ 91/91.
+- **Points fragiles** : un joueur qui avait déjà tout le T2 appris perd l'accès à la recherche tier 3 jusqu'à ce qu'il
+  apprenne la lampe. La lampe n'est pas dans `UPGRADE.tiers` (ligne de rune sur sa valeur propre).
+
+### Amélioration +1 à +9 (Geoffrey) — branche `geoffrey/amelioration-plus9`, ✅ en ligne le 26/10
+- **Quoi** : `UPGRADE.levels` passe de 3 à 9 paliers (`src/config.js`) ; le reste du code lit déjà `levels.length`
+  (`MAX_PLUS`, `nextLevel`, `plusMult`, `sanitizePiece`, onglet Amélioration, wiki). Textes : `wiki.html`,
+  `src/ui/upgrade.js`, `src/meta/piece.js`, GAME_DESIGN.
+- **Tests** : `tests/amelioration.test.js` (9 paliers puis maximum, coûts, valeurs à 3 %/rang, plus:10 refusé),
+  `tests/anticheat` (plumes du +1 = 6) ✅ ; amelioration, wiki, rune-pool ✅ 37 ; anticheat ✅ 91.
+  ❌ préexistant sur main au moment du travail, sans lien : `tests/rune.test.js` « tier » (Lampe à incandescence sans tier).
+- **Points fragiles** : pièces déjà +1 à +3 : bonus relu au nouveau barème (baisse : +3 = 9 % au lieu de 15 %).
+
+### Steel ingot : 5 Graphite ingot (Geoffrey) — branche `geoffrey/steel-graphite-5`, ✅ en ligne le 26/10
+- **Quoi** : `FURNACE` alliages, `src/config.js` : Steel ingot `'Graphite ingot':10` → `5`. Wiki (tableaux depuis la
+  config), GAME_DESIGN, état du projet.
+- **Tests** : `tests/graphite.test.js`, wiki, craft, anticheat.
+
+### Bloc géant (Geoffrey) — branche `geoffrey/bloc-geant`, ✅ en ligne le 26/10
+- **Quoi** : spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`. Config `GIANT` (+ mode `giant` dans
+  `MINE_MODES`, refusé par `game.start` : `mode_giant`). Règles pures `src/shared/giant.js` (jour de Paris : `dayOf`,
+  `dayEnd`, délai, paliers cumulés `rewardFor`, `ranking`). Simulation `src/sim/giant/session.js` (salle sans fin :
+  `joinGiant` / `leaveGiant` / `tickGiant`, visites finies dans `G.done`). `src/shared/giant-room.js` : fiche d'un joueur
+  via `minerSpecs` (un par un ; `record.rings` = anneaux de tous les présents, nouveau paramètre de `minerSpecs`),
+  recalcul des caractéristiques à chaque arrivée / départ. Serveur `server/giant/service.js` + `routes.js` (GET
+  /api/giant, GET /api/giant/view, POST enter / leave / claim), branché dans `server/main.js` (pompe) et `app.js`.
+  Service de jeu : `useGiant` (une visite compte comme une session : `start` refuse `in_giant`, `openInstant` écarte,
+  `activeSessionInfo` et `playersInSession` la voient : Social), `giantEnter` (verrou `acct:`), `giantGrant` (verrou
+  `inv:`, écriture inventaire + joueur). Stockage : ns `giant_day` (scores du jour) et `giant_player` (délai, visite en
+  cours, jours réclamés), écritures groupées. Navigateur : `src/ui/giant.js` (carte du lobby, visite, fin),
+  `src/render/giant.js`, `#giantCard`, `#gtRun`, `#gtDone` ; `lobbyCards` a une clé `giant`. Textures
+  `giant_block` (80 × 80), `giant_fountain`, `giant_torch` (`gen_textures.py` : `giant()`).
+- **Choix techniques** : la salle tourne dans le fil principal (pas de worker : 30 mineurs pendant 1 h de jeu ≈ 50 ms
+  de calcul) ; pas de rejeu après un redémarrage : les visites pas finies reprennent avec le temps restant et les
+  points enregistrés (toutes les `GIANT_SERVER.checkpointEvery` = 10 s), celles finies pendant l'arrêt sont closes avec
+  ces points. Récompense d'un jour disponible à `dayEnd + durée d'une visite`. Mode dev (`npm run dev`) : pas de délai.
+- **Tests** : giant-rules (8), giant-sim (12), giant-service (11), anticheat/giant (4), lobby (mis à jour), game-service
+  (`mode_giant`) ✅. `npm run test:anticheat` ✅ 95. Vérifié dans Chromium (Playwright) à 2 puis 3 comptes : entrée,
+  salle en direct, superposition (un pseudo + « ×3 »), fin de visite (155 points), carte du lobby (classement, paliers),
+  aucune erreur dans la page ✅. `npm run simulate:giant` : 151 / 190 / 228 points par visite (sans stuff / fer /
+  acier), une recharge par visite, pas de blocage.
+- **Points fragiles** : la salle et les visites en mémoire du serveur (un seul serveur) ; les points d'une visite en
+  cours depuis le dernier point d'étape sont perdus à un redémarrage (≤ 10 s) ; le jour d'une récompense se lit avec
+  `Date.parse(jour + 'T12:00:00Z')`.
+- **Après coup** : salle passée à 15 × 7 (`GIANT.w`, demande de Geoffrey) et mise en ligne **sans relancer les tests ni la
+  simulation** (demande de Geoffrey). ⚠️ À revérifier : `node --test tests/giant-*.test.js` et `npm run simulate:giant`
+  (le trajet plus long change les points par visite, la recharge d'oxygène et donc les repères des paliers).
+  ✅ Vérifié le 26/10 (branche `geoffrey/fix-bloc-geant-fin`) : giant-sim et giant-rules verts ; simulate:giant à 15 × 7 :
+  146 / 184 / 221 points par visite (sans stuff / fer / acier), une recharge par visite, pas de blocage.
+
+### Bloc géant : fin de visite affichée trop tôt (Geoffrey) — branche `geoffrey/fix-bloc-geant-fin`, ✅ en ligne le 26/10
+- **Bug** (signalé par Geoffrey) : écran de fin « Cette visite 91 points, total du jour 248 » pour une seule visite.
+  Cause : après un redémarrage du serveur, `view()` et `leave()` ne reprenaient pas les visites d'avant (seuls `info`,
+  `enter` et `pump` appelaient `restore`) ; si la vue arrivait avant, `me` = null et le navigateur concluait à la fin
+  de la visite (points du dernier envoi), alors que le serveur la reprenait et la comptait en entier. Reproduit
+  (scratch : une vue juste après un redémarrage → `me: null`).
+- **Correction** : `sync()` (restore + advance) au début de chaque demande (`server/giant/service.js`) ; la fin d'une
+  visite enregistre `p.last = { day, points, at }`, renvoyé dans `info.lastVisit` ; `src/ui/giant.js` : `me` absent →
+  `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
+- **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
+
+### Bloc géant : « Cette visite » < points réels, piste onglet en arrière-plan (Geoffrey) — branche `geoffrey/fix-bloc-geant-score`, ✅ en ligne le 26/10
+- Même symptôme que l'entrée au-dessus, autre piste (onglet en arrière-plan : `lastMe` figé). Branche écrite en parallèle
+  de `fix-bloc-geant-fin` ; au merge, **le code de `fix-bloc-geant-fin` est gardé** (`p.last`, `info.lastVisit` nul
+  pendant une visite, qui couvre aussi ce cas). Seul le test « 2e visite seule, jour = somme des visites » est ajouté
+  à `tests/giant-service.test.js`.
+
+---
+
+## 26/10/2026 — Tours : « Who ? » (branche `geoffrey/tour-who`) — ✅ en ligne le 26/10
+- **Quoi** : `game.towerDone(side)` (`server/game/service.js`) : `{ open, done:Set }` sous le verrou du Jugement (done
+  = comptes de l'ouverture en cours ; mode dev : toujours ouverte, comme au lancement). `social.towerWho(me, side)`
+  (`server/social/service.js`) = `online(me)` moins moi et les `done` ; tour fermée → liste vide. Route
+  `POST /api/social/tower-who { side }`, `socialApi.towerWho`. Lobby (`src/ui/lobby.js`) : bouton `#whoBtn` dans
+  `#lobbyInfo` (tour choisie), liste `#towerWho` (`whoRows` : Inviter si pas en session/hors ligne et pas membre du
+  groupe → `party.invite(displayId)`), refermée en changeant de mode. CSS `.towerWho`.
+- **Tests** : `tests/tower-who.test.js` (nouveau, 3) ; tower-who, lobby, social, game-service, judgment : 97/97 ✅.
+  Vérifié dans Chromium (mode dev, 2 invités) : la liste montre l'autre joueur, Inviter l'ajoute au groupe, 0 erreur JS.
+- **Limites** : la liste suit `SOCIAL_SERVER.onlineListMax` (comme l'onglet Online) ; pas rafraîchie toute seule
+  (reclic pour la mettre à jour).
+
+### Tableau de bord des joueurs (Geoffrey, 26/10) — branche `geoffrey/tableau-de-bord`, ✅ en ligne le 26/10
 - **Quoi** : `src/sim/mineur.js` + `src/sim/session.js` : `m.stats.hitTime` (+DT par tick où l'action est `attack`,
   compté avant `stepMiner`). `server/game/service.js` : au lancement d'une mine classique hors dev, `rec.statsAt[compte]
   = launchSnapshot({xp, tree, gear})` ; dans `settleWith`, après `status = 'done'`, `store.putSessionStats(statRows(…))`.

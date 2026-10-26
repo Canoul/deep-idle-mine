@@ -60,6 +60,11 @@
     <h2>Invitations</h2>
     <div id="invitesList"></div>
   </div>
+  <!-- Bloc géant : session du jour, entrée, scores, classement, récompenses (src/ui/giant.js) -->
+  <div class="card giantCard" id="giantCard" hidden>
+    <h2>🌈 Bloc géant</h2>
+    <div id="giantBody"><p class="mut small">Chargement…</p></div>
+  </div>
   <div class="card" id="teamCard">
     <h2 id="teamTitle">Équipe de la prochaine session</h2>
     <div class="pslots" id="lobbySlots"></div>
@@ -77,6 +82,7 @@
     <form class="joinRow" id="joinForm"><div class="irow" id="joinRow"><span>Tu as un code de groupe ?</span>
       <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
     <p class="mut" id="lobbyInfo"></p>
+    <div class="towerWho" id="towerWho" hidden></div>
     <p class="err" id="lobbyErr" hidden></p>
   </div>
   <div class="card devCard" id="devCard" hidden>
@@ -194,6 +200,30 @@
   </aside>
 </main>
 </div>
+<!-- Bloc géant : la visite en cours (src/ui/giant.js, rendu src/render/giant.js) -->
+<div id="gtRun" hidden>
+<header>
+  <div class="twTitle">🌈 Bloc géant</div>
+  <div class="timer" id="gtTimer">0:00</div>
+  <div class="grow"><div class="bar"><i id="gtTimeBar"></i></div></div>
+  <span class="mut" id="gtPoints"></span>
+  <button id="gtLeaveBtn" title="Tes points comptent, mais ton entrée est utilisée"><i data-pxi="door"></i>Quitter</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvGtWrap"><canvas id="cvGt"></canvas></div>
+  <aside>
+    <div class="card"><h2>Ma visite</h2><div id="gtMe"></div></div>
+    <div class="card"><h2>Devant le bloc</h2><div id="gtPresent"></div></div>
+    <div class="card"><h2>Session du jour</h2><div id="gtDay"></div></div>
+  </aside>
+</main>
+</div>
+<!-- Bloc géant : fin de visite -->
+<div id="gtDone" class="soon" hidden>
+  <div class="big">🌈</div><h2>Visite terminée</h2>
+  <div id="gtDoneBody"></div>
+  <button class="on" id="gtDoneBtn"><i data-pxi="house"></i>Retour au lobby</button>
+</div>
 <!-- bilan de fin de session : ne couvre que l'onglet Session (les autres onglets et la navigation restent utilisables) -->
 <div id="end" hidden><div class="box" id="endBox"></div></div>
 </section>
@@ -262,13 +292,20 @@
 <section class="view" data-view="social" hidden>
   <div class="furnWrap" id="socialBody">
     <div class="invHead"><h1><i data-pxi="group"></i>Social</h1><span class="mut small" id="socialCount"></span></div>
-    <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
-      <button class="on">Ajouter</button></form>
+    <div class="seg rsTabs" id="socialTabs"><button data-stab="friends" class="on">Amis</button><button data-stab="online">Online</button></div>
     <p id="socialMsg" hidden></p>
-    <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
-    <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
-    <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
-    <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. « Stuff » montre son équipement, ses stats et son niveau. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+    <div id="socialFriendsTab">
+      <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
+        <button class="on">Ajouter</button></form>
+      <div class="card" id="socialReqCard" hidden><h2>Demandes d'ami reçues</h2><div id="socialReq"></div></div>
+      <div class="card"><h2>Mes amis</h2><div id="socialFriends"></div></div>
+      <div class="card" id="socialOutCard" hidden><h2>Demandes envoyées</h2><div id="socialOut"></div></div>
+      <p class="mut small">Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby (onglet Lobby). Impossible d'inviter ou de rejoindre un ami en session. « Stuff » montre son équipement, ses stats et son niveau. Un compte invité n'a pas de pseudo : il s'ajoute avec son ID (ex. 7K3Q-9XHP).</p>
+    </div>
+    <div id="socialOnlineTab" hidden>
+      <div class="card"><h2>Joueurs en ligne <span class="mut" id="socialOnlineCount"></span></h2><div id="socialOnline"><p class="mut small">Chargement…</p></div></div>
+      <p class="mut small">Tous les joueurs connectés, amis ou non : ceux qui ne sont pas en session d'abord, puis ceux en session. « Ajouter » envoie une demande d'ami.</p>
+    </div>
   </div>
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->
   <div id="fview" hidden><div class="box"></div></div>

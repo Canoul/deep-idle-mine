@@ -14,8 +14,8 @@ let n = 0; const id = () => 'op-rs-' + (++n);
 const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
-test('config : tier 1 = 100 parts (recycle 15 à 30), tiers 2 et 3 = 150 parts (recycle 40 à 70) ; onglet présent', () => {
-  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 150]]);
+test('config : tier 1 = 100 parts (recycle 15 à 30), tier 2 = 150 parts, tier 3 = 200 parts (26/10 ; recycle 40 à 70) ; onglet présent', () => {
+  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200]]);
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 10);   // + Lance en fer BP (25/10)
   assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:15, max:30 }, { min:40, max:70 }, { min:40, max:70 }]);
@@ -91,7 +91,7 @@ test('table de recherche : description du blueprint obtenu (recette débloquée 
   assert.match(bpInfoHtml('Inconnu BP'), /aucune recette/);
 });
 
-/* tier 3 (23/10/2026, Geoffrey) : blueprints du Treasure T3, 150 parts, plan épique 4 fois moins probable */
+/* tier 3 (23/10/2026, Geoffrey) : blueprints du Treasure T3, 200 parts (26/10 ; avant 150), plan épique 4 fois moins probable */
 const T2 = LOOT['Treasure T2'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 const T3 = LOOT['Treasure T3'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 const EPIC = 'Plastron de l\'équilibre BP';
@@ -105,11 +105,11 @@ test('tier 3 : fermé tant que les recettes du tier 2 ne sont pas toutes apprise
   assert.equal(tierUnlocked(half, 3), false);
   assert.equal(research(half, 3, id(), fixed(0)).error, 'tier_locked');
   assert.equal(countOf(half, PARTS), 500, 'rien payé');
-  const all = knowsTiers(T1, T2); addAll(all, { [PARTS]:160 });
+  const all = knowsTiers(T1, T2); addAll(all, { [PARTS]:210 });
   assert.ok(tierUnlocked(all, 3) && canResearch(all, 3));
   const r = research(all, 3, id(), fixed(0));
   assert.ok(r.ok && T3.includes(r.item));
-  assert.equal(countOf(all, PARTS), 10, '150 parts');
+  assert.equal(countOf(all, PARTS), 10, '200 parts');
 });
 
 test('tier 3 : le plan épique pèse 4 fois moins que chaque autre plan', () => {
@@ -120,10 +120,10 @@ test('tier 3 : le plan épique pèse 4 fois moins que chaque autre plan', () => 
   assert.ok(Math.abs(odds[EPIC] - 0.25 / 6.25) < 1e-12, '4 % de chance avec les 7 plans possibles');
   /* tirages réels : fréquence du plan épique ≈ 4 % */
   let s = 7, epic = 0; const rng = () => (s = (s * 16807) % 2147483647) / 2147483647, N = 20000;
-  for(let i = 0; i < N; i++){ const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:150 }); if(research(v, 3, id(), rng).item === EPIC) epic++; }
+  for(let i = 0; i < N; i++){ const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:200 }); if(research(v, 3, id(), rng).item === EPIC) epic++; }
   assert.ok(Math.abs(epic / N - 0.04) < 0.006, `fréquence ${epic / N}`);
   /* en bout de tirage (rng proche de 1) : le dernier plan possible, jamais hors de la liste */
-  const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:150 });
+  const v = knowsTiers(T1, T2); addAll(v, { [PARTS]:200 });
   assert.equal(research(v, 3, id(), fixed(0.9999999)).item, T3.at(-1));
 });
 

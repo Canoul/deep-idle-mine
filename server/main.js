@@ -14,6 +14,7 @@ import { createGameService } from './game/service.js';
 import { createPartyService } from './party/service.js';
 import { createInstantService } from './instant/service.js';
 import { createSocialService } from './social/service.js';
+import { createGiantService } from './giant/service.js';
 import { createDiscordAnnouncer } from './social/discord.js';
 
 const port = +(process.argv[2] || SERVER.port);
@@ -31,12 +32,14 @@ const instant = createInstantService({ game, party, store: gameStore, dev: GAME_
 await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
 const social = createSocialService({ store: gameStore, accounts: store, party, game });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, root: ROOT }));
+/* Bloc géant : salle commune, visites, scores du jour, récompenses */
+const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
+const server = http.createServer(createApp({ store, service, game, party, instant, social, giant, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */
 game.recover().catch(console.error);       // sans attendre : le serveur répond tout de suite, les sessions rattrapent ensuite
-const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); }, GAME_SERVER.pumpEvery);
+const pump = setInterval(() => { instant.tick().catch(console.error); game.pump().catch(console.error); giant.pump().catch(console.error); }, GAME_SERVER.pumpEvery);
 pump.unref();
 
 /* ménage des connexions expirées, au démarrage puis toutes les heures */

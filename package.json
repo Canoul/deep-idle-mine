@@ -12,6 +12,7 @@
     "simulate": "node scripts/simulate.js",
     "simulate:mi": "node scripts/simulate-instant.js",
     "simulate:tower": "node scripts/simulate-tower.js",
+    "simulate:giant": "node scripts/simulate-giant.js",
     "weights": "node scripts/weights.js",
     "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py",

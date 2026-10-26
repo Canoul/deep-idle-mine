@@ -49,19 +49,19 @@ test('four : 10 Graphite ore + 10 charbons → 1 Graphite ingot en 60 s', () => 
   assert.equal(countOf(inv, 'Graphite ingot'), 2);
 });
 
-test('alliage : 3 Tainted iron + 10 Graphite ingot + 50 charbons → 1 Steel ingot en 3 min', () => {
+test('alliage : 3 Tainted iron + 5 Graphite ingot + 50 charbons → 1 Steel ingot en 3 min', () => {
   const r = FURNACE.alloys.find(a => a.out === 'Steel ingot');
-  assert.deepEqual(r.in, { 'Tainted iron':3, 'Graphite ingot':10 });
+  assert.deepEqual(r.in, { 'Tainted iron':3, 'Graphite ingot':5 });   // 26/10 : 10 → 5
   assert.equal(ITEMS['Steel ingot'].cat, 'ingot');
-  const inv = createInventory(); addAll(inv, { 'Tainted iron':6, 'Graphite ingot':15, Charbon:200 });
+  const inv = createInventory(); addAll(inv, { 'Tainted iron':6, 'Graphite ingot':7, Charbon:200 });
   const st = createFurnaces(), f = st.list[0];
   op(st, inv, { action:'mode', mode:'alloy' });
-  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Graphite ingot', qty:15 }).ok, 'ordre libre');
+  assert.ok(op(st, inv, { action:'load', slot:'a', item:'Graphite ingot', qty:7 }).ok, 'ordre libre');
   assert.ok(op(st, inv, { action:'load', slot:'b', item:'Tainted iron', qty:6 }).ok);
   assert.ok(op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:200 }).ok);
   advance(f, T0 + 3 * MIN - 1);
   assert.equal(f.out, null);
   advance(f, T0 + 60 * MIN);
-  assert.deepEqual(f.out, { item:'Steel ingot', qty:1 }, 'le graphite (15) limite à 1');
-  assert.deepEqual([f.a.qty, f.b.qty, f.fuel.qty], [5, 3, 150]);
+  assert.deepEqual(f.out, { item:'Steel ingot', qty:1 }, 'le graphite (7) limite à 1');
+  assert.deepEqual([f.a.qty, f.b.qty, f.fuel.qty], [2, 3, 150]);
 });
