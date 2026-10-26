@@ -253,7 +253,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
   dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`).
 - **Annonces Discord** (25/10, Geoffrey) : un trésor de tour ou une identification de qualité `ANNOUNCE.minQuality`
-  (R7) ou plus est annoncé dans #général par un webhook (`server/social/discord.js`, adresse secrète
+  (R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour
   un don admin ; envoi en tâche de fond, jamais bloquant.
 

@@ -1,12 +1,13 @@
 /* Annonces Discord : un message dans un salon (webhook) quand un joueur obtient quelque chose de très rare.
    - un trésor de tour de qualité ANNOUNCE.minQuality ou plus (« 🚨 Zoe a loot un trésor démoniaque R7 🚨 ») ;
-   - une pièce identifiée dans cette qualité (« 🚨 Zoe a identifié Plastron en fer R7 🚨 »).
+   - une pièce identifiée dans cette qualité (« 🚨 Zoe a identifié Plastron en fer R7 🚨 ») ;
+   - l'ouverture d'une tour du Jugement (« 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 », 26/10).
    L'adresse du webhook est secrète (n'importe qui qui l'a peut écrire dans le salon) : DIM_DISCORD_WEBHOOK, dans
    /etc/deep-idle-mine.env sur le VPS, JAMAIS dans git. Absente : aucune annonce (local, mode dev, tests).
    L'envoi part en tâche de fond : Discord lent ou en panne ne retarde ni ne fait échouer une fin de session ou une
    identification (l'erreur est seulement écrite dans le journal du serveur). Personne n'est mentionné (@everyone
    dans un pseudo reste du texte). */
-import { ANNOUNCE, ITEMS } from '../../src/config.js';
+import { ANNOUNCE, ITEMS, JUDGMENT } from '../../src/config.js';
 
 /* pseudo affiché tel quel : on neutralise la mise en forme Discord (*gras*, _italique_, `code`, ||spoiler||…) */
 export const escapeMarkdown = s => String(s ?? '').replace(/[\\*_~`|>[\]]/g, '\\$&');
@@ -25,6 +26,12 @@ export function treasureMessage(player, item){
 export function identifyMessage(player, piece){
   if(!(piece?.q >= ANNOUNCE.minQuality)) return null;
   return line(`${name(player)} a identifié ${piece.item} R${piece.q}`);
+}
+
+/* message pour l'ouverture de la tour de ce camp ('angel' | 'demon'), ou null si le camp est inconnu */
+export function towerOpenMessage(side){
+  const def = Object.hasOwn(JUDGMENT.sides, side) ? JUDGMENT.sides[side] : null;
+  return def ? line(`La ${def.tower} est ouverte pendant ${JUDGMENT.openHours} h !`) : null;
 }
 
 /* announce(texte) : envoie le message au webhook, sans jamais lever d'erreur ; renvoie la promesse de l'envoi (pour

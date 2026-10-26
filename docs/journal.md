@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Discord : annonce de l'ouverture des tours
+- **Pour le joueur** : quand la Tour de l'Ange ou la Tour du Démon s'ouvre, le bot Discord poste
+  « 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 ». Une seule fois par ouverture, quelle qu'en soit la cause
+  (jauge remplie par les résidus, réouverture automatique, commande d'admin).
+- **État** : 🧪 sur la branche `geoffrey/discord-tour-ouverte` (pas en ligne)
+
+
 ## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
 - **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
   restant, scores, classement, récompenses à réclamer). Le bouton « Entrer » reste grisé (« Termine d'abord ta

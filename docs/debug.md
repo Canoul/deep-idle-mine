@@ -3371,3 +3371,13 @@ Règles (voir CLAUDE.md) :
   « récompense : paliers » déjà présents sur main (paliers relevés, d6a2dfa), corrigés par la branche
   `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement. ✅ Après merge de main (9cb496c) : lobby +
   giant-rules + giant-service ✅ 35.
+
+### Discord : ouverture d'une tour annoncée (Geoffrey) — branche `geoffrey/discord-tour-ouverte`, 🧪 pas en ligne
+- **Quoi** : `towerOpenMessage(side)` (`server/social/discord.js`). Branché dans `withJudgment`
+  (`server/game/service.js`) : on note `j[side].opening` avant, et après l'enregistrement on annonce chaque camp dont
+  le numéro a avancé. Couvre les trois causes d'ouverture (`addResidues`, `refresh` à la lecture = réouverture après
+  une ouverture pleine, `setCount` admin) ; sous le verrou 'judgment' → jamais deux annonces pour une ouverture.
+- **Point fragile** : une réouverture automatique n'est vue (et annoncée) qu'à la prochaine lecture du Jugement
+  (lobby, lancement, fin de session) ; en pratique quelques secondes, mais pas à la minute près si personne ne joue.
+- **Tests** : discord ✅ (+4 : message, résidus + relectures/redémarrage, admin, réouverture ; 2 attentes existantes
+  complétées par l'annonce d'ouverture), judgment, admin, tower* ✅ 75.

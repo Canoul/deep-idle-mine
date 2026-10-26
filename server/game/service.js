@@ -42,7 +42,7 @@ import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
-import { treasureMessage, identifyMessage } from '../social/discord.js';
+import { treasureMessage, identifyMessage, towerOpenMessage } from '../social/discord.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
@@ -166,11 +166,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const loadPrefs = async accountId => sanitizePrefs(await store.getPrefs(accountId));
   /* Jugement : jauges communes, relues et revérifiées, sous le verrou 'judgment' ; fn(j) renvoie true pour enregistrer.
      Une tour dont la jauge est pleine s'ouvre à la lecture (refresh), et c'est enregistré. */
+  /* Une tour qui vient de s'ouvrir (son numéro d'ouverture a avancé, quelle que soit la cause : résidus, réouverture,
+     admin) est annoncée sur Discord une fois, après l'enregistrement (sous le verrou : jamais deux fois). */
   const withJudgment = fn => withLock('judgment', async () => {
     const j = sanitizeJudgment(await store.getJudgment());
+    const openings = Object.fromEntries(JUDGMENT_SIDES.map(s => [s, j[s].opening]));
     const opened = refreshJudgment(j, clock());
     const r = await fn(j);
     if(opened || r?.save) await store.putJudgment(j);
+    for(const s of JUDGMENT_SIDES) if(j[s].opening > openings[s]) shout(towerOpenMessage(s));
     return r?.value ?? r;
   });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
