@@ -35,7 +35,10 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   /* glyphes (25/10) : épiques */
   const GLYPH = Object.keys(ITEMS).filter(n => ITEMS[n].cat === 'glyph');
   for(const n of GLYPH) assert.equal(rarityOf(n), 'epique', n);
-  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH].includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* butin rare des mobs (26/10, tests/mob-drops.test.js) */
+  const MOB_STUFF = { 'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique' };
+  for(const [n, r] of Object.entries(MOB_STUFF)) assert.equal(rarityOf(n), r, n);
+  for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH, ...Object.keys(MOB_STUFF)].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

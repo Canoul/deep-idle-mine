@@ -3371,3 +3371,19 @@ Règles (voir CLAUDE.md) :
   « récompense : paliers » déjà présents sur main (paliers relevés, d6a2dfa), corrigés par la branche
   `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement. ✅ Après merge de main (9cb496c) : lobby +
   giant-rules + giant-service ✅ 35.
+
+## 26/10/2026 — Butin rare des mobs : 4 pièces de stuff (branche `geoffrey/stuff-mobs`) — ⏳
+- **Quoi** : `src/config.js` : 4 entrées `STUFF.items` (stats en x = pièce en fer de la case via `UPGRADE.prices`,
+  ceinture 250 x ; champ `recycle` = rendu fixe), `RARITY.items`, `UPGRADE.tiers[2]`, `TEXTURES`, nouveau `MOB_DROPS`
+  (après `DUNGEON` : mob, item, chance, kholeChance). `src/sim/actions.js` : `rareDrop` appelé à la fin de `killMob`
+  (tous les types), hasard `G.dropRng = mulberry32(seed ^ MOB_DROPS.salt)` créé au premier mob qui a un butin rare,
+  `G.khole` → kholeChance, `collect` d'1 pièce (poids 0), sans `lootOf`. `src/meta/craft.js` : `recyclable` /
+  `recycleRefund` acceptent un `recycle` fixe quand il n'y a pas de recette. Skins `src/skins.js` + dessins
+  `scripts/gen_textures.py` (icônes straps_goblin, hood_dark, cloud_magic, belt_giant ; calques skins/goblin_straps,
+  dark_hood, magic_cloud, giant_belt). Wiki : `sourcesOf`, `mobDropRows`, tableau `#w-mob-drops`.
+- **Tests** : `tests/mob-drops.test.js` ✅ 6 (config, x, fréquences sur 40 000 morts, hasard à part, recyclage
+  idempotent, wiki) ; `tests/anticheat/recycle.test.js` ✅ (rafale sur la Ceinture) ; rareté mise à jour ✅ ; 22 fichiers
+  liés ✅ sauf `rune.test.js` « chaque pièce qu'on peut runer a un tier » ❌ **déjà sur main** (Lampe à incandescence
+  sans tier, branche geoffrey/lampe-bp). Simulation 5 sessions ✅ 0 bloquée ; même seed = mêmes chiffres qu'avant.
+- **Points fragiles** : une pièce lâchée suit le sac du mineur, comme le reste du butin. En tour,
+  les mobs n'ont pas ces types : pas de drop. Le minotaure de l'arène du k hole compte comme « k hole » (G.khole).

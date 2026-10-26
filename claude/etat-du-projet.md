@@ -124,6 +124,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Butin rare des mobs** (26/10, Geoffrey) : 4 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
+  chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x), deux stats moitié / moitié :
+  **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,5 %),
+  **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,5 %), **Nuage magique** (jambes, rare ;
+  marche +1,4 ; méphite 0,5 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +12,6 % ; minotaure 1 %,
+  2 % en k hole). Chance fixe (ni Butin ni Pillage), hasard à part, un seul joueur la reçoit (partage normal). Tier 2
+  pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
+  nuage, ceinture à cornes).
 - **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5
   et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
   BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (inhabituelles ; ancien : fer × 1,2 ; Steel

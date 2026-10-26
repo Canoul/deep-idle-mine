@@ -1,5 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
@@ -124,6 +124,17 @@ function openTreasure(G,m,x,y){
   log(G, `💰 ${m.name} ouvre un treasure : +${TREASURE.itemCount} ${item}`);
 }
 
+/* butin rare (MOB_DROPS) : une pièce de stuff, avec sa chance fixe (kholeChance dans un k hole), sans Butin des mobs ni
+   Pillage. Hasard à part (G.dropRng), tiré seulement pour un mob qui a un butin rare : le reste de la partie ne bouge pas. */
+function rareDrop(G,m,o){
+  for(const d of MOB_DROPS.items){
+    if(d.mob!==o.type) continue;
+    const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
+    const chance=G.khole && d.kholeChance!=null ? d.kholeChance : d.chance;
+    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
+  }
+}
+
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
@@ -159,6 +170,7 @@ export function killMob(G,m,o){
     const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
+  rareDrop(G,m,o);
   G.mobs = G.mobs.filter(x=>x.hp>0);
 }
 

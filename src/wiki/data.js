@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -88,6 +88,14 @@ export function statsOf(item){
 }
 
 /* d'où vient un objet : liste de textes courts */
+/* butin rare des mobs (MOB_DROPS) : nom du mob, et texte de la chance */
+const mobDropName = d => d.mob === DUNGEON.boss.type ? DUNGEON.boss.name : MOB_LOOK[d.mob]?.name ?? d.mob;
+const mobDropText = d => `${fmt(pct(d.chance))} % de chance sur un ${mobDropName(d).toLowerCase()}`+
+  (d.kholeChance != null ? ` (${fmt(pct(d.kholeChance))} % dans un k hole)` : '');
+/* lignes du tableau du wiki : objet, mob, chance (texte), recyclage { objet: quantité } */
+export const mobDropRows = () => MOB_DROPS.items.map(d => ({ item: d.item, mob: mobDropName(d), chance: mobDropText(d),
+  recycle: STUFF.items[d.item]?.recycle ?? {} }));
+
 export function sourcesOf(item){
   const out = [];
   const block = Object.values(BLOCKS).find(b => b.name === item && !b.noDrop && !b.unbreakable);
@@ -99,6 +107,7 @@ export function sourcesOf(item){
   for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
     out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+  for(const d of MOB_DROPS.items) if(d.item === item) out.push(mobDropText(d));
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);

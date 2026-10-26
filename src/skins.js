@@ -24,6 +24,11 @@ export const SKIN = {
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
+    /* butin rare des mobs (26/10/2026, MOB_DROPS) */
+    'Lanières en cuir du gobelin': 'skins/goblin_straps', // torse nu, deux sangles de cuir des épaules le long des côtes
+    'Capuche sombre':      'skins/dark_hood',          // capuche violette de l'occultiste, visage sombre, yeux rouges
+    'Nuage magique':       'skins/magic_cloud',        // les jambes deviennent un nuage jaune
+    'Ceinture du Géant':   'skins/giant_belt',         // bande noire, cornes claires
   },
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {

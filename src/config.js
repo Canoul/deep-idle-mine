@@ -572,7 +572,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
@@ -739,6 +739,7 @@ export const RARITY = {
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
+    'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
     'Plume d\'ange':'rare',
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
@@ -810,6 +811,17 @@ export const STUFF = {
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
+    /* butin rare des mobs (26/10/2026, Geoffrey ; MOB_DROPS) : pas craftables. Chacune vaut en x (UPGRADE.prices) la pièce
+       en fer de sa case, partagée moitié / moitié entre ses deux stats ; la ceinture, sans équivalent en fer, vaut le x
+       du tier 2 (250). recycle : ce que rend le recyclage (quantités fixes, à la place de la part d'une recette) */
+    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:44, looting:22 },   // 440 x (Plastron en fer)
+                                     recycle:{ 'Chitine':20, 'Peau de gobelin':10 } },
+    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.13, crit:9.7 },   // 268 x (Casque en fer) : recul arrondi à 0,13 (130 x), le critique complète
+                             recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
+    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.4 },   // 350 x (Jambes en fer), une seule stat
+                             recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:3.1, tenacity:12.6 },   // 250 x (tier 2) : dégâts arrondis à 3,1 (124 x), la ténacité complète
+                             recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
@@ -886,7 +898,8 @@ export const UPGRADE = {
     1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
     2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
-                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
+                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui',
+                       'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre'] },
   },
@@ -961,7 +974,8 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
 
 /* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)
    est détruite et rend share de chaque ingrédient de sa recette, arrondi vers le bas (1 ingrédient → 0). Amélioration
-   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire. */
+   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire.
+   Une pièce sans recette qui a un `recycle` (STUFF.items, butin des mobs) rend ces quantités fixes à la place. */
 export const RECYCLE = { share:0.6 };
 /* tableau de bord de l'équipe (server/admin/dashboard.js, scripts/dashboard.js) : l'ilvl d'un joueur = somme des valeurs
    en x (itemValue) des pièces portées au lancement ; les courbes « par ilvl » regroupent les sessions par tranches de
@@ -1144,6 +1158,20 @@ export const DUNGEON = {
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   scaredTime: 15,
   salt: 0x0d06e0,
+};
+
+/* ---- Butin rare des mobs (26/10/2026, Geoffrey ; src/sim/actions.js killMob) ----
+   Quand un mob de ce type meurt, chance qu'il lâche une pièce de stuff (STUFF.items), dans le sac du mineur qui l'a tué
+   (puis le coffre commun : un seul joueur la reçoit, partage normal). kholeChance : dans un k hole. Le Butin des mobs et
+   le Glyphe Pillage ne changent pas ces chances. Hasard à part (salt) : le reste de la partie ne bouge pas. */
+export const MOB_DROPS = {
+  salt: 0x570ffd,
+  items: [
+    { mob:'gobelin',          item:'Lanières en cuir du gobelin', chance:0.005 },
+    { mob:'occultiste',       item:'Capuche sombre',              chance:0.005 },
+    { mob:'mephite',          item:'Nuage magique',               chance:0.005 },
+    { mob:DUNGEON.boss.type,  item:'Ceinture du Géant',           chance:0.01, kholeChance:0.02 },
+  ],
 };
 
 /* ---- Piège (src/sim/trap.js) — décisions du créateur, 22/10 ; valeurs provisoires ----

@@ -774,6 +774,49 @@ def main():
     rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
     tex['cape_naingui'] = cape
 
+    # butin rare des mobs (26/10/2026) : icônes d'inventaire
+    # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
+    straps = blank()
+    for i in range(11):
+        rect(straps, 3 + i, 2 + i, 2, 2, hexc('#7a5230'))
+        rect(straps, 11 - i, 2 + i, 2, 2, hexc('#7a5230'))
+    for i in range(11):
+        rect(straps, 3 + i, 2 + i, 1, 1, hexc('#a8743f'))
+        rect(straps, 12 - i, 2 + i, 1, 1, hexc('#a8743f'))
+    rect(straps, 7, 6, 2, 2, hexc('#4f9d3a'))              # pièce de peau de gobelin au croisement
+    for x, y in [(3, 2), (12, 2), (3, 13), (12, 13)]:
+        rect(straps, x, y, 1, 1, hexc('#ffd23f'))          # rivets
+    tex['straps_goblin'] = straps
+    # capuche sombre : capuche violette de l'occultiste, visage dans l'ombre, deux yeux rouges
+    hood = blank()
+    rect(hood, 5, 1, 6, 2, hexc('#4b2d6b'))
+    rect(hood, 3, 3, 10, 9, hexc('#4b2d6b'))
+    rect(hood, 2, 10, 12, 4, hexc('#4b2d6b'))
+    rect(hood, 3, 13, 10, 1, hexc('#a070d8'))              # ourlet
+    rect(hood, 5, 5, 6, 6, hexc('#120a1c'))                # visage sombre
+    rect(hood, 6, 7, 1, 1, hexc('#ff2a2a'))                # yeux rouges
+    rect(hood, 9, 7, 1, 1, hexc('#ff2a2a'))
+    rect(hood, 4, 3, 1, 7, hexc('#6a3d92'))                # pli éclairé
+    tex['hood_dark'] = hood
+    # nuage magique : nuage jaune doré, bombé, reflets clairs
+    cloud = blank()
+    for x, y, w, h in [(2, 8, 12, 4), (3, 6, 4, 3), (7, 4, 5, 5), (11, 6, 3, 3), (1, 9, 14, 2)]:
+        rect(cloud, x, y, w, h, hexc('#ffd23f'))
+    rect(cloud, 2, 11, 12, 1, hexc('#e0a91e'))
+    rect(cloud, 4, 12, 8, 1, hexc('#c4901a'))
+    rect(cloud, 8, 5, 3, 1, hexc('#fff1a8')); rect(cloud, 4, 7, 2, 1, hexc('#fff1a8'))
+    tex['cloud_magic'] = cloud
+    # ceinture du Géant : cuir noir, boucle en tête de taureau, deux cornes claires
+    gbelt = blank()
+    rect(gbelt, 1, 7, 14, 4, hexc('#1c1c1f'))
+    rect(gbelt, 1, 7, 14, 1, hexc('#3a3a40'))
+    rect(gbelt, 1, 10, 14, 1, hexc('#0b0b0d'))
+    rect(gbelt, 6, 6, 4, 6, hexc('#5a3a22'))               # boucle (tête de taureau)
+    rect(gbelt, 7, 8, 1, 1, hexc('#ff3b3b')); rect(gbelt, 8, 8, 1, 1, hexc('#ff3b3b'))
+    for x, y in [(5, 5), (4, 4), (4, 3), (10, 5), (11, 4), (11, 3)]:
+        rect(gbelt, x, y, 1, 1, hexc('#e8dcc0'))           # cornes
+    tex['belt_giant'] = gbelt
+
     # tissu sombre (matériau) : étoffe pliée, violet très sombre
     cloth = blank()
     rect(cloth, 2, 4, 12, 9, hexc('#2b1b3d'))
@@ -946,6 +989,36 @@ def main():
     rect(sk_cape_f, 3, 7, 1, 2, hexc('#4a2a6b'))
     rect(sk_cape_f, 9, 7, 2, 1, hexc('#ffd23f'))                # fermoir
     tex['skins/naingui_cape_front'] = sk_cape_f
+    # butin rare des mobs (26/10/2026) : calques sur le corps
+    skin_c, skin_d = hexc('#e0ac7d'), hexc('#c48e62')
+    sk_straps = blank()                            # lanières du gobelin : torse nu, deux sangles des épaules le long des côtes
+    rect(sk_straps, 4, 7, 8, 3, skin_c)            # torse et bras nus
+    rect(sk_straps, 7, 8, 2, 1, skin_d)            # ombre des pectoraux
+    rect(sk_straps, 6, 7, 1, 3, hexc('#7a5230'))   # sangles
+    rect(sk_straps, 9, 7, 1, 3, hexc('#7a5230'))
+    rect(sk_straps, 6, 7, 1, 1, hexc('#a8743f')); rect(sk_straps, 9, 7, 1, 1, hexc('#a8743f'))   # épaules
+    tex['skins/goblin_straps'] = sk_straps
+    sk_hood = blank()                              # capuche sombre : capuche violette, visage dans l'ombre, yeux rouges
+    rect(sk_hood, 5, 0, 5, 2, hexc('#4b2d6b'))
+    rect(sk_hood, 4, 2, 8, 2, hexc('#4b2d6b'))
+    rect(sk_hood, 4, 4, 2, 3, hexc('#4b2d6b'))     # côté de la capuche (derrière la tête)
+    rect(sk_hood, 11, 4, 1, 3, hexc('#4b2d6b'))
+    rect(sk_hood, 6, 4, 5, 3, hexc('#120a1c'))     # visage sombre
+    rect(sk_hood, 8, 5, 1, 1, hexc('#ff2a2a'))     # yeux rouges (regard à droite)
+    rect(sk_hood, 10, 5, 1, 1, hexc('#ff2a2a'))
+    rect(sk_hood, 5, 2, 6, 1, hexc('#6a3d92'))     # bord éclairé
+    tex['skins/dark_hood'] = sk_hood
+    sk_cloud = blank()                             # nuage magique : remplace les jambes par un nuage jaune
+    for x, y, w, h in [(3, 12, 10, 3), (4, 11, 8, 1), (2, 13, 12, 1), (5, 15, 6, 1)]:
+        rect(sk_cloud, x, y, w, h, hexc('#ffd23f'))
+    rect(sk_cloud, 3, 14, 10, 1, hexc('#e0a91e'))
+    rect(sk_cloud, 5, 11, 3, 1, hexc('#fff1a8')); rect(sk_cloud, 9, 12, 2, 1, hexc('#fff1a8'))
+    tex['skins/magic_cloud'] = sk_cloud
+    sk_gbelt = blank()                             # ceinture du Géant : bande noire, boucle et cornes claires
+    rect(sk_gbelt, 5, 10, 6, 1, hexc('#1c1c1f'))
+    rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
+    rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
+    tex['skins/giant_belt'] = sk_gbelt
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):
