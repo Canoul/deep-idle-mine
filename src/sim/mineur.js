@@ -44,7 +44,8 @@ export function createMiner(id, opts={}){
     /* sorts équipés (SPELLS, figés au lancement) : recharge (heure où chacun est de nouveau prêt, 0 = prêt) et blocs
        appris par Fast learner ({ id de bloc: bonus de vitesse }) ; voir src/sim/spells.js */
     spells: Array.isArray(opts.spells) ? [...opts.spells] : [], spellCd: {}, learned: {},
-    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0, stuns:0 },
+    stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0, stuns:0,
+             hitTime:0 },   // hitTime : secondes passées à frapper un mob (tableau de bord de l'équipe)
     fall:null,                      // chute en cours : { y0 : ligne de départ, blind : trou pas découvert }
   };
 }

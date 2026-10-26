@@ -7,7 +7,9 @@
                       bots, prefs, overrides, dev, speed, startedAt, finishAt,
                       leaves:[{account, tick, at}], status:'running'|'settling'|'done', result, seen:[compte], endedAt }
    Inscription à la mine instantanée (server/instant/) : { account, name, at }, par compte.
-   Jugement (ns judgment, clé 'state') : jauges Ange / Démon communes à tous (src/meta/judgment.js). */
+   Jugement (ns judgment, clé 'state') : jauges Ange / Démon communes à tous (src/meta/judgment.js).
+   Stats de session (ns session_stat, clé 'session:compte') : une ligne par joueur et par mine classique terminée, gardée
+   sans limite (les sessions, elles, sont effacées après 30 jours) ; lue par le tableau de bord (server/admin/dashboard.js). */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -26,6 +28,7 @@ export function createMemoryGameStore(initial = {}){
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
   const socials = new Map(Object.entries(initial.socials ?? {}));     // amis et demandes (server/social/service.js)
   const judgments = new Map(Object.entries(initial.judgments ?? {}));  // jauges de l'onglet Jugement (src/meta/judgment.js), clé 'state'
+  const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -118,6 +121,15 @@ export function createMemoryGameStore(initial = {}){
     async getJudgment(){ return copy(judgments.get('state')) ?? null; },
     async putJudgment(j){ judgments.set('state', copy(j)); await store.changed([{ ns: 'judgment', key: 'state', value: j }]); },
 
+    /* tableau de bord : lignes de stats ; une ligne déjà écrite n'est jamais remplacée (fin de session rejouée) */
+    async putSessionStats(rows){
+      const fresh = rows.filter(r => !sessionStats.has(r.key));
+      for(const r of fresh) sessionStats.set(r.key, copy(r.value));
+      if(fresh.length) await store.changed(fresh.map(r => ({ ns: 'session_stat', key: r.key, value: r.value })));
+      return fresh.length;
+    },
+    async allSessionStats(){ return [...sessionStats.values()].map(copy); },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
@@ -128,7 +140,7 @@ export function createMemoryGameStore(initial = {}){
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
-                         judgments: Object.fromEntries(judgments) }; },
+                         judgments: Object.fromEntries(judgments), sessionStats: Object.fromEntries(sessionStats) }; },
   };
   return store;
 }
@@ -158,11 +170,11 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'session_stat']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment });
+                                        judgments: rows.judgment, sessionStats: rows.session_stat });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

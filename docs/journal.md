@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Tableau de bord des joueurs (équipe)
+- **Pour le joueur** : rien de visible. Pour l'équipe : une page de courbes sur tous les joueurs (mine classique) :
+  Mineur = blocs récupérés par niveau ; Logisticien = profondeur par niveau ; Barbare = blocs et temps à frapper les
+  mobs par niveau ; tous = profondeur par niveau et par **ilvl** ; plus l'historique, avec un filtre par joueur.
+- **Décisions** (Geoffrey) : réservé à l'équipe ; mine classique seule (pas les tours, la MI ni le mode dev ; un joueur
+  parti avant la fin ne compte pas) ; barbare = temps passé à **frapper** (pas le tacle ni la marche vers le mob).
+  **ilvl** = somme des valeurs en x des pièces portées au lancement (qualité, amélioration et rune non comptées).
+- **Comment l'ouvrir** : sur ton ordinateur, `ssh VPS "sudo node /opt/deep-idle-mine/scripts/dashboard.js" >
+  tableau-de-bord.html`, puis ouvre le fichier.
+- **À suivre** : les courbes partent de zéro à la mise en ligne (les anciennes sessions n'ont ni niveau ni ilvl) ; ces
+  lignes sont gardées sans limite (les sessions, elles, 30 jours).
+- **État** : 🧪 sur la branche `geoffrey/tableau-de-bord` (pas en ligne)
+
 ## 26/10/2026 — Geoffrey — Glyphes : 3 % de trouver un glyphe par session (correction)
 - **Pour le joueur** : **≈ 3 % de chance de trouver un glyphe par session** (groupe de 3), peu importe lequel ; il est
   tiré au hasard parmi ceux qui manquent. La chance ne dépend plus du nombre de glyphes déjà trouvés.

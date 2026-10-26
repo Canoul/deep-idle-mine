@@ -3133,3 +3133,18 @@ Règles (voir CLAUDE.md) :
   restants) ; valeurs inchangées (1 − 0,97^(1/E)) : ≈ 3 % d'en trouver un par session à 3. L'entrée précédente
   (« 3 % par glyphe ») est remplacée : malentendu, ≈ 9 à 11 % par session.
 - **Tests** : glyph-drop (valeurs, chance unique quel que soit le nombre de manquants), wiki ✅.
+
+### Tableau de bord des joueurs (Geoffrey, 26/10) — branche `geoffrey/tableau-de-bord`, 🧪 pas en ligne
+- **Quoi** : `src/sim/mineur.js` + `src/sim/session.js` : `m.stats.hitTime` (+DT par tick où l'action est `attack`,
+  compté avant `stepMiner`). `server/game/service.js` : au lancement d'une mine classique hors dev, `rec.statsAt[compte]
+  = launchSnapshot({xp, tree, gear})` ; dans `settleWith`, après `status = 'done'`, `store.putSessionStats(statRows(…))`.
+  `server/game/store.js` : ns `session_stat` (clé `session:compte`), jamais remplacée (idempotent), jamais effacée ;
+  ajoutée au chargement PostgreSQL et au snapshot. `server/admin/dashboard.js` (logique pure + page HTML autonome,
+  données en JSON échappé `<`). Route `POST /api/admin/stats` (mêmes gardes que les autres routes admin).
+  `scripts/dashboard.js` (stdout ou `--out`). Config `DASHBOARD.ilvlStep` (250 x).
+- **Tests** : `tests/dashboard.test.js` (8) ✅ ; game-service (48), live, admin, admin-khole, postgres ✅.
+  Simulation 3 mineurs × 5 : 0 blocage, prof. 182, identique à avant ✅. Temps à frapper mesuré : 4 à 7 min par mineur
+  et par session (20 à 35 mobs tués). Page vérifiée dans Chromium (données fictives, filtre joueur, aucune erreur JS).
+- **Points fragiles** : `hitTime` compte la durée des actions `attack` au début de chaque tick (≈ au dixième de
+  seconde près). Une session en cours au moment de la mise en ligne n'a pas de `statsAt` : pas de ligne (voulu).
+  La profondeur est celle du groupe : dans un groupe de niveaux différents, chacun y contribue à son niveau.

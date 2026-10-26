@@ -956,6 +956,10 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
    est détruite et rend share de chaque ingrédient de sa recette, arrondi vers le bas (1 ingrédient → 0). Amélioration
    et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire. */
 export const RECYCLE = { share:0.6 };
+/* tableau de bord de l'équipe (server/admin/dashboard.js, scripts/dashboard.js) : l'ilvl d'un joueur = somme des valeurs
+   en x (itemValue) des pièces portées au lancement ; les courbes « par ilvl » regroupent les sessions par tranches de
+   ilvlStep x. Mine classique seulement, sans les sessions dev ni les joueurs partis avant la fin. */
+export const DASHBOARD = { ilvlStep:250 };
 
 /* ---- Comptes joueur (règles partagées par le jeu et le serveur) ----
    Pas d'adresse e-mail : un pseudo + un mot de passe, ou un compte invité à sécuriser plus tard.
