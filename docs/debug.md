@@ -3147,3 +3147,13 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `online()` fait un `activeSessionInfo` par joueur en ligne (lecture du store) ; OK à quelques
   dizaines de joueurs, à revoir (cache) s'il y en a des centaines. Un joueur en session navigateur fermé n'apparaît
   pas (présence = signe de vie, comme chez les amis).
+
+### Online : joueurs en session navigateur fermé oubliés (Geoffrey) — branche `geoffrey/fix-online-session`, ✅ en ligne le 26/10
+- **Quoi** : bug signalé (plus d'amis en ligne que de joueurs dans Online). `online()` ne prenait que la Map `seen`
+  (signes de vie) alors que `statusOf` (liste d'amis) dit « session » sans signe de vie. Ajout de
+  `game.playersInSession()` (`server/game/service.js` : sessions `running` / `settling`, joueurs pas partis) ;
+  `online()` = union `seen` ∪ en session. Le point fragile noté dans l'entrée précédente est réglé.
+- **Tests** : `tests/social.test.js` +1 (session navigateur fermé comptée) et attente corrigée dans le test d'ordre ;
+  social + game-service ✅ 66/66.
+- **Points fragiles** : à chaque redémarrage du serveur (mise à jour de `main`), `seen` repart de zéro : pendant
+  ~4 s, Online et la liste d'amis ne montrent que les joueurs en session.
