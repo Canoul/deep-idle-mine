@@ -4,6 +4,7 @@
    la session elle-même est dans l'onglet Session.
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { gearScore } from '../meta/gearscore.js';
+import { statusText } from './social.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
@@ -82,6 +83,13 @@ export function modulationState({ tower, locked, party, account, slots = [], myG
   return { show, over, text };
 }
 
+/* « Who ? » (tour ouverte) : une ligne par joueur en ligne qui n'a pas encore fait la tour ; « Inviter » (par son ID)
+   s'il n'est pas en session et pas déjà dans mon groupe. p = { id, displayId, name, status…, friend } */
+export function whoRows(list, party){
+  const inParty = new Set((party?.members ?? []).map(m => m.account));
+  return (list?.players ?? []).map(p => ({ ...p, text: statusText(p), canInvite: p.status !== 'session' && p.status !== 'offline' && !inParty.has(p.id) }));
+}
+
 export function alwaysReadyState({ account, party, offline }){
   if(offline || !account || !party || party.members.length < 2 || party.leader === account.id) return { show:false };
   const me = party.members.find(m => m.account === account.id);
@@ -139,7 +147,7 @@ export function slotButtons({ account, party, session }, slot){
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
-               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false,     // view 'jugement' : jauges à la place de l'équipe
+               session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false, who:null,     // view 'jugement' : jauges à la place de l'équipe
                lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null };   // lfgWant : sa recherche, à relancer si le serveur a redémarré
 
   function render(){
@@ -210,10 +218,12 @@ export function setupLobby(h){
       : jv ? 'Pour lancer, choisis la Mine ou une tour ouverte dans « Où miner ».'
       : def?.giant ? ''
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
-                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
+                `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture. `+
+                `<button class="small${st.who?.side === def.tower ? ' on' : ''}" id="whoBtn" title="Joueurs en ligne qui n'ont pas encore fait cette tour">Who ?</button>`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+
         (dev ? 'Mode développeur : vitesse au choix pendant la session, fin libre.'
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
+    renderWho(tower && !locked && !offline ? def.tower : null);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
     $('devCard').hidden = !cards.dev;   // seuls les réglages de celui qui lance comptent ; rien pour la MI
     renderInvite();
@@ -390,6 +400,38 @@ export function setupLobby(h){
     const tree = $('devSpecs').querySelector(`[data-spec="${i}"]`).value, level = parseInt($('devSpecs').querySelector(`[data-level="${i}"]`).value, 10);
     return tree ? { tree, level: Math.max(DEV_SPEC.minLevel, Math.min(DEV_SPEC.maxLevel, Number.isSafeInteger(level) ? level : DEV_SPEC.maxLevel)) } : null;
   });
+  /* liste « Who ? » sous l'info de la tour (fermée si on change de mode) */
+  function renderWho(side){
+    const box = $('towerWho');
+    if(!side || st.who?.side !== side){ box.hidden = true; if(st.who && st.who.side !== side) st.who = null; return; }
+    const w = st.who;
+    const rows = whoRows(w.data, st.party);
+    box.hidden = false;
+    box.innerHTML = w.busy && !w.data ? '<p class="mut small">Chargement…</p>'
+      : w.err ? `<p class="err small">${esc(w.err)}</p>`
+      : !rows.length ? '<p class="mut small">Personne d\'autre en ligne n\'a cette tour à faire.</p>'
+      : `<p class="small"><b>${rows.length}</b> joueur${rows.length > 1 ? 's' : ''} en ligne sans cette tour :</p>`+
+        rows.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(p.text)}${p.friend ? ' · ami' : ''}</small></span>`+
+          (p.canInvite ? `<button class="small" data-who-invite="${esc(p.displayId)}">Inviter</button>` : '')+`</div>`).join('');
+  }
+  async function loadWho(side){
+    st.who = { side, busy:true, data:st.who?.side === side ? st.who.data : null }; render();
+    try { st.who = { side, data: await h.towerWho(side) }; }
+    catch(e){ st.who = { side, err: e.message }; }
+    render();
+  }
+  $('lobbyInfo').addEventListener('click', e => {
+    if(!e.target.closest('#whoBtn')) return;
+    const side = MINE_MODES.find(m => m.id === st.mode)?.tower;
+    if(!side) return;
+    if(st.who?.side === side){ st.who = null; render(); return; }   // second clic : fermer
+    loadWho(side);
+  });
+  $('towerWho').addEventListener('click', e => {
+    const b = e.target.closest('[data-who-invite]'); if(!b) return;
+    act(() => h.party.invite(b.dataset.whoInvite));
+  });
+
   function devOptions(){
     const seed = parseInt($('devSeed').value, 10), overrides = {};
     for(const i of $('devStats').querySelectorAll('input')){

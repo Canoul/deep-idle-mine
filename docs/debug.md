@@ -3235,9 +3235,55 @@ Règles (voir CLAUDE.md) :
   `refresh()` d'abord, fin seulement si `info.visit` est nul, points de l'écran de fin = `info.lastVisit.points`.
 - **Tests** : giant-service +2 (première vue après redémarrage, `lastVisit`), anticheat/giant ✅ 17.
 
+### Bloc géant : « Cette visite » < points réels, piste onglet en arrière-plan (Geoffrey) — branche `geoffrey/fix-bloc-geant-score`, ✅ en ligne le 26/10
+- Même symptôme que l'entrée au-dessus, autre piste (onglet en arrière-plan : `lastMe` figé). Branche écrite en parallèle
+  de `fix-bloc-geant-fin` ; au merge, **le code de `fix-bloc-geant-fin` est gardé** (`p.last`, `info.lastVisit` nul
+  pendant une visite, qui couvre aussi ce cas). Seul le test « 2e visite seule, jour = somme des visites » est ajouté
+  à `tests/giant-service.test.js`.
+
 ---
 
-## 26/10/2026 — Gear score (GS) et modulation des tours (branche `geoffrey/modulation`)
+## 26/10/2026 — Tours : « Who ? » (branche `geoffrey/tour-who`) — ✅ en ligne le 26/10
+- **Quoi** : `game.towerDone(side)` (`server/game/service.js`) : `{ open, done:Set }` sous le verrou du Jugement (done
+  = comptes de l'ouverture en cours ; mode dev : toujours ouverte, comme au lancement). `social.towerWho(me, side)`
+  (`server/social/service.js`) = `online(me)` moins moi et les `done` ; tour fermée → liste vide. Route
+  `POST /api/social/tower-who { side }`, `socialApi.towerWho`. Lobby (`src/ui/lobby.js`) : bouton `#whoBtn` dans
+  `#lobbyInfo` (tour choisie), liste `#towerWho` (`whoRows` : Inviter si pas en session/hors ligne et pas membre du
+  groupe → `party.invite(displayId)`), refermée en changeant de mode. CSS `.towerWho`.
+- **Tests** : `tests/tower-who.test.js` (nouveau, 3) ; tower-who, lobby, social, game-service, judgment : 97/97 ✅.
+  Vérifié dans Chromium (mode dev, 2 invités) : la liste montre l'autre joueur, Inviter l'ajoute au groupe, 0 erreur JS.
+- **Limites** : la liste suit `SOCIAL_SERVER.onlineListMax` (comme l'onglet Online) ; pas rafraîchie toute seule
+  (reclic pour la mettre à jour).
+
+### Tableau de bord des joueurs (Geoffrey, 26/10) — branche `geoffrey/tableau-de-bord`, ✅ en ligne le 26/10
+- **Quoi** : `src/sim/mineur.js` + `src/sim/session.js` : `m.stats.hitTime` (+DT par tick où l'action est `attack`,
+  compté avant `stepMiner`). `server/game/service.js` : au lancement d'une mine classique hors dev, `rec.statsAt[compte]
+  = launchSnapshot({xp, tree, gear})` ; dans `settleWith`, après `status = 'done'`, `store.putSessionStats(statRows(…))`.
+  `server/game/store.js` : ns `session_stat` (clé `session:compte`), jamais remplacée (idempotent), jamais effacée ;
+  ajoutée au chargement PostgreSQL et au snapshot. `server/admin/dashboard.js` (logique pure + page HTML autonome,
+  données en JSON échappé `<`). Route `POST /api/admin/stats` (mêmes gardes que les autres routes admin).
+  `scripts/dashboard.js` (stdout ou `--out`). Config `DASHBOARD.ilvlStep` (250 x).
+- **Tests** : `tests/dashboard.test.js` (8) ✅ ; game-service (48), live, admin, admin-khole, postgres ✅.
+  Simulation 3 mineurs × 5 : 0 blocage, prof. 182, identique à avant ✅. Temps à frapper mesuré : 4 à 7 min par mineur
+  et par session (20 à 35 mobs tués). Page vérifiée dans Chromium (données fictives, filtre joueur, aucune erreur JS).
+- **Points fragiles** : `hitTime` compte la durée des actions `attack` au début de chaque tick (≈ au dixième de
+  seconde près). Une session en cours au moment de la mise en ligne n'a pas de `statsAt` : pas de ligne (voulu).
+  La profondeur est celle du groupe : dans un groupe de niveaux différents, chacun y contribue à son niveau.
+- **Ajout (26/10, 9 h 50)** : courbe « profondeur par ilvl du groupe » (`depth_group_ilvl`) : `withGroupIlvl` (moyenne
+  des ilvl des lignes de la même session = joueurs présents), calculé sur toutes les lignes avant le filtre par joueur ;
+  une seule ligne par session (`perSession`), la profondeur étant celle du groupe. Colonne « ilvl groupe » dans
+  l'historique. Test +1 (9) ✅ ; page revérifiée dans Chromium ✅.
+- **Ajout (26/10, 10 h 20)** : prédiction sur `depth_group_ilvl` : `forecast(points)` = moindres carrés sur les sessions
+  une par une (ilvl de groupe exact, pas les moyennes par tranche), ilvl où la droite atteint `DASHBOARD.forecastDepth`
+  (350) ; null si moins de `forecastMin` (3) sessions, un seul ilvl ou pente ≤ 0 (la page l'écrit). Dessin : droite en
+  pointillés décalée de `shift` = ilvlStep / 2 (un point de tranche est placé au début de sa tranche mais vaut pour son
+  milieu), ligne de 350, cercle et étiquette « 350 ≈ ilvl N » (N en ilvl réel). Test +1 (10) ✅ ; Chromium ✅.
+- **Point fragile** : une droite ; si la courbe réelle s'aplatit (rendement décroissant du stuff), la prédiction sera
+  trop optimiste. À relire quand il y aura des sessions réelles sur plusieurs tranches d'ilvl.
+
+---
+
+## 26/10/2026 — Gear score (GS) et modulation des tours (branche `geoffrey/modulation`) — ✅ en ligne le 26/10
 - **Quoi** : `src/meta/gearscore.js` (nouveau) : `pieceGS(entry)` = Σ stats de `pieceBonus` × `UPGRADE.prices` + Σ (set −
   STATS) × prix, arrondi ; anneau = 0 ; `gearScore(worn)` = somme. `TOWER.modulation.gsMax = 2000` (config).
   Serveur `server/game/service.js` `start` : `body.modulation === true` → refus `bad_request` hors tour, `gs_too_high`

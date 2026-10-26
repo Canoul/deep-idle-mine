@@ -245,6 +245,7 @@ const lobby = setupLobby({
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
   gs: () => gearScore(stuff.worn()),
+  towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },

@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 26/10/2026 (Bloc géant).*
+*Dernière mise à jour : 26/10/2026 (Bloc géant ; tableau de bord de l'équipe).*
 
 ---
 
@@ -41,7 +41,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     la session). Ancien : les deux tours pouvaient être ouvertes ensemble.
   - **Résidus** angélique / démoniaque dans la roche dès l'area 4 : **0,5 % au total** (13 par area, moitié chacun), à la place de pierre normale (23/10 ; ancien : 0,5 % chacun, pris sur tout terrain), poids 6, visés par l'IA comme un treasure une fois découverts (22/10). Rapportés au coffre, ils
     remplissent deux **jauges communes à tous les joueurs** (cap 200 depuis le 24/10 ; ancien 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
-  - **Gear score et modulation** (26/10, Geoffrey, **en test, branche `geoffrey/modulation`, pas en ligne**) : GS d'une
+  - **Gear score et modulation** (26/10, Geoffrey, **en test, en ligne le 26/10**) : GS d'une
     pièce et du joueur en x (`src/meta/gearscore.js`, affiché dans l'onglet Stuff, les bulles des pièces et le lobby) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
@@ -253,6 +253,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (R7) ou plus est annoncé dans #général par un webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour
   un don admin ; envoi en tâche de fond, jamais bloquant.
+
+- **Tableau de bord de l'équipe** (26/10, Geoffrey ; `server/admin/dashboard.js`, `scripts/dashboard.js`, `DASHBOARD`) :
+  page HTML générée sur le VPS (route admin `/api/admin/stats`) : courbes par niveau (Mineur : blocs ; Logisticien :
+  profondeur ; Barbare : blocs et temps à frapper), profondeur par niveau et par **ilvl** (somme des valeurs en x des
+  pièces portées au lancement), par ilvl du groupe (moyenne des présents, une fois par session, avec une
+  prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
+  une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
 ## Hébergement
 
