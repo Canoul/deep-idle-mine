@@ -3148,6 +3148,16 @@ Règles (voir CLAUDE.md) :
   dizaines de joueurs, à revoir (cache) s'il y en a des centaines. Un joueur en session navigateur fermé n'apparaît
   pas (présence = signe de vie, comme chez les amis).
 
+### Groupe : membre absent mais prêt gardé (Geoffrey) — branche `geoffrey/fix-absent-pret`, ✅ en ligne le 26/10
+- **Quoi** : le ménage du groupe (`sweep`, `server/party/service.js`) retirait tout membre sans signe de vie depuis
+  `memberTimeout` (5 min), même prêt / « prêt tout le temps » : onglet fermé = sorti du groupe, le chef ne pouvait
+  plus le lancer. Désormais `sweep` saute un membre **non chef** avec `ready || always`. Rien d'autre ne bloquait :
+  le lancement (`launch`, `game.start`) et `launchState` (lobby) ignorent `away`, qui reste un simple affichage.
+- **Tests** : `tests/party.test.js` +2 (absents prêts lancés avec le groupe, « prêt » retiré après la session,
+  « prêt tout le temps » gardé et relancé ; chef absent toujours retiré) ✅ 38/38 ; lobby, social, lfg ✅.
+- **Points fragiles** : un « prêt tout le temps » qui ne revient jamais reste dans le groupe (et part en session) tant
+  que le chef ne le retire pas ; c'est voulu. Il occupe aussi une place pour la recherche de groupe (LFG).
+
 ### Online : joueurs en session navigateur fermé oubliés (Geoffrey) — branche `geoffrey/fix-online-session`, ✅ en ligne le 26/10
 - **Quoi** : bug signalé (plus d'amis en ligne que de joueurs dans Online). `online()` ne prenait que la Map `seen`
   (signes de vie) alors que `statusOf` (liste d'amis) dit « session » sans signe de vie. Ajout de
@@ -3158,7 +3168,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : à chaque redémarrage du serveur (mise à jour de `main`), `seen` repart de zéro : pendant
   ~4 s, Online et la liste d'amis ne montrent que les joueurs en session.
 
-### Lampe à incandescence par BP du T2, recherche T3 à 200 parts (Geoffrey) — branche `geoffrey/bp-lampe`, 🧪
+### Lampe à incandescence par BP du T2, recherche T3 à 200 parts (Geoffrey) — branche `geoffrey/bp-lampe`, ✅ en ligne le 26/10
 - **Quoi** : `src/recipes.js` : `unlock: 'Lampe à incandescence BP'` (avant `null`) ; `src/config.js` : BP ajouté au
   Treasure T2 (famille blueprint, 0,02 ; total BP du T2 6 % → 8 %), rareté `rare` ; `RESEARCH.tiers[2].cost` 150 → 200.
   La table de recherche lit les plans du Treasure T2 : le BP y entre tout seul, et le tier 3 demande maintenant aussi

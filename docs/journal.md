@@ -25,7 +25,17 @@ Modèle d'entrée :
 - **Décisions** : la lampe devient la 4e recette du tier 2 : il faut l'apprendre aussi pour ouvrir la recherche tier 3.
   Les lampes déjà fabriquées sont gardées.
 - **À suivre** : la lampe n'a pas de tier de rune (valeur propre) ; la passer en T2 (250 x) comme les autres plans du T2 ?
-- **État** : 🧪 sur la branche `geoffrey/bp-lampe` (pas en ligne)
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Joueur absent mais prêt : le chef peut toujours le lancer
+- **Pour le joueur** : un membre qui ferme l'onglet du jeu est toujours affiché « absent », mais s'il était **prêt** ou
+  **prêt tout le temps**, il n'est plus sorti du groupe au bout de 5 min : le chef peut lancer la session avec lui.
+  Avant, au bout de 5 min, il disparaissait du groupe et le chef ne pouvait plus le lancer.
+- **Décisions** : un simple « prêt » redevient « pas prêt » après la session (comme avant), donc il finit retiré s'il
+  ne revient pas ; un « prêt tout le temps » reste jusqu'à ce que le chef le retire. Le chef absent est toujours
+  retiré (sinon le groupe serait bloqué).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Correction : Online oubliait les joueurs en session
 - **Pour le joueur** : la liste Online compte maintenant tous les joueurs en session, même s'ils ont fermé le jeu
