@@ -3346,6 +3346,9 @@ Règles (voir CLAUDE.md) :
   textes `GAME_DESIGN.md` et `wiki.html`.
 - **Tests** : ⚠️ mis en ligne **sans relancer les tests** (demande de Geoffrey). À vérifier : `node --test
   tests/giant-*.test.js tests/anticheat/giant*.test.js` (un test peut lire un `min` en dur).
+  Vérifié après la mise en ligne (26/10) : 3 tests lisaient les anciens paliers en dur (anticheat/giant, giant-rules,
+  giant-service) ; scores des tests doublés (branche `geoffrey/tests-paliers-bloc-geant`) → giant-*, anticheat/giant 37/37 ✅.
+  Le jeu lui-même n'était pas en cause.
 
 ---
 
