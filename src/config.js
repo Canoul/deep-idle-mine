@@ -1235,8 +1235,9 @@ export const TOWER = {
      sans capacité). Un seul par partie. */
   winch: { setup: 10 },
   /* modulation (26/10/2026, Geoffrey, en test) : cochée au lancement d'une tour, chaque joueur du groupe doit avoir un
-     gear score (src/meta/gearscore.js) strictement inférieur à gsMax. Récompense en plus : pas encore décidée. */
-  modulation: { gsMax: 2000 },
+     gear score (src/meta/gearscore.js) strictement inférieur à gsMax. Récompense en plus : pas encore décidée.
+     open : false = case cachée et refusée par le serveur, sauf en mode dev (26/10/2026, Geoffrey : pas encore prête) */
+  modulation: { open: false, gsMax: 2000 },
   /* regroupement (25/10/2026, Geoffrey) : un mineur tombé qui remonte et trouve le toit vide attend au dernier pas avant
      le toit (sous la porte du toit, ou dans le seau du treuil, une case sous l'arrivée) ; ils repartent ensemble quand
      chaque mineur de la tour est à un point d'attente ou sur le toit. Au plus maxWait s chacun, puis il monte seul. */

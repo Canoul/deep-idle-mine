@@ -69,11 +69,12 @@ export function launchState({ account, party, offline, busy, session }){
 
 /* Case « Prêt tout le temps » : seulement pour un membre (pas le chef) d'un groupe ; utilisable aussi pendant une
    session, pour être prêt dès la suivante */
-/* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie ;
-   over : les joueurs au-dessus du plafond (le serveur revérifie au lancement) */
-export function modulationState({ tower, locked, party, account, slots = [], myGs }){
+/* case « Modulation » du lobby (tours) : visible pour celui qui lance (seul, ou chef du groupe) quand une tour est choisie,
+   si elle est ouverte (TOWER.modulation.open) ou en mode dev ; over : les joueurs au-dessus du plafond (le serveur
+   revérifie au lancement) */
+export function modulationState({ tower, locked, party, account, slots = [], myGs, dev = false }){
   const leader = !party || party.members.length < 2 || party.leader === account?.id;
-  const show = !!tower && !locked && !!account && leader;
+  const show = (TOWER.modulation.open || dev) && !!tower && !locked && !!account && leader;
   const max = TOWER.modulation.gsMax;
   const members = slots.filter(s => s.kind === 'member').map(s => ({ name: s.me ? 'Toi' : s.name, gs: s.me ? myGs : s.gs }));
   const over = members.filter(m => Number.isFinite(m.gs) && m.gs >= max);
@@ -198,7 +199,7 @@ export function setupLobby(h){
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
-    const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.() });
+    const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
     $('modulationText').innerHTML = mod.text;
     if(!mod.show) $('modulation').checked = false;

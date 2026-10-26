@@ -418,6 +418,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* modulation d'une tour : chaque joueur sous le plafond de gear score, avec le stuff porté au lancement */
         const modulation = body.modulation === true;
         if(modulation){
+          if(!TOWER.modulation.open && !dev) fail('bad_request', 400, "La modulation n'est pas encore ouverte.");
           if(!side) fail('bad_request', 400, 'La modulation ne concerne que les tours du Jugement.');
           const over = players.filter(p => gearScore(gear[p.account]) >= TOWER.modulation.gsMax);
           if(over.length) fail('gs_too_high', 409, `Modulation : il faut moins de ${TOWER.modulation.gsMax} GS chacun. `+
