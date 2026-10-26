@@ -6,6 +6,7 @@ import { lightR } from '../sim/mineur.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
 import { createMinerSprite } from './miner-sprite.js';
+import { torchTexOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
 
@@ -88,7 +89,7 @@ export function createRenderer(cv){
       const px=T.x*TILE, py=sy(T.y);
       const g=ctx.createRadialGradient(px+8,py+8,2,px+8,py+8,TILE*3); g.addColorStop(0,'rgba(255,200,90,.35)'); g.addColorStop(1,'rgba(255,200,90,0)');
       ctx.fillStyle=g; ctx.fillRect(px-TILE*3,py-TILE*3,TILE*7,TILE*7);
-      blit('torch',px,py);
+      blit(torchTexOf(T),px,py);
     }
     for(const o of G.mobs){
       if(o.hp<=0) continue;

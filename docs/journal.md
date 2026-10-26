@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Lampe à incandescence : ses torches deviennent des lampes de mine
+- **Pour le joueur** : un mineur qui porte la Lampe à incandescence n'accroche plus des torches mais des **lampes de
+  mine** (une ampoule dans sa cage, suspendue à un câble), dans la mine comme dans les tours. Les torches des autres
+  mineurs restent des torches.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
   venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour
