@@ -18,6 +18,16 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Glyphes : chaque glyphe à 3 % par session
+- **Pour le joueur** : chaque glyphe qui manque a maintenant **≈ 3 % de chance par session** (groupe de 3), quelle que
+  soit la spécialisation et le nombre de glyphes déjà trouvés. Tant qu'on n'en a aucun : ≈ 8,7 % d'en trouver un
+  (Mineur, Barbare) ou ≈ 11,5 % (Logisticien). Avant : ≈ 7,6 % (Mineur), 6,2 % (Logisticien), 2,9 % (Barbare) pour
+  « un glyphe », et chaque glyphe devenait plus facile à mesure qu'on complétait l'arbre.
+- **Décisions** (Geoffrey) : la chance est **par glyphe manquant**, 3 % par glyphe (essayé à 1 % juste avant, pas mis
+  en ligne). Par événement : 0,00383 % par bloc (Mineur), 0,0335 % par échelle (Logisticien), 0,101 % par mob (Barbare).
+- **À suivre** : un glyphe donné ≈ 1 session sur 33 ; compléter un arbre de 3 ≈ 60 sessions en moyenne (4 : ≈ 70).
+- **État** : ✅ en ligne le 26/10
+
 ## 25/10/2026 — Geoffrey — Recherche : le tier 3 demande tout le T1 et tout le T2
 - **Pour le joueur** : la recherche du tier 3 reste fermée tant qu'il manque une recette du tier 1 **ou** du tier 2.
   Avant, seul le tier 2 comptait : en apprenant des BP du T2 trouvés dans des Treasures, on ouvrait le T3 avec un T1
