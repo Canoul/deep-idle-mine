@@ -811,16 +811,19 @@ export const STUFF = {
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
-    /* butin rare des mobs (26/10/2026, Geoffrey ; MOB_DROPS) : pas craftables. Chacune vaut en x (UPGRADE.prices) la pièce
-       en fer de sa case, partagée moitié / moitié entre ses deux stats ; la ceinture, sans équivalent en fer, vaut le x
-       du tier 2 (250). recycle : ce que rend le recyclage (quantités fixes, à la place de la part d'une recette) */
-    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:44, looting:22 },   // 440 x (Plastron en fer)
+    /* butin rare des mobs (26/10/2026, Geoffrey ; MOB_DROPS) : pas craftables. Chacune vaut en x la pièce en fer de sa
+       case, partagée moitié / moitié entre ses deux stats ; la ceinture, sans équivalent en fer, vaut le x du tier 2
+       (250). x = prix mesurés du GS (worth, gs) pour le Nuage et la Ceinture ; Lanières et Capuche gardent le tableau
+       des runes (prices) : en prix mesurés, vitesse d'attaque +135 % et recul +1,1 bloc, démesurés (le mineur de base se
+       bat peu, ces prix de combat sont bas). Décision de Geoffrey, 26/10 au soir.
+       recycle : ce que rend le recyclage (quantités fixes, à la place de la part d'une recette) */
+    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:44, looting:22 },   // 440 x en prices (Plastron en fer)
                                      recycle:{ 'Chitine':20, 'Peau de gobelin':10 } },
-    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.13, crit:9.7 },   // 268 x (Casque en fer) : recul arrondi à 0,13 (130 x), le critique complète
+    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.13, crit:9.7 },   // 268 x en prices (Casque en fer) : recul arrondi à 0,13 (130 x), le critique complète
                              recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
-    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.4 },   // 350 x (Jambes en fer), une seule stat
+    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.1 },   // 263 x (Jambes en fer, prix mesurés), une seule stat ; d'abord 1,4 (350 x en prices)
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
-    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:3.1, tenacity:12.6 },   // 250 x (tier 2) : dégâts arrondis à 3,1 (124 x), la ténacité complète
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:3.1, tenacity:25 },   // 250 x (tier 2, prix mesurés) : dégâts 3,1 (124 x), ténacité 25 % (125 x) ; d'abord 12,6
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),

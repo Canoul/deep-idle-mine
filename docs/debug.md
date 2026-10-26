@@ -3372,7 +3372,7 @@ Règles (voir CLAUDE.md) :
   `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement. ✅ Après merge de main (9cb496c) : lobby +
   giant-rules + giant-service ✅ 35.
 
-## 26/10/2026 — Butin rare des mobs : 4 pièces de stuff (branche `geoffrey/stuff-mobs`) — ⏳
+## 26/10/2026 — Butin rare des mobs : 4 pièces de stuff (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
 - **Quoi** : `src/config.js` : 4 entrées `STUFF.items` (stats en x = pièce en fer de la case via `UPGRADE.prices`,
   ceinture 250 x ; champ `recycle` = rendu fixe), `RARITY.items`, `UPGRADE.tiers[2]`, `TEXTURES`, nouveau `MOB_DROPS`
   (après `DUNGEON` : mob, item, chance, kholeChance). `src/sim/actions.js` : `rareDrop` appelé à la fin de `killMob`
@@ -3404,3 +3404,9 @@ Règles (voir CLAUDE.md) :
   Plastron de l'équilibre 1 335 → 1 426 (sa ténacité +3 % compte : 15 x), Lampe à incandescence 0 → 81.
 - **Points fragiles** : prix de `UPGRADE.gs` au bruit près (marges ci-dessus, mine classique seulement ; en tour, portée et
   recul valent sans doute plus). `TOWER.modulation.gsMax` (2000) choisi avec l'ancien barème, pas retouché.
+
+## 26/10/2026 — Butin rare des mobs : recalage sur les prix mesurés (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
+- **Quoi** : après le merge de `geoffrey/gs-en-x` (GS aux prix mesurés), Nuage `speed` 1,4 → 1,1
+  (263 x = Jambes en fer) et Ceinture `tenacity` 12,6 → 25 (250 x) ; Lanières et Capuche inchangées (tableau des runes :
+  en prix mesurés, vitesse d'attaque +135 % et recul +1,1). GS : Lanières 306, Capuche 142 (sous le fer en prix mesurés).
+  Test x réécrit en conséquence ✅.

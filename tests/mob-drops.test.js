@@ -36,16 +36,20 @@ test('config : case, rareté, tier 2, pas de recette, textures et skin ; chaque 
   }
 });
 
-test('valeur en x (GS) : celle de la pièce en fer de la case (à 1 x près) ; la ceinture vaut le tier 2', () => {
-  for(const [n, p] of Object.entries(PIECES)){
-    const want = p.iron ? pieceGS(p.iron) : p.x;
-    assert.ok(Math.abs(pieceGS(n) - want) <= 1, `${n} : ${pieceGS(n)} x, attendu ${want}`);
-  }
-  /* les deux stats se partagent la valeur à peu près moitié / moitié */
-  for(const n of ['Lanières en cuir du gobelin', 'Capuche sombre', 'Ceinture du Géant']){
-    const parts = Object.entries(STUFF.items[n].stats).map(([k, v]) => v * UPGRADE.prices[k]);
+/* x d'une pièce au tableau des runes (UPGRADE.prices) */
+const runeX = n => Object.entries(STUFF.items[n].stats).reduce((s, [k, v]) => s + v * UPGRADE.prices[k], 0);
+const gsPrice = k => UPGRADE.worth[k] ?? UPGRADE.gs[k];
+
+test('valeur en x : celle de la pièce en fer de la case (ceinture : tier 2) ; prix mesurés (GS) pour le Nuage et la Ceinture, tableau des runes pour les Lanières et la Capuche', () => {
+  assert.ok(Math.abs(pieceGS('Nuage magique') - pieceGS('Jambes en fer')) <= 2, `Nuage : ${pieceGS('Nuage magique')}`);
+  assert.ok(Math.abs(pieceGS('Ceinture du Géant') - UPGRADE.tiers[2].x) <= 2, `Ceinture : ${pieceGS('Ceinture du Géant')}`);
+  assert.ok(Math.abs(runeX('Lanières en cuir du gobelin') - runeX('Plastron en fer')) <= 2);
+  assert.ok(Math.abs(runeX('Capuche sombre') - runeX('Casque en fer')) <= 2);
+  /* les deux stats se partagent la valeur à peu près moitié / moitié (dans leur barème) */
+  for(const [n, price] of [['Lanières en cuir du gobelin', k => UPGRADE.prices[k]], ['Capuche sombre', k => UPGRADE.prices[k]], ['Ceinture du Géant', gsPrice]]){
+    const parts = Object.entries(STUFF.items[n].stats).map(([k, v]) => v * price(k));
     assert.equal(parts.length, 2, n);
-    assert.ok(Math.abs(parts[0] - parts[1]) <= 0.1 * pieceGS(n), `${n} : ${parts.map(Math.round)}`);
+    assert.ok(Math.abs(parts[0] - parts[1]) <= 0.1 * (parts[0] + parts[1]), `${n} : ${parts.map(Math.round)}`);
   }
 });
 

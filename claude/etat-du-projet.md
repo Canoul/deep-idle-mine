@@ -127,10 +127,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
 - **Butin rare des mobs** (26/10, Geoffrey) : 4 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
-  chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x), deux stats moitié / moitié :
+  chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,5 %),
   **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,5 %), **Nuage magique** (jambes, rare ;
-  marche +1,4 ; méphite 0,5 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +12,6 % ; minotaure 1 %,
+  marche +1,1 ; méphite 0,5 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +25 % ; minotaure 1 %,
   2 % en k hole). Chance × (1 + butin du mineur : stat Butin + skill Pillage ; 1 % à +50 % → 1,5 %), une seule pièce, hasard à part, un seul joueur la reçoit (partage normal). Tier 2
   pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
   nuage, ceinture à cornes).
