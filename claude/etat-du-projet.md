@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 26/10/2026 (amélioration +1 à +9).*
+*Dernière mise à jour : 26/10/2026 (Steel ingot à 5 Graphite ingot).*
 
 ---
 
@@ -106,7 +106,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   session ; Lobby : compteur « x joueurs en recherche » du LFG, visible sans chercher.
 - **Graphite et area 6** (23/10, Geoffrey ; en ligne le 23/10) : minerai **Graphite ore**
   (dureté 4, poids 3, attrait 4, 4 XP) en areas 5 et 6 ; four : 10 → 1 **Graphite ingot** (60 s) ; alliage **Steel
-  ingot** = 3 Tainted iron + 10 Graphite ingot (50 charbons, 3 min), sans usage pour l'instant. **Area 5** revue (55
+  ingot** = 3 Tainted iron + **5 Graphite ingot** (26/10 ; ancien : 10) (50 charbons, 3 min). **Area 5** revue (55
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
