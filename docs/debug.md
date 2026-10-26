@@ -3302,3 +3302,12 @@ Règles (voir CLAUDE.md) :
   des membres dans le lobby n'est rafraîchi qu'à l'état complet du groupe (les autres réponses du groupe ne le
   renvoient pas, comme le skin). Récompense de la modulation : rien (rec.modulation sert de marqueur pour la suite).
 
+---
+
+## 26/10/2026 — Glyphe Treuil : `GLYPHS.liftSpeed` 3 → 1,5 (branche `geoffrey/nerf-glyphe-treuil`)
+- **Quoi** : `src/config.js` `GLYPHS.liftSpeed: 1.5` et texte `GLYPHS.desc.winch` ; `GAME_DESIGN.md` (tableau des
+  glyphes : 1,28 × la montée, 1,59 × avec Escalateur 5/5) ; `claude/etat-du-projet.md` ; `tests/glyphs.test.js` (valeur).
+- **Tests** : glyphs, glyph-drop, tower*, wiki : 82/82 ✅.
+- **Fragile** : ⚠️ pas mesuré en simulation : l'ascenseur n'est posé qu'une area sur deux ; à × 1,5 il n'est plus
+  évident qu'il batte le treuil normal (× 0,85 de la montée, posé à chaque area). À vérifier si le glyphe devient un malus.
+

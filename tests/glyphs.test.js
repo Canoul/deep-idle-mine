@@ -32,7 +32,7 @@ test('glyphes : 10 objets, un par skill visé, catégorie glyph, épiques, textu
     assert.ok(GLYPHS.desc[node], `${node} : texte joueur`);
   }
   for(const node of ['lazy_legend', 'winch_speed', 'taunt']) assert.equal(GLYPHS.items[node], undefined, `${node} : pas de glyphe`);
-  assert.equal(GLYPHS.items.winch, 'Glyphe Treuil'); assert.equal(GLYPHS.liftSpeed, 3); assert.equal(GLYPHS.liftEvery, 2);
+  assert.equal(GLYPHS.items.winch, 'Glyphe Treuil'); assert.equal(GLYPHS.liftSpeed, 1.5); assert.equal(GLYPHS.liftEvery, 2);
   for(const t of ['lift_rail', 'lift_top', 'lift_cabin']) assert.ok(existsSync(`textures/${t}.png`), t);
   assert.ok(existsSync('textures/glyph.png'));
   assert.equal(GLYPHS.rushTime, 5); assert.equal(GLYPHS.killDamageMax, 25); assert.equal(GLYPHS.braumOxygen, 0.3);
@@ -286,11 +286,11 @@ test('Glyphe Treuil : le chantier pose un ascenseur ; le seau va 3 fois plus vit
   G.winchBoost = 0.25;
   const lift = baseWinchT(G, m);
   delete G.winch.lift;
-  assert.ok(Math.abs(baseWinchT(G, m) / lift - GLYPHS.liftSpeed) < 1e-9, 'treuil 3 fois plus lent');
+  assert.ok(Math.abs(baseWinchT(G, m) / lift - GLYPHS.liftSpeed) < 1e-9, 'treuil 1,5 fois plus lent');
   assert.ok(Math.abs(lift - 1 / (m.carac.climbSpeed * WINCH.speedFactor * 1.25 * GLYPHS.liftSpeed)) < 1e-12, 'Escalateur compris');
 });
 
-test('Glyphe Treuil dans les tours : le logisticien porteur installe un ascenseur ; même vitesse que dans la mine (× 3)', async () => {
+test('Glyphe Treuil dans les tours : le logisticien porteur installe un ascenseur ; même vitesse que dans la mine (× 1,5)', async () => {
   const { newTower, tickTower, towerWinchT } = await import('../src/sim/tower/session.js');
   const { winchMult } = await import('../src/sim/mineur.js');
   const G = newTower(3, { side:'angel', miners:[{ name:'L', account:'L', skillTree:'logisticien', skills:{ winch:1, glyph_winch:1, winch_speed:0.25 } }] });
