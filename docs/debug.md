@@ -3117,3 +3117,13 @@ Règles (voir CLAUDE.md) :
   avant) ✅. `tests/tier2.test.js` : 2 tests en retard sur main (T1 à 10 recettes depuis la Lance en fer, recyclage T1
   15-30) remis à jour (ils échouaient déjà sur main). research, tier2, anticheat/research, game-service, wiki, craft,
   blueprint ✅ (109) ; `npm run test:anticheat` ✅ (91).
+
+### Glyphes : 1 % par glyphe et par session (Geoffrey) — branche `geoffrey/glyphes-1pct`, 🧪 pas en ligne
+- **Quoi** : `GLYPHS.drop[*].chance` = chance PAR glyphe manquant et par événement ; `glyphDrop` (`src/sim/actions.js`)
+  tire `chance × glyphes restants` puis un glyphe au hasard parmi les restants (un seul tirage de glyphRng pour le
+  drop, comme avant). Valeurs = 1 − 0,99^(1/E), E mesuré à 3 mineurs, arbre complet, 5 seeds : mineur 795 blocs,
+  logisticien 91 échelles, barbare 30 mobs → 0,0000126 / 0,00011 / 0,000335. Wiki : `tiny()` (3 chiffres
+  significatifs) dans `sourcesOf` ; texte de `wiki.html` et bandeau au 26/10.
+- **Tests** : glyph-drop (valeurs, ≈ 1 % par session, chance × manquants), wiki ✅.
+- **Points fragiles** : E dépend du stuff et des skills (plus de blocs = plus de chances) ; en solo, ≈ 1030 blocs /
+  107 échelles / 52 mobs → ≈ 1,3 % / 1,2 % / 1,7 % par glyphe.

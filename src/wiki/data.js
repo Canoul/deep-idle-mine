@@ -124,7 +124,8 @@ export function sourcesOf(item){
   if(ITEMS[item]?.cat === 'glyph'){
     const tree = skillNode(ITEMS[item].glyph)?.tree, d = tree && GLYPHS.drop[tree.id];
     const ev = { block:'bloc qu\'il casse', ladder:'échelle qu\'il pose', kill:'mob qu\'il tue' };
-    if(d) out.push(`Mine : un mineur spécialisé ${tree.label} a ${fmt(d.chance * 100)} % de chance par ${ev[d.event]} d'en trouver un de son arbre qu'il n'a pas encore`);
+    const tiny = v => String(Number((v * 100).toPrecision(3))).replace('.', ',');   // petites chances : 3 chiffres significatifs
+    if(d) out.push(`Mine : un mineur spécialisé ${tree.label} a ${tiny(d.chance)} % de chance par ${ev[d.event]} de trouver celui-ci s'il ne l'a pas encore (≈ 1 % par session dans un groupe de 3)`);
   }
   if(!out.length) out.push('Pas encore obtenable');
   return out;
