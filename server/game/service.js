@@ -839,6 +839,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async judgment(me){
       return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
     },
+    /* tour d'un camp : ouverte ? et les comptes qui l'ont déjà faite pendant cette ouverture (bouton « Who ? » du lobby) */
+    async towerDone(side){
+      if(!JUDGMENT_SIDES.includes(side)) fail('bad_request', 400, 'Camp inconnu.');
+      return withJudgment(j => ({ value: { open: dev || towerOpen(j, side, clock()),   // mode dev : toujours ouverte (comme au lancement)
+                                           done: new Set(j.done[side].opening === j[side].opening ? j.done[side].accounts : []) } }));
+    },
 
     /* administration : ouvrir un k hole dans la session en cours d'un joueur (route /api/admin/khole,
        scripts/force-khole.js). Mine classique seulement. map : 0 = carte tirée, 1 à KHOLE.maps.length = imposée.
