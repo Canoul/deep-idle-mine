@@ -49,21 +49,25 @@ export function mobRows(){
     types: Object.fromEntries(MOB_TYPES.map(m => [m, { chance: t[m] || 0, hp: k >= MOBS.minArea[m] ? mobHp(m, k) : null }])),
   }));
 }
-/* fiche de chaque mob : nom, texture, butin [{ item, min, max }], XP, première area */
+/* fiche de chaque mob : nom, texture, butin [{ item, min, max }], XP, première area, vitesse (cases par seconde ; 0 :
+   immobile, le mimic) */
 export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
   name: MOB_LOOK[m]?.name ?? m, tex: MOB_LOOK[m]?.tex, xp: XP.mob[m] ?? 0, minArea: MOBS.minArea[m],
+  speed: m === 'mimic' ? 0 : (MOBS.speed[m] ?? 1) / CFG.mobStep,
   hp0: mobHp(m, MOBS.minArea[m]),
   loot: {
     bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
     gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
     occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }, { item: MOBS.bugItem, ...mm(range(r => MOBS.occult.chitin(r))) }],
     mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
+    golem:      [{ item: MOBS.golem.item, ...mm(range(r => MOBS.golem.loot(r))) }],
     mimic:      [],
   }[m] ?? [],
 }]));
 function mm([min, max]){ return { min, max }; }
 export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
-  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range };
+  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range,
+  golem: { ...MOBS.golem, knock: MOBS.knock.golem, hitEvery: MOBS.hitEveryBy.golem }, duckSpeed: 1 / DUCK.step };
 /* coups pour tuer un mob de pv points de vie, avec des dégâts d */
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
@@ -98,7 +102,7 @@ export function sourcesOf(item){
   }
   for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
-    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);

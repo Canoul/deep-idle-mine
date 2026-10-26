@@ -51,7 +51,7 @@ const duckCard = () => `<div class="mob"><h3><img src="textures/${esc(DUCK.tex)}
   <p>Un canard jaune qui sautille <b>à la surface</b>, autour du coffre (${DUCK.range} cases au plus). <b>Un Gallianix apparaît à chaque nouvelle area débloquée</b> pendant la session. Il saute par-dessus les trous et ne tombe jamais dans la mine.</p>
   <p>Comme un joueur, il a un <b>pseudo</b> : le 1er canard de la session s'appelle « ${esc(DUCK.names[0])} », le 2e « ${esc(DUCK.names[1])} », et ainsi de suite (${DUCK.names.length} noms, puis on recommence).</p>
   <p><b>Danger :</b> aucun, il ne tacle pas : il se balade. Ton mineur le frappe s'il le voit (réglage « combat »).</p>
-  <p><b>À partir de :</b> la première area débloquée · <b>PV :</b> ${DUCK.hp}</p>
+  <p><b>À partir de :</b> la première area débloquée · <b>PV :</b> ${DUCK.hp} · <b>Vitesse :</b> ${f(Math.round(D.MOB_RULES.duckSpeed * 100) / 100)} case/s</p>
   <p><b>Butin :</b> ${f(DUCK.heart.chance * 100)} % de chance d'avoir 1 ${item(DUCK.heart.item)} (dans le coffre commun) · <b>${XP.mob[DUCK.type] ?? 0} XP</b></p></div>`;
 const MOB_TEXT = {
   bestiole:   R => `<p>Le mob de base. Elle apparaît dans une galerie, entre ${R.dist[0]} et ${R.dist[1]} cases de ton mineur, et lui fonce dessus. Elle suit les mêmes règles que lui : pas de saut, elle monte par les échelles.</p>
@@ -64,13 +64,15 @@ const MOB_TEXT = {
                     <p><b>Danger :</b> ton mineur est <b>étourdi ${R.occult.channel} s</b> (il ne peut plus rien faire), et l'occultiste tacle aussi. Un barbare avec <b>Provocation</b> qui le frappe <b>casse</b> le rayon en cours (ton mineur est libéré), mais ne l'empêche pas de relancer son sort plus tard, sur le barbare : le barbare aussi peut se faire étourdir.</p>`,
   mephite:    R => `<p>Une masse de gaz verdâtre qui <b>vole</b> : pas besoin d'échelle, elle traverse les galeries vides et rejoint ton mineur même en hauteur. Fragile, mais difficile à semer.</p>
                     <p><b>Danger :</b> le tacle, et l'<b>asphyxie</b> : tant qu'elle le tient, ton mineur perd <b>${R.mephite.oxygen} d'oxygène toutes les ${R.mephite.every} s</b> (plusieurs méphites ne se cumulent pas ; la <b>Ténacité</b> peut ignorer chaque perte).</p>`,
+  golem:      R => `<p>Un golem de pierre de <b>2 × 2 cases</b>, couvert d'une sueur blanche qui coule le long de ses blocs. Lent (deux fois moins vite qu'un gobelin), mais <b>rien ne l'arrête</b> : à sa naissance il casse la roche qui le gêne, puis il <b>creuse</b> jusqu'à ton mineur, un bloc toutes les ${R.golem.dig} s. Il descend en creusant, monte en escalier puis tout droit en s'agrippant à la roche. Les blocs qu'il casse sont <b>perdus</b> (même les minerais). Il ne casse ni les treasures, ni les passerelles, ni les murs de donjon, et ne prend pas les échelles.</p>
+                    <p><b>Danger :</b> le tacle, et ses coups le <b>repoussent de ${f(R.golem.knock)}</b> case toutes les ${f(R.golem.hitEvery)} s. Surtout, il <b>ébranle la mine</b> : chaque fois qu'il a perdu un tiers de ses PV (à ${Math.round(R.golem.stunStep * 100)} %, ${Math.round(R.golem.stunStep * 200)} % et ${Math.round(R.golem.stunStep * 300)} % de PV perdus), les mineurs à ${R.golem.stunRadius} cases ou moins sont <b>étourdis ${R.golem.stunTime} s</b> (la <b>Ténacité</b> peut l'ignorer). Il ne se fait pas repousser.</p>`,
 };
 function mobs(){
   const R = D.MOB_RULES;
   $('w-mobs-list').innerHTML = `<div class="mobs">${D.MOB_TYPES.map(m => { const i = D.MOB_INFO[m];
     const loot = m === 'mimic' ? `${R.mimicLoot} exemplaires du minerai qu'il imitait` : i.loot.map(l => `${l.min === l.max ? l.min : `${l.min} à ${l.max}`} ${item(l.item)}`).join(' + ');
     return `<div class="mob"><h3>${i.tex ? `<img src="textures/${esc(i.tex)}.png" alt="">` : ''}${esc(i.name)}</h3>${(MOB_TEXT[m] ?? (() => ''))(R)}
-      <p><b>À partir de :</b> l'area ${i.minArea} · <b>PV :</b> ${i.hp0} au départ, +${f(Math.round((R.growth - 1) * 1000) / 10)} % par area plus profonde</p>
+      <p><b>À partir de :</b> l'area ${i.minArea} · <b>PV :</b> ${i.hp0} au départ, +${f(Math.round((R.growth - 1) * 1000) / 10)} % par area plus profonde · <b>Vitesse :</b> ${i.speed ? `${f(Math.round(i.speed * 100) / 100)} case/s` : 'immobile'}</p>
       <p><b>Butin :</b> ${loot} · <b>${i.xp} XP</b></p></div>`; }).join('')}${duckCard()}</div>`;
   const rows = D.mobRows().map(r => tr([`<b>${r.last ? r.k + '+' : r.k}</b>`,
     ...D.MOB_TYPES.map(m => { const t = r.types[m]; return t.chance ? num(`${Math.round(t.chance * 100)} %<div class="small mut">${f(t.hp)} PV</div>`) : num(none); }),

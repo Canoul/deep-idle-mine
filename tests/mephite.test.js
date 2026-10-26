@@ -17,7 +17,7 @@ test('apparition : 5 % en area 3, 15 % en area 4, 20 % en area 5 et au-delà, pr
   const T = MOBS.spawnTable;
   assert.deepEqual(T[3], { bestiole:0.2, gobelin:0.55, mephite:0.05, mimic:0.2 });
   assert.deepEqual(T[4], { gobelin:0.55, occultiste:0.1, mephite:0.15, mimic:0.2 });
-  assert.deepEqual(T[5], { gobelin:0.3, occultiste:0.3, mephite:0.2, mimic:0.2 });
+  assert.deepEqual(T[5], { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 });
   for(const row of T) assert.ok(Math.abs(sum(row) - 1) < 1e-9, JSON.stringify(row));
   assert.ok(!('mephite' in T[2]), 'pas avant l\'area 3');
   assert.equal(MOBS.minArea.mephite, 3);

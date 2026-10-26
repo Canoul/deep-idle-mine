@@ -796,6 +796,20 @@ def main():
     rect(ves, 7, 9, 3, 2, hexc('#c4e38f'))  # gaz
     tex['gas_vesicle'] = ves
 
+    # pierre glissante (butin du golem, 26/10) : galet gris lisse, luisant, nappé de liquide blanc qui coule
+    slick = blank()
+    rect(slick, 3, 6, 10, 7, hexc('#7d838c'))
+    rect(slick, 4, 5, 8, 1, hexc('#7d838c'))
+    rect(slick, 4, 13, 8, 1, hexc('#5a5f67'))
+    rect(slick, 3, 11, 10, 2, hexc('#61666e'))
+    rect(slick, 5, 6, 3, 1, hexc('#b9bec6'))               # reflet
+    rect(slick, 4, 4, 7, 2, hexc('#f4f1e8'))               # nappe blanche
+    rect(slick, 5, 6, 1, 3, hexc('#f4f1e8'))               # coulures
+    rect(slick, 9, 6, 1, 4, hexc('#f4f1e8'))
+    rect(slick, 9, 10, 1, 1, hexc('#dcd8cc'))
+    rect(slick, 12, 7, 1, 2, hexc('#f4f1e8'))
+    tex['slippery_stone'] = slick
+
 
 
     torch = blank()
@@ -1020,6 +1034,8 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    # golem (mob 2 × 2 cases) : 32 × 32 pixels
+    png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 
 
@@ -1128,6 +1144,49 @@ def tower_mobs():
     r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
     r(im, 3, 13, 2, 2, red)
     return {'seraph': sp, 'imp': im}
+
+
+def golem():
+    """Golem (26/10) : mob de 2 × 2 cases (32 × 32 pixels), regard vers la droite. Un golem trapu en blocs de pierre
+    grise (fissures sombres, épaules massives, poings énormes), deux yeux de braise, qui sue un liquide blanc : gouttes
+    sur le front, coulures sur le torse et les bras, flaque au pied. Le jeu fait tomber une goutte de plus."""
+    S = 32
+    px = [(0, 0, 0, 0)] * (S * S)
+
+    def r(x, y, w, h, c):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                if 0 <= xx < S and 0 <= yy < S:
+                    px[yy * S + xx] = c
+    st, hi, lo, dk = hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148')
+    white, cream = hexc('#f4f1e8'), hexc('#d9d4c6')
+    r(9, 2, 14, 9, st)                  # tête
+    r(10, 2, 12, 2, hi)
+    r(9, 9, 14, 2, lo)
+    r(16, 5, 3, 2, hexc('#ff8a2a'))     # yeux de braise
+    r(20, 5, 2, 2, hexc('#ff8a2a'))
+    r(17, 5, 1, 1, hexc('#ffe08a'))
+    r(12, 7, 1, 1, dk); r(13, 8, 1, 1, dk)   # fissure du front
+    r(4, 11, 24, 11, st)                # torse et épaules
+    r(4, 11, 24, 2, hi)
+    r(4, 20, 24, 2, lo)
+    r(15, 13, 2, 7, lo)                 # jointure des blocs
+    r(8, 15, 3, 1, dk); r(10, 16, 1, 2, dk); r(21, 14, 1, 3, dk); r(22, 17, 2, 1, dk)   # fissures
+    r(0, 12, 5, 12, lo); r(27, 12, 5, 12, lo)   # bras
+    r(0, 22, 6, 5, st); r(26, 22, 6, 5, st)     # poings
+    r(0, 26, 6, 1, dk); r(26, 26, 6, 1, dk)
+    r(7, 22, 7, 8, st); r(18, 22, 7, 8, st)     # jambes
+    r(7, 28, 7, 2, lo); r(18, 28, 7, 2, lo)
+    r(14, 22, 4, 4, lo)
+    # sueur blanche : gouttes sur le front, coulures sur le torse et les bras, flaque au pied
+    r(11, 3, 1, 2, white); r(14, 2, 1, 1, white); r(21, 3, 1, 1, white)
+    r(9, 10, 2, 1, white); r(10, 11, 1, 4, white); r(10, 15, 1, 1, cream)
+    r(19, 11, 1, 6, white); r(19, 17, 1, 1, cream)
+    r(25, 12, 1, 3, white)
+    r(1, 14, 1, 5, white); r(1, 19, 1, 1, cream)
+    r(30, 13, 1, 4, white)
+    r(12, 30, 4, 1, cream); r(19, 30, 5, 1, cream); r(9, 31, 16, 1, white)
+    return px
 
 
 def giant():

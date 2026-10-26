@@ -92,10 +92,10 @@ test('apparition : type tiré selon l\'area du mineur (table MOBS.spawnTable), P
     [3, 0.3,  'gobelin',    132],    // 100 × 1,15²
     [4, 0.1,  'gobelin',    152],
     [4, 0.6,  'occultiste', 150],    // occultiste dès l'area 4 (150 PV depuis le 23/10)
-    [5, 0.5,  'occultiste', 173],
+    [5, 0.4,  'occultiste', 173],   // area 5 : gobelin 0,2 puis occultiste 0,3… (golem le 26/10)
     [3, 0.77, 'mephite',    70],     // méphite dès l'area 3 (24/10) : 70 PV, +15 % par area
     [4, 0.7,  'mephite',    81],
-    [5, 0.75, 'mephite',    93],
+    [5, 0.6,  'mephite',    93],
   ];
   for(const [k, r, type, hp] of cases){
     const mobs = spawnAt(rowOf(k), [0, r, 0]);

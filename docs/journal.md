@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Nouveau mob : le golem de sperme (area 5+)
+- **Pour le joueur** : à partir de l'area 5, un golem de pierre qui sue un liquide blanc, **2 × 2 cases**, 300 PV (+15 %
+  par area), deux fois plus lent qu'un gobelin (10 % des apparitions, pris sur le gobelin). Il **creuse jusqu'à ton
+  mineur** (un bloc toutes les 2 s ; les blocs cassés sont perdus, même les minerais ; jamais les treasures, passerelles,
+  murs de donjon ni échelles), en escalier pour monter. Ses coups repoussent de 0,5 toutes les 1,5 s, et chaque fois qu'il
+  perd un tiers de ses PV il **ébranle la mine** : les mineurs à 3 cases sont étourdis 3 s (Ténacité). Butin : 1 à 3
+  **Pierres glissantes**, 30 XP. Wiki à jour, avec en plus la **vitesse de chaque mob**.
+- **Décisions** (Geoffrey) : 10 % pris sur le gobelin ; blocs perdus, il ne casse pas l'intouchable ; escalier ; 3
+  étourdissements, Ténacité oui. **Choix de Claude à valider** : il monte tout droit une fois sous le mineur et
+  s'agrippe à la roche (sinon il tournait en rond dans son propre escalier), il ne se fait pas repousser, pas de golem
+  dans les pièges ni dans le k hole.
+- **État** : 🔧 branche `geoffrey/golem`, pas en ligne
+
 ## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
 - **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
   restant, scores, classement, récompenses à réclamer). Le bouton « Entrer » reste grisé (« Termine d'abord ta
