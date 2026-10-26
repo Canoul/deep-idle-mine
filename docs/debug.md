@@ -3133,3 +3133,17 @@ Règles (voir CLAUDE.md) :
   restants) ; valeurs inchangées (1 − 0,97^(1/E)) : ≈ 3 % d'en trouver un par session à 3. L'entrée précédente
   (« 3 % par glyphe ») est remplacée : malentendu, ≈ 9 à 11 % par session.
 - **Tests** : glyph-drop (valeurs, chance unique quel que soit le nombre de manquants), wiki ✅.
+
+### Social : sous-onglets Amis / Online (Geoffrey) — branche `geoffrey/social-online`, ✅ en ligne le 26/10
+- **Quoi** : `social.online(me)` (`server/social/service.js`) parcourt la Map `seen` (signes de vie), oublie au passage
+  les entrées de plus de `onlineFor`, renvoie `{ count, players }` (statut via `statusOf`, `me`, `friend`), tri : pas
+  en session d'abord puis session, par pseudo ; bornée à `SOCIAL_SERVER.onlineListMax` (200). Route
+  `GET /api/social/online` (appeler la route est aussi un signe de vie). Navigateur (`src/ui/social.js`) : sous-onglets
+  `#socialTabs`, liste demandée seulement quand le sous-onglet Online est à l'écran (vérifié chaque seconde, rechargé
+  toutes les `SOCIAL.onlinePoll` = 5 s) ; le signe de vie habituel (`GET /api/social`, 4 s) n'est pas alourdi.
+  « Ajouter » = `h.request(id)` (le serveur accepte l'ID de compte).
+- **Tests** : `tests/social.test.js` +2 (liste, ordre, hors ligne absents, borne + compteur) et route HTTP (200, 401)
+  ✅ 17/17. Vérifié dans Chromium (Playwright) à 3 comptes, dont un en session : ordre, compteur, Ajouter ✅.
+- **Points fragiles** : `online()` fait un `activeSessionInfo` par joueur en ligne (lecture du store) ; OK à quelques
+  dizaines de joueurs, à revoir (cache) s'il y en a des centaines. Un joueur en session navigateur fermé n'apparaît
+  pas (présence = signe de vie, comme chez les amis).

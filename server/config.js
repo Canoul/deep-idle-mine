@@ -107,6 +107,7 @@ export const SOCIAL_SERVER = {
   maxFriends: 100,                  // amis par compte
   maxOutgoing: 20,                  // demandes d'ami envoyées en attente
   maxIncoming: 50,                  // demandes reçues gardées (les plus anciennes tombent)
+  onlineListMax: 200,               // joueurs montrés dans l'onglet Online (le compteur, lui, compte tout le monde)
   requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
 };
 

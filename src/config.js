@@ -1058,7 +1058,7 @@ export const MINE_MODES = [
 ];
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
-export const SOCIAL = { poll:4000, hiddenPoll:20000 };
+export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
