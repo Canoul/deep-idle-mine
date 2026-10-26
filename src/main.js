@@ -18,6 +18,7 @@ import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
 import { setupInstantLobby } from './ui/instant-lobby.js';
+import { setupGiant } from './ui/giant.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
 import { createTowerRenderer } from './render/tower.js';
@@ -56,7 +57,7 @@ import { setupSocial } from './ui/social.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -202,6 +203,7 @@ setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur m
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
+let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
@@ -243,7 +245,7 @@ const lobby = setupLobby({
   auras: () => aurasOf(stuff.worn()),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
-  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); },
+  onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
   onLaunch: async opts => {
     lobby.error('');
@@ -267,14 +269,17 @@ const instantLobby = setupInstantLobby({
   onState: st => { if(st.registered && !miModeShown){ miModeShown = true; lobby.update({ mode:'mi' }); } },
   onOpened: () => pollLobby(),                       // mode dev : la session est là, le lobby la voit et bascule
 });
-function startInstant(){ if(acct.account && !acct.offline) instantLobby.start(); else instantLobby.stop(); }
+function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); } else instantLobby.stop(); }
+
+/* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
+giantUI = setupGiant({ api: giantApi, nav, session: () => !!rec, me: () => acct.account?.id });
 window.MI = instantLobby;                            // pour le débogage depuis la console (F12) : MI._notice(30)
 
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
   setsUI.refresh();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('noSession').hidden = false;
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
 }

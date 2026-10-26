@@ -107,8 +107,9 @@ export function mineModes(cur, locked = false, judgment = null, dev = false){
    rien ne se lance d'ici (pas de Lancer, de préférences ni de réglages dev). Mine instantanée : sa carte d'inscription
    à la place de l'équipe. dev : réglages dev permis (mode dev, celui qui lance, hors session). */
 export function lobbyCards({ view, mode, dev = false }){
-  const jv = view === 'jugement', def = MINE_MODES.find(m => m.id === mode), mi = !!def?.scheduled, tower = !!def?.tower;
-  return { judgment:jv, mi:!jv && mi, team:!mi || jv, launch:!jv, prefs:!jv && !mi && !tower, dev:!jv && !mi && dev };
+  const jv = view === 'jugement', def = MINE_MODES.find(m => m.id === mode), mi = !!def?.scheduled, tower = !!def?.tower, giant = !jv && !!def?.giant;
+  /* Bloc géant : sa carte à la place de l'équipe (on y entre seul), ni Lancer ni préférences (26/10) */
+  return { judgment:jv, mi:!jv && mi, giant, team:(!mi && !giant) || jv, launch:!jv && !giant, prefs:!jv && !mi && !tower && !giant, dev:!jv && !mi && !giant && dev };
 }
 
 /* boutons du chef sur la place d'un autre membre : nommer chef (★) même pendant une session (25/10/2026 ; le serveur
@@ -142,6 +143,8 @@ export function setupLobby(h){
     const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
+    const giantWas = $('giantCard').hidden; $('giantCard').hidden = !cards.giant;
+    if(giantWas && cards.giant) h.onMode?.('giant');   // la carte vient d'apparaître : elle se met à jour
     $('launchBtn').hidden = !cards.launch;
     const btn = m => `<button data-mode="${m.id}" class="${m.on && !jv ? 'on' : ''}"${m.disabled ? ' disabled' : ''}${m.soon ? ' title="Bientôt disponible"' : m.done ? ' title="Déjà faite pendant cette ouverture"' : ''}>${esc(m.label)}`+
       `${m.soon ? ' <small>(bientôt)</small>' : m.done ? ' <small>(déjà faite)</small>' : ''}</button>`;
@@ -183,6 +186,7 @@ export function setupLobby(h){
     $('lobbyInfo').innerHTML = offline ? ''
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : jv ? 'Pour lancer, choisis la Mine ou une tour ouverte dans « Où miner ».'
+      : def?.giant ? ''
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
                 `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture.`
       : (n > 1 ? `Session à <b>${n}</b> : même mine, coffre partagé à la fin. ` : '')+

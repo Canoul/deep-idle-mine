@@ -54,3 +54,15 @@ test('mode Bloc géant listé, à part des lancements de groupe', () => {
   const m = MINE_MODES.find(x => x.id === 'giant');
   assert.ok(m?.giant); assert.ok(!m.tower); assert.ok(!m.scheduled);
 });
+
+test('carte du lobby : textes de durée, objets, bouton d\'entrée', async () => {
+  const { durText, clockText, itemsText, entryState } = await import('../src/ui/giant.js');
+  assert.equal(durText(45e3), '45 s'); assert.equal(durText(12 * 60e3), '12 min'); assert.equal(durText(9 * H + 12 * 60e3), '9 h 12 min');
+  assert.equal(clockText(62e3), '1:02');
+  assert.equal(itemsText({ 'Treasure T1': 2, 'Blueprint parts': 15 }), '2 Treasure T1, 15 Blueprint parts');
+  const base = { visit: null, present: 0, max: 30, nextEntry: 0 };
+  assert.deepEqual(entryState(base, 1000), { can: true, label: 'Entrer' });
+  assert.equal(entryState({ ...base, nextEntry: 1000 + 2 * H }, 1000).label, 'Prochaine entrée dans 2 h 00 min');
+  assert.equal(entryState({ ...base, present: 30 }, 1000).can, false);
+  assert.equal(entryState({ ...base, visit: { endsAt: 5 } }, 1000).inVisit, true);
+});

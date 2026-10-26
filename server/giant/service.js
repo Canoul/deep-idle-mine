@@ -135,7 +135,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     const day = dayOf(now), d = await dayWithLive(day), p = await loadPlayer(me.id), m = liveOf(me.id);
     const mine = d.scores[me.id];
     return {
-      now, day, endsAt: dayEnd(now), cooldownMs: cooldown,
+      now, day, endsAt: dayEnd(now), cooldownMs: cooldown, visitMs,
       nextEntry: nextEntry(p.lastEntry, { cooldownMs: cooldown }),
       visit: m && p.visit ? { endsAt: p.visit.endsAt, points: shownPoints(m.points) } : null,
       present: room?.G.miners.length ?? 0, max: config.maxPlayers,

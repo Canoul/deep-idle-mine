@@ -573,7 +573,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
@@ -1059,11 +1059,11 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
+  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
-  /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
-  { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
 ];
 
 /* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
