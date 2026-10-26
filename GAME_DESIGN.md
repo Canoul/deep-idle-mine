@@ -69,7 +69,7 @@ La dernière ligne se répète au-delà. Areas 5 et 6 : décision du 23/10/2026 
 au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide.
 - **Graphite** (23/10/2026) : minerai `Graphite ore` des areas 5 et 6 (dureté 4, poids 3, attrait 4, 4 XP *(provisoire)*).
   Au four : **10 Graphite ore → 1 Graphite ingot** (10 charbons, 60 s). Alliage : **Steel ingot = 3 Tainted iron +
-  10 Graphite ingot** (50 charbons, 3 min). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+  5 Graphite ingot** (50 charbons, 3 min ; 26/10/2026, avant 10 Graphite ingot). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
 - Les minerais sont générés en petits filons (1 à 4 blocs).
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
@@ -745,7 +745,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   |---|---|---|---|
   | **Tainted iron** | 5 lingots de fer + 15 chitine *(25/10/2026 ; avant 20)* | 50 charbons | 3 min |
   | **Tainted gold** | 5 lingots d'or + 20 peaux de gobelin *(23/10/2026 ; avant : 20 chitine)* | 50 charbons | 3 min |
-  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 10 Graphite ingot | 50 charbons | 3 min |
+  | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 5 Graphite ingot *(26/10 ; avant 10)* | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
 - **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.

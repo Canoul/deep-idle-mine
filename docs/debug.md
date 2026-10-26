@@ -3186,3 +3186,8 @@ Règles (voir CLAUDE.md) :
   `tests/anticheat` (plumes du +1 = 6) ✅ ; amelioration, wiki, rune-pool ✅ 37 ; anticheat ✅ 91.
   ❌ préexistant sur main au moment du travail, sans lien : `tests/rune.test.js` « tier » (Lampe à incandescence sans tier).
 - **Points fragiles** : pièces déjà +1 à +3 : bonus relu au nouveau barème (baisse : +3 = 9 % au lieu de 15 %).
+
+### Steel ingot : 5 Graphite ingot (Geoffrey) — branche `geoffrey/steel-graphite-5`, ✅ en ligne le 26/10
+- **Quoi** : `FURNACE` alliages, `src/config.js` : Steel ingot `'Graphite ingot':10` → `5`. Wiki (tableaux depuis la
+  config), GAME_DESIGN, état du projet.
+- **Tests** : `tests/graphite.test.js`, wiki, craft, anticheat.

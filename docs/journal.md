@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Steel ingot : 5 Graphite ingot au lieu de 10
+- **Pour le joueur** : un Steel ingot demande **3 Tainted iron + 5 Graphite ingot** (avant 10), toujours 50 charbons et
+  3 min. Les pièces en acier coûtent donc deux fois moins de graphite.
+- **État** : ✅ en ligne le 26/10
+
 ## 26/10/2026 — Geoffrey — Amélioration jusqu'à +9
 - **Pour le joueur** : on peut améliorer une pièce jusqu'à **+9** (avant +3). Chaque rang donne +3 % de toutes les
   stats (+27 % au +9) ; la réussite baisse de 5 % par rang (100 % au +1, 60 % au +9). Les premiers rangs coûtent
