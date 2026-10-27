@@ -3555,7 +3555,17 @@ Règles (voir CLAUDE.md) :
   `--skills mixed` avec / sans `--spells zipette,war_cry,cleave,hand_of_justice` : 0 blocage, coffre 4 499 / 4 510 pods.
 - À vérifier : effet réel de chaque sort sur le coffre et les combats (pas mesuré séparément).
 
-### Bloc géant pendant une session + récompense à 2 visites (Geoffrey) — branche `geoffrey/bloc-geant-session`, 🧪
+### Discord : ouverture d'une tour annoncée (Geoffrey) — branche `geoffrey/discord-tour-ouverte`, ✅ en ligne le 27/10 (restée sur sa branche le 26/10 : c'est pour ça que le bot n'a rien écrit)
+- **Quoi** : `towerOpenMessage(side)` (`server/social/discord.js`). Branché dans `withJudgment`
+  (`server/game/service.js`) : on note `j[side].opening` avant, et après l'enregistrement on annonce chaque camp dont
+  le numéro a avancé. Couvre les trois causes d'ouverture (`addResidues`, `refresh` à la lecture = réouverture après
+  une ouverture pleine, `setCount` admin) ; sous le verrou 'judgment' → jamais deux annonces pour une ouverture.
+- **Point fragile** : une réouverture automatique n'est vue (et annoncée) qu'à la prochaine lecture du Jugement
+  (lobby, lancement, fin de session) ; en pratique quelques secondes, mais pas à la minute près si personne ne joue.
+- **Tests** : discord ✅ (+4 : message, résidus + relectures/redémarrage, admin, réouverture ; 2 attentes existantes
+  complétées par l'annonce d'ouverture), judgment, admin, tower* ✅ 75.
+
+### Bloc géant pendant une session + récompense à 2 visites (Geoffrey) — branche `geoffrey/bloc-geant-session`, ✅ en ligne le 27/10
 - **Quoi (serveur)** : `giantEnter` ne refuse plus un joueur en session ; `game.start` ne refuse plus un joueur au Bloc
   géant (`in_giant` supprimé) ; `openInstant` n'écarte plus un joueur en visite. `activeSessionInfo` (Social) montre la
   session d'abord, sinon la visite. Récompense : `minVisitsFor(day)` / `earnsReward(score, day)` (`src/shared/giant.js`),

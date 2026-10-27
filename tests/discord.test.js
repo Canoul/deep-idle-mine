@@ -7,7 +7,7 @@ import { realDurationMs } from '../src/shared/game.js';
 import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
-import { treasureMessage, identifyMessage, escapeMarkdown, createDiscordAnnouncer } from '../server/social/discord.js';
+import { treasureMessage, identifyMessage, towerOpenMessage, escapeMarkdown, createDiscordAnnouncer } from '../server/social/discord.js';
 import { fakeLive } from './helpers.js';
 
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
@@ -20,7 +20,7 @@ const flush = () => new Promise(r => setTimeout(r, 10));   // les annonces parte
 
 /* ---------- messages ---------- */
 
-test('message : trésor de tour R7 (démon ou ange) annoncé ; en dessous, Treasure de la mine, objet inconnu : rien', () => {
+test("message : trésor de tour R7 (démon ou ange) annoncé ; en dessous, Treasure de la mine, objet inconnu : rien", () => {
   assert.equal(treasureMessage('admin', treasureItem('demon', 7)), '🚨 admin a loot un trésor démoniaque R7 🚨');
   assert.equal(treasureMessage('Zoe', treasureItem('angel', 7)), '🚨 Zoe a loot un trésor angélique R7 🚨');
   assert.equal(treasureMessage('Zoe', treasureItem('demon', MIN - 1)), null);
@@ -28,13 +28,13 @@ test('message : trésor de tour R7 (démon ou ange) annoncé ; en dessous, Treas
   for(const item of ['Charbon', 'Objet inconnu', '', undefined, null]) assert.equal(treasureMessage('Zoe', item), null, String(item));
 });
 
-test('message : pièce identifiée R7 avec son nom ; en dessous ou sans qualité : rien', () => {
+test("message : pièce identifiée R7 avec son nom ; en dessous ou sans qualité : rien", () => {
   assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:7 }), '🚨 Zoe a identifié Plastron en fer R7 🚨');
   assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:MIN - 1 }), null);
   for(const piece of [{ item:PICK }, null, undefined]) assert.equal(identifyMessage('Zoe', piece), null);
 });
 
-test('message : la mise en forme Discord d\'un pseudo est neutralisée ; pseudo vide = « Un joueur »', () => {
+test("message : la mise en forme Discord d\'un pseudo est neutralisée ; pseudo vide = « Un joueur »", () => {
   assert.equal(escapeMarkdown('*Zo_e*|`x`'), '\\*Zo\\_e\\*\\|\\`x\\`');
   assert.equal(identifyMessage('**Zoe**', { item:PICK, q:7 }), '🚨 \\*\\*Zoe\\*\\* a identifié Pioche en pierre R7 🚨');
   assert.equal(treasureMessage('', treasureItem('demon', 7)), '🚨 Un joueur a loot un trésor démoniaque R7 🚨');
@@ -49,7 +49,7 @@ function fakeFetch(respond = () => ({ ok:true, status:204 })){
   return { fetch, calls };
 }
 
-test('envoi : POST JSON au webhook, sans aucune mention possible', async () => {
+test("envoi : POST JSON au webhook, sans aucune mention possible", async () => {
   const { fetch, calls } = fakeFetch();
   await createDiscordAnnouncer({ url:'https://discord.test/hook', fetch })('🚨 @everyone a loot 🚨');
   assert.equal(calls.length, 1);
@@ -58,7 +58,7 @@ test('envoi : POST JSON au webhook, sans aucune mention possible', async () => {
   assert.deepEqual(calls[0].body, { content:'🚨 @everyone a loot 🚨', allowed_mentions:{ parse:[] } });
 });
 
-test('envoi : sans webhook configuré ou sans message, rien n\'est envoyé', async () => {
+test("envoi : sans webhook configuré ou sans message, rien n\'est envoyé", async () => {
   const { fetch, calls } = fakeFetch();
   await createDiscordAnnouncer({ url:'', fetch })('🚨 x 🚨');
   await createDiscordAnnouncer({ fetch })('🚨 x 🚨');
@@ -66,7 +66,7 @@ test('envoi : sans webhook configuré ou sans message, rien n\'est envoyé', asy
   assert.equal(calls.length, 0);
 });
 
-test('envoi : Discord en panne ou qui refuse → aucune erreur levée, seulement une ligne de journal', async () => {
+test("envoi : Discord en panne ou qui refuse → aucune erreur levée, seulement une ligne de journal", async () => {
   const logs = [];
   const down = createDiscordAnnouncer({ url:'https://discord.test/hook', log: m => logs.push(m), fetch: async () => { throw new Error('réseau'); } });
   await down('🚨 x 🚨');
@@ -103,29 +103,29 @@ async function winTower(t){
   t.advance(TOWER.duration / GAME.speed * 1000); await t.game.pump(); await flush();
 }
 
-test('tour réussie avec un trésor R7 : une annonce par joueur, avec son pseudo ; fin rejouée : pas de nouvelle annonce', async () => {
+test("tour réussie avec un trésor R7 : une annonce par joueur, avec son pseudo ; fin rejouée : pas de nouvelle annonce", async () => {
   const t = await setup({ random: () => rndFor(7), summary: towerSummary });
   await winTower(t);
-  assert.deepEqual(t.said.sort(), ['🚨 Max a loot un trésor angélique R7 🚨', '🚨 Zoe a loot un trésor angélique R7 🚨']);
+  assert.deepEqual(t.said.sort(), [towerOpenMessage('angel'), '🚨 Max a loot un trésor angélique R7 🚨', '🚨 Zoe a loot un trésor angélique R7 🚨']);
   await t.game.recover(); await t.game.pump(); await flush();
-  assert.equal(t.said.length, 2, 'redémarrage : rien n\'est annoncé deux fois');
+  assert.equal(t.said.length, 3, 'redémarrage : rien n\'est annoncé deux fois');
 });
 
-test('tour réussie avec un trésor sous R7 : aucune annonce', async () => {
+test("tour réussie avec un trésor sous R7 : aucune annonce", async () => {
   const t = await setup({ random: () => rndFor(MIN - 1), summary: towerSummary });
   await winTower(t);
   assert.ok((await t.game.state(ME)).inventory.slots.some(s => s?.item === treasureItem('angel', MIN - 1)), 'le trésor est bien versé');
-  assert.deepEqual(t.said, []);
+  assert.deepEqual(t.said, [towerOpenMessage('angel')], "seulement l'ouverture de la tour");
 });
 
-test('Discord en panne (announce qui lève) : la tour est quand même versée', async () => {
+test("Discord en panne (announce qui lève) : la tour est quand même versée", async () => {
   const t = await setup({ random: () => rndFor(7), summary: towerSummary, announce: () => { throw new Error('panne'); } });
   const logged = console.error; console.error = () => {};
   try { await winTower(t); } finally { console.error = logged; }
   assert.ok((await t.game.state(ME)).inventory.slots.some(s => s?.item === treasureItem('angel', 7)));
 });
 
-test('identification R7 : annoncée avec le pseudo et le nom de la pièce ; double clic (même demande) : une seule annonce', async () => {
+test("identification R7 : annoncée avec le pseudo et le nom de la pièce ; double clic (même demande) : une seule annonce", async () => {
   const t = await setup({ random: () => rndFor(7) });
   const [a, b, c] = t.uids;
   const op = { action:'identify', uid:a, sacrifice:b, opId:'op-identify-r7' };
@@ -134,11 +134,44 @@ test('identification R7 : annoncée avec le pseudo et le nom de la pièce ; doub
   assert.deepEqual(t.said, [`🚨 Zoe a identifié ${PICK} R7 🚨`]);
 });
 
-test('identification sous R7, don admin d\'une pièce R7 : aucune annonce', async () => {
+test("identification sous R7, don admin d\'une pièce R7 : aucune annonce", async () => {
   const t = await setup({ random: () => rndFor(MIN - 1) });
   const [a, b] = t.uids;
   const r = await t.game.upgrade(ME, { action:'identify', uid:a, sacrifice:b, opId:'op-identify-r6' });
   assert.equal(r.piece.q, MIN - 1);
   await t.game.adminGive(ME.id, PICK, 1, 7); await flush();
   assert.deepEqual(t.said, []);
+});
+
+/* ---------- ouverture d'une tour du Jugement (26/10) ---------- */
+
+test("message d'ouverture : nom de la tour et durée ; camp inconnu : rien", () => {
+  assert.equal(towerOpenMessage('demon'), `🚨 La Tour du Démon est ouverte pendant ${JUDGMENT.openHours} h ! 🚨`);
+  assert.equal(towerOpenMessage('angel'), `🚨 La Tour de l'Ange est ouverte pendant ${JUDGMENT.openHours} h ! 🚨`);
+  for(const s of ['diable', '', undefined, 'constructor', '__proto__']) assert.equal(towerOpenMessage(s), null, String(s));
+});
+
+test("tour ouverte par les résidus d'une mine : une annonce ; relectures et redémarrage : pas de nouvelle annonce", async () => {
+  const t = await setup({ summary: towerSummary });
+  await t.game.start(ME, {}); t.advance(realDurationMs()); await t.game.pump(); await flush();
+  assert.deepEqual(t.said, [towerOpenMessage('angel')]);
+  await t.game.judgment(ME); await t.game.recover(); await t.game.pump(); await t.game.judgment(ME); await flush();
+  assert.equal(t.said.length, 1);
+});
+
+test("tour ouverte par l'admin (jauge pleine) : annoncée ; jauge réglée sans la remplir : rien", async () => {
+  const t = await setup();
+  await t.game.adminJudgment('demon', JUDGMENT.cap - 1); await flush();
+  assert.deepEqual(t.said, []);
+  await t.game.adminJudgment('demon', JUDGMENT.cap); await flush();
+  assert.deepEqual(t.said, [towerOpenMessage('demon')]);
+});
+
+test("réouverture automatique : jauge pleine pendant l'ouverture, la tour rouvre à la fin et c'est annoncé", async () => {
+  const t = await setup();
+  await t.game.adminJudgment('demon', JUDGMENT.cap);
+  await t.game.adminJudgment('demon', JUDGMENT.cap); await flush();   // pleine pendant l'ouverture : pas encore
+  assert.equal(t.said.length, 1);
+  t.advance(JUDGMENT.openHours * 3600e3); await t.game.judgment(ME); await flush();
+  assert.deepEqual(t.said, [towerOpenMessage('demon'), towerOpenMessage('demon')]);
 });

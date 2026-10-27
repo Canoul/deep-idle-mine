@@ -41,7 +41,13 @@ Modèle d'entrée :
 - **Décisions** : les deux sens (session → Bloc géant et Bloc géant → session) ; 2 visites au Bloc géant (pas
   2 sessions de mine) ; compté à partir de la journée du 27/10, les journées déjà finies gardent l'ancienne règle.
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/bloc-geant-session` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
+
+## 26/10/2026 — Geoffrey — Discord : annonce de l'ouverture des tours
+- **Pour le joueur** : quand la Tour de l'Ange ou la Tour du Démon s'ouvre, le bot Discord poste
+  « 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 ». Une seule fois par ouverture, quelle qu'en soit la cause
+  (jauge remplie par les résidus, réouverture automatique, commande d'admin).
+- **État** : ✅ en ligne le 27/10 (codée le 26/10, oubliée sur sa branche)
 
 ## 27/10/2026 — Geoffrey — 4 nouveaux sorts
 - **Pour le joueur** : dans l'onglet Sorts,
