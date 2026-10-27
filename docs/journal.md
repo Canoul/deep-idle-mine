@@ -24,7 +24,7 @@ Modèle d'entrée :
   le suivant devenait chef (le chef revenait dans un lobby vide). Les autres joueurs quittent s'ils ne veulent pas
   l'attendre. Les membres : inchangé (retirés après 5 min sans nouvelles, sauf s'ils sont prêts).
 - **Décisions** (Geoffrey).
-- **État** : 🔧 branche `geoffrey/chef-jamais-retire`, pas en ligne
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Glyphes : 1 % par session au lieu de 3 %
 - **Pour le joueur** : trouver un glyphe dans la mine est 3 fois plus rare : environ **1 % par session** dans un groupe de
