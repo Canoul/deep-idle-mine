@@ -31,6 +31,7 @@ export function createMemoryGameStore(initial = {}){
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
   const socials = new Map(Object.entries(initial.socials ?? {}));     // amis et demandes (server/social/service.js)
+  const discovered = new Map(Object.entries(initial.discovered ?? {}));   // wiki : objets secrets déjà trouvés (WIKI.secret)
   const judgments = new Map(Object.entries(initial.judgments ?? {}));  // jauges de l'onglet Jugement (src/meta/judgment.js), clé 'state'
   const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
   const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
@@ -160,6 +161,10 @@ export function createMemoryGameStore(initial = {}){
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'giant_player', key: accountId, value: p }]);
     },
 
+    /* wiki : objets secrets trouvés en jeu (WIKI.secret) ; clé = nom de l'objet, valeur = { at } (premier trouvé) */
+    async listDiscovered(){ return [...discovered.keys()]; },
+    async putDiscovered(item, v){ if(discovered.has(item)) return; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); },
+
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},
     async close(){},
@@ -170,7 +175,7 @@ export function createMemoryGameStore(initial = {}){
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
-                         judgments: Object.fromEntries(judgments),
+                         judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats) }; },
   };
   return store;
@@ -201,11 +206,11 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'session_stat']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, sessionStats: rows.session_stat });
+                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

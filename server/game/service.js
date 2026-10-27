@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, treasureItem, goblinChestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -145,6 +145,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
      en cours compte comme une session (une seule à la fois), sans être une session de ce service */
   let giant = null;
   const inGiant = async accountId => giant ? await giant.busy(accountId) : null;
+
+  /* wiki (WIKI.secret) : un objet secret vient d'être trouvé en jeu (coffre, trésor, fin de session) : ses effets
+     apparaissent dans le wiki. Une seule fois par objet ; une erreur ici ne bloque jamais le gain. */
+  const SECRET = new Set(WIKI.secret);
+  const markFound = items => { for(const it of items) if(SECRET.has(it)) store.putDiscovered?.(it, { at: clock() })?.catch?.(console.error); };
 
   /* ---------- lecture ---------- */
 
@@ -305,6 +310,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
           if(!creditSession(inv, rec.id, share.bag)) return;
+          markFound(Object.keys(share.bag || {}));
           await store.putInventory(share.account, JSON.parse(serialize(inv)));
           /* trésor de tour très rare : annoncé sur Discord, une seule fois (comme le versement) */
           const who = rec.players.find(p => p.account === share.account)?.name;
@@ -345,6 +351,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
   return {
     dev, speed,
+    /* wiki : objets secrets, et ceux déjà trouvés (leurs effets s'affichent) */
+    wiki: async () => { const found = new Set(await store.listDiscovered?.() ?? []); return { secret: WIKI.secret, discovered: WIKI.secret.filter(i => found.has(i)) }; },
     info: () => ({ dev, speed: dev ? null : speed, speeds: dev ? GAME.devSpeeds : [speed], maxPlayers: GAME.maxPlayers }),
 
     /* état du joueur : inventaire, préférences, session en cours, et résultat d'une session terminée pas encore vu */
@@ -678,7 +686,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const ctx = { spells: (await loadSpells(me.id)).learned };   // coffre du Roi Gobelin : un sort appris ne ressort pas
         const res = body.all === true ? openAll(inv, item, opId, random, ctx) : openTreasure(inv, item, opId, random, ctx);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
-        if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        if(!res.repeated){ await store.putInventory(me.id, JSON.parse(serialize(inv))); markFound(Object.keys(res.loot || {})); }
         return { item, count: res.count ?? 1, loot: res.loot, inventory: publicInventory(inv) };
       });
     },

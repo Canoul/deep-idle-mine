@@ -3663,3 +3663,17 @@ Règles (voir CLAUDE.md) :
   Tests : instance-server +2 (victoire : coffre R1-R7 au présent, rien au parti, clés consommées ; échec : clé rendue à
   tous, fin rejouée sans double) et 2 attentes changées (clé rendue à l'échec), lobby (bouton en session) ✅ ; instance-*,
   goblin-*, wiki, rarity, game-service ✅ 111 ; anticheat ✅ 102. État : ✅ en ligne le 27/10.
+
+### Wiki : objets secrets (Geoffrey) — branche `geoffrey/wiki-secrets`, ✅ en ligne le 27/10
+- **Quoi** : `WIKI.secret` (config) = Couronne, Masse, Cape royale du Roi Gobelin. Serveur : `markFound` (service de jeu)
+  à l'ouverture d'un coffre ou d'un trésor (`open`, hors demande rejouée) et au versement d'une fin de session
+  (`settleWith`) ; ns `discovered` (clé = objet, `{ at }`, écrit une seule fois) ; `adminGive` ne marque rien. Route
+  publique `GET /api/wiki` → `{ secret, discovered }`. Wiki : `src/wiki/data.js` (`setDiscovered`, `isHidden`,
+  `HIDDEN_TEXT` ; `statsOf` renvoie le texte caché ; `statRows` retire les objets cachés et les stats qu'on ne trouve que
+  sur eux), `src/wiki/wiki.js` (fetch au chargement, 2,5 s au plus ; sans réponse : tout reste caché ; `[data-secret]`
+  dans wiki.html remplacé).
+- **Tests** : `tests/wiki-secret.test.js` (3) ; `tests/wiki.test.js` adapté (toutes les stats une fois tout trouvé) ✅ ;
+  game-service, loot, treasure ✅ ; anticheat ✅ 102. Navigateur : texte et tableaux cachés, stat asservis absente,
+  aucune erreur ✅.
+- **Points fragiles** : pas de rattrapage : un objet trouvé avant cette mise en ligne (≈ 15 h → 15 h 30) reste caché
+  jusqu'à la prochaine trouvaille ; un objet ajouté plus tard n'est caché que si on l'ajoute à `WIKI.secret`.

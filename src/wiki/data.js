@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -82,9 +82,17 @@ const statName = k => STUFF.statLabels[k] ?? k;
 const unit = k => STUFF.statUnits?.[k] ?? '';
 
 /* bonus d'une pièce de stuff, en texte : « Pods +25 », « Dégâts 11 » */
+/* objets secrets (WIKI.secret) pas encore trouvés par un joueur : effets cachés. Par défaut tous cachés ; le wiki
+   demande au serveur ceux déjà trouvés (setDiscovered). */
+let hidden = new Set(WIKI.secret);
+export const setDiscovered = list => { hidden = new Set(WIKI.secret.filter(i => !(list || []).includes(i))); };
+export const isHidden = item => hidden.has(item);
+export const HIDDEN_TEXT = '❓ Effets inconnus : personne ne l\'a encore trouvé';
+
 export function statsOf(item){
   const d = ITEMS[item];
   if(!d || d.cat !== 'stuff') return [];
+  if(hidden.has(item)) return [HIDDEN_TEXT];
   if(Object.hasOwn(RINGS.items, item)) return ringLines(item);
   return [
     ...Object.entries(d.set || {}).map(([k, v]) => `${statName(k)} ${fmt(v)}${unit(k)}`),
@@ -263,9 +271,12 @@ export function statRows(){
     for(const k of Object.keys(n.adds || {})) (skillBoost[k] ||= []).push(`${n.name} (${t.label})`);
   }
   const keys = [...STUFF.shownStats, ...Object.keys(STATS).filter(k => !STUFF.shownStats.includes(k))];
-  return keys.map(k => ({ key: k, label: STUFF.statLabels[k] ?? (k === 'torchRadius' ? 'Rayon des torches' : k), base: STATS[k],
+  /* une stat qu'on ne trouve que sur des objets encore secrets (WIKI.secret) est cachée elle aussi */
+  const givers = k => Object.keys(STUFF.items).filter(n => Object.hasOwn(STUFF.items[n].stats || {}, k) || Object.hasOwn(STUFF.items[n].set || {}, k));
+  const secretOnly = k => { const g = givers(k); return g.length > 0 && g.every(n => hidden.has(n)) && !(skillBoost[k]?.length) && !STATS[k]; };
+  return keys.filter(k => !secretOnly(k)).map(k => ({ key: k, label: STUFF.statLabels[k] ?? (k === 'torchRadius' ? 'Rayon des torches' : k), base: STATS[k],
     unit: STAT_UNIT[k] ?? '', help: STAT_HELP[k] ?? '',
-    items: Object.keys(STUFF.items).filter(n => Object.hasOwn(STUFF.items[n].stats || {}, k) || Object.hasOwn(STUFF.items[n].set || {}, k))
+    items: Object.keys(STUFF.items).filter(n => !hidden.has(n) && (Object.hasOwn(STUFF.items[n].stats || {}, k) || Object.hasOwn(STUFF.items[n].set || {}, k)))
       .map(n => ({ name: n, text: statsOf(n).find(s => s.startsWith(statName(k))) ?? '' })),
     skills: skillBoost[k] ?? [] }));
 }

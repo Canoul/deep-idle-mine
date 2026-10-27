@@ -9,6 +9,7 @@ const obj = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
 export function gameRoutes(game){
   return {
     'GET /api/game/info':    async () => game.info(),
+    'GET /api/wiki':         async () => game.wiki(),             // public (le wiki, sans compte) : objets secrets trouvés
     'GET /api/game/state':   async ctx => { needMe(ctx); return game.state(ctx.me); },
     'GET /api/game/judgment': async ctx => { needMe(ctx); return game.judgment(ctx.me); },
     'GET /api/game/history': async ctx => { needMe(ctx); return game.history(ctx.me); },
