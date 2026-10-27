@@ -24,16 +24,17 @@ Modèle d'entrée :
 
 ---
 
-## 27/10/2026 — Geoffrey — Prix des stats ajustés par Geoffrey ; tier 4 recalculé
-- **Pour le joueur** : les stats des nouvelles pièces sont recalculées. Jambes en thorium +62,5 % de dégâts (avant
-  +93,8 %), casque en cobalt +13,4 % de perçage (avant +53,6 %), plastron en cobalt +0,158 de vitesse de minage (avant
-  +0,474), jambes en cobalt +9,6 % (avant +28,8 %), résistance au recul +21,7 % sur les Doc Martins et la Ceinture
-  golémique (avant +32,5 %), Jambières titanesques minage +0,12 et recul +31,3 %. Le **GS** compte mieux le combat et le
-  minage : pioches × 3, épées × 2 (classements compris), sans que les pièces existantes changent de stats.
-- **Décisions** : **ajustements de Geoffrey** (ses choix, pas des mesures) : stats offensives ÷ 2, dégâts % ÷ 3,
-  perçage ÷ 4, vitesse de minage (fixe et %) ÷ 3, ténacité ÷ 2, résistance au recul ÷ 3. Ils remplacent la « demi-valeur »
-  des stats de combat. À réappliquer si on resimule les poids des stats.
-- **État** : 🧪 sur la branche `geoffrey/prix-offensifs` (pas en ligne)
+## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
+- **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
+  offensives ÷ 2 (plastron en thorium : dégâts +3,85 au lieu de +7,7), dégâts % ÷ 3 (jambes en thorium +31,3 % au lieu
+  de +93,8 %), perçage ÷ 4, vitesse de minage ÷ 3, ténacité ÷ 2, résistance au recul ÷ 3. Dans le wiki, les effets des
+  pièces en thorium, en cobalt et des pièces spéciales restent **cachés tant que personne n'a trouvé leur plan** (le
+  mithril reste visible). Le premier plan trouvé est **annoncé sur Discord avec les stats** de la pièce ; pareil pour le
+  premier exemplaire trouvé de la Couronne, de la Masse et de la Cape royale du Roi Gobelin. Le **GS** compte les mêmes
+  diviseurs : pioches × 3, épées × 2 (classements compris), sans que les pièces existantes changent de stats.
+- **Décisions** : **ajustements de Geoffrey** (ses choix, pas des mesures), dans la config (`UPGRADE.priceAdjust`). À
+  réappliquer si on resimule les poids des stats, et à signaler dans le rapport.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Classements : le compte « admin » n'y figure plus
 - **Pour le joueur** : le compte « admin » (celui de l'équipe pour tester) n'apparaît plus dans aucun classement et ne

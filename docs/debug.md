@@ -3904,7 +3904,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/leaderboard.test.js` (+1 : admin premier partout → absent des 4 classements, `me` null, total 1) ✅ ;
   social ✅ (28/28 avec leaderboard).
 
-### Prix des stats : ajustements de Geoffrey (UPGRADE.priceAdjust) ; tier 4 recalculé — branche `geoffrey/prix-offensifs`, 🧪
+### Prix des stats : ajustements de Geoffrey (UPGRADE.priceAdjust) ; tier 4 recalculé — ✅ en ligne le 27/10
 - **Quoi** : `UPGRADE.priceAdjust` (multiplicateurs des prix mesurés, choix de Geoffrey du 27/10) et `UPGRADE.priceBase`
   (`knockRes` : 5, pas de mesure) ; `statPrice(k)` exportée par `src/meta/gearscore.js` (worth ?? (gs || priceBase)) × adjust,
   utilisée par `pieceGS`. `STUFF.combatOnStuff` 0,5 → 1. `piece.itemValue` (ilvl du tableau de bord admin, base des lignes
@@ -3919,3 +3919,16 @@ Règles (voir CLAUDE.md) :
   de mesures dans les barres).
 - **Point fragile** : `npm run weights` / `stat-values` mesurent des prix bruts : appliquer `priceAdjust` par-dessus et le
   dire dans le rapport (consigne de Geoffrey).
+
+- **Mise à jour (27/10, demande de Geoffrey)** : les stats des pièces du T4 ne sont PAS recalculées avec les prix ajustés :
+  ce sont les valeurs de la première version **divisées** par le diviseur de la stat (dégâts 7,7 → 3,85, dégâts % 93,8 →
+  31,3, double attaque 23,4 → 11,7, critique 14,4 → 7,2, perçage 53,6 → 13,4, minage ÷ 3, ténacité 32,5 → 16,25, recul
+  ÷ 3). Conséquence : le GS de ces pièces (prix ajustés) est sous la valeur de leur tier (thorium ≈ 563, Doc Martins 325,
+  Gants de boucher 320) ; voulu tel quel.
+- **Secrets du wiki et Discord** : `WIKI.secret` + 8 pièces thorium / cobalt et les 5 pièces spéciales ; `markFound(items,
+  who)` (server/game/service.js) : un BP dont la recette donne une pièce secrète (`BP_SECRET`) révèle la pièce ;
+  `putDiscovered` renvoie `true` la première fois (server/game/store.js) → `shout(blueprintMessage)` (BP) ou
+  `discoveryMessage` (la pièce elle-même : stuff du Roi Gobelin), stats par `statLines`. Fin de session et ouverture d'un
+  trésor passent le pseudo. Tests ✅ `tests/wiki-secret.test.js` (premier BP : révélé + 1 annonce, le 2e : rien ; Roi
+  Gobelin : une annonce par pièce, une fois) ; discord, game-service, tier4, gearscore, stuff-balance, leaderboard,
+  steel-gear, treasure, wiki : 135/135 puis 68/68 ; `npm run test:anticheat` 104/104.

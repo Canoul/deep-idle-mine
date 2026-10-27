@@ -681,10 +681,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Pièce | Thorium | Cobalt |
   |---|---|---|
-  | Casque | Oxygène +94, Double attaque +23,4 % | Oxygène +94, Perçage +13,4 % |
-  | Plastron | Pods +103, Dégâts +7,7 | Pods +103, Vitesse de minage +0,158 |
-  | Jambes | Vitesse (échelle) +1,5, Dégâts +62,5 % | Vitesse (échelle) +1,5, Vitesse de minage +9,6 % |
-  | Bottes | Vitesse (marche) +1,56, Critique +14,4 % | Vitesse (marche) +1,56, Coup unique +28,8 % |
+  | Casque | Oxygène +94, Double attaque +11,7 % | Oxygène +94, Perçage +13,4 % |
+  | Plastron | Pods +103, Dégâts +3,85 | Pods +103, Vitesse de minage +0,158 |
+  | Jambes | Vitesse (échelle) +1,5, Dégâts +31,3 % | Vitesse (échelle) +1,5, Vitesse de minage +9,6 % |
+  | Bottes | Vitesse (marche) +1,56, Critique +7,2 % | Vitesse (marche) +1,56, Coup unique +28,8 % |
 
   *(« vitesse % » des jambes en cobalt lu comme vitesse de minage %, choix de Claude.)* Épée, lance et pioche de ces trois métaux : **pas encore** (pas de recette).
 - **Pièces spéciales** (BP du Treasure T4) :
@@ -692,12 +692,13 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Pièce | Case | Rareté | Recette | Stats |
   |---|---|---|---|---|
   | Lunettes Gucci | casque | rare | 20 diamants + 10 Mithril ingot + 2 Cobalt ingot | Découverte +1 (190 x), Oxygène +115 (le reste des 650 x) |
-  | Doc Martins | pieds | rare | 50 Cuir de minotaure + 4 Thorium ingot + 100 tissus sombres | Résistance au recul +21,7 %, Ténacité +32,5 % |
-  | Ceinture golémique | ceinture | rare | 50 pierres glissantes + 5 Thorium ingot + 100 vésicules de gaz | Pods +54, Résistance au recul +21,7 % |
-  | Gants de boucher | gants | rare | 50 Rotten flesh + 15 Mithril ingot + 500 peaux de gobelin | Dégâts +8,1 |
-  | Jambières titanesques | jambes | épique | 25 Cobalt ingot + 25 Thorium ingot + Topaze, Jade, Saphir, Rubis + 50 Shiny gold | 750 × 2,5 = 1 875 x en 4 parts : Vitesse (échelle) +1,88, Vitesse (marche) +1,95, Vitesse de minage +0,12, Résistance au recul +31,3 % |
+  | Doc Martins | pieds | rare | 50 Cuir de minotaure + 4 Thorium ingot + 100 tissus sombres | Résistance au recul +10,8 %, Ténacité +16,25 % |
+  | Ceinture golémique | ceinture | rare | 50 pierres glissantes + 5 Thorium ingot + 100 vésicules de gaz | Pods +54, Résistance au recul +10,8 % |
+  | Gants de boucher | gants | rare | 50 Rotten flesh + 15 Mithril ingot + 500 peaux de gobelin | Dégâts +4,05 |
+  | Jambières titanesques | jambes | épique | 25 Cobalt ingot + 25 Thorium ingot + Topaze, Jade, Saphir, Rubis + 50 Shiny gold | 750 × 2,5 = 1 875 x en 4 parts : Vitesse (échelle) +1,88, Vitesse (marche) +1,95, Vitesse de minage +0,12, Résistance au recul +15,6 % |
 
-  La résistance au recul n'a pas de prix mesuré dans le GS : sa base est celle du tableau des lignes (5 x par point), × 3 (ajustement de Geoffrey). *(Avant les ajustements du 27/10 : perçage +53,6 %, minage +0,474 / +28,8 % / +0,361, dégâts +93,8 %, recul +32,5 / +46,9 %.)*
+  **Stats ajustées par Geoffrey (27/10/2026)** : à partir de la première version (prix mesurés, stat de combat à moitié), chaque stat concernée est **divisée** : offensives ÷ 2 (dégâts 7,7 → 3,85 ; double attaque, critique), dégâts % ÷ 3 (93,8 → 31,3), perçage ÷ 4 (53,6 → 13,4), vitesse de minage ÷ 3 (0,474 → 0,158 ; 28,8 % → 9,6 % ; 0,361 → 0,12), ténacité ÷ 2 (32,5 → 16,25), résistance au recul ÷ 3 (32,5 → 10,8 ; 46,9 → 15,6).
+- **Secret dans le wiki** *(27/10/2026, Geoffrey ; `WIKI.secret`)* : les effets des pièces en thorium et en cobalt et des 5 pièces spéciales sont cachés tant que **personne n'a trouvé leur BP** (le stuff en mithril reste visible). Le **premier BP trouvé** d'une de ces pièces la révèle pour tout le monde, et le **bot Discord l'annonce** avec ses stats (« 🚨 Zoe a découvert le premier plan : Doc Martins BP ! Doc Martins : … 🚨 »). Pareil pour le stuff du Roi Gobelin encore caché : le **premier exemplaire trouvé** est annoncé avec ses stats.
 
 ### Stuff (onglet Stuff)
 - **13 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, **2 cases d'anneau** (23/10/2026) et **torche** (25/10/2026).

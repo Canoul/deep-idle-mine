@@ -108,7 +108,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   des mesures. Points d'une stat pour 1 x divisés : offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, minage (fixe et %) ÷ 3,
   ténacité ÷ 2, résistance au recul ÷ 3 (base 5 x). Remplacent la demi-valeur des stats de combat (`STUFF.combatOnStuff`
   1, ancien 0,5). GS des pioches × 3, des épées × 2. **À réappliquer et à signaler dans le rapport si les poids des stats
-  sont resimulés** (`npm run weights`, `stat-values`).
+  sont resimulés** (`npm run weights`, `stat-values`). Les stats du T4 sont la première version divisée (pas recalculées).
+- **Wiki : plans secrets** (27/10, `WIKI.secret`) : pièces thorium / cobalt et pièces spéciales cachées jusqu'au premier
+  BP trouvé ; première découverte (BP, ou stuff du Roi Gobelin) annoncée sur Discord avec les stats.
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes

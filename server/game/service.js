@@ -45,7 +45,8 @@ import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
-import { treasureMessage, identifyMessage, towerOpenMessage } from '../social/discord.js';
+import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, discoveryMessage } from '../social/discord.js';
+import { RECIPES } from '../../src/recipes.js';
 import { createLiveRunner } from './live.js';
 import { createChat } from './chat.js';
 import { instantDurationMs } from '../../src/shared/instant.js';
@@ -152,7 +153,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* wiki (WIKI.secret) : un objet secret vient d'être trouvé en jeu (coffre, trésor, fin de session) : ses effets
      apparaissent dans le wiki. Une seule fois par objet ; une erreur ici ne bloque jamais le gain. */
   const SECRET = new Set(WIKI.secret);
-  const markFound = items => { for(const it of items) if(SECRET.has(it)) store.putDiscovered?.(it, { at: clock() })?.catch?.(console.error); };
+  /* BP d'un objet secret (Treasure T4, 27/10/2026) : le premier BP trouvé révèle la pièce, et c'est annoncé sur Discord ;
+     un objet secret trouvé lui-même pour la première fois (stuff du Roi Gobelin) aussi, avec ses stats */
+  const BP_SECRET = new Map(Object.entries(RECIPES).filter(([n, r]) => r.unlock && SECRET.has(n)).map(([n, r]) => [r.unlock, n]));
+  const markFound = (items, who) => {
+    for(const it of items){
+      const piece = SECRET.has(it) ? it : BP_SECRET.get(it);
+      if(!piece) continue;
+      Promise.resolve(store.putDiscovered?.(piece, { at: clock() }))
+        .then(first => { if(first === true) shout(BP_SECRET.has(it) ? blueprintMessage(who, it, piece) : discoveryMessage(who, piece)); }).catch(console.error);
+    }
+  };
 
   /* ---------- lecture ---------- */
 
@@ -313,10 +324,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
           if(!creditSession(inv, rec.id, share.bag)) return;
-          markFound(Object.keys(share.bag || {}));
+          const who = rec.players.find(p => p.account === share.account)?.name;
+          markFound(Object.keys(share.bag || {}), who);
           await store.putInventory(share.account, JSON.parse(serialize(inv)));
           /* trésor de tour très rare : annoncé sur Discord, une seule fois (comme le versement) */
-          const who = rec.players.find(p => p.account === share.account)?.name;
           for(const item of Object.keys(share.bag || {})) shout(treasureMessage(who, item));
           /* résidus versés : ils remplissent les jauges du Jugement (une seule fois, comme le versement) */
           await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
@@ -729,7 +740,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const ctx = { spells: (await loadSpells(me.id)).learned };   // coffre du Roi Gobelin : un sort appris ne ressort pas
         const res = body.all === true ? openAll(inv, item, opId, random, ctx) : openTreasure(inv, item, opId, random, ctx);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
-        if(!res.repeated){ await store.putInventory(me.id, JSON.parse(serialize(inv))); markFound(Object.keys(res.loot || {})); }
+        if(!res.repeated){ await store.putInventory(me.id, JSON.parse(serialize(inv))); markFound(Object.keys(res.loot || {}), displayName(me)); }
         return { item, count: res.count ?? 1, loot: res.loot, inventory: publicInventory(inv) };
       });
     },

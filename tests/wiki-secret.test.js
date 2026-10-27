@@ -46,3 +46,37 @@ test('serveur : trouvé à l\'ouverture d\'un coffre (une fois), pas par un don 
   assert.deepEqual((await game.wiki()).discovered, found);
   assert.deepEqual(await store.listDiscovered(), found, 'retenu par le serveur');
 });
+
+test('Treasure T4 (27/10) : le premier BP d\'une pièce secrète la révèle et l\'annonce sur Discord avec ses stats, une seule fois', async () => {
+  const store = createMemoryGameStore(), said = [];
+  const game = createGameService({ store, liveRunner: fakeLive(r => ({ id: r.id, shares: [] })), clock: () => 1e12, randomSeed: () => 7,
+                                   random: () => 0, announce: t => { said.push(t); } });   // 1er objet de chaque tirage : Lunettes Gucci BP
+  assert.ok(WIKI.secret.includes('Lunettes Gucci') && !WIKI.secret.includes('Casque en mithril'), 'le mithril reste visible');
+  const inv = createInventory(); addItem(inv, 'Treasure T4', 2);
+  await store.putInventory(ME.id, JSON.parse(serialize(inv)));
+  const r = await game.open(ME, { item: 'Treasure T4', opId: 'open-t4-1' });
+  assert.equal(r.loot['Lunettes Gucci BP'], 1);
+  await new Promise(res => setTimeout(res, 10));
+  assert.ok((await game.wiki()).discovered.includes('Lunettes Gucci'), 'révélée par son BP');
+  assert.equal(said.length, 1);
+  assert.match(said[0], /Zoe a découvert le premier plan : Lunettes Gucci BP ! Lunettes Gucci : Découverte \+1/);
+  await game.open(ME, { item: 'Treasure T4', opId: 'open-t4-2' });
+  await new Promise(res => setTimeout(res, 10));
+  assert.equal(said.length, 1, 'le deuxième BP n\'est pas annoncé');
+});
+
+test('stuff du Roi Gobelin (27/10) : le premier exemplaire trouvé est annoncé sur Discord avec ses stats, une seule fois', async () => {
+  const store = createMemoryGameStore(), said = [];
+  const game = createGameService({ store, liveRunner: fakeLive(r => ({ id: r.id, shares: [] })), clock: () => 1e12, randomSeed: () => 7,
+                                   random: () => 0, announce: t => { said.push(t); } });
+  const inv = createInventory(); addItem(inv, goblinChestItem(5), 2);
+  await store.putInventory(ME.id, JSON.parse(serialize(inv)));
+  const r = await game.open(ME, { item: goblinChestItem(5), opId: 'open-king-1' });
+  const found = WIKI.secret.filter(n => r.loot[n]);
+  await new Promise(res => setTimeout(res, 10));
+  assert.equal(said.length, found.length);
+  assert.match(said[0], new RegExp(`Zoe est le premier à trouver : ${found[0]} !`));
+  await game.open(ME, { item: goblinChestItem(5), opId: 'open-king-2' });
+  await new Promise(res => setTimeout(res, 10));
+  assert.equal(said.length, found.length, 'le deuxième n\'est pas annoncé');
+});
