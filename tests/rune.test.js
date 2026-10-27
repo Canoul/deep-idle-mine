@@ -210,7 +210,7 @@ test('fragment : mêmes règles qu\'une rune (qualité ≤ pièce), relu et rev�
 test('tier : chaque pièce qu\'on peut runer a un tier (T1 100 x, T2 250 x, T3 400 x)', async () => {
   const { ITEMS, RINGS, UPGRADE } = await import('../src/config.js');
   const { tierOf, lineBase } = await import('../src/meta/piece.js');
-  assert.deepEqual(Object.fromEntries(Object.entries(UPGRADE.tiers).map(([t, d]) => [t, d.x])), { 1:100, 2:250, 3:400 });
+  assert.deepEqual(Object.fromEntries(Object.entries(UPGRADE.tiers).map(([t, d]) => [t, d.x])), { 1:100, 2:250, 3:400, 4:600 });   // T4 : la Couronne du Roi Gobelin (27/10)
   for(const [name, d] of Object.entries(ITEMS)) if(d.cat === 'stuff' && !Object.hasOwn(RINGS.items, name)){
     assert.ok(tierOf(name), `${name} sans tier`);
     assert.equal(lineBase(name), UPGRADE.tiers[tierOf(name)].x);

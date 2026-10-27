@@ -3681,3 +3681,8 @@ Règles (voir CLAUDE.md) :
 ### Clé d'instance I à 20 % (Geoffrey) — branche `geoffrey/cle-instance-20`, ✅ en ligne le 27/10 ⚠️
 - **Quoi** : `LOOT['Treasure T3']`, famille `key` : 0,05 → 0,20 ; textes du lobby, wiki, GAME_DESIGN, état.
 - **Tests** : ⚠️ **pas relancés** (demande de Geoffrey). `tests/instance-key.test.js` vérifie probablement 5 % : à mettre à 20 %.
+
+### Runes : couronne au tier 4 (600 x) (Geoffrey) — branche `geoffrey/roi-gobelin-tiers`, ✅ en ligne le 27/10
+- **Quoi** : `UPGRADE.tiers[4] = { x:600, items:['Couronne du Roi Gobelin'] }`, couronne retirée du tier 3 (masse, cape restent
+  au 3). `lineBase` lit déjà `UPGRADE.tiers[t].x` : aucune autre logique. Tier 3 = 400 x (Geoffrey pensait 450 : inchangé).
+- **Tests** : rune (valeurs des tiers), goblin-king (tier des 3 pièces) ✅.

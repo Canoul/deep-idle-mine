@@ -1019,7 +1019,9 @@ export const UPGRADE = {
                        'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre',
-                       'Couronne du Roi Gobelin','Masse du Roi Gobelin','Cape royale du Gobelin'] },   // Roi Gobelin : tier 3 (choix de Claude, 27/10)
+                       'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
+    /* tier 4 (27/10/2026, Geoffrey) : la Couronne du Roi Gobelin seule, 600 x */
+    4: { x:600, items:['Couronne du Roi Gobelin'] },
   },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,

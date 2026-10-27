@@ -46,7 +46,7 @@ export function itemValue(item){
   return Math.max(0, x);
 }
 
-/* tier de l'objet (1 à 3, UPGRADE.tiers), null s'il n'en a pas */
+/* tier de l'objet (1 à 4, UPGRADE.tiers), null s'il n'en a pas */
 const TIER_OF = new Map(Object.entries(UPGRADE.tiers).flatMap(([t, d]) => d.items.map(i => [i, +t])));
 export const tierOf = item => TIER_OF.get(item) ?? null;
 /* base d'une ligne en x : la valeur du tier de l'objet (25/10/2026) ; sans tier, sa propre valeur (ancien calcul) */
