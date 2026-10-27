@@ -57,13 +57,15 @@ function setup(){
   return { store, game };
 }
 const FER = { pioche:'Pioche en fer', epee:'Épée en fer', casque:'Casque en fer', torse:'Plastron en fer', jambes:'Jambes en fer', pieds:'Bottes en fer' };
+/* au-dessus de 2000 GS (depuis le 27/10, tout en fer = 1884 GS : armures à 250 x) */
+const ACIER = { pioche:'Pioche en acier', epee:'Épée en acier', casque:'Casque en acier', torse:'Plastron en acier', jambes:'Jambes en acier', pieds:'Bottes en acier' };
 
 test('modulation : tour lancée si chacun a moins de 2000 GS ; refusée sinon (avec qui et combien) ; seulement pour une tour', async () => {
   assert.equal(TOWER.modulation.gsMax, 2000);
   const { store, game } = setup();
   await wear(store, ME.id, { torse:'Plastron en fer' });
-  await wear(store, B.account, FER);
-  assert.ok(gearScore(FER) >= 2000, `stuff en fer : ${gearScore(FER)} GS`);
+  await wear(store, B.account, ACIER);
+  assert.ok(gearScore(ACIER) >= 2000, `stuff en acier : ${gearScore(ACIER)} GS`);
   const team = [{ account: ME.id, name: ME.name }, B];
   await assert.rejects(game.start(ME, { mode:'tower_angel', modulation:true }, team), e => e.code === 'gs_too_high' && /Max a \d+ GS/.test(e.message) && !/Zoe/.test(e.message));
   await assert.rejects(game.start(ME, { modulation:true }), { code:'bad_request' }, 'pas de modulation en mine');

@@ -320,10 +320,10 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Stat | Base | Prix d'un point | Exemple |
 |---|---|---|---|
 | Vitesse de minage | 1 | 1 300 x | +0,4 = 520 x (Pioche en fer, 25/10 ; 24/10 : +0,5 = 650 x) |
-| Vitesse (marche) | 3 | 240 x | +1,05 = 252 x (Bottes en fer, 24/10 ; avant +0,6 = 144 x) |
-| Vitesse de montée | 2,25 | 250 x | +1,05 = 262,5 x (Jambes en fer, 24/10 ; avant +0,6 = 150 x) |
-| Pods | 200 | 6 x *(prix « comme frein »)* | +88 = 528 x (Plastron en fer, 24/10 ; avant +50, et +33 avant le 23/10) |
-| Oxygène | 300 | 4 x *(prix « comme frein »)* | +67 = 268 x (Casque en fer, 24/10 ; avant +38 = 152 x) |
+| Vitesse (marche) | 3 | 240 x | +1,04 ≈ 250 x (Bottes en fer, 27/10 ; avant +1,05, et +0,6 avant le 24/10) |
+| Vitesse de montée | 2,25 | 250 x | +1 = 250 x (Jambes en fer, 27/10 ; avant +1,05, et +0,6 avant le 24/10) |
+| Pods | 200 | 6 x *(prix « comme frein »)* | +42 ≈ 250 x (Plastron en fer, 27/10 ; avant +88) |
+| Oxygène | 300 | 4 x *(prix « comme frein »)* | +63 ≈ 250 x (Casque en fer, 27/10 ; avant +67) |
 | Dégâts | 5 | 40 x | 14 au lieu de 5 = 360 x (Épée en fer, 24/10 ; avant 11 = 240 x) ; 8 = 120 x (Épée en pierre) |
 | Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
@@ -575,10 +575,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   |---|---|---|
   | Pioche en pierre | 30 lingots de fer (300 fer + 300 charbon, 30 min de four) | Vitesse de minage +0,2 *(×2 le 21/10)* |
   | Épée en pierre | 15 lingots de fer | Dégâts 8 (remplace les mains nues : 5 ; +3, moitié de l'épée en fer, ≈ 120 x) |
-  | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +30 |
-  | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +30 *(23/10 ; avant +25)* |
+  | Casque en chitine | 5 lingots de fer + 70 chitine | Oxygène +25 *(27/10, valeur du tier ; avant +30)* |
+  | Plastron en chitine | 8 lingots de fer + 30 chitine | Pods +17 *(27/10, valeur du tier ; avant +30 ; 23/10 : +25)* |
   | Jambes en chitine | 7 lingots de fer + 30 chitine | Vitesse (échelle) +0,4 |
-  | Bottes en chitine | 4 lingots de fer + 70 chitine | Vitesse (marche) +0,5 |
+  | Bottes en chitine | 4 lingots de fer + 70 chitine | Vitesse (marche) +0,42 *(27/10, valeur du tier ; avant +0,5)* |
 
   Débloquées par leur blueprint (« Pioche en fer BP »…, Treasure T1). **Buff du 24/10/2026 (Geoffrey)** : pièces en fer
   × 1,75, épée et pioche × 1,25, arrondi à l'entier pour les stats entières (but : une équipe en fer ≈ 5,4 areas au lieu de 5,0,
@@ -589,10 +589,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Pioche en fer | 20 Tainted iron | Vitesse de minage +0,4 *(25/10 : nerf, avant +0,5 ; 24/10 : × 1,25, avant +0,4 ; +0,7 pendant quelques heures le 24/10)* |
   | Épée en fer | 10 Tainted iron | Dégâts 14 (remplace les mains nues : 5) *(24/10 ; avant 11)* |
   | Lance en fer *(25/10/2026, Geoffrey)* | 10 Tainted iron *(provisoire)* | Dégâts +8 (13), vitesse d'attaque −10 %, **recul +0,5**, **portée d'attaque +0,25**. Variante de l'épée : elle **tue moins vite** (≈ +16 % de temps par mob) mais repousse assez pour faire **lâcher son tacle** au mob (≈ −36 % de temps taclé, plus de vol du gobelin). Case épée. |
-  | Casque en fer | 5 Tainted iron + 20 peau de gobelin *(25/10)* | Oxygène +67 *(24/10 ; avant +38)* |
-  | Plastron en fer | 8 Tainted iron + 20 peau de gobelin *(25/10)* | Pods +88 *(24/10 ; avant +50, et +33 avant le 23/10)* |
-  | Jambes en fer | 7 Tainted iron + 20 peau de gobelin *(25/10)* | Vitesse (échelle) +1,05 *(24/10 ; avant +0,6)* |
-  | Bottes en fer | 4 Tainted iron + 20 peau de gobelin *(25/10 ; avant 5)* + 1 lingot d'or | Vitesse (marche) +1,05 *(24/10 ; avant +0,6)* |
+  | Casque en fer | 5 Tainted iron + 20 peau de gobelin *(25/10)* | Oxygène +63 *(27/10, valeur du tier ; avant +67 ; 24/10 : +38)* |
+  | Plastron en fer | 8 Tainted iron + 20 peau de gobelin *(25/10)* | Pods +42 *(27/10, valeur du tier ; avant +88 ; 24/10 : +50, 23/10 : +33)* |
+  | Jambes en fer | 7 Tainted iron + 20 peau de gobelin *(25/10)* | Vitesse (échelle) +1 *(27/10, valeur du tier ; avant +1,05 ; 24/10 : +0,6)* |
+  | Bottes en fer | 4 Tainted iron + 20 peau de gobelin *(25/10 ; avant 5)* + 1 lingot d'or | Vitesse (marche) +1,04 *(27/10, valeur du tier ; avant +1,05 ; 24/10 : +0,6)* |
   | Ceinture en peau de gobelin | 20 peau de gobelin + 20 lingots d'or | Torches +10 *(avant le 21/10 : Découverte +1)* |
   | Four en fer | 1 000 charbon + 20 Tainted iron + 5 Shiny iron | « Utiliser » : ouvre le four 2 (×1,25) |
   | Boussole en or (case boussole) | 20 Tainted gold + 5 Shiny gold | Boussole : +1 ligne au-dessus et en dessous (≈ 300 x) |
@@ -614,7 +614,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Objet | Recette | Effet |
   |---|---|---|
   | Casque en acier | 10 Steel ingot + 5 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Oxygène +100 *(25/10, ≈ 400 x ; avant +69, 24/10 : avant +46)* |
-  | Plastron en acier | 16 Steel ingot + 8 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Pods +120 *(24/10 ; avant +80, et +40 avant le 23/10)* |
+  | Plastron en acier | 16 Steel ingot + 8 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Pods +67 *(27/10, valeur du tier ; avant +120 ; 24/10 : +80, 23/10 : +40)* |
   | Jambes en acier | 14 Steel ingot + 7 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (échelle) +1,6 *(25/10, ≈ 400 x ; avant +1,08, 24/10 : avant +0,72)* |
   | Bottes en acier | 8 Steel ingot + 4 Tainted gold *(24/10)* + 10 Shiny iron + 10 Tissu sombre | Vitesse (marche) +1,67 *(25/10, ≈ 400 x ; avant +1,08, 24/10 : avant +0,72)* |
   | Pioche en acier | 20 Steel ingot + 10 Shiny gold + 10 Diamant | Vitesse de minage +0,5 *(25/10 : nerf, avant +0,6 ; 24/10 : × 1,25, avant +0,48 ; +0,72 pendant quelques heures le 24/10)* |
@@ -652,14 +652,18 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Pods des plastrons** *(23/10/2026, Geoffrey)* : chitine +30, fer +50, acier +80, équilibre +125 (avant 25 / 33 / 40 / 60). *(24/10 : fer +88, acier +120, équilibre +188, buff du stuff fer et acier.)* Les stats d'une pièce sont lues dans le catalogue à chaque session : **les plastrons déjà fabriqués ont les nouvelles valeurs**, et comme la valeur d'un objet suit ses stats, les lignes d'identification et les runes posées sur un plastron grandissent aussi. Repère (simulation) : en stuff de base, chaque remontée au coffre coûte cher ; +100 pods sur les 3 mineurs d'une équipe en fer avançaient l'ouverture de l'area 5 de 6 min (dureté de la pierre, oxygène, torches : 0 à 3 min).
 - Une pièce peut **ajouter** à une stat (ex. Pods +30) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 14 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape) ; **pièces en acier** (gris bleuté) et **Plastron de l'équilibre** (moitié blanc, moitié rouge) depuis le 23/10. En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
-- **Butin rare des mobs** *(26/10/2026, Geoffrey ; `MOB_DROPS`)* : des pièces **non craftables** qu'un mob lâche à sa mort, dans le sac du mineur qui l'a tué (puis le coffre commun : **un seul joueur** la reçoit, partage normal). Chacune vaut **la valeur en x de la pièce en fer de sa case**, en prix mesurés du GS pour le Nuage et la Ceinture ; les Lanières et la Capuche gardent le tableau des runes (`UPGRADE.prices`), car les prix mesurés donneraient vitesse d'attaque +135 % et recul +1,1 bloc (26/10 au soir, Geoffrey) ; partagée **moitié / moitié** entre ses deux stats ; la ceinture, sans pièce en fer, vaut le x du **tier 2 (250 x)**. La chance est **multipliée par 1 + le butin du mineur** (stat Butin des mobs + skill Pillage) : 1 % avec +50 % de butin → 1,5 % ; toujours **une seule** pièce (pas d'exemplaire en plus, contrairement au butin normal). Tier 2 pour l'identification et les runes. Recyclage : des quantités fixes (pas de recette).
+- **Équilibre du stuff** *(règle du 27/10/2026, Geoffrey ; `STUFF.combatStats`, `STUFF.combatOnStuff` ; gardée par `tests/stuff-balance.test.js`)* :
+  - **casque, plastron, jambes et bottes** valent en GS **exactement la valeur de leur tier** : chitine **100 x**, fer **250 x**, acier **400 x** (à l'arrondi du pas de la stat près). Le plastron, qui valait le double (pods), est ramené au niveau des autres pièces ;
+  - **butin des mobs** : tier 2 (**250 x**), partagé **à parts égales** entre ses stats, aux prix mesurés ; une **stat de combat** (dégâts, dégâts %, vitesse d'attaque, double attaque, critique, ténacité, résistance au recul, portée, recul) n'en reçoit que **la moitié**. Raison : le mineur se bat peu dans la mine, les prix mesurés du combat sont bas, et la même stat est bien plus forte là où on ne fait que se battre (tours). Le GS de ces pièces est donc sous 250 (Lanières 188, Capuche 125, Ceinture 127, Nuage 250) ;
+  - les pièces **dessinées à la main** ne suivent pas cette règle : épées, lance, pioches, Plastron de l'équilibre, gants, cape, ceinture en peau, boussole, lampe.
+- **Butin rare des mobs** *(26/10/2026, Geoffrey ; `MOB_DROPS`)* : des pièces **non craftables** qu'un mob lâche à sa mort, dans le sac du mineur qui l'a tué (puis le coffre commun : **un seul joueur** la reçoit, partage normal). Valeur : voir *Équilibre du stuff* ci-dessus *(avant le 27/10 : la pièce en fer de sa case ; Lanières et Capuche au tableau des runes)*. La chance est **multipliée par 1 + le butin du mineur** (stat Butin des mobs + skill Pillage) : 1 % avec +50 % de butin → 1,5 % ; toujours **une seule** pièce (pas d'exemplaire en plus, contrairement au butin normal). Tier 2 pour l'identification et les runes. Recyclage : des quantités fixes (pas de recette).
 
   | Pièce (case, rareté) | Stats | Obtention | Recyclage |
   |---|---|---|---|
-  | **Lanières en cuir du gobelin** (torse, inhabituel) — torse nu, deux sangles de cuir | Vitesse d'attaque +44 %, Butin des mobs +22 % (440 x, Plastron en fer) | gobelin 0,1 % *(26/10 soir ; avant 0,5 %)* | 20 Chitine + 10 Peau de gobelin |
-  | **Capuche sombre** (casque, rare) — capuche violette, visage sombre, yeux rouges | Recul +0,13, Critique +9,7 % (≈ 268 x, Casque en fer) | occultiste 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Tissu sombre |
-  | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,1 (263 x, Jambes en fer) | méphite 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Vésicule de gaz |
-  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +3,1, Ténacité +25 % (250 x) | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
+  | **Lanières en cuir du gobelin** (torse, inhabituel) — torse nu, deux sangles de cuir | Vitesse d'attaque +31,9 % *(combat, ÷ 2)*, Butin des mobs +12,5 % *(27/10 ; avant +44 % / +22 %)* | gobelin 0,1 % *(26/10 soir ; avant 0,5 %)* | 20 Chitine + 10 Peau de gobelin |
+  | **Capuche sombre** (casque, rare) — capuche violette, visage sombre, yeux rouges | Recul +0,52, Critique +4,8 % *(combat, ÷ 2 ; 27/10, avant +0,13 / +9,7 %)* | occultiste 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Tissu sombre |
+  | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,04 (250 x) *(27/10 ; avant +1,1)* | méphite 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Vésicule de gaz |
+  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +1,6, Ténacité +12,5 % *(combat, ÷ 2 ; 27/10, avant +3,1 / +25 %)* | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
 
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.

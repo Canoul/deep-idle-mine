@@ -36,22 +36,7 @@ test('config : case, rareté, tier 2, pas de recette, textures et skin ; chaque 
   }
 });
 
-/* x d'une pièce au tableau des runes (UPGRADE.prices) */
-const runeX = n => Object.entries(STUFF.items[n].stats).reduce((s, [k, v]) => s + v * UPGRADE.prices[k], 0);
-const gsPrice = k => UPGRADE.worth[k] ?? UPGRADE.gs[k];
-
-test('valeur en x : celle de la pièce en fer de la case (ceinture : tier 2) ; prix mesurés (GS) pour le Nuage et la Ceinture, tableau des runes pour les Lanières et la Capuche', () => {
-  assert.ok(Math.abs(pieceGS('Nuage magique') - pieceGS('Jambes en fer')) <= 2, `Nuage : ${pieceGS('Nuage magique')}`);
-  assert.ok(Math.abs(pieceGS('Ceinture du Géant') - UPGRADE.tiers[2].x) <= 2, `Ceinture : ${pieceGS('Ceinture du Géant')}`);
-  assert.ok(Math.abs(runeX('Lanières en cuir du gobelin') - runeX('Plastron en fer')) <= 2);
-  assert.ok(Math.abs(runeX('Capuche sombre') - runeX('Casque en fer')) <= 2);
-  /* les deux stats se partagent la valeur à peu près moitié / moitié (dans leur barème) */
-  for(const [n, price] of [['Lanières en cuir du gobelin', k => UPGRADE.prices[k]], ['Capuche sombre', k => UPGRADE.prices[k]], ['Ceinture du Géant', gsPrice]]){
-    const parts = Object.entries(STUFF.items[n].stats).map(([k, v]) => v * price(k));
-    assert.equal(parts.length, 2, n);
-    assert.ok(Math.abs(parts[0] - parts[1]) <= 0.1 * (parts[0] + parts[1]), `${n} : ${parts.map(Math.round)}`);
-  }
-});
+/* valeur en x : tests/stuff-balance.test.js (règle du 27/10 : tier 2, parts égales, stat de combat à moitié) */
 
 /* tue `n` mobs de ce type dans une même partie ; renvoie le nombre de pièces lâchées */
 function drops(type, n, { khole = false, seed = 7, looting = 0 } = {}){

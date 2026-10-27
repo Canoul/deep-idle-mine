@@ -791,10 +791,10 @@ export const STUFF = {
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
-    'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
-    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25
-    'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
-    'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
+    'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:25 } },   // 27/10 (Geoffrey) : valeur du tier, 100 x (avant 30)
+    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:17 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 100 x (avant 30 ; 23/10 : 25)
+    'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },   // 100 x (valeur du tier)
+    'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.42 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 100 x (avant 0,5)
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
     'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },   // 25/10 (Geoffrey) : nerf, avant 0,5 (24/10 : 0,4 × 1,25 ; le × 1,75 du fer, 0,7, était trop fort)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
@@ -805,10 +805,10 @@ export const STUFF = {
        l'épée, aucun tacle évité. Dégâts +8 sur les mains nues (13), vitesse d'attaque −10 % (idée de Geoffrey ; le verrou
        du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
     'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
-    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:67 } },   // 24/10 : avant 38
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33)
-    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
-    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.05 } },   // 24/10 : avant 0,6
+    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:63 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 67 ; 24/10 : 38)
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:42 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 88 ; 24/10 : 50, 23/10 : 33)
+    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1 } },   // 27/10 (Geoffrey) : valeur du tier, 250 x (avant 1,05 ; 24/10 : 0,6)
+    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.04 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 1,05 ; 24/10 : 0,6)
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
@@ -820,26 +820,26 @@ export const STUFF = {
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
     'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40)
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:67 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 400 x (avant 120 ; 24/10 : 80, 23/10 : 40)
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.5 } },   // 25/10 : nerf, avant 0,6 (24/10 : 0,48 × 1,25 ; pas × 1,5 : 0,72)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
-    /* butin rare des mobs (26/10/2026, Geoffrey ; MOB_DROPS) : pas craftables. Chacune vaut en x la pièce en fer de sa
-       case, partagée moitié / moitié entre ses deux stats ; la ceinture, sans équivalent en fer, vaut le x du tier 2
-       (250). x = prix mesurés du GS (worth, gs) pour le Nuage et la Ceinture ; Lanières et Capuche gardent le tableau
-       des runes (prices) : en prix mesurés, vitesse d'attaque +135 % et recul +1,1 bloc, démesurés (le mineur de base se
-       bat peu, ces prix de combat sont bas). Décision de Geoffrey, 26/10 au soir.
+    /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
+       (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
+       une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
+       la mine, ses prix mesurés sont bas, et la même stat est bien plus forte là où on ne fait que se battre (tours).
+       tests/stuff-balance.test.js garde cette règle. (Avant, 26/10 au soir : Lanières et Capuche au tableau des runes.)
        recycle : ce que rend le recyclage (quantités fixes, à la place de la part d'une recette) */
-    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:44, looting:22 },   // 440 x en prices (Plastron en fer)
+    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:31.9, looting:12.5 },   // 125 x chacune ; attaque 63,8 % ÷ 2 (avant 44 / 22)
                                      recycle:{ 'Chitine':20, 'Peau de gobelin':10 } },
-    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.13, crit:9.7 },   // 268 x en prices (Casque en fer) : recul arrondi à 0,13 (130 x), le critique complète
+    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.52, crit:4.8 },   // 125 x chacune, ÷ 2 (combat) : recul 1,04 → 0,52, critique 9,6 → 4,8 (avant 0,13 / 9,7)
                              recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
-    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.1 },   // 263 x (Jambes en fer, prix mesurés), une seule stat ; d'abord 1,4 (350 x en prices)
+    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.04 },   // 250 x, une seule stat (avant 1,1 ; d'abord 1,4)
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
-    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:3.1, tenacity:25 },   // 250 x (tier 2, prix mesurés) : dégâts 3,1 (124 x), ténacité 25 % (125 x) ; d'abord 12,6
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.6, tenacity:12.5 },   // 125 x chacune, ÷ 2 (combat) : dégâts 3,1 → 1,6, ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
@@ -854,6 +854,14 @@ export const STUFF = {
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],
+  /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
+     - casque, plastron, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
+       (UPGRADE.tiers : 100 / 250 / 400 x) ;
+     - le butin des mobs vaut le tier 2, à parts égales entre ses stats, une stat de combat comptant pour combatOnStuff
+       de ce que donnerait l'équation (prix mesurés). Les pièces dessinées à la main (épées, lance, pioches, Plastron de
+       l'équilibre, gants, cape, ceinture en peau, boussole, lampe) ne suivent pas cette règle. */
+  combatStats: ['damage','damagePct','attackSpeed','doubleAttack','crit','tenacity','knockRes','reach','knockback'],
+  combatOnStuff: 0.5,
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 

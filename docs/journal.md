@@ -9,6 +9,20 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 27/10/2026 — Geoffrey — Stuff : armures à la valeur de leur tier, combat du butin des mobs divisé par 2
+- **Pour le joueur** : casque, plastron, jambes et bottes valent maintenant exactement leur tier : chitine 100 x, fer
+  250 x, acier 400 x. Gros changement sur les **plastrons** (ils valaient le double) : pods fer +88 → +42, acier
+  +120 → +67, chitine +30 → +17. Petits ajustements ailleurs (casque en fer +63, bottes en chitine +0,42…). Le butin rare
+  des mobs a ses **stats de combat divisées par 2** (Lanières : attaque +31,9 %, butin +12,5 % ; Capuche : recul +0,52,
+  critique +4,8 % ; Ceinture du Géant : dégâts +1,6, ténacité +12,5 % ; Nuage : marche +1,04).
+- **Décisions** (Geoffrey) : règle permanente, gardée par un test : armures = valeur du tier ; butin des mobs = 250 x à
+  parts égales, une stat de combat n'en reçoit que la moitié. Les pièces dessinées à la main (épées, pioches, Plastron
+  de l'équilibre, gants, cape…) ne bougent pas.
+- **À suivre** : tours en stuff complet (2 mineurs + 1 barbare, 20 tours) : fer 4/20 → 3/20, acier 16/20 → 11/20 (les
+  pods comptent dans les tours). La Capuche passe de recul +0,13 à +0,52 (l'équation, même divisée par 2, donne plus
+  qu'avant). Tout en fer = 1 884 GS, sous le seuil de 2 000 de la modulation.
+- **État** : 🧪 sur la branche `geoffrey/stuff-valeurs-tier` (pas en ligne)
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).

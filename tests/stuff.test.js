@@ -70,10 +70,10 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
   const { STATS, ITEMS, TEXTURES } = await import('../src/config.js');
   const { statsText } = await import('../src/meta/stuff.js');
   const { existsSync } = await import('node:fs');
-  assert.equal(statsText('Casque en chitine'), 'Oxygène +30');
-  assert.equal(statsText('Plastron en chitine'), 'Pods +30');
+  assert.equal(statsText('Casque en chitine'), 'Oxygène +25');
+  assert.equal(statsText('Plastron en chitine'), 'Pods +17');
   assert.equal(statsText('Jambes en chitine'), 'Vitesse (échelle) +0,4');
-  assert.equal(statsText('Bottes en chitine'), 'Vitesse (marche) +0,5');
+  assert.equal(statsText('Bottes en chitine'), 'Vitesse (marche) +0,42');
   assert.equal(statsText(PICK), 'Vitesse de minage +0,2');
   for(const [name, d] of Object.entries(STUFF.items)){
     for(const k of Object.keys(d.stats || {})){ assert.ok(k in STATS, `${name} : stat ${k} inconnue`); assert.ok(STUFF.statLabels[k], k); }
@@ -86,7 +86,7 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
 test('bulle d\'info du stuff : le nom, puis un effet par ligne ; rien pour un objet qui n\'est pas du stuff', async () => {
   const { stuffTip } = await import('../src/meta/stuff.js');
   assert.equal(stuffTip(PICK), `Pioche en pierre\nVitesse de minage +0,2\nGS ${pieceGS(PICK)}`);
-  assert.equal(stuffTip('Casque en chitine'), `Casque en chitine\nOxygène +30\nGS ${pieceGS('Casque en chitine')}`);
+  assert.equal(stuffTip('Casque en chitine'), `Casque en chitine\nOxygène +25\nGS ${pieceGS('Casque en chitine')}`);
   assert.equal(stuffTip('Charbon'), null);
   assert.equal(stuffTip('Objet inconnu'), null);
 });
@@ -97,7 +97,7 @@ test('stats du mineur : base + bonus des pièces portées, arrondies ; sans stuf
   const get = (worn, key) => minerStats(worn).find(s => s.key === key);
   assert.deepEqual(get({}, 'oxygenMax'), { key:'oxygenMax', label:'Oxygène', base:STATS.oxygenMax, bonus:0, mult:1, add:0, skill:0, ring:0, total:STATS.oxygenMax });
   const worn = { casque:{ item:'Casque en chitine', uid:1 }, jambes:{ item:'Jambes en chitine', uid:2 }, pioche:{ item:PICK, uid:3 }, torse:null };
-  assert.equal(get(worn, 'oxygenMax').total, STATS.oxygenMax + 30);
+  assert.equal(get(worn, 'oxygenMax').total, STATS.oxygenMax + 25);
   assert.equal(get(worn, 'climbSpeed').total, Math.round((STATS.climbSpeed + 0.4) * 100) / 100);
   assert.equal(get(worn, 'mineSpeed').bonus, 0.2);
   assert.equal(get(worn, 'pods').bonus, 0);
