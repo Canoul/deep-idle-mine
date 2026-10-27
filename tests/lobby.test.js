@@ -151,3 +151,18 @@ test('chef (25/10) : il peut nommer un autre chef même pendant une session ; re
   assert.deepEqual(slotButtons({ account, party, session:null }, { kind:'invited' }), { promote:false, kick:true });
   assert.deepEqual(slotButtons({ account:{ id:'BBBB2222' }, party, session:null }, other), { promote:false, kick:false }, 'pas chef');
 });
+
+test('démarrage : le lobby reçoit le compte tout de suite, même si la page s\'ouvre pendant une session (27/10)', async () => {
+  /* bug : page ouverte pendant une session → le lobby restait sans compte après la fin (Lancer et Inviter grisés tant
+     que le bilan n'était pas fermé). main.js n'est pas testable sans navigateur : on vérifie l'ordre dans le source. */
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const boot = src.indexOf('Object.assign(acct, await bootAccount'), give = src.indexOf('lobby.update({ account:acct.account, offline:acct.offline })', boot);
+  assert.ok(boot > 0 && give > boot && give < src.indexOf('await refresh()', boot));
+});
+
+test('chef, tout le monde prêt (dont « prêt tout le temps » absent) : on peut lancer', () => {
+  const p = party([M(me.id, 'Zoe', { leader:true, me:true }), M('B', 'Max', { ready:true, always:true }), M('C', 'Lou', { ready:true, always:true, away:true })]);
+  assert.deepEqual(launchState({ account:me, party:p }), { can:true, label:'▶ Lancer à 3' });
+  assert.equal(launchState({ account:null, party:p }).can, false, 'sans compte dans le lobby : grisé (le bug)');
+});

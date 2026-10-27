@@ -3844,7 +3844,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ : `tests/goblin-thrall.test.js` (absente de `minerStats`, couronne portée), goblin-king, wiki, wiki-secret,
   stuff, tier2 : 65/65.
 
-### Tier 4 : Treasure T4, mithril, thorium, cobalt (Geoffrey) — branche `geoffrey/tier4-mithril`, 🧪
+### Tier 4 : Treasure T4, mithril, thorium, cobalt (Geoffrey) — ✅ en ligne le 27/10
 - **Config** : `TREASURE.tiers` (T4 maxArea 8, T3 s'arrête à 6), `LOOT['Treasure T4']` (always + 1er jet BP 12,5 %, 4
   familles `learnOnce` à 5 %, gemmes 1 %), `FURNACE.recipes` Mithril / Cobalt / Thorium ore (`ore:5` pour cobalt et
   thorium), `FURNACE.alloys` Cobalt / Thorium ingot, `STUFF.items` (16 pièces), `UPGRADE.tiers` 4 = 650 x (Couronne
@@ -3865,3 +3865,13 @@ Règles (voir CLAUDE.md) :
   (areas 3,0, profondeur 185).
 - **À vérifier** : rien vu dans le navigateur (icônes, onglet Craft, fenêtre du four). Personne n'atteint encore l'area 7
   en simulation sans stuff : le T4 n'a pas été vu sortir d'une vraie partie.
+
+### Correctif : Lancer / Inviter grisés pour le chef, tout le groupe prêt (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- **Cause** : le lobby (`setupLobby`, `st.account`) ne recevait le compte que par `showNoSession()` ou `accountUI.onChange`.
+  Page ouverte pendant une session → `refresh()` → `enterSession` (pas `showNoSession`) ; à la fin, `showResult` ne fait
+  que `lobby.update({ session:null })` → `st.account` reste null → `launchState` renvoie `{ can:false, label:'▶ Lancer la
+  session' }` (et `inviteBtn` grisé) tant que le bilan n'est pas fermé. Le groupe, lui, s'affichait (pollLobby lit `acct`).
+- **Correctif** : `src/main.js`, juste après `bootAccount` : `lobby.update({ account, offline })`.
+- **Tests** : `tests/lobby.test.js` (+2 : ordre au démarrage vérifié dans le source de main.js ; chef + « prêt tout le
+  temps » absent → « Lancer à 3 ») ✅ 17/17 ; boot-check, nav ✅. Repéré : un membre « absent » ne bloque pas le lancement.
+
