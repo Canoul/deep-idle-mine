@@ -558,7 +558,8 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
 - **Trois sous-onglets** : **Amis** (tout ce qui suit), **Online** *(26/10/2026, Geoffrey)* et **Classements** *(27/10/2026, Geoffrey)*.
 - **Classements** *(27/10/2026, Geoffrey)* : tous les joueurs (amis ou non, invités compris), **les 50 premiers** et, si on
-  n'y est pas, **sa propre ligne avec son rang** *(valeur de config)*. Un joueur à 0 n'est pas classé. Ex aequo : même rang.
+  n'y est pas, **sa propre ligne avec son rang** *(valeur de config)*. Un joueur à 0 n'est pas classé. Le compte
+  « admin » (comptes de test de l'équipe, liste en config) n'est jamais classé *(27/10)*. Ex aequo : même rang.
   - **Gear score** : le GS du stuff porté (le même que l'onglet Stuff).
   - **Niveau** : l'XP totale du mineur (niveau affiché).
   - **Spécialisation** : **un classement par arbre** (Mineur, Logisticien, Barbare), l'XP gagnée dans cet arbre.

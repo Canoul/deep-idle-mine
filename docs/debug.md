@@ -3897,3 +3897,10 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : en mode dev, le classement de la tour reste vide (sessions dev exclues). Le calcul parcourt tous
   les comptes à chaque expiration du cache : à surveiller si le nombre de comptes devient très grand.
 
+### Classements : comptes cachés (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- **Quoi** : `LEADERBOARD.hidden` (`src/config.js`, pseudos, `['admin']`) ; `social.leaderboard` retrouve leurs comptes
+  (`findAccountByName(nameKey(n))`) et les retire **avant** `rankBoard` : ni ligne, ni rang, ni `total`. Les coéquipiers
+  d'un record de tour (`team`, des pseudos) ne sont pas filtrés : « admin » peut encore apparaître dans « avec … ».
+- **Tests** : `tests/leaderboard.test.js` (+1 : admin premier partout → absent des 4 classements, `me` null, total 1) ✅ ;
+  social ✅ (28/28 avec leaderboard).
+

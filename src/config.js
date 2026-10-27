@@ -1414,8 +1414,9 @@ export const GIANT = {
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
 /* Classements (onglet Social → Classements, 27/10/2026, Geoffrey ; src/meta/leaderboard.js) : top `size` joueurs + sa
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
-   serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour. */
-export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3 };
+   serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.
+   hidden : pseudos jamais classés (comptes de l'équipe pour tester, ex. « admin », 27/10). */
+export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

@@ -24,6 +24,11 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Classements : le compte « admin » n'y figure plus
+- **Pour le joueur** : le compte « admin » (celui de l'équipe pour tester) n'apparaît plus dans aucun classement et ne
+  compte pas dans le nombre de joueurs classés.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Classements dans l'onglet Social
 - **Pour le joueur** : un 3e sous-onglet **Classements** dans Social, avec quatre classements de tous les joueurs :
   **Gear score**, **Niveau** (XP), **Spécialisation** (un classement par arbre : Mineur, Logisticien, Barbare) et
