@@ -290,6 +290,7 @@ test('minotaure vaincu : 1 à 3 Cristaux de pleine lune (rare), 100 XP, donjon l
     killMob(G,m,boss);
     const n=m.inv[DUNGEON.loot.item]; seen.add(n);
     assert.ok(n>=1 && n<=3);
+    const c=m.inv[DUNGEON.leather.item]; assert.ok(c>=1 && c<=3, `cuir : ${c}`);   // 27/10 : 1 à 3 Cuir de minotaure en plus
     assert.equal(G.stats.xp, XP.mob.minotaure);
     run(G,1); assert.ok(d.cleared); assert.equal(noEntry(G,m,d.hx,d.hy), false);
   }
@@ -301,7 +302,9 @@ test('minotaure vaincu : 1 à 3 Cristaux de pleine lune (rare), 100 XP, donjon l
 
 test('cristaux : pas partagés, chaque joueur présent en reçoit la quantité entière (comme un Treasure TX)', () => {
   assert.ok(SHARE.copyToAll.includes(DUNGEON.loot.item));
-  const bags=shareChest({ [DUNGEON.loot.item]:2, Charbon:10 }, 3, 42);
+  assert.ok(SHARE.copyToAll.includes(DUNGEON.leather.item), 'cuir de minotaure : pareil (27/10)');
+  const bags=shareChest({ [DUNGEON.loot.item]:2, [DUNGEON.leather.item]:3, Charbon:10 }, 3, 42);
   assert.deepEqual(bags.map(b=>b[DUNGEON.loot.item]), [2,2,2]);
+  assert.deepEqual(bags.map(b=>b[DUNGEON.leather.item]), [3,3,3]);
   assert.equal(bags.reduce((s,b)=>s+b.Charbon,0), 10);
 });

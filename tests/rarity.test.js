@@ -47,7 +47,16 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   /* minerais profonds (27/10, Geoffrey) : mithril commun, cobalt et thorium inhabituels */
   const DEEP = ['Cobalt ore', 'Thorium ore'];
   for(const n of DEEP) assert.equal(rarityOf(n), 'inhabituel', n);
-  for(const n of Object.keys(ITEMS)) if(![...DEEP, ...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH, ...Object.keys(MOB_STUFF), ...Object.keys(KING)].includes(n)) assert.equal(rarityOf(n), 'commun', n);
+  /* Treasure T4 (27/10, Geoffrey) */
+  const PIECES = ['Casque', 'Plastron', 'Jambes', 'Bottes'];
+  const T4 = { 'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
+    'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
+    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
+    ...Object.fromEntries(PIECES.flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
+      [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
+    ...Object.fromEntries(['Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])) };
+  for(const [n, r] of Object.entries(T4)){ assert.ok(ITEMS[n], n); assert.equal(rarityOf(n), r, n); }
+  for(const n of Object.keys(ITEMS)) if(![...DEEP, ...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH, ...Object.keys(MOB_STUFF), ...Object.keys(KING), ...Object.keys(T4)].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });
 

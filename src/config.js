@@ -192,7 +192,8 @@ export const TREASURE = {
   tiers: [
     { item:'Treasure T1', maxArea:2, tex:'treasure_t1' },   // areas 0 à 2
     { item:'Treasure T2', maxArea:4, tex:'treasure_t2' },   // areas 3 et 4 (avant le 23/10 : 3 à 5 et au-delà)
-    { item:'Treasure T3', maxArea:6, tex:'treasure_t3' },   // areas 5 et 6 (et au-delà), 23/10 Geoffrey
+    { item:'Treasure T3', maxArea:6, tex:'treasure_t3' },   // areas 5 et 6, 23/10 Geoffrey
+    { item:'Treasure T4', maxArea:8, tex:'treasure_t4' },   // areas 7 et 8 (et au-delà), 27/10 Geoffrey
   ],
 };
 
@@ -269,6 +270,36 @@ export const LOOT = {
       { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.20, tex:'key_instance_1' } ] },   // 20 % (27/10, Geoffrey ; avant 5 %)
     ],
   },
+  /* Treasure T4 (areas 7 et 8, 27/10/2026, Geoffrey) : stuff en mithril, thorium, cobalt et pièces spéciales.
+     learnOnce : ne sort que si la recette n'est pas encore apprise (src/meta/loot.js) */
+  'Treasure T4': {
+    always: [
+      { item:'Mithril ore',     min:20, max:40 },
+      { item:'Cobalt ore',      min:5,  max:10 },
+      { item:'Thorium ore',     min:5,  max:10 },
+      { item:'Blueprint parts', min:12, max:14 },
+    ],
+    oneOf: [
+      /* 1er jet : un BP au plus (12,5 % en tout) */
+      { family:'blueprint', tex:'blueprint', items:[
+        { item:'Lunettes Gucci BP',         chance:0.01 },
+        { item:'Doc Martins BP',            chance:0.01 },
+        { item:'Ceinture golémique BP',     chance:0.01 },
+        { item:'Gants de boucher BP',       chance:0.01 },
+        { item:'Jambières titanesques BP',  chance:0.005 },
+        ...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),
+        ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en ${m} BP`, chance:0.005 }))),
+      ]},
+      /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise */
+      ...['Clé d\'instance I BP', 'Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
+        ({ family:'blueprint', tex:'blueprint', items:[ { item, chance:0.05, learnOnce:true } ] })),
+      /* 3e jet : une gemme au plus */
+      { family:'gem', items:[
+        { item:'Topaze', chance:0.01, tex:'gem_topaz' },        { item:'Saphir', chance:0.01, tex:'gem_sapphire_fine' },
+        { item:'Rubis',  chance:0.01, tex:'gem_ruby_fine' },    { item:'Jade',   chance:0.01, tex:'gem_jade_fine' },
+      ]},
+    ],
+  },
 };
 
 /* ---- Hors session : concasseur (onglet Concasseur, src/meta/crusher.js) ----
@@ -313,7 +344,7 @@ export const RESEARCH = {
 
 /* partage du coffre commun en fin de session (src/meta/share.js) : parts égales entre les joueurs,
    reste tiré au hasard depuis la seed ; les objets de copyToAll ne se partagent pas, chacun reçoit la quantité entière */
-export const SHARE = { copyToAll:[...TREASURE.tiers.map(t => t.item), 'Cristal de pleine lune'] };   // Treasure TX et butin du donjon (DUNGEON.loot)
+export const SHARE = { copyToAll:[...TREASURE.tiers.map(t => t.item), 'Cristal de pleine lune', 'Cuir de minotaure'] };   // cuir : 27/10   // Treasure TX et butin du donjon (DUNGEON.loot)
 
 /* génération : minerais en filons et vide en poches, de 1 à N cases d'un seul tenant */
 export const GEN = { veinMax:4, airPocketMax:4 };
@@ -632,6 +663,10 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver',
+  'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
+  'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_gucci','boots_docs','belt_golem','gloves_butcher','legs_titan',
+  'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
+  'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
@@ -661,11 +696,19 @@ export const FURNACE = {
     /* 27/10/2026 (Geoffrey) : 10 pépites (récompense du bloc géant, GIANT.nugget) + 10 charbons = 1 barre ; ouverte de base.
        Durée provisoire (comme le fer) ; la barre n'a pas encore d'usage */
     'Pépite d\'argent': { out:'Barre d\'argent', time:60, tex:'ingot_silver' },
+    /* 27/10/2026 (Geoffrey) : minerais des areas 6 à 8 ; ore = minerais par fournée (FURNACE.orePerIngot sinon).
+       Durées provisoires (choix de Claude) */
+    'Mithril ore':  { out:'Mithril ingot',   time:60, tex:'ingot_mithril' },
+    'Cobalt ore':   { out:'Refined cobalt',  ore:5, time:60, tex:'refined_cobalt' },
+    'Thorium ore':  { out:'Refined thorium', ore:5, time:60, tex:'refined_thorium' },
   },
   alloys: [
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
     { out:'Tainted gold', in:{ 'Lingot d\'or':5,  'Peau de gobelin':20 }, fuel:50, time:180, tex:'ingot_tainted_gold' },
     { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':5 },   fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey ; graphite 10 → 5 (26/10)
+    /* 27/10/2026 (Geoffrey) ; combustible et durée provisoires (comme les autres alliages, choix de Claude) */
+    { out:'Cobalt ingot',  in:{ 'Mithril ingot':5, 'Refined cobalt':5 },  fuel:50, time:180, tex:'ingot_cobalt' },
+    { out:'Thorium ingot', in:{ 'Mithril ingot':5, 'Refined thorium':5 }, fuel:50, time:180, tex:'ingot_thorium' },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
@@ -858,6 +901,14 @@ export const RARITY = {
     /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
     'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
     'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare',
+    /* Treasure T4 (27/10/2026, Geoffrey) */
+    'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
+    'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
+    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare',
+    ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes'].flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
+      [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
+    ...Object.fromEntries(['Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
+    'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
     ...Object.fromEntries(Object.keys(GOBLIN_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
   },
@@ -928,6 +979,28 @@ export const STUFF = {
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
+    /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
+       hors règle, même rapport que l'acier : 137 pods pour 500 x). Thorium et cobalt (T4.5, 750 x) : deux stats à 50/50,
+       aux prix mesurés du GS (worth, gs ; stat de combat à moitié, résistance au recul : UPGRADE.prices) ; plastron
+       × 1,644 comme l'acier. Pièces spéciales : 650 x (Lunettes : 1 Découverte = 190 x, le reste en oxygène) ;
+       Jambières titanesques : 750 × 2,5 = 1 875 x, quatre parts égales */
+    'Casque en mithril':   { slot:'casque', tex:'helmet_mithril', stats:{ oxygenMax:163 } },
+    'Plastron en mithril': { slot:'torse',  tex:'chest_mithril',  stats:{ pods:178 } },
+    'Jambes en mithril':   { slot:'jambes', tex:'legs_mithril',   stats:{ climbSpeed:2.6 } },
+    'Bottes en mithril':   { slot:'pieds',  tex:'boots_mithril',  stats:{ speed:2.71 } },
+    'Casque en thorium':   { slot:'casque', tex:'helmet_thorium', stats:{ oxygenMax:94, doubleAttack:23.4 } },
+    'Plastron en thorium': { slot:'torse',  tex:'chest_thorium',  stats:{ pods:103, damage:7.7 } },
+    'Jambes en thorium':   { slot:'jambes', tex:'legs_thorium',   stats:{ climbSpeed:1.5, damagePct:93.8 } },
+    'Bottes en thorium':   { slot:'pieds',  tex:'boots_thorium',  stats:{ speed:1.56, crit:14.4 } },
+    'Casque en cobalt':    { slot:'casque', tex:'helmet_cobalt',  stats:{ oxygenMax:94, piercing:53.6 } },
+    'Plastron en cobalt':  { slot:'torse',  tex:'chest_cobalt',   stats:{ pods:103, mineSpeed:0.474 } },
+    'Jambes en cobalt':    { slot:'jambes', tex:'legs_cobalt',    stats:{ climbSpeed:1.5, mineSpeedPct:28.8 } },
+    'Bottes en cobalt':    { slot:'pieds',  tex:'boots_cobalt',   stats:{ speed:1.56, oneTap:28.8 } },
+    'Lunettes Gucci':      { slot:'casque',   tex:'glasses_gucci',  stats:{ discoverMax:1, oxygenMax:115 } },
+    'Doc Martins':         { slot:'pieds',    tex:'boots_docs',     stats:{ knockRes:32.5, tenacity:32.5 } },
+    'Ceinture golémique':  { slot:'ceinture', tex:'belt_golem',     stats:{ pods:54, knockRes:32.5 } },
+    'Gants de boucher':    { slot:'gants',    tex:'gloves_butcher', stats:{ damage:8.1 } },
+    'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.361, knockRes:46.9 } },
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
        (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
        une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
@@ -1041,8 +1114,12 @@ export const UPGRADE = {
     3: { x:500, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre',
                        'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
-    /* tier 4 (27/10/2026, Geoffrey) : la Couronne du Roi Gobelin seule, 600 x */
-    4: { x:600, items:['Couronne du Roi Gobelin'] },
+    /* tier 4 (27/10/2026, Geoffrey) : 650 x (avant 600, Couronne seule) ; mithril et pièces spéciales du Treasure T4 */
+    4: { x:650, items:['Couronne du Roi Gobelin', 'Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril',
+                       'Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'] },
+    /* tier 4.5 (27/10/2026, Geoffrey) : 750 x, thorium, cobalt, Jambières titanesques */
+    '4.5': { x:750, items:[...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m}`)),
+                           'Jambières titanesques'] },
   },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
@@ -1097,6 +1174,8 @@ export const ITEMS = {
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
+  'Cuir de minotaure': { cat:'material',  tex:'minotaur_leather', w:1, stack:true },    // butin du minotaure (DUNGEON.leather, 27/10)
+  'Rotten flesh':      { cat:'material',  tex:'rotten_flesh', w:1, stack:true },        // butin d'un mob à venir (27/10), sans source pour l'instant
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
@@ -1365,6 +1444,7 @@ export const DUNGEON = {
   areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
   boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
+  leather: { item:'Cuir de minotaure', min:1, max:3, tex:'minotaur_leather' },   // en plus des cristaux, même partage (27/10/2026, Geoffrey)
   scaredTime: 15,
   salt: 0x0d06e0,
 };

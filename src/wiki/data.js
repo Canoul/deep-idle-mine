@@ -7,6 +7,7 @@ import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
 import { dropOdds } from '../meta/crusher.js';
 import { ringLines } from '../meta/stuff.js';
+import { oreFor } from '../meta/furnace.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
@@ -121,7 +122,7 @@ export function sourcesOf(item){
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
     out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
   for(const d of MOB_DROPS.items) if(d.item === item) out.push(mobDropText(d));
-  for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon${(d.qty ?? 1) > 1 ? ` → ${d.qty}` : ''}${d.unlock ? ` (recette débloquée par « ${d.unlock} »)` : ''}`);
+  for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${oreFor(d)} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon${(d.qty ?? 1) > 1 ? ` → ${d.qty}` : ''}${d.unlock ? ` (recette débloquée par « ${d.unlock} »)` : ''}`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
   const res = Object.values(JUDGMENT.sides).find(s => s.item === item);
@@ -139,6 +140,7 @@ export function sourcesOf(item){
     out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
   if(item === DUCK.heart.item) out.push(`Butin du ${DUCK.name} (canard de la surface) : ${fmt(pct(DUCK.heart.chance))} % de chance, dans le coffre commun`);
+  if(item === DUNGEON.leather?.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon), en plus des cristaux : ${DUNGEON.leather.min} à ${DUNGEON.leather.max}, et chaque joueur en reçoit autant`);
   if(item === DUNGEON.loot.item) out.push(`Butin du ${DUNGEON.boss.name.toLowerCase()} (donjon) : ${DUNGEON.loot.min} à ${DUNGEON.loot.max}, et chaque joueur en reçoit autant`);
   if(item === GIANT.nugget?.item) out.push(`Récompense du Bloc géant, à minuit : 1 par tranche de ${GIANT.nugget.per} de tes points du jour (si tu es venu au moins ${GIANT.minVisits} fois)`);
   for(const [tr, l] of Object.entries(LOOT)){
@@ -178,7 +180,7 @@ export function usesOf(item){
   if(d?.cat === 'combustible') out.push('Combustible du four');
   if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].qty ?? 1} ${FURNACE.recipes[item].out}${FURNACE.recipes[item].unlock ? ` (recette à débloquer : « ${FURNACE.recipes[item].unlock} »)` : ''}`);
   const fr = Object.entries(FURNACE.recipes).find(([, r]) => r.unlock === item);
-  if(fr) out.push(`« Utiliser » : débloque au four (mode Fondre) ${FURNACE.orePerIngot} ${fr[0].toLowerCase()} + ${FURNACE.fuelPerIngot} charbon → ${fr[1].qty ?? 1} ${fr[1].out}`);
+  if(fr) out.push(`« Utiliser » : débloque au four (mode Fondre) ${oreFor(fr[1])} ${fr[0].toLowerCase()} + ${FURNACE.fuelPerIngot} charbon → ${fr[1].qty ?? 1} ${fr[1].out}`);
   if(Object.hasOwn(FURNACE.unlockItems, item)) out.push(`« Utiliser » : ouvre le four ${FURNACE.unlockItems[item].slot + 1} (${FURNACE.tiers[FURNACE.unlockItems[item].tier].name}, vitesse ×${fmt(FURNACE.tiers[FURNACE.unlockItems[item].tier].speed)})`);
   const bp = Object.entries(RECIPES).find(([, r]) => r.unlock === item);
   if(bp) out.push(`« Utiliser » : débloque la recette ${bp[0]}`);
@@ -223,7 +225,7 @@ const rank = n => RARITY.tiers.findIndex(t => t.id === rarityOf(n));
 /* ---------- craft, four, recherche ---------- */
 export const recipeRows = () => Object.entries(RECIPES).map(([name, r]) => ({ name, cost: r.cost, qty: r.qty, unlock: r.unlock, stats: statsOf(name), uses: ITEMS[name]?.cat === 'stuff' ? [] : usesOf(name).filter(u => u.startsWith('«')) }));
 export const furnaceRows = () => [
-  ...Object.entries(FURNACE.recipes).map(([ore, r]) => ({ mode:'Fondre', out: r.out, inputs: { [ore]: FURNACE.orePerIngot }, fuel: FURNACE.fuelPerIngot, time: r.time })),
+  ...Object.entries(FURNACE.recipes).map(([ore, r]) => ({ mode:'Fondre', out: r.out, inputs: { [ore]: oreFor(r) }, fuel: FURNACE.fuelPerIngot, time: r.time })),
   ...FURNACE.alloys.map(a => ({ mode:'Alliage', out: a.out, inputs: a.in, fuel: a.fuel, time: a.time })),
 ];
 /* concasseur : une ligne par bloc ; par famille (une gemme, un treasure) : la chance par lot de CRUSHER.batch blocs */

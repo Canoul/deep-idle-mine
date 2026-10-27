@@ -21,6 +21,10 @@ export const SKIN = {
     'Plastron en acier':   'skins/steel_chest',
     'Jambes en acier':     'skins/steel_legs',
     'Bottes en acier':     'skins/steel_boots',
+    /* Treasure T4 (27/10/2026) : mithril clair, thorium vert, cobalt bleu */
+    ...Object.fromEntries([['mithril', 'mithril'], ['thorium', 'thorium'], ['cobalt', 'cobalt']].flatMap(([fr, m]) => [
+      [`Casque en ${fr}`, `skins/${m}_helmet`], [`Plastron en ${fr}`, `skins/${m}_chest`],
+      [`Jambes en ${fr}`, `skins/${m}_legs`], [`Bottes en ${fr}`, `skins/${m}_boots`]])),
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)

@@ -40,6 +40,11 @@ const remember = (inv, opId) => {
   if(inv.crafted.length > CRAFT_MEMORY) inv.crafted.splice(0, inv.crafted.length - CRAFT_MEMORY);
 };
 
+/* exemplaires d'une pièce de stuff dans l'inventaire, le plus simple d'abord (ni qualité, ni niveau, ni rune) : une recette
+   qui consomme une pièce (Casque en thorium ← Casque en mithril, 27/10/2026) prend celle qui vaut le moins */
+const worth = p => (p.q ? 1 : 0) + (p.plus | 0) + (p.rune ? 1 : 0) + (p.lines?.length ? 1 : 0);
+export const plainestFirst = (inv, item) => inv.slots.filter(s => s && s.item === item && s.uid != null).sort((a, b) => worth(a) - worth(b) || a.uid - b.uid);
+
 /* fabrique item : renvoie { ok, repeated } ou { error } (unknown, locked, not_enough) */
 export function craft(inv, item, opId){
   if(inv.crafted.includes(opId)) return { ok:true, repeated:true };
@@ -47,7 +52,10 @@ export function craft(inv, item, opId){
   if(!r) return { error:'unknown' };
   if(!isUnlocked(item, inv)) return { error:'locked' };
   if(!canCraft(inv, item)) return { error:'not_enough' };
-  for(const [k, n] of Object.entries(r.cost)) removeItem(inv, k, n);   // tout est là : vérifié juste avant
+  for(const [k, n] of Object.entries(r.cost)){                       // tout est là : vérifié juste avant
+    if(isStuff(k)) for(const p of plainestFirst(inv, k).slice(0, n)) takePiece(inv, p.uid);
+    else removeItem(inv, k, n);
+  }
   addItem(inv, item, r.qty);
   remember(inv, opId);
   return { ok:true, repeated:false };

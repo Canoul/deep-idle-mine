@@ -185,7 +185,7 @@ function items(){
 /* ---------- craft, four, recherche ---------- */
 const mmss = s => s >= 60 ? `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ''}` : `${s} s`;
 function craft(){
-  $('w-smelt-rule').textContent = `${FURNACE.orePerIngot} minerais + ${FURNACE.fuelPerIngot} charbon = 1 lingot.`;
+  $('w-smelt-rule').textContent = `${FURNACE.orePerIngot} minerais (5 pour le cobalt et le thorium) + ${FURNACE.fuelPerIngot} charbon = 1 lingot.`;
   $('w-furnace').innerHTML = table(['Mode', 'Produit', 'Ingrédients', 'Charbon', '#Durée'], D.furnaceRows().map(r =>
     tr([r.mode, item(r.out), ings(r.inputs), item('Charbon', r.fuel), num(mmss(r.time))])));
   $('w-furnace-tiers').innerHTML = table(['Four', '#Vitesse', 'Comment l\'avoir'], FURNACE.tiers.map((t, i) => {

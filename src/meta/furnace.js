@@ -31,6 +31,8 @@ export const furnaceRecipeName = item => `Four : ${FURNACE.recipes[item].out}`;
 /* le joueur (son inventaire) peut-il utiliser cette recette de fonte ? (ouverte de base, ou apprise) */
 export const recipeKnown = (item, inv) => { const r = recipeOf(item); return !!r && (!r.unlock || !!inv?.unlocked?.includes(furnaceRecipeName(item))); };
 export const isFuel   = item => ITEMS[item]?.cat === 'combustible';
+/* minerais par fournée d'une recette de fonte : son `ore` (5 pour le cobalt et le thorium, 27/10), sinon FURNACE.orePerIngot */
+export const oreFor = r => Number.isSafeInteger(r?.ore) && r.ore > 0 ? r.ore : FURNACE.orePerIngot;
 /* ingrédient d'au moins un alliage */
 export const isAlloyInput = item => FURNACE.alloys.some(r => Object.hasOwn(r.in, item));
 export function accepts(slot, item, mode = 'smelt', inv = null){
@@ -58,7 +60,7 @@ export function createFurnaces(){
 export function activeRecipe(f){
   if(modeOf(f) === 'smelt'){
     const r = f.ore && recipeOf(f.ore.item);
-    return r ? { out:r.out, qty:r.qty ?? 1, time:r.time, need:{ ore:FURNACE.orePerIngot, fuel:FURNACE.fuelPerIngot } } : null;
+    return r ? { out:r.out, qty:r.qty ?? 1, time:r.time, need:{ ore:oreFor(r), fuel:FURNACE.fuelPerIngot } } : null;
   }
   const r = alloyOf(f.a?.item, f.b?.item);
   return r ? { out:r.out, qty:1, time:r.time, need:{ a:r.in[f.a.item], b:r.in[f.b.item], fuel:r.fuel } } : null;

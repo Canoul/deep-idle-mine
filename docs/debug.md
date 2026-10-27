@@ -3843,3 +3843,25 @@ Règles (voir CLAUDE.md) :
   Gobelin, simulation inchangée) ; la bulle de la couronne et le wiki (caché tant que personne ne l'a trouvée) l'affichent encore.
 - **Tests** ✅ : `tests/goblin-thrall.test.js` (absente de `minerStats`, couronne portée), goblin-king, wiki, wiki-secret,
   stuff, tier2 : 65/65.
+
+### Tier 4 : Treasure T4, mithril, thorium, cobalt (Geoffrey) — branche `geoffrey/tier4-mithril`, 🧪
+- **Config** : `TREASURE.tiers` (T4 maxArea 8, T3 s'arrête à 6), `LOOT['Treasure T4']` (always + 1er jet BP 12,5 %, 4
+  familles `learnOnce` à 5 %, gemmes 1 %), `FURNACE.recipes` Mithril / Cobalt / Thorium ore (`ore:5` pour cobalt et
+  thorium), `FURNACE.alloys` Cobalt / Thorium ingot, `STUFF.items` (16 pièces), `UPGRADE.tiers` 4 = 650 x (Couronne
+  comprise, avant 600) et `'4.5'` = 750 x (clé texte : `tierOf` renvoie 4.5), `DUNGEON.leather`, `SHARE.copyToAll`
+  (+ Cuir de minotaure), `ITEMS` (Cuir de minotaure, Rotten flesh), `RARITY`, `TEXTURES` ; `src/recipes.js` (21 recettes).
+- **Code** : `oreFor(r)` (src/meta/furnace.js) remplace `FURNACE.orePerIngot` partout (four, UI, wiki) ; minotaure :
+  `src/sim/actions.js` tire le cuir après les cristaux (même `G.rng` : les parties d'après un minotaure changent) ;
+  `src/meta/loot.js` : `learnOnce` aussi dans les Treasure TX ; `src/meta/craft.js` : `plainestFirst`, une pièce de stuff
+  en ingrédient est prise sans qualité / niveau / rune d'abord (`takePiece`). Textures : 41 nouvelles (gen_textures.py :
+  lingots, trésor T4, gemmes, armures et calques de skin mithril / thorium / cobalt, pièces spéciales) ; `src/skins.js`
+  pour les 12 armures.
+- **Stats** : prix du GS (`UPGRADE.worth` / `gs`), combat × 0,5 (`STUFF.combatOnStuff`) ; `knockRes` a un gs de 0 :
+  calculée avec `UPGRADE.prices` (5 x par point), donc son GS est sous-évalué (Doc Martins, Ceinture golémique,
+  Jambières). Plastrons × 1,644 (rapport de l'acier : 137 pods pour 500 x).
+- **Tests** ✅ : `tests/tier4.test.js` (four, table, learnOnce, valeurs, craft le plus simple d'abord + rejouée,
+  recettes), `tests/dungeon.test.js` (cuir 1 à 3, partage), anciens tests mis à jour (rune : tiers, treasure et wiki : T4
+  en areas 7–8, rarity). Série large 315/315, `npm run test:anticheat` 104/104, simulation 5 sessions à 3 : 0 blocage
+  (areas 3,0, profondeur 185).
+- **À vérifier** : rien vu dans le navigateur (icônes, onglet Craft, fenêtre du four). Personne n'atteint encore l'area 7
+  en simulation sans stuff : le T4 n'a pas été vu sortir d'une vraie partie.
