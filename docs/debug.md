@@ -3519,3 +3519,24 @@ Règles (voir CLAUDE.md) :
   lfg ✅, lobby ✅, social ✅.
 - Point fragile : un chef parti pour de bon garde son groupe en mémoire et dans le stockage (rien ne le nettoie) ;
   volume négligeable (un groupe par compte au plus).
+
+### Stuff : armures = valeur du tier, combat du butin des mobs ÷ 2 (Geoffrey, 27/10) — branche `geoffrey/stuff-valeurs-tier`, ✅ en ligne le 27/10
+- **Quoi** : `src/config.js` : stats des 12 armures (casque / plastron / jambes / bottes × chitine / fer / acier) réglées
+  pour que `pieceGS` = `UPGRADE.tiers[t].x` à l'arrondi du pas près (102, 252, 402 au pire) ; butin des mobs recalculé :
+  part = 250 x / nb de stats, stat = part ÷ prix mesuré (worth ?? gs) × `STUFF.combatOnStuff` (0,5) si elle est dans
+  `STUFF.combatStats`. Nouvelles clés `STUFF.combatStats`, `STUFF.combatOnStuff` (seulement lues par le test).
+- **Tests** : `tests/stuff-balance.test.js` (3, nouveau : garde la règle) ✅ ; chiffres mis à jour dans amelioration,
+  anneaux, blueprint, carac, stuff, steel-gear ; `mob-drops` : ancien test de valeur retiré (remplacé) ; `gearscore` :
+  l'exemple « au-dessus de 2 000 GS » passe de tout fer (1 884 désormais) à tout acier. 58 fichiers qui lisent le stuff :
+  ✅ sauf 3 échecs **déjà présents sur main** (Lampe à incandescence sans tier dans rune.test ; source des glyphes dans
+  wiki.test ; lobby dev « tours toujours dans Où miner »).
+- **Simulation tours** (script jetable, 2 mineurs + 1 barbare, stuff complet, 20 tours, seeds 1-20) : fer 4/20 → 3/20,
+  acier 16/20 → 11/20 ; avant = repères du 26/10, retrouvés à l'identique. La mine (simulate.js, mineur de base) ne bouge pas.
+- **Points fragiles** : la règle dépend des prix mesurés : remesurer `UPGRADE.worth` / `gs` fera échouer
+  stuff-balance.test.js tant que les pièces ne sont pas réajustées (voulu). Capuche : recul +0,52 (gs : 120 x / bloc).
+- **Correction (27/10, 10 h 55, Geoffrey)** : plastrons remis à leurs valeurs (pods 30 / 88 / 120) : torse volontairement
+  plus fort, hors règle du tier. stuff-balance.test.js : casque / jambes / bottes seulement + un test « plastron au-dessus
+  de son tier » ; tests amelioration, carac, stuff, blueprint, steel-gear revenus aux anciens chiffres de pods ✅ (83).
+  La simulation des tours du matin ne vaut plus (les pods n'ont plus bougé) : seuls casques / jambes / bottes changent
+  un peu (fer : montée 3,3 → 3,25, marche 4,05 → 4,04).
+

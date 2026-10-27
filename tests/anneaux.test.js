@@ -97,7 +97,7 @@ test('effets : % du total pour vitesse, oxygène, pods ; points pour dégâts %,
 test('onglet Stuff : les anneaux portés s\'ajoutent au total (colonne ring)', () => {
   const s = minerStats({ anneau1:{ item:'Anneau de la baleine', uid:1 }, casque:{ item:'Casque en fer', uid:2 } });
   const ox = s.find(x => x.key === 'oxygenMax');
-  assert.equal(ox.bonus, 67); assert.equal(ox.total, 378.01); assert.equal(ox.ring, 11.01);   // (300 + 67) × 1,03
+  assert.equal(ox.bonus, 63); assert.equal(ox.total, 373.89); assert.equal(ox.ring, 10.89);   // (300 + 63) × 1,03
   assert.equal(s.find(x => x.key === 'pods').ring, 0);
 });
 
@@ -108,10 +108,10 @@ test('session : l\'effet va à tout le groupe, une seule fois même si deux joue
   for(const m of [a, b, c]){
     assert.equal(m.carac.speed, 3.09, m.name); assert.equal(m.carac.damagePct, 3, m.name);
   }
-  assert.equal(c.carac.oxygenMax, 367, 'pas de baleine : l\'oxygène ne bouge pas');
+  assert.equal(c.carac.oxygenMax, 363, 'pas de baleine : l\'oxygène ne bouge pas');
   /* sans anneau, rien ne change */
   const plain = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:{ casque:{ item:'Casque en fer', uid:4 } } } })[0];
-  assert.equal(plain.carac.speed, STATS.speed); assert.equal(plain.carac.oxygenMax, 367);
+  assert.equal(plain.carac.speed, STATS.speed); assert.equal(plain.carac.oxygenMax, 363);
 });
 
 test('mine instantanée : chacun pour soi, l\'anneau ne profite qu\'à son porteur', () => {
