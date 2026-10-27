@@ -1177,10 +1177,11 @@ export const INSTANCE = {
   duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
   w: 20, h: 20, ledgeW: 6, ledgeEvery: 5, ledges: 3, maxFall: 6,
   platform: { w: 4, height: 17 },
-  spawner: { hp: 50, every: 30, dynamite: 6, focusRange: 10 },
+  spawner: { hp: 75, every: 30, dynamite: 6, focusRange: 10 },   // 75 coups (27/10, Geoffrey ; avant 50)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
             knock: 0.5, knockChance: 0.30, step: 0.9 },
-  boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 2000, knockRes: 25, speedMul: 3, hitEvery: 1.5, push: 0.5,
+  boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3000, knockRes: 25,   // 3 000 PV (27/10, Geoffrey ; avant 2 000)
+          speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
           cageAt: [0.75, 0.5, 0.25], cageRadius: 3, cageHard: 10, cageMaxWait: 90,
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
