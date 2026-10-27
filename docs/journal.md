@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
+- **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
+  tes points** du jour (les tiens, pas ceux de tous), même si le score collectif n'atteint aucun palier. Au **four**
+  (mode Fondre, sans rien débloquer) : **10 pépites + 10 charbon → 1 Barre d'argent**, en 1 min. La carte du Bloc géant
+  affiche les pépites déjà gagnées dans la journée.
+- **Décisions** : il faut toujours être venu 2 fois dans la journée pour toucher la récompense (pépites comprises).
+  Choix de Claude, à valider : durée de fonte 1 min (comme le fer) ; les jours finis pas encore réclamés donnent aussi
+  leurs pépites.
+- **À suivre** : la barre d'argent n'a pas encore d'usage. Repère : ≈ 146 points par visite sans stuff, donc ≈ 2 à 3
+  pépites pour 2 visites : une barre tous les 3 à 4 jours pour un joueur qui fait le minimum.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
 - **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
   minotaures** et dans les **Vagues** du k hole. Avant, il restait planté pendant 2 min (« Plus rien à explorer ») et

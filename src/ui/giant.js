@@ -71,6 +71,7 @@ export function setupGiant(h){
       `<p class="small ${visitsLeft(info) ? 'mut' : 'okmsg'}">${esc(visitsText(info))}</p>`+
       `<p>Score collectif : <span class="gtTotal">${nf(info.total)}</span></p>`+
       `<div class="gtTiers">${tiers}</div>`+
+      (info.nugget ? `<p class="small">+ 1 ${esc(info.nugget.item)} par ${nf(info.nugget.per)} de tes points : <b>${nf(info.nugget.n)}</b> pour l'instant.</p>` : '')+
       rewards+
       `<h3>Classement du jour</h3>${rank}`+
       `<p class="mut small">Une visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h. Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points. `+

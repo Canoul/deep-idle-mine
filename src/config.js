@@ -620,7 +620,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king',
+  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
@@ -647,6 +647,9 @@ export const FURNACE = {
     /* 27/10/2026 (Geoffrey) : 10 peaux + 10 charbons = 5 chitine ; qty : produits par fournée (1 par défaut) ; unlock :
        recette fermée tant que l'objet n'a pas été « utilisé » (inv.unlocked, src/meta/craft.js learn) */
     'Peau de gobelin': { out:'Chitine', qty:5, time:60, tex:'bug', unlock:'Recette : Chitine' },
+    /* 27/10/2026 (Geoffrey) : 10 pépites (récompense du bloc géant, GIANT.nugget) + 10 charbons = 1 barre ; ouverte de base.
+       Durée provisoire (comme le fer) ; la barre n'a pas encore d'usage */
+    'Pépite d\'argent': { out:'Barre d\'argent', time:60, tex:'ingot_silver' },
   },
   alloys: [
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
@@ -1072,6 +1075,7 @@ export const ITEMS = {
   ...GOBLIN_CHEST_ITEMS,                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
+  'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
@@ -1275,9 +1279,9 @@ export const INSTANCE = {
    Dynamite : dynamitePoints point(s) de plus, sans rien casser ; Inspiration : comme en mine (tous les présents) ;
    Fast learner : le bloc géant est « appris » (+bonus à la vitesse de minage pour la visite). Dash, Illumination, Ulti
    shen : sans effet. Anneaux : pour tous les joueurs présents, une fois par anneau différent.
-   Récompense : à la fin de la session, à chaque joueur venu au moins une fois, selon le score collectif ; les paliers
-   s'additionnent. maxPlayers : mineurs en même temps dans la carte ; top : lignes du classement. poll : rafraîchissement
-   du panneau (ms). */
+   Récompense : à la fin de la session, à chaque joueur venu au moins minVisits fois, selon le score collectif ; les paliers
+   s'additionnent ; plus des pépites d'argent selon ses propres points (nugget). maxPlayers : mineurs en même temps dans
+   la carte ; top : lignes du classement. poll : rafraîchissement du panneau (ms). */
 export const GIANT = {
   timeZone: 'Europe/Paris',
   visit: 180, cooldownMs: 3 * 3600e3, maxPlayers: 30,
@@ -1297,6 +1301,9 @@ export const GIANT = {
   /* récompense seulement pour un joueur venu au moins minVisits fois dans la journée (27/10/2026, Geoffrey ; avant : une
      fois). Compté pour les journées à partir de minVisitsFrom : celles déjà finies gardent l'ancienne règle. */
   minVisits: 2, minVisitsFrom: '2026-10-27',
+  /* en plus des paliers, chaque joueur qui a droit à la récompense reçoit 1 pépite d'argent par tranche de `per` points
+     faits ce jour-là (ses points à lui, arrondi vers le bas) ; elle se fond au four (27/10/2026, Geoffrey) */
+  nugget: { item:'Pépite d\'argent', per:100 },
   top: 10, poll: 3000, viewPoll: 500,
 };
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),

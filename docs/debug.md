@@ -3701,3 +3701,18 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : les minotaures et les mobs des vagues chassent toujours le premier mineur (`hunt = miners[0]`) ;
   sans incidence ici, à revoir si une salle doit répartir les cibles.
 
+### Barre d'argent et pépites d'argent du Bloc géant (Geoffrey) — ✅ en ligne le 27/10
+- **Quoi** : `FURNACE.recipes['Pépite d\'argent']` → `Barre d'argent` (10 + 10 charbon, 60 s, sans `unlock`) ;
+  `ITEMS['Pépite d\'argent']` (material, écrit en clair : `GIANT` est défini après `ITEMS`, cohérence vérifiée par
+  `tierItemsKnown`) ; `GIANT.nugget = { item, per:100 }`. `src/shared/giant.js` : `nuggetsFor(points)` (floor, 0 pour
+  NaN / négatif / Infinity / texte), `playerRewardFor(total, points)` = paliers + pépites. `server/giant/service.js`
+  `pendingRewards` : `playerRewardFor(d.total, d.scores[account].points)` ; un jour sous le 1er palier donne quand même
+  les pépites. Même condition qu'avant (`earnsReward` : 2 visites depuis le 27/10), même idempotence (`p.claimed`).
+  `info()` renvoie `nugget: { item, per, n }` (carte du Lobby : « + 1 Pépite d'argent par 100 de tes points : N »).
+  Textures `nugget_silver`, `ingot_silver` (`gen_textures.py`). Wiki : source de la pépite (`sourcesOf`), texte du Bloc géant.
+- **Rétroactif** : les jours finis mais pas encore réclamés (26/10…) donnent aussi leurs pépites à la réclamation.
+- **Tests** ✅ : `giant-rules` (nuggetsFor, playerRewardFor, valeurs invalides), `giant-service` (paliers + pépites,
+  une seule fois, sous le 1er palier : pépites seules, 99,9 points : rien, 1 visite le 27/10 : rien même à 500 points,
+  carte), `furnace` (25 pépites → 2 barres, recette ouverte de base) ; wiki, rarity, shiny, treasure : 141/141 ;
+  `npm run test:anticheat` 102/102.
+- **À vérifier** : pas testé dans le navigateur (carte du Bloc géant, icônes). La barre n'a aucun usage.
