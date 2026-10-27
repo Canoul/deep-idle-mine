@@ -156,12 +156,24 @@ function fight(G,m,o){
 
 /* Profondeur maximale (couche) où il peut encore aller travailler : aller et retour depuis la surface en au plus
    (1 − CFG.endWorkShare) du temps restant, marge de 12 s. Calculée au départ de la surface (m.tripCap) : la remontée
-   à l'heure reste décidée comme avant (temps de retour estimé). Secondes par couche : mesurées à sa dernière remontée
-   (m.secPerRow), sinon estimées par la vitesse de montée (×1,25, comme le retour). Grande en début de session. */
+   à l'heure reste décidée comme avant (temps de retour estimé). Secondes par couche : remontée mesurée à sa dernière
+   remontée (m.secPerRow), sinon estimée par la vitesse de montée (×1,25, comme le retour) ; descente mesurée à sa
+   dernière descente jusqu'au front (m.secPerRowDown), sinon comptée comme la remontée. Grande en début de session.
+   27/10/2026 (Geoffrey) : avant, descente = remontée et 25 % de marge en plus sur la remontée mesurée (2,25 × la
+   remontée) ; avec le treuil la descente prend ≈ 75 % de la remontée : il s'arrêtait 90 couches au-dessus du front
+   dès 6-7 min de la fin (session dev du 27/10, seed 468608167). */
 const secPerRow = m => m.secPerRow ?? 1.25/m.carac.climbSpeed;
+const secPerRowDown = m => m.secPerRowDown ?? secPerRow(m);
 export function depthCap(G,m){
   const left=SESSION_LEN-G.t, budget=left*(1-CFG.endWorkShare)-12;
-  return Math.max(0, Math.floor(budget/(2.25*secPerRow(m))));   // descente (×1) + remontée (×1,25)
+  return Math.max(0, Math.floor(budget/(secPerRowDown(m)+secPerRow(m))));
+}
+/* descente mesurée (m.secPerRowDown) : du départ de la surface jusqu'à la profondeur de sa dernière remontée (le front),
+   bornée par la profondeur max du trajet ; abandonnée s'il remonte avant (pods, oxygène…) */
+function trackDescent(G,m){
+  if(m.descentStart==null) return;
+  if(m.mode==='return' || m.mode==='fetch' || m.y===0 && G.t>m.descentStart+1){ m.descentStart=null; return; }
+  if(m.y>=m.descentGoal){ m.secPerRowDown=(G.t-m.descentStart)/m.y; m.descentStart=null; }
 }
 
 function decideSurface(G,m){
@@ -186,6 +198,8 @@ function decideSurface(G,m){
   /* profondeur max de ce trajet, fixée quand il décide de repartir (sinon il remonterait sans cesse pour la suivre ;
      et avant de rejoindre son puits : il peut tomber dans le treuil en chemin, et partir sans repasser ici) */
   m.tripCap=depthCap(G,m);
+  const goal=Math.min(m.lastReturnFromY ?? 0, m.tripCap)-5;   // un peu au-dessus du front : il y mine déjà
+  m.descentStart = goal>=10 ? G.t : null; m.descentGoal=goal;
   decideDeparture(G,m);
 }
 
@@ -268,7 +282,7 @@ function decideReturn(G,m,rp){
     m.mode='surface'; m.lastReturnDur=G.t-m.returnStart;
     /* vitesse de remontée mesurée (secondes par couche), pour la profondeur maximale de fin de session */
     if(m.returnFromY>=10 && m.lastReturnDur>0) m.secPerRow=m.lastReturnDur/m.returnFromY;
-    m.returnFromY=null;
+    m.lastReturnFromY=m.returnFromY; m.returnFromY=null;
     return decideSurface(G,m);
   }
   m.returnFromY ??= m.y;
@@ -705,6 +719,7 @@ export function decide(G,m){
   { const tk=tackler(G,m); if(tk){ m.foe=tk.id; m.foeHit=G.t; fight(G,m,tk); if(m.action) m.action.data.fight=true; m.status='Taclé ! ('+tk.type+')'; return; } }
   if(m.mode==='surface' && m.y>0){ m.mode='return'; m.reason='chute'; m.returnStart=G.t; }  // tombé dans un trou en rejoignant le coffre
   if(m.mode==='departure' && m.y>0) m.mode='work';                       // tombé en rejoignant son puits : il est parti
+  trackDescent(G,m);
   if(m.y>0){
     /* engagement : une fois déclenché, le combat continue même si le mob sort du champ de vision.
        On lâche s'il s'éloigne trop ; on l'ignore si aucun coup n'a porté depuis foeGiveUp secondes. Sauf un barbare

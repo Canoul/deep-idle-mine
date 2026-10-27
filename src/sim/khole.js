@@ -32,7 +32,7 @@ const WORLD = ['tiles', 'ladder', 'seen', 'areas', 'unlockedAreas', 'winch', 'tr
 const SPOT = ['x', 'y', 'kx', 'ky', 'face', 'dir', 'action', 'mode', 'status', 'reason', 'target', 'foe', 'foeHit', 'exploring',
   'exploreArea', 'skipRows', 'ignored', 'digCol', 'galleryRow', 'returnStart', 'lastReturnDur', 'returnFromY', 'yieldSince',
   'scaredIn', 'scaredUntil', 'muleJob', 'muleFetch', 'helping', 'helpFoe', 'helpSkip', 'goingDown', 'choke', 'winchJob',
-  'winchDepth', 'pickPlan', 'pickPlanEmpty', 'pickPlanAt', 'pickFail', 'tripCap', 'secPerRow', 'lazyTry', 'lastArea', 'pings',
+  'winchDepth', 'pickPlan', 'pickPlanEmpty', 'pickPlanAt', 'pickFail', 'tripCap', 'secPerRow', 'secPerRowDown', 'descentStart', 'descentGoal', 'lastReturnFromY', 'lazyTry', 'lastArea', 'pings',
   'fall', 'atkReady', 'braumIn'];
 
 /* ---------- le portail, dans la mine ---------- */
