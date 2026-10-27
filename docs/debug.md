@@ -3540,7 +3540,7 @@ Règles (voir CLAUDE.md) :
   La simulation des tours du matin ne vaut plus (les pods n'ont plus bougé) : seuls casques / jambes / bottes changent
   un peu (fer : montée 3,3 → 3,25, marche 4,05 → 4,04).
 
-### Sorts : Bonbonne de zipette, Cri de guerre, Cleave, Hand of Justice (Geoffrey, 27/10) — 🔧 branche `geoffrey/sorts-zipette-cri-cleave-hoj`
+### Sorts : Bonbonne de zipette, Cri de guerre, Cleave, Hand of Justice (Geoffrey, 27/10) — ✅ en ligne le 27/10
 - Config `SPELLS.list` : `zipette`, `war_cry`, `cleave`, `hand_of_justice` (parchemins créés tout seuls dans ITEMS).
 - `src/sim/spells.js` (`updateSpells`) : `warCry`, `cleave`, `handOfJustice`, `zipette`. « En combat » = `fighting()` :
   coup en cours (action attack, mob vivant) ou tacle, jamais pendant un étourdissement. `fair()` : un boss de donjon

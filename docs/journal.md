@@ -50,7 +50,7 @@ Modèle d'entrée :
   en a plusieurs, et seulement s'il lui en manque ; Cleave ne touche pas un boss de donjon qu'il ne combat pas (mur de
   la salle) ; Hand of Justice coupe aussi la canalisation de l'occultiste, comme le Dash ; un 2e Cri de guerre prolonge
   l'effet sans le cumuler.
-- **État** : 🔧 branche `geoffrey/sorts-zipette-cri-cleave-hoj`, pas en ligne
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
 - **Pour le joueur** : un chef qui part (onglet fermé, PC en veille, téléphone verrouillé) **reste chef** de son groupe,
