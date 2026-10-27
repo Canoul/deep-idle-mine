@@ -50,9 +50,12 @@ export function updateHUD(G, ui){
 
   // coffre commun + contributions
   $('chestBox').innerHTML=chips(G.chest);
-  $('chestByBox').innerHTML = G.miners.length>1
+  /* part de chacun ; « Gobelins asservis » (Couronne du Roi Gobelin, 27/10) : ce que les gobelins ont miné, aussi en solo */
+  const gob=G.goblinChest && Object.keys(G.goblinChest).length
+    ? `<div class="row gobRow"><span>👑 Gobelins asservis${G.thralls?.length ? ` (${G.thralls.length} au travail)` : ''}</span><span>${chips(G.goblinChest)}</span></div>` : '';
+  $('chestByBox').innerHTML = (G.miners.length>1
     ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
-    : '';
+    : '') + gob;
   // XP de la session : pot commun, partagé à parts égales à la fin
   { const xp=G.stats.xp||0, n=G.miners.length;
     $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }

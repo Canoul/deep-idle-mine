@@ -3583,3 +3583,37 @@ Règles (voir CLAUDE.md) :
   aller-retour (canvas redessiné 944 × 503), « Entrer » actif en session, aucune erreur de page ✅.
 - **Points fragiles** : le Social (`activeSessionInfo`) n'affiche qu'une des deux activités (la session). Un joueur au
   Bloc géant pendant sa session ne regarde pas sa session (sans effet : elle tourne sur le serveur).
+
+### Roi Gobelin : coffre, objets, gobelins asservis, Four en or, recette Chitine (Geoffrey) — branche `geoffrey/roi-gobelin-objets`, 🧪
+- **Quoi** : `GOBLIN_KING` (config) : table du coffre, `thrall { radius:10, life:30, reach:6 }`. Objets `ITEMS` :
+  « Coffre du Roi Gobelin R1-R7 » (`chest:{ side:'goblin', q }`, `treasure:true`, Unique), « Four en or BP », « Recette :
+  Chitine » (cat blueprint) ; `STUFF.items` : Couronne (`set.goblinThrall = 10`, fortune 10), Masse, Cape royale (tier 3
+  dans `UPGRADE.tiers`). `STATS.goblinThrall = 0` (nouvelle stat, libellé, aide du wiki).
+  - Coffre : `openGoblinChest` (`src/meta/loot.js`) ; `rollLoot(table, rng, skip)` : un objet `learnOnce` déjà appris
+    ne sort pas (le tirage ne donne rien, pas de nouveau tirage). Stuff sorti : `slot.q = q` (identifié). Nom affiché :
+    `itemName` lit `GOBLIN_KING.chest` pour side 'goblin'. Une annonce Discord R7 part comme pour un trésor de tour.
+  - Four : `FURNACE.recipes['Peau de gobelin'] = { out:'Chitine', qty:5, time:60, unlock:'Recette : Chitine' }` ;
+    `recipeOf` accepte un non-minerai ; `accepts(slot, item, mode, inv)` refuse une recette fermée pas apprise
+    (`inv.unlocked` contient « Four : Chitine », mis par `learn` via `recipeOfBlueprint`) ; `qty` par fournée.
+    **Corrigé au passage** : `sanitizeFurnaces` effaçait à la relecture un ingrédient non-minerai posé et une sortie qui
+    n'est pas un lingot (la chitine) → relu sans l'inventaire (`recipeOf`) et sortie = toute sortie de recette.
+  - 3e four : `FURNACE.tiers[2] = Four en or ×1,5`, `unlockItems['Four en or'] = { slot:2 }`, recette dans `src/recipes.js`.
+  - Asservis (`src/sim/thrall.js`) : `spawnMobs` (mobs.js) envoie un gobelin né à `goblinThrall` cases (cercle) d'un porteur
+    sous terre vers `G.thralls` (pas dans `G.mobs` : aucun code de combat ne le voit). `updateThralls` (session.tick, après
+    les mobs) : prise (golem), chute, cible = meilleur minerai à `reach` (Manhattan) par `targetVal(porteur)` / (distance +
+    temps + 1), pas un minerai visé ou miné par un mineur ; il creuse droit (axe le plus long), temps = dureté /
+    STATS.mineSpeed, pas = 1 / STATS.speed ; bloqué : minerai abandonné (`skip`). Bloc cassé → `G.chest` + `G.goblinChest`
+    (+ déblocage d'area pour un minerai). Sans hasard. `thralls` gardés dans le k hole (WORLD) ; vue : `thralls`,
+    `goblinChest` ; rendu : gobelin doré + couronne ; HUD : ligne « 👑 Gobelins asservis » sous le coffre.
+  - Lampe à incandescence ajoutée au tier 2 de `UPGRADE.tiers` : `tests/rune.test.js` échouait déjà sur `main` (« sans tier »).
+  - Textures (6 icônes, 4 calques de skin) dans `scripts/gen_textures.py`, branchées dans `src/skins.js`.
+- **Tests** : `tests/goblin-king.test.js` (7 : objets, coffre R1-R7, seuils et fréquences, qualité, recette une seule fois,
+  four Chitine + relecture, Four en or), `tests/goblin-thrall.test.js` (8 : porteur, minage, temps, creuse, laisse la cible
+  d'un mineur, disparition, chute), `tests/anticheat/goblin-king.test.js` (2) ✅ ; furnace, craft, loot, stuff, rarity
+  (couronne légendaire…), wiki, rune, research, mobs, golem, khole, session, view, share… ✅ ; anticheat ✅.
+- **Simulation** (`--miners 3 --count 5`, 1er mineur avec `--crown`) : 0 blocage ; coffre 4 140 → 4 578 pods (+11 %),
+  areas 3,0 → 3,2, profondeur 182 → 196 ; ≈ 12 gobelins asservis, 86 blocs, 184 pods par session (le reste du gain :
+  fortune +10 et gobelins qui ne volent plus).
+- **Points fragiles** : le boss n'existe pas (coffre seulement par l'admin) ; `--crown` ne met que la stat et la fortune
+  (pas le stuff complet) ; un asservi peut casser le bloc qu'un mineur traverse (le mineur finit son action sur du vide,
+  sans effet) ; pas vérifié dans le navigateur (dessin du gobelin doré, ligne du coffre).

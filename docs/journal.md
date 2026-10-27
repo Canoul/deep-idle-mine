@@ -32,6 +32,21 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Roi Gobelin : son coffre et 5 nouveaux objets
+- **Pour le joueur** : un **Coffre du Roi Gobelin** (qualité R1 à R7) s'ouvre dans l'inventaire : graphite, peaux de
+  gobelin, et au plus un objet rare : **Couronne du Roi Gobelin** (1 %), **plan du Four en or** (2 %), **Masse du Roi
+  Gobelin** (2 %), **Cape royale du Gobelin** (2 %) ; plus la **Recette : Chitine** (5 %, si pas encore apprise) et une
+  gemme (1 % chacune). Les pièces arrivent identifiées à la qualité du coffre.
+  - **Couronne** (casque, légendaire) : fortune +10 %, et les gobelins qui apparaissent à 10 cases du porteur sont
+    **asservis** : 30 s à miner autour d'eux pour le coffre commun (ligne « 👑 Gobelins asservis »), puis ils disparaissent.
+  - **Masse** (14 dégâts, critique +15 %), **Cape royale** (dégâts +5 %, minage +5 %), **Four en or** (3e four, ×1,5),
+    **Recette : Chitine** (10 peaux + 10 charbon → 5 chitine au four).
+- **Décisions** : le **boss n'existe pas encore** ; en attendant, le coffre n'est donné que par l'équipe. Asservis : à
+  10 cases du porteur, quand ils apparaissent. Choix de Claude, à valider : objets au tier 3 pour les runes ; les asservis
+  n'ont ni fortune ni shiny ; Lampe à incandescence passée au tier 2 des runes (un test l'exigeait).
+- **À suivre** : le boss Roi Gobelin (où, PV, attaques, quand il lâche les coffres).
+- **État** : 🧪 sur la branche `geoffrey/roi-gobelin-objets` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Bloc géant : aussi pendant une session, récompense à partir de 2 visites
 - **Pour le joueur** : on peut **entrer au Bloc géant pendant une session**, et le chef peut **lancer une session
   pendant une visite** (la Mine instantanée aussi prend un joueur en visite). Les deux continuent chacune de leur côté.

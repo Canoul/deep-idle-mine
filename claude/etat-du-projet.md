@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (Bloc géant : pendant une session, récompense à 2 visites).*
+*Dernière mise à jour : 27/10/2026 (Roi Gobelin : coffre et objets, gobelins asservis, Four en or, recette Chitine).*
 
 ---
 
@@ -130,6 +130,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
+  `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : **le boss n'existe pas encore** (à définir) ; son « Coffre du Roi
+  Gobelin R1-R7 » (Unique, donné par l'admin en attendant) : graphite + peaux toujours, un objet rare au plus (Couronne 1 %,
+  Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), gemmes 1 % ; le stuff sort
+  identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
+  du porteur : 30 s à miner pour le coffre commun, ligne « Gobelins asservis » du coffre). **Four en or** = 3e four ×1,5.
+  **Recette : Chitine** : 10 peaux + 10 charbon → 5 chitine au four. Lampe à incandescence passée au tier 2 des runes.
 - **Butin rare des mobs** (26/10, Geoffrey) : 4 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
   chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
