@@ -9,20 +9,6 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 27/10/2026 — Geoffrey — Stuff : armures à la valeur de leur tier, combat du butin des mobs divisé par 2
-- **Pour le joueur** : casque, jambes et bottes valent maintenant exactement leur tier : chitine 100 x, fer 250 x,
-  acier 400 x (petits ajustements : casque en chitine +25, casque en fer +63, jambes en fer +1, bottes +0,42 / +1,04).
-  Les **plastrons ne changent pas** : la pièce de torse est volontairement plus forte. Le butin rare
-  des mobs a ses **stats de combat divisées par 2** (Lanières : attaque +31,9 %, butin +12,5 % ; Capuche : recul +0,52,
-  critique +4,8 % ; Ceinture du Géant : dégâts +1,6, ténacité +12,5 % ; Nuage : marche +1,04).
-- **Décisions** (Geoffrey) : règle permanente, gardée par un test : casque, jambes, bottes = valeur du tier, plastron
-  au-dessus (torse plus fort, hors règle) ; butin des mobs = 250 x à
-  parts égales, une stat de combat n'en reçoit que la moitié. Les pièces dessinées à la main (épées, pioches, Plastron
-  de l'équilibre, gants, cape…) ne bougent pas.
-- **À suivre** : la Capuche passe de recul +0,13 à +0,52 (l'équation, même divisée par 2, donne plus qu'avant). Tout
-  en fer = 2 160 GS, tout en acier = 3 011 GS (seuil de la modulation : 2 000).
-- **État** : ✅ en ligne le 27/10
-
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -113,6 +99,20 @@ Modèle d'entrée :
   en a plusieurs, et seulement s'il lui en manque ; Cleave ne touche pas un boss de donjon qu'il ne combat pas (mur de
   la salle) ; Hand of Justice coupe aussi la canalisation de l'occultiste, comme le Dash ; un 2e Cri de guerre prolonge
   l'effet sans le cumuler.
+- **État** : ✅ en ligne le 27/10
+
+## 27/10/2026 — Geoffrey — Stuff : armures à la valeur de leur tier, combat du butin des mobs divisé par 2
+- **Pour le joueur** : casque, jambes et bottes valent maintenant exactement leur tier : chitine 100 x, fer 250 x,
+  acier 400 x (petits ajustements : casque en chitine +25, casque en fer +63, jambes en fer +1, bottes +0,42 / +1,04).
+  Les **plastrons ne changent pas** : la pièce de torse est volontairement plus forte. Le butin rare
+  des mobs a ses **stats de combat divisées par 2** (Lanières : attaque +31,9 %, butin +12,5 % ; Capuche : recul +0,52,
+  critique +4,8 % ; Ceinture du Géant : dégâts +1,6, ténacité +12,5 % ; Nuage : marche +1,04).
+- **Décisions** (Geoffrey) : règle permanente, gardée par un test : casque, jambes, bottes = valeur du tier, plastron
+  au-dessus (torse plus fort, hors règle) ; butin des mobs = 250 x à
+  parts égales, une stat de combat n'en reçoit que la moitié. Les pièces dessinées à la main (épées, pioches, Plastron
+  de l'équilibre, gants, cape…) ne bougent pas.
+- **À suivre** : la Capuche passe de recul +0,13 à +0,52 (l'équation, même divisée par 2, donne plus qu'avant). Tout
+  en fer = 2 160 GS, tout en acier = 3 011 GS (seuil de la modulation : 2 000).
 - **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
