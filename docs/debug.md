@@ -3701,3 +3701,17 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : les minotaures et les mobs des vagues chassent toujours le premier mineur (`hunt = miners[0]`) ;
   sans incidence ici, à revoir si une salle doit répartir les cibles.
 
+### Mode dev : presets de personnage par spé (Geoffrey) — branche `geoffrey/presets-dev`, 🧪
+- **Quoi** : `scripts/dev-presets.js` (`npm run dev:presets`, options `--keys`, `--password`) : un compte par arbre de
+  `SKILLS.trees` (`PRESET.names`), créé par `createAccountService().register` sur le file store, sinon remis à neuf
+  (`putProgress` + `putLoadout` : inventaire, stuff, skills, sorts, sets écrasés ; mot de passe gardé). Refuse de tourner
+  si `DATABASE_URL` est présent (local seulement ; `DIM_DATA_DIR` respecté). `buildPreset` est pur : stuff équipé par
+  `stuffOp` (vrais uid), arbre via `sanitizeSkills`, sorts `unlock.tree` de la spé dans les `openSlots`.
+- **Niveau** : `maxStorableLevel()` = 72 (XP du niveau 73 > `Number.MAX_SAFE_INTEGER`, `sanitizeProgress` la remettrait
+  à 0). Demandé : 100, impossible sans changer le stockage de l'XP. Même XP pour la spé (`specCurve` = `curve`).
+- **Tests** : `tests/dev-presets.test.js` ✅ 5/5 (tout repasse les sanitize du serveur, clés invalides refusées).
+  Vérifié de bout en bout ✅ : serveur dev sur données temporaires, connexion Test_Barbare, `/api/game/state` = niveau 72,
+  spé barbare 72, 6 pièces acier, 5 clés (`--keys 5`), arbre 12/12, sorts dash + war_cry. Script lancé deux fois (création puis
+  remise à neuf) ✅.
+- **Point fragile** : si un nouvel arbre arrive sans entrée dans `PRESET.names`, son compte s'appelle `Test_<id>`
+  (tronqué à 16 caractères).

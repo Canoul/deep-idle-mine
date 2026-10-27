@@ -18,6 +18,15 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
+- **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets` crée (ou remet à neuf) dans les données
+  locales trois comptes : **Test_Mineur**, **Test_Logisticien**, **Test_Barbare** (mot de passe `preset1234`).
+  Chacun : stuff complet en acier porté, arbre de sa spé rempli, sorts de la spé équipés, 10 Clés d'instance I.
+- **Décisions** : niveau et niveau de spé à **72**, pas 100 : au-delà, l'XP ne tient plus dans un nombre que le serveur
+  accepte. Ça ne change rien en pratique : un arbre coûte 10 à 12 points et les sorts de spé s'ouvrent au niveau 5.
+- **À suivre** : arrêter le serveur de dev avant de lancer le script (sinon il réécrit l'ancien état).
+- **État** : 🧪 sur la branche `geoffrey/presets-dev` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
 - **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
   minotaures** et dans les **Vagues** du k hole. Avant, il restait planté pendant 2 min (« Plus rien à explorer ») et
