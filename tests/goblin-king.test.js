@@ -25,7 +25,8 @@ test('objets : cases, stats et raretés du créateur ; pas craftables (sauf le F
   assert.deepEqual(STUFF.items[MACE], { slot:'epee', tex:'mace_goblin_king', set:{ damage:14 }, stats:{ crit:15 } });
   assert.deepEqual(STUFF.items[CAPE], { slot:'cape', tex:'cape_goblin_royal', stats:{ damagePct:5, mineSpeedPct:5 } });
   assert.deepEqual([CROWN, MACE, CAPE, RECIPE, 'Four en or', BP].map(rarityOf), ['legendaire', 'rare', 'rare', 'inhabituel', 'rare', 'rare']);
-  for(const p of [CROWN, MACE, CAPE]){ assert.equal(RECIPES[p], undefined, p); assert.equal(tierOf(p), 3, p); }
+  for(const p of [CROWN, MACE, CAPE]) assert.equal(RECIPES[p], undefined, p);
+  assert.equal(tierOf(MACE), 3); assert.equal(tierOf(CAPE), 3); assert.equal(tierOf(CROWN), 4, 'couronne : tier 4, 600 x (27/10)');
   assert.deepEqual(RECIPES['Four en or'], { cost:{ 'Shiny gold':50, 'Tainted gold':50, 'Diamant':50 }, qty:1, unlock:BP });
   const s = equippedStats([{ item:CROWN }, { item:MACE }, { item:CAPE }]);
   assert.equal(s.fortune, 10); assert.equal(s.goblinThrall, 10); assert.equal(s.damage, 14); assert.equal(s.crit, 15);

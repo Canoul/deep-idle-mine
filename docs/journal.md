@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Runes : stuff du Roi Gobelin au tier 3, couronne au tier 4
+- **Pour le joueur** : une rune posée sur la masse ou la cape du Roi Gobelin vaut un % de **400 x** (tier 3) ; sur la
+  **couronne**, de **600 x** (nouveau **tier 4**). Ces pièces sortent déjà identifiées à la qualité de leur coffre.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Wiki : effets des nouveaux objets cachés tant que personne ne les a trouvés
 - **Pour le joueur** : dans le wiki, la **Couronne du Roi Gobelin**, la **Masse du Roi Gobelin** et la **Cape royale du
   Gobelin** s'affichent avec « ❓ Effets inconnus : personne ne l'a encore trouvé ». Dès qu'un joueur en obtient une en

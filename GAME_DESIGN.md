@@ -750,7 +750,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   - un autre tirage, **un parchemin de sort au plus** *(27/10/2026, Geoffrey)* : **Ulti shen 1 %**, **Fast learner 0,5 %**, **Cleave 1 %**, **Hand of Justice 1 %** (3,5 % d'en avoir un) ; **un sort déjà appris ne peut pas sortir** (ce tirage ne donne alors rien) ; un parchemin gardé dans l'inventaire sans l'avoir appris peut ressortir ;
   - un autre : les 3 gemmes inférieures, **1 % chacune**.
   - **La qualité du coffre s'applique aux pièces de stuff** qui en sortent : la couronne, la masse ou la cape arrivent **déjà identifiées** à la qualité du coffre (R6 → pièce R6). Le plan et la recette n'ont pas de qualité.
-- **Les objets** (pas craftables ; tier **3** pour les runes, *choix de Claude*) :
+- **Les objets** (pas craftables ; déjà identifiés à la qualité du coffre ; pour les runes : **tier 3 (400 x)** pour la masse et la cape, **tier 4 (600 x)** pour la couronne *(27/10/2026, Geoffrey)*) :
 
   | Objet | Case | Rareté | Effet |
   |---|---|---|---|
