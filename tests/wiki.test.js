@@ -61,9 +61,9 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
 test('wiki : areas — % de la config, seuil de déblocage = 40 % des minerais', () => {
   const rows = D.areaRows();
   assert.equal(rows.length, AREAS.length);
-  assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 501, 500]);
+  assert.deepEqual(rows.map(r => r.ores), [250, 400, 500, 500, 500, 501, 500, 500, 500]);
   for(const r of rows) assert.equal(r.unlock, Math.ceil(CFG.unlockRatio * r.ores));
-  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T3', 'Treasure T3']);
+  assert.deepEqual(rows.map(r => r.tier), ['Treasure T1', 'Treasure T1', 'Treasure T1', 'Treasure T2', 'Treasure T2', 'Treasure T3', 'Treasure T3', 'Treasure T3', 'Treasure T3']);
 });
 
 test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris', () => {
@@ -118,7 +118,7 @@ test('wiki : sorts, XP de spécialisation, anneaux et date de mise à jour (24/1
 
 test('wiki : chance de treasure par area lue dans la config (50 % en areas 0 à 2, 40 % au-delà, 25/10 au soir)', () => {
   assert.equal(D.treasureChanceText(), '40 à 50 %');
-  assert.deepEqual(AREAS.map(a => a.chestChance), [0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4]);
+  assert.deepEqual(AREAS.map(a => a.chestChance), [0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4]);
 });
 
 test('wiki : glyphes — tableau généré depuis GLYPHS (10 lignes), usage des objets, section dans la page', async () => {

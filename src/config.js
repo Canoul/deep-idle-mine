@@ -142,10 +142,16 @@ export const BLOCKS = {
   /* k hole (25/10, Geoffrey, KHOLE) : portail en trou noir, incassable ; dès qu'un mineur le découvre, il aspire tout le
      groupe dans une autre dimension, puis disparaît */
   20:{name:'K hole', type:'special', tex:'khole', w:0, hard:Infinity, color:'#12001f', dot:'#9b4dff', unbreakable:true, noDrop:true},
+  /* minerais des areas 6 à 8 (27/10/2026, Geoffrey) : mithril (commun) dès l'area 6, cobalt et thorium (inhabituels,
+     RARITY) dès l'area 7. Pas encore de recette de four. Dureté, poids, attrait et XP : provisoires (Claude) */
+  21:{name:'Mithril ore', type:'ore', tex:'mithril', w:3, hard:4.5, color:'#7d828c', dot:'#b8d4f0', val:5},
+  22:{name:'Cobalt ore',  type:'ore', tex:'cobalt',  w:4, hard:5.5, color:'#7d828c', dot:'#2f5fe0', val:7},
+  23:{name:'Thorium ore', type:'ore', tex:'thorium', w:4, hard:5.5, color:'#7d828c', dot:'#7ee04a', val:7},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
-export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19 };
+export const IDS = { air:0, dirt:1, stone:2, coal:3, iron:4, gold:5, diamond:6, hardstone:9, residueAngel:12, residueDemon:13, graphite:19,
+                     mithril:21, cobalt:22, thorium:23 };
 
 /* Constructions du mineur (catégorie build). La passerelle est une tuile de la grille ; l'échelle et la torche
    se posent PAR-DESSUS une case vide (G.ladder, G.torches) : ce ne sont pas des tuiles. */
@@ -169,7 +175,12 @@ export const AREAS = [
   /* areas 5 et 6 : décision du 23/10 (Geoffrey), graphite et plus de charbon ; ancien area 5 :
      stone 55, hardstone 20, coal 3, iron 8, gold 7, diamond 2, air 5 */
   { comp:{         stone:55, hardstone:20,           iron:9.5, gold:5, diamond:0.5, graphite:5, air:5}, chestChance:0.4 },
-  { comp:{         stone:35, hardstone:40,           iron:7,   gold:6, diamond:1,   graphite:6, air:5}, chestChance:0.4 },
+  /* areas 6 à 8 : décision du 27/10/2026 (Geoffrey) ; ancienne area 6 (répétée au-delà) : stone 35, hardstone 40,
+     iron 7, gold 6, diamond 1, graphite 6, air 5. Les résidus (0,5 %) sont pris sur la pierre à la génération : la
+     pierre affichée en jeu vaut 0,5 de moins (34,5 / 20 / 15) */
+  { comp:{         stone:35,   hardstone:40,         iron:5,   gold:6, diamond:1,   graphite:6, mithril:2,                       air:5}, chestChance:0.4 },
+  { comp:{         stone:20.5, hardstone:54.5,       iron:2,   gold:1, diamond:1,   graphite:7, mithril:5, cobalt:2, thorium:2,  air:5}, chestChance:0.4 },
+  { comp:{         stone:15.5, hardstone:59.5,                                      graphite:5, mithril:7, cobalt:4, thorium:4,  air:5}, chestChance:0.4 },
 ];
 
 /* butin d'un treasure : un objet « Treasure TX » dont le tier dépend de l'area où le treasure est enfoui
@@ -400,7 +411,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    talentPerLevel : points de talent gagnés à chaque niveau (dépensés plus tard dans l'onglet Talents).
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
-  ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4 },
+  ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8 },   // mithril, cobalt, thorium : 27/10
   mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
@@ -612,7 +623,7 @@ export const SPELLS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -824,6 +835,7 @@ export const RARITY = {
     [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
+    'Cobalt ore':'inhabituel', 'Thorium ore':'inhabituel',   // Mithril ore : commun (27/10/2026, Geoffrey)
     'Rubis inférieur':'inhabituel', 'Saphir inférieur':'inhabituel', 'Jade inférieur':'inhabituel',
     'Boussole en or':'inhabituel', 'Boussole en or BP':'inhabituel',
     'Four en fer':'inhabituel', 'Four en fer BP':'inhabituel',

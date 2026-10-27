@@ -40,7 +40,7 @@ Chaque bloc appartient à une catégorie :
 | Catégorie | Blocs | Rôle |
 |---|---|---|
 | `terrain` | terre, pierre, pierre dure | remplissage, se mine et se ramasse |
-| `ore` | charbon, fer, or, diamant | minerais : comptent pour le déblocage, visés par l'IA, signalés par la boussole |
+| `ore` | charbon, fer, or, diamant, graphite, mithril, cobalt, thorium | minerais : comptent pour le déblocage, visés par l'IA, signalés par la boussole |
 | `build` | passerelle, échelle, torche | posés par le mineur (l'échelle et la torche se posent par-dessus une case vide) |
 | `treasure` | treasure | entité enfouie dans la mine, voir ci-dessous |
 | `special` | barrière | bloc de jeu sans rôle de ressource |
@@ -55,21 +55,30 @@ Chaque bloc appartient à une catégorie :
 
 ### Compositions des areas
 
-| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Vide |
-|---|---|---|---|---|---|---|---|---|---|
-| 0 | 52 | 33 | – | 10 | – | – | – | – | 5 |
-| 1 | 30 | 49 | – | 15 | 1 | – | – | – | 5 |
-| 2 | 20 | 55 | – | 10 | 10 | – | – | – | 5 |
-| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | 5 |
-| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | 5 |
-| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | 5 |
-| 6+ | – | 35 | 40 | – | 7 | 6 | 1 | 6 | 5 |
+| Area | Terre | Pierre | Pierre dure | Charbon | Fer | Or | Diamant | Graphite | Mithril | Cobalt | Thorium | Vide |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 52 | 33 | – | 10 | – | – | – | – | – | – | – | 5 |
+| 1 | 30 | 49 | – | 15 | 1 | – | – | – | – | – | – | 5 |
+| 2 | 20 | 55 | – | 10 | 10 | – | – | – | – | – | – | 5 |
+| 3 | 10 | 60 | 5 | 7 | 10 | 3 | – | – | – | – | – | 5 |
+| 4 | – | 60 | 15 | 5 | 10 | 5 | – | – | – | – | – | 5 |
+| 5 | – | 55 | 20 | – | 9,5 | 5 | 0,5 | 5 | – | – | – | 5 |
+| 6 | – | 35 | 40 | – | 5 | 6 | 1 | 6 | 2 | – | – | 5 |
+| 7 | – | 20,5 | 54,5 | – | 2 | 1 | 1 | 7 | 5 | 2 | 2 | 5 |
+| 8+ | – | 15,5 | 59,5 | – | – | – | – | 5 | 7 | 4 | 4 | 5 |
 
-La dernière ligne se répète au-delà. Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
-au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide.
+La dernière ligne se répète au-delà. Dès l'area 4, les **résidus** (0,5 %) sont pris sur la pierre : la pierre réelle
+vaut 0,5 de moins (59,5 en area 4… 15 en area 8). Areas 5 et 6 : décision du 23/10/2026 (Geoffrey) ; ancienne area 5 (répétée
+au-delà) : 55 pierre, 20 pierre dure, 3 charbon, 8 fer, 7 or, 2 diamant, 5 vide. **Areas 6 à 8 : décision du
+27/10/2026 (Geoffrey)** ; ancienne area 6 (répétée au-delà) : 35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6 graphite, 5 vide.
+Toutes les areas de 2 à 8 ont 20 % de minerais (500 blocs).
 - **Graphite** (23/10/2026) : minerai `Graphite ore` des areas 5 et 6 (dureté 4, poids 3, attrait 4, 4 XP *(provisoire)*).
   Au four : **10 Graphite ore → 1 Graphite ingot** (10 charbons, 60 s). Alliage : **Steel ingot = 3 Tainted iron +
-  5 Graphite ingot** (50 charbons, 3 min ; 26/10/2026, avant 10 Graphite ingot). Usage du steel : à définir (craft). Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
+  5 Graphite ingot** (50 charbons, 3 min ; 26/10/2026, avant 10 Graphite ingot). Usage du steel : à définir (craft).
+- **Minerais profonds** (27/10/2026, Geoffrey) : **Mithril ore** (rareté commun, dès l'area 6), **Cobalt ore** et
+  **Thorium ore** (rareté inhabituel, dès l'area 7). Pas encore de recette de four ni de craft : usage à définir.
+  Valeurs *(provisoires, proposées par Claude)* : mithril dureté 4,5, poids 3, attrait 5, 5 XP ; cobalt et thorium
+  dureté 5,5, poids 4, attrait 7, 8 XP. Les comptes sont exacts, pas probabilistes (arrondis absorbés par le terrain principal).
 - Les minerais sont générés en petits filons (1 à 4 blocs).
 - Le **vide** est généré en petites poches (1 à 4 cases) : des cavités naturelles, cachées tant que le mineur ne les a pas découvertes. Le mineur peut y tomber (gravité). Les bestioles n'apparaissent pas dans une poche encore cachée.
 - **Pierre dure** : roche des areas profondes, deux fois plus longue à miner que la pierre (dureté 2,4, poids 3 *(provisoire)*).
