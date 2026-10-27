@@ -3728,3 +3728,5 @@ Règles (voir CLAUDE.md) :
 - **Difficulté** (`node scripts/simulate-instance.js --count 10 --size 3`, sans skills) : main : fer 0/10, fer + acier
   7/10 → 0/10, acier 10/10 → 3/10 ⚠️. Avec `geoffrey/acier-500` : fer + acier et acier 10/10 avec ou sans (9:16 → 9:21,
   8:57 → 9:07). À mettre en ligne ensemble.
+- **Spawners** (27/10, Geoffrey) : `INSTANCE.spawner.every` 30 → 20 s. **Tests et simulation non lancés** (demandé : direct sur
+  la version dev) ⚠️ : `tests/instance-sim.test.js` et `scripts/simulate-instance.js` à relancer avant la mise en ligne.
