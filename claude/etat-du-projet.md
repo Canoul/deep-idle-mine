@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (k hole : tout le monde se bat dans l'arène et les vagues).*
+*Dernière mise à jour : 27/10/2026 (minerais profonds : mithril, cobalt, thorium ; areas 7 et 8).*
 
 ---
 
@@ -140,8 +140,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (dureté 4, poids 3, attrait 4, 4 XP) en areas 5 et 6 ; four : 10 → 1 **Graphite ingot** (60 s) ; alliage **Steel
   ingot** = 3 Tainted iron + **5 Graphite ingot** (26/10 ; ancien : 10) (50 charbons, 3 min). **Area 5** revue (55
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
-  pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
+  pas de graphite) et **nouvelle area 6** (ancien : répétée au-delà ; 35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Minerais profonds et areas 7-8** (27/10, Geoffrey ; en ligne le 27/10) : **Mithril ore**
+  (commun, dès l'area 6), **Cobalt ore** et **Thorium ore** (inhabituels, dès l'area 7) ; pas encore de recette.
+  Valeurs provisoires (Claude) : mithril dureté 4,5, poids 3, attrait 5, 5 XP ; cobalt / thorium 5,5, 4, 7, 8 XP.
+  **Area 6** retouchée (fer 7 → 5, + 2 mithril), **nouvelles areas 7 et 8** (8 répétée au-delà), surtout de la pierre
+  dure (54,5 et 59,5 %) ; tableau dans `GAME_DESIGN.md`. Treasure T3, mobs, donjons : ceux de la dernière ligne
+  (rien de spécifique aux areas 7-8 pour l'instant).
 - **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
   `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : le boss est celui de l'Instance I ; son « Coffre du Roi
   Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : graphite + peaux toujours, un objet rare au plus (Couronne 1 %,

@@ -13,7 +13,7 @@ const setHtml = (el, h) => { if(el._html !== h){ el.innerHTML = h; el._html = h;
 const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';
 
 /* couleur et nom de chaque entrée de composition (les noms viennent des blocs ; « air » = poches de vide) */
-const COLORS={dirt:'#7a5230',stone:'#7d828c',hardstone:'#575c66',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0',graphite:'#2f3b4d',air:'#1a1410'};
+const COLORS={dirt:'#7a5230',stone:'#7d828c',hardstone:'#575c66',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0',graphite:'#2f3b4d',mithril:'#b8d4f0',cobalt:'#2f5fe0',thorium:'#7ee04a',air:'#1a1410'};
 const compName = n => n==='air' ? 'Vide' : BLOCKS[IDS[n]].name;
 
 function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+a+')':(m.y===0?' (surface)':' (couche de terre)')); }

@@ -20,9 +20,8 @@ test('bloc : Graphite ore, minerai, dureté 4, poids 3, attrait 4, 4 XP', () => 
 });
 
 test('compositions des areas 5 et 6 : 100 %, graphite 5 % et 6 %, plus de charbon', () => {
-  assert.equal(AREAS.length, 7);
   assert.deepEqual(AREAS[5].comp, { stone:55, hardstone:20, iron:9.5, gold:5, diamond:0.5, graphite:5, air:5 });
-  assert.deepEqual(AREAS[6].comp, { stone:35, hardstone:40, iron:7, gold:6, diamond:1, graphite:6, air:5 });
+  assert.equal(AREAS[6].comp.graphite, 6);   // area 6 retouchée le 27/10 (mithril) : tests/deep-ores.test.js
   for(const k of [5, 6]) assert.equal(Object.values(AREAS[k].comp).reduce((s, v) => s + v, 0), 100);
   for(let k = 0; k < 5; k++) assert.ok(!AREAS[k].comp.graphite, `pas de graphite en area ${k}`);
 });

@@ -196,6 +196,9 @@ def main():
     tex['gold'] = ore(5, '#7d828c', '#ffd23f')
     tex['diamond'] = ore(6, '#7d828c', '#4de8f0')
     tex['graphite'] = ore(19, '#7d828c', '#2f3b4d')   # graphite : veines gris-bleu métallique
+    tex['mithril'] = ore(21, '#7d828c', '#b8d4f0')    # mithril : éclats argent bleuté
+    tex['cobalt'] = ore(22, '#7d828c', '#2f5fe0')     # cobalt : bleu profond
+    tex['thorium'] = ore(23, '#7d828c', '#7ee04a')    # thorium : vert radioactif
 
     # fond de galerie creusée
     tex['tunnel'] = noisy(hexc('#2a1f18'), 7, 0.05)

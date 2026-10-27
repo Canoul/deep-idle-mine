@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Nouveaux minerais : mithril, cobalt, thorium (areas 7 et 8)
+- **Pour le joueur** : trois nouveaux minerais tout en bas de la mine. Le **mithril** (rareté commun) apparaît dès
+  l'area 6, le **cobalt** et le **thorium** (rareté inhabituel, nom en vert) dès l'area 7. Deux nouvelles areas : la **7** et la
+  **8** (la 8 se répète ensuite), surtout faites de pierre dure, donc lentes à creuser. L'area 6 change un peu : moins
+  de fer (7 % → 5 %), 2 % de mithril. On peut déjà les miner et les rapporter, mais **ils ne servent à rien pour
+  l'instant** (pas de four ni de craft).
+- **Décisions** : compositions des areas 6 à 8 et raretés : Geoffrey. Dureté, poids, attrait pour l'IA et XP : valeurs
+  provisoires proposées par Claude (mithril un peu plus dur que le graphite, cobalt et thorium plus durs que le diamant).
+- **À suivre** : à quoi servent ces minerais (four, alliages, stuff du tier 4) ; faut-il des mobs, un Treasure T4 ou
+  des donjons propres aux areas 7-8 (pour l'instant : ceux des areas précédentes).
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration
 - **Pour le joueur** : un **anneau** s'améliore de +1 à +9 en sacrifiant un **doublon du même anneau** (pas de plumes ni
   de cristaux), avec les mêmes chances de réussite que les autres pièces. Chaque niveau ajoute **+0,5** à chacun de ses

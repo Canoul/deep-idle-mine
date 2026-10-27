@@ -11,7 +11,7 @@ import { ringLines } from '../meta/stuff.js';
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
 const isStuffItem = item => ITEMS[item]?.cat === 'stuff';
-export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'graphite', 'air'];
+export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'graphite', 'mithril', 'cobalt', 'thorium', 'air'];
 const isOreKey = k => blockByKey(k)?.type === 'ore';
 
 /* ---------- areas ---------- */

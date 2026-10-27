@@ -3817,3 +3817,23 @@ Règles (voir CLAUDE.md) :
   runes, MI, bloc géant : 150/150 ; `npm run test:anticheat` 104/104.
 - **Point fragile** : la mine instantanée calcule les stats depuis `look` (noms seuls, `src/shared/instant.js`) : un
   anneau amélioré y compte au niveau 0, comme toute pièce améliorée (déjà le cas avant). Pas vu dans le navigateur.
+
+### Minerais profonds : mithril, cobalt, thorium ; areas 7 et 8 (Geoffrey) — branche `geoffrey/minerais-profonds`, ✅ en ligne le 27/10
+- **Quoi** : blocs 21 `Mithril ore`, 22 `Cobalt ore`, 23 `Thorium ore` (`BLOCKS`, `IDS`, `XP.ore`, `TEXTURES`,
+  `RARITY.items` pour cobalt et thorium) ; `AREAS[6]` retouchée, `AREAS[7]` et `AREAS[8]` ajoutées (la 8 se répète).
+  Les résidus (`JUDGMENT.pct` 0,5) sont pris sur la pierre à la génération : la config met donc 0,5 de plus en pierre
+  que le tableau de Geoffrey (35 / 20,5 / 15,5 ↔ 34,5 / 20 / 15). Le reste suit tout seul : objets d'inventaire
+  (catégorie ore, depuis `BLOCKS`), focus minerai (`ORE_KEYS` depuis `IDS`), tableaux du wiki. Ajouts à la main : couleurs
+  du panneau d'area (`src/ui/hud.js`), `AREA_KEYS` (`src/wiki/data.js`), noms courts (`src/wiki/wiki.js`), textures
+  (`scripts/gen_textures.py`, même motif que les autres minerais ; `textures/mithril|cobalt|thorium.png`).
+- **Tests** : `tests/deep-ores.test.js` (nouveau : blocs, rareté, compositions = tableau − résidus, comptes exacts de
+  `fillComp`, génération jusqu'à l'area 9) ; mis à jour : `graphite.test.js` (area 6), `wiki.test.js` (9 areas, 500
+  minerais en areas 7-8, T3 au-delà), `rarity.test.js` (cobalt, thorium). ✅ deep-ores, graphite, world, wiki, rarity,
+  focus, level, blocks, khole, instant-mine, session, lobby.
+- **Anti-triche** : `npm run test:anticheat` 102/102 ✅.
+- **Simulation** : 5 sessions de base inchangées (areas 3,0, profondeur 185,2, 0 bloquée ; personne n'atteint l'area 6) ✅.
+  Script à part (pas dans le dépôt) : mineurs ×6 minage, ×3 vitesse, seuil de déblocage 15 % : areas 13, 0 blocage,
+  coffre ≈ 170-250 mithril, 100-150 cobalt et thorium ✅ (2 seeds sur 5, coupé par le temps).
+- **Points fragiles** : `AREAS[8]` n'a ni fer ni or : un focus « fer » ou « or » en area 8+ ne trouve rien et saute (comportement
+  normal du focus). Pas de recette de four : `SHINY` ne s'applique pas à ces minerais. Le tableau du wiki affiche la pierre
+  de la config (35 / 20,5 / 15,5), sans les résidus, comme pour les areas 4 et 5.
