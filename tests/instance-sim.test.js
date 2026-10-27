@@ -33,13 +33,14 @@ test('salle : 28 × 24, 3 rebords de 6 par côté (5 cases d\'air entre deux), u
   assert.ok(p.row < Math.min(...ledges.map(l => l.row)), 'plus haute que les rebords');
 });
 
-test('spawners : un gobelin chacun dès le début, puis un toutes les 30 s', () => {
-  const G = newInstance(1, { miners: [] }), n = G.spawners.length;
+test('spawners : un gobelin chacun dès le début, puis un toutes les INSTANCE.spawner.every s (20 s depuis le 27/10)', () => {
+  const G = newInstance(1, { miners: [] }), n = G.spawners.length, every = INSTANCE.spawner.every;
+  assert.equal(every, 20);
   tickInstance(G);
   assert.equal(G.goblins.length, n);
-  run(G, 30);
+  run(G, every);
   assert.equal(G.stats.spawned, 2 * n);
-  run(G, 30);
+  run(G, every);
   assert.equal(G.stats.spawned, 3 * n);
 });
 
@@ -57,7 +58,7 @@ test('casser un spawner : INSTANCE.spawner.hp « coups de pioche » à la vitess
   assert.ok(Math.abs(s.hp - (HP - INSTANCE.spawner.dynamite - 2)) < 0.6, `Dynamite : ${s.hp}`);
 });
 
-test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre (30 %)', () => {
+test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre à chaque coup (27/10 ; avant 30 %)', () => {
   assert.equal(INSTANCE.goblin.hp, 150);
   const G = newInstance(3, { miners: [spec(0, { damage: 0.001, knockRes: 0 })] });
   quiet(G);
@@ -70,7 +71,8 @@ test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre (30 %
   assert.equal(tackler(G, m), o, 'premier coup : taclé');
   run(G, 600);
   const r = G.stats.gobKnocks / G.stats.gobHits;
-  assert.ok(G.stats.gobHits > 100 && Math.abs(r - 0.30) < 0.08, `${G.stats.gobKnocks} reculs sur ${G.stats.gobHits} coups`);
+  assert.equal(INSTANCE.goblin.knockChance, 1);
+  assert.ok(G.stats.gobHits > 100 && r > 0.95, `${G.stats.gobKnocks} reculs sur ${G.stats.gobHits} coups`);
 });
 
 test('recul : toujours vers le centre de la salle, des deux côtés', () => {
@@ -104,7 +106,7 @@ test('gobelins : ils tombent des rebords et montent aux échelles', () => {
   const l = G.ledges[0], o = goblin(G, l.mx, l.y);
   run(G, 20);
   assert.equal(o.y, G.floorY, 'descendu au sol'); assert.ok(Math.abs(o.x - m.x) <= 1);
-  const G2 = newInstance(5, { miners: [spec(0)] });
+  const G2 = newInstance(5, { miners: [spec(0, { knockRes: 100 })] });   // ne tombe pas du rebord sous les coups
   quiet(G2);
   const m2 = G2.miners[0], l2 = G2.ledges[0]; m2.x = 3; m2.y = l2.y; m2.action = { type: 'wait', dur: 1e9, t: 0, data: {} };
   for(let y = l2.y; y <= G2.floorY; y++) G2.ladder[y][6] = 1;

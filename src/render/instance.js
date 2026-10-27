@@ -1,5 +1,6 @@
 /* Rendu de l'Instance I : LIT la copie d'affichage (src/shared/instances-view.js), ne la modifie jamais.
-   Toute la salle à l'écran (20 × 21 cases) : fond de grotte, rebords et plateforme en briques, échelles, blocs des
+   Caméra rapprochée (INSTANCE.view : cols × rows cases, 27/10/2026 ; avant : toute la salle) qui suit le mineur du
+   joueur en glissant, comme dans la tour du Jugement. Fond de grotte, rebords et plateforme en briques, échelles, blocs des
    cages, spawners avec leur barre de vie, gobelins (et leur vie), le roi gobelin (3 × 3) et sa vie, les mineurs avec
    leur stuff (petit arc quand ils sont repoussés). Chaque entité glisse entre deux envois (src/shared/view.js). */
 import { INSTANCE } from '../config.js';
@@ -34,12 +35,24 @@ export function createInstanceRenderer(cv){
     return p > 0 && p < 1 ? 0.5 * Math.sin(Math.PI * p) : 0;
   };
 
-  /* me : ID du compte du joueur (son mineur est entouré et dessiné par-dessus) */
+  const V = INSTANCE.view;
+  let cam = null;                                   // coin haut-gauche affiché, en cases (glisse vers sa cible)
+
+  /* me : ID du compte du joueur (son mineur est entouré, dessiné par-dessus, et suivi par la caméra) */
   function draw(G, me){
-    const now = performance.now(), W = G.w * T, H = (G.h + 1) * T;
-    if(cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
+    const now = performance.now();
+    const cols = Math.min(V.cols, G.w), rows = Math.min(V.rows, G.h + 1);
+    if(cv.width !== cols * T || cv.height !== rows * T){ cv.width = cols * T; cv.height = rows * T; }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.imageSmoothingEnabled = false;
+    const fol = G.miners.find(m => m.account === me) ?? G.miners[0];
+    const [fx, fy] = fol ? posOf(G, fol, now) : [G.w / 2, G.h];
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const want = { x: clamp(fx + 0.5 - cols / 2, 0, G.w - cols), y: clamp(fy + 0.5 - rows / 2, 0, G.h + 1 - rows) };
+    if(!cam || Math.abs(cam.x - want.x) + Math.abs(cam.y - want.y) > 12) cam = { ...want };   // départ, projection : on saute
+    else { cam.x += (want.x - cam.x) * 0.15; cam.y += (want.y - cam.y) * 0.15; }
+    ctx.setTransform(1, 0, 0, 1, Math.round(-cam.x * T), Math.round(-cam.y * T));
     for(let y = 0; y <= G.h; y++) for(let x = 0; x < G.w; x++){
       const t = G.tiles[y][x], px = x * T, py = y * T;
       blit('tunnel', px, py, '#2a1f18');

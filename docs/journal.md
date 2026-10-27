@@ -51,6 +51,15 @@ Modèle d'entrée :
   `endWorkShare` 0,5) ; seule l'estimation du trajet est corrigée.
 - **État** : 🧪 sur la branche `geoffrey/fix-fin-treuil` (pas en ligne)
 
+## 27/10/2026 — Geoffrey — Instance : vitesses en mode dev, recul des gobelins à chaque coup
+- **Pour le joueur** : les gobelins de l'instance repoussent de 0,5 case **à chaque coup** (avant : 30 % des coups, presque
+  invisible). Mode dev : la barre de l'instance a enfin les vitesses (×1 à ×300) et la pause, comme la mine et les tours.
+  Les spawners font apparaître un gobelin toutes les **20 s** (avant 30 s).
+- **Décisions** : recul à chaque coup (choix de Geoffrey). Simulation à 3 sans skills : sans le buff de l'acier,
+  fer + acier passe de 7/10 à 0/10 réussites et acier de 10/10 à 3/10 ; **avec** le buff de l'acier (branche
+  `geoffrey/acier-500`), 10/10 dans les deux cas (+5 à 10 s). À mettre en ligne avec le buff de l'acier.
+- **État** : 🧪 sur la branche `geoffrey/instance-dev` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
   tes points** du jour (les tiens, pas ceux de tous), même si le score collectif n'atteint aucun palier. Au **four**

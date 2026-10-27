@@ -3,10 +3,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-test('la barre de la tour a ses boutons de vitesse et sa pause', () => {
+test("les barres de la tour et de l'instance ont leurs boutons de vitesse et leur pause", () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const tw = html.slice(html.indexOf('<div id="twRun"'), html.indexOf('</header>', html.indexOf('<div id="twRun"')));
-  assert.match(tw, /class="speedBtns"/); assert.match(tw, /class="pauseBtn"/);
+  for(const id of ['twRun', 'inRun']){   // instance : 27/10
+    const bar = html.slice(html.indexOf(`<div id="${id}"`), html.indexOf('</header>', html.indexOf(`<div id="${id}"`)));
+    assert.match(bar, /class="speedBtns"/, id); assert.match(bar, /class="pauseBtn"/, id);
+  }
 });
 
 test('renderSpeeds remplit toutes les barres (mine et tour) ; hors dev, la vitesse fixe seulement', async () => {

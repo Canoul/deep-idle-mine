@@ -3777,3 +3777,17 @@ Règles (voir CLAUDE.md) :
   pods et non en valeur) ✅.
 - **Point fragile** : une descente interrompue par un chantier (treuil du logisticien) peut être très lente (mesuré jusqu'à
   1,3 s/couche) : la mesure suivante la remplace ; dans ce cas l'estimation redevient prudente, comme avant.
+
+### Instance : vitesses dev, recul des gobelins à chaque coup (Geoffrey) — branche `geoffrey/instance-dev`, 🧪
+- **Vitesses** : la barre `#inRun` n'avait ni `.speedBtns` ni `.pauseBtn` (le serveur gérait déjà `rec.clock` pour tous
+  les modes, `renderSpeeds` et `setupRunControls` prennent toutes les barres) : ajoutés dans `index.html` (+ `.perfBox`).
+  `tests/controls.test.js` vérifie la tour et l'instance ✅.
+- **Recul** : `INSTANCE.goblin.knockChance` 0,30 → 1 (0,5 case vers le centre). Avant : 130 reculs sur 464 coups
+  (5 instances), et 0,5 case depuis le centre d'une case ne change pas de case : presque invisible. `G.stats.gobKnocks`
+  ne compte plus que les reculs appliqués (`pushMiner` ne pousse pas en plein pas). `tests/instance-sim.test.js` : taux de
+  recul > 95 % ; le test des échelles des gobelins donne knockRes 100 à son mineur (sinon poussé du rebord) ✅ 25/25.
+- **Difficulté** (`node scripts/simulate-instance.js --count 10 --size 3`, sans skills) : main : fer 0/10, fer + acier
+  7/10 → 0/10, acier 10/10 → 3/10 ⚠️. Avec `geoffrey/acier-500` : fer + acier et acier 10/10 avec ou sans (9:16 → 9:21,
+  8:57 → 9:07). À mettre en ligne ensemble.
+- **Spawners** (27/10, Geoffrey) : `INSTANCE.spawner.every` 30 → 20 s. **Tests et simulation non lancés** (demandé : direct sur
+  la version dev) ⚠️ : `tests/instance-sim.test.js` et `scripts/simulate-instance.js` à relancer avant la mise en ligne.
