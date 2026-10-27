@@ -119,14 +119,14 @@ test('IA : un groupe fort casse les 6 spawners, sans jamais rester bloqué', () 
   assert.ok(G.stats.ladders > 0);
 });
 
-test('roi : il dort tant qu\'il reste un spawner ; puis descend, enferme à 75 / 50 / 25 %, enrage, et meurt', () => {
+test('roi : il dort tant qu\'il reste un spawner ; puis descend, enferme à chaque seuil, enrage, et meurt', () => {
   const G = newInstance(7, { miners: [0, 1, 2].map(i => spec(i, STRONG)) });
   run(G, 60);
   assert.equal(G.boss.state, 'sleep'); assert.equal(G.boss.hp, G.boss.maxhp);
   run(G, INSTANCE.duration);
   assert.ok(G.over); assert.equal(G.summary.success, true);
   assert.equal(G.summary.spawners, 6);
-  assert.equal(G.timeline.cages.length, 3, 'trois enfermements');
+  assert.equal(G.timeline.cages.length, INSTANCE.boss.cageAt.length, 'un enfermement par seuil');
   assert.ok(G.timeline.rage != null, 'il a enragé');
   assert.ok(G.stats.boosts >= 1, 'au moins un coup boosté');
   assert.equal(G.stats.blocked, 0);
