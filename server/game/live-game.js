@@ -3,7 +3,8 @@
    ils arrivent. Chaque choix est noté avec ce tick dans l'enregistrement de la session : rejouer la seed et les
    choix enregistrés reconstruit exactement la même partie (seulement après un redémarrage du serveur).
    Mine instantanée (record.mode === 'mi', src/sim/instant/) et tours (record.mode 'tower_angel' / 'tower_demon',
-   src/sim/tower/) : même interface ; seuls les départs comptent (pas de focus).
+   src/sim/tower/) et instances (record.mode 'instance_1'…, src/sim/instance/) : même interface ; seuls les départs
+   comptent (pas de focus).
 
    Les réglages dev (valeurs globales STATS/CFG) ne sont appliqués que pendant les calculs de cette partie. */
 import { buildSession, applyOverrides, applyDueEvents } from '../../src/shared/game.js';
@@ -15,17 +16,21 @@ import { createInstantViewer } from '../../src/shared/instant-view.js';
 import { buildTower, applyDueTowerLeaves, isTowerMode } from '../../src/shared/tower.js';
 import { tickTower, endTower } from '../../src/sim/tower/session.js';
 import { createTowerViewer } from '../../src/shared/tower-view.js';
+import { buildInstanceGame, applyDueInstanceLeaves, isInstanceMode } from '../../src/shared/instances.js';
+import { tickInstance, endInstance } from '../../src/sim/instance/session.js';
+import { createInstanceViewer } from '../../src/shared/instances-view.js';
 
 /* ce qui change entre une session et une mine instantanée */
 const KINDS = {
   session: { build: buildSession, tick, end: endSession, events: applyDueEvents, viewer: createViewer },
   instant: { build: buildInstant, tick: tickInstant, end: endInstant, events: applyDueInstantLeaves, viewer: createInstantViewer },
   tower:   { build: buildTower, tick: tickTower, end: G => endTower(G, false), events: applyDueTowerLeaves, viewer: createTowerViewer },
+  instance: { build: buildInstanceGame, tick: tickInstance, end: G => endInstance(G, false), events: applyDueInstanceLeaves, viewer: createInstanceViewer },
 };
 
 export function createLiveGame(record){
   const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])], kholes: [...(record.kholes || [])] };
-  const K = KINDS[rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : 'session'];
+  const K = KINDS[rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : isInstanceMode(rec.mode) ? 'instance' : 'session'];
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => K.build(rec));
   const step = target => { while(!G.over && G.ticks < target){ K.events(G, rec); K.tick(G); } };

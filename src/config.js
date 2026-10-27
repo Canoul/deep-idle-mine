@@ -1141,6 +1141,9 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* Instances (27/10/2026, INSTANCE) : un groupe de 1 à 3, une clé chacun ; le lobby les montre sous un seul bouton
+     « Instances » (src/ui/lobby.js) */
+  { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
