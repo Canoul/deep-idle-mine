@@ -1,8 +1,8 @@
 /* Instance I (le roi gobelin) : la partie et sa boucle à pas fixe (DT). Ne touche ni au DOM ni au canvas.
    Réglages INSTANCE (src/config.js), carte ./world.js, spec docs/superpowers/specs/2026-10-27-instances-design.md.
 
-   Les mineurs partent du sol, au centre. Tant qu'il reste un spawner, le groupe va casser le même (le plus bas d'abord,
-   du côté où il se trouve : choix de Claude) : il monte au rebord par des échelles (illimitées, partagées), va au fond
+   Les mineurs partent du sol, au centre. Tant qu'il reste un spawner, le groupe va casser le même (un côté entier
+   puis l'autre, le plus proche d'abord : targetSpawner) : il monte au rebord par des échelles (illimitées, partagées), va au fond
    et le « mine » (chaque seconde enlève sa vitesse de minage effective). Les gobelins qui en sortent foncent sur les
    mineurs (la provocation d'abord, puis celui qui casse un spawner à focusRange cases ou moins, puis le plus proche),
    tombent des rebords et montent aux échelles ; leur premier coup tacle (le mineur doit tuer ce gobelin) et leurs coups
@@ -307,13 +307,20 @@ function damageBoss(G, m, dmg){
   if(b.hp <= 0){ log(G, `🏆 Le ${b.name} est vaincu ! Coup final de ${m.name}.`); endInstance(G, true); }
 }
 
-/* ---------- spawner visé par le groupe : le plus bas d'abord, du côté du groupe ---------- */
+/* ---------- spawner visé par le groupe : un côté entier, puis l'autre (27/10/2026, Geoffrey) ----------
+   Il garde le côté du spawner précédent tant qu'il y en reste un ; dans ce côté, le plus proche du groupe (au départ du
+   sol : le plus bas, puis il monte rebord par rebord ; sur l'autre côté, il part de là où il est : d'en haut, il descend).
+   Au premier choix : le côté du spawner le plus proche. Avant : le plus bas des deux côtés, en zigzag d'un mur à l'autre. */
 function targetSpawner(G){
   const cur = G.spawners.find(s => s.id === G.target && s.alive);
   if(cur) return cur;
-  const mx = G.miners.length ? G.miners.reduce((a, m) => a + m.x, 0) / G.miners.length : G.mid;
-  const next = G.spawners.filter(s => s.alive).sort((a, b) => a.level - b.level || Math.abs(a.x - mx) - Math.abs(b.x - mx) || a.id - b.id)[0] ?? null;
-  G.target = next?.id ?? null;
+  const n = G.miners.length;
+  const mx = n ? G.miners.reduce((a, m) => a + m.x, 0) / n : G.mid, my = n ? G.miners.reduce((a, m) => a + m.y, 0) / n : G.floorY;
+  const dist = s => Math.abs(s.mx - mx) + Math.abs(s.y - my);
+  const alive = G.spawners.filter(s => s.alive);
+  const pool = alive.some(s => s.side === G.targetSide) ? alive.filter(s => s.side === G.targetSide) : alive;
+  const next = pool.sort((a, b) => dist(a) - dist(b) || b.y - a.y || a.id - b.id)[0] ?? null;
+  G.target = next?.id ?? null; G.targetSide = next?.side ?? null;
   return next;
 }
 

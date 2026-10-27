@@ -1254,9 +1254,12 @@ export const INSTANCE = {
      4 essayés puis retirés), salle de 28 de large (avant 20) et 24 de haut (avant 20), plateforme du roi à 21 du sol */
   w: 28, h: 24, ledgeW: 6, ledgeEvery: 6, ledges: 3, maxFall: 7,
   platform: { w: 4, height: 21 },
+  /* caméra (27/10/2026, Geoffrey) : rapprochée, cols × rows cases, elle suit ton mineur (comme la tour du Jugement,
+     TOWER.view) ; avant : toute la salle à l'écran */
+  view: { cols: 14, rows: 11 },
   spawner: { hp: 125, every: 20, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200) ; un gobelin toutes les 20 s (27/10, Geoffrey ; avant 30)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
-            knock: 0.5, knockChance: 1, step: 0.9 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible)
+            knock: 0.5, knockChance: 1, step: 0.45 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible) ; step : une case toutes les 0,45 s, vitesse × 2 (27/10, Geoffrey ; avant 0,9)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,

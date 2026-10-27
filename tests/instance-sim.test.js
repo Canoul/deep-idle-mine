@@ -33,13 +33,14 @@ test('salle : 28 × 24, 3 rebords de 6 par côté (5 cases d\'air entre deux), u
   assert.ok(p.row < Math.min(...ledges.map(l => l.row)), 'plus haute que les rebords');
 });
 
-test('spawners : un gobelin chacun dès le début, puis un toutes les 30 s', () => {
-  const G = newInstance(1, { miners: [] }), n = G.spawners.length;
+test('spawners : un gobelin chacun dès le début, puis un toutes les INSTANCE.spawner.every s (20 s depuis le 27/10)', () => {
+  const G = newInstance(1, { miners: [] }), n = G.spawners.length, every = INSTANCE.spawner.every;
+  assert.equal(every, 20);
   tickInstance(G);
   assert.equal(G.goblins.length, n);
-  run(G, 30);
+  run(G, every);
   assert.equal(G.stats.spawned, 2 * n);
-  run(G, 30);
+  run(G, every);
   assert.equal(G.stats.spawned, 3 * n);
 });
 
