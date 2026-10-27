@@ -29,7 +29,7 @@ Modèle d'entrée :
 - **Décisions** : niveau et niveau de spé à **72**, pas 100 : au-delà, l'XP ne tient plus dans un nombre que le serveur
   accepte. Ça ne change rien en pratique : un arbre coûte 10 à 12 points et les sorts de spé s'ouvrent au niveau 5.
   Une spé imposée dans le panneau dev passe avant celle du preset (le stuff reste).
-- **État** : 🧪 sur la branche `geoffrey/presets-dev` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Buff du stuff en acier : 400 x → 500 x
 - **Pour le joueur** : chaque pièce en acier gagne l'équivalent de +100 x (≈ 100 s de travail par session) :
@@ -39,7 +39,7 @@ Modèle d'entrée :
   **25 % de plus**, celles déjà posées comprises.
 - **Décisions** : le tier 3 des runes passe à **500 x** avec l'acier (la règle « casque, jambes, bottes = valeur du tier »
   reste vraie). La couronne (tier 4, 600 x) n'est plus que 100 x au-dessus.
-- **État** : 🧪 sur la branche `geoffrey/acier-500` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Fin de session : les mineurs ne s'arrêtent plus trop tôt au-dessus du front
 - **Pour le joueur** : dans les dernières minutes, les mineurs restaient miner bien au-dessus du front « pour avoir le
@@ -49,16 +49,20 @@ Modèle d'entrée :
   +17 graphite, +1 Treasure T3, XP +1 %.
 - **Décisions** : la règle ne change pas (un dernier trajet doit laisser au moins autant de temps à miner que de trajet,
   `endWorkShare` 0,5) ; seule l'estimation du trajet est corrigée.
-- **État** : 🧪 sur la branche `geoffrey/fix-fin-treuil` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Instance : vitesses en mode dev, recul des gobelins à chaque coup
 - **Pour le joueur** : les gobelins de l'instance repoussent de 0,5 case **à chaque coup** (avant : 30 % des coups, presque
   invisible). Mode dev : la barre de l'instance a enfin les vitesses (×1 à ×300) et la pause, comme la mine et les tours.
   Les spawners font apparaître un gobelin toutes les **20 s** (avant 30 s).
+  Le groupe casse les spawners **un côté entier puis l'autre** (avant : en zigzag d'un mur à l'autre), les gobelins
+  avancent **2 fois plus vite**, et la **caméra est rapprochée** (14 × 11 cases, elle suit ton mineur, comme dans la tour).
+  ⚠️ Simulation à 3 (sans skills ni sorts, avec le buff de l'acier) : 0/10 réussites avec le spawn à 20 s ; 10/10 avec
+  30 s. Mis en ligne tel quel, à la demande de Geoffrey.
 - **Décisions** : recul à chaque coup (choix de Geoffrey). Simulation à 3 sans skills : sans le buff de l'acier,
   fer + acier passe de 7/10 à 0/10 réussites et acier de 10/10 à 3/10 ; **avec** le buff de l'acier (branche
   `geoffrey/acier-500`), 10/10 dans les deux cas (+5 à 10 s). À mettre en ligne avec le buff de l'acier.
-- **État** : 🧪 sur la branche `geoffrey/instance-dev` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de

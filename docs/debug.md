@@ -3717,7 +3717,7 @@ Règles (voir CLAUDE.md) :
   `npm run test:anticheat` 102/102.
 - **À vérifier** : pas testé dans le navigateur (carte du Bloc géant, icônes). La barre n'a aucun usage.
 
-### Mode dev : presets de personnage par spé (Geoffrey) — branche `geoffrey/presets-dev`, 🧪
+### Mode dev : presets de personnage par spé (Geoffrey) — branche `geoffrey/presets-dev`, ✅ en ligne le 27/10
 - **Quoi** : `scripts/dev-presets.js` (`npm run dev:presets`, options `--keys`, `--password`) : un compte par arbre de
   `SKILLS.trees` (`PRESET.names`), créé par `createAccountService().register` sur le file store, sinon remis à neuf
   (`putProgress` + `putLoadout` : inventaire, stuff, skills, sorts, sets écrasés ; mot de passe gardé). Refuse de tourner
@@ -3732,7 +3732,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : si un nouvel arbre arrive sans entrée dans `PRESET.names`, son compte s'appelle `Test_<id>`
   (tronqué à 16 caractères).
 
-### Presets : glyphes + preset au choix pour les mineurs de test (Geoffrey) — branche `geoffrey/presets-dev`, 🧪
+### Presets : glyphes + preset au choix pour les mineurs de test (Geoffrey) — branche `geoffrey/presets-dev`, ✅ en ligne le 27/10
 - **Quoi** : logique pure déplacée dans `src/shared/dev-presets.js` (`buildPreset`, `presetMiner`, `sanitizeBotPresets`,
   `maxStorableLevel`), noms / stuff / clés dans `DEV_PRESETS` (`src/config.js`) ; `scripts/dev-presets.js` ne garde que
   l'écriture des comptes. Glyphes : tous ceux des nœuds de l'arbre (`GLYPHS.items`), posés dans `skills.glyphs` (actifs :
@@ -3749,7 +3749,7 @@ Règles (voir CLAUDE.md) :
   De bout en bout ✅ : serveur dev sur données temporaires, Test_Mineur + 2 mineurs de test (logisticien, barbare) →
   `/api/game/view` : Test_Mineur / Test_Logisticien / Test_Barbare, acier, sorts de chaque spé.
 
-### Buff de l'acier : 500 x, tier 3 des runes à 500 x (Geoffrey) — branche `geoffrey/acier-500`, 🧪
+### Buff de l'acier : 500 x, tier 3 des runes à 500 x (Geoffrey) — branche `geoffrey/acier-500`, ✅ en ligne le 27/10
 - **Quoi** (`src/config.js`, `STUFF.items`) : +100 x par pièce au GS (`UPGRADE.worth`) : casque oxygène 100 → 125 (500),
   jambes montée 1,6 → 2 (500), bottes marche 1,67 → 2,08 (499), plastron pods 120 → 137 (822), pioche minage 0,5 → 0,58
   (754 ; 0,577 serait arrondi à 0,58 en session de toute façon : `carac.mineSpeed` au centième), épée dégâts 16 → 18,5 (540).
@@ -3760,7 +3760,7 @@ Règles (voir CLAUDE.md) :
 - **À vérifier** : modulation des tours (`TOWER.modulation.gsMax`) : un stuff acier complet gagne ≈ 600 GS ; si le plafond
   était calé sur l'ancien acier, il laisse passer moins de joueurs. Pas de simulation lancée (valeurs de config seulement).
 
-### Fin de session : profondeur max d'après la descente mesurée (Geoffrey) — branche `geoffrey/fix-fin-treuil`, 🧪
+### Fin de session : profondeur max d'après la descente mesurée (Geoffrey) — branche `geoffrey/fix-fin-treuil`, ✅ en ligne le 27/10
 - **Signalé** : à ~5 min de la fin, les mineurs minent plus haut alors que le treuil est rapide. Rejeu de la session dev
   `109abdac` (seed 468608167, Test_Mineur + mineurs de test logisticien / barbare) : à 390 s de la fin, Test_Mineur repart
   avec `tripCap` 245 (front 338), mine à 200-245 jusqu'à la fin.
@@ -3778,7 +3778,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : une descente interrompue par un chantier (treuil du logisticien) peut être très lente (mesuré jusqu'à
   1,3 s/couche) : la mesure suivante la remplace ; dans ce cas l'estimation redevient prudente, comme avant.
 
-### Instance : vitesses dev, recul des gobelins à chaque coup (Geoffrey) — branche `geoffrey/instance-dev`, 🧪
+### Instance : vitesses dev, recul des gobelins à chaque coup (Geoffrey) — branche `geoffrey/instance-dev`, ✅ en ligne le 27/10
 - **Vitesses** : la barre `#inRun` n'avait ni `.speedBtns` ni `.pauseBtn` (le serveur gérait déjà `rec.clock` pour tous
   les modes, `renderSpeeds` et `setupRunControls` prennent toutes les barres) : ajoutés dans `index.html` (+ `.perfBox`).
   `tests/controls.test.js` vérifie la tour et l'instance ✅.
@@ -3791,3 +3791,9 @@ Règles (voir CLAUDE.md) :
   8:57 → 9:07). À mettre en ligne ensemble.
 - **Spawners** (27/10, Geoffrey) : `INSTANCE.spawner.every` 30 → 20 s. **Tests et simulation non lancés** (demandé : direct sur
   la version dev) ⚠️ : `tests/instance-sim.test.js` et `scripts/simulate-instance.js` à relancer avant la mise en ligne.
+- **Suite** (27/10, Geoffrey) : `targetSpawner` : un côté entier puis l'autre (`G.targetSide`), le plus proche du groupe
+  d'abord ; `INSTANCE.goblin.step` 0,9 → 0,45 (vitesse × 2) ; caméra rapprochée `INSTANCE.view` 14 × 11 qui suit le mineur
+  (`src/render/instance.js`, comme `src/render/tower.js`). `tests/instance-sim.test.js` ✅ 12/12 (spawn lu dans la config).
+  `simulate-instance --size 3`, avec le buff de l'acier : **0/10** fer + acier et acier (roi à ≈ 700 PV) ; spawn remis à
+  30 s : 10/10 (gobelins × 2 compris). ⚠️ Mis en ligne sans réglage, à la demande de Geoffrey ; les tests de la version
+  fusionnée n'ont pas été relancés (refusé).
