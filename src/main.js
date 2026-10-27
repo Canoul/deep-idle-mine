@@ -602,6 +602,7 @@ async function refresh(){
 /* ---------- démarrage ---------- */
 Object.assign(acct, await bootAccount(accountUI));
 renderNavAccount($('navAccount'), acct);
+lobby.update({ account:acct.account, offline:acct.offline });   // tout de suite : une page ouverte pendant une session ne passe par showNoSession qu'en quittant le bilan (27/10)
 $('navAccount').onclick = () => accountUI.openProfile();
 if(acct.offline) showNoSession();
 else {
