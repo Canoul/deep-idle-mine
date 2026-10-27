@@ -6,6 +6,7 @@ import { lightR } from '../sim/mineur.js';
 import { loadTextures } from './textures.js';
 import { shownPos } from '../shared/view.js';
 import { createMinerSprite } from './miner-sprite.js';
+import { torchTexOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
 
@@ -88,7 +89,7 @@ export function createRenderer(cv){
       const px=T.x*TILE, py=sy(T.y);
       const g=ctx.createRadialGradient(px+8,py+8,2,px+8,py+8,TILE*3); g.addColorStop(0,'rgba(255,200,90,.35)'); g.addColorStop(1,'rgba(255,200,90,0)');
       ctx.fillStyle=g; ctx.fillRect(px-TILE*3,py-TILE*3,TILE*7,TILE*7);
-      blit('torch',px,py);
+      blit(torchTexOf(T),px,py);
     }
     for(const o of G.mobs){
       if(o.hp<=0) continue;
@@ -115,6 +116,17 @@ export function createRenderer(cv){
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
         else if(o.type==='minotaure') blit('minotaur',px,py,'#6b4226');   // boss du donjon
         else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
+        else if(o.type==='golem'){
+          /* golem : 2 × 2 cases, (x, y) = sa case du bas à gauche ; une goutte de sueur blanche tombe en boucle */
+          const i=TEX.golem, gy=py-TILE;
+          if(i && i.complete && i.naturalWidth) ctx.drawImage(i,px,gy,TILE*2,TILE*2);
+          else { ctx.fillStyle='#80868f'; ctx.fillRect(px,gy,TILE*2,TILE*2); }
+          const k=((frameNow/900+o.id*0.37)%1);
+          ctx.fillStyle='#f4f1e8'; ctx.fillRect(px+TILE*0.62,gy+TILE*(0.8+k*1.1),1,2);
+          if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,gy-3,TILE*2,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,gy-3,TILE*2*o.hp/o.maxhp,2); }
+          drawSplash(ctx,o,G.t,frameNow,px+TILE/2,gy,TILE);
+          continue;
+        }
         else blit('bug',px,py,'#d14b4b');
         // occultiste qui canalise : rayon de lumière noire jusqu'au mineur étourdi
         const tg=o.channel!=null && G.miners.find(m=>m.id===o.channel);

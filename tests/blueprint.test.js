@@ -18,10 +18,10 @@ const NEW = {
   'Pioche en fer':   { stats:{ mineSpeed:0.4 },  cost:{ 'Tainted iron':20 } },   // nerf du 25/10 (avant 0,5)
   'Épée en fer':     { set:{ damage:14 },        cost:{ 'Tainted iron':10 } },
   /* armure : + 20 peaux de gobelin (25/10) */
-  'Casque en fer':   { stats:{ oxygenMax:67 },   cost:{ 'Tainted iron':5, 'Peau de gobelin':20 } },
+  'Casque en fer':   { stats:{ oxygenMax:63 },   cost:{ 'Tainted iron':5, 'Peau de gobelin':20 } },
   'Plastron en fer': { stats:{ pods:88 },        cost:{ 'Tainted iron':8, 'Peau de gobelin':20 } },
-  'Jambes en fer':   { stats:{ climbSpeed:1.05 }, cost:{ 'Tainted iron':7, 'Peau de gobelin':20 } },
-  'Bottes en fer':   { stats:{ speed:1.05 },     cost:{ 'Tainted iron':4, 'Peau de gobelin':20, 'Lingot d\'or':1 } },
+  'Jambes en fer':   { stats:{ climbSpeed:1 }, cost:{ 'Tainted iron':7, 'Peau de gobelin':20 } },
+  'Bottes en fer':   { stats:{ speed:1.04 },     cost:{ 'Tainted iron':4, 'Peau de gobelin':20, 'Lingot d\'or':1 } },
   'Ceinture en peau de gobelin': { stats:{ torches:10 }, cost:{ 'Peau de gobelin':20, 'Lingot d\'or':20 } },
 };
 
@@ -86,8 +86,8 @@ test('sauvegarde trafiquée : seules des recettes à blueprint existantes, une f
 test('effets : l\'épée remplace les mains nues (14 au lieu de 5), les autres s\'ajoutent', () => {
   const c = equippedStats(['Épée en fer', 'Pioche en fer', 'Casque en fer', 'Plastron en fer', 'Jambes en fer', 'Bottes en fer', 'Ceinture en peau de gobelin']);
   assert.equal(c.damage, 14);
-  assert.equal(c.mineSpeed, 1.4); assert.equal(c.oxygenMax, STATS.oxygenMax + 67); assert.equal(c.pods, STATS.pods + 88);
-  assert.equal(c.climbSpeed, 3.3); assert.equal(c.speed, 4.05); assert.equal(c.discoverMax, STATS.discoverMax); assert.equal(c.torches, STATS.torches + 10);
+  assert.equal(c.mineSpeed, 1.4); assert.equal(c.oxygenMax, STATS.oxygenMax + 63); assert.equal(c.pods, STATS.pods + 88);
+  assert.equal(c.climbSpeed, 3.25); assert.equal(c.speed, 4.04); assert.equal(c.discoverMax, STATS.discoverMax); assert.equal(c.torches, STATS.torches + 10);
   assert.deepEqual(statLines('Épée en fer'), ['Dégâts 14']);
   assert.deepEqual(statLines('Ceinture en peau de gobelin'), ['Torches +10']);
 });

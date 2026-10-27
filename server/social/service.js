@@ -46,6 +46,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
 export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
+  const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
   const limit = createLimiter(config.requestsPerHour, clock);
   let chain = Promise.resolve();
   /* une écriture à la fois (une demande change deux comptes) */
@@ -173,14 +174,27 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return { count: players.length, players: players.slice(0, config.onlineListMax) };
     },
 
-    /* « Who ? » (lobby, tour ouverte) : joueurs en ligne qui n'ont pas encore fait la tour de ce camp pendant cette
-       ouverture, pour trouver des alliés. Moi exclu. Tour fermée : liste vide. */
+    /* « Who ? » (lobby, tour ouverte) : joueurs qui n'ont pas encore fait la tour de ce camp pendant cette ouverture, pour
+       trouver des alliés : en ligne d'abord, puis hors ligne venus depuis whoRecentFor (26/10/2026 ; lastSeenAt : dernier
+       passage, le plus récent d'abord). Moi exclu. Tour fermée : liste vide. */
     async towerWho(me, side){
       const t = await game.towerDone(side);
       if(!t.open) return { side, open: false, count: 0, players: [] };
       const all = await api.online(me);
       const players = all.players.filter(p => !p.me && !t.done.has(p.id));
-      return { side, open: true, count: players.length, players };
+      const now = clock(), since = now - config.whoRecentFor, shown = new Set(all.players.map(p => p.id));
+      for(const [id, at] of lastSeen) if(at < since) lastSeen.delete(id);
+      const when = { ...await accounts.recentlySeen?.(since) };
+      for(const [id, at] of lastSeen) if(!(when[id] >= at)) when[id] = at;
+      const mine = new Set((await load(me.id)).friends);
+      const away = [];
+      for(const [id, at] of Object.entries(when)){
+        if(id === me.id || shown.has(id) || t.done.has(id) || !await accounts.getAccount(id)) continue;
+        away.push({ id, displayId: formatAccountId(id), name: await nameOf(id), status: 'offline', lastSeenAt: at, friend: mine.has(id) });
+      }
+      away.sort((a, b) => b.lastSeenAt - a.lastSeenAt);
+      const list = [...players, ...away].slice(0, config.onlineListMax);
+      return { side, open: true, count: list.length, online: players.length, players: list };
     },
 
     /* inviter un ami dans mon groupe / rejoindre le sien */
@@ -206,7 +220,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
 
   };
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
-  for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); return fn(me, ...rest); }; }
+  for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
   return api;
 
   /* devenir amis : on retire les demandes dans les deux sens */

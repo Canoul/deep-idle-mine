@@ -73,9 +73,9 @@ function unlockHtml(s, furn){
          ` <span class="mut small">ouvre le four ${d.slot + 1}</span>`;
 }
 
-/* pièce de stuff fabriquée : bouton « Recycler » (une fenêtre demande de confirmer) */
+/* pièce de stuff fabriquée (ou butin de mob à recyclage fixe) : bouton « Recycler » (une fenêtre demande de confirmer) */
 const recycleHtml = s => s.uid != null && recyclable(s.item)
-  ? ` <button class="invRecycle" data-uid="${s.uid}" title="Détruit la pièce et rend une partie de sa recette">♻ Recycler</button>` : '';
+  ? ` <button class="invRecycle" data-uid="${s.uid}" title="Détruit la pièce et rend une partie de ses matériaux">♻ Recycler</button>` : '';
 
 function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';

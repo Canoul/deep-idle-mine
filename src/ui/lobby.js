@@ -86,9 +86,16 @@ export function modulationState({ tower, locked, party, account, slots = [], myG
 
 /* « Who ? » (tour ouverte) : une ligne par joueur en ligne qui n'a pas encore fait la tour ; « Inviter » (par son ID)
    s'il n'est pas en session et pas déjà dans mon groupe. p = { id, displayId, name, status…, friend } */
-export function whoRows(list, party){
+export function whoRows(list, party, now = Date.now()){
   const inParty = new Set((party?.members ?? []).map(m => m.account));
-  return (list?.players ?? []).map(p => ({ ...p, text: statusText(p), canInvite: p.status !== 'session' && p.status !== 'offline' && !inParty.has(p.id) }));
+  return (list?.players ?? []).map(p => ({ ...p, text: p.status === 'offline' ? seenText(p.lastSeenAt, now) : statusText(p),
+                                           canInvite: p.status !== 'session' && p.status !== 'offline' && !inParty.has(p.id) }));
+}
+/* joueur hors ligne de « Who ? » : « Hors ligne · vu il y a 3 h » (moins d'une heure : « il y a 25 min ») */
+export function seenText(at, now = Date.now()){
+  if(!Number.isFinite(at)) return 'Hors ligne';
+  const min = Math.max(0, Math.round((now - at) / 60000));
+  return `Hors ligne · vu il y a ${min < 60 ? `${Math.max(1, min)} min` : `${Math.round(min / 60)} h`}`;
 }
 
 export function alwaysReadyState({ account, party, offline }){
@@ -412,8 +419,8 @@ export function setupLobby(h){
     box.hidden = false;
     box.innerHTML = w.busy && !w.data ? '<p class="mut small">Chargement…</p>'
       : w.err ? `<p class="err small">${esc(w.err)}</p>`
-      : !rows.length ? '<p class="mut small">Personne d\'autre en ligne n\'a cette tour à faire.</p>'
-      : `<p class="small"><b>${rows.length}</b> joueur${rows.length > 1 ? 's' : ''} en ligne sans cette tour :</p>`+
+      : !rows.length ? '<p class="mut small">Personne d\'autre (en ligne, ou venu depuis 24 h) n\'a cette tour à faire.</p>'
+      : `<p class="small"><b>${rows.length}</b> joueur${rows.length > 1 ? 's' : ''} sans cette tour (${rows.filter(p => p.status !== 'offline').length} en ligne, les autres venus depuis 24 h) :</p>`+
         rows.map(p => `<div class="frow"><span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(p.text)}${p.friend ? ' · ami' : ''}</small></span>`+
           (p.canInvite ? `<button class="small" data-who-invite="${esc(p.displayId)}">Inviter</button>` : '')+`</div>`).join('');
   }

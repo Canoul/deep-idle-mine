@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 26/10/2026 (Bloc géant ; tableau de bord de l'équipe).*
+*Dernière mise à jour : 27/10/2026 (4 nouveaux sorts).*
 
 ---
 
@@ -43,10 +43,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     remplissent deux **jauges communes à tous les joueurs** (cap 200 depuis le 24/10 ; ancien 250), affichées dans le **Lobby** (« Où miner » → **Jugement**, à côté de Mine et Mine instantanée, depuis le 22/10 ; ancien : onglet Jugement à part).
   - **Gear score et modulation** (26/10, Geoffrey, **en test, en ligne le 26/10**) : GS d'une
     pièce et du joueur en x (`src/meta/gearscore.js`, affiché dans l'onglet Stuff, les bulles des pièces et le lobby) ;
+    **prix du GS depuis le 26/10 au soir : les x mesurés** (`UPGRADE.worth` + `UPGRADE.gs` pour double attaque, ténacité,
+    résistance au recul, portée, recul, rayon des torches, simulés le 26/10 ; ancien : `UPGRADE.prices`, le tableau des runes) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
+    **Pods dans les tours (26/10, Geoffrey, en ligne le 26/10)** : chaque stonebrick minée (poids
+    10) va dans le sac ; plein, le mineur redescend la vider au coffre commun (milieu de l'étage 0) ; victoire = coffre +
+    sacs des présents en parts égales (`splitTowerLoot`, `TOWER.chest`). Mesuré : tout fer 10/20 → 4/20, tout acier
+    17/20 → 16/20 (10 min gardées). Un 7e étage essayé le même jour, retiré (tout fer 0/20, acier 7/20).
     **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28), stonebrick **4 s** ; un étage
     « blocs » doit être **entièrement vidé** pour ouvrir sa porte (chaque mineur réserve son bloc) ; mobs empilables ;
     boss qui **focus** (premier arrivé au contact, ou barbare qui le provoque), le **suit** à travers les autres
@@ -113,7 +119,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public
   (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
 - **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session
-  commune quand tous les autres sont « prêts » (remis à zéro à chaque lancement), et peut donner sa place (21/10). Un membre **absent** (onglet fermé) mais prêt ou « prêt tout le temps » reste dans le groupe et part en session (26/10 ; ancien : retiré après 5 min) ; le chef absent est toujours retiré. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent
+  commune quand tous les autres sont « prêts » (remis à zéro à chaque lancement), et peut donner sa place (21/10). Un membre **absent** (onglet fermé) mais prêt ou « prêt tout le temps » reste dans le groupe et part en session (26/10 ; ancien : retiré après 5 min) ; le **chef absent n'est jamais retiré** (27/10, Geoffrey : les autres quittent s'ils veulent ; ancien : retiré après 5 min, le suivant devenait chef). **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent
   (GAME_DESIGN §6). Coffre et XP partagés par tranches entre les joueurs présents (anti-boosting).
 - **Retours du 23/10** : socle incassable sous le coffre (bloc 18, colonne 22 ; le treuil est en colonne 25) ;
   Tainted gold = 5 lingots d'or + **20 peaux de gobelin** (ancien : 20 chitine) ; Social : temps restant d'un ami en
@@ -124,6 +130,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6**, répétée au-delà (35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
+- **Butin rare des mobs** (26/10, Geoffrey) : 4 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
+  chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
+  **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
+  **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,1 %), **Nuage magique** (jambes, rare ;
+  marche +1,1 ; méphite 0,1 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +25 % ; minotaure 0,5 %,
+  1 % en k hole ; nerf du 26/10 au soir, ancien 0,5 % / 1 % / 2 %). Chance × (1 + butin du mineur : stat Butin + skill Pillage ; 1 % à +50 % → 1,5 %), une seule pièce, hasard à part, un seul joueur la reçoit (partage normal). Tier 2
+  pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
+  nuage, ceinture à cornes).
 - **Stuff tier 3** (23/10, Geoffrey ; en ligne le 23/10) : **Treasure T3** en areas 5
   et 6 (T2 en areas 3 et 4 ; ancien : T2 en 3 à 5 et au-delà) : graphite, tissu sombre, parts, BP acier 1 % chacun,
   BP Plastron de l'équilibre 0,5 %, gemmes 2 %, Cristal 10 %. **Six pièces en acier** (inhabituelles ; ancien : fer × 1,2 ; Steel
@@ -146,7 +160,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   téléportation + canalisation qui étourdit 5 s, laisse le Tissu sombre ; 150 PV de base depuis le 23/10, ancien 100 ;
   la Provocation casse la canalisation sans l'empêcher), **méphite** (24/10 : area 3+, 70 PV, **vole** sans gravité ni
   échelle, asphyxie −5 d'oxygène / 2 s tant qu'il tacle, non cumulable, Vésicule de gaz ; 5 / 15 / 20 % en areas 3 / 4 / 5+,
-  pris sur le gobelin). PV ×5 à ×10 (k = area où naît le mob),
+  pris sur le gobelin), **golem de sperme** (26/10 : area 5+, 10 % pris sur le gobelin, **2 × 2 cases**, 300 PV, deux fois
+  plus lent, **creuse** jusqu'au mineur un bloc toutes les 2 s (blocs perdus), escalier puis cheminée, s'agrippe à la roche,
+  repousse 0,5 / 1,5 s, ébranle à 33 / 66 / 99 % de PV perdus (étourdi 3 s à 3 cases), Pierre glissante, 30 XP ;
+  `src/sim/golem.js` ; portée depuis sa case la plus proche : `nearCell`, `src/sim/knock.js`). PV ×5 à ×10 (k = area où naît le mob),
   table d'apparition par area, mimics créés en jeu (un minerai devient mimic) et jamais minés.
   **Combat dynamique** (25/10, Geoffrey ; en ligne le 25/10) : portée 0,5 bord à bord (sans diagonale),
   chaque coup du mineur repousse le mob de 0,25 (`src/sim/knock.js`, `COMBAT`), minotaure et mobs / boss des tours
@@ -177,9 +194,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Glyphes** (25/10, Geoffrey ; `GLYPHS`, `src/meta/glyphs.js`, spec `docs/superpowers/specs/2026-10-25-glyphes-design.md`) :
   parchemin lié à un skill, posé dans l'onglet Skills (skill au rang max), retirable hors session ; état dans les skills
   (`st.glyphs`), figé au lancement (`sessionSkills`), effets via `m.skill.glyph_<nœud>`. 10 glyphes, dont le Glyphe Treuil
-  (étape 2 : ascenseur × 1,5 (26/10, avant × 3), une area sur deux, `G.winch.lift`, aussi dans les tours). Source (`GLYPHS.drop`) : mine classique, glyphes de sa spé pas encore possédés ; **≈ 3 % d'en trouver un par session
-  à 3** (26/10, tiré au hasard parmi ceux qui manquent) : mineur 0,00383 %/bloc, logisticien 0,0335 %/échelle posée,
-  barbare 0,101 %/mob (ancien, 25/10 : 0,01 / 0,07 / 0,1 %, ≈ 7,6 / 6,2 / 2,9 % par session) ; pour lui seul, versé à
+  (étape 2 : ascenseur × 1,5 (26/10, avant × 3), une area sur deux, `G.winch.lift`, aussi dans les tours). Source (`GLYPHS.drop`) : mine classique, glyphes de sa spé pas encore possédés ; **≈ 1 % d'en trouver un par session
+  à 3** (27/10, tiré au hasard parmi ceux qui manquent) : mineur 0,00126 %/bloc, logisticien 0,011 %/échelle posée,
+  barbare 0,0335 %/mob (ancien, 26/10 : ≈ 3 %, 0,00383 / 0,0335 / 0,101 % ; 25/10 : 0,01 / 0,07 / 0,1 %, ≈ 7,6 / 6,2 / 2,9 % par session) ; pour lui seul, versé à
   la fin (perdu s'il quitte).
 - **Mule** (23/10, Geoffrey ; en ligne le 23/10 ; spec `docs/superpowers/specs/2026-10-23-mule-design.md`, `MULE`
   en config, `src/sim/mule.js`) : Logisticien étage 4, sac posé à côté du bas du treuil (2 × pods des logisticiens
@@ -201,13 +218,17 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
   verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
   Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
+  **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
+  logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
+  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
+  50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session. Simulation : `--spells id,id`.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts ; Équiper remet tout d'un coup
   (pièce introuvable = case vide), hors session ; garde-fou 20 sets.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
-  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
+  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur, et ses torches dessinées en lampe de mine depuis le 26/10 ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
   pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →
@@ -263,6 +284,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pièces portées au lancement), par ilvl du groupe (moyenne des présents, une fois par session, avec une
   prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
+
+- **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
+  casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 400 x) ; plastrons hors règle (torse
+  volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
 
 ## Hébergement
 

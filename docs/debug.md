@@ -3372,7 +3372,190 @@ Règles (voir CLAUDE.md) :
   `geoffrey/tests-paliers-bloc-geant` — sans lien avec ce changement. ✅ Après merge de main (9cb496c) : lobby +
   giant-rules + giant-service ✅ 35.
 
-### Discord : ouverture d'une tour annoncée (Geoffrey) — branche `geoffrey/discord-tour-ouverte`, 🧪 pas en ligne
+## 26/10/2026 — Butin rare des mobs : 4 pièces de stuff (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` : 4 entrées `STUFF.items` (stats en x = pièce en fer de la case via `UPGRADE.prices`,
+  ceinture 250 x ; champ `recycle` = rendu fixe), `RARITY.items`, `UPGRADE.tiers[2]`, `TEXTURES`, nouveau `MOB_DROPS`
+  (après `DUNGEON` : mob, item, chance, kholeChance). `src/sim/actions.js` : `rareDrop` appelé à la fin de `killMob`
+  (tous les types), hasard `G.dropRng = mulberry32(seed ^ MOB_DROPS.salt)` créé au premier mob qui a un butin rare,
+  `G.khole` → kholeChance, `collect` d'1 pièce (poids 0), sans `lootOf` ; chance × (1 + `lootBonus(m)`, même bonus que `lootOf` : skill loot +
+  carac.looting/100), décision de Geoffrey le 26/10 (d'abord chance fixe). `src/meta/craft.js` : `recyclable` /
+  `recycleRefund` acceptent un `recycle` fixe quand il n'y a pas de recette. Skins `src/skins.js` + dessins
+  `scripts/gen_textures.py` (icônes straps_goblin, hood_dark, cloud_magic, belt_giant ; calques skins/goblin_straps,
+  dark_hood, magic_cloud, giant_belt). Wiki : `sourcesOf`, `mobDropRows`, tableau `#w-mob-drops`.
+- **Tests** : `tests/mob-drops.test.js` ✅ 6 (config, x, fréquences sur 40 000 morts, hasard à part, recyclage
+  idempotent, wiki) ; `tests/anticheat/recycle.test.js` ✅ (rafale sur la Ceinture) ; rareté mise à jour ✅ ; 22 fichiers
+  liés ✅ sauf `rune.test.js` « chaque pièce qu'on peut runer a un tier » ❌ **déjà sur main** (Lampe à incandescence
+  sans tier, branche geoffrey/lampe-bp). Simulation 5 sessions ✅ 0 bloquée ; même seed = mêmes chiffres qu'avant.
+- **Points fragiles** : une pièce lâchée suit le sac du mineur, comme le reste du butin. En tour,
+  les mobs n'ont pas ces types : pas de drop. Le minotaure de l'arène du k hole compte comme « k hole » (G.khole).
+
+---
+
+## 26/10/2026 — Gear score aux prix mesurés (branche `geoffrey/gs-en-x`) — ✅ en ligne le 26/10
+- **Quoi** : `src/meta/gearscore.js` `priceOf` = `UPGRADE.worth[k] ?? UPGRADE.gs[k] ?? 0` (avant : `UPGRADE.prices`).
+  `src/config.js` `UPGRADE.gs = { doubleAttack:8, tenacity:5, knockRes:0, reach:0, knockback:120, torchRadius:27 }` :
+  stats absentes de `worth`, simulées le 26/10 (script hors dépôt, 24 seeds `(i+1)×7919`, mineur de base, avec / sans,
+  écart de valeur de minerai au coffre × 3 600 ; marges : double attaque +20 % = 162 ± 97 x, ténacité +20 % = 99 ± 72,
+  résistance au recul : parties identiques, portée +0,5 = −60 ± 95, recul +1 = 120 ± 94) ; rayon des torches 27 =
+  GAME_DESIGN §3. `worth` n'est pas modifié : ilvl, valeur des objets et runes inchangés.
+- **Tests** : `tests/gearscore.test.js` +1 (prix = worth puis gs, pas de clé en double, Lance < 600) ; gearscore, stuff,
+  lobby, party, game-service : 116/116 ✅. `gearScore(tout fer) = 2191` reste ≥ 2000 (test de modulation).
+- **Chiffres** : tout fer 2 481 → 2 191, tout acier 3 391 → 3 011, Lance en fer 1 020 → 360, Pioche en acier 1 000 → 650,
+  Plastron de l'équilibre 1 335 → 1 426 (sa ténacité +3 % compte : 15 x), Lampe à incandescence 0 → 81.
+- **Points fragiles** : prix de `UPGRADE.gs` au bruit près (marges ci-dessus, mine classique seulement ; en tour, portée et
+  recul valent sans doute plus). `TOWER.modulation.gsMax` (2000) choisi avec l'ancien barème, pas retouché.
+
+## 26/10/2026 — Butin rare des mobs : recalage sur les prix mesurés (branche `geoffrey/stuff-mobs`) — ✅ en ligne le 26/10
+- **Quoi** : après le merge de `geoffrey/gs-en-x` (GS aux prix mesurés), Nuage `speed` 1,4 → 1,1
+  (263 x = Jambes en fer) et Ceinture `tenacity` 12,6 → 25 (250 x) ; Lanières et Capuche inchangées (tableau des runes :
+  en prix mesurés, vitesse d'attaque +135 % et recul +1,1). GS : Lanières 306, Capuche 142 (sous le fer en prix mesurés).
+  Test x réécrit en conséquence ✅.
+
+## 26/10/2026 — Golem de sperme : mob 2 × 2 qui creuse (branche `geoffrey/golem`) — ✅ en ligne le 26/10
+- **Quoi** : `src/sim/golem.js` (nouveau) : cases, `breakable`, `smash` (bloc perdu, `oreRemoved`, `updateLight`),
+  `standing` (sol sous une colonne OU bloc contre un flanc, bord de la mine compris), `fitsAt`/`clearAt` (naissance),
+  `golemFalls`, `golemStep` (escalier vers la proie, cheminée dessous, `o.stair` gardé en salle ouverte, demi-tour
+  seulement contre un bord ou un incassable ; un bloc toutes les `dig` s via `o.dig`, à part de `o.cd`), `quake`
+  (`m.quakeUntil`). `src/sim/mobs.js` : `updateGolem`, golem dans `WALKERS`, naissance dans `spawnMobs` (`fitsAt`,
+  `clearAt`, `o.size`, `o.knockRes`, `o.speed` depuis `MOBS.speed`), `strike` lit `MOBS.hitEveryBy` et pousse depuis
+  `nearCell`. `src/sim/knock.js` : `nearCell` (case la plus proche d'une entité de plusieurs cases), utilisée par `gap` et
+  `inReach` : tout ce qui mesure la portée (tacle, coups, IA) marche pour le golem sans autre changement. `ai.js` /
+  `session.js` : étourdi tant que `m.quakeUntil`. `actions.js` `killMob` : butin. `trap.js` : `MOBS.noTrap`. Config :
+  `MOBS.golem`, `hpBase`/`minArea`/`spawnTable`/`speed`/`hitEveryBy`/`knock`, `XP.mob.golem`, objet `Pierre glissante`,
+  textures `golem` (32 × 32) et `slippery_stone`. Rendu `src/render/canvas.js` (2 × 2, goutte animée). Wiki : fiche,
+  vitesse de chaque mob (`MOB_INFO.speed`).
+- **Piège évité** : un corps de 2 de large ne peut jamais faire demi-tour en montant un escalier qu'il creuse (la marche
+  qui le porterait est toujours déjà creusée par lui) : il dépassait le mineur, glissait sur son escalier, remontait
+  (boucle). D'où la cheminée et l'agrippement (`standing`).
+- **Tests** : `tests/golem.test.js` (nouveau, 14) ; goblin, mephite : table de l'area 5 mise à jour ; combat, dungeon,
+  goblin, khole, knock, lobby, loot, mephite, mobs, spells, trap, view, wiki, session, skins ✅ ; anticheat 95/95 ✅.
+- **Simulation** : normale (`--miners 3 --count 5`) identique au chiffre près à avant (182,4 de profondeur, 4140 pods,
+  0 bloquée) : rien ne change avant l'area 5. Stress (golem dès l'area 0, 30 % des apparitions, via un script chargé avant
+  `simulate.js`) : 14 à 20 golems par session, tous tués sauf 3 en fin de session, ≈ 90 s de vie, 80 à 200 blocs cassés,
+  0 session bloquée ; le seul golem immobile en chasse attendait devant un donjon où était le mineur (voulu).
+- **À vérifier** : ⚠️ pas regardé dans le navigateur (dessin 2 × 2, barre de vie, goutte) ; ⚠️ la simulation standard
+  n'atteint pas l'area 5 (3 areas) : à surveiller en vraie partie.
+
+
+## 26/10/2026 — « Who ? » : joueurs hors ligne des dernières 24 h (branche `geoffrey/who-deconnectes`) — ✅ en ligne le 26/10
+- **Quoi** : `server/accounts/store.js` `recentlySeen(since)` → { compte: max lastSeenAt } d'après les connexions
+  (lastSeenAt prolongé au plus une fois par heure : à une heure près ; survit aux redémarrages). `server/social/service.js`
+  : map `lastSeen` (signe de vie à la minute, gardée `SOCIAL_SERVER.whoRecentFor` = 24 h, perdue au redémarrage) ;
+  `towerWho` ajoute après les joueurs en ligne les comptes vus depuis 24 h (max des deux sources), sans moi, sans ceux
+  qui ont fait la tour, sans compte supprimé, `status:'offline'`, `lastSeenAt`, triés du plus récent ; renvoie aussi
+  `online`. `src/ui/lobby.js` : `seenText` (« Hors ligne · vu il y a 3 h / 25 min »), pas d'Inviter, en-tête « n joueurs
+  sans cette tour (x en ligne…) ».
+- **Tests** : `tests/tower-who.test.js` ✅ 7 (ordre et filtres, mémoire à la minute puis oubli après 24 h, texte,
+  recentlySeen) ; social, accounts, lobby ✅ (40).
+- **Points fragiles** : un joueur qui garde le jeu ouvert sans recharger a un lastSeenAt de connexion jusqu'à 1 h en
+  retard ; après un redémarrage du serveur, « vu il y a » peut donc être surestimé d'une heure au plus. Liste visible par
+  tous les joueurs (comme l'onglet Online), pas seulement les amis.
+
+---
+
+## 26/10/2026 — Apparence des torches de la Lampe à incandescence (branche `geoffrey/skin-lampe`) — ✅ en ligne le 26/10
+- **Quoi** : `src/sim/mineur.js` `placedTorch(m)` = { x, y, r, item? } (item = `m.look.torche`), utilisé par
+  `src/sim/actions.js` (mine) et `src/sim/tower/session.js` (tour). `src/skins.js` : `SKIN.torch` (base 'torch', lampe
+  'torch_lamp'), `torchTexOf(torche)`, ajouté à `SKIN_TEXTURES`. Rendu `src/render/canvas.js` et `src/render/tower.js`.
+  Vue de la tour `src/shared/tower-view.js` : liste `torchItem` (seulement si une torche a un item). Vue de la mine :
+  torches envoyées entières, rien à changer. Texture `torch_lamp` dans `scripts/gen_textures.py`.
+- **Tests** : `tests/lamp.test.js` ✅ (item et apparence en mine et en tour, vue navigateur comprise) ; tours, k hole,
+  lumière, vues ✅ (86). Simulation 5 sessions ✅ 0 bloquée, mêmes chiffres qu'avant (champ en plus, aucun hasard).
+- **Points fragiles** : l'apparence suit `look` (équipement figé au lancement), le rayon suit `carac` : les deux
+  viennent du même stuff. Torches du k hole (salle éclairée) : sans item, torches de base.
+
+---
+
+## 26/10/2026 — Tours : pods (branche `geoffrey/tour-pods`) — ✅ en ligne le 26/10
+- **Quoi** : `src/config.js` : `TOWER.floors` 6 → 7 ; `TOWER.chest = { floor:0, deposit:1, max:500 }` ; BLOCKS 14 / 16
+  (Stonebrick angélique / démoniaque) : `w:10`, `family:'material'`, plus de `noDrop` → ce sont des objets (ITEMS).
+  `src/sim/tower/session.js` : `m.inv` / `m.load` ; `mineCell` met la brique du camp dans le sac (`G.bricks--`) ;
+  `decide` : après les mobs, `bagFull` (load > 0 et load + w > pods) et `G.bricks > 0` → chemin vers `G.chestAt`
+  (milieu de l'étage 0, ligne du bas), action `deposit` → `G.chest` ; pas de chemin : il continue (la brique suivante
+  entre quand même : jamais perdue). `towerLoot(G)` = coffre + sacs des mineurs présents ; `summary.loot` (réussite
+  seulement). `leaveTower` : sac perdu. `src/shared/tower.js` `splitTowerLoot(loot, n, side, random)` : parts égales,
+  reste à des joueurs tirés au hasard, seule la brique du camp, entier 1…`TOWER.chest.max`. `server/game/service.js`
+  `settleWith` : héritiers = présents d'une réussite ; bag = trésor + part. Vue (`tower-view.js` : `chestAt`, `chest`,
+  `load`, `pods`), rendu (`render/tower.js` : texture `chest`), HUD (sac de chacun, ligne du coffre), bilan (tout le
+  butin). Wiki (texte de la tour), GAME_DESIGN (Tours).
+- **Tests** : `tests/tower.test.js` +4 (sac, vidage, conservation tick par tick, butin seulement en réussite et sans le
+  sac d'un parti, partage : conservation, égalité à 1 près, quantités invalides et objets étrangers refusés, vue) ;
+  `tests/game-service.test.js` (versement : 7 briques au seul présent, Fer inventé ignoré, rien en échec ni au parti).
+  tower, tower-boss, tower-who, game-service, anticheat/*, inventory, wiki ✅.
+- **Tests modifiés (équilibrage, à relire)** : « compo forte » ne vérifie plus « toit atteint et boss entamé de 20 % »
+  mais « au moins le dernier étage » (seed 13 n'atteint plus le toit). Treuil et regroupement : seed 3 → 7 (avec 7
+  étages, la porte du toit de la seed 3 passe à gauche, à côté du treuil : scène du test plus valable).
+- **Simulation** (20 tours, 2 mineurs + 1 barbare, sans skill) : 1,1 / 10 : toit 5/20 à 9:52, 7 vidages, 0 blocage
+  (sans limite de pods : 20/20 à 8:28 ; en ligne 20/20 à 7:11). Tout fer : 0/20 (en ligne 10/20). Tout acier : 7/20 à
+  9:43, 3 vidages, ≈ 59 briques par joueur (en ligne 17/20).
+- **Pas vérifié** : affichage dans un navigateur (coffre, sac dans le panneau, bilan).
+- **Points fragiles** : le chemin vers le coffre passe par les échelles posées à la montée (planTo) ; un mineur plein
+  pendant un combat de mobs combat d'abord. Rien d'autre ne lit encore les stonebricks (pas de recette).
+- **Mise à jour (26/10, plus tard)** : 7e étage **retiré** à la demande de Geoffrey (`TOWER.floors` 7 → 6). Les trois tests
+  adaptés (compo forte, seeds du treuil et du regroupement) sont revenus à leur version d'origine et passent ✅ (tower,
+  tower-boss, tower-who : 48/48). Simulation 6 étages + pods : tout fer 4/20 à 9:38 (toit 6:38, 4,8 vidages, ≈ 40
+  briques par joueur) ; tout acier 16/20 à 9:07 (toit 5:49, 3 vidages, ≈ 51 briques) ; 1,1 / 10 : toit 8:28 (sans
+  limite de pods 7:11), 6,5 vidages, 0 blocage ; compos de `simulate:tower` 0/20 (d : 2/20 sans les pods).
+
+## 26/10/2026 — Butin rare des mobs : `MOB_DROPS` 0,5 % → 0,1 %, minotaure 1 % / 2 % → 0,5 % / 1 % (branche `geoffrey/nerf-drops`)
+- **Quoi** : `src/config.js` `MOB_DROPS.items` ; `GAME_DESIGN.md` (tableau du butin des mobs), `claude/etat-du-projet.md`.
+  Wiki : tableaux et « d'où ça tombe » lus dans la config.
+- **Tests** : `tests/mob-drops.test.js` : valeurs et textes du wiki mis à jour, N = 200 000 tirages (à 0,1 %, 40 000 ne
+  suffisaient plus pour la marge de 25 %) ; le test du multiplicateur de butin lit la config. mob-drops, wiki 18/18 ✅.
+
+### Glyphes : drop à ≈ 1 % par session (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- `GLYPHS.drop` (src/config.js) : mineur 0,0000126 /bloc, logisticien 0,000110 /échelle, barbare 0,000335 /mob
+  (ancien 0,0000383 / 0,000335 / 0,00101 ≈ 3 %). Calcul 1 − 0,99^(1/E), E = 795 blocs, 91 échelles, 30 mobs par mineur
+  et par session à 3 (mesures du 26/10, non remesurées).
+- Mis à jour : tests/glyph-drop.test.js (taux + ≈ 1 % ± 0,02), wiki.html, GAME_DESIGN.md, claude/etat-du-projet.md.
+- Tests : glyph-drop ✅, anticheat ✅. Aucune logique changée, seulement des valeurs.
+
+### Groupe : chef absent jamais retiré (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- Signalé : chef AFK 1 h (onglet probablement endormi : le lobby continue d'envoyer des signes de vie onglet caché,
+  donc veille / onglet suspendu / navigateur fermé), lobby vide au retour. Cause : `sweep()` retirait le chef au bout
+  de `PARTY_SERVER.memberTimeout` (5 min), le suivant devenait chef.
+- `server/party/service.js` `sweep()` : `if(m.account === p.leader) continue;` avant la règle des membres prêts.
+- Test remplacé dans tests/party.test.js (chef absent 30 min gardé, affiché absent, les autres quittent). party ✅ (36),
+  lfg ✅, lobby ✅, social ✅.
+- Point fragile : un chef parti pour de bon garde son groupe en mémoire et dans le stockage (rien ne le nettoie) ;
+  volume négligeable (un groupe par compte au plus).
+
+### Stuff : armures = valeur du tier, combat du butin des mobs ÷ 2 (Geoffrey, 27/10) — branche `geoffrey/stuff-valeurs-tier`, ✅ en ligne le 27/10
+- **Quoi** : `src/config.js` : stats des 12 armures (casque / plastron / jambes / bottes × chitine / fer / acier) réglées
+  pour que `pieceGS` = `UPGRADE.tiers[t].x` à l'arrondi du pas près (102, 252, 402 au pire) ; butin des mobs recalculé :
+  part = 250 x / nb de stats, stat = part ÷ prix mesuré (worth ?? gs) × `STUFF.combatOnStuff` (0,5) si elle est dans
+  `STUFF.combatStats`. Nouvelles clés `STUFF.combatStats`, `STUFF.combatOnStuff` (seulement lues par le test).
+- **Tests** : `tests/stuff-balance.test.js` (3, nouveau : garde la règle) ✅ ; chiffres mis à jour dans amelioration,
+  anneaux, blueprint, carac, stuff, steel-gear ; `mob-drops` : ancien test de valeur retiré (remplacé) ; `gearscore` :
+  l'exemple « au-dessus de 2 000 GS » passe de tout fer (1 884 désormais) à tout acier. 58 fichiers qui lisent le stuff :
+  ✅ sauf 3 échecs **déjà présents sur main** (Lampe à incandescence sans tier dans rune.test ; source des glyphes dans
+  wiki.test ; lobby dev « tours toujours dans Où miner »).
+- **Simulation tours** (script jetable, 2 mineurs + 1 barbare, stuff complet, 20 tours, seeds 1-20) : fer 4/20 → 3/20,
+  acier 16/20 → 11/20 ; avant = repères du 26/10, retrouvés à l'identique. La mine (simulate.js, mineur de base) ne bouge pas.
+- **Points fragiles** : la règle dépend des prix mesurés : remesurer `UPGRADE.worth` / `gs` fera échouer
+  stuff-balance.test.js tant que les pièces ne sont pas réajustées (voulu). Capuche : recul +0,52 (gs : 120 x / bloc).
+- **Correction (27/10, 10 h 55, Geoffrey)** : plastrons remis à leurs valeurs (pods 30 / 88 / 120) : torse volontairement
+  plus fort, hors règle du tier. stuff-balance.test.js : casque / jambes / bottes seulement + un test « plastron au-dessus
+  de son tier » ; tests amelioration, carac, stuff, blueprint, steel-gear revenus aux anciens chiffres de pods ✅ (83).
+  La simulation des tours du matin ne vaut plus (les pods n'ont plus bougé) : seuls casques / jambes / bottes changent
+  un peu (fer : montée 3,3 → 3,25, marche 4,05 → 4,04).
+
+### Sorts : Bonbonne de zipette, Cri de guerre, Cleave, Hand of Justice (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- Config `SPELLS.list` : `zipette`, `war_cry`, `cleave`, `hand_of_justice` (parchemins créés tout seuls dans ITEMS).
+- `src/sim/spells.js` (`updateSpells`) : `warCry`, `cleave`, `handOfJustice`, `zipette`. « En combat » = `fighting()` :
+  coup en cours (action attack, mob vivant) ou tacle, jamais pendant un étourdissement. `fair()` : un boss de donjon
+  seulement si c'est sa cible ou celui qui le tacle.
+- Cri de guerre : `m.warcry = { until, dmg, speed }` sur chaque mineur touché ; lu par `warcryOf` (src/sim/mineur.js)
+  dans `hitDamage` (actions.js, × (1+dmg)) et l'intervalle d'attaque (ai.js `fight`, × (1+speed)). Recharge = fin + cd.
+- Zipette : modes exclus `return`, `departure`, `surface`, `fetch` ; `o.ox < oxygenMax` ; gain `m.carac.pods × 0,2`
+  plafonné. Hand of Justice : `stunUntil`, `grab = null`, `channel = null` (même étourdissement que le Dash, mobs.js).
+- Pas de branchement dans le Bloc géant, les tours ni la MI (pas de sorts là-bas, ou seulement les leurs).
+- Wiki : glyphes, texte « ≈ x % par session » lu dans `GLYPHS.dropPerSession` (restait à 3 % depuis le passage à 1 %).
+- Tests : spells ✅ (25), wiki ✅ (11), combat, knock, mobs, session, giant-sim, mob-drops ✅. Simulation 5 sessions
+  `--skills mixed` avec / sans `--spells zipette,war_cry,cleave,hand_of_justice` : 0 blocage, coffre 4 499 / 4 510 pods.
+- À vérifier : effet réel de chaque sort sur le coffre et les combats (pas mesuré séparément).
+
+### Discord : ouverture d'une tour annoncée (Geoffrey) — branche `geoffrey/discord-tour-ouverte`, ✅ en ligne le 27/10 (restée sur sa branche le 26/10 : c'est pour ça que le bot n'a rien écrit)
 - **Quoi** : `towerOpenMessage(side)` (`server/social/discord.js`). Branché dans `withJudgment`
   (`server/game/service.js`) : on note `j[side].opening` avant, et après l'enregistrement on annonce chaque camp dont
   le numéro a avancé. Couvre les trois causes d'ouverture (`addResidues`, `refresh` à la lecture = réouverture après

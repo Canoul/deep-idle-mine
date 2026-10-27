@@ -24,10 +24,22 @@ export const SKIN = {
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
+    /* butin rare des mobs (26/10/2026, MOB_DROPS) */
+    'Lanières en cuir du gobelin': 'skins/goblin_straps', // torse nu, deux sangles de cuir des épaules le long des côtes
+    'Capuche sombre':      'skins/dark_hood',          // capuche violette de l'occultiste, visage sombre, yeux rouges
+    'Nuage magique':       'skins/magic_cloud',        // les jambes deviennent un nuage jaune
+    'Ceinture du Géant':   'skins/giant_belt',         // bande noire, cornes claires
   },
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {
     'Cape de Naingui':     'skins/naingui_cape',       // tissu sombre violet, jusqu'aux chevilles
+  },
+
+  /* torches posées (26/10/2026, Geoffrey) : selon la pièce de la case torche de celui qui l'a posée (torche.item),
+     sinon la torche de base. Texture de textures/ (pas un calque du mineur) */
+  torch: {
+    base:                    'torch',
+    'Lampe à incandescence': 'torch_lamp',          // lampe de mine suspendue : ampoule dans sa cage, câble
   },
 
   /* outil sorti pour miner (et frapper) : la pioche équipée, sinon la pioche en bois de base */
@@ -47,7 +59,8 @@ export const SKIN = {
 };
 
 /* toutes les textures de skins, à charger avec les autres */
-export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.back), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword)];
+export const SKIN_TEXTURES = [SKIN.body, ...Object.values(SKIN.armor), ...Object.values(SKIN.back), ...Object.values(SKIN.pickaxe), ...Object.values(SKIN.sword),
+                              ...Object.values(SKIN.torch).filter(t => t !== SKIN.torch.base)];
 
 /* calques à dessiner pour un mineur d'après son équipement (look : { case: objet }) */
 export const armorLayers = look => SKIN.layers.map(slot => SKIN.armor[look?.[slot]]).filter(Boolean);
@@ -58,6 +71,8 @@ export const backPieces = look => SKIN.layers.filter(slot => SKIN.back[look?.[sl
 /* les calques qui portent l'aura de leur case : le dos s'il y en a un, sinon le calque de devant */
 export const auraPieces = look => { const back = backPieces(look), has = new Set(back.map(([s]) => s));
   return [...back, ...armorPieces(look).filter(([s]) => !has.has(s))]; };
+/* texture d'une torche posée ({ x, y, r, item? }) */
+export const torchTexOf = t => SKIN.torch[t?.item] ?? SKIN.torch.base;
 export const pickaxeOf = look => SKIN.pickaxe[look?.pioche] ?? SKIN.pickaxe.base;
 /* outil en main : pour frapper, l'épée équipée s'il en a une ; sinon (et pour miner) la pioche */
 export const toolOf = (look, action) => (action === 'attack' && SKIN.sword[look?.epee]) || pickaxeOf(look);

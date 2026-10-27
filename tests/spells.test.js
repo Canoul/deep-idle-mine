@@ -7,6 +7,8 @@ import { createSpells, spellOp, learnScroll, sanitizeSpells, equippedSpells, ses
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { worldFrom } from './helpers.js';
 import { startAction, moveT, mineT } from '../src/sim/mineur.js';
+import { hitDamage } from '../src/sim/actions.js';
+import { ITEMS } from '../src/config.js';
 import { finishAction, mineBlock } from '../src/sim/actions.js';
 import { afterDecide, updateSpells } from '../src/sim/spells.js';
 import { newSession, tick } from '../src/sim/session.js';
@@ -16,9 +18,10 @@ const BARB5 = { tree:'barbare', spec:{ barbare:5 } };
 
 /* ---------- compte ---------- */
 
-test('config : 4 slots dont 2 ouverts, 6 sorts, parchemins dans les objets', () => {
+test('config : 4 slots dont 2 ouverts, 10 sorts, parchemins dans les objets', () => {
   assert.equal(SPELLS.slots, 4); assert.equal(SPELLS.openSlots, 2);
-  assert.deepEqual(SPELLS.list.map(s => s.id), ['dash', 'illumination', 'inspiration', 'ulti_shen', 'fast_learner', 'dynamite']);
+  assert.deepEqual(SPELLS.list.map(s => s.id), ['dash', 'illumination', 'inspiration', 'ulti_shen', 'fast_learner', 'dynamite',
+                                               'zipette', 'war_cry', 'cleave', 'hand_of_justice']);
   assert.equal(unlockText('dash'), 'Barbare : niveau de spécialisation 5');
   assert.equal(unlockText('ulti_shen'), `Apprendre le ${SCROLL}`);
 });
@@ -266,6 +269,130 @@ test('10 min de session avec les sorts : déterministe, chacun lance ses sorts',
   const a = sum(), b = sum();
   assert.deepEqual(a, b);
   assert.ok(a.casts.every(n => n > 0), `chaque mineur lance des sorts : ${a.casts}`);
+});
+
+/* ---------- sorts du 27/10/2026 ---------- */
+
+test('27/10 : déblocage (Logisticien et Barbare niveau 10, parchemins pour Cleave et Hand of Justice)', () => {
+  const st = createSpells();
+  assert.equal(isUnlocked(st, 'zipette', { spec:{ logisticien:9 } }), false);
+  assert.equal(isUnlocked(st, 'zipette', { spec:{ logisticien:10 } }), true);
+  assert.equal(isUnlocked(st, 'war_cry', { spec:{ barbare:9 } }), false);
+  assert.equal(isUnlocked(st, 'war_cry', { spec:{ barbare:10 } }), true);
+  assert.deepEqual(spellOp(createSpells(), { action:'equip', spell:'war_cry', slot:0, opId:'w' }, { tree:'mineur', spec:{ barbare:10 } }), { error:'wrong_tree' });
+  for(const id of ['cleave', 'hand_of_justice']){
+    assert.equal(isUnlocked(st, id, { spec:{ barbare:99, mineur:99, logisticien:99 } }), false);
+    const scroll = SPELLS.list.find(s => s.id === id).unlock.scroll;
+    assert.equal(ITEMS[scroll]?.cat, 'scroll', `${scroll} existe comme objet`);
+    const inv = createInventory(); addItem(inv, scroll, 1);
+    assert.deepEqual(learnScroll(st, inv, scroll, 'l-' + id), { ok:true, repeated:false, spell:id });
+  }
+  assert.deepEqual(sessionSpells(['cleave', 'hand_of_justice'], null), ['cleave', 'hand_of_justice'], 'pas de spécialisation requise');
+});
+
+test('Bonbonne de zipette : l\'allié le plus proche du manque, à 3 cases, regagne 20 % des pods du logisticien ; pas lui-même', () => {
+  const G = worldFrom(['', '#'.repeat(50), '#@                  #', '#'.repeat(50)], { miners:3 }), [l, a, b] = G.miners;
+  l.spells = ['zipette']; l.x = 5; l.y = 2; l.carac.pods = 100; l.ox = 1;
+  a.x = 7; a.y = 2; a.mode = 'work'; a.ox = a.carac.oxygenMax - 5;     // il ne manque que 5
+  b.x = 15; b.y = 2; b.mode = 'work'; b.ox = 10;
+  updateSpells(G);
+  assert.deepEqual([a.ox, l.ox, l.spellCd.zipette ?? 0], [a.carac.oxygenMax, 1, G.t + 180], 'a regagne 5 (son max), pas le logisticien');
+  l.spellCd.zipette = 0; a.ox = 30;
+  b.x = 8; b.mode = 'return';                                           // b remonte : pas pour lui
+  updateSpells(G);
+  assert.equal(a.ox, 50, '+20 % de 100 pods');
+  assert.equal(b.ox, 10);
+  l.spellCd.zipette = 0; a.ox = a.carac.oxygenMax; b.mode = 'departure'; b.ox = 10;
+  updateSpells(G);
+  assert.equal(l.spellCd.zipette, 0, 'personne à aider : il garde sa bonbonne');
+  b.mode = 'work'; b.x = 9;                                             // à 4 cases : trop loin
+  updateSpells(G);
+  assert.equal(l.spellCd.zipette, 0);
+  b.x = 8;
+  updateSpells(G);
+  assert.deepEqual([b.ox, l.spellCd.zipette], [30, G.t + 180]);
+});
+
+test('Cri de guerre : en combat, lui et les mineurs à 10 cases : dégâts +10 %, attaque +5 % pendant 30 s ; recharge après', () => {
+  const G = worldFrom(['', '#'.repeat(50), '#@                           #', '#'.repeat(50)], { miners:3 }), [w, a, b] = G.miners;
+  w.spells = ['war_cry']; w.x = 5; w.y = 2; a.x = 14; a.y = 2; b.x = 16; b.y = 2;
+  for(const m of G.miners){ m.carac.crit = 0; }
+  const mob = { id:7, type:'gobelin', x:6, y:2, hp:5000, maxhp:5000, cd:1 };
+  G.mobs.push(mob);
+  updateSpells(G);
+  assert.equal(w.spellCd.war_cry ?? 0, 0, 'pas encore en combat');
+  const base = hitDamage(G, a);
+  startAction(w, 'attack', 1, { mob });
+  updateSpells(G);
+  assert.equal(w.spellCd.war_cry, G.t + 30 + 180);
+  assert.deepEqual([!!w.warcry, !!a.warcry, !!b.warcry], [true, true, false], 'b à 11 cases : rien');
+  assert.ok(Math.abs(hitDamage(G, a) - base * 1.1) < 1e-9);
+  G.t += 30;
+  assert.ok(Math.abs(hitDamage(G, a) - base) < 1e-9, 'fini après 30 s');
+});
+
+test('Cri de guerre : la vitesse d\'attaque +5 % raccourcit l\'intervalle entre deux coups', () => {
+  const run = cry => {
+    const G = worldFrom(['', '#'.repeat(50), '#@  #', '#'.repeat(50)]), m = G.miners[0];
+    m.carac.crit = 0; m.carac.doubleAttack = 0;
+    G.mobs.push({ id:3, type:'bestiole', x:2, y:2, hp:1e9, maxhp:1e9, cd:1e9 });
+    if(cry) m.warcry = { until:1e9, dmg:0, speed:0.05 };
+    m.foe = 3;
+    for(let i = 0; i < 600; i++) tick(G);
+    return 1e9 - G.mobs[0].hp;
+  };
+  const a = run(false), b = run(true);
+  assert.ok(b > a, `plus de coups avec le cri : ${a} → ${b}`);
+});
+
+test('Cleave : en combat, 50 % de ses dégâts à chaque mob à 2 cases (critique possible) ; recharge 10 s', () => {
+  const G = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)]), m = G.miners[0];
+  m.spells = ['cleave']; m.x = 5; m.y = 2; m.carac.crit = 0;
+  const near1 = { id:1, type:'gobelin', x:6, y:2, hp:1000, maxhp:1000, cd:1 };
+  const near2 = { id:2, type:'bestiole', x:3, y:2, hp:1000, maxhp:1000, cd:1 };
+  const far = { id:3, type:'bestiole', x:8, y:2, hp:1000, maxhp:1000, cd:1 };
+  const boss = { id:4, type:'minotaure', dungeon:0, x:4, y:2, hp:1000, maxhp:1000, cd:1 };
+  G.mobs.push(near1, near2, far, boss);
+  updateSpells(G);
+  assert.equal(near1.hp, 1000, 'pas en combat : rien');
+  startAction(m, 'attack', 1, { mob:near1 });
+  updateSpells(G);
+  const d = hitDamage(G, m) * 0.5;
+  assert.deepEqual([near1.hp, near2.hp, far.hp, boss.hp], [1000 - d, 1000 - d, 1000, 1000], 'le boss qu\'il ne combat pas est épargné');
+  assert.equal(m.spellCd.cleave, G.t + 10);
+  m.carac.crit = 100; m.spellCd.cleave = 0; near1.hp = 1000;
+  updateSpells(G);
+  assert.equal(near1.hp, 1000 - d * 2, 'critique : double');
+});
+
+test('Hand of Justice : étourdit 3 s un mob qui tacle un allié d\'abord (3 cases au plus), coupe son sort ; recharge 30 s', () => {
+  const G = worldFrom(['', '#'.repeat(50), '#@          #', '#'.repeat(50)], { miners:2 }), [m, ally] = G.miners;
+  m.spells = ['hand_of_justice']; m.x = 5; m.y = 2; ally.x = 8; ally.y = 2;
+  const mine = { id:1, type:'bestiole', x:6, y:2, hp:1000, maxhp:1000, cd:1 };
+  const oc = { id:2, type:'occultiste', x:7, y:2, hp:1000, maxhp:1000, cd:1, grab:ally.id, channel:{ target:ally.id, left:4 } };
+  G.mobs.push(mine, oc);
+  startAction(m, 'attack', 1, { mob:mine });
+  updateSpells(G);
+  assert.deepEqual([oc.stunUntil, oc.grab, oc.channel, mine.stunUntil], [G.t + 3, null, null, undefined], 'l\'occultiste qui tacle l\'allié passe avant');
+  assert.equal(m.spellCd.hand_of_justice, G.t + 30);
+  m.spellCd.hand_of_justice = 0; oc.grab = ally.id; oc.x = 9;          // à 4 cases : trop loin
+  updateSpells(G);
+  assert.equal(mine.stunUntil, G.t + 3, 'sinon le mob qu\'il frappe');
+  const at = [mine.x, mine.y];
+  for(let i = 0; i < 20; i++) tick(G);
+  assert.deepEqual([mine.x, mine.y], at, 'étourdi : il ne bouge pas');
+});
+
+test('10 min avec les nouveaux sorts : déterministe, aucun blocage de la partie', () => {
+  const miners = [{ spells:['cleave', 'hand_of_justice'], skillTree:'mineur' }, { spells:['war_cry', 'cleave'], skillTree:'barbare' },
+                  { spells:['zipette', 'hand_of_justice'], skillTree:'logisticien' }].map((s, i) => ({ ...s, x:20 + i * 5 }));
+  const sum = () => {
+    const G = newSession(777, { miners, id:'s2' });
+    for(let i = 0; i < 6000; i++) tick(G);
+    return { xp:G.stats.xp, pos:G.miners.map(m => [m.x, m.y]), casts:G.roster.map(m => m.stats.spells || 0) };
+  };
+  const a = sum(), b = sum();
+  assert.deepEqual(a, b);
 });
 
 /* ---------- affichage ---------- */

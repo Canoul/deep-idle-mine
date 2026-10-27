@@ -43,3 +43,15 @@ test('recycler : ni une pièce portée, ni une pièce d\'un set, ni un objet non
   const r = await game.recycle(ME, { uid:b });                                            // la seconde, hors set : oui
   assert.deepEqual(r.refund, { 'Tainted iron':6 });
 });
+
+test('butin rare des mobs (26/10/2026) : recyclé une seule fois en rafale, quantités fixes', async () => {
+  const game = setup();
+  await game.adminGive(ME.id, 'Ceinture du Géant', 1);
+  const uid = uidOf((await game.state(ME)).inventory, 'Ceinture du Géant');
+  const res = await Promise.allSettled(Array.from({ length:8 }, () => game.recycle(ME, { uid })));
+  assert.equal(res.filter(r => r.status === 'fulfilled').length, 1);
+  const inv = (await game.state(ME)).inventory;
+  assert.equal(count(inv, 'Chitine'), 50);
+  assert.equal(count(inv, 'Steel ingot'), 5);
+  assert.equal(count(inv, 'Ceinture du Géant'), 0);
+});

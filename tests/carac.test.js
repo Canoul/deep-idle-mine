@@ -12,10 +12,10 @@ const rec = looks => ({ id:'S', seed:4242, players:[{ account:'A', name:'Ana' },
 
 test('caractéristiques : base + somme des bonus des pièces', () => {
   const c = equippedStats(['Casque en chitine', 'Plastron en chitine', 'Pioche en pierre', 'Bottes en chitine', 'Jambes en chitine']);
-  assert.equal(c.oxygenMax, STATS.oxygenMax + 30);
+  assert.equal(c.oxygenMax, STATS.oxygenMax + 25);
   assert.equal(c.pods, STATS.pods + 30);
   assert.equal(c.mineSpeed, 1.2);
-  assert.equal(c.speed, STATS.speed + 0.5);
+  assert.equal(c.speed, STATS.speed + 0.42);
   assert.equal(c.climbSpeed, 2.65);                       // arrondi au centième
   assert.equal(c.damage, STATS.damage);                   // rien ne touche aux dégâts
   assert.deepEqual(equippedStats([]), { ...STATS });       // sans stuff : les stats de base
@@ -27,8 +27,8 @@ test('en session : chaque mineur a les caractéristiques de SON stuff', () => {
   const G = buildSession(rec({ A:{ torse:'Plastron en chitine', casque:'Casque en chitine' }, B:{ pioche:'Pioche en pierre' } }));
   const [a, b] = G.miners;
   assert.equal(a.carac.pods, STATS.pods + 30);
-  assert.equal(a.carac.oxygenMax, STATS.oxygenMax + 30);
-  assert.equal(a.ox, STATS.oxygenMax + 30);               // part avec son oxygène max
+  assert.equal(a.carac.oxygenMax, STATS.oxygenMax + 25);
+  assert.equal(a.ox, STATS.oxygenMax + 25);               // part avec son oxygène max
   assert.equal(b.carac.pods, STATS.pods);
   assert.equal(b.carac.mineSpeed, 1.2);
   assert.ok(Math.abs(baseMineT(b, 2) - baseMineT(a, 2) / 1.2) < 1e-12);   // la pioche en pierre mine plus vite

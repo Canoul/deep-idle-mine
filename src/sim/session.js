@@ -121,6 +121,8 @@ export function tick(G){
     if(!G.ladder[m.y]?.[m.x]) m.ky=0;   // poussé vers le haut hors d'une échelle : il retombe
     // un occultiste canalise sur lui : tout s'arrête (même un coup), sauf une chute ; il est étourdi pendant la canalisation
     if(m.action && m.action.type!=='stun' && !m.action.data.fall && channeler(G,m)) stopAction(m);
+    // ébranlé par un golem : tout s'arrête aussi (sauf une chute), il est étourdi (src/sim/golem.js)
+    if(m.action && m.action.type!=='stun' && !m.action.data.fall && m.quakeUntil>G.t+1e-9) stopAction(m);
     // canalisation arrêtée avant la fin (occultiste provoqué ou tué) : il est libéré tout de suite
     if(m.action?.data.hex && !channeler(G,m)) m.action=null;
     revealAround(G,m);

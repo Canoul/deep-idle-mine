@@ -1,9 +1,9 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, mineT, moveT, climbT, winchT, ladderTime, rushTime } from './mineur.js';
+import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime, warcryOf } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
@@ -27,8 +27,9 @@ function oreSkills(G,m){
 /* skill Barbare loot et stat looting (butin des mobs, en %) : b = loot + looting/100 est la CHANCE d'un butin en plus
    (pas un multiplicateur, décision du 22/10, Geoffrey) : 9 % → 9 % de chance d'avoir 1 de plus ; au-delà de 100 %,
    la partie entière est sûre (150 % → +1, et 50 % de chance de +2). Tirage G.rng (hasard « live ») */
+const lootBonus=m=>(m.skill.loot||0)+(m.carac.looting||0)/100;
 function lootOf(G,m,n){
-  const b=(m.skill.loot||0)+(m.carac.looting||0)/100; if(!(b>0)) return n;
+  const b=lootBonus(m); if(!(b>0)) return n;
   const sure=Math.floor(b);
   return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
@@ -54,7 +55,8 @@ export function fortuneExtra(G,m){
 const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
 /* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
-export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(gearChance(G,m.carac.crit||0) ? 2 : 1);
+export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))
+                                 *(gearChance(G,m.carac.crit||0) ? 2 : 1);   // Cri de guerre : × (1 + 10 %)
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
@@ -124,6 +126,18 @@ function openTreasure(G,m,x,y){
   log(G, `💰 ${m.name} ouvre un treasure : +${TREASURE.itemCount} ${item}`);
 }
 
+/* butin rare (MOB_DROPS) : une pièce de stuff (une seule), avec sa chance (kholeChance dans un k hole) multipliée par
+   1 + le bonus de butin du mineur (skill Pillage et stat Butin des mobs : 1 % et +50 % → 1,5 %). Hasard à part
+   (G.dropRng), tiré seulement pour un mob qui a un butin rare : le reste de la partie ne bouge pas. */
+function rareDrop(G,m,o){
+  for(const d of MOB_DROPS.items){
+    if(d.mob!==o.type) continue;
+    const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
+    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)));
+    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
+  }
+}
+
 export function killMob(G,m,o){
   o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
@@ -155,10 +169,15 @@ export function killMob(G,m,o){
     const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);
     log(G, `🗡 ${m.name} : méphite vaincu (+${n} ${it.toLowerCase()})`);
+  } else if(o.type==='golem'){
+    const it=MOBS.golem.item, n=lootOf(G,m,MOBS.golem.loot(G.rng));
+    collect(m,it,ITEMS[it].w ?? 1,n);
+    log(G, `🗡 ${m.name} : golem vaincu (+${n} ${it.toLowerCase()})`);
   } else {
     const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
+  rareDrop(G,m,o);
   G.mobs = G.mobs.filter(x=>x.hp>0);
 }
 
@@ -179,7 +198,7 @@ export function finishAction(G,m,a){
       glyphDrop(G,m,'ladder');   // Glyphe (spé Logisticien)
       break;
     case 'bridge': G.tiles[a.data.y][a.data.x]=BRIDGE; m.bridges--; updateLight(G); break;
-    case 'torch': m.torches--; G.torches.push({x:m.x,y:m.y,r:m.carac.torchRadius}); updateLight(G); break;   // r : son rayon (Lampe à incandescence)
+    case 'torch': m.torches--; G.torches.push(placedTorch(m)); updateLight(G); break;
     case 'deposit': {
       const parts=[];
       for(const k in m.inv){

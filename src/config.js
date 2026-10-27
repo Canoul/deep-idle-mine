@@ -126,11 +126,12 @@ export const BLOCKS = {
      jauges de l'onglet Jugement. */
   12:{name:'Résidu angélique',  type:'terrain', tex:'residue_angel', w:6, hard:2.4, color:'#2c2f3a', dot:'#8fd8ff', family:'residu', val:TREASURE_VAL},
   13:{name:'Résidu démoniaque', type:'terrain', tex:'residue_demon', w:6, hard:2.4, color:'#2c2f3a', dot:'#ff3b3b', family:'residu', val:TREASURE_VAL},
-  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (4 s depuis le 25/10, avant 6 ; ne rapporte rien) et sa version
-     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. */
-  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:0, hard:4, color:'#bfe3ff', dot:'#e8f4ff', noDrop:true},
+  /* tours de l'Ange et du Démon (TOWER) : stonebrick qui remplit la tour (4 s depuis le 25/10, avant 6) et sa version
+     indestructible (5 % de l'intérieur, murs). Jamais dans la mine normale. 26/10/2026 (Geoffrey) : une stonebrick minée va
+     dans le sac du mineur (poids w, pods) ; partagée entre les joueurs en cas de victoire (avant : ne rapportait rien). */
+  14:{name:'Stonebrick angélique', type:'special', tex:'brick_angel', w:10, hard:4, color:'#bfe3ff', dot:'#e8f4ff', family:'material'},
   15:{name:'Stonebrick angélique indestructible', type:'special', tex:'brick_angel_hard', w:0, hard:Infinity, color:'#7fa6c9', dot:'#ffd23f', unbreakable:true, noDrop:true},
-  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:0, hard:4, color:'#4a1f3a', dot:'#7a2f5a', noDrop:true},
+  16:{name:'Stonebrick démoniaque', type:'special', tex:'brick_demon', w:10, hard:4, color:'#4a1f3a', dot:'#7a2f5a', family:'material'},
   17:{name:'Stonebrick démoniaque indestructible', type:'special', tex:'brick_demon_hard', w:0, hard:Infinity, color:'#2a0f22', dot:'#ff3b3b', unbreakable:true, noDrop:true},
   /* socle du coffre (23/10, Geoffrey) : la case sous le coffre de la surface, incassable (le pathfinder ne creuse plus
      sous le coffre) */
@@ -315,16 +316,18 @@ export const MOBS = {
     { bestiole:0.4, gobelin:0.4, mimic:0.2 },
     { bestiole:0.2, gobelin:0.55, mephite:0.05, mimic:0.2 },   // méphite : 24/10 (Geoffrey), pris sur le gobelin (avant 0,6)
     { gobelin:0.55, occultiste:0.1, mephite:0.15, mimic:0.2 },  // avant gobelin 0,7
-    { gobelin:0.3, occultiste:0.3, mephite:0.2, mimic:0.2 },    // avant gobelin 0,5
+    { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 },   // golem : 26/10 (Geoffrey), pris sur le gobelin (avant 0,3 ; et 0,5 encore avant)
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70 },   // occultiste : 150 le 23/10 (avant 100)
-  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300 },   // occultiste : 150 le 23/10 (avant 100)
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
   spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
   firstSpawn: 25,
-  walkerCap:  k => 2 + k,          // mobs qui se déplacent vivants en même temps (bestioles, gobelins, occultistes, méphites ; pas les mimics)
+  walkerCap:  k => 2 + k,          // mobs qui se déplacent vivants en même temps (bestioles, gobelins, occultistes, méphites, golems ; pas les mimics)
+  /* vitesse de déplacement par type (× la vitesse de base, CFG.mobStep) ; absent = 1 */
+  speed: { golem:0.5 },
   spawnMin: 5, spawnMax: 10,       // distance d'apparition autour du mineur visé (Manhattan)
   mimicLoot:  3,                   // minerais rapportés par un mimic vaincu
   mimicRevealDist: 2.3,
@@ -349,8 +352,20 @@ export const MOBS = {
      (COMBAT.reach), et la repousse de knock[type] blocs (0 pour les autres). Les effets du gobelin (vol), du méphite
      (asphyxie) et de l'occultiste (sort) gardent leur propre cadence (goblinStealEvery, mephite.every, occult.cooldown). */
   hitEvery: 1,
-  knock: { minotaure:0.25 },
+  hitEveryBy: { golem:1.5 },        // cadence propre à un type (sinon hitEvery)
+  knock: { minotaure:0.25, golem:0.5 },
   mephite: { every:2, oxygen:5, flyReach:400, item:'Vésicule de gaz', loot: rng => 1 + Math.floor(rng()*2) },
+  /* golem (26/10/2026, Geoffrey ; src/sim/golem.js) : 2 × 2 cases (o.x, o.y = case du bas à gauche). À sa naissance il
+     casse les blocs qui le gênent ; pour rejoindre sa proie, il casse un bloc toutes les dig s (cadence à part de ses
+     coups) : ni les blocs incassables, ni les treasures, ni les passerelles, ni les murs de donjon, ni un mimic ; les
+     échelles restent (ce sont des cases vides). Les blocs cassés sont perdus. Il descend en creusant sous lui et monte
+     en escalier (une marche à la fois, seulement si la marche le porte) ; il ne prend pas les échelles.
+     Coups : MOBS.knock.golem toutes les MOBS.hitEveryBy.golem s. Ébranlement : à chaque tranche de stunStep des PV max
+     perdue (stuns fois au plus), les mineurs à stunRadius cases au plus (distance à sa case la plus proche) sont
+     étourdis stunTime s ; Ténacité par mineur. knockRes : un golem de pierre ne se fait pas repousser (choix de Claude). */
+  golem: { size:2, dig:2, stunStep:0.33, stuns:3, stunRadius:3, stunTime:3, knockRes:100,
+           item:'Pierre glissante', loot: rng => 1 + Math.floor(rng()*3) },
+  noTrap: ['golem'],               // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2)
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
    nouvelle area débloquée pendant la session (pas au lancement). Il ne tacle pas et ne chasse personne ; il ne tombe
@@ -383,7 +398,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4 },
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, minotaure:100, gallianix:5 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -451,11 +466,13 @@ export const GLYPHS = {
   /* drop (25/10/2026, Geoffrey) : un mineur avec une spécialisation (arbre figé au lancement) peut trouver un glyphe de SON
      arbre qu'il ne possède pas au lancement (inventaire + posés), à chaque événement de sa spé : bloc cassé (mineur),
      échelle posée (logisticien), mob tué (barbare). Mine classique ; pour lui seul, versé à la fin (perdu s'il quitte).
-     Hasard à part (dropSalt). chance = par événement, pour UN glyphe (n'importe lequel de ceux qui manquent) : 26/10/2026,
-     Geoffrey : ≈ 3 % de trouver un glyphe par session dans un groupe de 3. Calcul : 1 − 0,97^(1/E), E = événements par
-     mineur et par session à 3 (simulation, arbre complet) : ≈ 795 blocs, 91 échelles, 30 mobs. (Ancien, 25/10 : 0,0001 /
-     0,0007 / 0,001 ; quelques minutes le 26/10 : la même chance, mais par glyphe manquant.) */
-  drop: { mineur:{ event:'block', chance:0.0000383 }, logisticien:{ event:'ladder', chance:0.000335 }, barbare:{ event:'kill', chance:0.00101 } },
+     Hasard à part (dropSalt). chance = par événement, pour UN glyphe (n'importe lequel de ceux qui manquent) : 27/10/2026,
+     Geoffrey : ≈ 1 % de trouver un glyphe par session dans un groupe de 3. Calcul : 1 − 0,99^(1/E), E = événements par
+     mineur et par session à 3 (simulation, arbre complet) : ≈ 795 blocs, 91 échelles, 30 mobs. (Ancien, 26/10 : ≈ 3 %,
+     0,0000383 / 0,000335 / 0,00101 ; 25/10 : 0,0001 / 0,0007 / 0,001 ; quelques minutes le 26/10 : la même chance, mais
+     par glyphe manquant.) */
+  drop: { mineur:{ event:'block', chance:0.0000126 }, logisticien:{ event:'ladder', chance:0.000110 }, barbare:{ event:'kill', chance:0.000335 } },
+  dropPerSession: 0.01,   // ≈ chance d'en trouver un par session à 3, d'où viennent les chances ci-dessus (texte du wiki)
   dropSalt: 0x61f7d3,
   desc: {
     mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',
@@ -562,6 +579,31 @@ export const SPELLS = {
     { id:'dynamite', name:'Dynamite', icon:'🧨', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
       reach:2, radius:2, throwTime:0.5,
       desc:'Lance une dynamite devant lui (2 cases au plus) : elle casse tous les blocs minables dans un rayon de 2, comme s\'il les minait' },
+    /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
+       remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
+       LOGISTICIEN en oxygène (sans dépasser son max). Jamais sur lui-même. La recharge commence une fois l'oxygène
+       donné. Plusieurs alliés à portée : celui qui a le moins d'oxygène (en % de son max ; choix de Claude) */
+    { id:'zipette', name:'Bonbonne de zipette', icon:'🫧', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
+      radius:3, podsPct:0.20,
+      desc:'Le prochain allié croisé à 3 cases ou moins, qui travaille dans la mine et à qui il manque de l\'oxygène, regagne 20 % des pods max du logisticien en oxygène (pas sur lui-même ; la recharge commence une fois l\'oxygène donné)' },
+    /* 27/10/2026 (Geoffrey) : dès que le barbare entre en combat (il frappe un mob ou un mob le tacle), lui et les
+       mineurs à radius cases ou moins (cercle, au moment du cri) ont dégâts × (1 + dmgPct) et vitesse d'attaque ×
+       (1 + atkSpeed) pendant duration s ; la recharge commence à la fin de l'effet. Pas de cumul (un 2e cri prolonge) */
+    { id:'war_cry', name:'Cri de guerre', icon:'📯', unlock:{ tree:'barbare', level:10 }, needTree:'barbare', cd:180,
+      radius:10, duration:30, dmgPct:0.10, atkSpeed:0.05,
+      desc:'Quand il entre en combat : lui et les mineurs à 10 cases ou moins font 10 % de dégâts en plus et attaquent 5 % plus vite pendant 30 s (la recharge commence à la fin de l\'effet)' },
+    /* 27/10/2026 (Geoffrey) : en combat, inflige dmg × ses dégâts (critique possible, tiré pour chaque mob) à chaque mob
+       à radius cases ou moins (cercle) ; ni recul, ni dégâts de zone de Force brute. Un boss de donjon seulement s'il le
+       combat déjà */
+    { id:'cleave', name:'Cleave', icon:'🪓', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
+      radius:2, dmg:0.5,
+      desc:'En combat : inflige 50 % de ses dégâts à tous les mobs à 2 cases ou moins (coup critique possible)' },
+    /* 27/10/2026 (Geoffrey) : étourdit stun s un mob à range cases ou moins (cercle) qui se bat : d'abord un mob qui
+       tacle un allié, puis celui qui le tacle, puis celui qu'il frappe. Comme le Dash : il lâche son tacle et sa
+       canalisation (occultiste) est coupée (choix de Claude). Jamais un mob déjà étourdi */
+    { id:'hand_of_justice', name:'Hand of Justice', icon:'⚖️', unlock:{ scroll:'Parchemin « Hand of Justice »' }, cd:30,
+      range:3, stun:3,
+      desc:'Étourdit 3 s un mob qui se bat, jusqu\'à 3 cases de distance (d\'abord un mob qui tacle un allié) : il lâche son tacle et son sort est coupé' },
   ],
 };
 
@@ -572,11 +614,11 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','dark_cloth','gas_vesicle','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -739,6 +781,7 @@ export const RARITY = {
     ...Object.fromEntries(['Casque', 'Plastron', 'Jambes', 'Bottes', 'Pioche', 'Épée'].flatMap(p =>
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
+    'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
     'Plume d\'ange':'rare',
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
@@ -774,10 +817,10 @@ export const STUFF = {
      remplace les mains nues). Appliqués en session (stuff porté au lancement, src/meta/stuff.js statsOf). */
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
-    'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:30 } },
-    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25
-    'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },
-    'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.5 } },
+    'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:25 } },   // 27/10 (Geoffrey) : valeur du tier, 100 x (avant 30)
+    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25. Torse hors règle du tier (27/10 : volontairement plus fort)
+    'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },   // 100 x (valeur du tier)
+    'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.42 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 100 x (avant 0,5)
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
     'Pioche en fer':       { slot:'pioche', tex:'pickaxe_iron',  stats:{ mineSpeed:0.4 } },   // 25/10 (Geoffrey) : nerf, avant 0,5 (24/10 : 0,4 × 1,25 ; le × 1,75 du fer, 0,7, était trop fort)
     'Épée en pierre':      { slot:'epee',   tex:'sword_stone',   set:{ damage:8 } },      // remplace les mains nues (5) : +3, moitié de l'épée en fer
@@ -788,10 +831,10 @@ export const STUFF = {
        l'épée, aucun tacle évité. Dégâts +8 sur les mains nues (13), vitesse d'attaque −10 % (idée de Geoffrey ; le verrou
        du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
     'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
-    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:67 } },   // 24/10 : avant 38
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33)
-    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1.05 } },   // 24/10 : avant 0,6
-    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.05 } },   // 24/10 : avant 0,6
+    'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:63 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 67 ; 24/10 : 38)
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33). Torse hors règle du tier (27/10)
+    'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1 } },   // 27/10 (Geoffrey) : valeur du tier, 250 x (avant 1,05 ; 24/10 : 0,6)
+    'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.04 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 1,05 ; 24/10 : 0,6)
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
     'Boussole en or':      { slot:'boussole', tex:'compass_gold',  stats:{ compassRows:1 } },   // voit 1 ligne au-dessus et en dessous
     /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
@@ -803,13 +846,27 @@ export const STUFF = {
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
     'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40)
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40). Torse hors règle du tier (27/10)
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.5 } },   // 25/10 : nerf, avant 0,6 (24/10 : 0,48 × 1,25 ; pas × 1,5 : 0,72)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
+    /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
+       (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
+       une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
+       la mine, ses prix mesurés sont bas, et la même stat est bien plus forte là où on ne fait que se battre (tours).
+       tests/stuff-balance.test.js garde cette règle. (Avant, 26/10 au soir : Lanières et Capuche au tableau des runes.)
+       recycle : ce que rend le recyclage (quantités fixes, à la place de la part d'une recette) */
+    'Lanières en cuir du gobelin': { slot:'torse', tex:'straps_goblin', stats:{ attackSpeed:31.9, looting:12.5 },   // 125 x chacune ; attaque 63,8 % ÷ 2 (avant 44 / 22)
+                                     recycle:{ 'Chitine':20, 'Peau de gobelin':10 } },
+    'Capuche sombre':      { slot:'casque', tex:'hood_dark',     stats:{ knockback:0.52, crit:4.8 },   // 125 x chacune, ÷ 2 (combat) : recul 1,04 → 0,52, critique 9,6 → 4,8 (avant 0,13 / 9,7)
+                             recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
+    'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.04 },   // 250 x, une seule stat (avant 1,1 ; d'abord 1,4)
+                             recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.6, tenacity:12.5 },   // 125 x chacune, ÷ 2 (combat) : dégâts 3,1 → 1,6, ténacité 25 → 12,5 (d'abord 12,6 dégâts)
+                             recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
@@ -823,6 +880,15 @@ export const STUFF = {
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],
+  /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
+     - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
+       (UPGRADE.tiers : 100 / 250 / 400 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
+       forte (pods ; chitine 180, fer 528, acier 720 x) ;
+     - le butin des mobs vaut le tier 2, à parts égales entre ses stats, une stat de combat comptant pour combatOnStuff
+       de ce que donnerait l'équation (prix mesurés). Les pièces dessinées à la main (épées, lance, pioches, Plastron de
+       l'équilibre, gants, cape, ceinture en peau, boussole, lampe) ne suivent pas cette règle. */
+  combatStats: ['damage','damagePct','attackSpeed','doubleAttack','crit','tenacity','knockRes','reach','knockback'],
+  combatOnStuff: 0.5,
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -877,6 +943,9 @@ export const UPGRADE = {
             /* 25/10/2026 (provisoire, choix de Claude) : pour 100 x, ténacité +10 %, résistance au recul +20 %, portée +0,1,
                recul +0,1 ; double attaque +5 % (Geoffrey, 25/10 ; d'abord +20 % comme la vitesse d'attaque) */
             tenacity:10, knockRes:5, reach:1000, knockback:1000, doubleAttack:20 },
+  /* GEAR SCORE (26/10/2026, Geoffrey) : x par point = worth (mesuré), plus ces stats simulées le 26/10 (document « Valeurs
+     en x » : 24 sessions, mineur de base, mêmes seeds avec et sans) qui ne sont pas dans worth. Avant : prices. */
+  gs: { doubleAttack:8, tenacity:5, knockRes:0, reach:0, knockback:120, torchRadius:27 },
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
@@ -886,7 +955,8 @@ export const UPGRADE = {
     1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
     2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
-                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui'] },
+                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui',
+                       'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre'] },
   },
@@ -929,6 +999,7 @@ export const ITEMS = {
   ...Object.fromEntries(Object.entries(FURNACE.unlockItems).map(([n, d]) => [n, { cat:'furnace', tex:d.tex, stack:true }])),
   'Tissu sombre':    { cat:'material',  tex:'dark_cloth', stack:true },
   'Vésicule de gaz': { cat:'material',  tex:'gas_vesicle', stack:true },   // butin du méphite (24/10), sans usage pour l'instant
+  'Pierre glissante': { cat:'material', tex:'slippery_stone', stack:true },   // butin du golem (26/10), sans usage pour l'instant
   'Plume d\'ange':   { cat:'material',  tex:'angel_feather', stack:true },
   /* parchemins de sorts (SPELLS) : appris dans l'onglet Sorts (consommés) ; aucune source pour l'instant (24/10) */
   ...Object.fromEntries(SPELLS.list.filter(s => s.unlock.scroll).map(s => [s.unlock.scroll, { cat:'scroll', tex:'scroll', w:1, stack:true }])),
@@ -961,7 +1032,8 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
 
 /* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)
    est détruite et rend share de chaque ingrédient de sa recette, arrondi vers le bas (1 ingrédient → 0). Amélioration
-   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire. */
+   et rune sont perdues. Interdit pour une pièce portée ou enregistrée dans un set. Valeur provisoire.
+   Une pièce sans recette qui a un `recycle` (STUFF.items, butin des mobs) rend ces quantités fixes à la place. */
 export const RECYCLE = { share:0.6 };
 /* tableau de bord de l'équipe (server/admin/dashboard.js, scripts/dashboard.js) : l'ilvl d'un joueur = somme des valeurs
    en x (itemValue) des pièces portées au lancement ; les courbes « par ilvl » regroupent les sessions par tranches de
@@ -1146,6 +1218,22 @@ export const DUNGEON = {
   salt: 0x0d06e0,
 };
 
+/* ---- Butin rare des mobs (26/10/2026, Geoffrey ; src/sim/actions.js killMob) ----
+   Quand un mob de ce type meurt, chance qu'il lâche une pièce de stuff (STUFF.items), dans le sac du mineur qui l'a tué
+   (puis le coffre commun : un seul joueur la reçoit, partage normal). kholeChance : dans un k hole. La chance est
+   multipliée par 1 + le butin du mineur (skill Pillage + stat Butin des mobs ; 1 % avec +50 % → 1,5 %), toujours une
+   seule pièce (26/10/2026, Geoffrey). Hasard à part (salt) : le reste de la partie ne bouge pas. */
+export const MOB_DROPS = {
+  salt: 0x570ffd,
+  items: [
+    /* 26/10/2026 au soir (Geoffrey) : nerf, avant 0,5 % (gobelin, occultiste, méphite) et 1 % / 2 % (minotaure) */
+    { mob:'gobelin',          item:'Lanières en cuir du gobelin', chance:0.001 },
+    { mob:'occultiste',       item:'Capuche sombre',              chance:0.001 },
+    { mob:'mephite',          item:'Nuage magique',               chance:0.001 },
+    { mob:DUNGEON.boss.type,  item:'Ceinture du Géant',           chance:0.005, kholeChance:0.01 },   // k hole : toujours le double (choix de Claude)
+  ],
+};
+
 /* ---- Piège (src/sim/trap.js) — décisions du créateur, 22/10 ; valeurs provisoires ----
    À partir de l'area fromArea, tries tirages indépendants de chance chacun (tirage à part de la seed : le reste de
    l'area ne change pas) : 0, 1 ou 2 pièges par area. Un piège = une salle vide de w × h cases, entourée d'une paroi
@@ -1229,7 +1317,12 @@ export const JUDGMENT = {
    portes d'entrée : les doorH lignes du bas des deux murs. */
 export const TOWER = {
   duration: 600,                                  // s de jeu (10 min)
-  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7)
+  width: 20, floors: 6, floorH: 3, gate: 3,      // 6 × (3 + 1) = 24 lignes + 4 de toit = 28 (25/10 : 6 étages, avant 7 ; 7 essayés le 26/10 avec les pods, retirés)
+  /* pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (son poids : BLOCKS) ; plein (plus de
+     place pour une brique) et encore des briques dans la tour, il redescend au coffre commun, au milieu de l'étage
+     floor, et le vide en deposit s. Victoire : coffre + sacs des présents, en parts égales (le reste tiré par le
+     serveur) ; échec ou départ : rien. */
+  chest: { floor: 0, deposit: 1, max: 500 },   // max : garde-fou du serveur (briques par objet ; une tour en a ≈ 183)
   sky: 4, margin: 8, doorH: 2,
   /* treuil du logisticien (25/10/2026, Geoffrey) : le premier logisticien qui a le skill Treuil et qui tombe au pied de
      la tour (dehors) va contre le mur, de son côté, et l'installe en setup s ; une colonne contre le mur extérieur, du
@@ -1289,6 +1382,7 @@ export const MOB_INFO = {
   mimic:      { name:'Mimic',      tex:'mimic', under:'iron' },   // le mimic se dessine par-dessus un minerai
   occultiste: { name:'Occultiste', tex:'occultist' },
   mephite:    { name:'Méphite',    tex:'mephite' },
+  golem:      { name:'Golem de sperme', tex:'golem' },
 };
 
 /* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre

@@ -9,7 +9,7 @@ import { createGameService } from '../server/game/service.js';
 import { modulationState } from '../src/ui/lobby.js';
 import { fakeLive } from './helpers.js';
 
-const P = UPGRADE.prices;
+const P = { ...UPGRADE.gs, ...UPGRADE.worth };
 
 test('GS d\'une pièce : stats de l\'objet en x ; une valeur qui remplace la base compte pour ce qu\'elle ajoute', () => {
   const plastron = ITEMS['Plastron en fer'].stats;
@@ -17,6 +17,16 @@ test('GS d\'une pièce : stats de l\'objet en x ; une valeur qui remplace la bas
   const epee = ITEMS['Épée en fer'].set.damage;
   assert.equal(pieceGS('Épée en fer'), Math.round((epee - STATS.damage) * P.damage), 'épée : (dégâts − base) × prix');
   assert.equal(pieceGS(null), 0); assert.equal(pieceGS('Objet inconnu'), 0);
+});
+
+test('GS : prix mesurés (worth), complétés par UPGRADE.gs pour les stats simulées le 26/10', () => {
+  assert.equal(pieceGS('Pioche en fer'), Math.round(ITEMS['Pioche en fer'].stats.mineSpeed * UPGRADE.worth.mineSpeed));
+  for(const k of Object.keys(UPGRADE.gs)) assert.ok(!(k in UPGRADE.worth), `${k} : un seul prix`);
+  const lance = ITEMS['Lance en fer'];
+  const expect = Object.entries(lance.stats || {}).reduce((s, [k, v]) => s + v * (P[k] ?? 0), 0)
+    + Object.entries(lance.set || {}).reduce((s, [k, v]) => s + (v - STATS[k]) * (P[k] ?? 0), 0);
+  assert.equal(pieceGS('Lance en fer'), Math.round(expect));
+  assert.ok(pieceGS('Lance en fer') < 600, `lance : ${pieceGS('Lance en fer')} GS (portée et recul au prix simulé)`);
 });
 
 test('GS : identification, rune et amélioration comptent ; anneau = 0 ; joueur = somme des pièces portées', () => {
@@ -47,13 +57,15 @@ function setup(){
   return { store, game };
 }
 const FER = { pioche:'Pioche en fer', epee:'Épée en fer', casque:'Casque en fer', torse:'Plastron en fer', jambes:'Jambes en fer', pieds:'Bottes en fer' };
+/* au-dessus de 2000 GS (exemple franc : tout en acier) */
+const ACIER = { pioche:'Pioche en acier', epee:'Épée en acier', casque:'Casque en acier', torse:'Plastron en acier', jambes:'Jambes en acier', pieds:'Bottes en acier' };
 
 test('modulation : tour lancée si chacun a moins de 2000 GS ; refusée sinon (avec qui et combien) ; seulement pour une tour', async () => {
   assert.equal(TOWER.modulation.gsMax, 2000);
   const { store, game } = setup();
   await wear(store, ME.id, { torse:'Plastron en fer' });
-  await wear(store, B.account, FER);
-  assert.ok(gearScore(FER) >= 2000, `stuff en fer : ${gearScore(FER)} GS`);
+  await wear(store, B.account, ACIER);
+  assert.ok(gearScore(ACIER) >= 2000, `stuff en acier : ${gearScore(ACIER)} GS`);
   const team = [{ account: ME.id, name: ME.name }, B];
   await assert.rejects(game.start(ME, { mode:'tower_angel', modulation:true }, team), e => e.code === 'gs_too_high' && /Max a \d+ GS/.test(e.message) && !/Zoe/.test(e.message));
   await assert.rejects(game.start(ME, { modulation:true }), { code:'bad_request' }, 'pas de modulation en mine');

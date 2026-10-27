@@ -774,6 +774,49 @@ def main():
     rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
     tex['cape_naingui'] = cape
 
+    # butin rare des mobs (26/10/2026) : icônes d'inventaire
+    # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
+    straps = blank()
+    for i in range(11):
+        rect(straps, 3 + i, 2 + i, 2, 2, hexc('#7a5230'))
+        rect(straps, 11 - i, 2 + i, 2, 2, hexc('#7a5230'))
+    for i in range(11):
+        rect(straps, 3 + i, 2 + i, 1, 1, hexc('#a8743f'))
+        rect(straps, 12 - i, 2 + i, 1, 1, hexc('#a8743f'))
+    rect(straps, 7, 6, 2, 2, hexc('#4f9d3a'))              # pièce de peau de gobelin au croisement
+    for x, y in [(3, 2), (12, 2), (3, 13), (12, 13)]:
+        rect(straps, x, y, 1, 1, hexc('#ffd23f'))          # rivets
+    tex['straps_goblin'] = straps
+    # capuche sombre : capuche violette de l'occultiste, visage dans l'ombre, deux yeux rouges
+    hood = blank()
+    rect(hood, 5, 1, 6, 2, hexc('#4b2d6b'))
+    rect(hood, 3, 3, 10, 9, hexc('#4b2d6b'))
+    rect(hood, 2, 10, 12, 4, hexc('#4b2d6b'))
+    rect(hood, 3, 13, 10, 1, hexc('#a070d8'))              # ourlet
+    rect(hood, 5, 5, 6, 6, hexc('#120a1c'))                # visage sombre
+    rect(hood, 6, 7, 1, 1, hexc('#ff2a2a'))                # yeux rouges
+    rect(hood, 9, 7, 1, 1, hexc('#ff2a2a'))
+    rect(hood, 4, 3, 1, 7, hexc('#6a3d92'))                # pli éclairé
+    tex['hood_dark'] = hood
+    # nuage magique : nuage jaune doré, bombé, reflets clairs
+    cloud = blank()
+    for x, y, w, h in [(2, 8, 12, 4), (3, 6, 4, 3), (7, 4, 5, 5), (11, 6, 3, 3), (1, 9, 14, 2)]:
+        rect(cloud, x, y, w, h, hexc('#ffd23f'))
+    rect(cloud, 2, 11, 12, 1, hexc('#e0a91e'))
+    rect(cloud, 4, 12, 8, 1, hexc('#c4901a'))
+    rect(cloud, 8, 5, 3, 1, hexc('#fff1a8')); rect(cloud, 4, 7, 2, 1, hexc('#fff1a8'))
+    tex['cloud_magic'] = cloud
+    # ceinture du Géant : cuir noir, boucle en tête de taureau, deux cornes claires
+    gbelt = blank()
+    rect(gbelt, 1, 7, 14, 4, hexc('#1c1c1f'))
+    rect(gbelt, 1, 7, 14, 1, hexc('#3a3a40'))
+    rect(gbelt, 1, 10, 14, 1, hexc('#0b0b0d'))
+    rect(gbelt, 6, 6, 4, 6, hexc('#5a3a22'))               # boucle (tête de taureau)
+    rect(gbelt, 7, 8, 1, 1, hexc('#ff3b3b')); rect(gbelt, 8, 8, 1, 1, hexc('#ff3b3b'))
+    for x, y in [(5, 5), (4, 4), (4, 3), (10, 5), (11, 4), (11, 3)]:
+        rect(gbelt, x, y, 1, 1, hexc('#e8dcc0'))           # cornes
+    tex['belt_giant'] = gbelt
+
     # tissu sombre (matériau) : étoffe pliée, violet très sombre
     cloth = blank()
     rect(cloth, 2, 4, 12, 9, hexc('#2b1b3d'))
@@ -796,6 +839,20 @@ def main():
     rect(ves, 7, 9, 3, 2, hexc('#c4e38f'))  # gaz
     tex['gas_vesicle'] = ves
 
+    # pierre glissante (butin du golem, 26/10) : galet gris lisse, luisant, nappé de liquide blanc qui coule
+    slick = blank()
+    rect(slick, 3, 6, 10, 7, hexc('#7d838c'))
+    rect(slick, 4, 5, 8, 1, hexc('#7d838c'))
+    rect(slick, 4, 13, 8, 1, hexc('#5a5f67'))
+    rect(slick, 3, 11, 10, 2, hexc('#61666e'))
+    rect(slick, 5, 6, 3, 1, hexc('#b9bec6'))               # reflet
+    rect(slick, 4, 4, 7, 2, hexc('#f4f1e8'))               # nappe blanche
+    rect(slick, 5, 6, 1, 3, hexc('#f4f1e8'))               # coulures
+    rect(slick, 9, 6, 1, 4, hexc('#f4f1e8'))
+    rect(slick, 9, 10, 1, 1, hexc('#dcd8cc'))
+    rect(slick, 12, 7, 1, 2, hexc('#f4f1e8'))
+    tex['slippery_stone'] = slick
+
 
 
     torch = blank()
@@ -803,6 +860,22 @@ def main():
     rect(torch, 6, 3, 4, 4, hexc('#ff9f1c'))
     rect(torch, 7, 2, 2, 3, hexc('#ffd23f'))
     tex['torch'] = torch
+    # torche posée avec la Lampe à incandescence (26/10/2026) : lampe de mine suspendue à un câble, chapeau de métal,
+    # ampoule chaude dans sa cage de fils
+    tlamp = blank()
+    rect(tlamp, 7, 0, 2, 3, hexc('#6a707a'))               # câble
+    rect(tlamp, 5, 3, 6, 2, hexc('#4a4f57'))               # chapeau
+    rect(tlamp, 4, 4, 8, 1, hexc('#6a707a'))
+    rect(tlamp, 5, 5, 6, 6, hexc('#fff1a8'))               # ampoule
+    rect(tlamp, 6, 6, 4, 4, hexc('#ffd447'))
+    rect(tlamp, 7, 7, 2, 2, hexc('#ff8a1a'))               # filament
+    rect(tlamp, 6, 6, 1, 1, hexc('#ffffff'))               # reflet
+    for x in (5, 10):
+        rect(tlamp, x, 5, 1, 7, hexc('#3a3f46'))           # cage : montants
+    rect(tlamp, 5, 8, 6, 1, hexc('#3a3f46'))               # cage : cerceau
+    rect(tlamp, 6, 11, 4, 1, hexc('#3a3f46'))              # fond de la cage
+    rect(tlamp, 7, 12, 2, 1, hexc('#2b2b2b'))
+    tex['torch_lamp'] = tlamp
 
     # treuil (skill Logisticien) : corde au milieu du puits, poulie en bois en surface, seau en bois
     rope = blank()
@@ -946,6 +1019,36 @@ def main():
     rect(sk_cape_f, 3, 7, 1, 2, hexc('#4a2a6b'))
     rect(sk_cape_f, 9, 7, 2, 1, hexc('#ffd23f'))                # fermoir
     tex['skins/naingui_cape_front'] = sk_cape_f
+    # butin rare des mobs (26/10/2026) : calques sur le corps
+    skin_c, skin_d = hexc('#e0ac7d'), hexc('#c48e62')
+    sk_straps = blank()                            # lanières du gobelin : torse nu, deux sangles des épaules le long des côtes
+    rect(sk_straps, 4, 7, 8, 3, skin_c)            # torse et bras nus
+    rect(sk_straps, 7, 8, 2, 1, skin_d)            # ombre des pectoraux
+    rect(sk_straps, 6, 7, 1, 3, hexc('#7a5230'))   # sangles
+    rect(sk_straps, 9, 7, 1, 3, hexc('#7a5230'))
+    rect(sk_straps, 6, 7, 1, 1, hexc('#a8743f')); rect(sk_straps, 9, 7, 1, 1, hexc('#a8743f'))   # épaules
+    tex['skins/goblin_straps'] = sk_straps
+    sk_hood = blank()                              # capuche sombre : capuche violette, visage dans l'ombre, yeux rouges
+    rect(sk_hood, 5, 0, 5, 2, hexc('#4b2d6b'))
+    rect(sk_hood, 4, 2, 8, 2, hexc('#4b2d6b'))
+    rect(sk_hood, 4, 4, 2, 3, hexc('#4b2d6b'))     # côté de la capuche (derrière la tête)
+    rect(sk_hood, 11, 4, 1, 3, hexc('#4b2d6b'))
+    rect(sk_hood, 6, 4, 5, 3, hexc('#120a1c'))     # visage sombre
+    rect(sk_hood, 8, 5, 1, 1, hexc('#ff2a2a'))     # yeux rouges (regard à droite)
+    rect(sk_hood, 10, 5, 1, 1, hexc('#ff2a2a'))
+    rect(sk_hood, 5, 2, 6, 1, hexc('#6a3d92'))     # bord éclairé
+    tex['skins/dark_hood'] = sk_hood
+    sk_cloud = blank()                             # nuage magique : remplace les jambes par un nuage jaune
+    for x, y, w, h in [(3, 12, 10, 3), (4, 11, 8, 1), (2, 13, 12, 1), (5, 15, 6, 1)]:
+        rect(sk_cloud, x, y, w, h, hexc('#ffd23f'))
+    rect(sk_cloud, 3, 14, 10, 1, hexc('#e0a91e'))
+    rect(sk_cloud, 5, 11, 3, 1, hexc('#fff1a8')); rect(sk_cloud, 9, 12, 2, 1, hexc('#fff1a8'))
+    tex['skins/magic_cloud'] = sk_cloud
+    sk_gbelt = blank()                             # ceinture du Géant : bande noire, boucle et cornes claires
+    rect(sk_gbelt, 5, 10, 6, 1, hexc('#1c1c1f'))
+    rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
+    rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
+    tex['skins/giant_belt'] = sk_gbelt
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):
@@ -1020,6 +1123,8 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    # golem (mob 2 × 2 cases) : 32 × 32 pixels
+    png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 
 
@@ -1128,6 +1233,49 @@ def tower_mobs():
     r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
     r(im, 3, 13, 2, 2, red)
     return {'seraph': sp, 'imp': im}
+
+
+def golem():
+    """Golem (26/10) : mob de 2 × 2 cases (32 × 32 pixels), regard vers la droite. Un golem trapu en blocs de pierre
+    grise (fissures sombres, épaules massives, poings énormes), deux yeux de braise, qui sue un liquide blanc : gouttes
+    sur le front, coulures sur le torse et les bras, flaque au pied. Le jeu fait tomber une goutte de plus."""
+    S = 32
+    px = [(0, 0, 0, 0)] * (S * S)
+
+    def r(x, y, w, h, c):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                if 0 <= xx < S and 0 <= yy < S:
+                    px[yy * S + xx] = c
+    st, hi, lo, dk = hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148')
+    white, cream = hexc('#f4f1e8'), hexc('#d9d4c6')
+    r(9, 2, 14, 9, st)                  # tête
+    r(10, 2, 12, 2, hi)
+    r(9, 9, 14, 2, lo)
+    r(16, 5, 3, 2, hexc('#ff8a2a'))     # yeux de braise
+    r(20, 5, 2, 2, hexc('#ff8a2a'))
+    r(17, 5, 1, 1, hexc('#ffe08a'))
+    r(12, 7, 1, 1, dk); r(13, 8, 1, 1, dk)   # fissure du front
+    r(4, 11, 24, 11, st)                # torse et épaules
+    r(4, 11, 24, 2, hi)
+    r(4, 20, 24, 2, lo)
+    r(15, 13, 2, 7, lo)                 # jointure des blocs
+    r(8, 15, 3, 1, dk); r(10, 16, 1, 2, dk); r(21, 14, 1, 3, dk); r(22, 17, 2, 1, dk)   # fissures
+    r(0, 12, 5, 12, lo); r(27, 12, 5, 12, lo)   # bras
+    r(0, 22, 6, 5, st); r(26, 22, 6, 5, st)     # poings
+    r(0, 26, 6, 1, dk); r(26, 26, 6, 1, dk)
+    r(7, 22, 7, 8, st); r(18, 22, 7, 8, st)     # jambes
+    r(7, 28, 7, 2, lo); r(18, 28, 7, 2, lo)
+    r(14, 22, 4, 4, lo)
+    # sueur blanche : gouttes sur le front, coulures sur le torse et les bras, flaque au pied
+    r(11, 3, 1, 2, white); r(14, 2, 1, 1, white); r(21, 3, 1, 1, white)
+    r(9, 10, 2, 1, white); r(10, 11, 1, 4, white); r(10, 15, 1, 1, cream)
+    r(19, 11, 1, 6, white); r(19, 17, 1, 1, cream)
+    r(25, 12, 1, 3, white)
+    r(1, 14, 1, 5, white); r(1, 19, 1, 1, cream)
+    r(30, 13, 1, 4, white)
+    r(12, 30, 4, 1, cream); r(19, 30, 5, 1, cream); r(9, 31, 16, 1, white)
+    return px
 
 
 def giant():

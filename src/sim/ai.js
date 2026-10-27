@@ -4,7 +4,7 @@ import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKI
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT } from './mineur.js';
+import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -132,7 +132,7 @@ function fight(G,m,o){
      avant, le coup partait à la fin de l'élan, et un mob arrivé à portée avait le temps de tacler le premier) */
   if(inReach(G,m,o,reachOf(m))){
     if(dx) m.face=Math.sign(dx);
-    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*dk(G,m)); }
+    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)); }   // Cri de guerre : vitesse +5 %
     startAction(m,'attack', Math.max(DT, m.atkReady-G.t), {mob:o, done:true}); return;
   }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
@@ -697,6 +697,8 @@ export function decide(G,m){
   }
   // canalisation d'un occultiste sur lui : étourdi tant qu'elle dure (il ne peut ni bouger, ni miner, ni frapper)
   { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true}); return; } }
+  // ébranlement d'un golem (src/sim/golem.js) : étourdi jusqu'à m.quakeUntil
+  if(m.quakeUntil>G.t+1e-9){ m.status='Étourdi (golem)'; startAction(m,'stun', m.quakeUntil-G.t, {}); return; }
   /* taclé : il ne peut rien faire d'autre que combattre ce mob (même si « combat » est sur non, même en retour) ; il peut
      bouger pour rester à portée (25/10 ; avant : immobilisé). Ses pas sont marqués (data.fight) : le tacle ne les
      interrompt pas (src/sim/session.js) */

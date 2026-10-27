@@ -20,9 +20,17 @@ export function offX(e){
 export const offY = e => e.ky || 0;
 export const recenter = e => { e.kx = 0; e.ky = 0; };
 
-/* écart bord à bord (en blocs) entre deux entités d'une case alignées sur une ligne ou une colonne ; Infinity en
-   diagonale (on ne frappe jamais en diagonale). Même case : négatif. */
+/* entité de plusieurs cases (golem : e.size × e.size, (x, y) = sa case du bas à gauche) : sa case la plus proche de
+   other, qui sert pour l'écart, la portée et le recul ; une entité d'une case est elle-même */
+export function nearCell(e, other){
+  const s = e.size || 1; if(s <= 1) return e;
+  return { x: Math.max(e.x, Math.min(e.x + s - 1, other.x)), y: Math.max(e.y - s + 1, Math.min(e.y, other.y)), kx: e.kx || 0, ky: e.ky || 0 };
+}
+
+/* écart bord à bord (en blocs) entre deux entités alignées sur une ligne ou une colonne (une entité de plusieurs cases :
+   depuis sa case la plus proche) ; Infinity en diagonale (on ne frappe jamais en diagonale). Même case : négatif. */
 export function gap(a, b){
+  a = nearCell(a, b); b = nearCell(b, a);
   if(a.y === b.y) return Math.abs(a.x + offX(a) - b.x - offX(b)) - 1;
   if(a.x === b.x) return Math.abs(a.y + offY(a) - b.y - offY(b)) - 1;
   return Infinity;
@@ -31,6 +39,7 @@ export function gap(a, b){
 /* a peut-il frapper (ou tacler) b ? écart ≤ range et que des cases ouvertes entre les deux (open(G,x,y), par défaut
    une case vide) */
 export function inReach(G, a, b, range = COMBAT.reach, open = isAir){
+  a = nearCell(a, b); b = nearCell(b, a);
   if(!(gap(a, b) <= range + EPS)) return false;
   const dx = Math.sign(b.x - a.x), dy = Math.sign(b.y - a.y);
   for(let x = a.x + dx, y = a.y + dy; x !== b.x || y !== b.y; x += dx, y += dy) if(!open(G, x, y)) return false;

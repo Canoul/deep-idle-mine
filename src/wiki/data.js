@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -49,21 +49,25 @@ export function mobRows(){
     types: Object.fromEntries(MOB_TYPES.map(m => [m, { chance: t[m] || 0, hp: k >= MOBS.minArea[m] ? mobHp(m, k) : null }])),
   }));
 }
-/* fiche de chaque mob : nom, texture, butin [{ item, min, max }], XP, première area */
+/* fiche de chaque mob : nom, texture, butin [{ item, min, max }], XP, première area, vitesse (cases par seconde ; 0 :
+   immobile, le mimic) */
 export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
   name: MOB_LOOK[m]?.name ?? m, tex: MOB_LOOK[m]?.tex, xp: XP.mob[m] ?? 0, minArea: MOBS.minArea[m],
+  speed: m === 'mimic' ? 0 : (MOBS.speed[m] ?? 1) / CFG.mobStep,
   hp0: mobHp(m, MOBS.minArea[m]),
   loot: {
     bestiole:   [{ item: MOBS.bugItem, ...mm(range(r => MOBS.bugLoot(r))) }],
     gobelin:    [{ item: MOBS.goblinItem, ...mm(range(r => MOBS.goblinLoot(r))) }, { item: MOBS.bugItem, min: MOBS.goblinChitin, max: MOBS.goblinChitin }],
     occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }, { item: MOBS.bugItem, ...mm(range(r => MOBS.occult.chitin(r))) }],
     mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
+    golem:      [{ item: MOBS.golem.item, ...mm(range(r => MOBS.golem.loot(r))) }],
     mimic:      [],
   }[m] ?? [],
 }]));
 function mm([min, max]){ return { min, max }; }
 export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
-  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range };
+  steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range,
+  golem: { ...MOBS.golem, knock: MOBS.knock.golem, hitEvery: MOBS.hitEveryBy.golem }, duckSpeed: 1 / DUCK.step };
 /* coups pour tuer un mob de pv points de vie, avec des dégâts d */
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
@@ -88,6 +92,14 @@ export function statsOf(item){
 }
 
 /* d'où vient un objet : liste de textes courts */
+/* butin rare des mobs (MOB_DROPS) : nom du mob, et texte de la chance */
+const mobDropName = d => d.mob === DUNGEON.boss.type ? DUNGEON.boss.name : MOB_LOOK[d.mob]?.name ?? d.mob;
+const mobDropText = d => `${fmt(pct(d.chance))} % de chance sur un ${mobDropName(d).toLowerCase()}`+
+  (d.kholeChance != null ? ` (${fmt(pct(d.kholeChance))} % dans un k hole)` : '');
+/* lignes du tableau du wiki : objet, mob, chance (texte), recyclage { objet: quantité } */
+export const mobDropRows = () => MOB_DROPS.items.map(d => ({ item: d.item, mob: mobDropName(d), chance: mobDropText(d),
+  recycle: STUFF.items[d.item]?.recycle ?? {} }));
+
 export function sourcesOf(item){
   const out = [];
   const block = Object.values(BLOCKS).find(b => b.name === item && !b.noDrop && !b.unbreakable);
@@ -98,7 +110,8 @@ export function sourcesOf(item){
   }
   for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
-    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+  for(const d of MOB_DROPS.items) if(d.item === item) out.push(mobDropText(d));
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
@@ -125,7 +138,7 @@ export function sourcesOf(item){
     const tree = skillNode(ITEMS[item].glyph)?.tree, d = tree && GLYPHS.drop[tree.id];
     const ev = { block:'bloc qu\'il casse', ladder:'échelle qu\'il pose', kill:'mob qu\'il tue' };
     const tiny = v => String(Number((v * 100).toPrecision(3))).replace('.', ',');   // petites chances : 3 chiffres significatifs
-    if(d) out.push(`Mine : un mineur spécialisé ${tree.label} a ${tiny(d.chance)} % de chance par ${ev[d.event]} d'en trouver un de son arbre qu'il n'a pas encore (≈ 3 % par session dans un groupe de 3)`);
+    if(d) out.push(`Mine : un mineur spécialisé ${tree.label} a ${tiny(d.chance)} % de chance par ${ev[d.event]} d'en trouver un de son arbre qu'il n'a pas encore (≈ ${String(GLYPHS.dropPerSession*100).replace('.', ',')} % par session dans un groupe de 3)`);
   }
   if(!out.length) out.push('Pas encore obtenable');
   return out;

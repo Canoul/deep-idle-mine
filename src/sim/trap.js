@@ -16,10 +16,10 @@ export const isTrapWall = (t,x,y) => x>=t.x0 && x<t.x0+OW && y>=t.y0 && y<t.y0+O
 /* case cachée : l'intérieur d'un piège pas encore déclenché */
 export const veiled = (G,x,y) => !!G.veil?.size && G.veil.has(y*W+x);
 
-/* types des mobs d'un piège dans l'area k : table d'apparition de l'area, sans mimic (poids renormalisés) */
+/* types des mobs d'un piège dans l'area k : table d'apparition de l'area, sans mimic ni MOBS.noTrap (poids renormalisés) */
 export function trapTable(k){
   const row = MOBS.spawnTable[Math.max(0, Math.min(MOBS.spawnTable.length-1, k))], out = {};
-  for(const t in row) if(t!=='mimic' && row[t]>0 && MOBS.minArea[t]<=k) out[t]=row[t];
+  for(const t in row) if(t!=='mimic' && !MOBS.noTrap.includes(t) && row[t]>0 && MOBS.minArea[t]<=k) out[t]=row[t];
   return out;
 }
 function pick(table, r){

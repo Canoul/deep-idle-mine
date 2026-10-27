@@ -9,6 +9,20 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 27/10/2026 — Geoffrey — Stuff : armures à la valeur de leur tier, combat du butin des mobs divisé par 2
+- **Pour le joueur** : casque, jambes et bottes valent maintenant exactement leur tier : chitine 100 x, fer 250 x,
+  acier 400 x (petits ajustements : casque en chitine +25, casque en fer +63, jambes en fer +1, bottes +0,42 / +1,04).
+  Les **plastrons ne changent pas** : la pièce de torse est volontairement plus forte. Le butin rare
+  des mobs a ses **stats de combat divisées par 2** (Lanières : attaque +31,9 %, butin +12,5 % ; Capuche : recul +0,52,
+  critique +4,8 % ; Ceinture du Géant : dégâts +1,6, ténacité +12,5 % ; Nuage : marche +1,04).
+- **Décisions** (Geoffrey) : règle permanente, gardée par un test : casque, jambes, bottes = valeur du tier, plastron
+  au-dessus (torse plus fort, hors règle) ; butin des mobs = 250 x à
+  parts égales, une stat de combat n'en reçoit que la moitié. Les pièces dessinées à la main (épées, pioches, Plastron
+  de l'équilibre, gants, cape…) ne bougent pas.
+- **À suivre** : la Capuche passe de recul +0,13 à +0,52 (l'équation, même divisée par 2, donne plus qu'avant). Tout
+  en fer = 2 160 GS, tout en acier = 3 011 GS (seuil de la modulation : 2 000).
+- **État** : ✅ en ligne le 27/10
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -22,8 +36,97 @@ Modèle d'entrée :
 - **Pour le joueur** : quand la Tour de l'Ange ou la Tour du Démon s'ouvre, le bot Discord poste
   « 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 ». Une seule fois par ouverture, quelle qu'en soit la cause
   (jauge remplie par les résidus, réouverture automatique, commande d'admin).
-- **État** : 🧪 sur la branche `geoffrey/discord-tour-ouverte` (pas en ligne)
+- **État** : ✅ en ligne le 27/10 (codée le 26/10, oubliée sur sa branche)
 
+## 27/10/2026 — Geoffrey — 4 nouveaux sorts
+- **Pour le joueur** : dans l'onglet Sorts,
+  - **Bonbonne de zipette** (Logisticien niveau de spé 10) : le prochain allié à 3 cases ou moins qui travaille dans la
+    mine et à qui il manque de l'oxygène regagne 20 % des pods max du logisticien en oxygène ; recharge 180 s, comptée
+    une fois l'oxygène donné ;
+  - **Cri de guerre** (Barbare niveau de spé 10) : quand il entre en combat, lui et les mineurs à 10 cases ou moins font
+    +10 % de dégâts et attaquent 5 % plus vite pendant 30 s ; recharge 180 s après l'effet ;
+  - **Cleave** (parchemin) : en combat, 50 % de ses dégâts à tous les mobs à 2 cases ou moins, critique possible ; 10 s ;
+  - **Hand of Justice** (parchemin) : étourdit 3 s un mob qui se bat à 3 cases ou moins (d'abord celui qui tacle un
+    allié) ; 30 s.
+  Les parchemins de Cleave et Hand of Justice n'ont pas encore de source (outil d'admin pour tester). Wiki : les sorts et
+  parchemins s'affichent tout seuls depuis la config.
+- **Au passage** : le wiki affichait encore « ≈ 3 % par session » pour les glyphes (oubli de ce matin) : corrigé, le
+  texte suit maintenant la config.
+- **Décisions** (Geoffrey) ; choix de Claude à valider : zipette sur l'allié qui a le moins d'oxygène (en %) quand il y
+  en a plusieurs, et seulement s'il lui en manque ; Cleave ne touche pas un boss de donjon qu'il ne combat pas (mur de
+  la salle) ; Hand of Justice coupe aussi la canalisation de l'occultiste, comme le Dash ; un 2e Cri de guerre prolonge
+  l'effet sans le cumuler.
+- **État** : ✅ en ligne le 27/10
+
+## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
+- **Pour le joueur** : un chef qui part (onglet fermé, PC en veille, téléphone verrouillé) **reste chef** de son groupe,
+  même des heures, affiché « absent » ; à son retour il retrouve son groupe. Avant, il était retiré au bout de 5 min et
+  le suivant devenait chef (le chef revenait dans un lobby vide). Les autres joueurs quittent s'ils ne veulent pas
+  l'attendre. Les membres : inchangé (retirés après 5 min sans nouvelles, sauf s'ils sont prêts).
+- **Décisions** (Geoffrey).
+- **État** : ✅ en ligne le 27/10
+
+## 27/10/2026 — Geoffrey — Glyphes : 1 % par session au lieu de 3 %
+- **Pour le joueur** : trouver un glyphe dans la mine est 3 fois plus rare : environ **1 % par session** dans un groupe de
+  3 (avant 3 %), ≈ 1,5 % en solo. Spé Mineur 0,00126 % par bloc cassé, Logisticien 0,011 % par échelle posée, Barbare
+  0,0335 % par mob tué. Un arbre de 3 glyphes demande ≈ 300 sessions en moyenne (avant ≈ 100). Wiki mis à jour.
+- **Décisions** (Geoffrey).
+- **État** : ✅ en ligne le 27/10
+
+## 26/10/2026 — Geoffrey — Butin rare des mobs : chances baissées
+- **Pour le joueur** : les pièces lâchées par les mobs tombent bien moins souvent. Lanières en cuir du gobelin, Capuche
+  sombre et Nuage magique : **0,1 %** (avant 0,5 %) ; Ceinture du Géant : **0,5 %** sur le minotaure (avant 1 %), **1 %**
+  dans un k hole (avant 2 %). Le butin du mineur (stat Butin, Pillage) multiplie toujours ces chances. Le wiki suit tout
+  seul.
+- **Décisions** (Geoffrey) ; choix de Claude à valider : la chance en k hole reste le double de la chance normale.
+- **État** : ✅ en ligne le 27/10
+
+## 26/10/2026 — Geoffrey — Tours : le retour des pods
+- **Pour le joueur** : les **briques minées vont dans le sac** (10 pods chacune) ;
+  sac plein, le mineur redescend le vider au **coffre commun**, au milieu de l'étage 0, puis repart. **Si le boss
+  tombe**, toutes les briques (coffre + sacs) sont partagées **en parts égales** entre les joueurs présents ; un joueur
+  qui part perd son sac. Le panneau de la tour montre le sac de chacun et le coffre.
+- **Décisions** : coffre à l'étage 0 ; durée gardée à 10 min ; sacs comptés à la victoire ; parts égales (reste au hasard).
+  Un 7e étage a été essayé puis **retiré** (trop dur : tout fer 0/20, tout acier 7/20) : la tour garde 6 étages.
+- **À suivre** : en simulation (2 mineurs + 1 barbare, 20 tours), tout fer 10/20 → **4/20** victoires, tout acier
+  17/20 → **16/20** (≈ 51 briques par joueur). Les vidages coûtent ≈ 1 min 15 de montée. Pas encore vérifié dans un
+  vrai navigateur.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Lampe à incandescence : ses torches deviennent des lampes de mine
+- **Pour le joueur** : un mineur qui porte la Lampe à incandescence n'accroche plus des torches mais des **lampes de
+  mine** (une ampoule dans sa cage, suspendue à un câble), dans la mine comme dans les tours. Les torches des autres
+  mineurs restent des torches.
+- **État** : ✅ en ligne le 26/10
+
+
+## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
+- **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais
+  venus dans les **dernières 24 h** et qui n'ont pas fait la tour, avec « vu il y a 3 h ». Pas de bouton Inviter pour
+  eux (ils ne sont pas là) : c'est pour savoir qui contacter.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Nouveau mob : le golem de sperme (area 5+)
+- **Pour le joueur** : à partir de l'area 5, un golem de pierre qui sue un liquide blanc, **2 × 2 cases**, 300 PV (+15 %
+  par area), deux fois plus lent qu'un gobelin (10 % des apparitions, pris sur le gobelin). Il **creuse jusqu'à ton
+  mineur** (un bloc toutes les 2 s ; les blocs cassés sont perdus, même les minerais ; jamais les treasures, passerelles,
+  murs de donjon ni échelles), en escalier pour monter. Ses coups repoussent de 0,5 toutes les 1,5 s, et chaque fois qu'il
+  perd un tiers de ses PV il **ébranle la mine** : les mineurs à 3 cases sont étourdis 3 s (Ténacité). Butin : 1 à 3
+  **Pierres glissantes**, 30 XP. Wiki à jour, avec en plus la **vitesse de chaque mob**.
+- **Décisions** (Geoffrey) : 10 % pris sur le gobelin ; blocs perdus, il ne casse pas l'intouchable ; escalier ; 3
+  étourdissements, Ténacité oui. **Choix de Claude à valider** : il monte tout droit une fois sous le mineur et
+  s'agrippe à la roche (sinon il tournait en rond dans son propre escalier), il ne se fait pas repousser, pas de golem
+  dans les pièges ni dans le k hole.
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Gear score calculé avec les x mesurés
+- **Pour le joueur** : le GS des pièces baisse un peu et colle mieux à ce qu'elles font vraiment gagner en session. Tout
+  fer : 2 481 → 2 191 GS ; tout acier : 3 391 → 3 011. Les plus grosses baisses : Lance en fer 1 020 → 360, Pioche en
+  acier 1 000 → 650, Gants tactique 100 → 39. La Lampe à incandescence compte enfin (81 GS, pour son rayon).
+- **Décisions** : le GS suit la colonne « mesuré » du document « Valeurs en x » (secondes gagnées par session), plus
+  six stats simulées le 26/10. Le tableau « pour 100 x » reste celui des runes. Les anneaux restent à 0 GS.
+- **À suivre** : le plafond de la modulation (2 000 GS) n'a pas bougé ; à revoir quand la case sera ouverte.
+- **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Bloc géant : on peut le regarder pendant une session
 - **Pour le joueur** : pendant une session, « Où miner » → 🌈 Bloc géant n'est plus grisé : on voit la carte (temps
@@ -53,6 +156,21 @@ Modèle d'entrée :
 ## 26/10/2026 — Geoffrey — Glyphe Treuil : ascenseur 1,5 fois plus rapide (avant 3)
 - **Pour le joueur** : l'ascenseur du Glyphe Treuil monte et descend **1,5 fois** plus vite que le treuil (avant 3 fois),
   toujours posé une nouvelle area sur deux, et pareil dans les tours. Le wiki suit tout seul (texte lu dans la config).
+- **État** : ✅ en ligne le 26/10
+
+## 26/10/2026 — Geoffrey — Butin rare des mobs : 4 nouvelles pièces
+- **Pour le joueur** : quatre pièces qu'on ne peut pas fabriquer, lâchées par les mobs. Chacune vaut autant que la pièce
+  en fer de sa case, avec d'autres stats :
+  - **Lanières en cuir du gobelin** (torse, inhabituel) : vitesse d'attaque +44 %, butin des mobs +22 %. Gobelin : 0,5 %.
+  - **Capuche sombre** (casque, rare) : recul +0,13, critique +9,7 %. Occultiste : 0,5 %.
+  - **Nuage magique** (jambes, rare) : vitesse de marche +1,1. Méphite : 0,5 %.
+  - **Ceinture du Géant** (ceinture, épique) : dégâts +3,1, ténacité +25 %. Minotaure : 1 % (2 % dans un k hole).
+  Chacune a son apparence sur le mineur, se recycle en matériaux (ex. Ceinture : 50 chitine + 5 Steel ingot), et
+  apparaît dans le wiki (Mobs → Butin rare).
+- **Décisions** (Geoffrey) : ceinture à 250 x (pas de ceinture en fer) ; Nuage et Ceinture calés sur les nouveaux prix
+  mesurés du gear score, Lanières et Capuche gardées (sinon vitesse d'attaque +135 % et recul +1,1 bloc) ; deux stats moitié / moitié ; en groupe, un seul
+  joueur reçoit la pièce ; le **Butin des mobs** multiplie la chance (1 % avec +50 % de butin → 1,5 %), toujours une
+  seule pièce.
 - **État** : ✅ en ligne le 26/10
 
 ## 26/10/2026 — Geoffrey — Modulation cachée (pas encore prête)
