@@ -41,6 +41,16 @@ Modèle d'entrée :
   reste vraie). La couronne (tier 4, 600 x) n'est plus que 100 x au-dessus.
 - **État** : 🧪 sur la branche `geoffrey/acier-500` (pas en ligne)
 
+## 27/10/2026 — Geoffrey — Fin de session : les mineurs ne s'arrêtent plus trop tôt au-dessus du front
+- **Pour le joueur** : dans les dernières minutes, les mineurs restaient miner bien au-dessus du front « pour avoir le
+  temps de remonter », même avec un treuil rapide (session du 27/10 : 90 couches au-dessus du front dès 6 min 30 de la
+  fin). Ils comptaient la descente aussi lente que la remontée, plus 25 % de marge. Maintenant ils mesurent aussi leur
+  vraie descente : ils restent juste sous le front jusqu'à la remontée finale. Rejoué sur cette session : +4 diamants,
+  +17 graphite, +1 Treasure T3, XP +1 %.
+- **Décisions** : la règle ne change pas (un dernier trajet doit laisser au moins autant de temps à miner que de trajet,
+  `endWorkShare` 0,5) ; seule l'estimation du trajet est corrigée.
+- **État** : 🧪 sur la branche `geoffrey/fix-fin-treuil` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
   tes points** du jour (les tiens, pas ceux de tous), même si le score collectif n'atteint aucun palier. Au **four**

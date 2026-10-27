@@ -3759,3 +3759,21 @@ Règles (voir CLAUDE.md) :
   stuff-balance (libellé) mis à jour ; stuff-balance, rune, steel-gear, gearscore, goblin-king, stuff*, wiki, modulation ✅ 67/67.
 - **À vérifier** : modulation des tours (`TOWER.modulation.gsMax`) : un stuff acier complet gagne ≈ 600 GS ; si le plafond
   était calé sur l'ancien acier, il laisse passer moins de joueurs. Pas de simulation lancée (valeurs de config seulement).
+
+### Fin de session : profondeur max d'après la descente mesurée (Geoffrey) — branche `geoffrey/fix-fin-treuil`, 🧪
+- **Signalé** : à ~5 min de la fin, les mineurs minent plus haut alors que le treuil est rapide. Rejeu de la session dev
+  `109abdac` (seed 468608167, Test_Mineur + mineurs de test logisticien / barbare) : à 390 s de la fin, Test_Mineur repart
+  avec `tripCap` 245 (front 338), mine à 200-245 jusqu'à la fin.
+- **Cause** : `depthCap` = budget / (2,25 × `secPerRow`) : descente comptée = remontée mesurée, remontée × 1,25 en plus
+  alors qu'elle est déjà mesurée. Mesuré sur 40 trajets de deux sessions : descente ≈ 75-80 % de la remontée (treuil /
+  ascenseur dans les deux sens). Estimation ≈ +25 % trop haute.
+- **Quoi** (`src/sim/ai.js`) : `m.secPerRowDown` mesurée par `trackDescent` (appelée dans `decide`) : du départ de la
+  surface (`decideSurface`, `m.descentStart`) jusqu'à la profondeur de sa dernière remontée − 5 (`m.lastReturnFromY`,
+  bornée par `tripCap`, ≥ 10 couches), abandonnée s'il repasse en retour / fetch. `depthCap` = budget / (descente +
+  remontée), descente = remontée tant qu'elle n'est pas mesurée. Champs ajoutés à `SPOT` (`src/sim/khole.js`).
+- **Tests** : `tests/end-depth.test.js` ✅ 3/3. Rejeu de `109abdac` : `tripCap` 245 → 320, mine à 310-318, tous remontés
+  à temps ; coffre +4 diamants, +17 graphite, +1 Treasure T3, XP 5 418 → 5 471 ; `19860e4f` : XP 5 258 → 5 328.
+  Simulation 5 sessions (mineurs de base) : 0 bloquée ; profondeur 182,4 → 185,2, coffre 4 140 → 4 105 pods (−0,9 %, en
+  pods et non en valeur) ✅.
+- **Point fragile** : une descente interrompue par un chantier (treuil du logisticien) peut être très lente (mesuré jusqu'à
+  1,3 s/couche) : la mesure suivante la remplace ; dans ce cas l'estimation redevient prudente, comme avant.
