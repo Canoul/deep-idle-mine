@@ -1,6 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
-import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS } from '../config.js';
+import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS, TIME_SPLIT } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
 import { genArea, maxRow } from './world.js';
@@ -103,6 +103,8 @@ export function tick(G){
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners){
     if(m.action?.type==='attack') m.stats.hitTime=(m.stats.hitTime||0)+DT;   // temps à frapper (tableau de bord)
+    { const k=TIME_SPLIT.of[m.action?.type] ?? 'other', t=(m.stats.time ??= { mine:0, travel:0, fight:0, other:0 });
+      t[k]+=DT; }   // temps par activité (écran de fin, mode dev)
     stepMiner(G,m);
   }
   braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon
@@ -168,7 +170,7 @@ export function endSession(G){
        la Mule pas rapporté au coffre (posé dans la mine, ou porté par un logisticien pas remonté) */
     lostBags: G.roster.filter(m=>Object.keys(m.inv).length).map(m=>({ name:m.name, items:{...m.inv} }))
       .concat(G.mule && Object.keys(G.mule.inv).length ? [{ name:muleLabel(G), items:{...G.mule.inv} }] : []),
-    miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats} })),
+    miners: G.roster.map(m=>({ name:m.name, color:m.color, account:m.account, left:m.left!=null, stats:{...m.stats, time:{...(m.stats.time||{})}} })),
   };
   const present = G.roster.filter(m => m.left==null);
   const { bags, xp, segments } = shareBySegments(G, present);

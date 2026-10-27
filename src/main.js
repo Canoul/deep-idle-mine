@@ -557,7 +557,7 @@ function showResult(st){
   if(ended.mode === 'mi') showInstantEnd(ended, acct.account?.id, back, toInv);
   else if(isTowerMode(ended.mode)) showTowerEnd(ended, acct.account?.id, back, toInv);
   else if(isInstanceMode(ended.mode)) showInstanceEnd(ended, acct.account?.id, back, toInv);
-  else showEnd(ended, acct.account?.id, back, toInv, up);
+  else showEnd(ended, acct.account?.id, back, toInv, up, !!info.dev);   // mode dev : part du temps par activité
   pollLobby();                               // signe de vie au groupe pendant le bilan
 }
 

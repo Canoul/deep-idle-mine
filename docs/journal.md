@@ -18,6 +18,12 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Mode dev : part du temps par activité sur l'écran de fin
+- **Pour le joueur** : rien (mode développeur seulement). Sur l'écran de fin d'une session de mine, en mode dev, une
+  section « Temps (mode dev) » donne pour chaque mineur la part du temps à **miner**, **se déplacer**, **se battre** et
+  **autres** (poser échelles et torches, déposer au coffre, étourdi, attendre…). Repère : ≈ 30 % / 45 % / 10 % / 15 %.
+- **État** : 🧪 sur la branche `geoffrey/dev-temps-fin` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
 - **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
   minotaures** et dans les **Vagues** du k hole. Avant, il restait planté pendant 2 min (« Plus rien à explorer ») et

@@ -3701,3 +3701,11 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : les minotaures et les mobs des vagues chassent toujours le premier mineur (`hunt = miners[0]`) ;
   sans incidence ici, à revoir si une salle doit répartir les cibles.
 
+### Mode dev : temps par activité sur l'écran de fin (Geoffrey) — branche `geoffrey/dev-temps-fin`, 🧪
+- **Quoi** : `TIME_SPLIT` (config) : type d'action → catégorie (`mine` → mine ; `move`, `dash` → travel ; `attack` →
+  fight ; tout le reste, et pas d'action, → other). `m.stats.time` (src/sim/mineur.js) cumulé à chaque tick dans
+  `tick` (src/sim/session.js) ; copié dans `summary.miners[].stats.time`. Écran de fin (`showEnd`, src/ui/hud.js) :
+  section « Temps (mode dev) » si `dev` (passé par main.js depuis `info.dev`). Mine classique seulement (MI, tours,
+  instances : leurs propres écrans, non touchés). Les déplacements comptent la marche, les échelles, le seau, les chutes.
+- **Tests** : session +1 (les 4 parts = toute la session, miner et se déplacer > 0) ; view, game-service, dashboard ✅.
+  Vérifié dans Chromium en mode dev ×300 : « Miner 29 % · Se déplacer 46 % · Se battre 11 % · Autres 14 % » ✅.

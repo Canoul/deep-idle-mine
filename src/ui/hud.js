@@ -1,5 +1,5 @@
 /* Panneaux d'information (DOM). Lit l'état, ne le modifie jamais. */
-import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS, SPELLS } from '../config.js';
+import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS, SPELLS, TIME_SPLIT } from '../config.js';
 import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
@@ -111,7 +111,7 @@ export function showSettling(mi=false){
 /* Bilan d'une session, d'après le résultat du SERVEUR (celui qui fait foi).
    rec : la session publique ({ result, players, … }) ; me : ID du compte du joueur. */
 /* levelUp : texte de montée de niveau (ou null), d'après la progression relue au serveur */
-export function showEnd(rec, me, onBack, onInventory, levelUp=null){
+export function showEnd(rec, me, onBack, onInventory, levelUp=null, dev=false){
   const s=rec.result, shares=s.shares, n=shares.filter(p=>!p.left).length;
   const nameOf = acc => rec.players.find(p=>p.account===acc)?.name;
   const who = p => `${esc(p.account ? nameOf(p.account) ?? p.miner : p.miner)}${p.account===me?' (toi)':''}`;   // le mineur porte le pseudo
@@ -124,6 +124,12 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
   const miners = s.miners || [];
   const by = miners.length>1
     ? '<p>Contributions :</p>'+miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${t.stats.trips} dépôts · ${t.stats.ore} minerais · ${t.stats.kills} mobs</span></div>`).join('')
+    : '';
+  /* mode dev (27/10) : part du temps de chaque mineur à miner, se déplacer, se battre, autres (TIME_SPLIT) */
+  const pct = (t, k) => { const tot = Object.values(t).reduce((a, b) => a + b, 0); return tot > 0 ? Math.round(t[k] / tot * 100) : 0; };
+  const timeRows = dev && miners.some(t => t.stats?.time)
+    ? '<p>Temps (mode dev) :</p>'+miners.filter(t => t.stats?.time).map(t => `<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span class="small">`+
+        ['mine', 'travel', 'fight', 'other'].map(k => `${TIME_SPLIT.labels[k]} <b>${pct(t.stats.time, k)} %</b>`).join(' · ')+'</span></div>').join('')
     : '';
   const xpRow = mine && s.xp!=null
     ? `<div class="row"><span>XP gagnée</span><b>${mine.left ? 0 : '+'+mine.xp}</b></div>`+
@@ -147,7 +153,7 @@ export function showEnd(rec, me, onBack, onInventory, levelUp=null){
     (s.stolen ? `<div class="row"><span>Minerais volés par les gobelins</span><b>${s.stolen}</b></div>` : '')+
     `<div class="row"><span>Treasures ouverts</span><b>${s.treasures}</b></div>`+
     `<div class="row"><span>Allers-retours coffre</span><b>${s.trips}</b></div>`+
-    xpRow+by+split+lost+
+    xpRow+by+timeRows+split+lost+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';
   $('end').hidden=false;
   $('endBack').onclick=onBack;

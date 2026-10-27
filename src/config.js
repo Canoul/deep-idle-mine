@@ -686,6 +686,10 @@ export const SHINY = {
 /* ---- Annonces Discord (server/social/discord.js) ----
    25/10/2026 (Geoffrey) : un message dans le salon #général quand un joueur loot un trésor de tour (RUNE.treasures)
    ou identifie une pièce de qualité minQuality ou plus. timeoutMs : délai max d'un envoi (il part en tâche de fond). */
+/* temps d'un mineur par activité (écran de fin, mode dev, 27/10/2026, Geoffrey) : type d'action → catégorie ; tout ce qui
+   n'est pas listé (pose d'échelle, de torche, dépôt, étourdi, attente, réflexion…) compte dans « autres » */
+export const TIME_SPLIT = { of:{ mine:'mine', move:'travel', dash:'travel', attack:'fight' },
+  labels:{ mine:'Miner', travel:'Se déplacer', fight:'Se battre', other:'Autres' } };
 export const ANNOUNCE = { minQuality: 7, emoji: '🚨', timeoutMs: 5000 };
 
 export const RUNE = {

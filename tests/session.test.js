@@ -76,3 +76,15 @@ test('fin de session : un départ tardif passe au moins un tiers de son trajet �
   assert.ok(late.length > 0, 'au moins un départ dans les 10 dernières minutes');
   for(const tr of late) assert.ok(tr.work / tr.n >= 1 / 3, `${tr.name}, parti à ${Math.round(tr.start)} s : ${Math.round(100 * tr.work / tr.n)} % du trajet à travailler`);
 });
+
+test('temps par activité (écran de fin, mode dev, 27/10) : miner, se déplacer, se battre, autres = toute la session', async () => {
+  const { runSession } = await import('../src/sim/session.js');
+  const { DT, SESSION_LEN, TIME_SPLIT } = await import('../src/config.js');
+  const G = runSession(42, { miners: 2 });
+  for(const m of G.summary.miners){
+    const t = m.stats.time, tot = t.mine + t.travel + t.fight + t.other;
+    assert.ok(Math.abs(tot - SESSION_LEN) < 2 * DT, `${m.name} : ${tot} s`);
+    assert.ok(t.mine > 0 && t.travel > 0, JSON.stringify(t));
+  }
+  assert.deepEqual(Object.keys(TIME_SPLIT.labels), ['mine', 'travel', 'fight', 'other']);
+});
