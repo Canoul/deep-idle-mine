@@ -29,6 +29,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
   compassRows:0, torches:20, torchRadius:5, torchTime:1, discoverMax:2, tenacity:0, knockRes:0, reach:0, knockback:0,
   bridges:Infinity,   // passerelles illimitées (21/10, Geoffrey) : la stat reste pour un futur coût éventuel
   mineSpeedPct:0, damagePct:0, crit:0, oneTap:0, piercing:0, looting:0,
+  goblinThrall:0,   // Couronne du Roi Gobelin (27/10/2026, Geoffrey) : rayon (cases) où les gobelins qui naissent sont asservis (GOBLIN_KING.thrall)
   doubleAttack:0 };   // double attaque (25/10/2026, Geoffrey) : chance, en %, qu'un coup du mineur frappe deux fois
 
 export const CFG = {
@@ -617,6 +618,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
+  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
@@ -627,18 +629,22 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
    dans le four (le diamant, pour l'instant).
    max : nombre de fours au maximum ; startOwned : fours possédés au départ (les autres sont sous cadenas).
    tiers : fours plus puissants à venir (speed divise le temps de fonte).
-   Deux modes par four (bouton Fondre / Alliage) : recipes = la fonte (mode Fondre), alloys = les alliages (mode
+   Deux modes par four (bouton Fondre / Alliage) : recipes = la fonte (mode Fondre ; une entrée peut aussi être un
+   matériau, ex. Peau de gobelin → Chitine, et être fermée par `unlock`), alloys = les alliages (mode
    Alliage : deux ingrédients en `in` + `fuel` combustibles par produit, en time secondes). */
 export const FURNACE = {
   max:3, startOwned:1, orePerIngot:10, fuelPerIngot:10,
-  tiers: [ { name:'Four en pierre', speed:1 }, { name:'Four en fer', speed:1.25 } ],
+  tiers: [ { name:'Four en pierre', speed:1 }, { name:'Four en fer', speed:1.25 }, { name:'Four en or', speed:1.5 } ],   // four en or : 27/10 (Geoffrey)
   /* objets qui débloquent un four : « Utiliser » dans l'inventaire consomme l'objet et ouvre le four n° slot (0 = le
-     premier), du tier donné. Seulement s'il est le prochain four fermé (le 3e four reste fermé pour l'instant). */
-  unlockItems: { 'Four en fer': { slot:1, tier:1, tex:'furnace_iron' } },
+     premier), du tier donné. Seulement s'il est le prochain four fermé (le 3e four : Four en or, 27/10). */
+  unlockItems: { 'Four en fer': { slot:1, tier:1, tex:'furnace_iron' }, 'Four en or': { slot:2, tier:2, tex:'furnace_gold' } },
   recipes: {
     Fer:     { out:'Lingot de fer',     time:60,  tex:'ingot_iron' },
     Or:      { out:'Lingot d\'or',      time:120, tex:'ingot_gold' },
     'Graphite ore': { out:'Graphite ingot', time:60, tex:'ingot_graphite' },        // 23/10, Geoffrey
+    /* 27/10/2026 (Geoffrey) : 10 peaux + 10 charbons = 5 chitine ; qty : produits par fournée (1 par défaut) ; unlock :
+       recette fermée tant que l'objet n'a pas été « utilisé » (inv.unlocked, src/meta/craft.js learn) */
+    'Peau de gobelin': { out:'Chitine', qty:5, time:60, tex:'bug', unlock:'Recette : Chitine' },
   },
   alloys: [
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
@@ -714,6 +720,41 @@ const QUALITY_NUMS = [1,2,3,4,5,6,7];
 export const treasureItem = (side, q) => `${RUNE.treasures[side].name} R${q}`;
 const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap(([side, c]) =>
   QUALITY_NUMS.map(q => [treasureItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q }, treasure:true }])));
+/* ---- Roi Gobelin (27/10/2026, Geoffrey) ----
+   Le boss n'existe pas encore (à définir) : à sa mort, CHAQUE joueur recevra un « Coffre du Roi Gobelin » de qualité R1
+   à R7 (chances UPGRADE.qualities, comme les trésors des tours). En attendant, il ne s'obtient que par l'admin
+   (scripts/give-item.js « Coffre du Roi Gobelin R4 »). Ouvert depuis l'inventaire (src/meta/loot.js) : la table `loot`
+   (même format que LOOT : tous les always, puis un tirage par famille, au plus un objet chacune) ; une pièce de stuff qui
+   en sort est déjà identifiée, à la qualité du coffre. learnOnce : l'objet ne sort que si sa recette n'est pas encore
+   apprise (sinon, rien pour ce tirage).
+   thrall : passif de la Couronne du Roi Gobelin (STATS.goblinThrall = rayon) : un gobelin qui naît à radius cases ou
+   moins (cercle) d'un porteur est asservi : il ne se bat pas, mine pendant life s à la vitesse d'un mineur de base
+   (minerais à reach cases ou moins, même priorité que le porteur), puis disparaît ; ce qu'il mine va au coffre commun. */
+export const GOBLIN_KING = {
+  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
+  loot: {
+    always: [
+      { item:'Graphite ore',    min:20, max:40  },
+      { item:'Peau de gobelin', min:50, max:100 },
+    ],
+    oneOf: [
+      { family:'boss', items:[
+        { item:'Couronne du Roi Gobelin', chance:0.01 },
+        { item:'Four en or BP',           chance:0.02 },
+        { item:'Masse du Roi Gobelin',    chance:0.02 },
+        { item:'Cape royale du Gobelin',  chance:0.02 },
+      ]},
+      { family:'recipe', items:[ { item:'Recette : Chitine', chance:0.05, learnOnce:true } ] },
+      { family:'gem', items:gems(0.01) },
+    ],
+  },
+  thrall: { radius:10, life:30, reach:6 },
+};
+/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') */
+export const goblinChestItem = q => `${GOBLIN_KING.chest.name} R${q}`;
+const GOBLIN_CHEST_ITEMS = Object.fromEntries(QUALITY_NUMS.map(q =>
+  [goblinChestItem(q), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q }, treasure:true }]));
+
 /* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
 const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
@@ -784,6 +825,10 @@ export const RARITY = {
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
     'Plume d\'ange':'rare',
+    /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
+    'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
+    'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare',
+    ...Object.fromEntries(Object.keys(GOBLIN_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
   },
 };
@@ -867,6 +912,10 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
     'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.6, tenacity:12.5 },   // 125 x chacune, ÷ 2 (combat) : dégâts 3,1 → 1,6, ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
+    /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
+    'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
+    'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 } },          // remplace les mains nues (5), comme une épée
+    'Cape royale du Gobelin':  { slot:'cape',   tex:'cape_goblin_royal', stats:{ damagePct:5, mineSpeedPct:5 } },
     /* anneaux : aucune stat pour le porteur seul, leur effet de groupe est dans RINGS */
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, { slot:RINGS.slot, tex:d.tex }])),
   },
@@ -875,11 +924,12 @@ export const STUFF = {
                 torches:'Torches', torchRadius:'Rayon des torches', torchTime:'Pose d\'une torche', bridges:'Passerelles', discoverMax:'Découverte',
                 attackSpeed:'Vitesse d\'attaque', fortune:'Fortune', tenacity:'Ténacité',
                 mineSpeedPct:'Vitesse de minage', damagePct:'Dégâts', crit:'Critique', oneTap:'Coup unique',
-                piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul' },
-  statUnits: { torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+                piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul',
+                goblinThrall:'Gobelins asservis (rayon)' },
+  statUnits: { goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
-               'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],
+               'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime','goblinThrall'],
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
      - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
        (UPGRADE.tiers : 100 / 250 / 400 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
@@ -955,10 +1005,11 @@ export const UPGRADE = {
     1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
     2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
-                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui',
+                       'Gants tactique','Gants d\'ouvrier','Cape de Naingui','Lampe à incandescence',   // lampe : plan du T2 depuis le 26/10 (tier le 27/10)
                        'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
     3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
-                       'Bottes en acier','Plastron de l\'équilibre'] },
+                       'Bottes en acier','Plastron de l\'équilibre',
+                       'Couronne du Roi Gobelin','Masse du Roi Gobelin','Cape royale du Gobelin'] },   // Roi Gobelin : tier 3 (choix de Claude, 27/10)
   },
   /* pas d'arrondi de chaque stat (valeur d'une ligne, et stats d'une pièce améliorée) */
   steps: { mineSpeed:0.001, speed:0.01, climbSpeed:0.01, pods:1, oxygenMax:1, damage:0.1, attackSpeed:0.1, fortune:0.1,
@@ -1006,6 +1057,9 @@ export const ITEMS = {
   ...GLYPH_ITEMS,                                                                       // glyphes (GLYPHS, 25/10)
   [DUCK.heart.item]: { cat:'material',  tex:DUCK.heart.tex, w:1, stack:true },             // laissé par le Gallianix (DUCK)              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
+  ...GOBLIN_CHEST_ITEMS,                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
+  'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
+  'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2

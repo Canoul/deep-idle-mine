@@ -1,9 +1,10 @@
 /* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
    pure (le hasard est passé en paramètre). Un trésor de tour (RUNE.treasures) peut aussi donner un anneau (RINGS.drops).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT, ITEMS, RUNE, RINGS, TREASURE } from '../config.js';
+import { LOOT, ITEMS, RUNE, RINGS, TREASURE, GOBLIN_KING } from '../config.js';
 import { removeItem, addAll, addItem, countOf, OPEN_MEMORY } from './inventory.js';
-import { rollRune } from './piece.js';
+import { rollRune, isStuff } from './piece.js';
+import { recipeOfBlueprint, isUnlocked } from './craft.js';
 
 /* coffre de tour (RUNE) : { side, q } ou null */
 const chestOf = item => ITEMS[item]?.chest ?? null;
@@ -11,8 +12,9 @@ export const canOpen = item => Object.hasOwn(LOOT, item) || !!chestOf(item);
 
 const between = (min, max, rng) => min + Math.floor(rng() * (max - min + 1));
 
-/* butin { nom: quantité } d'une table : tous les « always », puis un tirage par famille (au plus un objet chacune) */
-export function rollLoot(table, rng){
+/* butin { nom: quantité } d'une table : tous les « always », puis un tirage par famille (au plus un objet chacune).
+   skip(item) : objet qui ne peut pas sortir (learnOnce, recette déjà apprise) : s'il est tiré, ce tirage ne donne rien */
+export function rollLoot(table, rng, skip = () => false){
   const loot = {};
   for(const a of table.always) loot[a.item] = (loot[a.item] || 0) + between(a.min, a.max, rng);
   for(const f of table.oneOf){
@@ -20,7 +22,7 @@ export function rollLoot(table, rng){
     let acc = 0;
     for(const i of f.items){
       acc += i.chance;
-      if(r < acc){ loot[i.item] = (loot[i.item] || 0) + 1; break; }
+      if(r < acc){ if(!skip(i)) loot[i.item] = (loot[i.item] || 0) + 1; break; }
     }
   }
   return loot;
@@ -67,6 +69,7 @@ function openOne(inv, item, rng){
   if(!canOpen(item) || !removeItem(inv, item, 1)) return null;
   let loot;
   const chest = chestOf(item);
+  if(chest?.side === 'goblin') return openGoblinChest(inv, chest.q, rng);
   if(chest){                                 // coffre de tour : une rune de sa qualité, lignes tirées maintenant
     const [i] = addItem(inv, RUNE.item, 1);
     Object.assign(inv.slots[i], rollRune(chest.q, rng));
@@ -79,6 +82,18 @@ function openOne(inv, item, rng){
   } else {
     loot = rollLoot(LOOT[item], rng);
     addAll(inv, loot);
+  }
+  return loot;
+}
+
+/* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026) : sa table de butin ; une pièce de stuff qui en sort arrive déjà
+   identifiée, à la qualité q du coffre ; « Recette : Chitine » (learnOnce) ne sort que si elle n'est pas encore apprise */
+function openGoblinChest(inv, q, rng){
+  const learned = i => i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv);
+  const loot = rollLoot(GOBLIN_KING.loot, rng, learned);
+  for(const [name, n] of Object.entries(loot)){
+    if(!isStuff(name)){ addItem(inv, name, n); continue; }
+    for(const i of addItem(inv, name, n)) inv.slots[i].q = q;
   }
   return loot;
 }

@@ -774,6 +774,62 @@ def main():
     rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
     tex['cape_naingui'] = cape
 
+    # ---- Roi Gobelin (27/10/2026, Geoffrey) : objets du coffre du Roi Gobelin ----
+    gold, gold_hi, gold_lo = hexc('#ffd23f'), hexc('#fff1a8'), hexc('#b8860b')
+    # couronne (stuff, casque) : bandeau doré à 3 pointes, gemmes rouges
+    crown = blank()
+    rect(crown, 2, 9, 12, 4, gold); rect(crown, 2, 12, 12, 1, gold_lo); rect(crown, 2, 9, 12, 1, gold_hi)
+    for x in (2, 7, 12):
+        rect(crown, x, 6, 2, 3, gold); rect(crown, x, 5, 2, 1, gold_hi)       # pointes
+    rect(crown, 4, 7, 2, 2, gold); rect(crown, 10, 7, 2, 2, gold)
+    for x in (4, 7, 10):
+        rect(crown, x, 10, 2, 2, hexc('#d62839'))                             # gemmes
+    rect(crown, 7, 10, 1, 1, hexc('#ff8a8a'))
+    tex['crown_goblin_king'] = crown
+    # masse (stuff, arme) : manche de bois en diagonale, tête de fer cloutée
+    mace = blank()
+    for i in range(8):
+        rect(mace, 2 + i, 13 - i, 2, 2, hexc('#7a5230'))
+    rect(mace, 9, 2, 5, 5, hexc('#8d939c')); rect(mace, 10, 1, 3, 7, hexc('#8d939c')); rect(mace, 8, 3, 7, 3, hexc('#8d939c'))
+    rect(mace, 10, 2, 2, 1, hexc('#d4d8de'))
+    for x, y in [(11, 0), (14, 4), (11, 8), (7, 4), (13, 1), (13, 7), (8, 1)]:
+        rect(mace, x, y, 1, 1, hexc('#c9cdd4'))                               # clous
+    rect(mace, 1, 14, 2, 2, gold)                                             # pommeau doré
+    tex['mace_goblin_king'] = mace
+    # cape royale du Gobelin (stuff) : velours rouge qui s'évase, bordure laineuse blanche (hermine)
+    rcape = blank()
+    for i in range(12):
+        rect(rcape, 5 - i // 3, 3 + i, 6 + 2 * (i // 3), 1, hexc('#b3121f'))
+        rect(rcape, 5 - i // 3, 3 + i, 1, 1, hexc('#f4f1ea'))                 # bord laineux
+        rect(rcape, 10 + i // 3, 3 + i, 1, 1, hexc('#f4f1ea'))
+    rect(rcape, 2, 14, 12, 1, hexc('#f4f1ea'))                                # ourlet laineux
+    for x in (4, 8, 12):
+        rect(rcape, x, 14, 1, 1, hexc('#1c1c1f'))                             # mouchetures d'hermine
+    rect(rcape, 5, 2, 6, 2, hexc('#f4f1ea')); rect(rcape, 7, 3, 2, 1, gold)  # col et fermoir
+    tex['cape_goblin_royal'] = rcape
+    # four en or (objet) : comme le four en fer, en or
+    gfur = blank()
+    rect(gfur, 2, 2, 12, 13, gold)
+    rect(gfur, 2, 2, 12, 1, gold_hi); rect(gfur, 2, 14, 12, 1, gold_lo)
+    rect(gfur, 2, 2, 1, 13, gold_hi); rect(gfur, 13, 2, 1, 13, gold_lo)
+    for x, y in [(3, 3), (12, 3), (3, 13), (12, 13)]:
+        rect(gfur, x, y, 1, 1, hexc('#8a6408'))
+    rect(gfur, 5, 5, 6, 2, hexc('#8a6408'))
+    rect(gfur, 4, 9, 8, 5, hexc('#2a1a12'))
+    rect(gfur, 5, 11, 6, 3, hexc('#ff7a1a')); rect(gfur, 6, 10, 4, 2, hexc('#ffb02e')); rect(gfur, 7, 12, 2, 1, hexc('#fff1a8'))
+    tex['furnace_gold'] = gfur
+    # recette : chitine (objet) : parchemin roulé, sceau vert gobelin et un éclat de chitine rouge
+    rec = blank()
+    rect(rec, 3, 3, 10, 10, hexc('#e8d6a8')); rect(rec, 3, 3, 10, 1, hexc('#f6ead0')); rect(rec, 3, 12, 10, 1, hexc('#b89a62'))
+    rect(rec, 2, 2, 12, 2, hexc('#c9ad74')); rect(rec, 2, 12, 12, 2, hexc('#c9ad74'))   # rouleaux
+    for y in (6, 8):
+        rect(rec, 5, y, 6, 1, hexc('#8a6a3a'))                                # lignes d'écriture
+    rect(rec, 9, 9, 3, 3, hexc('#4f7d32')); rect(rec, 10, 10, 1, 1, hexc('#8fc45a'))   # sceau gobelin
+    rect(rec, 5, 10, 2, 1, hexc('#c0392b'))                                   # chitine
+    tex['recipe_chitin'] = rec
+    # coffre du Roi Gobelin : coffre de bois sombre, ferrures dorées, emblème vert (tête de gobelin)
+    tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
+
     # butin rare des mobs (26/10/2026) : icônes d'inventaire
     # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
     straps = blank()
@@ -1049,6 +1105,33 @@ def main():
     rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
     rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
     tex['skins/giant_belt'] = sk_gbelt
+    # Roi Gobelin (27/10/2026) : couronne dorée sur la tête, cape rouge à bordure laineuse blanche (dos + col), masse en main
+    sk_crown = blank()
+    rect(sk_crown, 4, 1, 8, 2, hexc('#ffd23f')); rect(sk_crown, 4, 2, 8, 1, hexc('#b8860b'))
+    for x in (4, 7, 10):
+        rect(sk_crown, x, 0, 2, 1, hexc('#ffd23f'))                           # pointes
+    rect(sk_crown, 6, 1, 1, 1, hexc('#d62839')); rect(sk_crown, 9, 1, 1, 1, hexc('#d62839'))   # gemmes
+    tex['skins/goblin_crown'] = sk_crown
+    sk_rcape = blank()
+    for y in range(7, 15):
+        x0 = 3 if y < 9 else 2
+        rect(sk_rcape, x0, y, 11 - x0, 1, hexc('#b3121f'))
+        rect(sk_rcape, x0, y, 1, 1, hexc('#f4f1ea'))                          # bord laineux
+    rect(sk_rcape, 2, 14, 9, 1, hexc('#f4f1ea'))                              # ourlet laineux
+    rect(sk_rcape, 4, 14, 1, 1, hexc('#1c1c1f')); rect(sk_rcape, 8, 14, 1, 1, hexc('#1c1c1f'))
+    rect(sk_rcape, 3, 11, 1, 2, hexc('#7d0c16'))                              # pli
+    tex['skins/goblin_royal_cape'] = sk_rcape
+    sk_rcape_f = blank()
+    rect(sk_rcape_f, 4, 7, 7, 1, hexc('#f4f1ea'))                             # col laineux
+    rect(sk_rcape_f, 3, 7, 1, 2, hexc('#b3121f'))
+    rect(sk_rcape_f, 9, 7, 2, 1, hexc('#ffd23f'))                             # fermoir
+    tex['skins/goblin_royal_cape_front'] = sk_rcape_f
+    sk_mace = blank()                              # masse tenue en main : même repère que les épées
+    for i in range(7):
+        rect(sk_mace, 3 + i, 13 - i, 1, 2, hexc('#7a5230'))
+    rect(sk_mace, 9, 3, 4, 4, hexc('#8d939c')); rect(sk_mace, 10, 2, 2, 6, hexc('#8d939c')); rect(sk_mace, 8, 4, 6, 2, hexc('#8d939c'))
+    rect(sk_mace, 10, 3, 1, 1, hexc('#d4d8de'))
+    tex['skins/mace_goblin_king'] = sk_mace
     # épée tenue en main (combat) : même repère que les pioches (poignée en bas à gauche)
     sk_sword = blank()
     for i in range(9):

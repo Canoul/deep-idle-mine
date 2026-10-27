@@ -44,7 +44,7 @@ export function setupFurnace({ onOp }){
     }
     if(modeOf(f) === 'alloy') return alloyStatus(f, r);
     if(!f.ore) return 'Pose des minerais pour commencer.';
-    if(f.ore.qty < FURNACE.orePerIngot) return `Il faut ${FURNACE.orePerIngot} ${esc(f.ore.item)} pour un lingot.`;
+    if(f.ore.qty < FURNACE.orePerIngot) return `Il faut ${FURNACE.orePerIngot} ${esc(f.ore.item)} pour ${r?.qty > 1 ? `${r.qty} ${esc(r.out)}` : 'un lingot'}.`;
     if(!f.fuel || f.fuel.qty < FURNACE.fuelPerIngot) return `Il faut ${FURNACE.fuelPerIngot} combustibles pour un lingot.`;
     if(f.out && f.out.item !== r.out) return 'Sortie occupée : récupère les lingots pour continuer.';
     return 'À l\'arrêt.';
@@ -116,11 +116,11 @@ export function setupFurnace({ onOp }){
   function openPicker(i, slot){
     const f = view()[i], cur = f[slot], mode = modeOf(f);
     const other = slot === 'a' ? f.b : slot === 'b' ? f.a : null;   // alliage : l'autre ingrédient déjà posé
-    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode) && (!other || alloyOf(s.item, other.item))).map(s => s.item))];
+    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode, inv) && (!other || alloyOf(s.item, other.item))).map(s => s.item))];   // recette fermée : seulement une fois apprise
     let pick = cur?.item ?? items[0] ?? null;
     const box = $('fpick').querySelector('.box');
     const info = it => {
-      if(slot === 'ore'){ const r = recipeOf(it); return `${FURNACE.orePerIngot} → 1 ${esc(r.out)} · ${mmss(r.time * 1000)}`; }
+      if(slot === 'ore'){ const r = recipeOf(it); return `${FURNACE.orePerIngot} → ${r.qty ?? 1} ${esc(r.out)} · ${mmss(r.time * 1000)}`; }
       if(slot === 'fuel') return 'combustible';
       return alloysWith(it).map(r => `${r.in[it]} → 1 ${esc(r.out)}`).join(' · ');
     };
