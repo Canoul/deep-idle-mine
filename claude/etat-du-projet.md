@@ -140,7 +140,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pierre, 20 pierre dure, 9,5 fer, 5 or, 0,5 diamant, 5 graphite, 5 vide ; ancien : 3 charbon, 8 fer, 7 or, 2 diamant,
   pas de graphite) et **nouvelle area 6** (ancien : répétée au-delà ; 35 pierre, 40 pierre dure, 7 fer, 6 or, 1 diamant, 6
   graphite, 5 vide). Plus de charbon dès l'area 5. Pas de donjon en area 6, mobs de l'area 5.
-- **Minerais profonds et areas 7-8** (27/10, Geoffrey ; branche `geoffrey/minerais-profonds`) : **Mithril ore**
+- **Minerais profonds et areas 7-8** (27/10, Geoffrey ; en ligne le 27/10) : **Mithril ore**
   (commun, dès l'area 6), **Cobalt ore** et **Thorium ore** (inhabituels, dès l'area 7) ; pas encore de recette.
   Valeurs provisoires (Claude) : mithril dureté 4,5, poids 3, attrait 5, 5 XP ; cobalt / thorium 5,5, 4, 7, 8 XP.
   **Area 6** retouchée (fer 7 → 5, + 2 mithril), **nouvelles areas 7 et 8** (8 répétée au-delà), surtout de la pierre

@@ -28,7 +28,7 @@ Modèle d'entrée :
   provisoires proposées par Claude (mithril un peu plus dur que le graphite, cobalt et thorium plus durs que le diamant).
 - **À suivre** : à quoi servent ces minerais (four, alliages, stuff du tier 4) ; faut-il des mobs, un Treasure T4 ou
   des donjons propres aux areas 7-8 (pour l'instant : ceux des areas précédentes).
-- **État** : 🧪 sur la branche `geoffrey/minerais-profonds` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
 - **Pour le joueur** : rien, c'est un outil de test. Trois presets, un par spé : **Test_Mineur**, **Test_Logisticien**,

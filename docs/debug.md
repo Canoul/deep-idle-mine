@@ -3798,7 +3798,7 @@ Règles (voir CLAUDE.md) :
   30 s : 10/10 (gobelins × 2 compris). ⚠️ Mis en ligne sans réglage, à la demande de Geoffrey ; les tests de la version
   fusionnée n'ont pas été relancés (refusé).
 
-### Minerais profonds : mithril, cobalt, thorium ; areas 7 et 8 (Geoffrey) — branche `geoffrey/minerais-profonds`, 🧪 pas en ligne
+### Minerais profonds : mithril, cobalt, thorium ; areas 7 et 8 (Geoffrey) — branche `geoffrey/minerais-profonds`, ✅ en ligne le 27/10
 - **Quoi** : blocs 21 `Mithril ore`, 22 `Cobalt ore`, 23 `Thorium ore` (`BLOCKS`, `IDS`, `XP.ore`, `TEXTURES`,
   `RARITY.items` pour cobalt et thorium) ; `AREAS[6]` retouchée, `AREAS[7]` et `AREAS[8]` ajoutées (la 8 se répète).
   Les résidus (`JUDGMENT.pct` 0,5) sont pris sur la pierre à la génération : la config met donc 0,5 de plus en pierre
@@ -3810,6 +3810,7 @@ Règles (voir CLAUDE.md) :
   `fillComp`, génération jusqu'à l'area 9) ; mis à jour : `graphite.test.js` (area 6), `wiki.test.js` (9 areas, 500
   minerais en areas 7-8, T3 au-delà), `rarity.test.js` (cobalt, thorium). ✅ deep-ores, graphite, world, wiki, rarity,
   focus, level, blocks, khole, instant-mine, session, lobby.
+- **Anti-triche** : `npm run test:anticheat` 102/102 ✅.
 - **Simulation** : 5 sessions de base inchangées (areas 3,0, profondeur 185,2, 0 bloquée ; personne n'atteint l'area 6) ✅.
   Script à part (pas dans le dépôt) : mineurs ×6 minage, ×3 vitesse, seuil de déblocage 15 % : areas 13, 0 blocage,
   coffre ≈ 170-250 mithril, 100-150 cobalt et thorium ✅ (2 seeds sur 5, coupé par le temps).
