@@ -92,3 +92,10 @@ test('sans prise, il tombe ; il ne monte pas dans le vide', () => {
   assert.equal(G.thralls[0].y, 3, 'tombé sur le sol');
   updateThralls(G);
 });
+
+test('onglet Stuff : « Gobelins asservis » n\'est pas affichée, même couronne portée (27/10)', async () => {
+  const { STUFF } = await import('../src/config.js');
+  const { minerStats } = await import('../src/meta/stuff.js');
+  assert.ok(!STUFF.shownStats.includes('goblinThrall'));
+  assert.ok(!minerStats({ casque:{ item:'Couronne du Roi Gobelin', uid:1 } }).some(s => s.key === 'goblinThrall'));
+});

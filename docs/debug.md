@@ -3837,3 +3837,9 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `AREAS[8]` n'a ni fer ni or : un focus « fer » ou « or » en area 8+ ne trouve rien et saute (comportement
   normal du focus). Pas de recette de four : `SHINY` ne s'applique pas à ces minerais. Le tableau du wiki affiche la pierre
   de la config (35 / 20,5 / 15,5), sans les résidus, comme pour les areas 4 et 5.
+
+### Onglet Stuff : « Gobelins asservis (rayon) » cachée (Geoffrey) — ✅ en ligne le 27/10
+- **Quoi** : `goblinThrall` retirée de `STUFF.shownStats` (src/config.js). La stat existe toujours (Couronne du Roi
+  Gobelin, simulation inchangée) ; la bulle de la couronne et le wiki (caché tant que personne ne l'a trouvée) l'affichent encore.
+- **Tests** ✅ : `tests/goblin-thrall.test.js` (absente de `minerStats`, couronne portée), goblin-king, wiki, wiki-secret,
+  stuff, tier2 : 65/65.

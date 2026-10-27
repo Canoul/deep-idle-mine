@@ -18,6 +18,11 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Onglet Stuff : « Gobelins asservis » cachée
+- **Pour le joueur** : la ligne « Gobelins asservis (rayon) » n'apparaît plus dans les stats de l'onglet Stuff. La
+  Couronne du Roi Gobelin fait toujours le même effet, et sa bulle le montre encore.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Nouveaux minerais : mithril, cobalt, thorium (areas 7 et 8)
 - **Pour le joueur** : trois nouveaux minerais tout en bas de la mine. Le **mithril** (rareté commun) apparaît dès
   l'area 6, le **cobalt** et le **thorium** (rareté inhabituel, nom en vert) dès l'area 7. Deux nouvelles areas : la **7** et la
