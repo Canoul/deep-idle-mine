@@ -3798,6 +3798,26 @@ Règles (voir CLAUDE.md) :
   30 s : 10/10 (gobelins × 2 compris). ⚠️ Mis en ligne sans réglage, à la demande de Geoffrey ; les tests de la version
   fusionnée n'ont pas été relancés (refusé).
 
+### Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration (Geoffrey) — ✅ en ligne le 27/10
+- **Quoi** : config `RINGS.upgrade = 0.5` (points par niveau ajoutés à chaque valeur mult / add / xp), `UPGRADE.plainSlots =
+  ['boussole', 'torche']`. `src/meta/piece.js` : `isPlain`, `canIdentify` (stuff hors anneau et plain), `canUpgrade`
+  (stuff hors plain) ; `sanitizePiece` : anneau garde `plus` (1 à 9, sinon rien), boussole / torche → `{ item, uid }`
+  (q, lines, plus, rune effacés à la relecture : remise à zéro voulue, sans remboursement, rune comprise).
+  `src/meta/upgrade.js` : `nextLevel` d'un anneau = palier normal (même `chance`) avec `cost:{ anneau:1 }, dupe:true` ;
+  `ringDupes` (autres exemplaires de l'inventaire, plus bas niveau puis plus petit uid) ; `upgrade` retire `ringDupes[0]`
+  (enregistré `sacrificed` dans l'op, rejouée = rien de plus) ; erreur `plain` pour identify / upgrade / enchant.
+  `src/meta/stuff.js` : `ringsOf` renvoie `[{ item, plus }]` (un par anneau, **plus haut niveau**), `withRings`,
+  `ringXpPct`, `ringLines(item, plus)` acceptent noms ou `{ item, plus }`. Serveur : message `plain`, message « doublon »,
+  `adminGive` avec qualité refusé pour boussole / torche (`canIdentify`). UI : liste de l'Amélioration avec les anneaux
+  (coût « (doublon) », effet au niveau suivant, confirmation si le doublon sacrifié a un niveau) ; Identification et
+  Enchantement sans anneaux, boussoles ni torches. Wiki : textes et `usesOf`.
+- **Tests** ✅ : `tests/anneaux.test.js` (sanitize, erreurs, coût / chance, +0,5 par niveau, plus haut niveau, XP),
+  `tests/anticheat/anneaux.test.js` (double clic = un doublon, anneau porté jamais pris, plus bas niveau sacrifié, sans
+  doublon rien ne change, boussole / torche refusées sans rien consommer) ; stuff, wiki, lampe, boussole, gearscore,
+  runes, MI, bloc géant : 150/150 ; `npm run test:anticheat` 104/104.
+- **Point fragile** : la mine instantanée calcule les stats depuis `look` (noms seuls, `src/shared/instant.js`) : un
+  anneau amélioré y compte au niveau 0, comme toute pièce améliorée (déjà le cas avant). Pas vu dans le navigateur.
+
 ### Minerais profonds : mithril, cobalt, thorium ; areas 7 et 8 (Geoffrey) — branche `geoffrey/minerais-profonds`, ✅ en ligne le 27/10
 - **Quoi** : blocs 21 `Mithril ore`, 22 `Cobalt ore`, 23 `Thorium ore` (`BLOCKS`, `IDS`, `XP.ore`, `TEXTURES`,
   `RARITY.items` pour cobalt et thorium) ; `AREAS[6]` retouchée, `AREAS[7]` et `AREAS[8]` ajoutées (la 8 se répète).
@@ -3817,4 +3837,3 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : `AREAS[8]` n'a ni fer ni or : un focus « fer » ou « or » en area 8+ ne trouve rien et saute (comportement
   normal du focus). Pas de recette de four : `SHINY` ne s'applique pas à ces minerais. Le tableau du wiki affiche la pierre
   de la config (35 / 20,5 / 15,5), sans les résidus, comme pour les areas 4 et 5.
-

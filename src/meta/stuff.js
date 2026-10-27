@@ -60,7 +60,7 @@ const unitOf = k => STUFF.statUnits?.[k] ?? '';
 export function statLines(entry){
   const p = typeof entry === 'string' ? { item: entry } : entry || {};
   if(ITEMS[p.item]?.cat === 'rune') return runeLines(p);
-  if(isRing(p.item)) return ringLines(p.item);
+  if(isRing(p.item)) return ringLines(p.item, p.plus | 0);
   const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
   const label = k => STUFF.statLabels[k] ?? k;
   return [
@@ -79,31 +79,44 @@ export function runeLines(p){
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
     : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % du tier de la pièce`);
 }
-/* effet de groupe d'un anneau : ['Groupe · Vitesse (marche) +3 %', …] */
-export function ringLines(item){
+/* valeur d'un effet d'anneau à ce niveau : + RINGS.upgrade point(s) par rang (27/10/2026 : +3 % → +7,5 % au +9) */
+const ringVal = (v, plus) => r2(v + RINGS.upgrade * (plus | 0));
+/* effet de groupe d'un anneau (à son niveau) : ['Groupe · Vitesse (marche) +3 %', …] */
+export function ringLines(item, plus = 0){
   const d = RINGS.items[item]; if(!d) return [];
   const label = k => STUFF.statLabels[k] ?? k;
   return [
-    ...Object.entries(d.mult || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)} %`),
-    ...Object.entries(d.add || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(v)}${unitOf(k)}`),
-    ...(d.xp ? [`XP +${num(d.xp)} % (porteur seul)`] : []),
+    ...Object.entries(d.mult || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(ringVal(v, plus))} %`),
+    ...Object.entries(d.add || {}).map(([k, v]) => `Groupe · ${label(k)} +${num(ringVal(v, plus))}${unitOf(k)}`),
+    ...(d.xp ? [`XP +${num(ringVal(d.xp, plus))} % (porteur seul)`] : []),
   ];
 }
-/* anneaux différents parmi des pièces (noms ou pièces), triés : ceux du groupe = ringsOf de toutes ses pièces */
-export const ringsOf = items => [...new Set((items || []).map(e => typeof e === 'string' ? e : e?.item).filter(isRing))].sort();
-/* caractéristiques avec l'effet de ces anneaux, chacun une fois : mult = % du total, add = points (RINGS) */
+/* un anneau : un nom (niveau 0) ou { item, plus } → { item, plus } */
+const ringEntry = r => typeof r === 'string' ? { item: r, plus: 0 } : { item: r?.item, plus: Number.isSafeInteger(r?.plus) && r.plus > 0 ? r.plus : 0 };
+/* anneaux différents parmi des pièces (noms ou pièces) : [{ item, plus }] triés par nom, un par anneau, au PLUS HAUT
+   niveau trouvé (deux joueurs du groupe avec le même anneau : le meilleur compte, 27/10/2026) ; ceux du groupe = ringsOf
+   de toutes ses pièces */
+export function ringsOf(items){
+  const best = new Map();
+  for(const e of items || []){
+    const r = ringEntry(e);
+    if(isRing(r.item) && (!best.has(r.item) || r.plus > best.get(r.item))) best.set(r.item, r.plus);
+  }
+  return [...best].sort(([a], [b]) => a < b ? -1 : 1).map(([item, plus]) => ({ item, plus }));
+}
+/* caractéristiques avec l'effet de ces anneaux (noms ou { item, plus }), chacun une fois : mult = % du total, add =
+   points (RINGS) */
 export function withRings(carac, rings){
   const out = { ...carac };
-  for(const r of new Set(rings || [])){
-    const d = RINGS.items[r]; if(!d) continue;
-    for(const [k, v] of Object.entries(d.mult || {})) if(typeof out[k] === 'number') out[k] = r2(out[k] * (1 + v / 100));
-    for(const [k, v] of Object.entries(d.add || {})) out[k] = r2((out[k] || 0) + v);
+  for(const { item, plus } of ringsOf(rings)){
+    const d = RINGS.items[item];
+    for(const [k, v] of Object.entries(d.mult || {})) if(typeof out[k] === 'number') out[k] = r2(out[k] * (1 + ringVal(v, plus) / 100));
+    for(const [k, v] of Object.entries(d.add || {})) out[k] = r2((out[k] || 0) + ringVal(v, plus));
   }
   return out;
 }
-/* multiplicateur d'XP du pot commun de la session avec ces anneaux (1 = aucun) */
 /* % d'XP en plus des anneaux d'UN joueur (les siens, pas ceux du groupe) : appliqué à sa part, après le partage du pot */
-export const ringXpPct = rings => [...new Set(rings || [])].reduce((s, r) => s + (RINGS.items[r]?.xp || 0), 0);
+export const ringXpPct = rings => ringsOf(rings).reduce((s, { item, plus }) => s + (RINGS.items[item].xp ? ringVal(RINGS.items[item].xp, plus) : 0), 0);
 
 /* en une ligne : « Oxygène +30 · Pods +25 » (vide si aucun) */
 export const statsText = item => statLines(item).join(' · ');

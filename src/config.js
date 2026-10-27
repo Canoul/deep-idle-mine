@@ -788,7 +788,11 @@ const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([sid
    TOUT le groupe de la session (porteur compris), une seule fois même si plusieurs joueurs portent le même anneau
    (src/meta/stuff.js withRings). Un joueur ne peut pas porter deux fois le même anneau. En mine instantanée (chacun
    pour soi), seulement sur son porteur.
-   Ni craft, ni identification, ni amélioration, ni enchantement : un anneau ne vient que des trésors des tours.
+   Ni craft, ni identification, ni enchantement : un anneau ne vient que des trésors des tours.
+   Amélioration (27/10/2026, Geoffrey ; avant : aucune) : +1 à +9 comme les autres pièces, mêmes chances de réussite
+   (UPGRADE.levels), mais le coût est UN DOUBLON du même anneau (pas de plumes ni de cristaux) ; chaque rang ajoute
+   `upgrade` point(s) à chaque effet (+3 % → +3,5 % au +1, +7,5 % au +9). Deux joueurs du groupe avec le même anneau :
+   le plus haut niveau compte.
    Effets : mult = % ajouté au TOTAL de la stat (stuff et skills compris : ×1,03) ; add = points ajoutés à une stat
    déjà en % (dégâts %, minage %, fortune, butin des mobs) ; xp = % d'XP en plus pour son PORTEUR SEUL, sur sa part,
    après le partage du pot (24/10/2026, Geoffrey ; ancien : +% sur le pot, pour tout le groupe).
@@ -796,6 +800,7 @@ const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([sid
    chance de chacun. Valeurs provisoires (équilibrage). */
 export const RINGS = {
   slot: 'anneau',
+  upgrade: 0.5,        // points ajoutés à chaque effet par rang d'amélioration (27/10/2026, Geoffrey ; provisoire)
   items: {
     'Anneau du tigre':      { tex:'ring_tiger',  rarity:'rare',   mult:{ speed:3, climbSpeed:3 } },
     'Anneau du lion':       { tex:'ring_lion',   rarity:'rare',   add:{ damagePct:3 } },
@@ -1054,6 +1059,9 @@ export const UPGRADE = {
     { pct:24, chance:0.65, cost:{ 'Plume d\'ange':50, 'Cristal de pleine lune':25 } },
     { pct:27, chance:0.60, cost:{ 'Plume d\'ange':63, 'Cristal de pleine lune':32 } },
   ],
+  /* cases de stuff dont les pièces ne s'identifient, ne s'améliorent ni ne s'enchantent pas (27/10/2026, Geoffrey) : celles
+     qui existent déjà sont remises à zéro (qualité, niveau et rune retirés) à la relecture (src/meta/piece.js) */
+  plainSlots: ['boussole', 'torche'],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 

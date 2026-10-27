@@ -165,7 +165,8 @@ export function usesOf(item){
   const d = ITEMS[item], out = [];
   if(d?.cat === 'stuff' && Object.hasOwn(RINGS.items, item))
     out.push('S\'équipe dans une des 2 cases d\'anneau (jamais deux fois le même)', 'Son effet va à tout le groupe de la session, une seule fois même si plusieurs joueurs le portent ; en mine instantanée, à son porteur seulement',
-             'Ne s\'identifie pas, ne s\'améliore pas, ne s\'enchante pas');
+             'Ne s\'identifie pas, ne s\'enchante pas', `S'améliore (+1 à +9) en sacrifiant un doublon du même anneau : +${fmt(RINGS.upgrade)} à chaque effet par niveau`);
+  else if(d?.cat === 'stuff' && UPGRADE.plainSlots.includes(d.slot)) out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'Ne s\'identifie pas, ne s\'améliore pas, ne s\'enchante pas');
   else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);

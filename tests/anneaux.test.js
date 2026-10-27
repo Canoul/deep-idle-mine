@@ -6,8 +6,9 @@ import { RINGS, RARITY, STATS, ITEMS, treasureItem, chestItem } from '../src/con
 import { RECIPES } from '../src/recipes.js';
 import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { createStuff, stuffOp, piecesFor, sanitizeStuff, sanitizeGear, equipSlotFor, minerStats, withRings, ringsOf, statLines } from '../src/meta/stuff.js';
-import { sanitizePiece } from '../src/meta/piece.js';
-import { identifyError, upgradeError, enchantError } from '../src/meta/upgrade.js';
+import { sanitizePiece, canIdentify, canUpgrade } from '../src/meta/piece.js';
+import { identifyError, upgradeError, enchantError, nextLevel, upgradeNeeds } from '../src/meta/upgrade.js';
+import { ringXpPct } from '../src/meta/stuff.js';
 import { openTreasure } from '../src/meta/loot.js';
 import { minerSpecs, buildSession } from '../src/shared/game.js';
 import { instantSpecs } from '../src/shared/instant.js';
@@ -71,15 +72,46 @@ test('relecture : le même anneau dans les deux cases → le second revient dans
   assert.deepEqual(Object.keys(sanitizeGear({ anneau1:{ item:TIGRE, uid:1 }, anneau2:{ item:TIGRE, uid:2 } })), ['anneau1']);
 });
 
-test('ni qualité, ni niveau, ni rune sur un anneau ; identification, amélioration et enchantement refusés', () => {
-  assert.deepEqual(sanitizePiece({ item:TIGRE, uid:5, q:7, plus:3, rune:{ q:1, lines:[] } }), { item:TIGRE, uid:5 });
+test('anneau : ni qualité ni rune, un niveau (27/10) ; identification et enchantement refusés, amélioration avec un doublon', () => {
+  assert.deepEqual(sanitizePiece({ item:TIGRE, uid:5, q:7, plus:3, rune:{ q:1, lines:[] } }), { item:TIGRE, uid:5, plus:3 });
+  for(const plus of [0, -1, 10, 1.5, '3', NaN]) assert.deepEqual(sanitizePiece({ item:TIGRE, uid:5, plus }), { item:TIGRE, uid:5 }, String(plus));
   const { inv } = setup({ [TIGRE]:2 });
-  addItem(inv, 'Plume d\'ange', 100); addItem(inv, 'Cristal de pleine lune', 20);
   const [a, b] = inv.slots.filter(s => s?.item === TIGRE).map(s => s.uid);
   assert.equal(identifyError(inv, a, b), 'ring');
-  assert.equal(upgradeError(inv, a), 'ring');
+  assert.equal(upgradeError(inv, a), null, 'un doublon suffit, sans plumes ni cristaux');
+  const piece = inv.slots.find(s => s?.uid === a);
+  assert.deepEqual(nextLevel(piece), { ...nextLevel({ item:'Casque en fer' }), cost:{ [TIGRE]:1 }, dupe:true }, 'même chance qu\'une autre pièce');
+  assert.deepEqual(upgradeNeeds(inv, piece), [{ item:TIGRE, need:1, have:1 }]);
   const [r] = addItem(inv, 'Rune', 1); Object.assign(inv.slots[r], { q:1, lines:[{ stat:'crit', pct:1 }] });
   assert.equal(enchantError(inv, a, inv.slots[r].uid), 'ring');
+  inv.slots[inv.slots.findIndex(s => s?.uid === b)] = null;
+  assert.equal(upgradeError(inv, a), 'not_enough', 'sans doublon');
+});
+
+test('boussole et torche (27/10) : remises à zéro à la relecture ; ni identification, ni amélioration, ni enchantement', () => {
+  for(const item of ['Boussole en or', 'Lampe à incandescence']){
+    assert.deepEqual(sanitizePiece({ item, uid:7, q:5, plus:4, rune:{ q:1, lines:[{ stat:'crit', pct:1 }] } }), { item, uid:7 }, item);
+    const { inv } = setup({ [item]:2 });
+    addItem(inv, 'Plume d\'ange', 100); addItem(inv, 'Cristal de pleine lune', 20);
+    const [a, b] = inv.slots.filter(s => s?.item === item).map(s => s.uid);
+    assert.equal(identifyError(inv, a, b), 'plain'); assert.equal(upgradeError(inv, a), 'plain');
+    const [r] = addItem(inv, 'Rune', 1); Object.assign(inv.slots[r], { q:1, lines:[{ stat:'crit', pct:1 }] });
+    assert.equal(enchantError(inv, a, inv.slots[r].uid), 'plain');
+  }
+  assert.ok(canIdentify('Casque en fer') && canUpgrade('Casque en fer'));
+  assert.ok(!canIdentify(TIGRE) && canUpgrade(TIGRE));
+});
+
+test('anneau amélioré : +0,5 point par niveau à chaque effet ; le plus haut niveau du groupe compte (27/10)', () => {
+  assert.equal(RINGS.upgrade, 0.5);
+  const base = withRings({ ...STATS }, [{ item:'Anneau de la baleine', plus:0 }]), up = withRings({ ...STATS }, [{ item:'Anneau de la baleine', plus:9 }]);
+  assert.equal(base.oxygenMax, 309); assert.equal(up.oxygenMax, 322.5, '+3 % → +7,5 % au +9');
+  assert.equal(withRings({ ...STATS }, [{ item:'Anneau de Midas', plus:4 }]).fortune, STATS.fortune + 4);   // 2 + 4 × 0,5
+  assert.deepEqual(ringsOf([{ item:TIGRE, plus:2 }, { item:TIGRE, plus:5 }, TIGRE, { item:NERD, plus:1 }]),
+    [{ item:TIGRE, plus:5 }, { item:NERD, plus:1 }].sort((x, y) => x.item < y.item ? -1 : 1));
+  assert.deepEqual(withRings({ ...STATS }, [{ item:TIGRE, plus:1 }, { item:TIGRE, plus:3 }]), withRings({ ...STATS }, [{ item:TIGRE, plus:3 }]));
+  assert.equal(ringXpPct([{ item:NERD, plus:2 }]), 4); assert.equal(ringXpPct([NERD]), 3);
+  assert.deepEqual(statLines({ item:TIGRE, uid:1, plus:9 }), ['Groupe · Vitesse (marche) +7,5 %', 'Groupe · Vitesse (échelle) +7,5 %']);
 });
 
 test('effets : % du total pour vitesse, oxygène, pods ; points pour dégâts %, minage %, fortune, butin', () => {

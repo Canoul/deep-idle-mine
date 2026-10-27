@@ -8,12 +8,14 @@
      rune:{ q, lines, s } (frag:true pour un fragment). Une seule par pièce.
    - unenchant (23/10/2026) : retire la rune d'une pièce, gratuitement ; elle revient dans l'inventaire en Fragment de
      rune (même qualité, mêmes lignes, % ÷ 2 : RUNE.fragment). Un fragment posé ne se retire plus (définitif).
-   Les anneaux (RINGS) ne passent par aucune de ces étapes (erreur 'ring').
+   Les anneaux (RINGS) ne s'identifient ni ne s'enchantent (erreur 'ring') ; ils s'améliorent (27/10/2026) avec les mêmes
+   chances, mais le coût est un doublon du même anneau (celui de plus bas niveau est sacrifié), pas des matériaux.
+   Boussole, torche (UPGRADE.plainSlots, 27/10/2026) : aucune de ces étapes (erreur 'plain').
    Seulement des pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff).
    opId : une demande renvoyée (double clic, requête rejouée) retrouve son résultat, sans tirer ni consommer deux fois. */
 import { UPGRADE, RUNE } from '../config.js';
 import { countOf, removeItem, putPiece } from './inventory.js';
-import { rollIdentity, isIdentified, isStuff, isRune, isRing, isFragment, MAX_PLUS } from './piece.js';
+import { rollIdentity, isIdentified, isStuff, isRune, isRing, isPlain, isFragment, MAX_PLUS } from './piece.js';
 
 const slotOfUid = (inv, uid) => Number.isSafeInteger(uid) ? inv.slots.findIndex(s => s && s.uid === uid) : -1;
 const remember = (inv, entry) => {
@@ -23,14 +25,20 @@ const remember = (inv, entry) => {
 const repeated = (inv, opId, kind) => inv.upgrades.find(e => e.id === opId && e.kind === kind) ?? null;
 const pieceAt = (inv, uid) => inv.slots.find(s => s && s.uid === uid) ?? null;
 
-/* coût du prochain palier de cette pièce (null au maximum) : { level, pct, chance, cost } */
+/* coût du prochain palier de cette pièce (null au maximum) : { level, pct, chance, cost } ; un anneau : un doublon de
+   lui-même (cost = { anneau: 1 }, dupe:true), même chance */
 export function nextLevel(piece){
   const plus = piece?.plus | 0;
-  return plus >= MAX_PLUS ? null : { level: plus + 1, ...UPGRADE.levels[plus] };
+  if(plus >= MAX_PLUS) return null;
+  const lv = { level: plus + 1, ...UPGRADE.levels[plus] };
+  return isRing(piece?.item) ? { ...lv, cost: { [piece.item]: 1 }, dupe: true } : lv;
 }
+/* doublons d'un anneau dans l'inventaire (autres exemplaires), du plus bas niveau au plus haut : le premier est sacrifié */
+export const ringDupes = (inv, piece) => piece ? inv.slots.filter(s => s && s.uid != null && s.uid !== piece.uid && s.item === piece.item)
+  .sort((a, b) => (a.plus | 0) - (b.plus | 0) || a.uid - b.uid) : [];
 /* ce qu'il manque pour améliorer : [{ item, have, need }] */
 export const upgradeNeeds = (inv, piece) => Object.entries(nextLevel(piece)?.cost ?? {})
-  .map(([item, need]) => ({ item, need, have: countOf(inv, item) }));
+  .map(([item, need]) => ({ item, need, have: isRing(piece.item) ? ringDupes(inv, piece).length : countOf(inv, item) }));
 
 /* pièces de l'inventaire qu'on peut sacrifier pour identifier celle-ci : même objet, autre exemplaire */
 export const sacrificesFor = (inv, piece) => piece ? inv.slots.filter(s => s && s.uid != null && s.uid !== piece.uid && s.item === piece.item && isStuff(s.item)) : [];
@@ -43,6 +51,7 @@ export function identifyError(inv, uid, sacrifice){
   const p = inv.slots[i];
   if(!isStuff(p.item)) return 'not_stuff';
   if(isRing(p.item)) return 'ring';
+  if(isPlain(p.item)) return 'plain';
   if(isIdentified(p)) return 'already_identified';
   if(inv.slots[j].item !== p.item) return 'not_same_item';
   return null;
@@ -68,7 +77,7 @@ export function upgradeError(inv, uid){
   const p = slotOfUid(inv, uid) >= 0 ? pieceAt(inv, uid) : null;
   if(!p) return 'not_owned';
   if(!isStuff(p.item)) return 'not_stuff';
-  if(isRing(p.item)) return 'ring';
+  if(isPlain(p.item)) return 'plain';
   if(!nextLevel(p)) return 'maxed';
   if(upgradeNeeds(inv, p).some(n => n.have < n.need)) return 'not_enough';
   return null;
@@ -81,11 +90,18 @@ export function upgrade(inv, op, rnd){
   const e = upgradeError(inv, op.uid);
   if(e) return { error: e };
   const p = pieceAt(inv, op.uid), lv = nextLevel(p);
-  for(const [item, qty] of Object.entries(lv.cost)) removeItem(inv, item, qty);   // vérifié juste avant : tout ou rien
+  let sacrificed = null;
+  if(lv.dupe){                                           // anneau : son doublon de plus bas niveau disparaît
+    const d = ringDupes(inv, p)[0];
+    sacrificed = d.uid;
+    inv.slots[slotOfUid(inv, d.uid)] = null;
+    while(inv.slots.length && inv.slots[inv.slots.length-1] === null) inv.slots.pop();
+  }
+  else for(const [item, qty] of Object.entries(lv.cost)) removeItem(inv, item, qty);   // vérifié juste avant : tout ou rien
   const success = rnd() < lv.chance;
   if(success) p.plus = lv.level;
-  remember(inv, { id: op.opId, kind: 'upgrade', uid: op.uid, success });
-  return { ok:true, repeated:false, success, piece: p };
+  remember(inv, { id: op.opId, kind: 'upgrade', uid: op.uid, success, ...(sacrificed != null ? { sacrificed } : {}) });
+  return { ok:true, repeated:false, success, piece: p, ...(sacrificed != null ? { sacrificed } : {}) };
 }
 
 /* pourquoi on ne peut pas enchanter (code d'erreur) ou null */
@@ -96,6 +112,7 @@ export function enchantError(inv, uid, rune){
   if(!isStuff(p.item)) return 'not_stuff';
   if(!isRune(r.item)) return 'not_rune';
   if(isRing(p.item)) return 'ring';
+  if(isPlain(p.item)) return 'plain';
   if(p.rune) return 'already_enchanted';
   /* rareté (22/10/2026) : une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne (R6 → rune R1 à R6).
      Une pièce non identifiée n'a pas de qualité : elle doit d'abord être identifiée. */
