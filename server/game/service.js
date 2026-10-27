@@ -401,7 +401,6 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
         for(const p of players)
-          if(await inGiant(p.account)) fail('in_giant', 409, `${p.account === me.id ? 'Tu es' : (p.name || 'Un joueur') + ' est'} au Bloc géant : attends la fin de la visite.`);
         /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
         if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
           fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
@@ -468,7 +467,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many(players.map(p => 'acct:' + p.account), async () => {
         if(await store.getGameSession(id)) return null;
         const ok = [];
-        for(const p of players) if(!await activeOf(p.account) && !await inGiant(p.account)) ok.push(p);
+        for(const p of players) if(!await activeOf(p.account)) ok.push(p);   // une visite au Bloc géant n'empêche plus (27/10)
         if(!ok.length) return null;
         const looks = {}, gear = {}, skills = {};
         for(const p of ok){
@@ -979,11 +978,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* ---------- Bloc géant (server/giant/service.js) ---------- */
     useGiant(hooks){ giant = hooks; },
-    /* entrer au Bloc géant : sous le verrou du compte (comme un lancement : jamais en même temps qu'une session) ;
-       fn(fiche) reçoit le stuff, les skills et les sorts figés pour la visite et enregistre l'entrée */
+    /* entrer au Bloc géant : sous le verrou du compte ; fn(fiche) reçoit le stuff, les skills et les sorts figés pour la
+       visite et enregistre l'entrée. Possible pendant une session, et une session peut se lancer pendant une visite
+       (27/10/2026, Geoffrey ; avant : l'un ou l'autre) : la visite et la session tournent chacune de leur côté. */
     async giantEnter(accountId, fn){
       return withLock('acct:' + accountId, async () => {
-        if(await activeOf(accountId)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         const inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
         const sk = await loadSkills(accountId);
         return fn({ gear: gearOf(st), look: lookOf(st), skills: sessionSkills(sk),

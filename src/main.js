@@ -276,6 +276,26 @@ function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start()
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
 giantUI = setupGiant({ api: giantApi, nav, session: () => !!rec, me: () => acct.account?.id });
+
+/* Session et visite au Bloc géant en même temps (27/10/2026, Geoffrey) : l'onglet Session montre l'une OU l'autre, une
+   barre permet de passer de l'une à l'autre. Ce qui vient de commencer passe devant. Chaque partie garde ses propres
+   hidden (#run, #gtRun…) ; seules les classes de l'onglet décident de ce qui est caché quand il y a les deux. */
+const sessionView = document.querySelector('.view[data-view="session"]');
+let pane = 'session', hadSession = false, hadGiant = false;
+function updatePanes(){
+  const sess = !!rec || !$('end').hidden, gt = !!giantUI?.active();
+  if(sess && !hadSession) pane = 'session';
+  if(gt && !hadGiant) pane = 'giant';
+  hadSession = sess; hadGiant = gt;
+  const both = sess && gt;
+  sessionView.classList.toggle('both', both);
+  sessionView.classList.toggle('paneGiant', pane === 'giant');
+  sessionView.classList.toggle('paneSession', pane !== 'giant');
+  $('sessSwitch').hidden = !both;
+  for(const b of $('sessSwitch').querySelectorAll('button')) b.classList.toggle('on', b.dataset.pane === pane);
+}
+$('sessSwitch').onclick = e => { const b = e.target.closest('button'); if(b){ pane = b.dataset.pane; updatePanes(); } };
+setInterval(updatePanes, 300);
 window.MI = instantLobby;                            // pour le débogage depuis la console (F12) : MI._notice(30)
 
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
@@ -290,7 +310,7 @@ $('toLobbyBtn').onclick = () => nav.show('lobby');
 $('miLeaveBtn').onclick = () => leave();
 $('twLeaveBtn').onclick = () => leave();
 const navSession = document.querySelector('.navSession');
-navSession.onclick = () => { if(rec) nav.show('session'); };
+navSession.onclick = () => { if(rec || giantUI?.active()) nav.show('session'); };
 
 /* lobby : groupe, invitations ; le chef a lancé → tout le groupe passe à l'onglet Session. Continue pendant la session
    (plus lentement) pour que le lobby, en lecture seule, montre le groupe ; sert aussi de signe de vie au groupe,

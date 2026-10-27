@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (4 nouveaux sorts).*
+*Dernière mise à jour : 27/10/2026 (Bloc géant : pendant une session, récompense à 2 visites).*
 
 ---
 
@@ -90,8 +90,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes
-  les 3 h, visite de 3 min de jeu à frapper un bloc 5 × 5 indestructible dans une salle de 15 × 7 (points = vitesse de minage par seconde, recul
-  10 % de 1 à 3 cases, oxygène × 2, fontaine 30/s), 30 mineurs au plus. Récompense à minuit pour chaque joueur venu,
+  les 3 h (aussi pendant une session, et une session peut se lancer pendant une visite : 27/10 ; ancien : l'un ou l'autre), visite de 3 min de jeu à frapper un bloc 5 × 5 indestructible dans une salle de 15 × 7 (points = vitesse de minage par seconde, recul
+  10 % de 1 à 3 cases, oxygène × 2, fontaine 30/s), 30 mineurs au plus. Récompense à minuit pour chaque joueur venu **au moins 2 fois dans la journée** (27/10, `GIANT.minVisits` ; ancien : une fois),
   paliers cumulés du score collectif (1 000 → 10 000 : Treasures T1 à T3 + Blueprint parts), à réclamer. Salle calculée
   dans le fil principal du serveur ; visites reprises après un redémarrage (points enregistrés toutes les 10 s).
   Repères (15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer (`npm run simulate:giant`).

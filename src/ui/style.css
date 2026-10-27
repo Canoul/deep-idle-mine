@@ -230,6 +230,11 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #end .share>span:last-child{text-align:right}
 #end .share.me{background:var(--sel);box-shadow:inset 0 0 0 var(--u) var(--acc)}
 #noSession{padding:16vh calc(6*var(--u)) 0}
+/* session et Bloc géant en même temps (27/10) : la barre #sessSwitch choisit ce qu'on voit, sans toucher aux hidden */
+.sessSwitch{position:fixed;top:var(--top-h);left:0;right:0;z-index:3;height:calc(19*var(--u));display:flex;justify-content:center;align-items:center;background:var(--panel);border-bottom:var(--u) solid var(--sep)}
+.view.both #run,.view.both #miRun,.view.both #twRun,.view.both #gtRun{top:calc(var(--top-h) + 19*var(--u))}
+.view.both.paneGiant #run,.view.both.paneGiant #miRun,.view.both.paneGiant #twRun,.view.both.paneGiant #end,
+.view.both.paneSession #gtRun,.view.both.paneSession #gtDone{display:none!important}
 #noSession button{margin-top:calc(4*var(--u))}
 #run,#miRun,#twRun,#gtRun{position:fixed;top:var(--top-h);bottom:0;left:0;right:0;z-index:2;display:flex;flex-direction:column}
 /* la mine et la jauge restent au-dessus de la barre d'action ; les colonnes aussi par défaut, mais descendent jusqu'en

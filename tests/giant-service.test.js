@@ -1,4 +1,4 @@
-/* Bloc géant (serveur) : entrer, délai, une session à la fois, sortir, plein, scores du jour, minuit, récompenses,
+/* Bloc géant (serveur) : entrer, délai, en même temps qu'une session (27/10), sortir, plein, scores du jour, minuit, récompenses,
    redémarrage, routes HTTP. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -61,12 +61,36 @@ test('délai : 3 h depuis la dernière entrée', async () => {
   await giant.enter(A);
 });
 
-test('une seule session à la fois : pas d\'entrée en session, pas de lancement pendant une visite', async () => {
-  const { giant, game } = setup();
+test('session et visite en même temps, dans les deux sens (27/10) : entrer en session, lancer pendant une visite', async () => {
+  const { giant, game, advance } = setup();
   await game.start(B, {});
-  await assert.rejects(giant.enter(B), { code: 'session_running' });
+  const r = await giant.enter(B);                                  // B en session entre au Bloc géant
+  assert.ok(r.visit.endsAt > 0);
+  assert.ok(await game.activeSessionId(B.id), 'sa session continue');
   await giant.enter(A);
-  await assert.rejects(game.start(A, {}), { code: 'in_giant' });
+  const info0 = await game.activeSessionInfo(A.id);
+  assert.equal(info0.mode, 'giant', 'Social : en visite');
+  const s = await game.start(A, {});                               // A en visite lance une session
+  assert.equal(s.session.players[0].account, A.id);
+  assert.ok((await giant.info(A)).visit, 'sa visite continue');
+  await advance(VISIT + 1000);
+  const i = await giant.info(A);
+  assert.equal(i.visit, null); assert.ok(i.mine.points > 100, 'ses points comptent');
+  assert.equal((await giant.info(B)).mine.visits, 1);
+  assert.ok(await game.activeSessionId(A.id), 'la session dure après la visite');
+});
+
+test('mine instantanée pendant une visite : le joueur y entre aussi (27/10)', async () => {
+  const { giant, game, clock } = setup();
+  await giant.enter(A);
+  const r = await game.openInstant('mi-test', clock.now, [{ account: A.id, name: A.name }]);
+  assert.ok(r, 'mine ouverte'); assert.ok(await game.activeSessionId(A.id));
+  assert.ok((await giant.info(A)).visit, 'la visite continue');
+});
+
+test('une visite compte comme une session pour le Social et la liste Online', async () => {
+  const { giant, game } = setup();
+  await giant.enter(A);
   const info = await game.activeSessionInfo(A.id);
   assert.equal(info.mode, 'giant'); assert.ok(info.leftMs > 0);
   assert.ok((await game.playersInSession()).includes(A.id), 'liste Online du Social');
@@ -102,7 +126,7 @@ test('minuit : une visite commencée avant compte pour la session qui se ferme',
   assert.equal((await giant.info(A)).total, 0, 'nouvelle session à 0');
 });
 
-test('récompense : jour fini, venu au moins une fois, paliers additionnés, une seule fois', async () => {
+test('récompense (26/10, ancienne règle : une visite suffit) : jour fini, paliers additionnés, une seule fois', async () => {
   const { giant, advance, store, clock } = setup();
   await giant.enter(A);
   await advance(VISIT + 1000);
@@ -124,6 +148,25 @@ test('récompense : jour fini, venu au moins une fois, paliers additionnés, une
   assert.deepEqual((await giant.info(A)).rewards, []);
   assert.deepEqual((await giant.claim(B)).given, {});
   assert.equal(await store.getInventory(B.id), null, 'rien écrit pour B');
+});
+
+test('récompense à partir du 27/10 : 2 visites au moins dans la journée (une seule : rien)', async () => {
+  const { giant, advance, store, clock } = setup({ now: Date.UTC(2026, 9, 27, 6, 0) });   // 27/10 à 7 h, Paris
+  await giant.enter(A); await giant.enter(B);
+  await advance(VISIT + 1000);
+  let i = await giant.info(A);
+  assert.equal(i.minVisits, 2); assert.equal(i.mine.visits, 1);
+  clock.now += 3 * H;                                              // 10 h : A revient, pas B
+  await giant.enter(A); await advance(VISIT + 1000);
+  assert.equal((await giant.info(A)).mine.visits, 2);
+  const d = await store.getGiantDay('2026-10-27'); d.total = 1500;
+  await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
+  clock.now = dayEnd(clock.now) + VISIT + 1;
+  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ 'Treasure T1': 1 }], 'A : 2 visites');
+  assert.deepEqual((await giant.info(B)).rewards, [], 'B : une seule visite');
+  assert.deepEqual((await giant.claim(B)).given, {}, 'B ne peut rien réclamer');
+  assert.equal(countOf(await inv(store, A.id), 'Treasure T1'), 0);
+  assert.deepEqual((await giant.claim(A)).given, { 'Treasure T1': 1 });
 });
 
 test('récompense : sous le premier palier, rien à réclamer', async () => {

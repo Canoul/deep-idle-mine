@@ -17,7 +17,7 @@
      pour chaque joueur venu au moins une fois, si le score collectif atteint au moins un palier. Réclamée une seule
      fois (claimed), écrite avec l'inventaire. */
 import { GIANT, GAME, ITEMS } from '../../src/config.js';
-import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, rewardFor, tiersReached, ranking, shownPoints } from '../../src/shared/giant.js';
+import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, rewardFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
 import { newRoom, enterRoom, exitRoom, takeDone } from '../../src/shared/giant-room.js';
 import { tickGiant, VISIT_TICKS, giantRate } from '../../src/sim/giant/session.js';
 import { DT } from '../../src/config.js';
@@ -126,7 +126,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
   async function pendingRewards(account, p, now){
     const out = [];
     for(const d of await store.listGiantDays()){
-      if(!d.scores?.[account] || p.claimed.includes(d.day)) continue;
+      if(!earnsReward(d.scores?.[account], d.day, config) || p.claimed.includes(d.day)) continue;   // 2 visites au moins (27/10)
       if(now < dayEnd(Date.parse(d.day + 'T12:00:00Z')) + visitMs) continue;   // pas fini (ou visites encore en cours)
       const items = rewardFor(d.total, config);
       if(Object.keys(items).length) out.push({ day: d.day, total: shownPoints(d.total), items });
@@ -146,6 +146,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       lastVisit: !m && p.last ? { day: p.last.day, points: shownPoints(p.last.points) } : null,
       present: room?.G.miners.length ?? 0, max: config.maxPlayers,
       total: shownPoints(d.total), mine: { points: shownPoints(mine?.points ?? 0), visits: mine?.visits ?? 0 },
+      minVisits: minVisitsFor(day, config),          // visites à faire aujourd'hui pour la récompense de minuit
       tiers: config.tiers.map(t => ({ min: t.min, items: t.items, reached: d.total >= t.min })),
       ranking: ranking(d.scores, me.id, config.top),
       rewards: await pendingRewards(me.id, p, now),

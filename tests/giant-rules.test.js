@@ -2,7 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GIANT, MINE_MODES } from '../src/config.js';
-import { dayOf, dayEnd, dayStart, nextEntry, canEnter, tiersReached, rewardFor, tierItemsKnown, ranking, shownPoints } from '../src/shared/giant.js';
+import { dayOf, dayEnd, dayStart, nextEntry, canEnter, tiersReached, rewardFor, tierItemsKnown, ranking, shownPoints, minVisitsFor, earnsReward } from '../src/shared/giant.js';
+import { visitsLeft, visitsText } from '../src/ui/giant.js';
 
 const H = 3600e3;
 
@@ -65,4 +66,17 @@ test('carte du lobby : textes de durée, objets, bouton d\'entrée', async () =>
   assert.equal(entryState({ ...base, nextEntry: 1000 + 2 * H }, 1000).label, 'Prochaine entrée dans 2 h 00 min');
   assert.equal(entryState({ ...base, present: 30 }, 1000).can, false);
   assert.equal(entryState({ ...base, visit: { endsAt: 5 } }, 1000).inVisit, true);
+});
+
+test('récompense : 2 visites au moins dans la journée depuis le 27/10 (avant : une)', () => {
+  assert.equal(GIANT.minVisits, 2); assert.equal(GIANT.minVisitsFrom, '2026-10-27');
+  assert.equal(minVisitsFor('2026-10-26'), 1, 'journées d\'avant : ancienne règle');
+  assert.equal(minVisitsFor('2026-10-27'), 2); assert.equal(minVisitsFor('2026-12-01'), 2);
+  assert.equal(earnsReward({ points: 500, visits: 1 }, '2026-10-27'), false);
+  assert.equal(earnsReward({ points: 0, visits: 2 }, '2026-10-27'), true);
+  assert.equal(earnsReward({ points: 500, visits: 1 }, '2026-10-26'), true);
+  for(const bad of [null, undefined, {}, { visits: '2' }, { visits: 2.5 }, { visits: NaN }]) assert.equal(earnsReward(bad, '2026-10-27'), false);
+  assert.equal(visitsLeft({ minVisits: 2, mine: { visits: 0 } }), 2);
+  assert.equal(visitsText({ minVisits: 2, mine: { visits: 1 } }), 'Encore 1 visite aujourd\'hui pour avoir la récompense de minuit.');
+  assert.equal(visitsLeft({ minVisits: 2, mine: { visits: 3 } }), 0);
 });

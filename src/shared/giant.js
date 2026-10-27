@@ -46,6 +46,11 @@ export function rewardFor(total, cfg = GIANT){
   for(const t of tiersReached(total, cfg)) for(const [k, n] of Object.entries(t.items)) items[k] = (items[k] || 0) + n;
   return items;
 }
+/* visites qu'il faut avoir faites ce jour-là (« AAAA-MM-JJ ») pour recevoir sa récompense : GIANT.minVisits depuis
+   GIANT.minVisitsFrom (27/10/2026), 1 avant (les journées déjà finies gardent leur règle) */
+export const minVisitsFor = (day, cfg = GIANT) => typeof day === 'string' && cfg.minVisitsFrom && day >= cfg.minVisitsFrom ? (cfg.minVisits ?? 1) : 1;
+/* le joueur a-t-il droit à la récompense du jour ? score = { points, visits } du jour */
+export const earnsReward = (score, day, cfg = GIANT) => Number.isSafeInteger(score?.visits) && score.visits >= minVisitsFor(day, cfg);
 /* les objets des paliers doivent exister (vérifié au chargement des tests) */
 export const tierItemsKnown = (cfg = GIANT) => cfg.tiers.every(t => Object.keys(t.items).every(k => Object.hasOwn(ITEMS, k)));
 

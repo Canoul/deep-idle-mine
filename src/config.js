@@ -1177,6 +1177,9 @@ export const GIANT = {
     { min: 15000, items: { 'Treasure T2': 1, 'Blueprint parts': 30 } },
     { min: 20000, items: { 'Treasure T3': 1 } },
   ],
+  /* récompense seulement pour un joueur venu au moins minVisits fois dans la journée (27/10/2026, Geoffrey ; avant : une
+     fois). Compté pour les journées à partir de minVisitsFrom : celles déjà finies gardent l'ancienne règle. */
+  minVisits: 2, minVisitsFrom: '2026-10-27',
   top: 10, poll: 3000, viewPoll: 500,
 };
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
