@@ -3,8 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TOWER, BLOCKS, CFG } from '../src/config.js';
 import { genTower, towerLayout, inTower, floorBottom, floorTop, floorCeil, gateCols, floorOf } from '../src/sim/tower/world.js';
-import { newTower, tickTower, runTower, leaveTower, towerSupported, revealFloor, sealedFloor, wantedSide, contactCells, mobDist, TOWER_TICKS } from '../src/sim/tower/session.js';
-import { towerSide, isTowerMode, buildTower } from '../src/shared/tower.js';
+import { newTower, tickTower, runTower, leaveTower, towerSupported, revealFloor, sealedFloor, wantedSide, contactCells, mobDist, TOWER_TICKS, towerLoot, endTower, bagFull } from '../src/sim/tower/session.js';
+import { towerSide, isTowerMode, buildTower, splitTowerLoot } from '../src/shared/tower.js';
 import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
 
 const team = n => Array.from({ length: n }, (_, i) => ({ name: 'M' + i, account: 'A' + i }));
@@ -375,4 +375,62 @@ test('recul : repoussé au-delà de sa portée de tacle, le Séraphin lâche le 
   for(let i = 0; i < 150; i++){ tickTower(G); const g = o.grab === m.id; if(!g) freed = true; if(g && !was) regrabs++; was = g; }
   assert.ok(freed, 'il lâche le tacle');
   assert.ok(regrabs >= 2, `il revient tacler à chaque cycle (${regrabs})`);
+});
+
+/* ---------- pods (26/10/2026, Geoffrey) ---------- */
+const brickOf = side => BLOCKS[TOWER.sides[side].brick];
+const bricksIn = G => { let n = 0; for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] === TOWER.sides[G.side].brick) n++; return n; };
+const held = G => [...G.miners].reduce((n, m) => n + (m.inv[brickOf(G.side).name] || 0), 0);
+
+test("pods : une brique minée va dans le sac (poids 10) ; plein, il redescend la vider au coffre au milieu de l'étage 0", () => {
+  assert.equal(brickOf('angel').w, 10); assert.equal(brickOf('demon').w, 10);
+  const G = newTower(3, { side: 'angel', miners: [{ name: 'A', account: 'A', carac: { pods: 30, mineSpeed: 3 } }] });
+  const start = bricksIn(G), m = G.miners[0], name = brickOf('angel').name;
+  assert.equal(G.bricks, start);
+  assert.deepEqual(G.chestAt, { x: Math.floor((G.x0 + G.x1) / 2), y: G.floor });
+  let maxLoad = 0, sawFull = false;
+  while(!G.over && m.stats.deposits < 2){
+    tickTower(G); maxLoad = Math.max(maxLoad, m.load); if(bagFull(G, m)) sawFull = true;
+    /* la matière se conserve : dans la tour + dans le sac + au coffre = le départ */
+    assert.equal(bricksIn(G) + held(G) + (G.chest[name] || 0), start, `t=${G.t}`);
+  }
+  assert.ok(sawFull && m.stats.deposits >= 2, `vidages ${m.stats.deposits}`);
+  assert.ok(maxLoad <= 30, `jamais plus que ses pods : ${maxLoad}`);
+  assert.equal(G.chest[name] % 3, 0, '3 briques par vidage (30 pods)');
+  assert.ok(G.log.some(l => /vide son sac au coffre/.test(l.msg)));
+});
+
+test('pods : le butin (coffre + sacs des présents) seulement en cas de victoire ; un départ perd son sac', () => {
+  const G = newTower(5, { side: 'demon', miners: team(2) }), [a, b] = G.miners, name = brickOf('demon').name;
+  G.chest[name] = 4; a.inv[name] = 2; a.load = 20; b.inv[name] = 3; b.load = 30;
+  assert.deepEqual(towerLoot(G), { [name]: 9 });
+  leaveTower(G, b);
+  assert.deepEqual(towerLoot(G), { [name]: 6 }, 'parti : son sac ne compte plus');
+  endTower(G, true); assert.deepEqual(G.summary.loot, { [name]: 6 });
+  const H = newTower(5, { side: 'demon', miners: team(1) }); H.chest[name] = 4;
+  endTower(H, false); assert.deepEqual(H.summary.loot, {}, 'échec : rien');
+});
+
+test('pods : partage en parts égales, le reste au hasard ; rien de créé ; seules les briques de la tour, en quantité valide', () => {
+  const ang = brickOf('angel').name, dem = brickOf('demon').name;
+  for(const [q, n] of [[7, 3], [9, 3], [1, 2], [183, 3], [5, 1]]){
+    const parts = splitTowerLoot({ [ang]: q }, n, 'angel', Math.random);
+    assert.equal(parts.length, n);
+    assert.equal(parts.reduce((s, p) => s + (p[ang] || 0), 0), q, `${q} pour ${n} : conservé`);
+    const v = parts.map(p => p[ang] || 0);
+    assert.ok(Math.max(...v) - Math.min(...v) <= 1, `${q} pour ${n} : égal à 1 près (${v})`);
+  }
+  assert.deepEqual(splitTowerLoot({ [ang]: 5 }, 0, 'angel'), []);
+  for(const bad of [-1, 1.5, NaN, Infinity, '3', TOWER.chest.max + 1, null])
+    assert.deepEqual(splitTowerLoot({ [ang]: bad }, 2, 'angel'), [{}, {}], `quantité refusée : ${bad}`);
+  assert.deepEqual(splitTowerLoot({ [dem]: 4, Fer: 9, Treasure: 1 }, 2, 'angel'), [{}, {}], 'autre camp, autres objets : ignorés');
+  assert.deepEqual(splitTowerLoot(null, 2, 'angel'), [{}, {}]);
+});
+
+test('pods : la vue envoie le coffre et le sac de chaque mineur', () => {
+  const G = newTower(3, { side: 'angel', miners: team(2) }), name = brickOf('angel').name;
+  G.chest[name] = 2; G.miners[0].inv[name] = 1; G.miners[0].load = 10;
+  const V = applyTowerView(createTowerViewer(G)());
+  assert.deepEqual(V.chestAt, G.chestAt); assert.deepEqual(V.chest, { [name]: 2 });
+  assert.equal(V.miners[0].load, 10); assert.equal(V.miners[0].pods, G.miners[0].carac.pods);
 });

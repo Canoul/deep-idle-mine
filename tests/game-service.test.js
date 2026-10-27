@@ -572,9 +572,10 @@ test('Jugement : les résidus versés remplissent les jauges (une fois), partis 
 
 test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour par joueur présent, « déjà faite » ; échec = rien, on peut retenter', async () => {
   const { JUDGMENT, TOWER } = await import('../src/config.js');
-  const A = JUDGMENT.sides.angel.item;
+  const A = JUDGMENT.sides.angel.item, BRICK = 'Stonebrick angélique';
   let success = true;
-  const towerSummary = rec => ({ id: rec.id, mode: 'tower', side: 'angel', success,
+  /* butin de la partie (pods, 26/10) : seules les briques de la tour sont versées (le Fer, inventé, est ignoré) */
+  const towerSummary = rec => ({ id: rec.id, mode: 'tower', side: 'angel', success, loot: { [BRICK]: 7, Fer: 5 },
     shares: rec.players.map(p => ({ account: p.account, left: rec.leaves.some(l => l.account === p.account), bag: {} })) });
   const summary = rec => rec.mode === 'tower_angel' ? towerSummary(rec) : fakeSummary(() => ({ [A]: JUDGMENT.cap }))(rec);
   const { game, advance } = setup({ summary });
@@ -590,6 +591,7 @@ test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour 
   assert.equal(session.finishAt - session.startedAt, TOWER.duration / GAME.speed * 1000, 'durée d\'une tour');
   advance(TOWER.duration / GAME.speed * 1000); await game.pump();
   assert.ok(!(await game.state(ME)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
+  assert.ok(!(await game.state(ME)).inventory.slots.some(s => s?.item === BRICK), 'échec : pas de briques');
   assert.equal((await game.judgment(ME)).sides.angel.done, false);
   /* réussite à deux, l'autre part avant la fin : lui rien, moi un trésor ; je ne peux plus la refaire, lui si */
   success = true;
@@ -598,6 +600,10 @@ test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour 
   advance(TOWER.duration / GAME.speed * 1000); await game.pump();
   const mine = (await game.state(ME)).inventory.slots.filter(s => /^Trésor angélique R[1-7]$/.test(s?.item ?? ''));
   assert.equal(mine.length, 1); assert.equal(mine[0].qty, 1);
+  const qty = (inv, item) => inv.slots.filter(s => s?.item === item).reduce((n, s) => n + s.qty, 0);
+  assert.equal(qty((await game.state(ME)).inventory, BRICK), 7, 'seul présent : toutes les briques');
+  assert.equal(qty((await game.state(ME)).inventory, 'Fer'), 0, 'objet étranger au butin de la tour : ignoré');
+  assert.equal(qty((await game.state(OTHER)).inventory, BRICK), 0, 'parti : rien');
   assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
   assert.equal((await game.judgment(ME)).sides.angel.done, true); assert.equal((await game.judgment(OTHER)).sides.angel.done, false);
   await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_done' });

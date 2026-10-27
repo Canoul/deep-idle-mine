@@ -21,21 +21,29 @@ export function updateTowerHUD(G, me, left){
     `<div class="bar twBossBar ${esc(G.side)}"><i style="width:${pct}%"></i></div>`+
     `<p class="mut small">Étage ${G.reached ?? 0} / ${TOWER.floors}${G.mobsLeft ? ` · ${G.mobsLeft} ${esc(S.mob)}${G.mobsLeft > 1 ? 's' : ''} réveillé${G.mobsLeft > 1 ? 's' : ''}` : ''}. `+
     `Il frappe le premier arrivé à son contact ; chaque coup peut le projeter (hors de la tour depuis le bord)${G.stats?.knocks ? ` : ${G.stats.knocks} projection${G.stats.knocks > 1 ? 's' : ''}` : ''}.</p>`);
-  setHtml($('twTeam'), G.miners.map(m =>
+  setHtml($('twTeam'), (G.miners.map(m =>
     `<div class="row${m.account === me ? ' me' : ''}"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.target ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
-    `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} mobs` : ''}${m.stats.mined ? ` · ${m.stats.mined} blocs` : ''}</span></div>`).join('') || '<p class="mut">Tout le monde est parti.</p>');
+    `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} mobs` : ''}${m.stats.mined ? ` · ${m.stats.mined} blocs` : ''}`+
+    `${m.pods ? `<br><small class="mut">sac ${Math.round(m.load || 0)} / ${Math.round(m.pods)} pods</small>` : ''}</span></div>`).join('') || '<p class="mut">Tout le monde est parti.</p>')
+    + chestLine(G));
   setHtml($('twLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));
+}
+
+/* coffre commun de la tour (pods) : ce qui y est déposé, partagé en parts égales en cas de victoire */
+function chestLine(G){
+  const n = Object.values(G.chest || {}).reduce((s, v) => s + v, 0);
+  return `<p class="mut small">📦 Coffre (étage ${TOWER.chest.floor}) : ${n} brique${n > 1 ? 's' : ''}. Coffre et sacs sont partagés en parts égales si le boss tombe.</p>`;
 }
 
 /* bilan d'une tour, d'après le résultat du serveur */
 export function showTowerEnd(rec, me, onBack, onInventory){
   const s = rec.result, S = TOWER.sides[s.side] ?? TOWER.sides.angel, mine = (s.shares || []).find(p => p.account === me);
   const nameOf = acc => rec.players.find(p => p.account === acc)?.name;
-  const chest = Object.keys(mine?.bag || {})[0];
+  const loot = Object.entries(mine?.bag || {}).map(([k, n]) => `<span class="pill">${n > 1 ? n + ' × ' : ''}${rname(k)}</span>`).join(' ');
   $('endBox').innerHTML =
     `<h3>${S.icon} ${esc(S.tower)} : ${s.success ? `${esc(S.boss)} vaincu !` : 'échec'}</h3>`+
     (mine?.left ? '<p>Tu as quitté la tour avant la fin : <b>rien</b> n\'est versé.</p>'
-      : s.success ? `<p>Ton butin : <span class="pill">${rname(chest)}</span> (dans ton inventaire : ouvre-le pour obtenir une rune).</p>`
+      : s.success ? `<p>Ton butin : ${loot} (dans ton inventaire : ouvre le trésor pour obtenir une rune).</p>`
       : `<p>${esc(S.boss)} tient toujours (${s.bossHp} / ${s.bossMax} PV). Pas de trésor, mais tu peux retenter tant que la tour est ouverte.</p>`)+
     (s.shares || []).map(p => `<div class="row share${p.account === me ? ' me' : ''}"><span>${esc(nameOf(p.account) ?? p.miner)}${p.account === me ? ' (toi)' : ''}</span>`+
       `<span>${p.left ? '<span class="mut">a quitté : rien</span>' : `${p.stats?.dmg ?? 0} dégâts · ${p.stats?.mined ?? 0} blocs${p.stats?.knocked ? ` · projeté ${p.stats.knocked}×` : ''}`}</span></div>`).join('')+

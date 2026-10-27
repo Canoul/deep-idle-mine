@@ -49,6 +49,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
+    **Pods dans les tours (26/10, Geoffrey, en ligne le 26/10)** : chaque stonebrick minée (poids
+    10) va dans le sac ; plein, le mineur redescend la vider au coffre commun (milieu de l'étage 0) ; victoire = coffre +
+    sacs des présents en parts égales (`splitTowerLoot`, `TOWER.chest`). Mesuré : tout fer 10/20 → 4/20, tout acier
+    17/20 → 16/20 (10 min gardées). Un 7e étage essayé le même jour, retiré (tout fer 0/20, acier 7/20).
     **Tour céleste, refonte du 25/10** (Geoffrey ; GAME_DESIGN, Tours) : **6 étages** (20 × 28), stonebrick **4 s** ; un étage
     « blocs » doit être **entièrement vidé** pour ouvrir sa porte (chaque mineur réserve son bloc) ; mobs empilables ;
     boss qui **focus** (premier arrivé au contact, ou barbare qui le provoque), le **suit** à travers les autres
@@ -220,7 +224,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts ; Équiper remet tout d'un coup
   (pièce introuvable = case vide), hors session ; garde-fou 20 sets.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
-  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
+  Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur, et ses torches dessinées en lampe de mine depuis le 26/10 ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
 - **Amélioration** (21/10, GAME_DESIGN §6, `UPGRADE` en config) : onglet en 3 rubriques. **Identification** (une
   pièce + un exemplaire sacrifié, posés par le joueur dans la case qu'il choisit ; objets différents = refusé) →

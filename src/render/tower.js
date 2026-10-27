@@ -7,6 +7,7 @@ import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
 import { shownPos } from '../shared/view.js';
 import { drawSplash } from './splash.js';
+import { torchTexOf } from '../skins.js';
 
 export const TW_TILE = 16;
 
@@ -68,8 +69,9 @@ export function createTowerRenderer(cv){
       if(G.winch && x === G.winch.x && y > G.winch.top && y <= G.winch.bottom) blit(G.winch.lift ? 'lift_rail' : 'winch_rope', px, py);   // treuil (ou rails de l'ascenseur) du logisticien
     }
     if(G.winch) blit(G.winch.lift ? 'lift_top' : 'winch_top', G.winch.x * T, (G.winch.top - 1) * T);   // sa poulie (machinerie), au-dessus du dernier palier
+    if(G.chestAt && G.seen?.[G.chestAt.y]?.[G.chestAt.x]) blit('chest', G.chestAt.x * T, G.chestAt.y * T, '#8a5a2b');   // coffre commun (pods)
     /* torches, puis l'ombre de l'intérieur découvert selon la lumière (comme dans la mine) */
-    for(const tc of G.torches || []) if(G.seen?.[tc.y]?.[tc.x]) blit('torch', tc.x * T, tc.y * T);
+    for(const tc of G.torches || []) if(G.seen?.[tc.y]?.[tc.x]) blit(torchTexOf(tc), tc.x * T, tc.y * T);
     for(let y = y0; y <= Math.min(G.h, y0 + rows); y++) for(let x = x0; x <= Math.min(G.w - 1, x0 + cols); x++){
       if(!inside(x, y) || !G.seen?.[y]?.[x]) continue;
       let l = 0;
