@@ -27,7 +27,7 @@ Modèle d'entrée :
 ## 27/10/2026 — Geoffrey — Onglet Stuff : « Gobelins asservis » cachée
 - **Pour le joueur** : la ligne « Gobelins asservis (rayon) » n'apparaît plus dans les stats de l'onglet Stuff. La
   Couronne du Roi Gobelin fait toujours le même effet, et sa bulle le montre encore.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Nouveaux minerais : mithril, cobalt, thorium (areas 7 et 8)
 - **Pour le joueur** : trois nouveaux minerais tout en bas de la mine. Le **mithril** (rareté commun) apparaît dès
@@ -39,7 +39,7 @@ Modèle d'entrée :
   provisoires proposées par Claude (mithril un peu plus dur que le graphite, cobalt et thorium plus durs que le diamant).
 - **À suivre** : à quoi servent ces minerais (four, alliages, stuff du tier 4) ; faut-il des mobs, un Treasure T4 ou
   des donjons propres aux areas 7-8 (pour l'instant : ceux des areas précédentes).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration
 - **Pour le joueur** : un **anneau** s'améliore de +1 à +9 en sacrifiant un **doublon du même anneau** (pas de plumes ni
@@ -50,7 +50,7 @@ Modèle d'entrée :
   identifiées, améliorées ou enchantées **remises à zéro**, sans remboursement (rune comprise) ; le doublon de plus bas
   niveau est sacrifié, même en cas d'échec (choix de Claude).
 - **À suivre** : un anneau tombe à 1 % par trésor ; un +9 demande ≈ 11 doublons à cause des échecs.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
 - **Pour le joueur** : rien, c'est un outil de test. Trois presets, un par spé : **Test_Mineur**, **Test_Logisticien**,
@@ -63,7 +63,7 @@ Modèle d'entrée :
 - **Décisions** : niveau et niveau de spé à **72**, pas 100 : au-delà, l'XP ne tient plus dans un nombre que le serveur
   accepte. Ça ne change rien en pratique : un arbre coûte 10 à 12 points et les sorts de spé s'ouvrent au niveau 5.
   Une spé imposée dans le panneau dev passe avant celle du preset (le stuff reste).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Buff du stuff en acier : 400 x → 500 x
 - **Pour le joueur** : chaque pièce en acier gagne l'équivalent de +100 x (≈ 100 s de travail par session) :
@@ -73,7 +73,7 @@ Modèle d'entrée :
   **25 % de plus**, celles déjà posées comprises.
 - **Décisions** : le tier 3 des runes passe à **500 x** avec l'acier (la règle « casque, jambes, bottes = valeur du tier »
   reste vraie). La couronne (tier 4, 600 x) n'est plus que 100 x au-dessus.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Fin de session : les mineurs ne s'arrêtent plus trop tôt au-dessus du front
 - **Pour le joueur** : dans les dernières minutes, les mineurs restaient miner bien au-dessus du front « pour avoir le
@@ -83,7 +83,7 @@ Modèle d'entrée :
   +17 graphite, +1 Treasure T3, XP +1 %.
 - **Décisions** : la règle ne change pas (un dernier trajet doit laisser au moins autant de temps à miner que de trajet,
   `endWorkShare` 0,5) ; seule l'estimation du trajet est corrigée.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Instance : vitesses en mode dev, recul des gobelins à chaque coup
 - **Pour le joueur** : les gobelins de l'instance repoussent de 0,5 case **à chaque coup** (avant : 30 % des coups, presque
@@ -96,7 +96,7 @@ Modèle d'entrée :
 - **Décisions** : recul à chaque coup (choix de Geoffrey). Simulation à 3 sans skills : sans le buff de l'acier,
   fer + acier passe de 7/10 à 0/10 réussites et acier de 10/10 à 3/10 ; **avec** le buff de l'acier (branche
   `geoffrey/acier-500`), 10/10 dans les deux cas (+5 à 10 s). À mettre en ligne avec le buff de l'acier.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
@@ -108,7 +108,7 @@ Modèle d'entrée :
   leurs pépites.
 - **À suivre** : la barre d'argent n'a pas encore d'usage. Repère : ≈ 146 points par visite sans stuff, donc ≈ 2 à 3
   pépites pour 2 visites : une barre tous les 3 à 4 jours pour un joueur qui fait le minimum.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
 - **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
@@ -116,12 +116,12 @@ Modèle d'entrée :
   l'arène était souvent perdue (seed 2026520156 : 1 485 dégâts sur 2 000 à deux). Dans la mine et la carte Filons, le
   réglage est toujours respecté.
 - **Décisions** : option 1 recommandée par Claude, retenue par Geoffrey.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Runes : stuff du Roi Gobelin au tier 3, couronne au tier 4
 - **Pour le joueur** : une rune posée sur la masse ou la cape du Roi Gobelin vaut un % de **400 x** (tier 3) ; sur la
   **couronne**, de **600 x** (nouveau **tier 4**). Ces pièces sortent déjà identifiées à la qualité de leur coffre.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Wiki : effets des nouveaux objets cachés tant que personne ne les a trouvés
 - **Pour le joueur** : dans le wiki, la **Couronne du Roi Gobelin**, la **Masse du Roi Gobelin** et la **Cape royale du
@@ -131,7 +131,7 @@ Modèle d'entrée :
   « Gobelins asservis » (seulement sur la Couronne) est cachée elle aussi ; le nom et la chance de chaque objet dans le
   coffre restent visibles.
 - **À suivre** : pour cacher un autre objet plus tard, ajouter son nom à `WIKI.secret` (config).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Clé d'instance I : 20 % dans les Treasure T3
 - **Pour le joueur** : un Treasure T3 donne une Clé d'instance I **1 fois sur 5** (avant 1 sur 20).
@@ -154,7 +154,7 @@ Modèle d'entrée :
   groupe perd, la clé est rendue à tous** ; le bouton « 🗝 Instances » reste cliquable pendant une session (on regarde
   la carte ; choix de Claude, la demande « rend disponible le bouton » ne disait pas lequel).
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Instances : l'Instance I, le roi gobelin
 - **Pour le joueur** : nouveau choix « 🗝 Instances » dans « Où miner ». L'Instance I se joue en groupe de 1 à 3, avec
@@ -167,7 +167,7 @@ Modèle d'entrée :
   les spawners ensemble (le plus bas d'abord), le roi reprend dès qu'un mineur est sorti de sa cage (90 s au plus), départ
   au sol au centre, Hand of Justice ne marche pas sur le roi.
 - **À suivre** : la récompense ; à 3, fer 0/20, fer + acier 13/20, acier 20/20 (sans skills ni sorts) ; seul, impossible.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Bloc géant : aussi pendant une session, récompense à partir de 2 visites
 - **Pour le joueur** : on peut **entrer au Bloc géant pendant une session**, et le chef peut **lancer une session
@@ -178,7 +178,7 @@ Modèle d'entrée :
 - **Décisions** : les deux sens (session → Bloc géant et Bloc géant → session) ; 2 visites au Bloc géant (pas
   2 sessions de mine) ; compté à partir de la journée du 27/10, les journées déjà finies gardent l'ancienne règle.
 - **À suivre** : rien.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 26/10/2026 — Geoffrey — Discord : annonce de l'ouverture des tours
 - **Pour le joueur** : quand la Tour de l'Ange ou la Tour du Démon s'ouvre, le bot Discord poste
@@ -204,7 +204,7 @@ Modèle d'entrée :
   en a plusieurs, et seulement s'il lui en manque ; Cleave ne touche pas un boss de donjon qu'il ne combat pas (mur de
   la salle) ; Hand of Justice coupe aussi la canalisation de l'occultiste, comme le Dash ; un 2e Cri de guerre prolonge
   l'effet sans le cumuler.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Stuff : armures à la valeur de leur tier, combat du butin des mobs divisé par 2
 - **Pour le joueur** : casque, jambes et bottes valent maintenant exactement leur tier : chitine 100 x, fer 250 x,
@@ -218,7 +218,7 @@ Modèle d'entrée :
   de l'équilibre, gants, cape…) ne bougent pas.
 - **À suivre** : la Capuche passe de recul +0,13 à +0,52 (l'équation, même divisée par 2, donne plus qu'avant). Tout
   en fer = 2 160 GS, tout en acier = 3 011 GS (seuil de la modulation : 2 000).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
 - **Pour le joueur** : un chef qui part (onglet fermé, PC en veille, téléphone verrouillé) **reste chef** de son groupe,
@@ -226,14 +226,14 @@ Modèle d'entrée :
   le suivant devenait chef (le chef revenait dans un lobby vide). Les autres joueurs quittent s'ils ne veulent pas
   l'attendre. Les membres : inchangé (retirés après 5 min sans nouvelles, sauf s'ils sont prêts).
 - **Décisions** (Geoffrey).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Glyphes : 1 % par session au lieu de 3 %
 - **Pour le joueur** : trouver un glyphe dans la mine est 3 fois plus rare : environ **1 % par session** dans un groupe de
   3 (avant 3 %), ≈ 1,5 % en solo. Spé Mineur 0,00126 % par bloc cassé, Logisticien 0,011 % par échelle posée, Barbare
   0,0335 % par mob tué. Un arbre de 3 glyphes demande ≈ 300 sessions en moyenne (avant ≈ 100). Wiki mis à jour.
 - **Décisions** (Geoffrey).
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 26/10/2026 — Geoffrey — Butin rare des mobs : chances baissées
 - **Pour le joueur** : les pièces lâchées par les mobs tombent bien moins souvent. Lanières en cuir du gobelin, Capuche
@@ -241,7 +241,7 @@ Modèle d'entrée :
   dans un k hole (avant 2 %). Le butin du mineur (stat Butin, Pillage) multiplie toujours ces chances. Le wiki suit tout
   seul.
 - **Décisions** (Geoffrey) ; choix de Claude à valider : la chance en k hole reste le double de la chance normale.
-- **État** : 🧪 sur la branche `geoffrey/fix-lobby-lancer` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 26/10/2026 — Geoffrey — Tours : le retour des pods
 - **Pour le joueur** : les **briques minées vont dans le sac** (10 pods chacune) ;
