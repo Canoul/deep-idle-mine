@@ -465,6 +465,17 @@ def main():
     rect(cry, 12, 12, 1, 1, pale); rect(cry, 13, 2, 1, 1, pale)     # éclats
     tex['moon_crystal'] = cry
 
+    # Clé d'instance I (27/10) : clé de fer vert-de-gris (gobelins), anneau, tige et panneton, « I » gravé
+    key = blank()
+    kc, kd, kl = hexc('#7fae6a'), hexc('#4a6e3e'), hexc('#c9e6b4')
+    for (x, y) in [(3, 2), (4, 2), (5, 2), (2, 3), (6, 3), (2, 4), (6, 4), (2, 5), (6, 5), (3, 6), (4, 6), (5, 6)]:
+        rect(key, x, y, 1, 1, kc)
+    rect(key, 3, 2, 3, 1, kl)
+    rect(key, 4, 7, 1, 7, kc); rect(key, 5, 7, 1, 7, kd)
+    rect(key, 6, 10, 3, 1, kc); rect(key, 6, 12, 2, 1, kc); rect(key, 6, 13, 3, 1, kd)
+    rect(key, 4, 4, 1, 1, hexc('#22301c'))
+    tex['key_instance_1'] = key
+
     # plume d'ange (objet, mine instantanée) : plume blanche incurvée, rachis lavande, barbes fendues, tige dorée
     fea = blank()
     vane, vane_l, vane_d, quill, spark = hexc('#f4f1ff'), hexc('#ffffff'), hexc('#c9c3e6'), hexc('#e8c25a'), hexc('#fff6c8')

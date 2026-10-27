@@ -253,6 +253,8 @@ export const LOOT = {
       ]},
       { family:'gem', items:gems(0.02) },
       { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
+      /* Clé d'instance I (27/10/2026, Geoffrey) : son propre tirage, en plus du reste (INSTANCE) */
+      { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.05, tex:'key_instance_1' } ] },
     ],
   },
 };
@@ -614,7 +616,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
@@ -783,6 +785,7 @@ export const RARITY = {
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
+    'Clé d\'instance I':'inhabituel',
     'Plume d\'ange':'rare',
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
   },
@@ -1011,6 +1014,7 @@ export const ITEMS = {
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
+  'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
