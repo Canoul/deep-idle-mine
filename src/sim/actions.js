@@ -3,7 +3,7 @@ import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
-import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime } from './mineur.js';
+import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime, warcryOf } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
 import { inReach, push, reachOf, knockbackOf } from './knock.js';
 import { log } from './log.js';
@@ -55,7 +55,8 @@ export function fortuneExtra(G,m){
 const gearChance = (G,pct) => pct>0 && G.gearRng()*100 < pct;
 /* dégâts d'un coup : (base + bonus fixes) × (1 + bonus en %), doublés sur un coup critique */
 /* dégâts d'un coup (Glyphe Pillage : + m.pillage %, gagné en tuant des mobs) */
-export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(gearChance(G,m.carac.crit||0) ? 2 : 1);
+export const hitDamage = (G,m) => m.carac.damage*(1+((m.carac.damagePct||0)+(m.pillage||0))/100)*(1+(warcryOf(G,m)?.dmg||0))
+                                 *(gearChance(G,m.carac.crit||0) ? 2 : 1);   // Cri de guerre : × (1 + 10 %)
 /* coup unique : chance de casser le bloc instantanément (durée de minage minimale) */
 export const mineDuration = (G,m,t) => gearChance(G,m.carac.oneTap||0) ? 0 : mineT(G,m,t);
 
