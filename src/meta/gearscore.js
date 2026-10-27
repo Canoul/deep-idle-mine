@@ -9,7 +9,10 @@
 import { STATS, UPGRADE } from '../config.js';
 import { pieceBonus, isRing } from './piece.js';
 
-const priceOf = k => UPGRADE.worth[k] ?? UPGRADE.gs[k] ?? 0;
+/* x par point d'une stat : prix mesuré (worth, sinon gs ; sinon priceBase), × l'ajustement de Geoffrey (UPGRADE.priceAdjust,
+   27/10/2026 : les stats offensives, dégâts %, perçage, minage, ténacité, recul valent plus que leur mesure) */
+export const statPrice = k => ((UPGRADE.worth[k] ?? (UPGRADE.gs[k] || UPGRADE.priceBase?.[k])) ?? 0) * (UPGRADE.priceAdjust?.[k] ?? 1);
+const priceOf = statPrice;
 
 /* GS d'une pièce (nom d'objet ou pièce avec qualité, lignes, rune, niveau), arrondi à l'unité */
 export function pieceGS(entry){

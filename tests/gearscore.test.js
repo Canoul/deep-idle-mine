@@ -2,14 +2,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TOWER, UPGRADE, STATS, ITEMS } from '../src/config.js';
-import { pieceGS, gearScore } from '../src/meta/gearscore.js';
+import { pieceGS, gearScore, statPrice } from '../src/meta/gearscore.js';
 import { createInventory } from '../src/meta/inventory.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { modulationState } from '../src/ui/lobby.js';
 import { fakeLive } from './helpers.js';
 
-const P = { ...UPGRADE.gs, ...UPGRADE.worth };
+/* prix d'une stat : mesuré (worth, gs) × ajustement de Geoffrey (UPGRADE.priceAdjust, 27/10/2026) */
+const P = new Proxy({}, { get: (_, k) => statPrice(k) });
 
 test('GS d\'une pièce : stats de l\'objet en x ; une valeur qui remplace la base compte pour ce qu\'elle ajoute', () => {
   const plastron = ITEMS['Plastron en fer'].stats;
@@ -19,14 +20,25 @@ test('GS d\'une pièce : stats de l\'objet en x ; une valeur qui remplace la bas
   assert.equal(pieceGS(null), 0); assert.equal(pieceGS('Objet inconnu'), 0);
 });
 
-test('GS : prix mesurés (worth), complétés par UPGRADE.gs pour les stats simulées le 26/10', () => {
-  assert.equal(pieceGS('Pioche en fer'), Math.round(ITEMS['Pioche en fer'].stats.mineSpeed * UPGRADE.worth.mineSpeed));
+test('GS : prix mesurés (worth), complétés par UPGRADE.gs pour les stats simulées le 26/10, × ajustements de Geoffrey', () => {
+  assert.equal(pieceGS('Pioche en fer'), Math.round(ITEMS['Pioche en fer'].stats.mineSpeed * UPGRADE.worth.mineSpeed * 3), 'vitesse de minage ÷ 3 (27/10)');
   for(const k of Object.keys(UPGRADE.gs)) assert.ok(!(k in UPGRADE.worth), `${k} : un seul prix`);
   const lance = ITEMS['Lance en fer'];
   const expect = Object.entries(lance.stats || {}).reduce((s, [k, v]) => s + v * (P[k] ?? 0), 0)
     + Object.entries(lance.set || {}).reduce((s, [k, v]) => s + (v - STATS[k]) * (P[k] ?? 0), 0);
   assert.equal(pieceGS('Lance en fer'), Math.round(expect));
-  assert.ok(pieceGS('Lance en fer') < 600, `lance : ${pieceGS('Lance en fer')} GS (portée et recul au prix simulé)`);
+  assert.ok(pieceGS('Lance en fer') < 900, `lance : ${pieceGS('Lance en fer')} GS (portée et recul au prix simulé, × 2 : stats offensives)`);
+});
+
+test('ajustements de Geoffrey (27/10/2026) : points d\'une stat pour 1 x divisés (prix multiplié)', () => {
+  assert.deepEqual(UPGRADE.priceAdjust, { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
+    damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 });
+  assert.equal(statPrice('damage'), 80);              // 40 mesuré : 10 dégâts = 400 x → 5 dégâts = 400 x
+  assert.equal(statPrice('damagePct'), 6); assert.equal(statPrice('piercing'), 28);
+  assert.equal(statPrice('mineSpeed'), 3900); assert.equal(statPrice('mineSpeedPct'), 39);
+  assert.equal(statPrice('tenacity'), 10); assert.equal(statPrice('knockRes'), 15, 'pas de mesure : base du tableau des lignes (5)');
+  assert.equal(statPrice('pods'), UPGRADE.worth.pods, 'les autres stats : prix mesuré');
+  assert.equal(statPrice('reach'), 0, 'portée : mesurée à 0, reste à 0');
 });
 
 test('GS : identification, rune et amélioration comptent ; anneau = 0 ; joueur = somme des pièces portées', () => {

@@ -677,13 +677,13 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Jambes en mithril | 21 Mithril ingot + 7 Steel ingot + 10 Shiny iron | Vitesse (échelle) +2,6 |
   | Bottes en mithril | 16 Mithril ingot + 4 Steel ingot + 10 Shiny iron | Vitesse (marche) +2,71 |
 
-- **Armure en thorium et en cobalt** (rares ; BP du Treasure T4, 0,5 % chacun) : fabriquées **à partir de la pièce en mithril** (consommée : c'est toujours l'exemplaire le plus simple qui part, sans qualité, niveau ni rune si possible), + 10 / 16 / 14 / 8 lingots (thorium ou cobalt) + une gemme (casque : Rubis, plastron : Topaze, jambes : Saphir, bottes : Jade) + 25 diamants. Deux stats à **50/50 de 750 x**, aux prix mesurés du GS (stat de combat comptée à moitié ; plastron × 1,644 comme l'acier) :
+- **Armure en thorium et en cobalt** (rares ; BP du Treasure T4, 0,5 % chacun) : fabriquées **à partir de la pièce en mithril** (consommée : c'est toujours l'exemplaire le plus simple qui part, sans qualité, niveau ni rune si possible), + 10 / 16 / 14 / 8 lingots (thorium ou cobalt) + une gemme (casque : Rubis, plastron : Topaze, jambes : Saphir, bottes : Jade) + 25 diamants. Deux stats à **50/50 de 750 x**, aux prix du GS avec les **ajustements de Geoffrey** (voir *Équilibre du stuff* ; plastron × 1,644 comme l'acier) :
 
   | Pièce | Thorium | Cobalt |
   |---|---|---|
-  | Casque | Oxygène +94, Double attaque +23,4 % | Oxygène +94, Perçage +53,6 % |
-  | Plastron | Pods +103, Dégâts +7,7 | Pods +103, Vitesse de minage +0,474 |
-  | Jambes | Vitesse (échelle) +1,5, Dégâts +93,8 % | Vitesse (échelle) +1,5, Vitesse de minage +28,8 % |
+  | Casque | Oxygène +94, Double attaque +23,4 % | Oxygène +94, Perçage +13,4 % |
+  | Plastron | Pods +103, Dégâts +7,7 | Pods +103, Vitesse de minage +0,158 |
+  | Jambes | Vitesse (échelle) +1,5, Dégâts +62,5 % | Vitesse (échelle) +1,5, Vitesse de minage +9,6 % |
   | Bottes | Vitesse (marche) +1,56, Critique +14,4 % | Vitesse (marche) +1,56, Coup unique +28,8 % |
 
   *(« vitesse % » des jambes en cobalt lu comme vitesse de minage %, choix de Claude.)* Épée, lance et pioche de ces trois métaux : **pas encore** (pas de recette).
@@ -692,12 +692,12 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | Pièce | Case | Rareté | Recette | Stats |
   |---|---|---|---|---|
   | Lunettes Gucci | casque | rare | 20 diamants + 10 Mithril ingot + 2 Cobalt ingot | Découverte +1 (190 x), Oxygène +115 (le reste des 650 x) |
-  | Doc Martins | pieds | rare | 50 Cuir de minotaure + 4 Thorium ingot + 100 tissus sombres | Résistance au recul +32,5 %, Ténacité +32,5 % |
-  | Ceinture golémique | ceinture | rare | 50 pierres glissantes + 5 Thorium ingot + 100 vésicules de gaz | Pods +54, Résistance au recul +32,5 % |
+  | Doc Martins | pieds | rare | 50 Cuir de minotaure + 4 Thorium ingot + 100 tissus sombres | Résistance au recul +21,7 %, Ténacité +32,5 % |
+  | Ceinture golémique | ceinture | rare | 50 pierres glissantes + 5 Thorium ingot + 100 vésicules de gaz | Pods +54, Résistance au recul +21,7 % |
   | Gants de boucher | gants | rare | 50 Rotten flesh + 15 Mithril ingot + 500 peaux de gobelin | Dégâts +8,1 |
-  | Jambières titanesques | jambes | épique | 25 Cobalt ingot + 25 Thorium ingot + Topaze, Jade, Saphir, Rubis + 50 Shiny gold | 750 × 2,5 = 1 875 x en 4 parts : Vitesse (échelle) +1,88, Vitesse (marche) +1,95, Vitesse de minage +0,361, Résistance au recul +46,9 % |
+  | Jambières titanesques | jambes | épique | 25 Cobalt ingot + 25 Thorium ingot + Topaze, Jade, Saphir, Rubis + 50 Shiny gold | 750 × 2,5 = 1 875 x en 4 parts : Vitesse (échelle) +1,88, Vitesse (marche) +1,95, Vitesse de minage +0,12, Résistance au recul +31,3 % |
 
-  La résistance au recul n'a pas de prix mesuré dans le GS : elle suit le tableau des lignes (`UPGRADE.prices`, 20 % pour 100 x), comptée à moitié.
+  La résistance au recul n'a pas de prix mesuré dans le GS : sa base est celle du tableau des lignes (5 x par point), × 3 (ajustement de Geoffrey). *(Avant les ajustements du 27/10 : perçage +53,6 %, minage +0,474 / +28,8 % / +0,361, dégâts +93,8 %, recul +32,5 / +46,9 %.)*
 
 ### Stuff (onglet Stuff)
 - **13 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, **2 cases d'anneau** (23/10/2026) et **torche** (25/10/2026).
@@ -727,9 +727,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Pods des plastrons** *(23/10/2026, Geoffrey)* : chitine +30, fer +50, acier +80, équilibre +125 (avant 25 / 33 / 40 / 60). *(24/10 : fer +88, acier +120, équilibre +188, buff du stuff fer et acier.)* Les stats d'une pièce sont lues dans le catalogue à chaque session : **les plastrons déjà fabriqués ont les nouvelles valeurs**, et comme la valeur d'un objet suit ses stats, les lignes d'identification et les runes posées sur un plastron grandissent aussi. Repère (simulation) : en stuff de base, chaque remontée au coffre coûte cher ; +100 pods sur les 3 mineurs d'une équipe en fer avançaient l'ouverture de l'area 5 de 6 min (dureté de la pierre, oxygène, torches : 0 à 3 min).
 - Une pièce peut **ajouter** à une stat (ex. Pods +30) ou **remplacer** sa valeur de base (ex. l'Épée en fer : Dégâts 14 au lieu des 5 des mains nues).
 - Pièces existantes : **Pioches en pierre et en fer** (case pioche) ; **Épées en pierre et en fer** (case épée) ; **Casque, Plastron, Jambes et Bottes en chitine ou en fer** (cases casque, torse, jambes, pieds) ; **Ceinture en peau de gobelin** (case ceinture) ; **Gants tactique et Gants d'ouvrier** (case gants) ; **Cape de Naingui** (case cape) ; **pièces en acier** (gris bleuté) et **Plastron de l'équilibre** (moitié blanc, moitié rouge) depuis le 23/10. En session, l'armure en fer est grise, la ceinture verte ; le mineur sort son épée pour frapper (sa pioche s'il n'en a pas). Leurs bonus (tableau ci-dessus) s'affichent dans les onglets Craft, Stuff et Inventaire et s'appliquent en session.
-- **Équilibre du stuff** *(règle du 27/10/2026, Geoffrey ; `STUFF.combatStats`, `STUFF.combatOnStuff` ; gardée par `tests/stuff-balance.test.js`)* :
+- **Équilibre du stuff** *(règle du 27/10/2026, Geoffrey ; `UPGRADE.priceAdjust`, `STUFF.combatOnStuff` ; gardée par `tests/stuff-balance.test.js`)* :
+  - **Ajustements de Geoffrey** *(27/10/2026 ; ce sont ses choix, pas des mesures)* : sur les prix mesurés (x par point de stat), le nombre de points pour 1 x est **divisé** : **stats offensives ÷ 2** (dégâts, vitesse d'attaque, double attaque, critique, portée, recul : si 10 dégâts valaient 1 x, 5 dégâts valent 1 x), **dégâts % ÷ 3**, **perçage ÷ 4**, **vitesse de minage (fixe et %) ÷ 3**, **ténacité ÷ 2**, **résistance au recul ÷ 3**. Ils servent au GS (classements, plafond des tours) et à la valeur des pièces. **Si les poids des stats sont resimulés, ces diviseurs s'appliquent aux nouvelles mesures** (et le rapport le dit). Conséquence : le GS des pièces de combat et des pioches monte (pioche en acier 754 → 2 262, épée en acier 540 → 1 080, Masse du Roi Gobelin 555 → 1 110) sans que leurs stats changent ;
   - **casque, jambes et bottes** valent en GS **exactement la valeur de leur tier** : chitine **100 x**, fer **250 x**, acier **500 x** *(27/10 ; avant 400 x)* (à l'arrondi du pas de la stat près). Les **plastrons** sont hors règle : **la pièce de torse est volontairement plus forte** (pods : chitine 180, fer 528, acier 720 x) ;
-  - **butin des mobs** : tier 2 (**250 x**), partagé **à parts égales** entre ses stats, aux prix mesurés ; une **stat de combat** (dégâts, dégâts %, vitesse d'attaque, double attaque, critique, ténacité, résistance au recul, portée, recul) n'en reçoit que **la moitié**. Raison : le mineur se bat peu dans la mine, les prix mesurés du combat sont bas, et la même stat est bien plus forte là où on ne fait que se battre (tours). Le GS de ces pièces est donc sous 250 (Lanières 188, Capuche 125, Ceinture 127, Nuage 250) ;
+  - **butin des mobs** : tier 2 (**250 x**), partagé **à parts égales** entre ses stats, aux prix ajustés, chaque stat pour sa **valeur pleine** : leur GS vaut 250 (Lanières, Capuche, Ceinture du Géant, Nuage). *(Ancien, avant le 27/10 au soir : une stat de combat ne recevait que la moitié de sa part, et le GS de ces pièces restait sous 250 ; les stats sont les mêmes, l'ajustement ÷ 2 remplace la demi-part.)* ;
   - les pièces **dessinées à la main** ne suivent pas cette règle : épées, lance, pioches, Plastron de l'équilibre, gants, cape, ceinture en peau, boussole, lampe.
 - **Butin rare des mobs** *(26/10/2026, Geoffrey ; `MOB_DROPS`)* : des pièces **non craftables** qu'un mob lâche à sa mort, dans le sac du mineur qui l'a tué (puis le coffre commun : **un seul joueur** la reçoit, partage normal). Valeur : voir *Équilibre du stuff* ci-dessus *(avant le 27/10 : la pièce en fer de sa case ; Lanières et Capuche au tableau des runes)*. La chance est **multipliée par 1 + le butin du mineur** (stat Butin des mobs + skill Pillage) : 1 % avec +50 % de butin → 1,5 % ; toujours **une seule** pièce (pas d'exemplaire en plus, contrairement au butin normal). Tier 2 pour l'identification et les runes. Recyclage : des quantités fixes (pas de recette).
 

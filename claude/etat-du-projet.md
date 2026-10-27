@@ -104,6 +104,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   boucher, Jambières titanesques ; gemmes Topaze / Saphir / Rubis / Jade ; BP Clé d'instance I ; Cuir de minotaure (1 à 3
   par minotaure, `DUNGEON.leather`) ; Rotten flesh (sans source). T4 des runes : 650 x (Couronne comprise, ancien : 600 x).
   Pas d'épée, lance ni pioche de ces métaux (pas de recette) ; pas de tier 4 à la Table de recherche.
+- **Ajustements de prix de Geoffrey** (27/10, `UPGRADE.priceAdjust`, `statPrice` dans `src/meta/gearscore.js`) : ses choix, pas
+  des mesures. Points d'une stat pour 1 x divisés : offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, minage (fixe et %) ÷ 3,
+  ténacité ÷ 2, résistance au recul ÷ 3 (base 5 x). Remplacent la demi-valeur des stats de combat (`STUFF.combatOnStuff`
+  1, ancien 0,5). GS des pioches × 3, des épées × 2. **À réappliquer et à signaler dans le rapport si les poids des stats
+  sont resimulés** (`npm run weights`, `stat-values`).
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes

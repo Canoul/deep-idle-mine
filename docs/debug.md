@@ -3904,3 +3904,18 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/leaderboard.test.js` (+1 : admin premier partout → absent des 4 classements, `me` null, total 1) ✅ ;
   social ✅ (28/28 avec leaderboard).
 
+### Prix des stats : ajustements de Geoffrey (UPGRADE.priceAdjust) ; tier 4 recalculé — branche `geoffrey/prix-offensifs`, 🧪
+- **Quoi** : `UPGRADE.priceAdjust` (multiplicateurs des prix mesurés, choix de Geoffrey du 27/10) et `UPGRADE.priceBase`
+  (`knockRes` : 5, pas de mesure) ; `statPrice(k)` exportée par `src/meta/gearscore.js` (worth ?? (gs || priceBase)) × adjust,
+  utilisée par `pieceGS`. `STUFF.combatOnStuff` 0,5 → 1. `piece.itemValue` (ilvl du tableau de bord admin, base des lignes
+  des pièces sans tier) garde `UPGRADE.worth` brut, sans ajustement. Pièces du T4 recalculées (cobalt, thorium jambes,
+  Doc Martins, Ceinture golémique, Jambières) ; butin des mobs inchangé (÷ 2 et demi-valeur s'annulent : GS = 250 juste).
+- **GS** : pioche en pierre / fer / acier 260 / 520 / 754 → 780 / 1 560 / 2 262 ; épées × 2 ; Lance 360 → 721 ; Plastron de
+  l'équilibre 1 426 → 1 546 ; Masse 555 → 1 110 ; Cape royale 75 → 225. Le plafond de GS des tours (modulation) et les
+  classements lisent ces valeurs.
+- **Tests** ✅ : gearscore (prix ajustés, nouveau test des diviseurs), stuff-balance (combatOnStuff 1, prix ajustés),
+  steel-gear (oublié au tier 4 : 4 trésors) ; `npm test` 1 201 / 1 204. ❌ hors sujet, déjà en échec sur `main` sans ce
+  chantier : `tests/dev-spec.test.js` (« les tours sont toujours dans Où miner », mode dev) et `tests/perf.test.js` (boîte
+  de mesures dans les barres).
+- **Point fragile** : `npm run weights` / `stat-values` mesurent des prix bruts : appliquer `priceAdjust` par-dessus et le
+  dire dans le rapport (consigne de Geoffrey).

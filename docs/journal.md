@@ -24,6 +24,17 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Prix des stats ajustés par Geoffrey ; tier 4 recalculé
+- **Pour le joueur** : les stats des nouvelles pièces sont recalculées. Jambes en thorium +62,5 % de dégâts (avant
+  +93,8 %), casque en cobalt +13,4 % de perçage (avant +53,6 %), plastron en cobalt +0,158 de vitesse de minage (avant
+  +0,474), jambes en cobalt +9,6 % (avant +28,8 %), résistance au recul +21,7 % sur les Doc Martins et la Ceinture
+  golémique (avant +32,5 %), Jambières titanesques minage +0,12 et recul +31,3 %. Le **GS** compte mieux le combat et le
+  minage : pioches × 3, épées × 2 (classements compris), sans que les pièces existantes changent de stats.
+- **Décisions** : **ajustements de Geoffrey** (ses choix, pas des mesures) : stats offensives ÷ 2, dégâts % ÷ 3,
+  perçage ÷ 4, vitesse de minage (fixe et %) ÷ 3, ténacité ÷ 2, résistance au recul ÷ 3. Ils remplacent la « demi-valeur »
+  des stats de combat. À réappliquer si on resimule les poids des stats.
+- **État** : 🧪 sur la branche `geoffrey/prix-offensifs` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Classements : le compte « admin » n'y figure plus
 - **Pour le joueur** : le compte « admin » (celui de l'équipe pour tester) n'apparaît plus dans aucun classement et ne
   compte pas dans le nombre de joueurs classés.

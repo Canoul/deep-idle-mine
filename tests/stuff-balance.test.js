@@ -6,13 +6,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STUFF, UPGRADE, MOB_DROPS } from '../src/config.js';
-import { pieceGS } from '../src/meta/gearscore.js';
+import { pieceGS, statPrice } from '../src/meta/gearscore.js';
 import { tierOf } from '../src/meta/piece.js';
 
 const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : torse volontairement plus fort
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
-const price = k => UPGRADE.worth[k] ?? UPGRADE.gs[k];
+const price = statPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026)
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
 test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 500 x)', () => {
@@ -23,8 +23,8 @@ test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (
   }
 });
 
-test('butin des mobs : tier 2, parts égales entre les stats, stat de combat à moitié', () => {
-  assert.equal(STUFF.combatOnStuff, 0.5);
+test('butin des mobs : tier 2, parts égales entre les stats (prix ajustés, valeur pleine depuis le 27/10)', () => {
+  assert.equal(STUFF.combatOnStuff, 1, 'plus de demi-valeur : remplacée par UPGRADE.priceAdjust (27/10, Geoffrey)');
   for(const { item } of MOB_DROPS.items){
     const stats = Object.entries(STUFF.items[item].stats), share = UPGRADE.tiers[tierOf(item)].x / stats.length;
     assert.equal(tierOf(item), 2, item);

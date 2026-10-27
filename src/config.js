@@ -981,7 +981,7 @@ export const STUFF = {
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
        hors règle, même rapport que l'acier : 137 pods pour 500 x). Thorium et cobalt (T4.5, 750 x) : deux stats à 50/50,
-       aux prix mesurés du GS (worth, gs ; stat de combat à moitié, résistance au recul : UPGRADE.prices) ; plastron
+       aux prix du GS (worth, gs, avec les ajustements de Geoffrey UPGRADE.priceAdjust, 27/10) ; plastron
        × 1,644 comme l'acier. Pièces spéciales : 650 x (Lunettes : 1 Découverte = 190 x, le reste en oxygène) ;
        Jambières titanesques : 750 × 2,5 = 1 875 x, quatre parts égales */
     'Casque en mithril':   { slot:'casque', tex:'helmet_mithril', stats:{ oxygenMax:163 } },
@@ -990,17 +990,17 @@ export const STUFF = {
     'Bottes en mithril':   { slot:'pieds',  tex:'boots_mithril',  stats:{ speed:2.71 } },
     'Casque en thorium':   { slot:'casque', tex:'helmet_thorium', stats:{ oxygenMax:94, doubleAttack:23.4 } },
     'Plastron en thorium': { slot:'torse',  tex:'chest_thorium',  stats:{ pods:103, damage:7.7 } },
-    'Jambes en thorium':   { slot:'jambes', tex:'legs_thorium',   stats:{ climbSpeed:1.5, damagePct:93.8 } },
+    'Jambes en thorium':   { slot:'jambes', tex:'legs_thorium',   stats:{ climbSpeed:1.5, damagePct:62.5 } },   // dégâts 93,8 % avant les ajustements
     'Bottes en thorium':   { slot:'pieds',  tex:'boots_thorium',  stats:{ speed:1.56, crit:14.4 } },
-    'Casque en cobalt':    { slot:'casque', tex:'helmet_cobalt',  stats:{ oxygenMax:94, piercing:53.6 } },
-    'Plastron en cobalt':  { slot:'torse',  tex:'chest_cobalt',   stats:{ pods:103, mineSpeed:0.474 } },
-    'Jambes en cobalt':    { slot:'jambes', tex:'legs_cobalt',    stats:{ climbSpeed:1.5, mineSpeedPct:28.8 } },
+    'Casque en cobalt':    { slot:'casque', tex:'helmet_cobalt',  stats:{ oxygenMax:94, piercing:13.4 } },   // avant les ajustements (27/10) : perçage 53,6
+    'Plastron en cobalt':  { slot:'torse',  tex:'chest_cobalt',   stats:{ pods:103, mineSpeed:0.158 } },   // minage 0,474
+    'Jambes en cobalt':    { slot:'jambes', tex:'legs_cobalt',    stats:{ climbSpeed:1.5, mineSpeedPct:9.6 } },   // minage 28,8 %
     'Bottes en cobalt':    { slot:'pieds',  tex:'boots_cobalt',   stats:{ speed:1.56, oneTap:28.8 } },
     'Lunettes Gucci':      { slot:'casque',   tex:'glasses_gucci',  stats:{ discoverMax:1, oxygenMax:115 } },
-    'Doc Martins':         { slot:'pieds',    tex:'boots_docs',     stats:{ knockRes:32.5, tenacity:32.5 } },
-    'Ceinture golémique':  { slot:'ceinture', tex:'belt_golem',     stats:{ pods:54, knockRes:32.5 } },
+    'Doc Martins':         { slot:'pieds',    tex:'boots_docs',     stats:{ knockRes:21.7, tenacity:32.5 } },   // recul 32,5 avant
+    'Ceinture golémique':  { slot:'ceinture', tex:'belt_golem',     stats:{ pods:54, knockRes:21.7 } },
     'Gants de boucher':    { slot:'gants',    tex:'gloves_butcher', stats:{ damage:8.1 } },
-    'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.361, knockRes:46.9 } },
+    'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.12, knockRes:31.3 } },   // minage 0,361 et recul 46,9 avant
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
        (250, comme une pièce d'armure en fer), partagé à parts égales entre ses stats, aux prix mesurés du GS (worth, gs) ;
        une stat de combat (STUFF.combatStats) n'en reçoit que STUFF.combatOnStuff (la moitié) : le mineur se bat peu dans
@@ -1041,7 +1041,7 @@ export const STUFF = {
        de ce que donnerait l'équation (prix mesurés). Les pièces dessinées à la main (épées, lance, pioches, Plastron de
        l'équilibre, gants, cape, ceinture en peau, boussole, lampe) ne suivent pas cette règle. */
   combatStats: ['damage','damagePct','attackSpeed','doubleAttack','crit','tenacity','knockRes','reach','knockback'],
-  combatOnStuff: 0.5,
+  combatOnStuff: 1,   // 27/10/2026 (Geoffrey) : plus de demi-valeur, remplacée par UPGRADE.priceAdjust (ancien 0,5)
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
 
@@ -1099,6 +1099,16 @@ export const UPGRADE = {
   /* GEAR SCORE (26/10/2026, Geoffrey) : x par point = worth (mesuré), plus ces stats simulées le 26/10 (document « Valeurs
      en x » : 24 sessions, mineur de base, mêmes seeds avec et sans) qui ne sont pas dans worth. Avant : prices. */
   gs: { doubleAttack:8, tenacity:5, knockRes:0, reach:0, knockback:120, torchRadius:27 },
+  /* AJUSTEMENTS DE GEOFFREY (27/10/2026), pas des mesures : sur les prix mesurés (worth, gs), le nombre de points d'une
+     stat pour 1 x est DIVISÉ par ce nombre (prix × ce nombre : si 10 dégâts valaient 1 x, 5 dégâts valent 1 x). Stats
+     offensives ÷ 2 ; dégâts % ÷ 3 ; perçage ÷ 4 ; vitesse de minage (fixe et %) ÷ 3 ; ténacité ÷ 2 ; résistance au recul
+     ÷ 3. Ils remplacent la stat de combat comptée à moitié sur le stuff (STUFF.combatOnStuff, ancien 0,5).
+     À GARDER si les poids des stats sont resimulés (npm run weights, stat-values) : appliquer ces diviseurs aux nouvelles
+     mesures, et le dire dans le rapport. Utilisés par le GS et la valeur des pièces (src/meta/gearscore.js statPrice). */
+  priceAdjust: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
+                 damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 },
+  /* stats sans prix mesuré (gs à 0) mais ajustées : le prix du tableau des lignes (prices) sert de base */
+  priceBase: { knockRes:5 },
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
