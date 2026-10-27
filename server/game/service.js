@@ -19,6 +19,7 @@ import crypto from 'node:crypto';
 import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, treasureItem, goblinChestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
+import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
@@ -471,6 +472,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
+          botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),

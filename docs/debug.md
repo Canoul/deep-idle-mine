@@ -3716,3 +3716,35 @@ Règles (voir CLAUDE.md) :
   carte), `furnace` (25 pépites → 2 barres, recette ouverte de base) ; wiki, rarity, shiny, treasure : 141/141 ;
   `npm run test:anticheat` 102/102.
 - **À vérifier** : pas testé dans le navigateur (carte du Bloc géant, icônes). La barre n'a aucun usage.
+
+### Mode dev : presets de personnage par spé (Geoffrey) — branche `geoffrey/presets-dev`, 🧪
+- **Quoi** : `scripts/dev-presets.js` (`npm run dev:presets`, options `--keys`, `--password`) : un compte par arbre de
+  `SKILLS.trees` (`PRESET.names`), créé par `createAccountService().register` sur le file store, sinon remis à neuf
+  (`putProgress` + `putLoadout` : inventaire, stuff, skills, sorts, sets écrasés ; mot de passe gardé). Refuse de tourner
+  si `DATABASE_URL` est présent (local seulement ; `DIM_DATA_DIR` respecté). `buildPreset` est pur : stuff équipé par
+  `stuffOp` (vrais uid), arbre via `sanitizeSkills`, sorts `unlock.tree` de la spé dans les `openSlots`.
+- **Niveau** : `maxStorableLevel()` = 72 (XP du niveau 73 > `Number.MAX_SAFE_INTEGER`, `sanitizeProgress` la remettrait
+  à 0). Demandé : 100, impossible sans changer le stockage de l'XP. Même XP pour la spé (`specCurve` = `curve`).
+- **Tests** : `tests/dev-presets.test.js` ✅ 5/5 (tout repasse les sanitize du serveur, clés invalides refusées).
+  Vérifié de bout en bout ✅ : serveur dev sur données temporaires, connexion Test_Barbare, `/api/game/state` = niveau 72,
+  spé barbare 72, 6 pièces acier, 5 clés (`--keys 5`), arbre 12/12, sorts dash + war_cry. Script lancé deux fois (création puis
+  remise à neuf) ✅.
+- **Point fragile** : si un nouvel arbre arrive sans entrée dans `PRESET.names`, son compte s'appelle `Test_<id>`
+  (tronqué à 16 caractères).
+
+### Presets : glyphes + preset au choix pour les mineurs de test (Geoffrey) — branche `geoffrey/presets-dev`, 🧪
+- **Quoi** : logique pure déplacée dans `src/shared/dev-presets.js` (`buildPreset`, `presetMiner`, `sanitizeBotPresets`,
+  `maxStorableLevel`), noms / stuff / clés dans `DEV_PRESETS` (`src/config.js`) ; `scripts/dev-presets.js` ne garde que
+  l'écriture des comptes. Glyphes : tous ceux des nœuds de l'arbre (`GLYPHS.items`), posés dans `skills.glyphs` (actifs :
+  arbre au max) ; le mineur de test les a aussi en `glyphsOwned` (pas de drop d'un glyphe déjà là).
+- **Session** : `record.botPresets` (arbre ou null par mineur de test ; serveur : `dev ? sanitizeBotPresets(body.botPresets) : null`).
+  `minerSpecs` (`src/shared/game.js`) : pour un mineur de test avec preset → nom, look, gear, skills, sorts, auras, owned du
+  preset ; `devSpecs[i]` reste prioritaire sur les skills. Le record ne stocke que l'arbre : `presetMiner` est recalculé à
+  la reconstruction (déterministe ; changer `DEV_PRESETS` change le rejeu d'une vieille session dev).
+  Lobby : `#devPresets` (un menu par mineur de test, `GAME.maxPlayers − 1`), envoyé dans `botPresets`.
+- **Tests** : `tests/dev-presets.test.js` ✅ 9/9 (glyphes actifs, mineur de test avec preset et sans, devSpecs prioritaire,
+  serveur dev / normal). dev-spec, glyphs, game, tower : 146/147 ; l'échec « lobby, mode dev : les tours sont toujours
+  dans Où miner » (`tests/dev-spec.test.js:75`) **échoue aussi sur main sans ce chantier** (la liste attendue n'a pas
+  `instance_1` ni `giant`) ⚠️ à corriger à part.
+  De bout en bout ✅ : serveur dev sur données temporaires, Test_Mineur + 2 mineurs de test (logisticien, barbare) →
+  `/api/game/view` : Test_Mineur / Test_Logisticien / Test_Barbare, acier, sorts de chaque spé.

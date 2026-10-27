@@ -59,7 +59,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     (mineurs dans sa hitbox : ils y restent et frappent de là), recul **0,5** avec arc, projection **25 % / 10 %** barbare
     (rage 35 / 20 %) de **5 cases**, recul subi seulement de son focus (25 % de résistance) ; **saut** à 75 / 50 / 25 % :
     3 s en l'air intouchable, atterrissage = tous repoussés de 3 cases + étourdis 3 s. Affichage fluide (glissade).
-    Équilibrage en cours (Geoffrey fait ses propres simulations). Mode dev : spé imposée par mineur (+ niveau), mineurs de
+    Équilibrage en cours (Geoffrey fait ses propres simulations). Mode dev : spé imposée par mineur (+ niveau), preset par mineur de test (stuff acier, arbre + glyphes, sorts ;
+    `DEV_PRESETS`, 27/10), mineurs de
     test dans les tours, vitesse et pause dans la barre de la tour.
     **Ancien (refonte du 23/10)** : tour 20 × 32, **7 étages** de 3 séparés par des planchers
     indestructibles percés d'une porte de 3 cases au bord, alternée gauche / droite (**serpentin**) ; étage 0 vide, puis

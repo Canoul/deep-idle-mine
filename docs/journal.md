@@ -18,6 +18,19 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
+- **Pour le joueur** : rien, c'est un outil de test. Trois presets, un par spé : **Test_Mineur**, **Test_Logisticien**,
+  **Test_Barbare**. Chacun : stuff complet en acier porté, arbre de sa spé rempli avec **tous les glyphes de sa spé posés**,
+  sorts de la spé équipés.
+  - **Mineurs de test** : dans le panneau dev du lobby, chaque mineur de test a un menu « Preset » : il part avec le nom,
+    le stuff, l'arbre, les glyphes et les sorts du preset (mine, tours, instance). Sans preset : stats de base, comme avant.
+  - **Comptes** : `npm run dev:presets` (serveur arrêté) crée ou remet à neuf les trois comptes locaux (mot de passe
+    `preset1234`), avec en plus 10 Clés d'instance I, pour jouer à plusieurs navigateurs.
+- **Décisions** : niveau et niveau de spé à **72**, pas 100 : au-delà, l'XP ne tient plus dans un nombre que le serveur
+  accepte. Ça ne change rien en pratique : un arbre coûte 10 à 12 points et les sorts de spé s'ouvrent au niveau 5.
+  Une spé imposée dans le panneau dev passe avant celle du preset (le stuff reste).
+- **État** : 🧪 sur la branche `geoffrey/presets-dev` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
   tes points** du jour (les tiens, pas ceux de tous), même si le score collectif n'atteint aucun palier. Au **four**

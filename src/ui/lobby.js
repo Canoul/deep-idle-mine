@@ -7,6 +7,7 @@ import { gearScore } from '../meta/gearscore.js';
 import { statusText } from './social.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE } from '../config.js';
 import { joinLink } from '../shared/party.js';
+import { presetName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait } from '../render/portrait.js';
@@ -422,6 +423,11 @@ export function setupLobby(h){
   /* panneau dev : réglages appliqués à la session lancée (le serveur les vérifie et les borne) */
   $('devStats').innerHTML = DEV_TUNABLES.map(([obj, key, label, min, max]) =>
     `<span>${esc(label)}</span><input type="number" step="any" min="${min}" max="${max}" data-obj="${obj}" data-key="${key}" data-base="${TARGETS[obj][key]}" value="${TARGETS[obj][key]}">`).join('');
+  /* preset de chaque mineur de test (src/shared/dev-presets.js) : stuff, arbre et glyphes, sorts ; sans preset, stats de base */
+  $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
+    `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${
+      SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')}</select>`).join('');
+  const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
     `<span>Spé du mineur ${i + 1}</span><span class="devSpec"><select data-spec="${i}"><option value="">La sienne</option>${
@@ -470,7 +476,7 @@ export function setupLobby(h){
       const v = parseFloat(i.value);
       if(Number.isFinite(v) && v !== +i.dataset.base) (overrides[i.dataset.obj] ??= {})[i.dataset.key] = v;   // seulement ce qui change
     }
-    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs() };
+    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), botPresets: botPresets() };
   }
 
   $('launchBtn').onclick = async () => {
