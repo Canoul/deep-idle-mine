@@ -16,5 +16,6 @@ export function socialRoutes(social){
     'POST /api/social/invite':  async ctx => { needMe(ctx); return social.invite(ctx.me, str(ctx.body.id)); },
     'POST /api/social/join':    async ctx => { needMe(ctx); return social.join(ctx.me, str(ctx.body.id)); },
     'POST /api/social/profile': async ctx => { needMe(ctx); return social.profile(ctx.me, str(ctx.body.id)); },
+    'POST /api/social/leaderboard': async ctx => { needMe(ctx); return social.leaderboard(ctx.me, str(ctx.body.board)); },
   };
 }

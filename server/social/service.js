@@ -12,6 +12,9 @@
      fermé), pas seulement les amis ; ceux qui
      ne sont pas en session d'abord (en ligne ou dans un lobby), puis ceux en session, par pseudo. Liste bornée à
      SOCIAL_SERVER.onlineListMax, le compteur donne le vrai total.
+   - Classements (sous-onglet Classements, 27/10/2026) : GS, XP, XP de spécialisation (un par arbre), meilleur temps de
+     tour céleste ; tous les comptes, le top LEADERBOARD.size et sa propre place (src/meta/leaderboard.js). Les valeurs
+     viennent du service de jeu (game.leaderboardData) ; ici on classe et on met les pseudos.
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
      dans le groupe de l'ami (créé s'il n'en a pas), seulement s'il est en ligne et pas en session.
 
@@ -22,6 +25,7 @@
 import { displayName, formatAccountId, parseAccountId, nameKey } from '../../src/shared/account.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
+import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
 
 export class SocialError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -195,6 +199,16 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       away.sort((a, b) => b.lastSeenAt - a.lastSeenAt);
       const list = [...players, ...away].slice(0, config.onlineListMax);
       return { side, open: true, count: list.length, online: players.length, players: list };
+    },
+
+    /* un classement (board : BOARDS de src/meta/leaderboard.js) : { board, total, rows:[{ rank, name, value, me, … }], me } */
+    async leaderboard(me, board){
+      if(!isBoard(board)) fail('bad_request', 400, 'Classement inconnu.');
+      const data = await game.leaderboardData(), tree = specTree(board);
+      const r = rankBoard(board, tree ? data.spec[tree] : data[board], me.id);
+      const row = async ({ id, rank, value, me: mine, level, side, team }) =>
+        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}) });
+      return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
     },
 
     /* inviter un ami dans mon groupe / rejoindre le sien */

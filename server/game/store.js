@@ -13,7 +13,9 @@
    name } | null, claimed:[jour] }. Une entrée et une fin de visite écrivent le jour et le joueur ensemble ; une
    récompense écrit l'inventaire et le joueur ensemble.
    Stats de session (ns session_stat, clé 'session:compte') : une ligne par joueur et par mine classique terminée, gardée
-   sans limite (les sessions, elles, sont effacées après 30 jours) ; lue par le tableau de bord (server/admin/dashboard.js). */
+   sans limite (les sessions, elles, sont effacées après 30 jours) ; lue par le tableau de bord (server/admin/dashboard.js).
+   Record de tour (ns tower_record, clé = compte, 27/10/2026) : meilleur temps de victoire dans une tour céleste,
+   { t, at, side, team, session } (src/meta/leaderboard.js) ; gardé sans limite. Lu par les classements (onglet Social). */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -36,6 +38,7 @@ export function createMemoryGameStore(initial = {}){
   const sessionStats = new Map(Object.entries(initial.sessionStats ?? {}));   // tableau de bord : 'session:compte' → ligne
   const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
   const giantPlayers = new Map(Object.entries(initial.giantPlayers ?? {})); // Bloc géant : délai, visite en cours, récompenses prises
+  const towerRecords = new Map(Object.entries(initial.towerRecords ?? {})); // classements : meilleur temps de tour, par compte
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -59,12 +62,14 @@ export function createMemoryGameStore(initial = {}){
 
     /* stuff (pièces portées) : même principe que les fours, une pièce passe de l'inventaire au stuff et inversement */
     async getStuff(accountId){ return copy(stuff.get(accountId)) ?? null; },
+    async listStuff(){ return [...stuff.entries()].map(([account, st]) => ({ account, value: copy(st) })); },        // classements
     async putInventoryAndStuff(accountId, inv, st){
       inventories.set(accountId, copy(inv)); stuff.set(accountId, copy(st));
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'stuff', key: accountId, value: st }]);
     },
 
     async getProgress(accountId){ return copy(progress.get(accountId)) ?? null; },
+    async listProgress(){ return [...progress.entries()].map(([account, p]) => ({ account, value: copy(p) })); },   // classements
     async putProgress(accountId, p){ progress.set(accountId, copy(p)); await store.changed([{ ns: 'progress', key: accountId, value: p }]); },
 
     /* skills : à part de la progression (un versement d'XP en fin de session n'écrase jamais un point dépensé) */
@@ -161,6 +166,14 @@ export function createMemoryGameStore(initial = {}){
       await store.changed([{ ns: 'inventory', key: accountId, value: inv }, { ns: 'giant_player', key: accountId, value: p }]);
     },
 
+    /* classements : meilleur temps de tour par compte ; entries [[compte, record]…] écrits ensemble */
+    async getTowerRecord(accountId){ return copy(towerRecords.get(accountId)) ?? null; },
+    async listTowerRecords(){ return [...towerRecords.entries()].map(([account, r]) => ({ account, value: copy(r) })); },
+    async putTowerRecords(entries){
+      for(const [id, r] of entries) towerRecords.set(id, copy(r));
+      if(entries.length) await store.changed(entries.map(([id, r]) => ({ ns: 'tower_record', key: id, value: r })));
+    },
+
     /* wiki : objets secrets trouvés en jeu (WIKI.secret) ; clé = nom de l'objet, valeur = { at } (premier trouvé) */
     async listDiscovered(){ return [...discovered.keys()]; },
     async putDiscovered(item, v){ if(discovered.has(item)) return; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); },
@@ -176,7 +189,8 @@ export function createMemoryGameStore(initial = {}){
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
-                         giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats) }; },
+                         giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
+                         towerRecords: Object.fromEntries(towerRecords) }; },
   };
   return store;
 }
@@ -206,11 +220,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
-                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat });
+                                        judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
+                                        towerRecords: rows.tower_record });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

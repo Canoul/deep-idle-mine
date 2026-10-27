@@ -18,6 +18,18 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Classements dans l'onglet Social
+- **Pour le joueur** : un 3e sous-onglet **Classements** dans Social, avec quatre classements de tous les joueurs :
+  **Gear score**, **Niveau** (XP), **Spécialisation** (un classement par arbre : Mineur, Logisticien, Barbare) et
+  **Tour céleste** (meilleur temps pour battre le boss, Ange et Démon confondus). On voit les 50 premiers, et sa propre
+  place en bas si on n'y est pas. Pour la tour, chaque joueur de l'équipe garde son meilleur temps, et on voit avec qui
+  il l'a fait.
+- **Décisions** : un classement par spé, temps de tour par joueur avec l'équipe, top 50 + sa place (Geoffrey). Les
+  victoires en tour du dernier mois (encore gardées par le serveur) sont reprises ; les plus anciennes sont perdues.
+  Les parties du mode dev ne comptent pas.
+- **À suivre** : rien d'obligatoire ; idées possibles : bouton « Ajouter » sur une ligne, classement du Bloc géant.
+- **État** : 🧪 sur la branche `geoffrey/leaderboard` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Nouveaux minerais : mithril, cobalt, thorium (areas 7 et 8)
 - **Pour le joueur** : trois nouveaux minerais tout en bas de la mine. Le **mithril** (rareté commun) apparaît dès
   l'area 6, le **cobalt** et le **thorium** (rareté inhabituel, nom en vert) dès l'area 7. Deux nouvelles areas : la **7** et la
