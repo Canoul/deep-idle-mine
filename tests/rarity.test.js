@@ -42,6 +42,8 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const KING = { 'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
                  'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare' };
   for(const [n, r] of Object.entries(KING)) assert.equal(rarityOf(n), r, n);
+  KING['Clé d\'instance I'] = 'inhabituel';   // Instances (27/10) : la clé du roi gobelin
+  assert.equal(rarityOf('Clé d\'instance I'), 'inhabituel');
   for(const n of Object.keys(ITEMS)) if(![...UNCOMMON, ...TIER2, ...RARE, ...TOWER, ...STEEL, ...EPIC, ...RINGS_, ...GLYPH, ...Object.keys(MOB_STUFF), ...Object.keys(KING)].includes(n)) assert.equal(rarityOf(n), 'commun', n);
   assert.ok(ITEMS['Shiny iron'] && ITEMS['Shiny gold']);
 });

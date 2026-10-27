@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -21,6 +21,10 @@ import { setupInstantLobby } from './ui/instant-lobby.js';
 import { setupGiant } from './ui/giant.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
+import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
+import { createInstanceRenderer } from './render/instance.js';
+import { applyInstanceView } from './shared/instances-view.js';
+import { isInstanceMode } from './shared/instances.js';
 import { createTowerRenderer } from './render/tower.js';
 import { applyTowerView } from './shared/tower-view.js';
 import { createPerf, perfText } from './ui/perf.js';
@@ -75,6 +79,8 @@ const renderer = createRenderer($('cv'));
 const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
+const inRenderer = createInstanceRenderer($('cvIn'));
+const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
 /* ancienne sauvegarde d'inventaire dans le navigateur : l'inventaire est maintenant sur le serveur */
@@ -245,6 +251,7 @@ const lobby = setupLobby({
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
   gs: () => gearScore(stuff.worn()),
+  keys: item => (ui.inv?.slots ?? []).reduce((n, s) => n + (s?.item === item ? s.qty || 1 : 0), 0),   // clés d'instance (27/10)
   towerWho: side => socialApi.towerWho(side),
   onPrefs: prefs => gameApi.prefs(prefs).catch(e => lobby.error(e.message)),
   onShowSession: () => nav.show('session'),
@@ -252,7 +259,10 @@ const lobby = setupLobby({
   onJudgment: () => pollJudgment(),
   onLaunch: async opts => {
     lobby.error('');
-    try { enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh(); }   // lancer désinscrit du MI
+    try {
+      enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
+      if(isInstanceMode(opts.mode)) gameApi.state().then(st => setInventory(st.inventory)).catch(() => {});   // clé consommée au lancement
+    }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
       lobby.error(e.message);
@@ -302,13 +312,14 @@ window.MI = instantLobby;                            // pour le débogage depuis
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
   setsUI.refresh();   // sets de nouveau disponibles
-  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
+  $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
 }
 $('toLobbyBtn').onclick = () => nav.show('lobby');
 $('miLeaveBtn').onclick = () => leave();
 $('twLeaveBtn').onclick = () => leave();
+$('inLeaveBtn').onclick = () => leave();
 const navSession = document.querySelector('.navSession');
 navSession.onclick = () => { if(rec || giantUI?.active()) nav.show('session'); };
 
@@ -440,8 +451,8 @@ function enterSession(session){
   rec = session; waiting = false;
   setsUI.refresh();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
-  const mi = session.mode === 'mi', tw = isTowerMode(session.mode);
-  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
+  const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
+  G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
@@ -449,8 +460,8 @@ function enterSession(session){
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
-  $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw; $('miRun').hidden = !mi; $('twRun').hidden = !tw;
-  if(mi || tw) chat.stop(); else chat.start();
+  $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
+  if(mi || tw || ins) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
   pollView();
   pollLobby();                                   // le lobby continue de montrer le groupe
@@ -474,6 +485,7 @@ async function pollView(){
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
     if(r.view?.mode === 'mi'){ G = applyInstantView(r.view); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
       applyView(G, r.view); lastView = performance.now();
@@ -504,7 +516,7 @@ function smooth(dtr){
 
 async function leave(){
   if(!G || G.over) return;
-  if(!confirm(isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+  if(!confirm(isIn() ? 'Quitter l\'instance ?\nTa clé est perdue.' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
                      : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ alert(e.message); return; } }
@@ -544,6 +556,7 @@ function showResult(st){
   const toInv = () => { done(); $('end').hidden = true; showNoSession(); nav.show('inventaire'); };
   if(ended.mode === 'mi') showInstantEnd(ended, acct.account?.id, back, toInv);
   else if(isTowerMode(ended.mode)) showTowerEnd(ended, acct.account?.id, back, toInv);
+  else if(isInstanceMode(ended.mode)) showInstanceEnd(ended, acct.account?.id, back, toInv);
   else showEnd(ended, acct.account?.id, back, toInv, up);
   pollLobby();                               // signe de vie au groupe pendant le bilan
 }
@@ -553,6 +566,7 @@ function setInventory(inv, bag){
   ui.inv = { slots: inv?.slots ?? [], unlocked: inv?.unlocked ?? [] };
   furnace.setInventory(ui.inv); crusher.setInventory(ui.inv); craft.setInventory(ui.inv); stuff.setInventory(ui.inv); research.setInventory(ui.inv); upgradeUI.setInventory(ui.inv);
   spells.setInventory(ui.inv); skills?.refresh();   // skills : la case de glyphe dépend de l'inventaire
+  lobby.update({});                                  // carte des instances : les clés du joueur (27/10)
   if(bag) ui.inv.slots.forEach((s, i) => { if(s && bag[s.item]) ui.fresh.add(i); });
   if(ui.tab==='inventaire') renderInventory(ui.inv, ui.fresh);
   else if(ui.fresh.size) nav.badge('inventaire', true);
@@ -605,11 +619,12 @@ function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   if(perfOn) perf.frame(now);
   smooth(dtr);
-  const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower';
-  if(shown && ui.tab==='session') tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
+  const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
+    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
+    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
     else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
@@ -618,10 +633,10 @@ function frame(now){
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
-    updateNavSession(shown, waiting, tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
-    updateOrbs(shown, mi || tw, tw ? TOWER.duration : undefined);
+    updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
+    updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
-      tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');

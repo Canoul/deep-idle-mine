@@ -254,6 +254,8 @@ export const LOOT = {
       ]},
       { family:'gem', items:gems(0.02) },
       { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
+      /* Clé d'instance I (27/10/2026, Geoffrey) : son propre tirage, en plus du reste (INSTANCE) */
+      { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.05, tex:'key_instance_1' } ] },
     ],
   },
 };
@@ -615,8 +617,8 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
@@ -824,6 +826,7 @@ export const RARITY = {
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
+    'Clé d\'instance I':'inhabituel',
     'Plume d\'ange':'rare',
     /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
     'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
@@ -1065,6 +1068,7 @@ export const ITEMS = {
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
+  'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
@@ -1191,12 +1195,57 @@ export const PARTY = { codeLength:6, poll:2500, pollInSession:5000 };   // ms : 
 export const MINE_MODES = [
   { id:'mine', label:'Mine',              icon:'⛏', ready:true  },
   { id:'mi',   label:'Mine instantanée',  icon:'🌀', ready:true, scheduled:true },   // MI : inscription dans le lobby
+  /* Instances (27/10/2026, INSTANCE) : un groupe de 1 à 3, une clé chacun ; le lobby les montre sous un seul bouton
+     « Instances » (src/ui/lobby.js) */
+  { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
+
+/* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
+   provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
+   clé par joueur (key), consommée au lancement. Instance I (le roi gobelin) :
+   - salle w × h cases d'air (sol, murs et plafond indestructibles), tout éclairé, pas d'oxygène ni de pods ; rebords
+     (ledgeW cases de large, 1 de haut, collés aux murs) tous les ledgeEvery cases de hauteur, ledges par côté ; un
+     spawner par rebord, collé au mur ; plateforme du roi : platform.w de large, à platform.height cases du sol ; départ
+     au sol, au centre. Échelles illimitées ; on saute d'au plus maxFall cases (pas d'étourdissement en tombant).
+   - spawner : un gobelin dès le début puis toutes les every s ; hp « coups de pioche » (chaque seconde de minage
+     enlève la vitesse de minage effective, comme au Bloc géant) ; la Dynamite en enlève dynamite ; le mineur doit être
+     sur la case à côté (le rebord, contre le spawner).
+   - gobelin : hp PV, un coup toutes les hitEvery s ; le premier coup tacle ; chaque coup a knockChance de repousser de
+     knock case(s), toujours vers le centre de la salle. Cibles : la provocation, puis un mineur qui casse un spawner à
+     focusRange cases ou moins, puis le plus proche. Une case toutes les step s ; il tombe et monte aux échelles.
+   - roi : w × h, s'éveille quand les spawners sont cassés (il descend en dropTime s), hp PV, knockRes %, vitesse de
+     marche speedMul × un mineur de base ; un coup toutes les hitEvery s qui repousse de push case(s) vers le centre ;
+     tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
+     centre. À chaque seuil cageAt de ses PV (tous les 20 % manquants) : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
+     cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
+     cageMaxWait s). Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
+   - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
+export const INSTANCE = {
+  list: [
+    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', ready:true },
+    { id:'instance_2', label:'Instance II',  ready:false },
+    { id:'instance_3', label:'Instance III', ready:false },
+  ],
+  duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
+  /* 27/10 (Geoffrey) : 5 cases d'air entre deux rebords (un tous les 6 ; avant 5), 3 rebords par côté (6 spawners ;
+     4 essayés puis retirés), salle de 28 de large (avant 20) et 24 de haut (avant 20), plateforme du roi à 21 du sol */
+  w: 28, h: 24, ledgeW: 6, ledgeEvery: 6, ledges: 3, maxFall: 7,
+  platform: { w: 4, height: 21 },
+  spawner: { hp: 125, every: 30, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200)
+  goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
+            knock: 0.5, knockChance: 0.30, step: 0.9 },
+  boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
+          speedMul: 3, hitEvery: 1.5, push: 0.5,
+          boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
+          cageAt: [0.8, 0.6, 0.4, 0.2], cageRadius: 3,   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
+          cageHard: 10, cageMaxWait: 90,
+          rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
+};
 
 /* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
    Une session commune à tout le serveur, de minuit à minuit (timeZone). Chacun y entre seul, une fois toutes les

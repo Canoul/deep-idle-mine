@@ -5,7 +5,7 @@
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { gearScore } from '../meta/gearscore.js';
 import { statusText } from './social.js';
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
@@ -128,7 +128,10 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
    Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
    si le joueur les a déjà faites pendant cette ouverture. Mode dev : toujours là et jamais grisées (illimitées). */
 export function mineModes(cur, locked = false, judgment = null, dev = false){
-  return MINE_MODES.filter(m => !m.tower || dev || judgment?.sides?.[m.tower]?.open).map(m => {
+  /* instances (27/10) : un seul bouton « Instances » pour toutes ; il ouvre l'instance choisie (la première sinon) */
+  const curInst = MINE_MODES.find(m => m.id === cur)?.instance;
+  return MINE_MODES.filter(m => (!m.tower || dev || judgment?.sides?.[m.tower]?.open) && (!m.instance || m === MINE_MODES.find(x => x.instance))).map(m => {
+    if(m.instance) return { id: curInst ? cur : m.id, label: '🗝 Instances', on: !!curInst, soon: false, done: false, disabled: locked };
     const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;
     /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10), et regarder le Bloc géant
        (26/10 : scores, classement, récompenses ; « Entrer » y est grisé) */
@@ -141,8 +144,10 @@ export function mineModes(cur, locked = false, judgment = null, dev = false){
    à la place de l'équipe. dev : réglages dev permis (mode dev, celui qui lance, hors session). */
 export function lobbyCards({ view, mode, dev = false }){
   const jv = view === 'jugement', def = MINE_MODES.find(m => m.id === mode), mi = !!def?.scheduled, tower = !!def?.tower, giant = !jv && !!def?.giant;
-  /* Bloc géant : sa carte à la place de l'équipe (on y entre seul), ni Lancer ni préférences (26/10) */
-  return { judgment:jv, mi:!jv && mi, giant, team:(!mi && !giant) || jv, launch:!jv && !giant, prefs:!jv && !mi && !tower && !giant, dev:!jv && !mi && !giant && dev };
+  const inst = !jv && !!def?.instance;
+  /* Bloc géant : sa carte à la place de l'équipe (on y entre seul), ni Lancer ni préférences (26/10). Instances (27/10) :
+     leur carte, l'équipe et Lancer ; pas de préférences (l'IA de l'instance ne les lit pas) */
+  return { judgment:jv, mi:!jv && mi, giant, inst, team:(!mi && !giant) || jv, launch:!jv && !giant, prefs:!jv && !mi && !tower && !giant && !inst, dev:!jv && !mi && !giant && !inst && dev };
 }
 
 /* boutons du chef sur la place d'un autre membre : nommer chef (★) même pendant une session (25/10/2026 ; le serveur
@@ -176,6 +181,8 @@ export function setupLobby(h){
     const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
+    $('instCard').hidden = !cards.inst;
+    if(cards.inst) renderInstances();
     const giantWas = $('giantCard').hidden; $('giantCard').hidden = !cards.giant;
     if(giantWas && cards.giant) h.onMode?.('giant');   // la carte vient d'apparaître : elle se met à jour
     $('launchBtn').hidden = !cards.launch;
@@ -206,6 +213,7 @@ export function setupLobby(h){
 
     const ls = launchState(st);
     if(tower && ls.can) ls.label = ls.label.replace('la session', 'la tour').replace('Lancer à', 'Lancer la tour à');
+    if(def?.instance && ls.can) ls.label = ls.label.replace('la session', 'l\'instance').replace('Lancer à', 'Lancer l\'instance à');
     $('launchBtn').disabled = !ls.can; $('launchBtn').innerHTML = pxi('arrow') + esc(ls.label.replace(/^[^\p{L}\d]+/u, ''));   // l'icône pixel remplace le « ▶ » du texte
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
@@ -227,6 +235,8 @@ export function setupLobby(h){
       : locked ? 'Le lobby est en lecture seule pendant la session : tu pourras relancer à la fin.'
       : jv ? 'Pour lancer, choisis la Mine ou une tour ouverte dans « Où miner ».'
       : def?.giant ? ''
+      : def?.instance ? `${esc(def.label)} : <b>${INSTANCE.duration / 60} min</b> de jeu pour casser les ${INSTANCE.ledges * 2} spawners et vaincre le ${esc(INSTANCE.boss.name)}. `+
+                        `<b>Une clé par joueur</b>, consommée au lancement (même en cas d'échec).`
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
                 `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture. `+
                 `<button class="small${st.who?.side === def.tower ? ' on' : ''}" id="whoBtn" title="Joueurs en ligne qui n'ont pas encore fait cette tour">Who ?</button>`
@@ -361,6 +371,17 @@ export function setupLobby(h){
     pick(b.dataset.mode);
   };
   function pick(mode){ st.view = null; st.mode = mode; render(); h.onMode?.(st.mode); }
+
+  /* carte des instances : la liste (les pas prêtes grisées) et les clés du joueur pour l'instance choisie */
+  function renderInstances(){
+    const cur = INSTANCE.list.find(i => i.id === st.mode) ?? INSTANCE.list[0], n = cur.key ? (h.keys?.(cur.key) ?? 0) : 0;
+    $('instBody').innerHTML = `<div class="instList">${INSTANCE.list.map(i =>
+      `<button data-inst="${i.id}" class="${i.id === cur.id ? 'on' : ''}"${i.ready ? '' : ' disabled title="Bientôt disponible"'}>`+
+      `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
+      (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span></p>`+
+        `<p class="mut small">Chaque joueur du groupe doit avoir sa clé ; elle est consommée au lancement. On la trouve dans les Treasure T3 (5 %).</p>` : '');
+  }
+  $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };
   $('lobbyToSession').onclick = () => h.onShowSession?.();
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));

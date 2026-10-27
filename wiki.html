@@ -27,6 +27,7 @@
   <a href="#khole">Le k hole</a>
   <a href="#mi">La mine instantanée</a>
   <a href="#bloc">Le Bloc géant</a>
+  <a href="#instances">Les instances</a>
   <a href="#roigobelin">Le Roi Gobelin</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
@@ -119,7 +120,7 @@
   <h1>Les onglets</h1>
   <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, = et ²</b>). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; une pièce du <a href="#mobs">butin rare</a> rend des matériaux fixes ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun ; tu peux aussi <b>glisser</b> un objet dans un autre slot.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>12 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole et <b>2 <a href="#anneaux">anneaux</a></b>) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session. À gauche, tes <a href="#sets">sets</a>.</p></div>
@@ -231,6 +232,25 @@
   <h2>La récompense</h2>
   <p>À minuit, chaque joueur venu <b>au moins 2 fois dans la journée</b> (2 visites, donc espacées d'au moins 3 h) reçoit les objets de <b>tous les paliers</b> atteints par le score collectif (ils s'additionnent) : <b>1 000</b> : 1 Treasure T1 · <b>5 000</b> : 1 Treasure T1 + 15 Blueprint parts · <b>10 000</b> : 1 Treasure T2 · <b>15 000</b> : 1 Treasure T2 + 30 Blueprint parts · <b>20 000</b> : 1 Treasure T3. Elle t'attend sur la carte du Bloc géant (bouton <b>Réclamer</b>) tant que tu ne l'as pas prise.</p>
   <p class="tip">💡 Plus il y a de joueurs, plus le palier du Treasure T3 est à portée : passe toutes les 3 h !</p>
+</section>
+
+<section id="instances">
+  <h1>Les instances</h1>
+  <p class="lead">Des donjons de groupe à clé. Pour l'instant : <b>l'Instance I, le roi gobelin</b>.</p>
+  <h2>Entrer</h2>
+  <ul>
+    <li>Onglet <b>Lobby</b>, « Où miner » → <b>🗝 Instances</b> : la liste des instances (les prochaines sont encore fermées) et tes clés. Un groupe de <b>1 à 3</b>, lancé par le chef.</li>
+    <li>Il faut <b>une Clé d'instance I par joueur</b>. Elle est <b>consommée au lancement</b>, même si vous échouez ou si tu quittes. On la trouve dans les <b>Treasure T3</b> (5 % de chance).</li>
+  </ul>
+  <h2>L'Instance I : le roi gobelin</h2>
+  <ul>
+    <li><b>10 min de jeu</b> dans une salle à rebords : 3 de chaque côté, chacun avec un <b>spawner à gobelins</b> collé au mur. Ton mineur pose des échelles pour y monter.</li>
+    <li>Un spawner se casse « au coup de pioche » : chaque seconde lui enlève ta <b>vitesse de minage</b> (125 coups ; la Dynamite en vaut 6). Tant qu'il vit, il lâche un gobelin toutes les 30 s.</li>
+    <li>Les <b>gobelins</b> foncent sur vous, surtout sur celui qui casse un spawner. Leur premier coup te <b>tacle</b> : il faut tuer ce gobelin avant de reprendre. Leurs coups repoussent <b>vers le centre</b> : gare au bord du rebord !</li>
+    <li>Les 6 spawners cassés, le <b>roi gobelin</b> descend de sa plateforme : 3 500 PV, rapide, et tous les 10 coups il t'envoie en l'air. À chaque fois qu'il perd 20 % de ses PV, il <b>enferme</b> tout le monde sur les rebords : creuse pour sortir ! Sous 33 % de PV, il enrage.</li>
+    <li>Pas d'oxygène, pas de sac, tout est éclairé. <b>Pas de récompense pour l'instant</b> : elle viendra bientôt.</li>
+  </ul>
+  <p class="tip">💡 Une bonne <b>pioche</b> et une bonne <b>épée</b> comptent bien plus que l'armure ici. Visez au moins le niveau fer + acier, à trois.</p>
 </section>
 
 <section id="ange">

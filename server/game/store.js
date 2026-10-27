@@ -97,6 +97,13 @@ export function createMemoryGameStore(initial = {}){
     async putPrefs(accountId, p){ prefs.set(accountId, copy(p)); await store.changed([{ ns: 'prefs', key: accountId, value: p }]); },
 
     async getGameSession(id){ return copy(sessions.get(id)) ?? null; },
+    /* lancement d'une instance (27/10) : la session et les inventaires (clés consommées) en une seule écriture : jamais
+       une clé perdue sans session, ni une session sans clé ; entries = [[accountId, inv]…] */
+    async putGameSessionAndInventories(rec, entries){
+      sessions.set(rec.id, copy(rec));
+      for(const [id, inv] of entries) inventories.set(id, copy(inv));
+      await store.changed([{ ns: 'game_session', key: rec.id, value: rec }, ...entries.map(([id, inv]) => ({ ns: 'inventory', key: id, value: inv }))]);
+    },
     async putGameSession(rec){ sessions.set(rec.id, copy(rec)); await store.changed([{ ns: 'game_session', key: rec.id, value: rec }]); },
     /* sessions où ce compte joue, les plus récentes d'abord */
     async sessionsOf(accountId){
