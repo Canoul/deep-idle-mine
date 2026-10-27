@@ -556,7 +556,16 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; le minuteur de session reste visible dans la barre du haut.
 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
-- **Deux sous-onglets** *(26/10/2026, Geoffrey)* : **Amis** (tout ce qui suit) et **Online**.
+- **Trois sous-onglets** : **Amis** (tout ce qui suit), **Online** *(26/10/2026, Geoffrey)* et **Classements** *(27/10/2026, Geoffrey)*.
+- **Classements** *(27/10/2026, Geoffrey)* : tous les joueurs (amis ou non, invités compris), **les 50 premiers** et, si on
+  n'y est pas, **sa propre ligne avec son rang** *(valeur de config)*. Un joueur à 0 n'est pas classé. Ex aequo : même rang.
+  - **Gear score** : le GS du stuff porté (le même que l'onglet Stuff).
+  - **Niveau** : l'XP totale du mineur (niveau affiché).
+  - **Spécialisation** : **un classement par arbre** (Mineur, Logisticien, Barbare), l'XP gagnée dans cet arbre.
+  - **Tour céleste** : le **meilleur temps** pour vaincre le boss, **Ange et Démon confondus**, en temps de jeu. **Chaque
+    joueur** présent à la victoire garde son meilleur temps ; sa ligne montre le camp et ses coéquipiers de ce jour-là.
+    Un joueur parti avant la victoire n'est pas classé. Les victoires des 30 jours avant le 27/10 sont reprises.
+    Les sessions du mode dev ne comptent pas.
 - **Online** *(26/10/2026, Geoffrey)* : un **compteur** de joueurs en ligne et, en dessous, **la liste de tous les joueurs en ligne** (amis ou non), avec ce qu'ils font. Un joueur **en session compte toujours**, même navigateur fermé (sa session tourne sur le serveur), comme dans la liste d'amis *(correction du 26/10/2026)*. **Ceux qui ne sont pas en session sont au-dessus** (en ligne ou dans un lobby), **ceux en session en dessous**, chaque groupe par pseudo. Chaque ligne indique « toi » ou « ami » ; pour les autres, un bouton **Ajouter** envoie une demande d'ami *(ajout de Claude)*. Liste limitée à 200 lignes, le compteur compte tout le monde *(valeur de config)*.
 - **Ajouter un ami par son pseudo** (sans tenir compte des majuscules ni des accents). Un compte invité n'a pas de pseudo : il s'ajoute avec son **ID de compte** *(ajout de Claude)*. C'est une **demande** : l'autre joueur l'accepte ou la refuse. Deux joueurs qui se demandent l'un l'autre deviennent amis tout de suite. Un ami se retire (des deux côtés) ; une demande envoyée s'annule.
 - L'onglet liste **les amis et ce qu'ils font** : **hors ligne**, **en ligne**, **en session mine**, **dans le lobby (x/3)** (dans un groupe de x joueurs). En ligne = le jeu est ouvert (même dans un onglet caché) depuis moins de 45 s *(valeur de config)*. Ordre : lobby, en ligne, en session, hors ligne. **Un ami en session affiche le temps qu'il lui reste** (« En session mine · reste 23 min », arrondi à la minute du dessus ; « En session · Tour de l'Ange · … » pour une tour ou la mine instantanée) *(23/10/2026, Geoffrey)*.

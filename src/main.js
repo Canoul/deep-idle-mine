@@ -399,6 +399,7 @@ const social = setupSocial({
   join:    id => joinParty(() => socialApi.join(id)),
   profile: id => socialApi.profile(id),
   online:  () => socialApi.online(),
+  leaderboard: board => socialApi.leaderboard(board),
 });
 
 /* ---------- Jugement (dans le Lobby, « Où miner ») : jauges Ange / Démon (communes à tous) ----------
