@@ -903,12 +903,12 @@ export const STUFF = {
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
-    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40). Torse hors règle du tier (27/10)
-    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
-    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
-    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.5 } },   // 25/10 : nerf, avant 0,6 (24/10 : 0,48 × 1,25 ; pas × 1,5 : 0,72)
-    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:16 } },     // remplace les mains nues (5) ; 24/10 : avant 13
+    'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:125 } },   // 27/10 (Geoffrey) : buff +100 x, 500 x (avant 100 ; 25/10 : 69)
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:137 } },   // 27/10 (Geoffrey) : buff +100 x (avant 120 ; 24/10 : 80). Torse hors règle du tier (27/10)
+    'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:2 } },   // 27/10 (Geoffrey) : buff +100 x, 500 x (avant 1,6 ; 25/10 : 1,08)
+    'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:2.08 } },   // 27/10 (Geoffrey) : buff +100 x, ≈ 500 x (avant 1,67 ; 25/10 : 1,08)
+    'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.58 } },    // 27/10 (Geoffrey) : buff ≈ +100 x, 0,58 (au centième, comme en session ; avant 0,5 ; 25/10 : nerf, avant 0,6)
+    'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
     'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
                                    attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* butin rare des mobs (MOB_DROPS) : pas craftables. Règle du 27/10/2026 (Geoffrey) : chacune vaut le x du tier 2
@@ -945,8 +945,8 @@ export const STUFF = {
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime','goblinThrall'],
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
      - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
-       (UPGRADE.tiers : 100 / 250 / 400 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
-       forte (pods ; chitine 180, fer 528, acier 720 x) ;
+       (UPGRADE.tiers : 100 / 250 / 500 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
+       forte (pods ; chitine 180, fer 528, acier 822 x) ;
      - le butin des mobs vaut le tier 2, à parts égales entre ses stats, une stat de combat comptant pour combatOnStuff
        de ce que donnerait l'équation (prix mesurés). Les pièces dessinées à la main (épées, lance, pioches, Plastron de
        l'équilibre, gants, cape, ceinture en peau, boussole, lampe) ne suivent pas cette règle. */
@@ -1020,7 +1020,8 @@ export const UPGRADE = {
     2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
                        'Gants tactique','Gants d\'ouvrier','Cape de Naingui','Lampe à incandescence',   // lampe : plan du T2 depuis le 26/10 (tier le 27/10)
                        'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
-    3: { x:400, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
+    /* 27/10/2026 (Geoffrey) : 500 x (avant 400), avec le buff de +100 x des pièces en acier */
+    3: { x:500, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre',
                        'Masse du Roi Gobelin','Cape royale du Gobelin'] },   // stuff du Roi Gobelin : tier 3 (Geoffrey, 27/10)
     /* tier 4 (27/10/2026, Geoffrey) : la Couronne du Roi Gobelin seule, 600 x */

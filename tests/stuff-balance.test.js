@@ -1,5 +1,5 @@
 /* Équilibre du stuff (27/10/2026, Geoffrey ; règle dans STUFF.combatStats / combatOnStuff, src/config.js) :
-   - casque, jambes et bottes en chitine / fer / acier valent en GS la valeur de leur tier (100 / 250 / 400 x) ; les
+   - casque, jambes et bottes en chitine / fer / acier valent en GS la valeur de leur tier (100 / 250 / 500 x) ; les
      plastrons sont hors règle (torse volontairement plus fort, décision du 27/10) ;
    - le butin des mobs vaut le tier 2, à parts égales entre ses stats ; une stat de combat n'en reçoit que la moitié.
    Ce test échoue si un prix mesuré (UPGRADE.worth, gs) ou une pièce change sans rééquilibrer : c'est voulu. */
@@ -15,7 +15,7 @@ const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxyg
 const price = k => UPGRADE.worth[k] ?? UPGRADE.gs[k];
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
-test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 400 x)', () => {
+test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 500 x)', () => {
   for(const [mat, tier] of Object.entries(MATERIALS)) for(const p of ARMOR){
     const name = `${p} ${mat}`, want = UPGRADE.tiers[tier].x;
     assert.equal(tierOf(name), tier, `${name} : tier ${tier}`);

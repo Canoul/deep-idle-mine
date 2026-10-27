@@ -3716,3 +3716,14 @@ Règles (voir CLAUDE.md) :
   carte), `furnace` (25 pépites → 2 barres, recette ouverte de base) ; wiki, rarity, shiny, treasure : 141/141 ;
   `npm run test:anticheat` 102/102.
 - **À vérifier** : pas testé dans le navigateur (carte du Bloc géant, icônes). La barre n'a aucun usage.
+
+### Buff de l'acier : 500 x, tier 3 des runes à 500 x (Geoffrey) — branche `geoffrey/acier-500`, 🧪
+- **Quoi** (`src/config.js`, `STUFF.items`) : +100 x par pièce au GS (`UPGRADE.worth`) : casque oxygène 100 → 125 (500),
+  jambes montée 1,6 → 2 (500), bottes marche 1,67 → 2,08 (499), plastron pods 120 → 137 (822), pioche minage 0,5 → 0,58
+  (754 ; 0,577 serait arrondi à 0,58 en session de toute façon : `carac.mineSpeed` au centième), épée dégâts 16 → 18,5 (540).
+  `UPGRADE.tiers[3].x` 400 → 500 (choix de Geoffrey : lignes de rune / identification de toutes les pièces T3 +25 %,
+  y compris déjà posées, gardées en %). Texte de l'onglet Amélioration (`src/ui/upgrade.js`), wiki (texte des tiers).
+- **Tests** : steel-gear (valeurs du catalogue, « ≈ 500 x »), rune (tiers, ligne du Plastron de l'équilibre 16 → 20 pods),
+  stuff-balance (libellé) mis à jour ; stuff-balance, rune, steel-gear, gearscore, goblin-king, stuff*, wiki, modulation ✅ 67/67.
+- **À vérifier** : modulation des tours (`TOWER.modulation.gsMax`) : un stuff acier complet gagne ≈ 600 GS ; si le plafond
+  était calé sur l'ancien acier, il laisse passer moins de joueurs. Pas de simulation lancée (valeurs de config seulement).
