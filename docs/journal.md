@@ -24,6 +24,18 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
+- **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
+  offensives ÷ 2 (plastron en thorium : dégâts +3,85 au lieu de +7,7), dégâts % ÷ 3 (jambes en thorium +31,3 % au lieu
+  de +93,8 %), perçage ÷ 4, vitesse de minage ÷ 3, ténacité ÷ 2, résistance au recul ÷ 3. Dans le wiki, les effets des
+  pièces en thorium, en cobalt et des pièces spéciales restent **cachés tant que personne n'a trouvé leur plan** (le
+  mithril reste visible). Le premier plan trouvé est **annoncé sur Discord avec les stats** de la pièce ; pareil pour le
+  premier exemplaire trouvé de la Couronne, de la Masse et de la Cape royale du Roi Gobelin. Le **GS** compte les mêmes
+  diviseurs : pioches × 3, épées × 2 (classements compris), sans que les pièces existantes changent de stats.
+- **Décisions** : **ajustements de Geoffrey** (ses choix, pas des mesures), dans la config (`UPGRADE.priceAdjust`). À
+  réappliquer si on resimule les poids des stats, et à signaler dans le rapport.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Classements : le compte « admin » n'y figure plus
 - **Pour le joueur** : le compte « admin » (celui de l'équipe pour tester) n'apparaît plus dans aucun classement et ne
   compte pas dans le nombre de joueurs classés.

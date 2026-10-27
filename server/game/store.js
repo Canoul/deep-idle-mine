@@ -176,7 +176,8 @@ export function createMemoryGameStore(initial = {}){
 
     /* wiki : objets secrets trouvés en jeu (WIKI.secret) ; clé = nom de l'objet, valeur = { at } (premier trouvé) */
     async listDiscovered(){ return [...discovered.keys()]; },
-    async putDiscovered(item, v){ if(discovered.has(item)) return; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); },
+    /* renvoie true si c'est la première fois (annonce Discord d'un BP, 27/10), false si l'objet était déjà trouvé */
+    async putDiscovered(item, v){ if(discovered.has(item)) return false; discovered.set(item, copy(v)); await store.changed([{ ns: 'discovered', key: item, value: v }]); return true; },
 
     /* changements [{ ns, key, value (null = supprimé) }] : voir server/accounts/store.js */
     async changed(changes){},

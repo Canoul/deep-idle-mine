@@ -78,8 +78,8 @@ test('apparence : calques d\'armure, pioche et épée en acier', () => {
   for(const t of SKIN_TEXTURES) assert.ok(existsSync(`textures/${t}.png`), t);
 });
 
-test('Treasure T3 : areas 5 et au-delà, table du créateur', () => {
-  assert.deepEqual(TREASURE.tiers.map(t => [t.item, t.maxArea]), [['Treasure T1', 2], ['Treasure T2', 4], ['Treasure T3', 6]]);
+test('Treasure T3 : areas 5 et 6 (T4 au-delà depuis le 27/10), table du créateur', () => {
+  assert.deepEqual(TREASURE.tiers.map(t => [t.item, t.maxArea]), [['Treasure T1', 2], ['Treasure T2', 4], ['Treasure T3', 6], ['Treasure T4', 8]]);
   assert.ok(existsSync('textures/treasure_t3.png'));
   const T3 = LOOT['Treasure T3'];
   assert.deepEqual(T3.always.map(a => [a.item, a.min, a.max]),
