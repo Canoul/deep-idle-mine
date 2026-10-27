@@ -54,8 +54,8 @@ test('casser un spawner : 50 « coups de pioche » à la vitesse de minage ; la 
   assert.ok(Math.abs(s.hp - (50 - 6 - 2)) < 0.6, `Dynamite : ${s.hp}`);
 });
 
-test('gobelin : 125 PV, le premier coup tacle, recul de 0,5 vers le centre (30 %)', () => {
-  assert.equal(INSTANCE.goblin.hp, 125);
+test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre (30 %)', () => {
+  assert.equal(INSTANCE.goblin.hp, 150);
   const G = newInstance(3, { miners: [spec(0, { damage: 0.001, knockRes: 0 })] });
   quiet(G);
   const m = G.miners[0]; m.x = 4; m.y = G.floorY;
