@@ -3853,3 +3853,25 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/lobby.test.js` (+2 : ordre au démarrage vérifié dans le source de main.js ; chef + « prêt tout le
   temps » absent → « Lancer à 3 ») ✅ 17/17 ; boot-check, nav ✅. Repéré : un membre « absent » ne bloque pas le lancement.
 
+### Classements dans l'onglet Social (Geoffrey) — ✅ en ligne le 27/10
+- **Quoi** : sous-onglet « Classements » (`index.html` `#socialBoardTab`, `src/ui/social.js` : `BOARD_INFO`, `towerDetail`,
+  `rankText`, styles `.lrow`/`.lrank`/`.lval` dans `style.css`). Route `POST /api/social/leaderboard { board }`
+  (`server/social/routes.js`) → `social.leaderboard(me, board)` : classe (`rankBoard`) et met les pseudos ;
+  valeurs brutes de tous les comptes par `game.leaderboardData()` (cache `LEADERBOARD.cacheMs` 15 s). Logique pure :
+  `src/meta/leaderboard.js` (`BOARDS` = gs, xp, spec:<arbre>, tower ; `rankBoard`, `sanitizeTowerRecord`,
+  `betterTower`, `towerTime`). Config `LEADERBOARD` (`src/config.js`).
+- **GS** : `gearScore(sanitizeStuff(stuff, createInventory()).worn)` pour chaque ligne du ns stuff. **XP / spé** :
+  `sanitizeProgress` de chaque ligne du ns progress.
+- **Tour** : nouveau ns `tower_record` (clé = compte : `{ t, at, side, team, session }`), ajouté au chargement
+  PostgreSQL (`createPgGameStore`), au fichier local (`snapshot`) et au commentaire de `server/db/postgres.js`. Écrit en
+  fin de session (`settleWith` → `recordTower`) pour chaque joueur présent à une victoire (`!left && !hasLeft`), si
+  plus rapide (strict), verrou par compte ; jamais pour `rec.dev`. `t` = `summary.t` (secondes de jeu, au dixième).
+  Rattrapage une fois par démarrage du serveur (`backfillTowers`) : les sessions `done` de tour encore gardées (30 jours).
+- **Tests** : `tests/leaderboard.test.js` (9 : logique pure, affichage, records via de vraies fins de tour, joueur parti,
+  mode dev, rattrapage, GS/XP/spé, classement inconnu) ✅ ; social 18, game-service 48, postgres 6, dashboard,
+  gearscore, lobby, nav, security, game-http, giant-service, account-http, boot-check ✅. Serveur lancé sur un
+  autre port : la route répond (vide pour un invité neuf, `bad_request` pour un nom inconnu) ✅.
+  ⚠️ L'affichage n'a pas été regardé dans un navigateur.
+- **Points fragiles** : en mode dev, le classement de la tour reste vide (sessions dev exclues). Le calcul parcourt tous
+  les comptes à chaque expiration du cache : à surveiller si le nombre de comptes devient très grand.
+

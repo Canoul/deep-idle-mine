@@ -16,7 +16,8 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
+import { sanitizeTowerRecord, betterTower } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
@@ -337,9 +338,48 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       await store.putGameSession(rec);
       /* tableau de bord : une ligne par joueur présent (écrite une seule fois, même si la fin est rejouée) */
       await store.putSessionStats(statRows(rec, summary, a => hasLeft(rec, a)));
+      await recordTower(rec);
     }).finally(() => settling.delete(id));
     settling.set(id, p);
     return p;
+  }
+
+  /* ---------- classements (onglet Social → Classements, 27/10/2026) ---------- */
+
+  /* tour céleste réussie (session terminée, pas en mode dev) : les joueurs présents à la victoire (ceux qui reçoivent le
+     trésor) gardent ce temps s'il bat leur record ; team = les pseudos de tous ces joueurs. Rejouée : ne change rien. */
+  async function recordTower(rec){
+    const r = rec.result, side = towerSide(rec.mode);
+    if(!side || rec.dev || !r?.success || !Number.isFinite(r.t)) return;
+    const heirs = (r.shares || []).filter(s => s.account && !s.left && !hasLeft(rec, s.account)).map(s => s.account);
+    const name = a => rec.players.find(p => p.account === a)?.name || '';
+    const next = sanitizeTowerRecord({ t: r.t, at: rec.endedAt ?? clock(), side, team: heirs.map(name), session: rec.id });
+    if(!next) return;
+    for(const a of heirs) await withLock('tower_record:' + a, async () => {
+      const prev = sanitizeTowerRecord(await store.getTowerRecord(a));
+      if(betterTower(prev, next)) await store.putTowerRecords([[a, next]]);
+    });
+  }
+  /* au premier classement après un démarrage : les victoires en tour encore gardées (sessions des 30 derniers jours,
+     d'avant les records) deviennent des records */
+  let towerBackfill = null;
+  const backfillTowers = () => towerBackfill ??= (async () => {
+    for(const rec of await store.sessionsWithStatus('done')) if(isTowerMode(rec.mode)) await recordTower(rec);
+  })();
+
+  /* valeurs brutes de tous les comptes : { gs, xp, spec:{ arbre }, tower } (listes [{ id, value, … }]), gardées cacheMs */
+  let boardCache = null;
+  async function leaderboardData(){
+    if(boardCache && clock() - boardCache.at < LEADERBOARD.cacheMs) return boardCache.data;
+    await backfillTowers();
+    const gs = (await store.listStuff()).map(({ account, value }) => ({ id: account, value: gearScore(sanitizeStuff(value, createInventory()).worn) }));
+    const progress = (await store.listProgress()).map(({ account, value }) => ({ id: account, p: sanitizeProgress(value) }));
+    const xp = progress.map(({ id, p }) => ({ id, value: p.xp, level: levelOf(p.xp).level }));
+    const spec = Object.fromEntries(SKILLS.trees.map(t => [t.id, progress.map(({ id, p }) => ({ id, value: p.spec[t.id] ?? 0, level: specLevels(p)[t.id].level }))]));
+    const tower = (await store.listTowerRecords()).map(({ account, value }) => ({ id: account, r: sanitizeTowerRecord(value) }))
+      .filter(x => x.r).map(({ id, r }) => ({ id, value: r.t, at: r.at, side: r.side, team: r.team }));
+    boardCache = { at: clock(), data: { gs, xp, spec, tower } };
+    return boardCache.data;
   }
 
   /* termine une session tout de suite (dev, ou session dont l'heure est passée) ; sans effet sinon */
@@ -925,6 +965,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async judgment(me){
       return withJudgment(j => ({ value: publicJudgment(j, clock(), me.id) }));
     },
+    /* classements : valeurs de tous les comptes (le service social classe et met les pseudos) */
+    leaderboardData,
     /* tour d'un camp : ouverte ? et les comptes qui l'ont déjà faite pendant cette ouverture (bouton « Who ? » du lobby) */
     async towerDone(side){
       if(!JUDGMENT_SIDES.includes(side)) fail('bad_request', 400, 'Camp inconnu.');

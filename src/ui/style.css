@@ -578,6 +578,12 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
 .fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .fbtns .x{min-width:calc(15*var(--u));padding:0}
+/* classements (sous-onglet Classements) : rang, pseudo, valeur ; sa propre ligne surlignée */
+#boardTrees{margin-top:calc(-9*var(--u))}
+.lrank{width:calc(16*var(--u));flex:none;text-align:right;font:400 var(--fs-l)/1 var(--f-title);color:var(--acc)}
+.lval{flex:none;text-align:right;white-space:nowrap}
+.lrow.mine{background:var(--sel)}
+.lgap{text-align:center;padding:var(--u) 0;color:var(--mut)}
 /* présence : carré pixel (gris hors ligne, vert en ligne, braise en session) */
 .fdot{width:calc(5*var(--u));height:calc(5*var(--u));flex:none;background:#5a4f46;box-shadow:0 0 0 var(--u) #000}
 .fdot.on{background:var(--ok)}

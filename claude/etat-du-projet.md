@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (minerais profonds : mithril, cobalt, thorium ; areas 7 et 8).*
+*Dernière mise à jour : 27/10/2026 (classements dans l'onglet Social).*
 
 ---
 
@@ -124,6 +124,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   demandée seulement quand le sous-onglet est ouvert). Serveur : `server/social/`, stockage `social` dans PostgreSQL. **Voir le stuff d'un ami**
   (22/10, Jules) : bouton « Stuff » → niveau, spécialisation, pièces portées et stats, en lecture seule
   (`POST /api/social/profile`, réservé aux amis, jamais l'inventaire).
+  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste
+  (meilleur temps par joueur, Ange et Démon confondus, avec l'équipe) ; top 50 + sa place (`LEADERBOARD`,
+  `src/meta/leaderboard.js`, `POST /api/social/leaderboard`). Records de tour dans le ns `tower_record` (sans limite).
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
   d'action en bas (touches 1-9, 0, -, =) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,

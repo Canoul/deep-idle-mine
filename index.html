@@ -322,7 +322,7 @@
 <section class="view" data-view="social" hidden>
   <div class="furnWrap" id="socialBody">
     <div class="invHead"><h1><i data-pxi="group"></i>Social</h1><span class="mut small" id="socialCount"></span></div>
-    <div class="seg rsTabs" id="socialTabs"><button data-stab="friends" class="on">Amis</button><button data-stab="online">Online</button></div>
+    <div class="seg rsTabs" id="socialTabs"><button data-stab="friends" class="on">Amis</button><button data-stab="online">Online</button><button data-stab="board">Classements</button></div>
     <p id="socialMsg" hidden></p>
     <div id="socialFriendsTab">
       <form class="card sadd" id="socialAdd"><span>Ajouter un ami</span><input id="socialName" placeholder="Pseudo de ton ami" autocomplete="off" spellcheck="false" maxlength="32">
@@ -335,6 +335,12 @@
     <div id="socialOnlineTab" hidden>
       <div class="card"><h2>Joueurs en ligne <span class="mut" id="socialOnlineCount"></span></h2><div id="socialOnline"><p class="mut small">Chargement…</p></div></div>
       <p class="mut small">Tous les joueurs connectés, amis ou non : ceux qui ne sont pas en session d'abord, puis ceux en session. « Ajouter » envoie une demande d'ami.</p>
+    </div>
+    <div id="socialBoardTab" hidden>
+      <div class="seg" id="boardPick"><button data-board="gs" class="on">Gear score</button><button data-board="xp">Niveau</button><button data-board="spec">Spécialisation</button><button data-board="tower">Tour céleste</button></div>
+      <div class="seg" id="boardTrees" hidden></div>
+      <div class="card"><h2 id="boardTitle"></h2><div id="boardList"><p class="mut small">Chargement…</p></div></div>
+      <p class="mut small" id="boardHelp"></p>
     </div>
   </div>
   <!-- fiche d'un ami : son stuff, ses stats et son niveau (lecture seule) -->

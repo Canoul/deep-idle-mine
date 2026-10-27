@@ -1,11 +1,15 @@
-/* Onglet Social, deux sous-onglets (26/10) : « Amis » et « Online ».
+/* Onglet Social, trois sous-onglets : « Amis », « Online » (26/10) et « Classements » (27/10).
    Amis : ajouter un ami par pseudo, demandes reçues (accepter / refuser) et envoyées, liste d'amis avec ce
    qu'ils font (hors ligne, en ligne, en session, dans le lobby n/3) et les boutons Inviter / Rejoindre / Stuff (sa
    fiche : niveau, spécialisation, pièces portées, stats ; en lecture seule).
    Online : compteur et liste de tous les joueurs en ligne (pas en session d'abord, puis en session), « Ajouter » pour
    un non-ami ; demandée au serveur seulement quand ce sous-onglet est à l'écran (SOCIAL.onlinePoll).
+   Classements : Gear score, Niveau (XP), Spécialisation (un classement par arbre), Tour céleste (meilleur temps, Ange et
+   Démon confondus, avec l'équipe) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
+   quand il est à l'écran.
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS, MINE_MODES, SOCIAL } from '../config.js';
+import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT } from '../config.js';
+import { towerTime } from '../meta/leaderboard.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
 import { renderSlots, statsHTML } from './stuff.js';
@@ -38,9 +42,27 @@ export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === sk
 /* « 12 joueurs en ligne » */
 export const onlineCountText = n => `${n} joueur${n > 1 ? 's' : ''} en ligne`;
 
-/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online() } */
+const fr = n => Math.round(n).toLocaleString('fr-FR');
+/* classements : titre, aide et valeur affichée d'une ligne (r = { value, level?, side?, team? }) */
+export const BOARD_INFO = {
+  gs:    { title: 'Gear score', help: 'La puissance du stuff porté, en x (1 x = 1 s de travail gagnée par session).',
+           value: r => `${fr(r.value)} GS` },
+  xp:    { title: 'Niveau', help: 'L\'XP totale du mineur.', value: r => `Niv. ${r.level} · ${fr(r.value)} XP` },
+  spec:  { title: 'Spécialisation', help: 'L\'XP gagnée dans cette spécialisation (chaque arbre a son classement).',
+           value: r => `Niv. ${r.level} · ${fr(r.value)} XP` },
+  tower: { title: 'Tour céleste', help: 'Le meilleur temps pour vaincre le boss d\'une tour, Ange et Démon confondus (temps de jeu). Chaque joueur de l\'équipe garde son meilleur temps.',
+           value: r => towerTime(r.value) },
+};
+/* « Ange · avec Zoe, Max » : camp et coéquipiers d'un record de tour (sans le joueur lui-même) */
+export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n => n !== r.name).join(', ')]
+  .filter(Boolean).map((t, i) => i ? `avec ${t}` : t).join(' · ');
+/* « 12e sur 340 » */
+export const rankText = (rank, total) => `${rank}${rank === 1 ? 'er' : 'e'} sur ${total}`;
+
+/* h : { request(name), accept(id), refuse(id), remove(id), invite(id), join(id), profile(id), online(), leaderboard(board) } */
 export function setupSocial(h){
   let st = null, busy = false, tab = 'friends', online = null, onlineAt = 0, onlineBusy = false;
+  let board = 'gs', tree = SKILLS.trees[0].id, boards = {}, boardAt = 0, boardBusy = false;
 
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
@@ -69,11 +91,51 @@ export function setupSocial(h){
     $('socialOnline').innerHTML = online.players.map(onlineRow).join('') +
       (more > 0 ? `<p class="mut small">… et ${more} autre${more > 1 ? 's' : ''}.</p>` : '');
   }
+  /* ---------- classements ---------- */
+  const boardId = () => board === 'spec' ? 'spec:' + tree : board;
+  function boardRow(r){
+    const detail = board === 'tower' ? towerDetail(r) : '';
+    return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
+      `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
+      `<span class="lval">${esc(BOARD_INFO[board].value(r))}</span></div>`;
+  }
+  function renderBoard(){
+    const info = BOARD_INFO[board], t = SKILLS.trees.find(x => x.id === tree);
+    $('boardPick').querySelectorAll('[data-board]').forEach(b => b.classList.toggle('on', b.dataset.board === board));
+    $('boardTrees').hidden = board !== 'spec';
+    $('boardTrees').innerHTML = SKILLS.trees.map(x => `<button data-tree="${x.id}"${x.id === tree ? ' class="on"' : ''}>${x.icon} ${esc(x.label)}</button>`).join('');
+    $('boardTitle').textContent = board === 'spec' ? `${info.title} · ${t.icon} ${t.label}` : info.title;
+    $('boardHelp').textContent = `${info.help} Les ${LEADERBOARD.size} premiers, et ta place si tu n'y es pas.`;
+    const b = boards[boardId()];
+    if(!b) return;
+    $('boardList').innerHTML = !b.rows.length ? '<p class="mut small">Personne n\'est encore classé ici.</p>'
+      : b.rows.map(boardRow).join('') + (b.me ? `<div class="lgap">…</div>${boardRow(b.me)}` : '') +
+        `<p class="mut small">${b.total} joueur${b.total > 1 ? 's' : ''} classé${b.total > 1 ? 's' : ''}${b.me ? ` · toi : ${rankText(b.me.rank, b.total)}` : ''}</p>`;
+  }
+  const boardShown = () => tab === 'board' && !document.hidden && !$('socialBody').closest('section').hidden;
+  async function loadBoard(){
+    if(boardBusy) return;
+    boardBusy = true; boardAt = Date.now();
+    const id = boardId();
+    try { boards[id] = await h.leaderboard(id); if(id === boardId()) renderBoard(); } catch(e){ msg(e.message, false); }
+    finally { boardBusy = false; }
+  }
+  setInterval(() => { if(boardShown() && Date.now() - boardAt >= LEADERBOARD.refresh) loadBoard(); }, 1000);
+  $('socialBoardTab').onclick = e => {
+    const b = e.target.closest('[data-board], [data-tree]'); if(!b) return;
+    if(b.dataset.board) board = b.dataset.board; else tree = b.dataset.tree;
+    renderBoard();
+    if(!boards[boardId()]) $('boardList').innerHTML = '<p class="mut small">Chargement…</p>';
+    boardBusy = false; loadBoard();
+  };
+
   function renderHead(){
     $('socialTabs').querySelectorAll('[data-stab]').forEach(b => b.classList.toggle('on', b.dataset.stab === tab));
     $('socialFriendsTab').hidden = tab !== 'friends';
     $('socialOnlineTab').hidden = tab !== 'online';
-    if(tab === 'online') $('socialCount').textContent = online ? onlineCountText(online.count) : '';
+    $('socialBoardTab').hidden = tab !== 'board';
+    if(tab === 'board') $('socialCount').textContent = '';
+    else if(tab === 'online') $('socialCount').textContent = online ? onlineCountText(online.count) : '';
     else if(st){ const on = st.friends.filter(f => f.status !== 'offline').length;
       $('socialCount').textContent = st.friends.length ? `${on} en ligne sur ${st.friends.length}` : ''; }
   }
@@ -91,6 +153,7 @@ export function setupSocial(h){
     const b = e.target.closest('[data-stab]'); if(!b || b.dataset.stab === tab) return;
     tab = b.dataset.stab; msg(''); renderHead();
     if(tab === 'online') loadOnline();
+    if(tab === 'board'){ renderBoard(); loadBoard(); }
   };
 
   function render(){
