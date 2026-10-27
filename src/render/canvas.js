@@ -91,6 +91,16 @@ export function createRenderer(cv){
       ctx.fillStyle=g; ctx.fillRect(px-TILE*3,py-TILE*3,TILE*7,TILE*7);
       blit(torchTexOf(T),px,py);
     }
+    /* gobelins asservis (Couronne du Roi Gobelin, 27/10) : gobelin doré, petite couronne, pas de barre de vie ; il
+       frappe le bloc qu'il mine (petit éclat) */
+    for(const o of G.thralls || []){
+      const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
+      if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
+      const px=o.x*TILE, py=sy(o.y);
+      blit('goblin',px,py,'#c9a227');
+      ctx.fillStyle='#ffd23f'; ctx.fillRect(px+5,py-2,6,2); ctx.fillRect(px+5,py-4,1,2); ctx.fillRect(px+7,py-4,2,2); ctx.fillRect(px+10,py-4,1,2);
+      if(o.dig && Math.floor(frameNow/160)%2){ ctx.fillStyle='rgba(255,240,180,.85)'; ctx.fillRect((o.dig.x*TILE+px)/2+7,(sy(o.dig.y)+py)/2+7,2,2); }
+    }
     for(const o of G.mobs){
       if(o.hp<=0) continue;
       const [ox,oy]=o._to ? shownPos(G,o,frameNow) : [o.x+(o.kx||0),o.y+(o.ky||0)], px=ox*TILE, py=sy(oy);

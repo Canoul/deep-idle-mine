@@ -23,14 +23,19 @@ const ALL = [...SLOTS, 'out'];
 const validQty = q => Number.isSafeInteger(q) && q > 0;
 const modeOf = f => MODES.includes(f.mode) ? f.mode : 'smelt';
 
-/* ce qu'on peut poser dans chaque case */
-export const recipeOf = item => (ITEMS[item]?.cat === 'ore' && Object.hasOwn(FURNACE.recipes, item)) ? FURNACE.recipes[item] : null;
+/* ce qu'on peut poser dans chaque case. recipeOf : recette de fonte de cet ingrédient (un minerai, ou un matériau comme la
+   Peau de gobelin depuis le 27/10), apprise ou non */
+export const recipeOf = item => typeof item === 'string' && Object.hasOwn(ITEMS, item) && Object.hasOwn(FURNACE.recipes, item) ? FURNACE.recipes[item] : null;
+/* nom d'une recette de fonte fermée, gardé dans inv.unlocked une fois apprise (« Four : Chitine ») */
+export const furnaceRecipeName = item => `Four : ${FURNACE.recipes[item].out}`;
+/* le joueur (son inventaire) peut-il utiliser cette recette de fonte ? (ouverte de base, ou apprise) */
+export const recipeKnown = (item, inv) => { const r = recipeOf(item); return !!r && (!r.unlock || !!inv?.unlocked?.includes(furnaceRecipeName(item))); };
 export const isFuel   = item => ITEMS[item]?.cat === 'combustible';
 /* ingrédient d'au moins un alliage */
 export const isAlloyInput = item => FURNACE.alloys.some(r => Object.hasOwn(r.in, item));
-export function accepts(slot, item, mode = 'smelt'){
+export function accepts(slot, item, mode = 'smelt', inv = null){
   if(slot === 'fuel') return isFuel(item);
-  if(slot === 'ore') return mode === 'smelt' && !!recipeOf(item);
+  if(slot === 'ore') return mode === 'smelt' && recipeKnown(item, inv);   // recette fermée : seulement une fois apprise
   if(slot === 'a' || slot === 'b') return mode === 'alloy' && isAlloyInput(item);
   return false;
 }
@@ -40,19 +45,23 @@ export const alloyOf = (i1, i2) => i1 && i2 && i1 !== i2
 /* alliages possibles avec cet ingrédient (pour savoir quoi poser dans l'autre case) */
 export const alloysWith = item => FURNACE.alloys.filter(r => Object.hasOwn(r.in, item));
 
+/* tout ce qu'un four peut produire (la sortie relue ne garde que ça) */
+const OUTPUTS = new Set([...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => r.out));
+
 export const newFurnace = () => ({ tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
 export function createFurnaces(){
   return { list: Array.from({ length: FURNACE.startOwned }, newFurnace), ops: [] };
 }
 
-/* ce que fabrique le four avec ce qu'il contient : { out, time (s), need:{ case: quantité par produit } } ou null */
+/* ce que fabrique le four avec ce qu'il contient : { out, qty (produits par fournée), time (s), need:{ case: quantité par
+   fournée } } ou null */
 export function activeRecipe(f){
   if(modeOf(f) === 'smelt'){
     const r = f.ore && recipeOf(f.ore.item);
-    return r ? { out:r.out, time:r.time, need:{ ore:FURNACE.orePerIngot, fuel:FURNACE.fuelPerIngot } } : null;
+    return r ? { out:r.out, qty:r.qty ?? 1, time:r.time, need:{ ore:FURNACE.orePerIngot, fuel:FURNACE.fuelPerIngot } } : null;
   }
   const r = alloyOf(f.a?.item, f.b?.item);
-  return r ? { out:r.out, time:r.time, need:{ a:r.in[f.a.item], b:r.in[f.b.item], fuel:r.fuel } } : null;
+  return r ? { out:r.out, qty:1, time:r.time, need:{ a:r.in[f.a.item], b:r.in[f.b.item], fuel:r.fuel } } : null;
 }
 
 /* durée d'un produit (ms) dans ce four, ou null s'il n'a rien à fabriquer */
@@ -71,7 +80,7 @@ export function batches(f){
 /* le four peut-il produire une unité de plus ? (assez d'ingrédients et de combustible, sortie compatible) */
 export function canRun(f){
   const r = activeRecipe(f);
-  return !!r && batches(f) >= 1 && (!f.out || (f.out.item === r.out && Number.isSafeInteger(f.out.qty + 1)));
+  return !!r && batches(f) >= 1 && (!f.out || (f.out.item === r.out && Number.isSafeInteger(f.out.qty + r.qty)));
 }
 
 /* (re)met le four en marche s'il peut produire, l'arrête sinon */
@@ -91,7 +100,7 @@ export function advance(f, now){
   const n = Math.max(0, Math.min(Math.floor((now - f.since) / dur), batches(f)));
   if(n > 0){
     for(const [slot, k] of Object.entries(r.need)) take(f, slot, n * k);
-    f.out = { item: r.out, qty: (f.out?.qty || 0) + n };
+    f.out = { item: r.out, qty: (f.out?.qty || 0) + n * r.qty };
     f.since += n * dur;
   }
   if(!canRun(f)) f.since = null;
@@ -168,7 +177,7 @@ function load(f, inv, { slot, item, qty }){
   if(!SLOTS.includes(slot)) return { error:'bad_slot' };
   const mode = modeOf(f);
   if(slot !== 'fuel' && !INPUTS[mode].includes(slot)) return { error:'bad_slot' };
-  if(typeof item !== 'string' || !accepts(slot, item, mode)) return { error:'bad_item' };
+  if(typeof item !== 'string' || !accepts(slot, item, mode, inv)) return { error:'bad_item' };   // recette pas apprise : refusé aussi
   if(!validQty(qty)) return { error:'bad_qty' };
   if(f[slot] && f[slot].item !== item) return { error:'slot_busy' };
   if(mode === 'alloy'){
@@ -214,9 +223,10 @@ export function sanitizeFurnaces(raw){
     if(!r || typeof r !== 'object') return f;
     f.tier = Number.isSafeInteger(r.tier) && FURNACE.tiers[r.tier] ? r.tier : 0;
     f.mode = MODES.includes(r.mode) ? r.mode : 'smelt';
-    for(const s of INPUTS[f.mode]) f[s] = cleanSlot(r[s], i => accepts(s, i, f.mode));
+    /* relu sans l'inventaire : un ingrédient déjà posé reste (une recette fermée n'est vérifiée qu'en le posant) */
+    for(const s of INPUTS[f.mode]) f[s] = cleanSlot(r[s], i => s === 'ore' ? !!recipeOf(i) : accepts(s, i, f.mode));
     f.fuel = cleanSlot(r.fuel, i => accepts('fuel', i));
-    f.out  = cleanSlot(r.out,  i => ITEMS[i]?.cat === 'ingot');
+    f.out  = cleanSlot(r.out,  i => ITEMS[i]?.cat === 'ingot' || OUTPUTS.has(i));   // la Chitine (27/10) n'est pas un lingot
     f.since = Number.isFinite(r.since) && canRun(f) ? r.since : null;
     return f;
   });

@@ -32,6 +32,25 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Roi Gobelin : son coffre et 5 nouveaux objets
+- **Pour le joueur** : un **Coffre du Roi Gobelin** (qualité R1 à R7) s'ouvre dans l'inventaire : graphite, peaux de
+  gobelin, et au plus un objet rare : **Couronne du Roi Gobelin** (1 %), **plan du Four en or** (2 %), **Masse du Roi
+  Gobelin** (2 %), **Cape royale du Gobelin** (2 %) ; plus la **Recette : Chitine** (5 %, si pas encore apprise), au plus
+  un **parchemin de sort** (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %, Hand of Justice 1 % ; jamais un sort déjà
+  appris) et une gemme (1 % chacune). Les pièces arrivent identifiées à la qualité du coffre.
+  - **Couronne** (casque, légendaire) : fortune +10 %, et les gobelins qui apparaissent à 10 cases du porteur sont
+    **asservis** : 30 s à miner autour d'eux pour le coffre commun (ligne « 👑 Gobelins asservis »), puis ils disparaissent.
+  - **Masse** (14 dégâts, critique +15 %), **Cape royale** (dégâts +5 %, minage +5 %), **Four en or** (3e four, ×1,5),
+    **Recette : Chitine** (10 peaux + 10 charbon → 5 chitine au four).
+- **Décisions** : le **boss n'existe pas encore** ; en attendant, le coffre n'est donné que par l'équipe. Asservis : à
+  10 cases du porteur, quand ils apparaissent. Choix de Claude, à valider : objets au tier 3 pour les runes ; les asservis
+  n'ont ni fortune ni shiny ; Lampe à incandescence passée au tier 2 des runes (un test l'exigeait).
+- **Lien avec l'Instance I** (15 h) : **roi vaincu → un Coffre du Roi Gobelin par joueur encore présent** ; **si le
+  groupe perd, la clé est rendue à tous** ; le bouton « 🗝 Instances » reste cliquable pendant une session (on regarde
+  la carte ; choix de Claude, la demande « rend disponible le bouton » ne disait pas lequel).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Instances : l'Instance I, le roi gobelin
 - **Pour le joueur** : nouveau choix « 🗝 Instances » dans « Où miner ». L'Instance I se joue en groupe de 1 à 3, avec
   une **Clé d'instance I** chacun (dans les Treasure T3, 5 %), consommée au lancement. En 10 min : monter aux 6 rebords

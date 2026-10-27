@@ -29,10 +29,14 @@ export const SKIN = {
     'Capuche sombre':      'skins/dark_hood',          // capuche violette de l'occultiste, visage sombre, yeux rouges
     'Nuage magique':       'skins/magic_cloud',        // les jambes deviennent un nuage jaune
     'Ceinture du Géant':   'skins/giant_belt',         // bande noire, cornes claires
+    /* coffre du Roi Gobelin (27/10/2026, GOBLIN_KING) */
+    'Couronne du Roi Gobelin': 'skins/goblin_crown',     // couronne dorée à trois pointes, gemmes rouges
+    'Cape royale du Gobelin':  'skins/goblin_royal_cape_front', // devant : col laineux blanc, fermoir doré (le dos : back)
   },
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {
     'Cape de Naingui':     'skins/naingui_cape',       // tissu sombre violet, jusqu'aux chevilles
+    'Cape royale du Gobelin':  'skins/goblin_royal_cape', // velours rouge, bordure laineuse blanche (hermine)
   },
 
   /* torches posées (26/10/2026, Geoffrey) : selon la pièce de la case torche de celui qui l'a posée (torche.item),
@@ -55,6 +59,7 @@ export const SKIN = {
     'Épée en fer':      'skins/sword_iron',
     'Lance en fer':     'skins/spear_iron',
     'Épée en acier':    'skins/sword_steel',
+    'Masse du Roi Gobelin': 'skins/mace_goblin_king',   // 27/10 : manche de bois, tête de fer
   },
 };
 

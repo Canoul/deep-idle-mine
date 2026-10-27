@@ -28,6 +28,7 @@
   <a href="#mi">La mine instantanée</a>
   <a href="#bloc">Le Bloc géant</a>
   <a href="#instances">Les instances</a>
+  <a href="#roigobelin">Le Roi Gobelin</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
   <a href="#craft">Craft, four, concasseur</a>
@@ -126,7 +127,7 @@
     <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
     <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) : chaque minute, il en concasse 100, <b>même page fermée</b>. La plupart du temps il ne sort rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b>. Le bouton <b>?</b> donne les vraies chances (<a href="#concasseur">détail plus bas</a>).</p></div>
     <div class="tabcard"><h3>💎 Amélioration</h3><p><b>Identifier</b> une pièce de stuff (elle reçoit une qualité, de R1 à R7), l'<b>améliorer</b> de +1 à +9 avec des Plumes d'ange et des Cristaux de pleine lune, et l'<b>enchanter</b> avec une Rune. <a href="#amelioration">Détail plus bas</a>.</p></div>
-    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide.</p></div>
+    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide, et le Four en or un 3e (×1,5).</p></div>
     <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
     <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session). Chaque arbre affiche aussi ton <a href="#spe">niveau de spécialisation</a> (SP lvl).</p></div>
     <div class="tabcard"><h3>✨ Sorts</h3><p>Équipe tes <a href="#sorts">sorts</a> (clic ou glisser-déposer) : en session, ils partent tout seuls. Un parchemin s'apprend ici (« Apprendre »).</p></div>
@@ -239,7 +240,7 @@
   <h2>Entrer</h2>
   <ul>
     <li>Onglet <b>Lobby</b>, « Où miner » → <b>🗝 Instances</b> : la liste des instances (les prochaines sont encore fermées) et tes clés. Un groupe de <b>1 à 3</b>, lancé par le chef.</li>
-    <li>Il faut <b>une Clé d'instance I par joueur</b>. Elle est <b>consommée au lancement</b>, même si vous échouez ou si tu quittes. On la trouve dans les <b>Treasure T3</b> (5 % de chance).</li>
+    <li>Il faut <b>une Clé d'instance I par joueur</b>. Elle est <b>consommée au lancement</b>, mais <b>rendue à tous si le groupe perd</b> (temps écoulé). Si le groupe gagne, elle reste consommée, même pour celui qui est parti. On la trouve dans les <b>Treasure T3</b> (5 % de chance).</li>
   </ul>
   <h2>L'Instance I : le roi gobelin</h2>
   <ul>
@@ -247,7 +248,7 @@
     <li>Un spawner se casse « au coup de pioche » : chaque seconde lui enlève ta <b>vitesse de minage</b> (125 coups ; la Dynamite en vaut 6). Tant qu'il vit, il lâche un gobelin toutes les 30 s.</li>
     <li>Les <b>gobelins</b> foncent sur vous, surtout sur celui qui casse un spawner. Leur premier coup te <b>tacle</b> : il faut tuer ce gobelin avant de reprendre. Leurs coups repoussent <b>vers le centre</b> : gare au bord du rebord !</li>
     <li>Les 6 spawners cassés, le <b>roi gobelin</b> descend de sa plateforme : 3 500 PV, rapide, et tous les 10 coups il t'envoie en l'air. À chaque fois qu'il perd 20 % de ses PV, il <b>enferme</b> tout le monde sur les rebords : creuse pour sortir ! Sous 33 % de PV, il enrage.</li>
-    <li>Pas d'oxygène, pas de sac, tout est éclairé. <b>Pas de récompense pour l'instant</b> : elle viendra bientôt.</li>
+    <li>Pas d'oxygène, pas de sac, tout est éclairé. <b>Récompense</b> : roi vaincu, chaque joueur encore là reçoit un <a href="#roigobelin">Coffre du Roi Gobelin</a> (qualité R1 à R7). Pas d'XP.</li>
   </ul>
   <p class="tip">💡 Une bonne <b>pioche</b> et une bonne <b>épée</b> comptent bien plus que l'armure ici. Visez au moins le niveau fer + acier, à trois.</p>
 </section>
@@ -280,6 +281,19 @@
   </ul>
   <h2 id="sets">Les sets</h2>
   <p>Un <b>set</b> enregistre ton équipement complet : le <b>stuff porté</b> (les pièces exactes), tes <b>skills</b> et tes <b>sorts</b>. La même liste est à gauche des onglets Stuff, Skills et Sorts : <b>+ Nouveau set</b>, <b>Enregistrer</b> (remplace par l'équipement actuel), <b>✎</b> renommer, <b>×</b> supprimer. <b>Équiper</b> remet tout d'un coup ; une pièce qui n'existe plus (sacrifiée, recyclée…) laisse sa case vide. Pas pendant une session (sauf renommer et supprimer).</p>
+</section>
+
+<section id="roigobelin">
+  <h1>Le Roi Gobelin</h1>
+  <p class="lead">Le boss de l'<a href="#instances">Instance I</a>. Quand il tombe, chaque joueur encore là reçoit un <b>Coffre du Roi Gobelin</b>, de qualité R1 à R7 (tirée comme les trésors des tours).</p>
+  <ul>
+    <li>Dans le coffre : toujours du <b>graphite</b> (20 à 40) et des <b>peaux de gobelin</b> (50 à 100) ; au plus <b>un</b> objet rare : <b>Couronne du Roi Gobelin</b> (1 %), <b>plan du Four en or</b> (2 %), <b>Masse du Roi Gobelin</b> (2 %) ou <b>Cape royale du Gobelin</b> (2 %) ; la <b>Recette : Chitine</b> (5 %, seulement si tu ne l'as pas encore apprise) ; au plus <b>un parchemin de sort</b> : <b>Ulti shen</b> (1 %), <b>Fast learner</b> (0,5 %), <b>Cleave</b> (1 %), <b>Hand of Justice</b> (1 %), jamais un sort que tu as déjà appris ; une gemme inférieure (1 % chacune).</li>
+    <li>La couronne, la masse et la cape arrivent <b>déjà identifiées</b>, à la qualité du coffre.</li>
+    <li><b>Couronne du Roi Gobelin</b> (casque, légendaire) : Fortune +10 %. Un gobelin qui apparaît à <b>10 cases ou moins</b> de toi est <b>asservi</b> : il ne se bat pas, mine les minerais autour de lui pendant <b>30 s</b> (vitesse d'un mineur de base, même priorité que toi), et tout ce qu'il casse va <b>directement dans le coffre commun</b> (ligne « 👑 Gobelins asservis » du coffre). Puis il disparaît.</li>
+    <li><b>Masse du Roi Gobelin</b> (arme, rare) : 14 dégâts, critique +15 %. <b>Cape royale du Gobelin</b> (cape, rare) : dégâts +5 %, vitesse de minage +5 %.</li>
+    <li><b>Recette : Chitine</b> : « Utiliser » dans l'inventaire ; au four (mode Fondre), 10 peaux de gobelin + 10 charbon donnent <b>5 chitine</b> en 60 s.</li>
+    <li><b>Four en or</b> : se fabrique avec son plan (50 Shiny gold, 50 Tainted gold, 50 diamants) ; « Utiliser » ouvre le <b>3e four</b>, 1,5 fois plus rapide (il faut avoir ouvert le 2e avant).</li>
+  </ul>
 </section>
 
 <section id="craft">

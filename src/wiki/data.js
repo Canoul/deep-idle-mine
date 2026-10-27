@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -10,6 +10,7 @@ import { ringLines } from '../meta/stuff.js';
 
 export const CELLS = W * AREA_H;
 const blockByKey = key => BLOCKS[IDS[key]];
+const isStuffItem = item => ITEMS[item]?.cat === 'stuff';
 export const AREA_KEYS = ['dirt', 'stone', 'hardstone', 'coal', 'iron', 'gold', 'diamond', 'graphite', 'air'];
 const isOreKey = k => blockByKey(k)?.type === 'ore';
 
@@ -112,13 +113,19 @@ export function sourcesOf(item){
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
     out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
   for(const d of MOB_DROPS.items) if(d.item === item) out.push(mobDropText(d));
-  for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon`);
+  for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${FURNACE.orePerIngot} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon${(d.qty ?? 1) > 1 ? ` → ${d.qty}` : ''}${d.unlock ? ` (recette débloquée par « ${d.unlock} »)` : ''}`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);
   for(const t of TREASURE.tiers) if(t.item === item) out.push(`En cassant un treasure (areas ${tierAreas(t)})`);
   const res = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area pour les deux résidus ensemble, à la place de la pierre)`);
   const chest = ITEMS[item]?.chest;
-  if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  if(chest?.side === 'goblin') out.push(`Instance I : un coffre pour chaque joueur encore là quand le roi gobelin tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  else if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  /* coffre du Roi Gobelin (GOBLIN_KING, 27/10) */
+  { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);
+    if(a) out.push(`Coffre du Roi Gobelin : ${a.min} à ${a.max}, toujours`);
+    for(const f of l.oneOf){ const i = f.items.find(x => x.item === item);
+      if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
   if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
   for(const [side, list] of Object.entries(RINGS.drops)) for(const r of list) if(r.item === item)
     out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);
@@ -153,12 +160,15 @@ export function usesOf(item){
   else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
-  if(d?.cat === 'treasure') out.push(d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
+  if(d?.cat === 'treasure') out.push(d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
+    : d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
   const side = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(side) out.push(`Rapporté au coffre : remplit la jauge ${side.label === 'Ange' ? 'de l\'Ange' : 'du Démon'} du Jugement, commune à tous (${JUDGMENT.cap} pour ouvrir la tour)`);
   if(item === RUNE.item) out.push('Enchantement (onglet Amélioration) : se pose sur une pièce de stuff, une rune par pièce, définitif');
   if(d?.cat === 'combustible') out.push('Combustible du four');
-  if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].out}`);
+  if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].qty ?? 1} ${FURNACE.recipes[item].out}${FURNACE.recipes[item].unlock ? ` (recette à débloquer : « ${FURNACE.recipes[item].unlock} »)` : ''}`);
+  const fr = Object.entries(FURNACE.recipes).find(([, r]) => r.unlock === item);
+  if(fr) out.push(`« Utiliser » : débloque au four (mode Fondre) ${FURNACE.orePerIngot} ${fr[0].toLowerCase()} + ${FURNACE.fuelPerIngot} charbon → ${fr[1].qty ?? 1} ${fr[1].out}`);
   if(Object.hasOwn(FURNACE.unlockItems, item)) out.push(`« Utiliser » : ouvre le four ${FURNACE.unlockItems[item].slot + 1} (${FURNACE.tiers[FURNACE.unlockItems[item].tier].name}, vitesse ×${fmt(FURNACE.tiers[FURNACE.unlockItems[item].tier].speed)})`);
   const bp = Object.entries(RECIPES).find(([, r]) => r.unlock === item);
   if(bp) out.push(`« Utiliser » : débloque la recette ${bp[0]}`);
@@ -227,6 +237,7 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
+  goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
   tenacity:   "Chance d'ignorer un sort de mob : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite (un tirage à chaque sort).",

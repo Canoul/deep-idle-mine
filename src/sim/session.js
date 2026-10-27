@@ -8,6 +8,7 @@ import { createMiner, curLum } from './mineur.js';
 import { finishAction } from './actions.js';
 import { decide } from './ai.js';
 import { updateMobs, tackler, channeler } from './mobs.js';
+import { updateThralls } from './thrall.js';
 import { updateDungeons, isIn } from './dungeon.js';
 import { updateTraps, veiled, inTrapRoom } from './trap.js';
 import { log } from './log.js';
@@ -26,7 +27,7 @@ export function newSession(seed, opts={}){
   const G = {
     seed, t:0, ticks:0, over:false, rng:mulberry32(seed^0x51ed270b), shinyRng:mulberry32(seed^SHINY.salt), fortuneRng:mulberry32(seed^FORTUNE.salt), gearRng:mulberry32(seed^GEAR_RNG.salt), glyphRng:mulberry32(seed^GLYPHS.dropSalt),
     tiles:[new Uint8Array(W)], ladder:[new Uint8Array(W)], seen:[new Uint8Array(W).fill(1)],
-    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], chest:{}, chestBy:{}, mobId:1, log:[], torches:[], light:new Map(),
+    areas:[], unlockedAreas:0, winch:null, treasures:new Map(), dungeons:[], traps:[], veil:new Set(), mobs:[], thralls:[], chest:{}, chestBy:{}, goblinChest:{}, mobId:1, log:[], torches:[], light:new Map(),
     spawnTimer:MOBS.firstSpawn, spawnTurn:0, mimicCells:new Set(), combat:false,
     stats:{mined:0, kills:0, maxDepth:0, trips:0, falls:0, treasures:0, stolen:0, xp:0, stuns:0, shiny:0},
     miners: specs.map((s,i)=>createMiner(i, {x:SPAWN_X, ...s, account:opts.accounts?.[i] ?? s.account ?? null})),
@@ -108,6 +109,7 @@ export function tick(G){
   updateSpells(G);  // sorts : Illumination, Inspiration, Ulti shen
   updateTraps(G);   // un bloc de paroi de piège a disparu : le piège s'ouvre
   updateMobs(G);
+  updateThralls(G);   // gobelins asservis (Couronne du Roi Gobelin) : ils minent pour le coffre commun
   /* arrêt net (25/10/2026) : en marche vers le mob qu'il combat, il s'arrête dès que celui-ci entre dans sa portée, pour
      frapper le premier (sa portée peut dépasser celle du mob : stat reach, Lance en fer) */
   for(const m of G.miners){

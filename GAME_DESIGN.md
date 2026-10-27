@@ -562,7 +562,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
 **Rareté** *(décision du créateur, 21/10/2026)*. Chaque objet a une rareté : **commun** (gris), **inhabituel** (vert), **rare** (bleu), **épique** (violet), **légendaire** (orange).
 - Partout où l'objet apparaît (inventaire, craft, four, stuff, recherche, coffre en session, bulles), le **contour de sa case** et la **couleur de son nom** suivent sa rareté. La fiche d'un objet de l'inventaire affiche aussi le libellé de la rareté.
-- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. Les **Résidus angélique et démoniaque** sont **communs** *(22/10/2026 ; avant : rares)*. **Rare** : Cape de Naingui (et son BP). *(23/10/2026)* **Inhabituel** aussi : les six pièces en acier et leurs BP ; **Épique** : Plastron de l'équilibre (et son BP).
+- Par défaut, tout est **commun**. **Inhabituel** : Rubis inférieur, Saphir inférieur, Jade inférieur, Boussole en or (et son BP), Ceinture en peau de gobelin (et son BP), Four en fer (et son BP), Gants tactique et Gants d'ouvrier (et leurs BP), tous les **shiny**. Les **Résidus angélique et démoniaque** sont **communs** *(22/10/2026 ; avant : rares)*. **Rare** : Cape de Naingui (et son BP). *(23/10/2026)* **Inhabituel** aussi : les six pièces en acier et leurs BP ; **Épique** : Plastron de l'équilibre (et son BP). *(27/10/2026, Roi Gobelin)* **Légendaire** : Couronne du Roi Gobelin ; **rare** : Masse du Roi Gobelin, Cape royale du Gobelin, Four en or (et son BP) ; **inhabituel** : Recette : Chitine ; **Unique** : Coffre du Roi Gobelin (comme les trésors des tours).
 - Le vert étant pris par la rareté : un objet tout juste arrivé brille d'un halo blanc, et une recette qu'on peut fabriquer porte une coche ✔.
 
 ### Craft (onglet Craft)
@@ -741,11 +741,38 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
 - Une Rune est une pièce à part (ne s'empile pas, rareté épique) ; seule, elle affiche ses lignes en « % du tier de la pièce ».
 - **Aura du stuff** *(décision du créateur, 25/10/2026 ; `AURA` en config)* : une pièce **dessinée sur le mineur** (casque, torse, ceinture, jambes, bottes ; **pioche et épée** quand il les a en main : la pioche en minant, l'épée en frappant, ajout du 25/10) **identifiée R4+** et portant une **vraie rune R4+** émet une aura : un halo de la **couleur de la qualité la plus basse des deux** (en pratique celle de la rune, qui ne dépasse jamais la pièce), qui pulse, dessiné derrière le mineur autour de la pièce. **R4-R5 : faible, R6 : moyenne, R7 : forte.** Un **fragment de rune n'allume pas d'aura**. Visible partout : mine, mine instantanée, tours, portraits (barre du haut, lobby, onglet Stuff). Purement visuel. Ex. : plastron R6 + rune R5 → halo orange faible ; casque R7 + rune R3 → rien.
 
+### Roi Gobelin : son coffre et ses objets *(27/10/2026, Geoffrey ; `GOBLIN_KING` en config)*
+- **Le boss** est celui de l'**Instance I** (section Instances). Quand il tombe, **chaque joueur encore présent** reçoit un **Coffre du Roi Gobelin**, de qualité **R1 à R7** tirée comme les trésors des tours (rareté **Unique**, non empilable, nom « Antique Coffre du Roi Gobelin »). L'équipe peut aussi en donner (`scripts/give-item.js`, « Coffre du Roi Gobelin R4 »).
+- **Ouvert depuis l'inventaire** :
+  - toujours : **20 à 40 Graphite ore** et **50 à 100 Peaux de gobelin** ;
+  - **un seul tirage pour les objets rares** (au plus un) : **Couronne du Roi Gobelin 1 %**, **Four en or BP 2 %**, **Masse du Roi Gobelin 2 %**, **Cape royale du Gobelin 2 %** (7 % d'avoir l'un des quatre) ;
+  - un autre tirage : **Recette : Chitine 5 %**, **seulement si la recette n'est pas encore apprise** (sinon rien) ;
+  - un autre tirage, **un parchemin de sort au plus** *(27/10/2026, Geoffrey)* : **Ulti shen 1 %**, **Fast learner 0,5 %**, **Cleave 1 %**, **Hand of Justice 1 %** (3,5 % d'en avoir un) ; **un sort déjà appris ne peut pas sortir** (ce tirage ne donne alors rien) ; un parchemin gardé dans l'inventaire sans l'avoir appris peut ressortir ;
+  - un autre : les 3 gemmes inférieures, **1 % chacune**.
+  - **La qualité du coffre s'applique aux pièces de stuff** qui en sortent : la couronne, la masse ou la cape arrivent **déjà identifiées** à la qualité du coffre (R6 → pièce R6). Le plan et la recette n'ont pas de qualité.
+- **Les objets** (pas craftables ; tier **3** pour les runes, *choix de Claude*) :
+
+  | Objet | Case | Rareté | Effet |
+  |---|---|---|---|
+  | Couronne du Roi Gobelin (couronne dorée) | casque | légendaire | Fortune +10 % ; **passif : gobelins asservis** (ci-dessous) |
+  | Masse du Roi Gobelin | arme | rare | Dégâts 14 (remplace les mains nues, comme une épée), critique +15 % |
+  | Cape royale du Gobelin (rouge, bordure laineuse blanche) | cape | rare | Dégâts +5 %, vitesse de minage +5 % |
+  | Recette : Chitine | — | inhabituel | « Utiliser » : débloque au four (mode Fondre) **10 Peaux de gobelin + 10 charbon → 5 Chitine**, 60 s *(Geoffrey)* ; consommée |
+  | Four en or | — | rare | Craft (plan : Four en or BP) : 50 Shiny gold + 50 Tainted gold + 50 diamants ; « Utiliser » ouvre le **3e four**, **×1,5** |
+
+- **Passif de la couronne : gobelins asservis.** Un **gobelin qui apparaît à 10 cases ou moins** (cercle) d'un mineur qui porte la couronne *(Geoffrey : « dans un rayon de 10 blocs du porteur »)* est **asservi** au lieu d'être un mob :
+  - il ne se bat pas, ne vole rien, personne ne le frappe ; il ne donne ni XP ni butin ;
+  - pendant **30 s**, il **mine les minerais autour de lui** (6 cases au plus), avec la **même priorité que le porteur** (son focus minerai), à la **vitesse d'un mineur de base** (minage 1, marche, montée) ; il creuse droit vers le minerai (la pierre et la terre cassées en chemin comptent aussi) ; il laisse les minerais qu'un mineur vise ; il s'agrippe à la roche et ne tombe que dans le vide ;
+  - **tout ce qu'il casse va directement dans le coffre commun**, et apparaît dans une ligne **« 👑 Gobelins asservis »** du panneau Coffre commun (aussi en solo) ; ses minerais comptent pour le déblocage de l'area ; pas de fortune ni de shiny *(choix de Claude : « mineur de base »)* ;
+  - au bout de 30 s, il **disparaît** (journal : « Un gobelin asservi a fini son travail et disparaît ») ;
+  - il est dessiné en gobelin doré avec une petite couronne. Un gobelin né plus loin reste hostile.
+  - Repères (simulation, `npm run simulate -- --miners 3 --count 5 --crown`) : voir `docs/debug.md`.
+
 ### Four (onglet Four)
-- **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**.
-- **Four 2 : Four en fer** *(décision du créateur, 21/10/2026)*. L'objet « Four en fer » se fabrique (onglet Craft, recette débloquée par le Four en fer BP) ; dans l'inventaire, son bouton **Utiliser** le consomme et ouvre le four 2, un **Four en fer** qui fond **×1,25 plus vite** (lingot de fer en 48 s). Un seul Four en fer sert : une fois le four 2 ouvert, le bouton dit « four déjà débloqué ». Le **four 3 reste fermé** pour l'instant. Fait par le serveur, en une fois (un double clic ne consomme qu'un objet).
+- **Un four au départ** (Four en pierre), jusqu'à **3** *(valeur de config)*. Les fours 2 et 3 sont affichés **sous cadenas**. **Four 3 : Four en or** *(27/10/2026, Geoffrey)* : ×1,5, son plan vient du coffre du Roi Gobelin (voir plus haut) ; il faut avoir ouvert le four 2 avant.
+- **Four 2 : Four en fer** *(décision du créateur, 21/10/2026)*. L'objet « Four en fer » se fabrique (onglet Craft, recette débloquée par le Four en fer BP) ; dans l'inventaire, son bouton **Utiliser** le consomme et ouvre le four 2, un **Four en fer** qui fond **×1,25 plus vite** (lingot de fer en 48 s). Un seul Four en fer sert : une fois le four 2 ouvert, le bouton dit « four déjà débloqué ». Le four 3 *(ancien : resté fermé jusqu'au 27/10)* s'ouvre avec le Four en or. Fait par le serveur, en une fois (un double clic ne consomme qu'un objet).
 - Un four a **3 cases** :
-  - **minerai** : seulement un objet de la famille **ore** ; une seule sorte à la fois ;
+  - **minerai** : seulement un objet de la famille **ore** ; une seule sorte à la fois ; *(27/10)* aussi la **Peau de gobelin** une fois la « Recette : Chitine » apprise (10 peaux + 10 charbon → **5** Chitine) ;
   - **combustible** : seulement un objet de la famille **combustible** (le charbon) ;
   - **sortie** : les lingots (fer → Lingot de fer). Une seule sorte : si elle contient d'autres lingots, la fonte attend qu'on les récupère.
 - Cliquer une case minerai ou combustible : choisir l'objet, puis la quantité (**saisie libre**, bouton **½** = la moitié de son stock arrondie en dessous, ou **Max**). Cliquer la sortie : les lingots vont dans l'inventaire.
@@ -854,14 +881,14 @@ Un effort commun à **tout le serveur**, par petites visites : on frappe ensembl
 
 ### Instances (Lobby, « Où miner » → Instances) *(concept du créateur, 27/10/2026 ; valeurs provisoires, `INSTANCE` en config ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`)*
 Des donjons de groupe à clé. Pour l'instant **Instance I (le roi gobelin)** ; Instance II et III sont grisées (« bientôt »).
-- **Entrer** : un groupe de **1 à 3**, lancé par le chef. **Une Clé d'instance I par joueur**, **consommée au lancement** (même en cas d'échec ou de départ) ; le serveur refuse si un joueur n'a pas la sienne. La clé (rareté **inhabituel**, s'empile) vient des **Treasure T3** : **5 %**, tirage à part (en plus du reste).
+- **Entrer** : un groupe de **1 à 3**, lancé par le chef. **Une Clé d'instance I par joueur**, **consommée au lancement** ; **si le groupe perd** (temps écoulé, ou tout le monde est parti), **la clé est rendue à tous les joueurs**, partis compris *(27/10/2026, Geoffrey ; avant : perdue même en cas d'échec)* ; en cas de victoire, elle reste consommée (aussi pour celui qui est parti avant) ; le serveur refuse si un joueur n'a pas la sienne. La clé (rareté **inhabituel**, s'empile) vient des **Treasure T3** : **5 %**, tirage à part (en plus du reste).
 - **Valeurs** *(27/10, Geoffrey, après simulation)* : salle **28 × 24**, **3 rebords par côté** (6 de large, 5 cases d'air entre deux : à 6, 12 et 18 du sol), plateforme du roi à 21 ; **10 min de jeu** ; spawners **125 coups**, un gobelin toutes les **30 s** ; gobelins **150 PV** ; roi **3 500 PV**, **enfermement tous les 20 % de PV manquants** (80, 60, 40, 20 %).
 - **La salle** : sol, murs et plafond indestructibles, tout éclairé, **pas d'oxygène ni de pods**. **Un spawner par rebord, collé au mur** : il faut monter (échelles illimitées, partagées) et aller au fond du rebord. Départ au sol, au centre.
 - **Spawners** : un gobelin dès le début puis toutes les 30 s ; ils se cassent au « coup de pioche » comme le Bloc géant (chaque seconde enlève la vitesse de minage effective) ; **la Dynamite compte pour 6 coups**. Barre de vie au-dessus.
 - **Gobelins** : ils foncent vers les mineurs, tombent des rebords et montent aux échelles ; un coup toutes les 2 s ; **le premier coup tacle** (le mineur doit tuer ce gobelin) ; chaque coup a **30 %** de repousser de 0,5 case, **toujours vers le centre de la salle**. Cible : la **provocation**, sinon un mineur qui **casse un spawner** à 10 cases ou moins, sinon le **plus proche**. Pas de butin ni d'XP.
 - **Le roi gobelin** : endormi sur sa plateforme (intouchable, ignoré par les mineurs) tant qu'il reste un spawner ; puis il descend se battre au sol. **3 × 3**, **3 fois** la vitesse de marche d'un mineur de base, **résistance au recul 25 %**, un coup toutes les **1,5 s** (mêmes cibles que les gobelins) qui repousse de 0,5 case vers le centre ; **tous les 10 coups**, un coup boosté projette de **6-7 cases de haut et 6-7 de long** vers le centre (pour envoyer sur un rebord). **Enfermement** à chaque seuil : chaque mineur est téléporté sur un rebord différent et entouré de blocs (dureté 10, rayon 3, sur le rebord et au-dessus) ; il creuse pour sortir ; le roi attend, et reprend dès qu'un mineur est sorti de sa cage *(choix de Claude)*. **Rage sous 33 %** : recul de 1 case, vitesse × 2,5.
 - **Sorts** : comme en mine (Dash, Cleave, Hand of Justice, Cri de guerre, Inspiration, Fast learner, Ulti shen ; Dynamite = 6 coups sur un spawner, casse les blocs d'une cage) ; Illumination et Bonbonne de zipette sans effet.
-- **Fin** : roi mort = réussite ; 10 min = échec. **Pas de récompense ni d'XP pour l'instant** *(décision du créateur)*.
+- **Fin** : roi mort = réussite ; 10 min = échec. **Récompense** *(27/10/2026, Geoffrey ; avant : aucune)* : roi vaincu → **chaque joueur encore présent reçoit un Coffre du Roi Gobelin**, qualité R1 à R7 tirée par le serveur comme un trésor de tour (contenu : section « Roi Gobelin »). Toujours **pas d'XP** *(décision du créateur)*. Le bouton « 🗝 Instances » reste cliquable pendant une session (on regarde la carte, Lancer est grisé).
 - Repères (simulation, `npm run simulate:instance`, groupe de 3, stuff seul) : fer (2 830 GS) 0/20 ; fer + acier (3 232 GS) 13/20 en ≈ 9 min 56 ; acier (3 681 GS) 20/20 en ≈ 9 min 50. Seul : impossible (les gobelins s'accumulent). L'armure compte peu (pods, oxygène inutiles) : la pioche et l'épée font la différence.
 
 ### Mine instantanée (MI) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `INSTANT_MINE` en config)*

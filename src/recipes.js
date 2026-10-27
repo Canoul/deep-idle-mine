@@ -33,6 +33,8 @@ export const RECIPES = {
   /* débloquées par un blueprint (Treasure T1) : le four se pose avec « Utiliser » (2e four), la boussole s'équipe */
   'Four en fer':         { cost: { 'Charbon': 1000, 'Tainted iron': 20, 'Shiny iron': 5 },     qty: 1, unlock: 'Four en fer BP' },
   'Boussole en or':      { cost: { 'Tainted gold': 20, 'Shiny gold': 5 },                      qty: 1, unlock: 'Boussole en or BP' },
+  /* 3e four (27/10/2026, Geoffrey) : blueprint du coffre du Roi Gobelin ; « Utiliser » ouvre le four 3 (× 1,5) */
+  'Four en or':          { cost: { 'Shiny gold': 50, 'Tainted gold': 50, 'Diamant': 50 },      qty: 1, unlock: 'Four en or BP' },
 
   /* débloquées par un blueprint (Treasure T2) */
   'Gants tactique':      { cost: { 'Shiny iron': 20, 'Tainted iron': 20, 'Jade inférieur': 1 },   qty: 1, unlock: 'Gants tactique BP' },

@@ -12,6 +12,7 @@ import { veiled } from './trap.js';
 import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
 import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
 import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
+import { thrallOwner, enslave } from './thrall.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
@@ -375,6 +376,8 @@ function spawnMobs(G){
   }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];
+  /* Couronne du Roi Gobelin (27/10) : un gobelin qui naît près d'un porteur est asservi (src/sim/thrall.js), pas un mob */
+  if(type==='gobelin'){ const w=thrallOwner(G,x,y); if(w){ enslave(G,G.mobId++,x,y,w); return; } }
   const hp=mobHp(type, areaOf(y));
   const o={id:G.mobId++,type,x,y,hp,maxhp:hp,cd:1};
   if(MOBS.speed[type]) o.speed=MOBS.speed[type];

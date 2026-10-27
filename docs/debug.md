@@ -3608,3 +3608,58 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : la durée est lue au chargement du module (`INSTANCE_TICKS`) ; l'IA vise toujours le même spawner
   pour tout le groupe ; les spawners sans limite de gobelins font basculer la partie d'un coup si le groupe est trop
   faible ; pas de récompense (summary.loot vide, bag vide).
+
+### Roi Gobelin : coffre, objets, gobelins asservis, Four en or, recette Chitine (Geoffrey) — branche `geoffrey/roi-gobelin-objets`, ✅ en ligne le 27/10
+- **Quoi** : `GOBLIN_KING` (config) : table du coffre, `thrall { radius:10, life:30, reach:6 }`. Objets `ITEMS` :
+  « Coffre du Roi Gobelin R1-R7 » (`chest:{ side:'goblin', q }`, `treasure:true`, Unique), « Four en or BP », « Recette :
+  Chitine » (cat blueprint) ; `STUFF.items` : Couronne (`set.goblinThrall = 10`, fortune 10), Masse, Cape royale (tier 3
+  dans `UPGRADE.tiers`). `STATS.goblinThrall = 0` (nouvelle stat, libellé, aide du wiki).
+  - Coffre : `openGoblinChest` (`src/meta/loot.js`) ; `rollLoot(table, rng, skip)` : un objet `learnOnce` déjà appris
+    ne sort pas (le tirage ne donne rien, pas de nouveau tirage). Stuff sorti : `slot.q = q` (identifié). Nom affiché :
+    `itemName` lit `GOBLIN_KING.chest` pour side 'goblin'. Une annonce Discord R7 part comme pour un trésor de tour.
+  - Four : `FURNACE.recipes['Peau de gobelin'] = { out:'Chitine', qty:5, time:60, unlock:'Recette : Chitine' }` ;
+    `recipeOf` accepte un non-minerai ; `accepts(slot, item, mode, inv)` refuse une recette fermée pas apprise
+    (`inv.unlocked` contient « Four : Chitine », mis par `learn` via `recipeOfBlueprint`) ; `qty` par fournée.
+    **Corrigé au passage** : `sanitizeFurnaces` effaçait à la relecture un ingrédient non-minerai posé et une sortie qui
+    n'est pas un lingot (la chitine) → relu sans l'inventaire (`recipeOf`) et sortie = toute sortie de recette. Et
+    `deserialize` (`src/meta/inventory.js`) ne gardait dans `unlocked` que les recettes du Craft : « Four : Chitine » était
+    perdu à l'enregistrement (recette consommée pour rien) → gardé aussi (`FURNACE_UNLOCKS`), test ajouté.
+  - 3e four : `FURNACE.tiers[2] = Four en or ×1,5`, `unlockItems['Four en or'] = { slot:2 }`, recette dans `src/recipes.js`.
+  - Asservis (`src/sim/thrall.js`) : `spawnMobs` (mobs.js) envoie un gobelin né à `goblinThrall` cases (cercle) d'un porteur
+    sous terre vers `G.thralls` (pas dans `G.mobs` : aucun code de combat ne le voit). `updateThralls` (session.tick, après
+    les mobs) : prise (golem), chute, cible = meilleur minerai à `reach` (Manhattan) par `targetVal(porteur)` / (distance +
+    temps + 1), pas un minerai visé ou miné par un mineur ; il creuse droit (axe le plus long), temps = dureté /
+    STATS.mineSpeed, pas = 1 / STATS.speed ; bloqué : minerai abandonné (`skip`). Bloc cassé → `G.chest` + `G.goblinChest`
+    (+ déblocage d'area pour un minerai). Sans hasard. `thralls` gardés dans le k hole (WORLD) ; vue : `thralls`,
+    `goblinChest` ; rendu : gobelin doré + couronne ; HUD : ligne « 👑 Gobelins asservis » sous le coffre.
+  - Lampe à incandescence ajoutée au tier 2 de `UPGRADE.tiers` : `tests/rune.test.js` échouait déjà sur `main` (« sans tier »).
+  - Textures (6 icônes, 4 calques de skin) dans `scripts/gen_textures.py`, branchées dans `src/skins.js`.
+- **Tests** : `tests/goblin-king.test.js` (7 : objets, coffre R1-R7, seuils et fréquences, qualité, recette une seule fois,
+  four Chitine + relecture, Four en or), `tests/goblin-thrall.test.js` (8 : porteur, minage, temps, creuse, laisse la cible
+  d'un mineur, disparition, chute), `tests/anticheat/goblin-king.test.js` (2) ✅ ; furnace, craft, loot, stuff, rarity
+  (couronne légendaire…), wiki, rune, research, mobs, golem, khole, session, view, share… ✅ ; anticheat ✅.
+- **Simulation** (`--miners 3 --count 5`, 1er mineur avec `--crown`) : 0 blocage ; coffre 4 140 → 4 578 pods (+11 %),
+  areas 3,0 → 3,2, profondeur 182 → 196 ; ≈ 12 gobelins asservis, 86 blocs, 184 pods par session (le reste du gain :
+  fortune +10 et gobelins qui ne volent plus).
+- **Points fragiles** : le boss n'existe pas (coffre seulement par l'admin) ; `--crown` ne met que la stat et la fortune
+  (pas le stuff complet) ; un asservi peut casser le bloc qu'un mineur traverse (le mineur finit son action sur du vide,
+  sans effet).
+- **Vérifié dans Chromium** (Playwright, serveur local) : coffres donnés par l'admin et ouverts, recette apprise puis
+  proposée au four (« Peau de gobelin 10 → 5 Chitine »), 3e four sous cadenas « Four en or » ; en mode dev ×300 avec la
+  couronne portée : skin de la couronne, journal « Un gobelin s'incline… » puis « …disparaît », ligne « 👑 Gobelins asservis »
+  du coffre ; aucune erreur de page ✅.
+- **Ajout (Geoffrey, 15 h)** : famille `scroll` dans `GOBLIN_KING.loot` (Ulti shen 0,01, Fast learner 0,005, Cleave 0,01,
+  Hand of Justice 0,01, `spellOnce`). `openTreasure` / `openAll` prennent un 5e argument `ctx = { spells }` (sorts appris) ;
+  le serveur (`game.open`) relit `loadSpells(me.id).learned` et le passe. Un sort appris tiré = rien (comme la recette).
+  Tests : goblin-king +1 (seuils, sort appris, fréquence 3,5 %), anticheat +1 (serveur : 400 coffres, tous les sorts
+  appris → aucun parchemin) ✅. Merge de `main` (Instances) : journaux, wiki, état gardés des deux côtés ; `rarity.test.js`
+  ne connaissait pas la Clé d'instance I (inhabituel) et échouait sur `main` → ajoutée.
+- **Lien Instance I (15 h)** : `INSTANCE.list[0].chest = 'goblin'`. `settleWith` (`server/game/service.js`) : instance
+  réussie → `share.bag = { goblinChestItem(rollChestQuality(random)) : 1 }` pour chaque joueur encore présent (le butin de
+  la partie est ignoré) ; échec → `share.bag = { clé : 1 }` pour TOUS les joueurs de la session, partis compris (le
+  versement ne saute plus les partis quand `refund`) ; `creditSession` garde l'idempotence. Bilan (`showInstanceEnd`) :
+  « 🎁 Tu reçois : … » / « Ta clé t'est rendue ». Lobby : bouton Instances jamais grisé (Lancer l'est en session) ; carte :
+  « rendue si le groupe perd », « Roi vaincu : un Coffre… ». Confirmation de départ mise à jour.
+  Tests : instance-server +2 (victoire : coffre R1-R7 au présent, rien au parti, clés consommées ; échec : clé rendue à
+  tous, fin rejouée sans double) et 2 attentes changées (clé rendue à l'échec), lobby (bouton en session) ✅ ; instance-*,
+  goblin-*, wiki, rarity, game-service ✅ 111 ; anticheat ✅ 102. État : ✅ en ligne le 27/10.

@@ -26,7 +26,7 @@ import { updateLight } from './light.js';
 import { log } from './log.js';
 
 /* ce qui appartient à la carte : mis de côté pendant le k hole */
-const WORLD = ['tiles', 'ladder', 'seen', 'areas', 'unlockedAreas', 'winch', 'treasures', 'dungeons', 'traps', 'veil', 'mobs',
+const WORLD = ['tiles', 'ladder', 'seen', 'areas', 'unlockedAreas', 'winch', 'treasures', 'dungeons', 'traps', 'veil', 'mobs', 'thralls',
   'torches', 'light', 'mimicCells', 'mule', 'ducks', 'duckBase', 'spawnTimer', 'spawnTurn', 'combat'];
 /* ce qui, chez un mineur, dépend de sa place sur la carte (position, cibles, chantiers, action en cours) */
 const SPOT = ['x', 'y', 'kx', 'ky', 'face', 'dir', 'action', 'mode', 'status', 'reason', 'target', 'foe', 'foeHit', 'exploring',
@@ -176,7 +176,7 @@ export function buildDimension(G, n, k, map = pickMap(G.seed, n)){
   Object.assign(G, {
     tiles: Array.from({ length: rows }, () => row(BARRIER)), ladder: Array.from({ length: rows }, () => row(0)),
     seen: Array.from({ length: rows }, () => row(0)), areas: Array.from({ length: k+1 }, (_, i) => emptyArea(i)),
-    unlockedAreas: k+1, winch: null, treasures: new Map(), dungeons: [], traps: [], veil: new Set(), mobs: [], torches: [],
+    unlockedAreas: k+1, winch: null, treasures: new Map(), dungeons: [], traps: [], veil: new Set(), mobs: [], thralls: [], torches: [],
     light: new Map(), mimicCells: new Set(), mule: null, ducks: 0, duckBase: k+1, spawnTimer: Infinity, spawnTurn: 0, combat: false,
   });
   if(map.comp) buildVeins(G, r, map, k, top); else buildRoom(G, r, map, k, top);

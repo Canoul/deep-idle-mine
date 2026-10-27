@@ -6,18 +6,25 @@
    l'inventaire. Le blueprint est consommé et le nom de la recette rejoint inv.unlocked : débloquée pour toujours.
    Les deux changent ensemble (même inventaire, une seule écriture) : rien ne se perd, rien ne se duplique. */
 import { RECIPES } from '../recipes.js';
-import { RECYCLE, STUFF } from '../config.js';
+import { RECYCLE, STUFF, FURNACE } from '../config.js';
+import { furnaceRecipeName } from './furnace.js';
 import { countOf, removeItem, addItem, takePiece, CRAFT_MEMORY } from './inventory.js';
 import { isStuff } from './piece.js';
 
 export const recipeOf = item => (typeof item === 'string' && Object.hasOwn(RECIPES, item)) ? RECIPES[item] : null;
 /* recette disponible pour ce joueur : de base (unlock null), ou débloquée par son blueprint */
-export const isUnlocked = (item, inv) => { const r = recipeOf(item); return !!r && (r.unlock === null || !!inv?.unlocked?.includes(item)); };
+/* recettes de fonte fermées (FURNACE.recipes[…].unlock, 27/10) : objet qui la débloque → nom gardé dans inv.unlocked */
+const FURNACE_BY_ITEM = Object.fromEntries(Object.entries(FURNACE.recipes).filter(([, r]) => r.unlock).map(([i, r]) => [r.unlock, furnaceRecipeName(i)]));
+const FURNACE_NAMES = new Set(Object.values(FURNACE_BY_ITEM));
+export const isUnlocked = (item, inv) => {
+  if(FURNACE_NAMES.has(item)) return !!inv?.unlocked?.includes(item);   // recette du four (« Four : Chitine »)
+  const r = recipeOf(item); return !!r && (r.unlock === null || !!inv?.unlocked?.includes(item)); };
 /* recettes disponibles (onglet Craft). Celles à blueprint restent secrètes tant qu'il n'est pas utilisé : jamais listées. */
 export const craftable = inv => Object.keys(RECIPES).filter(n => isUnlocked(n, inv));
 
 /* recette débloquée par ce blueprint (null s'il ne débloque rien pour l'instant : Four en fer BP, Boussole en or BP…) */
-export const recipeOfBlueprint = bp => typeof bp === 'string' ? Object.keys(RECIPES).find(n => RECIPES[n].unlock === bp) ?? null : null;
+export const recipeOfBlueprint = bp => typeof bp === 'string'
+  ? Object.keys(RECIPES).find(n => RECIPES[n].unlock === bp) ?? (Object.hasOwn(FURNACE_BY_ITEM, bp) ? FURNACE_BY_ITEM[bp] : null) : null;   // ou une recette du four (Recette : Chitine)
 /* le joueur peut-il utiliser ce blueprint ? (il en a un, il débloque une recette qu'il n'a pas encore) */
 export const canLearn = (inv, bp) => { const n = recipeOfBlueprint(bp); return !!n && !isUnlocked(n, inv) && countOf(inv, bp) >= 1; };
 
