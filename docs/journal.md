@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Butin rare des mobs : chances baissées
+- **Pour le joueur** : les pièces lâchées par les mobs tombent bien moins souvent. Lanières en cuir du gobelin, Capuche
+  sombre et Nuage magique : **0,1 %** (avant 0,5 %) ; Ceinture du Géant : **0,5 %** sur le minotaure (avant 1 %), **1 %**
+  dans un k hole (avant 2 %). Le butin du mineur (stat Butin, Pillage) multiplie toujours ces chances. Le wiki suit tout
+  seul.
+- **Décisions** (Geoffrey) ; choix de Claude à valider : la chance en k hole reste le double de la chance normale.
+- **État** : ✅ en ligne le 27/10
+
 ## 26/10/2026 — Geoffrey — Tours : le retour des pods
 - **Pour le joueur** : les **briques minées vont dans le sac** (10 pods chacune) ;
   sac plein, le mineur redescend le vider au **coffre commun**, au milieu de l'étage 0, puis repart. **Si le boss
@@ -35,6 +43,7 @@ Modèle d'entrée :
   mine** (une ampoule dans sa cage, suspendue à un câble), dans la mine comme dans les tours. Les torches des autres
   mineurs restent des torches.
 - **État** : ✅ en ligne le 26/10
+
 
 ## 26/10/2026 — Geoffrey — « Who ? » : aussi les joueurs hors ligne des dernières 24 h
 - **Pour le joueur** : le bouton « Who ? » des tours liste, après les joueurs en ligne, ceux qui sont **hors ligne** mais

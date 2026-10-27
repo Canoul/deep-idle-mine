@@ -67,24 +67,24 @@ function drops(type, n, { khole = false, seed = 7, looting = 0 } = {}){
   return m.inv[item] ?? 0;
 }
 
-test('drop : 0,5 % sur gobelin, occultiste et méphite ; minotaure 1 %, 2 % dans un k hole', () => {
-  const N = 40000, near = (got, p) => Math.abs(got / N - p) < p * 0.25;
+test('drop : 0,1 % sur gobelin, occultiste et méphite ; minotaure 0,5 %, 1 % dans un k hole (nerf du 26/10)', () => {
+  const N = 200000, near = (got, p) => Math.abs(got / N - p) < p * 0.25;
   for(const d of MOB_DROPS.items){
     const got = drops(d.mob, N);
     assert.ok(near(got, d.chance), `${d.mob} : ${got} sur ${N}`);
   }
-  assert.equal(MOB_DROPS.items.find(d => d.mob === DUNGEON.boss.type).chance, 0.01);
+  assert.equal(MOB_DROPS.items.find(d => d.mob === DUNGEON.boss.type).chance, 0.005);
   const k = drops(DUNGEON.boss.type, N, { khole: true });
-  assert.ok(near(k, 0.02), `minotaure en k hole : ${k} sur ${N}`);
-  assert.ok(MOB_DROPS.items.filter(d => d.mob !== DUNGEON.boss.type).every(d => d.chance === 0.005));
+  assert.ok(near(k, 0.01), `minotaure en k hole : ${k} sur ${N}`);
+  assert.ok(MOB_DROPS.items.filter(d => d.mob !== DUNGEON.boss.type).every(d => d.chance === 0.001));
 });
 
-test('drop : le butin du mineur multiplie la chance (1 % avec +50 % → 1,5 %), une seule pièce à la fois', () => {
-  const N = 40000, near = (got, p) => Math.abs(got / N - p) < p * 0.2;
+test('drop : le butin du mineur multiplie la chance (+50 % → ×1,5), une seule pièce à la fois', () => {
+  const N = 200000, boss = MOB_DROPS.items.find(d => d.mob === DUNGEON.boss.type), near = (got, p) => Math.abs(got / N - p) < p * 0.2;
   const g = drops(DUNGEON.boss.type, N, { looting: 50 });
-  assert.ok(near(g, 0.015), `minotaure, +50 % : ${g} sur ${N}`);
+  assert.ok(near(g, boss.chance * 1.5), `minotaure, +50 % : ${g} sur ${N}`);
   const k = drops(DUNGEON.boss.type, N, { looting: 50, khole: true });
-  assert.ok(near(k, 0.03), `minotaure en k hole, +50 % : ${k} sur ${N}`);
+  assert.ok(near(k, boss.kholeChance * 1.5), `minotaure en k hole, +50 % : ${k} sur ${N}`);
   /* jamais deux pièces d'un coup, même avec un butin énorme : au plus une par mob */
   assert.ok(drops('gobelin', 200, { looting: 1000 }) <= 200);
 });
@@ -119,6 +119,6 @@ test('recyclage : quantités fixes ; la pièce disparaît une fois, rien ne se r
 });
 
 test('wiki : chaque pièce dit d\'où elle tombe', () => {
-  assert.ok(sourcesOf('Lanières en cuir du gobelin').some(s => /0,5 % de chance sur un gobelin/.test(s)));
-  assert.ok(sourcesOf('Ceinture du Géant').some(s => /1 % de chance sur un minotaure \(2 % dans un k hole\)/.test(s)));
+  assert.ok(sourcesOf('Lanières en cuir du gobelin').some(s => /0,1 % de chance sur un gobelin/.test(s)));
+  assert.ok(sourcesOf('Ceinture du Géant').some(s => /0,5 % de chance sur un minotaure \(1 % dans un k hole\)/.test(s)));
 });

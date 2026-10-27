@@ -1190,10 +1190,11 @@ export const DUNGEON = {
 export const MOB_DROPS = {
   salt: 0x570ffd,
   items: [
-    { mob:'gobelin',          item:'Lanières en cuir du gobelin', chance:0.005 },
-    { mob:'occultiste',       item:'Capuche sombre',              chance:0.005 },
-    { mob:'mephite',          item:'Nuage magique',               chance:0.005 },
-    { mob:DUNGEON.boss.type,  item:'Ceinture du Géant',           chance:0.01, kholeChance:0.02 },
+    /* 26/10/2026 au soir (Geoffrey) : nerf, avant 0,5 % (gobelin, occultiste, méphite) et 1 % / 2 % (minotaure) */
+    { mob:'gobelin',          item:'Lanières en cuir du gobelin', chance:0.001 },
+    { mob:'occultiste',       item:'Capuche sombre',              chance:0.001 },
+    { mob:'mephite',          item:'Nuage magique',               chance:0.001 },
+    { mob:DUNGEON.boss.type,  item:'Ceinture du Géant',           chance:0.005, kholeChance:0.01 },   // k hole : toujours le double (choix de Claude)
   ],
 };
 

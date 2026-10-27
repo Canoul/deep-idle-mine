@@ -656,10 +656,10 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Pièce (case, rareté) | Stats | Obtention | Recyclage |
   |---|---|---|---|
-  | **Lanières en cuir du gobelin** (torse, inhabituel) — torse nu, deux sangles de cuir | Vitesse d'attaque +44 %, Butin des mobs +22 % (440 x, Plastron en fer) | gobelin 0,5 % | 20 Chitine + 10 Peau de gobelin |
-  | **Capuche sombre** (casque, rare) — capuche violette, visage sombre, yeux rouges | Recul +0,13, Critique +9,7 % (≈ 268 x, Casque en fer) | occultiste 0,5 % | 30 Chitine + 10 Tissu sombre |
-  | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,1 (263 x, Jambes en fer) | méphite 0,5 % | 30 Chitine + 10 Vésicule de gaz |
-  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +3,1, Ténacité +25 % (250 x) | minotaure 1 % (2 % dans un k hole) | 50 Chitine + 5 Steel ingot |
+  | **Lanières en cuir du gobelin** (torse, inhabituel) — torse nu, deux sangles de cuir | Vitesse d'attaque +44 %, Butin des mobs +22 % (440 x, Plastron en fer) | gobelin 0,1 % *(26/10 soir ; avant 0,5 %)* | 20 Chitine + 10 Peau de gobelin |
+  | **Capuche sombre** (casque, rare) — capuche violette, visage sombre, yeux rouges | Recul +0,13, Critique +9,7 % (≈ 268 x, Casque en fer) | occultiste 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Tissu sombre |
+  | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,1 (263 x, Jambes en fer) | méphite 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Vésicule de gaz |
+  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +3,1, Ténacité +25 % (250 x) | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
 
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.

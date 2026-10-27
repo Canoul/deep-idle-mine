@@ -3496,3 +3496,10 @@ Règles (voir CLAUDE.md) :
   tower-boss, tower-who : 48/48). Simulation 6 étages + pods : tout fer 4/20 à 9:38 (toit 6:38, 4,8 vidages, ≈ 40
   briques par joueur) ; tout acier 16/20 à 9:07 (toit 5:49, 3 vidages, ≈ 51 briques) ; 1,1 / 10 : toit 8:28 (sans
   limite de pods 7:11), 6,5 vidages, 0 blocage ; compos de `simulate:tower` 0/20 (d : 2/20 sans les pods).
+
+## 26/10/2026 — Butin rare des mobs : `MOB_DROPS` 0,5 % → 0,1 %, minotaure 1 % / 2 % → 0,5 % / 1 % (branche `geoffrey/nerf-drops`)
+- **Quoi** : `src/config.js` `MOB_DROPS.items` ; `GAME_DESIGN.md` (tableau du butin des mobs), `claude/etat-du-projet.md`.
+  Wiki : tableaux et « d'où ça tombe » lus dans la config.
+- **Tests** : `tests/mob-drops.test.js` : valeurs et textes du wiki mis à jour, N = 200 000 tirages (à 0,1 %, 40 000 ne
+  suffisaient plus pour la marge de 25 %) ; le test du multiplicateur de butin lit la config. mob-drops, wiki 18/18 ✅.
+
