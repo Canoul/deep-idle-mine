@@ -3554,3 +3554,22 @@ Règles (voir CLAUDE.md) :
 - Tests : spells ✅ (25), wiki ✅ (11), combat, knock, mobs, session, giant-sim, mob-drops ✅. Simulation 5 sessions
   `--skills mixed` avec / sans `--spells zipette,war_cry,cleave,hand_of_justice` : 0 blocage, coffre 4 499 / 4 510 pods.
 - À vérifier : effet réel de chaque sort sur le coffre et les combats (pas mesuré séparément).
+
+### Bloc géant pendant une session + récompense à 2 visites (Geoffrey) — branche `geoffrey/bloc-geant-session`, 🧪
+- **Quoi (serveur)** : `giantEnter` ne refuse plus un joueur en session ; `game.start` ne refuse plus un joueur au Bloc
+  géant (`in_giant` supprimé) ; `openInstant` n'écarte plus un joueur en visite. `activeSessionInfo` (Social) montre la
+  session d'abord, sinon la visite. Récompense : `minVisitsFor(day)` / `earnsReward(score, day)` (`src/shared/giant.js`),
+  `GIANT.minVisits = 2` à partir de `GIANT.minVisitsFrom = '2026-10-27'` (avant : 1) ; `pendingRewards` les utilise,
+  `info()` renvoie `minVisits`.
+- **Quoi (navigateur)** : `#sessSwitch` (`index.html`) + `updatePanes()` (`src/main.js`, toutes les 300 ms) : quand une
+  session (ou son bilan) ET une visite (ou son écran de fin) existent, l'onglet reçoit `.both` + `.paneGiant` /
+  `.paneSession` ; le CSS cache l'autre groupe (`display:none!important`) sans toucher aux `hidden` des modules (le
+  Bloc géant continue de dessiner et d'interroger le serveur, `visiting()` lit `#gtRun.hidden`). Les panneaux plein
+  écran descendent de la hauteur de la barre. Ce qui vient de commencer passe devant. Carte : « Entrer » n'est plus
+  grisé en session ; « Encore N visites… » (`visitsLeft` / `visitsText`, `src/ui/giant.js`).
+- **Tests** : giant-service +3 (deux sens, MI pendant une visite, 2 visites dès le 27/10 dont « une seule : rien »),
+  ancien test « une session à la fois » remplacé ; giant-rules +1 ; giant-sim, lobby, game-service, instant-server,
+  party, social ✅ 167 ; anticheat ✅ 96. Vérifié dans Chromium (Playwright) : session puis entrée au Bloc géant, barre,
+  aller-retour (canvas redessiné 944 × 503), « Entrer » actif en session, aucune erreur de page ✅.
+- **Points fragiles** : le Social (`activeSessionInfo`) n'affiche qu'une des deux activités (la session). Un joueur au
+  Bloc géant pendant sa session ne regarde pas sa session (sans effet : elle tourne sur le serveur).

@@ -32,6 +32,17 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Bloc géant : aussi pendant une session, récompense à partir de 2 visites
+- **Pour le joueur** : on peut **entrer au Bloc géant pendant une session**, et le chef peut **lancer une session
+  pendant une visite** (la Mine instantanée aussi prend un joueur en visite). Les deux continuent chacune de leur côté.
+  Dans l'onglet Session, une barre « ⛏ Ma session / 🌈 Bloc géant » permet de passer de l'une à l'autre.
+  La **récompense de minuit** demande maintenant d'être venu **au moins 2 fois dans la journée** ; la carte affiche
+  « Encore N visites aujourd'hui pour avoir la récompense de minuit ».
+- **Décisions** : les deux sens (session → Bloc géant et Bloc géant → session) ; 2 visites au Bloc géant (pas
+  2 sessions de mine) ; compté à partir de la journée du 27/10, les journées déjà finies gardent l'ancienne règle.
+- **À suivre** : rien.
+- **État** : 🧪 sur la branche `geoffrey/bloc-geant-session` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — 4 nouveaux sorts
 - **Pour le joueur** : dans l'onglet Sorts,
   - **Bonbonne de zipette** (Logisticien niveau de spé 10) : le prochain allié à 3 cases ou moins qui travaille dans la
