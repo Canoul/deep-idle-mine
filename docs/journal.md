@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
+- **Pour le joueur** : un chef qui part (onglet fermé, PC en veille, téléphone verrouillé) **reste chef** de son groupe,
+  même des heures, affiché « absent » ; à son retour il retrouve son groupe. Avant, il était retiré au bout de 5 min et
+  le suivant devenait chef (le chef revenait dans un lobby vide). Les autres joueurs quittent s'ils ne veulent pas
+  l'attendre. Les membres : inchangé (retirés après 5 min sans nouvelles, sauf s'ils sont prêts).
+- **Décisions** (Geoffrey).
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Glyphes : 1 % par session au lieu de 3 %
 - **Pour le joueur** : trouver un glyphe dans la mine est 3 fois plus rare : environ **1 % par session** dans un groupe de
   3 (avant 3 %), ≈ 1,5 % en solo. Spé Mineur 0,00126 % par bloc cassé, Logisticien 0,011 % par échelle posée, Barbare

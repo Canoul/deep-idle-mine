@@ -12,6 +12,7 @@
      session, le chef ne peut pas relancer tant que les autres n'ont pas redit qu'ils sont prêts.
    - Un membre qui n'a plus donné signe de vie (onglet fermé) depuis PARTY_SERVER.memberTimeout est retiré, sauf s'il
      est dans une session (pendant la partie, son navigateur ne parle plus au groupe) : le délai repart de la fin.
+     Le CHEF n'est jamais retiré ainsi (27/10/2026, Geoffrey) : s'il est absent, ce sont les autres qui quittent.
    Les groupes vivent en mémoire et sont recopiés dans le stockage (store, s'il est donné) à chaque vrai changement :
    un redémarrage du serveur (mise à jour automatique toutes les 2 min) les retrouve (load). Les signes de vie ne sont
    pas enregistrés (ils changent sans arrêt) : au redémarrage, tout le monde repart avec un délai neuf.
@@ -88,10 +89,12 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     for(const p of [...parties.values()]){
       if(p.launching) continue;
       for(const m of [...p.members]){
+        /* le chef n'est jamais retiré pour absence (27/10, Geoffrey ; ancien : retiré au bout de memberTimeout, le
+           suivant devenait chef). Il est affiché « absent » ; les autres quittent s'ils ne veulent pas l'attendre. */
+        if(m.account === p.leader) continue;
         /* membre prêt (ou « prêt tout le temps ») : gardé même onglet fermé (26/10, Geoffrey). Il est affiché « absent »
-           mais le chef peut toujours le lancer avec le groupe. Le chef, lui, n'est jamais gardé ainsi (sinon personne
-           ne pourrait plus lancer). Pour l'enlever : le chef le retire. */
-        if(m.account !== p.leader && (m.ready || m.always)) continue;
+           mais le chef peut toujours le lancer avec le groupe. Pour l'enlever : le chef le retire. */
+        if(m.ready || m.always) continue;
         if(now - Math.max(m.seenAt, m.graceUntil ?? 0) <= config.memberTimeout) continue;   // grâce : fin prévue de la session
         /* … ou fin RÉELLE de sa dernière session (en retard sur l'heure prévue, ou fin libre en dev) */
         if(now - (await game.lastEndedAt?.(m.account) ?? 0) <= config.memberTimeout) continue;
