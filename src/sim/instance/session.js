@@ -6,7 +6,7 @@
    et le « mine » (chaque seconde enlève sa vitesse de minage effective). Les gobelins qui en sortent foncent sur les
    mineurs (la provocation d'abord, puis celui qui casse un spawner à focusRange cases ou moins, puis le plus proche),
    tombent des rebords et montent aux échelles ; leur premier coup tacle (le mineur doit tuer ce gobelin) et leurs coups
-   repoussent vers le centre de la salle (un mineur au bord d'un rebord peut tomber). Les 6 spawners cassés, le roi
+   repoussent vers le centre de la salle (un mineur au bord d'un rebord peut tomber). Tous les spawners cassés, le roi
    descend de sa plateforme et se bat au sol ; à 75, 50 et 25 % de ses PV il enferme chaque mineur sur un rebord, et
    attend qu'un mineur sorte de sa cage. Roi mort = réussite ; temps écoulé = échec.
 
@@ -45,7 +45,7 @@ export function newInstance(seed, opts = {}){
   G.miners = specs.map((s, i) => createMiner(i, s, cx - 1 + (i % 3), world.floorY));
   G.roster = [...G.miners];
   G.id = opts.id ?? `instance-${seed}-${Date.now().toString(36)}`;
-  log(G, `🗝 Instance I : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} face aux 6 spawners. Le ${B.name} attend en haut.`);
+  log(G, `🗝 Instance I : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} face aux ${G.spawners.length} spawners. Le ${B.name} attend en haut.`);
   return G;
 }
 
@@ -219,7 +219,7 @@ function stepBoss(G){
   if(b.state === 'sleep'){
     if(G.spawners.every(s => !s.alive)){
       b.state = 'drop'; b.t = 0; G.timeline.awake = G.t;
-      log(G, `👑 Les 6 spawners sont détruits : le ${b.name} saute de sa plateforme !`);
+      log(G, `👑 Les ${G.spawners.length} spawners sont détruits : le ${b.name} saute de sa plateforme !`);
     }
     return;
   }
@@ -600,10 +600,10 @@ export const brokenSpawners = G => G.spawners.filter(s => !s.alive).length;
 export function endInstance(G, success){
   if(G.summary) return;
   G.over = true;
-  if(!success && G.miners.length) log(G, `⌛ Temps écoulé : ${brokenSpawners(G)} spawner${brokenSpawners(G) > 1 ? 's' : ''} sur 6, le ${G.boss.name} tient toujours (${Math.ceil(G.boss.hp)} PV).`);
+  if(!success && G.miners.length) log(G, `⌛ Temps écoulé : ${brokenSpawners(G)} spawner${brokenSpawners(G) > 1 ? 's' : ''} sur ${G.spawners.length}, le ${G.boss.name} tient toujours (${Math.ceil(G.boss.hp)} PV).`);
   G.summary = {
     mode: 'instance', instance: G.instance, id: G.id, seed: G.seed, success: !!success, t: G.t,
-    spawners: brokenSpawners(G), bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, kills: G.stats.kills,
+    spawners: brokenSpawners(G), spawnersMax: G.spawners.length, bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, kills: G.stats.kills,
     awake: G.timeline.awake, loot: {},
     shares: G.roster.map(m => ({ miner: m.name, color: m.color, account: m.account, left: m.left != null, bag: {},
                                  stats: { dmg: Math.round(m.stats.dmg), bossDmg: Math.round(m.stats.bossDmg), kills: m.stats.kills,

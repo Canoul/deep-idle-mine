@@ -1134,6 +1134,8 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), 16, 32, px)
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in instance().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     # golem (mob 2 × 2 cases) : 32 × 32 pixels
     png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
@@ -1342,6 +1344,61 @@ def giant():
     r(tc, tw, th, 6, 0, 3, 2, hexc('#ff8a1f')); r(tc, tw, th, 4, 1, 2, 2, hexc('#ff3b1f')); r(tc, tw, th, 10, 1, 2, 2, hexc('#ff3b1f'))
 
     return {'giant_block': (W, H, blk), 'giant_fountain': (fw, fh, ft), 'giant_torch': (tw, th, tc)}
+
+
+def instance():
+    """Instance I (27/10) : le spawner à gobelins (une hutte de branches, gueule rougeoyante), les blocs des cages du roi
+    (planches cloutées) et le roi gobelin (3 × 3 cases, 48 × 48 pixels : couronne, cape, massue)."""
+    def canvas(w, h):
+        return [(0, 0, 0, 0)] * (w * h)
+
+    def r(px, w, h, x, y, rw, rh, c):
+        for yy in range(y, y + rh):
+            for xx in range(x, x + rw):
+                if 0 <= xx < w and 0 <= yy < h:
+                    px[yy * w + xx] = c
+
+    # spawner : hutte de branches, crâne au-dessus, entrée qui rougeoie
+    sp = canvas(16, 16)
+    wood, wood_d, glow, glow_l, bone = hexc('#6b4a2a'), hexc('#3f2a16'), hexc('#c8331a'), hexc('#ff8a3b'), hexc('#e8dcc0')
+    for i in range(7):
+        r(sp, 16, 16, 7 - i, 3 + i, 2 + 2 * i, 1, wood if i % 2 else wood_d)
+    r(sp, 16, 16, 1, 10, 14, 6, wood); r(sp, 16, 16, 1, 15, 14, 1, wood_d)
+    for x in (2, 5, 10, 13):
+        r(sp, 16, 16, x, 10, 1, 6, wood_d)
+    r(sp, 16, 16, 5, 11, 6, 5, glow); r(sp, 16, 16, 6, 12, 4, 4, glow_l)
+    r(sp, 16, 16, 6, 0, 4, 3, bone); r(sp, 16, 16, 6, 1, 1, 1, hexc('#22180e')); r(sp, 16, 16, 9, 1, 1, 1, hexc('#22180e'))
+
+    # cage : planches cloutées
+    cg = canvas(16, 16)
+    pl, pl_d, nail = hexc('#8a6a3e'), hexc('#5a4224'), hexc('#c9c9d1')
+    r(cg, 16, 16, 0, 0, 16, 16, pl)
+    for y in (0, 5, 10, 15):
+        r(cg, 16, 16, 0, y, 16, 1, pl_d)
+    for x, y in [(2, 2), (13, 2), (2, 7), (13, 7), (2, 12), (13, 12)]:
+        r(cg, 16, 16, x, y, 1, 1, nail)
+    r(cg, 16, 16, 0, 0, 1, 16, pl_d); r(cg, 16, 16, 15, 0, 1, 16, pl_d)
+
+    # roi gobelin : grand gobelin vert, couronne d'or, cape pourpre, massue
+    W = H = 48
+    kg = canvas(W, H)
+    skin, skin_d, cape, cape_d, gold, eye = hexc('#6fae48'), hexc('#4a7a2e'), hexc('#6a2a7a'), hexc('#3f1648'), hexc('#ffd23f'), hexc('#ff3b1f')
+    r(kg, W, H, 8, 14, 32, 26, cape); r(kg, W, H, 8, 38, 32, 2, cape_d)
+    r(kg, W, H, 15, 6, 18, 14, skin); r(kg, W, H, 15, 18, 18, 2, skin_d)
+    r(kg, W, H, 10, 8, 5, 3, skin); r(kg, W, H, 33, 8, 5, 3, skin)          # oreilles pointues
+    r(kg, W, H, 19, 11, 3, 2, eye); r(kg, W, H, 26, 11, 3, 2, eye)
+    r(kg, W, H, 20, 16, 8, 1, hexc('#22300e')); r(kg, W, H, 21, 17, 1, 1, hexc('#f4f0e0')); r(kg, W, H, 26, 17, 1, 1, hexc('#f4f0e0'))
+    r(kg, W, H, 15, 2, 18, 4, gold)
+    for x in (15, 20, 25, 30):
+        r(kg, W, H, x, 0, 3, 2, gold)
+    r(kg, W, H, 22, 3, 4, 2, hexc('#c8331a'))
+    r(kg, W, H, 17, 20, 14, 18, skin); r(kg, W, H, 22, 22, 4, 14, skin_d)  # torse
+    r(kg, W, H, 17, 38, 5, 10, skin_d); r(kg, W, H, 26, 38, 5, 10, skin_d)  # jambes
+    r(kg, W, H, 9, 20, 6, 14, skin); r(kg, W, H, 33, 20, 6, 14, skin)        # bras
+    r(kg, W, H, 40, 10, 4, 30, hexc('#5a3a1e')); r(kg, W, H, 38, 6, 8, 8, hexc('#7a5a3a'))   # massue
+    for x, y in [(38, 6), (45, 7), (39, 13), (44, 12)]:
+        r(kg, W, H, x, y, 1, 1, hexc('#c9c9d1'))
+    return {'instance_spawner': (16, 16, sp), 'instance_cage': (16, 16, cg), 'goblin_king': (W, H, kg)}
 
 
 if __name__ == '__main__':

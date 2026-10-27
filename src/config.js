@@ -617,7 +617,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
@@ -1178,8 +1178,10 @@ export const INSTANCE = {
     { id:'instance_3', label:'Instance III', ready:false },
   ],
   duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
-  w: 20, h: 20, ledgeW: 6, ledgeEvery: 5, ledges: 3, maxFall: 6,
-  platform: { w: 4, height: 17 },
+  /* 27/10 (Geoffrey) : 5 cases d'air entre deux rebords (un tous les 6 ; avant 5) et 4 rebords par côté (8 spawners ;
+     avant 3 et 6) : la salle passe à 30 de haut (avant 20), la plateforme du roi à 27 du sol (avant 17) */
+  w: 20, h: 30, ledgeW: 6, ledgeEvery: 6, ledges: 4, maxFall: 7,
+  platform: { w: 4, height: 27 },
   spawner: { hp: 75, every: 30, dynamite: 6, focusRange: 10 },   // 75 coups (27/10, Geoffrey ; avant 50)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
             knock: 0.5, knockChance: 0.30, step: 0.9 },

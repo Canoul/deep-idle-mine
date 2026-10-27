@@ -7,38 +7,40 @@ import { genInstance, ledgesOf, platformOf, ROCK, SPAWNER, CAGE, AIR } from '../
 
 const spec = (i, carac = {}, extra = {}) => ({ name: 'M' + i, account: 'a' + i, carac: { ...STATS, ...carac }, ...extra });
 const STRONG = { mineSpeed: 1.4, damage: 14, attackSpeed: 120 };
+/* très fort : pour vérifier la mécanique du roi sans dépendre de l'équilibrage (temps, PV) */
+const HUGE = { mineSpeed: 3, damage: 30, attackSpeed: 150 };
 const run = (G, s) => { for(let i = 0; i < Math.round(s / DT) && !G.over; i++) tickInstance(G); };
 const goblin = (G, x, y, extra = {}) => { const o = { id: G.nextGob++, x, y, kx: 0, hp: INSTANCE.goblin.hp, maxhp: INSTANCE.goblin.hp, grab: null,
   grabHit: null, taunt: null, hit: INSTANCE.goblin.hitEvery, moveCd: INSTANCE.goblin.step, fall: 0, stunUntil: null, ...extra }; G.goblins.push(o); return o; };
 /* salle sans spawner (ils ne gênent pas un test de combat) */
 const quiet = G => { for(const s of G.spawners){ s.alive = false; G.tiles[s.y][s.x] = AIR; } G.boss.state = 'test'; };
 
-test('salle : 20 × 20, 3 rebords de 6 par côté tous les 5 de haut, un spawner collé au mur sur chacun, plateforme du roi plus haute', () => {
+test('salle : 20 × 30, 4 rebords de 6 par côté (5 cases d\'air entre deux), un spawner collé au mur sur chacun, plateforme du roi plus haute', () => {
   const L = genInstance();
-  assert.equal(L.w, 20); assert.equal(L.h, 20); assert.ok(L.tiles[20].every(t => t === ROCK), 'sol');
+  assert.equal(L.w, 20); assert.equal(L.h, 30); assert.ok(L.tiles[30].every(t => t === ROCK), 'sol');
   const ledges = ledgesOf();
-  assert.equal(ledges.length, 6);
-  assert.deepEqual([...new Set(ledges.map(l => l.row))], [15, 10, 5]);
+  assert.equal(ledges.length, 8);
+  assert.deepEqual([...new Set(ledges.map(l => l.row))], [24, 18, 12, 6], '6, 12, 18 et 24 au-dessus du sol : 5 cases d\'air entre deux');
   for(const l of ledges){
     for(let x = l.x0; x <= l.x1; x++) assert.equal(L.tiles[l.row][x], ROCK);
     assert.equal(l.x1 - l.x0 + 1, 6);
     assert.equal(L.tiles[l.y][l.sx], SPAWNER);
-    assert.ok(l.sx === 0 || l.sx === 19, 'collé au mur');
+    assert.ok(l.sx === 0 || l.sx === L.w - 1, 'collé au mur');
     assert.equal(Math.abs(l.mx - l.sx), 1, 'on le casse depuis la case d\'à côté');
   }
   const p = platformOf();
-  assert.equal(20 - p.row, 17); assert.equal(p.x1 - p.x0 + 1, 4);
+  assert.equal(L.h - p.row, 27); assert.equal(p.x1 - p.x0 + 1, 4);
   assert.ok(p.row < Math.min(...ledges.map(l => l.row)), 'plus haute que les rebords');
 });
 
 test('spawners : un gobelin chacun dès le début, puis un toutes les 30 s', () => {
-  const G = newInstance(1, { miners: [] });
+  const G = newInstance(1, { miners: [] }), n = G.spawners.length;
   tickInstance(G);
-  assert.equal(G.goblins.length, 6);
+  assert.equal(G.goblins.length, n);
   run(G, 30);
-  assert.equal(G.stats.spawned, 12);
+  assert.equal(G.stats.spawned, 2 * n);
   run(G, 30);
-  assert.equal(G.stats.spawned, 18);
+  assert.equal(G.stats.spawned, 3 * n);
 });
 
 test('casser un spawner : INSTANCE.spawner.hp « coups de pioche » à la vitesse de minage ; la Dynamite en vaut 6', () => {
@@ -111,7 +113,7 @@ test('gobelins : ils tombent des rebords et montent aux échelles', () => {
   assert.equal(o2.y, l2.y, 'monté sur le rebord par l\'échelle'); assert.ok(Math.abs(o2.x - m2.x) <= 1);
 });
 
-test('IA : un groupe fort casse les 6 spawners, sans jamais rester bloqué', () => {
+test('IA : un groupe fort casse tous les spawners, sans jamais rester bloqué', () => {
   const G = newInstance(11, { miners: [0, 1, 2].map(i => spec(i, STRONG)) });
   run(G, 25 * 60);
   assert.equal(G.spawners.filter(s => s.alive).length, 0, `spawners restants`);
@@ -120,12 +122,12 @@ test('IA : un groupe fort casse les 6 spawners, sans jamais rester bloqué', () 
 });
 
 test('roi : il dort tant qu\'il reste un spawner ; puis descend, enferme à chaque seuil, enrage, et meurt', () => {
-  const G = newInstance(7, { miners: [0, 1, 2].map(i => spec(i, STRONG)) });
+  const G = newInstance(7, { miners: [0, 1, 2].map(i => spec(i, HUGE)) });
   run(G, 60);
   assert.equal(G.boss.state, 'sleep'); assert.equal(G.boss.hp, G.boss.maxhp);
   run(G, INSTANCE.duration);
   assert.ok(G.over); assert.equal(G.summary.success, true);
-  assert.equal(G.summary.spawners, 6);
+  assert.equal(G.summary.spawners, G.spawners.length);
   assert.equal(G.timeline.cages.length, INSTANCE.boss.cageAt.length, 'un enfermement par seuil');
   assert.ok(G.timeline.rage != null, 'il a enragé');
   assert.ok(G.stats.boosts >= 1, 'au moins un coup boosté');

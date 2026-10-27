@@ -70,20 +70,23 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
 test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seuls la MI et le Bloc géant restent choisissables', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
-  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false], ['giant', false, false, false]]);
-  assert.deepEqual(mineModes('mi').map(x => x.on), [false, true, false]);
+  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false]]);
+  assert.deepEqual(mineModes('mi').map(x => x.on), [false, true, false, false]);
+  const ins = mineModes('instance_1').find(x => x.id === 'instance_1');
+  assert.equal(ins.label, '🗝 Instances', 'un seul bouton pour toutes les instances (27/10)'); assert.equal(ins.on, true);
   const locked = mineModes('mine', true);
   assert.ok(locked.find(x => x.id === 'mine').disabled, 'lecture seule pendant la session');
   assert.equal(locked.find(x => x.id === 'mi').disabled, false, 'mais la mine instantanée reste choisissable (inscription en session, 22/10)');
   assert.equal(locked.find(x => x.id === 'giant').disabled, false, 'Bloc géant : on regarde sa carte en session (Entrer y est grisé, 26/10)');
+  assert.ok(locked.find(x => x.id === 'instance_1').disabled, 'instances : pas pendant une session');
 });
 
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const ids = j => mineModes('mine', false, j).map(m => m.id);
-  assert.deepEqual(ids(null), ['mine', 'mi', 'giant'], 'fermées : absentes');
+  assert.deepEqual(ids(null), ['mine', 'mi', 'instance_1', 'giant'], 'fermées : absentes');
   const j = { sides: { angel: { open: true, done: false }, demon: { open: false, done: false } } };
-  assert.deepEqual(ids(j), ['mine', 'mi', 'giant', 'tower_angel']);
+  assert.deepEqual(ids(j), ['mine', 'mi', 'instance_1', 'giant', 'tower_angel']);
   const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
   assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
   assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
@@ -128,11 +131,13 @@ test('prêt tout le temps (23/10) : le bouton principal ne permet pas de l\'annu
 test('Jugement (25/10) : jauges à gauche ET équipe à droite, comme pour la Mine ; sans Lancer ni préférences', async () => {
   const { lobbyCards } = await import('../src/ui/lobby.js');
   const j = lobbyCards({ view:'jugement', mode:'mine' });
-  assert.deepEqual(j, { judgment:true, mi:false, giant:false, team:true, launch:false, prefs:false, dev:false });
+  assert.deepEqual(j, { judgment:true, mi:false, giant:false, inst:false, team:true, launch:false, prefs:false, dev:false });
   const m = lobbyCards({ view:null, mode:'mine', dev:true });
-  assert.deepEqual(m, { judgment:false, mi:false, giant:false, team:true, launch:true, prefs:true, dev:true });
+  assert.deepEqual(m, { judgment:false, mi:false, giant:false, inst:false, team:true, launch:true, prefs:true, dev:true });
   const g = lobbyCards({ view:null, mode:'giant', dev:true });
-  assert.deepEqual(g, { judgment:false, mi:false, giant:true, team:false, launch:false, prefs:false, dev:false }, 'Bloc géant : sa carte seule (26/10)');
+  assert.deepEqual(g, { judgment:false, mi:false, giant:true, inst:false, team:false, launch:false, prefs:false, dev:false }, 'Bloc géant : sa carte seule (26/10)');
+  const i = lobbyCards({ view:null, mode:'instance_1', dev:true });
+  assert.deepEqual(i, { judgment:false, mi:false, giant:false, inst:true, team:true, launch:true, prefs:false, dev:false }, 'instance : sa carte, l\'équipe et Lancer (27/10)');
   const mi = lobbyCards({ view:null, mode:'mi' });
   assert.equal(mi.mi, true); assert.equal(mi.team, false);
 });

@@ -2,6 +2,7 @@
    chaque envoi contient tout (cases en base 36, échelles, spawners, gobelins, roi, mineurs, journal). Le navigateur
    affiche, en faisant glisser chaque mineur, gobelin et le roi de sa position affichée vers la nouvelle. */
 import { glide } from './view.js';
+import { INSTANCE } from '../config.js';
 
 const enc36 = v => v.toString(36);
 const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((v, x) => { if(v) out.push(y * G.w + x); })); return out; };
@@ -36,7 +37,7 @@ export function createInstanceViewer(G){
       goblins: G.goblins.filter(o => o.hp > 0).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, face: o.face || 1, hp: Math.ceil(o.hp), maxhp: o.maxhp,
                                                          grab: o.grab, stun: o.stunUntil != null && G.t < o.stunUntil })),
       boss: { name: b.name, hp: Math.ceil(b.hp), maxhp: b.maxhp, x: b.x, kx: b.kx || 0, y: b.y, w: b.w, h: b.h, state: b.state, focus: b.focus,
-              rage: b.hp < b.maxhp * 0.33 },
+              rage: b.hp > 0 && b.hp < b.maxhp * INSTANCE.boss.rageBelow },
       target: G.target, inspire: G.inspire && G.t < G.inspire.until ? Math.ceil(G.inspire.until - G.t) : 0,
       miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
     };
