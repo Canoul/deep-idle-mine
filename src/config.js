@@ -1524,6 +1524,16 @@ export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2,
    avec les points de talent de ce niveau (niveau − 1). Ne touche ni aux skills du compte ni à l'XP. Bornes du niveau. */
 export const DEV_SPEC = { minLevel:1, maxLevel:30 };
 
+/* Presets de personnage (mode dev, 27/10/2026, Geoffrey) : un par spécialisation. Ce sont les comptes locaux créés par
+   scripts/dev-presets.js ET ce qu'un mineur de test peut recevoir dans le panneau dev du lobby : niveau et spé au maximum
+   stockable, arbre rempli, sorts de la spé équipés, stuff porté (gear, non identifié, +0), keys × key dans l'inventaire
+   (comptes seulement). src/shared/dev-presets.js */
+export const DEV_PRESETS = {
+  names: { mineur:'Test_Mineur', logisticien:'Test_Logisticien', barbare:'Test_Barbare' },
+  gear: ['Casque en acier', 'Plastron en acier', 'Jambes en acier', 'Bottes en acier', 'Pioche en acier', 'Épée en acier'],
+  key: 'Clé d\'instance I', keys: 10,
+};
+
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.
    Le serveur les ignore en mode normal. [objet, clé, libellé, min, max] */
 export const DEV_TUNABLES = [
