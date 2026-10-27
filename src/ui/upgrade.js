@@ -3,10 +3,10 @@
    la rune s'ajoutent à la pièce, une rune par pièce ; retirée, elle devient un fragment aux % divisés par 2).
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
    Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */
-import { UPGRADE, STUFF } from '../config.js';
-import { isIdentified, isStuff, isRune, isRing, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
-import { statLines, runeLines } from '../meta/stuff.js';
-import { sacrificesFor, nextLevel, upgradeNeeds } from '../meta/upgrade.js';
+import { UPGRADE, STUFF, RINGS } from '../config.js';
+import { isIdentified, isRune, canIdentify, canUpgrade, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
+import { statLines, runeLines, ringLines } from '../meta/stuff.js';
+import { sacrificesFor, nextLevel, upgradeNeeds, ringDupes } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 import { rcls, rname, pname } from './rarity.js';
@@ -31,7 +31,9 @@ const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">
 export function setupUpgrade({ onOp }){
   let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, pick = 'target', busy = false, msg = '', ok = true;
   let rune = null;                                 // Enchantement : uid de la rune posée
-  const pieces = () => inv.slots.filter(s => s && s.uid != null && isStuff(s.item) && !isRing(s.item));   // un anneau ne passe pas par ici (RINGS)
+  /* Identification, Enchantement : ni anneau, ni boussole, ni torche ; Amélioration : les anneaux aussi (27/10/2026) */
+  const pieces = () => inv.slots.filter(s => s && s.uid != null && canIdentify(s.item));
+  const upgradable = () => inv.slots.filter(s => s && s.uid != null && canUpgrade(s.item));
   const runes = () => inv.slots.filter(s => s && s.uid != null && isRune(s.item));
   const byUid = uid => inv.slots.find(s => s && s.uid != null && s.uid === uid) ?? null;
 
@@ -86,14 +88,17 @@ export function setupUpgrade({ onOp }){
   }
 
   function renderUpgrade(t){
-    const list = pieces();
+    const list = upgradable();
     const lv = t ? nextLevel(t) : null, needs = t ? upgradeNeeds(inv, t) : [];
     const can = t && lv && needs.every(n => n.have >= n.need) && !busy;
+    const gain = lv => lv.dupe ? `effet ${esc(ringLines(t.item, lv.level).join(' · '))}` : `stats +${lv.pct} % en tout`;
     $('upBody').innerHTML =
-      `<p class="mut small">Chaque niveau augmente toutes les stats de la pièce. Un échec ne coûte que les matériaux.</p>`+
+      `<p class="mut small">Chaque niveau augmente toutes les stats de la pièce. Un échec ne coûte que les matériaux. `+
+      `Un <b>anneau</b> s'améliore avec un <b>doublon</b> du même anneau (celui de plus bas niveau est sacrifié, même en cas d'échec) : `+
+      `+${String(RINGS.upgrade).replace('.', ',')} à chacun de ses effets par niveau. Boussoles et torches ne s'améliorent pas.</p>`+
       `<div class="upPair"><div>${box(t, 'Pièce à améliorer', 'upTarget')}</div>`+
-      (t ? (lv ? `<div class="upInfo">Vers <b>+${lv.level}</b> : stats +${lv.pct} % en tout · réussite ${pct(lv.chance)}`+
-                 `<div class="craftNeeds">${needs.map(n => `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}${rname(n.item)}<b>${n.have}/${n.need}</b></div>`).join('')}</div></div>`
+      (t ? (lv ? `<div class="upInfo">Vers <b>+${lv.level}</b> : ${gain(lv)} · réussite ${pct(lv.chance)}`+
+                 `<div class="craftNeeds">${needs.map(n => `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}${rname(n.item)}${lv.dupe ? ' (doublon)' : ''}<b>${n.have}/${n.need}</b></div>`).join('')}</div></div>`
               : '<div class="upInfo mut">Niveau maximum atteint.</div>') : '')+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>⬆ Améliorer</button></div>`+
       message()+
@@ -103,8 +108,13 @@ export function setupUpgrade({ onOp }){
       levelTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => { target = +b.dataset.uid; msg = ''; render(); });
     $('upBody').querySelector('.upTarget').onclick = () => { target = null; msg = ''; render(); };
-    $('upGo').onclick = () => can && send({ action:'upgrade', uid:t.uid }, r =>
-      r.success ? `✔ Réussi : ${pname(r.piece)}` : `✖ Raté : les matériaux sont perdus, ${pname(r.piece)} ne change pas.`);
+    $('upGo').onclick = () => {
+      if(!can) return;
+      const d = lv.dupe ? ringDupes(inv, t)[0] : null;   // le doublon sacrifié (le serveur choisit le même)
+      if(d?.plus > 0 && !confirm(`Le doublon sacrifié est ${pieceName(d)} : son niveau sera perdu. Continuer ?`)) return;
+      send({ action:'upgrade', uid:t.uid }, r =>
+        r.success ? `✔ Réussi : ${pname(r.piece)}` : `✖ Raté : ${lv.dupe ? 'le doublon est perdu' : 'les matériaux sont perdus'}, ${pname(r.piece)} ne change pas.`);
+    };
   }
 
   /* Enchantement : la pièce + une rune. Même principe de cases que l'identification. Aperçu : ce que la rune donnera
@@ -114,7 +124,7 @@ export function setupUpgrade({ onOp }){
     : !isIdentified(t) ? 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.'
     : r && r.q > t.q ? `Cette rune (R${r.q}) est trop rare pour cette pièce (R${t.q}) : au plus une rune R${t.q}.` : '';
   function renderEnchant(t, r){
-    if(t && !isStuff(t.item)) t = null;
+    if(t && !canIdentify(t.item)) t = null;
     if(r && !isRune(r.item)) r = null;
     const why = enchantWhy(t, r);
     const can = t && r && !why && !busy;

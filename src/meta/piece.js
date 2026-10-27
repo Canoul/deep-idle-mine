@@ -14,7 +14,7 @@
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
    Les nombres viennent de UPGRADE (config) : qualités, prix des stats en x, pas d'arrondi, paliers. */
-import { UPGRADE, ITEMS, STATS, RUNE, RINGS, GOBLIN_KING } from '../config.js';
+import { UPGRADE, ITEMS, STATS, RUNE, RINGS, GOBLIN_KING, STUFF } from '../config.js';
 
 const QUALITY = new Map(UPGRADE.qualities.map(d => [d.q, d]));
 /* { q, label, color, chance, min, max, lines } de cette qualité, ou null */
@@ -22,8 +22,13 @@ export const qualityDef = q => QUALITY.get(q) ?? null;
 export const MAX_PLUS = UPGRADE.levels.length;
 export const isStuff = item => ITEMS[item]?.cat === 'stuff';
 export const isRune = item => ITEMS[item]?.cat === 'rune';
-/* anneau (RINGS) : du stuff qu'on n'identifie, n'améliore ni n'enchante jamais */
+/* anneau (RINGS) : du stuff qu'on n'identifie ni n'enchante jamais ; il s'améliore avec un doublon (27/10/2026) */
 export const isRing = item => typeof item === 'string' && Object.hasOwn(RINGS.items, item);
+/* boussole, torche (UPGRADE.plainSlots, 27/10/2026) : ni identification, ni amélioration, ni enchantement */
+export const isPlain = item => UPGRADE.plainSlots.includes(STUFF.items[item]?.slot);
+/* la pièce passe-t-elle par l'Identification / l'Enchantement (les deux suivent la qualité) ? par l'Amélioration ? */
+export const canIdentify = item => isStuff(item) && !isRing(item) && !isPlain(item);
+export const canUpgrade = item => isStuff(item) && !isPlain(item);
 /* fragment de rune (rune retirée d'une pièce, RUNE.fragment) : ses % ne comptent que pour RUNE.fragment.factor */
 export const isFragment = item => ITEMS[item]?.fragment === true;
 /* part des % d'une rune posée (rune:{ …, frag:true } = un fragment) ou d'un objet rune / fragment */
@@ -177,14 +182,15 @@ export function sanitizePiece(raw){
   }
   if(treasureOf(raw.item)) return { item: raw.item, uid: raw.uid };   // un trésor : sa qualité est dans son nom
   if(!isStuff(raw.item)) return null;
-  if(isRing(raw.item)) return { item: raw.item, uid: raw.uid };       // un anneau : ni qualité, ni niveau, ni rune
+  const plus = Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS ? { plus: raw.plus } : {};
+  if(isRing(raw.item)) return { item: raw.item, uid: raw.uid, ...plus };   // un anneau : ni qualité, ni rune ; un niveau (27/10)
+  if(isPlain(raw.item)) return { item: raw.item, uid: raw.uid };      // boussole, torche : remises à zéro (27/10/2026)
   const p = { item: raw.item, uid: raw.uid };
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
   if(id) Object.assign(p, id);
   else if(qualityDef(raw.q) && (raw.lines === undefined || (Array.isArray(raw.lines) && raw.lines.length === 0))) p.q = raw.q;   // identifiée depuis le 22/10 : qualité seule
   if(raw.rune && typeof raw.rune === 'object'){ const r = sanitizeLines(raw.rune); if(r) p.rune = raw.rune.frag === true ? { ...r, frag: true } : r; }
-  if(Number.isSafeInteger(raw.plus) && raw.plus > 0 && raw.plus <= MAX_PLUS) p.plus = raw.plus;
-  return p;
+  return { ...p, ...plus };
 }
 
 /* { q, lines, s } relus et revérifiés (identification d'une pièce, rune) ; null si impossible */
