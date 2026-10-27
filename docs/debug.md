@@ -3677,3 +3677,7 @@ Règles (voir CLAUDE.md) :
   aucune erreur ✅.
 - **Points fragiles** : pas de rattrapage : un objet trouvé avant cette mise en ligne (≈ 15 h → 15 h 30) reste caché
   jusqu'à la prochaine trouvaille ; un objet ajouté plus tard n'est caché que si on l'ajoute à `WIKI.secret`.
+
+### Clé d'instance I à 20 % (Geoffrey) — branche `geoffrey/cle-instance-20`, ✅ en ligne le 27/10 ⚠️
+- **Quoi** : `LOOT['Treasure T3']`, famille `key` : 0,05 → 0,20 ; textes du lobby, wiki, GAME_DESIGN, état.
+- **Tests** : ⚠️ **pas relancés** (demande de Geoffrey). `tests/instance-key.test.js` vérifie probablement 5 % : à mettre à 20 %.

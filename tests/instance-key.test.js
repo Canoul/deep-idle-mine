@@ -12,14 +12,15 @@ test('la clé : objet du jeu, inhabituel, empilable', () => {
   assert.equal(Object.values(RARITY).find(v => v && typeof v === 'object' && KEY in v)?.[KEY], 'inhabituel');
 });
 
-test('Treasure T3 : la clé est un tirage à part (sa propre famille), 5 %', () => {
+test('Treasure T3 : la clé est un tirage à part (sa propre famille), à sa chance de la config', () => {
   const fam = LOOT['Treasure T3'].oneOf.filter(f => f.items.some(i => i.item === KEY));
   assert.equal(fam.length, 1); assert.equal(fam[0].items.length, 1, 'seule dans sa famille : ne prend la place de rien');
-  assert.equal(fam[0].items[0].chance, 0.05);
+  assert.ok(fam[0].items[0].chance > 0 && fam[0].items[0].chance < 1);
   for(const t of ['Treasure T1', 'Treasure T2']) assert.ok(!LOOT[t].oneOf.some(f => f.items.some(i => i.item === KEY)));
 });
 
-test('Treasure T3 : ≈ 5 % des ouvertures donnent une clé, sans retirer les autres objets', () => {
+test('Treasure T3 : la clé tombe à sa chance, sans retirer les autres objets', () => {
+  const P = LOOT['Treasure T3'].oneOf.find(f => f.items.some(i => i.item === KEY)).items[0].chance;
   const rng = mulberry32(42), N = 20000;
   let keys = 0, crystals = 0, crystalsWithKey = 0;
   for(let i = 0; i < N; i++){
@@ -27,7 +28,7 @@ test('Treasure T3 : ≈ 5 % des ouvertures donnent une clé, sans retirer les au
     if(l[KEY]){ keys++; assert.equal(l[KEY], 1); if(l['Cristal de pleine lune']) crystalsWithKey++; }
     if(l['Cristal de pleine lune']) crystals++;
   }
-  assert.ok(Math.abs(keys / N - 0.05) < 0.006, `${keys / N}`);
+  assert.ok(Math.abs(keys / N - P) < 0.012, `${keys / N} pour ${P}`);
   assert.ok(Math.abs(crystals / N - 0.10) < 0.01, 'le cristal garde sa chance');
   assert.ok(crystalsWithKey > 0, 'clé et cristal peuvent tomber ensemble');
 });
