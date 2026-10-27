@@ -3686,3 +3686,18 @@ Règles (voir CLAUDE.md) :
 - **Quoi** : `UPGRADE.tiers[4] = { x:600, items:['Couronne du Roi Gobelin'] }`, couronne retirée du tier 3 (masse, cape restent
   au 3). `lineBase` lit déjà `UPGRADE.tiers[t].x` : aucune autre logique. Tier 3 = 400 x (Geoffrey pensait 450 : inchangé).
 - **Tests** : rune (valeurs des tiers), goblin-king (tier des 3 pièces) ✅.
+
+### K hole : tout le monde se bat dans l'arène et les vagues (Geoffrey) — branche `geoffrey/fix-khole-arene`, ✅ en ligne le 27/10
+- **Signalé** : seed 2026520156, vers 7-9 min, un joueur ne tape pas le minotaure dans le k hole (arène).
+- **Cause** : réglage « Face aux mobs » sur Ignorer / Fuir respecté dans l'arène (choix du 25/10, test « réglage
+  respecté ») ; les minotaures ne chassent que `G.miners[0]` (`addMob`, `hunt`), donc ce mineur n'est jamais taclé et
+  reste « Plus rien à explorer ». Reproduit : Vert sur Ignorer → 0 dégât, Rouge + Bleu 1 485 / 2 000 en 120 s, arène ratée.
+- **Quoi** : `KHOLE.maps` arene et vagues : `allFight:true` ; `src/sim/ai.js` (engagement) : `fightMobs===true ||
+  G.khole?.map.allFight`. Filons : inchangé.
+- **Tests** : `tests/khole.test.js` : le test « réglage respecté » remplacé (Ignorer et Fuir viennent se battre), groupe
+  avec un Ignorer qui gagne l'arène avant le compteur, allFight sur arene / vagues et pas filons ; les 2 premiers échouent
+  sans la correction ✅ 24/24. Seed 2026520156 rejouée : 670 / 665 / 665, arène gagnée en 108 s quel que soit le réglage
+  de Vert ✅.
+- **Point fragile** : les minotaures et les mobs des vagues chassent toujours le premier mineur (`hunt = miners[0]`) ;
+  sans incidence ici, à revoir si une salle doit répartir les cibles.
+

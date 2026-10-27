@@ -719,7 +719,9 @@ export function decide(G,m){
     if(!th) th=nearestThreat(G,m);
     // en retour, il ne se bat que contre un mimic qui lui bloque le passage (sinon il le « mine » à l'infini)
     const blocking = th && th.type==='mimic' && Math.abs(th.x-m.x)+Math.abs(th.y-m.y)<=1;
-    if(th && ((m.prefs.fightMobs===true && m.mode!=='return') || blocking)){   // Ignorer ou Fuir : il n'engage pas
+    /* Ignorer ou Fuir : il n'engage pas ; sauf dans une salle de combat du k hole (allFight : arène, vagues), où tout le
+       monde se bat (27/10/2026, Geoffrey) */
+    if(th && (((m.prefs.fightMobs===true || G.khole?.map.allFight) && m.mode!=='return') || blocking)){
       if(m.foe!==th.id){ m.foe=th.id; m.foeHit=G.t; }
       fight(G,m,th); return;
     }

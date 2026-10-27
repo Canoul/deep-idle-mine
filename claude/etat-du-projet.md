@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (Roi Gobelin : coffre et objets ; Instances, l'Instance I).*
+*Dernière mise à jour : 27/10/2026 (k hole : tout le monde se bat dans l'arène et les vagues).*
 
 ---
 
@@ -189,7 +189,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **K hole** (25/10, Geoffrey, en ligne) : portail enfoui (2 % par area ; ancien : 1 %), découvert → 3 s → tout le
   groupe dans une dimension tirée parmi 4 cartes (`KHOLE.maps`) : Filons (25 × 25 très riche, 5 min), Arène des minotaures
   (2 min, fin quand ils sont morts), Salle au trésor (2 treasures de tier au hasard, 2 min, fin à l'ouverture), Vagues
-  (vagues de 5 mobs, 3 min) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour
+  (vagues de 5 mobs, 3 min) ; **dans l'arène et les vagues, tout le monde se bat, même sur « Ignorer » / « Fuir »** (27/10, `allFight` ; ancien : réglage respecté, mineur planté) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour
   à la surface de la mine, mine figée entre-temps ; à 30 s de la fin de session, il se referme. Technique : échange de
   carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
 - **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
