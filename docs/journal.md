@@ -32,6 +32,19 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Instances : l'Instance I, le roi gobelin
+- **Pour le joueur** : nouveau choix « 🗝 Instances » dans « Où miner ». L'Instance I se joue en groupe de 1 à 3, avec
+  une **Clé d'instance I** chacun (dans les Treasure T3, 5 %), consommée au lancement. En 10 min : monter aux 6 rebords
+  et casser leurs spawners à gobelins (les gobelins taclent et repoussent vers le centre), puis vaincre le roi gobelin
+  (3 500 PV), qui enferme tout le monde sur les rebords tous les 20 % de ses PV et enrage à la fin. Pas encore de
+  récompense.
+- **Décisions** : valeurs réglées par Geoffrey en simulation (salle 28 × 24, 3 rebords par côté avec 5 cases d'air
+  entre deux, spawners 125 coups, gobelins 150 PV, roi 3 500 PV, 10 min). Choix de Claude à valider : le groupe casse
+  les spawners ensemble (le plus bas d'abord), le roi reprend dès qu'un mineur est sorti de sa cage (90 s au plus), départ
+  au sol au centre, Hand of Justice ne marche pas sur le roi.
+- **À suivre** : la récompense ; à 3, fer 0/20, fer + acier 13/20, acier 20/20 (sans skills ni sorts) ; seul, impossible.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Bloc géant : aussi pendant une session, récompense à partir de 2 visites
 - **Pour le joueur** : on peut **entrer au Bloc géant pendant une session**, et le chef peut **lancer une session
   pendant une visite** (la Mine instantanée aussi prend un joueur en visite). Les deux continuent chacune de leur côté.

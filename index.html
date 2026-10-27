@@ -60,6 +60,11 @@
     <h2>Invitations</h2>
     <div id="invitesList"></div>
   </div>
+  <!-- Instances (27/10) : liste des instances, clés (src/ui/lobby.js) -->
+  <div class="card instCard" id="instCard" hidden>
+    <h2>🗝 Instances</h2>
+    <div id="instBody"></div>
+  </div>
   <!-- Bloc géant : session du jour, entrée, scores, classement, récompenses (src/ui/giant.js) -->
   <div class="card giantCard" id="giantCard" hidden>
     <h2>🌈 Bloc géant</h2>
@@ -200,6 +205,24 @@
     <div class="card"><h2>Boss</h2><div id="twBoss"></div></div>
     <div class="card"><h2>Équipe</h2><div id="twTeam"></div></div>
     <div class="card"><h2>Journal</h2><div id="twLog" class="miLog"></div></div>
+  </aside>
+</main>
+</div>
+<!-- Instance (27/10) : la partie en cours (src/ui/instance-hud.js, rendu src/render/instance.js) -->
+<div id="inRun" hidden>
+<header>
+  <div class="twTitle" id="inTitle"></div>
+  <div class="timer" id="inTimer">00:00 / 10:00</div>
+  <div class="grow"><div class="bar"><i id="inTimeBar"></i></div></div>
+  <span class="mut" id="inLeft"></span>
+  <button id="inLeaveBtn" title="La clé est perdue"><i data-pxi="door"></i>Quitter l'instance</button>
+</header>
+<main class="runGrid mi tw">
+  <div id="cvInWrap"><canvas id="cvIn"></canvas></div>
+  <aside>
+    <div class="card"><h2>Le roi gobelin</h2><div id="inBoss"></div></div>
+    <div class="card"><h2>Équipe</h2><div id="inTeam"></div></div>
+    <div class="card"><h2>Journal</h2><div id="inLog" class="miLog"></div></div>
   </aside>
 </main>
 </div>

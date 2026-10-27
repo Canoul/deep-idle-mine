@@ -25,6 +25,7 @@ import { createInventory, deserialize, serialize, creditSession, addItem, remove
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
+import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys } from '../../src/shared/instances.js';
 import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -305,7 +306,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
             await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account) }));
         });
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
-        if(rec.mode !== 'mi' && !side) await withLock('xp:' + share.account, async () => {
+        if(rec.mode !== 'mi' && !side && !isInstanceMode(rec.mode)) await withLock('xp:' + share.account, async () => {
           const pr = await loadProgress(share.account);
           /* XP de spécialisation : recalculée ici, pour l'arbre figé au lancement (rec.skills, revérifié) */
           const tree = sanitizeSkills(rec.skills?.[share.account]).tree;
@@ -384,7 +385,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
       const side = modeDef.tower ?? null;
-      return withLock.many(players.map(p => 'acct:' + p.account), async () => {
+      /* instance (27/10) : une clé par joueur, vérifiée et consommée au lancement (sous le verrou des inventaires) */
+      const inst = modeDef.instance ? instanceDef(mode) : null;
+      if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
+      const invLocks = inst ? players.map(p => 'inv:' + p.account) : [];
+      return withLock.many([...players.map(p => 'acct:' + p.account), ...invLocks], async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
         let opening = null;
@@ -396,17 +401,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
-        const residues = side ? null : await withJudgment(j => ({ value: !anyTowerOpen(j, clock()) }));
+        const residues = side || inst ? null : await withJudgment(j => ({ value: !anyTowerOpen(j, clock()) }));
         if(await activeOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours.');
         for(const p of players.slice(1))
           if(await activeOf(p.account)) fail('member_in_session', 409, `${p.name || 'Un joueur'} est déjà dans une session.`);
-        for(const p of players)
         /* places : les sessions à l'heure seulement (une session dépassée se rattrape sur le budget restant) */
         if((await store.sessionsWithStatus('running')).filter(r => !overdue(r)).length >= (config.maxLive ?? Infinity))
           fail('server_busy', 503, 'Le serveur fait déjà tourner le maximum de sessions. Réessaie dans quelques minutes.', { retryAfter: 60 });
         const lim = startLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de sessions lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         startLimit.hit(me.id);
+        /* clés : chaque joueur doit avoir la sienne (vérifié avant de compter le lancement) */
+        const invs = {};
+        if(inst){
+          for(const p of players) invs[p.account] = await loadInventory(p.account);
+          const miss = missingKeys(mode, players, a => invs[a]);
+          if(miss.length) fail('no_key', 409, `Il faut une ${inst.key} par joueur : ${miss.map(p => p.name || 'un joueur').join(', ')} n'en ${miss.length > 1 ? 'ont' : 'a'} pas.`);
+        }
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
         for(const p of players){
@@ -442,7 +453,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
-          dev, speed: dev ? null : speed, startedAt: now, finishAt: dev ? null : now + (side ? towerDurationMs(speed) : realDurationMs(speed)),
+          dev, speed: dev ? null : speed, startedAt: now,
+          finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
@@ -450,7 +462,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
-        await store.putGameSession(rec);
+        if(inst){
+          /* la session et les clés consommées, en une seule écriture */
+          for(const p of players) if(!removeItem(invs[p.account], inst.key, 1)) fail('no_key', 409, `Il faut une ${inst.key} par joueur.`);
+          await store.putGameSessionAndInventories(rec, players.map(p => [p.account, JSON.parse(serialize(invs[p.account]))]));
+        } else await store.putGameSession(rec);
         ensureLive(rec);
         for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
         return { session: publicSession(rec) };
@@ -527,6 +543,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
           if(rec.mode === 'mi') fail('bad_request', 400, 'Pas de focus dans la mine instantanée.');
           if(isTowerMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une tour.');
+          if(isInstanceMode(rec.mode)) fail('bad_request', 400, 'Pas de focus dans une instance.');
           rec.focus ??= [];
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
@@ -904,7 +921,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('sess:' + rec0.id, async () => {
         const rec = await store.getGameSession(rec0.id);
         if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée.');
-        if(rec.mode === 'mi' || isTowerMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée ni une tour).');
+        if(rec.mode === 'mi' || isTowerMode(rec.mode) || isInstanceMode(rec.mode)) fail('bad_request', 400, 'Seulement dans une mine classique (pas la mine instantanée, une tour ni une instance).');
         if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
         const r = await live.khole(rec.id, map);
         if(!r.ok) fail('khole_refused', 409, 'Impossible maintenant : déjà dans un k hole (ou un k hole s\'ouvre), ou fin de session trop proche.');

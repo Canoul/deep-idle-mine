@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (Bloc géant : pendant une session, récompense à 2 visites).*
+*Dernière mise à jour : 27/10/2026 (Instances : Instance I, le roi gobelin).*
 
 ---
 
@@ -87,6 +87,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     `/api/admin/judgment`, même clé que give-item, sans redémarrage).
   - Retirer un objet (26/10) : `sudo node scripts/take-item.js --name X --item "Glyphe Ruée"` (route `/api/admin/take` ;
     inventaire puis glyphe posé, tout ou rien, sans redémarrage).
+- **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
+  `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
+  `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
+  gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 5 % à part), consommée au lancement avec la
+  création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
+  gobelins 150 PV, tacle au premier coup, recul vers le centre), roi gobelin 3 500 PV (3 × 3, enferme tous les 20 %,
+  rage sous 33 %), 10 min. Pas de récompense ni d'XP pour l'instant. Repères : à 3, fer 0/20, fer + acier 13/20, acier
+  20/20 (`npm run simulate:instance`) ; seul : impossible.
 - **Bloc géant** (26/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-26-bloc-geant-design.md`, GAME_DESIGN §6,
   config `GIANT`, `src/sim/giant/`, `src/shared/giant.js` + `giant-room.js`, `server/giant/`, `src/ui/giant.js`,
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes
