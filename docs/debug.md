@@ -3844,7 +3844,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ : `tests/goblin-thrall.test.js` (absente de `minerStats`, couronne portée), goblin-king, wiki, wiki-secret,
   stuff, tier2 : 65/65.
 
-### Tier 4 : Treasure T4, mithril, thorium, cobalt (Geoffrey) — branche `geoffrey/tier4-mithril`, 🧪
+### Tier 4 : Treasure T4, mithril, thorium, cobalt (Geoffrey) — ✅ en ligne le 27/10
 - **Config** : `TREASURE.tiers` (T4 maxArea 8, T3 s'arrête à 6), `LOOT['Treasure T4']` (always + 1er jet BP 12,5 %, 4
   familles `learnOnce` à 5 %, gemmes 1 %), `FURNACE.recipes` Mithril / Cobalt / Thorium ore (`ore:5` pour cobalt et
   thorium), `FURNACE.alloys` Cobalt / Thorium ingot, `STUFF.items` (16 pièces), `UPGRADE.tiers` 4 = 650 x (Couronne
