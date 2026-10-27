@@ -959,7 +959,7 @@ export const STUFF = {
   statUnits: { goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
-               'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime','goblinThrall'],
+               'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],   // goblinThrall (Gobelins asservis) cachée le 27/10 (Geoffrey)
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
      - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
        (UPGRADE.tiers : 100 / 250 / 500 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
