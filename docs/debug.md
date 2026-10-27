@@ -3844,7 +3844,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ : `tests/goblin-thrall.test.js` (absente de `minerStats`, couronne portée), goblin-king, wiki, wiki-secret,
   stuff, tier2 : 65/65.
 
-### Correctif : Lancer / Inviter grisés pour le chef, tout le groupe prêt (Geoffrey, 27/10) — ✅ en ligne
+### Correctif : Lancer / Inviter grisés pour le chef, tout le groupe prêt (Geoffrey, 27/10) — 🧪 branche `geoffrey/fix-lobby-lancer`
 - **Cause** : le lobby (`setupLobby`, `st.account`) ne recevait le compte que par `showNoSession()` ou `accountUI.onChange`.
   Page ouverte pendant une session → `refresh()` → `enterSession` (pas `showNoSession`) ; à la fin, `showResult` ne fait
   que `lobby.update({ session:null })` → `st.account` reste null → `launchState` renvoie `{ can:false, label:'▶ Lancer la
