@@ -18,6 +18,13 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Glyphes : 1 % par session au lieu de 3 %
+- **Pour le joueur** : trouver un glyphe dans la mine est 3 fois plus rare : environ **1 % par session** dans un groupe de
+  3 (avant 3 %), ≈ 1,5 % en solo. Spé Mineur 0,00126 % par bloc cassé, Logisticien 0,011 % par échelle posée, Barbare
+  0,0335 % par mob tué. Un arbre de 3 glyphes demande ≈ 300 sessions en moyenne (avant ≈ 100). Wiki mis à jour.
+- **Décisions** (Geoffrey).
+- **État** : ✅ en ligne le 27/10
+
 ## 26/10/2026 — Geoffrey — Butin rare des mobs : chances baissées
 - **Pour le joueur** : les pièces lâchées par les mobs tombent bien moins souvent. Lanières en cuir du gobelin, Capuche
   sombre et Nuage magique : **0,1 %** (avant 0,5 %) ; Ceinture du Géant : **0,5 %** sur le minotaure (avant 1 %), **1 %**

@@ -466,11 +466,12 @@ export const GLYPHS = {
   /* drop (25/10/2026, Geoffrey) : un mineur avec une spécialisation (arbre figé au lancement) peut trouver un glyphe de SON
      arbre qu'il ne possède pas au lancement (inventaire + posés), à chaque événement de sa spé : bloc cassé (mineur),
      échelle posée (logisticien), mob tué (barbare). Mine classique ; pour lui seul, versé à la fin (perdu s'il quitte).
-     Hasard à part (dropSalt). chance = par événement, pour UN glyphe (n'importe lequel de ceux qui manquent) : 26/10/2026,
-     Geoffrey : ≈ 3 % de trouver un glyphe par session dans un groupe de 3. Calcul : 1 − 0,97^(1/E), E = événements par
-     mineur et par session à 3 (simulation, arbre complet) : ≈ 795 blocs, 91 échelles, 30 mobs. (Ancien, 25/10 : 0,0001 /
-     0,0007 / 0,001 ; quelques minutes le 26/10 : la même chance, mais par glyphe manquant.) */
-  drop: { mineur:{ event:'block', chance:0.0000383 }, logisticien:{ event:'ladder', chance:0.000335 }, barbare:{ event:'kill', chance:0.00101 } },
+     Hasard à part (dropSalt). chance = par événement, pour UN glyphe (n'importe lequel de ceux qui manquent) : 27/10/2026,
+     Geoffrey : ≈ 1 % de trouver un glyphe par session dans un groupe de 3. Calcul : 1 − 0,99^(1/E), E = événements par
+     mineur et par session à 3 (simulation, arbre complet) : ≈ 795 blocs, 91 échelles, 30 mobs. (Ancien, 26/10 : ≈ 3 %,
+     0,0000383 / 0,000335 / 0,00101 ; 25/10 : 0,0001 / 0,0007 / 0,001 ; quelques minutes le 26/10 : la même chance, mais
+     par glyphe manquant.) */
+  drop: { mineur:{ event:'block', chance:0.0000126 }, logisticien:{ event:'ladder', chance:0.000110 }, barbare:{ event:'kill', chance:0.000335 } },
   dropSalt: 0x61f7d3,
   desc: {
     mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',

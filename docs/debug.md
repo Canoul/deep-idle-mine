@@ -3503,3 +3503,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/mob-drops.test.js` : valeurs et textes du wiki mis à jour, N = 200 000 tirages (à 0,1 %, 40 000 ne
   suffisaient plus pour la marge de 25 %) ; le test du multiplicateur de butin lit la config. mob-drops, wiki 18/18 ✅.
 
+### Glyphes : drop à ≈ 1 % par session (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- `GLYPHS.drop` (src/config.js) : mineur 0,0000126 /bloc, logisticien 0,000110 /échelle, barbare 0,000335 /mob
+  (ancien 0,0000383 / 0,000335 / 0,00101 ≈ 3 %). Calcul 1 − 0,99^(1/E), E = 795 blocs, 91 échelles, 30 mobs par mineur
+  et par session à 3 (mesures du 26/10, non remesurées).
+- Mis à jour : tests/glyph-drop.test.js (taux + ≈ 1 % ± 0,02), wiki.html, GAME_DESIGN.md, claude/etat-du-projet.md.
+- Tests : glyph-drop ✅, anticheat ✅. Aucune logique changée, seulement des valeurs.
