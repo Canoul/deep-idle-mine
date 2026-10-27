@@ -3510,7 +3510,17 @@ Règles (voir CLAUDE.md) :
 - Mis à jour : tests/glyph-drop.test.js (taux + ≈ 1 % ± 0,02), wiki.html, GAME_DESIGN.md, claude/etat-du-projet.md.
 - Tests : glyph-drop ✅, anticheat ✅. Aucune logique changée, seulement des valeurs.
 
-### Stuff : armures = valeur du tier, combat du butin des mobs ÷ 2 (Geoffrey, 27/10) — branche `geoffrey/stuff-valeurs-tier`, 🧪 pas en ligne
+### Groupe : chef absent jamais retiré (Geoffrey, 27/10) — ✅ en ligne le 27/10
+- Signalé : chef AFK 1 h (onglet probablement endormi : le lobby continue d'envoyer des signes de vie onglet caché,
+  donc veille / onglet suspendu / navigateur fermé), lobby vide au retour. Cause : `sweep()` retirait le chef au bout
+  de `PARTY_SERVER.memberTimeout` (5 min), le suivant devenait chef.
+- `server/party/service.js` `sweep()` : `if(m.account === p.leader) continue;` avant la règle des membres prêts.
+- Test remplacé dans tests/party.test.js (chef absent 30 min gardé, affiché absent, les autres quittent). party ✅ (36),
+  lfg ✅, lobby ✅, social ✅.
+- Point fragile : un chef parti pour de bon garde son groupe en mémoire et dans le stockage (rien ne le nettoie) ;
+  volume négligeable (un groupe par compte au plus).
+
+### Stuff : armures = valeur du tier, combat du butin des mobs ÷ 2 (Geoffrey, 27/10) — branche `geoffrey/stuff-valeurs-tier`, ✅ en ligne le 27/10
 - **Quoi** : `src/config.js` : stats des 12 armures (casque / plastron / jambes / bottes × chitine / fer / acier) réglées
   pour que `pieceGS` = `UPGRADE.tiers[t].x` à l'arrondi du pas près (102, 252, 402 au pire) ; butin des mobs recalculé :
   part = 250 x / nb de stats, stat = part ÷ prix mesuré (worth ?? gs) × `STUFF.combatOnStuff` (0,5) si elle est dans

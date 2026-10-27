@@ -158,13 +158,18 @@ test('membre prêt ou prêt tout le temps, onglet fermé : « absent » mais gar
   assert.equal((await party.launch(A, {})).session.players.length, 2, 'le chef relance avec B absent');
 });
 
-test('chef absent : jamais gardé, même « prêt tout le temps » (sinon personne ne lance)', async () => {
+test('chef absent : jamais retiré, même longtemps ; les autres peuvent quitter (27/10)', async () => {
   const { party, advance } = setup();
-  await party.create(A); await party.join(B, 'K7Q4P2');
-  await party.alwaysReady(B, true); await party.promote(A, B.id);    // B chef, il garde sa case cochée
-  advance(PARTY_SERVER.memberTimeout + 1000);
-  const st = (await party.state(A)).party;
-  assert.deepEqual(st.members.map(m => m.account), [A.id], 'B retiré, A devient chef');
+  await party.create(A); await party.join(B, 'K7Q4P2'); await party.join(C, 'K7Q4P2');
+  await party.promote(A, B.id);                                     // B chef
+  for(let i = 0; i < 12; i++){ advance(PARTY_SERVER.memberTimeout / 2); await party.state(A); await party.state(C); }   // 30 min : seuls A et C donnent signe de vie
+  let st = (await party.state(A)).party;
+  assert.equal(st.leader, B.id, 'B reste chef');
+  assert.deepEqual(st.members.map(m => [m.account, m.away]), [[A.id, false], [B.id, true], [C.id, false]], 'B affiché absent, gardé');
+  await party.leave(A); await party.leave(C);
+  st = (await party.state(B)).party;
+  assert.deepEqual(st.members.map(m => m.account), [B.id], 'à son retour, B retrouve son groupe (seul, les autres sont partis)');
+  assert.equal(st.leader, B.id);
 });
 
 /* ---------- lancer ---------- */

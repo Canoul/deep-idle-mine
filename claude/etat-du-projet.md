@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (glyphes à 1 %).*
+*Dernière mise à jour : 27/10/2026 (chef absent gardé).*
 
 ---
 
@@ -119,7 +119,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Comptes joueur** (sans e-mail) : invité en 1 clic, pseudo + mot de passe, code de secours, ID de compte public
   (`7K3Q-9XHP`). Détails : `docs/comptes.md`.
 - **Multijoueur** : groupes de 3 (code / lien `#rejoindre=…` / invitation par ID), le chef lance une session
-  commune quand tous les autres sont « prêts » (remis à zéro à chaque lancement), et peut donner sa place (21/10). Un membre **absent** (onglet fermé) mais prêt ou « prêt tout le temps » reste dans le groupe et part en session (26/10 ; ancien : retiré après 5 min) ; le chef absent est toujours retiré. **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent
+  commune quand tous les autres sont « prêts » (remis à zéro à chaque lancement), et peut donner sa place (21/10). Un membre **absent** (onglet fermé) mais prêt ou « prêt tout le temps » reste dans le groupe et part en session (26/10 ; ancien : retiré après 5 min) ; le **chef absent n'est jamais retiré** (27/10, Geoffrey : les autres quittent s'ils veulent ; ancien : retiré après 5 min, le suivant devenait chef). **La partie tourne sur le serveur (une seule copie)** ; les navigateurs la reçoivent et l'affichent
   (GAME_DESIGN §6). Coffre et XP partagés par tranches entre les joueurs présents (anti-boosting).
 - **Retours du 23/10** : socle incassable sous le coffre (bloc 18, colonne 22 ; le treuil est en colonne 25) ;
   Tainted gold = 5 lingots d'or + **20 peaux de gobelin** (ancien : 20 chitine) ; Social : temps restant d'un ami en
