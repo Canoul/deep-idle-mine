@@ -11,6 +11,7 @@ import { createSocialService } from '../server/social/service.js';
 import { SOCIAL_SERVER } from '../server/config.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { fakeLive } from './helpers.js';
+import { nameKey } from '../src/shared/account.js';
 import { BOARD_INFO, towerDetail, rankText } from '../src/ui/social.js';
 
 /* ---------- logique pure ---------- */
@@ -60,8 +61,10 @@ test('affichage : valeurs, détail d\'un record de tour, rang', () => {
 /* ---------- serveur ---------- */
 
 const A = { id:'AAAA1111', name:'Zoe' }, B = { id:'BBBB2222', name:'Max' }, C = { id:'CCCC3333', name:'Lou' };
-const ACCOUNTS = Object.fromEntries([A, B, C].map(a => [a.id, a]));
-const accounts = { getAccount: async id => ACCOUNTS[id] ?? null, findAccountByName: async () => null };
+const ADMIN = { id:'DDDD4444', name:'Admin' };
+const ACCOUNTS = Object.fromEntries([A, B, C, ADMIN].map(a => [a.id, a]));
+const accounts = { getAccount: async id => ACCOUNTS[id] ?? null,
+                   findAccountByName: async key => Object.values(ACCOUNTS).find(a => nameKey(a.name) === key) ?? null };
 const team = [A, B].map(a => ({ account: a.id, name: a.name }));
 
 function setup({ dev = false } = {}){
@@ -147,4 +150,19 @@ test('GS, XP et XP de spé : tous les comptes, classés par le serveur ; classem
   const gs = await social.leaderboard(B, 'gs');
   assert.deepEqual(gs.rows.map(x => x.name), ['Zoe']); assert.ok(gs.rows[0].value > 0); assert.equal(gs.me, null);
   for(const bad of ['', 'inventaire', 'spec:', null]) await assert.rejects(social.leaderboard(A, bad), { code: 'bad_request' });
+});
+
+test('compte « admin » (LEADERBOARD.hidden) : jamais classé, ni compté, même premier partout (27/10)', async () => {
+  assert.ok(LEADERBOARD.hidden.includes('admin'));
+  const { store, social } = setup();
+  await store.putProgress(ADMIN.id, { xp: 99999, spec: { barbare: 9999 }, credited: [] });
+  await store.putProgress(A.id, { xp: 5000, spec: { barbare: 900 }, credited: [] });
+  await store.putInventoryAndStuff(ADMIN.id, null, { worn: { pioche: { item: 'Pioche en acier', uid: 1 } }, ops: [] });
+  await store.putTowerRecords([[ADMIN.id, { t: 10, at: 1, side: 'angel', team: ['Admin'], session: 's' }]]);
+  for(const b of ['xp', 'spec:barbare', 'gs', 'tower']){
+    const r = await social.leaderboard(ADMIN, b);
+    assert.ok(!r.rows.some(x => x.name === 'Admin'), b); assert.equal(r.me, null, b);
+  }
+  const xp = await social.leaderboard(A, 'xp');
+  assert.deepEqual([xp.total, xp.rows[0].name, xp.rows[0].rank], [1, 'Zoe', 1]);
 });
