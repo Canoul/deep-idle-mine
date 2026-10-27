@@ -1148,6 +1148,43 @@ export const MINE_MODES = [
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
 
+/* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
+   provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
+   clé par joueur (key), consommée au lancement. Instance I (le roi gobelin) :
+   - salle w × h cases d'air (sol, murs et plafond indestructibles), tout éclairé, pas d'oxygène ni de pods ; rebords
+     (ledgeW cases de large, 1 de haut, collés aux murs) tous les ledgeEvery cases de hauteur, ledges par côté ; un
+     spawner par rebord, collé au mur ; plateforme du roi : platform.w de large, à platform.height cases du sol ; départ
+     au sol, au centre. Échelles illimitées ; on saute d'au plus maxFall cases (pas d'étourdissement en tombant).
+   - spawner : un gobelin dès le début puis toutes les every s ; hp « coups de pioche » (chaque seconde de minage
+     enlève la vitesse de minage effective, comme au Bloc géant) ; la Dynamite en enlève dynamite ; le mineur doit être
+     sur la case à côté (le rebord, contre le spawner).
+   - gobelin : hp PV, un coup toutes les hitEvery s ; le premier coup tacle ; chaque coup a knockChance de repousser de
+     knock case(s), toujours vers le centre de la salle. Cibles : la provocation, puis un mineur qui casse un spawner à
+     focusRange cases ou moins, puis le plus proche. Une case toutes les step s ; il tombe et monte aux échelles.
+   - roi : w × h, s'éveille quand les spawners sont cassés (il descend en dropTime s), hp PV, knockRes %, vitesse de
+     marche speedMul × un mineur de base ; un coup toutes les hitEvery s qui repousse de push case(s) vers le centre ;
+     tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
+     centre. À cageAt de ses PV : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
+     cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
+     cageMaxWait s). Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
+   - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
+export const INSTANCE = {
+  list: [
+    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', ready:true },
+    { id:'instance_2', label:'Instance II',  ready:false },
+    { id:'instance_3', label:'Instance III', ready:false },
+  ],
+  duration: 1800,
+  w: 20, h: 20, ledgeW: 6, ledgeEvery: 5, ledges: 3, maxFall: 6,
+  platform: { w: 4, height: 17 },
+  spawner: { hp: 50, every: 30, dynamite: 6, focusRange: 10 },
+  goblin: { hp: 125, hitEvery: 2, knock: 0.5, knockChance: 0.30, step: 0.9 },
+  boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 2000, knockRes: 25, speedMul: 3, hitEvery: 1.5, push: 0.5,
+          boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
+          cageAt: [0.75, 0.5, 0.25], cageRadius: 3, cageHard: 10, cageMaxWait: 90,
+          rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
+};
+
 /* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
    Une session commune à tout le serveur, de minuit à minuit (timeZone). Chacun y entre seul, une fois toutes les
    cooldownMs (depuis sa dernière entrée), pour une visite de visit s : son mineur frappe un bloc indestructible.
