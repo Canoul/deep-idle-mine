@@ -3,6 +3,11 @@
 *Concept de Geoffrey, 27/10/2026, réponses aux questions le même jour. Les choix marqués « (Claude) » sont à valider.
 Toutes les valeurs sont provisoires (équilibrage, config `INSTANCE`).*
 
+## Valeurs finales (27/10/2026, après simulation)
+
+salle **28 × 24**, **3 rebords par côté** (6 de large, 5 cases d'air entre deux : à 6, 12 et 18 du sol), plateforme du roi à 21 ; **10 min de jeu** ; spawners **125 coups**, un gobelin toutes les **30 s** ; gobelins **150 PV** ; roi **3 500 PV**, **enfermement tous les 20 % de PV manquants** (80, 60, 40, 20 %).
+Les valeurs ci-dessous sont celles du premier jet (remplacées par celles-ci).
+
 ## En une phrase
 
 Un donjon de groupe à clé : 1 à 3 joueurs entrent avec une Clé d'instance chacun, cassent les 6 spawners à gobelins

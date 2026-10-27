@@ -3583,3 +3583,28 @@ Règles (voir CLAUDE.md) :
   aller-retour (canvas redessiné 944 × 503), « Entrer » actif en session, aucune erreur de page ✅.
 - **Points fragiles** : le Social (`activeSessionInfo`) n'affiche qu'une des deux activités (la session). Un joueur au
   Bloc géant pendant sa session ne regarde pas sa session (sans effet : elle tourne sur le serveur).
+
+### Instances : Instance I, le roi gobelin (Geoffrey) — branche `geoffrey/instances`, 🧪
+- **Quoi** : spec `docs/superpowers/specs/2026-10-27-instances-design.md`. Config `INSTANCE` (+ `MINE_MODES` 'instance_1',
+  `instance: true`). Clé : `ITEMS['Clé d'instance I']` (cat 'key'), rareté inhabituel, famille `key` du `LOOT['Treasure
+  T3']` (tirage à part, 5 %), texture `key_instance_1`. Simulation `src/sim/instance/world.js` (carte : AIR, ROCK, CAGE,
+  SPAWNER ; rebords, plateforme) et `session.js` (spawners, gobelins avec BFS et gravité, IA des mineurs : Dijkstra
+  comme les tours avec échelles et creusage des cages, perçage des spawners au tick près dans `stepMiner`, roi : sleep →
+  drop → fight / wait, coup boosté, enfermements, rage ; sorts). Partagé : `src/shared/instances.js` (isInstanceMode,
+  clés, buildInstanceGame, départs) et `instances-view.js`. Serveur : `live-game.js` (kind 'instance'), `service.start`
+  (verrous `acct:` + `inv:` des joueurs, `no_key`, clés retirées et session écrite ensemble :
+  `store.putGameSessionAndInventories`), pas d'XP au partage, pas de focus. Navigateur : carte `#instCard` (lobby.js,
+  un seul bouton « Instances », `h.keys`), `#inRun`, `src/render/instance.js`, `src/ui/instance-hud.js`. Textures
+  `instance_spawner`, `instance_cage`, `goblin_king` (48 × 48). Script `npm run simulate:instance`.
+- **Au passage** : `service.start` avait une boucle `for(const p of players)` orpheline (laissée par une autre session) qui
+  répétait la vérification « serveur plein » : retirée. `main.js` : la carte du lobby se redessine quand l'inventaire
+  change, et l'inventaire est relu après le lancement d'une instance (clé consommée).
+- **Tests** : instance-key (3), instance-sim (12), instance-server (6), anticheat/instance (3), lobby (mis à jour) ✅ ;
+  game-service, live, party, tower, instant-server, social ✅ 146 ; `npm run test:anticheat` ✅ 99. Navigateur
+  (Playwright, clés données par `give-item.js` avec un DIM_ADMIN_TOKEN de test) : carte, clés 2 → 1 après lancement,
+  salle en direct, HUD, Quitter, aucune erreur ✅.
+- **Équilibrage** (à 3, 20 seeds, stuff seul) : fer 0/20 ; fer + acier 13/20 (9:56) ; acier 20/20 (9:50). Seul :
+  impossible (jusqu'à 124 gobelins vivants). Le temps varie peu d'une partie à l'autre (± 15 s).
+- **Points fragiles** : la durée est lue au chargement du module (`INSTANCE_TICKS`) ; l'IA vise toujours le même spawner
+  pour tout le groupe ; les spawners sans limite de gobelins font basculer la partie d'un coup si le groupe est trop
+  faible ; pas de récompense (summary.loot vide, bag vide).

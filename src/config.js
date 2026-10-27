@@ -1182,7 +1182,7 @@ export const INSTANCE = {
      4 essayés puis retirés), salle de 28 de large (avant 20) et 24 de haut (avant 20), plateforme du roi à 21 du sol */
   w: 28, h: 24, ledgeW: 6, ledgeEvery: 6, ledges: 3, maxFall: 7,
   platform: { w: 4, height: 21 },
-  spawner: { hp: 200, every: 30, dynamite: 6, focusRange: 10 },   // 200 coups (27/10, Geoffrey ; avant 75, puis 50)
+  spawner: { hp: 125, every: 30, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
             knock: 0.5, knockChance: 0.30, step: 0.9 },
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
