@@ -32,6 +32,16 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Wiki : effets des nouveaux objets cachés tant que personne ne les a trouvés
+- **Pour le joueur** : dans le wiki, la **Couronne du Roi Gobelin**, la **Masse du Roi Gobelin** et la **Cape royale du
+  Gobelin** s'affichent avec « ❓ Effets inconnus : personne ne l'a encore trouvé ». Dès qu'un joueur en obtient une en
+  jeu (ouverture d'un coffre ou d'un trésor, fin de session), ses effets apparaissent pour tout le monde.
+- **Décisions** : un don d'administration ne compte pas (on peut tester sans rien révéler). Choix de Claude : la stat
+  « Gobelins asservis » (seulement sur la Couronne) est cachée elle aussi ; le nom et la chance de chaque objet dans le
+  coffre restent visibles.
+- **À suivre** : pour cacher un autre objet plus tard, ajouter son nom à `WIKI.secret` (config).
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Clé d'instance I : 20 % dans les Treasure T3
 - **Pour le joueur** : un Treasure T3 donne une Clé d'instance I **1 fois sur 5** (avant 1 sur 20).
 - **État** : ✅ en ligne le 27/10 (sans relancer les tests, demande de Geoffrey)

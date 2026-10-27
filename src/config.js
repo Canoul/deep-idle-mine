@@ -1212,6 +1212,11 @@ export const MINE_MODES = [
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
 ];
 
+/* Wiki (27/10/2026, Geoffrey) : objets dont les effets restent cachés dans le wiki tant qu'aucun joueur ne les a
+   trouvés en jeu (ouverture d'un coffre ou d'un trésor, fin de session ; un don d'administration ne compte pas). Le
+   serveur retient le premier (server/game/service.js, ns « discovered ») ; le wiki le lui demande (GET /api/wiki). */
+export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin', 'Cape royale du Gobelin'] };
+
 /* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
    provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
    clé par joueur (key), consommée au lancement. Instance I (le roi gobelin) :

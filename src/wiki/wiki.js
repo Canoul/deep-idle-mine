@@ -270,6 +270,16 @@ function toc(){
   document.querySelectorAll('main section').forEach(s => obs.observe(s));
 }
 
+/* objets secrets (WIKI.secret) : le serveur dit lesquels ont déjà été trouvés ; sans réponse (wiki ouvert sans le jeu,
+   serveur injoignable), ils restent cachés. Le texte écrit à la main sur eux porte data-secret="nom de l'objet". */
+try {
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 2500);
+  const r = await fetch('/api/wiki', { signal: ctl.signal }); clearTimeout(timer);
+  if(r.ok) D.setDiscovered((await r.json()).discovered);
+} catch(e){ /* reste caché */ }
+for(const el of document.querySelectorAll('[data-secret]'))
+  if(D.isHidden(el.dataset.secret)) el.innerHTML = `<b>${esc(el.dataset.secret)}</b> : <span class="mut">${esc(D.HIDDEN_TEXT)}.</span>`;
+
 for(const fn of [areas, blocks, mobs, dungeon, instant, judgment, rarity, items, craft, upgrade, stats, treasures, level, spells, toc]){
   try { fn(); } catch(e){ console.error(fn.name, e); }
 }

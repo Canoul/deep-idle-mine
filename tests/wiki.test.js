@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { ITEMS, AREAS, CFG, LOOT, STATS, MOBS, mobHp, SPELLS, XP, RINGS } from '../src/config.js';
+import { ITEMS, AREAS, CFG, LOOT, STATS, MOBS, mobHp, SPELLS, XP, RINGS , WIKI } from '../src/config.js';
 import { RECIPES } from '../src/recipes.js';
 import { SERVER, ROOT } from '../server/config.js';
 import { resolvePublic } from '../server/http/static.js';
@@ -80,8 +80,10 @@ test('wiki : mobs — table d\'apparition et PV de la config, occultiste compris
 });
 
 test('wiki : stats, treasures, niveaux, format français', () => {
+  D.setDiscovered(WIKI.secret);                    // tout trouvé : toutes les stats (les objets secrets en cachent : tests/wiki-secret.test.js)
   const st = D.statRows();
   assert.deepEqual(st.map(s => s.key).sort(), Object.keys(STATS).sort());
+  D.setDiscovered([]);
   assert.ok(st.every(s => s.help), 'chaque stat a son explication');
   assert.deepEqual(D.lootTables().map(t => t.name), Object.keys(LOOT));
   assert.equal(D.lootTables()[0].families.find(f => f.family === 'blueprint').total.toFixed(2), '0.17');   // 7 BP en fer à 2 % (lance comprise) + 3 à 1 % (25/10)
