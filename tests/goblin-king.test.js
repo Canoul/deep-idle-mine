@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ITEMS, STUFF, FURNACE, GOBLIN_KING, goblinChestItem, UPGRADE } from '../src/config.js';
 import { RECIPES } from '../src/recipes.js';
-import { createInventory, addAll, addItem, countOf } from '../src/meta/inventory.js';
+import { createInventory, addAll, addItem, countOf, serialize, deserialize } from '../src/meta/inventory.js';
 import { openTreasure, openAll, canOpen } from '../src/meta/loot.js';
 import { craft, learn, recipeOfBlueprint } from '../src/meta/craft.js';
 import { createFurnaces, furnaceOp, advance, sanitizeFurnaces, accepts } from '../src/meta/furnace.js';
@@ -128,4 +128,13 @@ test('Four en or : plan, craft, « Utiliser » ouvre le 3e four (après le four 
   furnaceOp(st, inv, { furnace:2, action:'load', slot:'fuel', item:'Charbon', qty:10, opId:id() }, 0);
   advance(st.list[2], 39_999); assert.equal(st.list[2].out, null);
   advance(st.list[2], 40_000); assert.deepEqual(st.list[2].out, { item:'Lingot de fer', qty:1 }, '60 s / 1,5 = 40 s');
+});
+
+test('la recette apprise survit à l\'enregistrement (serveur) ; un nom inventé est retiré', () => {
+  const inv = createInventory(); addAll(inv, { [RECIPE]:1 });
+  learn(inv, RECIPE, id());
+  inv.unlocked.push('Four : Diamant', 'Four : Chitine');
+  const back = deserialize(serialize(inv));
+  assert.deepEqual(back.unlocked, ['Four : Chitine']);
+  assert.equal(accepts('ore', 'Peau de gobelin', 'smelt', back), true);
 });

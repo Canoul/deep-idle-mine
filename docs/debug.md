@@ -3596,7 +3596,9 @@ Règles (voir CLAUDE.md) :
     `recipeOf` accepte un non-minerai ; `accepts(slot, item, mode, inv)` refuse une recette fermée pas apprise
     (`inv.unlocked` contient « Four : Chitine », mis par `learn` via `recipeOfBlueprint`) ; `qty` par fournée.
     **Corrigé au passage** : `sanitizeFurnaces` effaçait à la relecture un ingrédient non-minerai posé et une sortie qui
-    n'est pas un lingot (la chitine) → relu sans l'inventaire (`recipeOf`) et sortie = toute sortie de recette.
+    n'est pas un lingot (la chitine) → relu sans l'inventaire (`recipeOf`) et sortie = toute sortie de recette. Et
+    `deserialize` (`src/meta/inventory.js`) ne gardait dans `unlocked` que les recettes du Craft : « Four : Chitine » était
+    perdu à l'enregistrement (recette consommée pour rien) → gardé aussi (`FURNACE_UNLOCKS`), test ajouté.
   - 3e four : `FURNACE.tiers[2] = Four en or ×1,5`, `unlockItems['Four en or'] = { slot:2 }`, recette dans `src/recipes.js`.
   - Asservis (`src/sim/thrall.js`) : `spawnMobs` (mobs.js) envoie un gobelin né à `goblinThrall` cases (cercle) d'un porteur
     sous terre vers `G.thralls` (pas dans `G.mobs` : aucun code de combat ne le voit). `updateThralls` (session.tick, après
@@ -3616,4 +3618,8 @@ Règles (voir CLAUDE.md) :
   fortune +10 et gobelins qui ne volent plus).
 - **Points fragiles** : le boss n'existe pas (coffre seulement par l'admin) ; `--crown` ne met que la stat et la fortune
   (pas le stuff complet) ; un asservi peut casser le bloc qu'un mineur traverse (le mineur finit son action sur du vide,
-  sans effet) ; pas vérifié dans le navigateur (dessin du gobelin doré, ligne du coffre).
+  sans effet).
+- **Vérifié dans Chromium** (Playwright, serveur local) : coffres donnés par l'admin et ouverts, recette apprise puis
+  proposée au four (« Peau de gobelin 10 → 5 Chitine »), 3e four sous cadenas « Four en or » ; en mode dev ×300 avec la
+  couronne portée : skin de la couronne, journal « Un gobelin s'incline… » puis « …disparaît », ligne « 👑 Gobelins asservis »
+  du coffre ; aucune erreur de page ✅.

@@ -8,7 +8,7 @@
      améliorée porte aussi q, lines, plus (src/meta/piece.js) ;
    - capacité illimitée pour l'instant.
    Un slot vidé (objet consommé) devient null : le trou est réutilisé par le prochain nouvel objet. */
-import { ITEMS, INVENTORY, RESEARCH, UPGRADE } from '../config.js';
+import { ITEMS, INVENTORY, RESEARCH, UPGRADE, FURNACE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { sanitizePiece } from './piece.js';
 import { rarityDef } from './rarity.js';
@@ -26,6 +26,9 @@ export const OPEN_MEMORY = 50;
 /* crafted : ids des dernières demandes de craft et de blueprints utilisés (une demande renvoyée ne fabrique pas un
    second objet, ne consomme pas un second blueprint) */
 export const CRAFT_MEMORY = 50;
+/* recettes du four fermées (FURNACE.recipes[…].unlock) : leur nom gardé dans unlocked (même règle que src/meta/furnace.js
+   furnaceRecipeName, recopiée ici pour ne pas importer le four) */
+const FURNACE_UNLOCKS = new Set(Object.values(FURNACE.recipes).filter(r => r.unlock).map(r => `Four : ${r.out}`));
 /* unlocked : recettes débloquées par un blueprint (src/meta/craft.js), pour toujours */
 /* research : dernières recherches / recyclages de la table de recherche (src/meta/research.js) */
 /* upgrades : dernières identifications / améliorations { id, kind, uid, success? } (src/meta/upgrade.js) : une demande
@@ -187,7 +190,7 @@ export function deserialize(json){
   inv.crafted = Array.isArray(d.crafted) ? d.crafted.filter(x => typeof x === 'string').slice(-CRAFT_MEMORY) : [];
   /* recettes débloquées : seulement des recettes à blueprint existantes, chacune une fois */
   inv.unlocked = Array.isArray(d.unlocked)
-    ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && Object.hasOwn(RECIPES, n) && RECIPES[n].unlock))] : [];
+    ? [...new Set(d.unlocked.filter(n => typeof n === 'string' && ((Object.hasOwn(RECIPES, n) && RECIPES[n].unlock) || FURNACE_UNLOCKS.has(n))))] : [];   // + recettes du four (« Four : Chitine », 27/10)
   inv.research = Array.isArray(d.research) ? d.research.filter(e => e && typeof e.id === 'string' && typeof e.kind === 'string'
       && e.result && typeof e.result.item === 'string' && (e.result.parts === undefined || Number.isSafeInteger(e.result.parts)))
     .map(e => ({ id:e.id, kind:e.kind, result:{ ...e.result, ok:true } })).slice(-RESEARCH.opMemory) : [];
