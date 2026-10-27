@@ -24,6 +24,13 @@ export const clockText = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); re
 /* « 2 Treasure T1, 15 Blueprint parts » */
 export const itemsText = items => Object.entries(items || {}).map(([k, n]) => `${n} ${k}`).join(', ');
 
+/* récompense de minuit (27/10 : 2 visites au moins dans la journée) : visites qui manquent, et la phrase de la carte */
+export const visitsLeft = info => Math.max(0, (info?.minVisits ?? 1) - (info?.mine?.visits ?? 0));
+export function visitsText(info){
+  const n = visitsLeft(info);
+  return n ? `Encore ${n} visite${n > 1 ? 's' : ''} aujourd'hui pour avoir la récompense de minuit.` : '✔ Récompense de minuit assurée (si les paliers sont atteints).';
+}
+
 /* ce que montre le bouton d'entrée : info = réponse de GET /api/giant, now = heure du navigateur, skew = décalage serveur */
 export function entryState(info, now){
   if(!info) return { can: false, label: 'Chargement…' };
@@ -33,7 +40,7 @@ export function entryState(info, now){
   return wait > 0 ? { can: false, label: `Prochaine entrée dans ${durText(wait)}` } : { can: true, label: 'Entrer' };
 }
 
-/* h : { api: giantApi, nav, session: () => bool (une session de jeu en cours) } */
+/* h : { api: giantApi, nav, session: () => bool (une session de jeu en cours : la visite peut se faire en même temps, 27/10) } */
 export function setupGiant(h){
   const renderer = createGiantRenderer($('cvGt'));
   let info = null, skew = 0, infoTimer = null, viewTimer = null, raf = null, busy = false, msg = '', ok = false;
@@ -57,16 +64,17 @@ export function setupGiant(h){
         `<button class="on" id="giantClaim"${busy ? ' disabled' : ''}>Réclamer</button></div>` : '';
     $('giantBody').innerHTML =
       `<p class="mut small">Session du jour : se termine dans <b>${durText(info.endsAt - now())}</b> (minuit). ${info.present} / ${info.max} mineur${info.present > 1 ? 's' : ''} devant le bloc.</p>`+
-      `<div class="lobbyActions"><button class="on big" id="giantEnter"${e.can && !busy && !h.session() ? '' : ' disabled'}>${esc(h.session() && !e.inVisit ? 'Termine d\'abord ta session' : e.label)}</button>`+
+      `<div class="lobbyActions"><button class="on big" id="giantEnter"${e.can && !busy ? '' : ' disabled'}>${esc(e.label)}</button>`+   // aussi pendant une session (27/10)
       `${e.inVisit ? '<button id="giantSee">Voir la visite</button>' : ''}</div>`+
       (msg ? `<p class="${ok ? 'okmsg' : 'err'} small">${esc(msg)}</p>` : '')+
       `<p>Mon score aujourd'hui : <b>${nf(info.mine.points)}</b> point${info.mine.points > 1 ? 's' : ''} (${info.mine.visits} visite${info.mine.visits > 1 ? 's' : ''})</p>`+
+      `<p class="small ${visitsLeft(info) ? 'mut' : 'okmsg'}">${esc(visitsText(info))}</p>`+
       `<p>Score collectif : <span class="gtTotal">${nf(info.total)}</span></p>`+
       `<div class="gtTiers">${tiers}</div>`+
       rewards+
       `<h3>Classement du jour</h3>${rank}`+
       `<p class="mut small">Une visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h. Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points. `+
-      `À minuit, chaque joueur venu au moins une fois reçoit les récompenses de tous les paliers atteints.</p>`;
+      `À minuit, chaque joueur venu au moins ${info.minVisits ?? 1} fois dans la journée reçoit les récompenses de tous les paliers atteints.</p>`;
   }
 
   async function refresh(){
@@ -154,7 +162,7 @@ export function setupGiant(h){
     try { await h.api.leave(); } catch(e){ console.warn(e); }
     endVisit();
   };
-  $('gtDoneBtn').onclick = () => { $('gtDone').hidden = true; $('noSession').hidden = false; h.nav.show('lobby'); };
+  $('gtDoneBtn').onclick = () => { $('gtDone').hidden = true; $('noSession').hidden = h.session(); if(!h.session()) h.nav.show('lobby'); };   // en session : on y retourne
 
   return {
     refresh,
