@@ -100,7 +100,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/render/giant.js`) : mode « Où miner » → Bloc géant, session commune de minuit à minuit (Paris), entrée seul toutes
   les 3 h (aussi pendant une session, et une session peut se lancer pendant une visite : 27/10 ; ancien : l'un ou l'autre), visite de 3 min de jeu à frapper un bloc 5 × 5 indestructible dans une salle de 15 × 7 (points = vitesse de minage par seconde, recul
   10 % de 1 à 3 cases, oxygène × 2, fontaine 30/s), 30 mineurs au plus. Récompense à minuit pour chaque joueur venu **au moins 2 fois dans la journée** (27/10, `GIANT.minVisits` ; ancien : une fois),
-  paliers cumulés du score collectif (1 000 → 10 000 : Treasures T1 à T3 + Blueprint parts), à réclamer. Salle calculée
+  paliers cumulés du score collectif (1 000 → 20 000 : Treasures T1 à T3 + Blueprint parts), à réclamer ; **+ 1 Pépite d'argent par
+  100 points personnels** (27/10, `GIANT.nugget`), qui se fond au four : 10 pépites + 10 charbon → 1 **Barre d'argent** (sans usage pour l'instant). Salle calculée
   dans le fil principal du serveur ; visites reprises après un redémarrage (points enregistrés toutes les 10 s).
   Repères (15 × 7) : ≈ 146 points par visite sans stuff, ≈ 184 en fer (`npm run simulate:giant`).
 - **Anneaux** (23/10, Geoffrey ; GAME_DESIGN §6 « Stuff », config `RINGS`) : 2 cases d'anneau dans le Stuff (12 cases),

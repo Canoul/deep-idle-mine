@@ -16,6 +16,7 @@ import { countOf, deserialize } from '../src/meta/inventory.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 
 const A = { id:'AAAA1111', name:'Zoe' }, B = { id:'BBBB2222', name:'Max' }, C = { id:'CCCC3333', name:'Lou' };
+const NUGGET = GIANT.nugget.item;   // pépite d'argent (27/10)
 const H = 3600e3, VISIT = visitDurationMs(GAME.speed);
 const fakeSummary = rec => ({ id:rec.id, shares: rec.players.map(p => ({ account:p.account, left:false, bag:{} })) });
 
@@ -132,19 +133,22 @@ test('récompense (26/10, ancienne règle : une visite suffit) : jour fini, pali
   await advance(VISIT + 1000);
   const d = await store.getGiantDay('2026-10-26');
   d.total = 15200;                                          // score collectif du jour (le serveur l'a compté)
+  d.scores[A.id].points = 250.7;                            // ses points à lui : 2 pépites d'argent (27/10)
   await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
   assert.deepEqual((await giant.info(A)).rewards, [], 'pas avant la fin de la session');
   clock.now = dayEnd(clock.now) + VISIT + 1;
   const i = await giant.info(A);
   assert.equal(i.rewards.length, 1);
-  assert.deepEqual(i.rewards[0].items, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2 });
+  assert.deepEqual(i.rewards[0].items, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, [NUGGET]: 2 });
   assert.deepEqual((await giant.info(B)).rewards, [], 'B n\'est pas venu');
   const r = await giant.claim(A);
-  assert.deepEqual(r.given, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2 });
+  assert.deepEqual(r.given, { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, [NUGGET]: 2 });
   const a = await inv(store, A.id);
+  assert.equal(countOf(a, NUGGET), 2);
   assert.equal(countOf(a, 'Treasure T1'), 2); assert.equal(countOf(a, 'Treasure T2'), 2); assert.equal(countOf(a, 'Blueprint parts'), 45);
   assert.deepEqual((await giant.claim(A)).given, {}, 'une seule fois');
   assert.equal(countOf(await inv(store, A.id), 'Treasure T1'), 2);
+  assert.equal(countOf(await inv(store, A.id), NUGGET), 2, 'pépites données une seule fois');
   assert.deepEqual((await giant.info(A)).rewards, []);
   assert.deepEqual((await giant.claim(B)).given, {});
   assert.equal(await store.getInventory(B.id), null, 'rien écrit pour B');
@@ -159,22 +163,39 @@ test('récompense à partir du 27/10 : 2 visites au moins dans la journée (une 
   clock.now += 3 * H;                                              // 10 h : A revient, pas B
   await giant.enter(A); await advance(VISIT + 1000);
   assert.equal((await giant.info(A)).mine.visits, 2);
-  const d = await store.getGiantDay('2026-10-27'); d.total = 1500;
+  const d = await store.getGiantDay('2026-10-27'); d.total = 1500; d.scores[A.id].points = 99; d.scores[B.id].points = 500;
   await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
   clock.now = dayEnd(clock.now) + VISIT + 1;
-  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ 'Treasure T1': 1 }], 'A : 2 visites');
-  assert.deepEqual((await giant.info(B)).rewards, [], 'B : une seule visite');
+  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ 'Treasure T1': 1 }], 'A : 2 visites, 99 points = 0 pépite');
+  assert.deepEqual((await giant.info(B)).rewards, [], 'B : une seule visite (ni palier ni pépite, même avec 500 points)');
   assert.deepEqual((await giant.claim(B)).given, {}, 'B ne peut rien réclamer');
   assert.equal(countOf(await inv(store, A.id), 'Treasure T1'), 0);
   assert.deepEqual((await giant.claim(A)).given, { 'Treasure T1': 1 });
 });
 
-test('récompense : sous le premier palier, rien à réclamer', async () => {
-  const { giant, advance, clock } = setup();
+test('récompense : sous le premier palier, seulement les pépites d\'argent (rien sous 100 points)', async () => {
+  const { giant, advance, clock, store } = setup();
+  await giant.enter(A); await giant.enter(B);
+  await advance(VISIT + 1000);
+  const d = await store.getGiantDay('2026-10-26');
+  assert.ok(d.total < 1000);
+  d.scores[A.id].points = 340; d.scores[B.id].points = 99.9;
+  await store.putGiantDayAndPlayer(d, A.id, await store.getGiantPlayer(A.id));
+  clock.now = dayEnd(clock.now) + VISIT + 1;
+  assert.deepEqual((await giant.info(A)).rewards.map(r => r.items), [{ [NUGGET]: 3 }]);
+  assert.deepEqual((await giant.info(B)).rewards, [], '99,9 points : rien');
+  assert.deepEqual((await giant.claim(A)).given, { [NUGGET]: 3 });
+  assert.deepEqual((await giant.claim(A)).given, {}, 'une seule fois');
+});
+
+test('carte : mes pépites d\'argent du jour', async () => {
+  const { giant, advance } = setup();
   await giant.enter(A);
   await advance(VISIT + 1000);
-  clock.now = dayEnd(clock.now) + VISIT + 1;
-  assert.deepEqual((await giant.info(A)).rewards, []);
+  const i = await giant.info(A);
+  assert.equal(i.nugget.item, NUGGET); assert.equal(i.nugget.per, GIANT.nugget.per);
+  assert.equal(i.nugget.n, Math.floor(i.mine.points / GIANT.nugget.per));
+  assert.ok(i.nugget.n >= 1, `${i.mine.points} points en une visite`);
 });
 
 test('redémarrage du serveur : la visite reprend avec le temps restant et ses points enregistrés', async () => {

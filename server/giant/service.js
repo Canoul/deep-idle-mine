@@ -17,7 +17,7 @@
      pour chaque joueur venu au moins une fois, si le score collectif atteint au moins un palier. Réclamée une seule
      fois (claimed), écrite avec l'inventaire. */
 import { GIANT, GAME, ITEMS } from '../../src/config.js';
-import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, rewardFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
+import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, playerRewardFor, nuggetsFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
 import { newRoom, enterRoom, exitRoom, takeDone } from '../../src/shared/giant-room.js';
 import { tickGiant, VISIT_TICKS, giantRate } from '../../src/sim/giant/session.js';
 import { DT } from '../../src/config.js';
@@ -128,7 +128,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
     for(const d of await store.listGiantDays()){
       if(!earnsReward(d.scores?.[account], d.day, config) || p.claimed.includes(d.day)) continue;   // 2 visites au moins (27/10)
       if(now < dayEnd(Date.parse(d.day + 'T12:00:00Z')) + visitMs) continue;   // pas fini (ou visites encore en cours)
-      const items = rewardFor(d.total, config);
+      const items = playerRewardFor(d.total, d.scores[account].points, config);   // + pépites d'argent (27/10)
       if(Object.keys(items).length) out.push({ day: d.day, total: shownPoints(d.total), items });
     }
     return out.sort((a, b) => a.day.localeCompare(b.day));
@@ -148,6 +148,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       total: shownPoints(d.total), mine: { points: shownPoints(mine?.points ?? 0), visits: mine?.visits ?? 0 },
       minVisits: minVisitsFor(day, config),          // visites à faire aujourd'hui pour la récompense de minuit
       tiers: config.tiers.map(t => ({ min: t.min, items: t.items, reached: d.total >= t.min })),
+      nugget: config.nugget ? { item: config.nugget.item, per: config.nugget.per, n: nuggetsFor(mine?.points ?? 0, config) } : null,   // mes pépites du jour (27/10)
       ranking: ranking(d.scores, me.id, config.top),
       rewards: await pendingRewards(me.id, p, now),
     };

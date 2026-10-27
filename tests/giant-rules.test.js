@@ -1,8 +1,8 @@
 /* Bloc géant : règles pures (src/shared/giant.js) : jour de Paris, délai, paliers cumulés, classement. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GIANT, MINE_MODES } from '../src/config.js';
-import { dayOf, dayEnd, dayStart, nextEntry, canEnter, tiersReached, rewardFor, tierItemsKnown, ranking, shownPoints, minVisitsFor, earnsReward } from '../src/shared/giant.js';
+import { GIANT, MINE_MODES, ITEMS } from '../src/config.js';
+import { dayOf, dayEnd, dayStart, nextEntry, canEnter, tiersReached, rewardFor, nuggetsFor, playerRewardFor, tierItemsKnown, ranking, shownPoints, minVisitsFor, earnsReward } from '../src/shared/giant.js';
 import { visitsLeft, visitsText } from '../src/ui/giant.js';
 
 const H = 3600e3;
@@ -38,6 +38,18 @@ test('récompense : les paliers s\'additionnent', () => {
   assert.deepEqual(rewardFor(1e9), { 'Treasure T1': 2, 'Blueprint parts': 45, 'Treasure T2': 2, 'Treasure T3': 1 });
   assert.equal(tiersReached(15000).length, 4);
   for(const bad of [NaN, -1, Infinity * -1, undefined]) assert.deepEqual(rewardFor(bad), {});
+});
+
+test('pépites d\'argent (27/10) : 1 par tranche de 100 de ses points, arrondi vers le bas, en plus des paliers', () => {
+  const N = GIANT.nugget.item;
+  assert.equal(GIANT.nugget.per, 100);
+  assert.equal(nuggetsFor(99.99), 0); assert.equal(nuggetsFor(100), 1); assert.equal(nuggetsFor(299.5), 2); assert.equal(nuggetsFor(1234), 12);
+  for(const bad of [NaN, -500, Infinity, -Infinity, undefined, '500', null]) assert.equal(nuggetsFor(bad), 0, String(bad));
+  assert.deepEqual(playerRewardFor(999, 250), { [N]: 2 }, 'sous le premier palier : seulement les pépites');
+  assert.deepEqual(playerRewardFor(5000, 150), { 'Treasure T1': 2, 'Blueprint parts': 15, [N]: 1 });
+  assert.deepEqual(playerRewardFor(999, 50), {});
+  assert.deepEqual(playerRewardFor(1000, 0, { ...GIANT, nugget: null }), { 'Treasure T1': 1 }, 'sans nugget en config : comme avant');
+  assert.ok(Object.hasOwn(ITEMS, N));
 });
 
 test('classement : du plus haut au plus bas, top 10, ma ligne si je n\'y suis pas', () => {
