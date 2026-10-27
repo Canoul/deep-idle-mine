@@ -50,7 +50,7 @@ Modèle d'entrée :
   tirés chacun à part, « vitesse % » des jambes en cobalt = vitesse de minage %.
 - **À suivre** : le **Rotten flesh** n'a pas de source (mob à concevoir) : pas de Gants de boucher pour l'instant. Pas de
   tier 4 à la Table de recherche. Les pièces spéciales n'ont pas d'apparence sur le mineur (icônes seulement).
-- **État** : ✅ en ligne le 27/10
+- **État** : 🧪 sur la branche `geoffrey/tier4-mithril` (pas en ligne)
 
 ## 27/10/2026 — Geoffrey — Onglet Stuff : « Gobelins asservis » cachée
 - **Pour le joueur** : la ligne « Gobelins asservis (rayon) » n'apparaît plus dans les stats de l'onglet Stuff. La
