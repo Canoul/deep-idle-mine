@@ -18,6 +18,14 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
+- **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
+  minotaures** et dans les **Vagues** du k hole. Avant, il restait planté pendant 2 min (« Plus rien à explorer ») et
+  l'arène était souvent perdue (seed 2026520156 : 1 485 dégâts sur 2 000 à deux). Dans la mine et la carte Filons, le
+  réglage est toujours respecté.
+- **Décisions** : option 1 recommandée par Claude, retenue par Geoffrey.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Runes : stuff du Roi Gobelin au tier 3, couronne au tier 4
 - **Pour le joueur** : une rune posée sur la masse ou la cape du Roi Gobelin vaut un % de **400 x** (tier 3) ; sur la
   **couronne**, de **600 x** (nouveau **tier 4**). Ces pièces sortent déjà identifiées à la qualité de leur coffre.

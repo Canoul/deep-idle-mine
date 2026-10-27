@@ -281,13 +281,28 @@ test('arène : un mineur loin du combat (hors de sa vision) vient quand même ai
   assert.ok(G.miners.every(m => m.foe === b.id), G.miners.map(m => `${m.name}@${m.x} foe=${m.foe}`).join(' '));
 });
 
-test('arène : un mineur réglé sur « Ignorer » ne vient pas se battre (réglage respecté)', () => {
-  const G = enterWith('arene'), [a, b] = G.mobs, [r, , v] = G.miners;
-  a.hp = 0; r.x = 1; b.x = 0; b.grab = r.id;
-  v.x = mapOf('arene').w - 1; v.prefs.fightMobs = false;
-  for(const m of G.miners){ m.action = null; m.foe = null; }
-  run(G, 10);
-  assert.equal(v.foe, null);
+/* 27/10/2026 (Geoffrey) : avant, le réglage était respecté et le mineur restait planté (arène perdue, seed 2026520156) */
+test('arène : même réglé sur « Ignorer » ou « Fuir », un mineur vient se battre (allFight)', () => {
+  for(const pref of [false, 'flee']){
+    const G = enterWith('arene'), [a, b] = G.mobs, [r, , v] = G.miners;
+    a.hp = 0; r.x = 1; b.x = 0; b.grab = r.id;
+    v.x = mapOf('arene').w - 1; v.prefs.fightMobs = pref;
+    for(const m of G.miners){ m.action = null; m.foe = null; }
+    run(G, 10);
+    assert.equal(v.foe, b.id, `réglage ${pref}`);
+  }
+});
+
+test('arène : un groupe dont un mineur est sur « Ignorer » bat les deux minotaures avant la fin du compteur', () => {
+  const G = enterWith('arene'), M = mapOf('arene'), t0 = G.t;
+  G.miners[2].prefs.fightMobs = false;
+  while(G.khole && G.t - t0 < M.duration - 1) tick(G);
+  assert.equal(G.khole, null, `encore dans l'arène après ${Math.round(G.t - t0)} s : ${G.mobs.map(o => o.hp).join(', ')} PV`);
+});
+
+test('les salles de combat (arène, vagues) font se battre tout le monde ; pas la carte Filons', () => {
+  assert.ok(mapOf('arene').allFight && mapOf('vagues').allFight);
+  assert.ok(!mapOf('filons').allFight);
 });
 
 test('salles (arène, trésor, vagues) : éclairées dès l\'arrivée, sur tout le sol', () => {
