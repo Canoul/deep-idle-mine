@@ -31,6 +31,16 @@ Modèle d'entrée :
   Une spé imposée dans le panneau dev passe avant celle du preset (le stuff reste).
 - **État** : 🧪 sur la branche `geoffrey/presets-dev` (pas en ligne)
 
+## 27/10/2026 — Geoffrey — Buff du stuff en acier : 400 x → 500 x
+- **Pour le joueur** : chaque pièce en acier gagne l'équivalent de +100 x (≈ 100 s de travail par session) :
+  casque oxygène **+125** (avant +100), jambes montée **+2** (1,6), bottes marche **+2,08** (1,67), plastron pods **+137**
+  (120), pioche minage **+0,58** (0,5), épée **18,5** dégâts (16). Les pièces déjà fabriquées sont buffées aussi.
+  Les **runes** posées sur une pièce du tier 3 (acier, Plastron de l'équilibre, masse et cape du Roi Gobelin) donnent
+  **25 % de plus**, celles déjà posées comprises.
+- **Décisions** : le tier 3 des runes passe à **500 x** avec l'acier (la règle « casque, jambes, bottes = valeur du tier »
+  reste vraie). La couronne (tier 4, 600 x) n'est plus que 100 x au-dessus.
+- **État** : 🧪 sur la branche `geoffrey/acier-500` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Barre d'argent : les pépites du Bloc géant
 - **Pour le joueur** : la récompense de minuit du **Bloc géant** donne en plus **1 Pépite d'argent par tranche de 100 de
   tes points** du jour (les tiens, pas ceux de tous), même si le score collectif n'atteint aucun palier. Au **four**

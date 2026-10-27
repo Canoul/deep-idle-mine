@@ -147,7 +147,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Hand of Justice 1 %, jamais un sort appris), gemmes 1 % ; le stuff sort
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
   du porteur : 30 s à miner pour le coffre commun, ligne « Gobelins asservis » du coffre). **Four en or** = 3e four ×1,5.
-  **Recette : Chitine** : 10 peaux + 10 charbon → 5 chitine au four. Lampe à incandescence passée au tier 2 des runes. Runes : masse et cape au tier 3 (400 x), **couronne au tier 4 (600 x)** (27/10).
+  **Recette : Chitine** : 10 peaux + 10 charbon → 5 chitine au four. Lampe à incandescence passée au tier 2 des runes. Runes : masse et cape au tier 3 (400 x ; 500 x depuis le 27/10), **couronne au tier 4 (600 x)** (27/10).
 - **Butin rare des mobs** (26/10, Geoffrey) : 4 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
   chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
@@ -165,7 +165,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   dans le catalogue). But : une équipe en fer (mineur, logisticien, barbare, skills complets) ≈ 5,4 areas au lieu de
   5,0 ; sans stuff (4,0) et en chitine (4,1) inchangés. Ancien : fer pioche +0,4, épée 11, casque +38, plastron +50,
   jambes et bottes +0,6 ; acier +0,48, 13, +46, +80, +0,72.
-- **Casque, jambes et bottes en acier ≈ 400 x** (25/10, Geoffrey) : oxygène +100, montée +1,6, marche +1,67 (ancien : +69,
+- **Buff de l'acier : 500 x** (27/10, Geoffrey) : chaque pièce en acier +100 x (casque oxygène +125, jambes montée +2,
+  bottes marche +2,08, plastron pods +137, pioche minage +0,58, épée dégâts 18,5) et **tier 3 des runes à 500 x** (avant 400 :
+  les lignes de toutes les pièces T3, Plastron de l'équilibre, masse et cape du Roi Gobelin comprises, +25 %).
+- **Ancien : casque, jambes et bottes en acier ≈ 400 x** (25/10, Geoffrey) : oxygène +100, montée +1,6, marche +1,67 (ancien : +69,
   +1,08, +1,08, soit 276 / 270 / 259 x, à peine 3 % au-dessus du fer). Valeur en x = `itemValue` (`UPGRADE.worth`).
 - **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
@@ -255,7 +258,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   barème actuel : total max 25 / 30 / 35 / 40 / 50 / 75 / 100 % de la valeur de l'objet). Conversion d'une ligne
   (anciennes pièces, runes) selon le **tableau du créateur « stat pour 100 x »** (`UPGRADE.prices`, 22/10), appliqué à la
   **valeur du tier de la pièce** (25/10, Geoffrey ; `UPGRADE.tiers` : T1 pierre/chitine/plans T1 100 x, T2 fer/plans T2 250 x,
-  T3 acier/équilibre/plans T3 400 x ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** **+1 à +9** (26/10, Geoffrey : +3 % de
+  T3 acier/équilibre/plans T3 500 x (400 x avant le 27/10) ; ancien : la valeur de l'objet, `UPGRADE.worth`, qui ne sert plus aux lignes). **Amélioration** **+1 à +9** (26/10, Geoffrey : +3 % de
   toutes les stats par rang, réussite 100 % puis −5 % par rang jusqu'à 60 %, plumes 6 / 9 / 14 / 18 / 24 / 32 / 40 / 50 / 63
   et cristaux 3 / 5 / 7 / 9 / 12 / 16 / 20 / 25 / 32 ; un échec ne coûte que les matériaux ; ancien : +1 à +3, +5 / 10 / 15 %
   (25/10), plumes 20 / 30 / 50, cristaux 3 / 5 / 7) ; lignes affichées une par une. **Enchantement** (22/10) : les runes des tours (elles tirent toujours des
@@ -304,7 +307,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
 - **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
-  casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 400 x) ; plastrons hors règle (torse
+  casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
 
 ## Hébergement

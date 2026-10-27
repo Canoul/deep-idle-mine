@@ -3748,3 +3748,14 @@ Règles (voir CLAUDE.md) :
   `instance_1` ni `giant`) ⚠️ à corriger à part.
   De bout en bout ✅ : serveur dev sur données temporaires, Test_Mineur + 2 mineurs de test (logisticien, barbare) →
   `/api/game/view` : Test_Mineur / Test_Logisticien / Test_Barbare, acier, sorts de chaque spé.
+
+### Buff de l'acier : 500 x, tier 3 des runes à 500 x (Geoffrey) — branche `geoffrey/acier-500`, 🧪
+- **Quoi** (`src/config.js`, `STUFF.items`) : +100 x par pièce au GS (`UPGRADE.worth`) : casque oxygène 100 → 125 (500),
+  jambes montée 1,6 → 2 (500), bottes marche 1,67 → 2,08 (499), plastron pods 120 → 137 (822), pioche minage 0,5 → 0,58
+  (754 ; 0,577 serait arrondi à 0,58 en session de toute façon : `carac.mineSpeed` au centième), épée dégâts 16 → 18,5 (540).
+  `UPGRADE.tiers[3].x` 400 → 500 (choix de Geoffrey : lignes de rune / identification de toutes les pièces T3 +25 %,
+  y compris déjà posées, gardées en %). Texte de l'onglet Amélioration (`src/ui/upgrade.js`), wiki (texte des tiers).
+- **Tests** : steel-gear (valeurs du catalogue, « ≈ 500 x »), rune (tiers, ligne du Plastron de l'équilibre 16 → 20 pods),
+  stuff-balance (libellé) mis à jour ; stuff-balance, rune, steel-gear, gearscore, goblin-king, stuff*, wiki, modulation ✅ 67/67.
+- **À vérifier** : modulation des tours (`TOWER.modulation.gsMax`) : un stuff acier complet gagne ≈ 600 GS ; si le plafond
+  était calé sur l'ancien acier, il laisse passer moins de joueurs. Pas de simulation lancée (valeurs de config seulement).
