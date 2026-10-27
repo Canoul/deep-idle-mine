@@ -32,6 +32,12 @@ Modèle d'entrée :
 
 ---
 
+## 26/10/2026 — Geoffrey — Discord : annonce de l'ouverture des tours
+- **Pour le joueur** : quand la Tour de l'Ange ou la Tour du Démon s'ouvre, le bot Discord poste
+  « 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 ». Une seule fois par ouverture, quelle qu'en soit la cause
+  (jauge remplie par les résidus, réouverture automatique, commande d'admin).
+- **État** : ✅ en ligne le 27/10 (codée le 26/10, oubliée sur sa branche)
+
 ## 27/10/2026 — Geoffrey — 4 nouveaux sorts
 - **Pour le joueur** : dans l'onglet Sorts,
   - **Bonbonne de zipette** (Logisticien niveau de spé 10) : le prochain allié à 3 cases ou moins qui travaille dans la

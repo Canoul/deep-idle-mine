@@ -3554,3 +3554,13 @@ Règles (voir CLAUDE.md) :
 - Tests : spells ✅ (25), wiki ✅ (11), combat, knock, mobs, session, giant-sim, mob-drops ✅. Simulation 5 sessions
   `--skills mixed` avec / sans `--spells zipette,war_cry,cleave,hand_of_justice` : 0 blocage, coffre 4 499 / 4 510 pods.
 - À vérifier : effet réel de chaque sort sur le coffre et les combats (pas mesuré séparément).
+
+### Discord : ouverture d'une tour annoncée (Geoffrey) — branche `geoffrey/discord-tour-ouverte`, ✅ en ligne le 27/10 (restée sur sa branche le 26/10 : c'est pour ça que le bot n'a rien écrit)
+- **Quoi** : `towerOpenMessage(side)` (`server/social/discord.js`). Branché dans `withJudgment`
+  (`server/game/service.js`) : on note `j[side].opening` avant, et après l'enregistrement on annonce chaque camp dont
+  le numéro a avancé. Couvre les trois causes d'ouverture (`addResidues`, `refresh` à la lecture = réouverture après
+  une ouverture pleine, `setCount` admin) ; sous le verrou 'judgment' → jamais deux annonces pour une ouverture.
+- **Point fragile** : une réouverture automatique n'est vue (et annoncée) qu'à la prochaine lecture du Jugement
+  (lobby, lancement, fin de session) ; en pratique quelques secondes, mais pas à la minute près si personne ne joue.
+- **Tests** : discord ✅ (+4 : message, résidus + relectures/redémarrage, admin, réouverture ; 2 attentes existantes
+  complétées par l'annonce d'ouverture), judgment, admin, tower* ✅ 75.
