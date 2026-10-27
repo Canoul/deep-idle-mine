@@ -94,8 +94,9 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | 0 à 2 | **Treasure T1** |
   | 3 et 4 | **Treasure T2** |
   | 5 et 6 | **Treasure T3** *(23/10/2026 ; avant : T2 en areas 3 à 5)* |
+  | 7 et 8 | **Treasure T4** *(27/10/2026, Geoffrey)* |
 
-  Au-delà de l'area 6, le dernier tier s'applique (T3). Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
+  Au-delà de l'area 8, le dernier tier s'applique (T4 ; avant le 27/10 : T3 au-delà de l'area 6). Poids 2 *(provisoire)*. Rien dans ce butin ne compte pour le déblocage de l'area.
 - **Ouvrir un Treasure TX** *(décision ferme)* : hors session, depuis l'onglet Inventaire (sélectionner le Treasure, bouton « Ouvrir »). Le Treasure est consommé, son contenu arrive dans l'inventaire et une petite fenêtre présente le butin obtenu (objets rares en tête). C'est le **serveur** qui tire le contenu, avec un hasard qu'on ne peut pas prévoir (pas la seed). Un Treasure TX sans table de butin ne s'ouvre pas (T1, T2 et T3 en ont une).
 - **Contenu du Treasure T1** *(valeurs provisoires)* :
 
@@ -128,6 +129,19 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | **Un blueprint** parmi : Casque, Plastron, Jambes, Bottes, Pioche, Épée en acier (1 % chacun) ; Plastron de l'équilibre (0,5 %) | 1 | 6,5 % au total |
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 2 % chacune (6 % au total) |
   | Cristal de pleine lune | 1 | 10 % |
+- **Contenu du Treasure T4** *(27/10/2026, Geoffrey ; areas 7 et 8 ; valeurs du créateur)* :
+
+  | Objet | Quantité | Chance |
+  |---|---|---|
+  | Mithril ore | 20 à 40 | 100 % |
+  | Cobalt ore | 5 à 10 | 100 % |
+  | Thorium ore | 5 à 10 | 100 % |
+  | Blueprint parts | 12 à 14 | 100 % |
+  | **Un blueprint** parmi : Lunettes Gucci, Doc Martins, Ceinture golémique, Gants de boucher (1 % chacun) ; Jambières titanesques (0,5 %) ; Casque, Plastron, Jambes, Bottes en mithril (1 % chacun) ; en thorium et en cobalt (0,5 % chacun) | 1 | 12,5 % au total |
+  | Clé d'instance I BP · Saphir BP · Rubis BP · Jade BP | 1 | 5 % chacun, **chacun son tirage**, seulement si la recette n'est pas encore apprise |
+  | **Une gemme** parmi : Topaze, Saphir, Rubis, Jade | 1 | 1 % chacune |
+
+  *(Choix de Claude, 27/10 : les quatre BP du 2e jet sont tirés chacun à part, la règle ne disant pas « 1 max ».)*
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas. Un treasure (ou un résidu) découvert **à portée** (12 cases) est visé **quel que soit le focus d'area** (« Plus profond » compris) *(23/10/2026, Geoffrey : un treasure d'une area du dessus, collé au puits du treuil où tout le monde passe, restait là toute la partie)*.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
@@ -648,6 +662,43 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   **Pierre glissante** *(26/10)* : matériau, butin du golem (1 à 3), sans usage pour l'instant.
   **Tissu sombre** : matériau (catégorie « Matériau »), nécessaire à la Cape de Naingui. Il vient de l'**occultiste** (1 à 3 par occultiste vaincu, areas 4 et 5).
 
+### Tier 4 : mithril, thorium, cobalt *(27/10/2026, Geoffrey ; valeurs du créateur, stats calculées par Claude)*
+- **Matières** (onglet Four) : **10 Mithril ore + 10 charbon → Mithril ingot** (inhabituel) ; **5 Cobalt ore + 10 charbon → Refined cobalt** et **5 Thorium ore + 10 charbon → Refined thorium** (inhabituels) ; 1 min chacun *(durée provisoire, choix de Claude)*. Alliages : **Cobalt ingot = 5 Mithril ingot + 5 Refined cobalt**, **Thorium ingot = 5 Mithril ingot + 5 Refined thorium** (rares ; 50 charbons, 3 min, comme les autres alliages, choix de Claude).
+- **Gemmes** (rares, différentes des gemmes inférieures) : **Topaze, Saphir, Rubis, Jade**. Saphir, Rubis et Jade se fabriquent aussi (BP du Treasure T4) : **50 diamants + 3 gemmes inférieures de la même couleur**. Pas de BP pour la Topaze.
+- **Rotten flesh** : matériau, butin d'un mob pas encore conçu (aucune source pour l'instant). **Cuir de minotaure** : voir Amélioration (minotaure).
+- **Clé d'instance I** (BP du Treasure T4) : 250 peaux de gobelin + 20 pierres glissantes + 50 tissus sombres + 1 Barre d'argent.
+- **Tiers des runes** : **T4 = 650 x** (mithril, pièces spéciales, Couronne du Roi Gobelin : avant 600 x), **T4.5 = 750 x** (thorium, cobalt, Jambières titanesques).
+- **Armure en mithril** (inhabituelle ; BP du Treasure T4, 1 % chacun) : la même stat que l'acier, à 650 x (plastron hors règle, même rapport que l'acier).
+
+  | Pièce | Recette | Stat |
+  |---|---|---|
+  | Casque en mithril | 15 Mithril ingot + 5 Steel ingot + 10 Shiny iron | Oxygène +163 |
+  | Plastron en mithril | 24 Mithril ingot + 8 Steel ingot + 10 Shiny iron | Pods +178 |
+  | Jambes en mithril | 21 Mithril ingot + 7 Steel ingot + 10 Shiny iron | Vitesse (échelle) +2,6 |
+  | Bottes en mithril | 16 Mithril ingot + 4 Steel ingot + 10 Shiny iron | Vitesse (marche) +2,71 |
+
+- **Armure en thorium et en cobalt** (rares ; BP du Treasure T4, 0,5 % chacun) : fabriquées **à partir de la pièce en mithril** (consommée : c'est toujours l'exemplaire le plus simple qui part, sans qualité, niveau ni rune si possible), + 10 / 16 / 14 / 8 lingots (thorium ou cobalt) + une gemme (casque : Rubis, plastron : Topaze, jambes : Saphir, bottes : Jade) + 25 diamants. Deux stats à **50/50 de 750 x**, aux prix mesurés du GS (stat de combat comptée à moitié ; plastron × 1,644 comme l'acier) :
+
+  | Pièce | Thorium | Cobalt |
+  |---|---|---|
+  | Casque | Oxygène +94, Double attaque +23,4 % | Oxygène +94, Perçage +53,6 % |
+  | Plastron | Pods +103, Dégâts +7,7 | Pods +103, Vitesse de minage +0,474 |
+  | Jambes | Vitesse (échelle) +1,5, Dégâts +93,8 % | Vitesse (échelle) +1,5, Vitesse de minage +28,8 % |
+  | Bottes | Vitesse (marche) +1,56, Critique +14,4 % | Vitesse (marche) +1,56, Coup unique +28,8 % |
+
+  *(« vitesse % » des jambes en cobalt lu comme vitesse de minage %, choix de Claude.)* Épée, lance et pioche de ces trois métaux : **pas encore** (pas de recette).
+- **Pièces spéciales** (BP du Treasure T4) :
+
+  | Pièce | Case | Rareté | Recette | Stats |
+  |---|---|---|---|---|
+  | Lunettes Gucci | casque | rare | 20 diamants + 10 Mithril ingot + 2 Cobalt ingot | Découverte +1 (190 x), Oxygène +115 (le reste des 650 x) |
+  | Doc Martins | pieds | rare | 50 Cuir de minotaure + 4 Thorium ingot + 100 tissus sombres | Résistance au recul +32,5 %, Ténacité +32,5 % |
+  | Ceinture golémique | ceinture | rare | 50 pierres glissantes + 5 Thorium ingot + 100 vésicules de gaz | Pods +54, Résistance au recul +32,5 % |
+  | Gants de boucher | gants | rare | 50 Rotten flesh + 15 Mithril ingot + 500 peaux de gobelin | Dégâts +8,1 |
+  | Jambières titanesques | jambes | épique | 25 Cobalt ingot + 25 Thorium ingot + Topaze, Jade, Saphir, Rubis + 50 Shiny gold | 750 × 2,5 = 1 875 x en 4 parts : Vitesse (échelle) +1,88, Vitesse (marche) +1,95, Vitesse de minage +0,361, Résistance au recul +46,9 % |
+
+  La résistance au recul n'a pas de prix mesuré dans le GS : elle suit le tableau des lignes (`UPGRADE.prices`, 20 % pour 100 x), comptée à moitié.
+
 ### Stuff (onglet Stuff)
 - **13 cases** : casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole, **2 cases d'anneau** (23/10/2026) et **torche** (25/10/2026).
 - **Case Torche** *(25/10/2026, Geoffrey)* : elle change l'effet des torches. **Lampe à incandescence** (rare) : **+10 torches**, **rayon des torches 8** (au lieu de 5), **pose en 0,5 s** (au lieu de 1). Le rayon et le temps de pose sont devenus des **stats du mineur** (« Rayon des torches », « Pose d'une torche », affichées dans l'onglet Stuff) : **chaque torche garde le rayon de celui qui l'a posée** (avant : un seul rayon pour toutes les torches de la partie), dans la mine comme dans les tours. **Apparence** *(26/10/2026, Geoffrey)* : les torches posées par un mineur qui porte la lampe sont dessinées en **lampe de mine** (ampoule dans sa cage, suspendue), les autres restent des torches. **Ni identification, ni amélioration, ni enchantement** *(27/10/2026, Geoffrey ; ancien : elle s'identifiait et s'améliorait comme les autres pièces)*.
@@ -755,7 +806,7 @@ Règle *(26/10/2026, Geoffrey)* : **+3 % de stats par rang**, **réussite −5 %
 *(Ancien : +1 à +3 = +5 / +10 / +15 % (25/10 ; avant +3 / +5 / +7 %), 20 / 30 / 50 plumes (22/10 ; avant 3 / 5 / 7) et 3 / 5 / 7 cristaux. Les pièces déjà améliorées gardent leur niveau et prennent le nouveau bonus : une pièce +3 passe de +15 % à +9 %.)*
 
 Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fer +3 : 5 + 9 × 1,09 = 14,8 dégâts. Les stats entières (pods, oxygène, découverte, lignes de boussole) sont arrondies.
-- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). Il faut donc 256 plumes et 129 cristaux pour monter une pièce à +9 (sans échec ; 29 plumes et 15 cristaux pour +3). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
+- **Plume d'ange** : celle qu'on ramasse dans la **mine instantanée**. **Cristal de pleine lune** : le butin du **minotaure** (donjon, 1 à 3 par victoire, chaque joueur présent reçoit la quantité entière). *(27/10/2026, Geoffrey)* Le minotaure donne aussi **1 à 3 Cuir de minotaure** (rare, même partage : chacun la quantité entière). Il faut donc 256 plumes et 129 cristaux pour monter une pièce à +9 (sans échec ; 29 plumes et 15 cristaux pour +3). Pour tester : `node scripts/give-admin.js --name <pseudo>` (une pièce de chaque qualité + des matériaux).
 
 **Enchantement** *(concept Ange vs Démon, 22/10/2026 ; `RUNE` en config)* : une pièce de stuff de l'inventaire + une **Rune** → la rune est consommée et ses lignes s'ajoutent à la pièce. **Une seule rune par pièce.** **Retirer une rune** *(décision du créateur, 23/10/2026 ; avant : définitif)* : gratuit ; la rune revient dans l'inventaire en **Fragment de rune** (rareté rare) : même qualité, mêmes lignes, mais **chaque % compte pour moitié** (la ligne « +1 Découverte » n'est pas un % : inchangée). Un fragment se pose **comme une rune** (mêmes règles : une par pièce, qualité ≤ celle de la pièce, pièce identifiée) ; **un fragment posé ne se retire plus**. **Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne** *(décision du créateur, 22/10/2026)* : une pièce R6 peut recevoir une rune R1 à R6 (par exemple un casque R6 avec une rune R3), pas une R7. **Une pièce non identifiée** n'a pas de qualité : elle doit **d'abord être identifiée** *(confirmé par le créateur le 22/10/2026 ; avant : une pièce non identifiée pouvait être enchantée)*. Identification et rune s'additionnent pour les anciennes pièces qui ont des lignes. Chaque ligne de rune vaut un **% de la valeur du tier de la pièce enchantée** (T1 100 x, T2 250 x, T3 500 x, voir Identification ; 25/10/2026, avant : de la valeur de la pièce) ; le niveau (+1 à +9) s'applique aussi. L'écran montre ce que la rune donnera sur la pièce choisie avant de valider.
 - **Trésors des tours** (depuis le 22/10/2026, avant : *Coffres*) : *Trésor angélique* et *Trésor démoniaque* de qualité R1 à R7. **Non empilables** (une case par trésor), **rareté Unique** (contour orange foncé) quelle que soit la qualité ; le nom affiché donne la qualité, dans sa couleur : « Antique Trésor démoniaque » (R5). Qualité tirée par le serveur avec les chances de l'identification. Ouverts depuis l'Inventaire, ils donnent **une Rune de la même qualité** ; ses lignes (stat et %) sont tirées à l'ouverture comme une identification de cette qualité (Découverte possible en R6-R7). Rune ange = rune démon.
@@ -772,7 +823,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   - un autre tirage, **un parchemin de sort au plus** *(27/10/2026, Geoffrey)* : **Ulti shen 1 %**, **Fast learner 0,5 %**, **Cleave 1 %**, **Hand of Justice 1 %** (3,5 % d'en avoir un) ; **un sort déjà appris ne peut pas sortir** (ce tirage ne donne alors rien) ; un parchemin gardé dans l'inventaire sans l'avoir appris peut ressortir ;
   - un autre : les 3 gemmes inférieures, **1 % chacune**.
   - **La qualité du coffre s'applique aux pièces de stuff** qui en sortent : la couronne, la masse ou la cape arrivent **déjà identifiées** à la qualité du coffre (R6 → pièce R6). Le plan et la recette n'ont pas de qualité.
-- **Les objets** (pas craftables ; déjà identifiés à la qualité du coffre ; pour les runes : **tier 3 (500 x depuis le 27/10)** pour la masse et la cape, **tier 4 (600 x)** pour la couronne *(27/10/2026, Geoffrey)*) :
+- **Les objets** (pas craftables ; déjà identifiés à la qualité du coffre ; pour les runes : **tier 3 (500 x depuis le 27/10)** pour la masse et la cape, **tier 4 (650 x depuis le 27/10 ; avant 600 x)** pour la couronne *(27/10/2026, Geoffrey)*) :
 
   | Objet | Case | Rareté | Effet |
   |---|---|---|---|

@@ -41,6 +41,22 @@ Modèle d'entrée :
 - **À suivre** : rien d'obligatoire ; idées possibles : bouton « Ajouter » sur une ligne, classement du Bloc géant.
 - **État** : ✅ en ligne le 27/10
 
+## 27/10/2026 — Geoffrey — Tier 4 : Treasure T4, mithril, thorium, cobalt
+- **Pour le joueur** : un **Treasure T4** se cache dans les areas 7 et 8. Il donne toujours du mithril, du cobalt, du
+  thorium et des BP parts, et parfois un plan : armures en **mithril**, **thorium** ou **cobalt**, **Lunettes Gucci**,
+  **Doc Martins**, **Ceinture golémique**, **Gants de boucher**, **Jambières titanesques** (épique), ou les plans de la
+  **Clé d'instance I** et des gemmes (seulement si on ne les a pas encore appris). Nouvelles gemmes : **Topaze, Saphir,
+  Rubis, Jade**. Au four : Mithril ingot, Refined cobalt, Refined thorium, puis les alliages Cobalt ingot et Thorium
+  ingot. Le minotaure donne aussi **1 à 3 Cuir de minotaure**. Les armures en thorium et en cobalt se fabriquent à partir
+  de la pièce en mithril : c'est toujours l'exemplaire le plus simple de l'inventaire qui est utilisé.
+- **Décisions** : T4 = 650 x (la Couronne du Roi Gobelin passe de 600 à 650 x), T4.5 = 750 x ; seulement les 4
+  armures (pas d'épée, lance ni pioche : pas de recette) ; Lunettes Gucci dans la case casque ; BP mithril 1 %, thorium et
+  cobalt 0,5 %. Choix de Claude, à valider : durées du four (1 min), alliages à 50 charbons et 3 min, les 4 BP du 2e jet
+  tirés chacun à part, « vitesse % » des jambes en cobalt = vitesse de minage %.
+- **À suivre** : le **Rotten flesh** n'a pas de source (mob à concevoir) : pas de Gants de boucher pour l'instant. Pas de
+  tier 4 à la Table de recherche. Les pièces spéciales n'ont pas d'apparence sur le mineur (icônes seulement).
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Onglet Stuff : « Gobelins asservis » cachée
 - **Pour le joueur** : la ligne « Gobelins asservis (rayon) » n'apparaît plus dans les stats de l'onglet Stuff. La
   Couronne du Roi Gobelin fait toujours le même effet, et sa bulle le montre encore.

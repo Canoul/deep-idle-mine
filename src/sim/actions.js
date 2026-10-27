@@ -155,7 +155,10 @@ export function killMob(G,m,o){
        compris) ; chaque joueur en recevra la quantité entière */
     const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     collect(m,L.item,ITEMS[L.item].w ?? 1,n);
-    log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item})`);
+    /* Cuir de minotaure (27/10/2026) : 1 à 3 en plus, même partage (SHARE.copyToAll) */
+    const C=DUNGEON.leather, c=C ? lootOf(G,m,C.min+Math.floor(G.rng()*(C.max-C.min+1))) : 0;
+    if(c) collect(m,C.item,ITEMS[C.item].w ?? 1,c);
+    log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item}${c ? `, +${c} ${C.item}` : ''})`);
   } else if(o.type===DUCK.type){
     /* Gallianix : un Fragment de cœur une fois sur 4 (hasard du canard, pas de Pillage), rapporté au coffre commun */
     const r=(G.duckRng ??= mulberry32(G.seed ^ DUCK.salt)), h=DUCK.heart;

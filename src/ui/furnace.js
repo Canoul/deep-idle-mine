@@ -5,7 +5,7 @@
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
-import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyOf, alloysWith, INPUTS } from '../meta/furnace.js';
+import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyOf, alloysWith, INPUTS, oreFor } from '../meta/furnace.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -19,7 +19,7 @@ const FURN_SLOTS = ['ore', 'a', 'b', 'fuel', 'out'];   // toutes les cases d'un 
 const x = (item, n) => `${icon(item)}${rname(item, `${item} ×${num(n)}`)}`;
 /* recettes d'un mode, pour la fenêtre « ? » : [{ out, parts:[[objet, quantité]…], time }] */
 const recipesOf = mode => mode === 'smelt'
-  ? Object.entries(FURNACE.recipes).map(([ore, r]) => ({ out:r.out, parts:[[ore, FURNACE.orePerIngot], ['Charbon', FURNACE.fuelPerIngot]], time:r.time }))
+  ? Object.entries(FURNACE.recipes).map(([ore, r]) => ({ out:r.out, parts:[[ore, oreFor(r)], ['Charbon', FURNACE.fuelPerIngot]], time:r.time }))
   : FURNACE.alloys.map(r => ({ out:r.out, parts:[...Object.entries(r.in), ['Charbon', r.fuel]], time:r.time }));
 
 /* onOp({ action, furnace, slot, item, qty }) → promesse (rejetée avec un message lisible) */
@@ -44,7 +44,7 @@ export function setupFurnace({ onOp }){
     }
     if(modeOf(f) === 'alloy') return alloyStatus(f, r);
     if(!f.ore) return 'Pose des minerais pour commencer.';
-    if(f.ore.qty < FURNACE.orePerIngot) return `Il faut ${FURNACE.orePerIngot} ${esc(f.ore.item)} pour ${r?.qty > 1 ? `${r.qty} ${esc(r.out)}` : 'un lingot'}.`;
+    if(f.ore.qty < oreFor(recipeOf(f.ore.item))) return `Il faut ${oreFor(recipeOf(f.ore.item))} ${esc(f.ore.item)} pour ${r?.qty > 1 ? `${r.qty} ${esc(r.out)}` : 'un lingot'}.`;
     if(!f.fuel || f.fuel.qty < FURNACE.fuelPerIngot) return `Il faut ${FURNACE.fuelPerIngot} combustibles pour un lingot.`;
     if(f.out && f.out.item !== r.out) return 'Sortie occupée : récupère les lingots pour continuer.';
     return 'À l\'arrêt.';
@@ -120,7 +120,7 @@ export function setupFurnace({ onOp }){
     let pick = cur?.item ?? items[0] ?? null;
     const box = $('fpick').querySelector('.box');
     const info = it => {
-      if(slot === 'ore'){ const r = recipeOf(it); return `${FURNACE.orePerIngot} → ${r.qty ?? 1} ${esc(r.out)} · ${mmss(r.time * 1000)}`; }
+      if(slot === 'ore'){ const r = recipeOf(it); return `${oreFor(r)} → ${r.qty ?? 1} ${esc(r.out)} · ${mmss(r.time * 1000)}`; }
       if(slot === 'fuel') return 'combustible';
       return alloysWith(it).map(r => `${r.in[it]} → 1 ${esc(r.out)}`).join(' · ');
     };

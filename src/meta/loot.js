@@ -81,7 +81,8 @@ function openOne(inv, item, rng, ctx = {}){
       Object.assign(loot, ring);
     }
   } else {
-    loot = rollLoot(LOOT[item], rng);
+    /* learnOnce (Treasure T4, 27/10) : un BP dont la recette est déjà apprise ne sort pas */
+    loot = rollLoot(LOOT[item], rng, i => i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv));
     addAll(inv, loot);
   }
   return loot;

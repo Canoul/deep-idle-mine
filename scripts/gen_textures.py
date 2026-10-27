@@ -119,7 +119,8 @@ def main():
 
     # icônes d'inventaire des objets Treasure TX : même coffre, ferrures à la couleur du tier
     # (T1 argent, T2 or) et marques de tier (1 ou 2 barres) en bas à droite
-    for tier, trim, lock in [(1, '#c0c6cf', '#e8ecf1'), (2, '#d4a017', '#ffd23f'), (3, '#4de8f0', '#c8fbff')]:   # T3 : diamant
+    for tier, trim, lock in [(1, '#c0c6cf', '#e8ecf1'), (2, '#d4a017', '#ffd23f'), (3, '#4de8f0', '#c8fbff'),   # T3 : diamant
+                             (4, '#9fe3e0', '#e6fffd')]:                                                      # T4 : mithril (27/10)
         icon = blank()
         rect(icon, 1, 4, 14, 10, hexc('#8a5a2b'))
         rect(icon, 1, 4, 14, 3, hexc('#5c3a1a'))
@@ -190,6 +191,33 @@ def main():
         rect(g, 7, 12, 2, 1, shade(c, 0.55))
         rect(g, 5, 5, 2, 1, hexc('#ffffff'))
         tex[name] = g
+    # gemmes (Treasure T4, 27/10) : plus grandes, deux facettes claires, liseré sombre
+    for name, base in [('gem_ruby_fine', '#e0203f'), ('gem_jade_fine', '#2fc277'), ('gem_sapphire_fine', '#2f63f0'), ('gem_topaz', '#f0a020')]:
+        g = blank()
+        c = hexc(base)
+        rect(g, 5, 1, 6, 1, shade(c, 1.35))
+        rect(g, 3, 2, 10, 3, shade(c, 1.15))
+        rect(g, 2, 5, 12, 3, c)
+        rect(g, 3, 8, 10, 2, shade(c, 0.85))
+        rect(g, 4, 10, 8, 2, shade(c, 0.7))
+        rect(g, 6, 12, 4, 2, shade(c, 0.55))
+        rect(g, 7, 14, 2, 1, shade(c, 0.4))
+        rect(g, 4, 3, 3, 1, hexc('#ffffff')); rect(g, 9, 5, 2, 1, shade(c, 1.5))
+        tex[name] = g
+    # cuir de minotaure (peau brune pliée, coutures claires) et rotten flesh (chair verdâtre, taches sombres)
+    lea = blank()
+    rect(lea, 2, 4, 12, 9, hexc('#7a4a26'))
+    rect(lea, 2, 4, 12, 1, hexc('#a86a3c')); rect(lea, 2, 12, 12, 1, hexc('#4a2a14'))
+    for x in range(3, 13, 2):
+        rect(lea, x, 6, 1, 1, hexc('#e8d2a8'))
+    rect(lea, 3, 9, 10, 1, hexc('#5e3819'))
+    tex['minotaur_leather'] = lea
+    fl = blank()
+    rect(fl, 3, 5, 10, 7, hexc('#8a9a55'))
+    rect(fl, 4, 4, 8, 1, hexc('#a9b86d')); rect(fl, 4, 12, 8, 1, hexc('#5a6634'))
+    for x, y in [(5, 7), (9, 6), (7, 9), (11, 10)]:
+        rect(fl, x, y, 2, 1, hexc('#5e3a3a'))
+    tex['rotten_flesh'] = fl
 
     tex['coal'] = ore(3, '#7d828c', '#1b1b1f')
     tex['iron'] = ore(4, '#7d828c', '#d9a67f')
@@ -552,7 +580,12 @@ def main():
                                     ('ingot_tainted_gold', '#b9924a', '#e6c98a', '#6e5226'),   # alliage or + chitine
                                     ('ingot_graphite', '#4a505a', '#8a93a0', '#2a2e35'),       # graphite fondu
                                     ('ingot_steel', '#7f8fa3', '#d6e2ef', '#3f4a58'),          # alliage tainted iron + graphite
-                                    ('ingot_silver', '#dfe6ef', '#ffffff', '#8c98a8')]:        # barre d'argent (pépites, 27/10)
+                                    ('ingot_silver', '#dfe6ef', '#ffffff', '#8c98a8'),         # barre d'argent (pépites, 27/10)
+                                    ('ingot_mithril', '#9fe3e0', '#e6fffd', '#4f9c99'),        # mithril (27/10)
+                                    ('refined_cobalt', '#5577c9', '#9bb3ec', '#2c3f78'),       # cobalt raffiné
+                                    ('refined_thorium', '#6f9a5a', '#a9cf93', '#3b5530'),      # thorium raffiné
+                                    ('ingot_cobalt', '#2a4fb5', '#7a9bf0', '#142a66'),         # alliage mithril + cobalt
+                                    ('ingot_thorium', '#3f7a33', '#86c46f', '#1f3f19')]:       # alliage mithril + thorium
         ing = blank()
         for i, yy in enumerate(range(6, 12)):
             rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))
@@ -645,7 +678,10 @@ def main():
     # pièces d'armure (stuff), mêmes formes par matériau : chitine = plaques rouge sombre de carapace, fer = gris acier
     for mat, base, hi, lo in [('chitin', '#a8343a', '#d65a5a', '#5e1a1e'),
                               ('iron', '#9aa1ab', '#d9dde3', '#5a6069'),
-                              ('steel', '#5f6f84', '#a9bbd0', '#2f3a48')]:          # acier : gris bleuté sombre
+                              ('steel', '#5f6f84', '#a9bbd0', '#2f3a48'),           # acier : gris bleuté sombre
+                              ('mithril', '#8fd6d2', '#e0fffc', '#4a8f8b'),         # 27/10 : mithril clair
+                              ('thorium', '#4f8a43', '#93cf7c', '#26461f'),         # thorium vert
+                              ('cobalt', '#2f55c0', '#86a5f2', '#172d70')]:         # cobalt bleu
         chit, chit_hi, chit_lo = hexc(base), hexc(hi), hexc(lo)
         helmet = blank()
         rect(helmet, 3, 3, 10, 7, chit)
@@ -786,6 +822,38 @@ def main():
     tex['gloves_tactical'] = glove('#3b3f46', '#6a707a', '#22252a', '#e63946')
     # gants d'ouvrier (stuff) : cuir brun, manchette dorée
     tex['gloves_worker'] = glove('#a9773a', '#d7a45a', '#6b4a22', '#ffd23f')
+    # gants de boucher (Treasure T4, 27/10) : cuir rouge sang, manchette d'acier
+    tex['gloves_butcher'] = glove('#8e1b1b', '#c43a3a', '#4f0d0d', '#9aa1ab')
+
+    # Treasure T4 (27/10) : lunettes Gucci (monture dorée, verres sombres), Doc Martins (bottes noires, semelle jaune),
+    # ceinture golémique (pierre grise et boucle de pierre glissante), jambières titanesques (or et pierres des 4 gemmes)
+    gl = blank()
+    rect(gl, 1, 6, 14, 1, hexc('#d4a017'))                 # branche / pont
+    for x0 in (2, 9):
+        rect(gl, x0, 6, 5, 4, hexc('#d4a017'))
+        rect(gl, x0 + 1, 7, 3, 2, hexc('#1b1b1f'))
+        rect(gl, x0 + 1, 7, 1, 1, hexc('#6a707a'))
+    tex['glasses_gucci'] = gl
+    docs = blank()
+    for x0 in (2, 9):
+        rect(docs, x0, 4, 4, 7, hexc('#1b1b1f'))
+        rect(docs, x0, 11, 6 if x0 == 2 else 5, 2, hexc('#1b1b1f'))
+        rect(docs, x0, 13, 6 if x0 == 2 else 5, 1, hexc('#e8c547'))   # semelle jaune
+        rect(docs, x0 + 1, 5, 2, 1, hexc('#e8c547'))                  # lacets
+        rect(docs, x0 + 1, 7, 2, 1, hexc('#e8c547'))
+    tex['boots_docs'] = docs
+    gb = blank()
+    rect(gb, 1, 6, 14, 4, hexc('#7d828c'))
+    rect(gb, 1, 6, 14, 1, hexc('#b4bac4')); rect(gb, 1, 9, 14, 1, hexc('#4a4e55'))
+    rect(gb, 6, 5, 4, 6, hexc('#4fb3c9')); rect(gb, 7, 6, 2, 4, hexc('#a8e6f2'))
+    tex['belt_golem'] = gb
+    tt = blank()
+    rect(tt, 4, 2, 8, 3, hexc('#d4a017'))
+    rect(tt, 4, 5, 3, 9, hexc('#d4a017')); rect(tt, 9, 5, 3, 9, hexc('#d4a017'))
+    rect(tt, 4, 4, 8, 1, hexc('#8a6a10'))
+    for (x, y, c) in [(5, 3, '#e0b23a'), (10, 3, '#3a7bd5'), (5, 9, '#d8243f'), (10, 9, '#32b56e')]:
+        rect(tt, x, y, 1, 1, hexc(c))
+    tex['legs_titan'] = tt
 
     # cape de Naingui (stuff) : tissu sombre qui s'évase, fermoir doré
     cape = blank()
@@ -1045,7 +1113,8 @@ def main():
 
     # calques d'armure par matériau : chitine = rouge, fer = gris acier
     for mat, r0, r1, r2 in [('chitin', '#b3261e', '#e0503f', '#6e1410'), ('iron', '#9aa1ab', '#d9dde3', '#5a6069'),
-                            ('steel', '#5f6f84', '#a9bbd0', '#2f3a48')]:
+                            ('steel', '#5f6f84', '#a9bbd0', '#2f3a48'), ('mithril', '#8fd6d2', '#e0fffc', '#4a8f8b'),
+                            ('thorium', '#4f8a43', '#93cf7c', '#26461f'), ('cobalt', '#2f55c0', '#86a5f2', '#172d70')]:
         red, red_hi, red_lo = hexc(r0), hexc(r1), hexc(r2)
         sk_helmet = blank()
         rect(sk_helmet, 4, 1, 8, 3, red)
