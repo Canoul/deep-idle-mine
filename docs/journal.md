@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
+- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
+  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
+  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
+- **État** : ✅ en ligne le 27/10
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -28,7 +34,12 @@ Modèle d'entrée :
   victoires en tour du dernier mois (encore gardées par le serveur) sont reprises ; les plus anciennes sont perdues.
   Les parties du mode dev ne comptent pas.
 - **À suivre** : rien d'obligatoire ; idées possibles : bouton « Ajouter » sur une ligne, classement du Bloc géant.
-- **État** : 🧪 sur la branche `geoffrey/leaderboard` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
+
+## 27/10/2026 — Geoffrey — Onglet Stuff : « Gobelins asservis » cachée
+- **Pour le joueur** : la ligne « Gobelins asservis (rayon) » n'apparaît plus dans les stats de l'onglet Stuff. La
+  Couronne du Roi Gobelin fait toujours le même effet, et sa bulle le montre encore.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Nouveaux minerais : mithril, cobalt, thorium (areas 7 et 8)
 - **Pour le joueur** : trois nouveaux minerais tout en bas de la mine. Le **mithril** (rareté commun) apparaît dès
