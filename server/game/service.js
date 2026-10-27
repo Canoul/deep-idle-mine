@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, treasureItem } from '../../src/config.js';
+import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, treasureItem, goblinChestItem } from '../../src/config.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
@@ -289,9 +289,19 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random))]: 1, ...parts[i] } : {};
         }
       }
-      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
+      /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
+         I : Coffre du Roi Gobelin), qualité tirée par le serveur comme un trésor de tour ; échec (temps écoulé, ou tout le
+         groupe parti) → la clé consommée au lancement est rendue à TOUS les joueurs de la session (partis compris) */
+      const inst = isInstanceMode(rec.mode) ? instanceDef(rec.mode) : null;
+      const refund = !!inst && !summary.success;
+      if(inst) for(const share of summary.shares || []){
+        const here = share.account && !share.left && !hasLeft(rec, share.account);
+        share.bag = refund ? (share.account && inst.key ? { [inst.key]: 1 } : {})
+          : here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random))]: 1 } : {};
+      }
+      /* versement : seulement aux joueurs de la session encore présents (clé rendue : à tous), une seule fois par session */
       for(const share of summary.shares || []){
-        if(!share.account || share.left || !inSession(rec, share.account) || hasLeft(rec, share.account)) continue;
+        if(!share.account || !inSession(rec, share.account) || (!refund && (share.left || hasLeft(rec, share.account)))) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
           if(!creditSession(inv, rec.id, share.bag)) return;

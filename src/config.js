@@ -1234,7 +1234,7 @@ export const MINE_MODES = [
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
 export const INSTANCE = {
   list: [
-    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', ready:true },
+    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', ready:true, chest:'goblin' },   // chest : roi vaincu → un Coffre du Roi Gobelin par joueur (27/10)
     { id:'instance_2', label:'Instance II',  ready:false },
     { id:'instance_3', label:'Instance III', ready:false },
   ],

@@ -78,7 +78,7 @@ test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable
   assert.ok(locked.find(x => x.id === 'mine').disabled, 'lecture seule pendant la session');
   assert.equal(locked.find(x => x.id === 'mi').disabled, false, 'mais la mine instantanée reste choisissable (inscription en session, 22/10)');
   assert.equal(locked.find(x => x.id === 'giant').disabled, false, 'Bloc géant : on regarde sa carte en session (Entrer y est grisé, 26/10)');
-  assert.ok(locked.find(x => x.id === 'instance_1').disabled, 'instances : pas pendant une session');
+  assert.equal(locked.find(x => x.id === 'instance_1').disabled, false, 'instances : on regarde la carte en session (27/10 ; Lancer reste grisé)');
 });
 
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {

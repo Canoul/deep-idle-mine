@@ -45,8 +45,11 @@ Modèle d'entrée :
 - **Décisions** : le **boss n'existe pas encore** ; en attendant, le coffre n'est donné que par l'équipe. Asservis : à
   10 cases du porteur, quand ils apparaissent. Choix de Claude, à valider : objets au tier 3 pour les runes ; les asservis
   n'ont ni fortune ni shiny ; Lampe à incandescence passée au tier 2 des runes (un test l'exigeait).
-- **À suivre** : le boss Roi Gobelin (où, PV, attaques, quand il lâche les coffres).
-- **État** : 🧪 sur la branche `geoffrey/roi-gobelin-objets` (pas en ligne)
+- **Lien avec l'Instance I** (15 h) : **roi vaincu → un Coffre du Roi Gobelin par joueur encore présent** ; **si le
+  groupe perd, la clé est rendue à tous** ; le bouton « 🗝 Instances » reste cliquable pendant une session (on regarde
+  la carte ; choix de Claude, la demande « rend disponible le bouton » ne disait pas lequel).
+- **À suivre** : rien.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Instances : l'Instance I, le roi gobelin
 - **Pour le joueur** : nouveau choix « 🗝 Instances » dans « Où miner ». L'Instance I se joue en groupe de 1 à 3, avec

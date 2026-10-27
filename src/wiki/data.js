@@ -119,7 +119,7 @@ export function sourcesOf(item){
   const res = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area pour les deux résidus ensemble, à la place de la pierre)`);
   const chest = ITEMS[item]?.chest;
-  if(chest?.side === 'goblin') out.push(`Roi Gobelin (boss à venir) : un coffre pour chaque joueur quand il tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance). Pour l'instant : seulement donné par l'équipe`);
+  if(chest?.side === 'goblin') out.push(`Instance I : un coffre pour chaque joueur encore là quand le roi gobelin tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   else if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   /* coffre du Roi Gobelin (GOBLIN_KING, 27/10) */
   { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);

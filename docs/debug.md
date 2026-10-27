@@ -3609,7 +3609,7 @@ Règles (voir CLAUDE.md) :
   pour tout le groupe ; les spawners sans limite de gobelins font basculer la partie d'un coup si le groupe est trop
   faible ; pas de récompense (summary.loot vide, bag vide).
 
-### Roi Gobelin : coffre, objets, gobelins asservis, Four en or, recette Chitine (Geoffrey) — branche `geoffrey/roi-gobelin-objets`, 🧪
+### Roi Gobelin : coffre, objets, gobelins asservis, Four en or, recette Chitine (Geoffrey) — branche `geoffrey/roi-gobelin-objets`, ✅ en ligne le 27/10
 - **Quoi** : `GOBLIN_KING` (config) : table du coffre, `thrall { radius:10, life:30, reach:6 }`. Objets `ITEMS` :
   « Coffre du Roi Gobelin R1-R7 » (`chest:{ side:'goblin', q }`, `treasure:true`, Unique), « Four en or BP », « Recette :
   Chitine » (cat blueprint) ; `STUFF.items` : Couronne (`set.goblinThrall = 10`, fortune 10), Masse, Cape royale (tier 3
@@ -3654,3 +3654,12 @@ Règles (voir CLAUDE.md) :
   Tests : goblin-king +1 (seuils, sort appris, fréquence 3,5 %), anticheat +1 (serveur : 400 coffres, tous les sorts
   appris → aucun parchemin) ✅. Merge de `main` (Instances) : journaux, wiki, état gardés des deux côtés ; `rarity.test.js`
   ne connaissait pas la Clé d'instance I (inhabituel) et échouait sur `main` → ajoutée.
+- **Lien Instance I (15 h)** : `INSTANCE.list[0].chest = 'goblin'`. `settleWith` (`server/game/service.js`) : instance
+  réussie → `share.bag = { goblinChestItem(rollChestQuality(random)) : 1 }` pour chaque joueur encore présent (le butin de
+  la partie est ignoré) ; échec → `share.bag = { clé : 1 }` pour TOUS les joueurs de la session, partis compris (le
+  versement ne saute plus les partis quand `refund`) ; `creditSession` garde l'idempotence. Bilan (`showInstanceEnd`) :
+  « 🎁 Tu reçois : … » / « Ta clé t'est rendue ». Lobby : bouton Instances jamais grisé (Lancer l'est en session) ; carte :
+  « rendue si le groupe perd », « Roi vaincu : un Coffre… ». Confirmation de départ mise à jour.
+  Tests : instance-server +2 (victoire : coffre R1-R7 au présent, rien au parti, clés consommées ; échec : clé rendue à
+  tous, fin rejouée sans double) et 2 attentes changées (clé rendue à l'échec), lobby (bouton en session) ✅ ; instance-*,
+  goblin-*, wiki, rarity, game-service ✅ 111 ; anticheat ✅ 102. État : ✅ en ligne le 27/10.
