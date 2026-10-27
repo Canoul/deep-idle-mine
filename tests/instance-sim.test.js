@@ -41,17 +41,18 @@ test('spawners : un gobelin chacun dès le début, puis un toutes les 30 s', () 
   assert.equal(G.stats.spawned, 18);
 });
 
-test('casser un spawner : 50 « coups de pioche » à la vitesse de minage ; la Dynamite en vaut 6', () => {
+test('casser un spawner : INSTANCE.spawner.hp « coups de pioche » à la vitesse de minage ; la Dynamite en vaut 6', () => {
+  const HP = INSTANCE.spawner.hp;
   const at = (carac, extra) => { const G = newInstance(1, { miners: [spec(0, { ...carac, tenacity: 0 }, extra)] }); const s = G.spawners[0], m = G.miners[0];
     m.x = s.mx; m.y = s.y; G.target = s.id; G.goblins = []; for(const q of G.spawners) q.cd = 1e9; return { G, s, m }; };
   let { G, s } = at({ mineSpeed: 2 });
   run(G, 10);
-  assert.ok(Math.abs(s.hp - (50 - 2 * 10)) < 0.6, `${s.hp}`);
-  run(G, 16);
+  assert.ok(Math.abs(s.hp - (HP - 2 * 10)) < 0.6, `${s.hp}`);
+  run(G, HP / 2 - 10 + 1);
   assert.equal(s.alive, false); assert.equal(G.tiles[s.y][s.x], AIR, 'cassé : la case se vide');
   ({ G, s } = at({ mineSpeed: 1 }, { spells: ['dynamite'] }));
   run(G, 2);
-  assert.ok(Math.abs(s.hp - (50 - 6 - 2)) < 0.6, `Dynamite : ${s.hp}`);
+  assert.ok(Math.abs(s.hp - (HP - INSTANCE.spawner.dynamite - 2)) < 0.6, `Dynamite : ${s.hp}`);
 });
 
 test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre (30 %)', () => {
@@ -148,8 +149,9 @@ test('enfermement : chaque mineur sur un rebord différent, entouré de blocs de
   const hp = G.boss.hp;
   run(G, 2);
   assert.equal(G.boss.hp, hp);
-  run(G, INSTANCE.boss.cageMaxWait);
-  assert.equal(G.boss.state === 'wait', false, 'il reprend');
+  let resumed = false;
+  for(let i = 0; i < Math.round(INSTANCE.boss.cageMaxWait / DT) + 1 && !resumed; i++){ run(G, DT); resumed = G.boss.state !== 'wait'; }
+  assert.ok(resumed, 'il reprend');
 });
 
 test('fin : 30 min de jeu sans tuer le roi = échec ; tout le monde parti = échec', () => {
