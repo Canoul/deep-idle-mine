@@ -165,7 +165,7 @@ function stepGoblins(G){
       if(o.hit <= 1e-9){
         o.hit += GB.hitEvery; o.hits = (o.hits || 0) + 1;
         if(canTackle(o, p) && o.grab !== p.id){ o.grab = p.id; o.grabHit = G.t; p.stats.tackled++; }
-        if(G.fightRng() < GB.knockChance){ pushMiner(G, p, GB.knock); G.stats.gobKnocks = (G.stats.gobKnocks || 0) + 1; }
+        if(G.fightRng() < GB.knockChance && pushMiner(G, p, GB.knock)) G.stats.gobKnocks = (G.stats.gobKnocks || 0) + 1;   // compté s'il a lieu (pas en plein pas)
         G.stats.gobHits = (G.stats.gobHits || 0) + 1;
       }
       continue;

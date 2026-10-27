@@ -1256,7 +1256,7 @@ export const INSTANCE = {
   platform: { w: 4, height: 21 },
   spawner: { hp: 125, every: 30, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
-            knock: 0.5, knockChance: 0.30, step: 0.9 },
+            knock: 0.5, knockChance: 1, step: 0.9 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,

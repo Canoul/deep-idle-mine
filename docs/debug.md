@@ -3716,3 +3716,15 @@ Règles (voir CLAUDE.md) :
   carte), `furnace` (25 pépites → 2 barres, recette ouverte de base) ; wiki, rarity, shiny, treasure : 141/141 ;
   `npm run test:anticheat` 102/102.
 - **À vérifier** : pas testé dans le navigateur (carte du Bloc géant, icônes). La barre n'a aucun usage.
+
+### Instance : vitesses dev, recul des gobelins à chaque coup (Geoffrey) — branche `geoffrey/instance-dev`, 🧪
+- **Vitesses** : la barre `#inRun` n'avait ni `.speedBtns` ni `.pauseBtn` (le serveur gérait déjà `rec.clock` pour tous
+  les modes, `renderSpeeds` et `setupRunControls` prennent toutes les barres) : ajoutés dans `index.html` (+ `.perfBox`).
+  `tests/controls.test.js` vérifie la tour et l'instance ✅.
+- **Recul** : `INSTANCE.goblin.knockChance` 0,30 → 1 (0,5 case vers le centre). Avant : 130 reculs sur 464 coups
+  (5 instances), et 0,5 case depuis le centre d'une case ne change pas de case : presque invisible. `G.stats.gobKnocks`
+  ne compte plus que les reculs appliqués (`pushMiner` ne pousse pas en plein pas). `tests/instance-sim.test.js` : taux de
+  recul > 95 % ; le test des échelles des gobelins donne knockRes 100 à son mineur (sinon poussé du rebord) ✅ 25/25.
+- **Difficulté** (`node scripts/simulate-instance.js --count 10 --size 3`, sans skills) : main : fer 0/10, fer + acier
+  7/10 → 0/10, acier 10/10 → 3/10 ⚠️. Avec `geoffrey/acier-500` : fer + acier et acier 10/10 avec ou sans (9:16 → 9:21,
+  8:57 → 9:07). À mettre en ligne ensemble.
