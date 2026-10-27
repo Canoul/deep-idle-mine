@@ -18,6 +18,17 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration
+- **Pour le joueur** : un **anneau** s'améliore de +1 à +9 en sacrifiant un **doublon du même anneau** (pas de plumes ni
+  de cristaux), avec les mêmes chances de réussite que les autres pièces. Chaque niveau ajoute **+0,5** à chacun de ses
+  effets : +3 % → **+7,5 % au +9**. Si deux joueurs du groupe portent le même anneau, le plus haut niveau compte. La
+  **boussole** et la **torche** (Lampe à incandescence) ne s'identifient, ne s'améliorent et ne s'enchantent plus.
+- **Décisions** : +0,5 point par niveau (provisoire) ; le plus haut niveau compte ; boussoles et torches déjà
+  identifiées, améliorées ou enchantées **remises à zéro**, sans remboursement (rune comprise) ; le doublon de plus bas
+  niveau est sacrifié, même en cas d'échec (choix de Claude).
+- **À suivre** : un anneau tombe à 1 % par trésor ; un +9 demande ≈ 11 doublons à cause des échecs.
+- **État** : ✅ en ligne le 27/10
+
 ## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
 - **Pour le joueur** : rien, c'est un outil de test. Trois presets, un par spé : **Test_Mineur**, **Test_Logisticien**,
   **Test_Barbare**. Chacun : stuff complet en acier porté, arbre de sa spé rempli avec **tous les glyphes de sa spé posés**,

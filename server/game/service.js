@@ -27,7 +27,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys } from '../../src/shared/instances.js';
-import { rollChestQuality, isStuff, isRing, qualityDef } from '../../src/meta/piece.js';
+import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
@@ -91,7 +91,8 @@ const UPGRADE_ERRORS = { not_owned: 'Cette pièce n\'est pas dans ton inventaire
                          not_identified: 'Identifie d\'abord cette pièce : sa qualité décide des runes qu\'elle accepte.',
                          rune_too_rare: 'Cette rune est de qualité trop élevée pour cette pièce (au plus la même qualité).',
                          no_rune: 'Cette pièce ne porte pas de rune.', fragment_locked: 'Un fragment de rune posé ne se retire plus.',
-                         ring: 'Un anneau ne s\'identifie, ne s\'améliore et ne s\'enchante pas.' };
+                         ring: 'Un anneau ne s\'identifie et ne s\'enchante pas (il s\'améliore avec un doublon).',
+                         plain: 'Une boussole ou une torche ne s\'identifie, ne s\'améliore et ne s\'enchante pas.' };
 const FURNACE_ERRORS = {
   bad_furnace: 'Ce four n\'existe pas.', bad_slot: 'Case inconnue.', bad_qty: 'Quantité invalide.',
   bad_item: 'Cet objet ne va pas dans cette case.', not_enough: 'Tu n\'en as pas assez.',
@@ -643,7 +644,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!Number.isSafeInteger(qty) || qty < 1 || qty > ADMIN_MAX_QTY) fail('bad_request', 400, `Quantité : un entier de 1 à ${ADMIN_MAX_QTY}.`);
       if(quality !== undefined){
         if(!Number.isSafeInteger(quality) || !qualityDef(quality)) fail('bad_request', 400, 'Qualité : un entier de 1 à 7.');
-        if(!isStuff(item) || isRing(item)) fail('bad_item', 400, `« ${item} » n'a pas de qualité (seulement les pièces de stuff, hors anneaux).`);
+        if(!canIdentify(item)) fail('bad_item', 400, `« ${item} » n'a pas de qualité (seulement les pièces de stuff, hors anneaux, boussoles et torches).`);
       }
       return withLock('inv:' + accountId, async () => {
         const inv = await loadInventory(accountId);
@@ -898,7 +899,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                 : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random)
                 : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId })
                 : action === 'unenchant' ? unenchant(inv, { uid: body.uid, opId }) : { error: 'bad_request' };
-        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
+        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, (r.error === 'not_enough' && isRing(inv.slots.find(s => s?.uid === body.uid)?.item) ? 'Il te faut un doublon de cet anneau.' : null) ?? UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         /* identification très rare : annoncée sur Discord (pas une demande renvoyée) */
         if(action === 'identify' && !r.repeated) shout(identifyMessage(displayName(me), r.piece));
