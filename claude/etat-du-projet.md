@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (chef absent gardé).*
+*Dernière mise à jour : 27/10/2026 (4 nouveaux sorts).*
 
 ---
 
@@ -218,6 +218,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/ui/spells.js` onglet, GAME_DESIGN §3 « Sorts ») : onglet Sorts, 4 emplacements dont 2 ouverts (les 2 autres
   verrouillés, règle à décider). Dash (Barbare spé 5), Illumination (Mineur spé 5), Inspiration (Logisticien spé 5),
   Dynamite (Mineur spé 10), Ulti shen et Fast learner (parchemins à apprendre, **pas encore de source** : à décider).
+  **27/10 (Geoffrey)** : **Bonbonne de zipette** (Logisticien spé 10 : allié à 3 cases qui travaille, +20 % des pods du
+  logisticien en oxygène, 180 s), **Cri de guerre** (Barbare spé 10 : en combat, lui et les mineurs à 10 cases +10 % dégâts,
+  +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
+  50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
   session. Simulation : `--spells id,id`.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une

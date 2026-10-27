@@ -3540,3 +3540,17 @@ Règles (voir CLAUDE.md) :
   La simulation des tours du matin ne vaut plus (les pods n'ont plus bougé) : seuls casques / jambes / bottes changent
   un peu (fer : montée 3,3 → 3,25, marche 4,05 → 4,04).
 
+### Sorts : Bonbonne de zipette, Cri de guerre, Cleave, Hand of Justice (Geoffrey, 27/10) — 🔧 branche `geoffrey/sorts-zipette-cri-cleave-hoj`
+- Config `SPELLS.list` : `zipette`, `war_cry`, `cleave`, `hand_of_justice` (parchemins créés tout seuls dans ITEMS).
+- `src/sim/spells.js` (`updateSpells`) : `warCry`, `cleave`, `handOfJustice`, `zipette`. « En combat » = `fighting()` :
+  coup en cours (action attack, mob vivant) ou tacle, jamais pendant un étourdissement. `fair()` : un boss de donjon
+  seulement si c'est sa cible ou celui qui le tacle.
+- Cri de guerre : `m.warcry = { until, dmg, speed }` sur chaque mineur touché ; lu par `warcryOf` (src/sim/mineur.js)
+  dans `hitDamage` (actions.js, × (1+dmg)) et l'intervalle d'attaque (ai.js `fight`, × (1+speed)). Recharge = fin + cd.
+- Zipette : modes exclus `return`, `departure`, `surface`, `fetch` ; `o.ox < oxygenMax` ; gain `m.carac.pods × 0,2`
+  plafonné. Hand of Justice : `stunUntil`, `grab = null`, `channel = null` (même étourdissement que le Dash, mobs.js).
+- Pas de branchement dans le Bloc géant, les tours ni la MI (pas de sorts là-bas, ou seulement les leurs).
+- Wiki : glyphes, texte « ≈ x % par session » lu dans `GLYPHS.dropPerSession` (restait à 3 % depuis le passage à 1 %).
+- Tests : spells ✅ (25), wiki ✅ (11), combat, knock, mobs, session, giant-sim, mob-drops ✅. Simulation 5 sessions
+  `--skills mixed` avec / sans `--spells zipette,war_cry,cleave,hand_of_justice` : 0 blocage, coffre 4 499 / 4 510 pods.
+- À vérifier : effet réel de chaque sort sur le coffre et les combats (pas mesuré séparément).

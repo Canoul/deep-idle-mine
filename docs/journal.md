@@ -32,6 +32,26 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — 4 nouveaux sorts
+- **Pour le joueur** : dans l'onglet Sorts,
+  - **Bonbonne de zipette** (Logisticien niveau de spé 10) : le prochain allié à 3 cases ou moins qui travaille dans la
+    mine et à qui il manque de l'oxygène regagne 20 % des pods max du logisticien en oxygène ; recharge 180 s, comptée
+    une fois l'oxygène donné ;
+  - **Cri de guerre** (Barbare niveau de spé 10) : quand il entre en combat, lui et les mineurs à 10 cases ou moins font
+    +10 % de dégâts et attaquent 5 % plus vite pendant 30 s ; recharge 180 s après l'effet ;
+  - **Cleave** (parchemin) : en combat, 50 % de ses dégâts à tous les mobs à 2 cases ou moins, critique possible ; 10 s ;
+  - **Hand of Justice** (parchemin) : étourdit 3 s un mob qui se bat à 3 cases ou moins (d'abord celui qui tacle un
+    allié) ; 30 s.
+  Les parchemins de Cleave et Hand of Justice n'ont pas encore de source (outil d'admin pour tester). Wiki : les sorts et
+  parchemins s'affichent tout seuls depuis la config.
+- **Au passage** : le wiki affichait encore « ≈ 3 % par session » pour les glyphes (oubli de ce matin) : corrigé, le
+  texte suit maintenant la config.
+- **Décisions** (Geoffrey) ; choix de Claude à valider : zipette sur l'allié qui a le moins d'oxygène (en %) quand il y
+  en a plusieurs, et seulement s'il lui en manque ; Cleave ne touche pas un boss de donjon qu'il ne combat pas (mur de
+  la salle) ; Hand of Justice coupe aussi la canalisation de l'occultiste, comme le Dash ; un 2e Cri de guerre prolonge
+  l'effet sans le cumuler.
+- **État** : 🔧 branche `geoffrey/sorts-zipette-cri-cleave-hoj`, pas en ligne
+
 ## 27/10/2026 — Geoffrey — Groupe : le chef absent n'est plus retiré
 - **Pour le joueur** : un chef qui part (onglet fermé, PC en veille, téléphone verrouillé) **reste chef** de son groupe,
   même des heures, affiché « absent » ; à son retour il retrouve son groupe. Avant, il était retiré au bout de 5 min et

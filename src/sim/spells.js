@@ -5,7 +5,8 @@
    Trois moments :
    - afterDecide : l'IA vient de choisir une action ; un pas de marche peut devenir un Dash, un coup de pioche une
      Dynamite ;
-   - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen ;
+   - updateSpells : à chaque tick, Illumination, Inspiration, Ulti shen, Cri de guerre, Cleave, Hand of Justice,
+     Bonbonne de zipette ;
    - learnOnMine : un bloc miné (Fast learner). */
 import { W, IDS, DUCK, BLOCKS, CFG } from '../config.js';
 import { SPELL } from '../meta/spells.js';
@@ -190,6 +191,10 @@ export function updateSpells(G){
     if(spellReady(G,m,'illumination')) illuminate(G,m);
     if(spellReady(G,m,'inspiration') && !(G.t < (G.inspire?.until ?? 0))) inspire(G,m);
     if(spellReady(G,m,'ulti_shen')) ulti(G,m);
+    if(spellReady(G,m,'war_cry')) warCry(G,m);
+    if(spellReady(G,m,'cleave')) cleave(G,m);
+    if(spellReady(G,m,'hand_of_justice')) handOfJustice(G,m);
+    if(spellReady(G,m,'zipette')) zipette(G,m);
   }
 }
 
@@ -248,4 +253,74 @@ export function learnOnMine(G,m,t){
   m.learned[t] = Math.round(((m.learned[t] || 0)+SPELL.fast_learner.bonus)*1e6)/1e6;
   cast(G,m,'fast_learner');
   log(G, `📖 ${m.name} : Fast learner, ${BLOCKS[t].name} +${Math.round(m.learned[t]*100)} % de vitesse de minage`);
+}
+
+/* ---------- sorts du 27/10/2026 (Geoffrey) ---------- */
+
+const dist = (a,o) => Math.hypot(a.x-o.x, a.y-o.y);
+/* mob qu'il frappe en ce moment (coup en cours), ou null */
+const attacking = m => m.action?.type==='attack' && m.action.data.mob?.hp>0 ? m.action.data.mob : null;
+/* il se bat : il frappe un mob, ou un mob le tacle. Pas pendant un étourdissement (canalisation de l'occultiste) */
+const fighting = (G,m) => m.action?.type!=='stun' && (attacking(m) || tackler(G,m));
+/* un mob qu'on peut viser : vivant, visible (pas un mimic caché) ; un boss de donjon seulement si ce mineur le combat
+   déjà (sinon on le toucherait à travers le mur de sa salle) */
+const fair = (G,m,o) => o.hp>0 && !(o.type==='mimic' && !o.revealed)
+                       && (o.dungeon==null || attacking(m)===o || tackler(G,m)===o);
+
+/* Cri de guerre : il entre en combat → lui et les mineurs à radius cases ou moins ont le bonus pendant duration s
+   (m.warcry, lu par hitDamage et par l'intervalle d'attaque) ; la recharge commence à la fin de l'effet */
+function warCry(G,m){
+  if(!fighting(G,m)) return;
+  const S = SPELL.war_cry, until = G.t+S.duration;
+  const hit = G.miners.filter(o => o===m || dist(m,o)<=S.radius);
+  for(const o of hit) o.warcry = { until:Math.max(until, o.warcry?.until ?? 0), dmg:S.dmgPct, speed:S.atkSpeed };
+  cast(G,m,'war_cry',until);
+  log(G, `📯 ${m.name} : Cri de guerre, ${hit.length} mineur${hit.length>1 ? 's' : ''} : dégâts +${Math.round(S.dmgPct*100)} %, attaque +${Math.round(S.atkSpeed*100)} % pendant ${S.duration} s`);
+}
+
+/* Cleave : en combat, dmg × ses dégâts (critique tiré pour chaque mob) à chaque mob à radius cases ou moins.
+   Un mob tué ainsi compte pour lui (butin, XP) */
+function cleave(G,m){
+  if(!fighting(G,m)) return;
+  const S = SPELL.cleave, foes = G.mobs.filter(o => fair(G,m,o) && dist(m,o)<=S.radius);
+  if(!foes.length) return;
+  for(const o of foes){
+    o.hp -= hitDamage(G,m)*S.dmg;
+    if(o.hp<=0) killMob(G,m,o);
+  }
+  m.foeHit = G.t;
+  cast(G,m,'cleave');
+  log(G, `🪓 ${m.name} : Cleave, ${foes.length} mob${foes.length>1 ? 's' : ''} touché${foes.length>1 ? 's' : ''}`);
+}
+
+/* Hand of Justice : étourdit stun s un mob qui se bat à range cases ou moins : d'abord un mob qui tacle un allié, puis
+   celui qui le tacle, puis celui qu'il frappe ; pas un mob déjà étourdi. Il lâche son tacle, sa canalisation est coupée */
+function handOfJustice(G,m){
+  if(m.action?.type==='stun') return;
+  const S = SPELL.hand_of_justice;
+  const ok = o => o && fair(G,m,o) && !(o.stunUntil>G.t) && dist(m,o)<=S.range;
+  const allies = G.miners.filter(o => o!==m && o.y>0).map(o => tackler(G,o)).filter(ok).sort((a,b) => dist(m,a)-dist(m,b));
+  const o = allies[0] ?? [tackler(G,m), attacking(m)].find(ok);
+  if(!o) return;
+  o.stunUntil = G.t+S.stun; o.grab = null;
+  if(o.channel) o.channel = null;
+  cast(G,m,'hand_of_justice');
+  log(G, `⚖️ ${m.name} : Hand of Justice, ${o.type} étourdi ${S.stun} s`);
+}
+
+/* Bonbonne de zipette : le prochain allié à radius cases ou moins, qui travaille dans la mine (pas en remontée, pas en
+   descente depuis la surface, pas à la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max du
+   logisticien (sans dépasser son max) ; s'il y en a plusieurs, celui qui en a le moins (en %). Jamais sur lui-même. La
+   recharge commence une fois l'oxygène donné. */
+const ZIP_AWAY = new Set(['return', 'departure', 'surface', 'fetch']);
+function zipette(G,m){
+  const S = SPELL.zipette;
+  const ratio = o => o.ox/o.carac.oxygenMax;
+  const o = G.miners.filter(o => o!==m && o.y>0 && !ZIP_AWAY.has(o.mode) && o.ox<o.carac.oxygenMax && dist(m,o)<=S.radius)
+                    .sort((a,b) => ratio(a)-ratio(b))[0];
+  if(!o) return;
+  const gain = Math.min(m.carac.pods*S.podsPct, o.carac.oxygenMax-o.ox);
+  o.ox += gain;
+  cast(G,m,'zipette');
+  log(G, `🫧 ${m.name} : Bonbonne de zipette, ${o.name} +${Math.round(gain)} d'oxygène`);
 }

@@ -472,6 +472,7 @@ export const GLYPHS = {
      0,0000383 / 0,000335 / 0,00101 ; 25/10 : 0,0001 / 0,0007 / 0,001 ; quelques minutes le 26/10 : la même chance, mais
      par glyphe manquant.) */
   drop: { mineur:{ event:'block', chance:0.0000126 }, logisticien:{ event:'ladder', chance:0.000110 }, barbare:{ event:'kill', chance:0.000335 } },
+  dropPerSession: 0.01,   // ≈ chance d'en trouver un par session à 3, d'où viennent les chances ci-dessus (texte du wiki)
   dropSalt: 0x61f7d3,
   desc: {
     mine_speed:  '10 % de son bonus de vitesse d\'attaque (au-dessus de 100 %) s\'ajoute à sa vitesse de minage (+20 % d\'attaque = +2 % de minage)',
@@ -578,6 +579,31 @@ export const SPELLS = {
     { id:'dynamite', name:'Dynamite', icon:'🧨', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
       reach:2, radius:2, throwTime:0.5,
       desc:'Lance une dynamite devant lui (2 cases au plus) : elle casse tous les blocs minables dans un rayon de 2, comme s\'il les minait' },
+    /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
+       remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
+       LOGISTICIEN en oxygène (sans dépasser son max). Jamais sur lui-même. La recharge commence une fois l'oxygène
+       donné. Plusieurs alliés à portée : celui qui a le moins d'oxygène (en % de son max ; choix de Claude) */
+    { id:'zipette', name:'Bonbonne de zipette', icon:'🫧', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
+      radius:3, podsPct:0.20,
+      desc:'Le prochain allié croisé à 3 cases ou moins, qui travaille dans la mine et à qui il manque de l\'oxygène, regagne 20 % des pods max du logisticien en oxygène (pas sur lui-même ; la recharge commence une fois l\'oxygène donné)' },
+    /* 27/10/2026 (Geoffrey) : dès que le barbare entre en combat (il frappe un mob ou un mob le tacle), lui et les
+       mineurs à radius cases ou moins (cercle, au moment du cri) ont dégâts × (1 + dmgPct) et vitesse d'attaque ×
+       (1 + atkSpeed) pendant duration s ; la recharge commence à la fin de l'effet. Pas de cumul (un 2e cri prolonge) */
+    { id:'war_cry', name:'Cri de guerre', icon:'📯', unlock:{ tree:'barbare', level:10 }, needTree:'barbare', cd:180,
+      radius:10, duration:30, dmgPct:0.10, atkSpeed:0.05,
+      desc:'Quand il entre en combat : lui et les mineurs à 10 cases ou moins font 10 % de dégâts en plus et attaquent 5 % plus vite pendant 30 s (la recharge commence à la fin de l\'effet)' },
+    /* 27/10/2026 (Geoffrey) : en combat, inflige dmg × ses dégâts (critique possible, tiré pour chaque mob) à chaque mob
+       à radius cases ou moins (cercle) ; ni recul, ni dégâts de zone de Force brute. Un boss de donjon seulement s'il le
+       combat déjà */
+    { id:'cleave', name:'Cleave', icon:'🪓', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
+      radius:2, dmg:0.5,
+      desc:'En combat : inflige 50 % de ses dégâts à tous les mobs à 2 cases ou moins (coup critique possible)' },
+    /* 27/10/2026 (Geoffrey) : étourdit stun s un mob à range cases ou moins (cercle) qui se bat : d'abord un mob qui
+       tacle un allié, puis celui qui le tacle, puis celui qu'il frappe. Comme le Dash : il lâche son tacle et sa
+       canalisation (occultiste) est coupée (choix de Claude). Jamais un mob déjà étourdi */
+    { id:'hand_of_justice', name:'Hand of Justice', icon:'⚖️', unlock:{ scroll:'Parchemin « Hand of Justice »' }, cd:30,
+      range:3, stun:3,
+      desc:'Étourdit 3 s un mob qui se bat, jusqu\'à 3 cases de distance (d\'abord un mob qui tacle un allié) : il lâche son tacle et son sort est coupé' },
   ],
 };
 
