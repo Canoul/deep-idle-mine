@@ -280,3 +280,15 @@ test('Tout retirer : une case qui ne rentre pas reste dans le four (les autres s
   assert.equal(countOf(inv, 'Fer'), 100);
   assert.equal(op(st, inv, { action:'empty', furnace:7 }).error, 'bad_furnace');
 });
+
+test('Barre d\'argent (27/10) : 10 pépites d\'argent + 10 charbons = 1 barre en 1 min, recette ouverte de base', () => {
+  const P = 'Pépite d\'argent', B = 'Barre d\'argent';
+  assert.equal(ITEMS[P].cat, 'material'); assert.equal(ITEMS[B].cat, 'ingot');
+  assert.ok(accepts('ore', P, 'smelt', createInventory()), 'pas besoin de l\'apprendre');
+  const { inv, st } = setup({ [P]:25, Charbon:30 });
+  assert.equal(op(st, inv, { action:'load', slot:'ore', item:P, qty:25 }).error, undefined);
+  op(st, inv, { action:'load', slot:'fuel', item:'Charbon', qty:30 });
+  op(st, inv, { action:'collect' }, T0 + 2 * MIN + 1);
+  assert.equal(countOf(inv, B), 2, '25 pépites : 2 barres, il en reste 5');
+  assert.equal(st.list[0].ore.qty, 5); assert.equal(st.list[0].fuel.qty, 10);
+});

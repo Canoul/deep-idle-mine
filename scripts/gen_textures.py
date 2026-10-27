@@ -548,7 +548,8 @@ def main():
                                     ('ingot_tainted', '#8b6f8f', '#c2a6c4', '#4f3a52'),    # alliage fer + chitine
                                     ('ingot_tainted_gold', '#b9924a', '#e6c98a', '#6e5226'),   # alliage or + chitine
                                     ('ingot_graphite', '#4a505a', '#8a93a0', '#2a2e35'),       # graphite fondu
-                                    ('ingot_steel', '#7f8fa3', '#d6e2ef', '#3f4a58')]:         # alliage tainted iron + graphite
+                                    ('ingot_steel', '#7f8fa3', '#d6e2ef', '#3f4a58'),          # alliage tainted iron + graphite
+                                    ('ingot_silver', '#dfe6ef', '#ffffff', '#8c98a8')]:        # barre d'argent (pépites, 27/10)
         ing = blank()
         for i, yy in enumerate(range(6, 12)):
             rect(ing, 4 - i // 2, yy, 8 + (i // 2) * 2, 1, hexc(base))
@@ -556,6 +557,15 @@ def main():
         rect(ing, 5, 7, 3, 1, hexc(light))
         rect(ing, 2, 11, 12, 1, hexc(dark))
         tex[name] = ing
+
+    # pépite d'argent (récompense du bloc géant, 27/10) : trois petites boules d'argent, reflet en haut à gauche
+    nug = blank()
+    for x, y, w, h in [(3, 8, 5, 5), (8, 9, 5, 4), (6, 4, 4, 4)]:
+        rect(nug, x, y, w, h, hexc('#c5cdd8'))
+        rect(nug, x, y + h - 1, w, 1, hexc('#7d8898'))
+        rect(nug, x + 1, y, w - 2, 1, hexc('#e8edf3'))
+        rect(nug, x + 1, y + 1, 1, 1, hexc('#ffffff'))
+    tex['nugget_silver'] = nug
 
     # four en fer (objet) : bloc de fer riveté, bouche de feu orange en bas
     fur = blank()
