@@ -792,7 +792,7 @@ export const STUFF = {
   items: {
     'Pioche en pierre':    { slot:'pioche', tex:'pickaxe_stone', stats:{ mineSpeed:0.2 } },
     'Casque en chitine':   { slot:'casque', tex:'helmet_chitin', stats:{ oxygenMax:25 } },   // 27/10 (Geoffrey) : valeur du tier, 100 x (avant 30)
-    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:17 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 100 x (avant 30 ; 23/10 : 25)
+    'Plastron en chitine': { slot:'torse',  tex:'chest_chitin',  stats:{ pods:30 } },   // 23/10 (Geoffrey) : avant 25. Torse hors règle du tier (27/10 : volontairement plus fort)
     'Jambes en chitine':   { slot:'jambes', tex:'legs_chitin',   stats:{ climbSpeed:0.4 } },   // 100 x (valeur du tier)
     'Bottes en chitine':   { slot:'pieds',  tex:'boots_chitin',  stats:{ speed:0.42 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 100 x (avant 0,5)
     /* pièces en fer et ceinture : recettes débloquées par leur blueprint (src/recipes.js) */
@@ -806,7 +806,7 @@ export const STUFF = {
        du recul suffit déjà contre la boucle, src/sim/actions.js landHit). Valeurs provisoires. */
     'Lance en fer':        { slot:'epee',   tex:'spear_iron',    stats:{ damage:8, attackSpeed:-10, knockback:0.5, reach:0.25 } },
     'Casque en fer':       { slot:'casque', tex:'helmet_iron',   stats:{ oxygenMax:63 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 67 ; 24/10 : 38)
-    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:42 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 88 ; 24/10 : 50, 23/10 : 33)
+    'Plastron en fer':     { slot:'torse',  tex:'chest_iron',    stats:{ pods:88 } },   // 24/10 : avant 50 (23/10 : avant 33). Torse hors règle du tier (27/10)
     'Jambes en fer':       { slot:'jambes', tex:'legs_iron',     stats:{ climbSpeed:1 } },   // 27/10 (Geoffrey) : valeur du tier, 250 x (avant 1,05 ; 24/10 : 0,6)
     'Bottes en fer':       { slot:'pieds',  tex:'boots_iron',    stats:{ speed:1.04 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 250 x (avant 1,05 ; 24/10 : 0,6)
     'Ceinture en peau de gobelin': { slot:'ceinture', tex:'belt_goblin', stats:{ torches:10 } },
@@ -820,7 +820,7 @@ export const STUFF = {
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
        24/10 (Geoffrey) : acier × 1,5, épée × 1,25, arrondi à l'entier pour les stats entières (oxygène, pods, dégâts) */
     'Casque en acier':     { slot:'casque', tex:'helmet_steel',  stats:{ oxygenMax:100 } },   // 25/10 (Geoffrey) : ≈ 400 x, avant 69 (24/10 : avant 46)
-    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:67 } },   // 27/10 (Geoffrey) : valeur du tier, ≈ 400 x (avant 120 ; 24/10 : 80, 23/10 : 40)
+    'Plastron en acier':   { slot:'torse',  tex:'chest_steel',   stats:{ pods:120 } },   // 24/10 : avant 80 (23/10 : avant 40). Torse hors règle du tier (27/10)
     'Jambes en acier':     { slot:'jambes', tex:'legs_steel',    stats:{ climbSpeed:1.6 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:1.67 } },   // 25/10 : ≈ 400 x, avant 1,08 (24/10 : avant 0,72)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.5 } },   // 25/10 : nerf, avant 0,6 (24/10 : 0,48 × 1,25 ; pas × 1,5 : 0,72)
@@ -855,8 +855,9 @@ export const STUFF = {
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],
   /* ÉQUILIBRE DU STUFF (27/10/2026, Geoffrey ; gardé par tests/stuff-balance.test.js) :
-     - casque, plastron, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
-       (UPGRADE.tiers : 100 / 250 / 400 x) ;
+     - casque, jambes et bottes en chitine, fer, acier valent en GS exactement la valeur de leur tier
+       (UPGRADE.tiers : 100 / 250 / 400 x). Les plastrons sont hors règle : la pièce de torse est volontairement plus
+       forte (pods ; chitine 180, fer 528, acier 720 x) ;
      - le butin des mobs vaut le tier 2, à parts égales entre ses stats, une stat de combat comptant pour combatOnStuff
        de ce que donnerait l'équation (prix mesurés). Les pièces dessinées à la main (épées, lance, pioches, Plastron de
        l'équilibre, gants, cape, ceinture en peau, boussole, lampe) ne suivent pas cette règle. */

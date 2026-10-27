@@ -3524,4 +3524,9 @@ Règles (voir CLAUDE.md) :
   acier 16/20 → 11/20 ; avant = repères du 26/10, retrouvés à l'identique. La mine (simulate.js, mineur de base) ne bouge pas.
 - **Points fragiles** : la règle dépend des prix mesurés : remesurer `UPGRADE.worth` / `gs` fera échouer
   stuff-balance.test.js tant que les pièces ne sont pas réajustées (voulu). Capuche : recul +0,52 (gs : 120 x / bloc).
+- **Correction (27/10, 10 h 55, Geoffrey)** : plastrons remis à leurs valeurs (pods 30 / 88 / 120) : torse volontairement
+  plus fort, hors règle du tier. stuff-balance.test.js : casque / jambes / bottes seulement + un test « plastron au-dessus
+  de son tier » ; tests amelioration, carac, stuff, blueprint, steel-gear revenus aux anciens chiffres de pods ✅ (83).
+  La simulation des tours du matin ne vaut plus (les pods n'ont plus bougé) : seuls casques / jambes / bottes changent
+  un peu (fer : montée 3,3 → 3,25, marche 4,05 → 4,04).
 

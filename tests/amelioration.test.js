@@ -72,7 +72,7 @@ test('pièce : lignes ajoutées aux stats de l\'objet, amélioration = bonus tot
   assert.deepEqual(pieceBonus(p).stats, { mineSpeed:0.215, fortune:0.7 });
   assert.equal(pieceBonus({ item:PICK, uid:1, plus:3 }).stats.mineSpeed, 0.218);        // 0,2 × 1,09 (3 % par rang, 26/10)
   assert.equal(pieceBonus({ item:'Épée en fer', uid:2, plus:3 }).set.damage, 14.8);    // 5 + 9 × 1,09 = 14,81 → 14,8
-  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 18);   // 17 × 1,03 = 17,51 → 18 (27/10 : 17 pods)
+  assert.equal(pieceBonus({ item:'Plastron en chitine', uid:3, plus:1 }).stats.pods, 31);   // 30 × 1,03 = 30,9 → 31
   assert.deepEqual(pieceBonus(PICK).stats, { mineSpeed:0.2 }, 'un simple nom d\'objet : comme avant');
   assert.equal(statsOf([p]).mineSpeed.total, 1.22);
   /* affichage : l'effet de l'objet, puis chaque ligne tirée à part, même sur la même stat (22/10) */

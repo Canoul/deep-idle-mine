@@ -57,7 +57,7 @@ function setup(){
   return { store, game };
 }
 const FER = { pioche:'Pioche en fer', epee:'Épée en fer', casque:'Casque en fer', torse:'Plastron en fer', jambes:'Jambes en fer', pieds:'Bottes en fer' };
-/* au-dessus de 2000 GS (depuis le 27/10, tout en fer = 1884 GS : armures à 250 x) */
+/* au-dessus de 2000 GS (exemple franc : tout en acier) */
 const ACIER = { pioche:'Pioche en acier', epee:'Épée en acier', casque:'Casque en acier', torse:'Plastron en acier', jambes:'Jambes en acier', pieds:'Bottes en acier' };
 
 test('modulation : tour lancée si chacun a moins de 2000 GS ; refusée sinon (avec qui et combien) ; seulement pour une tour', async () => {

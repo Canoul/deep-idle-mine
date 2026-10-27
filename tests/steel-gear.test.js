@@ -21,7 +21,7 @@ const ARMOR = { 'Shiny iron':10, 'Tissu sombre':10 }, TOOL = { 'Shiny gold':10, 
    pour oxygène, pods, dégâts). L'acier reste au-dessus du fer sur chaque stat. */
 const STEEL = {
   'Casque en acier':   { iron:'Casque en fer',   stats:{ oxygenMax:100 },    cost:{ 'Steel ingot':10, 'Tainted gold':5,  ...ARMOR } },
-  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:67 },         cost:{ 'Steel ingot':16, 'Tainted gold':8,  ...ARMOR } },
+  'Plastron en acier': { iron:'Plastron en fer', stats:{ pods:120 },         cost:{ 'Steel ingot':16, 'Tainted gold':8,  ...ARMOR } },
   'Jambes en acier':   { iron:'Jambes en fer',   stats:{ climbSpeed:1.6 },   cost:{ 'Steel ingot':14, 'Tainted gold':7,  ...ARMOR } },
   'Bottes en acier':   { iron:'Bottes en fer',   stats:{ speed:1.67 },       cost:{ 'Steel ingot':8,  'Tainted gold':4,  ...ARMOR } },
   'Pioche en acier':   { iron:'Pioche en fer',   stats:{ mineSpeed:0.5 },    cost:{ 'Steel ingot':20, ...TOOL } },
@@ -117,7 +117,7 @@ test('pièces déjà fabriquées : elles ont les stats du catalogue actuel, lign
   const gear = { torse:{ item:'Plastron en fer', uid:7, q:2, lines:[line], s:UPGRADE.scale }, pioche:{ item:'Pioche en acier', uid:8 },
                  epee:{ item:'Épée en fer', uid:9 }, casque:{ item:'Casque en acier', uid:10 } };
   const [m] = minerSpecs({ players:[{ account:'A', name:'Geo' }], gear:{ A:gear } });
-  assert.equal(m.carac.pods, STATS.pods + 42 + lineValue('Plastron en fer', line));
+  assert.equal(m.carac.pods, STATS.pods + 88 + lineValue('Plastron en fer', line));
   assert.equal(m.carac.mineSpeed, STATS.mineSpeed + 0.5);
   assert.equal(m.carac.damage, 14);
   assert.equal(m.carac.oxygenMax, STATS.oxygenMax + 100);

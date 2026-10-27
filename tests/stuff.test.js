@@ -71,7 +71,7 @@ test('pièces en chitine : bonus affichés (oxygène, pods, vitesses), clés de 
   const { statsText } = await import('../src/meta/stuff.js');
   const { existsSync } = await import('node:fs');
   assert.equal(statsText('Casque en chitine'), 'Oxygène +25');
-  assert.equal(statsText('Plastron en chitine'), 'Pods +17');
+  assert.equal(statsText('Plastron en chitine'), 'Pods +30');
   assert.equal(statsText('Jambes en chitine'), 'Vitesse (échelle) +0,4');
   assert.equal(statsText('Bottes en chitine'), 'Vitesse (marche) +0,42');
   assert.equal(statsText(PICK), 'Vitesse de minage +0,2');

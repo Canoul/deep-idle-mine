@@ -1,5 +1,6 @@
 /* Équilibre du stuff (27/10/2026, Geoffrey ; règle dans STUFF.combatStats / combatOnStuff, src/config.js) :
-   - casque, plastron, jambes et bottes en chitine / fer / acier valent en GS la valeur de leur tier (100 / 250 / 400 x) ;
+   - casque, jambes et bottes en chitine / fer / acier valent en GS la valeur de leur tier (100 / 250 / 400 x) ; les
+     plastrons sont hors règle (torse volontairement plus fort, décision du 27/10) ;
    - le butin des mobs vaut le tier 2, à parts égales entre ses stats ; une stat de combat n'en reçoit que la moitié.
    Ce test échoue si un prix mesuré (UPGRADE.worth, gs) ou une pièce change sans rééquilibrer : c'est voulu. */
 import { test } from 'node:test';
@@ -8,13 +9,13 @@ import { STUFF, UPGRADE, MOB_DROPS } from '../src/config.js';
 import { pieceGS } from '../src/meta/gearscore.js';
 import { tierOf } from '../src/meta/piece.js';
 
-const ARMOR = ['Casque en', 'Plastron en', 'Jambes en', 'Bottes en'];
+const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : torse volontairement plus fort
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
 const price = k => UPGRADE.worth[k] ?? UPGRADE.gs[k];
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
-test('armures en chitine, fer et acier : GS = valeur du tier (100 / 250 / 400 x)', () => {
+test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 400 x)', () => {
   for(const [mat, tier] of Object.entries(MATERIALS)) for(const p of ARMOR){
     const name = `${p} ${mat}`, want = UPGRADE.tiers[tier].x;
     assert.equal(tierOf(name), tier, `${name} : tier ${tier}`);
@@ -38,4 +39,9 @@ test('butin des mobs : tier 2, parts égales entre les stats, stat de combat à 
 
 test('stats de combat : toutes connues et avec un prix mesuré', () => {
   for(const k of STUFF.combatStats) assert.ok(k in STUFF.statLabels && price(k) !== undefined, k);
+});
+
+test('plastrons : hors règle, au-dessus de la valeur de leur tier (torse volontairement plus fort)', () => {
+  for(const [mat, tier] of Object.entries(MATERIALS))
+    assert.ok(pieceGS(`Plastron en ${mat}`) > UPGRADE.tiers[tier].x, `Plastron en ${mat} : ${pieceGS(`Plastron en ${mat}`)} x`);
 });

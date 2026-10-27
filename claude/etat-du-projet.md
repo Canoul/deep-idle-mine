@@ -282,8 +282,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
 - **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
-  casque / plastron / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 400 x ; plastrons ramenés de
-  ≈ 2 × à 1 ×) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
+  casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 400 x) ; plastrons hors règle (torse
+  volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
 
 ## Hébergement
 
