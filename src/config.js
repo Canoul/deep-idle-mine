@@ -255,7 +255,7 @@ export const LOOT = {
       { family:'gem', items:gems(0.02) },
       { family:'material', tex:'moon_crystal', items:[ { item:'Cristal de pleine lune', chance:0.10, tex:'moon_crystal' } ] },
       /* Clé d'instance I (27/10/2026, Geoffrey) : son propre tirage, en plus du reste (INSTANCE) */
-      { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.05, tex:'key_instance_1' } ] },
+      { family:'key', tex:'key_instance_1', items:[ { item:'Clé d\'instance I', chance:0.20, tex:'key_instance_1' } ] },   // 20 % (27/10, Geoffrey ; avant 5 %)
     ],
   },
 };

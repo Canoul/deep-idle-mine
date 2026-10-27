@@ -379,7 +379,7 @@ export function setupLobby(h){
       `<button data-inst="${i.id}" class="${i.id === cur.id ? 'on' : ''}"${i.ready ? '' : ' disabled title="Bientôt disponible"'}>`+
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
       (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span></p>`+
-        `<p class="mut small">Chaque joueur du groupe doit avoir sa clé ; elle est consommée au lancement, et <b>rendue si le groupe perd</b>. On la trouve dans les Treasure T3 (5 %).</p>`+
+        `<p class="mut small">Chaque joueur du groupe doit avoir sa clé ; elle est consommée au lancement, et <b>rendue si le groupe perd</b>. On la trouve dans les Treasure T3 (20 %).</p>`+
         (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là.</p>` : '') : '');
   }
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };

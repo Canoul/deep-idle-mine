@@ -32,6 +32,10 @@ Modèle d'entrée :
 
 ---
 
+## 27/10/2026 — Geoffrey — Clé d'instance I : 20 % dans les Treasure T3
+- **Pour le joueur** : un Treasure T3 donne une Clé d'instance I **1 fois sur 5** (avant 1 sur 20).
+- **État** : ✅ en ligne le 27/10 (sans relancer les tests, demande de Geoffrey)
+
 ## 27/10/2026 — Geoffrey — Roi Gobelin : son coffre et 5 nouveaux objets
 - **Pour le joueur** : un **Coffre du Roi Gobelin** (qualité R1 à R7) s'ouvre dans l'inventaire : graphite, peaux de
   gobelin, et au plus un objet rare : **Couronne du Roi Gobelin** (1 %), **plan du Four en or** (2 %), **Masse du Roi

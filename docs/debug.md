@@ -3663,3 +3663,7 @@ Règles (voir CLAUDE.md) :
   Tests : instance-server +2 (victoire : coffre R1-R7 au présent, rien au parti, clés consommées ; échec : clé rendue à
   tous, fin rejouée sans double) et 2 attentes changées (clé rendue à l'échec), lobby (bouton en session) ✅ ; instance-*,
   goblin-*, wiki, rarity, game-service ✅ 111 ; anticheat ✅ 102. État : ✅ en ligne le 27/10.
+
+### Clé d'instance I à 20 % (Geoffrey) — branche `geoffrey/cle-instance-20`, ✅ en ligne le 27/10 ⚠️
+- **Quoi** : `LOOT['Treasure T3']`, famille `key` : 0,05 → 0,20 ; textes du lobby, wiki, GAME_DESIGN, état.
+- **Tests** : ⚠️ **pas relancés** (demande de Geoffrey). `tests/instance-key.test.js` vérifie probablement 5 % : à mettre à 20 %.
