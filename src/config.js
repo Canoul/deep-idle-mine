@@ -1178,11 +1178,11 @@ export const INSTANCE = {
     { id:'instance_3', label:'Instance III', ready:false },
   ],
   duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
-  /* 27/10 (Geoffrey) : 5 cases d'air entre deux rebords (un tous les 6 ; avant 5) et 4 rebords par côté (8 spawners ;
-     avant 3 et 6) : la salle passe à 30 de haut (avant 20), la plateforme du roi à 27 du sol (avant 17) */
-  w: 20, h: 30, ledgeW: 6, ledgeEvery: 6, ledges: 4, maxFall: 7,
-  platform: { w: 4, height: 27 },
-  spawner: { hp: 75, every: 30, dynamite: 6, focusRange: 10 },   // 75 coups (27/10, Geoffrey ; avant 50)
+  /* 27/10 (Geoffrey) : 5 cases d'air entre deux rebords (un tous les 6 ; avant 5), 3 rebords par côté (6 spawners ;
+     4 essayés puis retirés), salle de 28 de large (avant 20) et 24 de haut (avant 20), plateforme du roi à 21 du sol */
+  w: 28, h: 24, ledgeW: 6, ledgeEvery: 6, ledges: 3, maxFall: 7,
+  platform: { w: 4, height: 21 },
+  spawner: { hp: 200, every: 30, dynamite: 6, focusRange: 10 },   // 200 coups (27/10, Geoffrey ; avant 75, puis 50)
   goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
             knock: 0.5, knockChance: 0.30, step: 0.9 },
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)

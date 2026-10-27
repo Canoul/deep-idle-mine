@@ -15,12 +15,12 @@ const goblin = (G, x, y, extra = {}) => { const o = { id: G.nextGob++, x, y, kx:
 /* salle sans spawner (ils ne gênent pas un test de combat) */
 const quiet = G => { for(const s of G.spawners){ s.alive = false; G.tiles[s.y][s.x] = AIR; } G.boss.state = 'test'; };
 
-test('salle : 20 × 30, 4 rebords de 6 par côté (5 cases d\'air entre deux), un spawner collé au mur sur chacun, plateforme du roi plus haute', () => {
+test('salle : 28 × 24, 3 rebords de 6 par côté (5 cases d\'air entre deux), un spawner collé au mur sur chacun, plateforme du roi plus haute', () => {
   const L = genInstance();
-  assert.equal(L.w, 20); assert.equal(L.h, 30); assert.ok(L.tiles[30].every(t => t === ROCK), 'sol');
+  assert.equal(L.w, 28); assert.equal(L.h, 24); assert.ok(L.tiles[24].every(t => t === ROCK), 'sol');
   const ledges = ledgesOf();
-  assert.equal(ledges.length, 8);
-  assert.deepEqual([...new Set(ledges.map(l => l.row))], [24, 18, 12, 6], '6, 12, 18 et 24 au-dessus du sol : 5 cases d\'air entre deux');
+  assert.equal(ledges.length, 6);
+  assert.deepEqual([...new Set(ledges.map(l => l.row))], [18, 12, 6], '6, 12 et 18 au-dessus du sol : 5 cases d\'air entre deux');
   for(const l of ledges){
     for(let x = l.x0; x <= l.x1; x++) assert.equal(L.tiles[l.row][x], ROCK);
     assert.equal(l.x1 - l.x0 + 1, 6);
@@ -29,7 +29,7 @@ test('salle : 20 × 30, 4 rebords de 6 par côté (5 cases d\'air entre deux), u
     assert.equal(Math.abs(l.mx - l.sx), 1, 'on le casse depuis la case d\'à côté');
   }
   const p = platformOf();
-  assert.equal(L.h - p.row, 27); assert.equal(p.x1 - p.x0 + 1, 4);
+  assert.equal(L.h - p.row, 21); assert.equal(p.x1 - p.x0 + 1, 4);
   assert.ok(p.row < Math.min(...ledges.map(l => l.row)), 'plus haute que les rebords');
 });
 
@@ -114,7 +114,7 @@ test('gobelins : ils tombent des rebords et montent aux échelles', () => {
 });
 
 test('IA : un groupe fort casse tous les spawners, sans jamais rester bloqué', () => {
-  const G = newInstance(11, { miners: [0, 1, 2].map(i => spec(i, STRONG)) });
+  const G = newInstance(11, { miners: [0, 1, 2].map(i => spec(i, HUGE)) });
   run(G, 25 * 60);
   assert.equal(G.spawners.filter(s => s.alive).length, 0, `spawners restants`);
   assert.equal(G.stats.blocked, 0);
@@ -141,11 +141,11 @@ test('enfermement : chaque mineur sur un rebord différent, entouré de blocs de
   G.boss.state = 'fight'; G.boss.y = G.floorY; G.boss.hp = G.boss.maxhp * 0.74;
   run(G, DT);
   assert.equal(G.boss.state, 'wait');
-  const ys = G.miners.map(m => `${m.x < 10 ? 'L' : 'R'}${m.y}`);
+  const ys = G.miners.map(m => `${m.x < G.mid ? 'L' : 'R'}${m.y}`);
   assert.equal(new Set(ys).size, 3, 'trois rebords différents');
   for(const m of G.miners){
     assert.ok(G.ledges.some(l => l.y === m.y), 'sur un rebord');
-    assert.equal(G.tiles[m.y - 1][m.x], CAGE); assert.equal(G.tiles[m.y][m.x + (m.x < 10 ? 1 : -1)], CAGE);
+    assert.equal(G.tiles[m.y - 1][m.x], CAGE); assert.equal(G.tiles[m.y][m.x + (m.x < G.mid ? 1 : -1)], CAGE);
     assert.ok(instSupported(G, m.x, m.y));
   }
   const hp = G.boss.hp;
