@@ -27,7 +27,7 @@ Modèle d'entrée :
   identifiées, améliorées ou enchantées **remises à zéro**, sans remboursement (rune comprise) ; le doublon de plus bas
   niveau est sacrifié, même en cas d'échec (choix de Claude).
 - **À suivre** : un anneau tombe à 1 % par trésor ; un +9 demande ≈ 11 doublons à cause des échecs.
-- **État** : 🧪 sur la branche `geoffrey/anneaux-doublons` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Mode dev : presets de personnage par spécialisation
 - **Pour le joueur** : rien, c'est un outil de test. Trois presets, un par spé : **Test_Mineur**, **Test_Logisticien**,

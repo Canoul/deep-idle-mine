@@ -3798,7 +3798,7 @@ Règles (voir CLAUDE.md) :
   30 s : 10/10 (gobelins × 2 compris). ⚠️ Mis en ligne sans réglage, à la demande de Geoffrey ; les tests de la version
   fusionnée n'ont pas été relancés (refusé).
 
-### Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration (Geoffrey) — branche `geoffrey/anneaux-doublons`, 🧪
+### Anneaux améliorables avec un doublon ; boussole et torche hors Amélioration (Geoffrey) — ✅ en ligne le 27/10
 - **Quoi** : config `RINGS.upgrade = 0.5` (points par niveau ajoutés à chaque valeur mult / add / xp), `UPGRADE.plainSlots =
   ['boussole', 'torche']`. `src/meta/piece.js` : `isPlain`, `canIdentify` (stuff hors anneau et plain), `canUpgrade`
   (stuff hors plain) ; `sanitizePiece` : anneau garde `plus` (1 à 9, sinon rien), boussole / torche → `{ item, uid }`
