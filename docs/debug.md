@@ -3648,3 +3648,9 @@ Règles (voir CLAUDE.md) :
   proposée au four (« Peau de gobelin 10 → 5 Chitine »), 3e four sous cadenas « Four en or » ; en mode dev ×300 avec la
   couronne portée : skin de la couronne, journal « Un gobelin s'incline… » puis « …disparaît », ligne « 👑 Gobelins asservis »
   du coffre ; aucune erreur de page ✅.
+- **Ajout (Geoffrey, 15 h)** : famille `scroll` dans `GOBLIN_KING.loot` (Ulti shen 0,01, Fast learner 0,005, Cleave 0,01,
+  Hand of Justice 0,01, `spellOnce`). `openTreasure` / `openAll` prennent un 5e argument `ctx = { spells }` (sorts appris) ;
+  le serveur (`game.open`) relit `loadSpells(me.id).learned` et le passe. Un sort appris tiré = rien (comme la recette).
+  Tests : goblin-king +1 (seuils, sort appris, fréquence 3,5 %), anticheat +1 (serveur : 400 coffres, tous les sorts
+  appris → aucun parchemin) ✅. Merge de `main` (Instances) : journaux, wiki, état gardés des deux côtés ; `rarity.test.js`
+  ne connaissait pas la Clé d'instance I (inhabituel) et échouait sur `main` → ajoutée.

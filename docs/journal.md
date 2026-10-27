@@ -35,8 +35,9 @@ Modèle d'entrée :
 ## 27/10/2026 — Geoffrey — Roi Gobelin : son coffre et 5 nouveaux objets
 - **Pour le joueur** : un **Coffre du Roi Gobelin** (qualité R1 à R7) s'ouvre dans l'inventaire : graphite, peaux de
   gobelin, et au plus un objet rare : **Couronne du Roi Gobelin** (1 %), **plan du Four en or** (2 %), **Masse du Roi
-  Gobelin** (2 %), **Cape royale du Gobelin** (2 %) ; plus la **Recette : Chitine** (5 %, si pas encore apprise) et une
-  gemme (1 % chacune). Les pièces arrivent identifiées à la qualité du coffre.
+  Gobelin** (2 %), **Cape royale du Gobelin** (2 %) ; plus la **Recette : Chitine** (5 %, si pas encore apprise), au plus
+  un **parchemin de sort** (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %, Hand of Justice 1 % ; jamais un sort déjà
+  appris) et une gemme (1 % chacune). Les pièces arrivent identifiées à la qualité du coffre.
   - **Couronne** (casque, légendaire) : fortune +10 %, et les gobelins qui apparaissent à 10 cases du porteur sont
     **asservis** : 30 s à miner autour d'eux pour le coffre commun (ligne « 👑 Gobelins asservis »), puis ils disparaissent.
   - **Masse** (14 dégâts, critique +15 %), **Cape royale** (dégâts +5 %, minage +5 %), **Four en or** (3e four, ×1,5),

@@ -728,7 +728,7 @@ const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap
    (scripts/give-item.js « Coffre du Roi Gobelin R4 »). Ouvert depuis l'inventaire (src/meta/loot.js) : la table `loot`
    (même format que LOOT : tous les always, puis un tirage par famille, au plus un objet chacune) ; une pièce de stuff qui
    en sort est déjà identifiée, à la qualité du coffre. learnOnce : l'objet ne sort que si sa recette n'est pas encore
-   apprise (sinon, rien pour ce tirage).
+   apprise ; spellOnce : un parchemin ne sort que si son sort n'est pas encore appris (sinon, rien pour ce tirage).
    thrall : passif de la Couronne du Roi Gobelin (STATS.goblinThrall = rayon) : un gobelin qui naît à radius cases ou
    moins (cercle) d'un porteur est asservi : il ne se bat pas, mine pendant life s à la vitesse d'un mineur de base
    (minerais à reach cases ou moins, même priorité que le porteur), puis disparaît ; ce qu'il mine va au coffre commun. */
@@ -747,6 +747,13 @@ export const GOBLIN_KING = {
         { item:'Cape royale du Gobelin',  chance:0.02 },
       ]},
       { family:'recipe', items:[ { item:'Recette : Chitine', chance:0.05, learnOnce:true } ] },
+      /* 27/10/2026 (Geoffrey) : parchemins de sort, au plus un ; spellOnce : un sort déjà appris ne sort pas */
+      { family:'scroll', items:[
+        { item:'Parchemin « Ulti shen »',       chance:0.01,  spellOnce:true },
+        { item:'Parchemin « Fast learner »',    chance:0.005, spellOnce:true },
+        { item:'Parchemin « Cleave »',          chance:0.01,  spellOnce:true },
+        { item:'Parchemin « Hand of Justice »', chance:0.01,  spellOnce:true },
+      ]},
       { family:'gem', items:gems(0.01) },
     ],
   },

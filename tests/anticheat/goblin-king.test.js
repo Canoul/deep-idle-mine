@@ -29,3 +29,22 @@ test('four : la recette Chitine fermée est refusée par le serveur même si le 
     assert.ok(furnaceOp(st, inv, { furnace:0, action:'load', slot:'ore', item:'Peau de gobelin', qty, opId:'q' + String(qty) }, 0).error, String(qty));
   assert.equal(countOf(inv, 'Peau de gobelin'), 100, 'rien retiré');
 });
+
+test('serveur : un parchemin de sort déjà appris ne sort jamais d\'un coffre du Roi Gobelin (sorts relus au serveur)', async () => {
+  const { createMemoryGameStore } = await import('../../server/game/store.js');
+  const { createGameService } = await import('../../server/game/service.js');
+  const { fakeLive } = await import('../helpers.js');
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner: fakeLive(rec => ({ id: rec.id, shares: [] })), clock: () => 5e6 });
+  const ME = { id: 'AAAA1111', name: 'Zoe' };
+  const inv = createInventory(); addItem(inv, CHEST, 400);
+  await store.putInventory(ME.id, JSON.parse(JSON.stringify({ v: 1, ...inv })));
+  await store.putSpells(ME.id, { learned: ['ulti_shen', 'fast_learner', 'cleave', 'hand_of_justice'], slots: [null, null], ops: [] });
+  let scrolls = 0, opened = 0;
+  for(let k = 0; k < 4; k++){
+    const r = await game.open(ME, { item: CHEST, opId: 'open-all-' + k, all: true });
+    opened += r.count; scrolls += Object.keys(r.loot).filter(x => x.startsWith('Parchemin')).length;
+  }
+  assert.equal(opened, 400);
+  assert.equal(scrolls, 0, 'tous les sorts sont appris : aucun parchemin');
+});

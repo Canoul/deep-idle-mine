@@ -125,7 +125,7 @@ export function sourcesOf(item){
   { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);
     if(a) out.push(`Coffre du Roi Gobelin : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item);
-      if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
+      if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
   if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
   for(const [side, list] of Object.entries(RINGS.drops)) for(const r of list) if(r.item === item)
     out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);

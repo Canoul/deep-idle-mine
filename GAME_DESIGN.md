@@ -747,6 +747,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   - toujours : **20 à 40 Graphite ore** et **50 à 100 Peaux de gobelin** ;
   - **un seul tirage pour les objets rares** (au plus un) : **Couronne du Roi Gobelin 1 %**, **Four en or BP 2 %**, **Masse du Roi Gobelin 2 %**, **Cape royale du Gobelin 2 %** (7 % d'avoir l'un des quatre) ;
   - un autre tirage : **Recette : Chitine 5 %**, **seulement si la recette n'est pas encore apprise** (sinon rien) ;
+  - un autre tirage, **un parchemin de sort au plus** *(27/10/2026, Geoffrey)* : **Ulti shen 1 %**, **Fast learner 0,5 %**, **Cleave 1 %**, **Hand of Justice 1 %** (3,5 % d'en avoir un) ; **un sort déjà appris ne peut pas sortir** (ce tirage ne donne alors rien) ; un parchemin gardé dans l'inventaire sans l'avoir appris peut ressortir ;
   - un autre : les 3 gemmes inférieures, **1 % chacune**.
   - **La qualité du coffre s'applique aux pièces de stuff** qui en sortent : la couronne, la masse ou la cape arrivent **déjà identifiées** à la qualité du coffre (R6 → pièce R6). Le plan et la recette n'ont pas de qualité.
 - **Les objets** (pas craftables ; tier **3** pour les runes, *choix de Claude*) :

@@ -665,7 +665,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // une rune reçoit un uid neuf : jamais celui d'une pièce portée
         /* all : « Ouvrir tout » (tous les exemplaires, au plus TREASURE.openAllMax) */
-        const res = body.all === true ? openAll(inv, item, opId, random) : openTreasure(inv, item, opId, random);
+        const ctx = { spells: (await loadSpells(me.id)).learned };   // coffre du Roi Gobelin : un sort appris ne ressort pas
+        const res = body.all === true ? openAll(inv, item, opId, random, ctx) : openTreasure(inv, item, opId, random, ctx);
         if(!res) fail('not_owned', 409, `Tu n'as pas de ${item} à ouvrir.`);
         if(!res.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item, count: res.count ?? 1, loot: res.loot, inventory: publicInventory(inv) };

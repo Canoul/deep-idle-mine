@@ -9,6 +9,7 @@ import { createInventory, addAll, addItem, countOf, serialize, deserialize } fro
 import { openTreasure, openAll, canOpen } from '../src/meta/loot.js';
 import { craft, learn, recipeOfBlueprint } from '../src/meta/craft.js';
 import { createFurnaces, furnaceOp, advance, sanitizeFurnaces, accepts } from '../src/meta/furnace.js';
+import { createSpells, learnScroll } from '../src/meta/spells.js';
 import { rarityOf } from '../src/meta/rarity.js';
 import { itemName, tierOf } from '../src/meta/piece.js';
 import { equippedStats } from '../src/meta/stuff.js';
@@ -16,7 +17,7 @@ import { equippedStats } from '../src/meta/stuff.js';
 const CROWN = 'Couronne du Roi Gobelin', MACE = 'Masse du Roi Gobelin', CAPE = 'Cape royale du Gobelin';
 const RECIPE = 'Recette : Chitine', BP = 'Four en or BP', CHEST = q => goblinChestItem(q);
 let n = 0; const id = () => 'op' + (n++);
-/* hasard rejoué : always (2 nombres), famille boss, famille recette, famille gemme */
+/* hasard rejoué : always (2 nombres), famille boss, famille recette, famille parchemin, famille gemme */
 const seq = (...v) => { let i = 0; return () => v[i++ % v.length]; };
 
 test('objets : cases, stats et raretés du créateur ; pas craftables (sauf le Four en or, par son plan)', () => {
@@ -43,16 +44,16 @@ test('coffre : un par qualité (R1 à R7), Unique, non empilable, nom affiché �
 
 test('coffre : toujours graphite 20-40 et peaux 50-100 ; un seul objet rare au plus (1 / 2 / 2 / 2 %) ; gemmes 1 % chacune', () => {
   const open = (...r) => { const inv = createInventory(); addItem(inv, CHEST(3), 1); return openTreasure(inv, CHEST(3), id(), seq(...r)).loot; };
-  assert.deepEqual(open(0, 0, 0.99, 0.99, 0.99), { 'Graphite ore':20, 'Peau de gobelin':50 });
-  assert.deepEqual(open(0.9999, 0.9999, 0.99, 0.99, 0.99), { 'Graphite ore':40, 'Peau de gobelin':100 });
-  const boss = r => Object.keys(open(0.5, 0.5, r, 0.99, 0.99)).filter(k => !['Graphite ore', 'Peau de gobelin'].includes(k));
+  assert.deepEqual(open(0, 0, 0.99, 0.99, 0.99, 0.99), { 'Graphite ore':20, 'Peau de gobelin':50 });
+  assert.deepEqual(open(0.9999, 0.9999, 0.99, 0.99, 0.99, 0.99), { 'Graphite ore':40, 'Peau de gobelin':100 });
+  const boss = r => Object.keys(open(0.5, 0.5, r, 0.99, 0.99, 0.99)).filter(k => !['Graphite ore', 'Peau de gobelin'].includes(k));
   assert.deepEqual(boss(0), [CROWN]); assert.deepEqual(boss(0.0099), [CROWN]);
   assert.deepEqual(boss(0.01), [BP]); assert.deepEqual(boss(0.0299), [BP]);
   assert.deepEqual(boss(0.03), [MACE]); assert.deepEqual(boss(0.05), [CAPE]); assert.deepEqual(boss(0.0699), [CAPE]);
   assert.deepEqual(boss(0.07), []);
-  assert.deepEqual(Object.keys(open(0.5, 0.5, 0.99, 0.0499, 0.99)).at(-1), RECIPE, 'recette : 5 %');
-  assert.equal(open(0.5, 0.5, 0.99, 0.05, 0.99)[RECIPE], undefined);
-  const gem = r => Object.keys(open(0.5, 0.5, 0.99, 0.99, r)).filter(k => k.endsWith('inférieur'));
+  assert.deepEqual(Object.keys(open(0.5, 0.5, 0.99, 0.0499, 0.99, 0.99)).at(-1), RECIPE, 'recette : 5 %');
+  assert.equal(open(0.5, 0.5, 0.99, 0.05, 0.99, 0.99)[RECIPE], undefined);
+  const gem = r => Object.keys(open(0.5, 0.5, 0.99, 0.99, 0.99, r)).filter(k => k.endsWith('inférieur'));
   assert.deepEqual(gem(0), ['Rubis inférieur']); assert.deepEqual(gem(0.0299), ['Saphir inférieur']); assert.deepEqual(gem(0.03), []);
   /* fréquences réelles */
   let s = 11; const rng = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -65,13 +66,13 @@ test('coffre : toujours graphite 20-40 et peaux 50-100 ; un seul objet rare au p
 test('coffre : la pièce de stuff arrive identifiée à la qualité du coffre ; le plan et la recette, non', () => {
   for(const [r, item] of [[0, CROWN], [0.04, MACE], [0.06, CAPE]]){
     const inv = createInventory(); addItem(inv, CHEST(6), 1);
-    openTreasure(inv, CHEST(6), id(), seq(0.5, 0.5, r, 0.0, 0.99));
+    openTreasure(inv, CHEST(6), id(), seq(0.5, 0.5, r, 0.0, 0.99, 0.99));
     const p = inv.slots.find(x => x?.item === item);
     assert.equal(p.q, 6, item); assert.ok(Number.isSafeInteger(p.uid));
     assert.equal(inv.slots.find(x => x?.item === RECIPE).q, undefined);
   }
   const inv = createInventory(); addItem(inv, CHEST(2), 1);
-  openTreasure(inv, CHEST(2), id(), seq(0.5, 0.5, 0.02, 0.99, 0.99));
+  openTreasure(inv, CHEST(2), id(), seq(0.5, 0.5, 0.02, 0.99, 0.99, 0.99));
   assert.equal(inv.slots.find(x => x?.item === BP).q, undefined);
 });
 
@@ -80,9 +81,9 @@ test('coffre : « Recette : Chitine » ne sort plus une fois apprise ; une deman
   assert.equal(recipeOfBlueprint(RECIPE), 'Four : Chitine');
   assert.equal(learn(inv, RECIPE, id()).ok, true);
   addItem(inv, CHEST(4), 2);
-  const r = openTreasure(inv, CHEST(4), 'same', seq(0.5, 0.5, 0.99, 0.0, 0.99));
+  const r = openTreasure(inv, CHEST(4), 'same', seq(0.5, 0.5, 0.99, 0.0, 0.99, 0.99));
   assert.equal(r.loot[RECIPE], undefined, 'déjà apprise : rien');
-  assert.deepEqual(openTreasure(inv, CHEST(4), 'same', seq(0.5, 0.5, 0.99, 0.0, 0.99)), { loot:r.loot, repeated:true });
+  assert.deepEqual(openTreasure(inv, CHEST(4), 'same', seq(0.5, 0.5, 0.99, 0.0, 0.99, 0.99)), { loot:r.loot, repeated:true });
   assert.equal(countOf(inv, CHEST(4)), 1, 'un seul coffre ouvert');
   assert.equal(openAll(inv, CHEST(4), id(), seq(0.5)).count, 1);
   assert.equal(openTreasure(inv, CHEST(4), id(), seq(0.5)), null, 'plus de coffre');
@@ -137,4 +138,25 @@ test('la recette apprise survit à l\'enregistrement (serveur) ; un nom inventé
   const back = deserialize(serialize(inv));
   assert.deepEqual(back.unlocked, ['Four : Chitine']);
   assert.equal(accepts('ore', 'Peau de gobelin', 'smelt', back), true);
+});
+
+test('coffre : 2e tirage, un parchemin au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %, Hand of Justice 1 %) ; un sort déjà appris ne sort pas', () => {
+  const US = 'Parchemin « Ulti shen »', FL = 'Parchemin « Fast learner »', CL = 'Parchemin « Cleave »', HJ = 'Parchemin « Hand of Justice »';
+  const scroll = (r, spells) => { const inv = createInventory(); addItem(inv, CHEST(3), 1);
+    return Object.keys(openTreasure(inv, CHEST(3), id(), seq(0.5, 0.5, 0.99, 0.99, r, 0.99), { spells }).loot).filter(k => k.startsWith('Parchemin')); };
+  assert.deepEqual(scroll(0), [US]); assert.deepEqual(scroll(0.0099), [US]);
+  assert.deepEqual(scroll(0.01), [FL]); assert.deepEqual(scroll(0.0149), [FL]);
+  assert.deepEqual(scroll(0.015), [CL]); assert.deepEqual(scroll(0.025), [HJ]); assert.deepEqual(scroll(0.0349), [HJ]);
+  assert.deepEqual(scroll(0.035), []);
+  assert.deepEqual(scroll(0, ['ulti_shen']), [], 'Ulti shen appris : rien');
+  assert.deepEqual(scroll(0.02, ['ulti_shen']), [CL], 'les autres restent');
+  /* avec l'état des sorts du joueur : appris par learnScroll */
+  const inv = createInventory(), st = createSpells(); addAll(inv, { [HJ]:1 });
+  assert.equal(learnScroll(st, inv, HJ, id()).ok, true);
+  assert.deepEqual(scroll(0.03, st.learned), []);
+  /* fréquence réelle : 3,5 % */
+  let s = 5; const rng = () => (s = (s * 16807) % 2147483647) / 2147483647; let n = 0; const N = 40000;
+  for(let k = 0; k < N; k++){ const v = createInventory(); addItem(v, CHEST(1), 1); const l = openTreasure(v, CHEST(1), id(), rng).loot;
+    const got = Object.keys(l).filter(x => x.startsWith('Parchemin')); assert.ok(got.length <= 1); n += got.length; }
+  assert.ok(Math.abs(n / N - 0.035) < 0.004, `parchemin ${n / N}`);
 });
