@@ -43,7 +43,7 @@ Modèle d'entrée :
   les spawners ensemble (le plus bas d'abord), le roi reprend dès qu'un mineur est sorti de sa cage (90 s au plus), départ
   au sol au centre, Hand of Justice ne marche pas sur le roi.
 - **À suivre** : la récompense ; à 3, fer 0/20, fer + acier 13/20, acier 20/20 (sans skills ni sorts) ; seul, impossible.
-- **État** : 🧪 sur la branche `geoffrey/instances` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Bloc géant : aussi pendant une session, récompense à partir de 2 visites
 - **Pour le joueur** : on peut **entrer au Bloc géant pendant une session**, et le chef peut **lancer une session

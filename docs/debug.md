@@ -3584,7 +3584,7 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le Social (`activeSessionInfo`) n'affiche qu'une des deux activités (la session). Un joueur au
   Bloc géant pendant sa session ne regarde pas sa session (sans effet : elle tourne sur le serveur).
 
-### Instances : Instance I, le roi gobelin (Geoffrey) — branche `geoffrey/instances`, 🧪
+### Instances : Instance I, le roi gobelin (Geoffrey) — branche `geoffrey/instances`, ✅ en ligne le 27/10
 - **Quoi** : spec `docs/superpowers/specs/2026-10-27-instances-design.md`. Config `INSTANCE` (+ `MINE_MODES` 'instance_1',
   `instance: true`). Clé : `ITEMS['Clé d'instance I']` (cat 'key'), rareté inhabituel, famille `key` du `LOOT['Treasure
   T3']` (tirage à part, 5 %), texture `key_instance_1`. Simulation `src/sim/instance/world.js` (carte : AIR, ROCK, CAGE,
