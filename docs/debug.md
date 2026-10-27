@@ -3701,7 +3701,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : les minotaures et les mobs des vagues chassent toujours le premier mineur (`hunt = miners[0]`) ;
   sans incidence ici, à revoir si une salle doit répartir les cibles.
 
-### Barre d'argent et pépites d'argent du Bloc géant (Geoffrey) — branche `geoffrey/barre-argent`, 🧪
+### Barre d'argent et pépites d'argent du Bloc géant (Geoffrey) — ✅ en ligne le 27/10
 - **Quoi** : `FURNACE.recipes['Pépite d\'argent']` → `Barre d'argent` (10 + 10 charbon, 60 s, sans `unlock`) ;
   `ITEMS['Pépite d\'argent']` (material, écrit en clair : `GIANT` est défini après `ITEMS`, cohérence vérifiée par
   `tierItemsKnown`) ; `GIANT.nugget = { item, per:100 }`. `src/shared/giant.js` : `nuggetsFor(points)` (floor, 0 pour

@@ -28,7 +28,7 @@ Modèle d'entrée :
   leurs pépites.
 - **À suivre** : la barre d'argent n'a pas encore d'usage. Repère : ≈ 146 points par visite sans stuff, donc ≈ 2 à 3
   pépites pour 2 visites : une barre tous les 3 à 4 jours pour un joueur qui fait le minimum.
-- **État** : 🧪 sur la branche `geoffrey/barre-argent` (pas en ligne)
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — K hole : dans l'arène et les vagues, tout le monde se bat
 - **Pour le joueur** : un mineur réglé sur « Ignorer » ou « Fuir » les mobs se bat quand même dans l'**Arène des
