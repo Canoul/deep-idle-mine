@@ -31,7 +31,15 @@ Modèle d'entrée :
   graphite comme de miner autre chose. Maintenant, dans ce cas, le focus se met en veille : il descend au plus profond
   qu'il peut et mine normalement, un message le dit dans le panneau, et le focus reprend tout seul dès que le graphite
   redevient atteignable.
-- **État** : 🧪 sur la branche `geoffrey/fix-focus-graphite` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Correctif : le mineur « se téléportait » dans l'ascenseur
+- **Pour le joueur** : en session, un mineur qui prenait l'ascenseur (Glyphe Treuil) sautait de plusieurs cases d'un
+  coup dans le puits au lieu de glisser. Il glisse maintenant tout du long, comme sur le treuil normal.
+- **Cause** : l'écran reçoit la partie environ 3 fois par seconde. Avec du bon stuff (vitesse de montée), l'Escalateur
+  et l'ascenseur, le mineur parcourt plus de 6 cases entre deux réceptions, et au-delà de 6 cases l'écran le faisait
+  apparaître directement (cette règle sert aux vraies téléportations). Le jeu lui-même n'était pas touché.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Onglet Sorts refait (piste A « la barre de sorts »)
 - **Pour le joueur** : l'onglet Sorts a une nouvelle mise en page, les sorts eux-mêmes ne changent pas. En haut, **ta barre

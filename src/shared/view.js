@@ -117,12 +117,16 @@ export function shownPos(M, o, now = performance.now()){
   const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
   return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
 }
+/* dans le seau du treuil (ou la cabine de l'ascenseur) : il va vite et en ligne droite, plus de TELEPORT cases entre deux
+   envois n'est pas une téléportation (28/10/2026 : à ×2, l'ascenseur faisait « sauter » le mineur dans le puits) */
+const riding = o => !!o?.action?.data?.winch;
 export function glide(M, oldList, newList, target, now){
   const old = new Map(oldList.map(o => [o.id, o]));
   for(const o of newList){
     const to = target(o), was = old.get(o.id), from = was ? shownPos(M, was, now) : to;
     o._to = to;
-    o._from = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) > TELEPORT ? to : from;
+    const far = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]) > TELEPORT;
+    o._from = far && !riding(o) && !riding(was) ? to : from;
   }
 }
 
