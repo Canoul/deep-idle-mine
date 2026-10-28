@@ -128,10 +128,11 @@ export const plusMult = plus => 1 + (plus > 0 ? UPGRADE.levels[plus - 1].pct : 0
 /* ce qu'apporte une pièce (ou un simple nom d'objet) : { stats:{ k: bonus }, set:{ k: valeur qui remplace la base } }.
    Bonus = stats de l'objet + lignes identifiées, × multiplicateur d'amélioration ; set : la base + ce que la valeur
    apporte en plus, × le multiplicateur (l'épée en fer +3 : 5 + 6 × 1,07 = 11,4). */
-export function pieceBonus(entry){
+/* extra : multiplicateur en plus de l'amélioration (maîtrise des skills, 28/10/2026 ; 1 = aucun), appliqué pareil */
+export function pieceBonus(entry, extra = 1){
   const p = typeof entry === 'string' ? { item: entry } : entry || {};
   const d = ITEMS[p.item]; if(!d) return { stats:{}, set:{} };
-  const m = plusMult(p.plus | 0), stats = { ...(d.stats || {}) }, set = {};
+  const m = plusMult(p.plus | 0) * (extra > 0 ? extra : 1), stats = { ...(d.stats || {}) }, set = {};
   for(const l of p.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
   for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l, runeFactor(p.rune));
   for(const k in stats) stats[k] = m === 1 || stats[k] < 0 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);   // un malus n'empire pas (Lance, 25/10)

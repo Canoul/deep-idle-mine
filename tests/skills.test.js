@@ -2,7 +2,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILLS, STATS, CFG, IDS } from '../src/config.js';
-import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText } from '../src/meta/skills.js';
+import { createSkills, skillOp, sanitizeSkills, skillEffects, blockedReason, spentPoints, nodeText, slotMastery, behaviourSkills } from '../src/meta/skills.js';
+import { equippedStats, minerStats } from '../src/meta/stuff.js';
+import { gearScore } from '../src/meta/gearscore.js';
 import { buildSession } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
 import { moveT, climbT, winchT } from '../src/sim/mineur.js';
@@ -18,9 +20,9 @@ const fullTree = tree => SKILLS.trees.find(t => t.id === tree).nodes.flatMap(n =
 test('arbres demandés : 3 étages (3 / 1 / 5 rangs, + au 4e : Braum 3 pour le Barbare, Légende de la flemme 1 pour le Mineur, Mule 1 pour le Logisticien) ; Logisticien : Échelle de 2 et Treuil côte à côte au 2e étage', () => {
   assert.deepEqual(SKILLS.trees.map(t => t.label), ['Mineur', 'Logisticien', 'Barbare']);
   for(const t of SKILLS.trees) for(const r of [1, 2, 3]) assert.ok(t.nodes.some(n => n.row === r), `${t.id} étage ${r}`);
-  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1], logisticien:[3, 1, 1, 5, 1], barbare:[3, 1, 5, 3] }[t.id]);   // 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
+  for(const t of SKILLS.trees) assert.deepEqual(t.nodes.map(n => n.max), { mineur:[3, 1, 5, 1, 3], logisticien:[3, 1, 1, 5, 1, 3], barbare:[3, 1, 5, 3, 3] }[t.id]);   // 5e étage : maîtrises (28/10) ; 4e étage : Braum (Barbare), Légende de la flemme (Mineur), Mule (Logisticien)
   const lg = SKILLS.trees.find(t => t.id === 'logisticien').nodes;
-  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4]]);   // 23/10 soir : Bâtisseur supprimé
+  assert.deepEqual(lg.map(n => [n.id, n.row]), [['travel_rush', 1], ['tall_ladder', 2], ['winch', 2], ['winch_speed', 3], ['mule', 4], ['bench_mastery', 5]]);   // 23/10 soir : Bâtisseur supprimé
   for(const t of SKILLS.trees) for(const n of t.nodes) assert.ok(n.name && n.icon, n.id);
   assert.equal(nodeText('mine_speed', 3), 'Vitesse de minage +6 %');
   assert.equal(nodeText('ore_rush', 0).startsWith('Vitesse de marche +3 %'), true);
@@ -309,4 +311,48 @@ test('Force brute 3/3 : en partie, le mob collé à la cible prend 6 % du coup',
 test('chiffre des dégâts de zone : « -0,3 », « -1,2 », « -13 », jamais « -0 »', async () => {
   const { splashText } = await import('../src/render/splash.js');
   assert.deepEqual([0.345, 1.23, 12.6, 0.01].map(splashText), ['-0,3', '-1,2', '-13', '-0,1']);
+});
+
+test('maîtrises (5e étage, 28/10) : pioche +5 %, épée +5 %, torse +3 % par rang, après le 4e étage au rang max', () => {
+  const nodes = { mineur:'pick_mastery', barbare:'sword_mastery', logisticien:'bench_mastery' };
+  for(const [tree, node] of Object.entries(nodes)){
+    const t = SKILLS.trees.find(x => x.id === tree), n = t.nodes.find(x => x.id === node);
+    assert.deepEqual([n.row, n.max], [5, 3], node);
+    const st = learnAll(createSkills(), t.nodes.filter(x => x.row < 4).flatMap(x => Array(x.max).fill(x.id)));
+    assert.ok(blockedReason(st, node, 99), node + ' bloqué sans le 4e étage');
+    learnAll(st, t.nodes.filter(x => x.row >= 4).flatMap(x => Array(x.max).fill(x.id)));
+    assert.equal(st.ranks[node], 3);
+  }
+  assert.equal(nodeText('pick_mastery', 3), 'Les stats données par la pioche +15 %');
+  assert.equal(nodeText('bench_mastery', 1), 'Les stats données par le torse +3 %');
+
+  const eff = tree => skillEffects(sanitizeSkills({ tree, ranks:Object.fromEntries(SKILLS.trees.find(t => t.id === tree).nodes.map(n => [n.id, n.max])) }));
+  assert.deepEqual(slotMastery(eff('mineur')), { pioche:0.15 });
+  assert.deepEqual(slotMastery(eff('barbare')), { epee:0.15 });
+  assert.deepEqual(slotMastery(eff('logisticien')), { torse:0.09 });
+  assert.deepEqual(slotMastery({}), {});
+
+  const gear = [{ item:'Pioche en fer' }, { item:'Épée en fer' }, { item:'Plastron en fer' }, { item:'Bottes en chitine' }];
+  const plain = equippedStats(gear);
+  const pick = equippedStats(gear, { pioche:0.15 }), sword = equippedStats(gear, { epee:0.15 }), chest = equippedStats(gear, { torse:0.09 });
+  assert.equal(pick.mineSpeed, STATS.mineSpeed + 0.46);                       // 0,4 × 1,15
+  assert.equal(pick.damage, plain.damage); assert.equal(pick.speed, plain.speed);   // le reste ne bouge pas
+  assert.equal(sword.damage, 15.4);                                           // 5 + (14 − 5) × 1,15 = 15,35 → 15,4 (dégâts au dixième) : ce que l'épée ajoute aux mains nues
+  assert.equal(chest.pods, STATS.pods + 96);                                  // 88 × 1,09 = 95,9 → 96 (pods entiers)
+  assert.equal(chest.mineSpeed, plain.mineSpeed);
+  /* rien porté dans la case : rien ne change */
+  assert.deepEqual(equippedStats([{ item:'Bottes en chitine' }], { pioche:0.15 }), equippedStats([{ item:'Bottes en chitine' }]));
+  /* pas dans le gear score (ce n'est pas le stuff) */
+  assert.equal(gearScore(gear), gearScore(gear));
+
+  /* onglet Stuff : l'apport va dans la colonne des skills, pas dans les comportements */
+  const row = minerStats({ pioche:{ item:'Pioche en fer' } }, eff('mineur')).find(r => r.key === 'mineSpeed');
+  assert.equal(row.bonus, 0.4);
+  assert.ok(row.total > (STATS.mineSpeed + 0.46) * 1.06 - 1e-9 && row.total < (STATS.mineSpeed + 0.46) * 1.06 + 0.01, String(row.total));   // × Pioche aiguisée 6 %
+  assert.ok(!behaviourSkills(eff('mineur')).some(b => b.id === 'pick_mastery'));
+
+  /* en session : mêmes stats (src/shared/game.js) */
+  const G = buildSession({ seed:1, players:[{ account:'A', name:'A' }], gear:{ A:{ pioche:{ item:'Pioche en fer', uid:1 } } },
+    skills:{ A:{ tree:'mineur', ranks:Object.fromEntries(SKILLS.trees[0].nodes.map(n => [n.id, n.max])) } } });
+  assert.ok(Math.abs(G.miners[0].carac.mineSpeed - row.total) < 0.01, String(G.miners[0].carac.mineSpeed));   // 1,46 × 1,06 (l'onglet arrondit au centième)
 });

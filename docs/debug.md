@@ -3969,3 +3969,17 @@ Règles (voir CLAUDE.md) :
   200–1 400 ms) : 1 clic suffit 3/3, 0 clic perdu sur 10. Piste restante : retour visuel absent → le joueur recliquait.
 - **Tests** ✅ `tests/giant-service.test.js` (la réponse de claim contient `inventory.slots`) + giant-rules : 26/26 ;
   vérifié dans le navigateur : Treasure et Blueprint parts présents dans l'onglet Inventaire sans recharger.
+
+## 28/10/2026 — Skills : 5e étage, maîtrises de la pioche, de l'épée et du bench (Geoffrey)
+- **Quoi** : nœuds `pick_mastery` (mineur, 0,05), `sword_mastery` (barbare, 0,05), `bench_mastery` (logisticien, 0,03),
+  row 5, max 3, clé `slot` (case du stuff). `slotMastery(effects)` (src/meta/skills.js) → `{ case: part }` ;
+  `pieceBonus(entry, extra)` (src/meta/piece.js) multiplie comme l'amélioration (`plusMult × extra`, malus intacts, `set` :
+  base + écart × m, roundStat) ; `statsOf(items, mastery)` / `equippedStats(items, mastery)` (src/meta/stuff.js) trouvent
+  la case par `STUFF.items[item].slot`. Appelants : src/shared/game.js `caracOf` (mine, tours, instances, Bloc géant),
+  src/shared/instant.js (MI), `minerStats` (onglet Stuff : l'apport passe dans la colonne skill). `behaviourSkills`
+  ignore les nœuds à `slot`. Icônes pixel : hammer / trophy / heart (src/ui/skills.js).
+- **Pas touché** : gear score (pieceBonus sans extra), `scripts/simulate.js` (ses arbres complets ne reçoivent pas la
+  maîtrise : leur stuff vient des presets, à brancher si on veut la mesurer).
+- **Tests** ✅ `tests/skills.test.js` (nouveau test : déblocage, textes, slotMastery, stats pioche / épée / torse, onglet
+  Stuff, session) ; stuff, gearscore, instant, glyphes, upgrade, game : 178/178 ; wiki, sets, tours, Bloc géant,
+  instances : 139/140, ❌ hors sujet `tests/dev-spec.test.js` (déjà en échec sur `main`).

@@ -13,7 +13,7 @@ import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
 import { aurasOf } from '../meta/aura.js';
 import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPct } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, withSkillStats } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
 import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
 import { presetMiner, sanitizeBotPresets } from './dev-presets.js';
@@ -102,7 +102,7 @@ export function minerSpecs(record){
   const rings = record.rings ?? groupRings(record);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
-  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i)), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier
+  const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
