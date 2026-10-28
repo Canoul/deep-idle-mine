@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SERVER } from '../server/config.js';
+import { APP_UA } from '../src/app/mode.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -19,6 +20,10 @@ test('appli : réglages Capacitor (identité, jeu chargé depuis deepmineidle.fr
   assert.equal(c.server.url, 'https://deepmineidle.fr');
   assert.equal(c.server.errorPath, 'offline.html');
   assert.ok(!c.server.cleartext, 'jamais de http en clair');
+});
+
+test('appli : la coque ajoute la marque que src/app/mode.js reconnaît', () => {
+  assert.equal(json('mobile/capacitor.config.json').appendUserAgent, APP_UA);
 });
 
 test('appli : page hors ligne avec un lien Réessayer vers le jeu, sans script', () => {

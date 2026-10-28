@@ -14,13 +14,20 @@ function fakeDoc(){
   };
 }
 const web = search => ({ location: { search } });
+/* WebView de NOTRE appli : la coque ajoute sa marque à l'agent utilisateur (mobile/capacitor.config.json) */
+const ourWebView = { navigator: { userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) Chrome/140 Mobile DeepMineIdleApp' } };
 
 test('appli : pont natif présent', () => {
   assert.equal(nativeStatus({ Capacitor: { isNativePlatform: () => true } }), 'ok');
 });
 
-test('appli : pont Android sans Capacitor = bloqué', () => {
-  assert.equal(nativeStatus({ androidBridge: {} }), 'blocked');
+test('appli : notre appli Android sans Capacitor = pont bloqué', () => {
+  assert.equal(nativeStatus({ ...ourWebView, androidBridge: {} }), 'blocked');
+});
+
+test('appli : navigateur intégré d’une AUTRE appli (androidBridge sans notre marque) = le site', () => {
+  assert.equal(nativeStatus({ androidBridge: {}, navigator: { userAgent: 'Mozilla/5.0 (Linux; Android 14; wv) Chrome/140' } }), 'web');
+  assert.equal(nativeStatus({ androidBridge: {} }), 'web');
 });
 
 test('appli : navigateur', () => {
@@ -60,6 +67,6 @@ test('appli : pont ok → classe app et badge « APPLI ✓ »', () => {
 
 test('appli : pont bloqué → badge « APPLI ⚠ pont bloqué »', () => {
   const doc = fakeDoc();
-  assert.deepEqual(bootApp({ doc, win: { ...web(''), androidBridge: {} } }), { status: 'blocked', app: true });
+  assert.deepEqual(bootApp({ doc, win: { ...web(''), ...ourWebView, androidBridge: {} } }), { status: 'blocked', app: true });
   assert.equal(doc.added[0].textContent, 'APPLI ⚠ pont bloqué');
 });

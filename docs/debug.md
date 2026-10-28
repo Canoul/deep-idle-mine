@@ -4279,7 +4279,11 @@ Règles (voir CLAUDE.md) :
 - **Pont natif et politique de sécurité** : `Bridge.java` (Capacitor 8.6) injecte le pont par
   `WebViewCompat.addDocumentStartJavaScript` (origine https://deepmineidle.fr) quand la WebView le permet, ce qui ne passe
   pas par le HTML de la page ; sinon (vieille WebView) il l'insère en script en ligne, bloqué par `script-src 'self'`
-  (`server/config.js`). Le badge le dira : « APPLI ⚠ pont bloqué » = `androidBridge` présent sans `window.Capacitor`.
+  (`server/config.js`). Le badge le dira : « APPLI ⚠ pont bloqué » = `androidBridge` présent sans `window.Capacitor`,
+  **et** la marque `DeepMineIdleApp` dans l'agent utilisateur (`appendUserAgent` de la coque, `APP_UA` de
+  `src/app/mode.js`) : correctif de la relecture finale, sans elle le navigateur intégré d'une autre appli exposant un
+  `androidBridge` aurait reçu la couche appli (le site aurait changé pour ce visiteur). Test « navigateur intégré
+  d'une AUTRE appli ». Prendre l'APK fabriquée après ce commit.
 - **Bord à bord** : `android.adjustMarginsForEdgeToEdge` (cité par des blogs) n'existe plus en 8.6 ; remplacé par
   `plugins.SystemBars.insetsHandling` (défaut `css`) : la WebView suit `viewport-fit`, absent de `index.html`, donc pas
   bord à bord. Rien de réglé.

@@ -2,6 +2,7 @@
   "appId": "fr.deepmineidle.app",
   "appName": "Deep Mine Idle",
   "webDir": "www",
+  "appendUserAgent": "DeepMineIdleApp",
   "server": {
     "url": "https://deepmineidle.fr",
     "errorPath": "offline.html"
