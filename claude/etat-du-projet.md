@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (chat global du Lobby, branche `jules/chat-global`).*
+*Dernière mise à jour : 28/10/2026 (chat global du Lobby, en ligne).*
 
 ---
 
@@ -156,7 +156,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
 - **Chat de session** (22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
-- **Chat global** (28/10, Jules ; branche `jules/chat-global`, pas encore en ligne) : carte du **Lobby**, tous les comptes
+- **Chat global** (28/10, Jules, en ligne) : carte du **Lobby**, tous les comptes
   (invités compris), en session ou non ; un message / 3 s (`CHAT.globalGapMs`), 50 derniers gardés **en base** (ns
   `chat_global`, survit aux redémarrages) ; `server/social/service.js` (`chatPost` / `chatGet`, `/api/social/chat`), même
   module d'affichage que le chat de session (`src/ui/chat.js`), relu seulement Lobby ouvert. **Pas de modération.**

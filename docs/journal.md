@@ -34,7 +34,7 @@ Modèle d'entrée :
   que quand l'onglet Lobby est ouvert (pas de pastille « nouveau message » sur l'onglet).
 - **À suivre** : pas de modération (ni signalement, ni sourdine, ni suppression par l'équipe) : à prévoir si des abus
   arrivent.
-- **État** : 🧪 sur la branche `jules/chat-global` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Correctif : mineur bloqué sur une échelle avec un focus minerai en fin de session
 - **Pour le joueur** : signalé par un joueur (focus graphite, couche 5). Près de la fin de la session, si le minerai visé
