@@ -22,6 +22,12 @@ const RUBRICS = [
   { id:'enchant',  label:'✨ Enchantement' },
 ];
 
+/* Identification en deux temps (28/10/2026) : sans pièce choisie, la liste ne propose que les pièces pas encore
+   identifiées ; une fois la pièce posée, seulement les autres exemplaires du même objet (identifiés ou non) à sacrifier. */
+export const identifyChoices = (list, t) => t
+  ? list.filter(p => p.uid !== t.uid && p.item === t.item)
+  : list.filter(p => !isIdentified(p));
+
 /* une case d'objet (vide : son libellé) */
 const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${p ? tipAttr(p.item, p.item, p) : ''}>`+
   `${p ? icon(p.item) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
@@ -54,37 +60,39 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
   }
   const message = () => msg ? `<p class="${ok ? 'okmsg' : 'err'}">${msg}</p>` : '';
 
-  /* Identification : deux cases. Un clic sur une case la choisit (cadre doré) ; un clic sur une pièce de la liste la
-     pose dans la case choisie. Un clic sur la case déjà choisie et remplie la vide. N'importe quelle pièce peut aller
-     dans n'importe quelle case : si ce n'est pas le même objet (ou si la pièce est déjà identifiée), on ne peut juste
-     pas identifier (bouton grisé, la raison est dite). Le serveur revérifie tout (src/meta/upgrade.js). */
+  /* Identification : deux cases, remplies en deux temps (28/10/2026). D'abord la pièce à identifier (la liste ne propose
+     que les pièces pas encore identifiées), puis le sacrifice (seulement les autres exemplaires du même objet, cf.
+     identifyChoices). La case active (cadre doré) suit : un clic sur une case remplie la vide, vider la pièce vide aussi
+     le sacrifice. Le contrôle `why` reste en garde-fou ; le serveur revérifie tout (src/meta/upgrade.js). */
   function renderIdentify(t, s){
     if(t && s && t.uid === s.uid) s = null;
+    pick = t ? 'sacrifice' : 'target';               // deux temps : la case active suit la pièce posée
+    if(!t){ s = null; sacrifice = null; }
     const why = !t || !s ? '' : isIdentified(t) ? 'Cette pièce est déjà identifiée.'
       : s.item !== t.item ? 'Les deux pièces doivent être le même objet.' : '';
     const can = t && s && !why && !busy;
-    const list = pieces().filter(p => p.uid !== (pick === 'target' ? s?.uid : t?.uid));
+    const list = identifyChoices(pieces(), t);
     const sel = c => pick === c ? ' sel' : '';
     $('upBody').innerHTML =
-      helpLine(`Identification\nClique sur une case, puis sur une pièce pour l'y poser.\nLa pièce à identifier reçoit une qualité (R1 à R7), en sacrifiant un autre exemplaire du même objet (peu importe sa qualité).\nC'est définitif.`)+
+      helpLine(`Identification\n1. Choisis la pièce à identifier (seules les pièces pas encore identifiées sont proposées).\n2. Choisis le sacrifice : un autre exemplaire du même objet, peu importe sa qualité.\nLa pièce reçoit une qualité (R1 à R7). C'est définitif.`)+
       `<div class="upPair"><div>${box(t, 'Pièce à identifier', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(s, 'Sacrifice', 'upSacrifice' + sel('sacrifice'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>🔍 Identifier</button></div>`+
       (why ? `<p class="err">${why}</p>` : '')+
       message()+
-      `<h3>${pick === 'target' ? 'Choisis la pièce à identifier' : 'Choisis le sacrifice'}</h3>`+
+      `<h3>${t ? 'Choisis le sacrifice' : 'Choisis la pièce à identifier'}</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => row(p, p.uid === t?.uid || p.uid === s?.uid ? '<b>posée</b>' : '')).join('')}</div>`
-        : '<p class="mut">Aucune pièce de stuff.</p>')+
+        : `<p class="mut">${t ? 'Aucun autre exemplaire de cet objet à sacrifier.' : 'Aucune pièce à identifier.'}</p>`)+
       qualityTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;
-      if(pick === 'target'){ target = uid; if(sacrifice === uid) sacrifice = null; if(sacrifice == null) pick = 'sacrifice'; }
-      else { sacrifice = uid; if(target === uid) target = null; if(target == null) pick = 'target'; }
+      if(t) sacrifice = uid; else target = uid;
       msg = ''; render();
     });
-    const choose = (c, filled, clear) => () => { if(pick === c && filled) clear(); pick = c; msg = ''; render(); };
-    $('upBody').querySelector('.upTarget').onclick = choose('target', !!t, () => { target = null; });
-    $('upBody').querySelector('.upSacrifice').onclick = choose('sacrifice', !!s, () => { sacrifice = null; });
+    /* la case de la pièce : la vider revient au premier temps (le sacrifice part avec) ; celle du sacrifice : seulement
+       une fois la pièce choisie */
+    $('upBody').querySelector('.upTarget').onclick = () => { target = null; msg = ''; render(); };
+    $('upBody').querySelector('.upSacrifice').onclick = () => { if(t && s){ sacrifice = null; msg = ''; render(); } };
     $('upGo').onclick = async () => {
       if(busy || !can) return;
       if((isIdentified(s) || s.plus > 0 || isWorn(s)) && !await ask(`Sacrifier ${pieceName(s)} ?${isIdentified(s) || s.plus > 0 ? ' Sa qualité et son niveau seront perdus.' : ''}${wornWarn(s)}`, { ok:'Sacrifier', danger:true })) return;

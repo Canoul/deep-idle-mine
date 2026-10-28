@@ -4564,3 +4564,12 @@ Règles (voir CLAUDE.md) :
   3 tuiles par ligne.
 - ⚠️ Pas vérifié en vrai : le bouton « Remplacer X » (barre pleine + un autre sort disponible), l'apprentissage d'un
   parchemin depuis la fiche (même appel serveur qu'avant), la barre de sorts pendant une session (couverte par le test).
+
+## 28/10/2026 — Identification en deux temps : pièce non identifiée, puis sacrifice du même objet (Geoffrey)
+- `src/ui/upgrade.js` : nouvel export pur `identifyChoices(list, t)` utilisé par `renderIdentify`. Sans cible : pièces
+  `!isIdentified` ; avec cible : même `item`, uid ≠ cible (identifiées comprises). `pick` est recalculé à chaque rendu
+  (`t ? 'sacrifice' : 'target'`) ; sans cible le sacrifice est vidé ; la case Sacrifice ne fait que se vider (rien avant
+  la cible). Aide « ? » réécrite en 2 étapes. Le contrôle `why` reste en garde-fou, le serveur revérifie
+  (`src/meta/upgrade.js`, inchangé).
+- **Tests** ✅ `tests/amelioration.test.js` (29/29, 1 nouveau sur `identifyChoices`).
+- ⚠️ Pas vérifié dans le navigateur (affichage seulement, même rendu qu'avant avec moins de lignes).

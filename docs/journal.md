@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Identification en deux temps
+- **Pour le joueur** : dans l'onglet Amélioration, rubrique Identification, on choisit d'abord la pièce à identifier :
+  la liste ne montre que les pièces **pas encore identifiées**. Ensuite seulement on choisit le sacrifice, et la liste
+  ne montre plus que les **autres exemplaires du même objet** (identifiés ou non : sacrifier un exemplaire identifié
+  reste permis, avec la fenêtre d'avertissement). Vider la case de la pièce revient au premier temps.
+- **État** : ✅ en ligne le 28/10.
+
 ## 28/10/2026 — Geoffrey — Correctif : le mineur « se téléportait » dans l'ascenseur
 - **Pour le joueur** : en session, un mineur qui prenait l'ascenseur (Glyphe Treuil) sautait de plusieurs cases d'un
   coup dans le puits au lieu de glisser. Il glisse maintenant tout du long, comme sur le treuil normal.
