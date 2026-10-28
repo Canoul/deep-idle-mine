@@ -4058,3 +4058,19 @@ Règles (voir CLAUDE.md) :
   166/166 ✅ sur tower*, judgment, game-service, discord, wiki, lobby, sets. ⚠️ Aucune simulation (demande de Geoffrey) :
   faisabilité du niveau 2 inconnue. Classement des temps (`recordTower`) : les deux niveaux sont mélangés.
 
+## 28/10/2026 — Shrines (Geoffrey)
+- Config `SHRINES` (liste, `drawX`, `opMemory`). Logique pure `src/meta/shrines.js` : sanitize, give (idempotent par opId,
+  ne prend que ce qui manque), consume (au lancement), `oreBonusComp` (points de terrain → minerais au prorata), effets.
+- Génération : `newSession(…, { shrines })` → `G.shrines`, `G.oreBonus` ; `genArea` applique `oreBonusComp` à `areaComp(k)`
+  (k hole non touché : sa propre composition). `buildSession` lit `record.shrines` (ancienne session : aucun).
+- Stockage : ns `shrine` (mémoire, fichier, PostgreSQL) ; `putShrinesAndInventory` écrit le don en une fois.
+- Serveur de jeu : `shrinesOf`, `shrineGive(me, leaderId, body, code)` (verrous inv:donneur + shrine:chef), `partyCodeFor`,
+  consommation dans `start` (mode mine hors dev, verrou shrine:chef) → `rec.shrines`, `publicSession.shrines`.
+- Groupes : `create` et `formLobby` deviennent async (code gardé via `game.partyCodeFor`, re-vérifie après l'attente),
+  `state.shrines` (chef du groupe ou soi), action `shrineGive` + route `POST /api/party/shrine`.
+- UI : carte `#shrinesCard` (lobby, mine classique), `shrinesHtml`, dessin à la surface (`render/canvas.js`, colonnes
+  `SHRINES.drawX`), texture `shrine_abundance` (gen_textures.py, seul fichier ajouté).
+- Tests : `tests/shrines.test.js` (11), `tests/anticheat/shrines.test.js` ; liés (game-service, party, lfg, social, world,
+  session, khole, view, lobby, live, wiki) 216/216 ✅ ; anti-triche 105/105 ✅ ; simulation 5 sessions sans shrine : 0 blocage.
+- ⚠️ Pas de simulation avec le shrine (effet sur la profondeur et le coffre non mesuré). Le don pendant une session est permis.
+

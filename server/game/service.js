@@ -39,6 +39,7 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
+import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
@@ -71,6 +72,8 @@ const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas enc
                        wrong_tree: 'Ce sort est réservé à une autre spécialisation.', slot_locked: 'Cet emplacement est verrouillé.',
                        not_scroll: 'Cet objet n\'est pas un parchemin de sort.', already_learned: 'Tu connais déjà ce sort : ton parchemin est gardé.',
                        not_owned: 'Tu n\'as pas ce parchemin.', bad_request: 'Demande invalide.' };
+const SHRINE_ERRORS = { bad_shrine: 'Shrine inconnu.', bad_item: 'Ce shrine ne demande pas cet objet.', bad_qty: 'Quantité invalide.',
+  active: 'Ce shrine est déjà actif.', full: 'Cet objet est déjà entièrement donné.', not_owned: 'Tu n\'en as pas assez.' };
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
@@ -226,6 +229,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
              ...(rec.modulation ? { modulation: rec.modulation } : {}),
              ...(rec.level ? { level: rec.level } : {}),   // niveau de tour (28/10)
+             ...(rec.shrines ? { shrines: rec.shrines } : {}),   // shrines actifs au lancement (28/10)
              result: rec.status === 'done' ? rec.result : null };
   }
   const isDue = rec => rec.status === 'running' && !rec.dev && clock() >= rec.finishAt;
@@ -519,6 +523,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(over.length) fail('gs_too_high', 409, `Modulation : il faut moins de ${TOWER.modulation.gsMax} GS chacun. `+
             over.map(p => `${p.name || 'Un joueur'} a ${gearScore(gear[p.account])} GS`).join(', ') + '.');
         }
+        /* shrines du chef (28/10/2026, SHRINES) : mine classique hors mode dev ; chaque shrine actif perd une session ici,
+           au lancement, et ses effets sont enregistrés dans la session (la partie se rejoue à l'identique) */
+        const shrines = mode === 'mine' && !dev ? await withLock('shrine:' + me.id, async () => {
+          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st);
+          if(used.length) await store.putShrines(me.id, st);
+          return used;
+        }) : [];
         const rec = {
           id: crypto.randomUUID(),
           mode,
@@ -534,6 +545,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(side ? { opening, level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
+          ...(shrines.length ? { shrines } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
@@ -986,6 +998,35 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
     /* classements : valeurs de tous les comptes (le service social classe et met les pseudos) */
     leaderboardData,
+    /* shrines (28/10/2026) : rattachés au compte du chef (leaderId). Le service des groupes vérifie que celui qui donne
+       est dans le groupe de ce chef (ou que c'est lui-même, seul). */
+    async shrinesOf(leaderId){ return publicShrines(sanitizeShrines(await store.getShrines(leaderId))); },
+    /* don : body = { shrine, item, qty, opId } ; code : code du lobby actuel du chef (gardé tant qu'il a un shrine) */
+    async shrineGive(me, leaderId, body = {}, code = null){
+      const { opId } = body;
+      if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
+      return withLock.many(['inv:' + me.id, 'shrine:' + leaderId], async () => {
+        const inv = await loadInventory(me.id), st = sanitizeShrines(await store.getShrines(leaderId));
+        const r = giveShrine(st, inv, { shrine: body.shrine, item: body.item, qty: body.qty, opId });
+        if(r.error) fail(r.error, ['active', 'full', 'not_owned'].includes(r.error) ? 409 : 400, SHRINE_ERRORS[r.error]);
+        if(!r.repeated){
+          if(code && hasShrines(st)) st.code = code;
+          await store.putShrinesAndInventory(leaderId, st, me.id, JSON.parse(serialize(inv)));
+        }
+        return { shrines: publicShrines(st), inventory: publicInventory(inv), given: r.given, activated: r.activated };
+      });
+    },
+    /* code d'un nouveau lobby de ce chef : le sien, gardé, tant qu'il a un shrine (actif ou en cours de paiement) ;
+       sinon propose. Le service des groupes vérifie qu'il est libre. */
+    async partyCodeFor(accountId, propose){
+      return withLock('shrine:' + accountId, async () => {
+        const st = sanitizeShrines(await store.getShrines(accountId));
+        if(!hasShrines(st)) return propose;
+        if(st.code) return st.code;
+        st.code = propose; await store.putShrines(accountId, st);
+        return propose;
+      });
+    },
     /* tour d'un camp : ouverte ? et les comptes qui l'ont déjà faite pendant cette ouverture (bouton « Who ? » du lobby) */
     async towerDone(side){
       if(!JUDGMENT_SIDES.includes(side)) fail('bad_request', 400, 'Camp inconnu.');

@@ -95,6 +95,24 @@ export function towerLevelState({ tower, locked, party, account, doneLevels = []
   return { show: !!tower && !locked && !!account && leader, levels, level: open.includes(cur) ? cur : open[0] ?? null };
 }
 
+/* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; sinon le prix,
+   ce qui est déjà donné, et pour chaque objet un champ + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
+export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy = false } = {}){
+  const e = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const head = `<p class="mut small">${leaderName ? `Shrines de <b>${e(leaderName)}</b> (chef du groupe) : chacun peut donner.` : 'Tes shrines : actifs dans les mines que tu lances, seul ou en chef de groupe. Ton groupe peut aider à payer.'}</p>`;
+  return head + list.map(sh => {
+    const top = `<div class="shrineHead"><img src="textures/${e(sh.tex)}.png" alt="" width="32" height="32"><span><b>${e(sh.name)}</b><br><small>${e(sh.desc)}</small></span></div>`;
+    if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> session${sh.left > 1 ? 's' : ''} de mine.</p></div>`;
+    const rows = Object.entries(sh.price).map(([item, q]) => {
+      const got = sh.paid?.[item] ?? 0, need = q - got, mine = have(item);
+      return `<div class="shrineRow"><span>${e(item)} : <b>${got} / ${q}</b> <small class="mut">(tu en as ${mine})</small></span>`+
+        (need > 0 ? `<input type="number" min="1" max="${need}" value="${Math.max(1, Math.min(need, mine))}" data-shrine-qty="${e(sh.id)}|${e(item)}">`+
+                    `<button data-shrine-give="${e(sh.id)}|${e(item)}"${busy || !mine ? ' disabled' : ''}>Donner</button>` : '<small class="ok">✔</small>')+`</div>`;
+    }).join('');
+    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : actif pour ${sh.sessions} mines.</p></div>`;
+  }).join('');
+}
+
 /* « Who ? » (tour ouverte) : une ligne par joueur en ligne qui n'a pas encore fait la tour ; « Inviter » (par son ID)
    s'il n'est pas en session et pas déjà dans mon groupe. p = { id, displayId, name, status…, friend } */
 export function whoRows(list, party, now = Date.now()){
@@ -172,7 +190,7 @@ export function slotButtons({ account, party, session }, slot){
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
-  const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false,
+  const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false, shrines:[],
                session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false, who:null,     // view 'jugement' : jauges à la place de l'équipe
                lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null };   // lfgWant : sa recherche, à relancer si le serveur a redémarré
 
@@ -192,6 +210,12 @@ export function setupLobby(h){
     const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
+    $('shrinesCard').hidden = !cards.prefs || !st.shrines?.length;   // shrines : lobby de la mine classique (28/10)
+    if(!$('shrinesCard').hidden){
+      const leader = party && party.members.length > 1 && party.leader !== account?.id ? party.members.find(m => m.account === party.leader)?.name ?? 'le chef' : null;
+      const html = shrinesHtml(st.shrines, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
+      if($('shrinesBody')._html !== html && !$('shrinesBody').contains(document.activeElement)){ $('shrinesBody').innerHTML = html; $('shrinesBody')._html = html; }
+    }
     $('instCard').hidden = !cards.inst;
     if(cards.inst) renderInstances();
     const giantWas = $('giantCard').hidden; $('giantCard').hidden = !cards.giant;
@@ -403,6 +427,15 @@ export function setupLobby(h){
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
   $('modulation').onchange = () => render();
+  $('shrinesBody').onclick = e => {
+    const b = e.target.closest('button[data-shrine-give]'); if(!b || b.disabled) return;
+    const [id, item] = b.dataset.shrineGive.split('|');
+    const input = [...$('shrinesBody').querySelectorAll('input[data-shrine-qty]')].find(i => i.dataset.shrineQty === b.dataset.shrineGive);
+    const qty = Math.floor(+input?.value || 0);
+    if(qty < 1) return error('Quantité invalide.');
+    st.busy = true;
+    act(async () => { const r = await h.shrineGive(id, item, qty); st.shrines = r.shrines; if(r.activated) error(''); return r; }, () => { st.busy = false; }).finally(() => { st.busy = false; render(); });
+  };
   $('towerLevelRow').onclick = e => { const b = e.target.closest('button[data-level]'); if(b && !b.disabled){ st.towerLevel = +b.dataset.level; render(); } };
   $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {

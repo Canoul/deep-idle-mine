@@ -29,6 +29,7 @@ export function createMemoryGameStore(initial = {}){
   const skills = new Map(Object.entries(initial.skills ?? {}));       // { tree, ranks, ops } (src/meta/skills.js)
   const spells = new Map(Object.entries(initial.spells ?? {}));       // { learned, slots, ops } (src/meta/spells.js)
   const sets = new Map(Object.entries(initial.sets ?? {}));           // { list, nextId, ops } (src/meta/sets.js)
+  const shrines = new Map(Object.entries(initial.shrines ?? {}));     // shrines d'un chef (src/meta/shrines.js, 28/10)
   const sessions = new Map(Object.entries(initial.sessions ?? {}));
   const parties = new Map(Object.entries(initial.parties ?? {}));     // groupes (server/party/service.js), par code
   const signups = new Map(Object.entries(initial.signups ?? {}));     // inscrits à la mine instantanée, par compte
@@ -82,6 +83,13 @@ export function createMemoryGameStore(initial = {}){
     /* sets : la liste seule, ou un set équipé (inventaire, stuff, skills, sorts et sets en une seule écriture : une pièce
        passe de l'inventaire au stuff, un arrêt entre deux écritures la dupliquerait ou la perdrait) */
     async getSets(accountId){ return copy(sets.get(accountId)) ?? null; },
+    /* shrines (28/10) : l'état d'un chef ; un don écrit en une fois l'inventaire du donneur et les shrines du chef */
+    async getShrines(accountId){ return copy(shrines.get(accountId)) ?? null; },
+    async putShrines(accountId, v){ shrines.set(accountId, copy(v)); await store.changed([{ ns: 'shrine', key: accountId, value: v }]); },
+    async putShrinesAndInventory(leaderId, v, giverId, inv){
+      shrines.set(leaderId, copy(v)); inventories.set(giverId, copy(inv));
+      await store.changed([{ ns: 'shrine', key: leaderId, value: v }, { ns: 'inventory', key: giverId, value: inv }]);
+    },
     async putSets(accountId, s){ sets.set(accountId, copy(s)); await store.changed([{ ns: 'sets', key: accountId, value: s }]); },
     async putLoadout(accountId, { inventory, stuff: st, skills: sk, spells: sp, sets: se }){
       inventories.set(accountId, copy(inventory)); stuff.set(accountId, copy(st)); skills.set(accountId, copy(sk));
@@ -185,7 +193,7 @@ export function createMemoryGameStore(initial = {}){
     snapshot(){ return { version: 1, inventories: Object.fromEntries(inventories), furnaces: Object.fromEntries(furnaces),
                          crushers: Object.fromEntries(crushers),
                          stuff: Object.fromEntries(stuff), progress: Object.fromEntries(progress), skills: Object.fromEntries(skills),
-                         spells: Object.fromEntries(spells), sets: Object.fromEntries(sets),
+                         spells: Object.fromEntries(spells), sets: Object.fromEntries(sets), shrines: Object.fromEntries(shrines),
                          prefs: Object.fromEntries(prefs),
                          sessions: Object.fromEntries(sessions), parties: Object.fromEntries(parties),
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
@@ -221,12 +229,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'shrine']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record });
+                                        towerRecords: rows.tower_record, shrines: rows.shrine });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

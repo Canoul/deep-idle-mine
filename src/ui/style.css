@@ -717,3 +717,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* niveau de tour dans le lobby (28/10/2026) */
 .lobbyActions .towerLevels{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap}
 .lobbyActions .towerLevels button.on{outline:2px solid var(--gold, #e0b050)}
+/* shrines dans le lobby (28/10/2026) */
+.shrine{border-top:1px solid rgba(255,255,255,.08);padding-top:calc(2*var(--u));margin-top:calc(2*var(--u))}
+.shrine .shrineHead{display:flex;gap:calc(3*var(--u));align-items:center}
+.shrine .shrineHead img{image-rendering:pixelated}
+.shrine .shrineRow{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap;margin-top:calc(1*var(--u))}
+.shrine .shrineRow input{width:4.5em}

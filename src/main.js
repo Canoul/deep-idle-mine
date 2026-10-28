@@ -248,6 +248,8 @@ const accountUI = createAccountUI($('account'), acct, {
 /* ---------- lobby ---------- */
 const lobby = setupLobby({
   party: partyApi,
+  /* don à un shrine (28/10) : l'inventaire revient du serveur */
+  shrineGive: async (shrine, item, qty) => { const r = await partyApi.shrine({ shrine, item, qty, opId: newOpId() }); if(r.inventory) setInventory(r.inventory); return r; },
   look: () => lookOf(stuff.worn()),
   auras: () => aurasOf(stuff.worn()),
   gs: () => gearScore(stuff.worn()),
@@ -336,7 +338,7 @@ async function pollLobby(){
     if(st.session && st.session !== rec?.id){          // lancée par le chef (ou relancée pendant le bilan : il est lu)
       endAck?.(); await refresh(); return nav.show('session');
     }
-    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg });
+    lobby.update({ party:st.party, invites:st.invites, lfg:st.lfg, shrines:st.shrines ?? [] });
     setLfgFound(st.lfg?.found);
   } catch(e){ console.warn(e); }
   lobbyTimer = setTimeout(pollLobby, rec ? PARTY.pollInSession : PARTY.poll);

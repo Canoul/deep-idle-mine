@@ -1,5 +1,6 @@
 /* Session : création de la partie et boucle de simulation à pas fixe (DT).
    Ne touche ni au DOM ni au canvas : tourne aussi bien dans le navigateur que dans Node (tests, simulate). */
+import { shrineOf, shrineEffects } from '../meta/shrines.js';
 import { W, DT, SESSION_LEN, TOP_DIRT_ROWS, STATS, CFG, IDS, CHEST_X, CHEST_BASE, MOBS, SPAWN_X, TEAM, SHINY, FORTUNE, GEAR_RNG, GLYPHS } from '../config.js';
 import { inReach, reachOf, stopAction } from './knock.js';
 import { mulberry32 } from '../core/rng.js';
@@ -34,7 +35,11 @@ export function newSession(seed, opts={}){
     summary:null,
     /* résidus du Jugement : aucun si une tour était ouverte au lancement (23/10, enregistré dans la session) */
     noResidues: !!opts.noResidues,
+    /* shrines actifs au lancement (28/10/2026, SHRINES ; enregistrés dans la session) : décor près du coffre, et leurs
+       effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
+    shrines: Array.isArray(opts.shrines) ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
+  G.oreBonus = shrineEffects(G.shrines).orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
   G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));

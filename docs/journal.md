@@ -76,6 +76,17 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Shrines : le Shrine d'abondance
+- **Pour le joueur** : nouvelle carte **Shrines** dans le lobby de la mine. Les shrines appartiennent au **chef du
+  groupe** ; chaque membre peut donner les ressources du prix, autant qu'il veut. Prix atteint : le shrine est actif
+  pour **5 mines** lancées par ce chef, et il apparaît à la surface à côté du coffre. **Shrine d'abondance** : 10 pépites
+  d'argent + 20 résidus angéliques, **5 % de minerais en plus** dans toutes les areas (pris sur la pierre et la terre,
+  réparti selon les minerais de chaque area). Tant que le chef a un shrine, son lobby garde le même code.
+- **Décisions** (Geoffrey) : calcul au prorata sur toutes les areas, charbon compris ; mine classique seulement ;
+  session comptée au lancement ; dons gardés si le groupe se défait ; shrines liés au compte du chef ; pas de
+  réactivation tant qu'il est actif ; seuil d'ouverture des areas inchangé ; d'autres shrines viendront.
+- **État** : 🧪 sur la branche `geoffrey/shrines` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Tours du Jugement : niveau 2
 - **Pour le joueur** : une tour choisie dans le Lobby, celui qui lance choisit le **niveau 1 ou 2**. Chaque niveau se
   gagne **une fois par ouverture** (un trésor chacun) : deux trésors possibles par ouverture. Niveau 2 : mobs et boss

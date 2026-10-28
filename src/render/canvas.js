@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -78,6 +78,7 @@ export function createRenderer(cv){
     ctx.strokeStyle='rgba(255,215,64,.9)'; ctx.lineWidth=1;
     for(const o of fm.pings){ if(G.tiles[o.y]&&G.tiles[o.y][o.x]===o.t) ctx.strokeRect(o.x*TILE+1.5,sy(o.y)+1.5,TILE-3,TILE-3); }
     blit('chest',CHEST_X*TILE,sy(0));
+    (G.shrines||[]).forEach((id,i)=>{ const d=SHRINES.list[id], x=SHRINES.drawX[i]; if(d && x!=null) blit(d.tex,x*TILE,sy(0)); });   // shrines actifs : décor (28/10)
     if(G.winch) blit(G.winch.lift ? 'lift_top' : 'winch_top',G.winch.x*TILE,sy(0));   // poulie du treuil (machinerie de l'ascenseur) en surface
     if(G.mule){                                            // sac de la Mule : sur sa case, jauge de remplissage au-dessus
       const px=G.mule.x*TILE, py=sy(G.mule.y), f=G.mule.cap>0 ? Math.min(1,G.mule.load/G.mule.cap) : 1;

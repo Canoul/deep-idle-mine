@@ -133,6 +133,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ni enchantement ; **amélioration +1 à +9 avec un doublon** du même anneau (27/10, `RINGS.upgrade` : +0,5 point par niveau à
   chaque effet, mêmes chances ; le plus haut niveau du groupe compte ; ancien : pas d'amélioration). **Boussole et torche** : ni
   identification, ni amélioration, ni enchantement (27/10, `UPGRADE.plainSlots`), les anciennes remises à zéro. Butin des **Trésors** des tours à l'ouverture (≈ 6,5 %, un anneau au plus).
+- **Shrines** (28/10, Geoffrey ; `SHRINES`, `src/meta/shrines.js`, GAME_DESIGN §6 « Shrines ») : bâtiments du lobby de la
+  mine classique, rattachés au **compte du chef**, payés par n'importe quel membre (dons gardés), actifs N mines lancées
+  par ce chef (décomptées au lancement), dessinés à la surface près du coffre ; lobby au même code tant qu'il y en a un.
+  **Shrine d'abondance** : 10 pépites d'argent + 20 résidus angéliques, 5 sessions, 5 points de terrain → minerais au
+  prorata dans toutes les areas. D'autres shrines prévus.
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
