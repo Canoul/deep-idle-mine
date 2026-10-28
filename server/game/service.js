@@ -956,7 +956,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* stuff : équiper une pièce de l'inventaire dans une case, ou la retirer. Inventaire et stuff changent ensemble. */
     /* amélioration : { action:'identify', uid, sacrifice } ou { action:'upgrade', uid }, opId. Le serveur tire le hasard ;
-       une demande renvoyée retrouve son résultat (rien n'est tiré ni consommé deux fois). */
+       une demande renvoyée retrouve son résultat (rien n'est tiré ni consommé deux fois). Les pièces portées comptent
+       aussi (28/10/2026) : inventaire et stuff sont enregistrés ensemble (un sacrifice porté vide sa case). */
     async upgrade(me, body = {}){
       const { action, opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
@@ -964,16 +965,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         fail('bad_request', 400, UPGRADE_ERRORS.bad_request);
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
-        await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
-        const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random)
-                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random)
-                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId })
-                : action === 'unenchant' ? unenchant(inv, { uid: body.uid, opId }) : { error: 'bad_request' };
-        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, (r.error === 'not_enough' && isRing(inv.slots.find(s => s?.uid === body.uid)?.item) ? 'Il te faut un doublon de cet anneau.' : null) ?? UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
-        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        const st = await loadStuff(me.id, inv), worn = st.worn;   // garde les uid uniques (pièces portées comprises)
+        const r = action === 'identify' ? identify(inv, { uid: body.uid, sacrifice: body.sacrifice, opId }, random, worn)
+                : action === 'upgrade' ? upgrade(inv, { uid: body.uid, opId }, random, worn)
+                : action === 'enchant' ? enchant(inv, { uid: body.uid, rune: body.rune, opId }, worn)
+                : action === 'unenchant' ? unenchant(inv, { uid: body.uid, opId }, worn) : { error: 'bad_request' };
+        const ringAsked = isRing((inv.slots.find(s => s?.uid === body.uid) ?? Object.values(worn).find(p => p?.uid === body.uid))?.item);
+        if(r.error) fail(r.error, r.error === 'not_enough' || r.error === 'not_owned' ? 409 : 400, (r.error === 'not_enough' && ringAsked ? 'Il te faut un doublon de cet anneau dans l\'inventaire.' : null) ?? UPGRADE_ERRORS[r.error] ?? UPGRADE_ERRORS.bad_request);
+        if(!r.repeated) await store.putInventoryAndStuff(me.id, JSON.parse(serialize(inv)), st);
         /* identification très rare : annoncée sur Discord (pas une demande renvoyée) */
         if(action === 'identify' && !r.repeated) shout(identifyMessage(displayName(me), r.piece));
-        return { piece: r.piece, fragment: r.fragment, success: r.success ?? true, inventory: publicInventory(inv) };
+        return { piece: r.piece, fragment: r.fragment, success: r.success ?? true, inventory: publicInventory(inv), stuff: worn };
       });
     },
 

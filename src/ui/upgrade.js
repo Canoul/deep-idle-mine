@@ -2,7 +2,7 @@
    lignes de stats), Amélioration (+1 à +9, matériaux, peut rater), Enchantement (une pièce + une Rune : les lignes de
    la rune s'ajoutent à la pièce, une rune par pièce ; retirée, elle devient un fragment aux % divisés par 2).
    Ne modifie rien lui-même : chaque action est demandée au serveur (onOp), qui tire le hasard et renvoie l'inventaire.
-   Seulement les pièces de l'inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. */
+   Pièces de l'inventaire et pièces portées (28/10/2026), marquées « équipée » : une pièce portée sacrifiée vide sa case. */
 import { UPGRADE, STUFF, RINGS } from '../config.js';
 import { isIdentified, isRune, canIdentify, canUpgrade, isFragment, runeFactor, pieceName, lineValue, plusMult, roundStat } from '../meta/piece.js';
 import { statLines, runeLines, ringLines } from '../meta/stuff.js';
@@ -24,19 +24,25 @@ const RUBRICS = [
 /* une case d'objet (vide : son libellé) */
 const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${p ? tipAttr(p.item, p.item, p) : ''}>`+
   `${p ? icon(p.item) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
-/* une ligne de la liste des pièces : icône, nom, effets */
-const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}`+
-  `<span>${pname(p)}<br><small class="stuffStats">${esc(statLines(p).join(' · ') || 'Aucun effet')}</small></span>${extra}</button>`;
-
-/* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) */
-export function setupUpgrade({ onOp }){
+/* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) ;
+   worn() : pièces portées { case: pièce } (onglet Stuff) */
+export function setupUpgrade({ onOp, worn = () => ({}) }){
   let inv = { slots:[] }, tab = 'identify', target = null, sacrifice = null, pick = 'target', busy = false, msg = '', ok = true;
   let rune = null;                                 // Enchantement : uid de la rune posée
+  /* pièces portées d'abord, puis celles de l'inventaire */
+  const worns = () => Object.values(worn() ?? {}).filter(p => p && p.uid != null);
+  const all = () => [...worns(), ...inv.slots.filter(s => s && s.uid != null)];
+  const isWorn = p => worns().some(w => w.uid === p?.uid);
   /* Identification, Enchantement : ni anneau, ni boussole, ni torche ; Amélioration : les anneaux aussi (27/10/2026) */
-  const pieces = () => inv.slots.filter(s => s && s.uid != null && canIdentify(s.item));
-  const upgradable = () => inv.slots.filter(s => s && s.uid != null && canUpgrade(s.item));
+  const pieces = () => all().filter(s => canIdentify(s.item));
+  const upgradable = () => all().filter(s => canUpgrade(s.item));
   const runes = () => inv.slots.filter(s => s && s.uid != null && isRune(s.item));
-  const byUid = uid => inv.slots.find(s => s && s.uid != null && s.uid === uid) ?? null;
+  const byUid = uid => all().find(s => s.uid === uid) ?? null;
+  /* une ligne de la liste des pièces : icône, nom (« équipée » si portée), effets */
+  const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}`+
+    `<span>${pname(p)}${isWorn(p) ? ' <small class="okmsg">équipée</small>' : ''}<br><small class="stuffStats">${esc(statLines(p).join(' · ') || 'Aucun effet')}</small></span>${extra}</button>`;
+  /* prévenir avant de détruire une pièce portée : sa case se videra */
+  const wornWarn = p => isWorn(p) ? ' Elle est équipée : sa case du stuff se videra.' : '';
 
   function render(){
     $('upTabs').innerHTML = RUBRICS.map(r => `<button data-rub="${r.id}" class="${r.id === tab ? 'on' : ''}">${r.label}</button>`).join('');
@@ -67,7 +73,7 @@ export function setupUpgrade({ onOp }){
       message()+
       `<h3>${pick === 'target' ? 'Choisis la pièce à identifier' : 'Choisis le sacrifice'}</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => row(p, p.uid === t?.uid || p.uid === s?.uid ? '<b>posée</b>' : '')).join('')}</div>`
-        : '<p class="mut">Aucune pièce de stuff dans ton inventaire.</p>')+
+        : '<p class="mut">Aucune pièce de stuff.</p>')+
       qualityTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;
@@ -80,7 +86,7 @@ export function setupUpgrade({ onOp }){
     $('upBody').querySelector('.upSacrifice').onclick = choose('sacrifice', !!s, () => { sacrifice = null; });
     $('upGo').onclick = async () => {
       if(busy || !can) return;
-      if((isIdentified(s) || s.plus > 0) && !confirm(`Sacrifier ${pieceName(s)} ? Sa qualité et son niveau seront perdus.`)) return;
+      if((isIdentified(s) || s.plus > 0 || isWorn(s)) && !confirm(`Sacrifier ${pieceName(s)} ?${isIdentified(s) || s.plus > 0 ? ' Sa qualité et son niveau seront perdus.' : ''}${wornWarn(s)}`)) return;
       await send({ action:'identify', uid:t.uid, sacrifice:s.uid }, r =>
         `✔ ${pname(r.piece)}`);
       target = null; sacrifice = null; pick = 'target'; render();
@@ -94,7 +100,7 @@ export function setupUpgrade({ onOp }){
     const gain = lv => lv.dupe ? `effet ${esc(ringLines(t.item, lv.level).join(' · '))}` : `stats +${lv.pct} % en tout`;
     $('upBody').innerHTML =
       helpLine(`Amélioration\nChaque niveau augmente toutes les stats de la pièce. Un échec ne coûte que les matériaux.\n`+
-        `Un anneau s'améliore avec un doublon du même anneau (celui de plus bas niveau est sacrifié, même en cas d'échec) : `+
+        `Un anneau s'améliore avec un doublon du même anneau, pris dans l'inventaire (celui de plus bas niveau est sacrifié, même en cas d'échec) : `+
         `+${String(RINGS.upgrade).replace('.', ',')} à chacun de ses effets par niveau.\nBoussoles et torches ne s'améliorent pas.`)+
       `<div class="upPair"><div>${box(t, 'Pièce à améliorer', 'upTarget')}</div>`+
       (t ? (lv ? `<div class="upInfo">Vers <b>+${lv.level}</b> : ${gain(lv)} · réussite ${pct(lv.chance)}`+
@@ -104,7 +110,7 @@ export function setupUpgrade({ onOp }){
       message()+
       `<h3>Choisis la pièce</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => row(p, nextLevel(p) ? '' : '<b>max</b>')).join('')}</div>`
-        : '<p class="mut">Aucune pièce de stuff dans ton inventaire.</p>')+
+        : '<p class="mut">Aucune pièce de stuff.</p>')+
       levelTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => { target = +b.dataset.uid; msg = ''; render(); });
     $('upBody').querySelector('.upTarget').onclick = () => { target = null; msg = ''; render(); };
@@ -151,7 +157,7 @@ export function setupUpgrade({ onOp }){
       (list.length ? `<div class="fopts">${list.map(p => pick === 'target'
           ? row(p, p.rune ? (p.rune.frag ? '<b>fragment posé</b>' : '<b>déjà enchantée</b>') : p.uid === t?.uid ? '<b>posée</b>' : !isIdentified(p) ? '<b>à identifier</b>' : `<b>jusqu'à R${p.q}</b>`)
           : `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}<br><small class="stuffStats">${esc(runeLines(p).join(' · '))}</small></span>${p.uid === r?.uid ? '<b>posée</b>' : t && isIdentified(t) && p.q > t.q ? `<b>trop rare pour cette pièce</b>` : ''}</button>`).join('')}</div>`
-        : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff dans ton inventaire.' : 'Aucune rune : ouvre un trésor de tour (Inventaire).'}</p>`);
+        : `<p class="mut">${pick === 'target' ? 'Aucune pièce de stuff.' : 'Aucune rune : ouvre un trésor de tour (Inventaire).'}</p>`);
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;
       if(pick === 'target'){ target = uid; if(rune == null) pick = 'rune'; }
@@ -184,7 +190,7 @@ export function setupUpgrade({ onOp }){
 
   $('upTabs').onclick = e => { const b = e.target.closest('[data-rub]'); if(b){ tab = b.dataset.rub; target = null; sacrifice = null; rune = null; pick = 'target'; msg = ''; render(); } };
 
-  return { setInventory(v){ inv = v; render(); } };
+  return { setInventory(v){ inv = v; render(); }, refresh: () => render() };
 }
 
 /* rappel des règles, depuis la config */

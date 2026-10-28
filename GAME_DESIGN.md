@@ -778,7 +778,7 @@ Set 2  [Équiper] [Enregistrer] [✎] [×]
 - Le serveur fait tout en une seule écriture (inventaire, stuff, skills, sorts) ; une demande renvoyée n'agit qu'une fois.
 
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
-Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
+Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Les pièces de l'inventaire **et les pièces portées** *(28/10/2026, Geoffrey)*, marquées « équipée » dans les listes : pas besoin de les retirer. Une pièce portée **sacrifiée** (identification) quitte sa case, qui se vide (une confirmation prévient). Le doublon sacrifié pour améliorer un anneau vient toujours de l'inventaire (jamais un anneau porté détruit sans l'avoir choisi). C'est le serveur qui tire le hasard.
 
 **Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous). **Définitif** : une pièce identifiée ne se ré-identifie pas.
 - **Depuis le 22/10/2026 (décision du créateur) : l'identification ne donne plus que la qualité** (titre et couleur du nom), **aucune stat en plus**. Les lignes de stats décrites ci-dessous ne concernent que les **pièces identifiées avant** : elles les **gardent** *(décision du créateur, 22/10/2026)*. Les colonnes « Chaque ligne vaut / Lignes / Total max » ne servent plus qu'à revérifier ces anciennes pièces.

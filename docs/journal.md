@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Amélioration : choisir directement une pièce équipée
+- **Pour le joueur** : dans l'onglet Amélioration (identifier, améliorer, enchanter, retirer une rune), les pièces que
+  le mineur porte apparaissent dans les listes, marquées « équipée » : plus besoin de les retirer puis de les remettre.
+  Elles restent dans leur case. Si on **sacrifie** une pièce portée pour en identifier une autre, sa case du stuff se
+  vide (une confirmation prévient).
+- **Décisions** : pour améliorer un anneau, le doublon sacrifié est toujours pris dans l'**inventaire**, jamais un anneau
+  porté (le jeu le choisit tout seul : il ne doit pas détruire un anneau équipé sans qu'on l'ait choisi).
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Sets : enregistrer pendant une session
 - **Pour le joueur** : pendant une session, les boutons **Enregistrer** et **+ Nouveau set** ne sont plus grisés. On peut
   donc préparer son prochain équipement et le sauvegarder dans un set sans attendre la fin de la session. La session en

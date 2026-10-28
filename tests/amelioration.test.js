@@ -315,3 +315,58 @@ test('barème : une pièce identifiée avant le 22/10/2026 est ramenée à la m�
   assert.equal(sanitizePiece({ ...old, s:2, lines:[{ stat:'crit', pct:hi4 }, { stat:'crit', pct:hi4 }] }).q, undefined, 'au barème actuel, l\'ancien maximum est hors fourchette');
   for(const d of UPGRADE.qualities) assert.ok(Math.abs(d.lines * d.max - [25, 30, 35, 40, 50, 75, 100][d.q - 1]) < 1e-9, `total max R${d.q}`);
 });
+
+/* ---------- pièces portées (28/10/2026) : choisies sans les retirer ; sacrifiées, leur case se vide ---------- */
+
+const RING = 'Anneau du tigre';
+function wornSetup(){
+  const { inv, uids:[a, b, c] } = setup(3, 30);
+  const st = createStuff();
+  stuffOp(inv, st, { action:'equip', slot:'pioche', uid:a, opId:id() });
+  return { inv, st, a, b, c };
+}
+
+test('identifier une pièce portée : elle reste dans sa case, identifiée ; le sacrifice vient de l\'inventaire', () => {
+  const { inv, st, a, b } = wornSetup();
+  const r = identify(inv, { uid:a, sacrifice:b, opId:id() }, seq([0.1, 0.5, 0.5]), st.worn);
+  assert.equal(r.ok, true);
+  assert.equal(st.worn.pioche.uid, a); assert.ok(st.worn.pioche.q >= 1);
+  assert.equal(countOf(inv, PICK), 1, 'le sacrifice a disparu de l\'inventaire');
+});
+
+test('sacrifier une pièce portée : sa case se vide, rien n\'est dupliqué ; une demande renvoyée ne sacrifie rien de plus', () => {
+  const { inv, st, a, b, c } = wornSetup();
+  const op = { uid:b, sacrifice:a, opId:id() };
+  assert.equal(identify(inv, op, fixed(0.5), st.worn).ok, true);
+  assert.equal(st.worn.pioche, null, 'la case se vide');
+  assert.equal(identify(inv, op, fixed(0.5), st.worn).repeated, true);
+  assert.deepEqual(inv.slots.filter(s => s?.item === PICK).map(s => s.uid).sort(), [b, c].sort());
+  assert.equal(identifyError(inv, b, a, st.worn), 'not_owned', 'la pièce sacrifiée n\'existe plus');
+});
+
+test('sans les pièces portées (ancien appel), une pièce portée reste introuvable', () => {
+  const { inv, a, b } = wornSetup();
+  assert.equal(identifyError(inv, a, b), 'not_owned');
+  assert.equal(upgrade(inv, { uid:a, opId:id() }, fixed(0)).error, 'not_owned');
+});
+
+test('améliorer une pièce portée : son niveau monte dans sa case, les matériaux viennent de l\'inventaire', () => {
+  const { inv, st, a } = wornSetup();
+  const r = upgrade(inv, { uid:a, opId:id() }, fixed(0), st.worn);
+  assert.equal(r.success, true); assert.equal(st.worn.pioche.plus, 1);
+  assert.ok(countOf(inv, FEATHER) < 30);
+});
+
+test('anneau porté : son doublon est pris dans l\'inventaire, jamais l\'autre anneau porté', () => {
+  const inv = createInventory(); const [i, j] = addItem(inv, RING, 2);
+  const a = inv.slots[i].uid, b = inv.slots[j].uid, st = createStuff();
+  stuffOp(inv, st, { action:'equip', slot:'anneau1', uid:a, opId:id() });
+  const r = upgrade(inv, { uid:a, opId:id() }, fixed(0), st.worn);           // le doublon b (inventaire) est sacrifié
+  assert.equal(r.sacrificed, b); assert.equal(st.worn.anneau1.plus, 1); assert.equal(countOf(inv, RING), 0);
+  /* l'inverse : l'anneau à améliorer est dans l'inventaire, le seul doublon est porté → refusé */
+  const inv2 = createInventory(); const [k, l] = addItem(inv2, RING, 2);
+  const st2 = createStuff();
+  stuffOp(inv2, st2, { action:'equip', slot:'anneau1', uid:inv2.slots[k].uid, opId:id() });
+  assert.equal(upgrade(inv2, { uid:inv2.slots[l].uid, opId:id() }, fixed(0), st2.worn).error, 'not_enough');
+  assert.ok(st2.worn.anneau1, 'l\'anneau porté n\'est pas touché');
+});
