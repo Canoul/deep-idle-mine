@@ -75,5 +75,5 @@ export const RECIPES = {
   'Saphir':              { cost: { 'Diamant': 50, 'Saphir inférieur': 3 }, qty: 1, unlock: 'Saphir BP' },
   'Rubis':               { cost: { 'Diamant': 50, 'Rubis inférieur': 3 },  qty: 1, unlock: 'Rubis BP' },
   'Jade':                { cost: { 'Diamant': 50, 'Jade inférieur': 3 },   qty: 1, unlock: 'Jade BP' },
-  'Clé d\'instance I':   { cost: { 'Peau de gobelin': 250, 'Pierre glissante': 20, 'Tissu sombre': 50, 'Barre d\'argent': 1 }, qty: 1, unlock: 'Clé d\'instance I BP' },
+  'Clé d\'instance I':   { cost: { 'Peau de gobelin': 250, 'Pierre glissante': 20, 'Tissu sombre': 50, 'Barre d\'argent': 1 }, qty: 1, unlock: null },   // 28/10 (Geoffrey) : de base (avant : Clé d'instance I BP, Treasure T4)
 };

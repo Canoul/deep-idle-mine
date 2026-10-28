@@ -3983,3 +3983,11 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/skills.test.js` (nouveau test : déblocage, textes, slotMastery, stats pioche / épée / torse, onglet
   Stuff, session) ; stuff, gearscore, instant, glyphes, upgrade, game : 178/178 ; wiki, sets, tours, Bloc géant,
   instances : 139/140, ❌ hors sujet `tests/dev-spec.test.js` (déjà en échec sur `main`).
+
+## 28/10/2026 — Clé d'instance I : recette de base, plan retiré du Treasure T4 (Geoffrey)
+- **Quoi** : src/recipes.js `unlock: null` ; src/config.js : `Clé d'instance I BP` retiré du 2e jet du T4 (LOOT) et
+  déclaré à la main dans ITEMS (il venait de LOOT : sans ça, un exemplaire gardé ne serait plus un blueprint). Il ne
+  s'apprend plus (`canLearn` : recette déjà ouverte) et se recycle au tarif du tier 1 (`tierOfBlueprint` → null).
+- **Effet de bord** : le T4 fait un tirage de moins, la suite des tirages d'une ouverture change (sans conséquence).
+- **Tests** ✅ `tests/instance-key.test.js` (nouveau : craft sans plan, plus dans le T4, ancien plan recyclé) ; craft,
+  loot, tier4, treasure, rarity, research, wiki : 75/75 ; `npm run test:anticheat` 104/104.
