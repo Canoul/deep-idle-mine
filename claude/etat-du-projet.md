@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 27/10/2026 (classements dans l'onglet Social).*
+*Dernière mise à jour : 28/10/2026 (GS au prix mesuré, sans les ajustements de Geoffrey).*
 
 ---
 
@@ -107,7 +107,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Ajustements de prix de Geoffrey** (27/10, `UPGRADE.priceAdjust`, `statPrice` dans `src/meta/gearscore.js`) : ses choix, pas
   des mesures. Points d'une stat pour 1 x divisés : offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, minage (fixe et %) ÷ 3,
   ténacité ÷ 2, résistance au recul ÷ 3 (base 5 x). Remplacent la demi-valeur des stats de combat (`STUFF.combatOnStuff`
-  1, ancien 0,5). GS des pioches × 3, des épées × 2. **À réappliquer et à signaler dans le rapport si les poids des stats
+  1, ancien 0,5). **Le GS n'utilise pas ces ajustements** (28/10, Geoffrey : la stat est divisée, sa valeur en GS aussi ;
+  `statPrice` = prix mesuré, `designPrice` = prix ajusté pour dessiner les pièces) : pioche en fer 520 GS (ancien, 27/10 :
+  GS des pioches × 3, épées × 2, pioche en fer 1 560). Pièces aux stats divisées (T4 thorium / cobalt, butin des mobs) sous la
+  valeur de leur tier en GS. **À réappliquer et à signaler dans le rapport si les poids des stats
   sont resimulés** (`npm run weights`, `stat-values`). Les stats du T4 sont la première version divisée (pas recalculées).
 - **Wiki : plans secrets** (27/10, `WIKI.secret`) : pièces thorium / cobalt et pièces spéciales cachées jusqu'au premier
   BP trouvé ; première découverte (BP, ou stuff du Roi Gobelin) annoncée sur Discord avec les stats.

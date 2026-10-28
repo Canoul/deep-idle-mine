@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
+- **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →
+  754, épée en fer 720 → 360) ; les stats ne bougent pas. Les pièces aux stats divisées le 27/10 (thorium, cobalt,
+  butin rare des mobs, Gants de boucher…) ont un GS plus bas qu'hier. Les classements Gear score et le plafond de la
+  modulation suivent.
+- **Décisions** : les diviseurs du 27/10 (offensives ÷ 2, minage ÷ 3…) divisent la stat ET sa valeur en GS : ils
+  servent seulement à dessiner les pièces ; le GS reste au prix mesuré.
+- **État** : 🧪 sur la branche `geoffrey/gs-prix-mesures` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
   offensives ÷ 2 (plastron en thorium : dégâts +3,85 au lieu de +7,7), dégâts % ÷ 3 (jambes en thorium +31,3 % au lieu

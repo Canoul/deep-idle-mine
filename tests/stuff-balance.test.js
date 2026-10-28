@@ -6,13 +6,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STUFF, UPGRADE, MOB_DROPS } from '../src/config.js';
-import { pieceGS, statPrice } from '../src/meta/gearscore.js';
+import { pieceGS, designPrice } from '../src/meta/gearscore.js';
 import { tierOf } from '../src/meta/piece.js';
 
 const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : torse volontairement plus fort
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
-const price = statPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026)
+const price = designPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026) : valeur de dessin, pas le GS (28/10)
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
 test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 500 x)', () => {

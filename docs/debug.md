@@ -3932,3 +3932,15 @@ Règles (voir CLAUDE.md) :
   trésor passent le pseudo. Tests ✅ `tests/wiki-secret.test.js` (premier BP : révélé + 1 annonce, le 2e : rien ; Roi
   Gobelin : une annonce par pièce, une fois) ; discord, game-service, tier4, gearscore, stuff-balance, leaderboard,
   steel-gear, treasure, wiki : 135/135 puis 68/68 ; `npm run test:anticheat` 104/104.
+
+## 28/10/2026 — Geoffrey — GS au prix mesuré, ajustements réservés au dessin des pièces
+- **Quoi** : `statPrice` (src/meta/gearscore.js) ne multiplie plus par `UPGRADE.priceAdjust` ; nouveau `designPrice` =
+  prix mesuré × ajustement (utilisé par `tests/stuff-balance.test.js` pour vérifier les pièces dessinées à la valeur de
+  leur tier). Demande de Geoffrey : « la stat ne bouge pas, juste la valeur x (GS) associée est divisée ».
+- **GS** : pioches 780 / 1 560 / 2 262 → 260 / 520 / 754 ; épées fer / acier 720 / 1 080 → 360 / 540 ; Lance 721 → 360 ;
+  Casque thorium 563 → 470, Plastron cobalt 1 234 → 823, Jambes thorium 563 → 438 ; Gants de boucher 320 → 160 ; Lanières
+  250 → 188, Capuche 250 → 125, Ceinture du Géant 253 → 127. Armures sans stat ajustée inchangées (casque acier 500).
+- **Tests** ✅ gearscore (prix bruts dans le GS, test des diviseurs via `designPrice`), stuff-balance (`designPrice`),
+  tier4 inchangé ; `npm test` 1 203 / 1 205. ❌ hors sujet, déjà en échec sur `main` : dev-spec (tours en mode dev),
+  perf (boîte de mesures).
+- **Point fragile** : les records du classement Gear score sont recalculés à la lecture (pas de valeur stockée) : rien à migrer.
