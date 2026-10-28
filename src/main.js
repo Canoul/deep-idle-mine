@@ -57,7 +57,7 @@ import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
-import { createBackdrop } from './ui/backdrop.js';
+import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
@@ -87,7 +87,8 @@ const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
-const backdrop = createBackdrop($('bgSession'));   // fond : la session en cours, hors onglet Session
+const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
+const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]) });   // fond : la session en cours, hors onglet Session
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
@@ -244,7 +245,11 @@ let guide = null;     // guide « Premiers pas » (créé au démarrage, une foi
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
+  const from = ui.tab;
   ui.tab = id;
+  /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
+  const sessView = document.querySelector('.view[data-view="session"]');
+  if(backdrop.switchTab(from, id, rec && G?.ready ? G : null)) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
@@ -704,6 +709,7 @@ function frame(now){
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
       ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(SESSION_CV[ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine']), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');

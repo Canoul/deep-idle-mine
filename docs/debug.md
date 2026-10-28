@@ -4422,6 +4422,54 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : `loadRecipe` remplace le contenu de l'objet `inv` (clés supprimées puis recopiées) ; le serveur
   sérialise ce même objet ensuite, donc ça marche, mais garder `inv` comme simple objet de données.
 
+## 28/10/2026 — Geoffrey — Fenêtres bornées à l'écran, défilement interne
+- `src/ui/style.css` : `#loot,#spick,#fpick,#cpick,#fview` passent de `position:absolute;inset:0` (calque de la hauteur
+  de l'onglet, boîte à 10vh du haut de l'onglet, sans hauteur max : sortait de l'écran si la page avait défilé ou si la
+  liste était longue) à `position:fixed` entre `--top-h` et `--dock-h`. Elles restent dans leur `<section data-view>`,
+  donc cachées avec leur onglet comme avant. `.box` : `max-height:100%;overflow:auto;overscroll-behavior:contain`.
+  `#notifs` : `max-height` + `overflow-y:auto`. Barre de défilement fine (`scrollbar-color:var(--line)`) sur toutes les
+  fenêtres qui défilent (#account, #end, #obtained, guide, recettes du four…).
+- ✅ Captures Chrome headless (vrai style.css, 40 lignes de butin) : 1280×720 et 390×800 (dans une iframe : headless ne
+  descend pas sous 500 px). Pas de test unitaire (CSS seul). ⚠️ Pas vérifié dans le vrai jeu pour chaque fenêtre. ✅ en ligne le 28/10.
+- Non traité : la bulle d'aide « ? » (`#tip.help`) n'a pas de hauteur max (elle ne reçoit pas la souris, donc ne peut pas
+  défiler).
+
+## 28/10/2026 — Geoffrey — Fond de page à l'échelle de la session, puis transition (✅ en ligne le 28/10)
+- **Quoi** : `src/ui/backdrop.js` `measure(mode, cv, rows)` appelé dans `frame` (src/main.js) juste après le fit de
+  l'onglet Session : `getBoundingClientRect` du canvas de la session (cv, cvMi, cvTw, cvIn) + lignes du moteur
+  (`renderer.rows` / `miRenderer.rows`) + `innerWidth/innerHeight`, gardé dans `localStorage['dim.bgPlace']` (relu et
+  revérifié : nombres finis, w/h > 0, modes connus). `draw` : place valable (même taille de fenêtre) → canvas
+  `position:absolute` à ces coordonnées, `setRows(place.rows)` ; sinon classe `.cover` (ancien comportement).
+  CSS : plus de fond noir sous `.bgSession` (le mur se voit autour de la mine).
+- **Tests** ✅ `tests/backdrop.test.js` 6/6 (mesure gardée, onglet caché ignoré, mode inconnu ignoré ; place reprise ;
+  fenêtre redimensionnée / mesure abîmée / JSON invalide → `.cover`).
+- ✅ **Navigateur** (Chrome sans écran, CDP, mode dev) : canvas de la session 274,136 776×543 → canvas du fond
+  274,136 776×543 sur l'onglet Inventaire ; aucune erreur console. Pas vérifié : tours, instance, MI, téléphone
+  (sur téléphone #cv est dans le flux et la page défile : la mesure dépend du défilement au moment du relevé).
+- **Suite le 28/10 (même branche) : plein écran + transition** (demande de Geoffrey : garder le plein écran hors Session,
+  mais une transition douce). `backdrop.js` : `coverRect` (plein écran calculé, plus d'`object-fit`), `lerpRect`,
+  `switchTab(from, to, G)` appelé par le callback de `setupNav` (src/main.js) ; vers Session : `#cv` (ou cvMi/cvTw/cvIn,
+  `SESSION_CV`) en `visibility:hidden` pendant `BACKDROP.transitionMs` (450 ms), le fond passe linéairement du plein écran
+  à la place mesurée, luminosité `BACKDROP.dim` (0,4) → 1, puis `#cv` réapparaît ; depuis Session : l'inverse. Le fond
+  dessine toujours `place.rows` lignes quand une place est connue (même image que la session : zoom pur). `enterPanels`
+  : classe `.bgEnter` sur la vue Session (keyframes `bgFromL/R/T`, `.runL`, `.runR`, `.rail`, `#run>header`, asides des
+  modes MI/tours/instance). `.bgSession` passe en `z-index:0` (au-dessus de la vignette `body::before`, sinon saut de
+  luminosité à la fin). `prefers-reduced-motion` : pas de transition. Le fond s'affiche avant le dessin (`show` puis
+  `draw`) : une erreur de dessin ne le laisse plus caché.
+- **Tests** ✅ `tests/backdrop.test.js` 8/8 (+ account-client) : plein écran, interpolation, mesure, transition aller (mine
+  de la session cachée puis rendue, mi-chemin exact) et retour, pas de transition entre deux autres onglets / sans
+  session / option coupée / mesure abîmée.
+- ✅ **Navigateur** (Chrome sans écran, CDP, localhost:8000) : captures à ~60 / 150 / 300 ms : fond 94 px → 216 px →
+  271 px (place de #cv), luminosité 0,60 → 0,87 → fin, `#cv` caché puis visible, panneaux en glissement ; aucune erreur.
+  Pas vérifié : MI, tours, instance, téléphone, petite machine.
+- **Suite 2 (même branche)** : panneaux en `linear` (avant `ease-out` : ils semblaient arriver avant la mine) ; sortie
+  de l'onglet Session : `leavePanels(vue, #views, () => ui.tab === 'session')` (nav cache la vue avant d'appeler
+  onChange) ré-affiche la vue en `position:fixed` à la place de `#views`, `.bgLeave` (z-index 5, sans clics, keyframes
+  en `reverse`), puis la cache après `transitionMs` sauf si on est revenu sur Session (`resetPanels` annule tout, aussi
+  au début d'une entrée). `#cv` caché pendant les deux sens (le fond fait le zoom). Tests ✅ backdrop 9/9 (+ sortie des
+  panneaux, retour pendant la sortie). ✅ Chrome : progression zoom / panneaux à chaque relevé, entrée 23/20 %, 44/41 %,
+  87/83 % ; sortie 19/19 %, 40/39 %, 83/81 % ; vue cachée à la fin ; aucune erreur.
+
 ## 28/10/2026 — Fenêtres de validation du site au lieu de confirm / alert / prompt (Geoffrey)
 - `src/ui/dialog.js` (nouveau) : `ask(text, { ok, cancel, danger })` → promesse booléenne, `tell(text)`, `askText(text,
   value, { maxLength, readOnly })` → texte ou null. File d'attente (une fenêtre à la fois), Entrée = oui, Échap / clic sur

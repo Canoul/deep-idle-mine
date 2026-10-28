@@ -389,6 +389,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Fond : la session en cours** (28/10, Geoffrey ; `src/ui/backdrop.js`) : pendant une session, hors onglet Session, la
   mine (dessin seul, sans panneaux) remplace le mur du fond, assombrie (CSS `.bgSession`). Option « Session en cours en
   fond d'écran » dans « Mon compte » (clic sur le pseudo), activée par défaut, gardée dans le navigateur (localStorage).
+  Plein écran sur les autres onglets ; **transition avec l'onglet Session** (28/10) : zoom linéaire du plein écran à la
+  place de la mine de la session (relevée sur l'onglet Session, gardée dans le navigateur avec la taille de la
+  fenêtre), panneaux qui glissent depuis les bords au même rythme ; l'inverse en sortant (l'onglet Session reste affiché
+  par-dessus le temps que ses panneaux repartent) (`BACKDROP` dans backdrop.js : dim 0,4,
+  450 ms). Ancien, jamais en ligne : la mine du fond figée à la place de la session.
 
 - **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,
   sous le gear score. **Vitesse d'attaque sans paliers** (28/10) : le coup suivant part à l'heure exacte (`nowOf`), avant
