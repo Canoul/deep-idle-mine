@@ -3,7 +3,7 @@
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
 import { piecesFor, statsText, minerStats, rawDps } from '../meta/stuff.js';
-import { sanitizeSkills, skillEffects, behaviourSkills } from '../meta/skills.js';
+import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
 import { rcls, pname } from './rarity.js';
@@ -45,14 +45,12 @@ export function statsHTML(worn, effects){
       `${s.bonus && s.mult !== 1 ? '' : ')'}</small>` : '')+
     (s.ring ? ` <small class="ringStats" title="anneaux (pour tout le groupe)">+${fr(s.ring)}${u}</small>` : '')+
     `</span></div>`); }).join('');
-  /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
-  const extra = behaviourSkills(effects);
   const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
   /* DPS brut (28/10) : stuff, skills et anneaux compris (les totaux affichés) ; sur cible immobile, sans recul */
   const dps = rawDps(Object.fromEntries(list.map(s => [s.key, s.total])));
   const dpsRow = `<div class="row" title="Dégâts par seconde en moyenne sur une cible immobile, sans recul ni obscurité : dégâts × critique × double attaque × vitesse d'attaque (stuff, skills et anneaux compris ; sans Cri de guerre ni Pillage)"><span><b>DPS</b> <small class="mut">(cible immobile)</small></span><span><b>${fr(dps.toFixed(1))}</b></span></div>`;
-  return gs + dpsRow + rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
-    extra.map(k => `<div class="row"><span>${k.icon} ${esc(k.name)}</span><span><small class="skillStats">${esc(k.text)}</small></span></div>`).join('') : '');
+  /* les skills de comportement (Navette, Treuil…) ne sont plus listés ici (28/10/2026, Geoffrey) : voir l'onglet Skills */
+  return gs + dpsRow + rows;
 }
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */

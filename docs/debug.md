@@ -4381,3 +4381,8 @@ Règles (voir CLAUDE.md) :
   right}` alignait les pseudos à droite.
 - **Correctif** : classe du four renommée `frecRow` (`src/ui/furnace.js`, `src/ui/style.css`). ✅ plus aucune règle
   du four sur `.frow`. **À retenir** : chercher une classe dans tout `src/ui/` avant de la créer.
+
+## 28/10/2026 — Stats du mineur sans « Skills en partie » (Geoffrey)
+- `src/ui/stuff.js` `statsHTML` : plus de bloc `behaviourSkills` (aussi utilisé par la fiche ami, `src/ui/social.js`).
+  `behaviourSkills` reste dans `src/meta/skills.js` (testé, plus appelé par l'interface).
+- ✅ `tests/dps.test.js` (nouveau : pas de « Skills en partie » avec un logisticien), skills, social : 44/44.

@@ -24,6 +24,12 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
+- **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
+  (Navette, Échelle de 2, Treuil, Mule…) disparaît. Le bonus des skills sur les stats reste affiché en bleu ; le détail
+  de chaque skill est dans l'onglet Skills.
+- **État** : 🔧 en cours (branche `geoffrey/stats-sans-skills`).
+
 ## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
 - **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
   « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
