@@ -56,7 +56,7 @@ export function statsHTML(worn, effects){
 }
 
 /* onOp({ action:'equip'|'unequip', slot, uid }) → promesse (rejetée avec un message lisible) */
-export function setupStuff({ onOp }){
+export function setupStuff({ onOp, onWorn }){
   let inv = { slots:[] }, worn = {}, effects = {}, busy = false, open = null;
 
   function render(){
@@ -97,7 +97,7 @@ export function setupStuff({ onOp }){
 
   return {
     setInventory(v){ inv = v; render(); },
-    set(w){ if(w){ worn = w; render(); } },
+    set(w){ if(w){ worn = w; render(); onWorn?.(); } },   // onWorn : l'onglet Amélioration propose aussi les pièces portées
     /* skills du joueur (onglet Skills) : leurs bonus de stats s'affichent aussi ici */
     setSkills(s){ effects = skillEffects(sanitizeSkills(s)); renderStats(); },
     worn: () => worn,                 // pièces portées (l'inventaire dit ce qu'une pièce remplacerait)

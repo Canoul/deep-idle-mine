@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Amélioration : choisir directement une pièce équipée
+- **Pour le joueur** : dans l'onglet Amélioration (identifier, améliorer, enchanter, retirer une rune), les pièces que
+  le mineur porte apparaissent dans les listes, marquées « équipée » : plus besoin de les retirer puis de les remettre.
+  Elles restent dans leur case. Si on **sacrifie** une pièce portée pour en identifier une autre, sa case du stuff se
+  vide (une confirmation prévient).
+- **Décisions** : pour améliorer un anneau, le doublon sacrifié est toujours pris dans l'**inventaire**, jamais un anneau
+  porté (le jeu le choisit tout seul : il ne doit pas détruire un anneau équipé sans qu'on l'ait choisi).
+- **État** : 🧪 sur la branche `geoffrey/stuff-remplacer` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
 - **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
   charbon (1 à 50), de l'or (1 à 20), **1 diamant** et du graphite (1 à 10), plus parfois une gemme inférieure (1 % chacune)

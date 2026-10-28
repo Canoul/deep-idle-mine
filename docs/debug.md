@@ -4295,3 +4295,21 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/crusher.test.js` (nouveau test : table, moyennes sur 100 000 lots, un lot réel ; « objet refusé » =
   l'or, « sortie invalide » = Lingot de fer, le diamant étant devenu une sortie), `tests/anticheat/crusher.test.js` (fer en
   entrée, lingot refusé, butin garanti ≤ max par lot) : `npm run test:anticheat` 105/105 ; wiki ✅.
+
+## 28/10/2026 — Geoffrey — Amélioration : pièces portées choisies sans les retirer (🧪 branche `geoffrey/stuff-remplacer`)
+- **Quoi** : `src/meta/upgrade.js` : `identify/upgrade/enchant/unenchant` (et leurs `*Error`) prennent un dernier argument
+  optionnel `worn` (= `st.worn`, modifié sur place) ; `findPiece` cherche l'uid dans l'inventaire puis dans les cases,
+  `dropPiece` retire un sacrifice de l'inventaire ou vide sa case. Rune : toujours de l'inventaire ; `ringDupes` inchangé
+  (doublon d'anneau = inventaire seulement). Sans `worn`, comportement d'avant (pièce portée = `not_owned`).
+- **Serveur** (`server/game/service.js` `upgrade`) : passe `st.worn`, enregistre avec `putInventoryAndStuff` (avant :
+  `putInventory`), renvoie `stuff`. Message « doublon » : l'anneau peut être porté (`ringAsked`).
+- **Navigateur** : `src/ui/upgrade.js` liste pièces portées + inventaire (`worn()` fourni par main.js), libellé
+  « équipée », confirmation avant de sacrifier une pièce portée ; `src/ui/stuff.js` `onWorn` → `upgradeUI.refresh()`
+  (l'ordre stuff.set / setInventory varie selon les appels) ; main.js applique `r.stuff` avant l'inventaire.
+- **Tests** ✅ `tests/amelioration.test.js` (5 nouveaux : identifier porté, sacrifice porté → case vide + rejeu sans effet,
+  appel sans `worn`, améliorer porté, anneau : doublon porté jamais pris), `tests/rune.test.js` (enchanter / retirer sur
+  pièce portée), `tests/anticheat/upgrade.test.js` (l'ancien test « porté refusé » devient « porté amélioré et
+  enregistré » ; sacrifice porté en double clic = une seule case vidée) ; + stuff, sets, anneaux : 78/78 ;
+  `npm run test:anticheat` 106/106.
+- ⚠️ Pas vérifié dans le navigateur (affichage de la liste et de la confirmation). Point fragile : un set qui contenait
+  la pièce sacrifiée laisse sa case vide à l'équipement (déjà le cas pour un sacrifice depuis l'inventaire).

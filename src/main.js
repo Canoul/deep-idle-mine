@@ -153,9 +153,11 @@ async function equipFromInventory(slot, uid){
 }
 
 /* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
-/* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce et l'inventaire à jour */
+/* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce, l'inventaire et le stuff à
+   jour (une pièce portée peut être choisie ; sacrifiée, sa case se vide) */
 const upgradeUI = setupUpgrade({
-  onOp: async op => { const r = await gameApi.upgrade({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
+  onOp: async op => { const r = await gameApi.upgrade({ ...op, opId: newOpId() }); if(r.stuff) stuff.set(r.stuff); setInventory(r.inventory); return r; },
+  worn: () => stuff.worn(),
 });
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
@@ -164,6 +166,7 @@ const craft = setupCraft({
 });
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
+  onWorn: () => upgradeUI.refresh(),
 });
 
 const furnace = setupFurnace({

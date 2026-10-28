@@ -7,7 +7,7 @@ import { createInventory, addItem, countOf, deserialize, serialize } from '../sr
 import { canOpen, openTreasure } from '../src/meta/loot.js';
 import { rollChestQuality, rollRune, sanitizePiece, pieceBonus, lineValue, isRune, isFragment, roundStat } from '../src/meta/piece.js';
 import { enchant, enchantError, unenchant, unenchantError } from '../src/meta/upgrade.js';
-import { statLines } from '../src/meta/stuff.js';
+import { statLines, createStuff, stuffOp } from '../src/meta/stuff.js';
 
 const PICK = 'Pioche en pierre';
 const fixed = v => () => v;
@@ -231,4 +231,15 @@ test('tier : une ligne vaut un % du tier, pas de la valeur de la pièce ; les pi
   assert.equal(lineValue('Plastron en chitine', line), 4);  // 20 % de 100 x
   assert.equal(lineValue('Plastron de l\'équilibre', line), 20);  // 20 % de 500 x (27/10 ; avant 400 x, et avant le 25/10 : 20 % de 1 411 x)
   assert.equal(lineValue('Plastron en fer', line, 0.5), 5, 'fragment : moitié');
+});
+
+test('pièce portée (28/10/2026) : on l\'enchante et on retire sa rune sans la retirer de sa case', () => {
+  const { inv, piece, rune } = withRune();
+  const st = createStuff();
+  stuffOp(inv, st, { action:'equip', slot:'pioche', uid:piece.uid, opId:id() });
+  assert.equal(enchant(inv, { uid:piece.uid, rune:rune.uid, opId:id() }, st.worn).ok, true);
+  assert.ok(st.worn.pioche.rune, 'la rune est sur la pièce portée');
+  const r = unenchant(inv, { uid:piece.uid, opId:id() }, st.worn);
+  assert.equal(r.ok, true); assert.equal(st.worn.pioche.rune, undefined);
+  assert.equal(r.fragment.item, RUNE.fragment.item, 'le fragment arrive dans l\'inventaire');
 });
