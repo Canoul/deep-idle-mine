@@ -371,6 +371,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
+- **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,
+  sous le gear score. **Vitesse d'attaque sans paliers** (28/10) : le coup suivant part à l'heure exacte (`nowOf`), avant
+  arrondie au dixième de seconde (250 % frappait comme 200 %).
+
 - **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
   casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.

@@ -4228,3 +4228,21 @@ Règles (voir CLAUDE.md) :
   block, mur visible ✅. Bandeau « prochaine session » de Stuff : affiché avec `sessionOn`, caché sans ✅.
   Pas vérifié : une vraie session en ligne après la mise à jour (à regarder par Jules).
 - **Point fragile** : une classe posée sur `<body>` ailleurs que dans ces trois fichiers échappe au test.
+
+## 28/10/2026 — Geoffrey — Vitesse d'attaque sans paliers de 0,1 s
+- **Cause** : `fight` (src/sim/ai.js), `strike` (tours, instance) comparaient `G.t` (heure du tick ENTIER) à `m.atkReady`.
+  Un coup fini au milieu d'un tick redécidait avec la même `G.t`, < atkReady, et attendait `max(DT, …)` : l'intervalle
+  était arrondi au dixième au-dessus (0,32 s → 0,4 s). Trouvé par les bancs du GS expérimental (branche geoffrey/gs-bancs).
+- **Correctif** : `nowOf(G, m)` (src/sim/mineur.js) = `m.now ?? G.t` ; les trois boucles `stepMiner` (mine, tours, instance)
+  posent `m.now = G.t − budget` (heure exacte) le temps de `decide`. Les coups utilisent `now`, l'attente = `atkReady − now`
+  (plus de minimum DT ; `startAction` / `act` gardent leur 0,05 s).
+- **Tests** ✅ `tests/attack-speed.test.js` (100 à 400 % au rythme exact, 250 > 200) ; `tests/tower.test.js` : le test du
+  verrou de recul compte les reprises de tacle par `stats.tackled` (le coup peut tomber dans le tick où le Séraphin
+  revient : reprise et perte dans le même tick, invisibles en fin de tick) ; combat, knock, golem, goblin, mephite, mobs,
+  flesh, dungeon, spells, khole, trap, instance-sim, tower-* : verts.
+- **Simulation** ✅ 5 sessions à 3 : 0 blocage. `simulate:instance --size 3` identique avant / après (⚠️ acier 0/20 aujourd'hui,
+  l'état du projet dit 20/20 : antérieur à ce correctif, à revoir).
+- **Ajout (même branche)** : `rawDps(stats)` (src/meta/stuff.js) = dégâts × (1 + dégâts %) × (1 + critique, ≤ 100 %) ×
+  (1 + double attaque, ≤ 100 %) × vitesse ÷ 100 ÷ `CFG.attackInterval` ; ligne « DPS (cible immobile) » sous le gear score
+  (`statsHTML`, src/ui/stuff.js), avec les totaux affichés (stuff, skills, anneaux, glyphes ; sans Cri de guerre ni
+  Pillage). Tests ✅ `tests/dps.test.js`.

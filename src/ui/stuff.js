@@ -2,7 +2,7 @@
    qui y vont (et « Retirer » si la case est occupée). Ne modifie rien lui-même : chaque action est demandée au
    serveur (onOp), qui renvoie l'inventaire et le stuff à jour. */
 import { STUFF } from '../config.js';
-import { piecesFor, statsText, minerStats } from '../meta/stuff.js';
+import { piecesFor, statsText, minerStats, rawDps } from '../meta/stuff.js';
 import { sanitizeSkills, skillEffects, behaviourSkills } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
@@ -35,7 +35,8 @@ export function renderSlots(el, worn, tag = 'button'){
    (en session, ceux du reste du groupe s'y ajoutent) */
 export function statsHTML(worn, effects){
   const fr = v => String(v).replace('.', ',');
-  const rows = minerStats(worn, effects).map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
+  const list = minerStats(worn, effects);
+  const rows = list.map(s => { const u = STUFF.statUnits?.[s.key] ?? ''; return (
     `<div class="row"><span>${esc(s.label)}</span><span><b>${fr(s.total)}${u}</b>`+
     (s.bonus || s.mult !== 1 || s.skill ? ` <small class="mut">(`+
       (s.bonus ? `${fr(s.base)} <span class="stuffStats" title="stuff">+${fr(s.bonus)}${u}</span>` : fr(s.base))+
@@ -47,7 +48,10 @@ export function statsHTML(worn, effects){
   /* skills de comportement (pas des stats) : ce qu'ils font pendant la partie */
   const extra = behaviourSkills(effects);
   const gs = `<div class="row" title="Gear score : ce que ton stuff porté ajoute aux stats de base, en x (stats, identification, rune, amélioration ; sans skills ni anneaux)"><span><b>Gear score</b></span><span><b>${gearScore(worn).toLocaleString('fr-FR')} GS</b></span></div>`;
-  return gs + rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
+  /* DPS brut (28/10) : stuff, skills et anneaux compris (les totaux affichés) ; sur cible immobile, sans recul */
+  const dps = rawDps(Object.fromEntries(list.map(s => [s.key, s.total])));
+  const dpsRow = `<div class="row" title="Dégâts par seconde en moyenne sur une cible immobile, sans recul ni obscurité : dégâts × critique × double attaque × vitesse d'attaque (stuff, skills et anneaux compris ; sans Cri de guerre ni Pillage)"><span><b>DPS</b> <small class="mut">(cible immobile)</small></span><span><b>${fr(dps.toFixed(1))}</b></span></div>`;
+  return gs + dpsRow + rows + (extra.length ? `<div class="row"><span class="skillStats">Skills en partie</span><span></span></div>`+
     extra.map(k => `<div class="row"><span>${k.icon} ${esc(k.name)}</span><span><small class="skillStats">${esc(k.text)}</small></span></div>`).join('') : '');
 }
 

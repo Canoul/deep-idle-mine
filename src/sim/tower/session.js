@@ -15,7 +15,7 @@ import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
-import { ladderTime, winchMult, placedTorch } from '../mineur.js';
+import { ladderTime, winchMult, placedTorch, nowOf } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
 
@@ -440,8 +440,9 @@ function act(m, type, dur, data, status){ m.action = { type, dur: Math.max(0.05,
 function strike(G, m, o, status){
   m.face = Math.sign(o.x - m.x) || m.face;
   combatSpells(G, m, o);
-  if(G.t + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = G.t + hitT(G, m) / dk(G, m); }
-  return act(m, 'attack', Math.max(DT, m.atkReady - G.t), { mob: o.id, done: true }, status);
+  const now = nowOf(G, m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
+  if(now + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = now + hitT(G, m) / dk(G, m); }
+  return act(m, 'attack', m.atkReady - now, { mob: o.id, done: true }, status);
 }
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
 
@@ -614,7 +615,7 @@ function stepMiner(G, m){
   if(!G.ladder[m.y]?.[m.x]) m.ky = 0;   // poussé vers le haut hors d'une échelle : il retombe
   let budget = DT, guard = 0;
   while(budget > 1e-9 && guard++ < 30 && !G.over){
-    if(!m.action){ decide(G, m); if(!m.action) break; }
+    if(!m.action){ m.now = G.t - budget; decide(G, m); m.now = null; if(!m.action) break; }   // m.now : heure exacte (nowOf)
     const a = m.action, need = a.dur - a.t;
     if(budget >= need){ budget -= need; m.action = null; finishAction(G, m, a); }
     else { a.t += budget; budget = 0; }

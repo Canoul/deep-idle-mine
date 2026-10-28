@@ -4,7 +4,7 @@ import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKI
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf } from './mineur.js';
+import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -133,8 +133,9 @@ function fight(G,m,o){
      avant, le coup partait à la fin de l'élan, et un mob arrivé à portée avait le temps de tacler le premier) */
   if(inReach(G,m,o,reachOf(m))){
     if(dx) m.face=Math.sign(dx);
-    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)*fleshSlow(m)); }   // Cri de guerre : vitesse +5 % ; mur de chair : −10 % par stack
-    startAction(m,'attack', Math.max(DT, m.atkReady-G.t), {mob:o, done:true}); return;
+    const now=nowOf(G,m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
+    if(now+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=now+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)*fleshSlow(m)); }   // Cri de guerre : vitesse +5 % ; mur de chair : −10 % par stack
+    startAction(m,'attack', m.atkReady-now, {mob:o, done:true}); return;
   }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
     const k=Math.max(Math.abs(m.kx||0), Math.abs(m.ky||0));
