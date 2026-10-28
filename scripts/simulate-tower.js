@@ -1,5 +1,5 @@
 /* Simulation des tours de l'Ange et du Démon : taux de victoire par composition d'équipe.
-   Usage : npm run simulate:tower -- [--count 20] [--seed 1] [--verbose]
+   Usage : npm run simulate:tower -- [--count 20] [--seed 1] [--level 1] [--verbose]   (--level : niveau de tour, TOWER.levels)
    Compositions (demande de Geoffrey, 23/10) : stats de base ; minage 1,1 + 10 dégâts avec un barbare ; deux barbares
    à 15 dégâts et un mineur à 1,3 de minage. Les barbares n'ont aucun rang de skill (arbre seulement). d) : b) avec un
    logisticien qui a le skill Treuil (treuil de la tour, 25/10). */
@@ -7,7 +7,7 @@ import { runTower } from '../src/sim/tower/session.js';
 import { TOWER } from '../src/config.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i < 0 ? d : (process.argv[i + 1] ?? true); };
-const COUNT = +arg('count', 20), SEED0 = +arg('seed', 1), VERBOSE = process.argv.includes('--verbose');
+const COUNT = +arg('count', 20), SEED0 = +arg('seed', 1), LEVEL = +arg('level', 1), VERBOSE = process.argv.includes('--verbose');
 
 const M = (name, carac = {}, skillTree = null, skills = {}) => ({ name, account: name, carac, skillTree, skills });
 export const COMPOS = {
@@ -28,7 +28,7 @@ const avg = a => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
 for(const [label, team] of Object.entries(COMPOS)){
   const runs = [];
   for(let i = 0; i < COUNT; i++){
-    const seed = SEED0 + i, G = runTower(seed, { side: i % 2 ? 'demon' : 'angel', miners: team });
+    const seed = SEED0 + i, G = runTower(seed, { side: i % 2 ? 'demon' : 'angel', level: LEVEL, miners: team });
     runs.push(G);
     if(VERBOSE) console.log(`  seed ${seed} ${G.summary.success ? 'VICTOIRE' : 'échec'} t=${fmt(G.t)} étage=${G.summary.floor} boss=${G.summary.bossHp} toit=${fmt(G.timeline.roof)} projections=${G.stats.knocks} chutes=${G.stats.falls} bloqué=${G.stats.blocked}`);
   }

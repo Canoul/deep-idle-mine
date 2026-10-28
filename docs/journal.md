@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Tours du Jugement : niveau 2 revu, invocations, descente des mobs
+- **Pour le joueur** : niveau 2 : PV des mobs et du boss **+150 %** (avant × 2), stonebricks **+75 %** de dureté (avant
+  × 2) ; le reste ne change pas (poids +50 %, rage à 50 %, recul des mobs +100 %). Nouveau : **à chaque envol, le boss
+  invoque 2 Séraphins / Diablotins** sur le toit. À tous les niveaux, un mob qui n'a plus personne dans son étage **saute
+  par la porte ouverte** pour suivre un mineur tombé plus bas.
+- **À suivre** : simulation (3 mineurs à 2,5 de minage, 40 dégâts, sans skills) : niveau 1 gagné 4 fois sur 4, niveau 2
+  perdu 4 fois sur 4 (toit atteint vers 7 min 20, boss à moitié). Le niveau 2 demande un vrai stuff de fin de jeu.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Nouveau mob : le mur de chair
 - **Pour le joueur** : à partir de l'area 6, un **mur de chair** (une colonne de 6 cases) peut sortir de la roche à
   quelques colonnes du mineur et avancer vers lui en balayant la mine à l'horizontale. On ne peut ni le traverser ni

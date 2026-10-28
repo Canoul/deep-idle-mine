@@ -4074,3 +4074,16 @@ Règles (voir CLAUDE.md) :
   session, khole, view, lobby, live, wiki) 216/216 ✅ ; anti-triche 105/105 ✅ ; simulation 5 sessions sans shrine : 0 blocage.
 - ⚠️ Pas de simulation avec le shrine (effet sur la profondeur et le coffre non mesuré). Le don pendant une session est permis.
 
+
+## 28/10/2026 (11 h) — Tours : niveau 2 revu, invocation au saut, descente des mobs (Geoffrey)
+- **Config** : `TOWER.levels[2]` hp 2 → 2,5, hard 2 → 1,75, `summon: 2` (niveau 1 : 0) ; `TOWER.mobs.descend: true`.
+- **Sim** (src/sim/tower/session.js) : `summonMobs(G, n)` appelé par `startJump` : mobs sur `roof - 1`, `floor = TOWER.floors`,
+  `summoned: true`, réveillés, colonnes tirées par `G.rng` hors de [bx − 1, bx + w]. `descendMob` (stepMobs, quand le mob
+  n'a pas de proie) : un mineur dans la tour à un étage plus bas (`lowerMiner`) → glisse vers la colonne la plus proche de
+  `holeCols` (porte du plafond de l'étage du dessous, ouverte), recentré, puis tombe au sol suivant ; `o.floor` change
+  (la porte de son ancien étage n'attend plus ce mob : pas de blocage si les mineurs remontent). `mobDied` : message
+  « porte ouverte » seulement pour un étage « mobs ». Le recul et la marche normale ne font jamais tomber un mob (mobFits).
+- **Script** : `npm run simulate:tower -- --level 2`.
+- **Tests** ✅ `tests/tower-level.test.js` (valeurs, invocation niveau 1/2, saut par la porte puis tacle, porte fermée : reste) ;
+  tower*, judgment, game-service : 118/118. Simulation niveau 1 (compos du script, 6 seeds) : comme avant, 0 « bloqué ».
+- ⚠️ À regarder en jeu : rendu du saut (glissade du navigateur sur 4 lignes), mobs invoqués pendant l'atterrissage.
