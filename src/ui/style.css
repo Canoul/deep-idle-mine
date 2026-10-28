@@ -796,6 +796,10 @@ button.danger{color:var(--bad)}
 .setRow button{padding:0 calc(3*var(--u))}
 .setsBody>.setNew{margin-top:calc(4*var(--u));width:100%}
 @media (max-width:700px){ .setLay,.spGrid{grid-template-columns:1fr} }
+/* lobby : carte plus large, le nom tient sur la même ligne que les boutons */
+.lobbySets h2{font-size:var(--fs-l)}
+.lobbySets .setRow b{flex:1 1 auto;min-width:calc(40*var(--u))}
+@media (max-width:700px){ .lobbySets .setRow b{flex-basis:100%} }   /* téléphone : le nom sur sa ligne, les boutons dessous */
 
 /* Bloc géant (26/10/2026) : carte du lobby, visite, fin de visite */
 #cvGt{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}

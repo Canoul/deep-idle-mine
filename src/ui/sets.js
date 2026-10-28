@@ -1,10 +1,10 @@
-/* Sets : la même liste dans les onglets Stuff, Skills et Sorts (#setsStuff, #setsSkills, #setsSpells). Chaque set :
+/* Sets : la même liste dans les onglets Stuff, Skills, Sorts et Lobby (#setsStuff, #setsSkills, #setsSpells, #setsLobby). Chaque set :
    Équiper (stuff, skills et sorts d'un coup), Enregistrer (remplace par l'équipement actuel), renommer, supprimer ;
    « + Nouveau set » enregistre l'équipement actuel. Pendant une session : tout reste permis
    (28/10/2026) ; ce qu'on équipe compte pour la prochaine session (le serveur vérifie tout, onOp). */
 import { ask, askText } from './dialog.js';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells'];
+const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells', 'setsLobby'];
 
 /* une liste de sets en HTML (list : [{ id, name }], max, locked : session en cours, busy : demande en cours) */
 export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false, msg = '' } = {}){
