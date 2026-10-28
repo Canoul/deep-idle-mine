@@ -85,7 +85,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : calcul au prorata sur toutes les areas, charbon compris ; mine classique seulement ;
   session comptée au lancement ; dons gardés si le groupe se défait ; shrines liés au compte du chef ; pas de
   réactivation tant qu'il est actif ; seuil d'ouverture des areas inchangé ; d'autres shrines viendront.
-- **État** : 🧪 sur la branche `geoffrey/shrines` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Tours du Jugement : niveau 2
 - **Pour le joueur** : une tour choisie dans le Lobby, celui qui lance choisit le **niveau 1 ou 2**. Chaque niveau se
