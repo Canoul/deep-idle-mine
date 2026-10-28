@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle
+- **Pour le joueur** : sur téléphone, l'écran de ces événements rapetissait sans arrêt (surtout quand le journal à
+  côté se remplissait), puis regrandissait d'un coup. Même défaut que la mine le 22/10, mais sur les autres écrans.
+  Maintenant le dessin prend 60 % de la hauteur, toute la largeur possible, et ne bouge plus ; les infos (boss,
+  équipe, journal) sont en dessous, défilent, et ne passent plus sous la barre d'action.
+- **À suivre** : rien de connu ; si un écran bouge encore, dire lequel et sur quel téléphone.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Tours du Jugement : niveau 2 revu, invocations, descente des mobs
 - **Pour le joueur** : niveau 2 : PV des mobs et du boss **+150 %** (avant × 2), stonebricks **+75 %** de dureté (avant
   × 2) ; le reste ne change pas (poids +50 %, rage à 50 %, recul des mobs +100 %). Nouveau : **à chaque envol, le boss

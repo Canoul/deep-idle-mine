@@ -1,4 +1,4 @@
-/* Tailles d'affichage de la session : la mine, la mine instantanée, et les colonnes autour.
+/* Tailles d'affichage de la session : la mine, les événements (MI, tours, instance, géant), et les colonnes autour.
    Quand on perd peu (20 % au plus), on prend un agrandissement entier (×1, ×2…) pour que tous les pixels aient la
    même taille. */
 
@@ -17,6 +17,12 @@ function snap(s){
   return whole >= 1 && whole / (s * dpr) >= 0.8 ? whole / dpr : s;
 }
 
+/* hauteur imposée par la page, ou 0 si la boîte suit le canvas (canvas dans le flux, ex. #cv sur téléphone) : se caler
+   sur cette hauteur-là ferait rétrécir le canvas à chaque appel (arrondis), en boucle */
+function boxHeight(cv, box){
+  return getComputedStyle(cv).position === 'absolute' && box.clientHeight > 60 ? box.clientHeight : 0;
+}
+
 function setSize(cv, s){
   const W = Math.floor(cv.width * s), H = Math.floor(cv.height * s), key = W + 'x' + H;
   if(cv._fit !== key){ cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv._fit = key; }
@@ -25,12 +31,10 @@ function setSize(cv, s){
 /* Mine de la session : elle remplit la largeur de sa boîte et montre autant de lignes que la hauteur en permet
    (entre minRows et maxRows), sans rien rogner : la caméra sait ce qui est visible (la surface en haut, le mineur
    suivi au milieu). Trop peu de hauteur pour minRows : la mine se cale sur la hauteur. Sans hauteur imposée
-   (téléphone : #cv est dans le flux, la boîte prend la hauteur du canvas), le nombre de lignes ne change pas : se
-   caler sur cette hauteur ferait perdre une ligne à chaque appel (arrondis), la mine rétrécirait en boucle.
+   (téléphone : #cv est dans le flux, la page défile), le nombre de lignes ne change pas.
    tile : taille d'une case dans le canvas (px). */
 export function fitMine(cv, box, renderer, { minRows, maxRows }, tile){
-  const imposed = getComputedStyle(cv).position === 'absolute';
-  const w = box.clientWidth, h = imposed && box.clientHeight > 60 ? box.clientHeight : 0;
+  const w = box.clientWidth, h = boxHeight(cv, box);
   if(!w || !cv.width) return;
   let s = snap(w / cv.width);
   if(h){
@@ -43,9 +47,9 @@ export function fitMine(cv, box, renderer, { minRows, maxRows }, tile){
 
 /* Mine instantanée (caméra qui suit le mineur) : la vue remplit la largeur de sa boîte (MI.camCols colonnes) et montre
    autant de lignes que la hauteur en permet (renderer.setRows borne entre MI.camMinRows et la mine entière). Trop peu
-   de hauteur : la vue se cale sur la hauteur. Sans hauteur imposée (téléphone), le nombre de lignes ne change pas. */
+   de hauteur : la vue se cale sur la hauteur. Sans hauteur imposée, le nombre de lignes ne change pas. */
 export function fitInstant(cv, box, renderer, tile){
-  const w = box.clientWidth, h = box.clientHeight > 60 ? box.clientHeight : 0;
+  const w = box.clientWidth, h = boxHeight(cv, box);
   if(!w || !cv.width) return;
   let s = snap(w / cv.width);
   if(h){
@@ -55,10 +59,10 @@ export function fitInstant(cv, box, renderer, tile){
   setSize(cv, s);
 }
 
-/* Tour : tout le canvas, le plus grand possible dans sa boîte, proportions gardées. Sans hauteur imposée
-   (téléphone : la boîte suit le canvas), on se cale sur la largeur. */
+/* Tours, instance, Bloc géant : tout le canvas, le plus grand possible dans sa boîte, proportions gardées. Sans hauteur
+   imposée, on se cale sur la largeur. */
 export function fitCanvas(cv, box){
-  const w = box.clientWidth, h = box.clientHeight > 60 ? box.clientHeight : Infinity;
+  const w = box.clientWidth, h = boxHeight(cv, box) || Infinity;
   if(!w || !cv.width || !cv.height) return;
   setSize(cv, snap(Math.min(w / cv.width, h / cv.height)));
 }
