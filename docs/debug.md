@@ -4247,7 +4247,7 @@ Règles (voir CLAUDE.md) :
   (`statsHTML`, src/ui/stuff.js), avec les totaux affichés (stuff, skills, anneaux, glyphes ; sans Cri de guerre ni
   Pillage). Tests ✅ `tests/dps.test.js`.
 
-## 28/10/2026 — Geoffrey — États visibles des mineurs et des mobs (branche geoffrey/buffs-debuffs)
+## 28/10/2026 — Geoffrey — États visibles des mineurs et des mobs (✅ en ligne le 28/10)
 - **Quoi** : `EFFECTS` en config (registre : sorte, nom, icône, couleur ; couleurs des sorts) ; `src/sim/effects.js`
   (`minerEffects`, `sessionBonuses`, `mobEffects`, `cleanRings`) LIT la partie, n'écrit rien. Envoyés dans `minerView` /
   `mobView` de la mine (`src/shared/view.js`), des tours, de l'instance (+ `spellCd`) et de la MI. Rangée d'icônes

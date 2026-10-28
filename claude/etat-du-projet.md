@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (états visibles des mineurs, sur branche).*
+*Dernière mise à jour : 28/10/2026 (états visibles des mineurs, en ligne).*
 
 ---
 
@@ -371,7 +371,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
-- **États visibles** (28/10, Geoffrey ; 🧪 branche `geoffrey/buffs-debuffs`, pas en ligne ; spec
+- **États visibles** (28/10, Geoffrey ; en ligne le 28/10 ; spec
   `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`, `EFFECTS`, `src/sim/effects.js`, `src/ui/effects.js`,
   `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
   le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,

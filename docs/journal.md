@@ -38,7 +38,7 @@ Modèle d'entrée :
   `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`.
 - **À suivre** : regarder en vrai si « Dans le noir » n'apparaît pas trop souvent (bruit) ; les icônes viennent de la
   planche Kenney, à remplacer si on veut un style à nous.
-- **État** : 🧪 sur la branche `geoffrey/buffs-debuffs` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
