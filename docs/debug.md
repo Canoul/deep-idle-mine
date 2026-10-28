@@ -4494,6 +4494,20 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/sets.test.js` + `tests/boot-check.test.js` 11/11. ✅ Captures Chrome headless (vrai `setsHtml` +
   style.css) à 1400 px et 390 px. ⚠️ Pas vérifié dans une vraie partie (clic Équiper depuis le lobby). ✅ en ligne le 28/10.
 
+## 28/10/2026 — Geoffrey — Correctif : saut du mineur dans l'ascenseur (affichage)
+- **Cause** : `glide` (src/shared/view.js) ne fait pas glisser au-delà de `TELEPORT` = 6 cases (Manhattan) entre la
+  position affichée et la nouvelle position reçue : il apparaît directement. Envoi toutes les ~250 ms + réseau
+  (~0,4 s réelle = 8 ticks à ×2). Mesure (script hors dépôt : partie du serveur, 3 seeds, 1 h, un envoi / 8 ticks,
+  `climbSpeed` 5,25 = jambes de haut tier, Escalateur 5/5) : **ascenseur** 1 642 envois sur 2 704 dans le seau à plus
+  de 6 cases (pire 7) ; treuil normal 0 (pire 5) ; aux stats de base, 0 dans les deux cas. La simulation (seau case par
+  case, `stepDir` / `winchT`) est correcte.
+- **Correctif** : `glide` garde la glissade quand le mineur est dans le seau (`action.data.winch`) dans l'envoi
+  d'avant ou dans le nouveau (`riding`), quelle que soit la distance. Vaut aussi pour les tours et les instances (même
+  `glide`). Les vraies téléportations hors du seau restent instantanées.
+- **Tests** ✅ `tests/view.test.js` (nouveau test : 10 cases dans le seau → glisse ; sortie du seau → glisse ; 10 cases
+  hors du seau → saut) ; ❌ avant le correctif, ✅ après ; view + camera 11/11. ⚠️ Pas vu à l'écran (bug visuel en
+  mouvement, pas de capture possible) : à regarder en vrai dans une session avec l'ascenseur.
+
 ## 28/10/2026 — Focus en fin de session : va-et-vient « Change d'area » / « Change de galerie » (Geoffrey)
 - **Symptôme** (joueur, focus graphite, couche 5) : sur l'échelle, monte et descend en boucle, 0 bloc miné.
 - **Cause** : `focusGoal` (`src/sim/focus.js`) ignorait `m.tripCap` (profondeur max du trajet, fin de session). Minerai

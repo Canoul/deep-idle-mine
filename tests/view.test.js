@@ -83,3 +83,19 @@ test('mouvement fluide : à l\'arrivée d\'un envoi, rien ne saute ; la glissade
   }
   assert.equal(jumps, 0, 'aucun saut à l\'arrivée d\'un envoi');
 });
+
+/* 28/10/2026 : l'ascenseur (Glyphe Treuil) va vite ; entre deux envois (~0,3-0,5 s réelles à ×2), le mineur parcourt
+   plus de 6 cases dans le puits et apparaissait d'un coup au lieu de glisser */
+import { glide } from '../src/shared/view.js';
+test('treuil / ascenseur : un mineur dans le seau glisse même sur plus de 6 cases ; un vrai saut reste un saut', () => {
+  const M = { _at:0, _dur:300 };
+  const at = (y, winch) => ({ id:1, x:25, y, action: winch ? { type:'move', t:0, dur:0.1, data:{ x:25, y, fx:25, fy:y, winch:true } } : null });
+  const ride = (y0, w0, y1, w1) => {
+    const old = [{ ...at(y0, w0), _from:[25, y0], _to:[25, y0] }], now = [at(y1, w1)];
+    glide(M, old, now, o => [o.x, o.y], 300);
+    return now[0]._from;
+  };
+  assert.deepEqual(ride(5, true, 15, true), [25, 5], 'dans le seau : part de là où il est affiché');
+  assert.deepEqual(ride(15, true, 1, false), [25, 15], 'sort du seau en haut : glisse aussi');
+  assert.deepEqual(ride(5, false, 15, false), [25, 15], 'hors du seau, 10 cases d\'un coup : apparaît directement');
+});
