@@ -3,6 +3,8 @@ import { SESSION_LEN, STATS, BLOCKS, IDS, SKILLS, SPELLS } from '../config.js';
 import { areaOf, unlockNeed, maxRow } from '../sim/world.js';
 import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
+import { pxi } from './pxicons.js';
+import { treeOf } from './spells.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
@@ -180,13 +182,14 @@ export function objectiveHtml(G){
 }
 
 /* barre des sorts d'un mineur (m.spells, m.spellCd : heure où chaque sort est de nouveau prêt) au temps t de la partie :
-   un carré par sort, grisé avec les secondes restantes pendant la recharge ; '' sans sort */
+   un carré par sort (icône pixel, couleur de sa famille comme dans l'onglet Sorts), grisé avec les secondes restantes
+   pendant la recharge ; '' sans sort */
 export function spellBarHtml(m, t){
   if(!m?.spells?.length) return '';
   return m.spells.map(id => {
     const s = SPELLS.list.find(x => x.id === id); if(!s) return '';
     const left = Math.ceil((m.spellCd?.[id] ?? 0) - t - 1e-9);
-    return `<div class="spB${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
-           `<span class="spIcon">${s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
+    return `<div class="spB tr-${treeOf(s)}${left > 0 ? ' cd' : ''}" title="${esc(s.name)}${left > 0 ? ` : prêt dans ${left} s` : ' : prêt'}">`+
+           `<span class="spIcon">${pxi(s.px) || s.icon}</span>${left > 0 ? `<b class="spLeft">${left}</b>` : ''}</div>`;
   }).join('');
 }

@@ -24,6 +24,17 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Onglet Sorts refait (piste A « la barre de sorts »)
+- **Pour le joueur** : l'onglet Sorts a une nouvelle mise en page, les sorts eux-mêmes ne changent pas. En haut, **ta barre
+  de sorts en grand**, la même qu'en bas de la mine. Dessous, le **grimoire** : tous les sorts en tuiles, avec des filtres
+  Mineur / Logisticien / Barbare / Parchemins et l'état de chaque sort (dans la barre, disponible, parchemin à apprendre,
+  réservé à une autre spé, pas encore débloqué). À droite, la **fiche du sort** choisi : ce qu'il fait, ses chiffres, et
+  pour un sort pas encore débloqué, où on en est (« Mineur : niveau 7 / 10, encore 3 ») ou d'où vient son parchemin.
+  Des **icônes pixel** à la place des emojis, aussi dans la barre de sorts en session, et une couleur par spé.
+- **Décisions** : choix de la piste A parmi trois maquettes (barre de sorts / grimoire / trois voies).
+- **À suivre** : la règle d'ouverture des emplacements 3 et 4 n'existe toujours pas (affichés « Verrouillé »).
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Jules — Chat global dans le Lobby
 - **Pour le joueur** : une carte **Chat global** dans le Lobby (colonne de gauche, sous les préférences) : **tous les
   joueurs du jeu** s'y écrivent, en session ou non, invités compris (ils apparaissent en « Invité XXXX »). Chaque message

@@ -625,6 +625,8 @@ export const SKILLS = {
 export const SETS = { max:20, nameMax:24, opMemory:50 };
 
 export const SPELLS = {
+  /* par sort : icon (emoji, wiki), px (icône pixel de src/ui/pxicons.js : onglet Sorts et barre en session), short (une
+     ligne sous le nom, fiche de l'onglet Sorts), desc (le détail) */
   slots: 4, openSlots: 2,
   opMemory: 50,
   list: [
@@ -632,26 +634,26 @@ export const SPELLS = {
        vers un mob qu'il va combattre (un mob qui tacle un allié d'abord), seulement s'il est à portée : sinon il le
        garde. Mob heurté : dmg × ses dégâts, recharge × hitCd, sa canalisation coupée, étourdi stun s (25/10/2026,
        Geoffrey ; avant : ligne droite seulement, sans étourdissement) */
-    { id:'dash', name:'Dash', icon:'💨', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
+    { id:'dash', name:'Dash', icon:'💨', px:'arrow', short:'Fonce sur un mob et l\'étourdit', unlock:{ tree:'barbare', level:5 }, needTree:'barbare', cd:30,
       range:6, speed:6, dmg:5, hitCd:0.5, minCells:2, stun:2,
       desc:'Fonce de 6 cases au plus (600 % de vitesse) en suivant le terrain : il descend et saute un bloc. Vise d\'abord un mob qui tacle un allié ; en route vers un mob, il attend d\'être à portée. Mob heurté : 500 % de ses dégâts, recharge réduite de moitié, son sort est coupé et il est étourdi 2 s' },
     /* révèle les blocs à radius cases (cercle) ; part s'il en reste au moins un inconnu */
-    { id:'illumination', name:'Illumination', icon:'💡', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
+    { id:'illumination', name:'Illumination', icon:'💡', px:'sun', short:'Révèle les blocs autour de lui', unlock:{ tree:'mineur', level:5 }, needTree:'mineur', cd:90,
       radius:5,
       desc:'Révèle tous les blocs dans un rayon de 5 autour du mineur' },
     /* vitesse de minage +mineSpeed pour tous les mineurs pendant duration s ; la recharge commence à la fin de l'effet.
        Plusieurs logisticiens : pas de cumul, le suivant attend la fin de l'effet (ils s'enchaînent) */
-    { id:'inspiration', name:'Inspiration', icon:'🎺', unlock:{ tree:'logisticien', level:5 }, needTree:'logisticien', cd:180,
+    { id:'inspiration', name:'Inspiration', icon:'🎺', px:'note', short:'Tout le groupe mine plus vite', unlock:{ tree:'logisticien', level:5 }, needTree:'logisticien', cd:180,
       duration:60, mineSpeed:0.10,
       desc:'Tous les mineurs minent 10 % plus vite pendant 60 s (la recharge commence à la fin de l\'effet)' },
     /* quand un autre mineur du groupe se bat (frappe ou est taclé) : téléporté sur sa case, inflige hpPct des PV max du
        mob (bossPct sur un boss : minotaure, Gallianix) */
-    { id:'ulti_shen', name:'Ulti shen', icon:'🌀', unlock:{ scroll:'Parchemin « Ulti shen »' }, cd:180,
+    { id:'ulti_shen', name:'Ulti shen', icon:'🌀', px:'shield', short:'Rejoint d\'un coup un allié en combat', unlock:{ scroll:'Parchemin « Ulti shen »' }, cd:180,
       hpPct:0.20, bossPct:0.05,
       desc:'Quand un allié se bat : se téléporte à lui et inflige 20 % des PV max du mob (5 % sur un boss)' },
     /* le prochain bloc miné (pas de la terre ni un trésor) est « appris » : ce type de bloc se mine bonus plus vite
        jusqu'à la fin de la session (cumulable) ; la recharge commence une fois le bloc appris */
-    { id:'fast_learner', name:'Fast learner', icon:'📖', unlock:{ scroll:'Parchemin « Fast learner »' }, cd:300,
+    { id:'fast_learner', name:'Fast learner', icon:'📖', px:'book', short:'Apprend à miner un type de bloc', unlock:{ scroll:'Parchemin « Fast learner »' }, cd:300,
       bonus:0.10,
       desc:'Le prochain bloc miné (sauf terre et trésor) est appris : ce type de bloc se mine 10 % plus vite jusqu\'à la fin de la session (cumulable)' },
     /* lancée dans le sens du minage, jusqu'à reach cases ou au premier bloc ; explose dans un rayon radius (cercle) :
@@ -660,32 +662,32 @@ export const SPELLS = {
        Rework du 28/10/2026 (Geoffrey) : elle ne casse que les blocs de dureté < hardMul × sa vitesse de minage (stat
        mineSpeed × (1 + minage %)), et inflige dmg × ses dégâts (critique possible, comme le Cleave) à chaque mob dans son
        rayon (un boss de donjon seulement s'il le combat déjà ; dans une tour, le boss aussi) */
-    { id:'dynamite', name:'Dynamite', icon:'🧨', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
+    { id:'dynamite', name:'Dynamite', icon:'🧨', px:'fire', short:'Fait sauter les blocs tendres devant lui', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
       reach:2, radius:2, throwTime:0.5, hardMul:3, dmg:0.5,
       desc:'Lance une dynamite devant lui (2 cases au plus) : dans un rayon de 2, elle casse les blocs moins durs que 3 × sa vitesse de minage, comme s\'il les minait, et inflige 50 % de ses dégâts aux mobs' },
     /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
        remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
        LOGISTICIEN en oxygène (sans dépasser son max). Jamais sur lui-même. La recharge commence une fois l'oxygène
        donné. Plusieurs alliés à portée : celui qui a le moins d'oxygène (en % de son max ; choix de Claude) */
-    { id:'zipette', name:'Bonbonne de zipette', icon:'🫧', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
+    { id:'zipette', name:'Bonbonne de zipette', icon:'🫧', px:'bubbles', short:'Redonne de l\'oxygène à un allié', unlock:{ tree:'logisticien', level:10 }, needTree:'logisticien', cd:180,
       radius:3, podsPct:0.20,
       desc:'Le prochain allié croisé à 3 cases ou moins, qui travaille dans la mine et à qui il manque de l\'oxygène, regagne 20 % des pods max du logisticien en oxygène (pas sur lui-même ; la recharge commence une fois l\'oxygène donné)' },
     /* 27/10/2026 (Geoffrey) : dès que le barbare entre en combat (il frappe un mob ou un mob le tacle), lui et les
        mineurs à radius cases ou moins (cercle, au moment du cri) ont dégâts × (1 + dmgPct) et vitesse d'attaque ×
        (1 + atkSpeed) pendant duration s ; la recharge commence à la fin de l'effet. Pas de cumul (un 2e cri prolonge) */
-    { id:'war_cry', name:'Cri de guerre', icon:'📯', unlock:{ tree:'barbare', level:10 }, needTree:'barbare', cd:180,
+    { id:'war_cry', name:'Cri de guerre', icon:'📯', px:'horn', short:'Le groupe frappe plus fort et plus vite', unlock:{ tree:'barbare', level:10 }, needTree:'barbare', cd:180,
       radius:10, duration:30, dmgPct:0.10, atkSpeed:0.05,
       desc:'Quand il entre en combat : lui et les mineurs à 10 cases ou moins font 10 % de dégâts en plus et attaquent 5 % plus vite pendant 30 s (la recharge commence à la fin de l\'effet)' },
     /* 27/10/2026 (Geoffrey) : en combat, inflige dmg × ses dégâts (critique possible, tiré pour chaque mob) à chaque mob
        à radius cases ou moins (cercle) ; ni recul, ni dégâts de zone de Force brute. Un boss de donjon seulement s'il le
        combat déjà */
-    { id:'cleave', name:'Cleave', icon:'🪓', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
+    { id:'cleave', name:'Cleave', icon:'🪓', px:'sword', short:'Frappe tous les mobs autour de lui', unlock:{ scroll:'Parchemin « Cleave »' }, cd:10,
       radius:2, dmg:0.5,
       desc:'En combat : inflige 50 % de ses dégâts à tous les mobs à 2 cases ou moins (coup critique possible)' },
     /* 27/10/2026 (Geoffrey) : étourdit stun s un mob à range cases ou moins (cercle) qui se bat : d'abord un mob qui
        tacle un allié, puis celui qui le tacle, puis celui qu'il frappe. Comme le Dash : il lâche son tacle et sa
        canalisation (occultiste) est coupée (choix de Claude). Jamais un mob déjà étourdi */
-    { id:'hand_of_justice', name:'Hand of Justice', icon:'⚖️', unlock:{ scroll:'Parchemin « Hand of Justice »' }, cd:30,
+    { id:'hand_of_justice', name:'Hand of Justice', icon:'⚖️', px:'daze', short:'Étourdit un mob qui se bat', unlock:{ scroll:'Parchemin « Hand of Justice »' }, cd:30,
       range:3, stun:3,
       desc:'Étourdit 3 s un mob qui se bat, jusqu\'à 3 cases de distance (d\'abord un mob qui tacle un allié) : il lâche son tacle et son sort est coupé' },
   ],

@@ -314,6 +314,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   session.
   **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de
   dureté < 3 × vitesse de minage, 50 % des dégâts aux mobs du rayon (boss compris dans la tour). Simulation : `--spells id,id`.
+  **Onglet refait le 28/10 (Jules, piste A « la barre de sorts »)** : la barre de sorts en grand en haut (comme en
+  session), dessous le grimoire (tuiles filtrées par spé / parchemins, état de chaque sort) et la fiche du sort choisi
+  (description, chiffres tirés de la config, action ou raison du blocage, barre de progression de spé). Icônes pixel
+  (`px` dans `SPELLS`, aussi dans la barre en session) et une couleur par famille ; `short` = la ligne sous le nom.
+  Ancien affichage (3 colonnes grises, emojis, détails en infobulle) remplacé.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe (28/10) ; Équiper remet tout d'un coup
   (pièce introuvable = case vide) ; **Équiper possible pendant une session, pour la suivante** (28/10, Geoffrey ; ancien :
