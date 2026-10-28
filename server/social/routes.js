@@ -17,5 +17,10 @@ export function socialRoutes(social){
     'POST /api/social/join':    async ctx => { needMe(ctx); return social.join(ctx.me, str(ctx.body.id)); },
     'POST /api/social/profile': async ctx => { needMe(ctx); return social.profile(ctx.me, str(ctx.body.id)); },
     'POST /api/social/leaderboard': async ctx => { needMe(ctx); return social.leaderboard(ctx.me, str(ctx.body.board)); },
+    /* chat global du lobby (28/10) */
+    'GET /api/social/chat':     async ctx => { needMe(ctx);
+      const after = new URL(ctx.req.url, 'http://x').searchParams.get('after');
+      return social.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
+    'POST /api/social/chat':    async ctx => { needMe(ctx); return social.chatPost(ctx.me, ctx.body && typeof ctx.body === 'object' ? ctx.body : {}); },
   };
 }

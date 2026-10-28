@@ -1555,8 +1555,11 @@ export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3,
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
    maxLen : caractères par message · keep : derniers messages gardés par session · gapMs : délai minimal entre deux
    messages d'un joueur · poll : rafraîchissement dans le navigateur (ms) · ttlMs : un salon sans message depuis ce
-   temps est oublié (filet de sécurité, la session dure 1 h) */
-export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3 };
+   temps est oublié (filet de sécurité, la session dure 1 h).
+   Chat global (28/10/2026, Jules) : un seul salon pour tous les joueurs (invités compris), carte du Lobby, mêmes
+   maxLen et keep, gardé en base (survit aux redémarrages). globalGapMs : délai minimal entre deux messages d'un joueur
+   (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
+export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */

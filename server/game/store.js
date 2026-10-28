@@ -15,7 +15,9 @@
    Stats de session (ns session_stat, clé 'session:compte') : une ligne par joueur et par mine classique terminée, gardée
    sans limite (les sessions, elles, sont effacées après 30 jours) ; lue par le tableau de bord (server/admin/dashboard.js).
    Record de tour (ns tower_record, clé = compte, 27/10/2026) : meilleur temps de victoire dans une tour céleste,
-   { t, at, side, team, session } (src/meta/leaderboard.js) ; gardé sans limite. Lu par les classements (onglet Social). */
+   { t, at, side, team, session } (src/meta/leaderboard.js) ; gardé sans limite. Lu par les classements (onglet Social).
+   Chat global (ns chat_global, clé 'state', 28/10/2026) : { next, msgs:[{ id, at, account, name, text }] }, les CHAT.keep
+   derniers messages, gardés pour survivre aux redémarrages (server/social/service.js). */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -40,6 +42,7 @@ export function createMemoryGameStore(initial = {}){
   const giantDays = new Map(Object.entries(initial.giantDays ?? {}));       // Bloc géant : scores du jour, par jour
   const giantPlayers = new Map(Object.entries(initial.giantPlayers ?? {})); // Bloc géant : délai, visite en cours, récompenses prises
   const towerRecords = new Map(Object.entries(initial.towerRecords ?? {})); // classements : meilleur temps de tour, par compte
+  const chats = new Map(Object.entries(initial.chats ?? {}));         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -148,6 +151,10 @@ export function createMemoryGameStore(initial = {}){
     async getJudgment(){ return copy(judgments.get('state')) ?? null; },
     async putJudgment(j){ judgments.set('state', copy(j)); await store.changed([{ ns: 'judgment', key: 'state', value: j }]); },
 
+    /* chat global (lobby) : un seul salon commun à tous les joueurs */
+    async getGlobalChat(){ return copy(chats.get('state')) ?? null; },
+    async putGlobalChat(c){ chats.set('state', copy(c)); await store.changed([{ ns: 'chat_global', key: 'state', value: c }]); },
+
     /* tableau de bord : lignes de stats ; une ligne déjà écrite n'est jamais remplacée (fin de session rejouée) */
     async putSessionStats(rows){
       const fresh = rows.filter(r => !sessionStats.has(r.key));
@@ -199,7 +206,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords) }; },
+                         towerRecords: Object.fromEntries(towerRecords), chats: Object.fromEntries(chats) }; },
   };
   return store;
 }
@@ -229,12 +236,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'shrine']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'shrine', 'chat_global']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, shrines: rows.shrine });
+                                        towerRecords: rows.tower_record, shrines: rows.shrine, chats: rows.chat_global });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

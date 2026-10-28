@@ -4509,3 +4509,22 @@ Règles (voir CLAUDE.md) :
   winch : 93/93. Simulation 5 sessions × 3 mineurs : 0 bloquée (sans focus : chiffres identiques avant / après la 2e version).
 - ⚠️ Pas de simulation avec focus minerai (le script n'en pose pas) ; à surveiller : focus « only » d'un minerai absent au
   dessus du cap → il creuse des galeries vides jusqu'à la fin (comme avant hors fin de session).
+
+## 28/10/2026 — Chat global du Lobby (Jules)
+- **Serveur** : `server/game/chat.js` `createChat({ clock, gapMs, ttlMs })` (avant : cadence et durée fixées à `CHAT`),
+  + `room(id)` / `restore(id, raw)` (reprise revérifiée : numéros strictement croissants, `cleanChatText(text) === text`,
+  champs typés, `CHAT.keep` derniers ; `next` = max(next enregistré, dernier + 1)). `server/social/service.js` : salon
+  unique `'global'`, `ttlMs: Infinity`, cadence `CHAT.globalGapMs` (3 s), `chatPost` / `chatGet` ; nom = `displayName(me)`
+  (jamais le navigateur) ; relu en base au premier appel (`chatReady`, une seule fois) ; chaque message réécrit l'état
+  entier (`putGlobalChat`, via `serial`). Routes `GET|POST /api/social/chat` (`?after=`, comme le chat de session).
+  Stockage : ns `chat_global`, clé `state` (`server/game/store.js` : mémoire, fichier, PostgreSQL `db.load`).
+- **Navigateur** : `src/ui/chat.js` généralisé (`prefix` des ids, `paused()`, `poke()`, `time`), une relecture à la fois
+  (`reading` = génération). `src/main.js` : `gchat` démarré une fois au démarrage (la déconnexion recharge la page), en
+  pause hors onglet Lobby, relu tout de suite en y revenant. `index.html` : carte `#gchatCard` ; CSS `#chatLog` → `.chatLog`.
+  Aide « ? » `gchat` (`src/ui/help.js`). `CHAT.globalGapMs` dans `src/config.js`.
+- **Tests** ✅ `tests/chat.test.js` (5 nouveaux : tous les comptes et invités, nom du serveur, cadence, séparé du chat de
+  session, 50 derniers + reprise après redémarrage avec numéros qui continuent, stockage trafiqué) + `tests/social.test.js`
+  (HTTP : 401 sans compte, 429, 400, corps tableau) : 33/33 ; `tests/boot-check.test.js` ✅. ✅ Vérifié dans le navigateur (serveur local, 2 invités) :
+  message reçu par l'autre en ≤ 3 s, balisage affiché en texte, « Doucement… » au 2e message rapide.
+- ⚠️ Points fragiles : pas de modération ; chaque message réécrit `game.json` en local (normal pour ce stockage) ;
+  `/api/social/chat` compte comme signe de vie (présence), comme toutes les routes Social ; pas vérifié sur téléphone.

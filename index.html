@@ -53,6 +53,10 @@
     <h2>Critères / préférences <i data-qhelp="prefs"></i></h2>
     <div class="prefs" id="prefsBox"></div>
   </div>
+  <!-- chat global : tous les joueurs du jeu, même en session (src/ui/chat.js) -->
+  <div class="card" id="gchatCard"><h2>Chat global <i data-qhelp="gchat"></i></h2><div id="gchatLog" class="chatLog" aria-live="polite"></div>
+    <form id="gchatForm" class="chatForm"><input id="gchatInput" autocomplete="off" placeholder="Message à tous les joueurs…" title="Écrire à tous les joueurs du jeu"><button>Envoyer</button></form>
+    <div id="gchatNote" class="mut small"></div></div>
   </div>
   <div class="lobbyCol">
   <div class="card invitesCard" id="invitesCard" hidden>
@@ -176,7 +180,7 @@
       <div class="row" style="margin-top:6px"><span>XP de la session</span><span id="xpBox">0</span></div>
     </div>
     <!-- chat des joueurs de la session (src/ui/chat.js) -->
-    <div class="card" id="chatCard"><h2>Chat</h2><div id="chatLog" aria-live="polite"></div>
+    <div class="card" id="chatCard"><h2>Chat</h2><div id="chatLog" class="chatLog" aria-live="polite"></div>
       <form id="chatForm" class="chatForm"><input id="chatInput" autocomplete="off" placeholder="Message…" title="Écrire aux joueurs de la session"><button>Envoyer</button></form>
       <div id="chatNote" class="mut small"></div></div>
     <div class="card"><h2>Journal</h2><div id="log"></div></div>
