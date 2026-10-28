@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Spec : buffs et debuffs visibles
+- **Pour le joueur** : rien pour l'instant, c'est une spec. L'idée : chaque état d'un mineur (étourdi, taclé,
+  asphyxie, Cri de guerre, anneaux, shrine, couronne du Roi Gobelin…) a une icône et un temps restant, et les
+  contrôles se voient sur le perso (étoiles quand il est étourdi, botte barrée quand il est taclé).
+- **Décisions** : aucune encore. 4 questions en bas de la spec (`docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`).
+- **À suivre** : répondre aux questions, puis coder.
+- **État** : 🧪 sur la branche `geoffrey/buffs-debuffs` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
   de seconde suivant : 250 % frappait exactement comme 200 %, 120 % comme 100 %… Maintenant 250 % frappe 25 % plus vite
