@@ -33,7 +33,7 @@ Modèle d'entrée :
   marche toujours.
 - **Décisions** : le nombre choisi = des fournées (Chitine : 1 fournée = 5 chitine) ; le combustible posé est du
   charbon ; si le four contient d'autres ingrédients, on refuse plutôt que de les retirer tout seul.
-- **État** : 🧪 sur la branche `geoffrey/four-recettes` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
 - **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
