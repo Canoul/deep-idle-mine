@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
+- **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer
+  un set, reset des skills, se déconnecter…), les messages d'erreur et le renommage d'un set s'ouvrent maintenant dans
+  une fenêtre du jeu (cadre pixel « Forge noire ») au lieu de la boîte grise du navigateur. Les boutons disent ce qu'ils
+  font (« Quitter », « Sacrifier », « Supprimer »…) ; Entrée valide, Échap ou un clic à côté annule.
+- **État** : ✅ en ligne le 28/10.
+
 ## 28/10/2026 — Geoffrey — Fond d'écran : transition douce avec l'onglet Session
 - **Pour le joueur** : sur les autres onglets, la mine reste en plein écran, assombrie. En ouvrant l'onglet Session,
   elle **rétrécit en douceur** (zoom régulier, ~0,5 s) jusqu'à sa place dans la session en s'éclaircissant, pendant que

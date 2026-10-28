@@ -8,6 +8,7 @@
 import { GUIDE, FURNACE } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { countOf } from '../meta/inventory.js';
+import { ask } from './dialog.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const ingots = RECIPES[GUIDE.pickaxe]?.cost?.[GUIDE.ingot] ?? 0;
@@ -106,7 +107,8 @@ export function setupGuide(el, { facts, go, highlight }){
     const b = e.target.closest('[data-g]'); if(!b) return;
     if(b.dataset.g === 'toggle') setSaved({ open: !all[el.dataset.account]?.open });
     else if(b.dataset.g === 'go'){ go(b.dataset.tab); refresh(); }
-    else if(b.dataset.g === 'close' && (b.classList.contains('on') || confirm('Masquer le guide « Premiers pas » ? Il ne reviendra pas.'))) setSaved({ hidden: true });
+    else if(b.dataset.g === 'close') (b.classList.contains('on') ? Promise.resolve(true) : ask('Masquer le guide « Premiers pas » ? Il ne reviendra pas.', { ok:'Masquer' }))
+      .then(yes => { if(yes) setSaved({ hidden: true }); });
   };
 
   return { refresh };

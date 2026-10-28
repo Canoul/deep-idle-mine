@@ -3,6 +3,7 @@
    Le serveur décide de tout (heure, inscriptions) ; ici on affiche et on demande. */
 import { INSTANT_MINE as MI, GAME, NOTIFY } from '../config.js';
 import { helpLine } from './help.js';
+import { tell } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -117,7 +118,7 @@ export function setupInstantLobby(h){
       j.disabled = true;
       const ok = await act(h.api.join);
       box.hidden = true;
-      if(ok) h.onJoined?.(); else alert(err);
+      if(ok) h.onJoined?.(); else tell(err);
     };
   }
 

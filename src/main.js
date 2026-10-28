@@ -69,6 +69,7 @@ import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
+import { ask, tell } from './ui/dialog.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -274,10 +275,10 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
 /* ---------- compte ---------- */
 const accountUI = createAccountUI($('account'), acct, {
   onChange: () => { renderNavAccount($('navAccount'), acct); lobby.update({ account:acct.account }); startInstant(); pollSocial(); pollJudgment(); },
-  confirmLeave: () => confirm([
+  confirmLeave: () => ask([
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
-    'Se déconnecter quand même ?'].filter(Boolean).join('\n')),
+    'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
   options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on }],
   setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); },
 });
@@ -457,7 +458,7 @@ async function pollJudgment(){
 addEventListener('hashchange', e => {
   const code = joinCodeFromHash(e.newURL);
   if(!code) return;
-  if(rec){ alert('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
+  if(rec){ tell('Tu es dans une session : termine-la ou quitte-la pour rejoindre ce groupe.'); return; }
   pendingJoin = code; pollLobby();
 });
 
@@ -469,7 +470,7 @@ setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'session');
 const focusPanel = setupFocusPanel({
   onChange: async focus => {
     try { return (await gameApi.focus(focus)).event; }
-    catch(e){ alert(e.message); throw e; }
+    catch(e){ tell(e.message); throw e; }
   },
 });
 
@@ -478,7 +479,7 @@ const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameAp
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
-  try { applyClock((await gameApi.clock(opts)).session.clock); } catch(e){ alert(e.message); }
+  try { applyClock((await gameApi.clock(opts)).session.clock); } catch(e){ tell(e.message); }
 }
 function applyClock(c){
   if(!c || !info.dev) return;
@@ -560,10 +561,10 @@ function smooth(dtr){
 
 async function leave(){
   if(!G || G.over) return;
-  if(!confirm(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
-                     : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.')) return;
+  if(!await ask(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
+                     : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.', { ok:'Quitter', danger:true })) return;
   try { await gameApi.leave(); }
-  catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ alert(e.message); return; } }
+  catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ tell(e.message); return; } }
   showNoSession(); nav.show('lobby');
 }
 

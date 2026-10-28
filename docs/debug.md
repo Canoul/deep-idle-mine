@@ -4469,3 +4469,19 @@ Règles (voir CLAUDE.md) :
   au début d'une entrée). `#cv` caché pendant les deux sens (le fond fait le zoom). Tests ✅ backdrop 9/9 (+ sortie des
   panneaux, retour pendant la sortie). ✅ Chrome : progression zoom / panneaux à chaque relevé, entrée 23/20 %, 44/41 %,
   87/83 % ; sortie 19/19 %, 40/39 %, 83/81 % ; vue cachée à la fin ; aucune erreur.
+
+## 28/10/2026 — Fenêtres de validation du site au lieu de confirm / alert / prompt (Geoffrey)
+- `src/ui/dialog.js` (nouveau) : `ask(text, { ok, cancel, danger })` → promesse booléenne, `tell(text)`, `askText(text,
+  value, { maxLength, readOnly })` → texte ou null. File d'attente (une fenêtre à la fois), Entrée = oui, Échap / clic sur
+  le fond = non (écouteur `keydown` en capture, retiré à la fermeture). `dialogHtml` pur (texte échappé, `
+` → `<br>`).
+  `#dialog` dans `index.html`, style dans `src/ui/style.css` (z-index 70, au-dessus de `#obtained` 65).
+- 22 appels remplacés : `src/main.js` (quitter session / instance / tour / MI, déconnexion via `confirmLeave` devenu
+  asynchrone dans `src/ui/account.js`, erreurs focus / horloge / lien d'invitation), account, giant, guide,
+  instant-lobby, lobby (chef, quitter le groupe, copie de secours en lecture seule), sets (enregistrer, renommer 24 car.,
+  supprimer), skills (reset), social (retirer un ami), upgrade (identifier, doublon, rune). Handlers rendus `async` ou
+  `.then`. Plus aucun `confirm(` / `alert(` / `prompt(` dans `src/`.
+- ✅ `tests/dialog.test.js` 4/4 ; sets, skills, lobby, social, obtained ✅ (75/75) ; `node --check` sur tous les modules.
+  Captures Chrome headless (page statique, vrai style.css) : confirmation et saisie, 1000 px et 360 px.
+- ⚠️ Pas testé en clic réel dans le jeu (serveur local refusé dans cette discussion) : à essayer une fois (quitter une
+  session, renommer un set, sacrifier une pièce). Fenêtre ouverte = le fond n'est pas cliquable (overlay plein écran).
