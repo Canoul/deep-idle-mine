@@ -57,6 +57,7 @@ import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
+import { createBackdrop } from './ui/backdrop.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
@@ -85,6 +86,7 @@ const miRenderer = createInstantRenderer($('cvMi'));
 const isMi = () => rec?.mode === 'mi';
 const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
+const backdrop = createBackdrop($('bgSession'));   // fond : la session en cours, hors onglet Session
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
@@ -271,6 +273,8 @@ const accountUI = createAccountUI($('account'), acct, {
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
     'Se déconnecter quand même ?'].filter(Boolean).join('\n')),
+  options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on }],
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); },
 });
 
 /* ---------- lobby ---------- */
@@ -680,6 +684,7 @@ function frame(now){
   if(perfOn) perf.frame(now);
   smooth(dtr);
   const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  backdrop.draw(rec ? shown : null, ui.tab !== 'session', acct.account?.id, ui.follow);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }

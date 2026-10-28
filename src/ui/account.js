@@ -36,6 +36,10 @@ const newPassFields = () =>
   field('password', 'Mot de passe', 'password', `autocomplete="new-password" placeholder="${ACCOUNT.passMin} caractères minimum"`) +
   field('confirm', 'Confirmation', 'password', 'autocomplete="new-password"');
 
+/* options du joueur dans « Mon compte » : une case à cocher par option (rien s'il n'y en a pas) */
+export const optionsHtml = (options = []) => options.length ? `<h4>Options</h4>` + options.map(o =>
+  `<label class="chk" title="${esc(o.title ?? '')}"><input type="checkbox" data-opt="${esc(o.key)}"${o.on ? ' checked' : ''}> ${esc(o.label)}</label>`).join('') : '';
+
 const VIEWS = {
   login: () => `
     <h3>⛏ Deep Mine Idle</h3>
@@ -78,7 +82,7 @@ const VIEWS = {
     <label class="chk"><input type="checkbox" data-ok> Je l'ai noté</label>
     <div class="acts"><button class="main" data-act="done" disabled>Continuer</button></div>`,
 
-  profile: ({ account, offline }) => offline ? `
+  profile: ({ account, offline, options = [] }) => offline ? `
     <h3>Hors ligne</h3>
     <p class="mut">Pas de serveur de jeu joignable : tu joues sans compte et ton inventaire reste dans ce navigateur.
        Lance le jeu avec <code>npm start</code> pour utiliser les comptes.</p>
@@ -93,6 +97,7 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
+    ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>`,
 
   claim: () => `
@@ -117,9 +122,10 @@ const VIEWS = {
 
 /* Gère la fenêtre de compte (#account). state = { account, offline } partagé avec le jeu.
    onSignedIn(account) : appelé quand quelqu'un vient de se connecter (au lancement).
-   onChange(account)   : le compte connecté a changé (sécurisé, mot de passe…). */
+   onChange(account)   : le compte connecté a changé (sécurisé, mot de passe…).
+   options() : cases à cocher de « Mon compte » [{ key, label, title?, on }] ; setOption(key, on) quand on en coche une. */
 export function createAccountUI(root, state, handlers = {}){
-  const on = { onSignedIn: () => {}, onChange: () => {}, confirmLeave: () => true, ...handlers };
+  const on = { onSignedIn: () => {}, onChange: () => {}, confirmLeave: () => true, options: () => [], setOption: () => {}, ...handlers };
   const box = root.querySelector('.box');
   let closable = false;
   let afterRecovery = null;
@@ -127,7 +133,7 @@ export function createAccountUI(root, state, handlers = {}){
   function show(view, data = {}){
     root.hidden = false;
     root.classList.toggle('gate', !closable);
-    box.innerHTML = VIEWS[view]({ ...state, ...data });
+    box.innerHTML = VIEWS[view]({ ...state, options: on.options(), ...data });
     box.querySelector('input')?.focus();
   }
   const hide = () => { root.hidden = true; };
@@ -196,6 +202,7 @@ export function createAccountUI(root, state, handlers = {}){
   });
   box.addEventListener('change', e => {
     if(e.target.matches('[data-ok]')) box.querySelector('[data-act="done"]').disabled = !e.target.checked;
+    if(e.target.matches('[data-opt]')) on.setOption(e.target.dataset.opt, e.target.checked);
   });
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && closable && !root.hidden) hide(); });
