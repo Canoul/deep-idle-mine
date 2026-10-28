@@ -9,7 +9,7 @@
    effet va à tout le groupe de la session (withRings), une fois par anneau différent. */
 import { STUFF, ITEMS, STATS, RINGS } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
-import { withSkillStats, SKILL_STATS, SKILL_ADD } from './skills.js';
+import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
 import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
@@ -125,17 +125,19 @@ const r2 = v => Math.round(v * 100) / 100;   // 2,25 + 0,4 donne 2,65 et pas 2,6
    d'une pièce qui la remplace : l'épée remplace les mains nues) + la somme des bonus (`stats`). C'est ce que le
    mineur a EN SESSION (figé au lancement, src/shared/game.js) et ce qu'affiche l'onglet Stuff.
    Renvoie { stat: { base, bonus, total } }. Lu au moment de l'appel : un réglage dev des STATS est pris en compte. */
-export function statsOf(items){
+export function statsOf(items, mastery = {}){
   const base = { ...STATS }, bonus = {};
   for(const entry of items || []){
-    const b = pieceBonus(entry);
+    const slot = ITEMS[typeof entry === 'string' ? entry : entry?.item]?.slot;
+    const b = pieceBonus(entry, 1 + (slot && Object.hasOwn(mastery, slot) ? mastery[slot] : 0));   // maîtrise des skills (28/10)
     for(const [k, v] of Object.entries(b.set)) base[k] = v;
     for(const [k, v] of Object.entries(b.stats)) bonus[k] = (bonus[k] || 0) + v;
   }
   return Object.fromEntries(Object.keys(STATS).map(k => [k, { base:base[k], bonus:r2(bonus[k] || 0), total:r2(base[k] + (bonus[k] || 0)) }]));
 }
 /* caractéristiques en session (src/sim/mineur.js, m.carac) : { stat: total } */
-export const equippedStats = items => Object.fromEntries(Object.entries(statsOf(items)).map(([k, s]) => [k, s.total]));
+/* mastery : slotMastery(effets des skills), les maîtrises (28/10/2026) */
+export const equippedStats = (items, mastery) => Object.fromEntries(Object.entries(statsOf(items, mastery)).map(([k, s]) => [k, s.total]));
 /* stats du mineur avec le stuff porté et les skills, pour l'onglet Stuff : [{ key, label, base, bonus, mult, skill, total }]
    bonus = apport du stuff (ajouté), mult = multiplicateur des skills (1 = aucun), total = (base + bonus) × mult : ce qu'il a
    en session ; skill = ce que le multiplicateur ajoute (total − (base + bonus)) */
@@ -143,7 +145,8 @@ export function minerStats(worn, effects = {}){
   const pieces = Object.values(worn || {}).filter(Boolean);
   const s = statsOf(pieces);
   const withStuff = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.total]));
-  const all = withSkillStats(withStuff, effects);
+  /* maîtrises (28/10) : elles grossissent les stats d'une pièce, leur apport va dans la colonne des skills */
+  const all = withSkillStats(equippedStats(pieces, slotMastery(effects)), effects);
   const multOf = key => Object.hasOwn(SKILL_STATS, key) ? 1 + (effects[SKILL_STATS[key]] || 0) : 1;
   const addOf = key => Object.hasOwn(SKILL_ADD, key) ? (effects[SKILL_ADD[key].node] || 0) * SKILL_ADD[key].scale : 0;
   /* anneaux de ce joueur (en session, ceux du reste du groupe s'ajoutent) : ring = ce qu'ils ajoutent au total */

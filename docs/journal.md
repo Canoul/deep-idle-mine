@@ -33,7 +33,31 @@ Modèle d'entrée :
   n'est jamais bloqué pour de bon) ; stacks de 10 s, perdus hors du rayon ; Ténacité par stack ; naissance à 8 à 12
   colonnes pour qu'on le voie arriver. Texture originale (pas celle d'un autre jeu).
 - **À suivre** : à observer en vrai dans les areas 6-8 (les sessions simulées n'y vont pas encore).
-- **État** : 🧪 sur la branche `geoffrey/mur-de-chair` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Discord : annonces dès R6
+- **Pour le joueur** : le bot Discord annonce aussi les **R6** (plus seulement les R7) : un trésor de tour ou un coffre
+  du Roi Gobelin (instance) R6 ou R7 obtenu par un joueur, et une pièce identifiée R6 ou R7.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Clé d'instance I : craft de base
+- **Pour le joueur** : la **Clé d'instance I** se fabrique dès le départ dans l'onglet Craft (250 peaux de gobelin,
+  20 pierres glissantes, 50 tissus sombres, 1 Barre d'argent), sans plan. Le **Treasure T4** ne donne plus son plan
+  (il garde les plans du Saphir, du Rubis et du Jade). Un plan déjà trouvé reste dans l'inventaire et se recycle en
+  parts (15 à 30). La clé sort toujours des Treasure T3 (20 %).
+- **Décisions** : Geoffrey (avant : plan du Treasure T4, 5 %).
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Skills : 5e étage, les maîtrises
+- **Pour le joueur** : une nouvelle case au bas de chaque arbre (0/3, débloquée quand l'étage 4 est au max).
+  **Mineur : Maîtrise de la pioche**, les stats de la pioche portée +5 % par rang ; **Barbare : Maîtrise de l'épée**,
+  +5 % par rang sur l'épée ; **Logisticien : Maîtrise du bench**, +3 % par rang sur le torse. À 3/3 : pioche en fer
+  +0,4 → +0,46 de minage, épée en fer 14 → 15,4 dégâts, plastron en fer +88 → +96 pods. Visible dans l'onglet Stuff
+  (colonne des skills).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : ça marche comme l'amélioration (lignes et rune
+  comprises, l'épée compte ce qu'elle ajoute aux mains nues, un malus n'empire pas) ; **pas compté dans le gear score**.
+- **À suivre** : 3 points de plus par arbre (Mineur 13, Logisticien 14, Barbare 15 au total).
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
 - **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →

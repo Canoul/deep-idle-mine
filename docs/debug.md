@@ -3970,6 +3970,34 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/giant-service.test.js` (la réponse de claim contient `inventory.slots`) + giant-rules : 26/26 ;
   vérifié dans le navigateur : Treasure et Blueprint parts présents dans l'onglet Inventaire sans recharger.
 
+## 28/10/2026 — Skills : 5e étage, maîtrises de la pioche, de l'épée et du bench (Geoffrey)
+- **Quoi** : nœuds `pick_mastery` (mineur, 0,05), `sword_mastery` (barbare, 0,05), `bench_mastery` (logisticien, 0,03),
+  row 5, max 3, clé `slot` (case du stuff). `slotMastery(effects)` (src/meta/skills.js) → `{ case: part }` ;
+  `pieceBonus(entry, extra)` (src/meta/piece.js) multiplie comme l'amélioration (`plusMult × extra`, malus intacts, `set` :
+  base + écart × m, roundStat) ; `statsOf(items, mastery)` / `equippedStats(items, mastery)` (src/meta/stuff.js) trouvent
+  la case par `STUFF.items[item].slot`. Appelants : src/shared/game.js `caracOf` (mine, tours, instances, Bloc géant),
+  src/shared/instant.js (MI), `minerStats` (onglet Stuff : l'apport passe dans la colonne skill). `behaviourSkills`
+  ignore les nœuds à `slot`. Icônes pixel : hammer / trophy / heart (src/ui/skills.js).
+- **Pas touché** : gear score (pieceBonus sans extra), `scripts/simulate.js` (ses arbres complets ne reçoivent pas la
+  maîtrise : leur stuff vient des presets, à brancher si on veut la mesurer).
+- **Tests** ✅ `tests/skills.test.js` (nouveau test : déblocage, textes, slotMastery, stats pioche / épée / torse, onglet
+  Stuff, session) ; stuff, gearscore, instant, glyphes, upgrade, game : 178/178 ; wiki, sets, tours, Bloc géant,
+  instances : 139/140, ❌ hors sujet `tests/dev-spec.test.js` (déjà en échec sur `main`).
+
+## 28/10/2026 — Clé d'instance I : recette de base, plan retiré du Treasure T4 (Geoffrey)
+- **Quoi** : src/recipes.js `unlock: null` ; src/config.js : `Clé d'instance I BP` retiré du 2e jet du T4 (LOOT) et
+  déclaré à la main dans ITEMS (il venait de LOOT : sans ça, un exemplaire gardé ne serait plus un blueprint). Il ne
+  s'apprend plus (`canLearn` : recette déjà ouverte) et se recycle au tarif du tier 1 (`tierOfBlueprint` → null).
+- **Effet de bord** : le T4 fait un tirage de moins, la suite des tirages d'une ouverture change (sans conséquence).
+- **Tests** ✅ `tests/instance-key.test.js` (nouveau : craft sans plan, plus dans le T4, ancien plan recyclé) ; craft,
+  loot, tier4, treasure, rarity, research, wiki : 75/75 ; `npm run test:anticheat` 104/104.
+
+## 28/10/2026 — Discord : seuil des annonces à R6 (Geoffrey)
+- **Quoi** : `ANNOUNCE.minQuality` 7 → 6 (src/config.js). `treasureMessage` couvre déjà les coffres du Roi Gobelin
+  (`treasure:true`, `chest.q`) : versés par la même boucle de fin de session que les trésors de tour (server/game/service.js).
+- **Tests** ✅ `tests/discord.test.js` (R6 trésor, coffre du Roi Gobelin R6/R7, R5 rien ; identification R6) + instance,
+  goblin : 63/63.
+
 ## 28/10/2026 — Geoffrey — Mur de chair (mob 1 × 6)
 - **Quoi** : `src/sim/flesh.js` (naissance `fleshSpot`, pas `fleshStep`, passif `fleshAura`, `fleshSlow`, cases `G.flesh`
   refaites à chaque tick par `syncFlesh` qui relance `updateLight` si elles changent). Config `MOBS.chair`, lignes 6 à 8 de

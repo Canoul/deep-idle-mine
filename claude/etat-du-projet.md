@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (mur de chair).*
+*Dernière mise à jour : 28/10/2026 (mur de chair ; Clé d'instance I de base ; Discord : annonces dès R6).*
 
 ---
 
@@ -91,7 +91,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
-  gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 %), consommée au lancement avec la
+  gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 % ; **craft de base** depuis le 28/10, ancien : plan du Treasure T4), consommée au lancement avec la
   création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
   gobelins 150 PV, tacle au premier coup, recul vers le centre), roi gobelin 3 500 PV (3 × 3, enferme tous les 20 %,
   rage sous 33 %), 10 min. **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : à 3, fer 0/20, fer + acier 13/20, acier
@@ -267,6 +267,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ×2 essayé le 22/10 puis retiré, décision Geoffrey et Jules), Barbare (provocation : interrompt la canalisation de l'occultiste sans l'empêcher de relancer, depuis le 21/10 ;
   4e étage **Braum** depuis le 22/10 : marche et montée +10 %/rang quand il va aider) ;
   spécialisation choisie dans le lobby. Dans le périmètre du jeu.
+- **Maîtrises, 5e étage des skills** (28/10, Geoffrey ; GAME_DESIGN §3) : 0/3, après l'étage 4 au max. Maîtrise de la
+  pioche (Mineur) et de l'épée (Barbare) : stats de la pièce +5 %/rang ; Maîtrise du bench (Logisticien) : torse +3 %/rang.
+  Calcul de l'amélioration (`pieceBonus(…, extra)`, `slotMastery`), partout où agissent les skills ; pas dans le GS.
 - **XP de spécialisation** (24/10, Geoffrey ; `XP.specPct` / `XP.specCurve`, `src/meta/level.js`) : 50 % de sa part (24/10 ; ancien 10 %)
   d'XP de session (après partage et bonus perso) va à l'arbre de skills figé au lancement ; une XP par arbre (gardée si
   on change), **même courbe que le niveau du mineur** (1000 ×1,5 ; 24/10, ancienne courbe 100 ×1,5). Affichée onglet Skills (SP lvl + barre), lobby (« Logisticien (SP lvl : 3) ») et bilan.
@@ -330,8 +333,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   objet dans un autre slot (échange). **Recycler** une pièce de stuff fabriquée (recette de craft) : détruite, rend
   **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
   dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`).
-- **Annonces Discord** (25/10, Geoffrey) : un trésor de tour ou une identification de qualité `ANNOUNCE.minQuality`
-  (R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
+- **Annonces Discord** (25/10, Geoffrey) : un trésor de tour, un coffre du Roi Gobelin (instance) ou une identification
+  de qualité `ANNOUNCE.minQuality` (**R6** depuis le 28/10 ; ancien : R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour
   un don admin ; envoi en tâche de fond, jamais bloquant.
 

@@ -290,8 +290,9 @@ export const LOOT = {
         ...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),
         ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en ${m} BP`, chance:0.005 }))),
       ]},
-      /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise */
-      ...['Clé d\'instance I BP', 'Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
+      /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise (28/10, Geoffrey : plus la Clé d'instance I
+         BP, la clé se crafte de base) */
+      ...['Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
         ({ family:'blueprint', tex:'blueprint', items:[ { item, chance:0.05, learnOnce:true } ] })),
       /* 3e jet : une gemme au plus */
       { family:'gem', items:[
@@ -574,6 +575,9 @@ export const SKILLS = {
       { id:'ore_rush',    row:3, max:5, per:0.03, icon:'💨', name:'Ruée',            desc:'Vitesse de marche +{v} pendant 3 s après avoir miné un minerai (ne se cumule pas)' },
       /* 23/10 (Geoffrey) : un tirage par remontée, au moment où il part (après un tacle ou un étourdissement), mine classique seulement */
       { id:'lazy_legend', row:4, max:1, per:0.05, icon:'💤', name:'Légende de la flemme', desc:'5 % de chance de se téléporter au-dessus du coffre commun quand il doit remonter à la surface (sauf en fin de session)' },
+      /* maîtrises (28/10/2026, Geoffrey) : slot = case du stuff dont la pièce portée voit ses stats × (1 + rang × per),
+         comme l'amélioration (bonus positifs, et ce qu'une valeur `set` ajoute à la base) ; pas dans le GS */
+      { id:'pick_mastery', row:5, max:3, per:0.05, slot:'pioche', icon:'⚒', name:'Maîtrise de la pioche', desc:'Les stats données par la pioche +{v}' },
     ]},
     { id:'logisticien', label:'Logisticien', icon:'🪜', nodes:[
       { id:'travel_rush', row:1, max:3, per:0.03, icon:'👟', name:'Navette',         desc:'Vitesse de marche +{v} quand il remonte à la surface ou redescend au front' },
@@ -582,12 +586,14 @@ export const SKILLS = {
       /* 23/10 soir (Geoffrey) : pour tout le groupe ; plusieurs logisticiens : le plus haut rang compte (pas de cumul) */
       { id:'winch_speed', row:3, max:5, per:0.05, needsAll:true, icon:'🛗', name:'Escalateur', desc:'Vitesse du seau du treuil +{v} pour tout le groupe (plusieurs logisticiens : le meilleur rang compte)' },
       { id:'mule',        row:4, max:1, per:1,    icon:'🎒', name:'Mule',            desc:'Pose un sac en bas du treuil où tout le monde dépose (capacité : 2 × ses pods). Il le vide au coffre quand il prolonge le treuil et en fin de session' },
+      { id:'bench_mastery', row:5, max:3, per:0.03, slot:'torse', icon:'🏋', name:'Maîtrise du bench', desc:'Les stats données par le torse +{v}' },
     ]},
     { id:'barbare', label:'Barbare', icon:'🪓', nodes:[
       { id:'damage',      row:1, max:3, per:0.05, icon:'🪓', name:'Force brute',     desc:'Dégâts infligés +{v}, ténacité +{tenacity}, dégâts de zone {aoe} (mobs à 1 case de sa cible)', adds:{ tenacity:5 }, aoe:0.02 },   // zone : 23/10 (Geoffrey)
       { id:'taunt',       row:2, max:1, per:1,    icon:'😤', name:'Provocation',     desc:'Le mob qu\'il frappe lâche les autres mineurs et ne peut plus tacler que lui ; ses coups interrompent la canalisation d\'un occultiste' },
       { id:'loot',        row:3, max:5, per:0.03, icon:'💰', name:'Pillage',         desc:'Butin des mobs +{v}' },
       { id:'braum',       row:4, max:3, per:0.1,  icon:'🛡', name:'Braum',           desc:'Vitesse de marche et de montée (échelle, seau) +{v} quand il va aider un allié (tacle, donjon, piège) et pendant ce combat' },
+      { id:'sword_mastery', row:5, max:3, per:0.05, slot:'epee', icon:'⚔', name:'Maîtrise de l\'épée', desc:'Les stats données par l\'épée +{v}' },
     ]},
   ],
   rushTime: 3,          // s : durée du bonus de vitesse après un minerai (ore_rush), remise à 3 s à chaque minerai
@@ -766,7 +772,8 @@ export const SHINY = {
 /* ---- Annonces Discord (server/social/discord.js) ----
    25/10/2026 (Geoffrey) : un message dans le salon #général quand un joueur loot un trésor de tour (RUNE.treasures)
    ou identifie une pièce de qualité minQuality ou plus. timeoutMs : délai max d'un envoi (il part en tâche de fond). */
-export const ANNOUNCE = { minQuality: 7, emoji: '🚨', timeoutMs: 5000 };
+/* minQuality : 6 depuis le 28/10/2026 (Geoffrey ; avant 7) : trésors de tour, coffres du Roi Gobelin, identifications */
+export const ANNOUNCE = { minQuality: 6, emoji: '🚨', timeoutMs: 5000 };
 
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,
@@ -1206,6 +1213,7 @@ export const ITEMS = {
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...GOBLIN_CHEST_ITEMS,                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
+  'Clé d\'instance I BP': { cat:'blueprint', tex:'blueprint', stack:true },             // ancien (28/10) : plus de source, la recette est de base ; un exemplaire gardé se recycle
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
   'Cuir de minotaure': { cat:'material',  tex:'minotaur_leather', w:1, stack:true },    // butin du minotaure (DUNGEON.leather, 27/10)
