@@ -30,7 +30,7 @@ Modèle d'entrée :
   (il garde les plans du Saphir, du Rubis et du Jade). Un plan déjà trouvé reste dans l'inventaire et se recycle en
   parts (15 à 30). La clé sort toujours des Treasure T3 (20 %).
 - **Décisions** : Geoffrey (avant : plan du Treasure T4, 5 %).
-- **État** : 🧪 sur la branche `geoffrey/cle-instance-de-base` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Skills : 5e étage, les maîtrises
 - **Pour le joueur** : une nouvelle case au bas de chaque arbre (0/3, débloquée quand l'étage 4 est au max).
