@@ -290,8 +290,9 @@ export const LOOT = {
         ...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en mithril BP`, chance:0.01 })),
         ...['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => ({ item:`${p} en ${m} BP`, chance:0.005 }))),
       ]},
-      /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise */
-      ...['Clé d\'instance I BP', 'Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
+      /* 2e jet : chacun son tirage, seulement si la recette n'est pas apprise (28/10, Geoffrey : plus la Clé d'instance I
+         BP, la clé se crafte de base) */
+      ...['Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
         ({ family:'blueprint', tex:'blueprint', items:[ { item, chance:0.05, learnOnce:true } ] })),
       /* 3e jet : une gemme au plus */
       { family:'gem', items:[
@@ -1198,6 +1199,7 @@ export const ITEMS = {
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
   ...GOBLIN_CHEST_ITEMS,                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
+  'Clé d\'instance I BP': { cat:'blueprint', tex:'blueprint', stack:true },             // ancien (28/10) : plus de source, la recette est de base ; un exemplaire gardé se recycle
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
   'Cuir de minotaure': { cat:'material',  tex:'minotaur_leather', w:1, stack:true },    // butin du minotaure (DUNGEON.leather, 27/10)
