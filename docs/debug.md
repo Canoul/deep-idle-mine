@@ -4368,3 +4368,9 @@ Règles (voir CLAUDE.md) :
   research → `r.item`), `upgrade` (identify / upgrade si `success !== false` / enchant → `r.piece` ; unenchant →
   `r.fragment`). Rien côté serveur ; les trésors (showLoot) ne passent pas par là.
 - **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur. ✅ en ligne le 28/10.
+
+## 28/10/2026 — Lobby : carte Shrines sous « Ton groupe » (Geoffrey)
+- `index.html` : `#shrinesCard` déplacée de la 1re `.lobbyCol` (après `#prefsCard`) vers la 2e, juste après `#teamCard`.
+  Affichage inchangé (`src/ui/lobby.js` : visible si `cards.prefs` et shrines présents). Sur téléphone la colonne de
+  droite passe en premier (`order:-1`) : Shrines y suit donc l'équipe et le bouton Lancer.
+- ✅ Tests lobby + shrines 28/28 ; capture Chrome headless (page statique, vrai style.css) : Shrines sous Ton groupe.

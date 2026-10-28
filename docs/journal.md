@@ -24,6 +24,11 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
+- **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
+  « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
+- **État** : 🔧 en cours (branche `geoffrey/shrine-sous-groupe`).
+
 ## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
 - **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
   « Tu as obtenu » (ou « Amélioration réussie », « Pièce identifiée », « Pièce enchantée »), la texture de l'objet en
