@@ -84,6 +84,42 @@ select option{background:var(--panel)}
   box-shadow:0 0 0 var(--u) var(--acc),calc(3*var(--u)) calc(3*var(--u)) 0 #000;font-size:var(--fs-s)}
 #tip b{display:block;margin-bottom:var(--u);font-weight:400;font-size:var(--fs)}
 #tip div{color:var(--o2)}
+#tip.help{max-width:min(calc(170*var(--u)),calc(100vw - 16px))}
+#tip.help div{color:var(--txt);margin-top:var(--u)}
+/* « ? » d'aide (src/ui/help.js) : une petite case, la bulle au survol ou au toucher ; zone de toucher élargie */
+.qhelp{display:inline-flex;align-items:center;gap:calc(3*var(--u));vertical-align:middle;padding:calc(2*var(--u));margin:calc(-2*var(--u)) 0;
+  cursor:help;color:var(--mut);font-family:var(--f-body);font-size:var(--fs-s);line-height:1;text-transform:none;letter-spacing:0}
+.qhelp b{display:inline-grid;place-items:center;width:calc(9*var(--u));height:calc(9*var(--u));background:var(--chip);
+  box-shadow:0 0 0 var(--u) var(--line);color:var(--acc-lt);font-weight:400;font-size:var(--fs-s)}
+.qhelp:hover b,.qhelp:focus-visible b{box-shadow:0 0 0 var(--u) var(--acc);color:#fff}
+.qhelp:hover,.qhelp:focus-visible{color:var(--txt)}
+.qhelp:focus{outline:none}
+h1 .qhelp b{width:calc(12*var(--u));height:calc(12*var(--u));font-size:var(--fs)}
+.helpLine{margin:0 0 calc(4*var(--u))}
+/* « pris en compte à la prochaine session » : seulement quand une session tourne (classe posée par src/main.js) */
+.nextNote{display:none;margin:0 0 calc(6*var(--u));padding:calc(2*var(--u)) calc(4*var(--u));background:var(--sel);
+  box-shadow:inset calc(2*var(--u)) 0 0 var(--acc);font-size:var(--fs-s)}
+body.sessionOn .nextNote{display:block}
+/* guide « Premiers pas » (src/ui/guide.js) : au-dessus de la barre d'action, à droite ; replié = une ligne */
+.guide{position:fixed;right:calc(6*var(--u));bottom:calc(var(--dock-h) + 10*var(--u));z-index:45;width:min(calc(190*var(--u)),calc(100vw - 16px));
+  background:var(--panel);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--acc-dk),calc(3*var(--u)) calc(3*var(--u)) 0 #000;font-size:var(--fs-s)}
+.guide .gHead{display:flex;align-items:center;gap:calc(3*var(--u));width:100%;min-height:0;padding:calc(3*var(--u)) calc(4*var(--u));justify-content:flex-start;
+  text-align:left;font-size:var(--fs-s);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guide .gHead b{color:var(--acc-lt);font-weight:400}
+.guide .gArrow{margin-left:auto;color:var(--mut)}
+.guide .gBody{padding:calc(2*var(--u)) calc(5*var(--u)) calc(5*var(--u));max-height:calc(100vh - var(--dock-h) - var(--top-h) - 60*var(--u));overflow-y:auto}
+.guide .gIntro{margin:0 0 calc(4*var(--u));color:var(--txt)}
+.guide ol{list-style:none;margin:0 0 calc(4*var(--u));padding:0;display:flex;flex-direction:column;gap:calc(3*var(--u))}
+.guide li{display:flex;gap:calc(3*var(--u));color:var(--mut)}
+.guide li b{font-weight:400}
+.guide li.ok{color:var(--ok)} .guide li.ok b{text-decoration:line-through;text-decoration-thickness:1px}
+.guide li.cur{color:var(--txt)} .guide li.cur b{color:var(--acc-lt)}
+.guide li small{display:block;margin:var(--u) 0 calc(2*var(--u));color:var(--txt)}
+.guide .gChk{flex:none;width:calc(7*var(--u));text-align:center}
+.guide .gHide{width:100%}
+/* onglet de l'étape en cours : il pulse dans la barre d'action */
+.dock ul button.guideTab{animation:guidePulse 1.4s steps(2) infinite;outline:var(--u) solid var(--acc);outline-offset:calc(-2*var(--u))}
+@keyframes guidePulse{50%{outline-color:transparent}}
 
 /* raretés (RARITY en config, src/ui/rarity.js) : contour plein dans la case, nom en couleur */
 :root{--r-commun:#b4b0a8;--r-inhabituel:#58d26a;--r-rare:#5a9cff;--r-epique:#c37dff;--r-legendaire:#ffa23a;--r-unique:#c0480f}
@@ -365,7 +401,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .furn h3,.crush h3{margin:0 0 calc(3*var(--u));font-size:var(--fs-l)}
 .fhead{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap;margin-bottom:calc(3*var(--u))}
 .fhead h3{margin:0;flex:1}
-.fhelp{width:calc(18*var(--u));padding:0}
+.fhelp{padding:0 calc(4*var(--u))}
 .frecipes{display:flex;flex-direction:column;gap:calc(2*var(--u));margin-bottom:calc(3*var(--u))}
 .frec{padding:calc(2*var(--u)) calc(3*var(--u));background:var(--chip)}
 .fout,.fparts{display:flex;align-items:center;gap:calc(2*var(--u));flex-wrap:wrap}
@@ -457,7 +493,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}
 /* sur ordinateur : les stats à droite des cases */
 .view[data-view="stuff"] .furnWrap{max-width:calc(580*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
-.view[data-view="stuff"] .furnWrap>.invHead{grid-column:1/-1}
+.view[data-view="stuff"] .furnWrap>.invHead,.view[data-view="stuff"] .furnWrap>.nextNote{grid-column:1/-1}
 .view[data-view="stuff"] .stuffStatsCard{margin-top:0;max-width:none}
 .stuffLevel{padding-bottom:calc(4*var(--u));margin-bottom:calc(3*var(--u));box-shadow:0 var(--u) 0 var(--sep)}
 .view[data-view="stuff"]{position:relative}
@@ -550,6 +586,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .dock ul{overflow-x:auto;max-width:100%}
   .dock ul button{flex:none}
   .dock ul button kbd{display:none}
+  .guide{right:8px;bottom:calc(var(--dock-h) + 6*var(--u))}
   .invWrap,.furnWrap,.lobbyWrap{padding:calc(9*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
   .runGrid{display:flex;flex-direction:column;padding:calc(3*var(--u))}
   .rail{display:none}

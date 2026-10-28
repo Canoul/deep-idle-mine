@@ -30,6 +30,14 @@ Modèle d'entrée :
   que 200 %. Valable dans la mine, les tours et l'instance. Le mineur de base (100 %) ne change pas.
   Nouveau : une ligne **DPS** dans les stats du joueur (onglet Stuff), sous le gear score : dégâts par seconde moyens sur
   une cible immobile (stuff, skills et anneaux compris).
+
+## 28/10/2026 — Jules — Correctif : la page se déformait pendant une session
+- **Pour le joueur** : depuis la mise en ligne des bulles d'aide « ? » (28/10 vers 15 h), la page était déformée
+  **pendant une session**, sur tous les onglets : barre du haut rétrécie et descendue, contenu tassé à gauche, mur du
+  fond disparu. Hors session, tout était normal. C'est corrigé : la page a de nouveau sa mise en page habituelle,
+  et le bandeau « comptera à la prochaine session » de Stuff, Skills et Sorts marche toujours.
+- **Cause** : deux éléments portaient le même nom de style ; le bandeau « En session » du lobby s'appliquait à toute la
+  page. Rien à voir avec l'appli téléphone. Un test empêche maintenant que ça se reproduise.
 - **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Les pop-ups se ferment toutes seules
@@ -38,6 +46,34 @@ Modèle d'entrée :
   pop-ups se ferment maintenant au bout de 20 s, le rappel de la mine instantanée au moment où elle commence (les autres
   rappels se fermaient déjà au bout de 12 s). Rien n'est perdu : l'invitation reste dans le Lobby, la demande d'ami dans
   l'onglet Social. Si quelqu'un renvoie une invitation, la pop-up réapparaît.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Guide « Premiers pas » pour les nouveaux joueurs
+- **Pour le joueur** : un nouveau joueur voit, en bas à droite (au-dessus de la barre d'onglets), un petit guide
+  **Premiers pas** avec 7 étapes qui suivent la boucle du jeu : lancer une session → regarder son butin → fondre son
+  fer au Four → crafter une Pioche en pierre → l'équiper → dépenser son premier point de skill → apprendre sa première
+  recette (treasure → Recherche → « Utiliser »). Chaque étape **se coche toute seule** quand c'est fait ; l'onglet de
+  l'étape en cours **clignote** dans la barre ; un bouton « Y aller » y mène. Le guide se replie en une ligne, et
+  « Masquer le guide » le ferme pour de bon. Un mot d'accueil s'affiche tant que rien n'est fait.
+- **Décisions** : on ne cache aucun onglet (les anciens joueurs et les liens `#craft` marchent comme avant). Un joueur
+  qui a déjà tout fait ne voit jamais le guide. Le guide est mémorisé dans le navigateur (pas sur le serveur) : sur un
+  autre appareil, il réapparaît là où en est le joueur.
+- **À suivre** : voir si les nouveaux joueurs le suivent ; l'étape « Pioche en pierre » (30 lingots) peut prendre
+  plusieurs sessions, à surveiller.
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Jules — Bulles d'aide « ? » à la place des textes d'explication
+- **Pour le joueur** : les paragraphes d'explication posés un peu partout (en haut ou en bas des onglets) sont
+  remplacés par un petit **« ? »** à côté de ce qu'ils expliquent : on passe la souris dessus (ou on le touche sur
+  téléphone) et une bulle s'ouvre. Les pages sont plus propres. Des explications qui manquaient sont ajoutées :
+  **Recherche** (d'où viennent les Blueprint parts, et qu'il faut « Utiliser » le blueprint dans l'Inventaire pour
+  apprendre la recette), **Skills** (un seul arbre, reset gratuit, niveau de spé, glyphes), **préférences** du lobby,
+  **Oxygène / Pods / Torches** en session, Inventaire, Craft, Amélioration, coffre commun.
+  « Pris en compte à la prochaine session » n'est plus un texte permanent en bas de Stuff, Skills et Sorts : c'est un
+  bandeau en haut de ces onglets, **seulement pendant une session** (le seul moment où c'est utile).
+  Dans le Four et le Concasseur, l'ancien bouton « ? » (qui ouvrait les tableaux) s'appelle maintenant **Recettes** /
+  **Butin**, pour qu'un « ? » veuille toujours dire « explication ».
+- **À suivre** : le guide de départ, fait juste après (entrée au-dessus).
 - **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle

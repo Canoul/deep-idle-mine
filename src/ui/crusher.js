@@ -53,7 +53,7 @@ export function setupCrusher({ onOp, onSync }){
     if(!st) return;
     $('crushBody').innerHTML =
       `<div class="crush"><div class="fhead"><h3>Entrée <span class="mut small">· ${BATCH} blocs par cycle, de la case 1 à la case ${CRUSHER.inSlots}</span></h3>`+
-      `<button class="fhelp" id="crushHelp" title="Tables de butin">?</button></div>`+
+      `<button class="fhelp" id="crushHelp" title="Tables de butin">Butin</button></div>`+
       `<div class="cgrid" style="--cols:${CRUSHER.cols}">${st.in.map((s, i) => slotHtml('in', i, s)).join('')}</div>`+
       `<div class="farrow cbar"><div class="bar"><i style="width:${(progress(st, now()) * 100).toFixed(1)}%"></i></div><span>⬇</span></div>`+
       `<p class="fstat small" id="crushStat">${statusText()}</p>`+

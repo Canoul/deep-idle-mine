@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -58,6 +58,8 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
+import { fillHelp } from './ui/help.js';
+import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
@@ -188,7 +190,7 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
@@ -206,11 +208,13 @@ const setsUI = setupSets({
 
 applyRarityColors();   // couleurs des raretés (config)
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
+fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
+let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
@@ -218,6 +222,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
@@ -313,7 +318,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
-  setsUI.refresh();   // sets de nouveau disponibles
+  setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
@@ -450,9 +455,13 @@ function applyClock(c){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
 }
 
+/* classe sessionOn sur la page : Stuff, Skills et Sorts affichent « comptera à la prochaine session » (src/ui/style.css).
+   Pas « inSession » : c'est le bandeau du lobby, toute la page en prendrait le style. */
+function sessionFlag(){ document.body.classList.toggle('sessionOn', !!rec); }
+
 function enterSession(session){
   rec = session; waiting = false;
-  setsUI.refresh();   // sets indisponibles pendant la session
+  setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
   const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
   G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
@@ -550,7 +559,7 @@ function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false; chat.stop();
-  setsUI.refresh();
+  setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
@@ -615,6 +624,16 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
+
+/* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
+guide = setupGuide($('guide'), {
+  facts: () => ({ ready: progress !== null && !acct.offline, account: acct.account?.id ?? null, tab: ui.tab, inSession: !!rec,
+                  played: (progress?.xp ?? 0) > 0 || ui.inv.slots.some(Boolean), inv: ui.inv, worn: stuff.worn(),
+                  skillsSpent: ui.skills?.spent ?? 0, unlocked: (ui.inv.unlocked ?? []).length }),
+  go: id => nav.show(id),
+  highlight: id => nav.highlight(id),
+});
+guide.refresh(); setInterval(guide.refresh, GUIDE.refreshMs);
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */

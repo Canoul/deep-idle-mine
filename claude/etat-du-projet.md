@@ -24,6 +24,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - Jeu découpé en modules ES (sans bundler ni dépendance), **3 mineurs** sur la même carte par défaut (1 possible).
   Une seule page (`index.html`) avec des onglets (`#lobby`, `#session`, `#jugement`, `#inventaire`…) : la session
   continue de tourner quand on change d'onglet. Chaque onglet a son module dans `src/ui/`.
+- **Aide « ? »** (28/10, Jules) : les explications de l'interface sont des bulles « ? » (survol, toucher), pas des
+  paragraphes dans les pages. Tous les textes des pages fixes sont dans `src/ui/help.js` (`HELP`) ; un écran construit
+  par le code utilise `qhelp()` / `helpLine()`. « Pris en compte à la prochaine session » : bandeau en haut de Stuff,
+  Skills et Sorts, seulement pendant une session. Nouvelle explication = un texte dans `HELP`, pas un paragraphe.
+- **Guide « Premiers pas »** (28/10, Jules ; `src/ui/guide.js`, config `GUIDE`) : 7 étapes pour les nouveaux joueurs
+  (session → butin → four → Pioche en pierre → l'équiper → 1er point de skill → 1re recette apprise), cochées toutes
+  seules d'après l'état du joueur ; l'onglet de l'étape en cours clignote. Mémorisé dans le navigateur, par compte ;
+  un joueur qui a déjà tout fait ne le voit pas. Aucun onglet caché.
 - **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
