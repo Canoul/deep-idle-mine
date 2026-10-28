@@ -18,6 +18,7 @@ import { log } from '../log.js';
 import { ladderTime, winchMult, placedTorch, nowOf } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
 import { genTower, inTower, onRoof, floorOf, floorTop, floorBottom, floorCeil, gateCols, isCeil, towerLight } from './world.js';
+import { cleanRings } from '../effects.js';
 
 export const TOWER_TICKS = Math.round(TOWER.duration / DT);
 const B = TOWER.boss, MB = TOWER.mobs;
@@ -71,6 +72,7 @@ function createMiner(id, s, x, y){
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
     x, y, face: 1, action: null, status: 'Départ', fallN: 0, knocked: false, inv: {}, load: 0,
     spells: Array.isArray(s.spells) ? [...s.spells] : [], spellCd: {}, learned: 0,   // sorts figés au lancement (28/10)
+    rings: cleanRings(s.rings),                                                      // affichage seulement (src/sim/effects.js)
     stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0, deposits: 0, spells: 0 },
   };
 }
@@ -137,6 +139,7 @@ function checkFloors(G){
 export function updateTowerLight(G){ G.light = towerLight(G); }
 export const towerLum = (G, x, y) => inTower(G, x, y) ? (G.light.get(y * G.w + x) || 0) : 1;
 const dk = (G, m) => towerLum(G, m.x, m.y) >= CFG.darkLum ? 1 : CFG.darkSlow;
+export const towerDark = (G, m) => dk(G, m) < 1;   // affichage des états (src/sim/effects.js)
 
 /* case du treuil du logisticien (TOWER.winch) : on y tient, et on y monte et descend au seau */
 export const isWinch = (G, x, y) => !!G.winch && x === G.winch.x && y >= G.winch.top && y <= G.winch.bottom;
@@ -158,7 +161,7 @@ const winchT = towerWinchT;
 const fallT = () => 1 / CFG.fallSpeed;
 const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 /* Cri de guerre (28/10) : actif pour les mineurs à son rayon de celui qui l'a lancé */
-const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? G.miners.find(o => o.id === w.by) : null;
+export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? G.miners.find(o => o.id === w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
@@ -921,7 +924,7 @@ function landBoss(G){
     knock(G, m, B.jumpKnock);
     if(!towerSupported(G, m.x, m.y)) continue;   // projeté hors du toit : il tombe
     if((m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
-    m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: {} }; m.status = 'Étourdi (atterrissage)';
+    m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: { cause: 'land' } }; m.status = 'Étourdi (atterrissage)';
     m.stats.stunned = (m.stats.stunned || 0) + 1;
   }
 }

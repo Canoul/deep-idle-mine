@@ -22,6 +22,10 @@ KENNEY = {
     'door': (0, 9), 'sword': (32, 8), 'shield': (37, 3), 'bubbles': (35, 11), 'ladder': (0, 6), 'sun': (27, 11),
     'arrow': (29, 20), 'target': (38, 12), 'feather': (29, 11), 'trophy': (40, 16), 'heart': (39, 10),
     'radiance': (28, 12),
+    # états des mineurs et des mobs (28/10/2026, src/config.js EFFECTS)
+    'daze': (29, 12), 'grab': (41, 1), 'alert': (35, 13), 'coin': (35, 16), 'heartbreak': (41, 10), 'moon': (47, 12),
+    'horn': (37, 16), 'note': (39, 16), 'rocket': (34, 21), 'updown': (21, 21), 'ring': (45, 3), 'shrine': (21, 11),
+    'crown': (43, 2), 'shout': (36, 13),
 }
 
 

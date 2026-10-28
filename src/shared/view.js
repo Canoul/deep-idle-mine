@@ -9,6 +9,8 @@
 import { W } from '../config.js';
 import { updateLight } from '../sim/light.js';
 import { muleCap } from '../sim/mule.js';
+import { lit, travelling } from '../sim/mineur.js';
+import { minerEffects, sessionBonuses, mobEffects } from '../sim/effects.js';
 
 const HISTORY = 400;           // changements gardés (un navigateur plus en retard reçoit la carte entière)
 const row = (a, enc) => Array.from(a, enc).join('');
@@ -16,7 +18,7 @@ const enc36 = v => v.toString(36);
 const dec36 = c => parseInt(c, 36);
 
 /* ce que l'affichage lit d'un mineur (pas de références internes à la simulation) */
-function minerView(m){
+function minerView(G, m){
   const a = m.action, d = a?.data || {};
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face,
@@ -28,12 +30,16 @@ function minerView(m){
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
     flesh: m.fleshStacks || 0,                                       // stacks du mur de chair (−10 % de vitesse d'attaque chacun)
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },          // sorts équipés et recharges (barre des sorts)
-    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
+    /* états (28/10, src/sim/effects.js) : contrôles, debuffs et buffs avec leur temps restant ; bonus de la session */
+    effects: minerEffects(G, m, { foes: G.mobs, robbable: true, dark: m.y > 0 && !lit(G, m),
+                                  warcry: m.warcry && G.t < m.warcry.until ? m.warcry : null, travelling: travelling(m) }),
+    bonus: sessionBonuses(G, m),
+    action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch, cause: d.cause } } : null,
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
-  channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null });   // splash : dégâts de zone reçus
+const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
+  channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null, fx: mobEffects(G, o) });   // fx : états (étourdi, provoqué…)   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */
 
@@ -72,7 +78,7 @@ export function createViewer(G){
     record();
     const base = {
       tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
-      miners: G.miners.map(minerView), mobs: G.mobs.map(mobView),
+      miners: G.miners.map(m => minerView(G, m)), mobs: G.mobs.map(o => mobView(G, o)),
       thralls: (G.thralls || []).map(o => ({ id: o.id, x: o.x, y: o.y, dig: o.dig ? { x: o.dig.x, y: o.dig.y } : null, left: Math.max(0, Math.round(o.until - G.t)) })),   // gobelins asservis (27/10)
       chest: G.chest, chestBy: G.chestBy, goblinChest: G.goblinChest || {}, shrines: G.shrines || [], stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
       mule: muleView(G),

@@ -3,17 +3,22 @@
    affiche, en faisant glisser chaque mineur, gobelin et le roi de sa position affichée vers la nouvelle. */
 import { glide } from './view.js';
 import { INSTANCE } from '../config.js';
+import { warcryOf } from '../sim/instance/session.js';
+import { minerEffects, sessionBonuses } from '../sim/effects.js';
 
 const enc36 = v => v.toString(36);
 const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((v, x) => { if(v) out.push(y * G.w + x); })); return out; };
 
-function minerView(m){
+function minerView(G, m){
   const a = m.action, d = a?.data || {};
   return {
     id: m.id, name: m.name, color: m.color, account: m.account, x: m.x, y: m.y, kx: m.kx || 0, ky: m.ky || 0, face: m.face, status: m.status,
     stats: m.stats, look: m.look || {}, auras: m.auras || {}, skillTree: m.skillTree,
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y } } : null,
     hop: m.hop ?? null, boosted: m.boosted ?? null,
+    spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },       // sorts (animation au lancement)
+    effects: minerEffects(G, m, { foes: G.goblins, warcry: warcryOf(G, m) }),   // états (28/10, src/sim/effects.js)
+    bonus: sessionBonuses(G, m),
   };
 }
 const minerPos = m => {
@@ -35,11 +40,11 @@ export function createInstanceViewer(G){
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')), ladders: ladderList(G),
       spawners: G.spawners.map(s => ({ id: s.id, x: s.x, y: s.y, hp: Math.ceil(s.hp), maxhp: s.maxhp, alive: s.alive, side: s.side, level: s.level })),
       goblins: G.goblins.filter(o => o.hp > 0).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, face: o.face || 1, hp: Math.ceil(o.hp), maxhp: o.maxhp,
-                                                         grab: o.grab, stun: o.stunUntil != null && G.t < o.stunUntil })),
+                                                         grab: o.grab, stun: o.stunUntil != null && G.t < o.stunUntil, taunt: o.taunt != null })),
       boss: { name: b.name, hp: Math.ceil(b.hp), maxhp: b.maxhp, x: b.x, kx: b.kx || 0, y: b.y, w: b.w, h: b.h, state: b.state, focus: b.focus,
-              rage: b.hp > 0 && b.hp < b.maxhp * INSTANCE.boss.rageBelow },
+              rage: b.hp > 0 && b.hp < b.maxhp * INSTANCE.boss.rageBelow, taunt: b.taunt != null },
       target: G.target, inspire: G.inspire && G.t < G.inspire.until ? Math.ceil(G.inspire.until - G.t) : 0,
-      miners: G.miners.map(minerView), stats: G.stats, log: G.log.slice(0, 50),
+      miners: G.miners.map(m => minerView(G, m)), stats: G.stats, log: G.log.slice(0, 50),
     };
   };
 }

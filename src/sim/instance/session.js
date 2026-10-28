@@ -18,6 +18,7 @@ import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
+import { cleanRings } from '../effects.js';
 import { ladderTime, nowOf } from '../mineur.js';
 import { inReach, push, driftsAway, reachOf, knockbackOf, knockOf, stopAction } from '../knock.js';
 import { genInstance, isOpen, toCenter, AIR, CAGE, SPAWNER } from './world.js';
@@ -54,6 +55,7 @@ function createMiner(id, s, x, y){
     id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null,
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
     spells: Array.isArray(s.spells) ? [...s.spells] : [], spellCd: {}, learned: 0,
+    rings: cleanRings(s.rings),   // affichage seulement (src/sim/effects.js)
     x, y, face: 1, kx: 0, ky: 0, action: null, status: 'Départ', fallN: 0, knocked: false,
     stats: { dmg: 0, bossDmg: 0, kills: 0, drilled: 0, mined: 0, ladders: 0, knocked: 0, tackled: 0, falls: 0, spells: 0 },
   };
@@ -77,7 +79,7 @@ const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
 const byId = (G, id) => id == null ? null : G.miners.find(m => m.id === id) ?? null;
 const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 /* Cri de guerre : actif pour les mineurs à son rayon de celui qui l'a lancé */
-const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
+export const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? byId(G, w.by) : null;
   return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
 const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
