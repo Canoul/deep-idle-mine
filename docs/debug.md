@@ -4296,6 +4296,69 @@ Règles (voir CLAUDE.md) :
   l'or, « sortie invalide » = Lingot de fer, le diamant étant devenu une sortie), `tests/anticheat/crusher.test.js` (fer en
   entrée, lingot refusé, butin garanti ≤ max par lot) : `npm run test:anticheat` 105/105 ; wiki ✅.
 
+## 28/10/2026 — Geoffrey — Onglet Stuff : stats à droite des cases
+- Depuis les Sets (`.setLay` : Sets | colonne), cases et stats étaient empilées dans la 2e colonne, et l'ancienne grille
+  2 colonnes sur `.view[data-view="stuff"] .furnWrap` laissait une colonne vide de 150u à droite.
+- `index.html` : la colonne de droite du `.setLay` devient `<div class="stuffMain">`. `src/ui/style.css` : la grille
+  « cases | stats 150u » passe sur `.stuffMain` (1 colonne sous 1100 px) ; `.furnWrap` de Stuff : simple max-width 720u.
+- ✅ Vérifié en capture Chrome headless (page statique avec le vrai style.css) à 1600 px (3 colonnes) et 900 px (stats
+  sous les cases). Pas de test unitaire (CSS seul). La fiche d'un ami (`#fview`, Social) n'est pas touchée.
+
+## 28/10/2026 — Sets : enregistrer et créer pendant une session (Geoffrey)
+- `server/game/service.js` `sets` : plus de `session_running` pour create / save (equip l'était déjà depuis ce matin). Sûr :
+  un set ne déplace rien (il note les uid portés, les skills, les sorts via `snapshot`) ; la session en cours garde
+  l'équipement figé à son lancement. Idempotence inchangée (`opId`).
+- `src/ui/sets.js` : en session, plus aucun bouton grisé (seulement pendant une demande) ; message du bas raccourci.
+- Tests `tests/sets.test.js` : enregistrer et créer en session (le set prend l'équipement actuel, demande rejouée = pas de
+  3e set) ; panneau. 8/8 ✅. GAME_DESIGN §sets et wiki (#sets) mis à jour.
+
+## 28/10/2026 — Geoffrey — Amélioration : pièces portées choisies sans les retirer (✅ en ligne le 28/10)
+- **Quoi** : `src/meta/upgrade.js` : `identify/upgrade/enchant/unenchant` (et leurs `*Error`) prennent un dernier argument
+  optionnel `worn` (= `st.worn`, modifié sur place) ; `findPiece` cherche l'uid dans l'inventaire puis dans les cases,
+  `dropPiece` retire un sacrifice de l'inventaire ou vide sa case. Rune : toujours de l'inventaire ; `ringDupes` inchangé
+  (doublon d'anneau = inventaire seulement). Sans `worn`, comportement d'avant (pièce portée = `not_owned`).
+- **Serveur** (`server/game/service.js` `upgrade`) : passe `st.worn`, enregistre avec `putInventoryAndStuff` (avant :
+  `putInventory`), renvoie `stuff`. Message « doublon » : l'anneau peut être porté (`ringAsked`).
+- **Navigateur** : `src/ui/upgrade.js` liste pièces portées + inventaire (`worn()` fourni par main.js), libellé
+  « équipée », confirmation avant de sacrifier une pièce portée ; `src/ui/stuff.js` `onWorn` → `upgradeUI.refresh()`
+  (l'ordre stuff.set / setInventory varie selon les appels) ; main.js applique `r.stuff` avant l'inventaire.
+- **Tests** ✅ `tests/amelioration.test.js` (5 nouveaux : identifier porté, sacrifice porté → case vide + rejeu sans effet,
+  appel sans `worn`, améliorer porté, anneau : doublon porté jamais pris), `tests/rune.test.js` (enchanter / retirer sur
+  pièce portée), `tests/anticheat/upgrade.test.js` (l'ancien test « porté refusé » devient « porté amélioré et
+  enregistré » ; sacrifice porté en double clic = une seule case vidée) ; + stuff, sets, anneaux : 78/78 ;
+  `npm run test:anticheat` 106/106.
+- ⚠️ Pas vérifié dans le navigateur (affichage de la liste et de la confirmation). Point fragile : un set qui contenait
+  la pièce sacrifiée laisse sa case vide à l'équipement (déjà le cas pour un sacrifice depuis l'inventaire).
+
+## 28/10/2026 — Geoffrey — Four : choisir une recette (action `recipe`)
+- `src/meta/furnace.js` : `recipeByOut(out)` (recette identifiée par son produit, tous différents), `allRecipes()`,
+  `recipeUsable`, `recipePlan(f, inv, out, count)` → `{ mode, add }` ou `{ error }`, `recipeMax` (recherche dichotomique
+  sur `recipePlan`), et l'action `furnaceOp({ action:'recipe', furnace, out, count })`. Règle : cible = fournées déjà
+  possibles (min des cases, combustible compris) + count ; chaque case est complétée jusqu'à cible × besoin. Un
+  ingrédient déjà posé garde sa case (alliage : a/b dans n'importe quel ordre) ; case d'ingrédient occupée par autre
+  chose → `slot_busy` ; changement de mode avec ingrédients posés → `not_empty` ; recette fermée non apprise ou produit
+  inconnu → `bad_item` ; quantité qui déborde (pas un entier sûr) → `bad_qty`. Inventaire vérifié en entier avant de
+  retirer quoi que ce soit (tout ou rien). Combustible : celui déjà posé, sinon `FUEL` = 'Charbon'.
+- `server/game/service.js` : `out` et `count` transmis à `furnaceOp` (messages d'erreur existants réutilisés).
+- `src/ui/furnace.js` : le bouton « Recettes » ouvre `openRecipes(i)` (remplace la fenêtre d'aide `openHelp`) : liste
+  Fondre / Alliage, max par recette, raison si grisée, fournées + ½ + Max + Lancer. `src/ui/style.css` : `.frecs`
+  (liste défilante 45vh ; `flex-shrink:0` sinon les lignes se chevauchent), `.frow b`.
+- **Tests** ✅ `tests/furnace.test.js` (5 nouveaux : fer, complément de l'existant, alliage, refus, max) 40/40 avec
+  `tests/anticheat/furnace.test.js` (quantités trafiquées, produits bidon dont `__proto__`, rejeu du même opId, matière
+  conservée) et `tests/iron-furnace-gold-compass.test.js` ; `tests/game-service.test.js` 49/49 (recette par le serveur,
+  double envoi).
+- ✅ Affichage vérifié en capture Chrome headless (vrai module + style.css, faux inventaire). ⚠️ Pas testé dans une
+  vraie partie avec serveur (envoi réel de la demande), seulement par les tests du service.
+
+## 28/10/2026 — Geoffrey — Fiche d'objet de l'inventaire sans le poids
+- `src/ui/inventory.js` `infoHtml` : ligne `poids ${d.w}` retirée (affichage seulement ; `ITEMS[…].w` et les pods en
+  session inchangés). Tests ✅ inventory + stuff 23/23. Pas vérifié dans le navigateur (une ligne de texte en moins).
+- Suite (même jour) : `infoHtml` rend trois blocs : `.iiDesc` (description), `.iiStats` (`statLines` de src/meta/stuff.js,
+  un `<li>` par stat ; texte du glyphe en `<p class="iiStats">`), `.iiActs` (boutons en flex-wrap, avec leurs petites
+  notes : case visée, « recette déjà débloquée », « four déjà débloqué », sans le « · » de tête). CSS dans
+  `src/ui/style.css` sous `.invInfo`. Tests ✅ inventory + stuff 23/23 ; ✅ capture Chrome headless (Nuage magique :
+  description, « Vitesse (marche) +1,04 », puis Équiper / Recycler).
+
 ## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu » (objet obtenu ou amélioré)
 - `src/ui/obtained.js` (nouveau) : `setupObtained(root)` → `show({ title, entry, qty })`, file d'attente (un objet après
   l'autre), fermeture clic / Entrée / Échap ; `obtainedLines(entry)` (pur) : stuff = `statLines` + GS (pas pour les
@@ -4304,4 +4367,4 @@ Règles (voir CLAUDE.md) :
 - Branché dans `src/main.js` seulement (les onglets ne changent pas) : `onCraft` (qty de la recette), `research` (action
   research → `r.item`), `upgrade` (identify / upgrade si `success !== false` / enchant → `r.piece` ; unenchant →
   `r.fragment`). Rien côté serveur ; les trésors (showLoot) ne passent pas par là.
-- **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur.
+- **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur. ✅ en ligne le 28/10.

@@ -365,6 +365,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* ---------- onglet Inventaire ---------- */
 .invGrid{display:grid;grid-template-columns:repeat(var(--cols,8),minmax(0,1fr));gap:var(--u);padding:calc(2*var(--u))}
 .invInfo{min-height:calc(12*var(--u));margin-top:calc(6*var(--u))}
+/* fiche d'objet : description, stats (une par ligne), boutons (28/10/2026) */
+.iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
+.iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
 .invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
@@ -411,6 +414,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .fodds .mut{flex-basis:100%;margin-top:calc(-1*var(--u))}
 .fodds img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
 .fparts img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
+.frecs{max-height:45vh;overflow-y:auto}             /* fenêtre « Recettes » du four (28/10) */
+.frecs>*{flex-shrink:0}
+.frecs p{margin:var(--u) 0 0}
+.frow b{text-align:right}
 .furn.locked{opacity:.55}
 .furn.locked h3{margin:0}
 .fgrid{display:grid;grid-template-columns:calc(36*var(--u)) 1fr calc(36*var(--u));align-items:center;gap:calc(6*var(--u));max-width:calc(260*var(--u))}
@@ -491,9 +498,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .stuffHero::after{content:"";width:calc(60*var(--u));height:calc(6*var(--u));margin-top:calc(-8*var(--u));
   background:radial-gradient(ellipse at 50% 50%,#ff7a2e55 0 30%,#ff7a2e22 30% 60%,transparent 60%)}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}
-/* sur ordinateur : les stats à droite des cases */
-.view[data-view="stuff"] .furnWrap{max-width:calc(580*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
-.view[data-view="stuff"] .furnWrap>.invHead,.view[data-view="stuff"] .furnWrap>.nextNote{grid-column:1/-1}
+/* sur ordinateur : Sets | cases | stats (les stats à droite des cases) */
+.view[data-view="stuff"] .furnWrap{max-width:calc(720*var(--u))}
+.stuffMain{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .view[data-view="stuff"] .stuffStatsCard{margin-top:0;max-width:none}
 .stuffLevel{padding-bottom:calc(4*var(--u));margin-bottom:calc(3*var(--u));box-shadow:0 var(--u) 0 var(--sep)}
 .view[data-view="stuff"]{position:relative}
@@ -571,7 +578,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .skTrees{grid-template-columns:1fr}
   .lobbyCols{grid-template-columns:1fr}
   .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
-  .invWrap,.view[data-view="stuff"] .furnWrap{grid-template-columns:1fr}
+  .invWrap,.stuffMain{grid-template-columns:1fr}
   .invWrap>.invInfo{position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}
 }

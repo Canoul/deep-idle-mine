@@ -134,8 +134,89 @@ function unlockFurnace(state, inv, item){
   return { ok:true };
 }
 
+/* ---------- choisir une recette (28/10/2026, Geoffrey) ----------
+   Au lieu de poser les ingrédients un par un, le joueur choisit une recette (par son produit, ex. « Lingot de fer ») et
+   un nombre de fournées : le four passe dans le bon mode et chaque case (ingrédients, combustible) est complétée
+   jusqu'à ce qu'il faut pour (fournées déjà possibles + count) fournées. Le combustible déjà posé sert ; sinon, du
+   charbon. Refusé si une case d'ingrédient contient autre chose (il faut la vider), ou si la recette n'est pas apprise. */
+export const FUEL = 'Charbon';
+/* recette de ce produit : { mode, out, qty, time, in:{ ingrédient: quantité par fournée }, fuel } ou null */
+export function recipeByOut(out){
+  if(typeof out !== 'string') return null;
+  const s = Object.entries(FURNACE.recipes).find(([, r]) => r.out === out);
+  if(s){ const [ore, r] = s; return { mode:'smelt', out, qty:r.qty ?? 1, time:r.time, in:{ [ore]:oreFor(r) }, fuel:FURNACE.fuelPerIngot }; }
+  const a = FURNACE.alloys.find(r => r.out === out);
+  return a ? { mode:'alloy', out, qty:1, time:a.time, in:{ ...a.in }, fuel:a.fuel } : null;
+}
+/* toutes les recettes, dans l'ordre de la config (fontes puis alliages) */
+export const allRecipes = () => [...Object.values(FURNACE.recipes), ...FURNACE.alloys].map(r => recipeByOut(r.out));
+/* la recette est-elle utilisable par ce joueur ? (une fonte fermée doit être apprise) */
+export const recipeUsable = (rec, inv) => rec.mode === 'alloy' || recipeKnown(Object.keys(rec.in)[0], inv);
+
+/* où va chaque objet de la recette dans ce four : { slots:{ case: objet }, need:{ case: quantité par fournée } }
+   ou { error } (not_empty : il faudrait changer de mode avec des ingrédients posés ; slot_busy : une case contient
+   autre chose) */
+function placeRecipe(f, rec){
+  const mode = modeOf(f);
+  if(mode !== rec.mode && INPUTS[mode].some(s => f[s])) return { error:'not_empty' };
+  const slots = {}, need = {}, free = [...INPUTS[rec.mode]];
+  const items = Object.keys(rec.in);
+  for(const it of items){                              // un ingrédient déjà posé garde sa case
+    const s = free.find(s => f[s]?.item === it);
+    if(s){ slots[s] = it; free.splice(free.indexOf(s), 1); }
+  }
+  for(const it of items){
+    if(Object.values(slots).includes(it)) continue;
+    const s = free.shift();
+    if(f[s]) return { error:'slot_busy' };
+    slots[s] = it;
+  }
+  if(free.some(s => f[s])) return { error:'slot_busy' };
+  slots.fuel = f.fuel?.item ?? FUEL;
+  for(const [s, it] of Object.entries(slots)) need[s] = s === 'fuel' ? rec.fuel : rec.in[it];
+  return { slots, need };
+}
+/* ce qu'il faut prendre dans l'inventaire pour count fournées de plus : { mode, add:{ case:{ item, qty } } } ou { error } */
+export function recipePlan(f, inv, out, count){
+  const rec = recipeByOut(out);
+  if(!rec || !recipeUsable(rec, inv)) return { error:'bad_item' };
+  if(!validQty(count)) return { error:'bad_qty' };
+  const p = placeRecipe(f, rec);
+  if(p.error) return p;
+  const have = s => f[s]?.qty ?? 0;
+  const target = Math.min(...Object.entries(p.need).map(([s, n]) => Math.floor(have(s) / n))) + count;
+  const add = {};
+  for(const [s, n] of Object.entries(p.need)){
+    const want = target * n;
+    if(!Number.isSafeInteger(want)) return { error:'bad_qty' };
+    if(want > have(s)) add[s] = { item:p.slots[s], qty:want - have(s) };
+  }
+  for(const { item, qty } of Object.values(add)) if(countOf(inv, item) < qty) return { error:'not_enough' };
+  return { mode:rec.mode, add };
+}
+/* le plus de fournées qu'on peut ajouter avec l'inventaire (0 si aucune ou recette impossible dans ce four) */
+export function recipeMax(f, inv, out){
+  if(recipePlan(f, inv, out, 1).error) return 0;
+  let lo = 1, hi = 2;
+  while(!recipePlan(f, inv, out, hi).error) { lo = hi; hi *= 2; }
+  while(hi - lo > 1){ const m = Math.floor((lo + hi) / 2); if(recipePlan(f, inv, out, m).error) hi = m; else lo = m; }
+  return lo;
+}
+/* applique le plan (tout ou rien : il a déjà vérifié l'inventaire) */
+function loadRecipe(f, inv, { out, count }){
+  const p = recipePlan(f, inv, out, count);
+  if(p.error) return p;
+  f.mode = p.mode;
+  for(const [s, { item, qty }] of Object.entries(p.add)){
+    if(!removeItem(inv, item, qty)) return { error:'not_enough' };   // ne peut pas arriver (vérifié dans le plan)
+    f[s] = { item, qty:(f[s]?.qty || 0) + qty };
+  }
+  return { ok:true };
+}
+
 /* ---------- actions du joueur ----------
-   op = { action:'load'|'unload'|'collect'|'mode'|'unlock', furnace, slot, item, qty, mode, opId }.
+   op = { action:'load'|'unload'|'collect'|'mode'|'unlock'|'recipe', furnace, slot, item, qty, mode, out, count, opId }.
+   recipe : choisir une recette (out = son produit) pour count fournées de plus (voir recipePlan).
    unlock : consomme un objet de four (item) et ouvre le four suivant (pas de numéro de four à donner).
    Modifie inv et state ensemble (tout ou rien). Renvoie { ok:true, repeated } ou { error } (code d'erreur). */
 export function furnaceOp(state, inv, op, now){
@@ -156,6 +237,7 @@ export function furnaceOp(state, inv, op, now){
     else if(op.action === 'collect') r = unload(f, inv, 'out');
     else if(op.action === 'empty') r = { ok:true, left:empty(f, inv) };
     else if(op.action === 'mode') r = setMode(f, op.mode);
+    else if(op.action === 'recipe') r = loadRecipe(f, inv, op);
     else r = { error:'bad_request' };
     if(r.error) return r;
     kick(f, now);

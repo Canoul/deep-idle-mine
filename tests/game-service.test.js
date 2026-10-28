@@ -328,6 +328,19 @@ test('four : poser, fondre en temps réel (page fermée), récupérer — le ser
   assert.equal(r.furnaces.list[0].ore.qty, 10);
 });
 
+test('four : choisir une recette par le serveur (28/10) : ingrédients et charbon posés en une fois, rejeu sans effet', async () => {
+  const { game, store, advance } = setup();
+  await store.putInventory(ME.id, { slots:[{ item:'Fer', qty:30 }, { item:'Charbon', qty:50 }], nextUid:1, credited:[] });
+  const op = { action:'recipe', furnace:0, out:'Lingot de fer', count:2, opId:'op-recipe-1' };
+  let r = await game.furnace(ME, op);
+  r = await game.furnace(ME, op);                                  // double clic
+  assert.deepEqual(r.inventory.slots.filter(Boolean), [{ item:'Fer', qty:10 }, { item:'Charbon', qty:30 }]);
+  await assert.rejects(game.furnace(ME, { ...op, count:5, opId:'op-recipe-2' }), { code:'not_enough' });
+  advance(120_000);
+  r = await game.furnace(ME, { action:'collect', furnace:0, opId:'op-recipe-3' });
+  assert.ok(r.inventory.slots.some(s => s?.item === 'Lingot de fer' && s.qty === 2));
+});
+
 test('four : mode Alliage par le serveur (Tainted iron en 3 min), changement refusé si des ingrédients restent', async () => {
   const { game, store, advance } = setup();
   await store.putInventory(ME.id, { slots:[{ item:'Lingot de fer', qty:5 }, { item:'Chitine', qty:20 }, { item:'Charbon', qty:50 }, { item:'Fer', qty:10 }], nextUid:1, credited:[] });

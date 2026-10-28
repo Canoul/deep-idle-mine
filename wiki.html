@@ -142,7 +142,7 @@
     <div class="tabcard"><h3>🔨 Craft</h3><p>Fabriquer de l'équipement. Chaque ingrédient s'affiche en « ce que tu as / ce qu'il faut ». Une petite coche ✔ indique ce que tu peux fabriquer tout de suite. Certaines recettes sont secrètes : il faut d'abord utiliser leur <b>blueprint</b>.</p></div>
     <div class="tabcard"><h3>🪨 Concasseur</h3><p>Pose tes blocs (terre, pierre, pierre dure) ou ton <b>minerai de fer</b> : chaque minute, il en concasse 100, <b>même page fermée</b>. Les blocs ne donnent le plus souvent rien, mais parfois une <b>gemme</b> ou même un <b>treasure</b> ; 100 fers donnent toujours du charbon, de l'or, un diamant et du graphite. Le bouton <b>?</b> donne les vraies chances (<a href="#concasseur">détail plus bas</a>).</p></div>
     <div class="tabcard"><h3>💎 Amélioration</h3><p><b>Identifier</b> une pièce de stuff (elle reçoit une qualité, de R1 à R7), l'<b>améliorer</b> de +1 à +9 avec des Plumes d'ange et des Cristaux de pleine lune, et l'<b>enchanter</b> avec une Rune. <a href="#amelioration">Détail plus bas</a>.</p></div>
-    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide, et le Four en or un 3e (×1,5).</p></div>
+    <div class="tabcard"><h3>🔥 Four</h3><p>Fondre les minerais en lingots (mode <b>Fondre</b>) ou créer des alliages (mode <b>Alliage</b>). Ça avance <b>en temps réel, même page fermée</b>. Tu commences avec 1 four ; le Four en fer en ouvre un 2e, plus rapide, et le Four en or un 3e (×1,5). Le bouton <b>Recettes</b> d'un four : tu choisis ce que tu veux fabriquer et combien, le four pose lui-même les ingrédients et le charbon.</p></div>
     <div class="tabcard"><h3>🔬 Recherche</h3><p>Dépenser tes <b>Blueprint parts</b> pour obtenir un blueprint au hasard, ou <b>recycler</b> un blueprint dont tu n'as pas besoin pour récupérer des parts.</p></div>
     <div class="tabcard"><h3>⭐ Skills</h3><p>À chaque niveau, tu gagnes <b>1 point de skill</b>. Choisis un arbre (Mineur, Logisticien ou Barbare) et dépense tes points. Le reset est gratuit (hors session). Chaque arbre affiche aussi ton <a href="#spe">niveau de spécialisation</a> (SP lvl).</p></div>
     <div class="tabcard"><h3>✨ Sorts</h3><p>Équipe tes <a href="#sorts">sorts</a> (clic ou glisser-déposer) : en session, ils partent tout seuls. Un parchemin s'apprend ici (« Apprendre »).</p></div>
@@ -307,7 +307,7 @@
     <li>On en trouve seulement dans les <b>trésors des <a href="#ange">tours</a></b>, en plus de la rune.</li>
   </ul>
   <h2 id="sets">Les sets</h2>
-  <p>Un <b>set</b> enregistre ton équipement complet : le <b>stuff porté</b> (les pièces exactes), tes <b>skills</b> et tes <b>sorts</b>. La même liste est à gauche des onglets Stuff, Skills et Sorts : <b>+ Nouveau set</b>, <b>Enregistrer</b> (remplace par l'équipement actuel), <b>✎</b> renommer, <b>×</b> supprimer. <b>Équiper</b> remet tout d'un coup ; une pièce qui n'existe plus (sacrifiée, recyclée…) laisse sa case vide. <b>Pendant une session</b>, tu peux <b>équiper</b> un set : la session en cours ne change pas, il compte dès la <b>prochaine</b> session. Enregistrer et Nouveau set attendent la fin de la session.</p>
+  <p>Un <b>set</b> enregistre ton équipement complet : le <b>stuff porté</b> (les pièces exactes), tes <b>skills</b> et tes <b>sorts</b>. La même liste est à gauche des onglets Stuff, Skills et Sorts : <b>+ Nouveau set</b>, <b>Enregistrer</b> (remplace par l'équipement actuel), <b>✎</b> renommer, <b>×</b> supprimer. <b>Équiper</b> remet tout d'un coup ; une pièce qui n'existe plus (sacrifiée, recyclée…) laisse sa case vide. <b>Pendant une session</b>, tu peux tout faire : <b>équiper</b> un set (la session en cours ne change pas, il compte dès la <b>prochaine</b> session), <b>enregistrer</b> tes modifications ou créer un nouveau set.</p>
 </section>
 
 <section id="roigobelin">
@@ -328,6 +328,7 @@
   <h1>Craft et four</h1>
   <h2>Le four</h2>
   <p>Mode <b>Fondre</b> : <span id="w-smelt-rule"></span> Mode <b>Alliage</b> : deux ingrédients + du charbon. Les ingrédients ne sont consommés qu'à la fin de chaque produit : si tu retires une case, tu récupères tout.</p>
+  <p class="tip">💡 Pas besoin de poser les ingrédients un par un : le bouton <b>Recettes</b> d'un four liste tout ce qu'il sait faire, avec le maximum que permet ton inventaire. Choisis une recette et un nombre de fournées (ou <b>Max</b>), puis <b>Lancer</b> : le four se met dans le bon mode et prend ce qu'il faut dans ton inventaire, charbon compris. Une recette grisée n'est pas encore apprise, ou il te manque des ingrédients, ou le four contient déjà autre chose (vide-le d'abord).</p>
   <div id="w-furnace"></div>
   <div id="w-furnace-tiers"></div>
   <h2 id="concasseur">Le concasseur</h2>
@@ -345,7 +346,7 @@
 
 <section id="amelioration">
   <h1>L'amélioration</h1>
-  <p>L'onglet <b>💎 Amélioration</b> a trois rubriques : Identification, Amélioration et Enchantement. Seulement pour les pièces de ton inventaire : une pièce portée se retire d'abord dans l'onglet Stuff. Le hasard est tiré par le serveur.</p>
+  <p>L'onglet <b>💎 Amélioration</b> a trois rubriques : Identification, Amélioration et Enchantement. Les pièces de ton inventaire et celles que tu portes (marquées « équipée ») : pas besoin de les retirer. Une pièce portée que tu sacrifies quitte sa case, qui se vide. Le doublon qui améliore un anneau vient toujours de l'inventaire. Le hasard est tiré par le serveur.</p>
   <h2>Identification</h2>
   <p>Deux cases : à gauche la pièce à identifier, à droite <b>un autre exemplaire du même objet</b>, qui sera <b>sacrifié</b> (peu importe sa qualité ou son niveau). Clique une case, puis la pièce à y poser. Si ce ne sont pas les mêmes objets, le bouton reste grisé et dit pourquoi.</p>
   <p>La pièce reçoit une <b>qualité</b> : son nom prend le titre et la couleur de la qualité (« Excellent : Pioche en pierre »), la case garde la couleur de rareté de l'objet. <b>C'est définitif</b> : une pièce identifiée ne se ré-identifie pas.</p>

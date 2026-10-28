@@ -773,12 +773,12 @@ Set 2  [Équiper] [Enregistrer] [✎] [×]
 ```
 - **+ Nouveau set** : crée « Set n » (premier numéro libre) avec l'équipement actuel. **Enregistrer** : remplace le set par l'équipement actuel (confirmation). **✎** renommer (1 à 24 caractères), **×** supprimer (confirmation).
 - **Équiper** agit toujours sur **tout le set** : tout le stuff porté revient dans l'inventaire puis chaque pièce du set retourne dans sa case ; une pièce **introuvable** (sacrifiée, recyclée…) laisse sa **case vide**, avec un message « n pièce(s) introuvable(s) » ; reset gratuit des skills puis les rangs du set, revérifiés avec les points du niveau ; les sorts du set qui sont encore équipables (débloqués, bonne spécialisation), les autres emplacements restent vides.
-- **Équiper pendant une session** *(28/10/2026, Geoffrey ; avant : refusé)* : permis. La session en cours **ne change pas** (stuff, skills et sorts figés à son lancement) ; le set compte **dès la prochaine session**. **Enregistrer et Nouveau set** restent **refusés pendant une session** ; renommer et supprimer restent possibles.
+- **Équiper pendant une session** *(28/10/2026, Geoffrey ; avant : refusé)* : permis. La session en cours **ne change pas** (stuff, skills et sorts figés à son lancement) ; le set compte **dès la prochaine session**. **Enregistrer et Nouveau set** sont aussi permis *(28/10/2026, Geoffrey ; avant : refusés pendant une session)* : le set prend l'équipement actuel, celui de la prochaine session. Renommer et supprimer restent possibles.
 - **Pas de limite voulue** pour le joueur ; garde-fou technique de **20 sets** (taille de la sauvegarde).
 - Le serveur fait tout en une seule écriture (inventaire, stuff, skills, sorts) ; une demande renvoyée n'agit qu'une fois.
 
 ### Amélioration (onglet Amélioration) *(décisions du créateur, 21/10/2026 ; valeurs provisoires, `UPGRADE` en config)*
-Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Seulement les pièces de l'inventaire (une pièce portée se retire d'abord dans l'onglet Stuff). C'est le serveur qui tire le hasard.
+Trois rubriques : **Identification**, **Amélioration**, **Enchantement** (22/10, voir ci-dessous). Les pièces de l'inventaire **et les pièces portées** *(28/10/2026, Geoffrey)*, marquées « équipée » dans les listes : pas besoin de les retirer. Une pièce portée **sacrifiée** (identification) quitte sa case, qui se vide (une confirmation prévient). Le doublon sacrifié pour améliorer un anneau vient toujours de l'inventaire (jamais un anneau porté détruit sans l'avoir choisi). C'est le serveur qui tire le hasard.
 
 **Identification** : deux cases. À gauche la pièce à identifier, à droite **un autre exemplaire du même objet, sacrifié** (peu importe sa qualité ou son niveau). La pièce reçoit une **qualité** (tirée selon les chances ci-dessous). **Définitif** : une pièce identifiée ne se ré-identifie pas.
 - **Depuis le 22/10/2026 (décision du créateur) : l'identification ne donne plus que la qualité** (titre et couleur du nom), **aucune stat en plus**. Les lignes de stats décrites ci-dessous ne concernent que les **pièces identifiées avant** : elles les **gardent** *(décision du créateur, 22/10/2026)*. Les colonnes « Chaque ligne vaut / Lignes / Total max » ne servent plus qu'à revérifier ces anciennes pièces.
@@ -879,7 +879,8 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   - **Fondre** : ce qui précède (case minerai + combustible) ;
   - **Alliage** : deux cases d'**ingrédients** (dans n'importe quel ordre, ils doivent former une recette) + combustible + sortie.
   - Changer de mode : seulement quand les cases d'ingrédients sont vides (le combustible et la sortie restent en place).
-  - Un bouton **?** montre les recettes du mode choisi (ingrédients, combustible, durée).
+  - *(ancien : un bouton **?** montrait seulement les recettes du mode choisi.)*
+- **Choisir une recette** *(28/10/2026, Geoffrey)* : le bouton **Recettes** de chaque four liste toutes les recettes (Fondre puis Alliage) avec leurs ingrédients, leur durée dans ce four et le **maximum** de fournées possible avec l'inventaire. On en choisit une, un nombre de **fournées** (saisie libre, **½** du maximum, **Max**), puis **Lancer** : le four passe dans le bon mode et pose lui-même les ingrédients et le **charbon**, **en plus** de ce qu'il contient déjà (les cases sont complétées jusqu'à « fournées déjà possibles + celles demandées » ; le combustible déjà posé compte). Une recette est grisée si elle n'est pas apprise (🔒), s'il manque des ingrédients, ou si le four contient autre chose (« vide le four d'abord »). Poser les objets case par case reste possible.
 - **Recettes d'alliage** *(valeurs provisoires ; d'autres viendront)* :
 
   | Produit | Ingrédients | Combustible | Durée |
