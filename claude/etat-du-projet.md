@@ -388,7 +388,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   fond d'écran » dans « Mon compte » (clic sur le pseudo), activée par défaut, gardée dans le navigateur (localStorage).
   Plein écran sur les autres onglets ; **transition avec l'onglet Session** (28/10) : zoom linéaire du plein écran à la
   place de la mine de la session (relevée sur l'onglet Session, gardée dans le navigateur avec la taille de la
-  fenêtre), panneaux qui glissent depuis les bords ; l'inverse en sortant (`BACKDROP` dans backdrop.js : dim 0,4,
+  fenêtre), panneaux qui glissent depuis les bords au même rythme ; l'inverse en sortant (l'onglet Session reste affiché
+  par-dessus le temps que ses panneaux repartent) (`BACKDROP` dans backdrop.js : dim 0,4,
   450 ms). Ancien, jamais en ligne : la mine du fond figée à la place de la session.
 
 - **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,

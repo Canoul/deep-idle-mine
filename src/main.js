@@ -57,7 +57,7 @@ import { setupHistory } from './ui/history.js';
 import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
-import { createBackdrop, enterPanels } from './ui/backdrop.js';
+import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
@@ -247,7 +247,8 @@ nav = setupNav($('nav'), $('views'), id => {
   const from = ui.tab;
   ui.tab = id;
   /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
-  if(backdrop.switchTab(from, id, rec && G?.ready ? G : null) && id==='session') enterPanels(document.querySelector('.view[data-view="session"]'));
+  const sessView = document.querySelector('.view[data-view="session"]');
+  if(backdrop.switchTab(from, id, rec && G?.ready ? G : null)) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();

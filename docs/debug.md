@@ -4433,3 +4433,10 @@ Règles (voir CLAUDE.md) :
 - ✅ **Navigateur** (Chrome sans écran, CDP, localhost:8000) : captures à ~60 / 150 / 300 ms : fond 94 px → 216 px →
   271 px (place de #cv), luminosité 0,60 → 0,87 → fin, `#cv` caché puis visible, panneaux en glissement ; aucune erreur.
   Pas vérifié : MI, tours, instance, téléphone, petite machine.
+- **Suite 2 (même branche)** : panneaux en `linear` (avant `ease-out` : ils semblaient arriver avant la mine) ; sortie
+  de l'onglet Session : `leavePanels(vue, #views, () => ui.tab === 'session')` (nav cache la vue avant d'appeler
+  onChange) ré-affiche la vue en `position:fixed` à la place de `#views`, `.bgLeave` (z-index 5, sans clics, keyframes
+  en `reverse`), puis la cache après `transitionMs` sauf si on est revenu sur Session (`resetPanels` annule tout, aussi
+  au début d'une entrée). `#cv` caché pendant les deux sens (le fond fait le zoom). Tests ✅ backdrop 9/9 (+ sortie des
+  panneaux, retour pendant la sortie). ✅ Chrome : progression zoom / panneaux à chaque relevé, entrée 23/20 %, 44/41 %,
+  87/83 % ; sortie 19/19 %, 40/39 %, 83/81 % ; vue cachée à la fin ; aucune erreur.

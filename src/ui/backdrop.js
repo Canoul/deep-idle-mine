@@ -48,12 +48,30 @@ function readPlaces(){
   } catch(e){ return {}; }
 }
 
-/* entrée dans l'onglet Session : les panneaux glissent depuis les bords (style.css .bgEnter), relancé à chaque fois */
+/* panneaux de l'onglet Session pendant la transition (style.css .bgEnter / .bgLeave), au même rythme que la mine.
+   enterPanels : ils glissent depuis les bords. leavePanels : l'onglet Session reste affiché par-dessus le nouvel onglet
+   (fixé à sa place, sans capter les clics) le temps que ses panneaux repartent vers les bords, puis il se cache ;
+   box : la zone des onglets (sa place), stillHere() : l'onglet Session est-il de nouveau ouvert entre-temps ? */
+function resetPanels(view){
+  clearTimeout(view._bgT);
+  view.classList.remove('bgEnter', 'bgLeave');
+  Object.assign(view.style, { position: '', left: '', top: '', width: '' });
+}
 export function enterPanels(view){
   if(!view) return;
+  resetPanels(view);
   view.style.setProperty('--bgAnim', BACKDROP.transitionMs + 'ms');
-  view.classList.remove('bgEnter'); void view.offsetWidth; view.classList.add('bgEnter');
-  clearTimeout(view._bgEnter); view._bgEnter = setTimeout(() => view.classList.remove('bgEnter'), BACKDROP.transitionMs + 50);
+  void view.offsetWidth; view.classList.add('bgEnter');
+  view._bgT = setTimeout(() => resetPanels(view), BACKDROP.transitionMs + 50);
+}
+export function leavePanels(view, box, stillHere = () => false){
+  if(!view || !box) return;
+  resetPanels(view);
+  const b = box.getBoundingClientRect();
+  view.style.setProperty('--bgAnim', BACKDROP.transitionMs + 'ms');
+  Object.assign(view.style, { position: 'fixed', left: b.left + 'px', top: Math.max(0, b.top) + 'px', width: b.width + 'px' });
+  view.hidden = false; view.classList.add('bgLeave');
+  view._bgT = setTimeout(() => { resetPanels(view); view.hidden = !stillHere(); }, BACKDROP.transitionMs);
 }
 
 /* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) */
@@ -111,7 +129,8 @@ export function createBackdrop(root, { sessionCanvas = () => null, now = () => p
     const mode = modeOf(G);
     if(!placeOf(mode)) return false;
     anim = { to: to === 'session' ? 'session' : 'cover', t0: now(), mode, hidden: null };
-    if(anim.to === 'session'){ const cv = sessionCanvas(mode); if(cv){ cv.style.visibility = 'hidden'; anim.hidden = cv; } }
+    const cv = sessionCanvas(mode);                    // la vraie mine se cache : le fond fait le zoom (aller et retour)
+    if(cv){ cv.style.visibility = 'hidden'; anim.hidden = cv; }
     return true;
   }
   /* onglet Session affiché : relève la place du canvas de la session (cv) et ses lignes (rows, mine qui défile) */

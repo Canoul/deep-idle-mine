@@ -11,7 +11,7 @@ globalThis.Image = class { set src(v){} };
 globalThis.innerWidth = 1400; globalThis.innerHeight = 900;
 const ctx = () => new Proxy({}, { get: (t, k) => k in t ? t[k] : () => ({ addColorStop(){} }), set: (t, k, v) => (t[k] = v, true) });
 globalThis.document = { createElement: () => ({ hidden: false, style: {}, width: 300, height: 300, getContext: ctx }) };
-const { createBackdrop, coverRect, lerpRect, BACKDROP } = await import('../src/ui/backdrop.js');
+const { createBackdrop, coverRect, lerpRect, BACKDROP, enterPanels, leavePanels } = await import('../src/ui/backdrop.js');
 
 const box = () => { const cvs = []; return { hidden: true, cvs, appendChild: c => cvs.push(c) }; };
 const fakeCv = (left, top, width, height) => ({ style: {}, getBoundingClientRect: () => ({ left, top, width, height }) });
@@ -108,9 +108,37 @@ test('transition depuis la session : place de la session → plein écran ; pas 
   frame(b, true);
   assert.deepEqual(rectOf(root.cvs[0]), [300, 80, 640, 720], 'départ : la place de la session');
   assert.equal(root.cvs[0].style.filter, '', 'pleine luminosité au départ');
-  assert.notEqual(sessCv.style.visibility, 'hidden');
+  assert.equal(sessCv.style.visibility, 'hidden', 'la vraie mine reste cachée : le fond fait le zoom');
+  t += BACKDROP.transitionMs; frame(b, true);
+  assert.equal(sessCv.style.visibility, '', 'rendue à la fin');
   assert.equal(b.switchTab('stuff', 'craft', G), false);
   assert.equal(b.switchTab('lobby', 'session', null), false, 'pas de session : rien');
   b.set(false);
   assert.equal(b.switchTab('lobby', 'session', G), false, 'option coupée : rien');
+});
+
+/* fausse vue : classes, style, hidden */
+function fakeView(){
+  const cls = new Set();
+  return { hidden: true, offsetWidth: 1, cls, style: { setProperty(){} },
+           classList: { add: (...c) => c.forEach(x => cls.add(x)), remove: (...c) => c.forEach(x => cls.delete(x)) } };
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+test('panneaux : sortie = l\'onglet Session reste affiché par-dessus, fixé à sa place, puis se cache ; revenu entre-temps, il reste', async () => {
+  const saved = BACKDROP.transitionMs; BACKDROP.transitionMs = 20;
+  try {
+    const v = fakeView(), zone = { getBoundingClientRect: () => ({ left: 10, top: 60, width: 1200 }) };
+    leavePanels(v, zone, () => false);
+    assert.equal(v.hidden, false); assert.ok(v.cls.has('bgLeave'));
+    assert.deepEqual([v.style.position, v.style.left, v.style.top, v.style.width], ['fixed', '10px', '60px', '1200px']);
+    await sleep(40);
+    assert.equal(v.hidden, true, 'caché à la fin'); assert.ok(!v.cls.has('bgLeave')); assert.equal(v.style.position, '');
+    leavePanels(v, zone, () => true);
+    enterPanels(v);                                                            // revenu sur Session pendant la sortie
+    assert.ok(v.cls.has('bgEnter') && !v.cls.has('bgLeave'));
+    await sleep(80);
+    assert.equal(v.hidden, false, 'la sortie annulée ne le cache pas');
+    assert.ok(!v.cls.has('bgEnter'));
+  } finally { BACKDROP.transitionMs = saved; }
 });

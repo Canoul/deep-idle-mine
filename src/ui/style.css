@@ -25,14 +25,19 @@ img,canvas{image-rendering:pixelated}
 .bgSession{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}   /* au-dessus de la vignette (body::before), sous .app */
 /* place, taille et luminosité posées par backdrop.js : plein écran assombri, ou en transition vers la place de la session */
 .bgSession canvas{position:absolute}
-/* entrée dans l'onglet Session : les panneaux glissent depuis les bords pendant que la mine rétrécit */
+/* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
+   (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
 @keyframes bgFromR{from{transform:translateX(110%);opacity:0}}
 @keyframes bgFromT{from{transform:translateY(-100%);opacity:0}}
-.bgEnter .runL,.bgEnter .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) ease-out both}
-.bgEnter .runR,.bgEnter .rail,.bgEnter .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) ease-out both}
-.bgEnter #run>header,.bgEnter .sessSwitch{animation:bgFromT var(--bgAnim,450ms) ease-out both}
-@media (prefers-reduced-motion:reduce){.bgEnter *{animation:none!important}}
+.view.bgLeave{z-index:5;pointer-events:none}
+.bgEnter .runL,.bgEnter .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) linear both}
+.bgEnter .runR,.bgEnter .rail,.bgEnter .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) linear both}
+.bgEnter #run>header,.bgEnter .sessSwitch{animation:bgFromT var(--bgAnim,450ms) linear both}
+.bgLeave .runL,.bgLeave .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) linear reverse both}
+.bgLeave .runR,.bgLeave .rail,.bgLeave .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) linear reverse both}
+.bgLeave #run>header,.bgLeave .sessSwitch{animation:bgFromT var(--bgAnim,450ms) linear reverse both}
+@media (prefers-reduced-motion:reduce){.bgEnter *,.bgLeave *{animation:none!important}}
 .pi{width:calc(16*var(--u));height:calc(16*var(--u));flex:none;display:inline-block;vertical-align:middle}
 h1,h2,h3{font-weight:400;font-family:var(--f-title);letter-spacing:.03em}
 a{color:var(--acc-lt)}
