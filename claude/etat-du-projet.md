@@ -47,7 +47,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     résistance au recul, portée, recul, rayon des torches, simulés le 26/10 ; ancien : `UPGRADE.prices`, le tableau des runes) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
-  - Jauge pleine → la **tour** de ce camp ouvre **6 h** (jauge à 0, elle continue de se remplir). Lancée depuis le
+  - Jauge pleine → la **tour** de ce camp ouvre **4 h** (28/10, Geoffrey ; ancien 6 h) (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
     **Pods dans les tours (26/10, Geoffrey, en ligne le 26/10)** : chaque stonebrick minée (poids
     10) va dans le sac ; plein, le mineur redescend la vider au coffre commun (milieu de l'étage 0) ; victoire = coffre +
