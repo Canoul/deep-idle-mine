@@ -605,9 +605,21 @@ test('Tour : fermée = refusée ; ouverte : réussite → un trésor de la tour 
   assert.equal(qty((await game.state(ME)).inventory, 'Fer'), 0, 'objet étranger au butin de la tour : ignoré');
   assert.equal(qty((await game.state(OTHER)).inventory, BRICK), 0, 'parti : rien');
   assert.ok(!(await game.state(OTHER)).inventory.slots.some(s => /^Trésor/.test(s?.item ?? '')));
-  assert.equal((await game.judgment(ME)).sides.angel.done, true); assert.equal((await game.judgment(OTHER)).sides.angel.done, false);
+  /* niveaux (28/10) : le niveau 1 est fait, le niveau 2 reste ; « done » = tous les niveaux faits */
+  assert.deepEqual((await game.judgment(ME)).sides.angel.doneLevels, [1]);
+  assert.equal((await game.judgment(ME)).sides.angel.done, false); assert.deepEqual((await game.judgment(OTHER)).sides.angel.doneLevels, []);
   await assert.rejects(game.start(ME, { mode: 'tower_angel' }), { code: 'tower_done' });
+  await assert.rejects(game.start(ME, { mode: 'tower_angel', level: 1 }), { code: 'tower_done' });
   await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }, [{ account: OTHER.id, name: 'B' }, { account: ME.id, name: 'Zoe' }]), { code: 'tower_done' }, 'un membre qui l\'a faite bloque le groupe');
+  for(const level of [0, 3, '2', 1.5]) await assert.rejects(game.start(ME, { mode: 'tower_angel', level }), { code: 'bad_request' }, `niveau ${level}`);
+  /* niveau 2 : lancé et enregistré avec son niveau ; gagné → un trésor de plus, puis plus rien à faire */
+  const lv2 = (await game.start(ME, { mode: 'tower_angel', level: 2 })).session;
+  assert.equal(lv2.level, 2);
+  advance(TOWER.duration / GAME.speed * 1000); await game.pump();
+  assert.equal((await game.state(ME)).inventory.slots.filter(s => /^Trésor angélique R[1-7]$/.test(s?.item ?? '')).reduce((n, s) => n + s.qty, 0), 2);
+  assert.deepEqual((await game.judgment(ME)).sides.angel.doneLevels, [1, 2]);
+  assert.equal((await game.judgment(ME)).sides.angel.done, true);
+  await assert.rejects(game.start(ME, { mode: 'tower_angel', level: 2 }), { code: 'tower_done' });
   /* la tour fermée (6 h plus tard) : refusée */
   advance(JUDGMENT.openHours * 3600e3);
   await assert.rejects(game.start(OTHER, { mode: 'tower_angel' }), { code: 'tower_closed' });

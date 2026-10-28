@@ -76,6 +76,16 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Tours du Jugement : niveau 2
+- **Pour le joueur** : une tour choisie dans le Lobby, celui qui lance choisit le **niveau 1 ou 2**. Chaque niveau se
+  gagne **une fois par ouverture** (un trésor chacun) : deux trésors possibles par ouverture. Niveau 2 : mobs et boss
+  avec **2 fois plus de PV**, stonebricks **2 fois plus dures** et **1,5 fois plus lourdes**, mobs qui repoussent **2 fois
+  plus loin**, boss **enragé dès 50 %**. Le titre de la tour affiche « niveau 2 ».
+- **Décisions** : valeurs de Geoffrey ; récompense du niveau 2 = la même qu'au niveau 1. Choix de Claude : le recul ×2
+  touche les Séraphins / Diablotins, pas le boss. Pas de simulation (demande de Geoffrey).
+- **À suivre** : savoir si le niveau 2 est faisable en acier ; une récompense en plus pour le niveau 2 ?
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Tours du Jugement : ouvertes 4 h au lieu de 6
 - **Pour le joueur** : quand une jauge est pleine, la tour de l'Ange ou du Démon reste ouverte **4 h** (avant 6 h). Le
   message Discord et le Lobby suivent. Une tour déjà ouverte au moment de la mise en ligne garde son heure de fermeture.

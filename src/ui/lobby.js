@@ -85,6 +85,16 @@ export function modulationState({ tower, locked, party, account, slots = [], myG
   return { show, over, text };
 }
 
+/* niveau de tour (28/10/2026, Geoffrey ; TOWER.levels) : choisi par celui qui lance (seul, ou chef du groupe), quand une
+   tour est choisie. doneLevels : niveaux que ce joueur a déjà gagnés pendant l'ouverture (grisés, sauf en mode dev). Le
+   niveau choisi reste s'il est jouable ; sinon le premier jouable. Le serveur revérifie pour chaque joueur du groupe. */
+export function towerLevelState({ tower, locked, party, account, doneLevels = [], dev = false, cur = null }){
+  const leader = !party || party.members.length < 2 || party.leader === account?.id;
+  const levels = Object.keys(TOWER.levels).map(Number).map(level => ({ level, done: !dev && doneLevels.includes(level) }));
+  const open = levels.filter(l => !l.done).map(l => l.level);
+  return { show: !!tower && !locked && !!account && leader, levels, level: open.includes(cur) ? cur : open[0] ?? null };
+}
+
 /* « Who ? » (tour ouverte) : une ligne par joueur en ligne qui n'a pas encore fait la tour ; « Inviter » (par son ID)
    s'il n'est pas en session et pas déjà dans mon groupe. p = { id, displayId, name, status…, friend } */
 export function whoRows(list, party, now = Date.now()){
@@ -219,6 +229,11 @@ export function setupLobby(h){
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
+    const tl = towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
+    st.towerLevel = tl.level;
+    $('towerLevelRow').hidden = !tl.show;
+    $('towerLevelRow').innerHTML = tl.show ? '<span>Niveau :</span>' + tl.levels.map(l =>
+      `<button data-level="${l.level}" class="${l.level === tl.level ? 'on' : ''}"${l.done ? ' disabled title="Déjà fait pendant cette ouverture"' : ''}>Niveau ${l.level}${l.done ? ' <small>(fait)</small>' : ''}</button>`).join('') : '';
     $('modulationText').innerHTML = mod.text;
     if(!mod.show) $('modulation').checked = false;
     const ar = alwaysReadyState(st);
@@ -388,6 +403,7 @@ export function setupLobby(h){
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
   $('modulation').onchange = () => render();
+  $('towerLevelRow').onclick = e => { const b = e.target.closest('button[data-level]'); if(b && !b.disabled){ st.towerLevel = +b.dataset.level; render(); } };
   $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
@@ -485,7 +501,7 @@ export function setupLobby(h){
     if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
     const tw = !!MINE_MODES.find(m => m.id === st.mode)?.tower;
-    try { await h.onLaunch({ mode: st.mode, ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
+    try { await h.onLaunch({ mode: st.mode, ...(tw && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }
   };
 

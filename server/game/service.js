@@ -26,7 +26,7 @@ import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
-import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
+import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot, TOWER_LEVELS } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys } from '../../src/shared/instances.js';
 import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
@@ -225,6 +225,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
              ...(rec.modulation ? { modulation: rec.modulation } : {}),
+             ...(rec.level ? { level: rec.level } : {}),   // niveau de tour (28/10)
              result: rec.status === 'done' ? rec.result : null };
   }
   const isDue = rec => rec.status === 'running' && !rec.dev && clock() >= rec.finishAt;
@@ -333,7 +334,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           await withJudgment(j => ({ save: addResidues(j, share.bag, clock()) }));
           /* tour réussie : « déjà faite » pour l'ouverture où elle a été lancée (pas une ouverture suivante) */
           if(side && summary.success)
-            await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account) }));
+            await withJudgment(j => ({ save: j[side].opening === rec.opening && markDone(j, side, share.account, rec.level ?? 1) }));
         });
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
         if(rec.mode !== 'mi' && !side && !isInstanceMode(rec.mode)) await withLock('xp:' + share.account, async () => {
@@ -463,12 +464,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many([...players.map(p => 'acct:' + p.account), ...invLocks], async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
-        let opening = null;
+        let opening = null, level = null;
         if(side){
+          /* niveau (28/10/2026, Geoffrey) : TOWER.levels, 1 par défaut ; chaque niveau une fois par ouverture */
+          level = body.level ?? 1;
+          if(!TOWER_LEVELS.includes(level)) fail('bad_request', 400, 'Niveau de tour inconnu.');
           const t = await withJudgment(j => ({ value: { open: towerOpen(j, side, clock()), opening: j[side].opening,
-                                                         done: players.filter(p => hasDone(j, side, p.account)) } }));
+                                                         done: players.filter(p => hasDone(j, side, p.account, level)) } }));
           if(!t.open && !dev) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
-          if(t.done.length && !dev) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait cette tour pendant cette ouverture.`);
+          if(t.done.length && !dev) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait le niveau ${level} de cette tour pendant cette ouverture.`);
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
@@ -527,7 +531,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
-          ...(side ? { opening } : {}),
+          ...(side ? { opening, level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
@@ -986,7 +990,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async towerDone(side){
       if(!JUDGMENT_SIDES.includes(side)) fail('bad_request', 400, 'Camp inconnu.');
       return withJudgment(j => ({ value: { open: dev || towerOpen(j, side, clock()),   // mode dev : toujours ouverte (comme au lancement)
-                                           done: new Set(j.done[side].opening === j[side].opening ? j.done[side].accounts : []) } }));
+                                           done: new Set(j.done[side].opening === j[side].opening ? j.done[side].accounts.filter(a => !a.includes(':')) : []) } }));   // niveau 1 (« compte:n » = niveau n)
     },
 
     /* administration : ouvrir un k hole dans la session en cours d'un joueur (route /api/admin/khole,

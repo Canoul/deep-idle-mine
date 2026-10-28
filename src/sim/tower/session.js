@@ -22,22 +22,27 @@ export const TOWER_TICKS = Math.round(TOWER.duration / DT);
 const B = TOWER.boss, MB = TOWER.mobs;
 
 /* opts.miners : [{ name, account, color, look, carac, skills, skillTree }] ; opts.side : 'angel' | 'demon' ; opts.id */
+/* niveau de tour (TOWER.levels, 28/10/2026) : un entier connu, sinon 1 */
+export const TOWER_LEVELS = Object.keys(TOWER.levels).map(Number);
+export const towerLevel = l => TOWER_LEVELS.includes(l) ? l : 1;
+
 export function newTower(seed, opts = {}){
   seed = seed ?? ((Math.random() * 2**31) | 0);
   const side = opts.side ?? 'angel';
+  const level = towerLevel(opts.level), LV = TOWER.levels[level];   // niveau (28/10) : 1 par défaut
   const world = genTower(seed, side);
   const specs = opts.miners ?? [{}];
   const inner = world.x1 - world.x0 - 1;
   const G = {
-    mode: 'tower', side, seed, t: 0, ticks: 0, over: false, ...world,
+    mode: 'tower', side, level, lv: LV, seed, t: 0, ticks: 0, over: false, ...world,
     rng: mulberry32(seed ^ 0x2545f491), fightRng: mulberry32(seed ^ 0x6a09e667),
     ladder: world.tiles.map(r => new Uint8Array(r.length)),
     /* découvert : tout l'extérieur de la tour ; l'intérieur se découvre étage par étage (revealFloor) */
     seen: world.tiles.map((r, y) => Uint8Array.from(r, (_, x) => inTower(world, x, y) ? 0 : 1)),
     floorSeen: new Array(TOWER.floors).fill(false),
     torches: [], light: new Map(),
-    mobs: placeMobs(world, seed),
-    boss: { name: TOWER.sides[side].boss, hp: B.hp, maxhp: B.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
+    mobs: placeMobs(world, seed, MB.hp * LV.hp),
+    boss: { name: TOWER.sides[side].boss, hp: B.hp * LV.hp, maxhp: B.hp * LV.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
@@ -70,7 +75,7 @@ const isBarb = m => m.skillTree === 'barbare';
 
 /* mobs des étages « mobs » : mobs.count par étage, sur la ligne du bas, à des colonnes différentes, loin de la porte
    d'entrée (porte du plafond de l'étage du dessous ± 1). Endormis jusqu'à ce qu'un mineur entre dans l'étage. */
-function placeMobs(L, seed){
+function placeMobs(L, seed, hp = MB.hp){
   const r = mulberry32(seed ^ 0x3b0b5), out = [];
   for(let k = 1; k < TOWER.floors; k++){
     if(L.kinds[k] !== 'mobs') continue;
@@ -78,7 +83,7 @@ function placeMobs(L, seed){
     for(let x = L.x0 + 1; x < L.x1; x++) if(!entry.some(g => Math.abs(g - x) <= 1)) cols.push(x);
     for(let i = 0; i < MB.count && cols.length; i++){
       const x = cols.splice(Math.floor(r() * cols.length), 1)[0];
-      out.push({ id: out.length, floor: k, x, y: floorBottom(L, k), hp: MB.hp, maxhp: MB.hp, awake: false, cd: MB.step, grab: null, taunt: null });
+      out.push({ id: out.length, floor: k, x, y: floorBottom(L, k), hp, maxhp: hp, awake: false, cd: MB.step, grab: null, taunt: null });
     }
   }
   return out;
@@ -97,7 +102,7 @@ export function blockCells(G, k){
 /* pods (TOWER.chest) : stonebricks de l'intérieur de la tour, poids d'une brique, sac plein */
 const countBricks = G => { let n = 0; const b = TOWER.sides[G.side].brick;
   for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] === b) n++; return n; };
-const brickW = G => BLOCKS[TOWER.sides[G.side].brick].w;
+const brickW = G => BLOCKS[TOWER.sides[G.side].brick].w * G.lv.weight;   // niveau 2 : × 1,5 (28/10)
 export const bagFull = (G, m) => m.load > 0 && m.load + brickW(G) > m.carac.pods;
 const inBlockFloor = (G, x, y) => { const k = floorOf(G, y);
   return k >= 0 && k < TOWER.floors && G.kinds[k] === 'blocks' && y >= floorTop(G, k) && y <= floorBottom(G, k) && x > G.x0 && x < G.x1 ? k : -1; };
@@ -138,7 +143,7 @@ export const towerSupported = (G, x, y) => isWinch(G, x, y) ||
   !(y + 1 <= G.h && towerAir(G, x, y + 1) && !G.ladder[y + 1][x] && !(y > 0 && G.ladder[y][x]));
 
 /* durées (sans lumière : ralenti comme dans la mine) */
-const mineT = (m, t) => BLOCKS[t].hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
+export const mineT = (G, m, t) => BLOCKS[t].hard * G.lv.hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
 /* seau, comme dans la mine (winchMult : Escalateur, et × liftSpeed pour l'ascenseur du Glyphe Treuil) */
@@ -197,7 +202,7 @@ function stepMobs(G){
     }
     const v = byId(G, o.grab);
     o.hit = v ? (o.hit ?? MB.hitEvery) - DT : MB.hitEvery;
-    if(v && o.hit <= 1e-9 && mobReach(G, o, v)){ o.hit += MB.hitEvery; pushMiner(G, v, mobCell(o, v), MB.knock); }
+    if(v && o.hit <= 1e-9 && mobReach(G, o, v)){ o.hit += MB.hitEvery; pushMiner(G, v, mobCell(o, v), MB.knock * G.lv.mobKnock); }
     /* revenu à portée de tacle : il peut de nouveau être repoussé (verrou du recul, hitMob) */
     const t = v ?? preyOf(G, o);
     if(o.knockLock && t && mobReach(G, o, t)) o.knockLock = false;
@@ -307,8 +312,8 @@ export function planTo(G, m, goals, avoid = null){
   const known = (x, y) => !inGrid(G, x, y) || G.seen[y][x];
   const airK = (x, y) => known(x, y) ? towerAir(G, x, y) : false;
   const dig = (x, y) => airK(x, y) ? 0
-    : !known(x, y) ? (inTower(G, x, y) ? mineT(m, brick) : Infinity)
-    : breakable(G, x, y) ? mineT(m, G.tiles[y][x]) + (taken.has(y * w + x) ? 8 : 0) : Infinity;
+    : !known(x, y) ? (inTower(G, x, y) ? mineT(G, m, brick) : Infinity)
+    : breakable(G, x, y) ? mineT(G, m, G.tiles[y][x]) + (taken.has(y * w + x) ? 8 : 0) : Infinity;
   const relax = (c, d, x, y, cost) => { const n = y * w + x; if(cost < Infinity && d + cost < dist[n]){ dist[n] = d + cost; prev[n] = c; push(dist[n], n); } };
   /* où il finit après être arrivé en (x, y) (la case supposée creusée) : il tombe tant qu'il n'a pas d'appui */
   const fallFrom = (x, y) => { let n = 0; while(y + 1 <= G.h && airK(x, y + 1) && !G.ladder[y + 1][x] && !G.ladder[y][x] && !isWinch(G, x, y)){ y++; n++; } return { y, n }; };
@@ -514,7 +519,7 @@ const busy = (G, m, type, x, y) => G.miners.some(o => o !== m && o.action?.type 
 function startMine(G, m, x, y, status){
   if(!breakable(G, x, y)) return act(m, 'wait', 0.1, {}, status);     // indestructible ou scellé : on replanifie
   if(busy(G, m, 'mine', x, y)) return act(m, 'wait', 0.2, {}, status);
-  act(m, 'mine', chance(G, m.carac.oneTap || 0) ? 0 : mineT(m, G.tiles[y][x]) / dk(G, m), { x, y }, status);
+  act(m, 'mine', chance(G, m.carac.oneTap || 0) ? 0 : mineT(G, m, G.tiles[y][x]) / dk(G, m), { x, y }, status);
 }
 
 /* ---------- boucle ---------- */
@@ -591,7 +596,7 @@ function mineCell(G, m, x, y){
   G.tiles[y][x] = 0; G.stats.mined++; m.stats.mined++;
   if(t === TOWER.sides[G.side].brick){                       // dans son sac (pods : TOWER.chest)
     const name = BLOCKS[t].name;
-    m.inv[name] = (m.inv[name] || 0) + 1; m.load += BLOCKS[t].w; G.bricks--;
+    m.inv[name] = (m.inv[name] || 0) + 1; m.load += brickW(G); G.bricks--;
   }
   if(kb >= 0 && --G.blocksLeft[kb] === 0) log(G, `🚪 Étage ${kb} vidé : la porte du plafond s'ouvre`);
   for(const o of G.miners)                                  // un autre creusait le même bloc : travail perdu
@@ -680,7 +685,7 @@ function stepBoss(G){
   }
   b.cd -= DT;
   if(b.cd > 1e-9) return;
-  const rage = b.hp < b.maxhp * B.rageBelow;
+  const rage = b.hp < b.maxhp * G.lv.rageBelow;
   b.cd += rage ? B.rageEvery : B.hitEvery;
   if(!contact) return;
   G.stats.hits++;
@@ -774,7 +779,7 @@ export function endTower(G, success){
   G.over = true;
   if(!success && G.boss.hp > 0 && G.miners.length) log(G, `⌛ Temps écoulé : ${G.boss.name} tient toujours (${Math.ceil(G.boss.hp)} PV).`);
   G.summary = {
-    mode: 'tower', id: G.id, seed: G.seed, side: G.side, success: !!success, t: G.t,
+    mode: 'tower', id: G.id, seed: G.seed, side: G.side, level: G.level, success: !!success, t: G.t,
     bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, mined: G.stats.mined, knocks: G.stats.knocks, falls: G.stats.falls,
     floor: reached(G), kills: G.stats.kills, loot: success ? towerLoot(G) : {},
     shares: G.roster.map(m => ({ miner: m.name, color: m.color, account: m.account, left: m.left != null, bag: {},

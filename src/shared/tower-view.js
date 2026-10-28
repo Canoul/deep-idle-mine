@@ -33,7 +33,7 @@ const minerPos = m => {
 export function createTowerViewer(G){
   return function view(){
     return {
-      mode: 'tower', side: G.side, tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
+      mode: 'tower', side: G.side, level: G.level ?? 1, tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h,
       x0: G.x0, x1: G.x1, roof: G.roof, floor: G.floor, bx: G.bx, by: G.by,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')), ladders: ladderList(G),
       winch: G.winch ?? null,                                          // treuil du logisticien
@@ -56,7 +56,7 @@ export function applyTowerView(v, prev = null, now = performance.now()){
   const ladder = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
   for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(ladder[y]) ladder[y][x] = 1; }
   const G = {
-    mode: 'tower', side: v.side, ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
+    mode: 'tower', side: v.side, level: v.level ?? 1, ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
     x0: v.x0, x1: v.x1, roof: v.roof, floor: v.floor, bx: v.bx, by: v.by,
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))), ladder,
     seen: (v.seen || []).map(s => Uint8Array.from(s, c => +c)),

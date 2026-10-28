@@ -11,13 +11,14 @@ const setHtml = (el, h) => { if(el && el._html !== h){ el.innerHTML = h; el._htm
 /* G : copie d'affichage ; me : ID du compte du joueur ; left : secondes réelles avant la fin (ou null) */
 export function updateTowerHUD(G, me, left){
   const S = TOWER.sides[G.side] ?? TOWER.sides.angel, b = G.boss;
-  $('twTitle').textContent = `${S.icon} ${S.tower}`;
+  const LV = TOWER.levels[G.level] ?? TOWER.levels[1];   // niveau (28/10)
+  $('twTitle').textContent = `${S.icon} ${S.tower}${G.level > 1 ? ` · niveau ${G.level}` : ''}`;
   $('twTimer').textContent = fmt(G.t) + ' / ' + fmt(TOWER.duration);
   $('twTimeBar').style.width = Math.min(100, G.t / TOWER.duration * 100) + '%';
   $('twLeft').textContent = left == null ? '' : `fin dans ${fmt(left)}`;
   const pct = Math.max(0, b.hp / b.maxhp * 100);
   setHtml($('twBoss'),
-    `<div class="row"><span><b>${esc(b.name)}</b>${pct < TOWER.boss.rageBelow * 100 ? ' <span class="err">· enragé</span>' : ''}</span><b>${b.hp} / ${b.maxhp} PV</b></div>`+
+    `<div class="row"><span><b>${esc(b.name)}</b>${pct < LV.rageBelow * 100 ? ' <span class="err">· enragé</span>' : ''}</span><b>${b.hp} / ${b.maxhp} PV</b></div>`+
     `<div class="bar twBossBar ${esc(G.side)}"><i style="width:${pct}%"></i></div>`+
     `<p class="mut small">Étage ${G.reached ?? 0} / ${TOWER.floors}${G.mobsLeft ? ` · ${G.mobsLeft} ${esc(S.mob)}${G.mobsLeft > 1 ? 's' : ''} réveillé${G.mobsLeft > 1 ? 's' : ''}` : ''}. `+
     `Il frappe le premier arrivé à son contact ; chaque coup peut le projeter (hors de la tour depuis le bord)${G.stats?.knocks ? ` : ${G.stats.knocks} projection${G.stats.knocks > 1 ? 's' : ''}` : ''}.</p>`);

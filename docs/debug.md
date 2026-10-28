@@ -4046,3 +4046,15 @@ Règles (voir CLAUDE.md) :
   une tour déjà ouverte garde sa fin. Tests judgment, discord, game-service, wiki : 87/87 ✅.
 - ⚠️ `JUDGMENT.salt` retiré par erreur puis remis dans le même commit : aucun test ne vérifie sa présence.
 
+## 28/10/2026 — Tours du Jugement : niveau 2 (Geoffrey)
+- Config `TOWER.levels` { 1 neutre, 2 : hp ×2, hard ×2, weight ×1,5, mobKnock ×2, rageBelow 0,5 }. Sim (`src/sim/tower/session.js`) :
+  `G.level` / `G.lv` (`towerLevel` : inconnu → 1), PV boss et mobs (`placeMobs(…, hp)`), `mineT(G, m, t)` (exporté), `brickW`
+  (sac et `bagFull`), recul des mobs, rage. `buildTower` lit `record.level` (ancienne session sans level → 1).
+- Serveur : `body.level` ∈ TOWER_LEVELS (sinon bad_request), `rec.level`, `publicSession.level` ; `hasDone/markDone(j, side,
+  account, level)` : niveau 1 = compte seul (rétrocompatible), niveau n = « compte:n » dans `done.accounts`. `publicJudgment` :
+  `done` = tous les niveaux faits, `doneLevels`. `towerDone` (Who ?) : niveau 1 seulement.
+- UI : `towerLevelState` + `#towerLevelRow` (lobby), titre et rage (HUD, rendu) selon le niveau, texte de la carte Jugement.
+- Tests : `tests/tower-level.test.js` (nouveau), `game-service` (niveau 2 lancé, gagné, refusé ensuite), `judgment` (vue publique).
+  166/166 ✅ sur tower*, judgment, game-service, discord, wiki, lobby, sets. ⚠️ Aucune simulation (demande de Geoffrey) :
+  faisabilité du niveau 2 inconnue. Classement des temps (`recordTower`) : les deux niveaux sont mélangés.
+

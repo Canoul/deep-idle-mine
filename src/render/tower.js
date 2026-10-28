@@ -108,7 +108,7 @@ export function createTowerRenderer(cv){
       else { ctx.fillStyle = G.side === 'demon' ? '#5a1f4a' : '#f4f7ff'; ctx.fillRect(bxp, byp, bw, bh); }
       const pct = Math.max(0, b.hp / b.maxhp);
       ctx.fillStyle = '#000'; ctx.fillRect(bxp - 2, byp - 8, bw + 4, 6);
-      ctx.fillStyle = pct < TOWER.boss.rageBelow ? '#ff3b3b' : G.side === 'demon' ? '#c48bff' : '#8fd8ff';
+      ctx.fillStyle = pct < (TOWER.levels[G.level] ?? TOWER.levels[1]).rageBelow ? '#ff3b3b' : G.side === 'demon' ? '#c48bff' : '#8fd8ff';
       ctx.fillRect(bxp - 1, byp - 7, (bw + 2) * pct, 4);
     }
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
