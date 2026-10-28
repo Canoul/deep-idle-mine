@@ -4422,7 +4422,7 @@ Règles (voir CLAUDE.md) :
 - **Point fragile** : `loadRecipe` remplace le contenu de l'objet `inv` (clés supprimées puis recopiées) ; le serveur
   sérialise ce même objet ensuite, donc ça marche, mais garder `inv` comme simple objet de données.
 
-## 29/10/2026 — Geoffrey — Fenêtres bornées à l'écran, défilement interne
+## 28/10/2026 — Geoffrey — Fenêtres bornées à l'écran, défilement interne
 - `src/ui/style.css` : `#loot,#spick,#fpick,#cpick,#fview` passent de `position:absolute;inset:0` (calque de la hauteur
   de l'onglet, boîte à 10vh du haut de l'onglet, sans hauteur max : sortait de l'écran si la page avait défilé ou si la
   liste était longue) à `position:fixed` entre `--top-h` et `--dock-h`. Elles restent dans leur `<section data-view>`,

@@ -24,7 +24,7 @@ Modèle d'entrée :
 
 ---
 
-## 29/10/2026 — Geoffrey — Fenêtres : elles ne sortent plus de l'écran
+## 28/10/2026 — Geoffrey — Fenêtres : elles ne sortent plus de l'écran
 - **Pour le joueur** : les fenêtres qui s'ouvrent dans un onglet (butin d'un trésor, choix d'une pièce dans le Stuff,
   four, concasseur, fiche d'un ami) restent toujours entre la barre du haut et la barre d'action, même si on a fait
   défiler la page. Leur taille est bornée : quand le contenu est trop long, c'est l'intérieur de la fenêtre qui défile

@@ -342,7 +342,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 
 /* ---------- fenêtres (treasure, stuff, four, concasseur) : visibles seulement avec leur onglet (elles sont dedans) ----------
    Calées sur l'écran entre la barre du haut et la barre d'action, jamais plus grandes : au-delà, la fenêtre défile
-   (29/10/2026). */
+   (28/10/2026). */
 #loot,#spick,#fpick,#cpick,#fview{position:fixed;top:var(--top-h);bottom:var(--dock-h);left:0;right:0;background:rgba(8,5,4,.8);display:flex;
   align-items:flex-start;justify-content:center;padding:6vh calc(6*var(--u)) calc(4*var(--u));z-index:9}
 #loot .box,#spick .box,#fpick .box,#cpick .box,#fview .box{max-height:100%;overflow:auto;overscroll-behavior:contain}
