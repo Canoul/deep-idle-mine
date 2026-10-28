@@ -3945,3 +3945,15 @@ Règles (voir CLAUDE.md) :
   UI : « Étape x / 3 : n plans possibles ». Test : les étapes couvrent exactement le 1er jet du T4 (garde-fou si on ajoute un plan au trésor
   sans l'ajouter à une étape). 61/61 ✅.
 
+## 28/10/2026 — Bloc géant : la réclamation met l'inventaire à jour (Geoffrey)
+- **Symptôme** : après « Réclamer », l'inventaire n'affichait les objets qu'après rechargement (ou « Trier », qui renvoie
+  l'inventaire du serveur). « Il faut cliquer 2 fois » rapporté aussi.
+- **Cause** : `POST /api/giant/claim` renvoyait déjà `inventory` (`game.giantGrant`), mais `src/ui/giant.js` l'ignorait.
+- **Correctif** : `setupGiant` reçoit `onInventory(inv, reçus)` (main.js → `setInventory(inv, bag)` : objets mis en
+  évidence + pastille d'onglet) ; bouton « Réclamation… » pendant l'appel ; la carte n'est reconstruite (innerHTML) que
+  si son HTML change (un bouton remplacé entre l'appui et le relâchement perdait son clic : rare, carte rafraîchie toutes
+  les 3 s).
+- **Double clic** ⚠️ non reproduit : Playwright (Chromium headless, dev local, appui 120–150 ms, latence réseau simulée
+  200–1 400 ms) : 1 clic suffit 3/3, 0 clic perdu sur 10. Piste restante : retour visuel absent → le joueur recliquait.
+- **Tests** ✅ `tests/giant-service.test.js` (la réponse de claim contient `inventory.slots`) + giant-rules : 26/26 ;
+  vérifié dans le navigateur : Treasure et Blueprint parts présents dans l'onglet Inventaire sans recharger.

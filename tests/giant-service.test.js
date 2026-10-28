@@ -250,6 +250,7 @@ test('routes HTTP : connecté seulement, entrer, voir, sortir, réclamer', async
     assert.equal((await zoe('POST', '/api/giant/leave')).status, 200);
     r = await zoe('POST', '/api/giant/claim');
     assert.equal(r.status, 200); assert.deepEqual(r.data.given, {});
+    assert.ok(Array.isArray(r.data.inventory?.slots), 'l\'inventaire revient avec la réclamation : le navigateur l\'affiche sans actualiser');
   } finally { server.close(); }
 });
 
