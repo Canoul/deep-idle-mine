@@ -4112,3 +4112,25 @@ Règles (voir CLAUDE.md) :
   khole, session, wiki 199/199 ✅. Simulation mine 5 sessions avec dynamite + fast_learner : 0 blocage. Tour 12 parties à 3
   avec sorts : 0 blocage, ≈ 16 sorts par partie, victoires 1/12 comme sans sorts (équipe de test faible).
 
+### Événements qui rétrécissent / grandissent en boucle sur téléphone (Jules) — branche `jules/fix-canvas-mobile`, ✅ en ligne le 28/10
+- **Cause** : suite de l'entrée du 22/10 (mine), non vérifiée alors pour les autres écrans. Sur téléphone
+  (≤ 700 px), `.runGrid.mi` passe en colonne flex ; `#cvMiWrap`, `#cvTwWrap`, `#cvInWrap`, `#cvGtWrap` (base flex
+  `auto` = hauteur du canvas, min-height 0) et l'`aside` se partagent la hauteur de `#miRun` / `#twRun` / `#inRun` /
+  `#gtRun` (fixes) au prorata de leur contenu. La boîte dépendait donc du canvas, et `fitCanvas` / `fitInstant` se
+  calaient sur elle → dérive à chaque appel, et saut quand le journal (aside) grandit. Sonde navigateur (vrai CSS,
+  fit.js appelé toutes les 30 ms, journal qui grandit à mi-parcours) : 360×740, tour 87 → 24 px de large, 10 à 28
+  tailles différentes en 1,2 s selon l'écran ; ordinateur stable.
+- **Correction** : `src/ui/style.css` : `#cv,#cvMi,#cvTw,#cvGt,#cvIn` en `position:absolute` centré (la boîte ne
+  dépend plus jamais du canvas ; `#cv` repasse `static` sur téléphone, page qui défile, lignes fixes) ; téléphone :
+  boîtes des événements `flex:0 0 60%`, `aside` `flex:1 1 0` + `margin-bottom:var(--dock-h)!important` (avant, elle
+  passait sous la barre d'action). `src/ui/fit.js` : `boxHeight(cv, box)` partagé par `fitMine`, `fitInstant`,
+  `fitCanvas` : hauteur de la boîte seulement si le canvas est en `absolute`, sinon 0 (ligne fixe / calage largeur).
+- **Tests** : `tests/fit.test.js` +4 (boîte qui suit le canvas : tours/instance/géant et MI stables, échouaient
+  avant ; hauteur imposée : tient dans la boîte, stable) ; fit, instant-ui ✅. Navigateur (playwright, Pixel 7) :
+  sonde 393 / 360 / 430 px, paysage 852×393, 1024×768, 1400×900 → 1 seule taille par écran ; tailles ordinateur et
+  tablette identiques à avant (MI 1024×640, tour 242×646, instance 914×609, géant 975×609 à 1400×900). Vraie Tour de
+  l'Ange en dev à 393 px : 380×277 fixe, aside au-dessus de la barre ; vraie mine 393 px 381×259 fixe, 1400 px 792×633
+  (comme avant).
+- **Piège de vérification** : `goto` vers la même page avec un autre `#` ne recharge pas → ancienne feuille de style ;
+  faire `reload()`.
+

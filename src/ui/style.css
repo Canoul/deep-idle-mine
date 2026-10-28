@@ -255,7 +255,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #cvWrap,#cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{position:relative;min-width:0;min-height:0;display:grid;place-items:center}
 /* la mine remplit la largeur : plus haute que sa boîte, elle est centrée et rognée en haut et en bas */
 #cvWrap{overflow:hidden}
-#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+/* les canvas sont hors du flux : la boîte a la taille que lui donne la page, jamais celle du canvas (sinon le calage de
+   src/ui/fit.js se nourrit de sa propre taille et le canvas rétrécit / grandit en boucle) */
+#cv,#cvMi,#cvTw,#cvGt,#cvIn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 #followBtn{z-index:1}
 #cv,#cvMi{display:block;background:#000;box-shadow:0 0 0 var(--u) #000,0 0 0 calc(3*var(--u)) var(--line),calc(4*var(--u)) calc(4*var(--u)) 0 calc(3*var(--u)) #000}
 #cv{touch-action:none;cursor:grab}
@@ -555,6 +557,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   #cv{position:static;transform:none}
   .runL,.runR{overflow:visible}
   .runGrid.mi{display:flex}
+  /* événements (MI, tours, instance, géant) : l'écran ne défile pas ; le canvas prend une part fixe de la hauteur,
+     la colonne d'infos le reste (elle défile) */
+  #cvMiWrap,#cvTwWrap,#cvGtWrap,#cvInWrap{flex:0 0 60%}
+  .runGrid.mi>aside{flex:1 1 0;margin-bottom:var(--dock-h)!important}   /* au-dessus de la barre d'action */
   .stuffGrid{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}
   .stuffSlot:nth-child(n){grid-column:1;grid-template-columns:calc(33*var(--u)) 1fr;text-align:left}
   .stuffSlot:nth-child(n) .slot{grid-column:1}
