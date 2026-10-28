@@ -4369,7 +4369,20 @@ Règles (voir CLAUDE.md) :
   `r.fragment`). Rien côté serveur ; les trésors (showLoot) ne passent pas par là.
 - **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur. ✅ en ligne le 28/10.
 
-## 28/10/2026 — Geoffrey — Fond de page : la session en cours (🧪 branche `geoffrey/fond-session`)
+## 28/10/2026 — Lobby : carte Shrines sous « Ton groupe » (Geoffrey)
+- `index.html` : `#shrinesCard` déplacée de la 1re `.lobbyCol` (après `#prefsCard`) vers la 2e, juste après `#teamCard`.
+  Affichage inchangé (`src/ui/lobby.js` : visible si `cards.prefs` et shrines présents). Sur téléphone la colonne de
+  droite passe en premier (`order:-1`) : Shrines y suit donc l'équipe et le bouton Lancer.
+- ✅ Tests lobby + shrines 28/28 ; capture Chrome headless (page statique, vrai style.css) : Shrines sous Ton groupe.
+
+## 28/10/2026 — Geoffrey — Correctif : `.frow b{text-align:right}` cassait les lignes de Social
+- **Cause** : la fenêtre « Recettes » du four (même jour) utilisait la classe `frow`, déjà prise par les lignes de
+  Social et du lobby (`src/ui/social.js`, `src/ui/lobby.js` : `.frow .fname b` = pseudo). Sa règle `.frow b{text-align:
+  right}` alignait les pseudos à droite.
+- **Correctif** : classe du four renommée `frecRow` (`src/ui/furnace.js`, `src/ui/style.css`). ✅ plus aucune règle
+  du four sur `.frow`. **À retenir** : chercher une classe dans tout `src/ui/` avant de la créer.
+
+## 28/10/2026 — Geoffrey — Fond de page : la session en cours (✅ en ligne le 28/10)
 - **Quoi** : `src/ui/backdrop.js` (nouveau) : `createBackdrop(#bgSession)`, un canvas par mode (mine, mi, tower,
   instance) créé à la première image, avec son propre moteur de dessin (createRenderer…) ; mine et mine instantanée :
   `setRows` = lignes pour couvrir l'écran (≤ `CAMERA.maxRows`). `draw(G, visible, me, follow)` appelé à chaque image dans

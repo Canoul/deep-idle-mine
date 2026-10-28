@@ -167,7 +167,7 @@ export function setupFurnace({ onOp }){
     const rows = allRecipes().map(rec => {
       const usable = recipeUsable(rec, inv), max = usable ? recipeMax(f, inv, rec.out) : 0;
       const why = !usable ? '🔒 à apprendre' : max ? `max ${num(max)}` : WHY[recipePlan(f, inv, rec.out, 1).error] ?? '—';
-      return { rec, max, html: `<button class="fopt frow" data-out="${esc(rec.out)}"${max ? '' : ' disabled'}>${icon(rec.out)}`+
+      return { rec, max, html: `<button class="fopt frecRow" data-out="${esc(rec.out)}"${max ? '' : ' disabled'}>${icon(rec.out)}`+
         `<span>${rname(rec.out, rec.qty > 1 ? `${rec.out} ×${rec.qty}` : rec.out)}`+
         `<span class="fparts">${[...Object.entries(rec.in), [FUEL, rec.fuel]].map(([it, n]) => x(it, n)).join('<span class="mut">+</span>')}`+
         `<span class="mut">· ${mmss(rec.time * 1000 / speed)}</span></span></span>`+
@@ -190,11 +190,11 @@ export function setupFurnace({ onOp }){
     };
     const select = out => {
       pick = out;
-      box.querySelectorAll('.frow').forEach(b => b.classList.toggle('on', b.dataset.out === out));
+      box.querySelectorAll('.frecRow').forEach(b => b.classList.toggle('on', b.dataset.out === out));
       $('fpickOk').disabled = !out; info();
     };
     select(pick);
-    box.querySelectorAll('.frow').forEach(b => b.onclick = () => select(b.dataset.out));
+    box.querySelectorAll('.frecRow').forEach(b => b.onclick = () => select(b.dataset.out));
     qty.oninput = info;
     $('fpickMax').onclick = () => { if(pick){ qty.value = maxOf(); info(); } };
     $('fpickHalf').onclick = () => { if(pick){ qty.value = Math.max(1, Math.floor(maxOf() / 2)); info(); } };

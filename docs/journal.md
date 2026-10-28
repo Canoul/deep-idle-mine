@@ -30,7 +30,17 @@ Modèle d'entrée :
   les panneaux d'infos (juste la mine). Hors session, le mur revient.
 - **Option** : clic sur son pseudo en haut à gauche → « Options » → « Session en cours en fond d'écran » (activée de
   base). Le choix est gardé dans le navigateur.
-- **État** : 🧪 sur la branche `geoffrey/fond-session` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
+- **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
+  « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Correctif : pseudos alignés à droite dans Social
+- **Pour le joueur** : depuis la mise en ligne du choix de recette au four, les pseudos de la liste d'amis (et des
+  demandes, du groupe, des classements) s'affichaient collés à droite. Ils sont revenus à gauche, comme avant.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
 - **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
