@@ -714,7 +714,7 @@ export const EFFECTS = {
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
     crown:        { kind:'session', name:'Gobelins asservis',   icon:'crown',     color:'#ffd23f' },
   },
-  session: { name:'Bonus de session', icon:'sparkle', color:'#ffd23f' },
+  session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
   /* états des mobs et des boss, au-dessus de leur barre de PV */
   mob: {
     stun:    { name:'Étourdi',   icon:'daze',     color:'#ffd23f' },
@@ -723,8 +723,10 @@ export const EFFECTS = {
     rage:    { name:'Rage',      icon:'fire',     color:'#e5534b' },
     air:     { name:'En l\'air', icon:'feather',  color:'#d8f0ff' },
   },
-  /* durée (ms, temps de la page) de l'animation d'un sort instantané sur le perso */
+  /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
   castAnim: 900,
+  castColor: { dash:'#d8f0ff', illumination:'#fff3a0', inspiration:'#6fc2ff', ulti_shen:'#b06bff', fast_learner:'#c9a2ff',
+               dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f' },
 };
 
 

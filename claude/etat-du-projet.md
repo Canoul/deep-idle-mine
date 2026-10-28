@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (tours : niveau 2 revu, invocations, descente des mobs).*
+*Dernière mise à jour : 28/10/2026 (états visibles des mineurs, sur branche).*
 
 ---
 
@@ -370,6 +370,15 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   pièces portées au lancement), par ilvl du groupe (moyenne des présents, une fois par session, avec une
   prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
+
+- **États visibles** (28/10, Geoffrey ; 🧪 branche `geoffrey/buffs-debuffs`, pas en ligne ; spec
+  `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`, `EFFECTS`, `src/sim/effects.js`, `src/ui/effects.js`,
+  `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
+  le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,
+  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner) et **une seule
+  icône « Bonus de session »** (anneaux du groupe, shrines, Escalateur, Couronne). Animations sur le perso (étoiles,
+  botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
+  seulement : la simulation ne change pas (cause des étourdissements et anneaux du groupe ajoutés pour l'affichage).
 
 - **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,
   sous le gear score. **Vitesse d'attaque sans paliers** (28/10) : le coup suivant part à l'heure exacte (`nowOf`), avant

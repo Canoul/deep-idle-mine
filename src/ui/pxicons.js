@@ -51,3 +51,5 @@ export const pxi = (name, cls = '') => P[name]
   ? `<svg class="pi ${cls}" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="${P[name]}"/></svg>`
   : '';
 export const PXI_NAMES = Object.keys(P);
+/* chemin SVG brut d'une icône (canvas : new Path2D(pxPath('daze'))) */
+export const pxPath = name => P[name] ?? null;

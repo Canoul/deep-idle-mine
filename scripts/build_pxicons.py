@@ -56,7 +56,9 @@ def main():
             'export const pxi = (name, cls = \'\') => P[name]\n'
             '  ? `<svg class="pi ${cls}" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="${P[name]}"/></svg>`\n'
             '  : \'\';\n'
-            'export const PXI_NAMES = Object.keys(P);\n')
+            'export const PXI_NAMES = Object.keys(P);\n'
+            '/* chemin SVG brut d\'une icône (canvas : new Path2D(pxPath(\'daze\'))) */\n'
+            'export const pxPath = name => P[name] ?? null;\n')
     with open(OUT, 'w', encoding='utf-8', newline='\n') as f:
         f.write(body)
     print(len(icons), 'icônes ->', os.path.relpath(OUT))
