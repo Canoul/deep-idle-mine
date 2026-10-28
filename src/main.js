@@ -58,6 +58,7 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
+import { fillHelp } from './ui/help.js';
 import { setupSocial } from './ui/social.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
@@ -206,6 +207,7 @@ const setsUI = setupSets({
 
 applyRarityColors();   // couleurs des raretés (config)
 setupTooltips();   // bulles d'info (effets du stuff) : survol, ou toucher sur mobile
+fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 
 /* ---------- navigation ---------- */
 const historyTab = setupHistory({ load: () => gameApi.history() });
@@ -313,7 +315,7 @@ window.MI = instantLobby;                            // pour le débogage depuis
 /* plus de session : l'onglet Session affiche « Tu n'es pas en session », le lobby redevient utilisable */
 function showNoSession(){
   rec = null; G = null; waiting = false; clearTimeout(viewTimer); chat.stop();
-  setsUI.refresh();   // sets de nouveau disponibles
+  setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
   pollLobby();
@@ -450,9 +452,12 @@ function applyClock(c){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
 }
 
+/* classe inSession sur la page : Stuff, Skills et Sorts affichent « comptera à la prochaine session » (src/ui/style.css) */
+function sessionFlag(){ document.body.classList.toggle('inSession', !!rec); }
+
 function enterSession(session){
   rec = session; waiting = false;
-  setsUI.refresh();   // sets indisponibles pendant la session
+  setsUI.refresh(); sessionFlag();   // sets indisponibles pendant la session
   clockOffset = session.now - Date.now();
   const mi = session.mode === 'mi', tw = isTowerMode(session.mode), ins = isInstanceMode(session.mode);
   G = mi ? { mode:'mi', ready:false, miners:[] } : tw ? { mode:'tower', ready:false, miners:[] } : ins ? { mode:'instance', ready:false, miners:[] } : emptyView();   // MI et tour : remplacées en entier à chaque envoi
@@ -550,7 +555,7 @@ function showResult(st){
   const ended = st.ended;
   setInventory(st.inventory, ended.result.shares.find(p => p.account === acct.account?.id)?.bag);
   rec = null; G = null; waiting = false; chat.stop();
-  setsUI.refresh();
+  setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill

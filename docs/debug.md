@@ -4148,3 +4148,31 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/notify.test.js` (nouveau, faux DOM + `t.mock.timers`) : fermeture à popupMs, pas de retour, retour
   si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
   ⚠️ Pas vérifié dans un vrai navigateur.
+
+### Bulles d'aide « ? » (Jules) — branche `jules/aide-bulles`, 🧪 pas en ligne
+- **Quoi** : `src/ui/help.js` (nouveau) : `HELP` (textes des pages fixes, 1re ligne = titre, chiffres du Four et du
+  Concasseur lus dans la config), `qhelp(texte, label)` / `helpLine(texte, label)` (HTML d'une bulle, pour les écrans
+  construits par le code), `fillHelp()` (remplace les `<i data-qhelp="clé">` d'`index.html` ; clé inconnue = console +
+  retirée). Bulle = la bulle commune `src/ui/tooltip.js`, avec `data-tipkind="help"` → `#tip.help` (texte clair, plus
+  large) ; un clic souris sur un « ? » le garde ouvert (avant : tout clic souris fermait la bulle) ; ouverture au
+  focus clavier (`focusin` / `focusout`). Style `.qhelp`, `.helpLine`, `.nextNote` dans `src/ui/style.css`.
+- **Bandeau « prochaine session »** : `<p class="nextNote">` en haut de Stuff, Skills, Sorts, caché par CSS sauf
+  `body.inSession` ; classe posée par `sessionFlag()` (`src/main.js`) aux trois endroits où `rec` change
+  (`enterSession`, `showNoSession`, `showResult`, à côté de `setsUI.refresh()`).
+- **Textes déplacés** : `index.html` (≈ 20 paragraphes et sous-titres → `data-qhelp`), `src/ui/lobby.js` (phrase des
+  shrines : seulement la ligne « Shrines de X (chef) » reste ; clés d'instance → `qhelp`), `src/ui/upgrade.js` (3
+  paragraphes → `helpLine`), `src/ui/instant-lobby.js` et `src/ui/giant.js` (règles → `helpLine(…, 'Règles')`),
+  `src/ui/social.js` (`#boardHelp` passe dans le titre du classement). Four / Concasseur : boutons `.fhelp` renommés
+  « Recettes » / « Butin ». `#teamTitle` et `#boardTitle` sont maintenant des `<span>` dans leur `<h2>`.
+- **Tests** : `tests/help.test.js` (nouveau, 6) : chaque `data-qhelp` a son texte et inversement, format titre + lignes,
+  échappement de `qhelp`, chiffres de la config, bandeau dans les 3 onglets et plus de paragraphe permanent, anciens
+  sous-titres partis. help, nav, shrines, sets, lobby, social, instant-ui, giant-rules, research… ✅.
+  ⚠️ **Échecs déjà présents sur `main`, sans lien** (vérifiés avec `git stash`) : `tests/perf.test.js` « la boîte de
+  mesures… » (3 `perfBox` au lieu de 2 : l'instance en a ajouté une) et `tests/dev-spec.test.js` « lobby, mode dev :
+  les tours sont toujours dans « Où miner » ».
+- **Navigateur** (playwright, serveur local déjà lancé) : 23 « ? » remplis, 0 restant ; bulle de la Recherche au
+  survol ✅ ; bandeau Skills avec `body.inSession` ✅ ; bulle du Four au toucher à 390 px ✅. Pas vérifié : une vraie
+  session (bandeau posé / retiré par `sessionFlag`), les bulles construites par le code (amélioration, MI, Bloc géant,
+  instances) affichées pour de vrai.
+- **Point fragile** : un texte de `HELP` qui cite une règle (oxygène, pods, recherche, skills) doit suivre
+  `GAME_DESIGN.md` si la règle change : c'est écrit à la main.

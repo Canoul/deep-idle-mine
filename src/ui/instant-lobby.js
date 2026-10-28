@@ -2,6 +2,7 @@
    S'inscrire / Se désinscrire) et les rappels avant l'ouverture, visibles depuis tous les onglets (GAME_DESIGN §6).
    Le serveur décide de tout (heure, inscriptions) ; ici on affiche et on demande. */
 import { INSTANT_MINE as MI, GAME, NOTIFY } from '../config.js';
+import { helpLine } from './help.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -64,10 +65,10 @@ export function setupInstantLobby(h){
         : open ? `<button class="on big" id="miJoin"${busy ? ' disabled' : ''}>🌀 S'inscrire</button>`
                : `<button class="big" disabled>🔒 Inscriptions à ${clockText(st.signupAt)}</button>`}`+
         (st.dev ? `<button id="miDevOpen"${busy || !st.count ? ' disabled' : ''} title="Mode développeur : sans attendre l'heure">⚡ Ouvrir maintenant (dev)</button>` : '')+`</div>`+
-      `<p class="mut small">Toutes les ${MI.everyHours} h pile (heure de Paris). ${Math.floor(real / 60)} min ${p2(real % 60)} de pillage dans une mine
-        ${MI.w}×${MI.h} pleine de minerais, avec tous les inscrits : <b>chacun pour soi</b>, chacun son butin, pas d'XP.
-        Des tas de <b>plumes d'ange</b> s'y cachent. Tu peux fermer la page ; seul <b>Quitter</b> te fait tout perdre.
-        Inscriptions <b>${MI.signupBefore / 60} min avant</b>, même en session. Chacun s'inscrit seul (pas d'invitation) ; tu restes dans ton groupe, que tu retrouves après la mine.</p>`+
+      helpLine(`Mine instantanée\nToutes les ${MI.everyHours} h pile (heure de Paris) : ${Math.floor(real / 60)} min ${p2(real % 60)} de pillage dans une mine `+
+        `${MI.w}×${MI.h} pleine de minerais, avec tous les inscrits.\nChacun pour soi, chacun son butin, pas d'XP. Des tas de plumes d'ange s'y cachent.\n`+
+        `Tu peux fermer la page ; seul « Quitter » te fait tout perdre.\n`+
+        `Inscriptions ${MI.signupBefore / 60} min avant, même en session. Chacun s'inscrit seul (pas d'invitation) ; tu restes dans ton groupe, que tu retrouves après la mine.`, 'Règles')+
       (st.registered && h.inSession?.() ? `<p class="small"><b>⚠ Tu es en session :</b> si elle n'est pas finie à l'heure, tu rates la mine instantanée (ta session continue).</p>` : '')+
       (err ? `<p class="err">${esc(err)}</p>` : '');
     $('miJoin')?.addEventListener('click', () => act(h.api.join));

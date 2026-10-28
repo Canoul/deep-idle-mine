@@ -5,6 +5,7 @@
    - Visite : la salle en direct (src/render/giant.js), mes points, ma vitesse, mon oxygène, qui est devant le bloc.
    La carte se rafraîchit toutes les GIANT.poll ms quand elle est à l'écran ; la salle toutes les GIANT.viewPoll ms. */
 import { GIANT } from '../config.js';
+import { helpLine } from './help.js';
 import { createGiantRenderer } from '../render/giant.js';
 import { fitCanvas } from './fit.js';
 
@@ -74,8 +75,8 @@ export function setupGiant(h){
       (info.nugget ? `<p class="small">+ 1 ${esc(info.nugget.item)} par ${nf(info.nugget.per)} de tes points : <b>${nf(info.nugget.n)}</b> pour l'instant.</p>` : '')+
       rewards+
       `<h3>Classement du jour</h3>${rank}`+
-      `<p class="mut small">Une visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h. Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points. `+
-      `À minuit, chaque joueur venu au moins ${info.minVisits ?? 1} fois dans la journée reçoit les récompenses de tous les paliers atteints.</p>`;
+      helpLine(`Bloc géant\nUne visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h.\nTon mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points.\n`+
+        `À minuit, chaque joueur venu au moins ${info.minVisits ?? 1} fois dans la journée reçoit les récompenses de tous les paliers atteints.`, 'Règles');
     /* rien n'a changé : on ne reconstruit pas la carte (un bouton remplacé entre l'appui et le relâchement perd son clic) */
     if(html !== lastHtml){ $('giantBody').innerHTML = html; lastHtml = html; }
   }

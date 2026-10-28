@@ -32,6 +32,20 @@ Modèle d'entrée :
   l'onglet Social. Si quelqu'un renvoie une invitation, la pop-up réapparaît.
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Jules — Bulles d'aide « ? » à la place des textes d'explication
+- **Pour le joueur** : les paragraphes d'explication posés un peu partout (en haut ou en bas des onglets) sont
+  remplacés par un petit **« ? »** à côté de ce qu'ils expliquent : on passe la souris dessus (ou on le touche sur
+  téléphone) et une bulle s'ouvre. Les pages sont plus propres. Des explications qui manquaient sont ajoutées :
+  **Recherche** (d'où viennent les Blueprint parts, et qu'il faut « Utiliser » le blueprint dans l'Inventaire pour
+  apprendre la recette), **Skills** (un seul arbre, reset gratuit, niveau de spé, glyphes), **préférences** du lobby,
+  **Oxygène / Pods / Torches** en session, Inventaire, Craft, Amélioration, coffre commun.
+  « Pris en compte à la prochaine session » n'est plus un texte permanent en bas de Stuff, Skills et Sorts : c'est un
+  bandeau en haut de ces onglets, **seulement pendant une session** (le seul moment où c'est utile).
+  Dans le Four et le Concasseur, l'ancien bouton « ? » (qui ouvrait les tableaux) s'appelle maintenant **Recettes** /
+  **Butin**, pour qu'un « ? » veuille toujours dire « explication ».
+- **À suivre** : le guide de départ pour les nouveaux joueurs (proposition faite à l'équipe, pas encore codé).
+- **État** : 🧪 sur la branche `jules/aide-bulles` (pas en ligne)
+
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle
 - **Pour le joueur** : sur téléphone, l'écran de ces événements rapetissait sans arrêt (surtout quand le journal à
   côté se remplissait), puis regrandissait d'un coup. Même défaut que la mine le 22/10, mais sur les autres écrans.

@@ -8,6 +8,7 @@ import { isIdentified, isRune, canIdentify, canUpgrade, isFragment, runeFactor, 
 import { statLines, runeLines, ringLines } from '../meta/stuff.js';
 import { sacrificesFor, nextLevel, upgradeNeeds, ringDupes } from '../meta/upgrade.js';
 import { tipAttr } from './tooltip.js';
+import { helpLine } from './help.js';
 import { icon } from './craft.js';
 import { rcls, rname, pname } from './rarity.js';
 
@@ -58,8 +59,7 @@ export function setupUpgrade({ onOp }){
     const list = pieces().filter(p => p.uid !== (pick === 'target' ? s?.uid : t?.uid));
     const sel = c => pick === c ? ' sel' : '';
     $('upBody').innerHTML =
-      `<p class="mut small">Clique sur une case, puis sur une pièce pour l'y poser. La pièce à identifier reçoit une qualité `+
-      `(R1 à R7), en sacrifiant un autre exemplaire du même objet (peu importe sa qualité). C'est définitif.</p>`+
+      helpLine(`Identification\nClique sur une case, puis sur une pièce pour l'y poser.\nLa pièce à identifier reçoit une qualité (R1 à R7), en sacrifiant un autre exemplaire du même objet (peu importe sa qualité).\nC'est définitif.`)+
       `<div class="upPair"><div>${box(t, 'Pièce à identifier', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(s, 'Sacrifice', 'upSacrifice' + sel('sacrifice'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>🔍 Identifier</button></div>`+
@@ -93,9 +93,9 @@ export function setupUpgrade({ onOp }){
     const can = t && lv && needs.every(n => n.have >= n.need) && !busy;
     const gain = lv => lv.dupe ? `effet ${esc(ringLines(t.item, lv.level).join(' · '))}` : `stats +${lv.pct} % en tout`;
     $('upBody').innerHTML =
-      `<p class="mut small">Chaque niveau augmente toutes les stats de la pièce. Un échec ne coûte que les matériaux. `+
-      `Un <b>anneau</b> s'améliore avec un <b>doublon</b> du même anneau (celui de plus bas niveau est sacrifié, même en cas d'échec) : `+
-      `+${String(RINGS.upgrade).replace('.', ',')} à chacun de ses effets par niveau. Boussoles et torches ne s'améliorent pas.</p>`+
+      helpLine(`Amélioration\nChaque niveau augmente toutes les stats de la pièce. Un échec ne coûte que les matériaux.\n`+
+        `Un anneau s'améliore avec un doublon du même anneau (celui de plus bas niveau est sacrifié, même en cas d'échec) : `+
+        `+${String(RINGS.upgrade).replace('.', ',')} à chacun de ses effets par niveau.\nBoussoles et torches ne s'améliorent pas.`)+
       `<div class="upPair"><div>${box(t, 'Pièce à améliorer', 'upTarget')}</div>`+
       (t ? (lv ? `<div class="upInfo">Vers <b>+${lv.level}</b> : ${gain(lv)} · réussite ${pct(lv.chance)}`+
                  `<div class="craftNeeds">${needs.map(n => `<div class="craftNeed${n.have >= n.need ? ' ok' : ''}">${icon(n.item)}${rname(n.item)}${lv.dupe ? ' (doublon)' : ''}<b>${n.have}/${n.need}</b></div>`).join('')}</div></div>`
@@ -134,12 +134,12 @@ export function setupUpgrade({ onOp }){
       : `${label(l.stat)} +${String(roundStat(l.stat, lineValue(t.item, l, runeFactor(r)) * plusMult(t.plus | 0))).replace('.', ',')}${unit(l.stat)}`).join(' · ') : '';
     const list = pick === 'target' ? pieces() : runes();
     $('upBody').innerHTML =
-      `<p class="mut small">Une rune (gagnée dans les trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
-      `chaque ligne vaut un % du <b>tier</b> de la pièce (T1 pierre et chitine : 100 x, T2 fer : 250 x, T3 acier : 500 x). Une seule rune par pièce. `+
-      `<b>Retirer une rune</b> est gratuit, mais elle revient en <b>Fragment de rune</b> : mêmes lignes, % divisés par 2. `+
-      `Un fragment se repose comme une rune, et une fois posé, il ne se retire plus. `+
-      `<b>Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne</b> (une pièce R6 accepte une rune R1 à R6) : `+
-      `une pièce non identifiée doit d'abord être identifiée.</p>`+
+      helpLine(`Enchantement\nUne rune (trésors des tours de l'Ange et du Démon) ajoute ses lignes de stats à une pièce : `+
+        `chaque ligne vaut un % du tier de la pièce (T1 pierre et chitine : 100 x, T2 fer : 250 x, T3 acier : 500 x).\nUne seule rune par pièce.\n`+
+        `Retirer une rune est gratuit, mais elle revient en Fragment de rune : mêmes lignes, % divisés par 2. `+
+        `Un fragment se repose comme une rune, et une fois posé, il ne se retire plus.\n`+
+        `Une pièce n'accepte qu'une rune de qualité égale ou inférieure à la sienne (une pièce R6 accepte une rune R1 à R6) : `+
+        `une pièce non identifiée doit d'abord être identifiée.`)+
       `<div class="upPair"><div>${box(t, 'Pièce à enchanter', 'upTarget' + sel('target'))}</div><b class="upPlus">+</b>`+
       `<div>${box(r, 'Rune', 'upSacrifice' + sel('rune'))}</div>`+
       `<button class="on" id="upGo"${can ? '' : ' disabled'}>✨ Enchanter</button></div>`+

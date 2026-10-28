@@ -75,7 +75,7 @@ export function setupFurnace({ onOp }){
       const mode = modeOf(f);
       h += `<div class="furn" data-f="${i}"><div class="fhead"><h3>Four ${i + 1} <span class="mut">· ${esc(FURNACE.tiers[f.tier].name)}${FURNACE.tiers[f.tier].speed !== 1 ? ` (vitesse ×${String(FURNACE.tiers[f.tier].speed).replace('.', ',')})` : ''}</span></h3>`+
            `<div class="seg fmode">${Object.keys(MODE_LABEL).map(m => `<button data-f="${i}" data-mode="${m}"${m === mode ? ' class="on"' : ''}>${MODE_LABEL[m]}</button>`).join('')}</div>`+
-           `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">?</button>`+
+           `<button class="fhelp" data-f="${i}" data-help="${mode}" title="Recettes : ${MODE_LABEL[mode]}">Recettes</button>`+
            `<button class="fempty" data-empty="${i}" title="Vide toutes les cases de ce four dans l'inventaire"${FURN_SLOTS.some(s => f[s]) ? '' : ' disabled'}>Tout retirer</button></div>`+
            `<div class="fgrid"><div class="fin">${INPUTS[mode].map(s => slotHtml(i, s, f[s])).join('')}${slotHtml(i, 'fuel', f.fuel)}</div>`+
            `<div class="farrow"><div class="bar"><i style="width:${(progress(f, now()) * 100).toFixed(1)}%"></i></div><span>➜</span></div>`+
