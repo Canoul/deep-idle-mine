@@ -27,6 +27,7 @@ export function setupTooltips(){
     const rar = el.dataset.rarity;
     const col = /^#[0-9a-f]{6}$/i.test(el.dataset.color ?? '') ? ` style="color:${el.dataset.color}"` : '';
     tip.innerHTML = `<b${rar ? ` class="rn r-${esc(rar)}"` : ''}${col}>${esc(title)}</b>` + lines.map(l => `<div>${esc(l)}</div>`).join('');
+    tip.className = el.dataset.tipkind === 'help' ? 'help' : '';   // bulle d'aide « ? » (src/ui/help.js) : texte, pas des stats
     tip.hidden = false;
     const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
@@ -36,8 +37,15 @@ export function setupTooltips(){
   const at = e => e.target.closest?.('[data-tip]') ?? null;
 
   document.addEventListener('pointerover', e => { if(e.pointerType === 'touch') return; const el = at(e); el ? show(el) : hide(); });
-  /* toucher : ouvre la bulle de l'élément (ou la ferme) ; clic souris : la ferme (le clic ouvre souvent autre chose) */
-  document.addEventListener('pointerdown', e => { const el = e.pointerType === 'touch' ? at(e) : null; el ? show(el) : hide(); });
+  /* toucher : ouvre la bulle de l'élément (ou la ferme) ; clic souris : la ferme (le clic ouvre souvent autre chose),
+     sauf sur un « ? » d'aide, qui ne fait rien d'autre qu'expliquer */
+  document.addEventListener('pointerdown', e => {
+    const el = at(e), keep = el && (e.pointerType === 'touch' || el.dataset.tipkind === 'help');
+    keep ? show(el) : hide();
+  });
+  /* clavier (Tab) : la bulle suit l'élément qui a le focus */
+  document.addEventListener('focusin', e => { const el = at(e); if(el) show(el); });
+  document.addEventListener('focusout', e => { if(at(e) === cur) hide(); });
   document.addEventListener('scroll', hide, true);
   addEventListener('blur', hide);
 }

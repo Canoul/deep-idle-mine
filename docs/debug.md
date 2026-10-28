@@ -4148,3 +4148,59 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/notify.test.js` (nouveau, faux DOM + `t.mock.timers`) : fermeture à popupMs, pas de retour, retour
   si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
   ⚠️ Pas vérifié dans un vrai navigateur.
+
+### Bulles d'aide « ? » (Jules) — branche `jules/aide-bulles`, ✅ en ligne le 28/10
+- **Quoi** : `src/ui/help.js` (nouveau) : `HELP` (textes des pages fixes, 1re ligne = titre, chiffres du Four et du
+  Concasseur lus dans la config), `qhelp(texte, label)` / `helpLine(texte, label)` (HTML d'une bulle, pour les écrans
+  construits par le code), `fillHelp()` (remplace les `<i data-qhelp="clé">` d'`index.html` ; clé inconnue = console +
+  retirée). Bulle = la bulle commune `src/ui/tooltip.js`, avec `data-tipkind="help"` → `#tip.help` (texte clair, plus
+  large) ; un clic souris sur un « ? » le garde ouvert (avant : tout clic souris fermait la bulle) ; ouverture au
+  focus clavier (`focusin` / `focusout`). Style `.qhelp`, `.helpLine`, `.nextNote` dans `src/ui/style.css`.
+- **Bandeau « prochaine session »** : `<p class="nextNote">` en haut de Stuff, Skills, Sorts, caché par CSS sauf
+  `body.inSession` ; classe posée par `sessionFlag()` (`src/main.js`) aux trois endroits où `rec` change
+  (`enterSession`, `showNoSession`, `showResult`, à côté de `setsUI.refresh()`).
+- **Textes déplacés** : `index.html` (≈ 20 paragraphes et sous-titres → `data-qhelp`), `src/ui/lobby.js` (phrase des
+  shrines : seulement la ligne « Shrines de X (chef) » reste ; clés d'instance → `qhelp`), `src/ui/upgrade.js` (3
+  paragraphes → `helpLine`), `src/ui/instant-lobby.js` et `src/ui/giant.js` (règles → `helpLine(…, 'Règles')`),
+  `src/ui/social.js` (`#boardHelp` passe dans le titre du classement). Four / Concasseur : boutons `.fhelp` renommés
+  « Recettes » / « Butin ». `#teamTitle` et `#boardTitle` sont maintenant des `<span>` dans leur `<h2>`.
+- **Tests** : `tests/help.test.js` (nouveau, 6) : chaque `data-qhelp` a son texte et inversement, format titre + lignes,
+  échappement de `qhelp`, chiffres de la config, bandeau dans les 3 onglets et plus de paragraphe permanent, anciens
+  sous-titres partis. help, nav, shrines, sets, lobby, social, instant-ui, giant-rules, research… ✅.
+  ⚠️ **Échecs déjà présents sur `main`, sans lien** (vérifiés avec `git stash`) : `tests/perf.test.js` « la boîte de
+  mesures… » (3 `perfBox` au lieu de 2 : l'instance en a ajouté une) et `tests/dev-spec.test.js` « lobby, mode dev :
+  les tours sont toujours dans « Où miner » ».
+- **Navigateur** (playwright, serveur local déjà lancé) : 23 « ? » remplis, 0 restant ; bulle de la Recherche au
+  survol ✅ ; bandeau Skills avec `body.inSession` ✅ ; bulle du Four au toucher à 390 px ✅. Pas vérifié : une vraie
+  session (bandeau posé / retiré par `sessionFlag`), les bulles construites par le code (amélioration, MI, Bloc géant,
+  instances) affichées pour de vrai.
+- **Point fragile** : un texte de `HELP` qui cite une règle (oxygène, pods, recherche, skills) doit suivre
+  `GAME_DESIGN.md` si la règle change : c'est écrit à la main.
+- **Correctif (même jour)** : dans Stuff, le `.nextNote` devenait une case de la grille `.furnWrap` et décalait tout →
+  `grid-column:1/-1` comme `.invHead`. Vérifié en vraie session (invité local) : Stuff, Skills, Sorts ✅.
+
+### Guide « Premiers pas » (Jules) — branche `jules/aide-bulles`, ✅ en ligne le 28/10
+- **Quoi** : `src/ui/guide.js` (nouveau). `GUIDE_STEPS` (7 étapes : launch, loot, smelt, craft, equip, skill, research ;
+  chacune un onglet, un titre, une aide, une condition `done(f)`), `guideView(f)` (étapes faites, étape en cours = la
+  1re pas faite ; pas un couloir : skills / recherche se cochent même si le four n'est pas fait ; « loot » faite aussi
+  dès qu'une étape suivante l'est), `nextSaved(saved, f, view)` (1re visite : `{ hidden: tout fait, open: !tout fait,
+  seenInv:false }` ; `seenInv` quand l'onglet Inventaire est ouvert après avoir joué), `setupGuide(el, { facts, go,
+  highlight })` (affichage, clics « replier », « Y aller », « Masquer »). Mémoire : `localStorage['deepIdleMine.guide']`
+  = `{ <id de compte>: { hidden, open, seenInv } }`, lectures / écritures dans des try/catch.
+- **Faits lus** (`src/main.js`, aucun appel serveur en plus) : `ready` = `progress` lu et pas hors ligne, `played` =
+  XP > 0 ou inventaire non vide, `inv` (`ui.inv`, `unlocked`), `worn` (`stuff.worn()`), `skillsSpent` (`ui.skills`,
+  posé dans `onChange` des skills), `inSession` (`rec`), `tab`. Relu toutes les `GUIDE.refreshMs` (1,5 s) et à chaque
+  changement d'onglet ; ne redessine que si l'état change. Objets visés : `GUIDE` en config (`Pioche en pierre`,
+  `Lingot de fer`, `Fer`) ; le nombre de lingots vient de `RECIPES`.
+- **Barre** : `nav.highlight(tab)` (`src/ui/nav.js`) → classe `guideTab` (contour orange qui clignote, `steps(2)` ;
+  coupé par `prefers-reduced-motion`). Page : `<aside id="guide" class="guide">` après `#notifs` ; CSS `.guide…`
+  (fixe, à droite au-dessus de la barre ; téléphone : `right:8px`).
+- **Tests** : `tests/guide.test.js` (nouveau, 9) : ordre et onglets des étapes, objets visés cohérents avec recettes et
+  four, nouveau joueur, en session, four → craft → équiper, liste pas couloir, « loot » implicite, tout fait, mémoire
+  (nouveau / ancien joueur masqué / inventaire vu), place dans la page. guide, help, nav ✅.
+- **Navigateur** (playwright, serveur local de Jules, compte invité créé dans `data/`) : nouveau compte → guide ouvert
+  0/7, accueil, Lobby en avant ✅ ; lancement → 1/7 « Regarde ton butin », Inventaire en avant ✅ ; replié en une ligne
+  ✅ ; 390 px : lisible, au-dessus de la barre ✅. **Pas vérifié** : fin d'une vraie session (étape butin cochée à
+  l'ouverture de l'inventaire), four / craft / équiper / skill / recherche en vrai (seulement par les tests).
+- **Remarque sans lien** : à 1400 px, dans certains onglets (Stuff, Sorts), la barre du haut ne prend pas toute la
+  largeur (800 à 1150 px) ; vu aussi sans les changements du guide. Pas cherché plus loin.

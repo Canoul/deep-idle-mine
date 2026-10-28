@@ -10,6 +10,7 @@ import { joinLink } from '../shared/party.js';
 import { presetName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
+import { qhelp } from './help.js';
 import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
@@ -99,7 +100,7 @@ export function towerLevelState({ tower, locked, party, account, doneLevels = []
    ce qui est déjà donné, et pour chaque objet un champ + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
 export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy = false } = {}){
   const e = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-  const head = `<p class="mut small">${leaderName ? `Shrines de <b>${e(leaderName)}</b> (chef du groupe) : chacun peut donner.` : 'Tes shrines : actifs dans les mines que tu lances, seul ou en chef de groupe. Ton groupe peut aider à payer.'}</p>`;
+  const head = leaderName ? `<p class="mut small">Shrines de <b>${e(leaderName)}</b> (chef du groupe) : chacun peut donner.</p>` : '';   // le reste : « ? » du titre
   return head + list.map(sh => {
     const top = `<div class="shrineHead"><img src="textures/${e(sh.tex)}.png" alt="" width="32" height="32"><span><b>${e(sh.name)}</b><br><small>${e(sh.desc)}</small></span></div>`;
     if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> session${sh.left > 1 ? 's' : ''} de mine.</p></div>`;
@@ -418,8 +419,8 @@ export function setupLobby(h){
     $('instBody').innerHTML = `<div class="instList">${INSTANCE.list.map(i =>
       `<button data-inst="${i.id}" class="${i.id === cur.id ? 'on' : ''}"${i.ready ? '' : ' disabled title="Bientôt disponible"'}>`+
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
-      (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span></p>`+
-        `<p class="mut small">Chaque joueur du groupe doit avoir sa clé ; elle est consommée au lancement, et <b>rendue si le groupe perd</b>. On la trouve dans les Treasure T3 (20 %).</p>`+
+      (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span> `+
+        qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle est consommée au lancement, et rendue si le groupe perd.\nOn la trouve dans les Treasure T3 (20 %).`)+`</p>`+
         (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là.</p>` : '') : '');
   }
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };

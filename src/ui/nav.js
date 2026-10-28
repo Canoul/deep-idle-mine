@@ -83,5 +83,7 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
   show(pickTab(location.hash, saved));
   /* pastille « nouveau » sur un onglet (ex. objets arrivés dans l'inventaire) */
   const badge = (id, on) => { const d = list.querySelector(`[data-tab="${id}"] .dot`); if(d) d.hidden = !on; };
-  return { current: () => cur, show, badge };
+  /* onglet mis en avant par le guide « Premiers pas » (src/ui/guide.js) ; null : aucun */
+  const highlight = id => list.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('guideTab', b.dataset.tab === id));
+  return { current: () => cur, show, badge, highlight };
 }

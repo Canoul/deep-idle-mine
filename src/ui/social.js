@@ -12,6 +12,7 @@ import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT } from '../config.js'
 import { towerTime } from '../meta/leaderboard.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
+import { qhelp } from './help.js';
 import { renderSlots, statsHTML } from './stuff.js';
 import { renderLevel } from './level.js';
 
@@ -105,7 +106,7 @@ export function setupSocial(h){
     $('boardTrees').hidden = board !== 'spec';
     $('boardTrees').innerHTML = SKILLS.trees.map(x => `<button data-tree="${x.id}"${x.id === tree ? ' class="on"' : ''}>${x.icon} ${esc(x.label)}</button>`).join('');
     $('boardTitle').textContent = board === 'spec' ? `${info.title} · ${t.icon} ${t.label}` : info.title;
-    $('boardHelp').textContent = `${info.help} Les ${LEADERBOARD.size} premiers, et ta place si tu n'y es pas.`;
+    $('boardHelp').innerHTML = qhelp(`${info.title}\n${info.help}\nLes ${LEADERBOARD.size} premiers, et ta place si tu n'y es pas.`);
     const b = boards[boardId()];
     if(!b) return;
     $('boardList').innerHTML = !b.rows.length ? '<p class="mut small">Personne n\'est encore classé ici.</p>'
