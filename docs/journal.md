@@ -80,7 +80,7 @@ Modèle d'entrée :
 - **Pour le joueur** : le bouton **Équiper** d'un set marche maintenant **pendant une session**. La session en cours
   continue avec l'équipement de son lancement ; le set compte **dès la prochaine session**. Enregistrer et Nouveau set
   restent après la session ; renommer et supprimer, toujours possibles.
-- **État** : 🧪 sur la branche `geoffrey/set-en-session` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Mine instantanée : nouvelle composition avec les minerais du tier 4
 - **Pour le joueur** : la mine instantanée contient maintenant **40 % de charbon, 27 % de fer, 20 % d'or**, 5 % de
