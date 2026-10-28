@@ -58,6 +58,7 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
+import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
@@ -636,6 +637,20 @@ guide = setupGuide($('guide'), {
 guide.refresh(); setInterval(guide.refresh, GUIDE.refreshMs);
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
+/* états du mineur du joueur en haut à droite de la mine (28/10, src/ui/effects.js) : un par mode de jeu */
+const fxBars = { mine: [createEffectsBar($('fxBar')), $('fxBar'), $('cv'), $('cvWrap'), $('followBtn')],
+                 mi: [createEffectsBar($('fxBarMi')), $('fxBarMi'), $('cvMi'), $('cvMiWrap')],
+                 tower: [createEffectsBar($('fxBarTw')), $('fxBarTw'), $('cvTw'), $('cvTwWrap')],
+                 instance: [createEffectsBar($('fxBarIn')), $('fxBarIn'), $('cvIn'), $('cvInWrap')] };
+function updateEffects(G){
+  const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
+  for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
+    if(k !== key){ if(!bar.hidden) update(null); continue; }
+    update(G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0] ?? null);   // son propre mineur (spec du 28/10)
+    if(!bar.hidden) placeEffectsBar(bar, cv, wrap, below);
+  }
+}
+
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
 let last = performance.now(), lastHud = 0;
 function frame(now){
@@ -656,6 +671,7 @@ function frame(now){
       const late = !info.dev && rec && G.ticks + 50 < tickAt(serverNow() - rec.startedAt, rec.speed);
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
+    updateEffects(ui.tab==='session' ? shown : null);
     updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){

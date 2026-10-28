@@ -113,3 +113,36 @@ test('partie réelle : les anneaux du lancement et les états partent au navigat
   assert.deepEqual(v.bonus.map(b => b.id), ['ring', 'shrine']);
   assert.ok(Array.isArray(view().mobs));
 });
+
+/* ---------- textes affichés (src/ui/effects.js) ---------- */
+import { effectTip, bonusTip, badgeOf } from '../src/ui/effects.js';
+
+test('bulles : un titre et des chiffres pour chaque état du registre', () => {
+  for(const id of Object.keys(EFFECTS.list).filter(id => EFFECTS.list[id].kind !== 'session')){
+    const tip = effectTip({ id, left: 3.2, stacks: 2, value: 0.1, src: 'gobelin' });
+    const [title, ...lines] = tip.split('\n');
+    assert.equal(title, EFFECTS.list[id].name, id);
+    assert.ok(lines.length >= 2, id);                       // l'effet + le temps restant
+    assert.ok(!/undefined|NaN/.test(tip), `${id} : ${tip}`);
+  }
+  assert.match(effectTip({ id: 'stun', src: 'quake', left: 2 }), /golem/);
+  assert.match(effectTip({ id: 'flesh', stacks: 4, left: 5 }), /−40 %/);
+});
+
+test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur, couronne', () => {
+  const tip = bonusTip([{ id: 'ring', src: 'Anneau du lion', value: 2 }, { id: 'shrine', src: 'abundance' },
+                        { id: 'escalator', value: 0.25 }, { id: 'crown', value: 10, stacks: 1 }]);
+  const lines = tip.split('\n');
+  assert.equal(lines[0], EFFECTS.session.name);
+  assert.match(lines[1], /Anneau du lion \+2 : .*4 %/);
+  assert.match(lines[2], /Shrine d'abondance/);
+  assert.match(lines[3], /25 %/);
+  assert.match(lines[4], /1 au travail/);
+});
+
+test('sous l\'icône : les stacks, sinon les secondes restantes arrondies au-dessus', () => {
+  assert.equal(badgeOf({ left: 2.1 }), '3');
+  assert.equal(badgeOf({ stacks: 4, left: 6 }), '×4');
+  assert.equal(badgeOf({ stacks: 4 }), '×4');
+  assert.equal(badgeOf({}), '');
+});

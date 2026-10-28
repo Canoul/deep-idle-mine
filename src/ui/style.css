@@ -720,6 +720,19 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .spB.cd .spIcon{filter:grayscale(1) brightness(.5)}
 .spB .spLeft{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-l);color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
 
+/* états du mineur en haut à droite de la mine (src/ui/effects.js) : rouge = contrôle / debuff, vert = buff, or = bonus */
+.fxBar{position:absolute;z-index:1;top:calc(4*var(--u));right:calc(4*var(--u));display:flex;flex-wrap:wrap;justify-content:flex-end;
+  gap:calc(2*var(--u));max-width:calc(150*var(--u));pointer-events:auto}
+.fxB{position:relative;width:calc(18*var(--u));height:calc(18*var(--u));display:grid;place-items:center;background:rgba(10,6,4,.78);
+  box-shadow:0 0 0 var(--u) #000,inset 0 0 0 var(--u) var(--fx,#6fc24a);cursor:help}
+.fxB.control,.fxB.debuff{--fx:#e5534b}
+.fxB.control{animation:fxPulse 1s steps(2) infinite}
+.fxB.session{--fx:#ffd23f}
+.fxB .fxI .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
+.fxB .fxL{position:absolute;left:0;right:0;bottom:calc(-1*var(--u));text-align:center;font-size:var(--fs-s);line-height:1;color:#fff;
+  text-shadow:0 0 2px #000,0 0 2px #000,0 0 2px #000;pointer-events:none}
+@keyframes fxPulse{50%{box-shadow:0 0 0 var(--u) #000,inset 0 0 0 calc(2*var(--u)) var(--fx)}}
+
 /* ---------- sets (src/ui/sets.js) : à gauche dans Stuff, Skills et Sorts ---------- */
 .setWrap{max-width:calc(520*var(--u))}
 .skWrap{max-width:calc(640*var(--u))}
