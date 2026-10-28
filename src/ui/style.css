@@ -365,6 +365,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 /* ---------- onglet Inventaire ---------- */
 .invGrid{display:grid;grid-template-columns:repeat(var(--cols,8),minmax(0,1fr));gap:var(--u);padding:calc(2*var(--u))}
 .invInfo{min-height:calc(12*var(--u));margin-top:calc(6*var(--u))}
+/* fiche d'objet : description, stats (une par ligne), boutons (28/10/2026) */
+.iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
+.iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
 .invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}

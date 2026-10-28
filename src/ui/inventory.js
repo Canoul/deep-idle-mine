@@ -6,7 +6,7 @@ import { itemDef, isStackable, usedSlots, gridSize, countOf } from '../meta/inve
 import { canOpen } from '../meta/loot.js';
 import { unlockOf, unlockError } from '../meta/furnace.js';
 import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund } from '../meta/craft.js';
-import { statsText, equipSlotFor } from '../meta/stuff.js';
+import { statLines, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname } from './rarity.js';
@@ -47,8 +47,8 @@ function slotHtml(s, i, fresh){
 function blueprintHtml(inv, s){
   if(itemDef(s.item)?.cat !== 'blueprint' || s.item === 'Blueprint parts') return '';
   const r = recipeOfBlueprint(s.item);
-  if(!r) return ' <span class="mut">· ne débloque rien pour l\'instant</span>';
-  if(isUnlocked(r, inv)) return ` <span class="mut">· recette « ${esc(r)} » déjà débloquée</span>`;
+  if(!r) return ' <span class="mut small">ne débloque rien pour l\'instant</span>';
+  if(isUnlocked(r, inv)) return ` <span class="mut small">recette « ${esc(r)} » déjà débloquée</span>`;
   return ` <button class="on invLearn" data-item="${esc(s.item)}" title="Le blueprint est consommé, la recette reste débloquée pour toujours">Utiliser</button>`;
 }
 
@@ -68,7 +68,7 @@ function unlockHtml(s, furn){
   const d = unlockOf(s.item);
   if(!d || !furn) return '';
   const e = unlockError(furn, s.item);
-  if(e) return ` <span class="mut">· ${esc(UNLOCK_WHY[e] ?? 'inutilisable')}</span>`;
+  if(e) return ` <span class="mut small">${esc(UNLOCK_WHY[e] ?? 'inutilisable')}</span>`;
   return ` <button class="on invUnlock" data-item="${esc(s.item)}" title="L'objet est consommé : le four ${d.slot + 1} s'ouvre pour toujours">Utiliser</button>`+
          ` <span class="mut small">ouvre le four ${d.slot + 1}</span>`;
 }
@@ -86,8 +86,7 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   bits.push(rlabel(s.item));
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(piece && !piece.q) bits.push('<span class="mut">non identifiée</span>');
-  if(statsText(piece ?? s.item)) bits.push(`<span class="stuffStats">${esc(statsText(piece ?? s.item))}</span>`);
-  if(glyphInfo(s.item)) bits.push(`<span class="stuffStats">${esc(glyphInfo(s.item))}</span>`);   // glyphe : skill visé, effet
+  const stats = statLines(piece ?? s.item);
   const n = inv ? countOf(inv, s.item) : 0;
   const open = pinned && canOpen(s.item) ? ` <button class="on invOpen" data-item="${esc(s.item)}">Ouvrir</button>`+
     (n > 1 ? ` <button class="on invOpen" data-item="${esc(s.item)}" data-all="1" title="Ouvre tous tes ${esc(s.item)} d'un coup">Ouvrir tout (${fullQty(Math.min(n, TREASURE.openAllMax))})</button>` : '') : '';
@@ -95,7 +94,12 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   const equip = pinned && worn ? equipHtml(s, worn) : '';
   const unlock = pinned ? unlockHtml(s, furn) : '';
   const recycle = pinned ? recycleHtml(s) : '';
-  return bits.join(' <span class="mut">·</span> ') + open + learn + equip + unlock + recycle;
+  const acts = open + learn + equip + unlock + recycle;
+  /* trois blocs (28/10/2026, Geoffrey) : description, puis les stats (une par ligne), puis les boutons */
+  return `<div class="iiDesc">${bits.join(' <span class="mut">·</span> ')}</div>`+
+    (stats.length ? `<ul class="iiStats stuffStats">${stats.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '')+
+    (glyphInfo(s.item) ? `<p class="iiStats stuffStats">${esc(glyphInfo(s.item))}</p>` : '')+   // glyphe : skill visé, effet
+    (acts ? `<div class="iiActs">${acts}</div>` : '');
 }
 
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;

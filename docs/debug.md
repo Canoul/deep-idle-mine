@@ -4307,3 +4307,8 @@ Règles (voir CLAUDE.md) :
 ## 28/10/2026 — Geoffrey — Fiche d'objet de l'inventaire sans le poids
 - `src/ui/inventory.js` `infoHtml` : ligne `poids ${d.w}` retirée (affichage seulement ; `ITEMS[…].w` et les pods en
   session inchangés). Tests ✅ inventory + stuff 23/23. Pas vérifié dans le navigateur (une ligne de texte en moins).
+- Suite (même jour) : `infoHtml` rend trois blocs : `.iiDesc` (description), `.iiStats` (`statLines` de src/meta/stuff.js,
+  un `<li>` par stat ; texte du glyphe en `<p class="iiStats">`), `.iiActs` (boutons en flex-wrap, avec leurs petites
+  notes : case visée, « recette déjà débloquée », « four déjà débloqué », sans le « · » de tête). CSS dans
+  `src/ui/style.css` sous `.invInfo`. Tests ✅ inventory + stuff 23/23 ; ✅ capture Chrome headless (Nuage magique :
+  description, « Vitesse (marche) +1,04 », puis Équiper / Recycler).

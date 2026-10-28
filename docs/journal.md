@@ -24,9 +24,11 @@ Modèle d'entrée :
 
 ---
 
-## 28/10/2026 — Geoffrey — Inventaire : le poids n'apparaît plus dans la fiche d'un objet
-- **Pour le joueur** : la fiche d'un objet (onglet Inventaire) n'affiche plus « poids N » : info inutile hors session.
-  Le poids compte toujours pour les pods du mineur en session.
+## 28/10/2026 — Geoffrey — Inventaire : fiche d'un objet rangée, sans le poids
+- **Pour le joueur** : la fiche d'un objet (onglet Inventaire) est rangée en trois parties : d'abord la description
+  (nom, quantité, type, rareté…), puis les stats, une par ligne, et enfin les boutons (Équiper, Recycler, Ouvrir,
+  Utiliser). Elle n'affiche plus « poids N » : info inutile hors session (le poids compte toujours pour les pods du
+  mineur en session).
 - **État** : 🧪 sur la branche `geoffrey/inventaire-sans-poids` (pas en ligne)
 
 ## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
