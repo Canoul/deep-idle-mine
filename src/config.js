@@ -1655,6 +1655,14 @@ export const TOWER = {
   boss: { hp: 3500, w: 3, h: 5, hitEvery: 1, rageBelow: 0.33, rageEvery: 0.5, knockChance: 0.25, knockBarb: 0.10,
           rageKnock: 0.35, rageKnockBarb: 0.20, knock: 4, push: 0.5, knockRes: 25, speedMul: 2, arcHigh: 0.5, arcMs: 350,
           jumpEvery: 0.25, jumpHigh: 5, jumpFly: 0.6, jumpHover: 3, jumpFall: 0.3, jumpStun: 3, jumpKnock: 3 },
+  /* niveaux (28/10/2026, Geoffrey) : choisis au lancement dans le lobby ; chaque niveau se gagne une fois par joueur et par
+     ouverture (un trésor chacun, le même qu'au niveau 1). Multiplicateurs : hp = PV des mobs et du boss, hard = dureté des
+     stonebricks, weight = poids des stonebricks dans le sac, mobKnock = recul des coups des Séraphins / Diablotins ;
+     rageBelow : le boss enrage sous cette part de ses PV (niveau 1 : boss.rageBelow). Valeurs provisoires. */
+  levels: {
+    1: { hp: 1, hard: 1, weight: 1,   mobKnock: 1, rageBelow: 0.33 },
+    2: { hp: 2, hard: 2, weight: 1.5, mobKnock: 2, rageBelow: 0.5 },
+  },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },

@@ -121,8 +121,9 @@ test('vue publique : compte, cap, ouvert, temps restant, déjà fait pour ce jou
   const j = createJudgment();
   addResidues(j, { [A]: CAP, [D]: 7 }, 0); markDone(j, 'angel', 'K1');
   const v = publicJudgment(j, 1000, 'K1');
-  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: true, paused: false });
-  assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false, paused: true });
+  /* niveaux (28/10) : done = tous les niveaux faits ; ici seulement le niveau 1 */
+  assert.deepEqual(v.sides.angel, { count: 0, cap: CAP, open: true, openUntil: OPEN, done: false, doneLevels: [1], paused: false });
+  assert.deepEqual(v.sides.demon, { count: 7, cap: CAP, open: false, openUntil: 0, done: false, doneLevels: [], paused: true });
   assert.equal(v.residues, false, 'une tour ouverte : pas de résidus dans les mines');
   assert.equal(v.now, 1000);
 });

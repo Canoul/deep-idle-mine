@@ -47,6 +47,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     résistance au recul, portée, recul, rayon des torches, simulés le 26/10 ; ancien : `UPGRADE.prices`, le tableau des runes) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
+  - **Niveaux de tour** (28/10, Geoffrey ; `TOWER.levels`) : niveau 1 ou 2 choisi au lancement dans le Lobby, chacun
+    gagné une fois par ouverture (un trésor chacun) ; niveau 2 : PV mobs et boss × 2, dureté × 2, poids des briques × 1,5,
+    rage sous 50 %, recul des mobs × 2. Pas encore simulé.
   - Jauge pleine → la **tour** de ce camp ouvre **4 h** (28/10, Geoffrey ; ancien 6 h) (jauge à 0, elle continue de se remplir). Lancée depuis le
     Lobby (« Où miner », visible seulement si ouverte ; en mode dev : toujours, sans limite), 1 à 3 joueurs, **10 min de jeu**.
     **Pods dans les tours (26/10, Geoffrey, en ligne le 26/10)** : chaque stonebrick minée (poids
@@ -71,8 +74,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     opposé** aux autres ; on passe derrière le boss (choix de Claude à valider). Mesures à 3500 PV (20 tours, sans skills) : base
     **0 %**, 2 mineurs + 1 barbare à 1,1 / 10 **0 %** (reste ≈ 300 PV), 2 barbares 15 dégâts + mineur 1,3 **60 %**
     (victoire vers 9 min 53 sur 10). `npm run simulate:tower`. (Ancien : 15 × 30 en labyrinthe, boss 1000 PV immobile, 10 / 5 %.)
-  - Victoire → chaque présent reçoit un **trésor R1 à R7** (chances de l'identification) ; une victoire par joueur et
-    par ouverture ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
+  - Victoire → chaque présent reçoit un **trésor R1 à R7** (chances de l'identification) ; une victoire par joueur,
+    par niveau et par ouverture (28/10 ; ancien : par ouverture) ; un échec ne coûte rien. **Trésor** (22/10, remplace l'ancien « coffre R1-R7 » empilable, gardé
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
     couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.

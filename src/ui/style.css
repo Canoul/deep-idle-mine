@@ -714,3 +714,6 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .instList button small{opacity:.75}
 .instKeys{display:flex;align-items:center;gap:calc(3*var(--u))}
 .instKeys .ok{color:var(--ok)}
+/* niveau de tour dans le lobby (28/10/2026) */
+.lobbyActions .towerLevels{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap}
+.lobbyActions .towerLevels button.on{outline:2px solid var(--gold, #e0b050)}

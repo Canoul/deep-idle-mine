@@ -3,14 +3,14 @@
    - construction et rejeu de la partie depuis l'enregistrement du serveur (seed, joueurs, stuff, skills, départs). */
 import { MINE_MODES, TOWER, BLOCKS } from '../config.js';
 import { minerSpecs } from './game.js';
-import { newTower, leaveTower, TOWER_TICKS } from '../sim/tower/session.js';
+import { newTower, leaveTower, TOWER_TICKS, TOWER_LEVELS, towerLevel } from '../sim/tower/session.js';
 
 /* camp d'un mode de lancement ('tower_angel' → 'angel'), null si ce n'est pas une tour */
 export const towerSide = mode => MINE_MODES.find(m => m.id === mode)?.tower ?? null;
 export const isTowerMode = mode => !!towerSide(mode);
 /* durée réelle d'une tour (ms) à la vitesse speed */
 export const towerDurationMs = speed => TOWER.duration / speed * 1000;
-export { TOWER_TICKS };
+export { TOWER_TICKS, TOWER_LEVELS, towerLevel };
 
 /* mineurs : un par joueur, stuff (qualité, niveau, rune) et skills figés au lancement, comme une session normale ; les
    mineurs de test (mode dev seulement : le serveur met bots à 0 sinon) viennent ensuite, sans compte (25/10) */
@@ -19,7 +19,7 @@ export function towerSpecs(record){
   return minerSpecs(record).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
 }
 
-export const buildTower = record => newTower(record.seed, { side: towerSide(record.mode), miners: towerSpecs(record), id: record.id });
+export const buildTower = record => newTower(record.seed, { side: towerSide(record.mode), level: towerLevel(record.level), miners: towerSpecs(record), id: record.id });
 
 /* départs dont le moment est venu ; renvoie le nombre appliqué */
 export function applyDueTowerLeaves(G, record){

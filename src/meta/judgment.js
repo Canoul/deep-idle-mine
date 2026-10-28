@@ -10,7 +10,7 @@
    Une tour à la fois (23/10/2026, Geoffrey) : pendant qu'une tour est ouverte, la jauge de l'autre camp est en pause
    (ses résidus versés ne comptent pas, elle n'ouvre pas même pleine) et les mines lancées pendant ce temps n'ont pas
    de résidus (le serveur l'enregistre dans la session : residues:false). */
-import { JUDGMENT } from '../config.js';
+import { JUDGMENT, TOWER } from '../config.js';
 
 export const SIDES = Object.keys(JUDGMENT.sides);
 const OPEN_MS = JUDGMENT.openHours * 3600e3;
@@ -81,12 +81,18 @@ export function setCount(j, side, count, now){
   return true;
 }
 
-export const hasDone =(j, side, account) => j.done[side].opening === j[side].opening && j.done[side].accounts.includes(account);
-/* note qu'un joueur a gagné le coffre de l'ouverture en cours ; false s'il l'avait déjà */
-export function markDone(j, side, account){
-  if(hasDone(j, side, account)) return false;
+/* niveaux de tour (28/10/2026) : chaque niveau se gagne une fois par ouverture. Dans done.accounts, le niveau 1 est noté
+   par le compte seul (comme avant les niveaux), le niveau n > 1 par « compte:n ». */
+const doneKey = (account, level = 1) => level > 1 ? `${account}:${level}` : account;
+export const LEVELS = Object.keys(TOWER.levels).map(Number);
+export const hasDone = (j, side, account, level = 1) => j.done[side].opening === j[side].opening && j.done[side].accounts.includes(doneKey(account, level));
+/* niveaux déjà gagnés par ce joueur pendant l'ouverture en cours */
+export const doneLevels = (j, side, account) => LEVELS.filter(l => hasDone(j, side, account, l));
+/* note qu'un joueur a gagné le coffre de ce niveau pendant l'ouverture en cours ; false s'il l'avait déjà */
+export function markDone(j, side, account, level = 1){
+  if(hasDone(j, side, account, level)) return false;
   if(j.done[side].opening !== j[side].opening) j.done[side] = { opening: j[side].opening, accounts: [] };
-  j.done[side].accounts.push(account);
+  j.done[side].accounts.push(doneKey(account, level));
   return true;
 }
 
@@ -94,6 +100,7 @@ export function markDone(j, side, account){
 export function publicJudgment(j, now, account){
   const sides = {};
   for(const s of SIDES) sides[s] = { count: j[s].count, cap: JUDGMENT.cap, open: isOpen(j, s, now), openUntil: j[s].openUntil,
-                                     done: !!account && hasDone(j, s, account), paused: paused(j, s, now) };
+                                     done: !!account && doneLevels(j, s, account).length === LEVELS.length,   // tous les niveaux faits
+                                     doneLevels: account ? doneLevels(j, s, account) : [], paused: paused(j, s, now) };
   return { sides, now, residues: !anyOpen(j, now) };
 }
