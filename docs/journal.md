@@ -24,6 +24,19 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Appli mobile : le plan
+- **Pour le joueur** : rien pour l'instant, c'est le plan. Le jeu aura une **appli iOS et Android** : le même jeu que le
+  site (mêmes comptes, toujours à jour), avec une **interface pensée pour le téléphone** (5 familles d'onglets en bas :
+  Accueil, Session, Sac, Perso, Social ; un Accueil avec le bouton Lancer et les rendez-vous ouverts ; la mine en haut de
+  l'écran de session) qui servira aussi au site sur téléphone, et des **notifications** (fin de session, mine
+  instantanée, Bloc géant, four ; plus tard tours, invitations, amis), réglables une par une.
+- **Décisions** : Capacitor (on emballe le jeu actuel, pas de réécriture) ; Android d'abord ; iOS et stores quand les
+  comptes seront pris (Geoffrey : plus tard, avec un business plan) ; sur PC, rien ne change. Le détail :
+  `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`.
+- **À suivre** : vérifier sur un vrai iPhone si la mine de la session déborde de l'écran (vu en émulation) ; étape 1 :
+  la coque Android, installable sur les téléphones des amis.
+- **État** : 🧪 sur la branche `jules/appli-mobile` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
   de seconde suivant : 250 % frappait exactement comme 200 %, 120 % comme 100 %… Maintenant 250 % frappe 25 % plus vite

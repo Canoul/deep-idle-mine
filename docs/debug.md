@@ -4246,3 +4246,17 @@ Règles (voir CLAUDE.md) :
   (1 + double attaque, ≤ 100 %) × vitesse ÷ 100 ÷ `CFG.attackInterval` ; ligne « DPS (cible immobile) » sous le gear score
   (`statsHTML`, src/ui/stuff.js), avec les totaux affichés (stuff, skills, anneaux, glyphes ; sans Cri de guerre ni
   Pillage). Tests ✅ `tests/dps.test.js`.
+
+## 28/10/2026 — Jules — Appli mobile : conception (pas de code)
+- **Quoi** : spec `docs/superpowers/specs/2026-10-28-appli-mobile-design.md` (Capacitor 8, jeu chargé depuis
+  deepmineidle.fr par `server.url`, interface téléphone ≤ 700 px, notifications locales puis push, APK par GitHub Actions).
+- **Relevé de l'interface** (playwright, iPhone 15 émulé 393 × 659, serveurs isolés : `PORT=8123 DIM_DATA_DIR=<temp>
+  node server/dev.js` et `PORT=8124 … node server/main.js`, comptes `dev:presets`) : hauteur de page lobby 2794 px (avec
+  le panneau dev), stuff 2636, skills 2564, sorts 1530, session 1808 (mode normal) ; barre des 13 onglets : 5,5 visibles,
+  110 px de haut.
+- ⚠️ **À vérifier sur un vrai téléphone** : en session (mode normal aussi), `#cv` fait 800 × 544 px CSS sur un écran de
+  393 px, `innerWidth` passe à 824, le mineur sort de l'écran. Hypothèse : sur téléphone `#cv` est dans le flux
+  (`src/ui/style.css`, `@media (max-width:700px)`, `#cv{position:static}`), sa largeur intrinsèque (800) élargit `#cvWrap`
+  avant `fitMine` (`src/ui/fit.js`), qui se cale ensuite sur cette largeur. Pas de correctif sur cette branche.
+- **Points fragiles** : `server.url` est déconseillé en production par Capacitor et peut faire refuser l'appli par
+  Apple (plan B dans la spec : fichiers embarqués + mise à jour du code web + API depuis une autre origine).
