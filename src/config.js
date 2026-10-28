@@ -1647,7 +1647,9 @@ export const TOWER = {
      l'étage ; ils marchent vers le mineur le plus proche de leur étage (step s par case, comme un mob de la mine) et
      le taclent à portée (COMBAT, 25/10) ; toutes les hitEvery s ils repoussent le mineur taclé de knock blocs. La porte
      du plafond de l'étage reste scellée tant qu'il en reste un vivant. */
-  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25, knockRes: -100 },   // knockRes : résistance au recul en % (−100 = le double : 0,5 bloc par coup normal ; 25/10 soir, remplace le temps sonné de 0,5 s)
+  /* descend (28/10/2026, Geoffrey, tous niveaux) : un mob sans proie dans son étage, alors qu'un mineur est plus bas dans la
+     tour, va à la porte ouverte du sol de son étage et saute à l'étage du dessous (ex. après avoir poussé un mineur dans le trou) */
+  mobs: { count: 5, hp: 200, step: 0.9, hitEvery: 1, knock: 0.25, knockRes: -100, descend: true },   // knockRes : résistance au recul en % (−100 = le double : 0,5 bloc par coup normal ; 25/10 soir, remplace le temps sonné de 0,5 s)
   blockFront: 1,      // étage « blocs » : les mineurs ne visent que les blocs des colonnes pas encore vidées les plus proches de l'entrée, blockFront par mineur (25/10)
   /* boss (bossW × bossH sur le toit, au milieu au départ). Le combat commence au premier coup reçu ; ensuite, quand
      personne n'est à son contact, il marche vers le mineur le plus proche sur le toit (speedMul × vitesse d'un mineur de
@@ -1675,10 +1677,12 @@ export const TOWER = {
   /* niveaux (28/10/2026, Geoffrey) : choisis au lancement dans le lobby ; chaque niveau se gagne une fois par joueur et par
      ouverture (un trésor chacun, le même qu'au niveau 1). Multiplicateurs : hp = PV des mobs et du boss, hard = dureté des
      stonebricks, weight = poids des stonebricks dans le sac, mobKnock = recul des coups des Séraphins / Diablotins ;
-     rageBelow : le boss enrage sous cette part de ses PV (niveau 1 : boss.rageBelow). Valeurs provisoires. */
+     rageBelow : le boss enrage sous cette part de ses PV (niveau 1 : boss.rageBelow) ; summon : mobs invoqués sur le toit à
+     chaque envol du boss (aux PV du niveau). 28/10 à 11 h (Geoffrey) : niveau 2 PV +150 % (avant × 2), dureté +75 %
+     (avant × 2), invocation de 2 mobs. Valeurs provisoires. */
   levels: {
-    1: { hp: 1, hard: 1, weight: 1,   mobKnock: 1, rageBelow: 0.33 },
-    2: { hp: 2, hard: 2, weight: 1.5, mobKnock: 2, rageBelow: 0.5 },
+    1: { hp: 1,   hard: 1,    weight: 1,   mobKnock: 1, rageBelow: 0.33, summon: 0 },
+    2: { hp: 2.5, hard: 1.75, weight: 1.5, mobKnock: 2, rageBelow: 0.5,  summon: 2 },
   },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },

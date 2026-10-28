@@ -207,7 +207,52 @@ function stepMobs(G){
     const t = v ?? preyOf(G, o);
     if(o.knockLock && t && mobReach(G, o, t)) o.knockLock = false;
     if(t) walkMob(G, o, t);   // il tacle : il suit son mineur pour rester au contact
+    else if(MB.descend) descendMob(G, o);
   }
+}
+
+/* Descente (28/10/2026, Geoffrey) : personne dans son étage, mais un mineur plus bas dans la tour (poussé dans le trou,
+   tombé) : le mob glisse vers la porte ouverte du sol de son étage (plafond de l'étage du dessous), y entre et tombe
+   jusqu'au sol de l'étage du dessous ; il en fait alors partie (o.floor). Un étage à la fois. Jamais hors de la tour. */
+const lowerMiner = (G, o) => G.miners.some(m => m.x > G.x0 && m.x < G.x1 && m.y <= G.floor && floorOf(G, m.y) >= 0 && floorOf(G, m.y) < o.floor);
+export function holeCols(G, o){
+  if(o.floor <= 0 || o.y !== floorBottom(G, o.floor)) return [];
+  return gateCols(G, o.floor - 1).filter(x => towerAir(G, x, o.y + 1) && towerAir(G, x, o.y) && towerAir(G, x, o.y - 1));
+}
+function descendMob(G, o){
+  if(!lowerMiner(G, o)) return;
+  const cols = holeCols(G, o); if(!cols.length) return;
+  const col = cols.reduce((a, x) => Math.abs(x - o.x) < Math.abs(a - o.x) ? x : a);
+  if(o.x === col && Math.abs(o.kx || 0) <= 0.25){
+    let y = o.y; while(y + 1 <= G.floor && towerAir(G, col, y + 1)) y++;
+    const from = o.floor;
+    Object.assign(o, { y, kx: 0, floor: floorOf(G, y), grab: null, knockLock: false, hop: G.ticks });   // hop : petit saut à l'affichage
+    log(G, `⬇ Un ${TOWER.sides[G.side].mob} saute de l'étage ${from === TOWER.floors ? 'du toit' : from} à l'étage ${o.floor}`);
+    return;
+  }
+  const v = DT / MB.step, dx = Math.sign(col - o.x) || -Math.sign(o.kx || 0);
+  const next = o.x + dx, ok = next === col ? towerAir(G, next, o.y) && towerAir(G, next, o.y - 1) : mobFits(G, o, next);
+  let nk = (o.kx || 0) + dx * v;
+  if(o.x === col) nk = Math.abs(o.kx || 0) <= v ? 0 : (o.kx || 0) - Math.sign(o.kx) * v;   // sur la porte : il se recentre
+  else if(!ok && nk * dx > 0) nk = (o.kx || 0) * dx > 0 ? o.kx : 0;
+  if(o.x !== col && ok && nk * dx > 0.5 + 1e-9){ o.x = next; nk -= dx; }
+  o.kx = nk;
+}
+
+/* invocation (niveau de tour, summon) : n mobs sur le toit, aux PV du niveau, réveillés, à des colonnes au hasard (G.rng)
+   où ils tiennent, hors de la largeur du boss au centre */
+function summonMobs(G, n){
+  if(!(n > 0)) return;
+  const y = G.roof - 1, hp = MB.hp * G.lv.hp;
+  const cols = [];
+  for(let x = G.x0 + 1; x < G.x1; x++) if(!(x >= G.bx - 1 && x <= G.bx + B.w) && towerAir(G, x, y) && towerAir(G, x, y - 1) && !towerAir(G, x, y + 1)) cols.push(x);
+  let made = 0;
+  for(let i = 0; i < n && cols.length; i++){
+    const x = cols.splice(Math.floor(G.rng() * cols.length), 1)[0];
+    G.mobs.push({ id: G.mobs.length, floor: TOWER.floors, x, y, hp, maxhp: hp, awake: true, cd: MB.step, grab: null, taunt: null, summoned: true });
+    made++;
+  }
+  if(made) log(G, `📯 ${G.boss.name} invoque ${made} ${TOWER.sides[G.side].mob}${made > 1 ? 's' : ''} sur le toit !`);
 }
 
 /* Marche d'un mob (25/10/2026, mouvement continu, comme dans la mine) : sur la ligne du bas de son étage, il GLISSE vers
@@ -258,7 +303,9 @@ function hitMob(G, m, o){
 function mobDied(G, m, o){
   o.grab = null; G.stats.kills++; m.stats.kills++;
   const left = G.mobs.filter(q => q.floor === o.floor && q.hp > 0).length;
-  log(G, left ? `⚔ ${m.name} abat un ${TOWER.sides[G.side].mob} (étage ${o.floor} : encore ${left})`
+  const where = o.floor >= TOWER.floors ? 'toit' : `étage ${o.floor}`;
+  /* « porte ouverte » seulement pour un étage « mobs » (un mob descendu ou invoqué ailleurs : simple compte, 28/10) */
+  log(G, left || G.kinds[o.floor] !== 'mobs' ? `⚔ ${m.name} abat un ${TOWER.sides[G.side].mob} (${where} : encore ${left})`
               : `🚪 Étage ${o.floor} nettoyé : la porte du plafond s'ouvre`);
 }
 
@@ -705,6 +752,7 @@ function startJump(G, level){
   const b = G.boss;
   b.phase = level; b.air = { stage: 'fly', t: 0, x0: b.x }; b.target = null; b.kx = 0;
   log(G, `🦅 ${G.boss.name} s'envole au-dessus du toit !`);
+  summonMobs(G, G.lv.summon || 0);   // niveau 2 : 2 mobs à chaque envol (28/10)
 }
 function stepJump(G){
   const b = G.boss, a = b.air;
