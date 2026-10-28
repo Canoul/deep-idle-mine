@@ -39,7 +39,7 @@ Modèle d'entrée :
 - **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
   d'équipement** au milieu, les **stats du mineur** à droite (elles étaient passées sous les cases depuis l'ajout des
   Sets). Sur écran moyen et téléphone, rien ne change : tout s'empile.
-- **État** : 🔧 en cours (branche `geoffrey/stuff-stats-droite`).
+- **État** : ✅ en ligne le 28/10.
 
 ## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
 - **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
