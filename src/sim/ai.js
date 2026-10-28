@@ -9,7 +9,8 @@ import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mul
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
 import { tackler, channeler, revealMimic } from './mobs.js';
-import { inReach, driftsAway, reachOf } from './knock.js';
+import { inReach, driftsAway, reachOf, nearCell } from './knock.js';
+import { fleshAt, fleshSlow } from './flesh.js';
 import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
 import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
@@ -21,7 +22,7 @@ export function compassScan(G,m,R){
   for(let y=Math.max(1,m.y-rows); y<=Math.min(maxRow(G),m.y+rows); y++){
     for(let x=Math.max(0,m.x-R); x<=Math.min(W-1,m.x+R); x++){
       const t=G.tiles[y][x];
-      if(isOre(t) && !G.mimicCells.has(y*W+x)) out.push({x,y,t,seen:G.seen[y][x]===1});   // mimic dévoilé : plus un minerai
+      if(isOre(t) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) out.push({x,y,t,seen:G.seen[y][x]===1});   // mimic dévoilé : plus un minerai
     }
   }
   m.pings=out; return out;
@@ -84,7 +85,7 @@ function explore(G,m,k,cap=Infinity){
   m.galleryRow=target;
   m.status = target===m.y ? 'Creuse une galerie' : 'Change de galerie';
   /* Objectif : se tenir SUR la ligne de la galerie, à côté d'un bloc à creuser, par un itinéraire où il tient toujours. */
-  const solidAt=(x,y)=> x>=0 && x<W && !isAir(G,x,y) && tileAt(G,x,y)!==BARRIER && !BLOCKS[tileAt(G,x,y)].unbreakable;
+  const solidAt=(x,y)=> x>=0 && x<W && !isAir(G,x,y) && !fleshAt(G,x,y) && tileAt(G,x,y)!==BARRIER && !BLOCKS[tileAt(G,x,y)].unbreakable;
   const r=search(G,m,m.x,m.y,true,(x,y)=>y===target && (solidAt(x-1,y)||solidAt(x+1,y)),2*CFG.planMaxCost);
   if(!r){ m.skipRows.add(target); idle(m,0.2); return; }   // galerie inatteignable : on en prendra une autre
   if(r.n===r.start){                                       // déjà en place : on creuse, en gardant la direction si possible
@@ -114,7 +115,7 @@ function nearestThreat(G,m){
   const R=lightR(G,m); let best=null,bd=1e9,far=null,fd=1e9;
   for(const o of G.mobs){
     if(o.hp<=0 || m.ignored.has(o.id) || o.dungeon!=null) continue;   // boss de donjon : voir dungeonGoal
-    const d=Math.hypot(o.x-m.x,o.y-m.y);
+    const c=o.h ? nearCell(o,m) : o, d=Math.hypot(c.x-m.x,c.y-m.y);   // mur de chair : depuis sa case la plus proche
     if(o.type==='mimic' && !o.revealed && d<=MOBS.mimicRevealDist) revealMimic(G,o);
     if(o.type==='mimic' && !o.revealed) continue;
     if(d>R){ if(d<fd){fd=d;far=o;} continue; }
@@ -126,13 +127,13 @@ function nearestThreat(G,m){
 /* combat : il frappe le mob s'il est à portée (COMBAT.reach) ; repoussé par un coup, il revient au contact (il se
    recentre dans sa case, ou fait un pas vers le mob) */
 function fight(G,m,o){
-  const dx=o.x-m.x, dy=o.y-m.y;
+  const c=o.h ? nearCell(o,m) : o, dx=c.x-m.x, dy=c.y-m.y;   // mur de chair (o.h cases) : vers sa case la plus proche
   m.status='Combat ('+o.type+')';
   /* à portée : le coup part tout de suite, puis il attend son intervalle (m.atkReady) avant le suivant (25/10/2026 :
      avant, le coup partait à la fin de l'élan, et un mob arrivé à portée avait le temps de tacler le premier) */
   if(inReach(G,m,o,reachOf(m))){
     if(dx) m.face=Math.sign(dx);
-    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)); }   // Cri de guerre : vitesse +5 %
+    if(G.t+1e-9 >= (m.atkReady||0)){ landHit(G,m,o); m.atkReady=G.t+CFG.attackInterval*100/(m.carac.attackSpeed*(1+(warcryOf(G,m)?.speed||0))*dk(G,m)*fleshSlow(m)); }   // Cri de guerre : vitesse +5 % ; mur de chair : −10 % par stack
     startAction(m,'attack', Math.max(DT, m.atkReady-G.t), {mob:o, done:true}); return;
   }
   if(Math.abs(dx)+Math.abs(dy)<=1 && driftsAway(m,o)){
@@ -341,7 +342,7 @@ function decideWork(G,m){
   const known=new Map(ores.map(o=>[o.y*W+o.x,o]));
   for(let y=1;y<=maxRow(G);y++) for(let x=0;x<W;x++){
     const t=G.tiles[y][x];
-    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x)) known.set(y*W+x,{x,y,t});
+    if(isTarget(t) && G.seen[y][x] && !known.has(y*W+x) && !G.mimicCells.has(y*W+x) && !fleshAt(G,x,y)) known.set(y*W+x,{x,y,t});
   }
   /* coût réel (au temps) pour atteindre chaque minerai : une seule recherche d'itinéraire qui réutilise échelles,
      galeries et passerelles, et compte les échelles à poser. « Voyage futur » = trajet retour ajouté. */
@@ -581,7 +582,8 @@ function helpAlly(G,m){
    s'il le faut). Inatteignable : il l'ignore désormais et renvoie false. */
 function goFight(G,m,o,d,fighting,going){
   if(d<=1 || inReach(G,m,o,reachOf(m))){ if(m.foe!==o.id){ m.foe=o.id; m.foeHit=G.t; } fight(G,m,o); m.status=fighting; return true; }
-  const r=search(G,m,m.x,m.y,true,(x,y)=>Math.abs(x-o.x)+Math.abs(y-o.y)<=1 && !(x===o.x && y===o.y && !isAir(G,x,y)));
+  const at=(x,y)=>o.h ? nearCell(o,{x,y}) : o;   // mur de chair : à côté de n'importe laquelle de ses cases
+  const r=search(G,m,m.x,m.y,true,(x,y)=>{ const c=at(x,y); return Math.abs(x-c.x)+Math.abs(y-c.y)<=1 && !(x===c.x && y===c.y && !isAir(G,x,y)); });
   const s=r && firstStep(r,r.n);
   if(!s || !(s.dx||s.dy)){ m.ignored.add(o.id); m.foe=null; return false; }   // inatteignable : il le laisse
   m.status=going;
@@ -728,7 +730,7 @@ export function decide(G,m){
     let th=null;
     const foe=m.foe && G.mobs.find(o=>o.id===m.foe && o.hp>0 && o.dungeon==null);   // le boss : voir dungeonGoal
     if(foe && G.t-m.foeHit>CFG.foeGiveUp){ if(!(foe.trap!=null && isBarbarian(m))) m.ignored.add(foe.id); m.foe=null; }
-    else if(foe && Math.hypot(foe.x-m.x,foe.y-m.y)<=CFG.foeLeash) th=foe;
+    else if(foe && (c=>Math.hypot(c.x-m.x,c.y-m.y))(foe.h ? nearCell(foe,m) : foe)<=CFG.foeLeash) th=foe;
     else m.foe=null;
     m.helping = !!th && th.id===m.helpFoe;   // il continue le combat commencé pour un allié
     if(!th) th=nearestThreat(G,m);

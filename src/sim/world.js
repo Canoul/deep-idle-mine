@@ -25,7 +25,8 @@ export const areaTop  = k => AREA_Y0 + k*AREA_H;   // première couche de l'area
 export const maxRow = G => G.tiles.length-1;
 /* sous la dernière area débloquée, tout est barrière (l'IA l'ignore comme case non franchissable) */
 export const tileAt = (G,x,y) => y>maxRow(G) ? BARRIER : G.tiles[y][x];
-export const isAir  = (G,x,y) => y>=0 && y<G.tiles.length && x>=0 && x<W && G.tiles[y][x]===0;
+/* une case recouverte par un mur de chair (G.flesh, src/sim/flesh.js) n'est pas vide : on n'y entre pas, on y tient */
+export const isAir  = (G,x,y) => y>=0 && y<G.tiles.length && x>=0 && x<W && G.tiles[y][x]===0 && !(G.flesh && G.flesh.size && G.flesh.has(y*W+x));
 /* treuil : G.winch = { x, bottom } une fois posé (colonne x, lignes 1 à bottom), sinon null */
 export const isWinch = (G,x,y) => !!G.winch && x===G.winch.x && y>=1 && y<=G.winch.bottom;
 /* gravité : sol sous la case (x,y) ? Non s'il y a du vide dessous sans échelle (ni sur la case, ni juste dessous) ;

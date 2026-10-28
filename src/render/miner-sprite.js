@@ -36,6 +36,11 @@ export function createMinerSprite(ctx, TEX, TILE){
     }
     ctx.restore();
     if(a&&a.type==='stun') blit('stun',px,py-6);   // étourdi : des étoiles au-dessus de la tête
+    if(m.flesh>0){   // stacks du mur de chair (28/10) : petit compteur rouge sur l'épaule
+      ctx.font='bold 7px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.lineWidth=2; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText('🩸'+m.flesh,px+TILE-3,py+1);
+      ctx.fillStyle='#ff6b6b'; ctx.fillText('🩸'+m.flesh,px+TILE-3,py+1);
+    }
     if(focused){ ctx.strokeStyle='#ffb84d'; ctx.lineWidth=1; ctx.strokeRect(px-1.5,py-1.5,TILE+3,TILE+3); }
     /* pseudo : petit, contour sombre pour rester lisible sur la roche comme sur le ciel */
     if(m.name){

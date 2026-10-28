@@ -115,6 +115,19 @@ export function createRenderer(cv){
         if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,dy-12,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,dy-12,TILE*o.hp/o.maxhp,2); }
         continue;
       }
+      if(o.type==='chair'){
+        /* mur de chair : une colonne de o.h cases, (x, y) = sa case du bas, dessinée par-dessus la roche qu'il recouvre.
+           Visible dès qu'une de ses cases est découverte ou éclairée par un mineur. Il pulse (affichage seulement). */
+        const h=o.h||6, top=py-(h-1)*TILE, near=G.miners.some(m=>Math.hypot(o.x-m.x,Math.max(o.y-h+1,Math.min(o.y,m.y))-m.y)<=lightR(G,m)+0.5);
+        let shown=near; for(let k=0;k<h && !shown;k++) shown=!!G.seen?.[o.y-k]?.[o.x];
+        if(!shown) continue;
+        const i=TEX.flesh_wall, pulse=Math.sin(frameNow/260+o.id)*0.5;
+        if(i && i.complete && i.naturalWidth) ctx.drawImage(i,px-pulse,top,TILE+pulse*2,TILE*h);
+        else { ctx.fillStyle='#8c1f2b'; ctx.fillRect(px,top,TILE,TILE*h); }
+        if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,top-4,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,top-4,TILE*o.hp/o.maxhp,2); }
+        drawSplash(ctx,o,G.t,frameNow,px,top,TILE);
+        continue;
+      }
       if(o.type==='mimic'){
         if(!o.revealed) continue;
         blit(BLOCKS[o.ore].tex,px,py,BLOCKS[o.ore].dot); blit('mimic',px,py);

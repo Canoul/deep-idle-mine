@@ -26,6 +26,7 @@ export function breakable(G, x, y){
   const t = G.tiles[y][x];
   if(!t || BLOCKS[t].unbreakable || BLOCKS[t].type === 'treasure' || t === BRIDGE) return false;
   if(veiled(G, x, y) || dungeonAt(G, x, y)) return false;
+  if(G.flesh?.has(y * W + x)) return false;   // recouvert par un mur de chair (src/sim/flesh.js)
   return !G.mobs.some(o => o.type === 'mimic' && o.hp > 0 && o.x === x && o.y === y);
 }
 

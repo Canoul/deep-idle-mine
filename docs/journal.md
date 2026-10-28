@@ -24,6 +24,17 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Nouveau mob : le mur de chair
+- **Pour le joueur** : à partir de l'area 6, un **mur de chair** (une colonne de 6 cases) peut sortir de la roche à
+  quelques colonnes du mineur et avancer vers lui en balayant la mine à l'horizontale. On ne peut ni le traverser ni
+  miner ce qu'il recouvre : il faut le tuer (200 PV). Près de lui, le mineur perd 10 % de vitesse d'attaque toutes les
+  2 s (jusqu'à −90 %). Il laisse de la Rotten flesh (1 à 3) et de la chitine (1 à 5).
+- **Décisions** : 2 / 5 / 8 % des apparitions en areas 6 / 7 / 8+, pris sur le gobelin ; plafond à −90 % (un joueur seul
+  n'est jamais bloqué pour de bon) ; stacks de 10 s, perdus hors du rayon ; Ténacité par stack ; naissance à 8 à 12
+  colonnes pour qu'on le voie arriver. Texture originale (pas celle d'un autre jeu).
+- **À suivre** : à observer en vrai dans les areas 6-8 (les sessions simulées n'y vont pas encore).
+- **État** : 🧪 sur la branche `geoffrey/mur-de-chair` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
 - **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →
   754, épée en fer 720 → 360) ; les stats ne bougent pas. Les pièces aux stats divisées le 27/10 (thorium, cobalt,
