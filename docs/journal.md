@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
+- **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
+  charbon (1 à 50), de l'or (1 à 20), **1 diamant** et du graphite (1 à 10), plus parfois une gemme inférieure (1 % chacune)
+  ou un treasure (T1 2 %, T2 1 %, T3 0,5 %). L'aide « ? » et le wiki montrent les fourchettes.
+- **À suivre** : 1 diamant par lot de 100 fers, soit 100 diamants pour 10 000 fers : à surveiller si le diamant doit rester rare.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Ceinture du Géant : 5 dégâts
 - **Pour le joueur** : la Ceinture du Géant donne **+5 dégâts** (avant +1,6) ; la ténacité ne change pas (+12,5 %). Les
   ceintures déjà trouvées en profitent (stats relues dans le catalogue). GS : 127 → 263.

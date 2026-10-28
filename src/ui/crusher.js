@@ -134,15 +134,17 @@ export function setupCrusher({ onOp, onSync }){
   function openHelp(){
     const box = $('cpick').querySelector('.box');
     const FAMILY = { gem:'Une gemme', treasure:'Un treasure' };
-    const family = f => f.items.length === 1
+    const family = f => f.min != null   // butin garanti (minerai de fer) : sa fourchette
+      ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${f.min === f.max ? f.min : `${f.min} à ${f.max}`}</b></div>`
+      : f.items.length === 1
       ? `<div class="fodds">${icon(f.items[0].item)}${rname(f.items[0].item, f.items[0].item, 'b')} <b>${pct(f.chance)}</b></div>`
       : `<div class="fodds"><b>${FAMILY[f.family] ?? esc(f.family)} : ${pct(f.chance)}</b></div>`+
         `<div class="fparts">${f.items.map(i => `${icon(i.item)}${rname(i.item)} <span class="mut">${pct(i.chance)}</span>`).join('<span class="mut">·</span>')}</div>`;
-    box.innerHTML = `<h3>Chances par lot de ${BATCH} blocs</h3><div class="frecipes">`+
+    box.innerHTML = `<h3>Butin par lot de ${BATCH}</h3><div class="frecipes">`+
       Object.keys(CRUSHER.loot).map(b => `<div class="frec"><div class="fout">${icon(b)}<b>${BATCH} ${esc(b)}</b></div>`+
         dropOdds(b).map(family).join('') + `</div>`).join('')+
       `</div><p class="mut small">Un lot par ${CRUSHER.time} s, même page fermée. À chaque lot, un seul tirage pour les gemmes ` +
-      `(au plus une) et un pour le treasure : la plupart des lots ne donnent rien.</p>`+
+      `(au plus une) et un pour le treasure ; le minerai de fer donne en plus, à chaque lot, le butin indiqué avec sa fourchette.</p>`+
       `<p style="text-align:right"><button id="cpickClose">Fermer</button></p>`;
     $('cpick').hidden = false;
     $('cpickClose').onclick = closePicker;

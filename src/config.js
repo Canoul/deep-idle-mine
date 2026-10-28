@@ -322,6 +322,13 @@ export const CRUSHER = {
                                         { family:'treasure', items:[{ item:'Treasure T2', chance:0.003 }] } ] },
     'Pierre dure': { always:[], oneOf:[ { family:'gem', items:gems(0.004) },
                                         { family:'treasure', items:[{ item:'Treasure T2', chance:0.005 }] } ] },
+    /* minerai de fer (28/10/2026, Geoffrey) : un lot de 100 donne toujours charbon 1-50, or 1-20, 1 diamant et graphite
+       1-10 ; une gemme inférieure (1 % chacune, une au plus) ; un treasure (T1 2 %, T2 1 %, T3 0,5 %, un au plus) */
+    'Fer':         { always:[ { item:'Charbon', min:1, max:50 }, { item:'Or', min:1, max:20 }, { item:'Diamant', min:1, max:1 },
+                              { item:'Graphite ore', min:1, max:10 } ],
+                     oneOf:[ { family:'gem', items:gems(0.01) },
+                             { family:'treasure', items:[{ item:'Treasure T1', chance:0.02 }, { item:'Treasure T2', chance:0.01 },
+                                                         { item:'Treasure T3', chance:0.005 }] } ] },
   },
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

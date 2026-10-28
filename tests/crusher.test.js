@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CRUSHER, ITEMS } from '../src/config.js';
 import { mulberry32 } from '../src/core/rng.js';
-import { createInventory, addAll, countOf, serialize } from '../src/meta/inventory.js';
+import { createInventory, addAll, addItem, countOf, serialize } from '../src/meta/inventory.js';
 import { createCrusher, crusherOp, advance, canRun, nextSlot, crushable, progress, sanitizeCrusher, dropOdds } from '../src/meta/crusher.js';
 import { rollLoot } from '../src/meta/loot.js';
 import { createMemoryGameStore } from '../server/game/store.js';
@@ -14,15 +14,16 @@ const MIN = 60_000, T0 = 1_000_000;
 const NOTHING = () => 0.999999;     // hasard qui ne donne jamais rien
 let n = 0;
 const id = () => 'op-crush-' + (++n);
-const setup = (bag = { Terre:500, Pierre:300, 'Pierre dure':200, Fer:50 }) => {
+const setup = (bag = { Terre:500, Pierre:300, 'Pierre dure':200, Or:50 }) => {
   const inv = createInventory(); addAll(inv, bag);
   return { inv, c: createCrusher() };
 };
 const op = (c, inv, o, now = T0) => crusherOp(c, inv, { opId:id(), ...o }, now);
 
-test('famille Bloc : terre, pierre, pierre dure ; seuls eux se concassent', () => {
+test('terre, pierre, pierre dure et minerai de fer (28/10) : seuls eux se concassent', () => {
   for(const b of ['Terre', 'Pierre', 'Pierre dure']){ assert.equal(ITEMS[b].cat, 'bloc', b); assert.ok(crushable(b), b); }
-  for(const x of ['Fer', 'Charbon', 'Treasure T1', 'Rubis inférieur', '__proto__', 'constructor', '', null, 3]) assert.ok(!crushable(x), String(x));
+  assert.ok(crushable('Fer'), 'minerai de fer (28/10/2026)');
+  for(const x of ['Or', 'Charbon', 'Treasure T1', 'Rubis inférieur', '__proto__', 'constructor', '', null, 3]) assert.ok(!crushable(x), String(x));
   assert.equal(createCrusher().in.length, 8); assert.equal(createCrusher().out.length, 8);
 });
 
@@ -40,7 +41,7 @@ test('tables : les chances demandées par le créateur', () => {
 
 test('poser : bloc seulement, une sorte par case, quantités invalides refusées, rien ne bouge en cas de refus', () => {
   const { inv, c } = setup();
-  assert.equal(op(c, inv, { action:'load', slot:0, item:'Fer', qty:10 }).error, 'bad_item');
+  assert.equal(op(c, inv, { action:'load', slot:0, item:'Or', qty:10 }).error, 'bad_item');
   for(const slot of [-1, 8, 1.5, '0', null]) assert.equal(op(c, inv, { action:'load', slot, item:'Terre', qty:10 }).error, 'bad_slot');
   for(const qty of [0, -5, 2.5, Infinity, NaN, '100', 1e300]) assert.equal(op(c, inv, { action:'load', slot:0, item:'Terre', qty }).error, 'bad_qty');
   assert.equal(op(c, inv, { action:'load', slot:0, item:'Terre', qty:501 }).error, 'not_enough');
@@ -116,7 +117,7 @@ test('aide « ? » : les chances affichées sont celles du tirage (gemmes additi
   assert.equal(tre.items[0].item, 'Treasure T1');
   assert.equal(tre.chance, 0.005);
   for(const o of [gem, tre, ...gem.items]) assert.deepEqual(Object.keys(o).filter(k => k === 'every' || k === 'sec'), []);
-  assert.deepEqual(dropOdds('Fer'), []);
+  assert.deepEqual(dropOdds('Or'), []);
   /* contrôle par le vrai tirage : 1 million de lots de pierre, toutes familles */
   for(const block of Object.keys(CRUSHER.loot)){
     const rng = mulberry32(7), N = 1_000_000, got = {};
@@ -168,9 +169,9 @@ test('sortie pleine : pas de cycle, aucun bloc consommé', () => {
 });
 
 test('relecture : sauvegarde trafiquée nettoyée', () => {
-  const c = sanitizeCrusher({ in:[{ item:'Fer', qty:100 }, { item:'Terre', qty:-5 }, { item:'Terre', qty:2.5 }, { item:'Pierre', qty:300 }],
-                              out:[{ item:'Diamant', qty:5 }, { item:'Jade inférieur', qty:2 }, null, null, null, null, null, null, { item:'Rubis inférieur', qty:1 }],
-                              since:Infinity, crushed:-3, finds:[{ at:1, from:'Fer', loot:{} }], ops:[1, 'a'] });
+  const c = sanitizeCrusher({ in:[{ item:'Or', qty:100 }, { item:'Terre', qty:-5 }, { item:'Terre', qty:2.5 }, { item:'Pierre', qty:300 }],
+                              out:[{ item:'Lingot de fer', qty:5 }, { item:'Jade inférieur', qty:2 }, null, null, null, null, null, null, { item:'Rubis inférieur', qty:1 }],
+                              since:Infinity, crushed:-3, finds:[{ at:1, from:'Or', loot:{} }], ops:[1, 'a'] });
   assert.deepEqual(c.in, [null, null, null, { item:'Pierre', qty:300 }, null, null, null, null]);
   assert.deepEqual(c.out[1], { item:'Jade inférieur', qty:2 }); assert.equal(c.out[0], null); assert.equal(c.out.length, 8);
   assert.equal(c.since, null); assert.equal(c.crushed, 0); assert.deepEqual(c.finds, []); assert.deepEqual(c.ops, ['a']);
@@ -213,6 +214,29 @@ test('serveur : poser, concasser au fil du temps, enregistré une seule fois, é
 test('serveur : demandes invalides refusées', async () => {
   const { game } = await server({ Terre:100 });
   await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Terre', qty:100, opId:'x' }), { code:'bad_request' });
-  await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Fer', qty:1, opId:'op-crush-bad1' }), { code:'bad_item' });
+  await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Or', qty:1, opId:'op-crush-bad1' }), { code:'bad_item' });
   await assert.rejects(game.crusher(ME, { action:'load', slot:0, item:'Terre', qty:101, opId:'op-crush-bad2' }), { code:'not_enough' });
+});
+
+test('minerai de fer (28/10/2026) : lot de 100 → charbon 1-50, or 1-20, 1 diamant, graphite 1-10 ; gemmes 1 % chacune ; T1 2 %, T2 1 %, T3 0,5 %', () => {
+  const t = CRUSHER.loot['Fer'];
+  assert.deepEqual(t.always.map(a => [a.item, a.min, a.max]), [['Charbon', 1, 50], ['Or', 1, 20], ['Diamant', 1, 1], ['Graphite ore', 1, 10]]);
+  const ch = item => t.oneOf.flatMap(f => f.items).find(i => i.item === item)?.chance;
+  assert.deepEqual(['Jade inférieur', 'Rubis inférieur', 'Saphir inférieur'].map(ch), [0.01, 0.01, 0.01]);
+  assert.deepEqual(['Treasure T1', 'Treasure T2', 'Treasure T3'].map(ch), [0.02, 0.01, 0.005]);
+  /* moyenne sur 100 000 lots : 25,5 charbons, 10,5 ors, 1 diamant, 5,5 graphites */
+  const rng = mulberry32(11), N = 100_000, sum = {};
+  for(let i = 0; i < N; i++) for(const [k, q] of Object.entries(rollLoot(t, rng))) sum[k] = (sum[k] || 0) + q;
+  for(const [k, want] of [['Charbon', 25.5], ['Or', 10.5], ['Diamant', 1], ['Graphite ore', 5.5]]) assert.ok(Math.abs(sum[k] / N - want) / want < 0.01, `${k} : ${sum[k] / N}`);
+  /* aide : le butin garanti en premier, avec sa fourchette */
+  const odds = dropOdds('Fer');
+  assert.deepEqual(odds.slice(0, 4).map(o => [o.items[0].item, o.min, o.max, o.chance]), [['Charbon', 1, 50, 1], ['Or', 1, 20, 1], ['Diamant', 1, 1, 1], ['Graphite ore', 1, 10, 1]]);
+  /* un lot passe dans le concasseur : 100 fers consommés, le butin garanti sort */
+  const inv = createInventory(); addItem(inv, 'Fer', 100);
+  const c = createCrusher();
+  assert.ok(op(c, inv, { action:'load', slot:0, item:'Fer', qty:100 }).ok);
+  assert.equal(advance(c, T0 + CRUSHER.time * 1000, mulberry32(3)), 1);
+  assert.equal(c.in[0], null);
+  const out = Object.fromEntries(c.out.filter(Boolean).map(s => [s.item, s.qty]));
+  assert.ok(out['Charbon'] >= 1 && out['Or'] >= 1 && out['Diamant'] === 1 && out['Graphite ore'] >= 1, JSON.stringify(out));
 });
