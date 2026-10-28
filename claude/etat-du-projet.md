@@ -363,6 +363,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   prédiction en droite jusqu'à 350 de profondeur, `DASHBOARD.forecastDepth`), historique filtrable par joueur. Mine classique seule, hors dev et hors joueurs partis ;
   une ligne par joueur et par session (ns `session_stat`), gardée sans limite, à partir du 26/10.
 
+- **GS par bancs d'essai** (28/10, Geoffrey ; **expérience**, branche `geoffrey/gs-bancs`, pas branché) : GS = secondes de
+  travail gagnées par heure, mesurées sur 4 bancs (mannequin, mine de pierre, couloir, échelles) et pondérées par la part
+  de temps en mine normale (fight 5,8 %, mine 40,5 %, walk 12 %, climb 18,8 %) ; `src/sim/bench.js`, `scripts/gs-bench.js`.
+
 - **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
   casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.

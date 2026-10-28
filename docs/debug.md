@@ -4148,3 +4148,20 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/notify.test.js` (nouveau, faux DOM + `t.mock.timers`) : fermeture à popupMs, pas de retour, retour
   si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
   ⚠️ Pas vérifié dans un vrai navigateur.
+
+## 28/10/2026 — Geoffrey — GS expérimental par bancs d'essai (branche geoffrey/gs-bancs, pas branché)
+- **Quoi** : `src/sim/bench.js` (bancs fight / mine / walk / climb de `BENCH.secs` = 600 s, `classify` pour les parts de
+  temps), `scripts/gs-bench.js` (parts de temps sur `--count` sessions de l'équipe des 3 presets dev, puis GS de chaque
+  pièce seule et de stuffs complets ; `--knock`, `--json`). GS = Σ part × 3 600 × (rendement ÷ base − 1) + stats hors
+  bancs × `statPrice`. Rien n'est branché dans le jeu.
+- **Bancs** : fight = IA complète, mannequin bestiole 1e12 PV qui repousse de `BENCH.dummyKnock` (0,5) toutes les
+  `MOBS.hitEvery` s ; couloir « sans fin » (recentrage près des bords : sans ça, le mineur repoussé finissait contre le mur
+  du bout, où le recul ne fait plus rien). Mine = pilote en serpentin, rendement = blocs ÷ temps passé à miner (sinon les
+  bottes « minaient »). Walk / climb = pilote. `CFG.darkSlow` neutralisé pendant les bancs.
+- **Mesures (10 sessions)** : fight 5,8 %, mine 40,5 %, walk 12,0 %, climb 18,8 %, autre 22,9 %. Base : 3 750 dégâts, 500
+  blocs, 1 800 cases à pied, 1 350 montées en 10 min.
+- **Constats** : (1) portée, recul et résistance au recul valent 0 tant que le recul du mob ≤ 0,5 (le mineur reste à
+  portée, le mob le suit) ; à 1 case, ils comptent pour un mineur rapide (+8 à +15 % de dégâts à 250 % de vitesse). (2) La
+  vitesse d'attaque avance par paliers de 0,1 s (l'attaque attend `G.t` ≥ `atkReady`, évalué au tick) : 250 % frappe
+  comme 200 %. Ça vaut aussi en jeu. (3) Le propre recul du mineur coûte un peu de dégâts (le mob repoussé doit revenir).
+- **Tests** ✅ `tests/bench.test.js` 4/4.

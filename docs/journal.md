@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Expérience : un GS mesuré sur des bancs d'essai
+- **Pour le joueur** : rien (expérience, le GS du jeu ne change pas).
+- **L'idée** : GS = secondes de travail gagnées par heure. Quatre bancs de 10 min (mannequin aux PV infinis, mine
+  géante de pierre, couloir, puits d'échelles) mesurent ce que le stuff apporte, pondéré par la part de temps passée à
+  se battre (5,8 %), miner (40,5 %), marcher (12 %) et monter (18,8 %) en mine normale (équipe des 3 presets acier).
+- **Résultats** : totaux proches du GS actuel (fer 2 190 contre 2 160, acier 3 634 contre 3 615), mais répartition
+  différente : bottes −40 %, jambes +20 %, pioches +12 %, critique et recul presque sans valeur.
+- **À suivre** : décider si on branche ce GS (`node scripts/gs-bench.js`).
+- **État** : 🧪 sur la branche `geoffrey/gs-bancs` (pas en ligne, expérience)
+
 ## 28/10/2026 — Jules — Les pop-ups se ferment toutes seules
 - **Pour le joueur** : les pop-ups en haut à gauche (invitation de groupe, demande d'ami, « groupe trouvé ») et le
   dernier rappel de la mine instantanée (Rejoindre / Décliner) restaient affichés tant qu'on n'avait pas cliqué. Les
