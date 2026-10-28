@@ -4550,3 +4550,25 @@ Règles (voir CLAUDE.md) :
   3 tuiles par ligne.
 - ⚠️ Pas vérifié en vrai : le bouton « Remplacer X » (barre pleine + un autre sort disponible), l'apprentissage d'un
   parchemin depuis la fiche (même appel serveur qu'avant), la barre de sorts pendant une session (couverte par le test).
+
+## 28/10/2026 — Focus minerai hors de portée du trajet : galeries en area 0 (graphite « only »)
+- **Symptôme** (Geoffrey) : focus « Uniquement » graphite → « Creuse une galerie » en haut de la mine toute la session ;
+  plus rien dès qu'on retire le focus. Reproduit : seed 7919, areas 0-6 débloquées, 1 mineur ; au 2e départ
+  `m.tripCap` = 196 (area 3), graphite seulement en areas 5-6 → `focusGoal` null (rien à portée, correctif du matin
+  c4a02b8), `focusStop` arrête la descente au-dessus de l'area 1 (sans graphite), `targetVal` ignore les autres
+  minerais → `explore` dans l'area 0 jusqu'à la fin (1 606 décisions « Creuse une galerie » en area 0).
+- **Correctif** `src/sim/focus.js` : `focusFar(G,m)` (aucune area de `focusAreas` ≤ area de `m.tripCap` n'a encore un
+  minerai visé) et `oreFocus(G,m)` (focus en vigueur : sans les minerais quand `focusFar`, l'area gardée). Lu par
+  `deepArea`, `focusGoal`, `targetVal` (**signature changée : `targetVal(G,m,t)`**, appelants `src/sim/ai.js`,
+  `src/sim/thrall.js`) et `ai.js` (`decideWork` `act`, `focusStop`). Résultat : « Plus profond » borné au trajet.
+  `dropDepleted` → `farNotice` : `m.focusFar` (nouveau, `src/sim/mineur.js`) suit le passage, `focusNotice` une fois
+  par passage en veille, plans revus (exploring / skipRows / target) dans les deux sens. `m.prefs.focus` jamais modifié.
+- **Tests** ✅ `tests/focus.test.js` (2 nouveaux : veille + message unique + reprise ; mineur qui descend jusqu'à l'area 3
+  au lieu de creuser en area 0 ; 1 attente changée : déjà sous le trajet avec un focus minerai en veille, `focusGoal`
+  le renvoie dans l'area du trajet au lieu de null), `tests/judgment.test.js` (nouvelle signature), `end-depth`,
+  `goblin-thrall`, `khole` : 78 ✅. Simulation 3 mineurs × 5 : 0 blocage ; `--focus iron:only` × 5 : 0 blocage.
+  Repro après correctif : area 3, « Suit un filon » fer / charbon / or.
+- ⚠️ Pas vérifié en vrai (session en ligne) : le message dans le panneau Focus minerai. Point fragile : `m.tripCap`
+  dépend de la remontée mesurée (`secPerRow`) ; une remontée lente (tacles) rend le trajet court et met le focus en
+  veille plus tôt.
+

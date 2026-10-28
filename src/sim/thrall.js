@@ -54,7 +54,7 @@ function pickTarget(G, o, owner){
     for(let x = Math.max(0, o.x - C.reach); x <= Math.min(W - 1, o.x + C.reach); x++){
       const d = Math.abs(x - o.x) + Math.abs(y - o.y), t = G.tiles[y][x];
       if(d > C.reach || !isOre(t) || !breakable(G, x, y) || taken(G, o, x, y) || o.skip.includes(y * W + x)) continue;
-      const v = owner ? targetVal(owner, t) : BLOCKS[t].val;
+      const v = owner ? targetVal(G, owner, t) : BLOCKS[t].val;
       if(v === null) continue;                          // focus « seulement » : les autres minerais sont ignorés
       const s = v / (d + mineTime(t) + 1);
       if(s > bs){ bs = s; best = { x, y }; }

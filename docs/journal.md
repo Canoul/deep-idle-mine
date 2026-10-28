@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
+- **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
+  jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite
+  (areas 5 et plus) était trop bas pour ce trajet. Le focus lui interdisait alors de descendre dans les areas sans
+  graphite comme de miner autre chose. Maintenant, dans ce cas, le focus se met en veille : il descend au plus profond
+  qu'il peut et mine normalement, un message le dit dans le panneau, et le focus reprend tout seul dès que le graphite
+  redevient atteignable.
+- **État** : 🧪 sur la branche `geoffrey/fix-focus-graphite` (pas en ligne)
+
 ## 28/10/2026 — Jules — Onglet Sorts refait (piste A « la barre de sorts »)
 - **Pour le joueur** : l'onglet Sorts a une nouvelle mise en page, les sorts eux-mêmes ne changent pas. En haut, **ta barre
   de sorts en grand**, la même qu'en bas de la mine. Dessous, le **grimoire** : tous les sorts en tuiles, avec des filtres

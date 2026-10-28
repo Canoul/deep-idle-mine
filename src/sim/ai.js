@@ -13,7 +13,7 @@ import { inReach, driftsAway, reachOf, nearCell } from './knock.js';
 import { fleshAt, fleshSlow } from './flesh.js';
 import { landHit } from './actions.js';
 export { tackler } from './mobs.js';
-import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood } from './focus.js';
+import { targetVal, dropDepleted, focusGoal, workArea, activeOres, areaGood, oreFocus } from './focus.js';
 import { active, mayEnter, isIn, inRoom, bossOf, hasBarbarian, isBarbarian, front } from './dungeon.js';
 
 /* boussole : minerais sur la ligne du mineur, et sur carac.compassRows lignes au-dessus et en dessous (Boussole en or) */
@@ -361,7 +361,7 @@ function decideWork(G,m){
   // focus minerai : pas de cible dans une area épuisée pour ses minerais visés (il y monterait, le focus le renverrait
   // aussitôt dans la sienne, et il recommencerait : va-et-vient sur l'échelle à la frontière, seed 770973224)
   // « Plus profond » : pareil, avec l'area la plus profonde débloquée (workArea)
-  const A=workArea(G,m), act=activeOres(m.prefs.focus);
+  const A=workArea(G,m), act=activeOres(oreFocus(G,m));
   /* fin de session : rien sous la profondeur maximale du trajet, fixée au départ de la surface (il mine plus haut) */
   const cap=m.tripCap ?? Infinity;
   /* un treasure ou un résidu découvert à portée (CFG.oreReach) est visé quel que soit le focus d'area : sinon celui
@@ -369,7 +369,7 @@ function decideWork(G,m){
   const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
   if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
-    if(isTarget(t) && targetVal(m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
+    if(isTarget(t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
     if(!inFocus(o.y,o.t)) continue;
@@ -377,7 +377,7 @@ function decideWork(G,m){
     if(dist>CFG.oreReach) continue;   // un filon lointain n'est pas plus attirant que creuser du neuf
     if(oreTakenBy(G,m,o.x,o.y)) continue;   // déjà visé ou en cours de minage par un autre
     if(veinTaken(G,m,o.x,o.y)) continue;    // filon réservé : un autre vise un minerai tout près
-    const val=targetVal(m,o.t);
+    const val=targetVal(G,m,o.t);
     if(val===null) continue;                // focus « only » : les autres minerais sont ignorés
     const {bd,bn}=nbrBest(o);
     if(bn<0) continue;
@@ -426,7 +426,7 @@ function digDown(G,m){
 function focusStop(G,m){
   const A=workArea(G,m);
   if(A!==null) return areaOf(m.y+1)>A ? A : null;
-  const act=activeOres(m.prefs.focus);
+  const act=activeOres(oreFocus(G,m));
   if(!act.length) return null;
   const cur=Math.max(0,areaOf(m.y)), below=areaOf(m.y+1);
   return below>cur && below<G.unlockedAreas && !areaGood(G,below,act) ? cur : null;
