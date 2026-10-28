@@ -147,14 +147,16 @@ export function finishDash(G,m,a){
 }
 
 /* cases cassables par la dynamite autour de (cx,cy), rayon SPELL.dynamite.radius (cercle) : un bloc que le mineur peut
-   miner (pas une construction, pas l'incassable, pas un mimic caché), jamais le sol sous les pieds d'un mineur */
+   miner (pas une construction, pas l'incassable, pas un mimic caché), jamais le sol sous les pieds d'un mineur ; depuis
+   le 28/10, seulement s'il est moins dur que hardMul × sa vitesse de minage (dynamiteHard) */
+export const dynamiteHard = m => SPELL.dynamite.hardMul * m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100);
 function blastCells(G,m,cx,cy){
-  const R = SPELL.dynamite.radius, out = [];
+  const R = SPELL.dynamite.radius, out = [], maxHard = dynamiteHard(m);
   for(let y=Math.max(1,cy-R); y<=Math.min(maxRow(G),cy+R); y++)
     for(let x=Math.max(0,cx-R); x<=Math.min(W-1,cx+R); x++){
       if((x-cx)**2+(y-cy)**2>R*R) continue;
       const t = G.tiles[y][x];
-      if(!t || typeOf(t)==='build' || BLOCKS[t].unbreakable) continue;
+      if(!t || typeOf(t)==='build' || BLOCKS[t].unbreakable || !(BLOCKS[t].hard < maxHard)) continue;
       if(G.mobs.some(o => o.type==='mimic' && o.hp>0 && o.x===x && o.y===y)) continue;
       if(G.miners.some(o => o.x===x && o.y===y-1)) continue;
       out.push([x,y]);
@@ -176,11 +178,15 @@ function tryDynamite(G,m,a){
   m.status = 'Lance une dynamite';
 }
 export function finishDynamite(G,m,a){
-  const cells = blastCells(G,m,a.data.cx,a.data.cy);
+  const S = SPELL.dynamite, { cx, cy } = a.data;
+  const cells = blastCells(G,m,cx,cy);
   for(const [x,y] of cells) breakBlock(G,m,x,y);
   updateLight(G);
+  /* 28/10 : dmg × ses dégâts à chaque mob du rayon (mêmes mobs que le Cleave) */
+  const foes = G.mobs.filter(o => fair(G,m,o) && (o.x-cx)**2+(o.y-cy)**2 <= S.radius*S.radius);
+  for(const o of foes){ o.hp -= hitDamage(G,m)*S.dmg; if(o.hp<=0) killMob(G,m,o); }
   cast(G,m,'dynamite');
-  log(G, `🧨 ${m.name} : dynamite, ${cells.length} blocs cassés`);
+  log(G, `🧨 ${m.name} : dynamite, ${cells.length} blocs cassés${foes.length ? `, ${foes.length} mob${foes.length>1 ? 's' : ''} touché${foes.length>1 ? 's' : ''}` : ''}`);
 }
 
 /* ---------- à chaque tick ---------- */
