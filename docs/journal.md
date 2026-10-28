@@ -33,7 +33,7 @@ Modèle d'entrée :
 - **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : ça marche comme l'amélioration (lignes et rune
   comprises, l'épée compte ce qu'elle ajoute aux mains nues, un malus n'empire pas) ; **pas compté dans le gear score**.
 - **À suivre** : 3 points de plus par arbre (Mineur 13, Logisticien 14, Barbare 15 au total).
-- **État** : 🧪 sur la branche `geoffrey/maitrises-skills` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
 - **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →
