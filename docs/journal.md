@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Correctif : mineur bloqué sur une échelle avec un focus minerai en fin de session
+- **Pour le joueur** : signalé par un joueur (focus graphite, couche 5). Près de la fin de la session, si le minerai visé
+  n'était plus que tout en bas, le mineur montait et descendait en boucle sur l'échelle (« Change d'area » / « Change de
+  galerie ») sans rien miner. Maintenant, le focus ne l'envoie plus plus bas que ce qu'il a encore le temps d'aller-retour :
+  il travaille au plus profond qu'il peut atteindre. Pareil avec un focus d'area trop profond.
+- **État** : 🔧 en cours (branche `geoffrey/fix-focus-oscillation`).
+
 ## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
 - **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer
   un set, reset des skills, se déconnecter…), les messages d'erreur et le renommage d'un set s'ouvrent maintenant dans

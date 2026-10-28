@@ -204,6 +204,7 @@ Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de c
 - Le jeu connaît, pour chaque area, le **nombre initial et le restant** de chaque minerai.
 - **Area épuisée** : s'il reste moins de **20 %** *(provisoire)* du nombre initial d'un minerai visé dans l'area du mineur, il part vers **l'area débloquée la plus proche** qui en a encore (au-dessus ou en dessous ; à égalité, celle du dessous). Il ne descend pas non plus dans une area épuisée : il explore la sienne en galeries.
 - **Épuisé partout** : si toutes les areas débloquées sont sous le seuil pour ce minerai, son focus **saute** et un message prévient le joueur dans le panneau.
+- **Fin de session** *(28/10/2026, correctif)* : le focus (minerai ou area) ne l'envoie jamais plus bas que la **profondeur maximale du trajet** (ce qu'il peut encore aller-retour avant la fin). Si le minerai visé n'est plus que trop profond, il n'a pas d'area imposée et travaille au plus profond qu'il peut atteindre ; un focus d'area trop profond le garde dans l'area la plus profonde atteignable. Le focus n'est pas retiré (il resservira à la session suivante).
 - Le changement est envoyé au serveur, qui l'**applique tout de suite** dans la partie (il n'y en a qu'une, sur le serveur) : tous les joueurs le voient en même temps. Il est enregistré avec son tick (comme un départ).
 
 ### Focus area

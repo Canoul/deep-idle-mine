@@ -4485,3 +4485,19 @@ Règles (voir CLAUDE.md) :
   Captures Chrome headless (page statique, vrai style.css) : confirmation et saisie, 1000 px et 360 px.
 - ⚠️ Pas testé en clic réel dans le jeu (serveur local refusé dans cette discussion) : à essayer une fois (quitter une
   session, renommer un set, sacrifier une pièce). Fenêtre ouverte = le fond n'est pas cliquable (overlay plein écran).
+
+## 28/10/2026 — Focus en fin de session : va-et-vient « Change d'area » / « Change de galerie » (Geoffrey)
+- **Symptôme** (joueur, focus graphite, couche 5) : sur l'échelle, monte et descend en boucle, 0 bloc miné.
+- **Cause** : `focusGoal` (`src/sim/focus.js`) ignorait `m.tripCap` (profondeur max du trajet, fin de session). Minerai
+  visé seulement dans une area plus basse → `changeArea` le fait descendre ; arrivé dans cette area, `focusGoal` = null,
+  mais `decideWork` (`src/sim/ai.js`) n'y vise rien (`inFocus` : y ≤ cap), `down` faux (m.y ≥ cap) → `explore` borné à
+  `areaOf(cap)` → galerie au-dessus, il remonte d'une ligne → `focusGoal` le renvoie en bas. Reproduit : 3 areas, charbon
+  « only » seulement en area 2, tripCap en area 1, puits avec échelle : va-et-vient lignes 101 ↔ 102, 46 bascules.
+- **Correctif** : `focusGoal` borne l'area visée à `capK = areaOf(tripCap)` : focus d'area / « Plus profond » →
+  `min(area, capK)` (il remonte toujours s'il est trop bas) ; focus minerai → seules les areas ≤ capK comptent, sinon null
+  (le focus n'est pas retiré). « Plus profond » inchangé (`deepArea` était déjà borné).
+- ✅ `tests/focus.test.js` : 2 tests (focusGoal borné, et 600 ticks sans va-et-vient ni descente en area 2, pour
+  `{coal:'only'}` et `{area:2}`), échouaient avant (46 bascules). focus, end-depth, deep-ores, miner, mule, path, session,
+  winch : 93/93. Simulation 5 sessions × 3 mineurs : 0 bloquée (sans focus : chiffres identiques avant / après la 2e version).
+- ⚠️ Pas de simulation avec focus minerai (le script n'en pose pas) ; à surveiller : focus « only » d'un minerai absent au
+  dessus du cap → il creuse des galeries vides jusqu'à la fin (comme avant hors fin de session).
