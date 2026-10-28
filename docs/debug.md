@@ -4134,7 +4134,7 @@ Règles (voir CLAUDE.md) :
 - **Piège de vérification** : `goto` vers la même page avec un autre `#` ne recharge pas → ancienne feuille de style ;
   faire `reload()`.
 
-### Pop-ups qui restent tant qu'on ne clique pas (Jules) — branche `jules/notifs-auto`, 🧪 pas en ligne
+### Pop-ups qui restent tant qu'on ne clique pas (Jules) — branche `jules/notifs-auto`, ✅ en ligne le 28/10
 - **Cause** : `src/ui/notify.js` n'avait aucun délai (une pop-up partait seulement après un clic ou quand le serveur
   cessait de l'envoyer) ; `src/ui/instant-lobby.js` `notice()` fermait les rappels MI après 12 s **sauf** celui avec
   Rejoindre / Décliner (`invite`), qui restait même après l'ouverture de la mine.

@@ -30,7 +30,7 @@ Modèle d'entrée :
   pop-ups se ferment maintenant au bout de 20 s, le rappel de la mine instantanée au moment où elle commence (les autres
   rappels se fermaient déjà au bout de 12 s). Rien n'est perdu : l'invitation reste dans le Lobby, la demande d'ami dans
   l'onglet Social. Si quelqu'un renvoie une invitation, la pop-up réapparaît.
-- **État** : 🧪 sur la branche `jules/notifs-auto` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle
 - **Pour le joueur** : sur téléphone, l'écran de ces événements rapetissait sans arrêt (surtout quand le journal à
