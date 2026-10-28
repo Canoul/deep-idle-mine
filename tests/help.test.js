@@ -47,7 +47,20 @@ test('« prochaine session » : un bandeau en haut de Stuff, Skills et Sorts, vi
     assert.equal((s.match(/prochaine session/g) ?? []).length, 1, `plus de paragraphe permanent dans ${v}`);
   }
   assert.match(css, /\.nextNote\{display:none/);
-  assert.match(css, /body\.inSession \.nextNote\{display:block\}/);
+  assert.match(css, /body\.sessionOn \.nextNote\{display:block\}/);
+});
+
+/* 28/10 : la classe de session posée sur <body> s'appelait inSession, comme le bandeau du lobby (.inSession{display:flex…}) :
+   en session, toute la page prenait le style du bandeau (barre du haut rétrécie, contenu centré, fond uni). */
+test('une classe posée sur <body> ne sert qu\'à lui : pas de règle .classe sans body devant, pas d\'autre élément', () => {
+  const js = ['main.js', 'ui/guide.js', 'ui/nav.js'].map(f => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8')).join('\n');
+  const flags = [...js.matchAll(/document\.body\.classList\.(?:toggle|add)\('([\w-]+)'/g)].map(m => m[1]);
+  assert.ok(flags.length >= 1, 'au moins la classe de session');
+  for(const c of flags){
+    const bare = [...css.matchAll(new RegExp(`(^|[^\\w-])\\.${c}(?![\\w-])`, 'gm'))].filter(m => !/body$/.test(css.slice(0, m.index + m[1].length)));
+    assert.equal(bare.length, 0, `.${c} stylé ailleurs que sur body : ${bare.map(m => css.slice(m.index, m.index + 40).trim()).join(' | ')}`);
+    assert.doesNotMatch(html, new RegExp(`class="[^"]*\\b${c}\\b`), `.${c} aussi sur un élément de index.html`);
+  }
 });
 
 test('les sous-titres d\'explication des onglets sont partis (remplacés par le « ? »)', () => {

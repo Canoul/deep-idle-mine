@@ -4158,7 +4158,8 @@ Règles (voir CLAUDE.md) :
   focus clavier (`focusin` / `focusout`). Style `.qhelp`, `.helpLine`, `.nextNote` dans `src/ui/style.css`.
 - **Bandeau « prochaine session »** : `<p class="nextNote">` en haut de Stuff, Skills, Sorts, caché par CSS sauf
   `body.inSession` ; classe posée par `sessionFlag()` (`src/main.js`) aux trois endroits où `rec` change
-  (`enterSession`, `showNoSession`, `showResult`, à côté de `setsUI.refresh()`).
+  (`enterSession`, `showNoSession`, `showResult`, à côté de `setsUI.refresh()`). ❌ **Cassait toute la page en
+  session** (`.inSession` = bandeau du lobby) → renommée `body.sessionOn`, voir « Correctif : page déformée en session ».
 - **Textes déplacés** : `index.html` (≈ 20 paragraphes et sous-titres → `data-qhelp`), `src/ui/lobby.js` (phrase des
   shrines : seulement la ligne « Shrines de X (chef) » reste ; clés d'instance → `qhelp`), `src/ui/upgrade.js` (3
   paragraphes → `helpLine`), `src/ui/instant-lobby.js` et `src/ui/giant.js` (règles → `helpLine(…, 'Règles')`),
@@ -4204,3 +4205,26 @@ Règles (voir CLAUDE.md) :
   l'ouverture de l'inventaire), four / craft / équiper / skill / recherche en vrai (seulement par les tests).
 - **Remarque sans lien** : à 1400 px, dans certains onglets (Stuff, Sorts), la barre du haut ne prend pas toute la
   largeur (800 à 1150 px) ; vu aussi sans les changements du guide. Pas cherché plus loin.
+  → Expliqué et corrigé le 28/10 : c'était `body.inSession` (bulles d'aide), voir l'entrée suivante.
+
+### Correctif : page déformée en session (Jules) — branche `jules/fix-classe-session`
+- **Symptôme** (signalé par Jules, capture sur PC 1911 × 888) : pendant une session, sur tous les onglets, la barre du
+  haut est rétrécie (~700 px) et descendue (~150 px), le contenu est collé à gauche, le mur du fond a disparu (fond uni).
+  Hors session : normal. Le site en ligne servait bien les fichiers de `main` (comparés avec curl) : pas de fichier
+  poussé à côté, et rien à voir avec le chantier de l'appli téléphone.
+- **Cause** : `sessionFlag()` (`src/main.js`) posait `inSession` sur `<body>`, mais `.inSession` est déjà le bandeau
+  « En session dans la mine » du lobby (`src/ui/style.css`, `display:flex; align-items:center;
+  justify-content:space-between; padding; background:var(--sel); box-shadow`). En session, le `<body>` devenait ce
+  bandeau : `.app` = élément flex rétréci à son contenu et centré en hauteur, fond `--sel` par-dessus le mur.
+  Introduit par `c0bfcf0` (bulles d'aide), en ligne le 28/10 à 14:59.
+- **Correctif** : classe du `<body>` renommée `sessionOn` (`src/main.js`, `body.sessionOn .nextNote` dans
+  `src/ui/style.css`). Le bandeau du lobby garde `.inSession`.
+- **Test** : `tests/help.test.js` « une classe posée sur <body> ne sert qu'à lui » : relève les
+  `document.body.classList.toggle/add('…')` de `main.js`, `ui/guide.js`, `ui/nav.js` et refuse une règle `.classe` sans
+  `body` devant dans le CSS, ou la même classe sur un élément d'`index.html`. ❌ avant le correctif (`.inSession{display:flex…`),
+  ✅ après ; help + guide 16/16 ✅.
+- **Navigateur** (playwright, fichiers statiques, 1911 × 888, onglet Inventaire) : `body.inSession` → barre du haut
+  x=12 y=158 largeur 704, `body` en flex (= la capture de Jules) ; `body.sessionOn` → x=0 y=0 largeur 1911, `body` en
+  block, mur visible ✅. Bandeau « prochaine session » de Stuff : affiché avec `sessionOn`, caché sans ✅.
+  Pas vérifié : une vraie session en ligne après la mise à jour (à regarder par Jules).
+- **Point fragile** : une classe posée sur `<body>` ailleurs que dans ces trois fichiers échappe au test.
