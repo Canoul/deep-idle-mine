@@ -370,3 +370,12 @@ test('anneau porté : son doublon est pris dans l\'inventaire, jamais l\'autre a
   assert.equal(upgrade(inv2, { uid:inv2.slots[l].uid, opId:id() }, fixed(0), st2.worn).error, 'not_enough');
   assert.ok(st2.worn.anneau1, 'l\'anneau porté n\'est pas touché');
 });
+
+test('onglet Identification en deux temps : pièces non identifiées, puis exemplaires du même objet', async () => {
+  const { identifyChoices } = await import('../src/ui/upgrade.js');
+  const brute = { item:PICK, uid:1 }, autre = { item:PICK, uid:2 }, faite = { item:PICK, uid:3, q:4, lines:[] }, plume = { item:FEATHER, uid:4 };
+  const list = [brute, autre, faite, plume];
+  assert.deepEqual(identifyChoices(list, null).map(p => p.uid), [1, 2, 4], '1er temps : la pièce identifiée est masquée');
+  assert.deepEqual(identifyChoices(list, brute).map(p => p.uid), [2, 3], '2e temps : même objet seulement, identifié ou non');
+  assert.deepEqual(identifyChoices(list, plume).map(p => p.uid), [], 'pas d\'autre exemplaire : liste vide');
+});
