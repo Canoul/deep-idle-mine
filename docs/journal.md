@@ -29,7 +29,7 @@ Modèle d'entrée :
   ce qui ne sert plus (ingrédients de l'ancienne recette, produits d'une autre sorte) revient tout seul dans
   l'inventaire. Rien n'est perdu ; le produit en cours de fonte est juste annulé. Un ingrédient commun (le Mithril
   ingot entre Cobalt et Thorium ingot) et le charbon restent dans le four. La fenêtre annonce ce qui va revenir.
-- **État** : 🧪 sur la branche `geoffrey/four-changer-recette` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
 - **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
