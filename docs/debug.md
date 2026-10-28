@@ -4041,3 +4041,8 @@ Règles (voir CLAUDE.md) :
   que la session en cours utilise encore ses stats figées (pas de duplication : la session ne la rend pas à la fin).
   Le lobby (lecture seule) montre l'apparence et le GS du nouveau set pendant la session.
 
+## 28/10/2026 — Tours du Jugement : 4 h (Geoffrey)
+- `JUDGMENT.openHours` 6 → 4 (lu partout : meta/judgment, Lobby, Discord, wiki). `openUntil` est enregistré à l'ouverture :
+  une tour déjà ouverte garde sa fin. Tests judgment, discord, game-service, wiki : 87/87 ✅.
+- ⚠️ `JUDGMENT.salt` retiré par erreur puis remis dans le même commit : aucun test ne vérifie sa présence.
+

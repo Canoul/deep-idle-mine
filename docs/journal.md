@@ -76,6 +76,11 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Tours du Jugement : ouvertes 4 h au lieu de 6
+- **Pour le joueur** : quand une jauge est pleine, la tour de l'Ange ou du Démon reste ouverte **4 h** (avant 6 h). Le
+  message Discord et le Lobby suivent. Une tour déjà ouverte au moment de la mise en ligne garde son heure de fermeture.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Sets : équiper pendant une session, pour la suivante
 - **Pour le joueur** : le bouton **Équiper** d'un set marche maintenant **pendant une session**. La session en cours
   continue avec l'équipement de son lancement ; le set compte **dès la prochaine session**. Enregistrer et Nouveau set

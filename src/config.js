@@ -1580,7 +1580,7 @@ export const TRAP = {
 export const JUDGMENT = {
   /* cap : 200 depuis le 24/10/2026 (Geoffrey ; ancien 250) */
   /* pct : % des blocs de l'area, les deux résidus ensemble, pris sur la pierre normale (23/10) */
-  fromArea: 4, pct: 0.5, cap: 200, openHours: 6, salt: 0x5e51d0e,
+  fromArea: 4, pct: 0.5, cap: 200, openHours: 4, salt: 0x5e51d0e,   // openHours : 28/10 (Geoffrey), avant 6
   sides: {
     angel: { block: 12, item:'Résidu angélique',  label:'Ange',  tower:'Tour de l\'Ange',  color:'#f4f7ff' },
     demon: { block: 13, item:'Résidu démoniaque', label:'Démon', tower:'Tour du Démon',  color:'#8b3fd9' },
