@@ -33,7 +33,7 @@ Modèle d'entrée :
   Des **icônes pixel** à la place des emojis, aussi dans la barre de sorts en session, et une couleur par spé.
 - **Décisions** : choix de la piste A parmi trois maquettes (barre de sorts / grimoire / trois voies).
 - **À suivre** : la règle d'ouverture des emplacements 3 et 4 n'existe toujours pas (affichés « Verrouillé »).
-- **État** : 🧪 sur la branche `jules/refonte-onglet-sorts` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Chat global dans le Lobby
 - **Pour le joueur** : une carte **Chat global** dans le Lobby (colonne de gauche, sous les préférences) : **tous les
