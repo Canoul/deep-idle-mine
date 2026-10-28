@@ -31,7 +31,9 @@ Modèle d'entrée :
   téléphone. Pas encore d'interface pour téléphone ni de notifications (étapes suivantes).
 - **Pour l'équipe** : l'appli est fabriquée par GitHub (onglet Actions) ; comment la récupérer et l'installer :
   `docs/appli-mobile.md`.
-- **À suivre** : l'essayer sur un vrai Android (liste de 7 essais dans le guide) ; puis l'étape 2, l'interface.
+- **À suivre** (en pause le 28/10, Jules reprendra) : 1) décider de mettre la branche en ligne (rien ne change sur le
+  site, mais sans elle le badge n'apparaît pas dans l'appli) ; 2) l'essayer sur un vrai Android (liste de 7 essais
+  dans le guide) ; 3) écrire le plan de l'étape 2, l'interface téléphone (spec, « Les étapes »).
 - **État** : 🧪 sur la branche `jules/appli-mobile` (pas en ligne)
 
 ## 28/10/2026 — Jules — Appli mobile : le plan
