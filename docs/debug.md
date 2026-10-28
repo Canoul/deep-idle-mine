@@ -3983,3 +3983,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/skills.test.js` (nouveau test : déblocage, textes, slotMastery, stats pioche / épée / torse, onglet
   Stuff, session) ; stuff, gearscore, instant, glyphes, upgrade, game : 178/178 ; wiki, sets, tours, Bloc géant,
   instances : 139/140, ❌ hors sujet `tests/dev-spec.test.js` (déjà en échec sur `main`).
+
+## 28/10/2026 — Discord : seuil des annonces à R6 (Geoffrey)
+- **Quoi** : `ANNOUNCE.minQuality` 7 → 6 (src/config.js). `treasureMessage` couvre déjà les coffres du Roi Gobelin
+  (`treasure:true`, `chest.q`) : versés par la même boucle de fin de session que les trésors de tour (server/game/service.js).
+- **Tests** ✅ `tests/discord.test.js` (R6 trésor, coffre du Roi Gobelin R6/R7, R5 rien ; identification R6) + instance,
+  goblin : 63/63.

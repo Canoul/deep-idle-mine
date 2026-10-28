@@ -1,6 +1,7 @@
 /* Annonces Discord : un message dans un salon (webhook) quand un joueur obtient quelque chose de très rare.
-   - un trésor de tour de qualité ANNOUNCE.minQuality ou plus (« 🚨 Zoe a loot un trésor démoniaque R7 🚨 ») ;
-   - une pièce identifiée dans cette qualité (« 🚨 Zoe a identifié Plastron en fer R7 🚨 ») ;
+   - un trésor de tour ou un coffre du Roi Gobelin (instance) de qualité ANNOUNCE.minQuality ou plus, R6 et R7 depuis le
+     28/10 (« 🚨 Zoe a loot un trésor démoniaque R7 🚨 », « 🚨 Zoe a loot un coffre du Roi Gobelin R6 🚨 ») ;
+   - une pièce identifiée dans cette qualité ou plus (« 🚨 Zoe a identifié Plastron en fer R6 🚨 ») ;
    - l'ouverture d'une tour du Jugement (« 🚨 La Tour du Démon est ouverte pendant 6 h ! 🚨 », 26/10) ;
    - le premier BP trouvé d'une pièce secrète du wiki (WIKI.secret), ou la pièce secrète elle-même (stuff du Roi
      Gobelin), avec ses stats (27/10).

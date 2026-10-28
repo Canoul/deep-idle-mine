@@ -757,7 +757,8 @@ export const SHINY = {
 /* ---- Annonces Discord (server/social/discord.js) ----
    25/10/2026 (Geoffrey) : un message dans le salon #général quand un joueur loot un trésor de tour (RUNE.treasures)
    ou identifie une pièce de qualité minQuality ou plus. timeoutMs : délai max d'un envoi (il part en tâche de fond). */
-export const ANNOUNCE = { minQuality: 7, emoji: '🚨', timeoutMs: 5000 };
+/* minQuality : 6 depuis le 28/10/2026 (Geoffrey ; avant 7) : trésors de tour, coffres du Roi Gobelin, identifications */
+export const ANNOUNCE = { minQuality: 6, emoji: '🚨', timeoutMs: 5000 };
 
 export const RUNE = {
   item: 'Rune', tex: 'rune', chestWeight: 2,

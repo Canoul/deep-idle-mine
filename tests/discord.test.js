@@ -2,7 +2,7 @@
    webhook (faux fetch), et branchements dans le service de jeu (une seule annonce, même rejouée ; jamais bloquante). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ANNOUNCE, UPGRADE, JUDGMENT, TOWER, GAME, TREASURE, treasureItem } from '../src/config.js';
+import { ANNOUNCE, UPGRADE, JUDGMENT, TOWER, GAME, TREASURE, treasureItem, goblinChestItem } from '../src/config.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
 import { createMemoryGameStore } from '../server/game/store.js';
@@ -24,12 +24,20 @@ test("message : trésor de tour R7 (démon ou ange) annoncé ; en dessous, Treas
   assert.equal(treasureMessage('admin', treasureItem('demon', 7)), '🚨 admin a loot un trésor démoniaque R7 🚨');
   assert.equal(treasureMessage('Zoe', treasureItem('angel', 7)), '🚨 Zoe a loot un trésor angélique R7 🚨');
   assert.equal(treasureMessage('Zoe', treasureItem('demon', MIN - 1)), null);
+  /* 28/10/2026 (Geoffrey) : R6 aussi, trésors de tour et coffres du Roi Gobelin (instance) */
+  assert.equal(MIN, 6);
+  assert.equal(treasureMessage('Zoe', treasureItem('demon', 6)), '🚨 Zoe a loot un trésor démoniaque R6 🚨');
+  assert.equal(treasureMessage('Zoe', goblinChestItem(6)), `🚨 Zoe a loot un ${goblinChestItem(6)[0].toLowerCase()}${goblinChestItem(6).slice(1)} 🚨`);
+  assert.equal(treasureMessage('Zoe', goblinChestItem(7)).endsWith('R7 🚨'), true);
+  assert.equal(treasureMessage('Zoe', goblinChestItem(5)), null);
   assert.equal(treasureMessage('Zoe', TREASURE.tiers.at(-1).item), null, 'un Treasure TX de la mine n\'a pas de qualité');
   for(const item of ['Charbon', 'Objet inconnu', '', undefined, null]) assert.equal(treasureMessage('Zoe', item), null, String(item));
 });
 
 test("message : pièce identifiée R7 avec son nom ; en dessous ou sans qualité : rien", () => {
   assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:7 }), '🚨 Zoe a identifié Plastron en fer R7 🚨');
+  assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:6 }), '🚨 Zoe a identifié Plastron en fer R6 🚨');   // 28/10
+  assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:5 }), null);
   assert.equal(identifyMessage('Zoe', { item:'Plastron en fer', q:MIN - 1 }), null);
   for(const piece of [{ item:PICK }, null, undefined]) assert.equal(identifyMessage('Zoe', piece), null);
 });
