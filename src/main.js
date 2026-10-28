@@ -285,7 +285,7 @@ const instantLobby = setupInstantLobby({
 function startInstant(){ if(acct.account && !acct.offline){ instantLobby.start(); giantUI?.refresh(); } else instantLobby.stop(); }
 
 /* Bloc géant : carte du lobby (« Où miner »), visite dans l'onglet Session, écran de fin (src/ui/giant.js) */
-giantUI = setupGiant({ api: giantApi, nav, session: () => !!rec, me: () => acct.account?.id });
+giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInventory(inv, bag), session: () => !!rec, me: () => acct.account?.id });
 
 /* Session et visite au Bloc géant en même temps (27/10/2026, Geoffrey) : l'onglet Session montre l'une OU l'autre, une
    barre permet de passer de l'une à l'autre. Ce qui vient de commencer passe devant. Chaque partie garde ses propres

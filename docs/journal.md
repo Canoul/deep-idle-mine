@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Correctif : réclamer le butin du Bloc géant
+- **Pour le joueur** : après « Réclamer », les objets apparaissent tout de suite dans l'inventaire (mis en évidence,
+  pastille sur l'onglet) : plus besoin d'actualiser la page ni de trier. Pendant la réclamation, le bouton affiche
+  « Réclamation… » et le message dit « C'est dans ton inventaire » : on voit que le premier clic a marché.
+- **À suivre** : le « il faut cliquer 2 fois » n'a pas été reproduit (un seul clic suffit, même avec un réseau lent) ;
+  le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
+- **État** : 🧪 sur la branche `geoffrey/fix-reclamer-bloc-geant` (pas en ligne)
+
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
   offensives ÷ 2 (plastron en thorium : dégâts +3,85 au lieu de +7,7), dégâts % ÷ 3 (jambes en thorium +31,3 % au lieu
