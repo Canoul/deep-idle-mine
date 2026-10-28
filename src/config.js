@@ -1490,6 +1490,9 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce
    temps ; le dernier (Rejoindre / Décliner) se ferme à l'ouverture de la mine. */
 export const NOTIFY = { popupMs:20_000, noticeMs:12_000 };
+/* Guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js, 28/10/2026, Jules) : les objets que visent ses étapes
+   (première pioche à crafter, lingot à fondre), et le délai entre deux relectures de l'état du joueur */
+export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'Fer', refreshMs:1500 };
 /* Classements (onglet Social → Classements, 27/10/2026, Geoffrey ; src/meta/leaderboard.js) : top `size` joueurs + sa
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
    serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.

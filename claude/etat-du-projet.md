@@ -28,6 +28,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   paragraphes dans les pages. Tous les textes des pages fixes sont dans `src/ui/help.js` (`HELP`) ; un écran construit
   par le code utilise `qhelp()` / `helpLine()`. « Pris en compte à la prochaine session » : bandeau en haut de Stuff,
   Skills et Sorts, seulement pendant une session. Nouvelle explication = un texte dans `HELP`, pas un paragraphe.
+- **Guide « Premiers pas »** (28/10, Jules ; `src/ui/guide.js`, config `GUIDE`) : 7 étapes pour les nouveaux joueurs
+  (session → butin → four → Pioche en pierre → l'équiper → 1er point de skill → 1re recette apprise), cochées toutes
+  seules d'après l'état du joueur ; l'onglet de l'étape en cours clignote. Mémorisé dans le navigateur, par compte ;
+  un joueur qui a déjà tout fait ne le voit pas. Aucun onglet caché.
 - **Lobby et Session séparés** (21/10/2026) : l'onglet **Lobby** prépare et lance (groupe, préférences, choix
   « Mine / Mine instantanée / tours ouvertes ») et reste visible en **lecture seule** pendant une session ;
   l'onglet **Session** montre la partie puis le bilan, « Tu n'es pas en session » sinon. Au lancement, tout le
@@ -392,7 +396,6 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 ## En attente / hors périmètre
 
 - Fondations : pas encore.
-- Guide de départ (tutoriel) pour les nouveaux joueurs : proposé le 28/10 (Jules), forme à décider.
 - Sorts : déblocage des emplacements 3 et 4, source des parchemins (butin ? craft ?) et récompense des niveaux de
   spécialisation autres que les sorts : à décider (24/10).
 - `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.

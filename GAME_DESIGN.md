@@ -571,6 +571,8 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 - **Historique** : les sessions terminées du joueur (gardées 30 jours), la plus récente en haut : date, durée, joueurs, **seed**, areas débloquées, profondeur, XP reçue et **sa part du butin** (« rien reçu » s'il est parti avant la fin).
 - **Social** : les amis, ce qu'ils font, les inviter ou les rejoindre (voir ci-dessous).
 - Changer d'onglet **ne met pas la session en pause** : la mine continue de tourner ; le minuteur de session reste visible dans la barre du haut.
+- **Aide** *(28/10/2026, Jules)* : les explications sont des bulles **« ? »** à côté de ce qu'elles expliquent (survol, toucher), pas des paragraphes dans les pages.
+- **Guide « Premiers pas »** *(28/10/2026, Jules ; `GUIDE` en config)* : pour un nouveau joueur, un petit panneau au-dessus de la barre d'action liste 7 étapes : lancer une session, regarder son butin (Inventaire), fondre son fer (Four), crafter une **Pioche en pierre**, l'équiper, dépenser son premier point de skill, apprendre sa première recette par un blueprint. Chaque étape se coche **toute seule** d'après l'état réel du joueur ; l'onglet de l'étape en cours clignote dans la barre. Repliable, et « Masquer » le ferme pour toujours. **Aucun onglet n'est caché.** Un compte qui a déjà tout fait à sa première visite ne le voit jamais. Mémorisé dans le navigateur (pas sur le serveur).
 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
 - **Trois sous-onglets** : **Amis** (tout ce qui suit), **Online** *(26/10/2026, Geoffrey)* et **Classements** *(27/10/2026, Geoffrey)*.

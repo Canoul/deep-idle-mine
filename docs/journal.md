@@ -32,6 +32,20 @@ Modèle d'entrée :
   l'onglet Social. Si quelqu'un renvoie une invitation, la pop-up réapparaît.
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Jules — Guide « Premiers pas » pour les nouveaux joueurs
+- **Pour le joueur** : un nouveau joueur voit, en bas à droite (au-dessus de la barre d'onglets), un petit guide
+  **Premiers pas** avec 7 étapes qui suivent la boucle du jeu : lancer une session → regarder son butin → fondre son
+  fer au Four → crafter une Pioche en pierre → l'équiper → dépenser son premier point de skill → apprendre sa première
+  recette (treasure → Recherche → « Utiliser »). Chaque étape **se coche toute seule** quand c'est fait ; l'onglet de
+  l'étape en cours **clignote** dans la barre ; un bouton « Y aller » y mène. Le guide se replie en une ligne, et
+  « Masquer le guide » le ferme pour de bon. Un mot d'accueil s'affiche tant que rien n'est fait.
+- **Décisions** : on ne cache aucun onglet (les anciens joueurs et les liens `#craft` marchent comme avant). Un joueur
+  qui a déjà tout fait ne voit jamais le guide. Le guide est mémorisé dans le navigateur (pas sur le serveur) : sur un
+  autre appareil, il réapparaît là où en est le joueur.
+- **À suivre** : voir si les nouveaux joueurs le suivent ; l'étape « Pioche en pierre » (30 lingots) peut prendre
+  plusieurs sessions, à surveiller.
+- **État** : 🧪 sur la branche `jules/aide-bulles` (pas en ligne)
+
 ## 28/10/2026 — Jules — Bulles d'aide « ? » à la place des textes d'explication
 - **Pour le joueur** : les paragraphes d'explication posés un peu partout (en haut ou en bas des onglets) sont
   remplacés par un petit **« ? »** à côté de ce qu'ils expliquent : on passe la souris dessus (ou on le touche sur
@@ -43,7 +57,7 @@ Modèle d'entrée :
   bandeau en haut de ces onglets, **seulement pendant une session** (le seul moment où c'est utile).
   Dans le Four et le Concasseur, l'ancien bouton « ? » (qui ouvrait les tableaux) s'appelle maintenant **Recettes** /
   **Butin**, pour qu'un « ? » veuille toujours dire « explication ».
-- **À suivre** : le guide de départ pour les nouveaux joueurs (proposition faite à l'équipe, pas encore codé).
+- **À suivre** : le guide de départ, fait juste après (entrée au-dessus).
 - **État** : 🧪 sur la branche `jules/aide-bulles` (pas en ligne)
 
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle

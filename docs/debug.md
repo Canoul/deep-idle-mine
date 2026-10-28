@@ -4176,3 +4176,31 @@ Règles (voir CLAUDE.md) :
   instances) affichées pour de vrai.
 - **Point fragile** : un texte de `HELP` qui cite une règle (oxygène, pods, recherche, skills) doit suivre
   `GAME_DESIGN.md` si la règle change : c'est écrit à la main.
+- **Correctif (même jour)** : dans Stuff, le `.nextNote` devenait une case de la grille `.furnWrap` et décalait tout →
+  `grid-column:1/-1` comme `.invHead`. Vérifié en vraie session (invité local) : Stuff, Skills, Sorts ✅.
+
+### Guide « Premiers pas » (Jules) — branche `jules/aide-bulles`, 🧪 pas en ligne
+- **Quoi** : `src/ui/guide.js` (nouveau). `GUIDE_STEPS` (7 étapes : launch, loot, smelt, craft, equip, skill, research ;
+  chacune un onglet, un titre, une aide, une condition `done(f)`), `guideView(f)` (étapes faites, étape en cours = la
+  1re pas faite ; pas un couloir : skills / recherche se cochent même si le four n'est pas fait ; « loot » faite aussi
+  dès qu'une étape suivante l'est), `nextSaved(saved, f, view)` (1re visite : `{ hidden: tout fait, open: !tout fait,
+  seenInv:false }` ; `seenInv` quand l'onglet Inventaire est ouvert après avoir joué), `setupGuide(el, { facts, go,
+  highlight })` (affichage, clics « replier », « Y aller », « Masquer »). Mémoire : `localStorage['deepIdleMine.guide']`
+  = `{ <id de compte>: { hidden, open, seenInv } }`, lectures / écritures dans des try/catch.
+- **Faits lus** (`src/main.js`, aucun appel serveur en plus) : `ready` = `progress` lu et pas hors ligne, `played` =
+  XP > 0 ou inventaire non vide, `inv` (`ui.inv`, `unlocked`), `worn` (`stuff.worn()`), `skillsSpent` (`ui.skills`,
+  posé dans `onChange` des skills), `inSession` (`rec`), `tab`. Relu toutes les `GUIDE.refreshMs` (1,5 s) et à chaque
+  changement d'onglet ; ne redessine que si l'état change. Objets visés : `GUIDE` en config (`Pioche en pierre`,
+  `Lingot de fer`, `Fer`) ; le nombre de lingots vient de `RECIPES`.
+- **Barre** : `nav.highlight(tab)` (`src/ui/nav.js`) → classe `guideTab` (contour orange qui clignote, `steps(2)` ;
+  coupé par `prefers-reduced-motion`). Page : `<aside id="guide" class="guide">` après `#notifs` ; CSS `.guide…`
+  (fixe, à droite au-dessus de la barre ; téléphone : `right:8px`).
+- **Tests** : `tests/guide.test.js` (nouveau, 9) : ordre et onglets des étapes, objets visés cohérents avec recettes et
+  four, nouveau joueur, en session, four → craft → équiper, liste pas couloir, « loot » implicite, tout fait, mémoire
+  (nouveau / ancien joueur masqué / inventaire vu), place dans la page. guide, help, nav ✅.
+- **Navigateur** (playwright, serveur local de Jules, compte invité créé dans `data/`) : nouveau compte → guide ouvert
+  0/7, accueil, Lobby en avant ✅ ; lancement → 1/7 « Regarde ton butin », Inventaire en avant ✅ ; replié en une ligne
+  ✅ ; 390 px : lisible, au-dessus de la barre ✅. **Pas vérifié** : fin d'une vraie session (étape butin cochée à
+  l'ouverture de l'inventaire), four / craft / équiper / skill / recherche en vrai (seulement par les tests).
+- **Remarque sans lien** : à 1400 px, dans certains onglets (Stuff, Sorts), la barre du haut ne prend pas toute la
+  largeur (800 à 1150 px) ; vu aussi sans les changements du guide. Pas cherché plus loin.

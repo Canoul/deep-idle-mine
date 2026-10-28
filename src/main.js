@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -59,6 +59,7 @@ import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { fillHelp } from './ui/help.js';
+import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
@@ -189,7 +190,7 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
@@ -213,6 +214,7 @@ fillHelp();        // « ? » d'aide des pages (src/ui/help.js)
 const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
+let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
@@ -220,6 +222,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
@@ -620,6 +623,16 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
+
+/* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
+guide = setupGuide($('guide'), {
+  facts: () => ({ ready: progress !== null && !acct.offline, account: acct.account?.id ?? null, tab: ui.tab, inSession: !!rec,
+                  played: (progress?.xp ?? 0) > 0 || ui.inv.slots.some(Boolean), inv: ui.inv, worn: stuff.worn(),
+                  skillsSpent: ui.skills?.spent ?? 0, unlocked: (ui.inv.unlocked ?? []).length }),
+  go: id => nav.show(id),
+  highlight: id => nav.highlight(id),
+});
+guide.refresh(); setInterval(guide.refresh, GUIDE.refreshMs);
 if(globalThis.DIM_BOOT) DIM_BOOT.started = true;   // démarrage réussi : src/boot-check.js n'affiche plus rien
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
