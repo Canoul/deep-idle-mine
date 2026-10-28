@@ -4303,3 +4303,7 @@ Règles (voir CLAUDE.md) :
   « cases | stats 150u » passe sur `.stuffMain` (1 colonne sous 1100 px) ; `.furnWrap` de Stuff : simple max-width 720u.
 - ✅ Vérifié en capture Chrome headless (page statique avec le vrai style.css) à 1600 px (3 colonnes) et 900 px (stats
   sous les cases). Pas de test unitaire (CSS seul). La fiche d'un ami (`#fview`, Social) n'est pas touchée.
+
+## 28/10/2026 — Geoffrey — Fiche d'objet de l'inventaire sans le poids
+- `src/ui/inventory.js` `infoHtml` : ligne `poids ${d.w}` retirée (affichage seulement ; `ITEMS[…].w` et les pods en
+  session inchangés). Tests ✅ inventory + stuff 23/23. Pas vérifié dans le navigateur (une ligne de texte en moins).

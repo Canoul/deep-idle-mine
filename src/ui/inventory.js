@@ -84,7 +84,6 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   const bits = [ piece ? pname(piece, 'b') : rname(s.item, undefined, 'b'), `× ${fullQty(s.qty)}` ];
   if(d) bits.push(CAT_LABEL[d.cat] || d.cat);
   bits.push(rlabel(s.item));
-  if(d?.w) bits.push(`poids ${d.w}`);
   if(!isStackable(s.item)) bits.push('ne s\'empile pas');
   if(piece && !piece.q) bits.push('<span class="mut">non identifiée</span>');
   if(statsText(piece ?? s.item)) bits.push(`<span class="stuffStats">${esc(statsText(piece ?? s.item))}</span>`);
