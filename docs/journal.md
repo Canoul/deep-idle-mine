@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Fond d'écran : la mine à la même place et à la même taille qu'en session
+- **Pour le joueur** : en passant de l'onglet Session à un autre onglet, la mine du fond reste exactement où elle était,
+  à la même échelle (avant, elle s'agrandissait pour couvrir tout l'écran : ça sautait aux yeux). Autour, le mur de
+  pierre habituel. Si on n'a pas encore ouvert l'onglet Session (ou après avoir changé la taille de la fenêtre), la mine
+  couvre l'écran comme avant, jusqu'au prochain passage sur l'onglet Session.
+- **État** : 🧪 sur la branche `geoffrey/fond-echelle` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
 - **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
   (Navette, Échelle de 2, Treuil, Mule…) disparaît. Le bonus des skills sur les stats reste affiché en bleu ; le détail

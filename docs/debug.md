@@ -4404,3 +4404,16 @@ Règles (voir CLAUDE.md) :
 - `src/ui/stuff.js` `statsHTML` : plus de bloc `behaviourSkills` (aussi utilisé par la fiche ami, `src/ui/social.js`).
   `behaviourSkills` reste dans `src/meta/skills.js` (testé, plus appelé par l'interface).
 - ✅ `tests/dps.test.js` (nouveau : pas de « Skills en partie » avec un logisticien), skills, social : 44/44.
+
+## 28/10/2026 — Geoffrey — Fond de page à l'échelle de la session (🧪 branche `geoffrey/fond-echelle`)
+- **Quoi** : `src/ui/backdrop.js` `measure(mode, cv, rows)` appelé dans `frame` (src/main.js) juste après le fit de
+  l'onglet Session : `getBoundingClientRect` du canvas de la session (cv, cvMi, cvTw, cvIn) + lignes du moteur
+  (`renderer.rows` / `miRenderer.rows`) + `innerWidth/innerHeight`, gardé dans `localStorage['dim.bgPlace']` (relu et
+  revérifié : nombres finis, w/h > 0, modes connus). `draw` : place valable (même taille de fenêtre) → canvas
+  `position:absolute` à ces coordonnées, `setRows(place.rows)` ; sinon classe `.cover` (ancien comportement).
+  CSS : plus de fond noir sous `.bgSession` (le mur se voit autour de la mine).
+- **Tests** ✅ `tests/backdrop.test.js` 6/6 (mesure gardée, onglet caché ignoré, mode inconnu ignoré ; place reprise ;
+  fenêtre redimensionnée / mesure abîmée / JSON invalide → `.cover`).
+- ✅ **Navigateur** (Chrome sans écran, CDP, mode dev) : canvas de la session 274,136 776×543 → canvas du fond
+  274,136 776×543 sur l'onglet Inventaire ; aucune erreur console. Pas vérifié : tours, instance, MI, téléphone
+  (sur téléphone #cv est dans le flux et la page défile : la mesure dépend du défilement au moment du relevé).

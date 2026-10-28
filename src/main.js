@@ -703,6 +703,7 @@ function frame(now){
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
       ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
+      if(shown) backdrop.measure(ins ? 'instance' : tw ? 'tower' : mi ? 'mi' : 'mine', $(ins ? 'cvIn' : tw ? 'cvTw' : mi ? 'cvMi' : 'cv'), mi ? miRenderer.rows : renderer.rows);   // le fond reprend cette place et cette échelle
       document.querySelectorAll('.runL, .runR, .runGrid.mi > aside').forEach(c => clearDock(c, $('nav')));   // colonnes jusqu'en bas si possible
     }
     const face = $('navAccount').querySelector('canvas');
