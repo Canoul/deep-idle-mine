@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
+- **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
+  « Tu as obtenu » (ou « Amélioration réussie », « Pièce identifiée », « Pièce enchantée »), la texture de l'objet en
+  grand, son nom dans la couleur de sa qualité et ses stats dessous (et son GS pour le stuff). Ça marche pour le
+  **craft**, le **blueprint** de la table de recherche (avec la recette qu'il débloque), l'**identification**,
+  l'**amélioration réussie**, l'**enchantement** et la rune retirée (fragment). Un clic, Entrée ou Échap la ferme.
+- **Décisions** : on tutoie (« Tu as obtenu »), comme partout dans le jeu. Les trésors gardent leur bilan habituel dans
+  l'inventaire, sans pop-up.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Amélioration : choisir directement une pièce équipée
 - **Pour le joueur** : dans l'onglet Amélioration (identifier, améliorer, enchanter, retirer une rune), les pièces que
   le mineur porte apparaissent dans les listes, marquées « équipée » : plus besoin de les retirer puis de les remettre.

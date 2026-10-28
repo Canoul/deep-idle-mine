@@ -651,6 +651,17 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .nbtns{display:flex;gap:calc(2*var(--u));justify-content:flex-end;margin-top:calc(3*var(--u))}
 .nbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .notif .err{margin:calc(2*var(--u)) 0 0}
+/* ---------- pop-up « Tu as obtenu » (src/ui/obtained.js) : au centre, au-dessus de tout ---------- */
+#obtained{position:fixed;inset:0;background:rgba(8,5,4,.6);display:flex;align-items:center;justify-content:center;z-index:65;padding:calc(6*var(--u));cursor:pointer}
+#obtained[hidden]{display:none}
+#obtained .box{max-width:min(calc(150*var(--u)),100%);width:100%;max-height:100%;overflow:auto;text-align:center;border:calc(6*var(--u)) solid transparent;
+  padding:calc(4*var(--u)) calc(6*var(--u));border-image:url(../../textures/ui/panel_hi.png) 6 fill / calc(6*var(--u)) stretch;animation:obin .25s steps(3)}
+.obTitle{margin:0 0 calc(4*var(--u));color:var(--acc-lt);font-size:var(--fs-l)}
+.obIcon{width:calc(40*var(--u));margin:0 auto;cursor:inherit}
+.obName{margin:calc(4*var(--u)) 0 calc(3*var(--u));font-size:var(--fs-l)}
+.obLine{color:var(--o2)}
+.obHint{margin:calc(4*var(--u)) 0 0}
+@keyframes obin{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
 @keyframes nin{from{transform:translateX(calc(-12*var(--u)));opacity:0}to{transform:none;opacity:1}}
 @media (max-width:700px){.frow{flex-wrap:wrap}.fbtns{width:100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

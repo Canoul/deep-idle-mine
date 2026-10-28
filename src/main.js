@@ -64,6 +64,8 @@ import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
 import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
+import { setupObtained } from './ui/obtained.js';
+import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
 
@@ -155,14 +157,26 @@ async function equipFromInventory(slot, uid){
 /* ---------- four : chaque action est faite par le serveur, qui renvoie fours et inventaire ---------- */
 /* amélioration : le serveur tire le hasard (identification, réussite) et renvoie la pièce, l'inventaire et le stuff à
    jour (une pièce portée peut être choisie ; sacrifiée, sa case se vide) */
+/* pop-up « Tu as obtenu » : objet crafté, blueprint, pièce identifiée, améliorée ou enchantée, fragment de rune */
+const obtained = setupObtained($('obtained'));
+const UPGRADE_TITLES = { identify:'Pièce identifiée', upgrade:'Amélioration réussie', enchant:'Pièce enchantée', unenchant:'Tu as obtenu' };
 const upgradeUI = setupUpgrade({
-  onOp: async op => { const r = await gameApi.upgrade({ ...op, opId: newOpId() }); if(r.stuff) stuff.set(r.stuff); setInventory(r.inventory); return r; },
+  onOp: async op => {
+    const r = await gameApi.upgrade({ ...op, opId: newOpId() });
+    if(r.stuff) stuff.set(r.stuff);
+    setInventory(r.inventory);
+    if(r.success !== false) obtained.show({ title: UPGRADE_TITLES[op.action] ?? 'Tu as obtenu', entry: r.fragment ?? r.piece });
+    return r;
+  },
   worn: () => stuff.worn(),
 });
 
 /* craft et stuff : même principe, le serveur fait l'action et renvoie l'inventaire (et le stuff) à jour */
 const craft = setupCraft({
-  onCraft: async item => { setInventory((await gameApi.craft(item, newOpId())).inventory); },
+  onCraft: async item => {
+    setInventory((await gameApi.craft(item, newOpId())).inventory);
+    obtained.show({ title:'Tu as obtenu', entry: item, qty: recipeOf(item)?.qty ?? 1 });
+  },
 });
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
@@ -186,7 +200,12 @@ const crusher = setupCrusher({
 
 /* table de recherche : le serveur tire le blueprint (ou les parts) et renvoie l'inventaire */
 const research = setupResearch({
-  onOp: async op => { const r = await gameApi.research({ ...op, opId: newOpId() }); setInventory(r.inventory); return r; },
+  onOp: async op => {
+    const r = await gameApi.research({ ...op, opId: newOpId() });
+    setInventory(r.inventory);
+    if(op.action === 'research') obtained.show({ title:'Tu as obtenu', entry: r.item });
+    return r;
+  },
 });
 
 /* skills : le serveur vérifie et enregistre ; reset refusé pendant une session */
