@@ -3,7 +3,8 @@
    - Recherche : on dépense RESEARCH.tiers[t].cost Blueprint parts (tout ou rien) et on obtient un blueprint du tier,
      tiré au hasard parmi ceux du Treasure du tier dont la recette n'est pas encore apprise (un BP déjà en stock peut
      ressortir ; un BP qui ne débloque encore rien reste toujours dans le tirage). Tirage pondéré par
-     RESEARCH.tiers[t].weights (1 par défaut ; ex. tier 3 : le plan épique pèse 0,25).
+     RESEARCH.tiers[t].weights (1 par défaut ; ex. tier 3 : le plan épique pèse 0,25). Tier à étapes (stages, tier 4) :
+     seulement les plans de la première étape pas finie (researchStage).
    - Un tier n'est ouvert que si le joueur a appris TOUTES les recettes de tous les tiers inférieurs (tierUnlocked). Les blueprints
      qui ne débloquent encore aucune recette (Four en fer, Boussole en or) ne comptent pas.
    - Recycle : un blueprint (n'importe lequel) est détruit et rend entre min et max Blueprint parts, selon le tier du
@@ -23,8 +24,21 @@ export const tierBlueprints = t => {
   const def = tierOf(t);
   return def ? (LOOT[def.from]?.oneOf.find(f => f.family === 'blueprint')?.items.map(i => i.item) ?? []) : [];
 };
-/* blueprints que la recherche peut donner à ce joueur : ceux du tier dont il n'a pas appris la recette */
-export const researchPool = (inv, t) => tierBlueprints(t).filter(bp => { const r = recipeOfBlueprint(bp); return !r || !isUnlocked(r, inv); });
+const notLearned = inv => bp => { const r = recipeOfBlueprint(bp); return !r || !isUnlocked(r, inv); };
+/* étape en cours d'un tier à étapes (RESEARCH.tiers[].stages, tier 4 depuis le 28/10) : la première dont une recette reste
+   à apprendre → { index (0 = 1re), count, pool } ; null pour un tier sans étapes ou entièrement appris */
+export function researchStage(inv, t){
+  const stages = tierOf(t)?.stages;
+  if(!stages) return null;
+  for(let i = 0; i < stages.length; i++){
+    const pool = stages[i].filter(notLearned(inv));
+    if(pool.length) return { index:i, count:stages.length, pool };
+  }
+  return null;
+}
+/* blueprints que la recherche peut donner à ce joueur : ceux du tier dont il n'a pas appris la recette (tier à étapes :
+   seulement ceux de l'étape en cours) */
+export const researchPool = (inv, t) => tierOf(t)?.stages ? (researchStage(inv, t)?.pool ?? []) : tierBlueprints(t).filter(notLearned(inv));
 /* poids d'un blueprint dans le tirage de son tier (1 par défaut) */
 export const weightOf = (t, bp) => { const w = tierOf(t)?.weights?.[bp]; return Number.isFinite(w) && w > 0 ? w : 1; };
 /* chance de chaque blueprint du tirage actuel de ce joueur : [{ item, chance }] (somme = 1) */

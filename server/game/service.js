@@ -882,7 +882,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const inv = await loadInventory(me.id);
         const r = action === 'research' ? research(inv, body.tier, opId, random) : recycle(inv, body.item, opId, random);
         if(r.error) fail(r.error, ['not_enough', 'not_owned', 'nothing_left', 'tier_locked'].includes(r.error) ? 409 : 400, RESEARCH_ERRORS[r.error]);
-        if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
+        if(!r.repeated){
+          await store.putInventory(me.id, JSON.parse(serialize(inv)));
+          if(action === 'research') markFound([r.item], displayName(me));   // tier 4 : un plan secret sorti de la recherche le révèle aussi (28/10)
+        }
         return { action, item: r.item, parts: r.parts, inventory: publicInventory(inv) };
       });
     },

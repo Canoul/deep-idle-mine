@@ -32,6 +32,17 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Table de recherche : tier 4, recyclage revu
+- **Pour le joueur** : un **tier 4** arrive à la table de recherche : **250 parts** pour un plan du Treasure T4
+  (stuff en mithril, thorium, cobalt et pièces spéciales), ouvert quand on a appris **toutes** les recettes des tiers 1
+  à 3. Recycler un plan rend maintenant **30 à 45 parts** (tier 2, avant 40 à 70), **45 à 60** (tier 3, avant 40 à 70),
+  **60 à 75** (tier 4). Le tier 4 se fait **en 3 étapes** : d'abord les 4 pièces en mithril et les 4 pièces spéciales
+  (Lunettes, Doc Martins, Ceinture, Gants), puis, quand ces recettes sont apprises, les 8 pièces en thorium et en
+  cobalt, et enfin les Jambières titanesques. L'onglet affiche « Étape x / 3 ». Un plan secret sorti de la recherche révèle la pièce dans le wiki et l'annonce sur Discord.
+- **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
+  recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
+- **État** : ✅ en ligne le 28/10
+
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
   offensives ÷ 2 (plastron en thorium : dégâts +3,85 au lieu de +7,7), dégâts % ÷ 3 (jambes en thorium +31,3 % au lieu

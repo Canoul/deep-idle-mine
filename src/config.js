@@ -334,10 +334,19 @@ export const RESEARCH = {
   parts: 'Blueprint parts',
   tiers: [
     { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:15, max:30 } },   // 25/10 au soir : avant 30 à 60
-    { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:40, max:70 } },
-    /* tier 3 (23/10/2026, Geoffrey) : recyclage comme le tier 2 ; recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
+    { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:30, max:45 } },   // 28/10 (Geoffrey) : avant 40 à 70
+    /* tier 3 (23/10/2026, Geoffrey) : recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
-    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:40, max:70 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:45, max:60 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },   // recyclage 28/10 (Geoffrey) : avant 40 à 70
+    /* tier 4 (28/10/2026, Geoffrey) : plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des tiers 1 à 3
+       sont apprises (règle commune, tierUnlocked). stages : le tirage se fait dans la première étape dont une recette
+       reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
+    { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:60, max:75 }, stages:[
+      [...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en mithril BP`),
+       'Lunettes Gucci BP', 'Doc Martins BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
+      ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
+      ['Jambières titanesques BP'],
+    ] },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };
