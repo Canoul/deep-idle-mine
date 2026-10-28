@@ -7,7 +7,7 @@
    niveau, pour les caractéristiques ; focus : changements faits pendant la session)
    À partir de lui, buildSession construit la partie que le serveur fait tourner (server/game/live-game.js) ; la même
    seed et les mêmes choix redonnent exactement la même partie (reconstruction après un redémarrage). */
-import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS } from '../config.js';
+import { TEAM, PREFS, PREF_OPTIONS, MOBS, DEV_TUNABLES, DEV_SPEC, SKILLS, GAME, SESSION_LEN, DT, MINE_MODES, DEV_TARGETS, RINGS } from '../config.js';
 import { newSession, tick, leaveSession, endSession, SESSION_TICKS } from '../sim/session.js';
 import { setFocus } from '../sim/focus.js';
 import { forceKhole } from '../sim/khole.js';
@@ -112,7 +112,8 @@ export function minerSpecs(record){
   /* glyphes possédés au lancement (drop : on ne trouve que les autres), figés par le serveur, revérifiés */
   const ownedOf = i => { const o = i < players.length ? record.skills?.[players[i].account]?.owned : presetOf(i)?.owned; return Array.isArray(o) ? o.filter(n => nodeOfGlyph(n)) : []; };
   const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i), glyphsOwned: ownedOf(i),
-                       xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i) });
+                       xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
+                       rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
   if(n <= 1) return [{ ...spec(0), name: players.length ? nameOf(0) : undefined }];
   return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
 }

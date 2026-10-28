@@ -5,6 +5,7 @@
 import { BLOCKS, TOWER } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
+import { drawMobFx } from './effects.js';
 import { shownPos } from '../shared/view.js';
 import { drawSplash } from './splash.js';
 import { torchTexOf } from '../skins.js';
@@ -89,6 +90,7 @@ export function createTowerRenderer(cv){
         ctx.fillStyle = '#ff5a3b'; ctx.fillRect(px + 1, py - 4, (T - 2) * Math.max(0, o.hp / o.maxhp), 3);
       }
       drawSplash(ctx, o, G.t, now, px, py - 4, T);   // dégâts de zone reçus (Force brute)
+      drawMobFx(ctx, o.fx, px + T / 2, py - 4, T, now, T);   // états : étourdi, provoqué (28/10)
     }
     /* ciel teinté : rouge sombre pour le Démon */
     if(G.side === 'demon'){ ctx.fillStyle = 'rgba(90,10,40,.35)'; ctx.fillRect(0, 0, G.w * T, G.roof * T); }
@@ -110,6 +112,7 @@ export function createTowerRenderer(cv){
       ctx.fillStyle = '#000'; ctx.fillRect(bxp - 2, byp - 8, bw + 4, 6);
       ctx.fillStyle = pct < (TOWER.levels[G.level] ?? TOWER.levels[1]).rageBelow ? '#ff3b3b' : G.side === 'demon' ? '#c48bff' : '#8fd8ff';
       ctx.fillRect(bxp - 1, byp - 7, (bw + 2) * pct, 4);
+      drawMobFx(ctx, [b.rage && 'rage', b.air && 'air', b.taunt && 'taunt'].filter(Boolean), bxp + bw / 2, byp - 8, bw, now, T);   // états du boss (28/10)
     }
     for(const m of [...G.miners.filter(x => x !== mine), ...(mine ? [mine] : [])]){
       const [x, y0] = posOf(G, m, now), y = y0 - arcOf(m, now);

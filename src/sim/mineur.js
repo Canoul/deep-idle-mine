@@ -3,6 +3,7 @@
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
 import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS } from '../config.js';
 import { lumAt } from './light.js';
+import { cleanRings } from './effects.js';
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
 
@@ -33,6 +34,7 @@ export function createMiner(id, opts={}){
     account: opts.account ?? null,  // ID du compte joueur qui contrôle ce mineur (null = sans compte)
     carac,                          // caractéristiques du mineur (oxygène max, vitesses, pods, dégâts…)
     xpPct: Number.isFinite(opts.xpPct) && opts.xpPct > 0 ? opts.xpPct : 0,   // % d'XP en plus sur sa part (Anneau du nerd)
+    rings: cleanRings(opts.rings),  // anneaux qui agissent sur lui, pour l'affichage seulement (déjà dans carac ; src/sim/effects.js)
     x: opts.x ?? SPAWN_X, y:0, ox:carac.oxygenMax, inv:{}, load:0, mode:'work', status:'Démarrage',
     action:null, exploring:false, exploreArea:null, skipRows:new Set(), target:null, foe:null, foeHit:0, ignored:new Set(),
     digCol:null, galleryRow:null,   // réservations visibles des autres mineurs (puits creusé, ligne de galerie)

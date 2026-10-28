@@ -709,13 +709,13 @@ export function decide(G,m){
     if((blind || n>CFG.maxFall) && n>=CFG.stunFall && !m.winchJob){          // en chantier de treuil : jamais étourdi
       G.stats.stuns=(G.stats.stuns||0)+1; m.stats.stuns++;
       log(G, `💫 ${m.name} tombe de ${n} blocs sans s'y attendre : étourdi ${CFG.stunTime} s`);
-      m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {}); return;
+      m.status='Étourdi (chute)'; startAction(m,'stun', CFG.stunTime, {cause:'fall'}); return;
     }
   }
   // canalisation d'un occultiste sur lui : étourdi tant qu'elle dure (il ne peut ni bouger, ni miner, ni frapper)
-  { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true}); return; } }
+  { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true, cause:'hex'}); return; } }
   // ébranlement d'un golem (src/sim/golem.js) : étourdi jusqu'à m.quakeUntil
-  if(m.quakeUntil>G.t+1e-9){ m.status='Étourdi (golem)'; startAction(m,'stun', m.quakeUntil-G.t, {}); return; }
+  if(m.quakeUntil>G.t+1e-9){ m.status='Étourdi (golem)'; startAction(m,'stun', m.quakeUntil-G.t, {cause:'quake'}); return; }
   /* taclé : il ne peut rien faire d'autre que combattre ce mob (même si « combat » est sur non, même en retour) ; il peut
      bouger pour rester à portée (25/10 ; avant : immobilisé). Ses pas sont marqués (data.fight) : le tacle ne les
      interrompt pas (src/sim/session.js) */

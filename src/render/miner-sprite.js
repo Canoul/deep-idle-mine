@@ -2,9 +2,11 @@
    par-dessus (src/skins.js) avec l'aura de ses pièces (src/render/aura.js), sa pioche quand il mine ou frappe, et son pseudo au-dessus de la tête. Lit, ne modifie rien. */
 import { SKIN, armorPieces, backPieces, auraPieces, toolOf, toolSlotOf } from '../skins.js';
 import { drawAura } from './aura.js';
+import { drawMinerFx, createCastWatch } from './effects.js';
 
 /* ctx : contexte canvas ; TEX : textures chargées ; TILE : taille d'une case (px) */
 export function createMinerSprite(ctx, TEX, TILE){
+  const castsOf = createCastWatch();   // sorts qui viennent de partir (animation, src/render/effects.js)
   function blit(name,px,py,fallback){
     const i=TEX[name];
     if(i && i.complete && i.naturalWidth) ctx.drawImage(i,px,py,TILE,TILE);
@@ -35,7 +37,10 @@ export function createMinerSprite(ctx, TEX, TILE){
       }
     }
     ctx.restore();
-    if(a&&a.type==='stun') blit('stun',px,py-6);   // étourdi : des étoiles au-dessus de la tête
+    /* états (28/10, src/render/effects.js) : étoiles qui tournent, botte barrée, bulles, sorts qui partent… ; une
+       partie sans m.effects (ancien envoi) garde les étoiles de l'étourdissement */
+    if(m.effects) drawMinerFx(ctx,m,px,py,TILE,now,castsOf(m,now));
+    else if(a&&a.type==='stun') blit('stun',px,py-6);
     if(m.flesh>0){   // stacks du mur de chair (28/10) : petit compteur rouge sur l'épaule
       ctx.font='bold 7px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
       ctx.lineWidth=2; ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText('🩸'+m.flesh,px+TILE-3,py+1);
