@@ -419,9 +419,49 @@ test('barre des sorts en session : secondes restantes sur un sort en recharge, r
   const { spellBarHtml } = await import('../src/ui/hud.js');
   assert.equal(spellBarHtml({ spells:[] }, 0), '');
   const h = spellBarHtml({ spells:['dash', 'illumination'], spellCd:{ dash:126 } }, 100);
-  assert.match(h, /spB cd[^]*<b class="spLeft">26<\/b>/);
-  assert.match(h, /Illumination : prêt/);
+  assert.match(h, /spB tr-barbare cd[^]*<b class="spLeft">26<\/b>/);
+  assert.match(h, /spB tr-mineur"[^]*Illumination : prêt/);
+  assert.match(h, /<svg class="pi/);   // icônes pixel, plus d'emoji
+  assert.doesNotMatch(h, /💨|💡/);
   const { TABS, TAB_KEYS } = await import('../src/ui/nav.js');
   assert.ok(TABS.some(t => t.id === 'sorts' && t.ready));
   assert.ok(TABS.filter(t => t.ready).length <= TAB_KEYS.length);
+});
+
+test('onglet Sorts : chaque sort a une icône pixel, une ligne courte et une famille (spé ou parchemin)', async () => {
+  const { PXI_NAMES } = await import('../src/ui/pxicons.js');
+  const { treeOf } = await import('../src/ui/spells.js');
+  for(const s of SPELLS.list){
+    assert.ok(PXI_NAMES.includes(s.px), `${s.id} : icône ${s.px} inconnue`);
+    assert.ok(typeof s.short === 'string' && s.short.length > 0 && s.short.length <= 45, `${s.id} : ligne courte`);
+    assert.equal(treeOf(s), s.unlock.scroll ? 'scroll' : s.unlock.tree);
+  }
+});
+
+test('onglet Sorts : état affiché de chaque sort (barre, disponible, parchemin en poche, autre spé, pas débloqué)', async () => {
+  const { spellStatus } = await import('../src/ui/spells.js');
+  const st = createSpells();
+  st.learned = ['fast_learner']; st.slots = ['illumination', 'dash'];
+  const ctx = { tree:'mineur', spec:{ mineur:7, logisticien:3, barbare:5 } };
+  assert.deepEqual(spellStatus(st, 'illumination', ctx), { status:'equipped', label:'Dans la barre' });
+  assert.deepEqual(spellStatus(st, 'dash', ctx), { status:'equipped', bad:true, label:'N\'agit pas' });   // autre spé : il n'agira pas
+  assert.equal(spellStatus(st, 'fast_learner', ctx).status, 'ready');
+  assert.deepEqual(spellStatus(st, 'war_cry', ctx), { status:'locked', label:'Barbare spé 10' });
+  assert.deepEqual(spellStatus(st, 'inspiration', ctx), { status:'locked', label:'Logisticien spé 5' });
+  assert.equal(spellStatus(st, 'dynamite', ctx).status, 'locked');                                           // mineur 7 < 10
+  assert.deepEqual(spellStatus(st, 'dynamite', { ...ctx, spec:{ mineur:10 } }), { status:'ready', label:'Disponible' });
+  assert.deepEqual(spellStatus(st, 'cleave', ctx, 1), { status:'learn', label:'Parchemin en poche' });
+  assert.deepEqual(spellStatus(st, 'cleave', ctx, 0), { status:'locked', label:'Parchemin à trouver' });
+  st.slots = [null, null];
+  assert.deepEqual(spellStatus(st, 'dash', ctx), { status:'other', label:'Réservé au Barbare' });
+});
+
+test('onglet Sorts : chiffres de la fiche tirés de la config (recharge d\'abord, pourcentages lisibles)', async () => {
+  const { spellStats } = await import('../src/ui/spells.js');
+  const of = id => spellStats(SPELLS.list.find(s => s.id === id));
+  assert.deepEqual(of('illumination'), [{ label:'Recharge', value:'90 s' }, { label:'Rayon', value:'5 cases' }]);
+  assert.deepEqual(of('war_cry').map(r => `${r.label} ${r.value}`),
+                   ['Recharge 180 s', 'Rayon 10 cases', 'Durée 30 s', 'Dégâts +10 %', 'Vit. d\'attaque +5 %']);
+  assert.ok(of('ulti_shen').some(r => r.value === '20 % PV max'));
+  for(const s of SPELLS.list) assert.equal(spellStats(s)[0].value, `${s.cd} s`);
 });

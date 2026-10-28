@@ -85,7 +85,8 @@ Niveau de spécialisation (SP lvl) : monte en jouant avec cet arbre et débloque
 Glyphes : la petite case sous un skill, où l'on pose son glyphe quand le skill est au rang max.`,
   spells: `Sorts
 Ils partent tout seuls en session, dès que leur recharge est finie et qu'ils peuvent servir.
-Clic sur un sort pour l'équiper ; clic sur un sort équipé pour le retirer.
+Clic sur un sort du grimoire pour voir sa fiche, puis « Mettre dans la barre » (ou double clic, ou glisse-le sur un emplacement).
+Clic sur un sort de la barre pour le retirer.
 Sorts de classe : débloqués par le niveau de spécialisation (onglet Skills). Les autres s'apprennent avec un parchemin.`,
   friends: `Amis
 Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby.

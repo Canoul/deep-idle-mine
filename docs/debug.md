@@ -4528,3 +4528,25 @@ Règles (voir CLAUDE.md) :
   message reçu par l'autre en ≤ 3 s, balisage affiché en texte, « Doucement… » au 2e message rapide.
 - ⚠️ Points fragiles : pas de modération ; chaque message réécrit `game.json` en local (normal pour ce stockage) ;
   `/api/social/chat` compte comme signe de vie (présence), comme toutes les routes Social ; pas vérifié sur téléphone.
+
+## 28/10/2026 — Onglet Sorts refait, piste A « la barre de sorts » (Jules)
+- **Quoi** : mise en page de l'onglet Sorts seulement ; règles, serveur et état du compte inchangés (`src/meta/spells.js`
+  intact). `index.html` : `#spellSpec` (spé + SP lvl), carte « Ta barre de sorts » (`#spellSlots`), « Grimoire »
+  (`#spellTabs`, `#spellList`, légende), « Fiche du sort » (`#spellInfo`, contenu entier rendu par le JS, `h2` compris).
+- `src/ui/spells.js` réécrit : exports purs `treeOf(s)` (spé ou `'scroll'`), `spellStats(s)` (chiffres de la fiche tirés
+  des champs de config, table `STATS`), `spellStatus(st, id, ctx, owned)` (equipped / ready / learn / other / locked,
+  `bad` = équipé mais n'agit pas). Clic tuile = fiche ; double clic / glisser / bouton de la fiche = équiper ; clic sur un
+  emplacement plein = le retirer. Emplacement visé (`target()`) : celui choisi s'il est libre, sinon le 1er libre, sinon
+  celui choisi (bouton « Remplacer X »). Fiche par défaut tant que le joueur n'a rien choisi (`picked`) : 1er sort de la barre.
+- `src/config.js` `SPELLS.list` : `px` (icône pixel, `src/ui/pxicons.js`) et `short` (ligne sous le nom) par sort ;
+  `icon` (emoji) gardé pour le wiki. `src/ui/hud.js` `spellBarHtml` : `pxi(s.px)` + classe `tr-<famille>`.
+- `src/ui/style.css` : bloc « onglet Sorts » remplacé (`.spSock`, `.spTile`, `.spInfo`…, couleurs `.tr-mineur` /
+  `.tr-logisticien` / `.tr-barbare` / `.tr-scroll`), `.spGrid` à 2 colonnes (sets | contenu), `.spWrap` 680u ; `.spB .spIcon`
+  pour la barre en session. Textes : aide « ? » (`src/ui/help.js`), wiki §Sorts, GAME_DESIGN §3 Sorts.
+- **Tests** ✅ `tests/spells.test.js` (barre en session : classes et icônes pixel ; 3 nouveaux : `px`/`short`/famille de
+  chaque sort, `spellStatus`, `spellStats`) + `tests/wiki.test.js` + `tests/world.test.js`. ✅ Vérifié dans le navigateur
+  (serveur de dev sur un autre port, `DIM_DATA_DIR` à part, compte Test_Mineur) : affichage 1440×900, retirer / remettre
+  par la barre et par la fiche, fiche d'un sort d'une autre spé ; téléphone 390 px : pas de défilement horizontal,
+  3 tuiles par ligne.
+- ⚠️ Pas vérifié en vrai : le bouton « Remplacer X » (barre pleine + un autre sort disponible), l'apprentissage d'un
+  parchemin depuis la fiche (même appel serveur qu'avant), la barre de sorts pendant une session (couverte par le test).

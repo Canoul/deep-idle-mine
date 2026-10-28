@@ -326,11 +326,23 @@
 </section>
 <section class="view" data-view="sorts" hidden>
   <div class="furnWrap spWrap">
-    <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts<i data-qhelp="spells"></i></h1></div>
+    <div class="invHead"><h1><i data-pxi="radiance"></i>Sorts<i data-qhelp="spells"></i></h1><div id="spellSpec"></div></div>
     <p class="nextNote">⏳ Session en cours : les sorts équipés maintenant compteront à la prochaine session.</p>
+    <!-- src/ui/spells.js : la barre de sorts en haut, le grimoire et la fiche du sort choisi dessous -->
     <div class="spGrid"><aside class="card setsCard"><h2>Sets</h2><div id="setsSpells" class="setsBody"></div></aside>
-      <div class="card"><h3>Emplacements</h3><div id="spellSlots" class="spSlots"></div></div>
-      <div class="card"><h3>Sorts</h3><div id="spellList" class="spList"></div></div>
+      <div class="spMain">
+        <section class="card spBarCard"><h2>Ta barre de sorts</h2>
+          <div class="spBarRow"><div id="spellSlots" class="spSlots"></div>
+            <div class="spBarNote"><p><b>En session, les sorts partent tout seuls</b> dès que leur recharge est finie.</p>
+              <p class="mut">C'est cette barre qui s'affiche en bas de la mine. Clique un sort de la barre pour le retirer.</p></div></div>
+        </section>
+        <div class="spLow">
+          <section class="card spGrim"><h2>Grimoire</h2><div id="spellTabs" class="spTabs"></div><div id="spellList" class="spList"></div>
+            <div class="spLegend"><span><i class="eq"></i>Dans la barre</span><span><i class="ok"></i>Disponible</span>
+              <span><i class="nw"></i>Parchemin à apprendre</span><span><i class="lk"></i>Pas encore débloqué</span></div></section>
+          <section class="card spInfo" id="spellInfo"></section>
+        </div>
+      </div>
     </div>
     <p id="spellMsg" class="err" hidden></p>
   </div>
