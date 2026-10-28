@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Pour le joueur** : la liste des **Sets** apparaît aussi dans le Lobby, juste sous « Équipe de la prochaine session » :
   on peut équiper un set (stuff, skills et sorts d'un coup) au moment de lancer, sans passer par l'onglet Stuff. C'est la
   même liste partout : un set créé, renommé ou supprimé dans le Lobby change aussi dans Stuff, Skills et Sorts.
-- **État** : 🧪 sur la branche `geoffrey/sets-lobby` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
 - **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer
