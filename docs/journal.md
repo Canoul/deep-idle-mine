@@ -33,7 +33,7 @@ Modèle d'entrée :
   cobalt, et enfin les Jambières titanesques. L'onglet affiche « Étape x / 3 ». Un plan secret sorti de la recherche révèle la pièce dans le wiki et l'annonce sur Discord.
 - **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
   recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
-- **État** : 🧪 sur la branche `geoffrey/recherche-t4` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
