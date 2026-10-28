@@ -29,6 +29,11 @@ Modèle d'entrée :
   « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
 - **État** : ✅ en ligne le 28/10.
 
+## 28/10/2026 — Geoffrey — Correctif : pseudos alignés à droite dans Social
+- **Pour le joueur** : depuis la mise en ligne du choix de recette au four, les pseudos de la liste d'amis (et des
+  demandes, du groupe, des classements) s'affichaient collés à droite. Ils sont revenus à gauche, comme avant.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
 - **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
   « Tu as obtenu » (ou « Amélioration réussie », « Pièce identifiée », « Pièce enchantée »), la texture de l'objet en

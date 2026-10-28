@@ -4374,3 +4374,10 @@ Règles (voir CLAUDE.md) :
   Affichage inchangé (`src/ui/lobby.js` : visible si `cards.prefs` et shrines présents). Sur téléphone la colonne de
   droite passe en premier (`order:-1`) : Shrines y suit donc l'équipe et le bouton Lancer.
 - ✅ Tests lobby + shrines 28/28 ; capture Chrome headless (page statique, vrai style.css) : Shrines sous Ton groupe.
+
+## 28/10/2026 — Geoffrey — Correctif : `.frow b{text-align:right}` cassait les lignes de Social
+- **Cause** : la fenêtre « Recettes » du four (même jour) utilisait la classe `frow`, déjà prise par les lignes de
+  Social et du lobby (`src/ui/social.js`, `src/ui/lobby.js` : `.frow .fname b` = pseudo). Sa règle `.frow b{text-align:
+  right}` alignait les pseudos à droite.
+- **Correctif** : classe du four renommée `frecRow` (`src/ui/furnace.js`, `src/ui/style.css`). ✅ plus aucune règle
+  du four sur `.frow`. **À retenir** : chercher une classe dans tout `src/ui/` avant de la créer.
