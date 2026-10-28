@@ -371,9 +371,13 @@ test('recul : repoussé au-delà de sa portée de tacle, le Séraphin lâche le 
   m.carac.knockback = 0.5;                                                 // 0,25 + 0,5 : plus que la portée (0,5)
   tickTower(G); assert.equal(o.grab, m.id, 'taclé');
   m.action = null; o.hp = 1e9;
-  let freed = false, regrabs = 0, was = true;
-  for(let i = 0; i < 150; i++){ tickTower(G); const g = o.grab === m.id; if(!g) freed = true; if(g && !was) regrabs++; was = g; }
+  let freed = false;
+  const t0 = m.stats.tackled;
+  for(let i = 0; i < 150; i++){ tickTower(G); if(o.grab !== m.id) freed = true; }
   assert.ok(freed, 'il lâche le tacle');
+  /* reprises du tacle comptées à la source (stats.tackled) : depuis le 28/10 (vitesse d'attaque à l'heure exacte), le coup
+     du mineur peut tomber dans le tick même où le Séraphin revient, et le repousser aussitôt */
+  const regrabs = m.stats.tackled - t0;
   assert.ok(regrabs >= 2, `il revient tacler à chaque cycle (${regrabs})`);
 });
 

@@ -90,6 +90,10 @@ export const baseLadderT = m => ladderTime(m)*(m.skill.tall_ladder ? 0.5 : 1);
 export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 
 /* ---- actions ---- */
+/* heure exacte du mineur pendant qu'il enchaîne ses actions dans un tick (m.now, posée par la boucle stepMiner) ; G.t en
+   dehors. 28/10/2026 : sans elle, un coup fini au milieu d'un tick ne pouvait repartir qu'au tick suivant (G.t est l'heure
+   du tick entier) : la vitesse d'attaque avançait par paliers de 0,1 s (250 % frappait comme 200 %). */
+export const nowOf = (G,m) => m.now ?? G.t;
 export function startAction(m,type,dur,data){ m.action={type, dur:Math.max(0.05,dur), t:0, data:data||{}}; }
 export function idle(m,t){ if(!m.action) startAction(m,'wait', t||0.5, {}); }
 export function collect(m,name,w,n){ m.inv[name]=(m.inv[name]||0)+n; m.load+=w*n; }

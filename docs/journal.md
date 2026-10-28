@@ -24,6 +24,12 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
+- **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
+  de seconde suivant : 250 % frappait exactement comme 200 %, 120 % comme 100 %… Maintenant 250 % frappe 25 % plus vite
+  que 200 %. Valable dans la mine, les tours et l'instance. Le mineur de base (100 %) ne change pas.
+- **État** : 🧪 sur la branche `geoffrey/fix-vitesse-attaque` (pas en ligne)
+
 ## 28/10/2026 — Jules — Les pop-ups se ferment toutes seules
 - **Pour le joueur** : les pop-ups en haut à gauche (invitation de groupe, demande d'ami, « groupe trouvé ») et le
   dernier rappel de la mine instantanée (Rejoindre / Décliner) restaient affichés tant qu'on n'avait pas cliqué. Les

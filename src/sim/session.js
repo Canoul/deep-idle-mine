@@ -80,7 +80,7 @@ function stepMiner(G,m){
   }
   let budget = DT*(m.ox<=0?CFG.oxygenOutSlow:1), guard=0;
   while(budget>1e-9 && guard++<30){
-    if(!m.action){ decide(G,m); if(!m.action) break; afterDecide(G,m); }   // sorts : Dash, Dynamite
+    if(!m.action){ m.now=G.t-budget; decide(G,m); m.now=null; if(!m.action) break; afterDecide(G,m); }   // sorts : Dash, Dynamite ; m.now : heure exacte (nowOf)
     const a=m.action, need=a.dur-a.t;
     if(budget>=need){ budget-=need; m.action=null; finishAction(G,m,a); }
     else { a.t+=budget; budget=0; }

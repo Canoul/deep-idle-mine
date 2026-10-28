@@ -18,7 +18,7 @@ import { INSTANCE, DT, STATS, CFG, COMBAT } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
-import { ladderTime } from '../mineur.js';
+import { ladderTime, nowOf } from '../mineur.js';
 import { inReach, push, driftsAway, reachOf, knockbackOf, knockOf, stopAction } from '../knock.js';
 import { genInstance, isOpen, toCenter, AIR, CAGE, SPAWNER } from './world.js';
 
@@ -378,12 +378,13 @@ const busy = (G, m, type, x, y) => G.miners.some(o => o !== m && o.action?.type 
 function strike(G, m, target, status){
   const boss = target === G.boss;
   m.face = Math.sign((boss ? bossMid(G) - 0.5 : target.x) - m.x) || m.face;
-  if(G.t + 1e-9 >= (m.atkReady || 0)){
+  const now = nowOf(G, m);   // heure exacte dans le tick (28/10/2026 : sinon paliers de 0,1 s)
+  if(now + 1e-9 >= (m.atkReady || 0)){
     combatSpells(G, m, target);
     if(boss) hitBoss(G, m); else hitGoblin(G, m, target);
-    m.atkReady = G.t + hitT(G, m);
+    m.atkReady = now + hitT(G, m);
   }
-  return act(m, 'attack', Math.max(DT, (m.atkReady || 0) - G.t), { done: true, boss }, status);
+  return act(m, 'attack', (m.atkReady || 0) - now, { done: true, boss }, status);
 }
 
 export function decide(G, m){
@@ -581,7 +582,7 @@ function stepMiner(G, m){
   if(!G.ladder[m.y]?.[m.x]) m.ky = 0;
   let budget = DT, guard = 0;
   while(budget > 1e-9 && guard++ < 30 && !G.over){
-    if(!m.action){ decide(G, m); if(!m.action) break; }
+    if(!m.action){ m.now = G.t - budget; decide(G, m); m.now = null; if(!m.action) break; }   // m.now : heure exacte (nowOf)
     const a = m.action, need = a.dur - a.t, used = Math.min(budget, need);
     /* casser un spawner : il perd la vitesse de minage × le temps passé (au tick près, même entre deux actions) */
     if(a.type === 'drill'){ const s = G.spawners.find(q => q.id === a.data.sp); if(s?.alive) drain(G, m, s, instRate(G, m) * used); }

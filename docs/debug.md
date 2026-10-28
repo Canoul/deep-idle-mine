@@ -4148,3 +4148,17 @@ Règles (voir CLAUDE.md) :
 - **Tests** : `tests/notify.test.js` (nouveau, faux DOM + `t.mock.timers`) : fermeture à popupMs, pas de retour, retour
   si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
   ⚠️ Pas vérifié dans un vrai navigateur.
+
+## 28/10/2026 — Geoffrey — Vitesse d'attaque sans paliers de 0,1 s
+- **Cause** : `fight` (src/sim/ai.js), `strike` (tours, instance) comparaient `G.t` (heure du tick ENTIER) à `m.atkReady`.
+  Un coup fini au milieu d'un tick redécidait avec la même `G.t`, < atkReady, et attendait `max(DT, …)` : l'intervalle
+  était arrondi au dixième au-dessus (0,32 s → 0,4 s). Trouvé par les bancs du GS expérimental (branche geoffrey/gs-bancs).
+- **Correctif** : `nowOf(G, m)` (src/sim/mineur.js) = `m.now ?? G.t` ; les trois boucles `stepMiner` (mine, tours, instance)
+  posent `m.now = G.t − budget` (heure exacte) le temps de `decide`. Les coups utilisent `now`, l'attente = `atkReady − now`
+  (plus de minimum DT ; `startAction` / `act` gardent leur 0,05 s).
+- **Tests** ✅ `tests/attack-speed.test.js` (100 à 400 % au rythme exact, 250 > 200) ; `tests/tower.test.js` : le test du
+  verrou de recul compte les reprises de tacle par `stats.tackled` (le coup peut tomber dans le tick où le Séraphin
+  revient : reprise et perte dans le même tick, invisibles en fin de tick) ; combat, knock, golem, goblin, mephite, mobs,
+  flesh, dungeon, spells, khole, trap, instance-sim, tower-* : verts.
+- **Simulation** ✅ 5 sessions à 3 : 0 blocage. `simulate:instance --size 3` identique avant / après (⚠️ acier 0/20 aujourd'hui,
+  l'état du projet dit 20/20 : antérieur à ce correctif, à revoir).
