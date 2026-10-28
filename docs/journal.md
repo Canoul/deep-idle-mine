@@ -39,6 +39,17 @@ Modèle d'entrée :
   cours ne change pas.
 - **État** : ✅ en ligne le 28/10.
 
+## 28/10/2026 — Geoffrey — Four : choisir une recette
+- **Pour le joueur** : le bouton **Recettes** d'un four ne fait plus seulement afficher les recettes : on y **choisit**
+  ce qu'on veut fabriquer (ex. Lingot de fer) et combien de fournées (nombre libre, ½ ou Max, avec le maximum possible
+  affiché pour chaque recette), puis **Lancer**. Le four se met tout seul en mode Fondre ou Alliage et prend dans
+  l'inventaire les ingrédients et le charbon, **en plus** de ce qu'il contient déjà. Une recette grisée dit pourquoi
+  (pas apprise, il en manque, ou le four contient autre chose : il faut le vider). Poser les objets case par case
+  marche toujours.
+- **Décisions** : le nombre choisi = des fournées (Chitine : 1 fournée = 5 chitine) ; le combustible posé est du
+  charbon ; si le four contient d'autres ingrédients, on refuse plutôt que de les retirer tout seul.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
 - **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
   d'équipement** au milieu, les **stats du mineur** à droite (elles étaient passées sous les cases depuis l'ajout des

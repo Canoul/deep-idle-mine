@@ -766,7 +766,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async furnace(me, body = {}){
       const { opId } = body;
       if(typeof opId !== 'string' || !/^[\w-]{8,64}$/.test(opId)) fail('bad_request', 400, 'Demande invalide.');
-      const op = { action: body.action, furnace: body.furnace, slot: body.slot, item: body.item, qty: body.qty, mode: body.mode, opId };
+      const op = { action: body.action, furnace: body.furnace, slot: body.slot, item: body.item, qty: body.qty, mode: body.mode, out: body.out, count: body.count, opId };
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id), st = await loadFurnaces(me.id);
         const r = furnaceOp(st, inv, op, clock());
