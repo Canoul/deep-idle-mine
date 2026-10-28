@@ -4104,7 +4104,10 @@ Règles (voir CLAUDE.md) :
   et `damageMob` ; sorts : mineBuffs + dynamite (action `dynamite`, `blast`) au début d'un minage, combatSpells dans `strike` et
   avant un coup sur le boss, supportSpells au début de `decide` (Illumination, Hand of Justice, Ulti shen), Dash vers un mob
   sur sa ligne. Dynamite : jamais le toit, dureté × niveau de tour. Zipette : jamais (pas d'oxygène).
-- Instance : inchangée (Dynamite = 6 coups / cages sans dureté).
+- Instance (alignée, même jour) : `mineSpells` casse la cage seulement si `cageHard < dynHard(m)`, `blastHurt/blastDamage` (gobelins et roi
+  du rayon, 50 %) aussi sur un spawner (toujours 6 coups). Test de scénario « cage » non retenu (un mineur seul ne mine pas sa cage
+  dans ce montage). ⚠️ `npm run simulate:instance` donne 0/10 partout, même en acier (sans sorts : pas lié à ce changement ; le
+  repère de l'état du projet dit acier 20/20 à 3) : à vérifier.
 - Tests : `tests/tower-spells.test.js` (4), `tests/spells.test.js` (Dynamite 28/10) ; tower*, spells, instance*, game-service,
   khole, session, wiki 199/199 ✅. Simulation mine 5 sessions avec dynamite + fast_learner : 0 blocage. Tour 12 parties à 3
   avec sorts : 0 blocage, ≈ 16 sorts par partie, victoires 1/12 comme sans sorts (équipe de test faible).

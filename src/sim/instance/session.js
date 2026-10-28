@@ -456,6 +456,7 @@ function drillSpells(G, m, s){
   if(ready(G, m, 'dynamite')){
     cast(G, m, 'dynamite');
     drain(G, m, s, SP.dynamite);
+    blastDamage(G, m, blastHurt(G, m, s.x, s.y));   // 28/10 : 50 % de ses dégâts aux gobelins et au roi du rayon
     log(G, `🧨 ${m.name} : Dynamite sur le spawner (${SP.dynamite} coups)`);
   }
 }
@@ -467,15 +468,35 @@ function mineBuffs(G, m){
   }
   if(ready(G, m, 'fast_learner')){ m.learned = Math.round((m.learned + SPELL.fast_learner.bonus) * 1e6) / 1e6; cast(G, m, 'fast_learner'); }
 }
-/* Dynamite sur un bloc de cage : elle casse les blocs de cage à son rayon (cercle) ; renvoie true si elle est partie */
+/* Dynamite (rework du 28/10/2026, Geoffrey, aligné sur la mine) : sur un bloc de cage, elle ne casse les blocs de cage
+   à son rayon (cercle) que si leur dureté (cageHard) est < hardMul × sa vitesse de minage ; elle inflige dmg × ses dégâts
+   aux gobelins et au roi de son rayon. Renvoie true si elle est partie (elle ne part que si elle casse ou touche). */
+const dynHard = m => SPELL.dynamite.hardMul * m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100);
+function blastHurt(G, m, x, y){
+  const S = SPELL.dynamite, R2 = S.radius * S.radius, b = G.boss;
+  const gobs = liveGobs(G).filter(o => (o.x - x) ** 2 + (o.y - y) ** 2 <= R2 + 1e-9);
+  let king = false;
+  if(bossActive(G)) for(let yy = b.y - b.h + 1; yy <= b.y && !king; yy++) for(let xx = Math.round(b.x); xx < Math.round(b.x) + b.w; xx++) if((xx - x) ** 2 + (yy - y) ** 2 <= R2 + 1e-9){ king = true; break; }
+  return { gobs, king };
+}
+function blastDamage(G, m, hurt){
+  const d = () => hitDmg(G, m) * SPELL.dynamite.dmg;
+  for(const o of hurt.gobs) hitGoblin(G, m, o, d());
+  if(hurt.king) damageBoss(G, m, d());
+}
 function mineSpells(G, m, x, y){
   mineBuffs(G, m);
   if(!ready(G, m, 'dynamite')) return false;
+  const R = SPELL.dynamite.radius, cells = [];
+  if(B.cageHard < dynHard(m))
+    for(let yy = y - R; yy <= y + R; yy++) for(let xx = x - R; xx <= x + R; xx++)
+      if(breakable(G, xx, yy) && Math.hypot(xx - x, yy - y) <= R + 1e-9) cells.push([xx, yy]);
+  const hurt = blastHurt(G, m, x, y);
+  if(!cells.length && !hurt.gobs.length && !hurt.king) return false;
   cast(G, m, 'dynamite');
-  const R = SPELL.dynamite.radius;
-  for(let yy = y - R; yy <= y + R; yy++) for(let xx = x - R; xx <= x + R; xx++)
-    if(breakable(G, xx, yy) && Math.hypot(xx - x, yy - y) <= R + 1e-9){ G.tiles[yy][xx] = AIR; G.stats.mined++; m.stats.mined++; }
-  log(G, `🧨 ${m.name} : Dynamite sur sa cage`);
+  for(const [xx, yy] of cells){ G.tiles[yy][xx] = AIR; G.stats.mined++; m.stats.mined++; }
+  blastDamage(G, m, hurt);
+  log(G, `🧨 ${m.name} : Dynamite sur sa cage${cells.length ? '' : ' (trop dure : rien de cassé)'}`);
   return true;
 }
 /* en combat : Cri de guerre (lui et les mineurs à son rayon), Cleave (les gobelins à son rayon, le roi s'il est au

@@ -92,8 +92,9 @@ Modèle d'entrée :
   **Dynamite** (mine et tours) : elle ne casse plus que les blocs **moins durs que 3 × ta vitesse de minage** (en vitesse
   1 : pierre, pierre dure, charbon, fer ; pas l'or), et inflige **50 % de tes dégâts** aux mobs de son rayon (au boss
   aussi dans la tour).
-- **À suivre** : l'Instance I garde sa Dynamite (6 coups sur un spawner, cages sans condition de dureté) ; à aligner ?
-- **État** : 🧪 sur la branche `geoffrey/sorts-tour` (pas en ligne)
+  **Instance I** alignée : la Dynamite enlève toujours 6 coups à un spawner, mais une cage (dureté 10) ne casse qu'au-delà
+  de 3,33 de vitesse de minage ; 50 % des dégâts aux gobelins et au roi de son rayon.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Gear score : les stats offensives comptent au prix des runes
 - **Pour le joueur** : dans le **GS**, les stats offensives (dégâts, dégâts %, vitesse d'attaque, double attaque,
