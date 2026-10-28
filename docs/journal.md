@@ -30,7 +30,7 @@ Modèle d'entrée :
   défiler la page. Leur taille est bornée : quand le contenu est trop long, c'est l'intérieur de la fenêtre qui défile
   (barre de défilement fine et sombre), au lieu de déborder de l'écran. La pile de notifications en haut à gauche défile
   aussi si elle devient trop haute.
-- **État** : 🧪 sur la branche `geoffrey/ui-taille-scroll` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Four : changer de recette sans vider le four
 - **Pour le joueur** : dans la fenêtre **Recettes**, on peut choisir une autre recette même si le four est plein :

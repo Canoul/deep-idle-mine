@@ -4430,6 +4430,6 @@ Règles (voir CLAUDE.md) :
   `#notifs` : `max-height` + `overflow-y:auto`. Barre de défilement fine (`scrollbar-color:var(--line)`) sur toutes les
   fenêtres qui défilent (#account, #end, #obtained, guide, recettes du four…).
 - ✅ Captures Chrome headless (vrai style.css, 40 lignes de butin) : 1280×720 et 390×800 (dans une iframe : headless ne
-  descend pas sous 500 px). Pas de test unitaire (CSS seul). ⚠️ Pas vérifié dans le vrai jeu pour chaque fenêtre.
+  descend pas sous 500 px). Pas de test unitaire (CSS seul). ⚠️ Pas vérifié dans le vrai jeu pour chaque fenêtre. ✅ en ligne le 28/10.
 - Non traité : la bulle d'aide « ? » (`#tip.help`) n'a pas de hauteur max (elle ne reçoit pas la souris, donc ne peut pas
   défiler).
