@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (tours : niveau 2 revu, invocations, descente des mobs).*
+*Dernière mise à jour : 28/10/2026 (appli mobile : conception et étape 1, sur la branche `jules/appli-mobile`).*
 
 ---
 
@@ -379,6 +379,20 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
 
+- **Appli mobile** (28/10, Jules ; **en cours, branche `jules/appli-mobile`, pas en ligne** ; spec
+  `docs/superpowers/specs/2026-10-28-appli-mobile-design.md`, guide `docs/appli-mobile.md`) : **Capacitor 8**, le jeu
+  actuel dans une coque native (pas de réécriture), qui **charge deepmineidle.fr** (`server.url` ; plan B si Apple
+  refuse : fichiers dans l'appli + mise à jour du code web). **Le site ne change pas** (décision de Jules, sur PC comme
+  dans le navigateur du téléphone) : l'interface téléphone n'existe que dans l'appli, par une couche `src/app/` activée
+  par le pont natif ou `?app` (aperçu), qui réutilise les modules du jeu (pas de deuxième jeu à maintenir). Choix de
+  Jules sur maquettes : navigation en **5 familles** (Accueil, Session, Sac, Perso, Social), **Accueil** avec Lancer et les
+  rendez-vous ouverts, **session** avec la mine en haut et les infos en petits onglets. Notifications : fin de session,
+  MI dans 5 min (coupée 23 h - 8 h), Bloc géant, four (programmées sur le téléphone), puis tours, invitations, amis
+  (push serveur) ; pas le concasseur. Étapes : 1 coque Android (APK de test par GitHub Actions) → 2 interface → 3
+  notifications programmées → 4 push, iOS, stores (comptes Apple / Google : plus tard, avec un business plan, Geoffrey).
+  **Étape 1 faite le 28/10** : `mobile/`, `src/app/` (classe `app`, badge provisoire « APPLI ✓ / ⚠ pont bloqué »),
+  icône (`npm run app:icon`), `.github/workflows/android-apk.yml` ; reste l'essai sur un vrai Android.
+
 ## Hébergement
 
 - **Sécurité** : revue du 22/10 (Jules), mémo `docs/securite.md`. Le dépôt GitHub est **public** : jamais de
@@ -388,6 +402,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   deepmineidle.fr : `docs/deploiement-ovh.md` et `deploy/ovh/`. Le serveur se met à jour depuis `main` toutes les
   2 min et redémarre à chaque changement ; d'après l'équipe, les parties en cours n'en souffrent pas.
 - Seule dépendance : `pg`, chargée uniquement si `DATABASE_URL` est défini.
+- **Appli mobile** : l'APK Android de test est fabriquée par **GitHub Actions** (artefact à télécharger, voir
+  `docs/appli-mobile.md`). Les dépendances de Capacitor sont dans `mobile/package.json`, jamais installées sur le VPS ;
+  le serveur ne sert pas `mobile/` (liste blanche `publicPaths`).
 - **Ancien** : Render (`docs/archive/deploiement-render.md`).
 
 ## Équipe et méthode

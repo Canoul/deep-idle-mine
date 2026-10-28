@@ -131,6 +131,10 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - `npm run textures` : régénère `textures/` (Python).
 - `npm run textures:ui` : régénère les éléments d'interface pixel art (`textures/ui/`) et les icônes
   (`src/ui/pxicons.js`) (Python).
+- **Appli mobile** (`mobile/`, guide `docs/appli-mobile.md`) : l'APK Android de test est fabriquée par GitHub
+  (onglet Actions) à chaque changement de `mobile/`. `cd mobile && npm install && npm run sync` après un changement de
+  sa config ; `npm run app:icon` : régénère l'icône (Python). Aperçu de la couche appli dans un navigateur : `?app`.
+  **Le site ne change pas** : la couche appli (`src/app/`) ne fait rien sans l'appli ou `?app`.
 
 ## 7. Structure
 
@@ -155,6 +159,9 @@ src/ui/               un module par onglet / panneau (nav, lobby, hud, inventory
                       research, skills, history, account, orbs…) + style.css (pixel art « Forge noire ») + pxicons.js
 src/wiki/             tableaux du wiki (data.js : logique pure, wiki.js : affichage)
 src/main.js           lobby → session (reçoit la partie du serveur, aucune simulation dans le navigateur) → bilan
+src/app/              couche de l'appli mobile (détection : pont natif ou ?app) ; sur le site, ne fait rien
+mobile/               coque de l'appli mobile (Capacitor) : config, projet android/, page hors ligne, icône
+.github/workflows/    fabrication de l'APK Android de test (GitHub Actions)
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
                       direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
                       instantanée), db/ (PostgreSQL)

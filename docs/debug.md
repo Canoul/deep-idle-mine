@@ -4260,3 +4260,31 @@ Règles (voir CLAUDE.md) :
   avant `fitMine` (`src/ui/fit.js`), qui se cale ensuite sur cette largeur. Pas de correctif sur cette branche.
 - **Points fragiles** : `server.url` est déconseillé en production par Capacitor et peut faire refuser l'appli par
   Apple (plan B dans la spec : fichiers embarqués + mise à jour du code web + API depuis une autre origine).
+
+## 28/10/2026 — Jules — Appli mobile, étape 1 : coque Android (plan `docs/superpowers/plans/2026-10-28-appli-mobile-etape1-coque-android.md`)
+- **Quoi** : `src/app/mode.js` (`nativeStatus(win)` → ok / blocked / web ; `isAppMode`), `src/app/boot.js` (`bootApp`,
+  appelé par `src/main.js` : classe `app` sur `<body>` dans l'appli ou avec `?app`, badge provisoire `#appBadge` dans
+  l'appli ; **sur le site, aucun accès au document**) ; `mobile/` (Capacitor **8.6.0**, `capacitor.config.json` :
+  `server.url` https://deepmineidle.fr, `server.errorPath` offline.html ; projet `android/` généré, minSdk 24,
+  compile/target 36, AGP 8.13.0, Gradle 8.14.3) ; `scripts/gen_app_icon.py` (`npm run app:icon`) ;
+  `.github/workflows/android-apk.yml` (Node 22, Java 21, `assembleDebug`, artefact `deep-mine-idle-apk`, 30 jours).
+- **Tests** ✅ `tests/app-mode.test.js` (8), `tests/mobile-config.test.js` (5 : config, page hors ligne sans script,
+  racine = `pg` seul, mobile/ = Capacitor 8 seul, `publicPaths` sans /mobile), `tests/mobile-icon.test.js` (3),
+  `tests/boot-check.test.js` (retrouve `src/app/*.js`).
+- **Site** ✅ (playwright, serveur isolé en mode normal) : sans `?app`, à 393 × 659 et 1440 × 900 : pas de classe `app`,
+  pas de badge, aucune erreur, pas de défilement horizontal ; seuls `src/app/boot.js` et `mode.js` se chargent (ils ne
+  font rien). Avec `?app` : classe posée, pas de badge (pas de pont).
+- **Fabrication** ✅ GitHub Actions run 40731150919 (commit 9f70bfe) : toutes les étapes vertes, APK 3,7 Mo (zip).
+  Pas téléchargée par Claude (`gh` absent, artefacts réservés aux comptes connectés).
+- **Pont natif et politique de sécurité** : `Bridge.java` (Capacitor 8.6) injecte le pont par
+  `WebViewCompat.addDocumentStartJavaScript` (origine https://deepmineidle.fr) quand la WebView le permet, ce qui ne passe
+  pas par le HTML de la page ; sinon (vieille WebView) il l'insère en script en ligne, bloqué par `script-src 'self'`
+  (`server/config.js`). Le badge le dira : « APPLI ⚠ pont bloqué » = `androidBridge` présent sans `window.Capacitor`.
+- **Bord à bord** : `android.adjustMarginsForEdgeToEdge` (cité par des blogs) n'existe plus en 8.6 ; remplacé par
+  `plugins.SystemBars.insetsHandling` (défaut `css`) : la WebView suit `viewport-fit`, absent de `index.html`, donc pas
+  bord à bord. Rien de réglé.
+- ⚠️ **Reste à vérifier sur un vrai Android** (liste du guide `docs/appli-mobile.md`) : badge, connexion gardée après
+  fermeture (cookie `Max-Age`), page hors ligne, bouton retour et lien Wiki (`target=_blank`), barre d'état.
+- **Points fragiles** : chaque fabrication a une clé de debug différente (désinstaller avant de réinstaller) ;
+  `server.url` déconseillé en production par Capacitor (Apple, plan B dans la spec) ; le badge est provisoire (à retirer
+  à l'étape 2).

@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Appli mobile : première appli Android de test
+- **Pour le joueur** : rien sur le site. Une **première appli Android de test** existe : elle ouvre le vrai jeu
+  (mêmes comptes), avec l'icône de la pioche, et une page « Pas de connexion » avec un bouton Réessayer quand le
+  serveur ne répond pas. Un petit badge provisoire « APPLI ✓ » en haut à droite dit qu'elle est bien branchée au
+  téléphone. Pas encore d'interface pour téléphone ni de notifications (étapes suivantes).
+- **Pour l'équipe** : l'appli est fabriquée par GitHub (onglet Actions) ; comment la récupérer et l'installer :
+  `docs/appli-mobile.md`.
+- **À suivre** : l'essayer sur un vrai Android (liste de 7 essais dans le guide) ; puis l'étape 2, l'interface.
+- **État** : 🧪 sur la branche `jules/appli-mobile` (pas en ligne)
+
 ## 28/10/2026 — Jules — Appli mobile : le plan
 - **Pour le joueur** : rien pour l'instant, c'est le plan. Le jeu aura une **appli iOS et Android** : le même jeu que le
   site (mêmes comptes, toujours à jour), avec une **interface pensée pour le téléphone** (5 familles d'onglets en bas :

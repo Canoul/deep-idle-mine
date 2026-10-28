@@ -246,7 +246,8 @@ Chaque étape = une branche `jules/…`, mise en ligne quand Jules le dit, jouab
   touché, en mode normal (le panneau du mode dev élargit le lobby), comme le relevé du 28/10 ; vérifier l'absence de
   défilement horizontal (`scrollWidth` = largeur de l'écran).
 - **Site inchangé** : à chaque étape, captures **sans** `?app` à 393 × 659 et à 1440 × 900, avant / après, identiques
-  (et aucun fichier de `src/app/` chargé : onglet Réseau).
+  (onglet Réseau : seuls les deux petits fichiers de détection `src/app/boot.js` et `mode.js` se chargent, jamais le CSS
+  ni les écrans de la couche appli).
 - **Vrai téléphone** à chaque étape : l'iPhone de Jules (dans Safari avec `?app` tant qu'il n'y a pas de compte Apple)
   et un Android d'ami (APK).
 - Pas de simulation à lancer : la simulation et l'IA ne bougent pas. `npm run test:anticheat` seulement si la phase 4
