@@ -44,7 +44,7 @@ Modèle d'entrée :
   autre appareil, il réapparaît là où en est le joueur.
 - **À suivre** : voir si les nouveaux joueurs le suivent ; l'étape « Pioche en pierre » (30 lingots) peut prendre
   plusieurs sessions, à surveiller.
-- **État** : 🧪 sur la branche `jules/aide-bulles` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Bulles d'aide « ? » à la place des textes d'explication
 - **Pour le joueur** : les paragraphes d'explication posés un peu partout (en haut ou en bas des onglets) sont
@@ -58,7 +58,7 @@ Modèle d'entrée :
   Dans le Four et le Concasseur, l'ancien bouton « ? » (qui ouvrait les tableaux) s'appelle maintenant **Recettes** /
   **Butin**, pour qu'un « ? » veuille toujours dire « explication ».
 - **À suivre** : le guide de départ, fait juste après (entrée au-dessus).
-- **État** : 🧪 sur la branche `jules/aide-bulles` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle
 - **Pour le joueur** : sur téléphone, l'écran de ces événements rapetissait sans arrêt (surtout quand le journal à

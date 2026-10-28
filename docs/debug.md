@@ -4149,7 +4149,7 @@ Règles (voir CLAUDE.md) :
   si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
   ⚠️ Pas vérifié dans un vrai navigateur.
 
-### Bulles d'aide « ? » (Jules) — branche `jules/aide-bulles`, 🧪 pas en ligne
+### Bulles d'aide « ? » (Jules) — branche `jules/aide-bulles`, ✅ en ligne le 28/10
 - **Quoi** : `src/ui/help.js` (nouveau) : `HELP` (textes des pages fixes, 1re ligne = titre, chiffres du Four et du
   Concasseur lus dans la config), `qhelp(texte, label)` / `helpLine(texte, label)` (HTML d'une bulle, pour les écrans
   construits par le code), `fillHelp()` (remplace les `<i data-qhelp="clé">` d'`index.html` ; clé inconnue = console +
@@ -4179,7 +4179,7 @@ Règles (voir CLAUDE.md) :
 - **Correctif (même jour)** : dans Stuff, le `.nextNote` devenait une case de la grille `.furnWrap` et décalait tout →
   `grid-column:1/-1` comme `.invHead`. Vérifié en vraie session (invité local) : Stuff, Skills, Sorts ✅.
 
-### Guide « Premiers pas » (Jules) — branche `jules/aide-bulles`, 🧪 pas en ligne
+### Guide « Premiers pas » (Jules) — branche `jules/aide-bulles`, ✅ en ligne le 28/10
 - **Quoi** : `src/ui/guide.js` (nouveau). `GUIDE_STEPS` (7 étapes : launch, loot, smelt, craft, equip, skill, research ;
   chacune un onglet, un titre, une aide, une condition `done(f)`), `guideView(f)` (étapes faites, étape en cours = la
   1re pas faite ; pas un couloir : skills / recherche se cochent même si le four n'est pas fait ; « loot » faite aussi
