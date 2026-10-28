@@ -24,6 +24,18 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Chat global dans le Lobby
+- **Pour le joueur** : une carte **Chat global** dans le Lobby (colonne de gauche, sous les préférences) : **tous les
+  joueurs du jeu** s'y écrivent, en session ou non, invités compris (ils apparaissent en « Invité XXXX »). Chaque message
+  a son heure. Un message toutes les **3 secondes** au plus, **200 caractères**, les **50 derniers** restent affichés, et
+  ils ne disparaissent plus quand le serveur redémarre (mise en ligne). Le chat de l'onglet Session ne change pas : il
+  reste entre les joueurs de la session.
+- **Décisions** (choix de Claude, à valider) : invités autorisés à écrire ; 3 s entre deux messages ; le chat n'est relu
+  que quand l'onglet Lobby est ouvert (pas de pastille « nouveau message » sur l'onglet).
+- **À suivre** : pas de modération (ni signalement, ni sourdine, ni suppression par l'équipe) : à prévoir si des abus
+  arrivent.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Correctif : mineur bloqué sur une échelle avec un focus minerai en fin de session
 - **Pour le joueur** : signalé par un joueur (focus graphite, couche 5). Près de la fin de la session, si le minerai visé
   n'était plus que tout en bas, le mineur montait et descendait en boucle sur l'échelle (« Change d'area » / « Change de

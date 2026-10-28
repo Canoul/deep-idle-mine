@@ -276,6 +276,27 @@ test('HTTP : s\'inscrire, demander en ami par pseudo, accepter, voir l\'ami en l
   } finally { server.close(); }
 });
 
+test('HTTP : chat global, connecté seulement ; écrire puis relire après un numéro ; trop vite ou vide refusé', async () => {
+  const { server, client } = await serve();
+  try {
+    const zoe = client(), guest = client();
+    await zoe('POST', '/api/account/register', { name:'Zoe', password:'motdepasse-zoe' });
+    await guest('POST', '/api/account/guest', {});
+    assert.equal((await client()('GET', '/api/social/chat')).status, 401);
+    assert.equal((await client()('POST', '/api/social/chat', { text:'x' })).status, 401);
+    const sent = await zoe('POST', '/api/social/chat', { text:'  hello <b>mine</b> ' });
+    assert.equal(sent.status, 200); assert.equal(sent.data.message.name, 'Zoe');
+    const r = await guest('GET', '/api/social/chat');
+    assert.deepEqual(r.data.messages.map(m => m.text), ['hello <b>mine</b>']);
+    assert.deepEqual((await guest('GET', `/api/social/chat?after=${sent.data.message.id}`)).data.messages, []);
+    assert.equal((await guest('GET', '/api/social/chat?after=abc')).data.messages.length, 1, 'numéro invalide : tout');
+    assert.equal((await zoe('POST', '/api/social/chat', { text:'vite' })).status, 429);
+    assert.equal((await guest('POST', '/api/social/chat', { text:'' })).status, 400);
+    assert.equal((await guest('POST', '/api/social/chat', [1])).status, 400);
+    assert.match((await guest('POST', '/api/social/chat', { text:'moi' })).data.message.name, /^Invité /);
+  } finally { server.close(); }
+});
+
 test('Online : tous les joueurs en ligne (amis ou non), pas en session d\'abord, puis en session ; hors ligne absents', async () => {
   const { social, game, advance } = setup();
   await friends(social, A, C);

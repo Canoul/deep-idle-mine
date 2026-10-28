@@ -242,6 +242,7 @@ const historyTab = setupHistory({ load: () => gameApi.history() });
 let nav;   // l'onglet de départ est ouvert pendant setupNav, avant que nav soit assigné
 let giantUI = null;   // Bloc géant (créé plus bas) : sa visite occupe l'onglet Session
 let guide = null;     // guide « Premiers pas » (créé au démarrage, une fois l'état du joueur lu)
+let gchat = null;     // chat global du Lobby (créé plus bas)
 let wantJudgment = /^#jugement$/i.test(location.hash);   // ancien onglet Jugement : ouvre le Lobby sur les jauges
 nav = setupNav($('nav'), $('views'), id => {
   if(ui.tab==='inventaire' && id!=='inventaire') ui.fresh.clear();   // les nouveautés ont été vues
@@ -254,6 +255,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
+  if(id==='lobby') gchat?.poke();        // chat global : relu seulement Lobby ouvert, tout de suite en y revenant
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
 });
 
@@ -476,6 +478,9 @@ const focusPanel = setupFocusPanel({
 
 /* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
 const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
+/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert */
+gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id,
+                    paused: () => ui.tab !== 'lobby', time: true });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -657,6 +662,7 @@ else {
 startInstant();
 pollSocial();
 pollJudgment();
+if(acct.account && !acct.offline) gchat.start();   // une déconnexion recharge la page : démarré une fois
 
 /* guide « Premiers pas » : relit l'état du joueur (déjà dans la page) et coche ses étapes toutes seules */
 guide = setupGuide($('guide'), {

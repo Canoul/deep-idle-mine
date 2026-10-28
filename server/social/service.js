@@ -15,6 +15,9 @@
    - Classements (sous-onglet Classements, 27/10/2026) : GS, XP, XP de spécialisation (un par arbre), meilleur temps de
      tour céleste ; tous les comptes, le top LEADERBOARD.size et sa propre place (src/meta/leaderboard.js). Les valeurs
      viennent du service de jeu (game.leaderboardData) ; ici on classe et on met les pseudos.
+   - Chat global (carte du Lobby, 28/10/2026) : un seul salon pour tous les comptes (invités compris), nom donné par le
+     serveur, CHAT.globalGapMs entre deux messages d'un joueur ; les CHAT.keep derniers sont enregistrés (ns chat_global)
+     et repris au premier appel après un redémarrage.
    - Inviter : passe par le service des groupes (invitation par ID, refusée si l'ami est en session). Rejoindre : entre
      dans le groupe de l'ami (créé s'il n'en a pas), seulement s'il est en ligne et pas en session.
 
@@ -26,7 +29,8 @@ import { displayName, formatAccountId, parseAccountId, nameKey } from '../../src
 import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
-import { LEADERBOARD } from '../../src/config.js';
+import { LEADERBOARD, CHAT } from '../../src/config.js';
+import { createChat } from '../game/chat.js';
 
 export class SocialError extends Error {
   constructor(code, status, message, extra = {}){ super(message); this.code = code; this.status = status; Object.assign(this, extra); }
@@ -60,6 +64,12 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const load = async id => sanitizeSocial(await store.getSocial(id), config);
   const save = entries => store.putSocial(entries);           // [[id, social]…] écrits ensemble
   const online = id => clock() - (seen.get(id) ?? -Infinity) <= config.onlineFor;
+  /* chat global : jamais oublié faute de message (ttl infini), relu en base une seule fois */
+  const GLOBAL = 'global';
+  const chat = createChat({ clock, gapMs: CHAT.globalGapMs, ttlMs: Infinity });
+  let chatLoad = null;
+  const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
+    .then(raw => chat.restore(GLOBAL, raw)).catch(console.error);
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
 
   /* l'ami visé : par pseudo d'abord, sinon par ID (« 7K3Q-9XHP ») */
@@ -232,6 +242,21 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const f = await friendOf(me, input);
       if(!f) fail('not_found', 404, 'Ce joueur n\'existe plus.');
       return { id: f.id, displayId: formatAccountId(f.id), name: displayName(f) || formatAccountId(f.id), ...await game.profile(f.id) };
+    },
+
+    /* chat global : tout compte connecté écrit ; le nom affiché vient du compte (serveur), jamais du navigateur */
+    async chatPost(me, body = {}){
+      await chatReady();
+      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text);
+      if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
+      if(r.error === 'too_fast') fail('too_many', 429, `Doucement : un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus.`);
+      await serial(() => store.putGlobalChat(chat.room(GLOBAL)));   // état le plus récent, écritures l'une après l'autre
+      return { message: r.msg };
+    },
+    /* messages après le numéro after (absent ou invalide : tous ceux gardés) */
+    async chatGet(me, after){
+      await chatReady();
+      return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0) };
     },
 
   };
