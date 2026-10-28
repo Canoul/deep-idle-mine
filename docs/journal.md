@@ -92,7 +92,7 @@ Modèle d'entrée :
   Lance en fer baisse un peu (360 → 330, son malus de vitesse d'attaque pèse plus). Les stats des pièces ne changent
   pas, ni les runes.
 - **Décisions** : choix de Geoffrey ; portée et recul restent au prix mesuré ; casque, jambes et bottes en fer restent à 250 x.
-- **État** : 🧪 sur la branche `geoffrey/gs-offensif` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Shrines : le Shrine d'abondance
 - **Pour le joueur** : nouvelle carte **Shrines** dans le lobby de la mine. Les shrines appartiennent au **chef du
