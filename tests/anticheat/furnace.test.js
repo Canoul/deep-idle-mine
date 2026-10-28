@@ -110,3 +110,24 @@ test('four, recette choisie (28/10) : quantités trafiquées refusées, rejeu sa
   assert.equal(total(inv, st, 'Fer') + FURNACE.orePerIngot * total(inv, st, 'Lingot de fer'), START.Fer);
   assert.equal(total(inv, st, 'Charbon') + FURNACE.fuelPerIngot * total(inv, st, 'Lingot de fer'), START.Charbon);
 });
+
+test('four, changer de recette (28/10) : 300 suites au hasard (changements en pleine fonte, rejeux), matière conservée', () => {
+  const r = mulberry32(2810);
+  for(let t = 0; t < 300; t++){
+    const inv = createInventory(); addAll(inv, START);
+    const st = createFurnaces();
+    let now = 1e6;
+    for(let k = 0; k < 25; k++){
+      now += Math.floor(r() * 150_000);
+      const out = ['Lingot de fer', 'Lingot d\'or', 'Tainted iron', 'Diamant'][Math.floor(r() * 4)];
+      const action = r() < 0.75 ? 'recipe' : ['collect', 'empty', 'unload'][Math.floor(r() * 3)];
+      const opId = r() < 0.15 && k ? `sw-${t}-${k - 1}` : `sw-${t}-${k}`;
+      furnaceOp(st, inv, { action, furnace:0, out, count:1 + Math.floor(r() * 12), slot:'ore', opId }, now);
+    }
+    advance(st.list[0], now + 1e12);
+    const ingots = total(inv, st, 'Lingot de fer') + total(inv, st, 'Lingot d\'or');
+    assert.equal(total(inv, st, 'Fer') + FURNACE.orePerIngot * total(inv, st, 'Lingot de fer'), START.Fer, `fer (essai ${t})`);
+    assert.equal(total(inv, st, 'Or') + FURNACE.orePerIngot * total(inv, st, 'Lingot d\'or'), START.Or, `or (essai ${t})`);
+    assert.equal(total(inv, st, 'Charbon') + FURNACE.fuelPerIngot * ingots, START.Charbon, `charbon (essai ${t})`);
+  }
+});

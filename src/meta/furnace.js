@@ -138,7 +138,11 @@ function unlockFurnace(state, inv, item){
    Au lieu de poser les ingrédients un par un, le joueur choisit une recette (par son produit, ex. « Lingot de fer ») et
    un nombre de fournées : le four passe dans le bon mode et chaque case (ingrédients, combustible) est complétée
    jusqu'à ce qu'il faut pour (fournées déjà possibles + count) fournées. Le combustible déjà posé sert ; sinon, du
-   charbon. Refusé si une case d'ingrédient contient autre chose (il faut la vider), ou si la recette n'est pas apprise. */
+   charbon. Refusé si la recette n'est pas apprise.
+   Changer de recette (28/10, Geoffrey) : sans vider le four soi-même. Les ingrédients qui ne servent pas à la nouvelle
+   recette et les produits d'une autre sorte (sortie) reviennent dans l'inventaire (le produit en cours est annulé, rien
+   n'est perdu) ; un ingrédient commun aux deux recettes reste en place, le combustible aussi. Inventaire plein : rien
+   ne bouge (inventory_full). */
 export const FUEL = 'Charbon';
 /* recette de ce produit : { mode, out, qty, time, in:{ ingrédient: quantité par fournée }, fuel } ou null */
 export function recipeByOut(out){
@@ -153,37 +157,32 @@ export const allRecipes = () => [...Object.values(FURNACE.recipes), ...FURNACE.a
 /* la recette est-elle utilisable par ce joueur ? (une fonte fermée doit être apprise) */
 export const recipeUsable = (rec, inv) => rec.mode === 'alloy' || recipeKnown(Object.keys(rec.in)[0], inv);
 
-/* où va chaque objet de la recette dans ce four : { slots:{ case: objet }, need:{ case: quantité par fournée } }
-   ou { error } (not_empty : il faudrait changer de mode avec des ingrédients posés ; slot_busy : une case contient
-   autre chose) */
+/* copies du four et de l'inventaire où ce qui gêne la recette est déjà rendu : { f, inv, back:[{ item, qty }] } ou
+   { error:'inventory_full' } (rien n'est modifié : on travaille sur des copies) */
+function cleared(f, inv, rec){
+  const f2 = structuredClone(f), inv2 = structuredClone(inv), back = [];
+  const give = slot => { back.push({ ...f2[slot] }); return unload(f2, inv2, slot); };
+  const keep = new Set(modeOf(f2) === rec.mode ? Object.keys(rec.in) : []);
+  for(const s of INPUTS[modeOf(f2)]) if(f2[s] && !keep.has(f2[s].item) && give(s).error) return { error:'inventory_full' };
+  if(f2.out && f2.out.item !== rec.out && give('out').error) return { error:'inventory_full' };
+  f2.mode = rec.mode;
+  if(back.length) f2.since = null;                     // le produit en cours de l'ancienne recette est annulé
+  return { f:f2, inv:inv2, back };
+}
+/* où va chaque objet de la recette dans un four sans ingrédient gênant : { slots:{ case: objet }, need:{ case: quantité
+   par fournée } } (un ingrédient déjà posé garde sa case, les autres prennent les cases vides) */
 function placeRecipe(f, rec){
-  const mode = modeOf(f);
-  if(mode !== rec.mode && INPUTS[mode].some(s => f[s])) return { error:'not_empty' };
-  const slots = {}, need = {}, free = [...INPUTS[rec.mode]];
-  const items = Object.keys(rec.in);
-  for(const it of items){                              // un ingrédient déjà posé garde sa case
-    const s = free.find(s => f[s]?.item === it);
-    if(s){ slots[s] = it; free.splice(free.indexOf(s), 1); }
-  }
-  for(const it of items){
-    if(Object.values(slots).includes(it)) continue;
-    const s = free.shift();
-    if(f[s]) return { error:'slot_busy' };
-    slots[s] = it;
-  }
-  if(free.some(s => f[s])) return { error:'slot_busy' };
+  const slots = {}, need = {}, free = INPUTS[rec.mode].filter(s => !f[s]);
+  for(const s of INPUTS[rec.mode]) if(f[s]) slots[s] = f[s].item;
+  for(const it of Object.keys(rec.in)) if(!Object.values(slots).includes(it)) slots[free.shift()] = it;
   slots.fuel = f.fuel?.item ?? FUEL;
   for(const [s, it] of Object.entries(slots)) need[s] = s === 'fuel' ? rec.fuel : rec.in[it];
   return { slots, need };
 }
-/* ce qu'il faut prendre dans l'inventaire pour count fournées de plus : { mode, add:{ case:{ item, qty } } } ou { error } */
-export function recipePlan(f, inv, out, count){
-  const rec = recipeByOut(out);
-  if(!rec || !recipeUsable(rec, inv)) return { error:'bad_item' };
+/* sur un four déjà débarrassé (cleared) : ce qu'il faut prendre pour count fournées de plus, { add } ou { error } */
+function planOn(f, inv, rec, count){
   if(!validQty(count)) return { error:'bad_qty' };
-  const p = placeRecipe(f, rec);
-  if(p.error) return p;
-  const have = s => f[s]?.qty ?? 0;
+  const p = placeRecipe(f, rec), have = s => f[s]?.qty ?? 0;
   const target = Math.min(...Object.entries(p.need).map(([s, n]) => Math.floor(have(s) / n))) + count;
   const add = {};
   for(const [s, n] of Object.entries(p.need)){
@@ -192,25 +191,45 @@ export function recipePlan(f, inv, out, count){
     if(want > have(s)) add[s] = { item:p.slots[s], qty:want - have(s) };
   }
   for(const { item, qty } of Object.values(add)) if(countOf(inv, item) < qty) return { error:'not_enough' };
-  return { mode:rec.mode, add };
+  return { add };
 }
-/* le plus de fournées qu'on peut ajouter avec l'inventaire (0 si aucune ou recette impossible dans ce four) */
+function prepare(f, inv, out){
+  const rec = recipeByOut(out);
+  if(!rec || !recipeUsable(rec, inv)) return { error:'bad_item' };
+  const c = cleared(f, inv, rec);
+  return c.error ? c : { rec, ...c };
+}
+/* ce que fera la recette : { mode, add:{ case:{ item, qty } }, back:[ objets rendus à l'inventaire ] } ou { error } */
+export function recipePlan(f, inv, out, count){
+  const c = prepare(f, inv, out);
+  if(c.error) return c;
+  const p = planOn(c.f, c.inv, c.rec, count);
+  return p.error ? p : { mode:c.rec.mode, add:p.add, back:c.back };
+}
+/* le plus de fournées qu'on peut ajouter avec l'inventaire (ce qui est rendu compte ; 0 si aucune) */
 export function recipeMax(f, inv, out){
-  if(recipePlan(f, inv, out, 1).error) return 0;
+  const c = prepare(f, inv, out);
+  if(c.error) return 0;
+  const ok = n => !planOn(c.f, c.inv, c.rec, n).error;
+  if(!ok(1)) return 0;
   let lo = 1, hi = 2;
-  while(!recipePlan(f, inv, out, hi).error) { lo = hi; hi *= 2; }
-  while(hi - lo > 1){ const m = Math.floor((lo + hi) / 2); if(recipePlan(f, inv, out, m).error) hi = m; else lo = m; }
+  while(ok(hi)) { lo = hi; hi *= 2; }
+  while(hi - lo > 1){ const m = Math.floor((lo + hi) / 2); if(ok(m)) lo = m; else hi = m; }
   return lo;
 }
-/* applique le plan (tout ou rien : il a déjà vérifié l'inventaire) */
+/* applique la recette : tout se fait sur les copies, recopiées dans f et inv seulement si tout a marché */
 function loadRecipe(f, inv, { out, count }){
-  const p = recipePlan(f, inv, out, count);
+  const c = prepare(f, inv, out);
+  if(c.error) return c;
+  const p = planOn(c.f, c.inv, c.rec, count);
   if(p.error) return p;
-  f.mode = p.mode;
   for(const [s, { item, qty }] of Object.entries(p.add)){
-    if(!removeItem(inv, item, qty)) return { error:'not_enough' };   // ne peut pas arriver (vérifié dans le plan)
-    f[s] = { item, qty:(f[s]?.qty || 0) + qty };
+    if(!removeItem(c.inv, item, qty)) return { error:'not_enough' };   // ne peut pas arriver (vérifié dans le plan)
+    c.f[s] = { item, qty:(c.f[s]?.qty || 0) + qty };
   }
+  Object.assign(f, c.f);
+  for(const k of Object.keys(inv)) delete inv[k];
+  Object.assign(inv, c.inv);
   return { ok:true };
 }
 
