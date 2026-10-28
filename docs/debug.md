@@ -4417,3 +4417,19 @@ Règles (voir CLAUDE.md) :
 - ✅ **Navigateur** (Chrome sans écran, CDP, mode dev) : canvas de la session 274,136 776×543 → canvas du fond
   274,136 776×543 sur l'onglet Inventaire ; aucune erreur console. Pas vérifié : tours, instance, MI, téléphone
   (sur téléphone #cv est dans le flux et la page défile : la mesure dépend du défilement au moment du relevé).
+- **Suite le 28/10 (même branche) : plein écran + transition** (demande de Geoffrey : garder le plein écran hors Session,
+  mais une transition douce). `backdrop.js` : `coverRect` (plein écran calculé, plus d'`object-fit`), `lerpRect`,
+  `switchTab(from, to, G)` appelé par le callback de `setupNav` (src/main.js) ; vers Session : `#cv` (ou cvMi/cvTw/cvIn,
+  `SESSION_CV`) en `visibility:hidden` pendant `BACKDROP.transitionMs` (450 ms), le fond passe linéairement du plein écran
+  à la place mesurée, luminosité `BACKDROP.dim` (0,4) → 1, puis `#cv` réapparaît ; depuis Session : l'inverse. Le fond
+  dessine toujours `place.rows` lignes quand une place est connue (même image que la session : zoom pur). `enterPanels`
+  : classe `.bgEnter` sur la vue Session (keyframes `bgFromL/R/T`, `.runL`, `.runR`, `.rail`, `#run>header`, asides des
+  modes MI/tours/instance). `.bgSession` passe en `z-index:0` (au-dessus de la vignette `body::before`, sinon saut de
+  luminosité à la fin). `prefers-reduced-motion` : pas de transition. Le fond s'affiche avant le dessin (`show` puis
+  `draw`) : une erreur de dessin ne le laisse plus caché.
+- **Tests** ✅ `tests/backdrop.test.js` 8/8 (+ account-client) : plein écran, interpolation, mesure, transition aller (mine
+  de la session cachée puis rendue, mi-chemin exact) et retour, pas de transition entre deux autres onglets / sans
+  session / option coupée / mesure abîmée.
+- ✅ **Navigateur** (Chrome sans écran, CDP, localhost:8000) : captures à ~60 / 150 / 300 ms : fond 94 px → 216 px →
+  271 px (place de #cv), luminosité 0,60 → 0,87 → fin, `#cv` caché puis visible, panneaux en glissement ; aucune erreur.
+  Pas vérifié : MI, tours, instance, téléphone, petite machine.

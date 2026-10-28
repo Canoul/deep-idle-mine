@@ -1,11 +1,12 @@
-/* Fond de page (28/10/2026, Geoffrey) : pendant une session, la mine en cours remplace le mur du fond, assombrie
-   (style.css .bgSession) pour rester un décor. Seulement le dessin de la mine : aucun panneau d'infos.
-   Pas dessinée sur l'onglet Session (la mine y est déjà). Option du joueur dans « Mon compte », gardée dans ce
-   navigateur (activée par défaut). Un canvas par mode de jeu : chaque moteur de dessin garde la taille du sien.
-   Même place et même échelle qu'en session (28/10, Geoffrey : changer d'onglet ne doit pas faire sauter l'image) :
-   measure() relève le canvas de la session (position à l'écran, taille, lignes) quand l'onglet Session est affiché ;
-   la mesure est gardée dans le navigateur avec la taille de la fenêtre. Sans mesure valable (jamais ouvert l'onglet
-   Session à cette taille de fenêtre) : la mine couvre l'écran (.cover). */
+/* Fond de page (28/10/2026, Geoffrey) : pendant une session, la mine en cours remplace le mur du fond, en plein écran,
+   assombrie pour rester un décor. Seulement le dessin de la mine : aucun panneau d'infos. Option du joueur dans
+   « Mon compte », gardée dans ce navigateur (activée par défaut). Un canvas par mode de jeu : chaque moteur de dessin
+   garde la taille du sien.
+   Transition avec l'onglet Session (28/10, Geoffrey) : en y entrant, la mine du fond rétrécit linéairement jusqu'à la
+   place de la mine de la session (et s'éclaircit), puis la vraie mine prend le relais ; en en sortant, l'inverse.
+   measure() relève cette place (position à l'écran, taille, lignes) quand l'onglet Session est affiché ; elle est
+   gardée dans le navigateur avec la taille de la fenêtre. Le fond dessine le même nombre de lignes que la session :
+   la transition n'est qu'un zoom (même image). Sans mesure valable : plein écran, sans transition. */
 import { CAMERA } from '../config.js';
 import { createRenderer, TILE } from '../render/canvas.js';
 import { createInstantRenderer, MI_TILE } from '../render/instant.js';
@@ -13,6 +14,7 @@ import { createTowerRenderer } from '../render/tower.js';
 import { createInstanceRenderer } from '../render/instance.js';
 
 const KEY = 'dim.bgSession', PLACE_KEY = 'dim.bgPlace';
+export const BACKDROP = { dim: 0.4, transitionMs: 450 };   // luminosité du fond ; durée de la transition (aussi en CSS : --bgAnim)
 const load = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch(e){ return d; } };
 const save = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
 
@@ -26,6 +28,14 @@ const MODES = {
 };
 export const modeOf = G => G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
 
+/* plein écran (le canvas couvre la fenêtre, centré, proportions gardées) */
+export function coverRect(cw, ch, vw, vh){
+  const s = Math.max(vw / cw, vh / ch), w = cw * s, h = ch * s;
+  return { x: (vw - w) / 2, y: (vh - h) / 2, w, h };
+}
+/* entre deux rectangles, k de 0 à 1 (linéaire) */
+export const lerpRect = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, w: a.w + (b.w - a.w) * k, h: a.h + (b.h - a.h) * k });
+
 /* mesure relue : { mode: { x, y, w, h, rows, vw, vh } }, seulement des nombres */
 function readPlaces(){
   try {
@@ -38,10 +48,20 @@ function readPlaces(){
   } catch(e){ return {}; }
 }
 
-export function createBackdrop(root){
-  let on = load(KEY, '1') !== '0', shownMode = null;
+/* entrée dans l'onglet Session : les panneaux glissent depuis les bords (style.css .bgEnter), relancé à chaque fois */
+export function enterPanels(view){
+  if(!view) return;
+  view.style.setProperty('--bgAnim', BACKDROP.transitionMs + 'ms');
+  view.classList.remove('bgEnter'); void view.offsetWidth; view.classList.add('bgEnter');
+  clearTimeout(view._bgEnter); view._bgEnter = setTimeout(() => view.classList.remove('bgEnter'), BACKDROP.transitionMs + 50);
+}
+
+/* root : boîte du fond ; sessionCanvas(mode) : le canvas de la mine dans l'onglet Session (caché pendant l'entrée) */
+export function createBackdrop(root, { sessionCanvas = () => null, now = () => performance.now() } = {}){
+  let on = load(KEY, '1') !== '0', shownMode = null, anim = null;   // anim : { to:'session'|'cover', t0, mode, hidden }
   const places = readPlaces();
   const made = {};                                     // mode → { cv, r, rows, key }
+  const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){ return false; } };
   function get(mode){
     if(made[mode]) return made[mode];
     const cv = document.createElement('canvas');
@@ -57,22 +77,42 @@ export function createBackdrop(root){
   const setRows = (m, tile, rows) => { if(tile && m.r.setRows && rows !== m.rows){ m.r.setRows(rows); m.rows = rows; } };
   /* la place de la session pour ce mode, si elle a été mesurée à cette taille de fenêtre */
   const placeOf = mode => { const p = places[mode]; return p && p.vw === innerWidth && p.vh === innerHeight ? p : null; };
-  function place(m, p){
-    const key = p ? `${p.x},${p.y},${p.w},${p.h}` : 'cover';
+  function place(m, r, bright){
+    const key = `${Math.round(r.x)},${Math.round(r.y)},${Math.round(r.w)},${Math.round(r.h)},${bright.toFixed(3)}`;
     if(key === m.key) return;
     m.key = key;
-    m.cv.classList.toggle('cover', !p);
-    Object.assign(m.cv.style, p ? { left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px' } : { left: '', top: '', width: '', height: '' });
+    Object.assign(m.cv.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px',
+      filter: bright < 1 ? `brightness(${bright}) saturate(${0.7 + 0.3 * (bright - BACKDROP.dim) / (1 - BACKDROP.dim)})` : '' });
+  }
+  function finish(){
+    if(anim?.hidden) anim.hidden.style.visibility = '';
+    anim = null;
   }
 
   /* à chaque image : G = partie affichée (null hors session), visible = pas sur l'onglet Session */
   function draw(G, visible, me, follow){
-    if(!on || !G || !visible) return show(null);
+    if(anim && now() - anim.t0 >= BACKDROP.transitionMs) finish();
+    if(!on || !G || (!visible && !anim)) return show(null);
     const mode = modeOf(G), m = get(mode), tile = MODES[mode].tile, p = placeOf(mode);
     setRows(m, tile, p ? p.rows : rowsFor(m.cv, tile));
-    place(m, p);
-    MODES[mode].draw(m.r, G, me, follow);
+    const cover = coverRect(m.cv.width, m.cv.height, innerWidth, innerHeight);
+    if(anim && p){
+      const k = Math.min(1, (now() - anim.t0) / BACKDROP.transitionMs), t = anim.to === 'session' ? k : 1 - k;
+      place(m, lerpRect(cover, p, t), BACKDROP.dim + (1 - BACKDROP.dim) * t);
+    }
+    else place(m, cover, BACKDROP.dim);
     show(mode);
+    MODES[mode].draw(m.r, G, me, follow);
+  }
+  /* changement d'onglet : vers la session, la mine rétrécit jusqu'à sa place ; depuis la session, elle s'agrandit */
+  function switchTab(from, to, G){
+    finish();
+    if(!on || !G || reduced() || (from === 'session') === (to === 'session')) return false;
+    const mode = modeOf(G);
+    if(!placeOf(mode)) return false;
+    anim = { to: to === 'session' ? 'session' : 'cover', t0: now(), mode, hidden: null };
+    if(anim.to === 'session'){ const cv = sessionCanvas(mode); if(cv){ cv.style.visibility = 'hidden'; anim.hidden = cv; } }
+    return true;
   }
   /* onglet Session affiché : relève la place du canvas de la session (cv) et ses lignes (rows, mine qui défile) */
   function measure(mode, cv, rows){
@@ -86,8 +126,9 @@ export function createBackdrop(root){
     save(PLACE_KEY, JSON.stringify(places));
   }
   return {
-    draw, measure,
+    draw, measure, switchTab,
     get on(){ return on; },
-    set(v){ on = !!v; save(KEY, on ? '1' : '0'); if(!on) show(null); },
+    get animating(){ return !!anim; },
+    set(v){ on = !!v; save(KEY, on ? '1' : '0'); if(!on){ finish(); show(null); } },
   };
 }

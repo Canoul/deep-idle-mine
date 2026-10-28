@@ -22,10 +22,17 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 75% 70% at 50% 45%,rgba(8,5,4,.35) 0 45%,rgba(8,5,4,.55) 45% 70%,rgba(8,5,4,.75) 70%)}
 img,canvas{image-rendering:pixelated}
 /* fond : la session en cours (src/ui/backdrop.js), sous la vignette, tamisée pour rester un décor */
-.bgSession{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-/* même place et même échelle qu'en session (position et taille posées par backdrop.js) ; .cover : pas encore mesurée */
-.bgSession canvas{position:absolute;filter:brightness(.45) saturate(.7)}
-.bgSession canvas.cover{left:0;top:0;width:100%;height:100%;object-fit:cover}
+.bgSession{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}   /* au-dessus de la vignette (body::before), sous .app */
+/* place, taille et luminosité posées par backdrop.js : plein écran assombri, ou en transition vers la place de la session */
+.bgSession canvas{position:absolute}
+/* entrée dans l'onglet Session : les panneaux glissent depuis les bords pendant que la mine rétrécit */
+@keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}
+@keyframes bgFromR{from{transform:translateX(110%);opacity:0}}
+@keyframes bgFromT{from{transform:translateY(-100%);opacity:0}}
+.bgEnter .runL,.bgEnter .runGrid.mi>aside:first-child{animation:bgFromL var(--bgAnim,450ms) ease-out both}
+.bgEnter .runR,.bgEnter .rail,.bgEnter .runGrid.mi>aside:last-child{animation:bgFromR var(--bgAnim,450ms) ease-out both}
+.bgEnter #run>header,.bgEnter .sessSwitch{animation:bgFromT var(--bgAnim,450ms) ease-out both}
+@media (prefers-reduced-motion:reduce){.bgEnter *{animation:none!important}}
 .pi{width:calc(16*var(--u));height:calc(16*var(--u));flex:none;display:inline-block;vertical-align:middle}
 h1,h2,h3{font-weight:400;font-family:var(--f-title);letter-spacing:.03em}
 a{color:var(--acc-lt)}

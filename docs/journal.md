@@ -24,11 +24,13 @@ Modèle d'entrée :
 
 ---
 
-## 28/10/2026 — Geoffrey — Fond d'écran : la mine à la même place et à la même taille qu'en session
-- **Pour le joueur** : en passant de l'onglet Session à un autre onglet, la mine du fond reste exactement où elle était,
-  à la même échelle (avant, elle s'agrandissait pour couvrir tout l'écran : ça sautait aux yeux). Autour, le mur de
-  pierre habituel. Si on n'a pas encore ouvert l'onglet Session (ou après avoir changé la taille de la fenêtre), la mine
-  couvre l'écran comme avant, jusqu'au prochain passage sur l'onglet Session.
+## 28/10/2026 — Geoffrey — Fond d'écran : transition douce avec l'onglet Session
+- **Pour le joueur** : sur les autres onglets, la mine reste en plein écran, assombrie. En ouvrant l'onglet Session,
+  elle **rétrécit en douceur** (zoom régulier, ~0,5 s) jusqu'à sa place dans la session en s'éclaircissant, pendant que
+  les panneaux de gauche et de droite **glissent depuis les bords** et que le bandeau du haut descend. En quittant
+  l'onglet Session, la mine s'agrandit à l'inverse jusqu'au plein écran. Plus de saut d'image.
+- **À savoir** : la transition apparaît dès qu'on a ouvert une fois l'onglet Session avec cette taille de fenêtre (le
+  jeu y note la place de la mine) ; avant, on passe directement. Désactivée si le système demande moins d'animations.
 - **État** : 🧪 sur la branche `geoffrey/fond-echelle` (pas en ligne)
 
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
