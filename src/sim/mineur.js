@@ -43,6 +43,7 @@ export function createMiner(id, opts={}){
     torches:carac.torches, bridges:carac.bridges, dir:0, face:1, reason:'', pings:[], lastArea:-1,
     prefs: { ...PREFS, focus:{}, ...(opts.prefs||{}) },   // focus : minerais visés (src/sim/focus.js)
     focusNotice:null,               // dernier focus abandonné faute de minerai ({t, msg}), affiché au joueur
+    focusFar:false,                 // minerais visés hors de portée du trajet (src/sim/focus.js focusFar)
     /* sorts équipés (SPELLS, figés au lancement) : recharge (heure où chacun est de nouveau prêt, 0 = prêt) et blocs
        appris par Fast learner ({ id de bloc: bonus de vitesse }) ; voir src/sim/spells.js */
     spells: Array.isArray(opts.spells) ? [...opts.spells] : [], spellCd: {}, learned: {},

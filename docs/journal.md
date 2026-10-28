@@ -24,12 +24,22 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
+- **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
+  jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite
+  (areas 5 et plus) était trop bas pour ce trajet. Le focus lui interdisait alors de descendre dans les areas sans
+  graphite comme de miner autre chose. Maintenant, dans ce cas, le focus se met en veille : il descend au plus profond
+  qu'il peut et mine normalement, un message le dit dans le panneau, et le focus reprend tout seul dès que le graphite
+  redevient atteignable.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Identification en deux temps
 - **Pour le joueur** : dans l'onglet Amélioration, rubrique Identification, on choisit d'abord la pièce à identifier :
   la liste ne montre que les pièces **pas encore identifiées**. Ensuite seulement on choisit le sacrifice, et la liste
   ne montre plus que les **autres exemplaires du même objet** (identifiés ou non : sacrifier un exemplaire identifié
   reste permis, avec la fenêtre d'avertissement). Vider la case de la pièce revient au premier temps.
 - **État** : ✅ en ligne le 28/10.
+
 
 ## 28/10/2026 — Geoffrey — Correctif : le mineur « se téléportait » dans l'ascenseur
 - **Pour le joueur** : en session, un mineur qui prenait l'ascenseur (Glyphe Treuil) sautait de plusieurs cases d'un

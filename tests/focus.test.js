@@ -6,11 +6,13 @@ import { IDS, BLOCKS, FOCUS, W, TREASURE_BLOCK } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaOf, areaTop, tryUnlock } from '../src/sim/world.js';
 import { mineBlock } from '../src/sim/actions.js';
-import { sanitizeFocus, targetVal, activeOres, depleted, dropDepleted, focusGoal, focusArea, deepArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
+import { sanitizeFocus, targetVal, activeOres, focusFar, oreFocus, depleted, dropDepleted, focusGoal, focusArea, deepArea, focusOptions, setFocus, FOCUS_VAL } from '../src/sim/focus.js';
 import { buildSession, applyDueEvents, replayRecord } from '../src/shared/game.js';
 import { worldFrom, run } from './helpers.js';
 
 const withFocus = (focus, m = { prefs:{ focus } }) => m;
+/* partie minimale pour targetVal : une area débloquée qui a encore de tous les minerais (focus jamais hors de portée) */
+const G1 = { unlockedAreas:1, areas:[{ ores:Object.fromEntries(Object.keys(IDS).map(k => [k, { total:1, left:1 }])) }] };
 
 /* ---------- comptage ---------- */
 
@@ -50,22 +52,22 @@ test('sanitizeFocus : minerais connus et modes permis seulement', () => {
 test('target : le minerai visé pèse plus lourd que le plus gros minerai', () => {
   const maxVal = Math.max(...Object.values(BLOCKS).filter(b=>b.type==='ore').map(b=>b.val));
   const m = withFocus({ coal:'target' });
-  assert.ok(targetVal(m, IDS.coal) > maxVal);
-  assert.equal(targetVal(m, IDS.coal), FOCUS_VAL);
-  assert.equal(targetVal(m, IDS.diamond), BLOCKS[IDS.diamond].val, 'les autres gardent leur poids');
+  assert.ok(targetVal(G1, m, IDS.coal) > maxVal);
+  assert.equal(targetVal(G1, m, IDS.coal), FOCUS_VAL);
+  assert.equal(targetVal(G1, m, IDS.diamond), BLOCKS[IDS.diamond].val, 'les autres gardent leur poids');
 });
 
 test('only : les autres minerais sont ignorés, les treasures restent visés', () => {
   const m = withFocus({ iron:'only' });
-  assert.equal(targetVal(m, IDS.coal), null);
-  assert.equal(targetVal(m, IDS.iron), FOCUS_VAL);
-  assert.equal(targetVal(m, TREASURE_BLOCK), BLOCKS[TREASURE_BLOCK].val);
+  assert.equal(targetVal(G1, m, IDS.coal), null);
+  assert.equal(targetVal(G1, m, IDS.iron), FOCUS_VAL);
+  assert.equal(targetVal(G1, m, TREASURE_BLOCK), BLOCKS[TREASURE_BLOCK].val);
 });
 
 test('only écrase target : un minerai en « target » est ignoré dès qu\'un « only » existe', () => {
   const m = withFocus({ iron:'only', gold:'target' });
   assert.deepEqual(activeOres(m.prefs.focus), ['iron']);
-  assert.equal(targetVal(m, IDS.gold), null);
+  assert.equal(targetVal(G1, m, IDS.gold), null);
 });
 
 /* ---------- areas épuisées ---------- */
@@ -385,4 +387,44 @@ test('fin de session, minerai visé trop profond : pas de va-et-vient « Change 
     assert.ok(flips < 4, `${JSON.stringify(focus)} : ${flips} va-et-vient entre les deux`);
     assert.ok(maxY < areaTop(2), `${JSON.stringify(focus)} : descendu en area 2 (ligne ${maxY}) malgré la profondeur max`);
   }
+});
+
+/* 28/10/2026 (Geoffrey : focus « uniquement » graphite, il creusait des galeries sans descendre) : le graphite n'est que
+   dans les areas 5+, le trajet ne descend que jusqu'à l'area 3. Avant : il s'arrêtait au-dessus de la première area sans
+   graphite et creusait des galeries dans l'area 0 toute la session. Maintenant le focus est en veille (focusFar) : il
+   travaille comme sans focus minerai, au plus profond du trajet. */
+test('focus minerai hors de portée du trajet : en veille, le joueur est prévenu une fois', () => {
+  const { G, m } = deepOnly();
+  setFocus(G, m, { coal:'only' });
+  assert.equal(focusFar(G, m), true);
+  assert.deepEqual(oreFocus(G, m), {}, 'focus minerai en veille');
+  assert.equal(targetVal(G, m, IDS.iron), BLOCKS[IDS.iron].val, 'les autres minerais reprennent leur poids');
+  dropDepleted(G, m);
+  assert.match(m.focusNotice.msg, /Charbon trop profond/);
+  assert.deepEqual(m.prefs.focus, { coal:'only' }, 'le choix du joueur est gardé');
+  const t = m.focusNotice.t; G.t += 5; dropDepleted(G, m);
+  assert.equal(m.focusNotice.t, t, 'prévenu une seule fois');
+  m.tripCap = Infinity;
+  assert.equal(focusFar(G, m), false, 'trajet assez long : le focus reprend');
+  assert.equal(targetVal(G, m, IDS.iron), null);
+  dropDepleted(G, m); assert.equal(m.focusFar, false);
+});
+
+test('focus « uniquement » hors de portée : il descend au plus profond du trajet au lieu de creuser des galeries en haut', () => {
+  const G = newSession(7919), m = G.miners[0];
+  for(let k = 0; k < 6; k++){ G.areas[k].oreMined = 1e9; assert.ok(tryUnlock(G)); }   // areas 0 à 6
+  G.mobs = []; G.spawnTimer = 1e9;
+  m.carac.oxygenMax = m.ox = 1e6;
+  m.tripCap = areaTop(3) + 40;                                   // le trajet ne va que jusqu'à l'area 3
+  m.mode = 'work'; m.y = 0;
+  setFocus(G, m, { graphite:'only' });
+  assert.equal(focusFar(G, m), true, 'graphite seulement dans les areas 5+');
+  let gal0 = 0, maxY = 0;
+  for(let i = 0; i < 12000; i++){
+    tick(G); m.tripCap = areaTop(3) + 40;
+    if(m.mode === 'work' && areaOf(m.y) === 0 && m.status.includes('galerie')) gal0++;
+    maxY = Math.max(maxY, m.y);
+  }
+  assert.ok(maxY >= areaTop(3), `il descend jusqu'à l'area 3 (couche max ${maxY})`);
+  assert.ok(gal0 < 50, `galeries dans l'area 0 : ${gal0} décisions`);
 });

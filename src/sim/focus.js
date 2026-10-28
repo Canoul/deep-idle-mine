@@ -39,10 +39,12 @@ export function focusArea(G,m){
    plus proche qui a ses minerais), ou area vidée (comportement d'avant : il descend, prend ce qu'il trouve). En fin
    de session, l'area la plus profonde qu'il peut encore atteindre (profondeur max du trajet, m.tripCap). */
 export function deepArea(G,m){
-  if(focusArea(G,m) !== null || activeOres(m.prefs.focus).length) return null;
-  const k = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+  if(focusArea(G,m) !== null || activeOres(oreFocus(G,m)).length) return null;
+  const k = capArea(G,m);
   return areaDepleted(G,k) ? null : k;
 }
+/* area de la profondeur max du trajet (m.tripCap), bornée aux areas débloquées */
+const capArea = (G,m) => Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
 /* area où il doit travailler : son focus d'area, sinon « Plus profond », sinon null (pas d'area imposée) */
 export const workArea = (G,m) => focusArea(G,m) ?? deepArea(G,m);
 
@@ -57,12 +59,26 @@ export function activeOres(focus){
 }
 export const onlyMode = focus => Object.values(focus || {}).includes('only');
 
+/* minerais visés hors de portée du trajet : aucune area où il cherche n'en a encore au-dessus de la profondeur max du
+   trajet (m.tripCap, la moitié du temps restant). Le focus minerai est alors mis en veille : il travaille comme sans
+   focus minerai (« Plus profond », borné au trajet). Sans ça, il s'arrêtait au-dessus de la première area sans le
+   minerai et y creusait des galeries pour rien (graphite « uniquement », areas 5+, trajet jusqu'à l'area 3 : toute
+   la session dans l'area 0, 28/10/2026). Il reprend tout seul dès qu'un trajet le permet. */
+export function focusFar(G,m){
+  const act = activeOres(m.prefs.focus);
+  if(!act.length) return false;
+  const capK = capArea(G,m);
+  return !focusAreas(G,m).some(k => k <= capK && areaGood(G,k,act));
+}
+/* focus minerai en vigueur : celui du joueur, sans ses minerais quand ils sont hors de portée (focusFar) */
+export const oreFocus = (G,m) => focusFar(G,m) ? (Object.hasOwn(m.prefs.focus, 'area') ? { area:m.prefs.focus.area } : {}) : m.prefs.focus;
+
 /* poids d'un bloc visé pour l'IA : null = ignoré (mode only), sinon sa valeur (augmentée s'il est visé).
    Les treasures et autres cibles non-ore gardent leur valeur. */
-export function targetVal(m,t){
+export function targetVal(G,m,t){
   const v = BLOCKS[t].val;
   if(!isOre(t)) return v;
-  const f = m.prefs.focus, act = activeOres(f), k = oreKey(t);
+  const f = oreFocus(G,m), act = activeOres(f), k = oreKey(t);
   if(act.includes(k)) return FOCUS_VAL;
   return onlyMode(f) ? null : v;
 }
@@ -120,7 +136,7 @@ export function dropDepleted(G,m){
     const act = activeOres(m.prefs.focus);
     const areas = focusAreas(G,m);
     const dead = act.filter(key => areas.every(k => depleted(G,k,key)));
-    if(!dead.length) return;
+    if(!dead.length) return farNotice(G,m,act);
     const where = focusArea(G,m) !== null ? `l'area ${focusArea(G,m)}` : 'les areas débloquées';
     const focus = { ...m.prefs.focus };
     for(const key of dead) delete focus[key];
@@ -132,15 +148,28 @@ export function dropDepleted(G,m){
   }
 }
 
+/* prévient le joueur quand ses minerais visés passent hors de portée du trajet (focusFar), une fois par passage ;
+   il revoit ses plans dans les deux sens */
+function farNotice(G,m,act){
+  const far = focusFar(G,m);
+  if(far === !!m.focusFar) return;
+  m.focusFar = far;
+  m.exploring = false; m.skipRows.clear(); m.target = null;
+  if(!far) return;
+  const names = act.map(key => BLOCKS[IDS[key]].name).join(', ');
+  m.focusNotice = { t:G.t, msg:`${names} trop profond pour ce trajet : il mine comme sans focus minerai, le focus reprendra dès que possible.` };
+  log(G, `🎯 ${m.name} : ${m.focusNotice.msg}`);
+}
+
 /* area où le mineur doit aller pour son focus (ou « Plus profond »), ou null s'il est déjà au bon endroit (ou sans focus).
    La plus proche des areas débloquées qui a encore un minerai visé ; à égalité, celle du dessous.
    Jamais plus bas que l'area de la profondeur max du trajet (fin de session, m.tripCap) : il ne peut plus y miner, le
    reste de l'IA le ferait remonter aussitôt (va-et-vient « Change d'area » / « Change de galerie », 28/10/2026). */
 export function focusGoal(G,m){
-  const capK = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+  const capK = capArea(G,m);
   const wk = workArea(G,m);
   if(wk !== null){ const A = Math.min(wk, capK); return Math.max(0, areaOf(m.y)) === A ? null : A; }   // focus d'area (ou « Plus profond ») : il l'emporte
-  const act = activeOres(m.prefs.focus);
+  const act = activeOres(oreFocus(G,m));
   if(!act.length) return null;
   const cur = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.y)));
   if(cur <= capK && areaGood(G,cur,act)) return null;
