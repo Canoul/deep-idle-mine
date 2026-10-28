@@ -18,6 +18,12 @@ test('MI : composition = 100 %, que des minerais connus, plumes 1 à 2', () => {
   assert.ok(Number.isInteger(MI.featherMin) && MI.featherMin >= 1 && MI.featherMax >= MI.featherMin);
 });
 
+test('MI : composition du 28/10 (Geoffrey) : quantités exactes sur 50×50', () => {
+  const W = genInstantMine(5), want = { coal:999, iron:675, gold:500, graphite:125, diamond:25, mithril:75, cobalt:38, thorium:38 };
+  for(const [k, n] of Object.entries(want)) assert.equal(count(W, IDS[k]), n, k);
+  assert.equal(W.feathers.size, 25);
+});
+
 test('MI : Plume d\'ange, objet rare qui s\'empile, textures de l\'objet et du tas présentes', () => {
   const it = ITEMS[MI.featherItem];
   assert.ok(it && it.stack && it.tex === MI.featherTex);
@@ -34,7 +40,7 @@ test('MI génération : 50×50 sous une ligne de surface vide, composition exact
   const A = genInstantMine(42), B = genInstantMine(42), C = genInstantMine(43);
   assert.equal(A.tiles.length, MI.h + 1);
   assert.ok(A.tiles[0].every(v => v === 0));
-  assert.equal(count(A, IDS.coal), 500); assert.equal(count(A, IDS.iron), 1000); assert.equal(count(A, IDS.gold), 825);
+  assert.equal(count(A, IDS.coal), 999); assert.equal(count(A, IDS.iron), 675); assert.equal(count(A, IDS.gold), 500);   // 28/10
   assert.equal(count(A, IDS.graphite), 125); assert.equal(count(A, IDS.diamond), 25);   // 23/10
   assert.equal(A.feathers.size, 25);
   for(const [k, n] of A.feathers){
