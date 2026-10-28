@@ -4271,3 +4271,14 @@ Règles (voir CLAUDE.md) :
   Pas vérifié : une vraie session en ligne, tours et instance à l'écran (même code de dessin).
 - **Points fragiles** : « Dans le noir » peut clignoter dans les galeries (à juger en jeu) ; `createCastWatch` garde
   les recharges par id de mineur d'une session à l'autre (au pire une onde manquée au début de la suivante).
+
+## 28/10/2026 — Jules — Panneau de l'area : pourcentages de composition non arrondis (✅ en ligne le 28/10)
+- **Cause** : `oreBonusComp` (src/meta/shrines.js, autel de minerais) répartit les points au prorata : area 3 à +5 points,
+  terre 10 − 10/75 × 5 = 9,333…, pierre dure 4,666…, charbon 8,75. Valeurs justes (les comptes exacts en dépendent),
+  mais `updateHUD` (src/ui/hud.js) les écrivait brutes.
+- **Correctif** : `areaCompHtml(a)` (src/ui/hud.js, exporté) construit les barres de composition ; texte arrondi à
+  1 décimale, virgule française (`pct`), largeur des barres inchangée (valeur exacte). Rien côté simulation ni serveur.
+- **Tests** ✅ `tests/world.test.js` (nouveau test : area 3 + 5 points → « 9,3% », « 8,8% », « 56% », tout au format
+  `\d+(,\d)?%`) ; ❌ avant le correctif (fonction absente), ✅ après ; world + spells + shrines 54/54.
+- Pas vérifié dans le navigateur (rendu HTML contrôlé en Node : Terre 9,3 · Pierre 56 · Pierre dure 4,7 · Charbon 8,8 ·
+  Fer 12,5 · Or 3,8 · Vide 5).

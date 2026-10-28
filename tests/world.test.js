@@ -168,3 +168,16 @@ test('panneau de la mine : l\'objectif suit la dernière area ouverte, pas l\'ar
   assert.match(h, /12 \/ 240/);   // 60 % de 400
   assert.match(h, /Area 2/);
 });
+
+test('panneau de la mine : composition arrondie à 1 décimale (autel de minerais : 9,333… % de terre)', async () => {
+  const { areaCompHtml } = await import('../src/ui/hud.js');
+  const { oreBonusComp } = await import('../src/meta/shrines.js');
+  const comp = oreBonusComp(AREAS[3].comp, 5);   // area 3, +5 points : terre 10 − 10/75 × 5
+  const counts = Object.fromEntries(Object.keys(comp).map(k => [k, 100]));
+  const v = [...areaCompHtml({ comp, counts }).matchAll(/class="v">([^<]*)</g)].map(x => x[1]);
+  assert.equal(v.length, Object.keys(comp).length);
+  for(const t of v) assert.match(t, /^\d+(,\d)?% \(\d+\)$/, `arrondi : ${t}`);
+  assert.ok(v.includes('9,3% (100)'), 'terre');
+  assert.ok(v.includes('8,8% (100)'), 'charbon 8,75');
+  assert.ok(v.includes('56% (100)'), 'pierre : pas de décimale inutile');
+});

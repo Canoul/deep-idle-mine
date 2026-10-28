@@ -15,6 +15,12 @@ const sw = c => c ? `<i class="sw" style="background:${c}"></i>` : '';
 /* couleur et nom de chaque entrée de composition (les noms viennent des blocs ; « air » = poches de vide) */
 const COLORS={dirt:'#7a5230',stone:'#7d828c',hardstone:'#575c66',coal:'#2e2e33',iron:'#d9a67f',gold:'#ffd23f',diamond:'#4de8f0',graphite:'#2f3b4d',mithril:'#b8d4f0',cobalt:'#2f5fe0',thorium:'#7ee04a',air:'#1a1410'};
 const compName = n => n==='air' ? 'Vide' : BLOCKS[IDS[n]].name;
+/* pourcentage arrondi à 1 décimale, virgule française : un autel de minerais donne 9,333… % (oreBonusComp) → « 9,3 » */
+const pct = v => String(Math.round(v*10)/10).replace('.', ',');
+
+/* barres de composition d'une area : % arrondi, nombre exact de blocs entre parenthèses */
+export const areaCompHtml = a => Object.keys(a.comp).map(n =>
+  `<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${pct(a.comp[n])}% (${a.counts[n]})</span></div>`).join('');
 
 function depthText(m){ const a=areaOf(m.y); return m.y+' blocs'+(a>=0?' (area '+a+')':(m.y===0?' (surface)':' (couche de terre)')); }
 
@@ -66,9 +72,7 @@ export function updateHUD(G, ui){
   const ai=areaOf(m.y), box=$('areaBody');
   if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
   const a=G.areas[ai];
-  let h=`<div class="row"><b>Area ${ai}</b></div>`;
-  for(const n in a.comp)
-    h+=`<div class="comp"><span class="n">${sw(COLORS[n])}${compName(n)}</span><div class="bar b"><i style="width:${a.comp[n]}%;background:${COLORS[n]}"></i></div><span class="v">${a.comp[n]}% (${a.counts[n]})</span></div>`;
+  let h=`<div class="row"><b>Area ${ai}</b></div>`+areaCompHtml(a);
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
   if(a.chestChance>0)
     h+=`<div class="row" style="margin-top:6px"><span>💰 Treasure ${a.treasure&&a.treasure.opened?esc(a.treasure.item.replace('Treasure ','')):''}</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
