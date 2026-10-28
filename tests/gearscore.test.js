@@ -28,11 +28,12 @@ test('GS : prix mesurés (worth), complétés par UPGRADE.gs pour les stats simu
   const expect = Object.entries(lance.stats || {}).reduce((s, [k, v]) => s + v * (P[k] ?? 0), 0)
     + Object.entries(lance.set || {}).reduce((s, [k, v]) => s + (v - STATS[k]) * (P[k] ?? 0), 0);
   assert.equal(pieceGS('Lance en fer'), Math.round(expect));
-  assert.equal(pieceGS('Lance en fer'), 1020, 'lance : portée et recul au prix du tableau des lignes (28/10, choix de Geoffrey)');
+  assert.ok(pieceGS('Lance en fer') < 900, `lance : ${pieceGS('Lance en fer')} GS (portée et recul au prix mesuré, 28/10)`);
+  assert.equal(gsPrice('reach'), statPrice('reach')); assert.equal(gsPrice('knockback'), statPrice('knockback'));
 });
 
 test('GS des stats offensives (28/10/2026, Geoffrey) : prix du tableau des lignes (runes) ; le dessin des pièces ne change pas', () => {
-  assert.deepEqual(UPGRADE.gsFromPrices, ['damage', 'damagePct', 'attackSpeed', 'doubleAttack', 'crit', 'oneTap', 'piercing', 'reach', 'knockback']);
+  assert.deepEqual(UPGRADE.gsFromPrices, ['damage', 'damagePct', 'attackSpeed', 'doubleAttack', 'crit', 'oneTap', 'piercing']);
   for(const k of UPGRADE.gsFromPrices) assert.equal(gsPrice(k), UPGRADE.prices[k], k);
   assert.equal(gsPrice('pods'), statPrice('pods')); assert.equal(gsPrice('knockRes'), statPrice('knockRes'), 'défensive : prix mesuré');
   assert.equal(designPrice('damagePct'), statPrice('damagePct') * UPGRADE.priceAdjust.damagePct, 'dessin : prix mesuré × ajustement');

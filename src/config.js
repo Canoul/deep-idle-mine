@@ -1143,7 +1143,7 @@ export const UPGRADE = {
   /* GS des stats OFFENSIVES (28/10/2026, Geoffrey) : comptées au prix du tableau des lignes (prices, celui des runes), pas au
      prix mesuré en mine classique (qui les sous-estime : on s'y bat peu). Ex. une ligne de rune Dégâts +9,2 % = 46 GS
      (avant 18). Ne change ni le dessin des pièces (designPrice) ni les runes. */
-  gsFromPrices: ['damage', 'damagePct', 'attackSpeed', 'doubleAttack', 'crit', 'oneTap', 'piercing', 'reach', 'knockback'],
+  gsFromPrices: ['damage', 'damagePct', 'attackSpeed', 'doubleAttack', 'crit', 'oneTap', 'piercing'],   // portée et recul : prix mesuré (Geoffrey, 28/10)
   /* TIER d'une pièce (25/10/2026, Geoffrey) : une ligne (rune, ou identification d'avant le 22/10) vaut un % de la valeur
      du TIER de la pièce, plus de sa propre valeur (worth, ancien). T1 : pierre, chitine, plans du Treasure T1 ; T2 : fer
      (plans pourtant dans le T1 : la matière compte), plans du Treasure T2 ; T3 : acier, plans du Treasure T3 (Plastron
