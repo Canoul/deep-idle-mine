@@ -4405,7 +4405,24 @@ Règles (voir CLAUDE.md) :
   `behaviourSkills` reste dans `src/meta/skills.js` (testé, plus appelé par l'interface).
 - ✅ `tests/dps.test.js` (nouveau : pas de « Skills en partie » avec un logisticien), skills, social : 44/44.
 
-## 28/10/2026 — Geoffrey — Fond de page à l'échelle de la session (🧪 branche `geoffrey/fond-echelle`)
+## 28/10/2026 — Geoffrey — Four : changer de recette sans vider (action `recipe`)
+- `src/meta/furnace.js` : `cleared(f, inv, rec)` travaille sur des **copies** (structuredClone) du four et de
+  l'inventaire : rend (`unload`) les ingrédients qui ne servent pas (tous si le mode change ; ceux hors `rec.in`
+  sinon), la sortie si c'est un autre produit, passe au mode de la recette, et met `since = null` si quelque chose a
+  été rendu (le chrono de l'ancienne recette ne compte pas pour la nouvelle). `placeRecipe` ne refuse plus
+  (`slot_busy` / `not_empty` ne sortent plus de `recipe`). `recipePlan` renvoie aussi `back` (objets rendus) ;
+  `recipeMax` compte ce qui serait rendu. `loadRecipe` recopie les copies dans `f` et `inv` seulement si tout a marché ;
+  inventaire qui ne reprend pas → `inventory_full`, rien ne bouge.
+- `src/ui/furnace.js` : plus de « vide le four d'abord » ; ligne « Reviennent dans l'inventaire : … » sous la quantité.
+- **Tests** ✅ `tests/furnace.test.js` (4 nouveaux : or → fer en pleine fonte avec chrono remis à zéro, sortie d'une
+  autre sorte rendue, Fondre → Alliage et alliage → alliage avec le mithril commun gardé, inventaire plein ; l'ancien
+  test des refus `slot_busy` / `not_empty` retiré), `tests/anticheat/furnace.test.js` (300 suites de changements au
+  hasard, rejeux : fer, or, charbon conservés), `tests/game-service.test.js` : 85/85 + 6/6. ✅ Capture Chrome headless
+  (four d'or en marche, choix du fer : « Reviennent dans l'inventaire : Or ×30, Lingot d'or ×2 »).
+- **Point fragile** : `loadRecipe` remplace le contenu de l'objet `inv` (clés supprimées puis recopiées) ; le serveur
+  sérialise ce même objet ensuite, donc ça marche, mais garder `inv` comme simple objet de données.
+
+## 28/10/2026 — Geoffrey — Fond de page à l'échelle de la session, puis transition (✅ en ligne le 28/10)
 - **Quoi** : `src/ui/backdrop.js` `measure(mode, cv, rows)` appelé dans `frame` (src/main.js) juste après le fit de
   l'onglet Session : `getBoundingClientRect` du canvas de la session (cv, cvMi, cvTw, cvIn) + lignes du moteur
   (`renderer.rows` / `miRenderer.rows`) + `innerWidth/innerHeight`, gardé dans `localStorage['dim.bgPlace']` (relu et

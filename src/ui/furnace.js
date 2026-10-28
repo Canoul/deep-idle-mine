@@ -161,13 +161,14 @@ export function setupFurnace({ onOp }){
 
   /* fenêtre « Recettes » : choisir une recette et un nombre de fournées ; le serveur pose tout (ingrédients, charbon) et
      change le mode du four si besoin (28/10/2026) */
-  const WHY = { slot_busy:'vide le four d\'abord', not_empty:'vide le four d\'abord', not_enough:'il en manque' };
+  const WHY = { not_enough:'il en manque', inventory_full:'inventaire plein' };
   function openRecipes(i){
     const f = view()[i], box = $('fpick').querySelector('.box'), speed = FURNACE.tiers[f.tier]?.speed || 1;
     const rows = allRecipes().map(rec => {
       const usable = recipeUsable(rec, inv), max = usable ? recipeMax(f, inv, rec.out) : 0;
       const why = !usable ? '🔒 à apprendre' : max ? `max ${num(max)}` : WHY[recipePlan(f, inv, rec.out, 1).error] ?? '—';
-      return { rec, max, html: `<button class="fopt frecRow" data-out="${esc(rec.out)}"${max ? '' : ' disabled'}>${icon(rec.out)}`+
+      const back = max ? recipePlan(f, inv, rec.out, 1).back : [];   // ce qui reviendra dans l'inventaire (changement de recette)
+      return { rec, max, back, html: `<button class="fopt frecRow" data-out="${esc(rec.out)}"${max ? '' : ' disabled'}>${icon(rec.out)}`+
         `<span>${rname(rec.out, rec.qty > 1 ? `${rec.out} ×${rec.qty}` : rec.out)}`+
         `<span class="fparts">${[...Object.entries(rec.in), [FUEL, rec.fuel]].map(([it, n]) => x(it, n)).join('<span class="mut">+</span>')}`+
         `<span class="mut">· ${mmss(rec.time * 1000 / speed)}</span></span></span>`+
@@ -179,14 +180,15 @@ export function setupFurnace({ onOp }){
       `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Fournées">`+
       `<button id="fpickHalf" title="La moitié du maximum">½</button><button id="fpickMax">Max</button><button class="on" id="fpickOk"${pick ? '' : ' disabled'}>Lancer</button></div>`+
       `<p class="mut small" id="fpickInfo"></p><p class="err" id="fpickErr" hidden></p>`+
-      `<p class="mut small">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit.</p>`+
+      `<p class="mut small">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+
       `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
     const qty = $('fpickQty'), maxOf = () => rows.find(r => r.rec.out === pick)?.max ?? 0;
     const info = () => {
-      const rec = rows.find(r => r.rec.out === pick)?.rec, n = Number(qty.value);
-      $('fpickInfo').textContent = rec && Number.isSafeInteger(n) && n > 0
-        ? `${num(n * rec.qty)} ${rec.out} en ${mmss(n * rec.time * 1000 / speed)} (sans compter ce qui est déjà dans le four).` : '';
+      const row = rows.find(r => r.rec.out === pick), rec = row?.rec, n = Number(qty.value);
+      const back = row?.back?.length ? `Reviennent dans l'inventaire : ${row.back.map(b => `${b.item} ×${num(b.qty)}`).join(', ')}. ` : '';
+      $('fpickInfo').textContent = back + (rec && Number.isSafeInteger(n) && n > 0
+        ? `${num(n * rec.qty)} ${rec.out} en ${mmss(n * rec.time * 1000 / speed)} (sans compter ce qui est déjà dans le four).` : '');
     };
     const select = out => {
       pick = out;

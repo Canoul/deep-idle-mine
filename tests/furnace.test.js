@@ -323,11 +323,9 @@ test('recette d\'alliage : le four passe en mode Alliage et pose les deux ingré
   assert.equal(recipeMax(f, inv, 'Tainted iron'), 0, '2 lingots de fer restants : pas assez pour un de plus');
 });
 
-test('recette : refusée si le four contient autre chose, si pas assez, si pas apprise ; rien ne bouge', () => {
+test('recette : refusée si pas assez, si pas apprise ; rien ne bouge', () => {
   const { inv, st } = setup({ Fer:100, Or:40, Charbon:200, 'Peau de gobelin':50, 'Lingot d\'or':10 });
   op(st, inv, { action:'load', slot:'ore', item:'Or', qty:10 });
-  assert.equal(op(st, inv, { action:'recipe', out:'Lingot de fer', count:1 }).error, 'slot_busy');
-  assert.equal(op(st, inv, { action:'recipe', out:'Tainted gold', count:1 }).error, 'not_empty', 'changer de mode avec du minerai posé');
   assert.equal(op(st, inv, { action:'recipe', out:'Lingot d\'or', count:5 }).error, 'not_enough');
   assert.equal(op(st, inv, { action:'recipe', out:'Chitine', count:1 }).error, 'bad_item', 'Recette : Chitine pas apprise');
   assert.equal(op(st, inv, { action:'recipe', out:'Diamant', count:1 }).error, 'bad_item');
@@ -345,4 +343,53 @@ test('recette : max = ce que permettent l\'inventaire et le combustible', () => 
   assert.equal(recipeMax(st.list[0], inv, 'Lingot d\'or'), 0);
   assert.equal(allRecipes().length, Object.keys(FURNACE.recipes).length + FURNACE.alloys.length);
   assert.equal(recipeByOut('Refined cobalt').in['Cobalt ore'], 5);
+});
+
+/* ---- changer de recette sans vider le four (28/10/2026) ---- */
+test('changer de recette : l\'or en cours revient dans l\'inventaire, le fer prend sa place, le chrono repart de zéro', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'recipe', out:'Lingot d\'or', count:2 });            // 20 or, 20 charbon, 2 min par lingot
+  const t = T0 + 90_000;                                                    // lingot d'or aux 3/4
+  assert.deepEqual(recipePlan(st.list[0], inv, 'Lingot de fer', 1).back, [{ item:'Or', qty:20 }]);
+  assert.ok(op(st, inv, { action:'recipe', out:'Lingot de fer', count:3 }, t).ok);
+  const f = st.list[0];
+  assert.deepEqual([f.ore, f.fuel], [{ item:'Fer', qty:30 }, { item:'Charbon', qty:30 }], 'le charbon déjà posé sert');
+  assert.equal(countOf(inv, 'Or'), 40, 'rien de perdu');
+  assert.equal(f.since, t);
+  advance(f, t + 59_000); assert.equal(f.out, null, 'pas de lingot avant 1 min de fer');
+  advance(f, t + 60_000); assert.deepEqual(f.out, { item:'Lingot de fer', qty:1 });
+});
+
+test('changer de recette : les produits d\'une autre sorte reviennent dans l\'inventaire', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'recipe', out:'Lingot d\'or', count:1 });
+  advance(st.list[0], T0 + 120_000);
+  op(st, inv, { action:'recipe', out:'Lingot de fer', count:1 }, T0 + 120_000);
+  assert.equal(countOf(inv, 'Lingot d\'or'), 1);
+  assert.equal(st.list[0].out, null);
+  assert.equal(st.list[0].since, T0 + 120_000, 'la fonte du fer démarre (la sortie n\'est plus occupée)');
+});
+
+test('changer de recette : Fondre → Alliage, et alliage → alliage en gardant l\'ingrédient commun', () => {
+  const { inv, st } = setup({ Fer:20, 'Lingot de fer':5, Chitine:15, 'Mithril ingot':10, 'Refined cobalt':5, 'Refined thorium':5, Charbon:300 });
+  op(st, inv, { action:'recipe', out:'Lingot de fer', count:2 });
+  op(st, inv, { action:'recipe', out:'Tainted iron', count:1 });
+  assert.equal(st.list[0].mode, 'alloy'); assert.equal(countOf(inv, 'Fer'), 20);
+  op(st, inv, { action:'recipe', out:'Cobalt ingot', count:1 });
+  assert.deepEqual([countOf(inv, 'Lingot de fer'), countOf(inv, 'Chitine')], [5, 15]);
+  op(st, inv, { action:'recipe', out:'Thorium ingot', count:1 });
+  const f = st.list[0];
+  assert.deepEqual([f.a, f.b].map(c => c.item).sort(), ['Mithril ingot', 'Refined thorium']);
+  assert.equal(countOf(inv, 'Refined cobalt'), 5); assert.equal(countOf(inv, 'Mithril ingot'), 5, 'le mithril commun reste dans le four');
+  assert.equal(recipeMax(f, inv, 'Cobalt ingot'), 1, 'le max compte ce qui serait rendu');
+});
+
+test('changer de recette : inventaire qui ne peut pas reprendre → inventory_full, rien ne bouge', () => {
+  const { inv, st } = setup();
+  op(st, inv, { action:'recipe', out:'Lingot d\'or', count:1 });
+  inv.slots.find(x => x.item === 'Or').qty = Number.MAX_SAFE_INTEGER;
+  const before = structuredClone([st.list[0], inv]);
+  assert.equal(op(st, inv, { action:'recipe', out:'Lingot de fer', count:1 }).error, 'inventory_full');
+  assert.deepEqual([st.list[0], inv], before);
+  assert.equal(recipeMax(st.list[0], inv, 'Lingot de fer'), 0);
 });

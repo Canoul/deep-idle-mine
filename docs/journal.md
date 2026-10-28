@@ -32,7 +32,14 @@ Modèle d'entrée :
   jusqu'au plein écran. Mine et panneaux vont au même rythme, du début à la fin. Plus de saut d'image.
 - **À savoir** : la transition apparaît dès qu'on a ouvert une fois l'onglet Session avec cette taille de fenêtre (le
   jeu y note la place de la mine) ; avant, on passe directement. Désactivée si le système demande moins d'animations.
-- **État** : 🧪 sur la branche `geoffrey/fond-echelle` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Four : changer de recette sans vider le four
+- **Pour le joueur** : dans la fenêtre **Recettes**, on peut choisir une autre recette même si le four est plein :
+  ce qui ne sert plus (ingrédients de l'ancienne recette, produits d'une autre sorte) revient tout seul dans
+  l'inventaire. Rien n'est perdu ; le produit en cours de fonte est juste annulé. Un ingrédient commun (le Mithril
+  ingot entre Cobalt et Thorium ingot) et le charbon restent dans le four. La fenêtre annonce ce qui va revenir.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
 - **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
