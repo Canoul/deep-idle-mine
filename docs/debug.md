@@ -4295,3 +4295,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/crusher.test.js` (nouveau test : table, moyennes sur 100 000 lots, un lot réel ; « objet refusé » =
   l'or, « sortie invalide » = Lingot de fer, le diamant étant devenu une sortie), `tests/anticheat/crusher.test.js` (fer en
   entrée, lingot refusé, butin garanti ≤ max par lot) : `npm run test:anticheat` 105/105 ; wiki ✅.
+
+## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu » (objet obtenu ou amélioré)
+- `src/ui/obtained.js` (nouveau) : `setupObtained(root)` → `show({ title, entry, qty })`, file d'attente (un objet après
+  l'autre), fermeture clic / Entrée / Échap ; `obtainedLines(entry)` (pur) : stuff = `statLines` + GS (pas pour les
+  anneaux), rune = `runeLines`, blueprint = « Débloque la recette : X » + stats de X, sinon rien. `#obtained` dans
+  index.html, style dans style.css (z-index 65, au-dessus de #account 60).
+- Branché dans `src/main.js` seulement (les onglets ne changent pas) : `onCraft` (qty de la recette), `research` (action
+  research → `r.item`), `upgrade` (identify / upgrade si `success !== false` / enchant → `r.piece` ; unenchant →
+  `r.fragment`). Rien côté serveur ; les trésors (showLoot) ne passent pas par là.
+- **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur.

@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
+- **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
+  « Tu as obtenu » (ou « Amélioration réussie », « Pièce identifiée », « Pièce enchantée »), la texture de l'objet en
+  grand, son nom dans la couleur de sa qualité et ses stats dessous (et son GS pour le stuff). Ça marche pour le
+  **craft**, le **blueprint** de la table de recherche (avec la recette qu'il débloque), l'**identification**,
+  l'**amélioration réussie**, l'**enchantement** et la rune retirée (fragment). Un clic, Entrée ou Échap la ferme.
+- **À suivre** : les trésors gardent leur bilan habituel dans l'inventaire (pas de pop-up) ; à décider si on veut la
+  pop-up aussi pour eux.
+- **État** : 🧪 sur la branche `geoffrey/popup-objet-obtenu` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
 - **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
   charbon (1 à 50), de l'or (1 à 20), **1 diamant** et du graphite (1 à 10), plus parfois une gemme inférieure (1 % chacune)
