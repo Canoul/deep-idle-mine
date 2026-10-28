@@ -22,6 +22,12 @@ const RUBRICS = [
   { id:'enchant',  label:'✨ Enchantement' },
 ];
 
+/* Identification : les pièces proposées pour la case choisie. Pour la pièce à identifier, celles déjà identifiées
+   n'apparaissent pas (28/10/2026) ; pour le sacrifice, tout exemplaire compte, identifié ou non. */
+export const identifyChoices = (list, pick, t, s) => pick === 'target'
+  ? list.filter(p => p.uid !== s?.uid && !isIdentified(p))
+  : list.filter(p => p.uid !== t?.uid);
+
 /* une case d'objet (vide : son libellé) */
 const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${p ? tipAttr(p.item, p.item, p) : ''}>`+
   `${p ? icon(p.item) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
@@ -63,7 +69,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
     const why = !t || !s ? '' : isIdentified(t) ? 'Cette pièce est déjà identifiée.'
       : s.item !== t.item ? 'Les deux pièces doivent être le même objet.' : '';
     const can = t && s && !why && !busy;
-    const list = pieces().filter(p => p.uid !== (pick === 'target' ? s?.uid : t?.uid));
+    const list = identifyChoices(pieces(), pick, t, s);
     const sel = c => pick === c ? ' sel' : '';
     $('upBody').innerHTML =
       helpLine(`Identification\nClique sur une case, puis sur une pièce pour l'y poser.\nLa pièce à identifier reçoit une qualité (R1 à R7), en sacrifiant un autre exemplaire du même objet (peu importe sa qualité).\nC'est définitif.`)+
@@ -74,7 +80,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
       message()+
       `<h3>${pick === 'target' ? 'Choisis la pièce à identifier' : 'Choisis le sacrifice'}</h3>`+
       (list.length ? `<div class="fopts">${list.map(p => row(p, p.uid === t?.uid || p.uid === s?.uid ? '<b>posée</b>' : '')).join('')}</div>`
-        : '<p class="mut">Aucune pièce de stuff.</p>')+
+        : `<p class="mut">${pick === 'target' ? 'Aucune pièce à identifier.' : 'Aucune pièce de stuff.'}</p>`)+
       qualityTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => {
       const uid = +b.dataset.uid;

@@ -4550,3 +4550,11 @@ Règles (voir CLAUDE.md) :
   3 tuiles par ligne.
 - ⚠️ Pas vérifié en vrai : le bouton « Remplacer X » (barre pleine + un autre sort disponible), l'apprentissage d'un
   parchemin depuis la fiche (même appel serveur qu'avant), la barre de sorts pendant une session (couverte par le test).
+
+## 28/10/2026 — Identification : pièces déjà identifiées masquées dans la liste à identifier (Geoffrey)
+- `src/ui/upgrade.js` : nouvel export pur `identifyChoices(list, pick, t, s)`, utilisé par `renderIdentify`. Case « pièce
+  à identifier » : filtre `!isIdentified(p)` en plus du sacrifice posé ; case « sacrifice » : inchangée (toute pièce sauf
+  la cible). Liste vide côté cible : « Aucune pièce à identifier. ». Le contrôle `why` (« déjà identifiée ») reste en
+  garde-fou, le serveur revérifie (`src/meta/upgrade.js`, inchangé).
+- **Tests** ✅ `tests/amelioration.test.js` (29/29, 1 nouveau sur `identifyChoices`).
+- ⚠️ Pas vérifié dans le navigateur (affichage seulement, même rendu qu'avant avec moins de lignes).
