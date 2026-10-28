@@ -11,6 +11,7 @@ import { tipAttr } from './tooltip.js';
 import { helpLine } from './help.js';
 import { icon } from './craft.js';
 import { rcls, rname, pname } from './rarity.js';
+import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -86,7 +87,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
     $('upBody').querySelector('.upSacrifice').onclick = choose('sacrifice', !!s, () => { sacrifice = null; });
     $('upGo').onclick = async () => {
       if(busy || !can) return;
-      if((isIdentified(s) || s.plus > 0 || isWorn(s)) && !confirm(`Sacrifier ${pieceName(s)} ?${isIdentified(s) || s.plus > 0 ? ' Sa qualité et son niveau seront perdus.' : ''}${wornWarn(s)}`)) return;
+      if((isIdentified(s) || s.plus > 0 || isWorn(s)) && !await ask(`Sacrifier ${pieceName(s)} ?${isIdentified(s) || s.plus > 0 ? ' Sa qualité et son niveau seront perdus.' : ''}${wornWarn(s)}`, { ok:'Sacrifier', danger:true })) return;
       await send({ action:'identify', uid:t.uid, sacrifice:s.uid }, r =>
         `✔ ${pname(r.piece)}`);
       target = null; sacrifice = null; pick = 'target'; render();
@@ -114,10 +115,10 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
       levelTable();
     $('upBody').querySelectorAll('.upPick').forEach(b => b.onclick = () => { target = +b.dataset.uid; msg = ''; render(); });
     $('upBody').querySelector('.upTarget').onclick = () => { target = null; msg = ''; render(); };
-    $('upGo').onclick = () => {
+    $('upGo').onclick = async () => {
       if(!can) return;
       const d = lv.dupe ? ringDupes(inv, t)[0] : null;   // le doublon sacrifié (le serveur choisit le même)
-      if(d?.plus > 0 && !confirm(`Le doublon sacrifié est ${pieceName(d)} : son niveau sera perdu. Continuer ?`)) return;
+      if(d?.plus > 0 && !await ask(`Le doublon sacrifié est ${pieceName(d)} : son niveau sera perdu. Continuer ?`, { ok:'Continuer', danger:true })) return;
       send({ action:'upgrade', uid:t.uid }, r =>
         r.success ? `✔ Réussi : ${pname(r.piece)}` : `✖ Raté : ${lv.dupe ? 'le doublon est perdu' : 'les matériaux sont perdus'}, ${pname(r.piece)} ne change pas.`);
     };
@@ -170,12 +171,12 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
     const rm = $('upBody').querySelector('#upRemove');
     if(rm) rm.onclick = async () => {
       if(busy) return;
-      if(!confirm(`Retirer la rune de ${pieceName(t)} ? Elle revient dans ton inventaire en Fragment de rune, avec ses % divisés par 2.`)) return;
+      if(!await ask(`Retirer la rune de ${pieceName(t)} ? Elle revient dans ton inventaire en Fragment de rune, avec ses % divisés par 2.`, { ok:'Retirer' })) return;
       await send({ action:'unenchant', uid:t.uid }, x => `✔ Rune retirée : ${pname(x.fragment)} dans ton inventaire (${esc(runeLines(x.fragment).join(' · '))})`);
     };
     $('upGo').onclick = async () => {
       if(busy || !can) return;
-      if(!confirm(`Poser ${pieceName(r)} sur ${pieceName(t)} ? La rune est consommée.${isFragment(r.item) ? ' Un fragment posé ne se retire plus.' : ''}`)) return;
+      if(!await ask(`Poser ${pieceName(r)} sur ${pieceName(t)} ? La rune est consommée.${isFragment(r.item) ? ' Un fragment posé ne se retire plus.' : ''}`, { ok:'Poser' })) return;
       await send({ action:'enchant', uid:t.uid, rune:r.uid }, x => `✔ ${pname(x.piece)} : ${esc(statLines(x.piece).join(' · '))}`);
       rune = null; target = null; pick = 'target'; render();
     };

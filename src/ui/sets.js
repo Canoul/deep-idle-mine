@@ -2,6 +2,7 @@
    Équiper (stuff, skills et sorts d'un coup), Enregistrer (remplace par l'équipement actuel), renommer, supprimer ;
    « + Nouveau set » enregistre l'équipement actuel. Pendant une session : tout reste permis
    (28/10/2026) ; ce qu'on équipe compte pour la prochaine session (le serveur vérifie tout, onOp). */
+import { ask, askText } from './dialog.js';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells'];
 
@@ -36,7 +37,7 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false 
     catch(e){ msg = { ok:false, text:e.message }; }
     finally { busy = false; render(); }
   }
-  function onClick(e){
+  async function onClick(e){
     const b = e.target.closest('[data-act]'); if(!b) return;
     const act = b.dataset.act, id = +b.closest('[data-set]')?.dataset.set, set = st.list.find(s => s.id === id);
     if(act === 'create') return send({ action:'create' }, () => 'Set créé avec ton équipement actuel.');
@@ -45,9 +46,9 @@ export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false 
       const next = inSession() ? ' Il compte dès la prochaine session.' : '';
       send({ action:'equip', id }, r => (r.missing ? `${set.name} équipé : ${r.missing} pièce${r.missing > 1 ? 's' : ''} introuvable${r.missing > 1 ? 's' : ''}.` : `${set.name} équipé.`) + next);
     }
-    else if(act === 'save'){ if(confirm(`Remplacer « ${set.name} » par ton équipement actuel ?`)) send({ action:'save', id }, () => `${set.name} enregistré.`); }
-    else if(act === 'rename'){ const name = prompt('Nom du set', set.name); if(name != null && name.trim()) send({ action:'rename', id, name }); }
-    else if(act === 'delete'){ if(confirm(`Supprimer « ${set.name} » ?`)) send({ action:'delete', id }); }
+    else if(act === 'save'){ if(await ask(`Remplacer « ${set.name} » par ton équipement actuel ?`, { ok:'Enregistrer' })) send({ action:'save', id }, () => `${set.name} enregistré.`); }
+    else if(act === 'rename'){ const name = await askText('Nom du set', set.name, { ok:'Renommer', maxLength:24 }); if(name != null && name.trim()) send({ action:'rename', id, name }); }
+    else if(act === 'delete'){ if(await ask(`Supprimer « ${set.name} » ?`, { ok:'Supprimer', danger:true })) send({ action:'delete', id }); }
   }
   for(const h of HOSTS) if($(h)) $(h).onclick = onClick;
 

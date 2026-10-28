@@ -14,6 +14,7 @@ import { qhelp } from './help.js';
 import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
+import { ask, askText } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -386,7 +387,7 @@ export function setupLobby(h){
 
   async function copy(text, el){
     try { await navigator.clipboard.writeText(text); el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1200); }
-    catch { prompt('Copie ce texte :', text); }
+    catch { askText('Copie ce texte :', text, { readOnly:true }); }
   }
 
   $('prefsBox').onclick = e => {
@@ -453,7 +454,7 @@ export function setupLobby(h){
   $('inviteBox').onclick = e => { const c = e.target.closest('[data-copy]'); if(c) copy(c.dataset.copy, c); };
   $('lobbySlots').onclick = e => {
     const p = e.target.closest('[data-promote]');
-    if(p){ if(confirm("Lui donner ta place de chef ? C'est lui qui lancera les sessions.")) act(() => h.party.promote(p.dataset.promote)); return; }
+    if(p){ ask("Lui donner ta place de chef ? C'est lui qui lancera les sessions.", { ok:'Donner ma place' }).then(yes => { if(yes) act(() => h.party.promote(p.dataset.promote)); }); return; }
     const b = e.target.closest('[data-kick]'); if(!b) return;
     act(() => h.party.kick(b.dataset.kick));
   };
@@ -462,8 +463,8 @@ export function setupLobby(h){
     if(a) act(() => h.party.join(a.dataset.accept), () => { st.invites = st.invites.filter(i => i.code !== a.dataset.accept); });
     if(d) act(() => h.party.decline(d.dataset.decline), () => { st.invites = st.invites.filter(i => i.code !== d.dataset.decline); });
   };
-  $('partyLeaveBtn').onclick = () => {
-    if(confirm('Quitter le groupe ? Tu te retrouves seul dans ton lobby.')) act(() => h.party.leave(), () => { st.inviteOpen = false; });
+  $('partyLeaveBtn').onclick = async () => {
+    if(await ask('Quitter le groupe ? Tu te retrouves seul dans ton lobby.', { ok:'Quitter' })) act(() => h.party.leave(), () => { st.inviteOpen = false; });
   };
   $('joinForm').onsubmit = e => {
     e.preventDefault();

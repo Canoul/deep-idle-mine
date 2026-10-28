@@ -4,6 +4,7 @@
 import { ACCOUNT } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
 import { accountApi, ApiError, OfflineError } from '../net/api.js';
+import { tell } from './dialog.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
@@ -184,10 +185,10 @@ export function createAccountUI(root, state, handlers = {}){
     if(name === 'guest'){
       el.disabled = true;
       try { signedIn(await accountApi.guest()); }
-      catch(e){ el.disabled = false; alert(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+      catch(e){ el.disabled = false; tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
     }
     if(name === 'logout'){
-      if(!on.confirmLeave()) return;
+      if(!await on.confirmLeave()) return;
       try { await accountApi.logout(); } catch(e){}
       location.reload();     // repartir d'une page propre : rien du compte précédent ne reste en mémoire
     }

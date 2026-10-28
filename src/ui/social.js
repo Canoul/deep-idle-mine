@@ -15,6 +15,7 @@ import { pxi } from './pxicons.js';
 import { qhelp } from './help.js';
 import { renderSlots, statsHTML } from './stuff.js';
 import { renderLevel } from './level.js';
+import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -196,7 +197,8 @@ export function setupSocial(h){
     else if(d.join) act(() => h.join(d.join));
     else if(d.profile) act(async () => showProfile(await h.profile(d.profile)));
     else if(d.add) act(() => h.request(d.add), r => r.friend ? `✔ ${r.friend} et toi êtes maintenant amis.` : `✔ Demande envoyée à ${r.sent}.`);
-    else if(d.remove && (!d.name || confirm(`Retirer ${d.name} de tes amis ?`))) act(() => h.remove(d.remove));
+    else if(d.remove) (d.name ? ask(`Retirer ${d.name} de tes amis ?`, { ok:'Retirer', danger:true }) : Promise.resolve(true))
+      .then(yes => { if(yes) act(() => h.remove(d.remove)); });
   };
 
   /* fiche d'un ami : p = { name, stuff, progress, skills } (server/social/service.js) */

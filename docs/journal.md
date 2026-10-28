@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
+- **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer
+  un set, reset des skills, se déconnecter…), les messages d'erreur et le renommage d'un set s'ouvrent maintenant dans
+  une fenêtre du jeu (cadre pixel « Forge noire ») au lieu de la boîte grise du navigateur. Les boutons disent ce qu'ils
+  font (« Quitter », « Sacrifier », « Supprimer »…) ; Entrée valide, Échap ou un clic à côté annule.
+- **État** : 🔧 en cours (branche `geoffrey/fenetres-validation`).
+
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
 - **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
   (Navette, Échelle de 2, Treuil, Mule…) disparaît. Le bonus des skills sur les stats reste affiché en bleu ; le détail

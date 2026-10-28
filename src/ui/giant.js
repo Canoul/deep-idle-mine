@@ -8,6 +8,7 @@ import { GIANT } from '../config.js';
 import { helpLine } from './help.js';
 import { createGiantRenderer } from '../render/giant.js';
 import { fitCanvas } from './fit.js';
+import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -166,7 +167,7 @@ export function setupGiant(h){
     lastMe = null;
   }
   $('gtLeaveBtn').onclick = async () => {
-    if(!confirm('Quitter le bloc géant ? Tes points comptent, mais ton entrée est utilisée.')) return;
+    if(!await ask('Quitter le bloc géant ? Tes points comptent, mais ton entrée est utilisée.', { ok:'Quitter' })) return;
     try { await h.api.leave(); } catch(e){ console.warn(e); }
     endVisit();
   };
