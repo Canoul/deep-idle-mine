@@ -30,7 +30,7 @@ Modèle d'entrée :
 - **Cause** : l'écran reçoit la partie environ 3 fois par seconde. Avec du bon stuff (vitesse de montée), l'Escalateur
   et l'ascenseur, le mineur parcourt plus de 6 cases entre deux réceptions, et au-delà de 6 cases l'écran le faisait
   apparaître directement (cette règle sert aux vraies téléportations). Le jeu lui-même n'était pas touché.
-- **État** : 🧪 sur la branche `geoffrey/fix-treuil-fluide` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Sets : aussi dans le Lobby
 - **Pour le joueur** : la liste des **Sets** apparaît aussi dans le Lobby, juste sous « Équipe de la prochaine session » :
