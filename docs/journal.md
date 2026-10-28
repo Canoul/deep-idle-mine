@@ -29,7 +29,13 @@ Modèle d'entrée :
   n'était plus que tout en bas, le mineur montait et descendait en boucle sur l'échelle (« Change d'area » / « Change de
   galerie ») sans rien miner. Maintenant, le focus ne l'envoie plus plus bas que ce qu'il a encore le temps d'aller-retour :
   il travaille au plus profond qu'il peut atteindre. Pareil avec un focus d'area trop profond.
-- **État** : 🔧 en cours (branche `geoffrey/fix-focus-oscillation`).
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Sets : aussi dans le Lobby
+- **Pour le joueur** : la liste des **Sets** apparaît aussi dans le Lobby, juste sous « Équipe de la prochaine session » :
+  on peut équiper un set (stuff, skills et sorts d'un coup) au moment de lancer, sans passer par l'onglet Stuff. C'est la
+  même liste partout : un set créé, renommé ou supprimé dans le Lobby change aussi dans Stuff, Skills et Sorts.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Fenêtres de validation dans le thème du jeu
 - **Pour le joueur** : les demandes de confirmation (quitter une session, sacrifier une pièce, poser une rune, supprimer

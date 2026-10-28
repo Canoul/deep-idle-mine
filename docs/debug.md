@@ -4486,6 +4486,14 @@ Règles (voir CLAUDE.md) :
 - ⚠️ Pas testé en clic réel dans le jeu (serveur local refusé dans cette discussion) : à essayer une fois (quitter une
   session, renommer un set, sacrifier une pièce). Fenêtre ouverte = le fond n'est pas cliquable (overlay plein écran).
 
+## 28/10/2026 — Geoffrey — Sets dans le Lobby
+- `src/ui/sets.js` : `HOSTS` + `'setsLobby'` (même rendu, même clic que les trois autres listes). `index.html` : carte
+  `.setsCard.lobbySets` dans la colonne de droite du lobby, après `#teamCard` (pas `lockable` : les sets sont permis en
+  session). `src/ui/style.css` : `.lobbySets` (titre normal, nom du set sur la ligne des boutons ; sous 700 px, le nom
+  repasse sur sa ligne). Wiki (#sets), GAME_DESIGN, état du projet : « et dans le Lobby ».
+- **Tests** ✅ `tests/sets.test.js` + `tests/boot-check.test.js` 11/11. ✅ Captures Chrome headless (vrai `setsHtml` +
+  style.css) à 1400 px et 390 px. ⚠️ Pas vérifié dans une vraie partie (clic Équiper depuis le lobby). ✅ en ligne le 28/10.
+
 ## 28/10/2026 — Focus en fin de session : va-et-vient « Change d'area » / « Change de galerie » (Geoffrey)
 - **Symptôme** (joueur, focus graphite, couche 5) : sur l'échelle, monte et descend en boucle, 0 bloc miné.
 - **Cause** : `focusGoal` (`src/sim/focus.js`) ignorait `m.tripCap` (profondeur max du trajet, fin de session). Minerai

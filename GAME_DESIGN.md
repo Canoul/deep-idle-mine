@@ -765,8 +765,8 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.
 
-### Sets (onglets Stuff, Skills et Sorts) *(24/10/2026, Geoffrey ; garde-fou provisoire, `SETS` en config)*
-Un **set** enregistre l'équipement complet du moment : le **stuff porté** (les pièces exactes, avec leur qualité, leur niveau et leur rune), les **skills** (arbre et rangs) et les **sorts** (emplacements). **Une seule liste**, la même à gauche des onglets Stuff, Skills et Sorts :
+### Sets (onglets Stuff, Skills, Sorts et Lobby) *(24/10/2026, Geoffrey ; garde-fou provisoire, `SETS` en config)*
+Un **set** enregistre l'équipement complet du moment : le **stuff porté** (les pièces exactes, avec leur qualité, leur niveau et leur rune), les **skills** (arbre et rangs) et les **sorts** (emplacements). **Une seule liste**, la même à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe :
 ```
 Set 1  [Équiper] [Enregistrer] [✎] [×]
 Set 2  [Équiper] [Enregistrer] [✎] [×]
