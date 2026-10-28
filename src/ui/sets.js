@@ -1,21 +1,21 @@
 /* Sets : la même liste dans les onglets Stuff, Skills et Sorts (#setsStuff, #setsSkills, #setsSpells). Chaque set :
    Équiper (stuff, skills et sorts d'un coup), Enregistrer (remplace par l'équipement actuel), renommer, supprimer ;
-   « + Nouveau set » enregistre l'équipement actuel. Pendant une session : Équiper seulement, pour la prochaine session
-   (28/10/2026) ; créer et enregistrer restent hors session (le serveur vérifie tout, onOp). */
+   « + Nouveau set » enregistre l'équipement actuel. Pendant une session : tout reste permis
+   (28/10/2026) ; ce qu'on équipe compte pour la prochaine session (le serveur vérifie tout, onOp). */
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells'];
 
 /* une liste de sets en HTML (list : [{ id, name }], max, locked : session en cours, busy : demande en cours) */
 export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false, msg = '' } = {}){
-  const off = locked || busy ? ' disabled' : '';
+  const off = busy ? ' disabled' : '';
   const rows = list.map(s => `<div class="setRow" data-set="${s.id}"><b title="${esc(s.name)}">${esc(s.name)}</b>`+
-    `<button data-act="equip"${busy ? ' disabled' : ''} title="${locked ? 'Équiper ce set pour la prochaine session (la session en cours ne change pas)' : 'Équiper le stuff, les skills et les sorts de ce set'}">Équiper</button>`+
+    `<button data-act="equip"${off} title="${locked ? 'Équiper ce set pour la prochaine session (la session en cours ne change pas)' : 'Équiper le stuff, les skills et les sorts de ce set'}">Équiper</button>`+
     `<button data-act="save"${off} title="Remplacer ce set par ton équipement actuel">Enregistrer</button>`+
-    `<button data-act="rename"${busy ? ' disabled' : ''} title="Renommer">✎</button>`+
-    `<button data-act="delete"${busy ? ' disabled' : ''} title="Supprimer">×</button></div>`).join('');
+    `<button data-act="rename"${off} title="Renommer">✎</button>`+
+    `<button data-act="delete"${off} title="Supprimer">×</button></div>`).join('');
   return (rows || '<p class="mut small">Aucun set : enregistre ton équipement actuel.</p>')+
     (list.length < max ? `<button class="setNew" data-act="create"${off}>+ Nouveau set</button>` : '')+
-    (locked ? '<p class="mut small">Session en cours : un set équipé maintenant compte dès la prochaine session. Créer et enregistrer : après la session.</p>' : '')+
+    (locked ? '<p class="mut small">Session en cours : un set équipé maintenant compte dès la prochaine session.</p>' : '')+
     (msg ? `<p class="small ${msg.ok ? 'mut' : 'err'}">${esc(msg.text)}</p>` : '');
 }
 

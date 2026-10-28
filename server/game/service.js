@@ -872,7 +872,6 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
         const sets = sanitizeSets(await store.getSets(me.id));
         if(sets.ops.includes(opId)) return await setsReply(me.id, sets);
-        if(['create', 'save'].includes(action) && await activeOf(me.id)) err('session_running');
         const inv = await loadInventory(me.id), stuff = await loadStuff(me.id, inv);
         const skills = await loadSkills(me.id), spells = await loadSpells(me.id);
         if(action === 'equip'){
