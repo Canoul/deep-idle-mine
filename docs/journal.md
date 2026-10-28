@@ -24,6 +24,12 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Correctif : pourcentages à rallonge dans le panneau de l'area
+- **Pour le joueur** : avec un autel de minerais actif, le panneau de l'area en session affichait des pourcentages
+  comme « 9.3333333333 % » ou « 4.6666666667 % ». Ils sont maintenant arrondis à une décimale (« 9,3 % », « 4,7 % »,
+  « 56 % ») ; le nombre exact de blocs reste entre parenthèses. Rien ne change dans la mine elle-même.
+- **État** : 🧪 sur la branche `jules/fix-arrondi-composition` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième
   de seconde suivant : 250 % frappait exactement comme 200 %, 120 % comme 100 %… Maintenant 250 % frappe 25 % plus vite
