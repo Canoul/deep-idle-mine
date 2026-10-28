@@ -40,11 +40,11 @@ export function entryState(info, now){
   return wait > 0 ? { can: false, label: `Prochaine entrée dans ${durText(wait)}` } : { can: true, label: 'Entrer' };
 }
 
-/* h : { api: giantApi, nav, session: () => bool (une session de jeu en cours : la visite peut se faire en même temps, 27/10) } */
+/* h : { api: giantApi, nav, onInventory(inv, reçus) (inventaire renvoyé par la réclamation), session: () => bool (une session de jeu en cours : la visite peut se faire en même temps, 27/10) } */
 export function setupGiant(h){
   const renderer = createGiantRenderer($('cvGt'));
   let info = null, skew = 0, infoTimer = null, viewTimer = null, raf = null, busy = false, msg = '', ok = false;
-  let view = null, lastMe = null;
+  let view = null, lastMe = null, lastHtml = '';
   const now = () => Date.now() + skew;
   const cardShown = () => !$('giantCard').hidden && !$('giantCard').closest('section').hidden;
   const visiting = () => !$('gtRun').hidden;
@@ -52,7 +52,7 @@ export function setupGiant(h){
   /* ---------- carte du lobby ---------- */
 
   function renderCard(){
-    if(!info){ $('giantBody').innerHTML = '<p class="mut small">Chargement…</p>'; return; }
+    if(!info){ $('giantBody').innerHTML = lastHtml = '<p class="mut small">Chargement…</p>'; return; }
     const e = entryState(info, now());
     const tiers = info.tiers.map(t => `<div class="gtTier${t.reached ? ' ok' : ''}"><span>${t.reached ? '✔' : '○'} ${nf(t.min)}</span><span>${esc(itemsText(t.items))}</span></div>`).join('');
     const row = r => `<tr class="${r.account === h.me?.() ? 'me' : ''}"><td>${r.rank}</td><td>${esc(r.name)}</td><td>${nf(r.points)}</td></tr>`;
@@ -61,8 +61,8 @@ export function setupGiant(h){
       : '<p class="mut small">Personne n\'a encore frappé le bloc aujourd\'hui.</p>';
     const rewards = info.rewards.length
       ? `<div class="gtReward"><span>🎁 ${info.rewards.map(r => `<b>${esc(r.day.split('-').reverse().slice(0, 2).join('/'))}</b> (${nf(r.total)} points) : ${esc(itemsText(r.items))}`).join('<br>')}</span>`+
-        `<button class="on" id="giantClaim"${busy ? ' disabled' : ''}>Réclamer</button></div>` : '';
-    $('giantBody').innerHTML =
+        `<button class="on" id="giantClaim"${busy ? ' disabled' : ''}>${busy ? 'Réclamation…' : 'Réclamer'}</button></div>` : '';
+    const html =
       `<p class="mut small">Session du jour : se termine dans <b>${durText(info.endsAt - now())}</b> (minuit). ${info.present} / ${info.max} mineur${info.present > 1 ? 's' : ''} devant le bloc.</p>`+
       `<div class="lobbyActions"><button class="on big" id="giantEnter"${e.can && !busy ? '' : ' disabled'}>${esc(e.label)}</button>`+   // aussi pendant une session (27/10)
       `${e.inVisit ? '<button id="giantSee">Voir la visite</button>' : ''}</div>`+
@@ -76,6 +76,8 @@ export function setupGiant(h){
       `<h3>Classement du jour</h3>${rank}`+
       `<p class="mut small">Une visite : ${GIANT.visit / 60} min de jeu, seul, une fois toutes les ${GIANT.cooldownMs / 3600e3} h. Ton mineur frappe le bloc : chaque seconde rapporte sa vitesse de minage en points. `+
       `À minuit, chaque joueur venu au moins ${info.minVisits ?? 1} fois dans la journée reçoit les récompenses de tous les paliers atteints.</p>`;
+    /* rien n'a changé : on ne reconstruit pas la carte (un bouton remplacé entre l'appui et le relâchement perd son clic) */
+    if(html !== lastHtml){ $('giantBody').innerHTML = html; lastHtml = html; }
   }
 
   async function refresh(){
@@ -102,7 +104,11 @@ export function setupGiant(h){
     const b = e.target.closest('button'); if(!b || b.disabled) return;
     if(b.id === 'giantEnter') act(async () => { const r = await h.api.enter(); view = r.view; renderer.update(view); showRun(); h.nav.show('session'); });
     else if(b.id === 'giantSee') h.nav.show('session');
-    else if(b.id === 'giantClaim') act(() => h.api.claim(), r => Object.keys(r.given).length ? `✔ Reçu : ${itemsText(r.given)}.` : 'Rien à réclamer.');
+    else if(b.id === 'giantClaim') act(async () => {
+      const r = await h.api.claim();
+      if(r.inventory) h.onInventory?.(r.inventory, r.given);   // l'inventaire se met à jour tout de suite, objets reçus mis en évidence (28/10 : il fallait actualiser)
+      return r;
+    }, r => Object.keys(r.given).length ? `✔ Reçu : ${itemsText(r.given)}. C'est dans ton inventaire.` : 'Rien à réclamer.');
   };
 
   /* ---------- la visite ---------- */

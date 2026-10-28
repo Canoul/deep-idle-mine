@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH, LOOT } from '../src/config.js';
 import { createInventory, addAll, countOf, serialize, deserialize } from '../src/meta/inventory.js';
-import { research, recycle, researchPool, researchOdds, tierBlueprints, tierUnlocked, canResearch, PARTS } from '../src/meta/research.js';
+import { research, recycle, researchPool, researchStage, researchOdds, tierBlueprints, tierUnlocked, canResearch, PARTS } from '../src/meta/research.js';
 import { RECIPES } from '../src/recipes.js';
 import { learn } from '../src/meta/craft.js';
 import { TABS } from '../src/ui/nav.js';
@@ -14,11 +14,11 @@ let n = 0; const id = () => 'op-rs-' + (++n);
 const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
-test('config : tier 1 = 100 parts (recycle 15 à 30), tier 2 = 150 parts, tier 3 = 200 parts (26/10 ; recycle 40 à 70) ; onglet présent', () => {
-  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200]]);
+test('config : tier 1 = 100 parts (recycle 15 à 30), tier 2 = 150 (30 à 45), tier 3 = 200 (45 à 60), tier 4 = 250 (60 à 75) (28/10) ; onglet présent', () => {
+  assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200], [4, 250]]);
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 10);   // + Lance en fer BP (25/10)
-  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:15, max:30 }, { min:40, max:70 }, { min:40, max:70 }]);
+  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:15, max:30 }, { min:30, max:45 }, { min:45, max:60 }, { min:60, max:75 }]);
   assert.ok(TABS.some(t => t.id === 'recherche' && t.ready));
 });
 
@@ -37,7 +37,7 @@ test('recherche : pas assez de parts → rien ne bouge ; tier inconnu refusé', 
   const inv = invWith({ [PARTS]:99 });
   assert.equal(research(inv, 1, id(), fixed(0)).error, 'not_enough');
   assert.equal(countOf(inv, PARTS), 99);
-  for(const t of [0, 4, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
+  for(const t of [0, 5, '1', null, 1.5]) assert.equal(research(invWith({ [PARTS]:500 }), t, id(), fixed(0)).error, 'bad_tier');
   assert.equal(canResearch(inv, 1), false);
 });
 
@@ -127,12 +127,12 @@ test('tier 3 : le plan épique pèse 4 fois moins que chaque autre plan', () => 
   assert.equal(research(v, 3, id(), fixed(0.9999999)).item, T3.at(-1));
 });
 
-test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 40 à 70 parts', () => {
+test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 45 à 60 parts', () => {
   const inv = knowsTiers(T1, T2, T3.filter(b => b !== EPIC));
   assert.deepEqual(researchOdds(inv, 3), [{ item:EPIC, chance:1 }], 'seul reste le plan épique : il sort à coup sûr');
   addAll(inv, { 'Casque en acier BP':1 });
   const r = recycle(inv, 'Casque en acier BP', id(), fixed(0.9999999));
-  assert.equal(r.parts, 70);
+  assert.equal(r.parts, 60);
 });
 
 test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tout le T2 appris mais une recette du T1 manque)', () => {
@@ -144,4 +144,51 @@ test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tou
   assert.equal(countOf(inv, PARTS), 500, 'rien payé');
   const all = knowsTiers(T1, T2);
   assert.equal(tierUnlocked(all, 3), true);
+});
+
+/* tier 4 (28/10/2026, Geoffrey) : 250 parts, plans du 1er jet du Treasure T4, ouvert quand les tiers 1 à 3 sont finis */
+test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts → un plan du T4 ; recycler un plan T4 rend 60 à 75 parts', () => {
+  const T4 = tierBlueprints(4);
+  assert.ok(T4.includes('Casque en mithril BP') && T4.includes('Jambières titanesques BP'));
+  assert.ok(!T4.includes('Saphir BP'), 'les plans du 2e jet (clé, gemmes) ne sortent pas de la recherche');
+  const part = knowsTiers(T1, T2, T3.slice(1)); addAll(part, { [PARTS]:250 });
+  assert.equal(research(part, 4, id(), fixed(0)).error, 'tier_locked');
+  assert.equal(countOf(part, PARTS), 250, 'rien payé');
+  const inv = knowsTiers(T1, T2, T3); addAll(inv, { [PARTS]:249 });
+  assert.equal(tierUnlocked(inv, 4), true);
+  assert.equal(research(inv, 4, id(), fixed(0)).error, 'not_enough');
+  addAll(inv, { [PARTS]:1 });
+  const r = research(inv, 4, id(), fixed(0.5));
+  assert.ok(r.ok && T4.includes(r.item), r.item);
+  assert.equal(countOf(inv, PARTS), 0);
+  addAll(inv, { 'Casque en mithril BP':2 });
+  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0)).parts, 60);
+  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0.9999999)).parts, 75);
+});
+
+/* tier 4 en trois étapes (28/10/2026, Geoffrey) : mithril + pièces spéciales, puis thorium et cobalt, puis les Jambières */
+test('tier 4 : étapes = tous les plans du 1er jet du Treasure T4, chacun une fois', () => {
+  const stages = RESEARCH.tiers.find(t => t.tier === 4).stages;
+  assert.deepEqual(stages.map(s => s.length), [8, 8, 1]);
+  assert.deepEqual([...stages.flat()].sort(), [...tierBlueprints(4)].sort());
+  for(const bp of stages.flat()) assert.ok(RECIPES[Object.keys(RECIPES).find(r => RECIPES[r].unlock === bp)], bp + ' débloque une recette');
+});
+
+test('tier 4 : on tire dans l\'étape en cours ; la suivante s\'ouvre quand toutes ses recettes sont apprises', () => {
+  const [S1, S2, S3] = RESEARCH.tiers.find(t => t.tier === 4).stages;
+  const inv = knowsTiers(T1, T2, T3);
+  assert.deepEqual(researchStage(inv, 4), { index:0, count:3, pool:S1 });
+  assert.deepEqual(researchOdds(inv, 4).map(o => o.chance), S1.map(() => 1 / 8), 'chances égales');
+  for(let k = 0; k < 50; k++){ addAll(inv, { [PARTS]:250 }); assert.ok(S1.includes(research(inv, 4, id(), Math.random).item)); }
+  const s1 = knowsTiers(T1, T2, T3, S1.slice(1));
+  assert.deepEqual(researchPool(s1, 4), [S1[0]], 'un plan de l\'étape 1 en stock ne suffit pas : il faut l\'apprendre');
+  const s2 = knowsTiers(T1, T2, T3, S1, S2.slice(0, 3));
+  assert.deepEqual(researchStage(s2, 4), { index:1, count:3, pool:S2.slice(3) }, 'les plans appris via un trésor sortent du tirage');
+  const s3 = knowsTiers(T1, T2, T3, S1, S2);
+  addAll(s3, { [PARTS]:250 });
+  assert.equal(research(s3, 4, id(), fixed(0.5)).item, S3[0], 'dernière étape : les Jambières à coup sûr');
+  const all = knowsTiers(T1, T2, T3, S1, S2, S3); addAll(all, { [PARTS]:250 });
+  assert.equal(researchStage(all, 4), null);
+  assert.equal(research(all, 4, id(), fixed(0)).error, 'nothing_left');
+  assert.equal(countOf(all, PARTS), 250, 'rien payé');
 });

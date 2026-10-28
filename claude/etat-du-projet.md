@@ -201,7 +201,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   +1,08, +1,08, soit 276 / 270 / 259 x, à peine 3 % au-dessus du fer). Valeur en x = `itemValue` (`UPGRADE.worth`).
 - **Nerf des pioches** (25/10, Geoffrey) : fer +0,4 (520 x ; ancien +0,5), acier +0,5 (650 x ; ancien +0,6).
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
-  épique 4 fois moins probable (poids 0,25), recyclage 40 à 70. (Ancien : pas de tier 3.)
+  épique 4 fois moins probable (poids 0,25), recyclage **45 à 60** (28/10 ; ancien 40 à 70). (Ancien : pas de tier 3.)
+  **Tier 4** (28/10, Geoffrey) : **250 parts**, plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des
+  tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques,
+  chaque étape ouverte quand les recettes de la précédente sont apprises), recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
   dans la mine ; les mineurs (« combat » sur Combattre) le chassent à chaque passage au coffre, sac vidé (24/10 ;

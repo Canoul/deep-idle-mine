@@ -31,7 +31,26 @@ Modèle d'entrée :
   modulation suivent.
 - **Décisions** : les diviseurs du 27/10 (offensives ÷ 2, minage ÷ 3…) divisent la stat ET sa valeur en GS : ils
   servent seulement à dessiner les pièces ; le GS reste au prix mesuré.
-- **État** : 🧪 sur la branche `geoffrey/gs-prix-mesures` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Correctif : réclamer le butin du Bloc géant
+- **Pour le joueur** : après « Réclamer », les objets apparaissent tout de suite dans l'inventaire (mis en évidence,
+  pastille sur l'onglet) : plus besoin d'actualiser la page ni de trier. Pendant la réclamation, le bouton affiche
+  « Réclamation… » et le message dit « C'est dans ton inventaire » : on voit que le premier clic a marché.
+- **À suivre** : le « il faut cliquer 2 fois » n'a pas été reproduit (un seul clic suffit, même avec un réseau lent) ;
+  le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Table de recherche : tier 4, recyclage revu
+- **Pour le joueur** : un **tier 4** arrive à la table de recherche : **250 parts** pour un plan du Treasure T4
+  (stuff en mithril, thorium, cobalt et pièces spéciales), ouvert quand on a appris **toutes** les recettes des tiers 1
+  à 3. Recycler un plan rend maintenant **30 à 45 parts** (tier 2, avant 40 à 70), **45 à 60** (tier 3, avant 40 à 70),
+  **60 à 75** (tier 4). Le tier 4 se fait **en 3 étapes** : d'abord les 4 pièces en mithril et les 4 pièces spéciales
+  (Lunettes, Doc Martins, Ceinture, Gants), puis, quand ces recettes sont apprises, les 8 pièces en thorium et en
+  cobalt, et enfin les Jambières titanesques. L'onglet affiche « Étape x / 3 ». Un plan secret sorti de la recherche révèle la pièce dans le wiki et l'annonce sur Discord.
+- **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
+  recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
+- **État** : ✅ en ligne le 28/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
