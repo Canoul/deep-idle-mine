@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Jules — Les pop-ups se ferment toutes seules
+- **Pour le joueur** : les pop-ups en haut à gauche (invitation de groupe, demande d'ami, « groupe trouvé ») et le
+  dernier rappel de la mine instantanée (Rejoindre / Décliner) restaient affichés tant qu'on n'avait pas cliqué. Les
+  pop-ups se ferment maintenant au bout de 20 s, le rappel de la mine instantanée au moment où elle commence (les autres
+  rappels se fermaient déjà au bout de 12 s). Rien n'est perdu : l'invitation reste dans le Lobby, la demande d'ami dans
+  l'onglet Social. Si quelqu'un renvoie une invitation, la pop-up réapparaît.
+- **État** : 🧪 sur la branche `jules/notifs-auto` (pas en ligne)
+
 ## 28/10/2026 — Jules — Téléphone : mine instantanée, tours, instance et Bloc géant ne rétrécissent plus en boucle
 - **Pour le joueur** : sur téléphone, l'écran de ces événements rapetissait sans arrêt (surtout quand le journal à
   côté se remplissait), puis regrandissait d'un coup. Même défaut que la mine le 22/10, mais sur les autres écrans.

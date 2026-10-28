@@ -370,7 +370,7 @@ function syncNotifs(){
     ...(lfgFound && !lfgFound.error && !G ? [{ key: 'lfg:' + lfgFound.at, icon: pxi('group'),
       text: `Groupe trouvé : <b>${esc(lfgFound.names.join(', '))}</b>`,
       actions: [{ label: 'Voir le lobby', primary: true, run: async () => nav.show('lobby') }] }] : []),
-    ...st.partyInvites.map(i => ({ key: 'p:' + i.code, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
+    ...st.partyInvites.map(i => ({ key: 'p:' + i.code + ':' + i.at, icon: pxi('group'), text: `<b>${esc(i.from)}</b> vous a invité dans son lobby${i.full ? ' <span class="mut">(complet)</span>' : ''}`,
       actions: [{ label: 'Rejoindre', primary: true, run: () => joinParty(() => partyApi.join(i.code)) },
                 { label: 'Décliner', run: async () => { await partyApi.decline(i.code); pollSocial(); } }] })),
     ...st.incoming.map(r => ({ key: 'f:' + r.id, icon: pxi('person'), text: `<b>${esc(r.name)}</b> vous a envoyé une demande d'ami`,

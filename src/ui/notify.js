@@ -1,13 +1,22 @@
 /* Notifications en pop-up, en haut à gauche de l'écran (invitation de groupe, demande d'ami).
    sync(items) reçoit la liste complète de ce qui doit être affiché (items = [{ key, icon, text, actions:[{ label,
    primary, run }] }]) : une notification déjà là reste en place, une nouvelle apparaît, une disparue (acceptée ailleurs,
-   expirée) s'en va. Un bouton lance son action (une promesse) ; la notification part dès qu'elle a réussi. */
+   expirée) s'en va. Un bouton lance son action (une promesse) ; la notification part dès qu'elle a réussi.
+   Sans clic, elle se ferme seule au bout de ttl ms (NOTIFY.popupMs) et ne revient pas tant que le serveur l'envoie. */
+import { NOTIFY } from '../config.js';
+
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-export function setupNotify(root){
+export function setupNotify(root, ttl = NOTIFY.popupMs){
   const shown = new Map();                   // key → élément
-  const done = new Set();                    // traitées ici : cachées même si le serveur ne l'a pas encore vu
+  const done = new Set();                    // traitées ou expirées ici : cachées même si le serveur l'envoie encore
 
+  /* fermeture automatique ; une action en cours (bouton cliqué) la repousse */
+  function expire(key){
+    const el = shown.get(key); if(!el) return;
+    if(el.classList.contains('busy')){ el._t = setTimeout(() => expire(key), ttl); return; }
+    done.add(key); remove(key);
+  }
   function make(it){
     const el = document.createElement('div');
     el.className = 'notif';
@@ -24,7 +33,7 @@ export function setupNotify(root){
     };
     return el;
   }
-  function remove(key){ shown.get(key)?.remove(); shown.delete(key); }
+  function remove(key){ const el = shown.get(key); if(el){ clearTimeout(el._t); el.remove(); } shown.delete(key); }
 
   return {
     sync(items){
@@ -34,6 +43,7 @@ export function setupNotify(root){
       for(const it of items){
         if(shown.has(it.key) || done.has(it.key)) continue;
         const el = make(it); shown.set(it.key, el); root.appendChild(el);
+        el._t = setTimeout(() => expire(it.key), ttl);
       }
     },
   };

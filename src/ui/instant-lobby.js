@@ -1,7 +1,7 @@
 /* Mine instantanée, hors partie : la carte du Lobby (« Où miner » → Mine instantanée : compte à rebours, inscrits,
    S'inscrire / Se désinscrire) et les rappels avant l'ouverture, visibles depuis tous les onglets (GAME_DESIGN §6).
    Le serveur décide de tout (heure, inscriptions) ; ici on affiche et on demande. */
-import { INSTANT_MINE as MI, GAME } from '../config.js';
+import { INSTANT_MINE as MI, GAME, NOTIFY } from '../config.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -22,6 +22,10 @@ export function crossedNotice(prev, now, nextAt, notify = MI.notify){
   const hit = notify.filter(s => { const at = nextAt - s * 1000; return prev < at && at <= now; });
   return hit.length ? Math.min(...hit) : null;
 }
+
+/* durée d'affichage (ms) d'un rappel envoyé s secondes avant l'ouverture : NOTIFY.noticeMs ; celui qui propose
+   Rejoindre / Décliner reste jusqu'à l'ouverture de la mine (après, il ne sert plus à rien) */
+export const noticeTtl = (s, invite) => invite ? s * 1000 : NOTIFY.noticeMs;
 
 /* inscriptions ouvertes au moment t (ms, heure du serveur) pour cet état du serveur (fenêtre des 30 dernières minutes ;
    mode dev : toujours) */
@@ -105,7 +109,7 @@ export function setupInstantLobby(h){
               : `<button class="x" id="miNoticeNo" title="Fermer">×</button>`);
     box.hidden = false;
     clearTimeout(box._t);
-    if(!invite) box._t = setTimeout(() => { box.hidden = true; }, 12e3);
+    box._t = setTimeout(() => { box.hidden = true; }, noticeTtl(s, invite));
     $('miNoticeNo').onclick = () => { box.hidden = true; };
     const j = $('miNoticeJoin');
     if(j) j.onclick = async () => {
