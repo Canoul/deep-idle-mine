@@ -1,6 +1,6 @@
 /* Gear score (GS) : la puissance du stuff en x (1 x = 1 s de travail), concept « modulation » du 26/10/2026 (Geoffrey).
    GS d'une pièce = ce qu'elle ajoute aux stats de base, converti en x avec les prix mesurés (UPGRADE.worth, complétés
-   par UPGRADE.gs ; avant le 26/10 au soir : UPGRADE.prices, le tableau de conversion des lignes). Comptent : les stats de l'objet, ses lignes d'identification, sa rune (ou son
+   par UPGRADE.gs ; stats offensives : tableau des lignes UPGRADE.prices depuis le 28/10 ; avant le 26/10 au soir : UPGRADE.prices, le tableau de conversion des lignes). Comptent : les stats de l'objet, ses lignes d'identification, sa rune (ou son
    fragment) et son amélioration (pieceBonus les contient toutes). Une valeur qui remplace la base (l'épée : Dégâts 14)
    compte pour ce qu'elle ajoute à la base (14 − 5). Un malus (Lance : vitesse d'attaque −10 %) retire des x.
    GS du joueur = somme des GS des pièces portées = stats avec le stuff − stats de base (en x).
@@ -16,7 +16,10 @@ import { pieceBonus, isRing } from './piece.js';
 export const statPrice = k => (UPGRADE.worth[k] ?? (UPGRADE.gs[k] || UPGRADE.priceBase?.[k])) ?? 0;
 /* x par point pour dessiner une pièce (stats du tier 4, butin des mobs) : prix mesuré × UPGRADE.priceAdjust (27/10) */
 export const designPrice = k => statPrice(k) * (UPGRADE.priceAdjust?.[k] ?? 1);
-const priceOf = statPrice;
+/* x par point pour le GS (28/10/2026, Geoffrey) : les stats offensives (UPGRADE.gsFromPrices) au prix du tableau des
+   lignes (prices, celui des runes), les autres au prix mesuré (statPrice) */
+export const gsPrice = k => UPGRADE.gsFromPrices?.includes(k) && Number.isFinite(UPGRADE.prices[k]) ? UPGRADE.prices[k] : statPrice(k);
+const priceOf = gsPrice;
 
 /* GS d'une pièce (nom d'objet ou pièce avec qualité, lignes, rune, niveau), arrondi à l'unité */
 export function pieceGS(entry){
