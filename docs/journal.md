@@ -101,6 +101,17 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Sorts dans les tours du Jugement ; rework de la Dynamite
+- **Pour le joueur** : les **sorts sont joués dans les tours** de l'Ange et du Démon (avant : aucun). Dash, Cri de
+  guerre, Cleave, Hand of Justice et Ulti shen contre les Séraphins / Diablotins et le boss ; Inspiration, Fast learner et
+  Dynamite sur les stonebricks ; Illumination. La Bonbonne de zipette ne sert pas (pas d'oxygène dans la tour).
+  **Dynamite** (mine et tours) : elle ne casse plus que les blocs **moins durs que 3 × ta vitesse de minage** (en vitesse
+  1 : pierre, pierre dure, charbon, fer ; pas l'or), et inflige **50 % de tes dégâts** aux mobs de son rayon (au boss
+  aussi dans la tour).
+  **Instance I** alignée : la Dynamite enlève toujours 6 coups à un spawner, mais une cage (dureté 10) ne casse qu'au-delà
+  de 3,33 de vitesse de minage ; 50 % des dégâts aux gobelins et au roi de son rayon.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Gear score : les stats offensives comptent au prix des runes
 - **Pour le joueur** : dans le **GS**, les stats offensives (dégâts, dégâts %, vitesse d'attaque, double attaque,
   critique, coup unique, perçage) valent maintenant ce que vaut une ligne de rune : une rune Dégâts +9,2 % donne

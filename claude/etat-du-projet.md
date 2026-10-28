@@ -296,7 +296,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
-  session. Simulation : `--spells id,id`.
+  session.
+  **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de
+  dureté < 3 × vitesse de minage, 50 % des dégâts aux mobs du rayon (boss compris dans la tour). Simulation : `--spells id,id`.
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts ; Équiper remet tout d'un coup
   (pièce introuvable = case vide) ; **Équiper possible pendant une session, pour la suivante** (28/10, Geoffrey ; ancien :
