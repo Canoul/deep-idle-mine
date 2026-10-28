@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Deep Mine Idle</string>
+    <string name="title_activity_main">Deep Mine Idle</string>
+    <string name="package_name">fr.deepmineidle.app</string>
+    <string name="custom_url_scheme">fr.deepmineidle.app</string>
+</resources>
