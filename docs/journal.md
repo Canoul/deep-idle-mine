@@ -27,7 +27,7 @@ Modèle d'entrée :
 ## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
 - **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
   « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).
-- **État** : 🔧 en cours (branche `geoffrey/shrine-sous-groupe`).
+- **État** : ✅ en ligne le 28/10.
 
 ## 28/10/2026 — Geoffrey — Pop-up « Tu as obtenu »
 - **Pour le joueur** : quand on obtient ou améliore un objet hors session, une fenêtre s'ouvre au centre de l'écran :
