@@ -318,8 +318,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   désinscrit plus ; après la MI, aucune session) ; ancien : inscription à toute heure, refusée en session)
   (`INSTANT_MINE` en
   config) : toutes les 2 h pile (heure de Paris), les inscrits du lobby
-  (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (20 % charbon, 40 % fer, 33 % or, 5 % graphite,
-  1 % diamant depuis le 23/10 ; ancien : 39 % or, ni graphite ni diamant ; 1 % tas de
+  (« Où miner » → Mine instantanée) dans une mine 50×50 de minerais (**40 % charbon, 27 % fer, 20 % or, 5 % graphite, 3 % mithril,
+  1,5 % cobalt, 1,5 % thorium, 1 % diamant** depuis le 28/10 ; ancien : 20 % charbon, 40 % fer, 33 % or, 5 % graphite,
+  1 % diamant (23/10), et avant 39 % or, ni graphite ni diamant ; 1 % tas de
   **Plumes d'ange**, 1 à 2 par tas depuis le 22/10, matériau d'amélioration), chacun pour soi, 5 min de jeu ; 20 joueurs max par mine.
   IA à part (`src/sim/instant/`) : aucun minerai prioritaire, évite les autres mineurs, change de zone après 3 blocs
   perdus, va chercher un tas de plumes à 3 pas ou moins. **Gravité et échelles** depuis le 22/10 (ancien : il
@@ -327,7 +328,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   étourdissement (choix de Claude à valider) ; **galeries** : un cap par mineur (22/10) et, depuis le 24/10, creuser
   vers le bas coûte un pas (`downWeight`) : ils ne foncent plus au fond (ancien : descente gratuite, puits jusqu'au fond) ; ≈ 2 à 5 plumes par joueur et par MI (moins à 20). Côté serveur, c'est une session `mode: 'mi'` (même vie
   qu'une session : partie en direct, Quitter = rien, versement unique), sans XP. Rappels à 30, 15, 5 min et 30 s.
-  Équilibrage à surveiller : ≈ 40 fers et 39 ors par joueur et par MI.
+  Équilibrage à surveiller : par joueur et par MI à 3, ≈ 108 blocs (≈ 43 charbons, 29 fers, 21 ors, 3 mithrils, 1,6 cobalt,
+  1,6 thorium) et ≈ 4,8 plumes (28/10 ; ancien : ≈ 40 fers et 39 ors).
 - **Inventaire : trier, déplacer, recycler** (25/10, Geoffrey). Bouton **Trier** (une fois : par type blocs → minerais →
   matériaux → stuff → le reste, puis rareté du catalogue, la plus rare d'abord ; pas la qualité R1-R7), **glisser** un
   objet dans un autre slot (échange). **Recycler** une pièce de stuff fabriquée (recette de craft) : détruite, rend

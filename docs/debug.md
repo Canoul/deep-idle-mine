@@ -4020,3 +4020,14 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : le navigateur recalcule la lumière sans `G.flesh` (affichage seulement : la lumière passe à
   travers le mur à l'écran). Un mineur seul à 5 dégâts ne tue pas un mur de 200 PV avant −90 % (voulu : ça pousse au jeu à
   plusieurs ; la soupape du tacle reste celle de tous les mobs).
+
+## 28/10/2026 — Mine instantanée : composition avec mithril, cobalt, thorium (Geoffrey)
+- `INSTANT_MINE.comp` : iron 27, gold 20, graphite 5, diamond 1, mithril 3, cobalt 1.5, thorium 1.5, **coal 40 en dernier**
+  (genInstantMine coupe le dépassement d'arrondi sur la dernière clé : 37,5 → 38 cobalts et 38 thoriums, charbon 999).
+  Graphite, diamant et plumes gardés (non cités par Geoffrey, total = 100).
+- Wiki : composition triée par % décroissant, nombres formatés (`f`).
+- Mesure (script ponctuel, 8 seeds, `runInstant`) : 3 joueurs, blocs/joueur 102 → 108, plumes 3,63 → 4,83, au fond 1/24 → 5/24 ;
+  10 joueurs, 103 → 107, 2,95 → 3,11, au fond 31/80 → 29/80.
+- `tests/instant-mine.test.js` : quantités exactes ; test de descente relâché `bottom <= n*0.35` (avant 0,15 ; 4/12 avec la
+  nouvelle mine), choix de Geoffrey. 30/30 ✅. ⚠️ À surveiller : plumes par MI (+30 % à 3, mesure bruitée).
+

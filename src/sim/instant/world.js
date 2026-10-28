@@ -5,7 +5,8 @@ import { INSTANT_MINE as MI, IDS } from '../../config.js';
 import { mulberry32, shuffle } from '../../core/rng.js';
 
 /* composition EXACTE (pas un tirage par case) : chaque mine a les mêmes quantités, à l'arrondi près
-   (50×50 : 500 charbons, 1 000 fers, 825 ors, 125 graphites, 25 diamants, 25 tas de plumes) ; seules les positions changent */
+   (50×50 : 999 charbons, 675 fers, 500 ors, 125 graphites, 25 diamants, 75 mithrils, 38 cobalts, 38 thoriums, 25 tas de plumes ;
+   le dernier minerai de MI.comp perd ce qui dépasse à cause des arrondis) ; seules les positions changent */
 export function genInstantMine(seed, w=MI.w, h=MI.h){
   const r = mulberry32(seed ^ 0x1a57a11e), n = w*h;
   const cells = [];

@@ -76,6 +76,14 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Mine instantanée : nouvelle composition avec les minerais du tier 4
+- **Pour le joueur** : la mine instantanée contient maintenant **40 % de charbon, 27 % de fer, 20 % d'or**, 5 % de
+  graphite, **3 % de mithril, 1,5 % de cobalt, 1,5 % de thorium**, 1 % de diamant et 1 % de tas de plumes (avant : 20 %
+  charbon, 40 % fer, 33 % or). Par joueur et par mine à 3 : environ 3 mithrils, 1 à 2 cobalts et 1 à 2 thoriums. La mine
+  est plus tendre (plus de charbon) : un peu plus de blocs creusés et de plumes ramassées à 3 (≈ 4,8 au lieu de 3,6).
+- **Décisions** : Geoffrey accepte que les mineurs descendent un peu plus souvent jusqu'au fond à 3 joueurs.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Table de recherche : tier 4, recyclage revu
 - **Pour le joueur** : un **tier 4** arrive à la table de recherche : **250 parts** pour un plan du Treasure T4
   (stuff en mithril, thorium, cobalt et pièces spéciales), ouvert quand on a appris **toutes** les recettes des tiers 1
