@@ -4399,3 +4399,8 @@ Règles (voir CLAUDE.md) :
   tours, instance, mine instantanée en fond, téléphone, fluidité sur une petite machine. Points fragiles : le fond dessine la mine en entier à chaque image (même coût que l'onglet Session) ;
   `src/render/splash.js` garde les éclaboussures vues dans une Map partagée par les deux canvas (sans effet : un seul
   dessiné à la fois).
+
+## 28/10/2026 — Stats du mineur sans « Skills en partie » (Geoffrey)
+- `src/ui/stuff.js` `statsHTML` : plus de bloc `behaviourSkills` (aussi utilisé par la fiche ami, `src/ui/social.js`).
+  `behaviourSkills` reste dans `src/meta/skills.js` (testé, plus appelé par l'interface).
+- ✅ `tests/dps.test.js` (nouveau : pas de « Skills en partie » avec un logisticien), skills, social : 44/44.
