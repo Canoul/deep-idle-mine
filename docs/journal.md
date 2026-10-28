@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Fenêtres : elles ne sortent plus de l'écran
+- **Pour le joueur** : les fenêtres qui s'ouvrent dans un onglet (butin d'un trésor, choix d'une pièce dans le Stuff,
+  four, concasseur, fiche d'un ami) restent toujours entre la barre du haut et la barre d'action, même si on a fait
+  défiler la page. Leur taille est bornée : quand le contenu est trop long, c'est l'intérieur de la fenêtre qui défile
+  (barre de défilement fine et sombre), au lieu de déborder de l'écran. La pile de notifications en haut à gauche défile
+  aussi si elle devient trop haute.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Four : changer de recette sans vider le four
 - **Pour le joueur** : dans la fenêtre **Recettes**, on peut choisir une autre recette même si le four est plein :
   ce qui ne sert plus (ingrédients de l'ancienne recette, produits d'une autre sorte) revient tout seul dans

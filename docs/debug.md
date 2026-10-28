@@ -4421,3 +4421,15 @@ Règles (voir CLAUDE.md) :
   (four d'or en marche, choix du fer : « Reviennent dans l'inventaire : Or ×30, Lingot d'or ×2 »).
 - **Point fragile** : `loadRecipe` remplace le contenu de l'objet `inv` (clés supprimées puis recopiées) ; le serveur
   sérialise ce même objet ensuite, donc ça marche, mais garder `inv` comme simple objet de données.
+
+## 28/10/2026 — Geoffrey — Fenêtres bornées à l'écran, défilement interne
+- `src/ui/style.css` : `#loot,#spick,#fpick,#cpick,#fview` passent de `position:absolute;inset:0` (calque de la hauteur
+  de l'onglet, boîte à 10vh du haut de l'onglet, sans hauteur max : sortait de l'écran si la page avait défilé ou si la
+  liste était longue) à `position:fixed` entre `--top-h` et `--dock-h`. Elles restent dans leur `<section data-view>`,
+  donc cachées avec leur onglet comme avant. `.box` : `max-height:100%;overflow:auto;overscroll-behavior:contain`.
+  `#notifs` : `max-height` + `overflow-y:auto`. Barre de défilement fine (`scrollbar-color:var(--line)`) sur toutes les
+  fenêtres qui défilent (#account, #end, #obtained, guide, recettes du four…).
+- ✅ Captures Chrome headless (vrai style.css, 40 lignes de butin) : 1280×720 et 390×800 (dans une iframe : headless ne
+  descend pas sous 500 px). Pas de test unitaire (CSS seul). ⚠️ Pas vérifié dans le vrai jeu pour chaque fenêtre. ✅ en ligne le 28/10.
+- Non traité : la bulle d'aide « ? » (`#tip.help`) n'a pas de hauteur max (elle ne reçoit pas la souris, donc ne peut pas
+  défiler).
