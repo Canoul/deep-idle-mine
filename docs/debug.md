@@ -4296,7 +4296,15 @@ Règles (voir CLAUDE.md) :
   l'or, « sortie invalide » = Lingot de fer, le diamant étant devenu une sortie), `tests/anticheat/crusher.test.js` (fer en
   entrée, lingot refusé, butin garanti ≤ max par lot) : `npm run test:anticheat` 105/105 ; wiki ✅.
 
-## 28/10/2026 — Geoffrey — Amélioration : pièces portées choisies sans les retirer (🧪 branche `geoffrey/stuff-remplacer`)
+## 28/10/2026 — Geoffrey — Onglet Stuff : stats à droite des cases
+- Depuis les Sets (`.setLay` : Sets | colonne), cases et stats étaient empilées dans la 2e colonne, et l'ancienne grille
+  2 colonnes sur `.view[data-view="stuff"] .furnWrap` laissait une colonne vide de 150u à droite.
+- `index.html` : la colonne de droite du `.setLay` devient `<div class="stuffMain">`. `src/ui/style.css` : la grille
+  « cases | stats 150u » passe sur `.stuffMain` (1 colonne sous 1100 px) ; `.furnWrap` de Stuff : simple max-width 720u.
+- ✅ Vérifié en capture Chrome headless (page statique avec le vrai style.css) à 1600 px (3 colonnes) et 900 px (stats
+  sous les cases). Pas de test unitaire (CSS seul). La fiche d'un ami (`#fview`, Social) n'est pas touchée.
+
+## 28/10/2026 — Geoffrey — Amélioration : pièces portées choisies sans les retirer (✅ en ligne le 28/10)
 - **Quoi** : `src/meta/upgrade.js` : `identify/upgrade/enchant/unenchant` (et leurs `*Error`) prennent un dernier argument
   optionnel `worn` (= `st.worn`, modifié sur place) ; `findPiece` cherche l'uid dans l'inventaire puis dans les cases,
   `dropPiece` retire un sacrifice de l'inventaire ou vide sa case. Rune : toujours de l'inventaire ; `ringDupes` inchangé

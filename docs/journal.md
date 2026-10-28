@@ -31,7 +31,13 @@ Modèle d'entrée :
   vide (une confirmation prévient).
 - **Décisions** : pour améliorer un anneau, le doublon sacrifié est toujours pris dans l'**inventaire**, jamais un anneau
   porté (le jeu le choisit tout seul : il ne doit pas détruire un anneau équipé sans qu'on l'ait choisi).
-- **État** : 🧪 sur la branche `geoffrey/stuff-remplacer` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
+- **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
+  d'équipement** au milieu, les **stats du mineur** à droite (elles étaient passées sous les cases depuis l'ajout des
+  Sets). Sur écran moyen et téléphone, rien ne change : tout s'empile.
+- **État** : ✅ en ligne le 28/10.
 
 ## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
 - **Pour le joueur** : on peut poser du **minerai de fer** dans le concasseur. Chaque lot de 100 donne toujours du
