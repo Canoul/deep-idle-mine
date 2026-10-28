@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Pour le joueur** : pendant une session, les boutons **Enregistrer** et **+ Nouveau set** ne sont plus grisés. On peut
   donc préparer son prochain équipement et le sauvegarder dans un set sans attendre la fin de la session. La session en
   cours ne change pas.
-- **État** : 🔧 en cours (branche `geoffrey/sets-enregistrer-session`).
+- **État** : ✅ en ligne le 28/10.
 
 ## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
 - **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
