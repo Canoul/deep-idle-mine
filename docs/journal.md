@@ -30,8 +30,8 @@ Modèle d'entrée :
   grand, son nom dans la couleur de sa qualité et ses stats dessous (et son GS pour le stuff). Ça marche pour le
   **craft**, le **blueprint** de la table de recherche (avec la recette qu'il débloque), l'**identification**,
   l'**amélioration réussie**, l'**enchantement** et la rune retirée (fragment). Un clic, Entrée ou Échap la ferme.
-- **À suivre** : les trésors gardent leur bilan habituel dans l'inventaire (pas de pop-up) ; à décider si on veut la
-  pop-up aussi pour eux.
+- **Décisions** : on tutoie (« Tu as obtenu »), comme partout dans le jeu. Les trésors gardent leur bilan habituel dans
+  l'inventaire, sans pop-up.
 - **État** : 🧪 sur la branche `geoffrey/popup-objet-obtenu` (pas en ligne)
 
 ## 28/10/2026 — Geoffrey — Concasseur : le minerai de fer se concasse
