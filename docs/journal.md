@@ -29,7 +29,7 @@ Modèle d'entrée :
   (nom, quantité, type, rareté…), puis les stats, une par ligne, et enfin les boutons (Équiper, Recycler, Ouvrir,
   Utiliser). Elle n'affiche plus « poids N » : info inutile hors session (le poids compte toujours pour les pods du
   mineur en session).
-- **État** : 🧪 sur la branche `geoffrey/inventaire-sans-poids` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Onglet Stuff : les stats repassent à droite des cases
 - **Pour le joueur** : sur ordinateur, l'onglet Stuff se lit en trois colonnes : les **Sets** à gauche, les **cases
