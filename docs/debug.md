@@ -4247,7 +4247,32 @@ Règles (voir CLAUDE.md) :
   (`statsHTML`, src/ui/stuff.js), avec les totaux affichés (stuff, skills, anneaux, glyphes ; sans Cri de guerre ni
   Pillage). Tests ✅ `tests/dps.test.js`.
 
-## 28/10/2026 — Jules — Panneau de l'area : pourcentages de composition non arrondis
+## 28/10/2026 — Geoffrey — États visibles des mineurs et des mobs (✅ en ligne le 28/10)
+- **Quoi** : `EFFECTS` en config (registre : sorte, nom, icône, couleur ; couleurs des sorts) ; `src/sim/effects.js`
+  (`minerEffects`, `sessionBonuses`, `mobEffects`, `cleanRings`) LIT la partie, n'écrit rien. Envoyés dans `minerView` /
+  `mobView` de la mine (`src/shared/view.js`), des tours, de l'instance (+ `spellCd`) et de la MI. Rangée d'icônes
+  `src/ui/effects.js` (nœuds gardés : la bulle ouverte ne saute pas), `#fxBar*` dans index.html, posée en haut à droite
+  du canvas par `placeEffectsBar` depuis la boucle de `src/main.js` (`updateEffects`, son propre mineur). Dessins sur le
+  perso et les mobs : `src/render/effects.js`, appelé par `miner-sprite.js` (remplace le blit `stun` quand `m.effects`
+  existe), `canvas.js`, `tower.js`, `instance.js`. Icônes : 14 de plus dans `scripts/build_pxicons.py` (+ `pxPath`).
+- **Changements de simulation** (affichage seulement) : `data.cause` sur l'action `stun` (`fall`, `hex`, `quake` dans
+  ai.js ; `land` dans la tour) ; `m.rings` (anneaux qui agissent sur lui, depuis `minerSpecs` / `instantSpecs` : le
+  nerd seulement pour son porteur) ; exports `towerDark`, `warcryOf` (tours), `warcryOf` (instance). Les stats ne
+  changent pas (les anneaux restent fondus dans `carac` avant la session).
+- **Sorts** : détectés côté navigateur quand `spellCd[id]` augmente (`createCastWatch`), rien de plus envoyé.
+- **Tests** ✅ `tests/effects.test.js` (14) ; view, tower, tower-boss, tower-spells, instance-sim, instant-mine, spells,
+  flesh, golem, game-replay, mobs, stuff, help, guide, nav, camera, controls, boot-check… : verts. ❌ `tests/perf.test.js`
+  « boîte de mesures… » : rouge AVANT ce chantier aussi (index.html de main), pas lié.
+- **Simulation** ✅ 5 sessions à 3 : 0 blocage, chiffres habituels. Partie d'1 h (seed 7, 3 mineurs, sorts et skills) :
+  dark, inspiration, ore_rush, war_cry, stun (cause fall), travel_rush, tackled, robbed vus ; mobs stun / taunt.
+- **Navigateur** (playwright, page de démo locale non commitée, mine avec états forcés) : rangée en haut à droite,
+  bulles « Étourdi / Ébranlement du golem / Encore 4 s » et « Bonus de session » (anneaux à leur niveau, shrine) ✅ ;
+  étoiles, botte barrée, bulles, lueur du Cri de guerre, onde de sort, icônes du gobelin (étourdi + provoqué) ✅.
+  Pas vérifié : une vraie session en ligne, tours et instance à l'écran (même code de dessin).
+- **Points fragiles** : « Dans le noir » peut clignoter dans les galeries (à juger en jeu) ; `createCastWatch` garde
+  les recharges par id de mineur d'une session à l'autre (au pire une onde manquée au début de la suivante).
+
+## 28/10/2026 — Jules — Panneau de l'area : pourcentages de composition non arrondis (✅ en ligne le 28/10)
 - **Cause** : `oreBonusComp` (src/meta/shrines.js, autel de minerais) répartit les points au prorata : area 3 à +5 points,
   terre 10 − 10/75 × 5 = 9,333…, pierre dure 4,666…, charbon 8,75. Valeurs justes (les comptes exacts en dépendent),
   mais `updateHUD` (src/ui/hud.js) les écrivait brutes.

@@ -684,6 +684,51 @@ export const SPELLS = {
   ],
 };
 
+/* ---- États visibles d'un mineur ou d'un mob (28/10/2026, Geoffrey ; spec docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md) ----
+   Calculés par src/sim/effects.js depuis les champs de la simulation (rien n'est écrit), envoyés au navigateur avec le
+   mineur, affichés en haut à droite de la mine (src/ui/effects.js) et sur le perso (src/render/miner-sprite.js).
+   kind : control (il ne peut plus agir), debuff, buff, session (bonus permanent de la session, regroupés dans une
+   seule icône) ; icon : icône pixel (src/ui/pxicons.js) ; color : couleur de l'icône. Textes d'aide : src/ui/effects.js. */
+export const EFFECTS = {
+  order: ['control', 'debuff', 'buff'],
+  list: {
+    stun:         { kind:'control', name:'Étourdi',             icon:'daze',      color:'#ffd23f' },
+    tackled:      { kind:'control', name:'Taclé',               icon:'grab',      color:'#e5534b' },
+    caged:        { kind:'control', name:'Enfermé',             icon:'lock',      color:'#c9a227' },
+    scared:       { kind:'debuff',  name:'Effroi',              icon:'alert',     color:'#ff8c1a' },
+    choke:        { kind:'debuff',  name:'Asphyxie',            icon:'bubbles',   color:'#8fd14f' },
+    robbed:       { kind:'debuff',  name:'Volé',                icon:'coin',      color:'#e0b03a' },
+    flesh:        { kind:'debuff',  name:'Chair putride',       icon:'heartbreak',color:'#ff6b6b' },
+    boss_focus:   { kind:'debuff',  name:'Ciblé par le boss',   icon:'target',    color:'#e5534b' },
+    dark:         { kind:'debuff',  name:'Dans le noir',        icon:'moon',      color:'#8a8fb0' },
+    war_cry:      { kind:'buff',    name:'Cri de guerre',       icon:'horn',      color:'#ff8c1a' },
+    inspiration:  { kind:'buff',    name:'Inspiration',         icon:'note',      color:'#6fc2ff' },
+    ore_rush:     { kind:'buff',    name:'Ruée',                icon:'rocket',    color:'#6fc24a' },
+    travel_rush:  { kind:'buff',    name:'Navette',             icon:'updown',    color:'#6fc24a' },
+    braum:        { kind:'buff',    name:'Braum',               icon:'shield',    color:'#6fc2ff' },
+    pillage:      { kind:'buff',    name:'Pillage (glyphe)',    icon:'sword',     color:'#e5534b' },
+    fast_learner: { kind:'buff',    name:'Fast learner',        icon:'book',      color:'#b06bff' },
+    /* bonus de session (une seule icône, le détail dans sa bulle) */
+    ring:         { kind:'session', name:'Anneau',              icon:'ring',      color:'#ffd23f' },
+    shrine:       { kind:'session', name:'Shrine',              icon:'shrine',    color:'#c9a227' },
+    escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
+    crown:        { kind:'session', name:'Gobelins asservis',   icon:'crown',     color:'#ffd23f' },
+  },
+  session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
+  /* états des mobs et des boss, au-dessus de leur barre de PV */
+  mob: {
+    stun:    { name:'Étourdi',   icon:'daze',     color:'#ffd23f' },
+    channel: { name:'Canalise',  icon:'radiance', color:'#b06bff' },
+    taunt:   { name:'Provoqué',  icon:'shout',    color:'#ff8c1a' },
+    rage:    { name:'Rage',      icon:'fire',     color:'#e5534b' },
+    air:     { name:'En l\'air', icon:'feather',  color:'#d8f0ff' },
+  },
+  /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
+  castAnim: 900,
+  castColor: { dash:'#d8f0ff', illumination:'#fff3a0', inspiration:'#6fc2ff', ulti_shen:'#b06bff', fast_learner:'#c9a2ff',
+               dynamite:'#ff8c1a', zipette:'#8fd14f', war_cry:'#ff6a3b', cleave:'#e5534b', hand_of_justice:'#ffd23f' },
+};
+
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
 export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',

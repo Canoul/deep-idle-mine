@@ -28,7 +28,23 @@ Modèle d'entrée :
 - **Pour le joueur** : avec un autel de minerais actif, le panneau de l'area en session affichait des pourcentages
   comme « 9.3333333333 % » ou « 4.6666666667 % ». Ils sont maintenant arrondis à une décimale (« 9,3 % », « 4,7 % »,
   « 56 % ») ; le nombre exact de blocs reste entre parenthèses. Rien ne change dans la mine elle-même.
-- **État** : 🧪 sur la branche `jules/fix-arrondi-composition` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
+
+## 28/10/2026 — Geoffrey — États visibles : buffs, debuffs et bonus de session
+- **Pour le joueur** : en haut à droite de la mine (et des tours, de l'instance, de la mine instantanée), une rangée
+  d'icônes montre ce qui agit sur son propre mineur, avec le temps restant ou les stacks dessous : cadre rouge pour ce
+  qui le gêne (étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss, dans le noir), vert pour
+  ce qui l'aide (Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner), et une seule icône
+  dorée « Bonus de session » (anneaux du groupe, shrines, Escalateur, gobelins asservis de la Couronne) dont la bulle
+  donne le détail. Sur les persos : étoiles qui tournent (étourdi), botte barrée (taclé), bulles (asphyxie), « ! »
+  (effroi), lueur (Cri de guerre), notes (Inspiration), traits de vitesse, et une onde quand un sort part. Les mobs et
+  les boss ont leurs icônes au-dessus de leur barre de vie (étourdi, provoqué, canalise, rage, en l'air).
+- **Décisions** (Geoffrey) : la liste en haut à droite, pour son propre mineur ; une seule icône pour les bonus de
+  session ; une animation pour les sorts ; les mobs tout de suite. Spec :
+  `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`.
+- **À suivre** : regarder en vrai si « Dans le noir » n'apparaît pas trop souvent (bruit) ; les icônes viennent de la
+  planche Kenney, à remplacer si on veut un style à nous.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Correctif : la vitesse d'attaque comptait par paliers
 - **Pour le joueur** : chaque point de vitesse d'attaque compte enfin. Avant, un coup ne pouvait repartir qu'au dixième

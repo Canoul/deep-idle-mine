@@ -6,6 +6,7 @@
 import { INSTANCE } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
+import { drawMobFx } from './effects.js';
 import { shownPos } from '../shared/view.js';
 import { ROCK, CAGE, SPAWNER } from '../sim/instance/world.js';
 
@@ -78,6 +79,7 @@ export function createInstanceRenderer(cv){
       blit('goblin_king', px, py, '#3f7a3a', b.w * T, b.h * T);
       ctx.restore();
       if(b.state !== 'sleep') bar(px - 2, py - 7, b.w * T + 4, b.hp / b.maxhp, b.rage ? '#ff3b3b' : '#7fd35a');
+      if(b.state !== 'sleep') drawMobFx(ctx, [b.rage && 'rage', b.taunt && 'taunt'].filter(Boolean), px + b.w * T / 2, py - 7, b.w * T, now, T);   // états du roi (28/10)
       if(b.state === 'sleep'){ ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#d8c9a8'; ctx.fillText('zZ', px + b.w * T - 2, py - 1); }
     }
     /* gobelins */
@@ -87,7 +89,7 @@ export function createInstanceRenderer(cv){
       if((o.face || 1) < 0){ ctx.translate(px + T, 0); ctx.scale(-1, 1); blit('goblin', 0, py, '#5f8a3a'); } else blit('goblin', px, py, '#5f8a3a');
       ctx.restore();
       if(o.hp < o.maxhp) bar(px + 1, py - 5, T - 2, o.hp / o.maxhp, '#ff5a3b');
-      if(o.stun) blit('stun', px, py - 6);
+      drawMobFx(ctx, [o.stun && 'stun', o.taunt && 'taunt'].filter(Boolean), px + T / 2, py - 5, T, now, T);   // états (28/10)
     }
     /* mineurs : le sien par-dessus */
     const mine = G.miners.find(m => m.account === me);

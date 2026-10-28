@@ -9,6 +9,7 @@ import { createMinerSprite } from './miner-sprite.js';
 import { torchTexOf } from '../skins.js';
 import { createCamera, followedMiner } from './camera.js';
 import { drawSplash } from './splash.js';
+import { drawMobFx } from './effects.js';
 
 export const TILE=16, VIEW_ROWS=34;
 
@@ -127,6 +128,7 @@ export function createRenderer(cv){
         else { ctx.fillStyle='#8c1f2b'; ctx.fillRect(px,top,TILE,TILE*h); }
         if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,top-4,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,top-4,TILE*o.hp/o.maxhp,2); }
         drawSplash(ctx,o,G.t,frameNow,px,top,TILE);
+        drawMobFx(ctx,o.fx,px+TILE/2,top-4,TILE,frameNow);
         continue;
       }
       if(o.type==='mimic'){
@@ -149,6 +151,7 @@ export function createRenderer(cv){
           ctx.fillStyle='#f4f1e8'; ctx.fillRect(px+TILE*0.62,gy+TILE*(0.8+k*1.1),1,2);
           if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,gy-3,TILE*2,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,gy-3,TILE*2*o.hp/o.maxhp,2); }
           drawSplash(ctx,o,G.t,frameNow,px+TILE/2,gy,TILE);
+          drawMobFx(ctx,o.fx,px+TILE,gy-3,TILE*2,frameNow);
           continue;
         }
         else blit('bug',px,py,'#d14b4b');
@@ -162,6 +165,7 @@ export function createRenderer(cv){
       }
       if(o.hp<o.maxhp){ ctx.fillStyle='#400'; ctx.fillRect(px,py-3,TILE,2); ctx.fillStyle='#e5534b'; ctx.fillRect(px,py-3,TILE*o.hp/o.maxhp,2); }
       drawSplash(ctx,o,G.t,frameNow,px,py,TILE);   // dégâts de zone reçus (Force brute)
+      drawMobFx(ctx,o.fx,px+TILE/2,py-3,TILE,frameNow);   // états : étourdi, canalise, provoqué (28/10)
     }
     // mineurs : le suivi en dernier (au-dessus des autres)
     // plusieurs mineurs sur la même case (ils se traversent) : léger décalage pour les distinguer

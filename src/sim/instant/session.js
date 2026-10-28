@@ -11,6 +11,7 @@ import { rushTime } from '../mineur.js';
 import { log } from '../log.js';
 import { genInstantMine, spawnColumns } from './world.js';
 import { decide, miSupported } from './ai.js';
+import { cleanRings } from '../effects.js';
 export { miMoveT, miMineT } from './ai.js';
 
 /* fin jugée au compteur de ticks (jamais au temps flottant) */
@@ -43,6 +44,7 @@ function createInstantMiner(id, s, x){
     id, name:s.name || ('Mineur '+(id+1)), color:s.color || null, look:s.look || {}, auras:s.auras || {}, account:s.account ?? null,
     carac:{ ...STATS, ...(s.carac||{}) }, skill:{ ...(s.skills||{}) }, skillTree:s.skillTree ?? null,
     x, y:0, face:1, action:null, status:'Départ', inv:{}, rushUntil:-1,
+    rings:cleanRings(s.rings),          // ses anneaux (porteur seul en MI), affichage seulement (src/sim/effects.js)
     target:null, path:[],               // bloc visé et cases vides à traverser pour l'atteindre
     goal:null,                          // tas de plumes visé (ramassage opportuniste, MI.featherReach)
     interrupts:0, flee:null,            // blocs perdus d'affilée ; zone à fuir { x, y, until }
