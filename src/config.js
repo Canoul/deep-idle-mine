@@ -649,10 +649,13 @@ export const SPELLS = {
       desc:'Le prochain bloc miné (sauf terre et trésor) est appris : ce type de bloc se mine 10 % plus vite jusqu\'à la fin de la session (cumulable)' },
     /* lancée dans le sens du minage, jusqu'à reach cases ou au premier bloc ; explose dans un rayon radius (cercle) :
        casse ce que le mineur peut miner (pas les constructions ni l'incassable), comme s'il l'avait miné (butin, XP,
-       fortune). Le lancer dure throwTime s */
+       fortune). Le lancer dure throwTime s.
+       Rework du 28/10/2026 (Geoffrey) : elle ne casse que les blocs de dureté < hardMul × sa vitesse de minage (stat
+       mineSpeed × (1 + minage %)), et inflige dmg × ses dégâts (critique possible, comme le Cleave) à chaque mob dans son
+       rayon (un boss de donjon seulement s'il le combat déjà ; dans une tour, le boss aussi) */
     { id:'dynamite', name:'Dynamite', icon:'🧨', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
-      reach:2, radius:2, throwTime:0.5,
-      desc:'Lance une dynamite devant lui (2 cases au plus) : elle casse tous les blocs minables dans un rayon de 2, comme s\'il les minait' },
+      reach:2, radius:2, throwTime:0.5, hardMul:3, dmg:0.5,
+      desc:'Lance une dynamite devant lui (2 cases au plus) : dans un rayon de 2, elle casse les blocs moins durs que 3 × sa vitesse de minage, comme s\'il les minait, et inflige 50 % de ses dégâts aux mobs' },
     /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
        remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
        LOGISTICIEN en oxygène (sans dépasser son max). Jamais sur lui-même. La recharge commence une fois l'oxygène

@@ -13,6 +13,7 @@
 import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
+import { SPELL } from '../../meta/spells.js';
 import { log } from '../log.js';
 import { ladderTime, winchMult, placedTorch } from '../mineur.js';
 import { inReach, push, recenter, driftsAway, reachOf, knockbackOf, gap, stopAction } from '../knock.js';
@@ -45,6 +46,7 @@ export function newTower(seed, opts = {}){
     boss: { name: TOWER.sides[side].boss, hp: B.hp * LV.hp, maxhp: B.hp * LV.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
+    inspire: null, warcry: null,          // sorts de groupe en cours (Inspiration, Cri de guerre ; 28/10)
     arrivals: [],                         // ids des mineurs dans l'ordre d'arrivée sur le toit (encore dessus)
     chest: {},                            // coffre commun (TOWER.chest) : stonebricks déposées
     chestAt: { x: Math.floor((world.x0 + world.x1) / 2), y: floorBottom(world, TOWER.chest.floor) },
@@ -68,7 +70,8 @@ function createMiner(id, s, x, y){
     id, name: s.name || ('Mineur ' + (id + 1)), color: s.color || null, look: s.look || {}, auras: s.auras || {}, account: s.account ?? null,
     carac: { ...STATS, ...(s.carac || {}) }, skill: { ...(s.skills || {}) }, skillTree: s.skillTree ?? null,
     x, y, face: 1, action: null, status: 'Départ', fallN: 0, knocked: false, inv: {}, load: 0,
-    stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0, deposits: 0 },
+    spells: Array.isArray(s.spells) ? [...s.spells] : [], spellCd: {}, learned: 0,   // sorts figés au lancement (28/10)
+    stats: { mined: 0, ladders: 0, dmg: 0, hits: 0, knocked: 0, falls: 0, kills: 0, tackled: 0, deposits: 0, spells: 0 },
   };
 }
 const isBarb = m => m.skillTree === 'barbare';
@@ -143,16 +146,23 @@ export const towerSupported = (G, x, y) => isWinch(G, x, y) ||
   !(y + 1 <= G.h && towerAir(G, x, y + 1) && !G.ladder[y + 1][x] && !(y > 0 && G.ladder[y][x]));
 
 /* durées (sans lumière : ralenti comme dans la mine) */
-export const mineT = (G, m, t) => BLOCKS[t].hard * G.lv.hard / (m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100));
+const inspireOn = G => !!G.inspire && G.t < G.inspire.until;
+/* vitesse de minage : stat × minage %, × Inspiration (groupe) et Fast learner (le mineur), sorts du 28/10 */
+const mineRate = (G, m) => m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100) * (1 + (inspireOn(G) ? G.inspire.pct : 0)) * (1 + (m.learned || 0));
+export const mineT = (G, m, t) => BLOCKS[t].hard * G.lv.hard / mineRate(G, m);
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
 /* seau, comme dans la mine (winchMult : Escalateur, et × liftSpeed pour l'ascenseur du Glyphe Treuil) */
 export const towerWinchT = (G, m) => 1 / (m.carac.climbSpeed * WINCH.speedFactor * winchMult(G));
 const winchT = towerWinchT;
 const fallT = () => 1 / CFG.fallSpeed;
-const hitT = m => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100);
+const manh = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+/* Cri de guerre (28/10) : actif pour les mineurs à son rayon de celui qui l'a lancé */
+const warcryOf = (G, m) => { const w = G.warcry, c = w && G.t < w.until ? G.miners.find(o => o.id === w.by) : null;
+  return c && manh(c, m) <= SPELL.war_cry.radius ? w : null; };
+const hitT = (G, m) => CFG.attackInterval / Math.max(0.1, (m.carac.attackSpeed ?? 100) / 100 * (1 + (warcryOf(G, m)?.speed || 0)));
 const chance = (G, pct) => pct > 0 && G.fightRng() < pct / 100;
-const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (chance(G, m.carac.crit || 0) ? 2 : 1);
+const hitDmg = (G, m) => m.carac.damage * (1 + (m.carac.damagePct || 0) / 100) * (1 + (warcryOf(G, m)?.dmg || 0)) * (chance(G, m.carac.crit || 0) ? 2 : 1);
 
 /* ---------- mobs ---------- */
 /* distance (Manhattan) d'un mineur à un mob (2 cases de haut : (x, y) et (x, y - 1)) */
@@ -193,6 +203,7 @@ function pushMiner(G, m, from, k, arc = false){
 function stepMobs(G){
   for(const o of G.mobs){
     if(o.hp <= 0 || !o.awake) continue;
+    if(o.stunUntil > G.t){ o.grab = null; o.hit = MB.hitEvery; continue; }   // étourdi (Dash, Hand of Justice : 28/10)
     const held = byId(G, o.grab);
     if(!(held && canTackle(o, held) && mobDist(o, held) <= COMBAT.tackleLeash && G.t - (o.grabHit ?? G.t) <= COMBAT.tackleGiveUp + 1e-9)){
       const p = preyOf(G, o);
@@ -428,13 +439,15 @@ function act(m, type, dur, data, status){ m.action = { type, dur: Math.max(0.05,
    (m.atkReady) ; l'action « attack » done ne fait qu'attendre */
 function strike(G, m, o, status){
   m.face = Math.sign(o.x - m.x) || m.face;
-  if(G.t + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = G.t + hitT(m) / dk(G, m); }
+  combatSpells(G, m, o);
+  if(G.t + 1e-9 >= (m.atkReady || 0)){ hitMob(G, m, o); m.atkReady = G.t + hitT(G, m) / dk(G, m); }
   return act(m, 'attack', Math.max(DT, m.atkReady - G.t), { mob: o.id, done: true }, status);
 }
 const torchByOther = (G, m) => G.miners.some(o => o !== m && o.action?.type === 'torch' && Math.abs(o.x - m.x) + Math.abs(o.y - m.y) <= 2);
 
 export function decide(G, m){
   if(!towerSupported(G, m.x, m.y)) return act(m, 'move', fallT(), { x: m.x, y: m.y + 1, fall: true }, 'Tombe');
+  if(m.spells.length && supportSpells(G, m)) return act(m, 'wait', DT, {}, m.status);   // Ulti shen : il vient d'arriver
   /* treuil à installer (logisticien tombé au pied de la tour) : contre le mur, de son côté, puis TOWER.winch.setup s */
   if(m.winchJob){
     const tx = m.winchJob === 'L' ? G.x0 - 1 : G.x1 + 1;
@@ -466,6 +479,8 @@ export function decide(G, m){
     /* à côté d'un mob mais repoussé hors de portée : il se recentre (sa case est déjà une case d'arrivée du chemin) */
     const back = mobs.find(o => mobDist(o, m) <= 1 && driftsAway(m, mobCell(o, m)));
     if(back) return act(m, 'move', moveT(m) * Math.abs(m.kx || 0), { x: m.x, y: m.y }, `Combat un ${mobName}`);
+    const dashTo = mobs.filter(o => o.y === m.y).sort((a, b) => Math.abs(a.x - m.x) - Math.abs(b.x - m.x))[0];
+    if(dashTo && dash(G, m, dashTo)) return act(m, 'wait', DT, {}, `Dash sur un ${mobName}`);
     const goals = mobs.flatMap(o => [[o.x - 1, o.y], [o.x + 1, o.y]]);
     const path = planTo(G, m, goals);
     if(path?.length) return follow(G, m, path, `Va combattre les ${mobName}s`);
@@ -513,10 +528,11 @@ export function decide(G, m){
   const want = wantedSide(G, m), here = contactSide(G, m);
   if(here === 'in' || (here && (!want || want === here))){   // dans le boss : il frappe d'où il est
     m.face = here === 'L' ? 1 : here === 'R' ? -1 : (Math.sign(bossMid(G) - (m.x + 0.5)) || m.face);
-    return act(m, 'attack', hitT(m), { boss: true }, `Combat ${G.boss.name}`);
+    combatSpells(G, m, G.boss);
+    return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`);
   }
   const cells = contactCells(G), goals = cells.filter(c => !want || c[2] === want);
-  if(here && !goals.length){ m.face = here === 'L' ? 1 : -1; return act(m, 'attack', hitT(m), { boss: true }, `Combat ${G.boss.name}`); }   // son côté n'existe pas (boss au bord)
+  if(here && !goals.length){ m.face = here === 'L' ? 1 : -1; combatSpells(G, m, G.boss); return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`); }   // son côté n'existe pas (boss au bord)
   const path = planTo(G, m, goals.length ? goals : cells);
   if(!path?.length){ G.stats.blocked++; return act(m, 'wait', 0.5, {}, mobs.length ? `Attend (${mobName}s)` : 'Bloqué'); }
   return follow(G, m, path, m.y >= G.roof ? 'Monte vers le sommet' : `Va au contact de ${G.boss.name}`);
@@ -566,6 +582,11 @@ const busy = (G, m, type, x, y) => G.miners.some(o => o !== m && o.action?.type 
 function startMine(G, m, x, y, status){
   if(!breakable(G, x, y)) return act(m, 'wait', 0.1, {}, status);     // indestructible ou scellé : on replanifie
   if(busy(G, m, 'mine', x, y)) return act(m, 'wait', 0.2, {}, status);
+  if(m.spells.length){
+    mineBuffs(G, m);
+    if(ready(G, m, 'dynamite') && (blastCells(G, m, x, y).length >= 2 || blastFoes(G, x, y).length))
+      return act(m, 'dynamite', SPELL.dynamite.throwTime, { cx: x, cy: y }, 'Lance une dynamite');
+  }
   act(m, 'mine', chance(G, m.carac.oneTap || 0) ? 0 : mineT(G, m, G.tiles[y][x]) / dk(G, m), { x, y }, status);
 }
 
@@ -617,6 +638,7 @@ function finishAction(G, m, a){
   } else if(a.type === 'torch'){
     if(!G.torches.some(t => t.x === m.x && t.y === m.y)){ G.torches.push(placedTorch(m)); G.stats.torches++; updateTowerLight(G); }
   } else if(a.type === 'mine') mineCell(G, m, a.data.x, a.data.y);
+  else if(a.type === 'dynamite') blast(G, m, a.data.cx, a.data.cy);
   else if(a.type === 'deposit') deposit(G, m);
   else if(a.type === 'attack'){
     if(a.data.boss) hitBoss(G, m);
@@ -665,15 +687,135 @@ function deposit(G, m){
 function hitBoss(G, m){
   if(G.boss.hp <= 0 || G.boss.air || !contactSide(G, m)) return;   // en l'air : intouchable
   if(m.skill.taunt) G.boss.taunt = m.id;   // provocation du barbare : il le focus (25/10)
-  const dmg = strikeDmg(G, m);
+  m.stats.hits++;
+  damageBoss(G, m, strikeDmg(G, m), true);
+}
+/* dégâts au boss (coup, ou sort : 28/10) ; push : un coup de son focus le repousse */
+function damageBoss(G, m, dmg, push = false){
+  if(G.boss.hp <= 0 || G.boss.air || G.over) return;
   G.boss.hp = Math.max(0, G.boss.hp - dmg);
-  G.stats.dmg += dmg; m.stats.dmg += dmg; m.stats.hits++;
-  if(G.boss.focus === m.id && G.boss.hp > 0) pushBoss(G, m);   // seul son focus le repousse
+  G.stats.dmg += dmg; m.stats.dmg += dmg;
+  if(push && G.boss.focus === m.id && G.boss.hp > 0) pushBoss(G, m);   // seul son focus le repousse
   if(!G.boss.engaged){ G.boss.engaged = true; G.timeline.engaged = G.t; log(G, `⚔ ${m.name} engage le combat contre ${G.boss.name}`); }
   if(G.boss.hp <= 0){
     log(G, `🏆 ${G.boss.name} est vaincu ! Coup final de ${m.name}.`);
     endTower(G, true);
   }
+}
+/* dégâts d'un sort à un mob (sans recul) */
+function damageMob(G, m, o, dmg){
+  if(o.hp <= 0) return;
+  o.hp = Math.max(0, o.hp - dmg); G.stats.dmg += dmg; m.stats.dmg += dmg;
+  o.splash = { v: dmg, t: G.t };
+  if(o.hp <= 0) mobDied(G, m, o);
+}
+
+/* ---------- sorts (28/10/2026, Geoffrey : joués dans les tours du Jugement) ----------
+   Comme dans la mine et l'instance : chaque sort équipé (figé au lancement) part tout seul dès que sa recharge est finie
+   et qu'il sert. Bonbonne de zipette : pas d'oxygène dans la tour, elle ne part jamais. */
+const ready = (G, m, id) => m.spells.includes(id) && G.t + 1e-9 >= (m.spellCd[id] || 0);
+const cast = (G, m, id, cdFrom = G.t, mul = 1) => { m.spellCd[id] = cdFrom + SPELL[id].cd * mul; m.stats.spells++; };
+/* mob vivant réveillé dont une des 2 cases est à R cases ou moins de (x, y), en cercle */
+const mobNear = (o, x, y, R) => Math.min((o.x - x) ** 2 + (o.y - y) ** 2, (o.x - x) ** 2 + (o.y - 1 - y) ** 2) <= R * R + 1e-9;
+/* Inspiration (tout le groupe mine plus vite), Fast learner (lui) : quand il mine */
+function mineBuffs(G, m){
+  if(ready(G, m, 'inspiration') && !inspireOn(G)){
+    const S = SPELL.inspiration; G.inspire = { until: G.t + S.duration, pct: S.mineSpeed };
+    cast(G, m, 'inspiration', G.inspire.until);
+    log(G, `🎺 ${m.name} : Inspiration, tout le monde mine ${Math.round(S.mineSpeed * 100)} % plus vite`);
+  }
+  if(ready(G, m, 'fast_learner')){ m.learned = Math.round((m.learned + SPELL.fast_learner.bonus) * 1e6) / 1e6; cast(G, m, 'fast_learner'); }
+}
+/* Dynamite (rework du 28/10) : blocs cassables du rayon moins durs que hardMul × sa vitesse de minage (dureté de la tour
+   comprise : niveau), jamais le sol sous un mineur ; mobs et boss du rayon : dmg × ses dégâts */
+const dynHard = m => SPELL.dynamite.hardMul * m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100);
+function blastCells(G, m, cx, cy){
+  const R = SPELL.dynamite.radius, out = [], maxHard = dynHard(m);
+  for(let y = cy - R; y <= cy + R; y++) for(let x = cx - R; x <= cx + R; x++){
+    if((x - cx) ** 2 + (y - cy) ** 2 > R * R || !inGrid(G, x, y) || !breakable(G, x, y)) continue;
+    if(y === G.roof) continue;   // jamais le toit (le boss et les mineurs s'y tiennent)
+    if(!(BLOCKS[G.tiles[y][x]].hard * G.lv.hard < maxHard)) continue;
+    if(G.miners.some(o => o.x === x && o.y === y - 1)) continue;
+    out.push([x, y]);
+  }
+  return out;
+}
+const blastFoes = (G, cx, cy) => liveMobs(G).filter(o => mobNear(o, cx, cy, SPELL.dynamite.radius));
+const bossInBlast = (G, cx, cy) => { const b = G.boss, R = SPELL.dynamite.radius;
+  if(b.hp <= 0 || b.air) return false;
+  for(let y = b.y; y < b.y + B.h; y++) for(let x = Math.round(b.x); x < Math.round(b.x) + B.w; x++) if((x - cx) ** 2 + (y - cy) ** 2 <= R * R) return true;
+  return false; };
+function blast(G, m, cx, cy){
+  const S = SPELL.dynamite, cells = blastCells(G, m, cx, cy), foes = blastFoes(G, cx, cy), boss = bossInBlast(G, cx, cy);
+  for(const [x, y] of cells) mineCell(G, m, x, y);
+  for(const o of foes) damageMob(G, m, o, hitDmg(G, m) * S.dmg);
+  if(boss) damageBoss(G, m, hitDmg(G, m) * S.dmg);
+  cast(G, m, 'dynamite');
+  log(G, `🧨 ${m.name} : dynamite, ${cells.length} bloc${cells.length > 1 ? 's' : ''} cassé${cells.length > 1 ? 's' : ''}`+
+         `${foes.length ? `, ${foes.length} ${TOWER.sides[G.side].mob}${foes.length > 1 ? 's' : ''} touché${foes.length > 1 ? 's' : ''}` : ''}${boss ? `, ${G.boss.name} touché` : ''}`);
+}
+/* en combat (il frappe un mob ou le boss) : Cri de guerre (lui et les mineurs à son rayon), Cleave (les mobs à son
+   rayon ; le boss s'il est à son contact), Dynamite sur le boss (s'il est dans le rayon) */
+function combatSpells(G, m, target){
+  if(!m.spells.length) return;
+  if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
+    const S = SPELL.war_cry; G.warcry = { until: G.t + S.duration, by: m.id, dmg: S.dmgPct, speed: S.atkSpeed };
+    cast(G, m, 'war_cry', G.warcry.until);
+    log(G, `📯 ${m.name} : Cri de guerre`);
+  }
+  if(ready(G, m, 'cleave')){
+    const S = SPELL.cleave, foes = liveMobs(G).filter(o => o !== target && mobNear(o, m.x, m.y, S.radius));
+    const boss = target === G.boss || (contactSide(G, m) && !G.boss.air && G.boss.hp > 0);
+    if(foes.length || (boss && target !== G.boss)){
+      cast(G, m, 'cleave');
+      for(const o of foes) damageMob(G, m, o, hitDmg(G, m) * S.dmg);
+      if(boss && target !== G.boss) damageBoss(G, m, hitDmg(G, m) * S.dmg);
+    }
+  }
+  if(target === G.boss && ready(G, m, 'dynamite') && bossInBlast(G, m.x + m.face, m.y)) blast(G, m, m.x + m.face, m.y);
+}
+/* à chaque décision : Illumination (cases inconnues de la tour à son rayon), Hand of Justice (un mob qui tacle un allié,
+   puis lui, à sa portée : étourdi), Ulti shen (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).
+   Renvoie true si Ulti shen l'a déplacé. */
+function supportSpells(G, m){
+  if(ready(G, m, 'illumination')){
+    const R = SPELL.illumination.radius, cells = [];
+    for(let y = m.y - R; y <= m.y + R; y++) for(let x = m.x - R; x <= m.x + R; x++)
+      if((x - m.x) ** 2 + (y - m.y) ** 2 <= R * R && inGrid(G, x, y) && !G.seen[y]?.[x]) cells.push([x, y]);
+    if(cells.length){ for(const [x, y] of cells) G.seen[y][x] = 1; cast(G, m, 'illumination'); }
+  }
+  if(ready(G, m, 'hand_of_justice')){
+    const S = SPELL.hand_of_justice;
+    const o = liveMobs(G).filter(o => o.grab != null && !(o.stunUntil > G.t) && mobDist(o, m) <= S.range).sort((a, b) => (a.grab === m.id) - (b.grab === m.id))[0];
+    if(o){ cast(G, m, 'hand_of_justice'); o.stunUntil = G.t + S.stun; o.grab = null; log(G, `⚖ ${m.name} : Hand of Justice étourdit un ${TOWER.sides[G.side].mob}`); }
+  }
+  if(ready(G, m, 'ulti_shen') && !tackler(G, m)){
+    const S = SPELL.ulti_shen;
+    const ally = G.miners.find(a => a !== m && tackler(G, a)), fighting = G.miners.find(a => a !== m && contactSide(G, a) && G.boss.engaged && !G.boss.air && G.boss.hp > 0);
+    const to = ally ?? fighting;
+    if(to){
+      cast(G, m, 'ulti_shen'); stopAction(m); m.action = null; m.x = to.x; m.y = to.y; m.kx = 0; m.ky = 0;
+      if(ally) damageMob(G, m, tackler(G, ally), tackler(G, ally).maxhp * S.hpPct);
+      else damageBoss(G, m, G.boss.maxhp * S.bossPct);
+      log(G, `🌀 ${m.name} : Ulti shen auprès de ${to.name}`);
+      return true;
+    }
+  }
+  return false;
+}
+/* Dash vers un mob sur sa ligne, à sa portée : il arrive au contact et frappe (dmg × ses dégâts), le mob est étourdi ;
+   recharge × hitCd */
+function dash(G, m, o){
+  if(!ready(G, m, 'dash') || o.y !== m.y) return false;
+  const S = SPELL.dash, dir = Math.sign(o.x - m.x), n = Math.abs(o.x - m.x) - 1;
+  if(!dir || n < S.minCells || n > S.range) return false;
+  for(let x = m.x + dir; x !== o.x; x += dir) if(!towerAir(G, x, m.y) || !towerSupported(G, x, m.y)) return false;
+  cast(G, m, 'dash', G.t, S.hitCd);
+  m.x = o.x - dir; m.kx = 0; m.face = dir;
+  damageMob(G, m, o, strikeDmg(G, m) * S.dmg);
+  if(o.hp > 0){ o.stunUntil = G.t + S.stun; o.grab = null; }
+  log(G, `💨 ${m.name} : Dash`);
+  return true;
 }
 
 /* recul du boss sous les coups de son focus (25/10 au soir) : COMBAT.knock × (1 − B.knockRes %), horizontal, à l'opposé

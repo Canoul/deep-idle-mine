@@ -258,6 +258,24 @@ test('Dynamite : casse les blocs minables dans un rayon de 2 comme s\'il minait 
   assert.equal(m.spellCd.dynamite, G.t + 150);
 });
 
+/* rework du 28/10/2026 (Geoffrey) : seulement les blocs de dureté < 3 × sa vitesse de minage ; 50 % de ses dégâts aux mobs */
+test('Dynamite (28/10) : blocs moins durs que 3 × sa vitesse de minage ; 50 % de ses dégâts aux mobs du rayon', () => {
+  const G = worldFrom(['', '#####', '#@ccc', '##=##', '#####']), m = G.miners[0];
+  m.spells = ['dynamite']; m.carac.mineSpeed = 0.5;            // 3 × 0,5 = 1,5 : la pierre (1,2) oui, le charbon (1,6) non
+  G.tiles[2][4] = IDS.gold;
+  G.mobs.push({ id:99, type:'gobelin', x:3, y:1, hp:100, maxhp:100, revealed:true }, { id:98, type:'gobelin', x:4, y:5, hp:100, maxhp:100 });
+  startAction(m, 'mine', 1, { x:2, y:2 });
+  afterDecide(G, m);
+  assert.equal(m.action.type, 'dynamite');
+  finishAction(G, m, m.action);
+  assert.equal(G.tiles[2][2], IDS.coal, 'charbon trop dur pour lui');
+  assert.equal(G.tiles[2][4], IDS.gold);
+  assert.equal(G.tiles[1][2], 0, 'pierre cassée'); assert.equal(G.tiles[4][2], 0);
+  const d = m.carac.damage * SPELLS.list.find(x => x.id === 'dynamite').dmg;
+  assert.ok(G.mobs[0].hp <= 100 - d + 1e-9 && G.mobs[0].hp >= 100 - 2 * d - 1e-9, 'mob du rayon touché (critique possible)');
+  assert.equal(G.mobs[1].hp, 100, 'mob hors du rayon');
+});
+
 test('10 min de session avec les sorts : déterministe, chacun lance ses sorts', () => {
   const miners = [{ spells:['illumination', 'dynamite'], skillTree:'mineur' }, { spells:['dash', 'ulti_shen'], skillTree:'barbare' },
                   { spells:['inspiration', 'fast_learner'], skillTree:'logisticien' }].map((s, i) => ({ ...s, x:20 + i * 5 }));

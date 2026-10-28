@@ -4096,6 +4096,22 @@ Règles (voir CLAUDE.md) :
   cobalt 470→510, Lance en fer 360→330 (malus vitesse d'attaque à 5 x), autres +1 à 8 %. Classements GS et modulation suivent.
 - Tests : gearscore, stuff-balance, tier4, mob-drops, rune, social, lobby ✅.
 
+## 28/10/2026 — Sorts dans les tours ; rework de la Dynamite (Geoffrey)
+- Config `SPELLS` dynamite : `hardMul: 3`, `dmg: 0.5`. Mine (`src/sim/spells.js`) : `dynamiteHard(m)`, `blastCells` filtre la
+  dureté, `finishDynamite` touche les mobs `fair` du rayon (hitDamage × dmg, killMob).
+- Tour (`src/sim/tower/session.js`) : mineurs avec `spells/spellCd/learned`, `G.inspire/G.warcry`, `mineT` avec Inspiration et
+  Fast learner, `hitT/hitDmg` avec Cri de guerre, mobs étourdis (`stunUntil` dans stepMobs), `damageBoss` (refactor de hitBoss)
+  et `damageMob` ; sorts : mineBuffs + dynamite (action `dynamite`, `blast`) au début d'un minage, combatSpells dans `strike` et
+  avant un coup sur le boss, supportSpells au début de `decide` (Illumination, Hand of Justice, Ulti shen), Dash vers un mob
+  sur sa ligne. Dynamite : jamais le toit, dureté × niveau de tour. Zipette : jamais (pas d'oxygène).
+- Instance (alignée, même jour) : `mineSpells` casse la cage seulement si `cageHard < dynHard(m)`, `blastHurt/blastDamage` (gobelins et roi
+  du rayon, 50 %) aussi sur un spawner (toujours 6 coups). Test de scénario « cage » non retenu (un mineur seul ne mine pas sa cage
+  dans ce montage). ⚠️ `npm run simulate:instance` donne 0/10 partout, même en acier (sans sorts : pas lié à ce changement ; le
+  repère de l'état du projet dit acier 20/20 à 3) : à vérifier.
+- Tests : `tests/tower-spells.test.js` (4), `tests/spells.test.js` (Dynamite 28/10) ; tower*, spells, instance*, game-service,
+  khole, session, wiki 199/199 ✅. Simulation mine 5 sessions avec dynamite + fast_learner : 0 blocage. Tour 12 parties à 3
+  avec sorts : 0 blocage, ≈ 16 sorts par partie, victoires 1/12 comme sans sorts (équipe de test faible).
+
 ### Événements qui rétrécissent / grandissent en boucle sur téléphone (Jules) — branche `jules/fix-canvas-mobile`, ✅ en ligne le 28/10
 - **Cause** : suite de l'entrée du 22/10 (mine), non vérifiée alors pour les autres écrans. Sur téléphone
   (≤ 700 px), `.runGrid.mi` passe en colonne flex ; `#cvMiWrap`, `#cvTwWrap`, `#cvInWrap`, `#cvGtWrap` (base flex
