@@ -24,6 +24,17 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Skills : 5e étage, les maîtrises
+- **Pour le joueur** : une nouvelle case au bas de chaque arbre (0/3, débloquée quand l'étage 4 est au max).
+  **Mineur : Maîtrise de la pioche**, les stats de la pioche portée +5 % par rang ; **Barbare : Maîtrise de l'épée**,
+  +5 % par rang sur l'épée ; **Logisticien : Maîtrise du bench**, +3 % par rang sur le torse. À 3/3 : pioche en fer
+  +0,4 → +0,46 de minage, épée en fer 14 → 15,4 dégâts, plastron en fer +88 → +96 pods. Visible dans l'onglet Stuff
+  (colonne des skills).
+- **Décisions** : valeurs de Geoffrey. Choix de Claude, à valider : ça marche comme l'amélioration (lignes et rune
+  comprises, l'épée compte ce qu'elle ajoute aux mains nues, un malus n'empire pas) ; **pas compté dans le gear score**.
+- **À suivre** : 3 points de plus par arbre (Mineur 13, Logisticien 14, Barbare 15 au total).
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
 - **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →
   754, épée en fer 720 → 360) ; les stats ne bougent pas. Les pièces aux stats divisées le 27/10 (thorium, cobalt,

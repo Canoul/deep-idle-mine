@@ -26,7 +26,8 @@ const GLYPH_TIP = { empty:'Case de glyphe : pose le glyphe de ce skill quand le 
 /* icônes pixel (src/ui/pxicons.js) ; sans correspondance, l'émoji de la config */
 const TREE_PX = { mineur:'pickaxe', logisticien:'ladder', barbare:'sword' };
 const NODE_PX = { mine_speed:'pickaxe', ore_oxygen:'bubbles', ore_rush:'feather', tall_ladder:'ladder', winch:'key',
-                  travel_rush:'arrow', winch_speed:'hourglass', mule:'bag', damage:'sword', taunt:'skull', loot:'chest', braum:'shield', lazy_legend:'sparkle' };
+                  travel_rush:'arrow', winch_speed:'hourglass', mule:'bag', damage:'sword', taunt:'skull', loot:'chest', braum:'shield', lazy_legend:'sparkle',
+                  pick_mastery:'hammer', sword_mastery:'trophy', bench_mastery:'heart' };   // maîtrises (28/10)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

@@ -76,8 +76,9 @@ export const SKILL_STATS = { mineSpeed:'mine_speed', damage:'damage' };
    Seulement pour l'affichage : la partie lit le skill directement (src/sim/actions.js lootOf). */
 export const SKILL_ADD = { looting:{ node:'loot', scale:100 } };
 /* skills qui changent le comportement pendant la partie (pas une stat) : affichés à part, sous les stats */
+ /* (les maîtrises, qui agissent sur les stats d'une pièce, comptent dans la colonne des skills des stats) */
 export const behaviourSkills = effects => Object.values(NODES)
-  .filter(n => effects?.[n.id] && !Object.values(SKILL_STATS).includes(n.id) && !Object.values(SKILL_ADD).some(a => a.node === n.id))
+  .filter(n => effects?.[n.id] && !n.slot && !Object.values(SKILL_STATS).includes(n.id) && !Object.values(SKILL_ADD).some(a => a.node === n.id))
   .map(n => ({ id:n.id, icon:n.icon, name:n.name, text:nodeText(n.id, Math.round(effects[n.id] / n.per)) }));
 /* rang d'un nœud retrouvé depuis son effet (rang × per) */
 const rankFrom = (n, effects) => Math.round((effects?.[n.id] || 0) / n.per);
@@ -91,6 +92,14 @@ export function withSkillStats(carac, effects){
     const r = rankFrom(n, effects);
     if(r) for(const [stat, v] of Object.entries(n.adds)) out[stat] = (out[stat] || 0) + r * v;
   }
+  return out;
+}
+
+/* maîtrises (28/10/2026) : { case du stuff: part en plus } pour les nœuds appris qui ont un `slot`, ex. { pioche:0.1 } ;
+   les stats de la pièce portée dans cette case sont multipliées par (1 + part) (src/meta/stuff.js statsOf) */
+export function slotMastery(effects){
+  const out = {};
+  for(const n of Object.values(NODES)) if(n.slot && effects?.[n.id] > 0) out[n.slot] = (out[n.slot] || 0) + effects[n.id];
   return out;
 }
 
