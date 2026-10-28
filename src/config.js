@@ -1113,7 +1113,8 @@ export const UPGRADE = {
      offensives ÷ 2 ; dégâts % ÷ 3 ; perçage ÷ 4 ; vitesse de minage (fixe et %) ÷ 3 ; ténacité ÷ 2 ; résistance au recul
      ÷ 3. Ils remplacent la stat de combat comptée à moitié sur le stuff (STUFF.combatOnStuff, ancien 0,5).
      À GARDER si les poids des stats sont resimulés (npm run weights, stat-values) : appliquer ces diviseurs aux nouvelles
-     mesures, et le dire dans le rapport. Utilisés par le GS et la valeur des pièces (src/meta/gearscore.js statPrice). */
+     mesures, et le dire dans le rapport. Servent à DESSINER les pièces (src/meta/gearscore.js designPrice) ; le GS, lui, reste
+     au prix mesuré (statPrice) : la stat est divisée ET sa valeur en GS aussi (28/10/2026, Geoffrey ; ancien : GS × ajustement). */
   priceAdjust: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
                  damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 },
   /* stats sans prix mesuré (gs à 0) mais ajustées : le prix du tableau des lignes (prices) sert de base */

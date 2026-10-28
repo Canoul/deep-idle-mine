@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Gear score : les ajustements de prix ne gonflent plus le GS
+- **Pour le joueur** : le GS des pioches et des armes redescend (pioche en fer 1 560 → 520, pioche en acier 2 262 →
+  754, épée en fer 720 → 360) ; les stats ne bougent pas. Les pièces aux stats divisées le 27/10 (thorium, cobalt,
+  butin rare des mobs, Gants de boucher…) ont un GS plus bas qu'hier. Les classements Gear score et le plafond de la
+  modulation suivent.
+- **Décisions** : les diviseurs du 27/10 (offensives ÷ 2, minage ÷ 3…) divisent la stat ET sa valeur en GS : ils
+  servent seulement à dessiner les pièces ; le GS reste au prix mesuré.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Correctif : réclamer le butin du Bloc géant
 - **Pour le joueur** : après « Réclamer », les objets apparaissent tout de suite dans l'inventaire (mis en évidence,
   pastille sur l'onglet) : plus besoin d'actualiser la page ni de trier. Pendant la réclamation, le bouton affiche
