@@ -372,17 +372,21 @@ export const MOBS = {
     { bestiole:0.2, gobelin:0.55, mephite:0.05, mimic:0.2 },   // méphite : 24/10 (Geoffrey), pris sur le gobelin (avant 0,6)
     { gobelin:0.55, occultiste:0.1, mephite:0.15, mimic:0.2 },  // avant gobelin 0,7
     { gobelin:0.2, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1 },   // golem : 26/10 (Geoffrey), pris sur le gobelin (avant 0,3 ; et 0,5 encore avant)
+    /* mur de chair (28/10/2026, Geoffrey) : 2 / 5 / 8 % en areas 6 / 7 / 8+, pris sur le gobelin (avant : la ligne de l'area 5) */
+    { gobelin:0.18, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.02 },
+    { gobelin:0.15, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.05 },
+    { gobelin:0.12, occultiste:0.3, mephite:0.2, mimic:0.2, golem:0.1, chair:0.08 },
   ],
   /* PV = hpBase × hpGrowth^(k − minArea) : minArea = première area où le mob peut apparaître */
-  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300 },   // occultiste : 150 le 23/10 (avant 100)
-  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5 },
+  hpBase:  { bestiole:50, gobelin:100, mimic:50, occultiste:150, mephite:70, golem:300, chair:200 },   // occultiste : 150 le 23/10 (avant 100)
+  minArea: { bestiole:0,  gobelin:1,   mimic:0,  occultiste:4,   mephite:3,  golem:5, chair:6 },
   hpGrowth: 1.15,
   /* rythme des apparitions (tous types confondus), selon k = dernière area débloquée (intensité de la partie) */
   spawnDelay: (rng, k) => (40 + rng()*30) / (1 + 0.15*k),
   firstSpawn: 25,
   walkerCap:  k => 2 + k,          // mobs qui se déplacent vivants en même temps (bestioles, gobelins, occultistes, méphites, golems ; pas les mimics)
   /* vitesse de déplacement par type (× la vitesse de base, CFG.mobStep) ; absent = 1 */
-  speed: { golem:0.5 },
+  speed: { golem:0.5, chair:0.5 },
   spawnMin: 5, spawnMax: 10,       // distance d'apparition autour du mineur visé (Manhattan)
   mimicLoot:  3,                   // minerais rapportés par un mimic vaincu
   mimicRevealDist: 2.3,
@@ -420,7 +424,17 @@ export const MOBS = {
      étourdis stunTime s ; Ténacité par mineur. knockRes : un golem de pierre ne se fait pas repousser (choix de Claude). */
   golem: { size:2, dig:2, stunStep:0.33, stuns:3, stunRadius:3, stunTime:3, knockRes:100,
            item:'Pierre glissante', loot: rng => 1 + Math.floor(rng()*3) },
-  noTrap: ['golem'],               // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2)
+  /* mur de chair (28/10/2026, Geoffrey ; src/sim/flesh.js) : 1 × h cases, une colonne ((o.x, o.y) = sa case du bas).
+     Il naît DANS la roche, à spawnDist cases à côté du mineur visé, sa ligne vers le milieu du mur ; il recouvre les
+     blocs sans les casser et ne se déplace qu'à l'horizontale (ni gravité, ni montée), vers le mineur le plus proche,
+     jusqu'à l'avoir à portée (ou juste au-dessus / au-dessous de lui). Ses cases sont un MUR : on ne peut ni y entrer ni les miner
+     (même au-dessus d'une galerie) ; il faut le tuer. Il ne repousse pas et ne se fait pas repousser (knockRes).
+     Passif : toutes les every s, chaque mineur à radius cases au plus de sa case la plus proche prend un stack de
+     −slow % de vitesse d'attaque (maxStacks au plus : −90 %, il tape encore) ; les stacks durent last s après le
+     dernier reçu, et tombent tous dès qu'il sort du rayon ; la Ténacité peut ignorer chaque stack. */
+  chair: { h:6, spawnDist:{ min:8, max:12 }, knockRes:100, every:2, radius:1.5, slow:10, maxStacks:9, last:10,
+           flesh:{ item:'Rotten flesh', min:1, max:3 }, chitin:{ min:1, max:5 } },
+  noTrap: ['golem', 'chair'],      // jamais dans un piège ni dans la dimension du k hole (choix de Claude : 2 × 2, 1 × 6)
 };
 /* Gallianix (23/10/2026, Geoffrey) : un canard jaune qui se promène à la surface, autour du coffre. Il naît à chaque
    nouvelle area débloquée pendant la session (pas au lancement). Il ne tacle pas et ne chasse personne ; il ne tombe
@@ -453,7 +467,7 @@ export const mobHp = (type, k) => Math.round(MOBS.hpBase[type] * MOBS.hpGrowth *
    maxLevel : garde-fou de calcul. Valeurs provisoires. */
 export const XP = {
   ore: { coal:1, iron:2, gold:4, diamond:7, graphite:4, mithril:5, cobalt:8, thorium:8 },   // mithril, cobalt, thorium : 27/10
-  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, minotaure:100, gallianix:5 },
+  mob: { bestiole:5, gobelin:10, mimic:5, occultiste:15, mephite:12, golem:30, chair:40, minotaure:100, gallianix:5 },
   curve: { first:1000, factor:1.5 },
   talentPerLevel: 1,
   maxLevel: 200,
@@ -683,7 +697,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
   'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1203,7 +1217,7 @@ export const ITEMS = {
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
   'Pépite d\'argent':  { cat:'material',  tex:'nugget_silver', w:1, stack:true },       // récompense du bloc géant (GIANT.nugget, 27/10)
   'Cuir de minotaure': { cat:'material',  tex:'minotaur_leather', w:1, stack:true },    // butin du minotaure (DUNGEON.leather, 27/10)
-  'Rotten flesh':      { cat:'material',  tex:'rotten_flesh', w:1, stack:true },        // butin d'un mob à venir (27/10), sans source pour l'instant
+  'Rotten flesh':      { cat:'material',  tex:'rotten_flesh', w:1, stack:true },        // butin du mur de chair (28/10)
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
@@ -1653,6 +1667,7 @@ export const MOB_INFO = {
   occultiste: { name:'Occultiste', tex:'occultist' },
   mephite:    { name:'Méphite',    tex:'mephite' },
   golem:      { name:'Golem de sperme', tex:'golem' },
+  chair:      { name:'Mur de chair', tex:'flesh_icon' },   // icône carrée ; le mob se dessine avec flesh_wall (1 × 6)
 };
 
 /* Focus minerai : réglé PENDANT la session (panneau de l'onglet Mine), minerai par minerai. Le serveur enregistre

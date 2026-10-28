@@ -1303,6 +1303,10 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     # golem (mob 2 × 2 cases) : 32 × 32 pixels
     png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())
+    # mur de chair (mob 1 × 6 cases, 28/10) : 16 × 96 pixels
+    fw = flesh_wall()
+    png_wh(os.path.join(OUT, 'flesh_wall.png'), 16, 96, fw)
+    png_wh(os.path.join(OUT, 'flesh_icon.png'), 16, 16, fw[16 * 40:16 * 56])   # icône carrée (lobby, wiki) : le milieu du mur
     print('%d textures écrites dans %s' % (len(tex), os.path.normpath(OUT)))
 
 
@@ -1411,6 +1415,56 @@ def tower_mobs():
     r(im, 2, 6, 1, 22, hexc('#6b6b73')); r(im, 1, 4, 3, 1, hexc('#9a9aa5')); r(im, 1, 3, 1, 1, hexc('#9a9aa5')); r(im, 3, 3, 1, 1, hexc('#9a9aa5'))   # fourche
     r(im, 3, 13, 2, 2, red)
     return {'seraph': sp, 'imp': im}
+
+
+def flesh_wall():
+    """Mur de chair (28/10) : mob de 1 × 6 cases (16 × 96 pixels), dessin original, dessiné couché puis redressé. Une masse de chair qui recouvre la
+    roche : muscle rouge sombre en bourrelets, plis plus clairs, veines violacées qui serpentent, quelques pustules
+    jaunâtres et des filaments de chair qui débordent en haut et en bas (bord irrégulier). Le jeu la fait pulser."""
+    W, H = 96, 16
+    rnd = random.Random(2810)
+    px = [(0, 0, 0, 0)] * (W * H)
+    base, dark, light, fold = hexc('#8c1f2b'), hexc('#5a0f1a'), hexc('#c4485a'), hexc('#e07a86')
+    vein, veinhi, pus, pushi = hexc('#4b1f5c'), hexc('#7a3a8c'), hexc('#c9b24a'), hexc('#f0e08a')
+
+    def put(x, y, c):
+        if 0 <= x < W and 0 <= y < H:
+            px[y * W + x] = c
+    # bord haut et bas irréguliers : la chair déborde un peu
+    top = [rnd.choice([0, 0, 1, 1, 2]) for _ in range(W)]
+    bot = [H - 1 - rnd.choice([0, 0, 1, 1, 2]) for _ in range(W)]
+    for x in range(W):
+        for y in range(top[x], bot[x] + 1):
+            # bourrelets : bandes ondulées
+            wave = math.sin(x / 5.0 + y / 3.0) + 0.6 * math.sin(x / 11.0 - y / 2.0)
+            c = base if wave > -0.4 else dark
+            if wave > 1.1:
+                c = light
+            put(x, y, c)
+        put(x, top[x], light if x % 3 else fold)   # liseré clair en haut
+        put(x, bot[x], dark)                        # ombre en bas
+    # plis : petits arcs clairs
+    for _ in range(14):
+        cx, cy = rnd.randrange(3, W - 3), rnd.randrange(4, H - 4)
+        for k in range(-2, 3):
+            put(cx + k, cy + (1 if abs(k) == 2 else 0), fold)
+            put(cx + k, cy + 1 + (1 if abs(k) == 2 else 0), dark)
+    # veines : marches aléatoires
+    for _ in range(6):
+        x, y = rnd.randrange(0, W), rnd.randrange(3, H - 3)
+        for _ in range(rnd.randrange(14, 26)):
+            put(x, y, vein)
+            if rnd.random() < 0.3:
+                put(x, y - 1, veinhi)
+            x += rnd.choice([-1, 1, 1])
+            y = max(2, min(H - 3, y + rnd.choice([-1, 0, 0, 1])))
+    # pustules
+    for _ in range(7):
+        cx, cy = rnd.randrange(2, W - 2), rnd.randrange(4, H - 4)
+        put(cx, cy, pus); put(cx + 1, cy, pus); put(cx, cy + 1, pus); put(cx + 1, cy + 1, dark)
+        put(cx, cy, pushi)
+    # redressé : colonne de 16 × 96 (la ligne x du dessin couché devient la ligne y)
+    return [px[(H - 1 - c) * W + r] for r in range(W) for c in range(H)]
 
 
 def golem():

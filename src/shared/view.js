@@ -26,12 +26,13 @@ function minerView(m){
     look: m.look || {},                                              // équipement visible (skin, src/skins.js)
     auras: m.auras || {},                                            // aura des pièces visibles (src/meta/aura.js)
     carac: { oxygenMax: m.carac?.oxygenMax, pods: m.carac?.pods },   // jauges (oxygène, pods) avec le stuff
+    flesh: m.fleshStacks || 0,                                       // stacks du mur de chair (−10 % de vitesse d'attaque chacun)
     spells: m.spells || [], spellCd: { ...(m.spellCd || {}) },          // sorts équipés et recharges (barre des sorts)
     action: a ? { type: a.type, t: a.t, dur: a.dur, data: { x: d.x, y: d.y, fx: d.fx, fy: d.fy, down: d.down, fall: d.fall, winch: d.winch } } : null,
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
+const mobView = o => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
   channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null });   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */

@@ -12,6 +12,7 @@ import { glyphsOfTree } from '../meta/glyphs.js';
 import { noEntry } from './dungeon.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
+import { fleshAt } from './flesh.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -73,6 +74,7 @@ function pierce(G,m,x,y){
 }
 
 export function mineBlock(G,m,x,y){
+  if(fleshAt(G,x,y)) return;   // recouvert par un mur de chair pendant qu'il minait : rien
   const mim=G.mobs.find(o=>o.type==='mimic'&&o.hp>0&&o.x===x&&o.y===y);
   if(mim){ revealMimic(G,mim,'⚠ Un mimic se cachait dans la roche !'); return; }   // un mimic se combat, il ne se mine pas
   const t=G.tiles[y][x];
@@ -99,6 +101,7 @@ function glyphDrop(G,m,event){
 }
 
 export function breakBlock(G,m,x,y){
+  if(fleshAt(G,x,y)) return;   // un bloc sous un mur de chair ne se mine pas (dynamite, perçage compris)
   const t=G.tiles[y][x];
   glyphDrop(G,m,'block');   // Glyphe (spé Mineur)
   G.tiles[y][x]=0; G.stats.mined++; m.stats.mined++; updateLight(G);
@@ -172,6 +175,12 @@ export function killMob(G,m,o){
     const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);
     log(G, `🗡 ${m.name} : méphite vaincu (+${n} ${it.toLowerCase()})`);
+  } else if(o.type==='chair'){
+    /* mur de chair (28/10/2026) : Rotten flesh et chitine */
+    const C=MOBS.chair, r=(a)=>a.min+Math.floor(G.rng()*(a.max-a.min+1));
+    const n=lootOf(G,m,r(C.flesh)), c=lootOf(G,m,r(C.chitin));
+    collect(m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    log(G, `🗡 ${m.name} : mur de chair vaincu (+${n} ${C.flesh.item.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='golem'){
     const it=MOBS.golem.item, n=lootOf(G,m,MOBS.golem.loot(G.rng));
     collect(m,it,ITEMS[it].w ?? 1,n);
@@ -298,7 +307,7 @@ export function stepDir(G,m,dx,dy,opt){
     startAction(m,'bridge', CFG.bridgeTime, {x:nx,y:ny+1}); return true;
   }
   if(!isAir(G,nx,ny)){
-    const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable) return false;
+    const t=tileAt(G,nx,ny); if(!t||BLOCKS[t].unbreakable||fleshAt(G,nx,ny)) return false;   // mur de chair : il faut le tuer
     startAction(m,'mine', mineDuration(G,m,t), {x:nx,y:ny}); return true;
   }
   if(dy===-1 && m.y>0 && !G.ladder[m.y][m.x] && !isWinch(G,m.x,m.y)){ startAction(m,'ladder', ladderTime(m), {}); return true; }

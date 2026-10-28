@@ -63,13 +63,14 @@ export const MOB_INFO = Object.fromEntries(MOB_TYPES.map(m => [m, {
     occultiste: [{ item: MOBS.occult.item, ...mm(range(r => MOBS.occult.loot(r))) }, { item: MOBS.bugItem, ...mm(range(r => MOBS.occult.chitin(r))) }],
     mephite:    [{ item: MOBS.mephite.item, ...mm(range(r => MOBS.mephite.loot(r))) }],
     golem:      [{ item: MOBS.golem.item, ...mm(range(r => MOBS.golem.loot(r))) }],
+    chair:      [{ item: MOBS.chair.flesh.item, min: MOBS.chair.flesh.min, max: MOBS.chair.flesh.max }, { item: MOBS.bugItem, min: MOBS.chair.chitin.min, max: MOBS.chair.chitin.max }],
     mimic:      [],
   }[m] ?? [],
 }]));
 function mm([min, max]){ return { min, max }; }
 export const MOB_RULES = { first: MOBS.firstSpawn, dist: [MOBS.spawnMin, MOBS.spawnMax], chase: CFG.mobChaseRange,
   steal: MOBS.goblinStealEvery, growth: MOBS.hpGrowth, mimicLoot: MOBS.mimicLoot, reveal: MOBS.mimicRevealDist, occult: MOBS.occult, mephite: MOBS.mephite, help: HELP.range,
-  golem: { ...MOBS.golem, knock: MOBS.knock.golem, hitEvery: MOBS.hitEveryBy.golem }, duckSpeed: 1 / DUCK.step };
+  golem: { ...MOBS.golem, knock: MOBS.knock.golem, hitEvery: MOBS.hitEveryBy.golem }, chair: MOBS.chair, duckSpeed: 1 / DUCK.step };
 /* coups pour tuer un mob de pv points de vie, avec des dégâts d */
 export const hitsToKill = (hp, d = STATS.damage) => Math.ceil(hp / d);
 
@@ -120,7 +121,7 @@ export function sourcesOf(item){
   }
   for(const [ore, s] of Object.entries(SHINY.items)) if(s.item === item) out.push(`${fmt(pct(SHINY.chance))} % de chance en minant ${/^[aeiouyh]/i.test(ore) ? 'de l\'' : 'du '}${ore.toLowerCase()} (déjà cuit !)`);
   for(const [m, info] of Object.entries(MOB_INFO)) for(const l of info.loot) if(l.item === item)
-    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
+    out.push(`Butin ${m === 'bestiole' ? 'des bestioles' : m === 'gobelin' ? 'des gobelins' : m === 'occultiste' ? 'des occultistes' : m === 'mephite' ? 'des méphites' : m === 'golem' ? 'des golems' : m === 'chair' ? 'des murs de chair' : 'de ' + info.name} (${l.min === l.max ? l.min : `${l.min} à ${l.max}`})`);
   for(const d of MOB_DROPS.items) if(d.item === item) out.push(mobDropText(d));
   for(const [r, d] of Object.entries(FURNACE.recipes)) if(d.out === item) out.push(`Four : fondre ${oreFor(d)} ${r.toLowerCase()} + ${FURNACE.fuelPerIngot} charbon${(d.qty ?? 1) > 1 ? ` → ${d.qty}` : ''}${d.unlock ? ` (recette débloquée par « ${d.unlock} »)` : ''}`);
   for(const a of FURNACE.alloys) if(a.out === item) out.push(`Four (alliage) : ${Object.entries(a.in).map(([i, n]) => `${n} ${i}`).join(' + ')} + ${a.fuel} charbon`);

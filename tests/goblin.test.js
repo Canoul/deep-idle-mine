@@ -104,7 +104,7 @@ test('apparition : type tiré selon l\'area du mineur (table MOBS.spawnTable), P
     assert.equal(mobs[0].hp, hp, `PV area ${k}`); assert.equal(mobs[0].maxhp, hp);
   }
   assert.deepEqual(Object.values(MOBS.spawnTable).map(t => Math.round(Object.values(t).reduce((a, b) => a + b, 0) * 100)),
-    [100, 100, 100, 100, 100, 100], 'chaque ligne de la table fait 100 %');
+    [100, 100, 100, 100, 100, 100, 100, 100, 100], 'chaque ligne de la table fait 100 % (areas 6 à 8 : mur de chair, 28/10)');
 });
 
 test('apparition : mimic = un minerai de la roche proche devient un mimic caché (aucun sans minerai)', () => {

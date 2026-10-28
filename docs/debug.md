@@ -3997,3 +3997,26 @@ Règles (voir CLAUDE.md) :
   (`treasure:true`, `chest.q`) : versés par la même boucle de fin de session que les trésors de tour (server/game/service.js).
 - **Tests** ✅ `tests/discord.test.js` (R6 trésor, coffre du Roi Gobelin R6/R7, R5 rien ; identification R6) + instance,
   goblin : 63/63.
+
+## 28/10/2026 — Geoffrey — Mur de chair (mob 1 × 6)
+- **Quoi** : `src/sim/flesh.js` (naissance `fleshSpot`, pas `fleshStep`, passif `fleshAura`, `fleshSlow`, cases `G.flesh`
+  refaites à chaque tick par `syncFlesh` qui relance `updateLight` si elles changent). Config `MOBS.chair`, lignes 6 à 8 de
+  `MOBS.spawnTable`, `hpBase` 200, `minArea` 6, `speed` 0,5, XP 40, `noTrap`. (o.x, o.y) = case du BAS, `o.h` = 6.
+- **Le mur** : `world.isAir` est faux sur une case de `G.flesh` (on n'y entre pas, on y tient, la lumière ne passe pas) ;
+  `path.search` : `brk` refuse une case recouverte (et `t` à 0), la montée exige `isAir` ; `stepDir`, `mineBlock`,
+  `breakBlock` refusent un bloc recouvert ; l'IA ne vise pas un minerai recouvert (boussole, connus, galeries) ; golem et
+  gobelins asservis (`golem.breakable`) ne cassent pas un bloc recouvert. Il ne couvre jamais une case avec un mineur
+  (ni en train d'y entrer), un donjon, un piège caché, le puits du treuil.
+- **Combat** : `knock.nearCell` lit `e.h` (hauteur) ; `mobs.reachDist` (proie, laisse du tacle, poursuite), `ai.fight`,
+  `goFight`, `nearestThreat`, laisse `foeLeash` : depuis sa case la plus proche pour un mob à `o.h`. Golem inchangé.
+  Vitesse d'attaque × `fleshSlow(m)` dans `ai.fight`. Vue : `h` du mob, `flesh` (stacks) du mineur ; rendu
+  `canvas.js` (texture 16 × 96, pulsation), compteur 🩸 sur le mineur (`miner-sprite.js`), icône `flesh_icon`.
+- **Tests** ✅ `tests/flesh.test.js` 9/9 (config, naissance, mur, avance, attente sous le mineur, stacks + Ténacité, pas de
+  recul, butin, combat IA) ; `goblin.test.js` (table à 9 lignes) ; combat, golem, khole, knock, mephite, mob-drops, mobs,
+  path, trap, view, wiki, textures : verts.
+- **Simulation** ✅ `--miners 3 --count 5 --skills mixed` : résultats identiques à `main` (aucun mur avant l'area 6), 0
+  blocage. Stress (script hors dépôt : 35 % de murs dès l'area 1, 3 mineurs à 14 dégâts, 5 seeds) : ≈ 20 murs par session,
+  presque tous tués, 0 blocage.
+- **Points fragiles** : le navigateur recalcule la lumière sans `G.flesh` (affichage seulement : la lumière passe à
+  travers le mur à l'écran). Un mineur seul à 5 dégâts ne tue pas un mur de 200 PV avant −90 % (voulu : ça pousse au jeu à
+  plusieurs ; la soupape du tacle reste celle de tous les mobs).

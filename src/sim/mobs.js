@@ -13,10 +13,11 @@ import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
 import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
 import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
 import { thrallOwner, enslave } from './thrall.js';
+import { isFlesh, fleshSpot, fleshStep, fleshAura, syncFlesh } from './flesh.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
-export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite', 'golem']);
+export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite', 'golem', 'chair']);
 export const isWalker = o => WALKERS.has(o.type);
 export const FLYERS = new Set(['mephite']);
 export const isFlyer = o => FLYERS.has(o.type);
@@ -26,6 +27,8 @@ export const MOB_TYPES = Object.keys(MOBS.hpBase);
 const ORE_W = new Map(Object.values(BLOCKS).filter(b=>b.type==='ore').map(b=>[b.name, b.w]));
 
 const manhattan = (a,b) => Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+/* distance d'un mob à un mineur ; le mur de chair (o.h cases de haut) : depuis sa case la plus proche */
+const reachDist = (o,m) => o.h ? manhattan(nearCell(o,m),m) : manhattan(m,o);
 const byId = (G,id) => id==null ? null : G.miners.find(m=>m.id===id) ?? null;
 
 /* provocation (skill Barbare « taunt ») : un mob frappé par un barbare ne vise plus que lui, jusqu'à sa mort (ou au
@@ -55,6 +58,7 @@ export function mobCanEnter(G,o){
   if(o.type==='mimic') return () => false;
   if(o.type===DUCK.type) return (x,y) => y===o.y && duckCanEnter(G,x);
   if(o.type==='golem') return golemCanEnter(G);
+  if(isFlesh(o)) return () => false;   // mur de chair : ne se fait jamais repousser
   const d=o.dungeon!=null ? G.dungeons.find(q=>q.id===o.dungeon) : null;
   return (x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !veiled(G,x,y)
     && (d ? interior(d,x,y) : !dungeonAt(G,x,y));
@@ -78,7 +82,7 @@ function preyOf(G,o){
   const t=tauntedBy(G,o); if(t) return t;
   const h=byId(G,o.hunt); if(h && h.y>0) return h;
   let best=null, bd=Infinity;
-  for(const m of G.miners){ if(m.y<=0) continue; const d=manhattan(m,o); if(d<bd){ bd=d; best=m; } }
+  for(const m of G.miners){ if(m.y<=0) continue; const d=reachDist(o,m); if(d<bd){ bd=d; best=m; } }
   return best;
 }
 
@@ -86,7 +90,7 @@ function preyOf(G,o){
    provocation (le mineur peut bouger, mais seulement pour le frapper). Soupape contre les blocages : le tacle saute si
    le mineur taclé ne l'a pas frappé depuis COMBAT.tackleGiveUp s, ou s'il est à plus de COMBAT.tackleLeash cases. */
 const keepsGrab = (G,o,m,stay=()=>true) => m && m.y>0 && stay(m) && canTackle(G,o,m)
-  && manhattan(m,o)<=COMBAT.tackleLeash && G.t-(o.grabHit ?? G.t)<=COMBAT.tackleGiveUp+1e-9;
+  && reachDist(o,m)<=COMBAT.tackleLeash && G.t-(o.grabHit ?? G.t)<=COMBAT.tackleGiveUp+1e-9;
 function grab(G,o,p){
   const id = p && inReach(G,o,p) && canTackle(G,o,p) ? p.id : null;
   if(id!=null && id!==o.grab) o.grabHit=G.t;   // nouveau tacle : la soupape part de maintenant
@@ -130,7 +134,7 @@ function chaseOf(G,o){
   return p && inChase(o,p) ? p.id : null;
 }
 /* le mob poursuit-il ce mineur ? à mobChaseRange cases au plus, sans limite pour le mineur qu'il chasse (piège) */
-const inChase = (o,p) => p.id===o.hunt || manhattan(p,o)<=CFG.mobChaseRange;
+const inChase = (o,p) => p.id===o.hunt || reachDist(o,p)<=CFG.mobChaseRange;
 /* temps d'un pas : mobStep, divisé par la vitesse du mob (mobs de piège : TRAP.speedMul) */
 const stepOf = o => CFG.mobStep/(o.speed||1);
 
@@ -147,6 +151,18 @@ function updateGolem(G,o){
   if(o.grab==null && !inChase(o,m)) return;
   if(inReach(G,o,m)) return;
   golemStep(G,o,m,stepOf(o));
+}
+
+/* ---- mur de chair (src/sim/flesh.js) : tacle comme les autres (sans coup ni recul), avance à l'horizontale vers sa
+   proie et s'arrête à portée */
+function updateFlesh(G,o){
+  updateGrab(G,o);
+  o.chase=chaseOf(G,o);
+  o.cd=(o.cd||0)-DT;
+  const m=byId(G,o.grab) ?? preyOf(G,o); if(!m) return;
+  if(o.grab==null && !inChase(o,m)) return;
+  if(inReach(G,o,m)) return;
+  fleshStep(G,o,m,stepOf(o));
 }
 
 /* ---- boss de donjon (minotaure) : enfermé dans sa salle, il ne vise que les mineurs qui y sont (intérieur ou entrée),
@@ -174,6 +190,7 @@ export function updateMobs(G){
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
     if(o.type==='golem'){ updateGolem(G,o); continue; }
+    if(isFlesh(o)){ updateFlesh(G,o); continue; }
     if(o.type==='mimic'){
       if(!o.revealed && G.miners.some(m=>m.y>0 && Math.hypot(o.x-m.x,o.y-m.y)<=MOBS.mimicRevealDist)) revealMimic(G,o);
       updateGrab(G,o); o.chase=chaseOf(G,o); continue;
@@ -208,9 +225,11 @@ export function updateMobs(G){
     walk(G,o,m);
   }
   asphyxia(G);
+  fleshAura(G,resists);
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
   spawnMobs(G);
   spawnDucks(G);
+  syncFlesh(G);   // cases du mur de chair (nouveau, déplacé ou mort)
 }
 
 /* Marche d'un mob (25/10/2026, Geoffrey : mouvement continu). Sur sa ligne, il GLISSE vers sa proie à 1/stepOf blocs
@@ -369,6 +388,7 @@ function spawnMobs(G){
   if(type==='mimic') return spawnMimic(G,m);
   const live=G.mobs.filter(o=>isWalker(o)&&o.hp>0&&o.trap==null).length;   // les mobs de piège ne comptent pas
   if(live>=MOBS.walkerCap(k)) return;
+  if(type==='chair') return spawnFlesh(G,m);
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
     if(areaOf(y)<MOBS.minArea[type]) continue;
@@ -384,6 +404,16 @@ function spawnMobs(G){
   if(type==='occultiste') o.cast=MOBS.occult.cooldown;
   if(type==='golem'){ o.size=MOBS.golem.size; o.knockRes=MOBS.golem.knockRes; clearAt(G,x,y); log(G, '🗿 Un golem sort de la roche !'); }
   G.mobs.push(o);
+}
+
+/* mur de chair : dans la roche, à côté du mineur visé (sa ligne vers le milieu du mur), assez loin pour qu'on le voie avancer (MOBS.chair.spawnDist) */
+function spawnFlesh(G,m){
+  if(areaOf(m.y)<MOBS.minArea.chair) return;
+  const at=fleshSpot(G,m); if(!at) return;
+  const hp=mobHp('chair', areaOf(m.y));
+  G.mobs.push({id:G.mobId++, type:'chair', x:at.x, y:at.y, h:MOBS.chair.h, hp, maxhp:hp, cd:1, speed:MOBS.speed.chair, knockRes:MOBS.chair.knockRes});
+  syncFlesh(G);
+  log(G, '🩸 Un mur de chair recouvre la roche !');
 }
 
 /* un minerai de la roche (pas visé ni en train d'être miné, pas déjà un mimic) devient un mimic caché */

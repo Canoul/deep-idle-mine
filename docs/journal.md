@@ -24,6 +24,17 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Nouveau mob : le mur de chair
+- **Pour le joueur** : à partir de l'area 6, un **mur de chair** (une colonne de 6 cases) peut sortir de la roche à
+  quelques colonnes du mineur et avancer vers lui en balayant la mine à l'horizontale. On ne peut ni le traverser ni
+  miner ce qu'il recouvre : il faut le tuer (200 PV). Près de lui, le mineur perd 10 % de vitesse d'attaque toutes les
+  2 s (jusqu'à −90 %). Il laisse de la Rotten flesh (1 à 3) et de la chitine (1 à 5).
+- **Décisions** : 2 / 5 / 8 % des apparitions en areas 6 / 7 / 8+, pris sur le gobelin ; plafond à −90 % (un joueur seul
+  n'est jamais bloqué pour de bon) ; stacks de 10 s, perdus hors du rayon ; Ténacité par stack ; naissance à 8 à 12
+  colonnes pour qu'on le voie arriver. Texture originale (pas celle d'un autre jeu).
+- **À suivre** : à observer en vrai dans les areas 6-8 (les sessions simulées n'y vont pas encore).
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Discord : annonces dès R6
 - **Pour le joueur** : le bot Discord annonce aussi les **R6** (plus seulement les R7) : un trésor de tour ou un coffre
   du Roi Gobelin (instance) R6 ou R7 obtenu par un joueur, et une pièce identifiée R6 ou R7.

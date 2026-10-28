@@ -47,7 +47,8 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
         drop=(x,l,k=l.n)=>k*(ontoLadder(G,x,l.y) ? cl : fall),   // k cases de chute jusqu'à l (échelle à l'arrivée : vitesse d'échelle)
         wt=baseWinchT(G,m), ladT=baseLadderT(m);   // seau du treuil ; pose d'une nouvelle échelle (skills compris)
   /* bloc qu'on peut creuser : ni barrière, ni incassable, ni mimic dévoilé (un mimic se combat, il ne se mine pas) */
-  const mim=G.mimicCells, brk=(x,y,t)=>t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x));
+  /* … ni recouvert par un mur de chair (G.flesh : il faut le tuer ; ses cases au-dessus du vide ne sont pas vides non plus) */
+  const mim=G.mimicCells, fl=G.flesh, brk=(x,y,t)=>!!t && t!==BARRIER && !BLOCKS[t].unbreakable && !(mim && mim.size && mim.has(y*W+x)) && !(fl && fl.size && fl.has(y*W+x));
   const mineCache=new Map(), mineT=t=>{ let v=mineCache.get(t); if(v===undefined){ v=baseMineT(m,t); mineCache.set(t,v); } return v; };
   const start=sy*W+sx; dist[start]=0; push(h ? h(start) : 0,start);
   while(hd.length){
@@ -73,7 +74,7 @@ export function search(G,m,sx,sy,build,goalFn,maxCost=Infinity,lw=CFG.ladderPlan
     }
     if(y>=1){                                       // monter (build=false : uniquement par les échelles existantes ou le treuil)
       const w=isWinch(G,x,y), t=tileAt(G,x,y-1), has=y>0&&(G.ladder[y][x]||w), lad=has ? 0 : ladT*lw, up=w ? wt : climbT();
-      if(t===0){ if(build||has) relax(n,d,x,y-1,lad+up); }
+      if(t===0){ if((build||has) && isAir(G,x,y-1)) relax(n,d,x,y-1,lad+up); }
       else if(build && brk(x,y-1,t)) relax(n,d,x,y-1,mineT(t)+lad+up);
     }
     if(isAir(G,x,y+1)){                             // descendre (par l'échelle, ou se laisser tomber)
