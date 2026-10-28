@@ -4282,3 +4282,7 @@ Règles (voir CLAUDE.md) :
   `\d+(,\d)?%`) ; ❌ avant le correctif (fonction absente), ✅ après ; world + spells + shrines 54/54.
 - Pas vérifié dans le navigateur (rendu HTML contrôlé en Node : Terre 9,3 · Pierre 56 · Pierre dure 4,7 · Charbon 8,8 ·
   Fer 12,5 · Or 3,8 · Vide 5).
+
+## 28/10/2026 — Geoffrey — Ceinture du Géant : dégâts 1,6 → 5
+- `STUFF.items['Ceinture du Géant'].stats.damage` 5 (décision de Geoffrey, hors règle du butin des mobs à 250 x) ;
+  `tests/stuff-balance.test.js` : exception `OFF_RULE`. GS 127 → 263. Tests ✅ stuff-balance, mob-drops, gearscore, wiki.

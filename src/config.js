@@ -1091,7 +1091,7 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
     'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.04 },   // 250 x, une seule stat (avant 1,1 ; d'abord 1,4)
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
-    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.6, tenacity:12.5 },   // 125 x chacune, ÷ 2 (combat) : dégâts 3,1 → 1,6, ténacité 25 → 12,5 (d'abord 12,6 dégâts)
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:5, tenacity:12.5 },   // 28/10 (Geoffrey) : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
     'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
