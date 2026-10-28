@@ -114,9 +114,15 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* signe de vie de celui qui appelle (avant le ménage : on ne se retire pas soi-même) */
   function touch(me){ const p = partyOf(me.id); if(p) memberOf(p, me.id).seenAt = clock(); }
 
-  function create(me){
+  /* shrines (28/10/2026) : un chef qui a un shrine garde le même code de lobby (game.partyCodeFor) ; pris par un autre
+     groupe (rare) : un code neuf. Un groupe créé pendant l'attente : on le garde. */
+  async function create(me){
     let code;
     do code = newCode(); while(parties.has(code));
+    const kept = await game.partyCodeFor?.(me.id, code);
+    if(typeof kept === 'string' && !parties.has(kept)) code = kept;
+    while(parties.has(code)) code = newCode();
+    const again = partyOf(me.id); if(again) return again;
     const p = { code, leader: me.id, members: [newMember(me.id, displayName(me))],
                 invites: new Map(), createdAt: clock(), launching: false };
     parties.set(code, p);
@@ -153,8 +159,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   }
   /* forme un lobby d'un coup : les invités quittent leur groupe d'un joueur et entrent dans celui de l'hôte (créé s'il
      n'en a pas) */
-  function formLobby({ host, guests }){
-    const p = partyOf(host.account) ?? create(host.me);
+  async function formLobby({ host, guests }){
+    const p = partyOf(host.account) ?? await create(host.me);
     unready(p);                                        // des nouveaux venus : tout le monde redit qu'il est prêt
     for(const g of guests){
       const old = partyOf(g.account);
@@ -185,7 +191,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       await pruneLfg();
       let m;
       while((m = matchLfg([...queue.values()].filter(lfgValid), GAME.maxPlayers))){
-        const p = formLobby(m);
+        const p = await formLobby(m);
         if(m.host.auto) await autoLaunch(m.host, p);
       }
     } finally { matching = false; }
@@ -268,6 +274,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                                members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
         session: await game.activeSessionId(me.id),       // le chef a lancé : le navigateur passe à la session
         lfg: lfgView(me),
+        /* shrines du chef du groupe (ou les siens, seul) : 28/10/2026 */
+        shrines: await game.shrinesOf?.(p?.leader ?? me.id) ?? [],
       };
     },
 
@@ -302,7 +310,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     async create(me){
       touch(me); await sweep();
       await notInSession(me);
-      return { party: publicParty(partyOf(me.id) ?? create(me), me.id) };
+      return { party: publicParty(partyOf(me.id) ?? await create(me), me.id) };
     },
 
     /* entrer avec un code (ou en acceptant une invitation : même code). On quitte son groupe précédent. */
@@ -337,7 +345,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const friend = await getAccount(id);
       if(!friend) fail('account_not_found', 404, 'Aucun joueur avec cet ID.');
       if(await game.activeSessionId(id)) fail('friend_in_session', 409, `${displayName(friend)} est en session : invite-le à la fin.`);
-      const p = partyOf(me.id) ?? create(me);
+      const p = partyOf(me.id) ?? await create(me);
       noChange(p);
       if(memberOf(p, id)) fail('already_member', 409, `${displayName(friend)} est déjà dans ton groupe.`);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est complet.');
@@ -355,7 +363,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(friend.id === me.id) fail('invalid_id', 400, 'C\'est toi.');
       await notInSession(me);
       if(await game.activeSessionId(friend.id)) fail('friend_in_session', 409, `${displayName(friend)} est en session.`);
-      const p = partyOf(friend.id) ?? create(friend);
+      const p = partyOf(friend.id) ?? await create(friend);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
@@ -439,6 +447,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     /* « Lancer la session » : seul = session solo ; en groupe, seul le chef lance, pour tous les membres.
        Le groupe reste (on enchaîne les sessions sans se réinviter). Un membre encore dans la session précédente :
        lancement refusé par le service de jeu (member_in_session), le groupe ne bouge pas. */
+    /* donner au shrine du chef de son groupe (ou au sien, seul) : body = { shrine, item, qty, opId } (28/10/2026) */
+    async shrineGive(me, body = {}){
+      touch(me);
+      const p = partyOf(me.id);
+      const r = await game.shrineGive(me, p?.leader ?? me.id, body, p?.code ?? null);
+      return { ...r, party: p ? publicParty(p, me.id) : null };
+    },
+
     async launch(me, body = {}){
       touch(me); await sweep();
       const p = partyOf(me.id);

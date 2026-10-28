@@ -117,4 +117,5 @@ export const partyApi = {
   promote: id   => request('POST', '/api/party/promote', { id }),
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)
   lfgCancel: () => request('POST', '/api/party/lfg/cancel', {}),
+  shrine:  body => request('POST', '/api/party/shrine', body),   // don à un shrine du chef (28/10)
 };

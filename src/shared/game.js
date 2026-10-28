@@ -127,6 +127,7 @@ export function buildSession(record){
     accounts: (record.players || []).map(p => p.account),
     id: record.id,
     noResidues: record.residues === false,          // une tour du Jugement était ouverte au lancement (23/10)
+    shrines: record.shrines,                        // shrines actifs du chef au lancement (28/10)
   });
 }
 

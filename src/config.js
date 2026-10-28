@@ -691,7 +691,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
-  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver',
+  'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
   'gem_topaz','gem_ruby_fine','gem_jade_fine','gem_sapphire_fine','glasses_gucci','boots_docs','belt_golem','gloves_butcher','legs_titan',
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
@@ -1417,6 +1417,23 @@ export const INSTANCE = {
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
 };
 
+
+/* Shrines (28/10/2026, Geoffrey ; src/meta/shrines.js, GAME_DESIGN §6 « Shrines ») : bâtiments activés dans le lobby de la
+   mine classique, rattachés au COMPTE DU CHEF (ou du joueur seul). Chaque membre du groupe peut donner autant qu'il veut
+   des ressources du prix ; les dons restent sur le shrine du chef jusqu'à ce que le prix soit atteint, puis le shrine est
+   actif pour `sessions` mines classiques lancées par ce chef (décomptées au lancement, mode dev exclu). Pas de
+   réactivation tant qu'il est actif. Tant qu'un chef a un shrine (actif ou en cours de paiement), ses lobbies gardent le
+   même code. Actif : dessiné à la surface près du coffre (décor, traversable).
+   effect.orePoints : points de composition pris sur le terrain (pierre, pierre dure, terre, au prorata ; pas le vide) et
+   donnés aux minerais (charbon compris) au prorata de chacun, dans toutes les areas de la session. Valeurs provisoires. */
+export const SHRINES = {
+  list: {
+    abundance: { name:'Shrine d\'abondance', desc:'5 % de minerais en plus', tex:'shrine_abundance', sessions:5,
+                 price:{ 'Pépite d\'argent':10, 'Résidu angélique':20 }, effect:{ orePoints:5 } },
+  },
+  opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
+  drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne
+};
 /* Bloc géant (concept de Geoffrey, 26/10/2026 ; spec docs/superpowers/specs/2026-10-26-bloc-geant-design.md).
    Une session commune à tout le serveur, de minuit à minuit (timeZone). Chacun y entre seul, une fois toutes les
    cooldownMs (depuis sa dernière entrée), pour une visite de visit s : son mineur frappe un bloc indestructible.

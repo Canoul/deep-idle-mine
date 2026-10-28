@@ -5,6 +5,7 @@ import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
 import { planTraps, carveTrap, registerTrap } from './trap.js';
 import { placeKhole, registerKhole } from './khole.js';
+import { oreBonusComp } from '../meta/shrines.js';
 
 export const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
 
@@ -98,7 +99,8 @@ export function fillComp(r, comp, w=W, h=AREA_H){
    résidus et k hole par-dessus. */
 export function genArea(G,k){
   const r = mulberry32(hash(G.seed, k+1));
-  const comp = areaComp(k);
+  /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
+  const comp = G.oreBonus > 0 ? oreBonusComp(areaComp(k), G.oreBonus) : areaComp(k);
   const filled = fillComp(r, comp), { grid, counts, big } = filled;
   let { oreTotal } = filled;
   /* donjon (DUNGEON) et pièges (TRAP) : tirages à part, posés par-dessus ; les comptes de l'area suivent les blocs

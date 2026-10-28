@@ -603,6 +603,19 @@ def main():
         rect(nug, x + 1, y + 1, 1, 1, hexc('#ffffff'))
     tex['nugget_silver'] = nug
 
+    # Shrine d'abondance (28/10/2026) : autel de pierre à deux marches, colonne, cristal doré qui brille au sommet
+    shr = blank()
+    rect(shr, 1, 13, 14, 3, hexc('#6b6f7a')); rect(shr, 1, 13, 14, 1, hexc('#9aa0ab')); rect(shr, 1, 15, 14, 1, hexc('#44474f'))
+    rect(shr, 3, 11, 10, 2, hexc('#7a7e89')); rect(shr, 3, 11, 10, 1, hexc('#a8aeb9'))
+    rect(shr, 6, 6, 4, 5, hexc('#80848f')); rect(shr, 6, 6, 1, 5, hexc('#a8aeb9')); rect(shr, 9, 6, 1, 5, hexc('#55585f'))
+    rect(shr, 5, 5, 6, 1, hexc('#9aa0ab'))
+    for y, (x, w) in enumerate([(7, 2), (6, 4), (5, 6), (6, 4), (7, 2)]):
+        rect(shr, x, y, w, 1, hexc('#e8b830'))
+    rect(shr, 7, 1, 1, 2, hexc('#fff3b0')); rect(shr, 6, 2, 1, 1, hexc('#ffe070'))
+    rect(shr, 3, 1, 1, 1, hexc('#ffe070')); rect(shr, 12, 2, 1, 1, hexc('#ffe070')); rect(shr, 13, 5, 1, 1, hexc('#fff3b0'))
+    rect(shr, 4, 9, 1, 1, hexc('#6fc24a')); rect(shr, 11, 8, 1, 1, hexc('#6fc24a'))
+    tex['shrine_abundance'] = shr
+
     # four en fer (objet) : bloc de fer riveté, bouche de feu orange en bas
     fur = blank()
     rect(fur, 2, 2, 12, 13, hexc('#9aa0aa'))
