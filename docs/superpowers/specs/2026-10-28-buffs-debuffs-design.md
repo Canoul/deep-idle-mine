@@ -1,7 +1,16 @@
 # Buffs et debuffs visibles — spec
 
 *Idée de Geoffrey, 28/10/2026. Inventaire fait dans le code le même jour (branche `geoffrey/buffs-debuffs`).
-Pas encore codé. Les choix marqués « (Claude) » sont à valider. Les durées viennent de `src/config.js` au 28/10.*
+Décisions de Geoffrey le 28/10 à 16 h 24 (section « Décisions »). Les choix marqués « (Claude) » sont à valider.
+Les durées viennent de `src/config.js` au 28/10.*
+
+## Décisions (28/10, Geoffrey)
+
+1. La liste est **en haut à droite de la mine** (ancienne proposition : sous chaque portrait). Claude : elle montre
+   **son propre mineur** (celui du compte connecté ; sans mineur à soi, le premier de la partie).
+2. Les bonus de session tiennent dans **une seule icône**, qui ouvre le détail.
+3. Les sorts instantanés ont une **animation sur le perso**.
+4. Les états des mobs sont faits **tout de suite**.
 
 ## En une phrase
 
@@ -13,15 +22,13 @@ perso (étoiles qui tournent quand il est étourdi, botte barrée quand il est t
 
 - **Sur le perso (canvas)** : une animation par **contrôle** seulement, pour ne pas surcharger la mine à 3 mineurs
   (liste plus bas, colonne « Sur le perso »).
-- **Liste des états** : sous le portrait de chaque mineur, dans la colonne de l'onglet Session (Claude : le coin
-  haut-droit de la mine marche en solo mais devient illisible à 3). Une rangée d'icônes 16×16 :
+- **Liste des états** : en haut à droite de la mine, pour son propre mineur. Une rangée d'icônes 16×16 :
   - bordure **rouge** = debuff / contrôle, **verte** = buff, **dorée** = bonus de session ;
   - sous l'icône : secondes restantes (`12`), ou le nombre de stacks (`×4`), rien pour un état sans durée ;
   - bulle « ? » au survol / toucher : nom, effet chiffré, source (texte dans `HELP` via un registre, voir plus bas).
   - Ordre : contrôles, debuffs, buffs, puis bonus de session.
-- **Bonus de session** (anneaux, shrine, passifs de stuff et de skills de groupe) : toujours actifs, sans durée.
-  Claude : regroupés dans une seule icône « Bonus de session » dont la bulle liste le détail, pour garder la rangée
-  courte (à valider : sinon une icône par anneau).
+- **Bonus de session** (anneaux, shrine, passifs de stuff et de skills de groupe) : toujours actifs, sans durée,
+  regroupés dans une seule icône « Bonus de session » dont la bulle liste le détail.
 - Aussi dans les **tours** et l'**instance** (mêmes mineurs, mêmes états), et la **MI** pour ce qui s'y applique.
 
 ## Inventaire des états (code du 28/10)
@@ -57,7 +64,7 @@ perso (étoiles qui tournent quand il est étourdi, botte barrée quand il est t
 
 Sorts **instantanés**, sans état qui dure : Dash, Dynamite, Illumination, Cleave, Ulti shen, Bonbonne de zipette,
 Hand of Justice (étourdit un mob), Glyphe Braum (+30 % d'O₂ en entrant dans un piège ou un donjon), Légende de la
-flemme. Claude : un effet ponctuel sur le perso (éclair, fumée…) quand ils partent, pas d'icône dans la liste.
+flemme. Un effet ponctuel sur le perso (éclair, fumée…) quand ils partent, pas d'icône dans la liste.
 
 ### Bonus de session (permanents, dans l'icône « Bonus de session »)
 
@@ -123,8 +130,4 @@ poing de provocation, flamme de rage, aile.
 
 ## Questions pour l'équipe
 
-1. **Où mettre la liste** : sous chaque portrait (Claude, recommandé à 3 mineurs) ou en haut à droite de la mine
-   (seulement son propre mineur) ?
-2. **Bonus de session** : une seule icône qui regroupe tout (Claude, recommandé) ou une icône par anneau / shrine ?
-3. **Effets instantanés** (Dash, Dynamite, zipette…) : une animation ponctuelle sur le perso, ou rien ?
-4. **États des mobs** au-dessus de leur barre de PV : maintenant ou dans un second temps ?
+Tranchées le 28/10 (voir « Décisions » en haut).
