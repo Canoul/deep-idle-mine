@@ -1485,6 +1485,11 @@ export const GIANT = {
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
+/* Pop-ups (28/10/2026, Jules) : avant, elles restaient tant qu'on n'avait pas cliqué. popupMs : une pop-up en haut à
+   gauche (invitation, demande d'ami, groupe trouvé) se ferme seule au bout de ce temps (ms) ; l'invitation et la demande
+   restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce
+   temps ; le dernier (Rejoindre / Décliner) se ferme à l'ouverture de la mine. */
+export const NOTIFY = { popupMs:20_000, noticeMs:12_000 };
 /* Classements (onglet Social → Classements, 27/10/2026, Geoffrey ; src/meta/leaderboard.js) : top `size` joueurs + sa
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
    serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.

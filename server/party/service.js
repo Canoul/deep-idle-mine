@@ -485,7 +485,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     load,
     /* pour l'onglet Social : groupe d'un joueur (taille, places) et invitations qu'il a reçues, sans ménage ni signe de vie */
     groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers } : null; },
-    invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from,
+    invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* pour les tests et le journal */
     count: () => parties.size,

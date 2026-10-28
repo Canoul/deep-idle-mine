@@ -4134,3 +4134,17 @@ Règles (voir CLAUDE.md) :
 - **Piège de vérification** : `goto` vers la même page avec un autre `#` ne recharge pas → ancienne feuille de style ;
   faire `reload()`.
 
+### Pop-ups qui restent tant qu'on ne clique pas (Jules) — branche `jules/notifs-auto`, ✅ en ligne le 28/10
+- **Cause** : `src/ui/notify.js` n'avait aucun délai (une pop-up partait seulement après un clic ou quand le serveur
+  cessait de l'envoyer) ; `src/ui/instant-lobby.js` `notice()` fermait les rappels MI après 12 s **sauf** celui avec
+  Rejoindre / Décliner (`invite`), qui restait même après l'ouverture de la mine.
+- **Correction** : `NOTIFY = { popupMs:20_000, noticeMs:12_000 }` (`src/config.js`). `setupNotify(root, ttl)` : minuterie
+  par pop-up (`el._t`) ; à l'échéance `expire(key)` la met dans `done` (ne revient pas tant que le serveur envoie la
+  même clé) ; si `busy` (action en cours), repoussée d'un ttl. `noticeTtl(s, invite)` : `noticeMs`, ou `s × 1000` pour
+  l'invitation (fermée à l'ouverture). Clé des invitations de groupe = `p:<code>:<at>` : `invitesOf` (server/party/
+  service.js) renvoie maintenant `at` (mis à jour à chaque nouvelle invitation), sinon une invitation renouvelée après
+  expiration ne réapparaissait pas. Demande d'ami : clé `f:<id du demandeur>` inchangée (une seule demande en attente par
+  paire ; elle reste visible dans l'onglet Social, pastille comprise).
+- **Tests** : `tests/notify.test.js` (nouveau, faux DOM + `t.mock.timers`) : fermeture à popupMs, pas de retour, retour
+  si nouvelle clé ou si oubliée puis renvoyée, action en cours qui repousse ; `noticeTtl`. notify, instant-ui, social ✅.
+  ⚠️ Pas vérifié dans un vrai navigateur.
