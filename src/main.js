@@ -65,6 +65,10 @@ import { setupJudgment } from './ui/judgment.js';
 import { setupNotify } from './ui/notify.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
+import { bootApp } from './app/boot.js';
+
+/* appli mobile (src/app/) : sur le site, ne fait rien */
+bootApp({ doc:document, win:window });
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
