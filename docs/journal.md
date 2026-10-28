@@ -39,6 +39,13 @@ Modèle d'entrée :
   cours ne change pas.
 - **État** : ✅ en ligne le 28/10.
 
+## 28/10/2026 — Geoffrey — Inventaire : fiche d'un objet rangée, sans le poids
+- **Pour le joueur** : la fiche d'un objet (onglet Inventaire) est rangée en trois parties : d'abord la description
+  (nom, quantité, type, rareté…), puis les stats, une par ligne, et enfin les boutons (Équiper, Recycler, Ouvrir,
+  Utiliser). Elle n'affiche plus « poids N » : info inutile hors session (le poids compte toujours pour les pods du
+  mineur en session).
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Four : choisir une recette
 - **Pour le joueur** : le bouton **Recettes** d'un four ne fait plus seulement afficher les recettes : on y **choisit**
   ce qu'on veut fabriquer (ex. Lingot de fer) et combien de fournées (nombre libre, ½ ou Max, avec le maximum possible
