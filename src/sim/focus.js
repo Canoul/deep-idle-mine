@@ -133,17 +133,20 @@ export function dropDepleted(G,m){
 }
 
 /* area où le mineur doit aller pour son focus (ou « Plus profond »), ou null s'il est déjà au bon endroit (ou sans focus).
-   La plus proche des areas débloquées qui a encore un minerai visé ; à égalité, celle du dessous. */
+   La plus proche des areas débloquées qui a encore un minerai visé ; à égalité, celle du dessous.
+   Jamais plus bas que l'area de la profondeur max du trajet (fin de session, m.tripCap) : il ne peut plus y miner, le
+   reste de l'IA le ferait remonter aussitôt (va-et-vient « Change d'area » / « Change de galerie », 28/10/2026). */
 export function focusGoal(G,m){
-  const A = workArea(G,m);
-  if(A !== null) return Math.max(0, areaOf(m.y)) === A ? null : A;   // focus d'area (ou « Plus profond ») : il l'emporte
+  const capK = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.tripCap ?? Infinity)));
+  const wk = workArea(G,m);
+  if(wk !== null){ const A = Math.min(wk, capK); return Math.max(0, areaOf(m.y)) === A ? null : A; }   // focus d'area (ou « Plus profond ») : il l'emporte
   const act = activeOres(m.prefs.focus);
   if(!act.length) return null;
   const cur = Math.max(0, Math.min(G.unlockedAreas-1, areaOf(m.y)));
-  if(areaGood(G,cur,act)) return null;
-  for(let d=1; d<G.unlockedAreas; d++){
-    if(cur+d < G.unlockedAreas && areaGood(G,cur+d,act)) return cur+d;
+  if(cur <= capK && areaGood(G,cur,act)) return null;
+  for(let d=1; d<G.unlockedAreas; d++){   // trop bas pour le trajet (cur > capK) : seules les areas du dessus comptent
+    if(cur+d <= capK && areaGood(G,cur+d,act)) return cur+d;
     if(cur-d >= 0 && areaGood(G,cur-d,act)) return cur-d;
   }
-  return null;   // n'arrive pas : dropDepleted a déjà retiré les minerais épuisés partout
+  return null;   // plus rien à portée (minerai épuisé partout, ou seulement trop profond en fin de session)
 }

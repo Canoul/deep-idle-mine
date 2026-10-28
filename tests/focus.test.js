@@ -338,3 +338,51 @@ test('focus minerai : pas de va-et-vient sur l\'échelle à la frontière de deu
   assert.equal(G.tiles[51][4], IDS.coal, 'le charbon de l\'area 0 n\'est pas visé');
   assert.ok(m.stats.mined >= 5, `il ne travaille pas (${m.stats.mined} blocs minés en 30 s)`);
 });
+
+/* 28/10/2026 (signalé par un joueur : focus graphite, couche 5) : en fin de session, le minerai visé n'est plus que dans
+   une area trop profonde pour le temps qui reste. Avant : « Change d'area » le faisait descendre dans cette area, où il
+   n'a plus le droit de miner (profondeur max du trajet, m.tripCap), « Change de galerie » le faisait remonter : va-et-vient
+   sur l'échelle à la frontière, sans rien miner. */
+const deepOnly = () => {
+  const G = newSession(2), m = G.miners[0];
+  for(let k = 0; k < 2; k++){ G.areas[k].oreMined = 1e9; assert.ok(tryUnlock(G)); }   // areas 0, 1, 2
+  G.mobs = [];
+  const y = areaTop(1) + 10; m.x = 25; m.y = y; m.mode = 'work';
+  for(let yy = y; yy < areaTop(2) + 30; yy++){ G.tiles[yy][25] = 0; G.ladder[yy][25] = 1; }   // un puits jusqu'à l'area 2
+  for(const k of [0, 1]) G.areas[k].ores.coal.left = 0;
+  G.areas[2].ores.coal.left = G.areas[2].ores.coal.total;
+  m.tripCap = areaTop(1) + 20;                                   // fin de session : pas plus bas que l'area 1
+  return { G, m };
+};
+
+test('fin de session : le focus ne l\'envoie pas dans une area plus profonde que la profondeur max du trajet', () => {
+  const { G, m } = deepOnly();
+  setFocus(G, m, { coal:'only' });
+  assert.equal(focusGoal(G, m), null, 'focus minerai : le charbon n\'est que trop bas, pas d\'area imposée');
+  m.y = areaTop(2) + 1;
+  assert.equal(focusGoal(G, m), null, 'déjà trop bas : il n\'y est pas retenu');
+  setFocus(G, m, { area:2 }); m.y = areaTop(1) + 10;
+  assert.equal(focusGoal(G, m), null, 'focus d\'area 2 : il reste dans l\'area 1, la plus profonde qu\'il peut atteindre');
+  m.y = areaTop(2) + 1;
+  assert.equal(focusGoal(G, m), 1, 'focus d\'area 2, déjà en area 2 : il remonte dans l\'area 1');
+  m.y = areaTop(1) + 10; m.tripCap = Infinity;
+  assert.equal(focusGoal(G, m), 2, 'sans limite de profondeur : il y va');
+});
+
+test('fin de session, minerai visé trop profond : pas de va-et-vient « Change d\'area » / « Change de galerie »', () => {
+  for(const focus of [{ coal:'only' }, { area:2 }]){
+    const { G, m } = deepOnly();
+    setFocus(G, m, focus);
+    let flips = 0, last = null, maxY = m.y;
+    for(let i = 0; i < 600; i++){
+      tick(G);
+      if(m.mode !== 'work') continue;
+      maxY = Math.max(maxY, m.y);
+      const s = m.status.startsWith('Change d\'area') ? 'area' : m.status === 'Change de galerie' ? 'galerie' : null;
+      if(s && last && s !== last) flips++;
+      if(s) last = s;
+    }
+    assert.ok(flips < 4, `${JSON.stringify(focus)} : ${flips} va-et-vient entre les deux`);
+    assert.ok(maxY < areaTop(2), `${JSON.stringify(focus)} : descendu en area 2 (ligne ${maxY}) malgré la profondeur max`);
+  }
+});
