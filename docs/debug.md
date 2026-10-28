@@ -4507,3 +4507,60 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/view.test.js` (nouveau test : 10 cases dans le seau → glisse ; sortie du seau → glisse ; 10 cases
   hors du seau → saut) ; ❌ avant le correctif, ✅ après ; view + camera 11/11. ⚠️ Pas vu à l'écran (bug visuel en
   mouvement, pas de capture possible) : à regarder en vrai dans une session avec l'ascenseur.
+
+## 28/10/2026 — Focus en fin de session : va-et-vient « Change d'area » / « Change de galerie » (Geoffrey)
+- **Symptôme** (joueur, focus graphite, couche 5) : sur l'échelle, monte et descend en boucle, 0 bloc miné.
+- **Cause** : `focusGoal` (`src/sim/focus.js`) ignorait `m.tripCap` (profondeur max du trajet, fin de session). Minerai
+  visé seulement dans une area plus basse → `changeArea` le fait descendre ; arrivé dans cette area, `focusGoal` = null,
+  mais `decideWork` (`src/sim/ai.js`) n'y vise rien (`inFocus` : y ≤ cap), `down` faux (m.y ≥ cap) → `explore` borné à
+  `areaOf(cap)` → galerie au-dessus, il remonte d'une ligne → `focusGoal` le renvoie en bas. Reproduit : 3 areas, charbon
+  « only » seulement en area 2, tripCap en area 1, puits avec échelle : va-et-vient lignes 101 ↔ 102, 46 bascules.
+- **Correctif** : `focusGoal` borne l'area visée à `capK = areaOf(tripCap)` : focus d'area / « Plus profond » →
+  `min(area, capK)` (il remonte toujours s'il est trop bas) ; focus minerai → seules les areas ≤ capK comptent, sinon null
+  (le focus n'est pas retiré). « Plus profond » inchangé (`deepArea` était déjà borné).
+- ✅ `tests/focus.test.js` : 2 tests (focusGoal borné, et 600 ticks sans va-et-vient ni descente en area 2, pour
+  `{coal:'only'}` et `{area:2}`), échouaient avant (46 bascules). focus, end-depth, deep-ores, miner, mule, path, session,
+  winch : 93/93. Simulation 5 sessions × 3 mineurs : 0 bloquée (sans focus : chiffres identiques avant / après la 2e version).
+- ⚠️ Pas de simulation avec focus minerai (le script n'en pose pas) ; à surveiller : focus « only » d'un minerai absent au
+  dessus du cap → il creuse des galeries vides jusqu'à la fin (comme avant hors fin de session).
+
+## 28/10/2026 — Chat global du Lobby (Jules)
+- **Serveur** : `server/game/chat.js` `createChat({ clock, gapMs, ttlMs })` (avant : cadence et durée fixées à `CHAT`),
+  + `room(id)` / `restore(id, raw)` (reprise revérifiée : numéros strictement croissants, `cleanChatText(text) === text`,
+  champs typés, `CHAT.keep` derniers ; `next` = max(next enregistré, dernier + 1)). `server/social/service.js` : salon
+  unique `'global'`, `ttlMs: Infinity`, cadence `CHAT.globalGapMs` (3 s), `chatPost` / `chatGet` ; nom = `displayName(me)`
+  (jamais le navigateur) ; relu en base au premier appel (`chatReady`, une seule fois) ; chaque message réécrit l'état
+  entier (`putGlobalChat`, via `serial`). Routes `GET|POST /api/social/chat` (`?after=`, comme le chat de session).
+  Stockage : ns `chat_global`, clé `state` (`server/game/store.js` : mémoire, fichier, PostgreSQL `db.load`).
+- **Navigateur** : `src/ui/chat.js` généralisé (`prefix` des ids, `paused()`, `poke()`, `time`), une relecture à la fois
+  (`reading` = génération). `src/main.js` : `gchat` démarré une fois au démarrage (la déconnexion recharge la page), en
+  pause hors onglet Lobby, relu tout de suite en y revenant. `index.html` : carte `#gchatCard` ; CSS `#chatLog` → `.chatLog`.
+  Aide « ? » `gchat` (`src/ui/help.js`). `CHAT.globalGapMs` dans `src/config.js`.
+- **Tests** ✅ `tests/chat.test.js` (5 nouveaux : tous les comptes et invités, nom du serveur, cadence, séparé du chat de
+  session, 50 derniers + reprise après redémarrage avec numéros qui continuent, stockage trafiqué) + `tests/social.test.js`
+  (HTTP : 401 sans compte, 429, 400, corps tableau) : 33/33 ; `tests/boot-check.test.js` ✅. ✅ Vérifié dans le navigateur (serveur local, 2 invités) :
+  message reçu par l'autre en ≤ 3 s, balisage affiché en texte, « Doucement… » au 2e message rapide.
+- ⚠️ Points fragiles : pas de modération ; chaque message réécrit `game.json` en local (normal pour ce stockage) ;
+  `/api/social/chat` compte comme signe de vie (présence), comme toutes les routes Social ; pas vérifié sur téléphone.
+
+## 28/10/2026 — Onglet Sorts refait, piste A « la barre de sorts » (Jules)
+- **Quoi** : mise en page de l'onglet Sorts seulement ; règles, serveur et état du compte inchangés (`src/meta/spells.js`
+  intact). `index.html` : `#spellSpec` (spé + SP lvl), carte « Ta barre de sorts » (`#spellSlots`), « Grimoire »
+  (`#spellTabs`, `#spellList`, légende), « Fiche du sort » (`#spellInfo`, contenu entier rendu par le JS, `h2` compris).
+- `src/ui/spells.js` réécrit : exports purs `treeOf(s)` (spé ou `'scroll'`), `spellStats(s)` (chiffres de la fiche tirés
+  des champs de config, table `STATS`), `spellStatus(st, id, ctx, owned)` (equipped / ready / learn / other / locked,
+  `bad` = équipé mais n'agit pas). Clic tuile = fiche ; double clic / glisser / bouton de la fiche = équiper ; clic sur un
+  emplacement plein = le retirer. Emplacement visé (`target()`) : celui choisi s'il est libre, sinon le 1er libre, sinon
+  celui choisi (bouton « Remplacer X »). Fiche par défaut tant que le joueur n'a rien choisi (`picked`) : 1er sort de la barre.
+- `src/config.js` `SPELLS.list` : `px` (icône pixel, `src/ui/pxicons.js`) et `short` (ligne sous le nom) par sort ;
+  `icon` (emoji) gardé pour le wiki. `src/ui/hud.js` `spellBarHtml` : `pxi(s.px)` + classe `tr-<famille>`.
+- `src/ui/style.css` : bloc « onglet Sorts » remplacé (`.spSock`, `.spTile`, `.spInfo`…, couleurs `.tr-mineur` /
+  `.tr-logisticien` / `.tr-barbare` / `.tr-scroll`), `.spGrid` à 2 colonnes (sets | contenu), `.spWrap` 680u ; `.spB .spIcon`
+  pour la barre en session. Textes : aide « ? » (`src/ui/help.js`), wiki §Sorts, GAME_DESIGN §3 Sorts.
+- **Tests** ✅ `tests/spells.test.js` (barre en session : classes et icônes pixel ; 3 nouveaux : `px`/`short`/famille de
+  chaque sort, `spellStatus`, `spellStats`) + `tests/wiki.test.js` + `tests/world.test.js`. ✅ Vérifié dans le navigateur
+  (serveur de dev sur un autre port, `DIM_DATA_DIR` à part, compte Test_Mineur) : affichage 1440×900, retirer / remettre
+  par la barre et par la fiche, fiche d'un sort d'une autre spé ; téléphone 390 px : pas de défilement horizontal,
+  3 tuiles par ligne.
+- ⚠️ Pas vérifié en vrai : le bouton « Remplacer X » (barre pleine + un autre sort disponible), l'apprentissage d'un
+  parchemin depuis la fiche (même appel serveur qu'avant), la barre de sorts pendant une session (couverte par le test).

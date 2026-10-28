@@ -4,7 +4,7 @@
    - pages fixes (index.html) : <i data-qhelp="clé"></i>, rempli au chargement par fillHelp() avec HELP[clé] ;
    - écrans construits par le code : qhelp(texte) ou helpLine(texte) renvoient le HTML de la bulle.
    À ne pas confondre avec les boutons « Recettes » / « Butin » du Four et du Concasseur, qui ouvrent un tableau. */
-import { FURNACE, CRUSHER } from '../config.js';
+import { FURNACE, CRUSHER, CHAT } from '../config.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -27,6 +27,10 @@ Figées au lancement : elles comptent pour toute la session.`,
 Un shrine se paie en objets ; une fois le prix atteint, il donne son bonus pendant plusieurs mines.
 Ils agissent dans les mines que tu lances, seul ou en chef de groupe.
 Ton groupe peut t'aider à payer.`,
+  gchat: `Chat global
+Tous les joueurs du jeu le lisent, en session ou non.
+Un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus ; les ${CHAT.keep} derniers restent affichés.
+Le chat de l'onglet Session, lui, reste entre les joueurs de ta session.`,
   judgment: `Ange contre Démon
 L'effort de tous les joueurs : chaque résidu angélique ou démoniaque rapporté au coffre remplit la jauge de son camp.
 Ces résidus se trouvent dans la roche à partir de l'area 4.
@@ -81,7 +85,8 @@ Niveau de spécialisation (SP lvl) : monte en jouant avec cet arbre et débloque
 Glyphes : la petite case sous un skill, où l'on pose son glyphe quand le skill est au rang max.`,
   spells: `Sorts
 Ils partent tout seuls en session, dès que leur recharge est finie et qu'ils peuvent servir.
-Clic sur un sort pour l'équiper ; clic sur un sort équipé pour le retirer.
+Clic sur un sort du grimoire pour voir sa fiche, puis « Mettre dans la barre » (ou double clic, ou glisse-le sur un emplacement).
+Clic sur un sort de la barre pour le retirer.
 Sorts de classe : débloqués par le niveau de spécialisation (onglet Skills). Les autres s'apprennent avec un parchemin.`,
   friends: `Amis
 Un ami invité reçoit une notification ; « Rejoindre » t'emmène dans son lobby.

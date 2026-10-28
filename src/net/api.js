@@ -101,6 +101,8 @@ export const socialApi = {
   join:    id   => request('POST', '/api/social/join', { id }),
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
   leaderboard: board => request('POST', '/api/social/leaderboard', { board }),   // un classement (gs, xp, spec:<arbre>, tower)
+  chat:    after => request('GET', '/api/social/chat?after=' + (after | 0)),   // chat global du lobby
+  say:     text  => request('POST', '/api/social/chat', { text }),
 };
 
 /* Groupes : se réunir avant une session commune. Lancer reste gameApi.start (le serveur sait qui est dans le groupe). */
