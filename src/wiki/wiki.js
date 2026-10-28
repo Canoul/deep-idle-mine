@@ -199,7 +199,7 @@ function craft(){
   const FAMILY = { gem:'Une gemme (au hasard parmi les 3)', treasure:'Un treasure' };
   $('w-crusher').innerHTML = table(['Lot', 'Butin', '#Chance par lot'], D.crusherRows().flatMap(r =>
     r.families.map((fam, k) => tr([k ? '' : item(r.block, CRUSHER.batch),
-      fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
+      fam.min != null ? `${item(fam.items[0].item)} <b>${fam.min === fam.max ? fam.min : `${fam.min} à ${fam.max}`}</b>` : fam.items.length === 1 ? item(fam.items[0].item) : `<b>${esc(FAMILY[fam.family] ?? fam.family)}</b><div class="small mut">${fam.items.map(i => `${esc(i.item)} ${cpct(i.chance)}`).join(' · ')}</div>`,
       num(`<b>${cpct(fam.chance)}</b>`)]))));
   $('w-recipes').innerHTML = table(['Objet', 'Ingrédients', 'Effet', 'Recette'], D.recipeRows().map(r =>
     tr([item(r.name), ings(r.cost), r.stats.length ? pills(r.stats, 'stat') : r.uses.map(esc).join('<br>') || none,

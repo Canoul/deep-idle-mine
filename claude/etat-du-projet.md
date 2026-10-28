@@ -332,7 +332,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   blocs par minute (première case pleine, haut→bas, gauche→droite), butin tiré par le serveur (gemmes inférieures,
   treasure). Chances par lot depuis le 22/10 : gemme 0,6 / 0,9 / 1,2 %, treasure 0,5 / 0,3 / 0,5 % (terre / pierre /
   pierre dure), soit ≈ 1 gemme / 30 sessions et 1 treasure / 60 par joueur (ancien : 1 gemme / 60, treasure / 2 000) ;
-  l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé.
+  l'aide « ? » et le wiki ne montrent plus de moyenne ni de temps estimé. **Minerai de fer** (28/10, Geoffrey) : 100 fers →
+  toujours charbon 1-50, or 1-20, 1 diamant, graphite 1-10 ; gemme inférieure 1 % chacune, treasure T1 2 % / T2 1 % / T3 0,5 %.
 - **MI, galeries (en ligne le 22/10)** : cap par mineur (galeries dans tous les sens) et tas de plumes découvert ≤ 8 cases prioritaire, même dans la roche.
 - **Mine instantanée (MI)** (en ligne le 21/10, GAME_DESIGN §6, `INSTANT_MINE` en config ; **depuis le 23/10 après-midi :
   ne touche plus aux groupes** (inscription seule, on reste dans son lobby ; ancien : on quittait son groupe) ; **depuis le 22/10 : cachée

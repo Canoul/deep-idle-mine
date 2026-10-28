@@ -889,7 +889,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   | **Steel ingot** *(23/10/2026)* | 3 Tainted iron + 5 Graphite ingot *(26/10 ; avant 10)* | 50 charbons | 3 min |
 
 ### Concasseur (onglet Concasseur) *(demande du créateur, 21/10/2026 ; valeurs provisoires)*
-- **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** : terre, pierre, pierre dure. Une sorte de bloc par case, quantité libre.
+- **8 cases d'entrée** (2 rangées de 4) pour les objets de la famille **bloc** (terre, pierre, pierre dure) et, depuis le 28/10/2026, le **minerai de fer**. Une sorte par case, quantité libre.
 - **8 cases de sortie** en dessous pour le butin ; clic sur une case pour la récupérer, ou bouton « Tout récupérer ».
 - Un **cycle par minute**, en temps réel, même page fermée : à la fin du cycle, il concasse **100 blocs** de la **première case qui en a au moins 100**, de haut en bas puis de gauche à droite (case 1 → 8). Une case de moins de 100 est sautée. Les blocs ne sont consommés qu'à la fin du cycle (retirer une case pendant le cycle ne coûte rien).
 - **Butin pour 100 blocs** (un tirage par famille : au plus une gemme et un treasure par cycle ; la plupart des cycles ne donnent rien) *(chances données par le créateur le 22/10/2026 ; avant : gemme 0,3 / 0,45 / 0,36 %, treasure 0,01 / 0,015 / 0,02 %)* :
@@ -899,6 +899,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   | Terre | 0,6 % | T1 : 0,5 % |
   | Pierre | 0,9 % | T2 : 0,3 % |
   | Pierre dure | 1,2 % | T2 : 0,5 % |
+- **Minerai de fer** *(28/10/2026, Geoffrey)* : un lot de **100 Iron ore** donne **toujours** charbon **1 à 50**, gold ore **1 à 20**, **1 diamant** et graphite **1 à 10** (chaque quantité tirée au hasard, toutes aussi probables) ; en plus, **une gemme inférieure** (jade, rubis ou saphir, **1 % chacune**, une au plus) et **un treasure** (**T1 2 %, T2 1 %, T3 0,5 %**, un au plus). En moyenne pour 10 000 fers : 2 550 charbons, 1 050 ors, 100 diamants, 550 graphites, 2 T1, 1 T2, 0,5 T3, 1 gemme de chaque. ⚠️ 1 diamant par lot : à surveiller si le diamant doit rester rare.
 - **L'aide « ? » et le wiki n'affichent que la chance par lot** : plus de « 1 lot sur N », ni de moyenne, ni de temps estimé avant un butin *(décision du 22/10/2026)*.
 - Les **dernières trouvailles** et le nombre de lots concassés sont affichés sous la machine.
 - **Le serveur fait foi** : il tire le butin avec un hasard imprévisible et l'enregistre dès qu'un cycle est fini (un cycle n'est tiré qu'une fois) ; inventaire et concasseur changent ensemble, une demande renvoyée ne s'applique qu'une fois.

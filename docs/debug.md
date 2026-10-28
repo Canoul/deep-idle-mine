@@ -4286,3 +4286,12 @@ Règles (voir CLAUDE.md) :
 ## 28/10/2026 — Geoffrey — Ceinture du Géant : dégâts 1,6 → 5
 - `STUFF.items['Ceinture du Géant'].stats.damage` 5 (décision de Geoffrey, hors règle du butin des mobs à 250 x) ;
   `tests/stuff-balance.test.js` : exception `OFF_RULE`. GS 127 → 263. Tests ✅ stuff-balance, mob-drops, gearscore, wiki.
+
+## 28/10/2026 — Geoffrey — Concasseur : minerai de fer
+- `CRUSHER.loot['Fer']` : `always` charbon 1-50, Or 1-20, Diamant 1, Graphite ore 1-10 (`rollLoot` : quantité uniforme) ;
+  `oneOf` gemmes `gems(0.01)`, treasure T1 0,02 / T2 0,01 / T3 0,005. `crushable` : tout objet qui a une table (plus
+  seulement la famille bloc). `dropOdds` met le butin garanti en tête (`family:'fixed'`, `min`, `max`) ; aide « ? »
+  (src/ui/crusher.js) et wiki l'affichent en fourchette.
+- **Tests** ✅ `tests/crusher.test.js` (nouveau test : table, moyennes sur 100 000 lots, un lot réel ; « objet refusé » =
+  l'or, « sortie invalide » = Lingot de fer, le diamant étant devenu une sortie), `tests/anticheat/crusher.test.js` (fer en
+  entrée, lingot refusé, butin garanti ≤ max par lot) : `npm run test:anticheat` 105/105 ; wiki ✅.

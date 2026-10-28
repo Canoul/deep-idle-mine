@@ -7,9 +7,11 @@ import { mulberry32 } from '../../src/core/rng.js';
 import { createInventory, addAll, countOf } from '../../src/meta/inventory.js';
 import { createCrusher, crusherOp, advance } from '../../src/meta/crusher.js';
 
-const START = { Terre:900, Pierre:700, 'Pierre dure':400, Fer:100 };
-const BLOCKS = ['Terre', 'Pierre', 'Pierre dure'];
-const LOOT = ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur', 'Treasure T1', 'Treasure T2'];
+const START = { Terre:900, Pierre:700, 'Pierre dure':400, Fer:500, 'Lingot de fer':100 };
+const BLOCKS = ['Terre', 'Pierre', 'Pierre dure', 'Fer'];   // le minerai de fer se concasse depuis le 28/10/2026
+const LOOT = ['Rubis inférieur', 'Saphir inférieur', 'Jade inférieur', 'Treasure T1', 'Treasure T2', 'Treasure T3'];
+/* butin garanti d'un lot de fer (CRUSHER.loot.Fer.always) : jamais plus que son maximum par lot */
+const FIXED = CRUSHER.loot['Fer'].always;
 const BAD_QTY = [0, -10, 2.5, Infinity, -Infinity, NaN, '50', 1e300, null, undefined, {}];
 
 const total = (inv, c, name) => countOf(inv, name) + [...c.in, ...c.out].reduce((n, s) => n + (s?.item === name ? s.qty : 0), 0);
@@ -27,12 +29,13 @@ test('concasseur : blocs conservés et butin borné sur 500 suites d\'actions au
       ids.push(opId);
       const qty = r() < 0.2 ? pick(BAD_QTY) : 1 + Math.floor(r() * 300);
       const slot = r() < 0.1 ? pick([-1, 8, 'all', '0', 2.5]) : Math.floor(r() * 8);
-      crusherOp(c, inv, { action:pick(['load', 'load', 'unload', 'collect', 'hack']), slot, item:pick([...BLOCKS, 'Fer', 'Rubis inférieur']), qty, opId }, now);
+      crusherOp(c, inv, { action:pick(['load', 'load', 'unload', 'collect', 'hack']), slot, item:pick([...BLOCKS, 'Lingot de fer', 'Rubis inférieur']), qty, opId }, now);
     }
     advance(c, now + 1e12, r);
     const consumed = BLOCKS.reduce((n, b) => n + START[b] - total(inv, c, b), 0);
     assert.equal(consumed, c.crushed * CRUSHER.batch, `blocs consommés = lots × ${CRUSHER.batch} (essai ${t})`);
-    assert.equal(total(inv, c, 'Fer'), START.Fer);
+    assert.equal(total(inv, c, 'Lingot de fer'), START['Lingot de fer'], 'un objet qui ne se concasse pas ne bouge pas');
+    for(const a of FIXED) assert.ok(total(inv, c, a.item) <= a.max * c.crushed, `${a.item} : au plus ${a.max} par lot (essai ${t})`);
     const loot = LOOT.reduce((n, i) => n + total(inv, c, i), 0);
     assert.ok(loot <= 2 * c.crushed, `au plus une gemme + un treasure par lot (essai ${t})`);
     for(const s of [...inv.slots, ...c.in, ...c.out]) if(s) assert.ok(Number.isSafeInteger(s.qty) && s.qty > 0);
