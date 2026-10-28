@@ -99,7 +99,7 @@ h1 .qhelp b{width:calc(12*var(--u));height:calc(12*var(--u));font-size:var(--fs)
 /* « pris en compte à la prochaine session » : seulement quand une session tourne (classe posée par src/main.js) */
 .nextNote{display:none;margin:0 0 calc(6*var(--u));padding:calc(2*var(--u)) calc(4*var(--u));background:var(--sel);
   box-shadow:inset calc(2*var(--u)) 0 0 var(--acc);font-size:var(--fs-s)}
-body.inSession .nextNote{display:block}
+body.sessionOn .nextNote{display:block}
 /* guide « Premiers pas » (src/ui/guide.js) : au-dessus de la barre d'action, à droite ; replié = une ligne */
 .guide{position:fixed;right:calc(6*var(--u));bottom:calc(var(--dock-h) + 10*var(--u));z-index:45;width:min(calc(190*var(--u)),calc(100vw - 16px));
   background:var(--panel);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--acc-dk),calc(3*var(--u)) calc(3*var(--u)) 0 #000;font-size:var(--fs-s)}

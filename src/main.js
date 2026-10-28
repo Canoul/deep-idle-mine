@@ -455,8 +455,9 @@ function applyClock(c){
   renderSpeeds(ui, info, s => setClock({ speed:s }));
 }
 
-/* classe inSession sur la page : Stuff, Skills et Sorts affichent « comptera à la prochaine session » (src/ui/style.css) */
-function sessionFlag(){ document.body.classList.toggle('inSession', !!rec); }
+/* classe sessionOn sur la page : Stuff, Skills et Sorts affichent « comptera à la prochaine session » (src/ui/style.css).
+   Pas « inSession » : c'est le bandeau du lobby, toute la page en prendrait le style. */
+function sessionFlag(){ document.body.classList.toggle('sessionOn', !!rec); }
 
 function enterSession(session){
   rec = session; waiting = false;
