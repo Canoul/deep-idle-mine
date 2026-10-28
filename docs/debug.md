@@ -4368,3 +4368,10 @@ Règles (voir CLAUDE.md) :
   research → `r.item`), `upgrade` (identify / upgrade si `success !== false` / enchant → `r.piece` ; unenchant →
   `r.fragment`). Rien côté serveur ; les trésors (showLoot) ne passent pas par là.
 - **Tests** ✅ `tests/obtained.test.js` (5) + `tests/boot-check.test.js`. ⚠️ Pas vérifié dans le navigateur. ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Correctif : `.frow b{text-align:right}` cassait les lignes de Social
+- **Cause** : la fenêtre « Recettes » du four (même jour) utilisait la classe `frow`, déjà prise par les lignes de
+  Social et du lobby (`src/ui/social.js`, `src/ui/lobby.js` : `.frow .fname b` = pseudo). Sa règle `.frow b{text-align:
+  right}` alignait les pseudos à droite.
+- **Correctif** : classe du four renommée `frecRow` (`src/ui/furnace.js`, `src/ui/style.css`). ✅ plus aucune règle
+  du four sur `.frow`. **À retenir** : chercher une classe dans tout `src/ui/` avant de la créer.
