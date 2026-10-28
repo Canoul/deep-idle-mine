@@ -7,7 +7,8 @@
    - create : nouveau set, avec l'équipement actuel ; save : le remplace ; rename ; delete ;
    - équiper (applySet) : tout le stuff porté revient à l'inventaire puis chaque pièce du set retourne dans sa case (une
      pièce introuvable laisse sa case vide) ; reset des skills puis les rangs du set (revérifiés avec les points) ; les
-     sorts du set encore équipables avec ces skills. Refusé pendant une session (vérifié par le serveur). */
+     sorts du set encore équipables avec ces skills. Permis pendant une session (28/10/2026) : la session en cours garde
+     l'équipement figé à son lancement, le set compte dès la suivante. Créer et enregistrer : hors session (serveur). */
 import { SETS, SPELLS } from '../config.js';
 import { SLOT_IDS, fits } from './stuff.js';
 import { takePiece, putPiece } from './inventory.js';

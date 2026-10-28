@@ -844,8 +844,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     },
 
     /* sets : { action:'create' } | { action:'save', id } | { action:'rename', id, name } | { action:'delete', id } |
-       { action:'equip', id }. Enregistrer et équiper : refusés pendant une session (les skills seraient remis à zéro).
-       Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
+       { action:'equip', id }. Créer et enregistrer : refusés pendant une session. Équiper est permis pendant une session
+       (28/10/2026, Geoffrey ; avant : refusé) : la session en cours garde le stuff, les skills et les sorts figés à son
+       lancement (rec.gear, rec.skills, rec.spells), le set ne compte qu'à partir de la prochaine. Équiper touche l'inventaire, le stuff, les skills et les sorts : tout est écrit en une fois. opId : une demande
        renvoyée n'agit qu'une fois. */
     async sets(me, body = {}){
       const { action, opId } = body;
@@ -855,7 +856,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many(['inv:' + me.id, 'skills:' + me.id, 'spells:' + me.id, 'sets:' + me.id], async () => {
         const sets = sanitizeSets(await store.getSets(me.id));
         if(sets.ops.includes(opId)) return await setsReply(me.id, sets);
-        if(['create', 'save', 'equip'].includes(action) && await activeOf(me.id)) err('session_running');
+        if(['create', 'save'].includes(action) && await activeOf(me.id)) err('session_running');
         const inv = await loadInventory(me.id), stuff = await loadStuff(me.id, inv);
         const skills = await loadSkills(me.id), spells = await loadSpells(me.id);
         if(action === 'equip'){
