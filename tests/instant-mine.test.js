@@ -316,7 +316,7 @@ test('MI descente : descendre coûte un pas, ils ne foncent plus au fond (côté
     }
     for(const m of G.miners){ n++; if(m.y >= G.h - 1) bottom++; }
   }
-  assert.ok(bottom <= n*0.15, `${bottom}/${n} au fond`);
+  assert.ok(bottom <= n*0.35, `${bottom}/${n} au fond`);   // 28/10 (Geoffrey) : 0,35 avec la mine plus tendre (40 % charbon ; avant 0,15)
   assert.ok(deep < mined*0.33, `${deep}/${mined} blocs dans la moitié basse`);
 });
 

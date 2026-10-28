@@ -115,7 +115,7 @@ function instant(){
   $('w-mi').innerHTML = table(['Quand', 'Durée', 'La mine', 'Joueurs'], [tr([
     `Toutes les <b>${m.every} h pile</b>, heure de Paris<div class="small mut">${hours.join(', ')}</div>`,
     `<b>${m.game / 60} min</b> de jeu<div class="small mut">${mmss(m.real)} en vrai</div>`,
-    `${m.w} × ${m.h} blocs, <b>que des minerais</b> : ${Object.entries(m.comp).map(([k, v]) => `${v} % ${item(NAME[k] ?? k)}`).join(', ')}, et <b>${f(m.feather)} % de tas de plumes</b>`,
+    `${m.w} × ${m.h} blocs, <b>que des minerais</b> : ${Object.entries(m.comp).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${f(v)} % ${item(NAME[k] ?? k)}`).join(', ')}, et <b>${f(m.feather)} % de tas de plumes</b>`,
     `Jusqu'à <b>${m.max}</b> par mine<div class="small mut">au-delà, plusieurs mines de tailles égales</div>`])]) +
     `<p>Un <b>tas de plumes</b> est une case vide qui porte des plumes : le <b>premier mineur qui passe dessus</b> le ramasse et gagne <b>${m.fMin} à ${m.fMax} ${item(m.item)}</b>. Dès qu'un tas <b>déjà découvert</b> est à ${m.reach} cases ou moins (à vol d'oiseau), le mineur le plus proche y va avant tout, <b>en creusant droit vers lui</b> s'il le faut. Compte en moyenne quelques plumes par mine instantanée.</p>`;
   const n = m.notify.map(s => s >= 60 ? `${s / 60} min` : `${s} s`);
