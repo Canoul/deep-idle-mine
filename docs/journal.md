@@ -30,7 +30,7 @@ Modèle d'entrée :
   « Réclamation… » et le message dit « C'est dans ton inventaire » : on voit que le premier clic a marché.
 - **À suivre** : le « il faut cliquer 2 fois » n'a pas été reproduit (un seul clic suffit, même avec un réseau lent) ;
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
-- **État** : 🧪 sur la branche `geoffrey/fix-reclamer-bloc-geant` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :
