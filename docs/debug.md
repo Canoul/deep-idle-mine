@@ -4031,3 +4031,13 @@ Règles (voir CLAUDE.md) :
 - `tests/instant-mine.test.js` : quantités exactes ; test de descente relâché `bottom <= n*0.35` (avant 0,15 ; 4/12 avec la
   nouvelle mine), choix de Geoffrey. 30/30 ✅. ⚠️ À surveiller : plumes par MI (+30 % à 3, mesure bruitée).
 
+## 28/10/2026 — Sets : équiper pendant une session (Geoffrey)
+- `server/game/service.js` `sets` : `session_running` seulement pour create / save (avant : equip aussi). Sûr car tout ce que la
+  session utilise est figé au lancement (`rec.gear`, `rec.skills`, `rec.spells`, `looks`, glyphes `owned`) et la fin de
+  session ne relit ni stuff, ni skills, ni sorts (vérifié par grep des load*/get* du serveur). Bloc géant : figé à l'entrée.
+- `src/ui/sets.js` : Équiper actif en session (grisé seulement pendant une demande), message « compte dès la prochaine session ».
+- Tests `tests/sets.test.js` : équiper en session → compte changé, `rec.gear/skills/spells` identiques ; panneau. 8/8 ✅.
+- ⚠️ Pendant la session, une pièce retirée par le set revient dans l'inventaire : on peut l'améliorer ou la recycler alors
+  que la session en cours utilise encore ses stats figées (pas de duplication : la session ne la rend pas à la fin).
+  Le lobby (lecture seule) montre l'apparence et le GS du nouveau set pendant la session.
+

@@ -760,7 +760,7 @@ Set 2  [Équiper] [Enregistrer] [✎] [×]
 ```
 - **+ Nouveau set** : crée « Set n » (premier numéro libre) avec l'équipement actuel. **Enregistrer** : remplace le set par l'équipement actuel (confirmation). **✎** renommer (1 à 24 caractères), **×** supprimer (confirmation).
 - **Équiper** agit toujours sur **tout le set** : tout le stuff porté revient dans l'inventaire puis chaque pièce du set retourne dans sa case ; une pièce **introuvable** (sacrifiée, recyclée…) laisse sa **case vide**, avec un message « n pièce(s) introuvable(s) » ; reset gratuit des skills puis les rangs du set, revérifiés avec les points du niveau ; les sorts du set qui sont encore équipables (débloqués, bonne spécialisation), les autres emplacements restent vides.
-- **Pas pendant une session** (Enregistrer, Équiper, Nouveau set : comme le reset des skills) ; renommer et supprimer restent possibles.
+- **Équiper pendant une session** *(28/10/2026, Geoffrey ; avant : refusé)* : permis. La session en cours **ne change pas** (stuff, skills et sorts figés à son lancement) ; le set compte **dès la prochaine session**. **Enregistrer et Nouveau set** restent **refusés pendant une session** ; renommer et supprimer restent possibles.
 - **Pas de limite voulue** pour le joueur ; garde-fou technique de **20 sets** (taille de la sauvegarde).
 - Le serveur fait tout en une seule écriture (inventaire, stuff, skills, sorts) ; une demande renvoyée n'agit qu'une fois.
 
