@@ -6,7 +6,8 @@ contester si besoin. Rien ici ne change les règles du jeu.*
 ## En une phrase
 
 Le jeu actuel, sans réécriture, emballé dans une appli native (Capacitor) pour iOS et Android, avec une interface
-pensée pour le téléphone et des notifications qui ramènent le joueur au bon moment.
+pensée pour le téléphone et des notifications qui ramènent le joueur au bon moment. **Le site ne change pas** : la
+nouvelle interface n'existe que dans l'appli (décision de Jules, 28/10).
 
 ## Pourquoi
 
@@ -30,8 +31,8 @@ mettre prêt), jeter un œil à la session en cours, ranger le butin (bilan, fou
 1. **Une appli Android puis iOS**, couvrant presque tous les téléphones en circulation.
 2. **Le même jeu, le même code** que le site : une mise en ligne sur `main` arrive dans l'appli sans repasser par les
    stores. Même serveur, mêmes comptes ; on passe du PC au téléphone sans rien faire.
-3. **Une interface pour téléphone** (écran ≤ 700 px de large, site ou appli) : navigation en 5 familles, Accueil avec
-   les rendez-vous, session avec la mine en haut, écrans longs raccourcis, gestes au doigt.
+3. **Une interface pour téléphone, dans l'appli seulement** : navigation en 5 familles, Accueil avec les rendez-vous,
+   session avec la mine en haut, écrans longs raccourcis, gestes au doigt.
 4. **Des notifications** pour les rendez-vous, réglables une par une.
 
 ## Non-objectifs (pour l'instant)
@@ -41,16 +42,18 @@ mettre prêt), jeter un œil à la session en cours, ranger le butin (bilan, fou
   prendre plus tard, avec un business plan. On construit tout ce qui n'en dépend pas.
 - Monétisation, achats dans l'appli.
 - Jeu hors ligne : le serveur fait foi, sans réseau il n'y a pas de jeu (l'appli affiche un écran « pas de connexion »).
-- Changer l'interface **sur PC** : la barre des 13 onglets et le lobby actuels restent tels quels au-dessus de 700 px.
-- Mise en page spéciale tablette (une tablette a la mise en page PC).
+- **Changer le site** (décision de Jules) : sur PC comme dans le navigateur du téléphone, `deepmineidle.fr` garde son
+  interface actuelle. Un joueur du site ne doit voir aucune différence.
+- Mise en page spéciale tablette (dans l'appli, une tablette a la même interface qu'un téléphone).
 - Notifications dans le navigateur (Web Push) pour le site.
 - Toucher au rendu du canvas, à la simulation ou aux règles.
 
 ## Anti-objectifs (échec même si ça marche)
 
-- **Deux interfaces à maintenir.** Chaque nouveauté de Geoffrey ou Jules ne doit pas demander « la version PC et la
-  version téléphone ». Les écrans téléphone sont les **mêmes modules** (`src/ui/`) réorganisés par le CSS et quelques
-  composants partagés, pas une deuxième UI.
+- **Deux jeux à maintenir.** Chaque nouveauté de Geoffrey ou Jules (un mob, une recette, un onglet) doit arriver dans
+  l'appli sans être refaite. L'appli réutilise **les mêmes modules** (`src/ui/`, le rendu, l'API) ; la couche « appli »
+  ne fait que les réorganiser (CSS, barre de navigation, Accueil, onglets de la session) et ajouter ce qui est propre au
+  téléphone (notifications). Écarté par Jules (option B du 28/10) : un code séparé pour l'appli.
 - **Une appli en retard sur le serveur** (version de l'appli qui ne comprend plus ce que le serveur envoie).
 - **Le spam de notifications** : le joueur coupe tout ou désinstalle.
 - **Casser le site** sur PC ou sur téléphone pendant les travaux (chaque étape mise en ligne doit être jouable).
@@ -67,6 +70,11 @@ mettre prêt), jeter un œil à la session en cours, ranger le butin (bilan, fou
 - Serveur OVH : il ne sert que les chemins de sa liste blanche (`server/http/static.js`), donc rien de `mobile/` ; il ne
   lance `npm ci` qu'à la racine (`deploy/ovh/update.sh`), donc jamais les dépendances de `mobile/`. Les fichiers du jeu
   sont servis en `Cache-Control: no-store` : l'appli charge toujours la dernière version.
+- **Politique de sécurité du serveur** (`server/config.js`, `securityHeaders`) : `script-src 'self'`, aucun script en
+  ligne. Le pont natif de Capacitor est injecté dans la page chargée ; selon la version d'Android WebView, Capacitor peut
+  l'insérer comme script en ligne, que cette règle bloquerait. **À vérifier en tout premier à l'étape 1** (le pont
+  répond-il : `window.Capacitor.isNativePlatform()` vrai dans l'appli ?). Ne pas assouplir la règle pour tout le site
+  sans en parler à l'équipe (mémo `docs/securite.md`).
 - Matériel : pas de Mac. Jules a un iPhone, des amis ont des Android. Windows pour développer.
 - Dépôt GitHub **public** : jamais de clé, de jeton Firebase de service, de mot de passe de keystore dans git (secrets
   GitHub ou variables d'environnement du VPS).
@@ -92,6 +100,25 @@ mettre prêt), jeter un œil à la session en cours, ranger le butin (bilan, fou
   origine (CORS, cookie, protection contre les requêtes forgées). **Préparer dès maintenant** : l'adresse du serveur
   lue à un seul endroit dans `src/net/api.js` (vide sur le site = adresses relatives).
 
+### Le site ne change pas : une « couche appli » (choix de Jules, option A du 28/10)
+
+- **Une seule page** (`index.html`), pas de copie : une page `app.html` à part devrait être tenue identique à la main à
+  chaque nouvel onglet ou panneau. (Claude, dans l'esprit de l'option A « page d'entrée à part »)
+- Au démarrage, un petit module regarde si la page tourne **dans l'appli** (`window.Capacitor?.isNativePlatform()`) ou
+  si l'adresse contient **`?app`** (aperçu dans un navigateur : captures, iPhone de Jules dans Safari tant qu'il n'y a pas
+  de compte Apple). Si oui, il pose la classe `app` sur `<body>` et charge la couche appli ; sinon, **il ne charge
+  rien** : le site garde exactement sa page, son CSS et son comportement.
+- La couche appli vit dans **`src/app/`** : son CSS (`app.css`, chaque règle sous `body.app`), son entrée (`main.js`),
+  la logique pure testable (familles d'onglets, rendez-vous, notifications à programmer) et le seul module qui parle au
+  natif (`native.js`). (Claude)
+- Quand un module partagé de `src/ui/` doit se comporter autrement dans l'appli (bulles au toucher, texte « Touche… »,
+  inventaire au doigt), il le fait **seulement** si `body.app` (ou un drapeau lu dans `src/app/`) est présent. Sur le
+  site, le chemin de code reste celui d'aujourd'hui.
+- Le code de la couche appli arrive sur `main` comme le reste (c'est là que l'appli le charge), mais ne change rien pour
+  les joueurs du site. Chaque mise en ligne redémarre le serveur, comme d'habitude.
+- **Garde-fou** : un test vérifie que chaque onglet de `TABS` (`src/ui/nav.js`) est rangé dans une famille de l'appli,
+  pour qu'un nouvel onglet ajouté au site ne disparaisse pas dans l'appli.
+
 ### Navigation téléphone : 5 familles en bas (choix de Jules, maquette A)
 
 Barre du bas à 5 boutons, sous-onglets en haut du contenu quand la famille en a plusieurs :
@@ -106,7 +133,7 @@ Barre du bas à 5 boutons, sous-onglets en haut du contenu quand la famille en a
 
 - Les adresses `#inventaire`, `#craft`… continuent de marcher (elles ouvrent la bonne famille et le bon sous-onglet).
 - La famille retient son dernier sous-onglet ouvert. (Claude)
-- Sur PC (> 700 px), la barre actuelle ne change pas.
+- Sur le site (PC et navigateur du téléphone), la barre actuelle des 13 onglets ne change pas.
 
 ### Accueil (maquette validée)
 
@@ -149,10 +176,10 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
   gratuit, compte Apple nécessaire pour iOS). Jetons d'appareil rattachés à l'**ID de compte**. Envoi en tâche de fond,
   jamais bloquant (comme les annonces Discord). Clé de service Firebase dans une variable d'environnement du VPS.
 
-### Gestes au doigt
+### Gestes au doigt (dans l'appli)
 
 - Plus de « Survole… » : tout ce qui s'ouvre au survol s'ouvre aussi au toucher (`src/ui/tooltip.js`), textes adaptés
-  (« Touche un objet pour voir son détail »).
+  (« Touche un objet pour voir son détail »). Sur le site, textes et comportement inchangés.
 - Glisser-déposer de l'inventaire : au doigt, **toucher l'objet puis toucher la case** d'arrivée (déjà signalé dans le
   journal du 25/10). (Claude)
 - Raccourcis clavier (1-9, 0…) cachés sur téléphone (déjà le cas).
@@ -163,11 +190,12 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
 - **Skills** (≈ 4 écrans) : seul l'arbre de la spécialisation choisie est ouvert, les deux autres repliés.
 - **Session** : réglé par la mise en page « Session 1 ».
 - **Lobby** : réglé par l'Accueil.
-- **Bug à vérifier d'abord sur un vrai téléphone** : en émulation, la mine de la session garde 800 px de large sur un
-  écran de 393 px (le mineur sort de l'écran). `#cv` est dans le flux sur téléphone (`position:static`, CSS l.594) et
-  `fitMine` lit la largeur de sa boîte, que le canvas a lui-même élargie. Corrigé de toute façon par la mise en page
-  « Session 1 » (canvas hors du flux), mais si Jules le voit sur son iPhone, c'est un correctif du site à mettre en
-  ligne tout de suite (branche `jules/fix-…`).
+- **Bug du site à vérifier sur un vrai téléphone** (hors chantier de l'appli) : en émulation, la mine de la session
+  garde 800 px de large sur un écran de 393 px (le mineur sort de l'écran). `#cv` est dans le flux sur téléphone
+  (`position:static`, CSS l.594) et `fitMine` lit la largeur de sa boîte, que le canvas a lui-même élargie. Dans
+  l'appli, la mise en page « Session 1 » (canvas hors du flux) l'évite. Si Jules le voit sur son iPhone dans le
+  navigateur, c'est un **correctif du site**, sur sa propre branche `jules/fix-…`, à décider par Jules (il change le
+  site, même si c'est pour réparer).
 
 ### La coque de l'appli
 
@@ -177,8 +205,8 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
 - Identité : nom **Deep Mine Idle**, identifiant **`fr.deepmineidle.app`**, icône tirée du pixel art du jeu (pioche).
   (Claude)
 - Le jeu détecte l'appli par `window.Capacitor?.isNativePlatform()` et appelle les plugins par `window.Capacitor.Plugins`
-  (le pont natif les injecte dans la page chargée) : **aucun import npm dans `src/`**, pas de bundler. Tout ce qui est
-  propre à l'appli passe par **un seul module** (`src/ui/native.js` ou équivalent) qui ne fait rien sur le site.
+  (le pont natif les injecte dans la page chargée) : **aucun import npm dans `src/`**, pas de bundler. Tout ce qui parle
+  au natif passe par **un seul module** (`src/app/native.js`), jamais chargé sur le site.
 - Plugins prévus : local-notifications (phase 3), push-notifications (phase 4), app (bouton retour Android, retour au
   premier plan → relancer les sondages), status-bar et splash-screen. Pas d'autre plugin sans raison.
 - Encoches et barres système : `viewport-fit=cover` et marges `env(safe-area-inset-*)` sur la barre du haut et la barre
@@ -195,11 +223,14 @@ Le Lobby sur téléphone, dans cet ordre, sans défiler pour l'essentiel :
 
 Chaque étape = une branche `jules/…`, mise en ligne quand Jules le dit, jouable à chaque fois.
 
-1. **Coque Android** : `mobile/`, config, page « pas de connexion », icône, workflow GitHub qui sort l'APK. *Fini quand*
-   l'APK s'installe sur un Android d'ami, ouvre deepmineidle.fr, on se connecte et on joue une session.
-2. **Interface téléphone** (en plusieurs branches, dans cet ordre) : navigation 5 familles → Session 1 (avec le bug de
-   largeur) → Accueil et rendez-vous → Stuff et Skills → gestes au doigt. *Fini quand* chaque écran tient à 393 px de
-   large sans défilement horizontal, et que les 13 onglets restent accessibles en 2 touchers au plus.
+1. **Coque Android** : `mobile/`, config, page « pas de connexion », icône, workflow GitHub qui sort l'APK, et la
+   détection de l'appli (`src/app/`, classe `body.app`, rien d'autre encore). *Fini quand* l'APK s'installe sur un
+   Android d'ami, ouvre deepmineidle.fr, le pont natif répond (voir la contrainte de sécurité), on se connecte et on
+   joue une session ; et le site est identique.
+2. **Interface téléphone dans l'appli** (en plusieurs branches, dans cet ordre) : navigation 5 familles → Session 1 →
+   Accueil et rendez-vous → Stuff et Skills → gestes au doigt. *Fini quand* chaque écran tient à 393 px de large sans
+   défilement horizontal dans l'appli (et avec `?app`), que les 13 onglets restent accessibles en 2 touchers au plus,
+   et que le site (sans `?app`) est identique à avant.
 3. **Notifications programmées** + écran de réglages (dans l'appli seulement). *Fini quand* les 4 notifications
    arrivent appli fermée sur un vrai Android, au bon moment, et s'éteignent une par une.
 4. **Quand les comptes sont pris** : push serveur (tours, invitations, amis), version iOS (runner macOS, TestFlight),
@@ -211,11 +242,13 @@ Chaque étape = une branche `jules/…`, mise en ligne quand Jules le dit, jouab
   familles et l'ouverture par adresse (`#craft` → Sac / Craft) ; la liste des rendez-vous à afficher à partir de l'état ;
   le calcul des notifications à programmer (heures, textes, réglages, heures calmes de la MI, rien dans le passé, pas
   de doublon).
-- **Mise en page** : captures à 393 × 659 (iPhone 15 émulé) et 360 × 740 (Android courant) de chaque écran touché, en
-  mode normal (le panneau du mode dev élargit le lobby), comme le relevé du 28/10 ; vérifier l'absence de défilement
-  horizontal (`scrollWidth` = largeur de l'écran) et le PC à 1440 px inchangé.
-- **Vrai téléphone** à chaque étape : l'iPhone de Jules (dans Safari tant qu'il n'y a pas de compte Apple) et un Android
-  d'ami (APK).
+- **Mise en page** : captures avec `?app` à 393 × 659 (iPhone 15 émulé) et 360 × 740 (Android courant) de chaque écran
+  touché, en mode normal (le panneau du mode dev élargit le lobby), comme le relevé du 28/10 ; vérifier l'absence de
+  défilement horizontal (`scrollWidth` = largeur de l'écran).
+- **Site inchangé** : à chaque étape, captures **sans** `?app` à 393 × 659 et à 1440 × 900, avant / après, identiques
+  (et aucun fichier de `src/app/` chargé : onglet Réseau).
+- **Vrai téléphone** à chaque étape : l'iPhone de Jules (dans Safari avec `?app` tant qu'il n'y a pas de compte Apple)
+  et un Android d'ami (APK).
 - Pas de simulation à lancer : la simulation et l'IA ne bougent pas. `npm run test:anticheat` seulement si la phase 4
   touche aux routes du serveur.
 
