@@ -4162,3 +4162,7 @@ Règles (voir CLAUDE.md) :
   flesh, dungeon, spells, khole, trap, instance-sim, tower-* : verts.
 - **Simulation** ✅ 5 sessions à 3 : 0 blocage. `simulate:instance --size 3` identique avant / après (⚠️ acier 0/20 aujourd'hui,
   l'état du projet dit 20/20 : antérieur à ce correctif, à revoir).
+- **Ajout (même branche)** : `rawDps(stats)` (src/meta/stuff.js) = dégâts × (1 + dégâts %) × (1 + critique, ≤ 100 %) ×
+  (1 + double attaque, ≤ 100 %) × vitesse ÷ 100 ÷ `CFG.attackInterval` ; ligne « DPS (cible immobile) » sous le gear score
+  (`statsHTML`, src/ui/stuff.js), avec les totaux affichés (stuff, skills, anneaux, glyphes ; sans Cri de guerre ni
+  Pillage). Tests ✅ `tests/dps.test.js`.

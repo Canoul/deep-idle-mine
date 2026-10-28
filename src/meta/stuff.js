@@ -7,7 +7,7 @@
    son uid : elle n'est jamais à deux endroits à la fois, et jamais recréée.
    Anneaux (RINGS) : deux cases (anneau1, anneau2) pour le même genre d'objet, jamais deux fois le même anneau ; leur
    effet va à tout le groupe de la session (withRings), une fois par anneau différent. */
-import { STUFF, ITEMS, STATS, RINGS } from '../config.js';
+import { STUFF, ITEMS, STATS, RINGS, CFG } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
@@ -141,6 +141,12 @@ export const equippedStats = (items, mastery) => Object.fromEntries(Object.entri
 /* stats du mineur avec le stuff porté et les skills, pour l'onglet Stuff : [{ key, label, base, bonus, mult, skill, total }]
    bonus = apport du stuff (ajouté), mult = multiplicateur des skills (1 = aucun), total = (base + bonus) × mult : ce qu'il a
    en session ; skill = ce que le multiplicateur ajoute (total − (base + bonus)) */
+/* DPS brut (28/10/2026, Geoffrey) : dégâts par seconde sur une cible immobile, sans recul ni obscurité, en moyenne.
+   stats = { stat: total } (minerStats → total, ou m.carac). Un critique fait ×2 (src/sim/actions.js hitDamage), la double
+   attaque ajoute un coup complet avec son propre critique, un coup toutes les CFG.attackInterval s à 100 % de vitesse. */
+export const rawDps = s => (s.damage || 0) * (1 + (s.damagePct || 0) / 100) * (1 + Math.min(100, s.crit || 0) / 100)
+  * (1 + Math.min(100, s.doubleAttack || 0) / 100) * Math.max(0, s.attackSpeed || 0) / 100 / CFG.attackInterval;
+
 export function minerStats(worn, effects = {}){
   const pieces = Object.values(worn || {}).filter(Boolean);
   const s = statsOf(pieces);
