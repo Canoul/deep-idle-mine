@@ -271,14 +271,14 @@ test('recherche T2 : tout appris → nothing_left', () => {
   assert.equal(research(inv, 2, id(), fixed(0)).error, 'nothing_left');
   assert.equal(countOf(inv, PARTS), 1000);
 });
-test('recycle : un BP du T2 rend 40 à 70 parts, un BP du T1 15 à 30 (RESEARCH.tiers[0].recycle)', () => {
+test('recycle : un BP du T2 rend 30 à 45 parts (28/10), un BP du T1 15 à 30 (RESEARCH.tiers[0].recycle)', () => {
   assert.equal(tierOfBlueprint('Gants tactique BP').tier, 2); assert.equal(tierOfBlueprint('Pioche en fer BP').tier, 1);
   const inv = invWith({ 'Gants tactique BP':3, 'Pioche en fer BP':3 });
-  assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0)).parts, 40);
-  assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0.9999999)).parts, 70);
+  assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0)).parts, 30);
+  assert.equal(recycle(inv, 'Gants tactique BP', id(), fixed(0.9999999)).parts, 45);
   const T1R = RESEARCH.tiers[0].recycle;
   assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0)).parts, T1R.min);
   assert.equal(recycle(inv, 'Pioche en fer BP', id(), fixed(0.9999999)).parts, T1R.max);
   const rng = mulberry32(8);
-  for(let k = 0; k < 500; k++){ addItem(inv, 'Cape de Naingui BP', 1); const p = recycle(inv, 'Cape de Naingui BP', id(), rng).parts; assert.ok(p >= 40 && p <= 70); }
+  for(let k = 0; k < 500; k++){ addItem(inv, 'Cape de Naingui BP', 1); const p = recycle(inv, 'Cape de Naingui BP', id(), rng).parts; assert.ok(p >= 30 && p <= 45); }
 });

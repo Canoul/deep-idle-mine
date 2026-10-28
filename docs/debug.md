@@ -3932,3 +3932,13 @@ Règles (voir CLAUDE.md) :
   trésor passent le pseudo. Tests ✅ `tests/wiki-secret.test.js` (premier BP : révélé + 1 annonce, le 2e : rien ; Roi
   Gobelin : une annonce par pièce, une fois) ; discord, game-service, tier4, gearscore, stuff-balance, leaderboard,
   steel-gear, treasure, wiki : 135/135 puis 68/68 ; `npm run test:anticheat` 104/104.
+
+## 28/10/2026 — Table de recherche : tier 4 et recyclage (Geoffrey)
+- `src/config.js` `RESEARCH.tiers` : recycle T2 30–45, T3 45–60 (avant 40–70) ; nouveau `{ tier:4, from:'Treasure T4', cost:250, recycle 60–75 }`.
+  Pool T4 = 1re famille `blueprint` du Treasure T4 (`tierBlueprints` prend `.find`) : les plans `learnOnce` du 2e jet
+  (clé, gemmes) n'y sont pas, et recyclés ils tombent sur le tier 1 (`tierOfBlueprint` → null).
+- `server/game/service.js` `research` : `markFound([item])` après une recherche (plan secret du T4 → wiki + Discord).
+- Tests : `tests/research.test.js` (config, test tier 4, tier inconnu = 5), `tests/tier2.test.js` (recycle 30–45).
+  `node --test` research, tier2, tier4, wiki, wiki-secret, anticheat/research : 59/59 ✅.
+- ⚠️ Pas de poids dans le tirage T4 (Jambières, thorium et cobalt pèsent comme les autres, alors qu'ils sont 2× plus rares au trésor).
+
