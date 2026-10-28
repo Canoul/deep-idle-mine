@@ -31,7 +31,7 @@ Modèle d'entrée :
   et le bandeau « comptera à la prochaine session » de Stuff, Skills et Sorts marche toujours.
 - **Cause** : deux éléments portaient le même nom de style ; le bandeau « En session » du lobby s'appliquait à toute la
   page. Rien à voir avec l'appli téléphone. Un test empêche maintenant que ça se reproduise.
-- **État** : 🧪 sur la branche `jules/fix-classe-session` (pas en ligne)
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Jules — Les pop-ups se ferment toutes seules
 - **Pour le joueur** : les pop-ups en haut à gauche (invitation de groupe, demande d'ami, « groupe trouvé ») et le

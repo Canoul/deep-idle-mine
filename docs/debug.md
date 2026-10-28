@@ -4207,7 +4207,7 @@ Règles (voir CLAUDE.md) :
   largeur (800 à 1150 px) ; vu aussi sans les changements du guide. Pas cherché plus loin.
   → Expliqué et corrigé le 28/10 : c'était `body.inSession` (bulles d'aide), voir l'entrée suivante.
 
-### Correctif : page déformée en session (Jules) — branche `jules/fix-classe-session`
+### Correctif : page déformée en session (Jules) — branche `jules/fix-classe-session`, ✅ en ligne le 28/10
 - **Symptôme** (signalé par Jules, capture sur PC 1911 × 888) : pendant une session, sur tous les onglets, la barre du
   haut est rétrécie (~700 px) et descendue (~150 px), le contenu est collé à gauche, le mur du fond a disparu (fond uni).
   Hors session : normal. Le site en ligne servait bien les fichiers de `main` (comparés avec curl) : pas de fichier
