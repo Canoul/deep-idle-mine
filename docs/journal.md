@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Fond d'écran : transition douce avec l'onglet Session
+- **Pour le joueur** : sur les autres onglets, la mine reste en plein écran, assombrie. En ouvrant l'onglet Session,
+  elle **rétrécit en douceur** (zoom régulier, ~0,5 s) jusqu'à sa place dans la session en s'éclaircissant, pendant que
+  les panneaux de gauche et de droite **glissent depuis les bords** et que le bandeau du haut descend. En quittant
+  l'onglet Session, c'est l'inverse : les panneaux repartent vers les bords en s'effaçant pendant que la mine s'agrandit
+  jusqu'au plein écran. Mine et panneaux vont au même rythme, du début à la fin. Plus de saut d'image.
+- **À savoir** : la transition apparaît dès qu'on a ouvert une fois l'onglet Session avec cette taille de fenêtre (le
+  jeu y note la place de la mine) ; avant, on passe directement. Désactivée si le système demande moins d'animations.
+
 ## 28/10/2026 — Geoffrey — Fenêtres : elles ne sortent plus de l'écran
 - **Pour le joueur** : les fenêtres qui s'ouvrent dans un onglet (butin d'un trésor, choix d'une pièce dans le Stuff,
   four, concasseur, fiche d'un ami) restent toujours entre la barre du haut et la barre d'action, même si on a fait
