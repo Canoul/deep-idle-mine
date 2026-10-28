@@ -4087,3 +4087,12 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/tower-level.test.js` (valeurs, invocation niveau 1/2, saut par la porte puis tacle, porte fermée : reste) ;
   tower*, judgment, game-service : 118/118. Simulation niveau 1 (compos du script, 6 seeds) : comme avant, 0 « bloqué ».
 - ⚠️ À regarder en jeu : rendu du saut (glissade du navigateur sur 4 lignes), mobs invoqués pendant l'atterrissage.
+
+## 28/10/2026 — GS : stats offensives au tableau des lignes (Geoffrey)
+- `UPGRADE.gsFromPrices` (dégâts, dégâts %, vitesse d'attaque, double attaque, critique, coup unique, perçage, portée, recul) ;
+  `gsPrice(k)` dans `src/meta/gearscore.js` (prices pour ces stats, sinon statPrice) ; `pieceGS` l'utilise. `statPrice` et
+  `designPrice` inchangés (dessin des pièces, stuff-balance).
+- Diff du GS des objets : Lance en fer 360→1020, Capuche sombre 125→589, Lanières 188→285, Gants tactique 39→100, Casque en
+  thorium 470→610, Jambes thorium 438→532, Casque cobalt 470→510, autres +1 à 8 %. Classements GS et modulation (2000 GS) suivent.
+- Tests : gearscore (nouveau test, lance = 1020), stuff-balance, tier4, mob-drops, rune, social, game-service, lobby, dashboard 133/133 ✅.
+

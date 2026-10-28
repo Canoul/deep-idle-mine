@@ -45,6 +45,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     pièce et du joueur en x (`src/meta/gearscore.js`, affiché dans l'onglet Stuff, les bulles des pièces et le lobby) ;
     **prix du GS depuis le 26/10 au soir : les x mesurés** (`UPGRADE.worth` + `UPGRADE.gs` pour double attaque, ténacité,
     résistance au recul, portée, recul, rayon des torches, simulés le 26/10 ; ancien : `UPGRADE.prices`, le tableau des runes) ;
+    **stats offensives au prix du tableau des lignes** (`UPGRADE.gsFromPrices`, 28/10, Geoffrey ; portée et recul compris :
+    Lance en fer 1 020 GS) ;
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - **Niveaux de tour** (28/10, Geoffrey ; `TOWER.levels`) : niveau 1 ou 2 choisi au lancement dans le Lobby, chacun

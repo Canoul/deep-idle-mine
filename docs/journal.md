@@ -85,6 +85,14 @@ Modèle d'entrée :
   le plus probable : sans retour visible, le joueur recliquait. Si ça revient, demander sur quel appareil (mobile ?).
 - **État** : ✅ en ligne le 28/10
 
+## 28/10/2026 — Geoffrey — Gear score : les stats offensives comptent au prix des runes
+- **Pour le joueur** : dans le **GS**, les stats offensives (dégâts, dégâts %, vitesse d'attaque, double attaque,
+  critique, coup unique, perçage, portée, recul) valent maintenant ce que vaut une ligne de rune : une rune Dégâts
+  +9,2 % donne **46 GS** au lieu de 18. Les pièces offensives montent : Lance en fer 360 → 1 020 GS, Capuche sombre
+  125 → 589, Lanières en cuir 188 → 285, Gants tactique 39 → 100. Les stats des pièces ne changent pas, ni les runes.
+- **Décisions** : choix de Geoffrey, portée et recul compris ; casque, jambes et bottes en fer restent à 250 x.
+- **État** : 🧪 sur la branche `geoffrey/gs-offensif` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Shrines : le Shrine d'abondance
 - **Pour le joueur** : nouvelle carte **Shrines** dans le lobby de la mine. Les shrines appartiennent au **chef du
   groupe** ; chaque membre peut donner les ressources du prix, autant qu'il veut. Prix atteint : le shrine est actif

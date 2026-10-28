@@ -2,15 +2,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TOWER, UPGRADE, STATS, ITEMS } from '../src/config.js';
-import { pieceGS, gearScore, statPrice, designPrice } from '../src/meta/gearscore.js';
+import { pieceGS, gearScore, statPrice, designPrice, gsPrice } from '../src/meta/gearscore.js';
 import { createInventory } from '../src/meta/inventory.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { modulationState } from '../src/ui/lobby.js';
 import { fakeLive } from './helpers.js';
 
-/* prix d'une stat dans le GS : mesuré (worth, gs), sans l'ajustement de Geoffrey (28/10/2026) */
-const P = new Proxy({}, { get: (_, k) => statPrice(k) });
+/* prix d'une stat dans le GS : mesuré (worth, gs), sans l'ajustement de Geoffrey (28/10/2026) ; stats offensives : tableau des
+   lignes (28/10/2026, UPGRADE.gsFromPrices) */
+const P = new Proxy({}, { get: (_, k) => gsPrice(k) });
 
 test('GS d\'une pièce : stats de l\'objet en x ; une valeur qui remplace la base compte pour ce qu\'elle ajoute', () => {
   const plastron = ITEMS['Plastron en fer'].stats;
@@ -27,7 +28,18 @@ test('GS : prix mesurés (worth), complétés par UPGRADE.gs pour les stats simu
   const expect = Object.entries(lance.stats || {}).reduce((s, [k, v]) => s + v * (P[k] ?? 0), 0)
     + Object.entries(lance.set || {}).reduce((s, [k, v]) => s + (v - STATS[k]) * (P[k] ?? 0), 0);
   assert.equal(pieceGS('Lance en fer'), Math.round(expect));
-  assert.ok(pieceGS('Lance en fer') < 900, `lance : ${pieceGS('Lance en fer')} GS (portée et recul au prix simulé)`);
+  assert.equal(pieceGS('Lance en fer'), 1020, 'lance : portée et recul au prix du tableau des lignes (28/10, choix de Geoffrey)');
+});
+
+test('GS des stats offensives (28/10/2026, Geoffrey) : prix du tableau des lignes (runes) ; le dessin des pièces ne change pas', () => {
+  assert.deepEqual(UPGRADE.gsFromPrices, ['damage', 'damagePct', 'attackSpeed', 'doubleAttack', 'crit', 'oneTap', 'piercing', 'reach', 'knockback']);
+  for(const k of UPGRADE.gsFromPrices) assert.equal(gsPrice(k), UPGRADE.prices[k], k);
+  assert.equal(gsPrice('pods'), statPrice('pods')); assert.equal(gsPrice('knockRes'), statPrice('knockRes'), 'défensive : prix mesuré');
+  assert.equal(designPrice('damagePct'), statPrice('damagePct') * UPGRADE.priceAdjust.damagePct, 'dessin : prix mesuré × ajustement');
+  /* exemple de Geoffrey : Casque en fer avec une rune Dégâts +9,2 % → 46 GS pour cette ligne */
+  const base = pieceGS('Casque en fer'), item = 'Casque en fer';
+  const r = pieceGS({ item, q:7, rune:{ q:7, s:1, lines:[{ stat:'damagePct', pct:18.4 }] } });
+  assert.equal(r - base, 46);
 });
 
 test('ajustements de Geoffrey (27/10/2026) : servent à dessiner les pièces, pas au GS (28/10)', () => {
