@@ -29,7 +29,14 @@ Modèle d'entrée :
   un set, reset des skills, se déconnecter…), les messages d'erreur et le renommage d'un set s'ouvrent maintenant dans
   une fenêtre du jeu (cadre pixel « Forge noire ») au lieu de la boîte grise du navigateur. Les boutons disent ce qu'ils
   font (« Quitter », « Sacrifier », « Supprimer »…) ; Entrée valide, Échap ou un clic à côté annule.
-- **État** : 🔧 en cours (branche `geoffrey/fenetres-validation`).
+- **État** : ✅ en ligne le 28/10.
+
+## 28/10/2026 — Geoffrey — Four : changer de recette sans vider le four
+- **Pour le joueur** : dans la fenêtre **Recettes**, on peut choisir une autre recette même si le four est plein :
+  ce qui ne sert plus (ingrédients de l'ancienne recette, produits d'une autre sorte) revient tout seul dans
+  l'inventaire. Rien n'est perdu ; le produit en cours de fonte est juste annulé. Un ingrédient commun (le Mithril
+  ingot entre Cobalt et Thorium ingot) et le charbon restent dans le four. La fenêtre annonce ce qui va revenir.
+- **État** : ✅ en ligne le 28/10
 
 ## 28/10/2026 — Geoffrey — Stats du mineur : plus de liste « Skills en partie »
 - **Pour le joueur** : sous les stats du mineur (onglet Stuff et fiche d'un ami), la liste « Skills en partie »
