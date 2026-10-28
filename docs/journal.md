@@ -24,10 +24,11 @@ Modèle d'entrée :
 
 ---
 
-## 28/10/2026 — Geoffrey — Identification : les pièces déjà identifiées ne sont plus proposées
-- **Pour le joueur** : dans l'onglet Amélioration, rubrique Identification, la liste « Choisis la pièce à identifier »
-  ne montre plus les pièces déjà identifiées (elles ne pouvaient de toute façon pas l'être une 2e fois). La liste des
-  sacrifices les montre toujours : on peut sacrifier un exemplaire identifié (avec la fenêtre d'avertissement).
+## 28/10/2026 — Geoffrey — Identification en deux temps
+- **Pour le joueur** : dans l'onglet Amélioration, rubrique Identification, on choisit d'abord la pièce à identifier :
+  la liste ne montre que les pièces **pas encore identifiées**. Ensuite seulement on choisit le sacrifice, et la liste
+  ne montre plus que les **autres exemplaires du même objet** (identifiés ou non : sacrifier un exemplaire identifié
+  reste permis, avec la fenêtre d'avertissement). Vider la case de la pièce revient au premier temps.
 - **État** : en cours (branche `geoffrey/identif-masquer`).
 
 ## 28/10/2026 — Jules — Onglet Sorts refait (piste A « la barre de sorts »)

@@ -371,11 +371,11 @@ test('anneau porté : son doublon est pris dans l\'inventaire, jamais l\'autre a
   assert.ok(st2.worn.anneau1, 'l\'anneau porté n\'est pas touché');
 });
 
-test('onglet Identification : les pièces déjà identifiées ne sont pas proposées comme pièce à identifier', async () => {
+test('onglet Identification en deux temps : pièces non identifiées, puis exemplaires du même objet', async () => {
   const { identifyChoices } = await import('../src/ui/upgrade.js');
-  const brute = { item:PICK, uid:1 }, autre = { item:PICK, uid:2 }, faite = { item:PICK, uid:3, q:4, lines:[] };
-  const list = [brute, autre, faite];
-  assert.deepEqual(identifyChoices(list, 'target', null, null).map(p => p.uid), [1, 2], 'la pièce identifiée est masquée');
-  assert.deepEqual(identifyChoices(list, 'target', null, autre).map(p => p.uid), [1], 'le sacrifice posé non plus');
-  assert.deepEqual(identifyChoices(list, 'sacrifice', brute, null).map(p => p.uid), [2, 3], 'une pièce identifiée peut toujours être sacrifiée');
+  const brute = { item:PICK, uid:1 }, autre = { item:PICK, uid:2 }, faite = { item:PICK, uid:3, q:4, lines:[] }, plume = { item:FEATHER, uid:4 };
+  const list = [brute, autre, faite, plume];
+  assert.deepEqual(identifyChoices(list, null).map(p => p.uid), [1, 2, 4], '1er temps : la pièce identifiée est masquée');
+  assert.deepEqual(identifyChoices(list, brute).map(p => p.uid), [2, 3], '2e temps : même objet seulement, identifié ou non');
+  assert.deepEqual(identifyChoices(list, plume).map(p => p.uid), [], 'pas d\'autre exemplaire : liste vide');
 });
