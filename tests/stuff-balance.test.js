@@ -13,6 +13,8 @@ const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : to
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
 const price = designPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026) : valeur de dessin, pas le GS (28/10)
+/* hors règle, voulu : Ceinture du Géant à 5 dégâts (28/10/2026, Geoffrey ; avant 1,6) */
+const OFF_RULE = new Set(['Ceinture du Géant']);
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 
 test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (100 / 250 / 500 x)', () => {
@@ -26,6 +28,7 @@ test('casques, jambes et bottes en chitine, fer et acier : GS = valeur du tier (
 test('butin des mobs : tier 2, parts égales entre les stats (prix ajustés, valeur pleine depuis le 27/10)', () => {
   assert.equal(STUFF.combatOnStuff, 1, 'plus de demi-valeur : remplacée par UPGRADE.priceAdjust (27/10, Geoffrey)');
   for(const { item } of MOB_DROPS.items){
+    if(OFF_RULE.has(item)) continue;
     const stats = Object.entries(STUFF.items[item].stats), share = UPGRADE.tiers[tierOf(item)].x / stats.length;
     assert.equal(tierOf(item), 2, item);
     for(const [k, v] of stats){

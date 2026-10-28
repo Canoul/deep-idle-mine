@@ -24,6 +24,11 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — Ceinture du Géant : 5 dégâts
+- **Pour le joueur** : la Ceinture du Géant donne **+5 dégâts** (avant +1,6) ; la ténacité ne change pas (+12,5 %). Les
+  ceintures déjà trouvées en profitent (stats relues dans le catalogue). GS : 127 → 263.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Jules — Correctif : pourcentages à rallonge dans le panneau de l'area
 - **Pour le joueur** : avec un autel de minerais actif, le panneau de l'area en session affichait des pourcentages
   comme « 9.3333333333 % » ou « 4.6666666667 % ». Ils sont maintenant arrondis à une décimale (« 9,3 % », « 4,7 % »,
