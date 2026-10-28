@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 28/10/2026 — Geoffrey — La session en cours en fond d'écran
+- **Pour le joueur** : pendant une session, quand on est sur un autre onglet (lobby, inventaire, craft…), la mine en
+  cours s'affiche en fond, assombrie, à la place du mur de pierre : on voit son mineur travailler en arrière-plan. Sans
+  les panneaux d'infos (juste la mine). Hors session, le mur revient.
+- **Option** : clic sur son pseudo en haut à gauche → « Options » → « Session en cours en fond d'écran » (activée de
+  base). Le choix est gardé dans le navigateur.
+- **État** : ✅ en ligne le 28/10
+
 ## 28/10/2026 — Geoffrey — Lobby : les Shrines sous « Ton groupe »
 - **Pour le joueur** : dans le lobby de la mine, le panneau **Shrines** passe dans la colonne de droite, juste sous
   « Ton groupe » (il était en bas de la colonne de gauche, sous les préférences).

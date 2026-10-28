@@ -4381,3 +4381,21 @@ Règles (voir CLAUDE.md) :
   right}` alignait les pseudos à droite.
 - **Correctif** : classe du four renommée `frecRow` (`src/ui/furnace.js`, `src/ui/style.css`). ✅ plus aucune règle
   du four sur `.frow`. **À retenir** : chercher une classe dans tout `src/ui/` avant de la créer.
+
+## 28/10/2026 — Geoffrey — Fond de page : la session en cours (✅ en ligne le 28/10)
+- **Quoi** : `src/ui/backdrop.js` (nouveau) : `createBackdrop(#bgSession)`, un canvas par mode (mine, mi, tower,
+  instance) créé à la première image, avec son propre moteur de dessin (createRenderer…) ; mine et mine instantanée :
+  `setRows` = lignes pour couvrir l'écran (≤ `CAMERA.maxRows`). `draw(G, visible, me, follow)` appelé à chaque image dans
+  `frame` (src/main.js) avec `rec ? shown : null` et `ui.tab !== 'session'` : rien dessiné sur l'onglet Session ni hors
+  session. CSS `.bgSession` : fixed, z-index −1 (sous la vignette `body::before`), `object-fit:cover`,
+  `filter:brightness(.45) saturate(.7)` (sans flou : coût sur un canvas plein écran).
+- **Option** : `src/ui/account.js` `optionsHtml` + handlers `options()` / `setOption(key, on)` (vue « Mon compte ») ;
+  clé localStorage `dim.bgSession` ('0' = coupée, défaut activée, try/catch si stockage bloqué).
+- **Tests** ✅ `tests/backdrop.test.js` (défaut, persistance, stockage bloqué, rien sans session / onglet Session /
+  option coupée, cases d'options échappées) + account-client : 5/5.
+- ✅ **Navigateur** (Chrome sans écran piloté par CDP, mode dev, invité, session lancée) : sur l'onglet Inventaire le fond
+  montre la mine assombrie (surface et mineur), `#bgSession` visible avec 1 canvas ; la case « Session en cours en fond
+  d'écran » dans « Mon compte », décochée → fond caché, `dim.bgSession = '0'` ; aucune erreur console. Pas vérifié :
+  tours, instance, mine instantanée en fond, téléphone, fluidité sur une petite machine. Points fragiles : le fond dessine la mine en entier à chaque image (même coût que l'onglet Session) ;
+  `src/render/splash.js` garde les éclaboussures vues dans une Map partagée par les deux canvas (sans effet : un seul
+  dessiné à la fois).
