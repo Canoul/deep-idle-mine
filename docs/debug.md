@@ -3940,5 +3940,8 @@ Règles (voir CLAUDE.md) :
 - `server/game/service.js` `research` : `markFound([item])` après une recherche (plan secret du T4 → wiki + Discord).
 - Tests : `tests/research.test.js` (config, test tier 4, tier inconnu = 5), `tests/tier2.test.js` (recycle 30–45).
   `node --test` research, tier2, tier4, wiki, wiki-secret, anticheat/research : 59/59 ✅.
-- ⚠️ Pas de poids dans le tirage T4 (Jambières, thorium et cobalt pèsent comme les autres, alors qu'ils sont 2× plus rares au trésor).
+- Étapes (même jour) : `RESEARCH.tiers[3].stages` (8 / 8 / 1). `researchStage(inv, t)` = 1re étape avec une recette non apprise ;
+  `researchPool` d'un tier à étapes = son pool. `tierBlueprints` reste la liste complète (recipesLeft, recycle, wiki).
+  UI : « Étape x / 3 : n plans possibles ». Test : les étapes couvrent exactement le 1er jet du T4 (garde-fou si on ajoute un plan au trésor
+  sans l'ajouter à une étape). 61/61 ✅.
 

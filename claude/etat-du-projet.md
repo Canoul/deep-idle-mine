@@ -200,7 +200,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage **45 à 60** (28/10 ; ancien 40 à 70). (Ancien : pas de tier 3.)
   **Tier 4** (28/10, Geoffrey) : **250 parts**, plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des
-  tiers 1 à 3 sont apprises, recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).
+  tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques,
+  chaque étape ouverte quand les recettes de la précédente sont apprises), recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
   dans la mine ; les mineurs (« combat » sur Combattre) le chassent à chaque passage au coffre, sac vidé (24/10 ;

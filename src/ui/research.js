@@ -10,7 +10,7 @@ import { rcls, rname } from './rarity.js';
 import { tipAttr } from './tooltip.js';
 import { recipeOfBlueprint } from '../meta/craft.js';
 import { statLines } from '../meta/stuff.js';
-import { PARTS, tierOf, researchPool, isBlueprint, tierOfBlueprint, tierUnlocked, tiersBlocking } from '../meta/research.js';
+import { PARTS, tierOf, researchPool, researchStage, isBlueprint, tierOfBlueprint, tierUnlocked, tiersBlocking } from '../meta/research.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -27,13 +27,13 @@ export function setupResearch({ onOp }){
 
   function researchHtml(){
     if(!tierUnlocked(inv, tier)) tier = RESEARCH.tiers[0].tier;           // tier verrouillé (jamais reverrouillé en pratique)
-    const def = tierOf(tier), have = countOf(inv, PARTS), left = researchPool(inv, tier).length;
+    const def = tierOf(tier), have = countOf(inv, PARTS), left = researchPool(inv, tier).length, stage = researchStage(inv, tier);
     const lockedBy = RESEARCH.tiers.filter(t => !tierUnlocked(inv, t.tier));
     if(partsIn && have < def.cost) partsIn = false;           // plus assez (dépensées ailleurs) : la case se vide
     const ok = partsIn && left > 0 && !busy;
     return `<div class="rsRow"><label>Tier <select id="rsTier">${RESEARCH.tiers.map(t =>
               `<option value="${t.tier}"${t.tier === tier ? ' selected' : ''}${tierUnlocked(inv, t.tier) ? '' : ' disabled'}>${esc(t.label)}${tierUnlocked(inv, t.tier) ? '' : ' 🔒'}</option>`).join('')}</select></label>`+
-           `<span class="mut small">${left} blueprint${left > 1 ? 's' : ''} du ${esc(def.label)} encore à découvrir</span></div>`+
+           `<span class="mut small">${stage ? `Étape ${stage.index + 1} / ${stage.count} : ${left} plan${left > 1 ? 's' : ''} possible${left > 1 ? 's' : ''}` : `${left} blueprint${left > 1 ? 's' : ''} du ${esc(def.label)} encore à découvrir`}</span></div>`+
            `<div class="rsBench"><div class="slot rsSlot${partsIn ? '' : ' empty'}" id="rsParts" title="Clique pour poser ou retirer ${def.cost} ${esc(PARTS)}">`+
              `${partsIn ? icon(PARTS) + `<span class="q">${def.cost}</span>` : `<span class="fhint">${def.cost} parts</span>`}</div>`+
            `<span class="rsArrow">➜</span>`+
