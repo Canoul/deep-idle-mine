@@ -3932,3 +3932,16 @@ Règles (voir CLAUDE.md) :
   trésor passent le pseudo. Tests ✅ `tests/wiki-secret.test.js` (premier BP : révélé + 1 annonce, le 2e : rien ; Roi
   Gobelin : une annonce par pièce, une fois) ; discord, game-service, tier4, gearscore, stuff-balance, leaderboard,
   steel-gear, treasure, wiki : 135/135 puis 68/68 ; `npm run test:anticheat` 104/104.
+
+## 28/10/2026 — Table de recherche : tier 4 et recyclage (Geoffrey)
+- `src/config.js` `RESEARCH.tiers` : recycle T2 30–45, T3 45–60 (avant 40–70) ; nouveau `{ tier:4, from:'Treasure T4', cost:250, recycle 60–75 }`.
+  Pool T4 = 1re famille `blueprint` du Treasure T4 (`tierBlueprints` prend `.find`) : les plans `learnOnce` du 2e jet
+  (clé, gemmes) n'y sont pas, et recyclés ils tombent sur le tier 1 (`tierOfBlueprint` → null).
+- `server/game/service.js` `research` : `markFound([item])` après une recherche (plan secret du T4 → wiki + Discord).
+- Tests : `tests/research.test.js` (config, test tier 4, tier inconnu = 5), `tests/tier2.test.js` (recycle 30–45).
+  `node --test` research, tier2, tier4, wiki, wiki-secret, anticheat/research : 59/59 ✅.
+- Étapes (même jour) : `RESEARCH.tiers[3].stages` (8 / 8 / 1). `researchStage(inv, t)` = 1re étape avec une recette non apprise ;
+  `researchPool` d'un tier à étapes = son pool. `tierBlueprints` reste la liste complète (recipesLeft, recycle, wiki).
+  UI : « Étape x / 3 : n plans possibles ». Test : les étapes couvrent exactement le 1er jet du T4 (garde-fou si on ajoute un plan au trésor
+  sans l'ajouter à une étape). 61/61 ✅.
+
