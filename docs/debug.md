@@ -4303,3 +4303,11 @@ Règles (voir CLAUDE.md) :
   « cases | stats 150u » passe sur `.stuffMain` (1 colonne sous 1100 px) ; `.furnWrap` de Stuff : simple max-width 720u.
 - ✅ Vérifié en capture Chrome headless (page statique avec le vrai style.css) à 1600 px (3 colonnes) et 900 px (stats
   sous les cases). Pas de test unitaire (CSS seul). La fiche d'un ami (`#fview`, Social) n'est pas touchée.
+
+## 28/10/2026 — Sets : enregistrer et créer pendant une session (Geoffrey)
+- `server/game/service.js` `sets` : plus de `session_running` pour create / save (equip l'était déjà depuis ce matin). Sûr :
+  un set ne déplace rien (il note les uid portés, les skills, les sorts via `snapshot`) ; la session en cours garde
+  l'équipement figé à son lancement. Idempotence inchangée (`opId`).
+- `src/ui/sets.js` : en session, plus aucun bouton grisé (seulement pendant une demande) ; message du bas raccourci.
+- Tests `tests/sets.test.js` : enregistrer et créer en session (le set prend l'équipement actuel, demande rejouée = pas de
+  3e set) ; panneau. 8/8 ✅. GAME_DESIGN §sets et wiki (#sets) mis à jour.

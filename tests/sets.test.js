@@ -107,7 +107,7 @@ async function server(){
 }
 const ME = { id:'AAAA1111', name:'Zoe' };
 
-test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer refusés pendant une session', async () => {
+test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enregistrer permis pendant une session', async () => {
   const { game, uid } = await server(), [p1] = uid(PICK);
   await game.stuff(ME, { action:'equip', slot:'pioche', uid:p1, opId:'op-set-w1' });
   await game.skills(ME, { action:'learn', node:'damage', opId:'op-set-k1' });
@@ -121,9 +121,15 @@ test('serveur : un set enregistre et remet stuff, skills et sorts ; créer / enr
   assert.deepEqual([r.skills.tree, r.skills.ranks, r.spells.slots], ['barbare', { damage:1 }, ['dash', null]]);
   assert.equal(r.missing, 0);
   assert.deepEqual((await game.state(ME)).sets.list.map(s => s.name), ['Set 1']);
+  /* 28/10/2026 (Geoffrey) : enregistrer et créer sont permis pendant une session (rien ne bouge : le set note l'équipement) */
   await game.start(ME, {});
-  for(const action of ['save', 'create'])
-    await assert.rejects(game.sets(ME, { action, id:1, opId:'op-set-s-' + action }), { code:'session_running' });
+  await game.stuff(ME, { action:'unequip', slot:'pioche', opId:'op-set-w3' });
+  r = await game.sets(ME, { action:'save', id:1, opId:'op-set-s-save' });
+  assert.equal(r.sets.list[0].stuff.pioche, undefined, 'enregistrer en session : le set prend l\'équipement actuel');
+  r = await game.sets(ME, { action:'create', opId:'op-set-s-create' });
+  assert.deepEqual(r.sets.list.map(s => s.name), ['Set 1', 'Set 2'], 'créer en session');
+  r = await game.sets(ME, { action:'create', opId:'op-set-s-create' });
+  assert.equal(r.sets.list.length, 2, 'demande rejouée : pas de 3e set');
   r = await game.sets(ME, { action:'rename', id:1, name:'Barbare', opId:'op-set-rn1' });
   assert.equal(r.sets.list[0].name, 'Barbare', 'renommer reste possible');
   await assert.rejects(game.sets(ME, { action:'bidule', opId:'op-set-bad1' }), { code:'bad_request' });
@@ -155,7 +161,7 @@ test('serveur : équiper un set pendant une session ; la session en cours ne cha
 
 /* ---------- affichage ---------- */
 
-test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jusqu\'au garde-fou, Équiper permis en session, le reste grisé', async () => {
+test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jusqu\'au garde-fou, tout permis en session, grisé pendant une demande', async () => {
   const { setsHtml } = await import('../src/ui/sets.js');
   const list = [{ id:1, name:'Set 1' }, { id:2, name:'<b>' }];
   const h = setsHtml({ list, max:20 });
@@ -165,7 +171,8 @@ test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jus
   assert.doesNotMatch(setsHtml({ list, max:2 }), /Nouveau set/);
   const inSession = setsHtml({ list, max:20 }, { locked:true });
   assert.doesNotMatch(inSession, /data-act="equip" disabled/, 'équiper reste possible en session (28/10)');
-  assert.match(inSession, /data-act="save" disabled/); assert.match(inSession, /data-act="create" disabled/);
+  assert.doesNotMatch(inSession, /data-act="(save|create)" disabled/, 'enregistrer et créer restent possibles en session (28/10)');
   assert.match(inSession, /prochaine session/);
-  assert.match(setsHtml({ list, max:20 }, { busy:true }), /data-act="equip" disabled/);
+  const busy = setsHtml({ list, max:20 }, { busy:true });
+  assert.match(busy, /data-act="equip" disabled/); assert.match(busy, /data-act="save" disabled/);
 });
