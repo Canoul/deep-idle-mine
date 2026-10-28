@@ -4303,3 +4303,23 @@ Règles (voir CLAUDE.md) :
   « cases | stats 150u » passe sur `.stuffMain` (1 colonne sous 1100 px) ; `.furnWrap` de Stuff : simple max-width 720u.
 - ✅ Vérifié en capture Chrome headless (page statique avec le vrai style.css) à 1600 px (3 colonnes) et 900 px (stats
   sous les cases). Pas de test unitaire (CSS seul). La fiche d'un ami (`#fview`, Social) n'est pas touchée.
+
+## 28/10/2026 — Geoffrey — Four : choisir une recette (action `recipe`)
+- `src/meta/furnace.js` : `recipeByOut(out)` (recette identifiée par son produit, tous différents), `allRecipes()`,
+  `recipeUsable`, `recipePlan(f, inv, out, count)` → `{ mode, add }` ou `{ error }`, `recipeMax` (recherche dichotomique
+  sur `recipePlan`), et l'action `furnaceOp({ action:'recipe', furnace, out, count })`. Règle : cible = fournées déjà
+  possibles (min des cases, combustible compris) + count ; chaque case est complétée jusqu'à cible × besoin. Un
+  ingrédient déjà posé garde sa case (alliage : a/b dans n'importe quel ordre) ; case d'ingrédient occupée par autre
+  chose → `slot_busy` ; changement de mode avec ingrédients posés → `not_empty` ; recette fermée non apprise ou produit
+  inconnu → `bad_item` ; quantité qui déborde (pas un entier sûr) → `bad_qty`. Inventaire vérifié en entier avant de
+  retirer quoi que ce soit (tout ou rien). Combustible : celui déjà posé, sinon `FUEL` = 'Charbon'.
+- `server/game/service.js` : `out` et `count` transmis à `furnaceOp` (messages d'erreur existants réutilisés).
+- `src/ui/furnace.js` : le bouton « Recettes » ouvre `openRecipes(i)` (remplace la fenêtre d'aide `openHelp`) : liste
+  Fondre / Alliage, max par recette, raison si grisée, fournées + ½ + Max + Lancer. `src/ui/style.css` : `.frecs`
+  (liste défilante 45vh ; `flex-shrink:0` sinon les lignes se chevauchent), `.frow b`.
+- **Tests** ✅ `tests/furnace.test.js` (5 nouveaux : fer, complément de l'existant, alliage, refus, max) 40/40 avec
+  `tests/anticheat/furnace.test.js` (quantités trafiquées, produits bidon dont `__proto__`, rejeu du même opId, matière
+  conservée) et `tests/iron-furnace-gold-compass.test.js` ; `tests/game-service.test.js` 49/49 (recette par le serveur,
+  double envoi).
+- ✅ Affichage vérifié en capture Chrome headless (vrai module + style.css, faux inventaire). ⚠️ Pas testé dans une
+  vraie partie avec serveur (envoi réel de la demande), seulement par les tests du service.

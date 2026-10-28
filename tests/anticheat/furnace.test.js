@@ -93,3 +93,20 @@ test('four : débloquer avec un Four en fer — 300 suites trafiquées (rejouée
     assert.equal(back.list.length, st.list.length);
   }
 });
+
+test('four, recette choisie (28/10) : quantités trafiquées refusées, rejeu sans effet, matière conservée', () => {
+  const inv = createInventory(); addAll(inv, START);
+  const st = createFurnaces();
+  for(const count of BAD_QTY)
+    assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count, opId:'bad-' + String(count) }, 1e6).error, 'bad_qty', String(count));
+  for(const out of [null, 42, 'Diamant', '__proto__', 'constructor', { out:'Lingot de fer' }])
+    assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out, count:1, opId:'out-' + String(out) }, 1e6).error, 'bad_item');
+  assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:1e12, opId:'huge' }, 1e6).error, 'not_enough');
+  assert.equal(furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:1e15, opId:'huge2' }, 1e6).error, 'bad_qty', 'quantité qui déborde');
+  assert.equal(countOf(inv, 'Fer'), START.Fer);
+  for(let k = 0; k < 3; k++) furnaceOp(st, inv, { action:'recipe', furnace:0, out:'Lingot de fer', count:5, opId:'same-op' }, 1e6);
+  assert.equal(st.list[0].ore.qty, 50, 'trois envois de la même demande : une seule fois');
+  advance(st.list[0], 1e12);
+  assert.equal(total(inv, st, 'Fer') + FURNACE.orePerIngot * total(inv, st, 'Lingot de fer'), START.Fer);
+  assert.equal(total(inv, st, 'Charbon') + FURNACE.fuelPerIngot * total(inv, st, 'Lingot de fer'), START.Charbon);
+});

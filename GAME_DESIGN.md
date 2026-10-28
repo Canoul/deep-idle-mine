@@ -879,7 +879,8 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
   - **Fondre** : ce qui précède (case minerai + combustible) ;
   - **Alliage** : deux cases d'**ingrédients** (dans n'importe quel ordre, ils doivent former une recette) + combustible + sortie.
   - Changer de mode : seulement quand les cases d'ingrédients sont vides (le combustible et la sortie restent en place).
-  - Un bouton **?** montre les recettes du mode choisi (ingrédients, combustible, durée).
+  - *(ancien : un bouton **?** montrait seulement les recettes du mode choisi.)*
+- **Choisir une recette** *(28/10/2026, Geoffrey)* : le bouton **Recettes** de chaque four liste toutes les recettes (Fondre puis Alliage) avec leurs ingrédients, leur durée dans ce four et le **maximum** de fournées possible avec l'inventaire. On en choisit une, un nombre de **fournées** (saisie libre, **½** du maximum, **Max**), puis **Lancer** : le four passe dans le bon mode et pose lui-même les ingrédients et le **charbon**, **en plus** de ce qu'il contient déjà (les cases sont complétées jusqu'à « fournées déjà possibles + celles demandées » ; le combustible déjà posé compte). Une recette est grisée si elle n'est pas apprise (🔒), s'il manque des ingrédients, ou si le four contient autre chose (« vide le four d'abord »). Poser les objets case par case reste possible.
 - **Recettes d'alliage** *(valeurs provisoires ; d'autres viendront)* :
 
   | Produit | Ingrédients | Combustible | Durée |
