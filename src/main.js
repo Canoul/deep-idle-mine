@@ -107,6 +107,7 @@ const town = setupTown($('bgTown'), {
     const card = $('gchatCard');
     if(on){ gchatHome = { parent: card.parentNode, next: card.nextSibling }; town.chatSlot.appendChild(card); }
     else if(gchatHome){ gchatHome.parent.insertBefore(card, gchatHome.next); gchatHome = null; }
+    requestAnimationFrame(() => gchat?.toEnd());   // déplacée, la liste repart en haut : on la remet sur les derniers messages
     gchat?.poke();
   },
 });

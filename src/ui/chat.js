@@ -8,6 +8,10 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 
+/* la liste est-elle en bas, sur les derniers messages ? Cachée (hauteur 0 : onglet fermé, carte déplacée), on garde
+   l'état d'avant : le navigateur la remet en haut quand elle se réaffiche, ce n'est pas le joueur qui a remonté (29/10) */
+export const stuckToEnd = (el, prev = true, slack = 8) => el.clientHeight ? el.scrollTop + el.clientHeight >= el.scrollHeight - slack : prev;
+
 /* h : { prefix (ids <prefix>Log, Input, Note, Form ; 'chat' par défaut), get(after) → { messages },
          post(text) → { message }, meId() → ID du compte du joueur,
          paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages } */
@@ -16,13 +20,17 @@ export function setupChat(h){
   const log = $(p + 'Log'), input = $(p + 'Input'), note = $(p + 'Note');
   input.maxLength = CHAT.maxLen;
   let msgs = [], last = 0, timer = null, on = false, busy = false, gen = 0, reading = null;   // reading : génération de la relecture en cours
+  /* stick : le joueur est en bas de la liste (il suit les nouveaux messages) ; faux s'il est remonté relire */
+  let stick = true;
+  log.addEventListener('scroll', () => { stick = stuckToEnd(log, stick); });
+  const toEnd = () => { if(stick) log.scrollTop = log.scrollHeight; };
+  if(typeof ResizeObserver !== 'undefined') new ResizeObserver(toEnd).observe(log);   // réaffichée : de nouveau en bas
 
   function render(){
-    const atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 8;   // on ne fait défiler que si on était en bas
     const me = h.meId();
     log.innerHTML = msgs.length ? msgs.map(m => `<div${m.account === me ? ' class="mine"' : ''}>${h.time ? `<time>${hhmm(m.at)}</time>` : ''}<b>${esc(m.name)}</b> : ${esc(m.text)}</div>`).join('')
       : '<div class="mut small">Aucun message.</div>';
-    if(atEnd) log.scrollTop = log.scrollHeight;
+    toEnd();
   }
   function add(list){
     const fresh = list.filter(m => m.id > last);
@@ -60,5 +68,7 @@ export function setupChat(h){
     stop(){ gen++; on = false; clearTimeout(timer); msgs = []; last = 0; render(); },
     /* relire tout de suite (le panneau redevient visible) */
     poke(){ if(on) poll(); },
+    /* retour aux derniers messages si le joueur suivait le fil (carte déplacée dans la page) */
+    toEnd,
   };
 }
