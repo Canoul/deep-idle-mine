@@ -58,14 +58,14 @@ test('casser un spawner : INSTANCE.spawner.hp « coups de pioche » à la vitess
   assert.ok(Math.abs(s.hp - (HP - INSTANCE.spawner.dynamite - 2)) < 0.6, `Dynamite : ${s.hp}`);
 });
 
-test('gobelin : 150 PV, le premier coup tacle, recul de 0,5 vers le centre à chaque coup (27/10 ; avant 30 %)', () => {
-  assert.equal(INSTANCE.goblin.hp, 150);
+test('gobelin : 175 PV (29/10 ; avant 150), le premier coup tacle, recul de 0,5 vers le centre à chaque coup (27/10 ; avant 30 %)', () => {
+  assert.equal(INSTANCE.goblin.hp, 175);
   const G = newInstance(3, { miners: [spec(0, { damage: 0.001, knockRes: 0 })] });
   quiet(G);
   const m = G.miners[0]; m.x = 4; m.y = G.floorY;
   const o = goblin(G, 3, G.floorY);
-  run(G, 1.9);
-  assert.equal(tackler(G, m), null, 'pas encore frappé (un coup toutes les 2 s)');
+  run(G, INSTANCE.goblin.hitEvery - 0.1);
+  assert.equal(tackler(G, m), null, 'pas encore frappé (un coup toutes les hitEvery s)');
   for(let i = 0; i < 300 && !o.hits; i++) run(G, DT);
   assert.equal(o.hits, 1);
   assert.equal(tackler(G, m), o, 'premier coup : taclé');
@@ -151,8 +151,8 @@ test('enfermement : chaque mineur sur un rebord différent, entouré de blocs de
     assert.ok(instSupported(G, m.x, m.y));
   }
   const hp = G.boss.hp;
-  run(G, 2);
-  assert.equal(G.boss.hp, hp);
+  run(G, INSTANCE.boss.regenEvery);
+  assert.ok(Math.abs(G.boss.hp - (hp + G.boss.maxhp * INSTANCE.boss.regenPct)) < 1e-6, 'il régénère pendant l\'enfermement');
   let resumed = false;
   for(let i = 0; i < Math.round(INSTANCE.boss.cageMaxWait / DT) + 1 && !resumed; i++){ run(G, DT); resumed = G.boss.state !== 'wait'; }
   assert.ok(resumed, 'il reprend');
@@ -186,4 +186,43 @@ test('recul vers le centre : il s\'arrête au centre, sans aller-retour (29/10/2
   assert.deepEqual(seen, [c - 1.5, c - 1, c - 0.5, c, c, c]);
   m.x = Math.floor(c) + 1; m.kx = -0.3;                                              // 0,7 à droite, coup de 1 (rage) : pile au centre
   pushMiner(G, m, 1); assert.ok(Math.abs(m.x + 0.5 + m.kx - c) < 1e-9);
+});
+
+test("régénération du roi : 1 % toutes les 2 s après un enfermement, jusqu'à ce qu'un mineur pose le pied au sol", () => {
+  const G = newInstance(9, { miners: [0, 1].map(i => spec(i, STRONG)) });
+  quiet(G);
+  G.boss.state = 'fight'; G.boss.y = G.floorY; G.boss.hp = G.boss.maxhp * 0.79;
+  run(G, DT);
+  assert.equal(G.boss.state, 'wait');
+  for(const m of G.miners) m.action = { type: 'test', dur: 1e9, t: 0, data: {} };   // ils restent dans leur cage
+  const hp0 = G.boss.hp, { regenPct, regenEvery } = INSTANCE.boss;
+  run(G, regenEvery * 5 - DT / 2);
+  assert.ok(Math.abs(G.boss.hp - (hp0 + 4 * regenPct * G.boss.maxhp)) < 1e-6, '4 paliers en un peu moins de 10 s');
+  run(G, DT);
+  assert.ok(Math.abs(G.boss.hp - (hp0 + 5 * regenPct * G.boss.maxhp)) < 1e-6, '5e palier à 10 s');
+  /* un mineur au sol : fini */
+  const m = G.miners[0]; m.x = 2; m.y = G.floorY;
+  run(G, DT);
+  assert.equal(G.boss.regen, null);
+  assert.ok(G.log.some(l => /récupéré/.test(l.msg ?? l)), 'le journal le dit');
+  const hp1 = G.boss.hp;
+  m.y = G.ledges[0].y;   // remonter ne la relance pas
+  run(G, regenEvery * 3);
+  assert.ok(G.boss.hp <= hp1 + 1e-9);
+});
+
+test("régénération : jamais au-dessus des PV max ; remonté au-dessus d'un seuil, il ne réenferme pas", () => {
+  const G = newInstance(9, { miners: [spec(0, STRONG)] });
+  quiet(G);
+  G.boss.state = 'fight'; G.boss.y = G.floorY; G.boss.hp = G.boss.maxhp * 0.795;
+  run(G, DT);
+  assert.equal(G.timeline.cages.length, 1);
+  G.miners[0].action = { type: 'test', dur: 1e9, t: 0, data: {} };
+  run(G, INSTANCE.boss.regenEvery * 40);
+  assert.equal(G.boss.hp, G.boss.maxhp, 'plafonné aux PV max');
+  G.boss.regen = null; G.boss.state = 'fight';
+  G.boss.hp = G.boss.maxhp * 0.75;   // repasse sous 80 % : seuil déjà fait
+  run(G, DT);
+  assert.equal(G.timeline.cages.length, 1, 'pas de nouvel enfermement');
+  assert.notEqual(G.boss.state, 'wait');
 });

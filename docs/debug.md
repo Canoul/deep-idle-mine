@@ -4903,3 +4903,22 @@ Règles (voir CLAUDE.md) :
 - Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
   navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
 
+## 29/10/2026 — Geoffrey — Instance I : gobelins 175 PV / 1,75 s, régénération du roi après un enfermement
+- **Contexte** : analyse du record (session 6ed73842…, seed 71430292, 7:12,4) : rejeu local identique au résumé serveur
+  (t 432,4, réveil 308,7). Combat contre le roi ≈ 2 min pour tout le monde ; l'écart est la phase des spawners (5:08 contre
+  8:04 pour le profil « acier » de `simulate-instance`). Seuil net : profil acier dégâts 20 → 0/5, 22 → 5/5 (150 PV : 8 → 7
+  coups par gobelin). Les mineurs n'ont pas de PV dans l'instance : seules les stats d'attaque comptent. ⚠️
+  `scripts/simulate-instance.js` ne met que `equippedStats` (ni skills, ni sorts, ni lignes / runes / plus, Gants d'ouvrier) :
+  il sous-estime les vrais joueurs (0/5 en acier alors que les 6 vraies parties du 29/10 = 6 victoires).
+- **Quoi** : `INSTANCE.goblin` hp 175, hitEvery 1.75 ; `INSTANCE.boss.regenPct` 0.01, `regenEvery` 2 (src/config.js).
+  `src/sim/instance/session.js` : `boss.regen` = { t, gain } posé par `cage()` ; `regen(G)` appelé dans `stepBoss` avant le
+  test des seuils (états wait et fight) : +regenPct × maxhp toutes les regenEvery s, plafonné à maxhp ; s'arrête (regen =
+  null, log « 💚 … a récupéré N PV ») dès qu'un mineur a `y >= floorY`. `b.phase` ne redescend jamais : remonté au-dessus
+  d'un seuil, pas de nouvel enfermement. Bulle « enfermé » (src/ui/effects.js) : ligne sur la régénération.
+- **Tests** ✅ `tests/instance-sim.test.js` (+2 : paliers à 2 s, arrêt au sol, pas de relance en remontant, plafond PV max,
+  pas de réenfermement ; test de l'enfermement : +1 % après 2 s au lieu de PV figés ; gobelin 175 PV, premier coup à
+  hitEvery), instance-server, instance-key, effects, wiki, boot-check : 60/60.
+- **Mesure** : les 6 sessions d'instance en base (export lecture seule) rejouées avec les nouvelles règles : 5 victoires
+  (8:35 à 9:33, combat 136-158 s, ≈ 350 PV repris par cage, soit ≈ 20 s avant qu'un mineur touche le sol), 1 échec (roi
+  784 PV). `simulate-instance --size 3 --count 5` : 0/5 partout (acier : roi 2 226 PV), 0 bloqué.
+- ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).

@@ -1472,7 +1472,8 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
      tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
      centre. À chaque seuil cageAt de ses PV (tous les 20 % manquants) : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
      cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
-     cageMaxWait s). Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
+     cageMaxWait s). Pendant ce temps et jusqu'à ce qu'un mineur pose le pied au sol, il régénère regenPct de ses PV max
+     toutes les regenEvery s. Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
 export const INSTANCE = {
   list: [
@@ -1489,13 +1490,16 @@ export const INSTANCE = {
      TOWER.view) ; avant : toute la salle à l'écran */
   view: { cols: 14, rows: 11 },
   spawner: { hp: 125, every: 20, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200) ; un gobelin toutes les 20 s (27/10, Geoffrey ; avant 30)
-  goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
+  goblin: { hp: 175, hitEvery: 1.75,   // 175 PV, un coup toutes les 1,75 s (29/10, Geoffrey ; avant 150 PV et 2 s ; le 27/10 : 125 PV)
             knock: 0.5, knockChance: 1, step: 0.45 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible) ; step : une case toutes les 0,45 s, vitesse × 2 (27/10, Geoffrey ; avant 0,9)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
           cageAt: [0.8, 0.6, 0.4, 0.2], cageRadius: 3,   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
           cageHard: 10, cageMaxWait: 90,
+          /* régénération (29/10/2026, Geoffrey) : dès un enfermement, regenPct de ses PV max toutes les regenEvery s, tant
+             qu'aucun mineur n'a posé le pied au sol ; un seuil déjà franchi ne réenferme pas (s'il remonte au-dessus) */
+          regenPct: 0.01, regenEvery: 2,
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
 };
 

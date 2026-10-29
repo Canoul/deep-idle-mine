@@ -38,7 +38,8 @@ export function newInstance(seed, opts = {}){
     spawners: world.ledges.map(l => ({ id: l.id, side: l.side, level: l.level, x: l.sx, y: l.y, mx: l.mx, hp: SP.hp, maxhp: SP.hp, cd: 0, alive: true })),
     goblins: [], nextGob: 0, target: null, inspire: null, warcry: null, cages: [],
     boss: { name: B.name, hp: B.hp, maxhp: B.hp, w: B.w, h: B.h, x: Math.floor((world.w - B.w) / 2), y: world.plat.row - 1,
-            state: 'sleep', t: 0, cd: B.hitEvery, moveCd: 0, focus: null, taunt: null, hits: 0, phase: 0, knockRes: B.knockRes, kx: 0 },
+            state: 'sleep', t: 0, cd: B.hitEvery, moveCd: 0, focus: null, taunt: null, hits: 0, phase: 0, knockRes: B.knockRes, kx: 0,
+            regen: null },   // regen : { t, gain } après un enfermement, jusqu'à ce qu'un mineur soit au sol
     log: [], timeline: { spawners: [], awake: null, cages: [], rage: null },
     stats: { ladders: 0, mined: 0, drilled: 0, spawned: 0, kills: 0, dmg: 0, bossDmg: 0, knocks: 0, boosts: 0, falls: 0, blocked: 0 }, summary: null,
   };
@@ -236,7 +237,9 @@ function stepBoss(G){
     if(b.t >= B.dropTime - 1e-9){ b.state = 'fight'; b.y = G.floorY; b.cd = B.hitEvery; b.moveCd = 0; }
     return;
   }
-  /* enfermement : à chaque seuil de PV (une seule fois même si un coup en fait passer deux) */
+  regen(G);
+  /* enfermement : à chaque seuil de PV (une seule fois même si un coup en fait passer deux ; b.phase ne redescend
+     jamais : remonté au-dessus d'un seuil par la régénération, il ne réenferme pas en repassant dessous) */
   const level = B.cageAt.filter(f => b.hp <= b.maxhp * f + 1e-9).length;
   if(level > b.phase){ b.phase = level; return cage(G); }
   if(b.state === 'wait'){
@@ -260,6 +263,23 @@ function stepBoss(G){
   b.hits++;
   if(b.hits % B.boostEvery === 0) boost(G, f);
   else pushMiner(G, f, rage ? B.ragePush : B.push, true);
+}
+
+/* régénération après un enfermement : regenPct des PV max toutes les regenEvery s, jusqu'à ce qu'un mineur pose le
+   pied au sol (sorti de sa cage et descendu : c'est là qu'on peut le frapper) */
+function regen(G){
+  const b = G.boss, r = b.regen;
+  if(!r) return;
+  if(G.miners.some(m => m.y >= G.floorY)){
+    b.regen = null;
+    if(r.gain > 0) log(G, `💚 Le ${b.name} a récupéré ${Math.round(r.gain)} PV`);
+    return;
+  }
+  r.t += DT;
+  if(r.t < B.regenEvery - 1e-9) return;
+  r.t -= B.regenEvery;
+  const d = Math.min(b.maxhp - b.hp, b.maxhp * B.regenPct);
+  b.hp += d; r.gain += d;
 }
 
 /* coup boosté : projeté de boostHigh cases de haut puis boostLong de long, vers le centre (il s'arrête contre un bloc),
@@ -294,7 +314,7 @@ function cage(G){
     }
     G.cages.push({ id: m.id, x: cx, y: cy });
   });
-  b.state = 'wait'; b.t = 0; b.kx = 0;
+  b.state = 'wait'; b.t = 0; b.kx = 0; b.regen = { t: 0, gain: 0 };
   G.timeline.cages.push(G.t);
   log(G, `🧱 Le ${b.name} enferme tout le monde sur les rebords ! (${Math.round(b.hp / b.maxhp * 100)} % de PV)`);
 }
