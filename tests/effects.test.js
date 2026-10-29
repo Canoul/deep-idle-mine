@@ -5,6 +5,7 @@ import { minerEffects, sessionBonuses, mobEffects, cleanRings } from '../src/sim
 import { EFFECTS, INSTANCE } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { createViewer } from '../src/shared/view.js';
+import { thrallOwner } from '../src/sim/thrall.js';
 
 const miner = (o = {}) => ({ id: 0, x: 5, y: 10, skill: {}, carac: {}, action: null, ...o });
 const ids = list => list.map(e => e.id);
@@ -80,14 +81,41 @@ test('boss : ciblé par le boss ; enfermé par le roi gobelin avec le temps avan
   assert.equal(one(minerEffects({ ...I, boss: { ...I.boss, state: 'fight' } }, miner()), 'caged'), undefined);
 });
 
-test('bonus de session : anneaux, shrines, Escalateur, couronne avec ses gobelins asservis', () => {
-  const G = { shrines: ['abundance'], winchBoost: 0.25, thralls: [{ owner: 0 }, { owner: 0 }, { owner: 1 }] };
+test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus : buff de zone)', () => {
+  const G = { shrines: ['abundance'], winchBoost: 0.25, thralls: [], miners: [] };
   const m = miner({ rings: [{ item: 'Anneau du rat', plus: 3 }], carac: { goblinThrall: 10 } });
   assert.deepEqual(sessionBonuses(G, m), [
-    { id: 'ring', src: 'Anneau du rat', value: 3 }, { id: 'shrine', src: 'abundance' },
-    { id: 'escalator', value: 0.25 }, { id: 'crown', value: 10, stacks: 2 }]);
-  /* tour : pas de gobelins asservis (G.thralls absent) */
+    { id: 'ring', src: 'Anneau du rat', value: 3 }, { id: 'shrine', src: 'abundance' }, { id: 'escalator', value: 0.25 }]);
   assert.deepEqual(ids(sessionBonuses({}, m)), ['ring']);
+});
+
+test('couronne : buff pour tout mineur à son rayon du porteur (porteur compris), pas plus loin', () => {
+  const wearer = miner({ id: 0, name: 'Sonata', x: 10, y: 20, carac: { goblinThrall: 10 } });
+  const near = miner({ id: 1, x: 16, y: 28 });          // 6 et 8 : distance 10 pile (cercle, comme thrallOwner)
+  const far = miner({ id: 2, x: 10, y: 31 });           // 11 cases
+  const G = { t: 0, miners: [wearer, near, far], thralls: [{ owner: 0 }, { owner: 0 }, { owner: 3 }] };
+  assert.deepEqual(one(minerEffects(G, wearer), 'crown'), { id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
+  assert.deepEqual(one(minerEffects(G, near), 'crown'), { id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
+  assert.equal(one(minerEffects(G, far), 'crown'), undefined);
+  assert.equal(EFFECTS.list[one(minerEffects(G, near), 'crown').id].kind, 'buff');
+  /* porteur à la surface : la couronne n'agit pas (thrallOwner l'ignore) */
+  const up = { ...G, miners: [{ ...wearer, y: 0 }, near] };
+  assert.equal(one(minerEffects(up, { ...wearer, y: 0 }), 'crown'), undefined);
+  assert.equal(one(minerEffects(up, near), 'crown'), undefined);
+  /* tours, instance : pas de gobelins asservis (G.thralls absent) */
+  assert.equal(one(minerEffects({ t: 0, miners: [wearer] }, wearer), 'crown'), undefined);
+  /* deux porteurs : les deux noms, leurs asservis additionnés */
+  const two = { t: 0, miners: [wearer, { ...near, name: 'Jules', carac: { goblinThrall: 10 } }], thralls: [{ owner: 0 }, { owner: 1 }] };
+  assert.deepEqual(one(minerEffects(two, near), 'crown'), { id: 'crown', src: 'Sonata, Jules', value: 10, stacks: 2 });
+});
+
+test('couronne : même règle que la naissance d\'un asservi (thrallOwner)', () => {
+  const wearer = miner({ id: 0, x: 10, y: 20, carac: { goblinThrall: 10 } });
+  const G = { t: 0, miners: [wearer], thralls: [] };
+  for(const [x, y] of [[10, 30], [17, 27], [18, 27], [10, 31], [3, 13]]){
+    const buff = !!one(minerEffects(G, miner({ id: 5, x, y })), 'crown');
+    assert.equal(buff, thrallOwner(G, x, y) === wearer, `${x},${y}`);
+  }
 });
 
 test('cleanRings : anneaux inconnus, rangs invalides', () => {
@@ -129,15 +157,21 @@ test('bulles : un titre et des chiffres pour chaque état du registre', () => {
   assert.match(effectTip({ id: 'flesh', stacks: 4, left: 5 }), /−40 %/);
 });
 
-test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur, couronne', () => {
+test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur', () => {
   const tip = bonusTip([{ id: 'ring', src: 'Anneau du lion', value: 2 }, { id: 'shrine', src: 'abundance' },
-                        { id: 'escalator', value: 0.25 }, { id: 'crown', value: 10, stacks: 1 }]);
+                        { id: 'escalator', value: 0.25 }]);
   const lines = tip.split('\n');
   assert.equal(lines[0], EFFECTS.session.name);
   assert.match(lines[1], /Anneau du lion \+2 : .*4 %/);
   assert.match(lines[2], /Shrine d'abondance/);
   assert.match(lines[3], /25 %/);
-  assert.match(lines[4], /1 au travail/);
+  assert.equal(lines.length, 4);
+});
+
+test('bulle de la couronne : le porteur, le rayon, les asservis au travail', () => {
+  const tip = effectTip({ id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
+  assert.match(tip, /^Couronne du Roi Gobelin\nÀ 10 cases ou moins de Sonata\n.*asservi.*\n2 au travail$/);
+  assert.equal(badgeOf({ id: 'crown', stacks: 0 }), '');
 });
 
 test('sous l\'icône : les stacks, sinon les secondes restantes arrondies au-dessus', () => {

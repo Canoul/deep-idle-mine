@@ -44,6 +44,9 @@ export function effectTip(e){
     case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Braum'); break;
     case 'pillage': L.push(`Dégâts +${num(e.value || 0)} % (${GLYPHS.killDamagePct} % par mob tué, ${GLYPHS.killDamageMax} % au plus)`, 'Glyphe Pillage, jusqu\'à la fin de la session'); break;
     case 'fast_learner': L.push(`${e.stacks} type${e.stacks > 1 ? 's' : ''} de bloc appris : +${pct(SPELL.fast_learner.bonus)} de minage chacun`, 'Jusqu\'à la fin de la session'); break;
+    case 'crown': L.push(`À ${e.value} cases ou moins de ${e.src ?? 'la Couronne du Roi Gobelin'}`,
+                         `Un gobelin qui naît ici devient asservi : il mine ${GOBLIN_KING.thrall.life} s pour le coffre au lieu d'attaquer`,
+                         ...(e.stacks ? [`${e.stacks} au travail`] : [])); break;
   }
   if(e.left != null) L.push(`Encore ${Math.ceil(e.left)} s`);
   return [d.name, ...L].join('\n');
@@ -55,8 +58,6 @@ export function bonusLine(b){
     case 'ring': return `${b.src}${b.value ? ` +${b.value}` : ''} : ${ringLines(b.src, b.value).map(l => l.replace(/^Groupe · /, '')).join(', ')}`;
     case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${s.name} : ${s.desc}` : ''; }
     case 'escalator': return `Escalateur : seau du treuil +${pct(b.value)}`;
-    case 'crown': return `Couronne du Roi Gobelin : un gobelin qui naît à ${b.value} cases devient asservi et mine ${GOBLIN_KING.thrall.life} s pour le coffre`
-                       + (b.stacks ? ` (${b.stacks} au travail)` : '');
   }
   return '';
 }

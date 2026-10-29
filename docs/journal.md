@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff autour du porteur, pour tous
+- **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session » chez son seul porteur. C'est maintenant
+  un **buff** (cadre vert) chez **chaque mineur à 10 cases ou moins de celui qui la porte**, porteur compris : c'est là
+  qu'un gobelin qui naît est asservi. La bulle dit qui porte la couronne ; sous l'icône, le nombre de gobelins asservis
+  au travail. Hors de portée, le buff disparaît. La règle du jeu ne change pas, seul l'affichage était faux.
+- **État** : 🧪 sur la branche `geoffrey/couronne-aura` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
 - **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
   jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite

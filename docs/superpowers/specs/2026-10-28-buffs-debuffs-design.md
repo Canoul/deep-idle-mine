@@ -80,10 +80,13 @@ flemme. Un effet ponctuel sur le perso (éclair, fumée…) quand ils partent, p
 | `ring_nerd` | Anneau du nerd | **porteur seul** | XP +3 % sur sa part | `ringXpPct`, au versement |
 | `shrine_abundance` | Shrine d'abondance | shrine actif du chef | 5 points de terrain → minerais dans toutes les areas | `G.oreBonus` |
 | `escalator` | Escalateur | skill d'un logisticien du groupe | seau du treuil +5 %/rang (meilleur rang) | skills, avant la session |
-| `crown_thralls` | Gobelins asservis | **Couronne du Roi Gobelin** portée | un gobelin qui naît à 10 cases du porteur mine 30 s pour le coffre commun au lieu d'attaquer | `m.carac.goblinThrall`, `G.thralls` |
+| ~~`crown_thralls`~~ | ~~Gobelins asservis~~ | ancien (28/10) : bonus de session du porteur seul, remplacé le 29/10 (ci-dessous) | | |
 
-Pour la couronne, Claude : en plus de l'icône de bonus, un compteur « gobelins asservis actifs » sur l'icône
-(nombre de `G.thralls` du porteur), puisque `thralls` part déjà au navigateur avec leur temps restant.
+**Couronne du Roi Gobelin (29/10, Geoffrey)** : « le passif de la couronne ne marche qu'autour du porteur, pour tous
+les mineurs ». Ce n'est donc plus un bonus de session : c'est un **buff** (cadre vert, id `crown`) chez **chaque
+mineur à 10 cases ou moins d'un porteur** (porteur compris ; cercle, porteur dans la mine, pas à la surface : même
+règle que `thrallOwner`, src/sim/thrall.js). Bulle : le porteur, le rayon, l'effet ; sous l'icône, le nombre de
+gobelins asservis au travail (×n). Seulement dans la mine (les tours, l'instance et la MI n'ont pas d'asservis).
 
 ### États des mobs et boss (mêmes icônes, au-dessus de leur barre de PV)
 
