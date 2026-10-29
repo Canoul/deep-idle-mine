@@ -107,7 +107,7 @@ export function blockCells(G, k){
 /* pods (TOWER.chest) : stonebricks de l'intérieur de la tour, poids d'une brique, sac plein */
 const countBricks = G => { let n = 0; const b = TOWER.sides[G.side].brick;
   for(let y = G.roof; y <= G.floor; y++) for(let x = G.x0 + 1; x < G.x1; x++) if(G.tiles[y][x] === b) n++; return n; };
-const brickW = G => BLOCKS[TOWER.sides[G.side].brick].w * G.lv.weight;   // niveau 2 : × 1,5 (28/10)
+const brickW = G => BLOCKS[TOWER.sides[G.side].brick].w * G.lv.weight;   // niveau 2 : × 2 (29/10 ; avant × 1,5)
 export const bagFull = (G, m) => m.load > 0 && m.load + brickW(G) > m.carac.pods;
 const inBlockFloor = (G, x, y) => { const k = floorOf(G, y);
   return k >= 0 && k < TOWER.floors && G.kinds[k] === 'blocks' && y >= floorTop(G, k) && y <= floorBottom(G, k) && x > G.x0 && x < G.x1 ? k : -1; };

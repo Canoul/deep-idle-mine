@@ -6,7 +6,7 @@
   --u:2px;
   --void:#0b0806; --panel:#191310; --txt:#efe3cf; --mut:#a8957f; --acc:#ff7a2e; --acc-lt:#ffc27a; --acc-dk:#8f2f0c;
   --ok:#58d26a; --bad:#ff5a4a; --o2:#7cc6f2; --shadow:#2a1206; --sep:#2a231e; --chip:#1d1612; --sel:#24160d; --line:#3a302a;
-  --f-body:'Jersey 10',system-ui,sans-serif; --f-title:'Jersey 15','Jersey 10',system-ui,sans-serif;
+  --f-body:'VT323',system-ui,sans-serif; --f-title:'Jersey 15','VT323',system-ui,sans-serif;
   --fs:17px; --fs-s:15px; --fs-l:21px; --fs-xl:27px; --fs-h1:42px;
   --top-h:calc(30*var(--u)); --dock-h:calc(58*var(--u));
 }
