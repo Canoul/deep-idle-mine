@@ -487,6 +487,23 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
+- **Chantier Prison en cours (reprise, 30/10/2026, Geoffrey)** : branche `geoffrey/prison`, **pas en ligne**, pas encore
+  fusionnée avec `main` (qui a bougé depuis : `git merge origin/main` à faire avant la mise en ligne). Fait sur la branche
+  (détail dans le haut de `docs/journal.md` et la fin de `docs/debug.md`) :
+  - contenu de la prison = profil des 10 dernières mines (`src/meta/prison-profile.js`), plus de choix d'area, le lobby
+    affiche ce contenu ; mobs × 3 moins fréquents (`spawnDelayMul`), pièges et k hole × 0,5 (k hole nouveau en prison) ;
+    kills par type enregistrés dans les mines classiques ;
+  - panneau « Butin de la prison » (runs, temps de jeu, XP, énergie, objets), fenêtre à la sortie, ligne dans l'Historique ;
+  - `oreMul` 0,30 (avant 0,52) ;
+  - mode dev : vitesses ×1–×300 en prison, « Ton preset », copies de vrais joueurs (`dev:presets --from`), import
+    d'historique (`dev:history`).
+  **À décider** : `oreMul` 0,30 donne 0,58 (acier, area de réf.) mais **64 %** avec le stuff et le profil de canoul (1 h 07
+  de prison mesurée) ; ~0,23 viserait 50 % pour lui. **À vérifier** : k hole en prison jamais joué (entrée, retour, fin de run
+  pendant un k hole) ; `simulate:prison` ne passe pas de profil (il mesure le contenu de l'area) ; 2 tests anciens rouges
+  aussi sur `main` (dev-spec : liste des modes dev ; perf : nombre de barres). **Données locales** (ignorées par git) :
+  `data/presets/canoul-mus.json` (stuff de canoul et MUS) et `history-canoul.json` : sur un autre poste, les refaire avec
+  les codes navigateur de `docs/debug.md` (entrée « Codes navigateur »).
+
 - Fondations : pas encore.
 - Sorts : déblocage des emplacements 3 et 4, source des parchemins (butin ? craft ?) et récompense des niveaux de
   spécialisation autres que les sorts : à décider (24/10).

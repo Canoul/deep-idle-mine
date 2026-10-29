@@ -5224,3 +5224,25 @@ Règles (voir CLAUDE.md) :
   history : 60/60, anticheat 118/118. Mesure sur la prison de Test_Canoul (profil canoul, area 7, rejouée run par run) :
   8 runs, 1 h 07 de jeu, 453 minerais/h contre 707 par mine de 1 h sur ses 10 dernières : **64 %** (nombre et poids) ;
   diamant 26 %, cobalt et thorium 0 ; tout le butin blocs compris : 122 % (beaucoup de pierre dure).
+
+## 30/10/2026 — Codes navigateur : copier un vrai joueur pour le mode dev (Geoffrey)
+À coller dans la console (F12) de https://deepmineidle.fr/, connecté avec le compte du joueur ; lecture seule. Chacun
+télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ranger dans `data/presets/` (ignoré par git).
+- **Stuff, skills, sorts, progression** (le sien, et celui d'un ami dont le pseudo contient « mus » : à adapter) → fichier
+  pour `npm run dev:presets -- --from data/presets/<fichier>.json` (serveur arrêté) :
+  ```js
+  (async()=>{const j=(u,b)=>fetch(u,b?{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{credentials:'same-origin'}).then(r=>r.json());
+  const me=await j('/api/game/state'), so=await j('/api/social');
+  const mus=so.friends.find(f=>/mus/i.test(f.name)), fr=mus?await j('/api/social/profile',{id:mus.id}):null;
+  const out=JSON.stringify({canoul:{stuff:me.stuff,skills:me.skills,spells:me.spells,progress:me.progress},mus:fr&&{name:fr.name,stuff:fr.stuff,skills:fr.skills,progress:fr.progress}});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/json'}));a.download='presets-canoul-mus.json';a.click();})()
+  ```
+- **Historique** (profil de la prison) → `npm run dev:history -- --from data/presets/history-canoul.json --name Test_Canoul`
+  (serveur arrêté) :
+  ```js
+  (async()=>{const r=await fetch('/api/game/history',{credentials:'same-origin'}).then(r=>r.json());
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(r)],{type:'application/json'}));a.download='history-canoul.json';a.click();})()
+  ```
+- Piège vu le 29/10 : plusieurs discussions partagent le dossier du dépôt et peuvent y changer de branche ; le serveur dev
+  sert les fichiers du disque. Pour un chantier qui dure, le servir depuis son propre worktree (ex. `F:\dim-prison`, data/
+  recopié dedans).
