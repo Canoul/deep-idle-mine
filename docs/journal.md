@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Instance : le mineur ne tremble plus au centre de la salle
+- **Pour le joueur** : en combat dans l'instance, les mineurs faisaient des allers-retours d'une demi-case. Ce n'était pas
+  l'affichage (il glisse déjà comme dans la mine) : chaque coup d'un gobelin ou du roi repousse vers le centre de la
+  salle, et un mineur au centre était envoyé de l'autre côté, puis renvoyé par le coup suivant. Le recul s'arrête
+  maintenant au centre. Le coup boosté du roi (la grande projection) ne change pas.
+- **État** : 🧪 sur la branche `geoffrey/instance-recul-centre` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
 - **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
   gobelin** (Instance I), de l'entrée dans l'instance à la mort du roi. Chaque joueur encore là à la victoire garde son

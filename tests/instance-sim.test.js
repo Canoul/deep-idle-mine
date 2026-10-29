@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { INSTANCE, STATS, DT } from '../src/config.js';
-import { newInstance, tickInstance, runInstance, instSupported, tackler, INSTANCE_TICKS, leaveInstance, pushMiner } from '../src/sim/instance/session.js';
+import { newInstance, tickInstance, runInstance, instSupported, tackler, INSTANCE_TICKS, leaveInstance, pushMiner, centerX } from '../src/sim/instance/session.js';
 import { genInstance, ledgesOf, platformOf, ROCK, SPAWNER, CAGE, AIR } from '../src/sim/instance/world.js';
 
 const spec = (i, carac = {}, extra = {}) => ({ name: 'M' + i, account: 'a' + i, carac: { ...STATS, ...carac }, ...extra });
@@ -174,4 +174,16 @@ test('déterministe : même seed, mêmes mineurs → même partie', () => {
   const a = runInstance(13, { miners: [0, 1].map(i => spec(i, STRONG)) }).summary;
   const b = runInstance(13, { miners: [0, 1].map(i => spec(i, STRONG)) }).summary;
   assert.deepEqual({ ...a, id: 0 }, { ...b, id: 0 });
+});
+
+test('recul vers le centre : il s\'arrête au centre, sans aller-retour (29/10/2026)', () => {
+  const G = newInstance(1, { miners: [spec(0, {})] }), m = G.miners[0], c = centerX(G);
+  m.action = null; m.y = G.floorY - 1; m.x = Math.floor(c); m.kx = 0;                 // au centre
+  assert.equal(pushMiner(G, m, 0.5), false); assert.equal(m.x + 0.5 + m.kx, c);
+  m.x = Math.floor(c) - 2; m.kx = 0;                                                 // 2 cases à gauche : 4 coups de 0,5
+  const seen = [];
+  for(let i = 0; i < 6; i++){ pushMiner(G, m, 0.5); seen.push(m.x + 0.5 + m.kx); }
+  assert.deepEqual(seen, [c - 1.5, c - 1, c - 0.5, c, c, c]);
+  m.x = Math.floor(c) + 1; m.kx = -0.3;                                              // 0,7 à droite, coup de 1 (rage) : pile au centre
+  pushMiner(G, m, 1); assert.ok(Math.abs(m.x + 0.5 + m.kx - c) < 1e-9);
 });
