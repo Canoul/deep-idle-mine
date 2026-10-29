@@ -4859,3 +4859,12 @@ Règles (voir CLAUDE.md) :
 - `src/render/town.js` : constantes `LABEL` (#ffc27a, `--acc-lt` de style.css) pour les noms des bâtiments, la statue et
   les bannières, `HINT` (#ff7a2e, `--acc`) pour « E : entrer » et « Tour ouverte ! » (ancien : #f2ece4 / #ffc27a / #ffd27a).
   Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
+
+## 29/10/2026 — Geoffrey — Inventaire : onglets (filtre)
+- `INVENTORY.tabs` (config) : id, icône (`icon` = texture d'un objet, ou `px` = icône pixel), nom (bulle), `items` puis
+  `cats`. `src/ui/inventory.js` : `tabOf(item)` (items d'abord, puis catégorie, sinon le dernier onglet), `tabSlots(inv,
+  tab, n)` (vrais numéros de slot : glisser-déposer et infos inchangés), onglet gardé en mémoire du module. `index.html`
+  `#invTabs` ; style `.invTab`. Aide « ? » de l'inventaire complétée. Affichage seul : rien côté serveur.
+- **Tests** ✅ inventory (nouveau test : tout objet du catalogue a un onglet, cas demandés, filtre sans trou), stuff :
+  24/24. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+

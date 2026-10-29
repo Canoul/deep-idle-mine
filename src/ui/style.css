@@ -961,3 +961,10 @@ button.danger{color:var(--bad)}
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
 .setRow.on b{color:var(--ok)}
+/* onglets de l'inventaire (29/10/2026) : une icône par catégorie, grisée si vide */
+.invTabs{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
+.invTab{display:grid;place-items:center;width:calc(26*var(--u));height:calc(26*var(--u));padding:0}
+.invTab img,.invTab .pi{width:calc(16*var(--u));height:calc(16*var(--u));image-rendering:pixelated}
+.invTab.on{outline:calc(2*var(--u)) solid var(--acc);outline-offset:calc(-1*var(--u));background:var(--sel)}
+.invTab.none:not(.on){opacity:.4}
+.invNone{grid-column:1/-1}

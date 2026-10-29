@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Inventaire : onglets par type d'objet
+- **Pour le joueur** : au-dessus de la grille, une rangée d'icônes filtre l'inventaire : tout, blocs, minerais, stuff,
+  butin des mobs, matériaux (gemmes, lingots, alliages, shiny, plumes, cristaux, argent), runes, divers (coffres, clés,
+  plans, parchemins, glyphes). Le nom de chaque onglet s'affiche au survol ; un onglet vide est grisé. Glisser un objet
+  sur un autre marche dans tous les onglets ; pour le poser sur une case vide, c'est dans « Tout ».
+- **Décisions** : résidus avec les minerais, stonebricks avec les blocs, glyphes dans divers (rangement de Claude, à changer
+  dans `INVENTORY.tabs`).
+- **État** : 🧪 sur la branche `geoffrey/inventaire-onglets` (pas en ligne)
+
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
 - **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais
   jaune doré, comme les titres de l'interface ; « E : entrer » passe en orange. Demande de Geoffrey (« le blanc dénote »).

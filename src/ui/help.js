@@ -57,7 +57,8 @@ Quitter avant la fin = tu ne reçois rien.`,
   inventory: `Inventaire
 Tout ce que tu as rapporté des sessions.
 Sélectionne un objet pour voir ce qu'on peut en faire : ouvrir un treasure, utiliser un blueprint, équiper ou recycler une pièce.
-Glisse un objet sur une autre case pour le déplacer.`,
+Glisse un objet sur une autre case pour le déplacer.
+Les icônes au-dessus de la grille filtrent par type (blocs, minerais, stuff, butin des mobs, matériaux, runes, divers) ; la première montre tout.`,
   stuff: `Stuff
 Clique une case pour y équiper une pièce de ton inventaire.
 Les stats du mineur à droite : en vert, ce que donne le stuff ; en bleu, ce que donnent les skills.
