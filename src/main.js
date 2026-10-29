@@ -880,6 +880,7 @@ function frame(now){
   const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
   const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
   ui.prison = pz && shown === PG;
+  ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
   backdrop.draw(rec ? shown : null, ui.tab !== 'session', acct.account?.id, ui.follow);
   /* le Carreau : fond quand il n'y a pas de session ; promenade quand l'onglet Session n'a rien d'autre à montrer */
   town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
