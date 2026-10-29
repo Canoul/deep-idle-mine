@@ -19,7 +19,7 @@ import { instanceDurationMs } from '../src/shared/instances.js';
 /* ---------- logique pure ---------- */
 
 test('classements : GS, XP, une XP de spé par arbre, tour, roi gobelin ; un nom inconnu est refusé', () => {
-  assert.deepEqual(BOARDS, ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'instance']);
+  assert.deepEqual(BOARDS, ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'instance', 'instance2']);
   assert.ok(isBoard('instance'));
   assert.equal(BOARD_INFO.instance.value({ value: 612.3 }), '10:12.3');
   assert.equal(instanceDetail({ name: 'Zoe', fight: 130.4, team: ['Zoe', 'Max', 'Lou'] }), 'combat 2:10.4 · avec Max, Lou');
@@ -198,10 +198,10 @@ function setupInstance({ dev = false } = {}){
   const social = createSocialService({ store, accounts, party, game, clock: () => now, config: SOCIAL_SERVER });
   const keys = async ids => { for(const id of ids){ const inv = createInventory(); addItem(inv, INSTANCE.list[0].key, 1); await store.putInventory(id, JSON.parse(serialize(inv))); } };
   /* une instance jouée par players (clé donnée à chacun) ; r : { success, t, awake } ; bLeaves : B part avant la fin */
-  const play = async (players, r, bLeaves = false) => {
+  const play = async (players, r, bLeaves = false, level) => {
     res = r; leftB = bLeaves;
     await keys(players.map(p => p.account));
-    const s = await game.start({ id: players[0].account, name: players[0].name }, { mode: 'instance_1' }, players);
+    const s = await game.start({ id: players[0].account, name: players[0].name }, { mode: 'instance_1', ...(level ? { level } : {}) }, players);
     if(bLeaves){ now += 5_000; await game.leave(B); }
     if(!dev) now += instanceDurationMs();          // l'heure de fin est passée : la partie se termine (settle)
     await game.settle(s.session.id);
@@ -251,4 +251,23 @@ test('roi gobelin : rattrapage des victoires gardées d\'avant le classement ; a
   assert.deepEqual(r.rows.map(x => [x.rank, x.name, x.value, x.fight]), [[1, 'Lou', 650, 100], [2, 'Zoe', 700, 100], [2, 'Max', 700, 100]]);
   assert.ok(await store.getInstanceRecord(ADMIN.id), 'admin : record gardé…');
   assert.ok(!r.rows.some(x => x.name === 'Admin'), '… mais jamais affiché');
+});
+
+test("roi gobelin II (29/10) : un classement par niveau ; le niveau 2 ne touche pas au record du niveau 1", async () => {
+  const { social, play, store } = setupInstance();
+  await play(team, { success: true, t: 612, awake: 400 });
+  await play(team, { success: true, t: 580, awake: 380 }, false, 2);
+  assert.deepEqual((await social.leaderboard(A, 'instance')).rows.map(x => [x.name, x.value]), [['Zoe', 612], ['Max', 612]]);
+  const r2 = await social.leaderboard(A, 'instance2');
+  assert.deepEqual(r2.rows.map(x => [x.name, x.value, x.fight, x.team]), [['Zoe', 580, 200, ['Zoe', 'Max']], ['Max', 580, 200, ['Zoe', 'Max']]]);
+  assert.equal((await store.getInstanceRecord(A.id)).t, 612);
+  assert.equal((await store.getInstanceRecord(A.id + '#2')).t, 580);
+});
+
+test("clé d'un record d'instance : compte au niveau 1, « compte#2 » au niveau 2 ; une clé abîmée n'est pas classée", async () => {
+  const { instanceRecordKey, splitInstanceKey } = await import('../src/meta/leaderboard.js');
+  assert.equal(instanceRecordKey('AB12', 1), 'AB12'); assert.equal(instanceRecordKey('AB12', 2), 'AB12#2'); assert.equal(instanceRecordKey('AB12'), 'AB12');
+  assert.deepEqual(splitInstanceKey('AB12'), { account: 'AB12', level: 1 });
+  assert.deepEqual(splitInstanceKey('AB12#2'), { account: 'AB12', level: 2 });
+  for(const k of ['AB12#', 'AB12#x', 'AB12#0', 'AB12#-1']) assert.deepEqual(splitInstanceKey(k), { account: null, level: null }, k);
 });

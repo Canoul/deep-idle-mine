@@ -1,7 +1,7 @@
 /* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
    pure (le hasard est passé en paramètre). Un trésor de tour (RUNE.treasures) peut aussi donner un anneau (RINGS.drops).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT, ITEMS, RUNE, RINGS, TREASURE, GOBLIN_KING } from '../config.js';
+import { LOOT, ITEMS, RUNE, RINGS, TREASURE, GOBLIN_KING, INSTANCE } from '../config.js';
 import { removeItem, addAll, addItem, countOf, OPEN_MEMORY } from './inventory.js';
 import { rollRune, isStuff } from './piece.js';
 import { recipeOfBlueprint, isUnlocked } from './craft.js';
@@ -70,7 +70,7 @@ function openOne(inv, item, rng, ctx = {}){
   if(!canOpen(item) || !removeItem(inv, item, 1)) return null;
   let loot;
   const chest = chestOf(item);
-  if(chest?.side === 'goblin') return openGoblinChest(inv, chest.q, rng, ctx);
+  if(chest?.side === 'goblin') return openGoblinChest(inv, chest.q, rng, ctx, chest.level);
   if(chest){                                 // coffre de tour : une rune de sa qualité, lignes tirées maintenant
     const [i] = addItem(inv, RUNE.item, 1);
     Object.assign(inv.slots[i], rollRune(chest.q, rng));
@@ -88,15 +88,23 @@ function openOne(inv, item, rng, ctx = {}){
   return loot;
 }
 
+/* table du coffre d'un niveau de l'instance (29/10/2026) : ressources sûres × res (min et max arrondis), chances des
+   objets × drop (INSTANCE.levels[level].chest ; niveau inconnu : niveau 1) */
+export function goblinChestTable(level = 1){
+  const c = INSTANCE.levels[level]?.chest ?? INSTANCE.levels[1].chest, T = GOBLIN_KING.loot;
+  return { always: T.always.map(a => ({ ...a, min: Math.round(a.min * c.res), max: Math.round(a.max * c.res) })),
+           oneOf: T.oneOf.map(f => ({ ...f, items: f.items.map(i => ({ ...i, chance: i.chance * c.drop })) })) };
+}
+
 /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026) : sa table de butin ; une pièce de stuff qui en sort arrive déjà
    identifiée, à la qualité q du coffre ; « Recette : Chitine » (learnOnce) ne sort que si elle n'est pas encore apprise ;
    un parchemin (spellOnce) seulement si son sort n'est pas appris (ctx.spells : sorts appris du joueur, fournis par le
    serveur ; un parchemin ouvert pendant que le parchemin est seulement dans l'inventaire, pas appris, peut ressortir) */
-function openGoblinChest(inv, q, rng, ctx = {}){
+function openGoblinChest(inv, q, rng, ctx = {}, level = 1){
   const spells = Array.isArray(ctx.spells) ? ctx.spells : [];
   const learned = i => (i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv))
     || (i.spellOnce && spells.includes(spellOfScroll(i.item)?.id));
-  const loot = rollLoot(GOBLIN_KING.loot, rng, learned);
+  const loot = rollLoot(goblinChestTable(level), rng, learned);
   for(const [name, n] of Object.entries(loot)){
     if(!isStuff(name)){ addItem(inv, name, n); continue; }
     for(const i of addItem(inv, name, n)) inv.slots[i].q = q;

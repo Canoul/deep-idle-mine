@@ -5,13 +5,13 @@
      départs), comme les tours. */
 import { INSTANCE, GAME } from '../config.js';
 import { minerSpecs } from './game.js';
-import { newInstance, leaveInstance, INSTANCE_TICKS } from '../sim/instance/session.js';
+import { newInstance, leaveInstance, INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel } from '../sim/instance/session.js';
 import { countOf } from '../meta/inventory.js';
 
 export const instanceDef = mode => INSTANCE.list.find(i => i.id === mode) ?? null;
 export const isInstanceMode = mode => !!instanceDef(mode);
 export const instanceDurationMs = (speed = GAME.speed) => INSTANCE.duration / speed * 1000;
-export { INSTANCE_TICKS };
+export { INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel };
 
 /* qui n'a pas sa clé : players [{ account, name }], invOf(compte) → inventaire ; renvoie les joueurs sans clé */
 export function missingKeys(mode, players, invOf){

@@ -166,3 +166,15 @@ test('chef, tout le monde prêt (dont « prêt tout le temps » absent) : on peu
   assert.deepEqual(launchState({ account:me, party:p }), { can:true, label:'▶ Lancer à 3' });
   assert.equal(launchState({ account:null, party:p }).can, false, 'sans compte dans le lobby : grisé (le bug)');
 });
+
+test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niveaux 1 et 2 ouverts, niveau gardé", async () => {
+  const { instanceLevelState } = await import('../src/ui/lobby.js');
+  const me = { id: 'A' };
+  const solo = instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 2 });
+  assert.equal(solo.show, true); assert.deepEqual(solo.levels.map(l => [l.level, l.done]), [[1, false], [2, false]]); assert.equal(solo.level, 2);
+  assert.equal(instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 7 }).level, 1, 'niveau inconnu : 1');
+  const party = { leader: 'B', members: [{ account: 'A' }, { account: 'B' }] };
+  assert.equal(instanceLevelState({ instance: true, locked: false, party, account: me }).show, false, 'pas le chef : caché');
+  assert.equal(instanceLevelState({ instance: false, locked: false, party: null, account: me }).show, false);
+  assert.equal(instanceLevelState({ instance: true, locked: true, party: null, account: me }).show, false, 'session en cours');
+});

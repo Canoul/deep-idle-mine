@@ -22,13 +22,23 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Instance I : le niveau 2 est jouable
+- **Pour le joueur** : dans le Lobby, l'Instance I propose **Niveau 1 / Niveau 2** (choisi par celui qui lance). Même clé.
+  Niveau 2 : spawners 200 coups et un gobelin toutes les 15 s, gobelins 350 PV, roi 6 000 PV qui frappe plus vite, enrage
+  sous 40 % et régénère 2 % dans les cages. Roi vaincu : un **Coffre du Roi Gobelin II** (× 1,5 de ressources, × 1,5 de
+  chances d'objets). Nouveau classement **« Roi gobelin II »** (onglet Social).
+- **Décisions** (Geoffrey) : même clé, ouvert à tous, un classement par niveau, valeurs gardées même si la simulation le dit
+  impossible avec le stuff d'aujourd'hui.
+- **À suivre** : vérifier à l'écran le choix du niveau dans le Lobby et le classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Correctif : le sort Dash sur les boss (tour, roi gobelin)
 - **Pour le joueur** : le Dash du barbare ne partait jamais sur le boss d'une tour ni sur le roi gobelin, et presque jamais
   dans l'instance (0 ou 1 fois par partie). Maintenant, il fonce sur le boss quand il en est éloigné (après un recul ou une
   projection) et frappe à 500 %, et dans l'instance il fonce sur les gobelins de sa ligne (≈ 14 Dash par partie).
 - **Décision** : le Dash n'étourdit pas les boss des tours ni le roi gobelin (Geoffrey). Les petits mobs, si.
 - **Repère** : tours simulées, combat du boss 5 à 50 s plus court ; Instance I (6 vraies parties) : toujours 3 victoires sur 6.
-- **État** : 🧪 sur la branche `geoffrey/dash-boss` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Instance I plus dure : gobelins plus solides, le roi se régénère dans les cages
 - **Pourquoi** : les 6 parties d'instance jouées le 29/10 étaient toutes des victoires (record 7:12). Le rejeu a montré
