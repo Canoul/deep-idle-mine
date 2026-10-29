@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Jules — Correctifs : torches à virgule, Lunettes Gucci invisibles
+- **Pour le joueur** : le compteur de torches affichait « 22.200000000000003 en réserve » quand un bonus en % (anneau,
+  maîtrise) donnait un nombre à virgule. Le stock est maintenant un nombre entier, arrondi à l'inférieur (22,2 → 22).
+  Les **Lunettes Gucci** se voient enfin sur le mineur (monture dorée, verre sombre) : elles n'avaient pas de dessin.
+- **À suivre** : les Doc Martins, la Ceinture golémique et les Jambières titanesques n'ont pas encore de dessin sur le
+  mineur non plus.
+- **État** : 🧪 sur la branche `jules/fix-torches-lunettes` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
 - **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
   `move-to-lobby.js --name X --to Y` met X dans le lobby de Y ; `set-ready.js --name X` le met prêt, `--always on` le met
