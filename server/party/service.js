@@ -548,6 +548,21 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
         return { ...r, leader: memberOf(p, p.leader).name, members: members.map(m => m.name) };
       } finally { p.launching = false; }
     },
+    /* donne la place de chef à player (compte), comme « Nommer chef » du chef actuel. Le nouveau chef n'a plus d'état
+       « prêt » ; l'ancien redevient membre, pas prêt (sauf « prêt tout le temps »). */
+    async adminPromote(player){
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const old = p.leader;
+      if(old !== player.id){
+        p.leader = player.id;
+        memberOf(p, player.id).ready = false;
+        const was = memberOf(p, old);
+        if(was) was.ready = !!was.always;
+      }
+      return { changed: old !== player.id, party: adminView(p) };
+    },
   };
   Object.assign(actions, admin);
   for(const k of Object.keys(actions)) actions[k] = saving(actions[k]);

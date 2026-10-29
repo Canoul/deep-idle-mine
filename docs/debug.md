@@ -5082,3 +5082,8 @@ Règles (voir CLAUDE.md) :
   script `scripts/launch-lobby.js`. Tests ✅ admin-end-session (+2 : membre non chef, personne prêt ; solo, inconnu),
   admin-party, party : 49/49. Script lui-même non testé (copie des autres).
 
+## 29/10/2026 — Administration : chef du lobby (Geoffrey)
+- **Quoi** : `party.adminPromote(player)` (server/party/service.js, comme `promote` : nouveau chef ready false, ancien chef
+  ready = always), route `POST /api/admin/party-lead` {name}, script `scripts/set-leader.js`.
+- **Tests** ✅ admin-party +1 (membre → chef, déjà chef, sans groupe, relais) ; party, admin-end-session : 50/50.
+
