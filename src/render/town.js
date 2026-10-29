@@ -15,6 +15,9 @@ const T = TOWN_TILE, HIRES = 2;
 const GLOW = { lit: [255, 150, 60], magic: [90, 255, 140] };
 /* police des textes de la ville : celle du jeu (VT323 depuis le 29/10 ; ancien : Jersey 10, plus chargée) */
 const FONT = '"VT323", sans-serif';
+/* couleurs des textes de la ville : celles de l'interface (style.css) ; noms des bâtiments, statue, bannières en jaune
+   doré (--acc-lt ; ancien : blanc cassé, « ça dénote trop », Geoffrey, 29/10), « E : entrer » en orange (--acc) */
+const LABEL = '#ffc27a', HINT = '#ff7a2e';
 
 /* texte d'une bulle coupé en lignes de max caractères (au plus 3 lignes, « … » si ça dépasse) */
 export function bubbleLines(text, max = 22, rows = 3){
@@ -133,10 +136,10 @@ export function createTownRenderer(cv){
      plus proche à moins de 1,8 case), au-dessus des têtes, pour ne pas couvrir les joueurs de la place */
   function drawPlaceLabels(b, camX, scene){
     const items = [];
-    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS`, color: '#ffd27a' });
+    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS`, color: LABEL });
     for(const side of ['angel', 'demon']){
       const j = scene.judgment?.[side];
-      if(j) items.push({ cx: b.x + TOWN.place[side] + 0.5, color: j.open ? '#ffc27a' : '#f2ece4',
+      if(j) items.push({ cx: b.x + TOWN.place[side] + 0.5, color: j.open ? HINT : LABEL,
                          text: j.open ? `${JUDGMENT.sides[side].tower} ouverte !` : `Jauge ${JUDGMENT.sides[side].label} : ${j.count} / ${j.cap}` });
     }
     const it = items.filter(i => Math.abs(i.cx - scene.meX) <= 1.8).sort((a, c) => Math.abs(a.cx - scene.meX) - Math.abs(c.cx - scene.meX))[0];
@@ -203,7 +206,7 @@ export function createTownRenderer(cv){
     lines.forEach((l, k) => {
       const ly = y0 + k * 9;
       ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(l, Math.round(cx), ly);
-      ctx.fillStyle = k ? '#ffc27a' : '#f2ece4'; ctx.fillText(l, Math.round(cx), ly);
+      ctx.fillStyle = k ? HINT : LABEL; ctx.fillText(l, Math.round(cx), ly);
     });
   }
 
