@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Décision** (Geoffrey) : sortie sans butin (plutôt qu'arrêter la session de tout le groupe, ou la finir avec le butin).
 - **Aussi** : `launch-lobby.js --name X` lance le lobby de X (n'importe quel membre) dans la mine, même si tout le monde
   n'est pas prêt.
-- **État** : 🧪 sur la branche `geoffrey/admin-fin-session` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
 - **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
