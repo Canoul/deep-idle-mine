@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — États (buffs / debuffs) d'un autre joueur, dans tous les modes
+- **Pour le joueur** : la rangée d'états en haut à droite de la mine montre maintenant les états du joueur qu'on regarde,
+  avec son nom devant les icônes quand ce n'est pas soi. Mine classique : le mineur suivi (clic dans l'équipe). Tours,
+  Instance et Mine instantanée : un clic sur un joueur de l'équipe (ou du classement) montre ses états, un clic sur soi
+  ou à nouveau sur lui revient aux siens. **Bloc géant** : la rangée d'états existe maintenant aussi (Inspiration, Fast
+  learner, anneaux…), avec le même choix dans « Devant le bloc ».
+- **État** : 🧪 sur la branche `geoffrey/etats-focus` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
 - **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
   durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque

@@ -59,7 +59,7 @@ import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
 import { setupTooltips } from './ui/tooltip.js';
-import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
+import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
@@ -506,7 +506,7 @@ function enterSession(session){
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
-  ui.follow = null; ui.followSet = false; renderer.follow();
+  ui.follow = null; ui.followSet = false; ui.focus = null; renderer.follow();
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
@@ -680,11 +680,20 @@ const fxBars = { mine: [createEffectsBar($('fxBar')), $('fxBar'), $('cv'), $('cv
                  mi: [createEffectsBar($('fxBarMi')), $('fxBarMi'), $('cvMi'), $('cvMiWrap')],
                  tower: [createEffectsBar($('fxBarTw')), $('fxBarTw'), $('cvTw'), $('cvTwWrap')],
                  instance: [createEffectsBar($('fxBarIn')), $('fxBarIn'), $('cvIn'), $('cvInWrap')] };
+/* tours, instance, MI : un clic sur un joueur de l'équipe (ou du classement) montre ses états ; sur soi, retour aux siens */
+for(const id of ['twTeam', 'inTeam', 'miRank']) $(id).addEventListener('pointerdown', e => {
+  const r = e.target.closest('[data-id]'); if(!r || e.button !== 0) return;
+  const m = G?.miners?.find(o => o.id === +r.dataset.id);
+  ui.focus = !m || m.account === acct.account?.id || ui.focus === m.id ? null : m.id;
+});
 function updateEffects(G){
   const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
   for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
     if(k !== key){ if(!bar.hidden) update(null); continue; }
-    update(G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0] ?? null);   // son propre mineur (spec du 28/10)
+    /* 29/10 : mine classique = le mineur suivi (clic dans l'équipe) ; tours, instance, MI = le joueur choisi dans l'équipe
+       ou le classement (ui.focus) ; par défaut son propre mineur (spec du 28/10) */
+    const f = focusedMiner(G.miners, acct.account?.id, key === 'mine' ? ui.follow : ui.focus);
+    update(f.m, f.name);
     if(!bar.hidden) placeEffectsBar(bar, cv, wrap, below);
   }
 }
@@ -700,9 +709,9 @@ function frame(now){
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
+    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);

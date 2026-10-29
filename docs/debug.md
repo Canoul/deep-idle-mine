@@ -4642,3 +4642,15 @@ Règles (voir CLAUDE.md) :
   / 700 ms), view, camera, giant-service, giant-sim : 49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) ; le rendu du Bloc
   géant n'a pas de test (canvas), il réutilise `glide` / `pace` / `shownPos` testés.
 
+## 29/10/2026 — Geoffrey — États du joueur regardé, et barre d'états au Bloc géant
+- `src/ui/effects.js` : `focusedMiner(miners, me, focus)` (choisi s'il est là, sinon le sien — `account` ou `me` —,
+  sinon le premier ; `name` si ce n'est pas le sien) ; `createEffectsBar` → `update(m, name)` ajoute un nœud `.fxWho`
+  (nom, bulle) devant les icônes.
+- `src/main.js` `updateEffects` : mine = `ui.follow` (déjà réglé par un clic dans `#teamBody`), tours / instance / MI =
+  `ui.focus` (clic `pointerdown` sur `[data-id]` de `#twTeam`, `#inTeam`, `#miRank` ; sur soi ou le même = null ; remis à
+  null au lancement d'une session). HUD : lignes `.pick` avec `data-id`, `.focus` sur le joueur choisi (4e paramètre).
+- Bloc géant : `server/giant/service.js` viewOf, chaque mineur porte `effects` (`minerEffects`) et `bonus`
+  (`sessionBonuses`) ; `index.html` `#fxBarGt` ; `src/ui/giant.js` `showEffects` à chaque image, choix dans `#gtPresent`.
+- **Tests** ✅ effects (focusedMiner, lignes cliquables), giant-service (effets dans la vue), instant-ui, tower-spells :
+  49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) : clic dans l'équipe, place du nom devant les icônes.
+

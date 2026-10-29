@@ -16,6 +16,7 @@
    - Récompense d'un jour : disponible quand le jour est fini et que ses visites le sont aussi (dayEnd + une visite),
      pour chaque joueur venu au moins une fois, si le score collectif atteint au moins un palier. Réclamée une seule
      fois (claimed), écrite avec l'inventaire. */
+import { minerEffects, sessionBonuses } from '../../src/sim/effects.js';
 import { GIANT, GAME, ITEMS } from '../../src/config.js';
 import { dayOf, dayEnd, nextEntry, canEnter, visitDurationMs, playerRewardFor, nuggetsFor, tiersReached, ranking, shownPoints, minVisitsFor, earnsReward } from '../../src/shared/giant.js';
 import { newRoom, enterRoom, exitRoom, takeDone } from '../../src/shared/giant-room.js';
@@ -168,7 +169,8 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       miners: (G?.miners ?? []).map(m => ({ id: m.id, name: m.name, me: m.account === me.id, x: Math.round(m.x * 100) / 100, y: m.y,
         face: m.face, fly: m.fly ? { from: m.fly.from, to: m.fly.to, k: Math.min(1, m.fly.t / m.fly.dur) } : null,
         status: m.status, look: m.look, auras: m.auras, color: m.color,
-        mining: m.status === 'Frappe le bloc géant' })),
+        mining: m.status === 'Frappe le bloc géant',
+        effects: minerEffects(G, m), bonus: sessionBonuses(G, m) })),   // états (barre d'états, 29/10)
     };
   }
 

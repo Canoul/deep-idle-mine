@@ -84,8 +84,17 @@ export function createEffectsBar(el){
     if(n.dataset.tip !== tip) n.dataset.tip = tip;
     const b = n.lastChild; if(b.textContent !== badge) b.textContent = badge;
   }
-  /* m : le mineur à montrer (null = rien) */
-  return function update(m){
+  /* nom du joueur dont on voit les états (29/10/2026 : quand ce n'est pas le sien) */
+  let who = null;
+  function whoNode(name){
+    if(!who){ who = document.createElement('div'); who.className = 'fxWho'; }
+    if(who.textContent !== name) who.textContent = name;
+    const tip = `États de ${name}\nClique sur ton nom dans l'équipe pour revoir les tiens`;
+    if(who.dataset.tip !== tip) who.dataset.tip = tip;
+    return who;
+  }
+  /* m : le mineur à montrer (null = rien) ; name : son nom si ce n'est pas le mineur du joueur */
+  return function update(m, name = null){
     const want = [];
     for(const e of m?.effects || []){
       const d = EFFECTS.list[e.id]; if(!d) continue;
@@ -96,11 +105,20 @@ export function createEffectsBar(el){
       const S = EFFECTS.session, n = node('session', S.icon, S.color, 'session');
       set(n, bonusTip(m.bonus), String(m.bonus.length)); want.push(n);
     }
+    if(name && want.length) want.unshift(whoNode(name));
     /* ordre et présence : ne touche le DOM que s'il change */
     const cur = [...el.children];
     if(cur.length !== want.length || cur.some((c, i) => c !== want[i])) el.replaceChildren(...want);
     el.hidden = !want.length;
   };
+}
+
+/* mineur dont on montre les états (29/10/2026) : celui choisi (focus, id) s'il est là, sinon le sien, sinon le premier ;
+   name : son nom quand ce n'est pas le sien (null sinon) */
+export function focusedMiner(miners, me, focus){
+  const list = miners || [];
+  const m = (focus != null ? list.find(o => o.id === focus) : null) ?? list.find(o => o.account === me || o.me) ?? list[0] ?? null;
+  return { m, name: m && !(m.account === me || m.me) ? m.name ?? null : null };
 }
 
 /* place la rangée en haut à droite du canvas (centré dans son cadre), sous le bouton « Suivre » s'il est affiché */

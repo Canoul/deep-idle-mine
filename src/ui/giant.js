@@ -8,6 +8,7 @@ import { GIANT } from '../config.js';
 import { helpLine } from './help.js';
 import { createGiantRenderer } from '../render/giant.js';
 import { fitCanvas } from './fit.js';
+import { createEffectsBar, placeEffectsBar, focusedMiner } from './effects.js';
 import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
@@ -115,9 +116,23 @@ export function setupGiant(h){
 
   /* ---------- la visite ---------- */
 
+  /* états (29/10/2026) : ceux de son mineur, ou d'un autre choisi dans « Devant le bloc » (clic ; sur soi : retour) */
+  const fx = createEffectsBar($('fxBarGt'));
+  let focus = null;
+  function showEffects(){
+    const f = focusedMiner(view?.miners, null, focus);
+    fx(f.m, f.name);
+    if(!$('fxBarGt').hidden) placeEffectsBar($('fxBarGt'), $('cvGt'), $('cvGtWrap'));
+  }
+  $('gtPresent').addEventListener('pointerdown', e => {
+    const r = e.target.closest('[data-id]'); if(!r || e.button !== 0) return;
+    const m = view?.miners?.find(o => o.id === +r.dataset.id);
+    focus = !m || m.me || focus === m.id ? null : m.id;
+  });
+
   function showRun(){
     $('gtDone').hidden = true; $('gtRun').hidden = false; $('noSession').hidden = true;
-    lastMe = null;
+    lastMe = null; focus = null;
     pollView();
     if(!raf) raf = requestAnimationFrame(frame);
   }
@@ -125,6 +140,7 @@ export function setupGiant(h){
     raf = null;
     if(!visiting()) return;
     renderer.draw(view);
+    showEffects();
     fitCanvas($('cvGt'), $('cvGtWrap'));
     raf = requestAnimationFrame(frame);
   }
@@ -152,7 +168,7 @@ export function setupGiant(h){
     $('gtMe').innerHTML = `<div class="gtStats"><span>Points</span><b>${nf(m.points)}</b><span>Vitesse</span><b>${m.rate.toLocaleString('fr-FR')} / s</b></div>`+
       `<p class="small">${esc(m.status)}${view.inspire ? ` · 🎺 Inspiration (${view.inspire} s)` : ''}</p>`+
       `<p class="small mut">Oxygène ${m.ox} / ${m.oxMax}</p><div class="gtOx"><i style="width:${Math.max(0, Math.min(100, m.ox / m.oxMax * 100))}%"></i></div>`;
-    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small">${o.me ? '<b>' : ''}${esc(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
+    $('gtPresent').innerHTML = view.miners.map(o => `<div class="small pick${o.id === focus && !o.me ? ' focus' : ''}" data-id="${o.id}" title="Voir ses états">${o.me ? '<b>' : ''}${esc(o.name)}${o.me ? '</b>' : ''} <span class="mut">· ${esc(o.status)}</span></div>`).join('');
     $('gtDay').innerHTML = info ? `<p>Score collectif : <b>${nf(info.total)}</b></p><p class="small mut">Mon score du jour : ${nf(info.mine.points)}</p>` : '';
   }
   async function endVisit(){
