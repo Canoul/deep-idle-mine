@@ -721,6 +721,7 @@ function updatePrisonUI(){
   const on = prisonShown(), active = prisonActive(prison);
   $('navPrison').hidden = !active;
   sessionView.classList.toggle('prisonOn', on);
+  sessionView.classList.toggle('prisonDev', on && info.dev);   // mode dev : les boutons de vitesse restent visibles (29/10)
   $('prisonBanner').hidden = !on;
   $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
   $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';

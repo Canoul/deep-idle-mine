@@ -5159,3 +5159,6 @@ Règles (voir CLAUDE.md) :
   sur `npm run dev` (Test_Canoul) : areas 0-8, area 9 refusée, area 2 à ×300 (run 1 fini en 3 s), ×20, sortie.
 - ⚠️ `endedAway` estime l'heure réelle de fin d'un run avec `t / p.speed` : après un changement de vitesse en dev, le bilan
   « pendant ton absence » peut se tromper d'un run (dev seulement). Liste Area pas vue à l'écran.
+- **Correctif (même jour)** : les boutons de vitesse étaient créés mais invisibles en prison (`.prisonOn #speedBtns
+  {display:none}` dans `src/ui/style.css`). Classe `prisonDev` sur la vue Session (prison regardée en mode dev) : la
+  règle devient `.prisonOn:not(.prisonDev) #speedBtns`. Hors dev, toujours masqués. ✅ controls, prison-ui 13/13.

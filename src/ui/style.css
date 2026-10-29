@@ -343,7 +343,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .prisonBanner{display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));
   background:var(--sel);box-shadow:inset 0 calc(-1*var(--u)) 0 var(--acc-dk);font-size:var(--fs-l);font-variant-numeric:tabular-nums;text-align:center}
 .prisonBanner>span:first-child{color:var(--acc)}
-.prisonOn #chatCard,.prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}
+.prisonOn #chatCard,.prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn:not(.prisonDev) #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}   /* vitesses : en mode dev seulement (29/10) */
 .lobbyActions .launchCost{align-self:center;color:var(--mut)}
 .lobbyActions .launchCost.err{color:var(--bad)}
 .grow{flex:1;min-width:calc(60*var(--u))}
