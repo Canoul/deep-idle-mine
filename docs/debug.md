@@ -4656,3 +4656,16 @@ Règles (voir CLAUDE.md) :
   ignorés, record plus lent qui ne remplace rien, rattrapage, admin caché) ; 27 fichiers serveur / store / social :
   334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
   `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).
+
+## 29/10/2026 — Jules — Police du corps de texte : VT323 au lieu de Jersey 10
+- **Quoi** : `--f-body` (src/ui/style.css) passe de `'Jersey 10'` à `'VT323'` ; `--f-title` reste `'Jersey 15'` (repli
+  VT323). index.html charge `Jersey 15` + `VT323` depuis Google Fonts (Jersey 10 n'est plus chargée). CSP inchangée.
+- **Cause** : une police pixel n'est nette qu'aux multiples de sa grille. Jersey 10 est nette à 20 px, floue à
+  `--fs-s` 15 px / `--fs` 17 px : 8 → 9, 5 → 6 (signalé sur l'orbe d'XP). Comparaison à taille réelle (captures agrandies
+  sans lissage) : VT323 nette à 15/17/20/21 px ; Pixelify Sans : 5 ≈ S ; Tiny5 : 8 ≈ e.
+- **Vérification** ✅ lobby, inventaire, stuff, orbe à 1366×768 (compte Test_Mineur, `npm run dev`), pas de défilement
+  horizontal à 390×844 (lobby, stuff). Tests nav, controls, guide, help, perf, account-http : 40/41, le ❌ « la boîte de
+  mesures est dans les barres… » échoue aussi sur main sans ce changement, pas lié.
+- **Points fragiles** : VT323 est monospace, plus large que Jersey 10 : textes en `nowrap` un peu plus longs (boutons
+  « Où miner » sur 3 lignes à 1366 px). Le canvas (mine) écrit toujours en `sans-serif`, non concerné. VT323 n'a qu'une
+  graisse : le gras est simulé par le navigateur (déjà le cas avec Jersey).
