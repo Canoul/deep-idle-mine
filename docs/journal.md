@@ -44,7 +44,7 @@ Modèle d'entrée :
 - **Pour le joueur** : dans Social → Classements, plus de boutons « Tour céleste II » et « Roi gobelin II » : un bouton
   **Tour céleste** et un bouton **Roi gobelin**, chacun avec ses sous-onglets **Niveau 1 / Niveau 2**, comme les
   spécialisations.
-- **État** : 🧪 sur la branche `geoffrey/classements-sous-onglets` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Classement de la tour par niveau
 - **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
