@@ -94,7 +94,9 @@ function dungeon(){
   <p>${intro} : un carré de ${g.size} × ${g.size} en <b>briques violettes</b> qu'aucune pioche ne peut casser, avec <b>une seule entrée</b> sur un côté. Dedans, un monstre l'attend.</p>
   <div class="mobs">
     <div class="mob"><h3><img src="textures/${esc(g.boss.tex)}.png" alt="">${esc(g.boss.name)}</h3>
-      <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle et ne fait rien de spécial : il <b>tacle</b> qui s'approche.</p>
+      <p>Mi-homme mi-taureau, debout sur ses pattes arrière. Il ne sort jamais de sa salle ; il <b>tacle</b> qui s'approche et le repousse à chaque coup.</p>
+      <p>🐂 <b>Charge</b> : toutes les ${g.charge.every} s, il <b>gratte le sol</b> ${f(g.charge.windup)} s (il tremble), puis fonce tout droit. Le premier mineur touché est <b>projeté de ${g.charge.knock} cases</b> et <b>étourdi ${g.charge.stun} s</b> (la ténacité évite l'étourdissement, la résistance au recul réduit la projection). S'il ne touche personne et percute le mur, c'est lui qui est <b>sonné ${g.charge.missStun} s</b> et prend <b>+${Math.round(g.charge.missVuln * 100)} % de dégâts</b>. Un barbare peut couper sa charge en l'étourdissant pendant qu'il gratte le sol (Dash, Main de la justice).</p>
+      <p>🔥 <b>Rage</b> : sous ${Math.round(g.rage.below * 100)} % de ses PV, il frappe deux fois plus vite, repousse plus fort et charge toutes les ${g.rage.chargeEvery} s.</p>
       <p><b>PV :</b> ${f(g.boss.hp)} (${f(g.hits)} coups avec les dégâts de base, environ ${Math.round(g.fightSec / 60)} min seul) · <b>${g.bossXp} XP</b></p>
       <p><b>Butin :</b> ${g.loot.min} à ${g.loot.max} ${item(g.loot.item)}. Il n'est <b>pas partagé</b> : comme un treasure, <b>chaque joueur en reçoit autant</b> (s'il est encore là à la fin).</p></div>
     <div class="mob"><h3>🏰 Quand un mineur le découvre</h3>

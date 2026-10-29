@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, MINOTAUR } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -140,7 +140,10 @@ export function createRenderer(cv){
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
         if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
-        else if(o.type==='minotaure') blit('minotaur',px,py,'#6b4226');   // boss du donjon
+        else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; il tremble quand il gratte le sol
+          const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, shake=o.fx?.includes('charge') ? Math.round(Math.sin(frameNow/30)) : 0;
+          blit(tex,px+shake,py,o.variant==='noir' ? '#1c1714' : '#6b4226');
+        }
         else if(o.type==='mephite') blit('mephite',px,py+Math.round(Math.sin(frameNow/250+o.id)),'#6f9a3a');   // il flotte (affichage seulement)
         else if(o.type==='golem'){
           /* golem : 2 × 2 cases, (x, y) = sa case du bas à gauche ; une goutte de sueur blanche tombe en boucle */

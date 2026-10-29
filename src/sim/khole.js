@@ -16,7 +16,7 @@
    la grille, entourées de barrière. Dans la dimension (G.khole), l'oxygène ne baisse pas, les pods n'ont pas de limite
    et l'IA ne remonte jamais (src/sim/session.js, src/sim/ai.js), rien ne se débloque (tryUnlock), pas d'apparition de
    mobs normale, pas de focus d'area, la profondeur ne compte pas. */
-import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, TREASURE, TREASURE_BLOCK, MOBS, STATS, mobHp } from '../config.js';
+import { W, IDS, BARRIER, SPAWN_X, SESSION_LEN, KHOLE, KHOLE_BLOCK, DUNGEON, MINOTAUR, TREASURE, TREASURE_BLOCK, MOBS, STATS, mobHp } from '../config.js';
 import { mulberry32, hash } from '../core/rng.js';
 import { fillComp, typeOf, isResidue, isOre, oreKey, areaTop, areaOf, treasureItem } from './world.js';
 import { carve, registerDungeon } from './dungeon.js';
@@ -158,7 +158,11 @@ function buildRoom(G, r, map, k, top){
   }
   if(map.minotaurs){
     const xs = map.minotaurs === 1 ? [map.w-1] : Array.from({ length: map.minotaurs }, (_, i) => Math.round(i*(map.w-1)/(map.minotaurs-1)));
-    for(const x of xs) addMob(G, DUNGEON.boss.type, x, floor, k, { name: DUNGEON.boss.name });
+    xs.forEach((x, i) => {   // variantes de gauche à droite (map.minoVariants : un brun, un noir ; 30/10/2026)
+      const variant = map.minoVariants?.[i % map.minoVariants.length];
+      const hp = map.minoHp ? { hp: map.minoHp, maxhp: map.minoHp } : {};   // PV de l'Arène (sinon ceux du donjon)
+      addMob(G, DUNGEON.boss.type, x, floor, k, { ...hp, ...(variant ? { name: MINOTAUR.variants[variant].name, variant } : { name: DUNGEON.boss.name }) });
+    });
   }
   for(let i=0; i<(map.treasures || 0); i++){
     const x = map.w-1-i, item = TREASURE.tiers[Math.floor(r()*TREASURE.tiers.length)].item;   // tier tiré au hasard

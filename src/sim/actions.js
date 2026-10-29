@@ -13,6 +13,7 @@ import { noEntry } from './dungeon.js';
 import { depositToMule, pickMule, placeMule, emptyMule, isCarrier } from './mule.js';
 import { finishDash, finishDynamite, learnOnMine } from './spells.js';
 import { fleshAt } from './flesh.js';
+import { exposedMul } from './minotaur.js';
 
 /* XP de la session : pot commun (partagé à parts égales en fin de session) ; m.stats.xp = ce que ce mineur y a apporté */
 function gainXp(G,m,n){ if(!n) return; G.stats.xp=(G.stats.xp||0)+n; m.stats.xp=(m.stats.xp||0)+n; }
@@ -243,18 +244,19 @@ export function finishAction(G,m,a){
    - un mob repoussé hors de SA portée de tacle lâche son tacle : il doit revenir pour reprendre le mineur ;
    - verrou (o.knockLock) : un mob repoussé ne peut plus l'être tant qu'il n'est pas revenu à portée de tacle (levé dans
      src/sim/mobs.js). Le mineur ne peut donc jamais le repousser en boucle, quelle que soit sa vitesse d'attaque :
-     le mob revient au contact à chaque fois. Les coups suivants font leurs dégâts, sans recul. */
+     le mob revient au contact à chaque fois. Les coups suivants font leurs dégâts, sans recul.
+   Minotaure sonné après une charge ratée : dégâts × exposedMul (src/sim/minotaur.js, 30/10/2026). */
 export function landHit(G,m,o){
   if(!(o.hp>0) || !inReach(G,m,o,reachOf(m))) return;
   if(m.skill.taunt) provoke(G,o,m);   // provocation : il ne vise plus que ce mineur (tous les mobs)
-  const dmg=hitDamage(G,m);
+  const dmg=hitDamage(G,m)*exposedMul(G,o);
   o.hp-=dmg; m.foeHit=G.t;
   if(o.grab===m.id) o.grabHit=G.t;   // tacle : il se bat, la soupape repart (COMBAT.tackleGiveUp)
   splash(G,m,o,dmg);
   if(o.hp<=0){ killMob(G,m,o); return; }
   /* double attaque (stat doubleAttack, %) : un second coup, avec son propre critique ; un seul recul */
   if(gearChance(G,m.carac.doubleAttack||0)){
-    const d2=hitDamage(G,m);
+    const d2=hitDamage(G,m)*exposedMul(G,o);
     o.hp-=d2; splash(G,m,o,d2);
     m.stats.doubleHits=(m.stats.doubleHits||0)+1;
     if(o.hp<=0){ killMob(G,m,o); return; }

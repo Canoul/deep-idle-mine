@@ -92,5 +92,8 @@ export function mobEffects(G, o){
   if(o.stunUntil != null && G.t < o.stunUntil) out.push('stun');
   if(o.channel) out.push('channel');
   if(o.taunt != null) out.push('taunt');
+  if(o.charge?.phase === 'windup') out.push('charge');   // minotaure qui gratte le sol (src/sim/minotaur.js)
+  if(o.rage) out.push('rage');
+  if(o.exposedUntil > G.t) out.push('exposed');
   return out;
 }

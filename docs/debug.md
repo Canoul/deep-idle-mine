@@ -5108,3 +5108,30 @@ Règles (voir CLAUDE.md) :
   et « Who ? » du lobby (src/ui/lobby.js) l'affichent.
 - **Tests** ✅ `tests/social.test.js` +1 (solo 1/3, duo 2/3 dans amis et Online, 1/3 après un départ, textes, géant sans
   taille) : 20/20 ; giant-service, tower-who, chat, party : 77/77. ⚠️ Pas vu dans le navigateur.
+
+## 30/10/2026 — Minotaure : Charge, Rage, variantes de l'Arène (Jules)
+- **Quoi** : `src/sim/minotaur.js` (nouveau) : `charge` (états `o.charge` windup/run, `o.chargeCd`, course case par case à
+  `speed` cases/s, arrêt sur le premier mineur `inReach` devant lui → `gore` : `stopAction` + `push` de `knock` (knockRes du
+  mineur) + `m.goredUntil` sauf `resists` ; obstacle sans toucher → `o.stunUntil = o.exposedUntil` ; `maxRun` ou pas de sol →
+  arrêt), `breakCharge` (étourdi pendant la charge), `enrage` / `rageHit` (`o.rage` sous `below`), `exposedMul`. Branché dans
+  `src/sim/mobs.js` : `updateBoss` (donjon, cases = intérieur de la salle) et une branche `isMinotaur` dans la boucle
+  générique (Arène, `mobCanEnter`) ; `strike` lit `rageHit` ; l'étourdissement d'un mob appelle `breakCharge`.
+  `actions.js landHit` : dégâts × `exposedMul` (coup et double attaque). `ai.js` + `session.js` : `m.goredUntil` traité comme
+  `quakeUntil` (stun, cause `gore`). `effects.js mobEffects` : `charge` (windup), `rage`, `exposed` (`EFFECTS.mob`). Rendu :
+  `view.js` envoie `variant`, `canvas.js` choisit la texture (`MINOTAUR.variants[].tex`) et fait trembler pendant la
+  préparation. `khole.js buildRoom` : `minoVariants` (brun, noir) et `minoHp` (1000). `DUNGEON.boss.hp` 1000 → 2500.
+  Texture `textures/minotaur_black.png` (`gen_textures.py`, minotaure refait en fonction à palette ; `minotaur.png`
+  inchangé à l'octet).
+- **Tests** ✅ `tests/minotaur.test.js` (nouveau, 8 : préparation sans coup puis encornement, ténacité, résistance au
+  recul, charge ratée + vulnérabilité, coupure par étourdissement, boss enfermé pendant les charges, rage, variantes) ;
+  `tests/khole.test.js` +1 (brun à gauche / noir à droite) et PV de l'arène ; `tests/dungeon.test.js` (2 500 PV ; test
+  « oxygène à 0 » : 12 000 ticks au lieu de 6 000, barbare seul sans stuff ≈ 8 min). Dungeon, khole, combat, mob-drops,
+  spells, golem, effects, mobs, diagnostics, wiki, view, flesh, trap, tier4 : 0 échec. Simulation 3 × 5 : identique
+  (areas 3,0, profondeur 189,8, 0 bloquée ; le donjon est en areas 4-5, non atteintes).
+- **Chiffres** (scène de test du donjon, barbare en tête, 5 seeds) : avant (1000 PV, sans effets) 3 mineurs à 15 de dégâts
+  20 s, barbare seul 53 s ; après (2500 PV) 50 s et 154 s, ~4 charges par mineur et par minute, **0 charge ratée** (l'IA
+  n'esquive pas). Arène à 3 : 108 → 112 s (carte de 120 s : juste ; à 1-2 mineurs, finie à la limite des 120 s avant
+  comme après).
+- ⚠️ Pas vu à l'écran (tremblement, icônes Charge / Vulnérable, sprite noir en jeu). Points fragiles : la charge suppose
+  un boss au sol et une course horizontale ; une proie sur une échelle juste au-dessus le fait attendre (pas de charge) ;
+  l'Arène reste serrée en temps (2 min) avec peu de mineurs.
