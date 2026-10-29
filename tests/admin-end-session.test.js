@@ -93,3 +93,32 @@ test('script : end-session.js sort Linoleom de sa session (clé lue dans le fich
   r = await run([]);
   assert.equal(r.ok, false); assert.match(r.out, /--name/);
 });
+
+/* lancement forcé d'un lobby (/api/admin/party-launch, scripts/launch-lobby.js) */
+const launch = name => fetch(base + '/api/admin/party-launch', { method: 'POST',
+  headers: { 'content-type': 'application/json', authorization: `Bearer ${TOKEN}` }, body: JSON.stringify({ name }) })
+  .then(async r => ({ status: r.status, data: await r.json().catch(() => null) }));
+
+test('launch : un membre (pas le chef) suffit ; le lobby part dans la mine même si personne n\'est prêt', async () => {
+  for(const a of ACC) await party.leave(a);
+  await party.create(canoul); await party.join(crousti, (await party.state(canoul)).party.code);
+  await assert.rejects(party.launch(canoul, {}), /Pas encore prêt/);
+  const r = await launch('crousti');
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.deepEqual({ leader: r.data.leader, members: r.data.members }, { leader: 'canoul', members: ['canoul', 'Crousti'] });
+  const rec = await gs.getGameSession(r.data.session);
+  assert.equal(rec.mode ?? 'mine', 'mine');
+  assert.deepEqual(rec.players.map(p => p.account), [canoul.id, crousti.id]);
+  assert.equal((await launch('canoul')).status, 409, 'déjà en session : refusé');
+  await end('crousti'); await end('canoul');
+});
+
+test('launch : seul (sans groupe) → sa session solo ; pseudo inconnu refusé', async () => {
+  await party.leave(lino);
+  const r = await launch('Linoleom');
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.deepEqual(r.data.members, ['Linoleom']);
+  assert.ok(await game.activeSessionId(lino.id));
+  assert.equal((await launch('personne')).data.error.code, 'no_account');
+  await end('Linoleom');
+});

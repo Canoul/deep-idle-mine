@@ -5077,4 +5077,8 @@ Règles (voir CLAUDE.md) :
   `scripts/end-session.js`. Refusée si la session est déjà à l'heure de fin (`session_over`, résultat en cours de calcul).
 - **Tests** ✅ `tests/admin-end-session.test.js` (4 : en groupe, dernier joueur, refus et clé, script) ; game-service ✅.
   Mise en ligne rapide à la demande de Geoffrey (pas de suite complète).
+- **Ajout (même jour)** : `party.adminLaunch(player)` (server/party/service.js) : comme `launch` du chef, mode mine
+  (`MINE_MODES[0]`), sans le contrôle « prêt » ; seul : `game.start` solo. Route `POST /api/admin/party-launch` {name},
+  script `scripts/launch-lobby.js`. Tests ✅ admin-end-session (+2 : membre non chef, personne prêt ; solo, inconnu),
+  admin-party, party : 49/49. Script lui-même non testé (copie des autres).
 
