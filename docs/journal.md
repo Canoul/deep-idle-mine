@@ -22,6 +22,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — La Dynamite part aussi en combat (tours, Instance I)
+- **Pour le joueur** : le mineur lance maintenant sa Dynamite pendant les combats : sur le roi gobelin à son contact, sur
+  un groupe d'au moins 2 gobelins (instance) ou 2 mobs (tours). 50 % de ses dégâts à tout le rayon. La règle de dureté des
+  briques ne change pas.
+- **Repère** (vraies parties rejouées) : Instance I de 20:48, 2 → 4 Dynamites, victoire 8:00 → 7:40 ; au niveau 2 elle
+  part 4 fois (jusqu'à 53 gobelins touchés) ; Tour du Démon niveau 2 : 2 → 4 Dynamites (3 sur les Diablotins, 1 sur le Démon).
+- **Valeur provisoire** : 2 mobs dans le rayon au moins (`SPELL.dynamite.fightFoes`).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Correctif : le Dash du barbare sur le boss de la tour
 - **Pour le joueur** : dans la tour, le barbare ne dashait sur le boss que s'il arrivait déjà du côté où il veut se placer
   (à l'opposé de ses coéquipiers) : en pratique presque jamais. Il fonce maintenant sur le boss de quelque côté qu'il arrive.

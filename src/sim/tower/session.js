@@ -760,7 +760,7 @@ function blast(G, m, cx, cy){
          `${foes.length ? `, ${foes.length} ${TOWER.sides[G.side].mob}${foes.length > 1 ? 's' : ''} touché${foes.length > 1 ? 's' : ''}` : ''}${boss ? `, ${G.boss.name} touché` : ''}`);
 }
 /* en combat (il frappe un mob ou le boss) : Cri de guerre (lui et les mineurs à son rayon), Cleave (les mobs à son
-   rayon ; le boss s'il est à son contact), Dynamite sur le boss (s'il est dans le rayon) */
+   rayon ; le boss s'il est à son contact), Dynamite sur le boss (s'il est dans le rayon), ou sur un mob entouré (fightFoes, 29/10) */
 function combatSpells(G, m, target){
   if(!m.spells.length) return;
   if(ready(G, m, 'war_cry') && !(G.warcry && G.t < G.warcry.until)){
@@ -778,6 +778,8 @@ function combatSpells(G, m, target){
     }
   }
   if(target === G.boss && ready(G, m, 'dynamite') && bossInBlast(G, m.x + m.face, m.y)) blast(G, m, m.x + m.face, m.y);
+  /* sur un mob (29/10/2026, Geoffrey) : s'il y en a au moins fightFoes dans le rayon autour de lui (lui compris) */
+  else if(target !== G.boss && ready(G, m, 'dynamite') && blastFoes(G, target.x, target.y).length >= SPELL.dynamite.fightFoes) blast(G, m, target.x, target.y);
 }
 /* à chaque décision : Illumination (cases inconnues de la tour à son rayon), Hand of Justice (un mob qui tacle un allié,
    puis lui, à sa portée : étourdi), Ulti shen (un allié taclé, ou au contact du boss : il se téléporte à lui et frappe).

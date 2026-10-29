@@ -664,6 +664,7 @@ export const SPELLS = {
        rayon (un boss de donjon seulement s'il le combat déjà ; dans une tour, le boss aussi) */
     { id:'dynamite', name:'Dynamite', icon:'🧨', px:'fire', short:'Fait sauter les blocs tendres devant lui', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
       reach:2, radius:2, throwTime:0.5, hardMul:3, dmg:0.5,
+      fightFoes:2,   // tours et instance (29/10/2026, Geoffrey) : en combat, elle part sur le boss, ou s'il y a au moins fightFoes mobs dans son rayon (valeur provisoire)
       desc:'Lance une dynamite devant lui (2 cases au plus) : dans un rayon de 2, elle casse les blocs moins durs que 3 × sa vitesse de minage, comme s\'il les minait, et inflige 50 % de ses dégâts aux mobs' },
     /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
        remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
