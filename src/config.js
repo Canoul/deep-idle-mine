@@ -1547,7 +1547,8 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    surface de la mine, vue de côté. Hors session, elle remplace le mur du fond derrière les onglets ; ton mineur marche
    jusqu'au bâtiment de l'onglet ouvert, les autres joueurs en ligne qui ne sont pas en session sont devant le leur.
    Onglet Session sans session : la ville en plein écran, sans les panneaux, et on s'y promène (flèches, clic).
-   buildings : de gauche à droite, un par onglet (tab) ; w × h : place du bâtiment en cases (largeur, hauteur au plus) ;
+   buildings : de gauche à droite, un par onglet (tab) ; la Taverne à côté de la place (29/10 soir, demande de Jules :
+   l'un des premiers bâtiments qu'on voit ; ancien : au bout gauche, l'Entrepôt à sa place) ; w × h : place du bâtiment en cases (largeur, hauteur au plus) ;
    sprite : sa texture, dessinée d'un bloc, posée sur le sol et centrée (scripts/gen_town.py, direction « Crépuscule de
    forge » inspirée de Darkest Dungeon, choisie par Jules le 29/10 ; ancien : maisons en tuiles mur + toit + enseigne) ;
    glows : halos de lumière [x, y, rayon, 'magic' pour le vert] en pixels du sprite ; smoke : [x, y] haut de la cheminée
@@ -1586,17 +1587,17 @@ export const TOWN = {
      palissade à droite, dessinées dans les marges (margin cases) ; on ne marche pas au-delà (src/shared/town.js, clampX) */
   edges: { left: 'town_cliff', right: 'town_gate' },
   buildings: [
-    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
-      glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
+    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
     { tab:'historique',   name:'Archives',             kind:'house', w:5, h:7,  sprite:'town_archives', glows:[[19, 72, 14], [61, 72, 14], [40, 24, 10]] },
     { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:9,  sprite:'town_library',
       glows:[[37, 84, 26], [13, 114, 12], [61, 114, 12], [80, 58, 12]] },
     { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:7,  sprite:'town_training',
       glows:[[26, 65, 12], [70, 65, 12], [27, 86, 14], [67, 86, 14]] },
     { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:11, sprite:'town_mage_tower',
-      glows:[[33, 94, 18, 'magic'], [31, 122, 18, 'magic'], [33, 59, 10, 'magic']] },
+      glows:[[33, 94, 18, 'magic'], [31, 122, 18, 'magic']] },
     { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:6,  sprite:'town_armory', smoke:[77, 0], glows:[[65, 86, 34]] },
-    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
+    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
+      glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
     { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:3 },
     { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sprite:'town_headframe', glows:[[59, 64, 20]] },
     { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:9,  sprite:'town_foundry', smoke:[75, 0],

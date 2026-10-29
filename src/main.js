@@ -102,7 +102,15 @@ const town = setupTown($('bgTown'), {
   /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
   friend: async id => setSocial(await socialApi.request(id)),
   invite: async id => { await partyApi.invite(id); pollLobby(); },
+  /* promenade : la carte du chat global quitte le Lobby pour le bas de l'écran, et y revient à la fin */
+  onWalk: on => {
+    const card = $('gchatCard');
+    if(on){ gchatHome = { parent: card.parentNode, next: card.nextSibling }; town.chatSlot.appendChild(card); }
+    else if(gchatHome){ gchatHome.parent.insertBefore(card, gchatHome.next); gchatHome = null; }
+    gchat?.poke();
+  },
 });
+let gchatHome = null;                                // place de la carte du chat global dans le Lobby, pendant la promenade
 window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
@@ -494,9 +502,10 @@ const focusPanel = setupFocusPanel({
 
 /* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
 const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
-/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert */
+/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert, ou
+   pendant la promenade dans le Carreau (sa carte est alors en bas de l'écran, 29/10) */
 gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id,
-                    paused: () => ui.tab !== 'lobby', time: true });
+                    paused: () => ui.tab !== 'lobby' && !town.walking, time: true });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){

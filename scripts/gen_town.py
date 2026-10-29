@@ -285,7 +285,6 @@ def mage_tower():
     c.poly([(8 + l, top), (20 + l, top - 18), (26 + l, top - 36), (30 + l, top - 52), (24 + l, top - 64), (36 + l, top - 50),
             (40 + l, top - 30), (46 + l, top - 14), (56 + l, top)], SLATE)
     c.recolor(0, 0, 64, top, SLATE, SLATE2, 5)
-    c.rect(18 + l, top - 8, 26, 3, MAGICD)                         # ruban du chapeau
     for y, x in ((88, 28), (116, 26)):
         c.window(x, y, 10, 12, MAGIC, MAGIC2, INK)
     c.arch_door(21, 148, 18, 28)
@@ -309,8 +308,8 @@ def armory():
     c.bricks(48, 66, 34, 30)
     c.poly([(52, 96), (52, 80), (65, 72), (78, 80), (78, 96)], LIT)
     c.poly([(57, 96), (57, 84), (65, 79), (73, 84), (73, 96)], LIT2)
-    c.rect(6, 86, 14, 10, WOOD)                                    # billot
-    c.rect(6, 86, 14, 2, WOODL)
+    c.rect(9, 86, 16, 10, WOOD)                                    # billot, juste sous le pied de l'enclume
+    c.rect(9, 86, 16, 2, WOODL)
     c.poly([(2, 80), (8, 78), (26, 78), (26, 82), (8, 82)], IRON)   # bigorne + table
     c.rect(8, 78, 18, 1, IRON2)
     c.poly([(10, 82), (24, 82), (21, 84), (13, 84)], IRON)         # taille de l'enclume
@@ -541,27 +540,31 @@ def cloud():
     return (48, 16, c.p)
 
 
-def cliff():
-    """bord gauche de la ville (6 × 12) : falaise de roche en strates, rebords en saillie, vieille entrée de mine
-    condamnée par des planches, arbre mort accroché en haut"""
-    c = Pix(96, 192, 2928)
+def rock(c, pts):
+    """masse de roche en strates qui ondulent, fissures entre les strates (falaises des bords de la ville)"""
     MARK = H('#010203')
-    pts = [(0, 6), (14, 0), (30, 10), (46, 4), (58, 18), (52, 36), (66, 52), (60, 70), (74, 92), (70, 112), (84, 134),
-           (80, 154), (96, 176), (96, 192), (0, 192)]
     c.poly(pts, MARK)
     tones = [H('#3a3440'), H('#302a36'), H('#28222e'), H('#342e3a')]
-    for y in range(192):
-        band = (y + int(6 * math.sin(y / 9))) // 10                # strates qui ondulent
-        for x in range(96):
+    for y in range(c.H):
+        band = (y + int(6 * math.sin(y / 9))) // 10
+        for x in range(c.W):
             if c.get(x, y) != MARK:
                 continue
             col = tones[band % len(tones)]
             if (x * 7 + y * 3) % 29 == 0:
                 col = STONEL
             if (y + int(6 * math.sin(y / 9))) % 10 == 0 and (x + band * 5) % 9 > 2:
-                col = H('#1c1820')                                 # fissure entre deux strates
+                col = H('#1c1820')
             c.set(x, y, col)
-    for (x0, y0, w) in ((40, 36, 22), (52, 92, 24), (64, 134, 22)):   # rebords en saillie, éclairés
+
+
+def cliff():
+    """bord gauche de la ville (6 × 12) : falaise de roche en strates, rebords en saillie, vieille entrée de mine
+    condamnée par des planches, arbre mort accroché en haut"""
+    c = Pix(96, 192, 2928)
+    rock(c, [(0, 6), (14, 0), (30, 10), (46, 4), (58, 18), (52, 36), (66, 52), (60, 70), (74, 92), (70, 112), (84, 134),
+             (80, 154), (96, 176), (96, 192), (0, 192)])
+    for (x0, y0, w) in ((40, 36, 22), (52, 92, 24), (64, 134, 22)):
         c.rect(x0, y0, w, 3, STONEL)
         c.rect(x0, y0 + 3, w, 2, H('#1c1820'))
     c.poly([(30, 192), (30, 150), (40, 140), (62, 140), (72, 150), (72, 192)], DARK)
@@ -569,26 +572,32 @@ def cliff():
     for y, tilt in ((154, 4), (166, -3), (178, 5)):
         c.line(30, y, 72, y + tilt, WOODL, 4)
     c.line(36, 150, 66, 186, WOOD2, 2)
-    c.line(46, 4, 46, 22, WOOD2, 2)                                 # arbre mort sur la crête
+    c.line(46, 4, 46, 22, WOOD2, 2)
     c.line(46, 12, 36, 2, WOOD2); c.line(46, 8, 56, 0, WOOD2); c.line(41, 7, 38, 10, WOOD2)
     return c.finish()
 
 
 def gate():
-    """bord droit de la ville (6 × 9) : palissade de pieux pointus, porte fermée par une barre, deux torches"""
-    c = Pix(96, 144, 2929)
-    for i, x in enumerate(range(0, 96, 8)):
-        top = 40 + (i % 3) * 4
-        c.poly([(x, 144), (x, top + 6), (x + 4, top), (x + 8, top + 6), (x + 8, 144)], WOOD if i % 2 else WOODL)
-    c.rect(0, 70, 96, 4, WOOD2); c.rect(0, 120, 96, 4, WOOD2)
-    c.rect(28, 84, 40, 60, WOOD2)                                  # porte
-    c.rect(30, 86, 36, 58, WOOD)
-    c.rect(48, 86, 1, 58, WOOD2)
-    c.rect(22, 106, 52, 5, IRON); c.rect(22, 106, 52, 1, IRON2)   # barre
-    c.poly([(26, 84), (48, 70), (70, 84)], WOOD2)
-    for x in (18, 76):                                             # torches
-        c.rect(x, 82, 3, 14, WOOD)
-        c.rect(x - 1, 76, 5, 6, LIT); c.rect(x, 75, 3, 3, LIT2); c.set(x + 1, 73, LIT3)
+    """bord droit de la ville (7 × 12) : falaise en strates qui répond à celle de gauche, et la palissade de pieux
+    pointus adossée à la roche, avec sa porte barrée entre deux torches"""
+    c = Pix(112, 192, 2929)
+    rock(c, [(112, 0), (96, 4), (82, 16), (88, 34), (72, 52), (80, 72), (62, 92), (68, 116), (52, 136), (58, 160),
+             (48, 176), (52, 192), (112, 192)])
+    for (x0, y0, w) in ((78, 50, 20), (60, 112, 22)):
+        c.rect(x0, y0, w, 3, STONEL)
+        c.rect(x0, y0 + 3, w, 2, H('#1c1820'))
+    for i, x in enumerate(range(0, 72, 8)):                        # palissade
+        top = 88 + (i % 3) * 4
+        c.poly([(x, 192), (x, top + 6), (x + 4, top), (x + 8, top + 6), (x + 8, 192)], WOOD if i % 2 else WOODL)
+    c.rect(0, 118, 72, 4, WOOD2); c.rect(0, 168, 72, 4, WOOD2)
+    c.rect(16, 132, 40, 60, WOOD2)                                 # porte
+    c.rect(18, 134, 36, 58, WOOD)
+    c.rect(36, 134, 1, 58, WOOD2)
+    c.rect(10, 154, 52, 5, IRON); c.rect(10, 154, 52, 1, IRON2)
+    c.poly([(14, 132), (36, 118), (58, 132)], WOOD2)
+    for x in (6, 64):                                              # torches
+        c.rect(x, 130, 3, 14, WOOD)
+        c.rect(x - 1, 124, 5, 6, LIT); c.rect(x, 123, 3, 3, LIT2); c.set(x + 1, 121, LIT3)
     return c.finish()
 
 

@@ -45,6 +45,11 @@ img,canvas{image-rendering:pixelated}
 .tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
 .tcMsg:empty{display:none}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
+/* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : en bas à gauche, au-dessus de la barre d'action */
+.townChat{display:none}
+.bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:calc(var(--dock-h) + 8px);width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}
+.townChat .card{margin:0;background:rgba(11,8,6,.85)}
+.townChat .chatLog{max-height:calc(46*var(--u))}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
 body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent

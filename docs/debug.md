@@ -4693,3 +4693,10 @@ Règles (voir CLAUDE.md) :
   d'un joueur en promenade entre la falaise et la porte. Rendu : falaise collée au bord gauche, porte au bord droit.
   Tests ✅ `tests/town.test.js` 19/19 (nouveau : bords dans les marges, toute place devant un bâtiment entre les deux).
   ✅ Vérifié dans le navigateur : arrêt au pied de la falaise et devant la porte.
+- **Retouches 2 (même soir)** : ordre de `TOWN.buildings` : Entrepôt en premier, Taverne juste avant la place.
+  `scripts/gen_town.py` : `rock()` partagé, `gate()` = falaise en strates + palissade (112 × 192), ruban vert de la tour
+  retiré (et son halo), billot de l'enclume recentré. Chat global en promenade : `setupTown` `onWalk(on)` + `chatSlot`
+  (`.townChat`), `src/main.js` déplace `#gchatCard` dans `chatSlot` puis le remet à sa place dans le Lobby (`gchatHome`) ;
+  `gchat` relu aussi quand `town.walking`. ✅ Vérifié dans le navigateur : message envoyé depuis la promenade (bulle au-
+  dessus de moi + ligne dans le chat), carte revenue dans le Lobby après la promenade, falaise de droite. Tests ✅ town,
+  boot-check, chat : 36/36.

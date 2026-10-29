@@ -61,6 +61,11 @@ Modèle d'entrée :
   tôle, cheminée qui sort du toit, volant sur son bâti avec courroie) ; vitrine du Joaillier rangée sur deux étagères.
   **Bords de la ville fermés** : falaise avec l'ancienne entrée de mine condamnée à gauche, porte de palissade à droite ;
   on ne marche plus dans le vide.
+- **Encore des retouches** : la **Taverne déménage à côté de la place** (l'un des premiers bâtiments qu'on voit),
+  l'Entrepôt prend sa place au bout gauche ; la porte de droite est maintenant **adossée à une falaise** comme à gauche ;
+  plus de barre verte sur la Tour du mage ; l'enclume est bien sur son billot. **Chat global en promenade** : en bas à
+  gauche de l'écran, pour écrire aux gens de la ville (le message s'affiche aussi en bulle) ; il revient dans le Lobby
+  quand on quitte la promenade.
 - **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
 - **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
 

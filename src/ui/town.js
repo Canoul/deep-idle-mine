@@ -13,6 +13,8 @@
      un joueur qui cherche un groupe porte un « ? » doré.
    - Émotes : barre en promenade (TOWN.emotes), vues par les autres au ping suivant.
    - Place : statue du n°1 du classement GS, bannières des jauges Ange / Démon (setJudgment).
+   - Chat global en promenade (29/10 soir, demande de Jules) : la boîte chatSlot en bas à gauche reçoit la carte du chat
+     global du Lobby le temps de la promenade (onWalk, src/main.js), pour écrire aux gens de la ville.
    Option « Le Carreau en fond d'écran » (Mon compte), gardée dans ce navigateur. */
 import { TOWN, SKILLS } from '../config.js';
 import { createTownRenderer, TOWN_TILE } from '../render/town.js';
@@ -55,8 +57,9 @@ export function cardHtml(p, me = false){
 
 /* root : boîte du fond (#bgTown) ; ping(body) : POST /api/town ; emote(id) : POST /api/town/emote ; me() : { id, name,
    look, auras } ou null (pas connecté) ; onEnter(onglet) : ouvrir un onglet ; friend(id) / invite(id) : boutons de la
-   fiche d'un joueur (promesses ; une erreur affiche son message dans la fiche) */
-export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
+   fiche d'un joueur (promesses ; une erreur affiche son message dans la fiche) ; onWalk(on) : la promenade commence
+   (true) ou s'arrête (false) */
+export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {} }){
   const cv = document.createElement('canvas');
   root.appendChild(cv);
   const hint = document.createElement('div');
@@ -67,6 +70,9 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
   const card = document.createElement('div');
   card.className = 'townCard'; card.hidden = true;
   root.appendChild(card);
+  const chatSlot = document.createElement('div');
+  chatSlot.className = 'townChat';
+  root.appendChild(chatSlot);
   const r = createTownRenderer(cv);
   let on = load(KEY, '1') !== '0';
   let shown = false, free = false, tab = 'lobby';
@@ -140,7 +146,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
 
   /* clic : un joueur → sa fiche ; un bâtiment (sa façade) → y aller puis entrer ; ailleurs → y aller */
   root.addEventListener('pointerdown', e => {
-    if(!free || e.target.closest('.townHint, .townCard')) return;
+    if(!free || e.target.closest('.townHint, .townCard, .townChat')) return;
     const b = cv.getBoundingClientRect(), s = b.height / (TOWN.rows * TOWN_TILE);
     const tx = camX + (e.clientX - b.left) / s / TOWN_TILE, ty = (e.clientY - b.top) / s / TOWN_TILE;
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
@@ -178,6 +184,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
       free = walk; keys = 0; enterOnArrive = null; closeCard();
       document.body.classList.toggle('townWalk', free);
       root.classList.toggle('walk', free);
+      onWalk(free);
       if(shown) poll();
     }
     if(!shown) return;
@@ -205,6 +212,10 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
   return {
     frame,
     get on(){ return on; },
+    /* en promenade (onglet Session sans session) */
+    get walking(){ return free; },
+    /* boîte en bas à gauche de la promenade (le chat global y est déplacé) */
+    chatSlot,
     set(v){ on = !!v; save(KEY, on ? '1' : '0'); },
     /* jauges du Jugement (GET /api/game/judgment → value.sides) : { angel: { count, cap, open }, demon: … } */
     setJudgment(sides){ judgment = sides ?? null; },
