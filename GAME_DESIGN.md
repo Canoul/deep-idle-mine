@@ -592,6 +592,8 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
   - **Tour céleste II** *(29/10/2026, Geoffrey)* : **un classement par niveau de tour**, comme le roi gobelin. « Tour céleste »
     ne compte plus que les victoires au niveau 1, « Tour céleste II » celles au niveau 2 (mêmes règles). Les records
     d'avant ce classement sont rangés d'après le niveau de leur session (niveau 1 si elle n'est plus gardée).
+  - **Sous-onglets** *(29/10/2026, Geoffrey)* : comme la Spécialisation (un sous-onglet par arbre), la Tour céleste et le Roi
+    gobelin ont un seul bouton, avec un sous-onglet par niveau (**Niveau 1**, **Niveau 2**).
   - **Roi gobelin** *(29/10/2026, Geoffrey)* : le **meilleur temps pour vaincre le roi gobelin** de l'Instance I, en temps
     de jeu **de l'entrée dans l'instance à sa mort** (spawners compris). Mêmes règles que la tour : chaque joueur présent
     à la victoire garde son meilleur temps, un joueur parti avant n'est pas classé, le mode dev ne compte pas, un échec
