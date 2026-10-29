@@ -37,3 +37,12 @@ test('lancement refusé (session déjà en cours, clé manquante) : rien de déb
   await assert.rejects(fresh.game.start(A, { mode: 'instance_1' }), { code: 'no_key' });
   assert.equal(await fresh.store.getEnergy(A.id), null, 'aucune énergie écrite');
 });
+
+test('refus après la lecture de l\'énergie (serveur plein) : rien de débité ni d\'écrit', async () => {
+  const store = createMemoryGameStore();
+  const game = createGameService({ store, liveRunner: fakeLive(() => ({ shares: [] })), clock: () => 5_000_000, randomSeed: () => 7,
+                                   config: { startsPerHour: 1000, keepEnded: 1e12, maxLive: 0 } });
+  await assert.rejects(game.start(A, {}), { code: 'server_busy' });
+  assert.equal(await store.getEnergy(A.id), null);
+  assert.equal(await game.activeSessionId(A.id), null);
+});

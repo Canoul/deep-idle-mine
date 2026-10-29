@@ -588,8 +588,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(energyLocks.length){
           rec.energy = {};
           for(const p of players){
-            const cost = rollCost(random);
-            if(!spendEnergy(energies[p.account], rec.id, cost)) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${p.name || 'Un joueur'}.`);
+            /* dès 6 d'énergie le lancement réussit toujours : le coût est plafonné à l'énergie restante (jamais négative) */
+            const cost = Math.min(rollCost(random), Math.floor(energies[p.account].value));
+            if(!spendEnergy(energies[p.account], rec.id, cost)) throw new Error('énergie : débit impossible après la vérification (bug)');
             rec.energy[p.account] = cost;
           }
           for(const p of players) await store.putEnergy(p.account, energies[p.account]);

@@ -70,3 +70,17 @@ test('tour, instance et mode dev : énergie inchangée', async () => {
   await d.game.start(A, {});
   assert.equal(await d.valueOf(A.id), 5, 'mode dev : pas de coût');
 });
+
+test('de 6 à 11 d\'énergie : le lancement réussit toujours, coût plafonné à l\'énergie restante', async () => {
+  for(const [start, roll] of [[7, 0.9999], [6, 0.9999], [11, 0.9999], [7, 0]]){
+    const store = createMemoryGameStore();
+    const game = createGameService({ store, liveRunner: fakeLive(() => ({ shares: [] })), clock: () => 5_000_000, randomSeed: () => 7, random: () => roll });
+    await store.putEnergy(A.id, { ...createEnergy(), value: start });
+    const r = await game.start(A, {});
+    const rec = await store.getGameSession(r.session.id);
+    const cost = Math.min(roll ? ENERGY.cost.max : ENERGY.cost.min, start);
+    assert.equal(rec.energy[A.id], cost); assert.equal((await store.getEnergy(A.id)).value, start - cost);
+  }
+  const { game, setEnergy, valueOf } = setup();
+  for(let i = 0; i < 20; i++){ await setEnergy(A.id, 7); const r = await game.start(A, {}); assert.ok(await valueOf(A.id) >= 0); await game.leave(A).catch(() => {}); }
+});
