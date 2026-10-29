@@ -15,7 +15,7 @@ import { GAME, DT, INSTANCE, MINE_MODES, PRISON } from '../src/config.js';
 import { GAME_SERVER } from '../server/config.js';
 import { createEnergy, energyOfTicks } from '../src/meta/energy.js';
 import { createInventory, addItem, serialize, deserialize, countOf } from '../src/meta/inventory.js';
-import { runRecord, buildPrisonRun, sanitizePrison, prisonTickAt, prisonDueMs, touchPrison, isPresent, batchDue, newPrisonRecord, publicPrison } from '../src/shared/prison.js';
+import { runRecord, buildPrisonRun, sanitizePrison, prisonTickAt, prisonDueMs, touchPrison, isPresent, batchDue, newPrisonRecord, publicPrison, endedAway } from '../src/shared/prison.js';
 import { tickPrison, endPrisonRun } from '../src/sim/prison.js';
 
 const A = { id: 'AAAA1111', name: 'Zoe' }, B = { id: 'BBBB2222', name: 'Max' };
@@ -290,7 +290,11 @@ test('règles : prisonDueMs plafonné à lastSeenAt + offlineMax, touchPrison (a
   assert.equal(touchPrison(p, 5000e3, cfg), true);
   assert.equal(p.state, 'running'); assert.equal(p.pausedMs, 100e3 + 4000e3); assert.equal(p.lastSeenAt, 5000e3);
   assert.equal(prisonDueMs(p, 5000e3, cfg), due, 'pas de saut');
-  assert.deepEqual(p.away, { runs: 0, energy: 0, bag: {} });
+  assert.deepEqual(p.lastAbsence, { from: 0, to: 5000e3 }, 'absence notée');
+  assert.equal(p.away.runs, 3, 'le bilan reste à envoyer (le serveur le remet à zéro une fois envoyé)');
+  /* run fini pendant l'absence, versé après le retour : compté ; fini après le retour : non */
+  assert.ok(endedAway(p, 2000e3, cfg)); assert.ok(!endedAway(p, 10e3, cfg)); assert.ok(!endedAway(p, 5005e3, cfg));
+  p.away = { runs: 0, energy: 0, bag: {} };
   /* présent : seul lastSeenAt change */
   assert.equal(touchPrison(p, 5010e3, cfg), false);
   assert.equal(p.lastSeenAt, 5010e3);
@@ -457,4 +461,56 @@ test('arrêt après un redémarrage du moteur : run rejoué depuis son début ju
   const inv = await invOf(store, A.id);
   for(const [item, n] of Object.entries(bag)) assert.equal(countOf(inv, item), n, item);
   assert.equal(sumInv(inv), total(bag));
+});
+
+/* ---------- revue de la Tâche 7 : courses, state() sans rattrapage, bilan à l'heure de fin des runs ---------- */
+
+test('deux vues et pump en même temps à travers la fin d\'un run : aucune erreur, tous répondent', async () => {
+  const { game, store, t } = setup();
+  await game.prisonStart(A);
+  const p = await prisonOf(store, A.id);
+  t.now = runEndAt(p);
+  const res = await Promise.allSettled([game.prisonView(A, null), game.prisonView(A, null), game.pump(), game.state(A)]);
+  assert.deepEqual(res.map(r => r.status), ['fulfilled', 'fulfilled', 'fulfilled', 'fulfilled'], res.map(r => r.reason?.message).join(' / '));
+  await game.pump();
+  const after = await prisonOf(store, A.id);
+  assert.equal(after.run, 2); assert.equal(after.totals.runs, 1);
+});
+
+test('state() note la visite sans jouer le retard de la prison (aucune avance)', async () => {
+  const { game, store, t, box } = setup();
+  await game.prisonStart(A);
+  t.now = T0 + 20 * 60e3;                       // absent, en retard
+  const n = box.advances;
+  const s = await game.state(A);
+  assert.equal(box.advances, n, 'aucune avance');
+  assert.equal(s.prison.state, 'running');
+  assert.equal((await prisonOf(store, A.id)).lastSeenAt, t.now, 'visite écrite (retour d\'absence)');
+});
+
+test('bilan à l\'heure de fin : run fini pendant l\'absence versé plus tard (state puis vue) → compté ; run fini sous les yeux → non', async () => {
+  {
+    const { game, store, t } = setup();
+    await game.prisonStart(A);
+    const p = await prisonOf(store, A.id);
+    t.now = runEndAt(p) + 60e3;                 // le run 1 a fini pendant l'absence, rien n'a tourné
+    const s = await game.state(A);              // visite d'abord : rien de versé encore
+    assert.equal(s.prison.away.runs, 0);
+    const v = await game.prisonView(A, null);   // la vue joue le retard : run 1 versé maintenant
+    assert.equal(v.prison.run, 2);
+    assert.equal(v.prison.away.runs, 1, 'fini pendant l\'absence');
+    assert.equal((await game.prisonView(A, v.view.tick)).prison.away.runs, 0, 'montré une fois');
+  }
+  {
+    const { game, store, t } = setup();
+    await game.prisonStart(A);
+    const p = await prisonOf(store, A.id), end = runEndAt(p);
+    for(t.now = T0 + 10e3; (await prisonOf(store, A.id)).run === 1; t.now += 10e3){
+      await game.pump();
+      const r = await game.prisonView(A, null);
+      assert.equal(r.prison.away.runs, 0);
+      assert.ok(t.now < end + 30e3, 'le run 1 finit');
+    }
+    assert.equal((await prisonOf(store, A.id)).away.runs, 0, 'fini sous les yeux du joueur');
+  }
 });

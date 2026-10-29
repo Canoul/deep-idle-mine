@@ -48,7 +48,7 @@ import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../../src/meta/energy.js';
 import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
-         addAway } from '../../src/shared/prison.js';
+         addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
@@ -394,7 +394,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   }
   /* Verse un run (verrous prisonLocks déjà pris) : coffre (shares : coffre + glyphes trouvés, sans le sac du mineur),
      XP du mineur et de sa spécialisation, énergie au prorata du temps de jeu ; clé « prison:<id>:<run> » partout
-     (rejoué : rien deux fois). Joueur absent : ajouté au bilan de l'absence (away). Puis : arrêt → prison fermée ;
+     (rejoué : rien deux fois). Run fini pendant une absence (heure réelle de sa fin, endedAway) : ajouté au bilan
+     (away). Puis : arrêt → prison fermée ;
      sinon run suivant, qui démarre où le précédent a fini. */
   async function settleRun(p, summary, { stopped }){
     const key = runId(p), share = (summary?.shares || []).find(s => s.account === p.account) ?? {};
@@ -412,7 +413,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       p.totals.runs++;
       p.totals.energy = Math.round((p.totals.energy + energy) * 10) / 10;
       for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
-      if(!isPresent(p, clock(), cfg)) addAway(p, energy, bag);
+      if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, energy, bag);
     }
     if(stopped){ p.state = 'done'; p.endedAt = clock(); closedRun.delete(p.id); }
     else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; closedRun.set(p.id, p.run); p.run++; }
@@ -464,7 +465,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const end = Math.min(target, tick + Math.floor(left));
       if(end <= tick) return { upToDate: false };
       left -= end - tick;
-      await advanceRun(id, end);
+      try { await advanceRun(id, end); }
+      catch(e){ if(live.has(id) && !runEnded.has(id)) throw e; }   // fini ou fermé sous nos pieds (pump, une autre vue)
       if(runEnded.has(id)){ await prisonSettling.get(id)?.catch(() => {}); continue; }   // run fini : le suivant
       if(!live.has(id) || live.tickOf(id) < target) return { upToDate: false };        // budget épuisé (ou fermé)
     }
@@ -528,35 +530,44 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* sessions qui empêchent de lancer une prison : mine, tour, instance (pas la mine instantanée) */
   const sessionOf = async accountId => (await store.sessionsOf(accountId))
     .find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
-  /* retard joué à une visite : au plus un paquet et le rejeu d'un run (au-delà, pump finit le rattrapage) */
+  /* retard joué à une vue de la prison : au plus un paquet et le rejeu d'un run (au-delà, pump finit le rattrapage) */
   const catchUpBudget = p => prisonTickAt(cfg.batchMs, p.speed) + Math.ceil(cfg.runMax / DT);
-  /* Visite du joueur (state, vue de la prison) : le retard est joué (au plus un paquet et le rejeu d'un run), la visite
-     notée (touchPrison : une prison qui attendait repart d'où elle s'était arrêtée), puis la prison est envoyée avec le
-     bilan de l'absence (une seule fois) et, si withView, la vue du run depuis le tick since.
+  /* Visite du joueur (state, vue de la prison) : notée (touchPrison, lastSeenAt écrit au plus toutes les seenWriteMs ;
+     une prison qui attendait repart d'où elle s'était arrêtée) ; play : le retard est joué avant de répondre (vue de
+     la prison seulement, jamais state) ; puis la prison est envoyée avec le bilan de l'absence, une seule fois (remis à
+     zéro dès qu'il est envoyé) et, si withView, la vue du run depuis le tick since.
      → { prison: publicPrison | null, view: vue | null } */
-  const seePrison = (accountId, { since = null, withView = false } = {}) => watch(accountId, async () => {
-    const p0 = await loadPrison(accountId);
-    if(!p0) return { prison: null, view: null };
-    if(p0.state === 'running') await playPrison(accountId, catchUpBudget(p0));   // avant la visite : le bilan compte ces runs
-    const seenNow = await withLock('prison:' + accountId, async () => {
+  const seePrison = (accountId, { since = null, withView = false, play = false } = {}) => watch(accountId, async () => {
+    const visit = await withLock('prison:' + accountId, async () => {
       const p = await loadPrison(accountId);
       if(!p) return null;
-      const away = p.away, now = clock();
-      const changed = touchPrison(p, now, cfg);   // fermée : seul le bilan (arrêtée pendant l'absence) est remis à zéro
+      const now = clock(), changed = touchPrison(p, now, cfg);
       seen.set(accountId, p.lastSeenAt);
       if(changed || (p.state !== 'done' && !(now - (seenWritten.get(accountId) ?? -Infinity) < cfg.seenWriteMs))){
         await store.putPrison(accountId, p); seenWritten.set(accountId, now);
       }
+      return p;
+    });
+    if(!visit) return { prison: null, view: null };
+    if(play && visit.state === 'running') await playPrison(accountId, catchUpBudget(visit));
+    const { p, away } = await withLock('prison:' + accountId, async () => {
+      const p = await loadPrison(accountId) ?? visit, away = p.away;
+      if(hasAway(p)){ clearAway(p); await store.putPrison(accountId, p); }
       return { p, away };
     });
-    if(!seenNow) return { prison: null, view: null };
-    let { p } = seenNow;
-    if(p.state === 'running'){ await playPrison(accountId, catchUpBudget(p)); p = await loadPrison(accountId) ?? p; }   // repris après une attente, ou moteur fermé
     const id = runId(p), on = p.state === 'running' && live.has(id);
     const info = on ? await live.info(id).catch(() => null) : null;
     const view = on && withView ? await live.view(id, since).catch(() => null) : null;
-    return { prison: publicPrison(p, info, { away: seenNow.away, cfg }), view };
+    return { prison: publicPrison(p, info, { away, cfg }), view };
   });
+  /* la prison dans state() : une visite, sans rattrapage ; ne fait jamais échouer state() (au pire, telle qu'en base) */
+  async function prisonOfState(accountId){
+    try { return (await seePrison(accountId)).prison; }
+    catch(e){
+      console.error(`Prison de ${accountId} (state) :`, e.message);
+      return publicPrison(await loadPrison(accountId).catch(() => null), null, { cfg });
+    }
+  }
 
   /* ---------- fin de session ---------- */
 
@@ -718,7 +729,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended),
-               prison: (await seePrison(me.id)).prison };
+               prison: await prisonOfState(me.id) };
     },
 
     /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
@@ -1016,15 +1027,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!rec) fail('no_session', 404, 'Aucune session en cours.');
       const s = Number.isSafeInteger(since) && since >= 0 ? since : null;
       const ok = rec.status === 'running' && ensureLive(rec);
-      return { view: ok ? await live.view(rec.id, s) : null, status: ok ? 'running' : 'settling',
-               clock: rec.dev ? rec.clock : null, now: clock() };
+      /* la partie peut se terminer (et le moteur la fermer) pendant que la vue attend son tour : « settling » */
+      const view = ok ? await live.view(rec.id, s).catch(e => { if(live.has(rec.id)) throw e; return null; }) : null;
+      return { view, status: view ? 'running' : 'settling', clock: rec.dev ? rec.clock : null, now: clock() };
     },
 
     /* la prison du joueur, pour l'afficher (GET /api/game/prison) : c'est une visite (présence, retour après une
        attente) ; le retard est joué avant l'envoi. view : le run en cours depuis le tick since (absent : carte entière). */
     async prisonView(me, since){
       const s = Number.isSafeInteger(since) && since >= 0 ? since : null;
-      const r = await seePrison(me.id, { since: s, withView: true });
+      const r = await seePrison(me.id, { since: s, withView: true, play: true });
       return { ...r, now: clock() };
     },
 

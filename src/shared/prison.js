@@ -3,8 +3,9 @@
 
    Enregistrement d'une prison (serveur, ns prison, clé = compte) :
      { id, account, seed, run, specs, areaMax, speed, runStartedAt, pausedMs, state: 'running' | 'waiting' | 'done',
-       lastSeenAt, lastBatchAt, endedAt, totals: { runs, energy, bag }, away: { runs, energy, bag } }
-   away : ce que les runs finis pendant l'absence du joueur ont rapporté (bilan montré une fois à son retour).
+       lastSeenAt, lastBatchAt, endedAt, totals: { runs, energy, bag }, away: { runs, energy, bag }, lastAbsence }
+   away : ce que les runs finis pendant l'absence du joueur ont rapporté (bilan montré une fois, puis remis à zéro par
+   le serveur) · lastAbsence : { from, to } dernière absence (de la visite d'avant au retour), null avant la première.
    specs : le mineur figé au lancement { name, prefs, look, gear, skills, spells } (comme une session : revérifiés à la
    construction par minerSpecs). Chaque run est une partie à part pour le moteur (runRecord : id 'prison:<id>:<run>'),
    qui se rejoue à l'identique depuis son début (seed de la prison + numéro du run). */
@@ -41,13 +42,15 @@ export function sanitizePrison(p){
     lastBatchAt: isNum(p.lastBatchAt) ? p.lastBatchAt : null,
     endedAt: isNum(p.endedAt) ? p.endedAt : null,
     totals: sanitizeTotals(p.totals), away: sanitizeTotals(p.away),
+    lastAbsence: isObj(p.lastAbsence) && isNum(p.lastAbsence.from) && isNum(p.lastAbsence.to) && p.lastAbsence.from <= p.lastAbsence.to
+      ? { from: p.lastAbsence.from, to: p.lastAbsence.to } : null,
   };
 }
 
 /* nouvelle prison : run 1, qui commence maintenant */
 export function newPrisonRecord({ id, account, seed, specs, areaMax = 0, now, speed = GAME.speed }){
   return { id, account, seed, run: 1, specs, areaMax, speed, startedAt: now, runStartedAt: now, pausedMs: 0, state: 'running',
-           lastSeenAt: now, lastBatchAt: null, endedAt: null, totals: noTotals(), away: noTotals() };
+           lastSeenAt: now, lastBatchAt: null, endedAt: null, totals: noTotals(), away: noTotals(), lastAbsence: null };
 }
 
 /* id du run en cours : clé de ses versements (inventaire, XP, énergie) et de sa partie dans le moteur */
@@ -82,17 +85,24 @@ export const isPresent = (p, now, cfg = PRISON) => now - p.lastSeenAt <= cfg.pre
 export const batchDue = (p, now, cfg = PRISON) => now - Math.max(p.lastBatchAt ?? -Infinity, p.lastSeenAt) >= cfg.batchMs;
 /* Visite du joueur à l'heure now (le serveur seul l'appelle) : lastSeenAt = now. Le temps passé au-delà du plafond
    (lastSeenAt + offlineMax) est une attente, ajoutée à pausedMs : le run reprend au tick où il s'était arrêté (en
-   waiting, il repasse running). De retour après plus de presentFor : le bilan de l'absence (away) est remis à zéro
-   (l'appelant l'a lu avant). → true si autre chose que lastSeenAt a changé (à écrire tout de suite). */
+   waiting, il repasse running). De retour après plus de presentFor : l'absence est notée (lastAbsence), pour que les
+   runs finis pendant ce temps et versés plus tard comptent dans le bilan (endedAway). → true si autre chose que
+   lastSeenAt a changé (à écrire tout de suite). */
 export function touchPrison(p, now, cfg = PRISON){
   let changed = false;
   const cap = p.lastSeenAt + cfg.offlineMax;
   if(now > cap && p.state !== 'done'){ p.pausedMs += now - cap; changed = true; }
   if(p.state === 'waiting'){ p.state = 'running'; changed = true; }
-  if(now - p.lastSeenAt > cfg.presentFor && (p.away.runs || p.away.energy || Object.keys(p.away.bag).length)){ p.away = noTotals(); changed = true; }
+  if(now - p.lastSeenAt > cfg.presentFor){ p.lastAbsence = { from: p.lastSeenAt, to: now }; changed = true; }
   p.lastSeenAt = Math.max(p.lastSeenAt, now);
   return changed;
 }
+/* un run fini à l'heure endAt (temps réel) l'a été pendant une absence : plus de presentFor après la dernière visite,
+   ou pendant la dernière absence (versé seulement après le retour) */
+export const endedAway = (p, endAt, cfg = PRISON) => endAt > p.lastSeenAt + cfg.presentFor
+  || (!!p.lastAbsence && endAt > p.lastAbsence.from + cfg.presentFor && endAt <= p.lastAbsence.to);
+export const hasAway = p => !!(p.away.runs || p.away.energy || Object.keys(p.away.bag).length);
+export const clearAway = p => { p.away = noTotals(); };
 /* ajoute un run versé au bilan de l'absence */
 export function addAway(p, energy, bag){
   p.away.runs++;
