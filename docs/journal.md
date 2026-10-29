@@ -31,7 +31,7 @@ Modèle d'entrée :
 - **Décisions** : un seul objet, la Poudre de rêve (rareté rare), sert au recyclage et à la recette. Chiffres provisoires.
 - **À suivre** : ~10 runes recyclées pour une neuve, R4 ou mieux 30 % du temps (22 % pour un trésor de tour) : à
   surveiller, ça rend les tours un peu plus rentables pour qui accumule des petites runes.
-- **État** : 🧪 sur la branche `geoffrey/recyclage-runes` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — La Dynamite part aussi en combat (tours, Instance I)
 - **Pour le joueur** : le mineur lance maintenant sa Dynamite pendant les combats : sur le roi gobelin à son contact, sur
