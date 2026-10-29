@@ -73,6 +73,14 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
   const chatSlot = document.createElement('div');
   chatSlot.className = 'townChat';
   root.appendChild(chatSlot);
+  /* chat tout en bas à gauche, à côté de la barre d'action ; trop peu de place à côté d'elle : au-dessus */
+  function placeChat(){
+    const d = document.querySelector('.dock')?.getBoundingClientRect(), gap = 12, avail = d ? d.left - 2 * gap : innerWidth;
+    const below = !d || avail >= TOWN.chatMin;
+    Object.assign(chatSlot.style, below ? { bottom: gap / 2 + 'px', width: Math.min(TOWN.chatMax, avail) + 'px' }
+                                        : { bottom: innerHeight - d.top + gap / 2 + 'px', width: Math.min(TOWN.chatMax, innerWidth - 2 * gap) + 'px' });
+  }
+  addEventListener('resize', () => { if(free) placeChat(); });
   const r = createTownRenderer(cv);
   let on = load(KEY, '1') !== '0';
   let shown = false, free = false, tab = 'lobby';
@@ -185,6 +193,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
       document.body.classList.toggle('townWalk', free);
       root.classList.toggle('walk', free);
       onWalk(free);
+      if(free) requestAnimationFrame(placeChat);              // une fois la barre d'action à sa place
       if(shown) poll();
     }
     if(!shown) return;

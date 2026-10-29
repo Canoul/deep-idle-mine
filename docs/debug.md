@@ -4700,3 +4700,7 @@ Règles (voir CLAUDE.md) :
   `gchat` relu aussi quand `town.walking`. ✅ Vérifié dans le navigateur : message envoyé depuis la promenade (bulle au-
   dessus de moi + ligne dans le chat), carte revenue dans le Lobby après la promenade, falaise de droite. Tests ✅ town,
   boot-check, chat : 36/36.
+- **Retouches 3** : `scripts/gen_town.py` `gate()` remplacé par `slagheap()` (`town_slagheap`, 112 × 192 ; `town_gate`
+  supprimée), `TOWN.edges.right`. Chat en promenade : `placeChat()` dans `src/ui/town.js` (à la mise en promenade et au
+  redimensionnement) : en bas à gauche, largeur = place à gauche de `.dock` (au plus `TOWN.chatMax` 360 px) ; moins de
+  `TOWN.chatMin` (220 px) : au-dessus de la barre. ✅ Vu à 1600 et 1920 px de large (≈ 225 px et 360 px).

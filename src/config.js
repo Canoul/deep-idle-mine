@@ -758,7 +758,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
   'town_cobble','town_campfire','town_lamppost','town_headframe','town_cloud',
   'town_banner_angel','town_banner_demon','town_pedestal','town_tavern','town_archives','town_library','town_training','town_mage_tower',
-  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler','town_cliff','town_gate'];
+  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler','town_cliff','town_slagheap'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1570,6 +1570,7 @@ export const TOWN = {
   walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
+  chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },
     { id:'mine',  icon:'⛏️', name:'On mine ?' },
@@ -1583,9 +1584,10 @@ export const TOWN = {
   /* ciel de crépuscule (dégradé de haut en bas), falaises au loin (la plus lointaine d'abord), brume au ras du sol, sol
      assombri (luminosité des pavés et de la terre) ; « plus sombre et en dégradé » : demande de Jules, 29/10 */
   sky: ['#16070a', '#3e140f', '#7a2e18', '#b45a2c'], far: ['#4a1c14', '#2a0e0a'], fog: 'rgba(255,130,70,.2)', groundDim: 0.5,
-  /* bords de la ville (29/10 soir, retour de Jules : « les bords de la map sont vides ») : falaise à gauche, porte de
-     palissade à droite, dessinées dans les marges (margin cases) ; on ne marche pas au-delà (src/shared/town.js, clampX) */
-  edges: { left: 'town_cliff', right: 'town_gate' },
+  /* bords de la ville (29/10 soir, retours de Jules : « les bords de la map sont vides », puis la porte de palissade
+     « pas ouf ») : falaise à gauche, terril qui couve à droite (ancien : palissade adossée à la roche), dessinés dans les
+     marges (margin cases) ; on ne marche pas au-delà (src/shared/town.js, clampX) */
+  edges: { left: 'town_cliff', right: 'town_slagheap' },
   buildings: [
     { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
     { tab:'historique',   name:'Archives',             kind:'house', w:5, h:7,  sprite:'town_archives', glows:[[19, 72, 14], [61, 72, 14], [40, 24, 10]] },

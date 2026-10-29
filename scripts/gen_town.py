@@ -577,27 +577,40 @@ def cliff():
     return c.finish()
 
 
-def gate():
-    """bord droit de la ville (7 × 12) : falaise en strates qui répond à celle de gauche, et la palissade de pieux
-    pointus adossée à la roche, avec sa porte barrée entre deux torches"""
+def slagheap():
+    """bord droit de la ville (7 × 12) : le terril, tas de déblais noirs de la mine qui couve encore (braises), et devant
+    lui sa passerelle en bois sur pilotis qui monte au sommet, un wagonnet en haut, une lanterne au pied"""
     c = Pix(112, 192, 2929)
-    rock(c, [(112, 0), (96, 4), (82, 16), (88, 34), (72, 52), (80, 72), (62, 92), (68, 116), (52, 136), (58, 160),
-             (48, 176), (52, 192), (112, 192)])
-    for (x0, y0, w) in ((78, 50, 20), (60, 112, 22)):
-        c.rect(x0, y0, w, 3, STONEL)
-        c.rect(x0, y0 + 3, w, 2, H('#1c1820'))
-    for i, x in enumerate(range(0, 72, 8)):                        # palissade
-        top = 88 + (i % 3) * 4
-        c.poly([(x, 192), (x, top + 6), (x + 4, top), (x + 8, top + 6), (x + 8, 192)], WOOD if i % 2 else WOODL)
-    c.rect(0, 118, 72, 4, WOOD2); c.rect(0, 168, 72, 4, WOOD2)
-    c.rect(16, 132, 40, 60, WOOD2)                                 # porte
-    c.rect(18, 134, 36, 58, WOOD)
-    c.rect(36, 134, 1, 58, WOOD2)
-    c.rect(10, 154, 52, 5, IRON); c.rect(10, 154, 52, 1, IRON2)
-    c.poly([(14, 132), (36, 118), (58, 132)], WOOD2)
-    for x in (6, 64):                                              # torches
-        c.rect(x, 130, 3, 14, WOOD)
-        c.rect(x - 1, 124, 5, 6, LIT); c.rect(x, 123, 3, 3, LIT2); c.set(x + 1, 121, LIT3)
+    MARK = H('#010203')
+    c.poly([(26, 192), (44, 164), (60, 128), (74, 92), (86, 58), (96, 34), (104, 24), (112, 26), (112, 192)], MARK)
+    slag = [H('#1e1a1a'), H('#262020'), H('#2e2826'), H('#221c1c')]
+    for y in range(192):
+        for x in range(112):
+            if c.get(x, y) != MARK:
+                continue
+            col = slag[(x * 13 + y * 7 + (x * y) % 5) % 4]
+            if (x * 31 + y * 17) % 41 == 0:
+                col = H('#4a4240')
+            c.set(x, y, col)
+    for (x, y) in ((70, 130), (84, 96), (96, 70), (100, 140), (80, 166), (104, 50)):   # braises qui couvent
+        c.rect(x, y, 3, 2, CLOTH2); c.set(x + 1, y, LIT); c.set(x, y + 1, LIT2)
+    x0, y0, x1, y1 = 0, 150, 88, 40                                # passerelle, devant le terril
+    rail_y = lambda x: y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    for k, x in enumerate((6, 24, 42, 60, 78)):                    # pilotis jusqu'au sol, croisillons
+        y = round(rail_y(x))
+        c.rect(x, y, 3, 192 - y, WOODL)
+        if k:
+            px = x - 18
+            c.line(px + 1, round(rail_y(px)) + 8, x + 1, 190, WOOD, 2)
+    c.line(x0, y0, x1, y1, WOOD, 5)
+    c.line(x0, y0 - 3, x1, y1 - 3, IRON2, 1)                       # rail
+    for x in range(0, x1, 6):
+        c.rect(x, round(rail_y(x)) - 3, 2, 6, WOOD2)
+    c.poly([(70, 50), (84, 38), (90, 46), (76, 58)], IRON)         # wagonnet en haut
+    c.poly([(72, 48), (82, 40), (86, 44), (76, 52)], H('#3a3436'))
+    c.rect(72, 54, 3, 3, IRON2); c.rect(84, 44, 3, 3, IRON2)
+    c.rect(14, 168, 2, 24, IRON)                                   # lanterne au pied
+    c.lantern(12, 160)
     return c.finish()
 
 
@@ -611,5 +624,5 @@ def town():
         'town_lamppost': lamppost(), 'town_campfire': campfire(), 'town_pedestal': pedestal(),
         'town_banner_angel': banner(H('#c8ccd8'), H('#7a8092'), LIT2),
         'town_banner_demon': banner(H('#5a2a8a'), H('#2e1248'), CLOTH2),
-        'town_cobble': cobble(), 'town_cloud': cloud(), 'town_cliff': cliff(), 'town_gate': gate(),
+        'town_cobble': cobble(), 'town_cloud': cloud(), 'town_cliff': cliff(), 'town_slagheap': slagheap(),
     }

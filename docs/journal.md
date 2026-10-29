@@ -65,7 +65,9 @@ Modèle d'entrée :
   l'Entrepôt prend sa place au bout gauche ; la porte de droite est maintenant **adossée à une falaise** comme à gauche ;
   plus de barre verte sur la Tour du mage ; l'enclume est bien sur son billot. **Chat global en promenade** : en bas à
   gauche de l'écran, pour écrire aux gens de la ville (le message s'affiche aussi en bulle) ; il revient dans le Lobby
-  quand on quitte la promenade.
+  quand on quitte la promenade. Puis : chat **tout en bas à gauche** (à côté de la barre d'action ; sur un écran trop
+  étroit, au-dessus d'elle) ; bord droit remplacé par un **terril** qui couve encore (braises), avec sa passerelle sur
+  pilotis et un wagonnet en haut (ancien : palissade adossée à la roche, « pas ouf » pour Jules).
 - **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
 - **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
 
