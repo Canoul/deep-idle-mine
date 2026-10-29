@@ -13,6 +13,8 @@ import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 export const TOWN_TILE = 16;
 const T = TOWN_TILE, HIRES = 2;
 const GLOW = { lit: [255, 150, 60], magic: [90, 255, 140] };
+/* police des textes de la ville : celle du jeu (VT323 depuis le 29/10 ; ancien : Jersey 10, plus chargée) */
+const FONT = '"VT323", sans-serif';
 
 /* texte d'une bulle coupé en lignes de max caractères (au plus 3 lignes, « … » si ça dépasse) */
 export function bubbleLines(text, max = 22, rows = 3){
@@ -140,7 +142,7 @@ export function createTownRenderer(cv){
     const it = items.filter(i => Math.abs(i.cx - scene.meX) <= 1.8).sort((a, c) => Math.abs(a.cx - scene.meX) - Math.abs(c.cx - scene.meX))[0];
     if(!it) return;
     const y = (G - 3) * T - 4;
-    ctx.font = '9px "Jersey 10", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(it.text, Math.round((it.cx - camX) * T), y);
     ctx.fillStyle = it.color; ctx.fillText(it.text, Math.round((it.cx - camX) * T), y);
   }
@@ -182,14 +184,14 @@ export function createTownRenderer(cv){
   }
   function drawBubble(text, cx, bottom){
     const lines = bubbleLines(text.slice(0, TOWN.bubbleMax));
-    ctx.font = '8px "Jersey 10", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    const w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width))) + 6, h = lines.length * 8 + 3;
+    ctx.font = `10px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    const w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width))) + 6, h = lines.length * 9 + 3;
     const x = Math.round(Math.min(cols * T - w - 1, Math.max(1, cx - w / 2))), y = Math.round(bottom - h);
     ctx.fillStyle = 'rgba(20,14,10,.9)'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
     ctx.fillStyle = '#f2ece4'; ctx.fillRect(x, y, w, h);
     ctx.fillRect(Math.round(cx) - 1, y + h, 3, 2);
     ctx.fillStyle = '#1b130d';
-    lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 2 + (i + 1) * 8));
+    lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 2 + (i + 1) * 9));
   }
   /* nom du bâtiment (et « E : entrer » devant sa porte) au-dessus de son sprite, sans sortir du haut du canvas */
   function drawLabel(b, camX, hint){
@@ -197,7 +199,7 @@ export function createTownRenderer(cv){
     const top = i ? G - i.naturalHeight / T : b.kind === 'place' ? G - 4 : G - b.h;
     const lines = [b.name, hint].filter(Boolean), cx = (b.door - camX) * T;
     const y0 = Math.max(9, top * T - 2 - (lines.length - 1) * 9);
-    ctx.font = '9px "Jersey 10", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.font = `11px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     lines.forEach((l, k) => {
       const ly = y0 + k * 9;
       ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(l, Math.round(cx), ly);

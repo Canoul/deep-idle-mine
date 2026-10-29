@@ -117,6 +117,13 @@ export function shownPos(M, o, now = performance.now()){
   const p = Math.max(0, Math.min(1, (now - M._at) / M._dur));
   return [o._from[0] + (o._to[0] - o._from[0]) * p, o._from[1] + (o._to[1] - o._from[1]) * p];
 }
+/* rythme des envois (29/10/2026 : partagé avec la Mine instantanée et le Bloc géant) : durée de glissade = moyenne lissée
+   du temps réel entre deux envois (attente + requête), pour que le mineur arrive juste quand le suivant arrive */
+export function pace(M, prev, now){
+  M._dur = prev?._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (prev._dur ?? 250) + 0.3 * (now - prev._at)));
+  M._at = now;
+  return M;
+}
 /* dans le seau du treuil (ou la cabine de l'ascenseur) : il va vite et en ligne droite, plus de TELEPORT cases entre deux
    envois n'est pas une téléportation (28/10/2026 : à ×2, l'ascenseur faisait « sauter » le mineur dans le puits) */
 const riding = o => !!o?.action?.data?.winch;
@@ -162,8 +169,7 @@ export function applyView(M, v, now = performance.now()){
   /* glissades : depuis la position affichée maintenant (calculée avec l'envoi précédent), vers la nouvelle */
   glide(M, M.miners, v.miners, minerPos, now);
   glide(M, M.mobs, v.mobs, o => [o.x + (o.kx || 0), o.y + (o.ky || 0)], now);
-  M._dur = M._at == null ? 250 : Math.max(80, Math.min(1500, 0.7 * (M._dur ?? 250) + 0.3 * (now - M._at)));
-  M._at = now;
+  pace(M, M, now);
   Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
   return M;

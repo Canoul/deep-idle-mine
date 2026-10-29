@@ -69,7 +69,99 @@ Modèle d'entrée :
   étroit, au-dessus d'elle) ; bord droit remplacé par un **terril** qui couve encore (braises), avec sa passerelle sur
   pilotis et un wagonnet en haut (ancien : palissade adossée à la roche, « pas ouf » pour Jules).
 - **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
-- **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Correctif : bouton « ½ » du four renommé « Moitié »
+- **Pour le joueur** : dans le four (choix de la recette et pose d'un minerai), le bouton « ½ » était illisible avec la
+  nouvelle police. Il s'appelle maintenant **Moitié** ; il fait toujours la même chose (la moitié du maximum).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance : le mineur ne tremble plus au centre de la salle
+- **Pour le joueur** : en combat dans l'instance, les mineurs faisaient des allers-retours d'une demi-case. Ce n'était pas
+  l'affichage (il glisse déjà comme dans la mine) : chaque coup d'un gobelin ou du roi repousse vers le centre de la
+  salle, et un mineur au centre était envoyé de l'autre côté, puis renvoyé par le coup suivant. Le recul s'arrête
+  maintenant au centre. Le coup boosté du roi (la grande projection) ne change pas.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — États (buffs / debuffs) d'un autre joueur, dans tous les modes
+- **Pour le joueur** : la rangée d'états en haut à droite de la mine montre maintenant les états du joueur qu'on regarde,
+  avec son nom devant les icônes quand ce n'est pas soi. Mine classique : le mineur suivi (clic dans l'équipe). Tours,
+  Instance et Mine instantanée : un clic sur un joueur de l'équipe (ou du classement) montre ses états, un clic sur soi
+  ou à nouveau sur lui revient aux siens. **Bloc géant** : la rangée d'états existe maintenant aussi (Inspiration, Fast
+  learner, anneaux…), avec le même choix dans « Devant le bloc ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
+  équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
+  ceux du moment ; si on change une pièce, un skill ou un sort, la ligne passe à « aucun ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : stonebricks 2 fois plus dures et 2 fois plus lourdes
+- **Pour le joueur** : au niveau 2 des tours, les stonebricks sont **2 fois plus dures** (avant 1,75) et pèsent **2 fois
+  plus** dans le sac (avant 1,5). Le reste du niveau 2 ne change pas. Le niveau 1 non plus.
+- **À suivre** : en simulation, les équipes de base montent l'étage 4 environ une minute plus tard qu'avant et n'arrivent
+  plus à l'étage 5 dans les 10 min. Le repère noté le 28/10 (équipe à 2,5 de minage et 40 de dégâts) perdait déjà le
+  niveau 2 (0/4) : aucune équipe mesurée ne le gagne encore.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Jules — Correctif : police du texte plus lisible (VT323 à la place de Jersey 10)
+- **Pour le joueur** : les petits textes et surtout les chiffres se lisent enfin : avant, « 89 % XP » ressemblait à
+  « 99 % XP » et « 3 615 GS » à « 3 616 GS » (orbe d'XP, barre de niveau, gear score…). Le texte courant passe en
+  **VT323**, une police pixel art nette à toutes les tailles. Les titres gardent leur police (Jersey 15).
+- **Décisions** : Jersey 10 n'est nette qu'à 20 px ou plus, et le jeu l'affichait à 15-17 px. Pixelify Sans (son 5
+  ressemble à un S) et Tiny5 (son 8 ressemble à un e) ont été écartées après comparaison.
+- **À suivre** : VT323 est un peu plus large : les boutons « Où miner » du lobby passent sur 3 lignes au lieu de 2.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
+- **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
+  gobelin** (Instance I), de l'entrée dans l'instance à la mort du roi. Chaque joueur encore là à la victoire garde son
+  meilleur temps ; sous son nom, le **temps du combat contre le roi** (de son réveil à sa mort) et ses coéquipiers. Un
+  joueur parti avant la fin n'est pas classé, un échec ne compte pas. Les victoires des 30 derniers jours sont reprises.
+- **Décisions** : classé sur le temps total (comme la tour) ; le temps du combat seul est affiché à côté (choix de
+  Claude, facile à inverser).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
+- **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
+  durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque
+  réception. Dans la **Mine instantanée**, ils avançaient par petits bonds à chaque réception, sans glisser. Les deux
+  modes utilisent maintenant la glissade de la mine classique, qui se cale sur le vrai rythme des réceptions. Seul
+  l'affichage change, pas la partie.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : lingots à la place du minerai de graphite
+- **Pour le joueur** : le coffre ne donne plus de minerai de graphite (20 à 40). À la place, toujours **5 à 15 lingots
+  de graphite** et **10 à 20 Tainted iron**, en plus des 50 à 100 peaux de gobelin. Les objets rares ne changent pas.
+- **Chances d'objet rare par coffre** (inchangées) : un objet du roi (couronne 1 %, plan du Four en or 2 %, masse 2 %,
+  cape 2 %) **7 %**, soit 1 coffre sur 14 ; la couronne seule 1 sur 100 (50 % de chances de l'avoir en 69 coffres). En
+  comptant aussi la recette de chitine (5 %), un parchemin (3,5 %) et une gemme (3 %) : **17,3 %** d'avoir au moins un
+  de tout ça (9,8 % une fois la recette et les sorts appris).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : un buff du porteur
+- **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session ». C'est un **buff** (cadre vert) chez
+  **celui qui la porte**, seulement : un gobelin qui naît à 10 cases ou moins de lui est asservi. La bulle le rappelle ;
+  sous l'icône, le nombre de ses gobelins asservis au travail. Les autres mineurs n'ont rien, et ils ne frappent jamais
+  un gobelin asservi (c'était déjà le cas, c'est maintenant vérifié par un test sur une vraie partie).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Recharge des sorts visible dans tous les modes
+- **Pour le joueur** : la barre des sorts (icônes et secondes de recharge) n'existait que dans la mine classique. Elle
+  apparaît maintenant aussi en bas de l'écran dans les **tours du Jugement**, l'**Instance** et le **Bloc géant**, avec les
+  sorts de son propre mineur. La Mine instantanée n'en a pas : aucun sort n'y part.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Nerf : Gants tactique et Ceinture du Géant (≈ +10 % de DPS chacun)
+- **Pour le joueur** : les **Gants tactique** passent à vitesse d'attaque **+10 %** (avant +20 %) et la **Ceinture du
+  Géant** à dégâts **+1,5** (avant +5 ; ténacité +12,5 % inchangée). Chacune donne maintenant environ +10 % de DPS : les
+  gants +10 % quelle que soit l'arme, la ceinture +10,7 % avec une épée en fer ou la Masse du Roi Gobelin, +8,1 % avec
+  l'épée en acier (ses dégâts s'ajoutent à ceux de l'arme, avant les % de dégâts). Les pièces déjà fabriquées ou trouvées
+  changent aussi (stats relues dans le catalogue).
+- **À suivre** : les Gants de boucher (+4,05 dégâts) donnent maintenant nettement plus que les Gants tactique (+28,6 %
+  contre +10 % avec l'épée en fer).
+- **État** : ✅ en ligne le 29/10
 
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
 - **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans

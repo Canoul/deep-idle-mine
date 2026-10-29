@@ -5,7 +5,8 @@
    Online : compteur et liste de tous les joueurs en ligne (pas en session d'abord, puis en session), « Ajouter » pour
    un non-ami ; demandée au serveur seulement quand ce sous-onglet est à l'écran (SOCIAL.onlinePoll).
    Classements : Gear score, Niveau (XP), Spécialisation (un classement par arbre), Tour céleste (meilleur temps, Ange et
-   Démon confondus, avec l'équipe) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
+   Démon confondus, avec l'équipe), Roi gobelin (29/10 : meilleur temps pour vaincre le roi de l'Instance I, avec
+   l'équipe et le temps du combat contre le roi) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
    quand il est à l'écran.
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
 import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT } from '../config.js';
@@ -54,7 +55,14 @@ export const BOARD_INFO = {
            value: r => `Niv. ${r.level} · ${fr(r.value)} XP` },
   tower: { title: 'Tour céleste', help: 'Le meilleur temps pour vaincre le boss d\'une tour, Ange et Démon confondus (temps de jeu). Chaque joueur de l\'équipe garde son meilleur temps.',
            value: r => towerTime(r.value) },
+  instance: { title: 'Roi gobelin', help: 'Le meilleur temps pour vaincre le roi gobelin de l\'Instance I, de l\'entrée dans l\'instance à sa mort (temps de jeu). Sous le nom : le temps du combat contre le roi, de son réveil à sa mort. Chaque joueur présent à la victoire garde son meilleur temps.',
+              value: r => towerTime(r.value) },
 };
+/* « combat 2:10.4 · avec Zoe, Max » : temps du combat contre le roi et coéquipiers d'un record d'instance */
+export function instanceDetail(r){
+  const mates = (r.team || []).filter(n => n !== r.name).join(', ');
+  return [r.fight != null ? `combat ${towerTime(r.fight)}` : '', mates ? `avec ${mates}` : ''].filter(Boolean).join(' · ');
+}
 /* « Ange · avec Zoe, Max » : camp et coéquipiers d'un record de tour (sans le joueur lui-même) */
 export const towerDetail = r => [JUDGMENT.sides[r.side]?.label, r.team?.filter(n => n !== r.name).join(', ')]
   .filter(Boolean).map((t, i) => i ? `avec ${t}` : t).join(' · ');
@@ -96,7 +104,7 @@ export function setupSocial(h){
   /* ---------- classements ---------- */
   const boardId = () => board === 'spec' ? 'spec:' + tree : board;
   function boardRow(r){
-    const detail = board === 'tower' ? towerDetail(r) : '';
+    const detail = board === 'tower' ? towerDetail(r) : board === 'instance' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
       `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
       `<span class="lval">${esc(BOARD_INFO[board].value(r))}</span></div>`;

@@ -423,6 +423,13 @@ test('barre des sorts en session : secondes restantes sur un sort en recharge, r
   assert.match(h, /spB tr-mineur"[^]*Illumination : prêt/);
   assert.match(h, /<svg class="pi/);   // icônes pixel, plus d'emoji
   assert.doesNotMatch(h, /💨|💡/);
+  /* showSpellBar (29/10) : une barre par mode (mine, tours, instance, Bloc géant), cachée sans sort ou sans mineur */
+  const { showSpellBar } = await import('../src/ui/hud.js');
+  const el = { hidden:true, innerHTML:'' };
+  showSpellBar(el, { spells:['dash'], spellCd:{ dash:110 } }, 100);
+  assert.equal(el.hidden, false); assert.match(el.innerHTML, /<b class="spLeft">10<\/b>/);
+  showSpellBar(el, null, 0); assert.equal(el.hidden, true);
+  showSpellBar(el, { spells:[] }, 0); assert.equal(el.hidden, true);
   const { TABS, TAB_KEYS } = await import('../src/ui/nav.js');
   assert.ok(TABS.some(t => t.id === 'sorts' && t.ready));
   assert.ok(TABS.filter(t => t.ready).length <= TAB_KEYS.length);

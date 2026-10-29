@@ -4595,6 +4595,142 @@ Règles (voir CLAUDE.md) :
   dépend de la remontée mesurée (`secPerRow`) ; une remontée lente (tacles) rend le trajet court et met le focus en
   veille plus tôt.
 
+## 29/10/2026 — Geoffrey — Gants tactique et Ceinture du Géant : ≈ +10 % de DPS chacun
+- `STUFF.items['Gants tactique'].stats.attackSpeed` 20 → 10 ; `STUFF.items['Ceinture du Géant'].stats.damage` 5 → 1,5
+  (ténacité 12,5 inchangée ; toujours hors règle du butin des mobs, `OFF_RULE` de `tests/stuff-balance.test.js`).
+- Vérifié avant : `rawDps` (src/meta/stuff.js) = formule des coups en session (`hitDamage` src/sim/actions.js, attente
+  `ai.js`) ; les dégâts fixes du stuff sont dans `carac.damage`, donc multipliés par damagePct, critique, double attaque.
+- DPS (`rawDps`, sans skills ni anneaux) : épée en fer 17,5 → ceinture 19,38 (+10,7 %), gants 19,25 (+10 %) ; épée en
+  acier 23,13 → 25,00 (+8,1 %), 25,44 (+10 %). GS : Gants tactique 100 → 50, Ceinture du Géant 263 → 123.
+- **Tests** ✅ tier2 (valeurs attendues 20 → 10, 39,2 x → 19,6 x, total 120 → 110), stuff-balance, mob-drops, gearscore,
+  wiki, amelioration : 82/82. Ni simulation ni économie touchées.
+
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff du porteur (✅ en ligne le 29/10)
+- **Demande** : « c'est un buff individuel, ça n'impacte pas les autres mineurs à côté, hormis qu'ils ne doivent pas tuer
+  les gobelins asservis ». Première version du matin (buff pour tout mineur à 10 cases du porteur) : mauvaise lecture,
+  remplacée dans le même chantier.
+- **Quoi** : `crownOf(G, m)` (src/sim/effects.js) → buff `crown` (EFFECTS.list, `kind:'buff'`) chez le porteur seul
+  (`carac.goblinThrall > 0`, `y > 0`, `G.thralls` présent = la mine) ; `stacks` = ses asservis au travail. Retiré de
+  `sessionBonuses` et `bonusLine` ; bulle dans `effectTip` (src/ui/effects.js). Simulation inchangée.
+- **Asservis jamais frappés** : ils vivent dans `G.thralls`, jamais dans `G.mobs` ; coups, Cleave, Dynamite, Dash,
+  Hand of Justice, Ulti shen ne lisent que `G.mobs`. Test « personne ne frappe un gobelin asservi » : partie d'1 h à 3
+  barbares (Cleave, Dynamite, Dash, HoJ, 60 dégâts), le porteur au milieu : chaque asservi vit tout son temps ✅.
+- **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
+  échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.
+
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : Graphite ingot + Tainted iron au lieu de Graphite ore (✅ en ligne le 29/10)
+- **Quoi** : `GOBLIN_KING.loot.always` (src/config.js) : `Graphite ore` 20-40 retiré ; `Graphite ingot` 5-15 et
+  `Tainted iron` 10-20 ajoutés (avant les peaux). GAME_DESIGN.md (Roi Gobelin), wiki.html (texte du coffre). Les lignes
+  « où le trouver » du wiki viennent de la config (src/wiki/data.js) : rien à changer.
+- **Attention aux tests** : `rollLoot` tire un nombre par entrée `always`, puis un par famille : un `always` de plus
+  décale le hasard rejoué ; `tests/goblin-king.test.js` a un 0,5 de plus dans chaque `seq` / `open`.
+- **Tests** ✅ goblin-king 9/9, graphite, wiki, loot / treasure (44) ; `npm run test:anticheat` 108/108.
+- **Probabilités** (calcul + 200 000 ouvertures avec `openTreasure`) : objet du boss 7,00 % (simulé 6,91 %), couronne
+  1 % (0,97 %), au moins un rare toutes familles 17,30 % (17,35 %) ; moyennes 10 lingots, 15 Tainted iron, 75 peaux ✅.
+
+## 29/10/2026 — Geoffrey — Glissade adaptative au Bloc géant et dans la MI (affichage)
+- **Cause** Bloc géant : `src/render/giant.js` glissait sur `GIANT.viewPoll` (500 ms) fixes, alors que `pollView`
+  (src/ui/giant.js) relance son délai de 500 ms après la réponse : un envoi toutes les ~600-800 ms → mineur figé ~100 à
+  300 ms avant chaque envoi. Glissade en x seulement, saut au-delà de 4 cases. **MI** : `instantPos` (avancée du pas à
+  l'envoi) sans glissade entre deux envois → petits bonds.
+- **Correctif** : `src/shared/view.js` exporte `pace(M, prev, now)` (durée = moyenne lissée 0,7 / 0,3 du temps réel entre
+  envois, bornée 80-1500 ms ; déjà utilisée par la mine, maintenant partagée). Bloc géant : `glide` + `pace` + `shownPos`
+  sur une copie des mineurs (x et y, seuil de saut `TELEPORT` 6 comme partout). MI : `applyInstantView(v, prev, now)`
+  fait `glide` avec `instantPos` (déplacé dans `src/shared/instant-view.js`, réexporté par `src/render/instant.js`) ;
+  rendu et caméra lisent `shownPos`. `src/main.js` passe la copie d'avant à `applyInstantView`.
+- **Tests** ✅ instant-ui (nouveau test : glissade départ / milieu / arrivée, durée qui converge vers 700 ms pour un envoi
+  / 700 ms), view, camera, giant-service, giant-sim : 49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) ; le rendu du Bloc
+  géant n'a pas de test (canvas), il réutilise `glide` / `pace` / `shownPos` testés.
+
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » (✅ en ligne le 29/10)
+- **Quoi** : board `instance` (src/meta/leaderboard.js : `BOARDS`, tri croissant comme `tower`, `sanitizeInstanceRecord`
+  { t, fight, at, instance, team, session }, `betterInstance`) ; ns `instance_record` (server/game/store.js : mémoire,
+  fichier, PostgreSQL, `get/list/putInstanceRecords`) ; `recordInstance(rec)` après `recordTower` à la fin de session
+  (server/game/service.js) : instance réussie, pas dev, joueurs présents à la victoire ; `fight = r.t − r.awake`
+  (`G.timeline.awake`, réveil du roi) ; rattrapage des sessions `done` gardées (`backfillTowers`, même passage) ;
+  `leaderboardData().instance`. Social : ligne avec `team` et `fight` (server/social/service.js) ; `BOARD_INFO.instance`,
+  `instanceDetail` (« combat 2:10.4 · avec Max »), bouton « Roi gobelin » (index.html).
+- **Outil de test** : `fakeLive` (tests/helpers.js) termine maintenant une instance à `INSTANCE_TICKS` (avant : à la
+  durée d'une mine classique, une instance hors mode dev ne finissait jamais dans les tests).
+- **Tests** ✅ `tests/leaderboard.test.js` 14/14 (record revérifié, plus court gagne, présents seulement, échec et dev
+  ignorés, record plus lent qui ne remplace rien, rattrapage, admin caché) ; 27 fichiers serveur / store / social :
+  334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
+  `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).
+
+## 29/10/2026 — Jules — Police du corps de texte : VT323 au lieu de Jersey 10
+- **Quoi** : `--f-body` (src/ui/style.css) passe de `'Jersey 10'` à `'VT323'` ; `--f-title` reste `'Jersey 15'` (repli
+  VT323). index.html charge `Jersey 15` + `VT323` depuis Google Fonts (Jersey 10 n'est plus chargée). CSP inchangée.
+- **Cause** : une police pixel n'est nette qu'aux multiples de sa grille. Jersey 10 est nette à 20 px, floue à
+  `--fs-s` 15 px / `--fs` 17 px : 8 → 9, 5 → 6 (signalé sur l'orbe d'XP). Comparaison à taille réelle (captures agrandies
+  sans lissage) : VT323 nette à 15/17/20/21 px ; Pixelify Sans : 5 ≈ S ; Tiny5 : 8 ≈ e.
+- **Vérification** ✅ lobby, inventaire, stuff, orbe à 1366×768 (compte Test_Mineur, `npm run dev`), pas de défilement
+  horizontal à 390×844 (lobby, stuff). Tests nav, controls, guide, help, perf, account-http : 40/41, le ❌ « la boîte de
+  mesures est dans les barres… » échoue aussi sur main sans ce changement, pas lié.
+- **Points fragiles** : VT323 est monospace, plus large que Jersey 10 : textes en `nowrap` un peu plus longs (boutons
+  « Où miner » sur 3 lignes à 1366 px). Le canvas (mine) écrit toujours en `sans-serif`, non concerné. VT323 n'a qu'une
+  graisse : le gras est simulé par le navigateur (déjà le cas avec Jersey).
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : dureté × 2, poids × 2 (✅ en ligne le 29/10)
+- **Quoi** : `TOWER.levels[2]` : `hard` 1,75 → 2, `weight` 1,5 → 2 (src/config.js). GAME_DESIGN.md, wiki.html, état du
+  projet ; commentaire de `brickW` (src/sim/tower/session.js).
+- **Tests** ✅ tower-level (config, brique 2 fois plus longue, sac plein au niveau 2 seulement), tower, tower-spells,
+  tower-boss : 54/54.
+- **Simulation** `npm run simulate:tower -- --level 2 --count 20`, avant → après : 0/20 victoires partout dans les deux
+  cas (équipes de base) ; étage 4 atteint à 7:46-7:47 → 8:20-9:56, étage 5 à 9:49 (équipe a) → jamais. ⚠️ Aucune équipe
+  mesurée ne gagne le niveau 2 (repère du 28/10 : 2,5 minage / 40 dégâts, 0/4, avant ce changement).
+
+## 29/10/2026 — Geoffrey — Barre des sorts dans les tours, l'instance et le Bloc géant
+- Seul `updateHUD` (mine classique, `#spellBar`) remplissait la barre ; les tours, l'instance et le Bloc géant jouent des
+  sorts (`spellCd` dans leurs simulations) sans les montrer. MI : pas de sorts dans `src/sim/instant/`, pas de barre.
+- `src/ui/hud.js` : `showSpellBar(el, m, t)` (cache sans sort / sans mineur) et `placeSpellBar(el, cv, wrap)` (bas du canvas
+  quand il est centré plus petit que sa zone). `index.html` : `#spellBarTw`, `#spellBarIn`, `#spellBarGt`. `src/main.js` :
+  `updateSpellBars` (son propre mineur, comme les états). `server/giant/service.js` viewOf : `me.spells`, `me.spellCd` ;
+  `src/ui/giant.js` frame : barre à chaque image, temps = `view.t` (rafraîchi à chaque réception, ~0,5 s).
+- **Tests** ✅ spells (showSpellBar), giant-service (me.spells / spellCd), tower-spells, giant-sim, instance-server : 72/72.
+  ⚠️ Pas vu à l'écran (pas de navigateur ici) : vérifier la place de la barre dans une tour, une instance et au Bloc géant.
+
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- `src/meta/sets.js` `equippedSet(list, worn, skills, spellSlots)` : premier set dont l'uid de chaque case, l'arbre, les
+  rangs > 0 et les emplacements de sorts égalent l'équipement actuel ; null sinon. Rien de stocké (pas de « set actif »
+  côté serveur) : comparaison à l'affichage.
+- `src/ui/sets.js` : `setsHtml(…, { current })` (ligne `.setCur`, ligne du set `.setRow.on` + ✔), `setupSets({ current })`.
+  `src/ui/spells.js` : `onChange`, `slots()`. `src/main.js` : `setsUI.refresh()` sur changement de stuff (`onWorn`), de
+  skills (`onChange`) et de sorts (`onChange`) ; `let setsUI` déclaré avant `setupStuff`.
+- **Tests** ✅ sets (nouveau test : correspondance, pièce / exemplaire / sort différent, rang à 0, HTML), spells, skills :
+  61/61. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+
+## 29/10/2026 — Geoffrey — États du joueur regardé, et barre d'états au Bloc géant
+- `src/ui/effects.js` : `focusedMiner(miners, me, focus)` (choisi s'il est là, sinon le sien — `account` ou `me` —,
+  sinon le premier ; `name` si ce n'est pas le sien) ; `createEffectsBar` → `update(m, name)` ajoute un nœud `.fxWho`
+  (nom, bulle) devant les icônes.
+- `src/main.js` `updateEffects` : mine = `ui.follow` (déjà réglé par un clic dans `#teamBody`), tours / instance / MI =
+  `ui.focus` (clic `pointerdown` sur `[data-id]` de `#twTeam`, `#inTeam`, `#miRank` ; sur soi ou le même = null ; remis à
+  null au lancement d'une session). HUD : lignes `.pick` avec `data-id`, `.focus` sur le joueur choisi (4e paramètre).
+- Bloc géant : `server/giant/service.js` viewOf, chaque mineur porte `effects` (`minerEffects`) et `bonus`
+  (`sessionBonuses`) ; `index.html` `#fxBarGt` ; `src/ui/giant.js` `showEffects` à chaque image, choix dans `#gtPresent`.
+- **Tests** ✅ effects (focusedMiner, lignes cliquables), giant-service (effets dans la vue), instant-ui, tower-spells :
+  49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) : clic dans l'équipe, place du nom devant les icônes.
+
+## 29/10/2026 — Geoffrey — Instance : recul vers le centre sans dépasser (aller-retour d'une demi-case)
+- **Cause** : `pushMiner` (src/sim/instance/session.js) poussait de k (0,5 ; rage 1) dans le sens `toCenter(G, m.x)`,
+  calculé sur la case seule. Au centre (mid = 14) : x 13 → poussé à 13,9 (case 14) → sens inverse → 13,4 → … Trace
+  (seed 7919, 3 fer) : x+kx alterne 13,4 / 13,9 toutes les 1 à 4 s en combat. Mesure d'affichage (envoi / 8 ticks, glide) :
+  135 demi-tours de l'image sur 5 min.
+- **Correctif** : `centerX(G)` = milieu de la case du centre ; recul de min(k, écart) vers lui sur la position exacte
+  (x + 0,5 + kx), rien si déjà au centre (renvoie false : pas compté dans gobKnocks). `boost` (coup boosté) inchangé.
+  Après : 14 demi-tours (vrais déplacements).
+- **Tests** ✅ instance-sim (nouveau test : arrêt au centre, 4 coups de 0,5 depuis 2 cases, coup de 1 à 0,7 du centre),
+  instance-server, instance-key : 25/25. Simulation `simulate-instance --count 5 --size 3`, avant / après identiques
+  (fer 0/5, roi 3 500 PV ; fer + acier 0/5, ≈ 685 PV ; acier 0/5, ≈ 700 PV ; 0 bloqué). ⚠️ Les repères du 27/10
+  (fer + acier 13/20, acier 20/20) ne tiennent plus sur main, déjà avant ce correctif.
+
+## 29/10/2026 — Jules — Four : bouton `½` → « Moitié »
+- **Quoi** : `src/ui/furnace.js`, `#fpickHalf` (deux fenêtres : pose d'un objet, choix de recette) affiche « Moitié » au
+  lieu de « ½ » : le glyphe ½ de VT323 est illisible à 15 px. Comportement inchangé. `GAME_DESIGN.md` mis à jour.
+- **Vérification** ✅ capture de la fenêtre « choisir une recette » à 1366×768 (le bouton tient dans la ligne) ;
+  tests furnace + help 38/38.
+- **Point fragile** : avec VT323, éviter les glyphes spéciaux (fractions ½ ¼…) dans les boutons ; `×`, `·`, `→`, `✓` restent lisibles.
+
 ## 29/10/2026 — Le Carreau, la ville du spawn (Jules)
 - **Quoi** : nouveau fond hors session + promenade. Config `TOWN` (`src/config.js` : plan, vitesses, cadences, bulles ;
   `buildings` = un par onglet de `TABS`, ordre de gauche à droite) et `TOWN_SERVER` (`server/config.js`).
@@ -4704,3 +4840,7 @@ Règles (voir CLAUDE.md) :
   supprimée), `TOWN.edges.right`. Chat en promenade : `placeChat()` dans `src/ui/town.js` (à la mise en promenade et au
   redimensionnement) : en bas à gauche, largeur = place à gauche de `.dock` (au plus `TOWN.chatMax` 360 px) ; moins de
   `TOWN.chatMin` (220 px) : au-dessus de la barre. ✅ Vu à 1600 et 1920 px de large (≈ 225 px et 360 px).
+- **Mise en ligne (29/10)** : fusion de `origin/main` dans la branche (conflits seulement dans `docs/journal.md` et
+  `docs/debug.md` : les deux côtés gardés). `main` est passé à la police VT323 (Jersey 10 n'est plus chargée) : les
+  textes du canvas de la ville (`src/render/town.js`, `FONT`) passent en VT323, 11 px (noms) / 10 px (bulles, interligne
+  9). Tests ✅ town, social, party, chat, boot-check, wiki, game-http, backdrop, skins : 124/124 ; vu dans le navigateur.

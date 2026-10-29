@@ -80,14 +80,42 @@ test('boss : ciblé par le boss ; enfermé par le roi gobelin avec le temps avan
   assert.equal(one(minerEffects({ ...I, boss: { ...I.boss, state: 'fight' } }, miner()), 'caged'), undefined);
 });
 
-test('bonus de session : anneaux, shrines, Escalateur, couronne avec ses gobelins asservis', () => {
-  const G = { shrines: ['abundance'], winchBoost: 0.25, thralls: [{ owner: 0 }, { owner: 0 }, { owner: 1 }] };
+test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus : buff du porteur)', () => {
+  const G = { shrines: ['abundance'], winchBoost: 0.25, thralls: [], miners: [] };
   const m = miner({ rings: [{ item: 'Anneau du rat', plus: 3 }], carac: { goblinThrall: 10 } });
   assert.deepEqual(sessionBonuses(G, m), [
-    { id: 'ring', src: 'Anneau du rat', value: 3 }, { id: 'shrine', src: 'abundance' },
-    { id: 'escalator', value: 0.25 }, { id: 'crown', value: 10, stacks: 2 }]);
-  /* tour : pas de gobelins asservis (G.thralls absent) */
+    { id: 'ring', src: 'Anneau du rat', value: 3 }, { id: 'shrine', src: 'abundance' }, { id: 'escalator', value: 0.25 }]);
   assert.deepEqual(ids(sessionBonuses({}, m)), ['ring']);
+});
+
+test('couronne : buff du porteur seul, pas des mineurs à côté', () => {
+  const wearer = miner({ id: 0, x: 10, y: 20, carac: { goblinThrall: 10 } });
+  const near = miner({ id: 1, x: 11, y: 20 });
+  const G = { t: 0, miners: [wearer, near], thralls: [{ owner: 0 }, { owner: 0 }, { owner: 3 }] };
+  assert.deepEqual(one(minerEffects(G, wearer), 'crown'), { id: 'crown', value: 10, stacks: 2 });
+  assert.equal(EFFECTS.list.crown.kind, 'buff');
+  assert.equal(one(minerEffects(G, near), 'crown'), undefined);
+  /* à la surface, la couronne n'agit pas (thrallOwner l'ignore) */
+  assert.equal(one(minerEffects(G, { ...wearer, y: 0 }), 'crown'), undefined);
+  /* tours, instance : pas de gobelins asservis (G.thralls absent) */
+  assert.equal(one(minerEffects({ t: 0, miners: [wearer] }, wearer), 'crown'), undefined);
+});
+
+test('partie réelle : personne ne frappe un gobelin asservi (il vit tout son temps)', () => {
+  /* porteur au milieu d'un groupe qui se bat : coups, Cleave, Dynamite, Dash, Hand of Justice */
+  const fight = { carac: { damage: 60 }, spells: ['cleave', 'dynamite', 'dash', 'hand_of_justice'], skillTree: 'barbare' };
+  const G = newSession(7, { miners: [{ ...fight, carac: { damage: 60, goblinThrall: 10 } }, fight, fight] });
+  const born = new Map();
+  let seen = 0;
+  for(let i = 0; i < 36000 && !G.over; i++){
+    tick(G);
+    for(const o of G.thralls){ if(!born.has(o.id)){ born.set(o.id, o.until); seen++; } }
+    assert.ok(!G.mobs.some(o => born.has(o.id)), 'un asservi n\'est jamais un mob');
+    for(const [id, until] of born) if(!G.thralls.some(o => o.id === id) && G.t < until - 1e-6)
+      assert.fail(`asservi ${id} parti avant la fin de son temps (${G.t} < ${until})`);
+    for(const [id, until] of born) if(G.t >= until) born.delete(id);
+  }
+  assert.ok(seen > 0, 'au moins un gobelin asservi dans la partie');
 });
 
 test('cleanRings : anneaux inconnus, rangs invalides', () => {
@@ -129,15 +157,21 @@ test('bulles : un titre et des chiffres pour chaque état du registre', () => {
   assert.match(effectTip({ id: 'flesh', stacks: 4, left: 5 }), /−40 %/);
 });
 
-test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur, couronne', () => {
+test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur', () => {
   const tip = bonusTip([{ id: 'ring', src: 'Anneau du lion', value: 2 }, { id: 'shrine', src: 'abundance' },
-                        { id: 'escalator', value: 0.25 }, { id: 'crown', value: 10, stacks: 1 }]);
+                        { id: 'escalator', value: 0.25 }]);
   const lines = tip.split('\n');
   assert.equal(lines[0], EFFECTS.session.name);
   assert.match(lines[1], /Anneau du lion \+2 : .*4 %/);
   assert.match(lines[2], /Shrine d'abondance/);
   assert.match(lines[3], /25 %/);
-  assert.match(lines[4], /1 au travail/);
+  assert.equal(lines.length, 4);
+});
+
+test('bulle de la couronne : le rayon, l\'effet, les asservis au travail', () => {
+  const tip = effectTip({ id: 'crown', value: 10, stacks: 2 });
+  assert.match(tip, /^Couronne du Roi Gobelin\n.*10 cases ou moins de lui.*asservi.*\nPersonne ne frappe.*\n2 au travail$/);
+  assert.equal(badgeOf({ id: 'crown', stacks: 0 }), '');
 });
 
 test('sous l\'icône : les stacks, sinon les secondes restantes arrondies au-dessus', () => {
@@ -145,4 +179,22 @@ test('sous l\'icône : les stacks, sinon les secondes restantes arrondies au-des
   assert.equal(badgeOf({ stacks: 4, left: 6 }), '×4');
   assert.equal(badgeOf({ stacks: 4 }), '×4');
   assert.equal(badgeOf({}), '');
+});
+
+test('états d\'un autre joueur (29/10/2026) : le joueur choisi, sinon le sien, sinon le premier ; son nom si ce n\'est pas le sien', async () => {
+  const { focusedMiner } = await import('../src/ui/effects.js');
+  const list = [{ id:1, account:'B', name:'Bob' }, { id:2, account:'A', name:'Ana' }, { id:3, account:'C', name:'Cid' }];
+  assert.deepEqual(focusedMiner(list, 'A', null), { m:list[1], name:null });
+  assert.deepEqual(focusedMiner(list, 'A', 3), { m:list[2], name:'Cid' });
+  assert.deepEqual(focusedMiner(list, 'A', 9), { m:list[1], name:null }, 'parti : retour au sien');
+  assert.deepEqual(focusedMiner(list, 'Z', null), { m:list[0], name:'Bob' }, 'spectateur : le premier');
+  assert.deepEqual(focusedMiner([{ id:4, me:true, name:'Moi' }, { id:5, name:'Lou' }], null, 5), { m:{ id:5, name:'Lou' }, name:'Lou' });   // Bloc géant : drapeau me
+  assert.deepEqual(focusedMiner([], 'A', null), { m:null, name:null });
+});
+
+test('équipe des tours, de l\'instance et de la MI : lignes cliquables, joueur choisi marqué (29/10/2026)', async () => {
+  const { instantRanking } = await import('../src/ui/instant-hud.js');
+  assert.ok(instantRanking);   // module chargeable sans page
+  const src = await import('node:fs').then(fs => ['tower-hud', 'instance-hud', 'instant-hud'].map(f => fs.readFileSync(new URL(`../src/ui/${f}.js`, import.meta.url), 'utf8')));
+  for(const s of src){ assert.match(s, /data-id="\$\{[mt]\.id\}"/); assert.match(s, /' focus'/); }
 });

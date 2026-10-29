@@ -44,6 +44,9 @@ export function effectTip(e){
     case 'braum': L.push(`Marche et montée +${pct(e.value || 0)} quand il va aider un allié`, 'Skill Braum'); break;
     case 'pillage': L.push(`Dégâts +${num(e.value || 0)} % (${GLYPHS.killDamagePct} % par mob tué, ${GLYPHS.killDamageMax} % au plus)`, 'Glyphe Pillage, jusqu\'à la fin de la session'); break;
     case 'fast_learner': L.push(`${e.stacks} type${e.stacks > 1 ? 's' : ''} de bloc appris : +${pct(SPELL.fast_learner.bonus)} de minage chacun`, 'Jusqu\'à la fin de la session'); break;
+    case 'crown': L.push(`Un gobelin qui naît à ${e.value} cases ou moins de lui devient asservi : il mine ${GOBLIN_KING.thrall.life} s pour le coffre au lieu d'attaquer`,
+                         'Personne ne frappe un gobelin asservi',
+                         ...(e.stacks ? [`${e.stacks} au travail`] : [])); break;
   }
   if(e.left != null) L.push(`Encore ${Math.ceil(e.left)} s`);
   return [d.name, ...L].join('\n');
@@ -55,8 +58,6 @@ export function bonusLine(b){
     case 'ring': return `${b.src}${b.value ? ` +${b.value}` : ''} : ${ringLines(b.src, b.value).map(l => l.replace(/^Groupe · /, '')).join(', ')}`;
     case 'shrine': { const s = SHRINES.list[b.src]; return s ? `${s.name} : ${s.desc}` : ''; }
     case 'escalator': return `Escalateur : seau du treuil +${pct(b.value)}`;
-    case 'crown': return `Couronne du Roi Gobelin : un gobelin qui naît à ${b.value} cases devient asservi et mine ${GOBLIN_KING.thrall.life} s pour le coffre`
-                       + (b.stacks ? ` (${b.stacks} au travail)` : '');
   }
   return '';
 }
@@ -83,8 +84,17 @@ export function createEffectsBar(el){
     if(n.dataset.tip !== tip) n.dataset.tip = tip;
     const b = n.lastChild; if(b.textContent !== badge) b.textContent = badge;
   }
-  /* m : le mineur à montrer (null = rien) */
-  return function update(m){
+  /* nom du joueur dont on voit les états (29/10/2026 : quand ce n'est pas le sien) */
+  let who = null;
+  function whoNode(name){
+    if(!who){ who = document.createElement('div'); who.className = 'fxWho'; }
+    if(who.textContent !== name) who.textContent = name;
+    const tip = `États de ${name}\nClique sur ton nom dans l'équipe pour revoir les tiens`;
+    if(who.dataset.tip !== tip) who.dataset.tip = tip;
+    return who;
+  }
+  /* m : le mineur à montrer (null = rien) ; name : son nom si ce n'est pas le mineur du joueur */
+  return function update(m, name = null){
     const want = [];
     for(const e of m?.effects || []){
       const d = EFFECTS.list[e.id]; if(!d) continue;
@@ -95,11 +105,20 @@ export function createEffectsBar(el){
       const S = EFFECTS.session, n = node('session', S.icon, S.color, 'session');
       set(n, bonusTip(m.bonus), String(m.bonus.length)); want.push(n);
     }
+    if(name && want.length) want.unshift(whoNode(name));
     /* ordre et présence : ne touche le DOM que s'il change */
     const cur = [...el.children];
     if(cur.length !== want.length || cur.some((c, i) => c !== want[i])) el.replaceChildren(...want);
     el.hidden = !want.length;
   };
+}
+
+/* mineur dont on montre les états (29/10/2026) : celui choisi (focus, id) s'il est là, sinon le sien, sinon le premier ;
+   name : son nom quand ce n'est pas le sien (null sinon) */
+export function focusedMiner(miners, me, focus){
+  const list = miners || [];
+  const m = (focus != null ? list.find(o => o.id === focus) : null) ?? list.find(o => o.account === me || o.me) ?? list[0] ?? null;
+  return { m, name: m && !(m.account === me || m.me) ? m.name ?? null : null };
 }
 
 /* place la rangée en haut à droite du canvas (centré dans son cadre), sous le bouton « Suivre » s'il est affiché */

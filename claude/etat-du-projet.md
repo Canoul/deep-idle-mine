@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 29/10/2026 (le Carreau, ville du spawn : sur la branche `jules/spawn-ville`).*
+*Dernière mise à jour : 29/10/2026 (le Carreau, ville du spawn, en ligne).*
 
 ---
 
@@ -42,7 +42,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## Systèmes en place
 
-- **Le Carreau, la ville du spawn** (29/10, Jules ; **sur la branche `jules/spawn-ville`, pas en ligne** ; config `TOWN`,
+- **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
   `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une
   ville minière vue de côté, un bâtiment par onglet ; ton mineur marche jusqu'au bâtiment de l'onglet ouvert, les autres
   joueurs en ligne **hors session** sont devant le leur, avec bulle de leurs messages du chat global. Onglet Session sans
@@ -70,8 +70,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - **Niveaux de tour** (28/10, Geoffrey ; `TOWER.levels`) : niveau 1 ou 2 choisi au lancement dans le Lobby, chacun
-    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 1,75 (ancien × 2), poids des
-    briques × 1,5, rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
+    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 2 (29/10 ; ancien × 1,75), poids des
+    briques × 2 (29/10 ; ancien × 1,5), rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
     à 2,5 minage / 40 dégâts, niveau 1 4/4, niveau 2 0/4 (`npm run simulate:tower -- --level 2`).
   - **Descente des mobs** (28/10, tous niveaux, `TOWER.mobs.descend`) : un mob sans proie dans son étage saute par la porte
     ouverte du sol quand un mineur est plus bas dans la tour.
@@ -182,10 +182,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste
   (meilleur temps par joueur, Ange et Démon confondus, avec l'équipe) ; top 50 + sa place (`LEADERBOARD`,
   `src/meta/leaderboard.js`, `POST /api/social/leaderboard`). Records de tour dans le ns `tower_record` (sans limite).
+  **Roi gobelin** (29/10, Geoffrey) : meilleur temps de victoire de l'Instance I par joueur présent (de l'entrée à la
+  mort du roi, temps du combat contre le roi affiché à côté, avec l'équipe) ; ns `instance_record` (sans limite).
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
   d'action en bas (touches 1-9, 0, -, =) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
-  `src/ui/pxicons.js`, `npm run textures:ui`). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
+  `src/ui/pxicons.js`, `npm run textures:ui`). Polices : titres en Jersey 15, texte en VT323 (29/10 ; ancien :
+  Jersey 10, illisible sous 20 px). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
@@ -211,7 +214,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (rien de spécifique aux areas 7-8 pour l'instant).
 - **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
   `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : le boss est celui de l'Instance I ; son « Coffre du Roi
-  Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : graphite + peaux toujours, un objet rare au plus (Couronne 1 %,
+  Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : lingots de graphite 5-15 + Tainted iron 10-20 + peaux toujours (29/10 ; ancien : Graphite ore 20-40), un objet rare au plus (Couronne 1 %,
   Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %,
   Hand of Justice 1 %, jamais un sort appris), gemmes 1 % ; le stuff sort
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
@@ -221,7 +224,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
   **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,1 %), **Nuage magique** (jambes, rare ;
-  marche +1,1 ; méphite 0,1 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +25 % ; minotaure 0,5 %,
+  marche +1,1 ; méphite 0,1 %), **Ceinture du Géant** (ceinture, épique ; **dégâts +1,5** (29/10, Geoffrey : ≈ +10 % de DPS ; 28/10 : +5 ; ancien +3,1), ténacité +12,5 % (ancien +25 %) ; minotaure 0,5 %,
   1 % en k hole ; nerf du 26/10 au soir, ancien 0,5 % / 1 % / 2 %). Chance × (1 + butin du mineur : stat Butin + skill Pillage ; 1 % à +50 % → 1,5 %), une seule pièce, hasard à part, un seul joueur la reçoit (partage normal). Tier 2
   pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
   nuage, ceinture à cornes).
@@ -323,7 +326,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
-  session.
+  session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).
   **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de
   dureté < 3 × vitesse de minage, 50 % des dégâts aux mobs du rayon (boss compris dans la tour). Simulation : `--spells id,id`.
   **Onglet refait le 28/10 (Jules, piste A « la barre de sorts »)** : la barre de sorts en grand en haut (comme en
@@ -334,7 +337,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe (28/10) ; Équiper remet tout d'un coup
   (pièce introuvable = case vide) ; **Équiper possible pendant une session, pour la suivante** (28/10, Geoffrey ; ancien :
-  hors session), créer / enregistrer hors session ; garde-fou 20 sets.
+  hors session), créer / enregistrer hors session ; garde-fou 20 sets. **Ligne « Set équipé »** (29/10) : le set dont le stuff,
+  les skills et les sorts sont exactement l'équipement actuel (marqué ✔), « aucun » sinon.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur, et ses torches dessinées en lampe de mine depuis le 26/10 ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
@@ -402,10 +406,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `docs/superpowers/specs/2026-10-28-buffs-debuffs-design.md`, `EFFECTS`, `src/sim/effects.js`, `src/ui/effects.js`,
   `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
   le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,
-  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner) et **une seule
-  icône « Bonus de session »** (anneaux du groupe, shrines, Escalateur, Couronne). Animations sur le perso (étoiles,
+  dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner, **Couronne du Roi
+  Gobelin** chez son porteur seul, depuis le 29/10) et **une seule icône « Bonus de
+  session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
   seulement : la simulation ne change pas (cause des étourdissements et anneaux du groupe ajoutés pour l'affichage).
+  **Depuis le 29/10** : les états du joueur regardé (mine : le mineur suivi ; tours, instance, MI, Bloc géant : clic sur
+  un joueur de l'équipe), avec son nom devant ; aussi au Bloc géant (ancien : son propre mineur seulement, pas au Bloc géant).
 
 - **Fond : la session en cours** (28/10, Geoffrey ; `src/ui/backdrop.js`) : pendant une session, hors onglet Session, la
   mine (dessin seul, sans panneaux) remplace le mur du fond, assombrie (CSS `.bgSession`). Option « Session en cours en
@@ -415,6 +422,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   fenêtre), panneaux qui glissent depuis les bords au même rythme ; l'inverse en sortant (l'onglet Session reste affiché
   par-dessus le temps que ses panneaux repartent) (`BACKDROP` dans backdrop.js : dim 0,4,
   450 ms). Ancien, jamais en ligne : la mine du fond figée à la place de la session.
+
+- **Gants tactique** (29/10, Geoffrey) : vitesse d'attaque **+10 %** (ancien +20 %), ≈ +10 % de DPS comme la Ceinture du
+  Géant (+10,7 % avec une épée en fer, +8,1 % en acier). Les Gants de boucher (+4,05 dégâts) font plus (+28,6 % en fer).
 
 - **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,
   sous le gear score. **Vitesse d'attaque sans paliers** (28/10) : le coup suivant part à l'heure exacte (`nowOf`), avant

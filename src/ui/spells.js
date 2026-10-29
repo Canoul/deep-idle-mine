@@ -45,7 +45,7 @@ export function spellStatus(st, id, ctx, owned = 0){
 
 /* onOp({ action:'equip', spell, slot } | { action:'unequip', slot } | { action:'learn', item }) → promesse de la réponse
    du serveur ({ spells, inventory? }) ; onInventory(inv) : inventaire renvoyé après un parchemin appris */
-export function setupSpells({ onOp, onInventory = () => {} }){
+export function setupSpells({ onOp, onInventory = () => {}, onChange = () => {} }){
   let st = { learned:[], slots:Array(SPELLS.openSlots).fill(null) }, ctx = { tree:null, spec:{} }, inv = { slots:[] };
   let sel = 0, cur = null, picked = false, tab = 'all', busy = false, msg = '';   // picked : le joueur a choisi le sort de la fiche
 
@@ -138,7 +138,7 @@ export function setupSpells({ onOp, onInventory = () => {} }){
   async function send(op){
     if(busy) return;
     busy = true; msg = ''; render();
-    try { const r = await onOp(op); st = r.spells; if(r.inventory){ inv = r.inventory; onInventory(r.inventory); } }
+    try { const r = await onOp(op); st = r.spells; onChange(st); if(r.inventory){ inv = r.inventory; onInventory(r.inventory); } }
     catch(e){ msg = e.message; }
     finally { busy = false; render(); }
   }
@@ -176,7 +176,8 @@ export function setupSpells({ onOp, onInventory = () => {} }){
 
   render();
   return {
-    set(s){ if(s){ st = s; render(); } },
+    set(s){ if(s){ st = s; render(); onChange(st); } },
+    slots: () => st?.slots ?? [],
     /* spécialisation choisie (onglet Skills) et niveaux de spécialisation (progression) : débloqué / équipable */
     setContext(c){ ctx = { ...ctx, ...c }; render(); },
     setInventory(i){ inv = i ?? { slots:[] }; render(); },

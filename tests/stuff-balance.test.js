@@ -13,7 +13,7 @@ const ARMOR = ['Casque en', 'Jambes en', 'Bottes en'];   // pas le plastron : to
 const MATERIALS = { chitine: 1, fer: 2, acier: 3 };
 const TOL = 0.025;   // arrondi au pas de la stat (un pod = 6 x, un point d'oxygène = 4 x)
 const price = designPrice;   // prix mesurés × ajustements de Geoffrey (UPGRADE.priceAdjust, 27/10/2026) : valeur de dessin, pas le GS (28/10)
-/* hors règle, voulu : Ceinture du Géant à 5 dégâts (28/10/2026, Geoffrey ; avant 1,6) */
+/* hors règle, voulu : Ceinture du Géant à 1,5 dégâts (29/10/2026, Geoffrey ; 28/10 : 5 ; avant 1,6) */
 const OFF_RULE = new Set(['Ceinture du Géant']);
 const near = (v, want) => Math.abs(v - want) <= TOL * want;
 

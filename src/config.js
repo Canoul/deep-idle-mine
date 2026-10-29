@@ -720,8 +720,9 @@ export const EFFECTS = {
     /* bonus de session (une seule icône, le détail dans sa bulle) */
     ring:         { kind:'session', name:'Anneau',              icon:'ring',      color:'#ffd23f' },
     shrine:       { kind:'session', name:'Shrine',              icon:'shrine',    color:'#c9a227' },
+    /* Couronne du Roi Gobelin : buff de son porteur seul (29/10 ; avant : bonus de session) */
+    crown:        { kind:'buff',    name:'Couronne du Roi Gobelin', icon:'crown', color:'#ffd23f' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
-    crown:        { kind:'session', name:'Gobelins asservis',   icon:'crown',     color:'#ffd23f' },
   },
   session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
   /* états des mobs et des boss, au-dessus de leur barre de PV */
@@ -884,7 +885,9 @@ export const GOBLIN_KING = {
   chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
   loot: {
     always: [
-      { item:'Graphite ore',    min:20, max:40  },
+      /* 29/10/2026 (Geoffrey) : lingots de graphite et fer souillé à la place du minerai de graphite (avant : Graphite ore 20-40) */
+      { item:'Graphite ingot',  min:5,  max:15  },
+      { item:'Tainted iron',    min:10, max:20  },
       { item:'Peau de gobelin', min:50, max:100 },
     ],
     oneOf: [
@@ -1057,7 +1060,7 @@ export const STUFF = {
     /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
     'Lampe à incandescence': { slot:'torche', tex:'lamp_incandescent', stats:{ torches:10 }, set:{ torchRadius:8, torchTime:0.5 } },
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
-    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
+    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:10 } },   // 29/10 (Geoffrey) : ≈ +10 % de DPS (avant 20)
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
@@ -1104,7 +1107,7 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
     'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.04 },   // 250 x, une seule stat (avant 1,1 ; d'abord 1,4)
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
-    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:5, tenacity:12.5 },   // 28/10 (Geoffrey) : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.5, tenacity:12.5 },   // 29/10 (Geoffrey) : dégâts 1,5 ≈ +10 % de DPS avec 14 dégâts fixes (avant 5) ; 28/10 : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
     'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
@@ -1821,10 +1824,11 @@ export const TOWER = {
      stonebricks, weight = poids des stonebricks dans le sac, mobKnock = recul des coups des Séraphins / Diablotins ;
      rageBelow : le boss enrage sous cette part de ses PV (niveau 1 : boss.rageBelow) ; summon : mobs invoqués sur le toit à
      chaque envol du boss (aux PV du niveau). 28/10 à 11 h (Geoffrey) : niveau 2 PV +150 % (avant × 2), dureté +75 %
-     (avant × 2), invocation de 2 mobs. Valeurs provisoires. */
+     (avant × 2), invocation de 2 mobs. 29/10 (Geoffrey) : niveau 2 dureté × 2 (avant × 1,75), poids × 2 (avant × 1,5).
+     Valeurs provisoires. */
   levels: {
     1: { hp: 1,   hard: 1,    weight: 1,   mobKnock: 1, rageBelow: 0.33, summon: 0 },
-    2: { hp: 2.5, hard: 1.75, weight: 1.5, mobKnock: 2, rageBelow: 0.5,  summon: 2 },
+    2: { hp: 2.5, hard: 2,    weight: 2,   mobKnock: 2, rageBelow: 0.5,  summon: 2 },
   },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },

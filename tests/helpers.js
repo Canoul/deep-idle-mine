@@ -37,6 +37,7 @@ export const FAST_SCRYPT = { N: 1024, r: 8, p: 1, keyLen: 32, saltLen: 16 };
    joueurs sont partis, ou sur finish) avec le résumé summaryOf(enregistrement). ended : ids des parties terminées. */
 import { TOTAL_TICKS } from '../src/shared/game.js';
 import { isTowerMode, TOWER_TICKS } from '../src/shared/tower.js';
+import { isInstanceMode, INSTANCE_TICKS } from '../src/shared/instances.js';
 export function fakeLive(summaryOf){
   const ended = [];
   const factory = ({ onEnd }) => {
@@ -50,7 +51,7 @@ export function fakeLive(summaryOf){
       get size(){ return games.size; },
       close: id => { games.delete(id); },
       closeAll: () => games.clear(),
-      async advance(id, target){ const g = get(id), last = isTowerMode(g.rec.mode) ? TOWER_TICKS : TOTAL_TICKS;   // une tour finit plus tôt
+      async advance(id, target){ const g = get(id), last = isTowerMode(g.rec.mode) ? TOWER_TICKS : isInstanceMode(g.rec.mode) ? INSTANCE_TICKS : TOTAL_TICKS;   // une tour, une instance finissent plus tôt
         g.tick = Math.max(g.tick, Math.min(target, last)); if(g.tick >= last) end(id); },
       async leave(id, account){
         const g = get(id); g.rec.leaves.push({ account, tick:g.tick });
