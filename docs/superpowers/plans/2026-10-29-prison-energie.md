@@ -24,7 +24,7 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
   lancement de mine ne débite l'énergie qu'une fois (clé = id de session).
 - Énergie : `max: 100`, départ `100`, coût entier tiré dans `[6, 12]`, refus sous `6`, recharge `8` par heure de jeu
   en prison, plafonnée à 100, gardée au dixième, affichée arrondie.
-- Prison : `resetAt: 0.8` (des minerais du run), `runMax: 3 h` de jeu, `treasureMul: 0.5`, `rareMul: 0.5`,
+- Prison : carte de 25 × 25 (décision de Geoffrey : la taille ne bouge pas, on règle la part de minerais), `resetAt: 0.8` (des minerais du run), `runMax: 3 h` de jeu, `treasureMul: 0.5`, `rareMul: 0.5`,
   `offlineMax: 24 h` réelles, `batchMs: 10 min` réelles, pas de k hole, pas de shrines, pas de Gallianix.
 - Seule la mine classique coûte de l'énergie ; mode dev : pas de coût (comme les shrines) ; bots exclus.
 - Lancer une mine, une tour ou une instance termine la prison du ou des joueurs concernés (coffre versé, pas le sac) ;
@@ -36,7 +36,7 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
 
 - Un run rejoué après un redémarrage du serveur (même seed, mêmes specs) doit verser exactement une fois → test dans la Tâche 6.
 - Un joueur qui revient après 30 h : la prison a joué 24 h puis attendu, elle reprend sans rejouer les 6 h d'attente → test dans la Tâche 7.
-- Deux lancements de mine simultanés avec 10 d'énergie : un seul passe, l'énergie ne devient jamais négative → test dans la Tâche 2.
+- Double clic sur « Lancer » (deux demandes en même temps) : une seule session, un seul débit d'énergie → test dans la Tâche 2.
 - Un run qui ne peut jamais atteindre 80 % (mineur de base, minerais inaccessibles) se termine à `runMax` et repart → test dans la Tâche 4.
 - La prison ouverte pendant qu'un membre du groupe lance une mine : sa prison se termine avant que la mine démarre, et il ne tourne jamais deux parties → test dans la Tâche 6.
 
@@ -92,7 +92,7 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
   - à 5 d'énergie (posée dans le store) : `start` rejette `code: 'no_energy'`, message avec « Zoe » ; aucune session créée ; énergie inchangée ;
   - groupe Zoe (50) + Max (3) : refus nommant Max seulement ; énergie de Zoe inchangée ;
   - tour, instance, mine en mode dev : énergie inchangée.
-- [ ] **Step 2 :** `tests/anticheat/energy.test.js` : deux `start` simultanés (`Promise.allSettled`) à 10 d'énergie → une seule session, énergie ≥ 0 ; `start` rejoué après une erreur `session_running` ne débite pas.
+- [ ] **Step 2 :** `tests/anticheat/energy.test.js` (double clic ou deux onglets : deux demandes de lancement en même temps ; le serveur refuse déjà la deuxième, on vérifie qu'elle ne coûte rien) : deux `start` simultanés (`Promise.allSettled`) → une seule session, un seul débit ; une demande refusée (`session_running`, `no_key`…) ne débite rien.
 - [ ] **Step 3 :** `node --test tests/energy-server.test.js tests/anticheat/energy.test.js` → échoue.
 - [ ] **Step 4 :** store + `start()` + `state()`.
 - [ ] **Step 5 :** les deux fichiers verts ; `node --test tests/game-service.test.js tests/leaderboard.test.js tests/instance-server.test.js` verts (les sessions de mine des tests existants partent à 100 d'énergie).
@@ -115,9 +115,9 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
 ### Tâche 4 : Simulation d'un run de prison
 
 **Files :**
-- Modify : `src/config.js` : `PRISON = { width: 30, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, bars: 24, salt: 0x9a150e }` ; bloc `24: { name:'Barreaux de prison', type:'special', tex:'prison_bars', unbreakable:true, … }` dans `BLOCKS` (copier la forme de `7: Barrière`) ; `'prison_bars'` dans `TEXTURES` ; texture dans `scripts/gen_textures.py` (barreaux gris foncé sur fond sombre) puis `npm run textures`.
-- Modify : `src/sim/world.js` : `export const contentOf = (G, k) => G.prison ? G.prison.areaMax : k;` et `contentAt = (G, y) => contentOf(G, areaOf(y))` ; `genArea` lit composition, `chestChance` (× `treasureMul` si prison), `planDungeon` / `planTraps` / `treasureItem` avec `contentOf(G, k)` (placement inchangé : `areaTop(k)`) ; prison : colonnes hors de `[x0, x0 + width)` (centrées sur `CHEST_X` ; `SPAWN_X` et la colonne du treuil doivent y tomber, test à l'appui) remplies de `PRISON.bars`, pas de `placeKhole`, `tryUnlock` sans effet.
-- Modify : `src/sim/mobs.js` (`tableOf`, `minArea`, `mobHp`, mimic, mur de chair), `src/sim/actions.js:125` (treasure), `src/sim/trap.js` : `areaOf(y)` → `contentAt(G, y)` pour le contenu ; `src/sim/dungeon.js` `planDungeon` : chance × `rareMul` en prison (seed et `k` de contenu passés par `genArea`).
+- Modify : `src/config.js` : `PRISON = { width: 25, height: 25, oreMul: 1, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, bars: 24, salt: 0x9a150e }` ; bloc `24: { name:'Barreaux de prison', type:'special', tex:'prison_bars', unbreakable:true, … }` dans `BLOCKS` (copier la forme de `7: Barrière`) ; `'prison_bars'` dans `TEXTURES` ; texture dans `scripts/gen_textures.py` (barreaux gris foncé sur fond sombre) puis `npm run textures`.
+- Modify : `src/sim/world.js` : `export const contentOf = (G, k) => G.prison ? G.prison.areaMax : k;` et `contentAt = (G, y) => contentOf(G, areaOf(y))` ; `genArea` lit composition (minerais × `oreMul` en prison, le reste pris sur la pierre et la terre : `prisonComp(comp, oreMul) → comp`, pure, somme 100), `chestChance` (× `treasureMul` si prison), `planDungeon` / `planTraps` / `treasureItem` avec `contentOf(G, k)` (placement : `areaTop(k)`) ; en prison, `fillComp(r, comp, W, PRISON.height)` et seulement `PRISON.height` lignes ajoutées ; prison : colonnes hors de `[x0, x0 + width)` (centrées sur `CHEST_X` ; `SPAWN_X` et la colonne du treuil doivent y tomber, test à l'appui) remplies de `PRISON.bars`, pas de `placeKhole`, `tryUnlock` sans effet.
+- Modify : `src/sim/mobs.js` (`tableOf`, `minArea`, `mobHp`, mimic, mur de chair), `src/sim/actions.js:125` (treasure), `src/sim/trap.js` : `areaOf(y)` → `contentAt(G, y)` pour le contenu ; `src/sim/dungeon.js` `planDungeon(seed, k, box)` et `src/sim/trap.js` `planTraps(seed, k, dp, box)` : `box = { x0, w, h }` facultatif (défaut : toute la largeur, `AREA_H`) pour tirer la position dans la prison ; `planDungeon` : chance × `rareMul` en prison.
 - Modify : `src/sim/actions.js` : shiny (`SHINY.chance`), `glyphDrop` (`d.chance`), `rareDrop` (`chance`) × `G.prison ? PRISON.rareMul : 1`.
 - Modify : `src/sim/mineur.js` : `export const timeLeft = G => (G.endAt ?? SESSION_LEN) - G.t;` ; `src/sim/ai.js` : les 8 `SESSION_LEN-G.t` → `timeLeft(G)`.
 - Modify : `src/sim/session.js` : `newSession` accepte `opts.prison = { areaMax }` (pose `G.prison`, `G.endAt = Infinity`, pas de shrines même si `opts.shrines`, `G.duckBase` neutralisé) ; `tick` : `if(!G.prison && G.ticks >= SESSION_TICKS) endSession(G)`.
@@ -134,7 +134,9 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
 - Produces : `contentOf(G, k)`, `contentAt(G, y)`, `timeLeft(G)`.
 
 - [ ] **Step 1 : tests** — `tests/prison-sim.test.js` :
-  - `newPrisonRun(7, { miner: {}, areaMax: 3, run: 1 })` : une seule area (`G.areas.length` 1, lignes = surface + `AREA_H`), composition = `areaComp(3)` (`G.areas[0].comp`), colonnes hors largeur = `PRISON.bars`, `BLOCKS[24].unbreakable` ; `G.endAt` Infinity ; `timeLeft(G)` Infinity.
+  - `newPrisonRun(7, { miner: {}, areaMax: 3, run: 1 })` : une seule area (`G.areas.length` 1, lignes = surface + couches de terre + `PRISON.height`), composition = `prisonComp(areaComp(3), PRISON.oreMul)`, exactement `PRISON.width` colonnes hors barreaux sur chaque ligne de la carte, `SPAWN_X`, `CHEST_X` et la colonne du treuil dedans, `BLOCKS[24].unbreakable` ; `G.endAt` Infinity ; `timeLeft(G)` Infinity.
+  - `prisonComp` : `prisonComp({ coal: 4, iron: 2, stone: 60, dirt: 34 }, 2)` → coal 8, iron 4, somme 100, pierre et terre réduites dans leur proportion ; `oreMul` 1 → identique.
+  - donjon et pièges : sur 200 seeds d'areas qui en ont (areaMax ≥ `DUNGEON.areas[0]` / `TRAP.fromArea`), leurs cases tombent toutes entre les barreaux et dans les 25 lignes.
   - mobs : sur 10 000 tirages de `tableOf` via un mineur à la ligne 10 d'une prison areaMax 5, les types sont ceux de `MOBS.spawnTable[5]` (aucun type absent de cette ligne).
   - `treasureMul` : sur 400 seeds, part des runs avec un treasure ≈ `areaDef(k).chestChance × 0.5` (écart < 0,05) pour `k = 2`.
   - rareMul : `glyphDrop` sur 20 000 blocs en prison ≈ moitié de la mine (même seed, écart relatif < 20 %).
@@ -152,14 +154,14 @@ est un enregistrement par compte (ns `energy`), débitée au lancement d'une min
 
 **Files :**
 - Create : `scripts/simulate-prison.js` ; `package.json` : `"simulate:prison": "node scripts/simulate-prison.js"`.
-- Modify : `src/config.js` : `PRISON.width` (et au besoin un `PRISON.oreMul`, multiplicateur de densité de minerais appliqué dans `genArea` en prison, s'il faut plus que la largeur).
+- Modify : `src/config.js` : `PRISON.oreMul` (la taille reste 25 × 25, décision de Geoffrey).
 
 **Interfaces :**
 - Consumes : `newPrisonRun`, `tickPrison` ; presets de stuff de `src/shared/dev-presets.js`.
 - Produces : sortie texte : pour chaque (preset, areaMax ∈ {1, 3, 5}) : pods rapportés par heure de jeu, runs par heure, durée moyenne d'un run, énergie par heure ; et la référence « mine à 3, part d'un joueur par heure » calculée avec `runSession` sur les mêmes presets (3 mineurs, `--count`).
 
 - [ ] **Step 1 :** écrire le script (arguments `--count 5 --hours 4 --seed 1`), sortie avec le ratio `prison / (mine à 3 ÷ 3)`.
-- [ ] **Step 2 :** lancer `npm run simulate:prison -- --count 5`, régler `PRISON.width` (puis `oreMul` si la largeur seule ne suffit pas) jusqu'à un ratio entre 0,45 et 0,55 pour les presets acier et fer.
+- [ ] **Step 2 :** lancer `npm run simulate:prison -- --count 5`, régler `PRISON.oreMul` (taille fixe 25 × 25) jusqu'à un ratio entre 0,45 et 0,55 pour les presets acier et fer ; si `oreMul` dépasse 3 sans y arriver, s'arrêter et présenter les chiffres à Geoffrey (décision de design).
 - [ ] **Step 3 :** relancer `node --test tests/prison-sim.test.js` (vert avec la valeur finale).
 - [ ] **Step 4 :** commit « Prison : rendement réglé à ≈ 50 % d'une mine à 3 (simulate:prison) » avec les chiffres dans `docs/debug.md`.
 
