@@ -51,3 +51,30 @@ export function awayText(a){
     (res > 0 ? `, + ${nf(res)} ressources` : '')+
     (ok(a.energy) && a.energy > 0 ? `, + ${nf(a.energy)} énergie` : '')+'.';
 }
+
+/* ---------- confirmations (relecture finale, 29/10) : lancer une mine, une tour ou une instance termine la prison de
+   chaque joueur du groupe (le serveur l'arrête au lancement) ---------- */
+const LOOT = 'pas ce que le mineur porte sur lui.';
+const listFr = names => names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} et ${names[names.length - 1]}`;
+/* Lancer (seul ou chef) : '' s'il n'y a rien à terminer ; sinon la question, qui nomme les membres dont la prison sera
+   arrêtée. mine : sa prison tourne (la sienne, publicPrison) ; party : vue du groupe (members[].prison, du serveur). */
+export function launchPrisonText({ mine = false, party = null, meId = null } = {}){
+  const others = (party?.members ?? []).filter(m => m.account !== meId && m.prison).map(m => m.name || 'un joueur');
+  if(!mine && !others.length) return '';
+  const who = [mine && 'ta prison', others.length && `la prison de ${listFr(others)}`].filter(Boolean).join(' et ');
+  return `Lancer termine ${who}.\nLe coffre du run en cours est versé dans ${others.length ? 'l\'inventaire de chacun' : 'ton inventaire'}, ${LOOT}`;
+}
+/* Membre : « Je suis prêt » ou « Prêt tout le temps » (always) alors que sa prison tourne : '' sinon */
+export function readyPrisonText({ prison, always = false } = {}){
+  if(!prisonActive(prison)) return '';
+  return `${always ? 'Prêt tout le temps' : 'Prêt'} : quand le chef lance, ta prison est terminée.\n`+
+    `Le coffre du run en cours est versé dans ton inventaire, ${LOOT}`;
+}
+
+/* Sondage de la prison en erreur (errors : erreurs de suite) : déconnecté (401) → arrêt ; plus de session ou de prison
+   côté serveur → état relu ; sinon nouvel essai, délai doublé à chaque erreur (PRISON.uiRetry … PRISON.uiPoll). */
+export function prisonPollError(e, errors = 1){
+  if(e?.status === 401) return { action: 'stop' };
+  if(e?.code === 'no_session' || e?.code === 'no_prison') return { action: 'refresh' };
+  return { action: 'retry', delay: Math.min(PRISON.uiPoll, PRISON.uiRetry * 2 ** Math.max(0, errors - 1)) };
+}

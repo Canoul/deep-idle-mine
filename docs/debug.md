@@ -4868,7 +4868,9 @@ Règles (voir CLAUDE.md) :
   rythme, `oreMul` y pesait peu. D'où le changement de mesure (décision du 29/10) : on compare le POIDS DES MINERAIS (blocs de type `ore`), pods affichés à titre d'info.
 - Mesure en minerais (mineur, area 5, 5 chaînes, ±0,1) : acier : 0,6 → 0,48 ; 0,55 → 0,56 ; 0,5 → 0,55 (contrôleur : 0,46 à 3 chaînes) ; 1 → 0,67 (contrôleur).
   fer : 0,6 → 0,62 ; 0,55 → 0,57 ; 0,5 → 0,43. Références : acier 1388 minerais/h, fer 1149 (sur 2873 / 2418 pods).
-- **`PRISON.oreMul` = 0,52** (acier ≈ 0,5, fer ≈ 0,5 par interpolation ; non mesuré tel quel, incertitude ±0,1). Tests ✅ `tests/prison-sim.test.js` 14/14, aucune assertion changée
+- **`PRISON.oreMul` = 0,52** (acier ≈ 0,5, fer ≈ 0,5 par interpolation ; non mesuré tel quel, incertitude ±0,1).
+  → **Mis à jour le 29/10 (relecture finale)** : mesuré par le contrôleur à 0,52, 10 chaînes, area 5, arbre mineur : acier 0,48
+  (678 minerais/h contre 1405), fer 0,43 (473 contre 1111). Tests ✅ `tests/prison-sim.test.js` 14/14, aucune assertion changée
   (elles lisent `PRISON.oreMul`). À vérifier : mesure à 10 chaînes à 0,52, arbres logisticien/barbare, areas 1/3, stuff de base (mineur étourdi par les occultistes).
 
 ## 29/10/2026 — Prison et énergie : documentation et vérification finale (Geoffrey, branche geoffrey/prison) 🧪
@@ -4884,6 +4886,8 @@ Règles (voir CLAUDE.md) :
   Mesure de référence à 10 chaînes (T5) : acier 0,48, fer 0,43, runs ≈ 24–31 min. ⚠ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » échoue déjà sur main (non lié).
 - **Chiffres** : `oreMul` 0,52 = valeur provisoire (fer un peu sous la cible ; si besoin ≈ 0,55 : fer ≈ 0,46, acier ≈ 0,51, estimé). Coût serveur ≈ 7 min de CPU par joueur
   et par jour à ×2 pour une prison 24 h/24 ; les paquets ×300 le concentrent, ne le réduisent pas.
+  → **Corrigé le 29/10 (relecture finale)** : il faut ajouter les rejeux (chaque paquet rejoue le run en cours depuis son début) : ≈ ×1,5 en moyenne,
+  jusqu'à ≈ ×9 pour un run qui va jusqu'à `runMax`. Mesure à 10 chaînes à 0,52 faite pour l'arbre mineur (contrôleur : acier 0,48, fer 0,43).
 - **À vérifier** : mesure à 10 chaînes à 0,52 pour les arbres logisticien / barbare, areas 1/3, stuff de base (mineur étourdi sans fin par les occultistes en area 5, run fini à `runMax`) ;
   passage en ligne : rattrapage de `areaMax` depuis `session_stat` (parcours à chaque fin de mine tant que areaMax = 0).
 - **Points fragiles (mineurs repoussés, encore ouverts)** :
@@ -4895,8 +4899,30 @@ Règles (voir CLAUDE.md) :
     `lastAbsence` ne garde que la dernière absence, est effacé dès l'envoi (perdu si la réponse n'arrive pas) ; présence en mémoire perdue au redémarrage (≤ 60 s) ;
     pas de test de `prisonStop` après `live.closeAll()`.
   - Sim : `G.endAt` et `G.duckBase` valent Infinity (→ null en JSON) ; `simulate:prison` par défaut bruité (3 chaînes) ; pas de plafond de ticks dans sa boucle.
-  - Navigateur (⚠ à corriger avant mise en ligne) : bandeau calculé avec l'horloge locale au lieu de `serverNow()` (`main.js`) ; `syncAccount` → `setProgress` sans garde `st.ended` ;
+  - Navigateur (⚠ à corriger avant mise en ligne ; ✅ corrigé le 29/10, entrée « relecture finale » ci-dessous) : bandeau calculé avec l'horloge locale au lieu de `serverNow()` (`main.js`) ; `syncAccount` → `setProgress` sans garde `st.ended` ;
     erreurs du sondage de la prison (401 / 500) seulement en console ; finitions : panneau « Area 0 » contre journal « contenu de l'area N », « Coffre commun » / « XP de la session » en solo,
     « Voir la prison » pendant une MI, pas d'état « chargement », couleur rouge par regex, logique `setPrison` non testée.
   - Décisions à faire trancher : résidus de prison sans jauges du Jugement ni Discord ; refus d'énergie sans compter le run en cours (un joueur à 5 dont le run rendrait 2 est refusé) ;
     treuil absent en prison (la récupération du sac de Mule reste prête pour le jour où).
+
+## 29/10/2026 — Prison : corrections de la relecture finale (Geoffrey, branche geoffrey/prison) 🧪
+- **Moteur en erreur** (`server/game/service.js`) : `stopPrisonOf` ne relance plus l'erreur du moteur (journalisée, moteur fermé, rien
+  versé sans bilan, prison `done`) : « Sortir de prison » et `start()` (mine, tour, instance, et le groupe) passent. Les erreurs du moteur
+  (avance, ouverture) sont marquées `prisonRun` (`engineError`) ; `runCrashed` les compte par run (`crashes`), dans `pump` et dans la vue
+  (qui répond quand même) ; à `PRISON.crashMax` (5) : `abandonPrison` arrête la prison (journal « prison arrêtée »). Les erreurs du stockage
+  ne comptent pas (pas d'arrêt sur une panne de base).
+- **Plafond des paquets** : `PRISON.batchConcurrency` (1) paquets d'absents à la fois (les commencés d'abord, puis le `lastBatchAt` le plus
+  ancien), le reste au passage suivant. `batching` nettoyé à l'arrêt.
+- **Index** : seules les prisons `running` (en attente : sortie par `endBatch` / `pump`, remise par `seePrison` quand `touchPrison` la
+  repasse à `running`) ; une liste en échec n'est plus gardée (relue au besoin suivant).
+- **Énergie du bilan** : `settleRun` compte l'énergie réellement créditée (avant / après `creditEnergy`, plafond 100) dans `away` et
+  `totals` ; `creditEnergy` inchangé (booléen, idempotent).
+- **Groupe** : `game.prisonActiveOf` → `members[].prison` dans `party.state` ; `launchPrisonText` (chef / seul : nomme les membres dont la
+  prison sera arrêtée, vue du groupe relue avant de demander), `readyPrisonText` (« Je suis prêt », « Prêt tout le temps » : décoché si refus).
+  Le lancement par la recherche de groupe (LFG) ne demande pas (non couvert).
+- **Navigateur** : bandeau à `serverNow()` ; `syncAccount` garde `st.ended` ; sondage : 401 → arrêt (prison oubliée, relue au retour),
+  `no_session` → `refresh()`, autres erreurs → recul `PRISON.uiRetry` doublé jusqu'à `uiPoll` (`prisonPollError`).
+- **Tests** ✅ `tests/prison-server.test.js` (+6 : arrêt et mine avec moteur en panne, arrêt après crashMax, 1 paquet par passage, prison
+  en attente non relue, énergie plafonnée au bilan, `prison` par membre ; « absent » part de 50 d'énergie), `tests/prison-ui.test.js` (+3).
+  Sujet + lobby / party / live / game-service / instance-server : 177/177 ; `npm run test:anticheat` 115/115.
+- **À vérifier** : le comportement réel d'un fil d'exécution qui meurt (Worker) dans `pump` (testé avec le moteur dans le fil principal).

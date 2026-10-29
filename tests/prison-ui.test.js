@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MINE_MODES, ENERGY, PRISON } from '../src/config.js';
-import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText } from '../src/ui/prison.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError } from '../src/ui/prison.js';
 import { mineModes, prisonLaunchState } from '../src/ui/lobby.js';
 
 const now = 1_800_000_000_000;
@@ -83,4 +83,40 @@ test('lobby : bouton de la prison (entrer, la voir quand elle tourne)', () => {
   assert.equal(prisonLaunchState({ account: null, prison: null }).can, false);
   assert.equal(prisonLaunchState({ account: me, prison: null, busy: true }).can, false);
   assert.ok(PRISON.uiPoll > 0 && PRISON.uiPoll < PRISON.presentFor, 'le jeu ouvert reste « présent » pour le serveur');
+});
+
+/* ---------- relecture finale : confirmations du groupe, sondage de la prison ---------- */
+
+test('lancer (chef ou seul) : la confirmation nomme ce qui sera terminé (sa prison, celle des membres)', () => {
+  const party = { members: [{ account: 'A', name: 'Zoe' }, { account: 'B', name: 'Max', prison: true }, { account: 'C', name: 'Lea', prison: true }, { account: 'D', name: 'Tom' }] };
+  assert.equal(launchPrisonText({ mine: false, party: null, meId: 'A' }), '', 'rien à terminer : pas de question');
+  assert.equal(launchPrisonText({ mine: false, party: { members: [{ account: 'A', name: 'Zoe' }, { account: 'D', name: 'Tom' }] }, meId: 'A' }), '');
+  assert.match(launchPrisonText({ mine: true, party: null, meId: 'A' }), /^Lancer termine ta prison\./);
+  const both = launchPrisonText({ mine: true, party, meId: 'A' });
+  assert.match(both, /ta prison et la prison de Max et Lea/);
+  assert.doesNotMatch(both, /Tom|Zoe/);
+  assert.match(launchPrisonText({ mine: false, party: { members: [...party.members, { account: 'E', name: 'Eve', prison: true }] }, meId: 'A' }), /la prison de Max, Lea et Eve\./);
+  assert.match(both, /pas ce que le mineur porte/);
+  assert.equal(launchPrisonText({ mine: false, party: { members: [{ account: 'A', name: 'Zoe', prison: true }] }, meId: 'A' }), '', 'sa propre ligne : mine fait foi');
+});
+
+test('membre : « Je suis prêt » et « Prêt tout le temps » demandent confirmation si sa prison tourne', () => {
+  assert.equal(readyPrisonText({ prison: null }), '');
+  assert.equal(readyPrisonText({ prison: { state: 'done' } }), '');
+  const t = readyPrisonText({ prison: { state: 'running' } });
+  assert.match(t, /quand le chef lance, ta prison est terminée/);
+  assert.match(t, /pas ce que le mineur porte/);
+  assert.match(readyPrisonText({ prison: { state: 'waiting' }, always: true }), /^Prêt tout le temps/);
+});
+
+test('sondage de la prison : 401 → arrêt ; no_session → état relu ; autre erreur → recul doublé jusqu\'à uiPoll', () => {
+  assert.deepEqual(prisonPollError({ status: 401, code: 'not_authenticated' }, 1), { action: 'stop' });
+  assert.deepEqual(prisonPollError({ status: 404, code: 'no_session' }, 1), { action: 'refresh' });
+  const d = n => prisonPollError(new Error('réseau'), n).delay;
+  assert.equal(prisonPollError({ status: 500 }, 1).action, 'retry');
+  assert.equal(d(1), PRISON.uiRetry);
+  assert.equal(d(2), PRISON.uiRetry * 2);
+  assert.equal(d(3), PRISON.uiRetry * 4);
+  assert.equal(d(50), PRISON.uiPoll, 'plafonné');
+  assert.ok(PRISON.uiRetry > 250, 'plus lent que la vue en direct');
 });

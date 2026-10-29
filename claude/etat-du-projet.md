@@ -55,8 +55,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   jeu) : remontée, coffre versé (clé `prison:<id>:<run>`), XP et énergie, run suivant. Résidus dans l'inventaire sans jauges du Jugement
   ni Discord. Arrêt (bouton, ou lancement d'une mine / tour / instance) : coffre versé, pas le sac. Rythme : en direct quand le jeu est
   ouvert (`uiPoll` 15 s), sinon paquets toutes les 10 min réelles dès 10 min après la dernière visite, pause après 24 h sans visite, reprise
-  sans rejouer l'attente ; seule la vue de la prison rattrape (`state()` note la présence). Coût serveur : ≈ 7 min de calcul par joueur et
-  par jour à ×2 (les paquets le concentrent, ne le réduisent pas).
+  sans rejouer l'attente ; seule la vue de la prison rattrape (`state()` note la présence). Coût serveur : ≈ 7 min de jeu calculé par joueur et
+  par jour à ×2, plus les rejeux d'un run depuis son début à chaque paquet : ≈ ×1,5 en moyenne (≈ 10 min), jusqu'à ≈ ×9 pour un
+  run qui va jusqu'à `runMax` ; un seul paquet d'absent à la fois (`batchConcurrency`). Moteur qui plante sur un run : arrêt et
+  lancement passent quand même, prison arrêtée au bout de `crashMax` plantages. Le groupe voit qui a une prison en cours :
+  « Je suis prêt » / « Prêt tout le temps » et le lancement du chef demandent confirmation.
 
 - **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
   `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une

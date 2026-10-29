@@ -41,8 +41,12 @@ Modèle d'entrée :
   (pas de place à droite) et il n'y a pas de treuil. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
   ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
 - **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
-  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, à surveiller si beaucoup
+  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, ≈ 10 min avec les
+  rejeux (jusqu'à ≈ ×9 pour un run très long) ; un seul paquet hors ligne calculé à la fois. À surveiller si beaucoup
   de joueurs la laissent tourner.
+- **Relecture finale (29/10)** : dans un groupe, celui dont la prison tourne doit confirmer avant « Je suis prêt » ou
+  « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
+  si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
 - **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
 
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré

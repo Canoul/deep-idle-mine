@@ -72,7 +72,7 @@ import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
-import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive } from './ui/prison.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError } from './ui/prison.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -335,10 +335,13 @@ const lobby = setupLobby({
   onPrisonStart: () => startPrison(),
   onPrisonStop: () => stopPrison(),
   onShowPrison: () => nav.show('session'),
-  onLaunch: async opts => {
+  onLaunch: async (opts, { party } = {}) => {
     lobby.error('');
-    /* lancer une mine, une tour ou une instance termine la prison (29/10) : on prévient */
-    if(prisonActive(prison) && !await ask('Lancer termine ta prison.\nLe coffre du run en cours est versé dans ton inventaire, pas ce que le mineur porte sur lui.', { ok:'Lancer quand même' })) return;
+    /* lancer une mine, une tour ou une instance termine la prison de chaque joueur (29/10) : on prévient, en nommant les
+       membres dont la prison tourne (vue du groupe relue au serveur, qui fait foi) */
+    const team = party?.members?.length > 1 ? ((await partyApi.state().catch(() => null))?.party ?? party) : party;
+    const q = launchPrisonText({ mine: prisonActive(prison), party: team, meId: acct.account?.id });
+    if(q && !await ask(q, { ok:'Lancer quand même' })) return;
     try {
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
       /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
@@ -661,11 +664,13 @@ function setPrison(p, { sync = true } = {}){
 async function syncAccount(){
   try {
     const st = await gameApi.state();
-    setInventory(st.inventory); setEnergy(st.energy); setProgress(st.progress); skills.set(st.skills);
+    setInventory(st.inventory); setEnergy(st.energy);
+    if(!st.ended || st.session) setProgress(st.progress);   // un bilan à montrer : showResult annonce la montée de niveau
+    skills.set(st.skills);
     setPrison(st.prison, { sync:false });
   } catch(e){ console.warn(e); }
 }
-let prisonTimer = null, prisonBusy = false;
+let prisonTimer = null, prisonBusy = false, prisonErrors = 0;
 function kickPrison(delay = 0){ clearTimeout(prisonTimer); prisonTimer = setTimeout(pollPrison, delay); }
 async function pollPrison(){
   clearTimeout(prisonTimer);
@@ -674,6 +679,7 @@ async function pollPrison(){
   let again = null;
   try {
     const r = await gameApi.prisonView(PG?.ready ? PG.ticks : null);
+    prisonErrors = 0;
     setPrison(r.prison);
     if(r.view && prisonActive(prison)){
       if(PG && PG.run !== prison.run && !r.view.full){ PG = null; again = 0; }   // run suivant : sa carte entière d'abord
@@ -683,7 +689,14 @@ async function pollPrison(){
         if(!rec && ui.follow == null && PG.miners.length) ui.follow = (PG.miners.find(m => m.account === acct.account?.id) ?? PG.miners[0]).id;
       }
     }
-  } catch(e){ console.warn(e); }
+  } catch(e){
+    console.warn(e);
+    /* déconnecté : on s'arrête ; plus de prison ni de session côté serveur : état relu ; sinon recul (PRISON.uiRetry…) */
+    const next = prisonPollError(e, ++prisonErrors);
+    if(next.action === 'stop') return void setPrison(null, { sync:false });   // reconnecté : state() la renvoie et relance
+    if(next.action === 'refresh') return void refresh().catch(console.warn);
+    again = next.delay;
+  }
   finally { prisonBusy = false; }
   if(!prisonActive(prison)) return;
   kickPrison(again ?? (prisonShown() && ui.tab === 'session' && !document.hidden ? VIEW_EVERY : PRISON.uiPoll));
@@ -873,7 +886,7 @@ function frame(now){
       $('timer').textContent = `Run ${prison.run} · ${fmt(shown.t)}`;
       $('timeBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
       $('realLeft').textContent = performance.now() - prisonViewAt > 5000 ? 'connexion…' : '';
-      $('prisonBannerTxt').textContent = prisonBanner(prison, Date.now());
+      $('prisonBannerTxt').textContent = prisonBanner(prison, serverNow());
       $('prisonBanner').title = Number.isFinite(prison.goal) ? `${prison.mined} minerais minés sur ${prison.goal} pour finir le run` : '';
     }
     else if(shown && ui.tab==='session'){

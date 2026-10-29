@@ -15,7 +15,7 @@ import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
 import { ask, askText } from './dialog.js';
-import { prisonActive, launchCostText } from './prison.js';
+import { prisonActive, launchCostText, readyPrisonText } from './prison.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -204,7 +204,7 @@ export function slotButtons({ account, party, session }, slot){
   return { promote: leader && slot.kind !== 'invited', kick: leader && !session };
 }
 
-/* h : { onLaunch(opts), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart(), onPrisonStop(), onShowPrison(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
+/* h : { onLaunch(opts, { party }), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart(), onPrisonStop(), onShowPrison(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
@@ -466,7 +466,12 @@ export function setupLobby(h){
     act(async () => { const r = await h.shrineGive(id, item, qty); st.shrines = r.shrines; if(r.activated) error(''); return r; }, () => { st.busy = false; }).finally(() => { st.busy = false; render(); });
   };
   $('towerLevelRow').onclick = e => { const b = e.target.closest('button[data-level]'); if(b && !b.disabled){ st.towerLevel = +b.dataset.level; render(); } };
-  $('alwaysReady').onchange = () => act(() => h.party.alwaysReady($('alwaysReady').checked));
+  /* prêt tout le temps alors que sa prison tourne : le lancement du chef la terminera, on demande d'abord (29/10) */
+  $('alwaysReady').onchange = async () => {
+    const on = $('alwaysReady').checked, q = on ? readyPrisonText({ prison: st.prison, always: true }) : '';
+    if(q && !await ask(q, { ok:'Prêt tout le temps' })){ $('alwaysReady').checked = false; return; }
+    act(() => h.party.alwaysReady(on));
+  };
   $('lfgAuto').onchange = () => {
     st.lfgAuto = $('lfgAuto').checked;
     if(st.lfg?.search?.mine) act(() => h.party.lfg(st.lfgAuto));     // déjà en recherche : on garde sa place
@@ -568,10 +573,14 @@ export function setupLobby(h){
       return;
     }
     const ls = launchState(st);
-    if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
+    if(ls.action === 'ready'){                                               // membre : prêt / plus prêt
+      const q = ls.ready ? readyPrisonText({ prison: st.prison }) : '';      // sa prison tourne : le lancement la terminera
+      if(q && !await ask(q, { ok:'Je suis prêt' })) return;
+      return act(() => h.party.ready(ls.ready));
+    }
     st.busy = true; render();
     const tw = !!MINE_MODES.find(m => m.id === st.mode)?.tower;
-    try { await h.onLaunch({ mode: st.mode, ...(tw && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
+    try { await h.onLaunch({ mode: st.mode, ...(tw && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
     finally { st.busy = false; render(); }
   };
 
