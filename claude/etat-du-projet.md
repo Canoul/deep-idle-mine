@@ -175,7 +175,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
   d'action en bas (touches 1-9, 0, -, =) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
-  `src/ui/pxicons.js`, `npm run textures:ui`). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
+  `src/ui/pxicons.js`, `npm run textures:ui`). Polices : titres en Jersey 15, texte en VT323 (29/10 ; ancien :
+  Jersey 10, illisible sous 20 px). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
