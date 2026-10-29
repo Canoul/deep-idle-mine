@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
+- **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
+  gobelin** (Instance I), de l'entrée dans l'instance à la mort du roi. Chaque joueur encore là à la victoire garde son
+  meilleur temps ; sous son nom, le **temps du combat contre le roi** (de son réveil à sa mort) et ses coéquipiers. Un
+  joueur parti avant la fin n'est pas classé, un échec ne compte pas. Les victoires des 30 derniers jours sont reprises.
+- **Décisions** : classé sur le temps total (comme la tour) ; le temps du combat seul est affiché à côté (choix de
+  Claude, facile à inverser).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
 - **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
   durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque

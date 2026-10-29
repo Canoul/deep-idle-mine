@@ -4642,3 +4642,17 @@ Règles (voir CLAUDE.md) :
   / 700 ms), view, camera, giant-service, giant-sim : 49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) ; le rendu du Bloc
   géant n'a pas de test (canvas), il réutilise `glide` / `pace` / `shownPos` testés.
 
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » (✅ en ligne le 29/10)
+- **Quoi** : board `instance` (src/meta/leaderboard.js : `BOARDS`, tri croissant comme `tower`, `sanitizeInstanceRecord`
+  { t, fight, at, instance, team, session }, `betterInstance`) ; ns `instance_record` (server/game/store.js : mémoire,
+  fichier, PostgreSQL, `get/list/putInstanceRecords`) ; `recordInstance(rec)` après `recordTower` à la fin de session
+  (server/game/service.js) : instance réussie, pas dev, joueurs présents à la victoire ; `fight = r.t − r.awake`
+  (`G.timeline.awake`, réveil du roi) ; rattrapage des sessions `done` gardées (`backfillTowers`, même passage) ;
+  `leaderboardData().instance`. Social : ligne avec `team` et `fight` (server/social/service.js) ; `BOARD_INFO.instance`,
+  `instanceDetail` (« combat 2:10.4 · avec Max »), bouton « Roi gobelin » (index.html).
+- **Outil de test** : `fakeLive` (tests/helpers.js) termine maintenant une instance à `INSTANCE_TICKS` (avant : à la
+  durée d'une mine classique, une instance hors mode dev ne finissait jamais dans les tests).
+- **Tests** ✅ `tests/leaderboard.test.js` 14/14 (record revérifié, plus court gagne, présents seulement, échec et dev
+  ignorés, record plus lent qui ne remplace rien, rattrapage, admin caché) ; 27 fichiers serveur / store / social :
+  334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
+  `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).
