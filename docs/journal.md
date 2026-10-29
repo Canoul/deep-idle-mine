@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Jules — Correctifs : torches à virgule, Lunettes Gucci invisibles
+- **Pour le joueur** : le compteur de torches affichait « 22.200000000000003 en réserve » quand un bonus en % (anneau,
+  maîtrise) donnait un nombre à virgule. Le stock est maintenant un nombre entier, arrondi à l'inférieur (22,2 → 22).
+  Les **Lunettes Gucci** se voient enfin sur le mineur (monture dorée, verre sombre) : elles n'avaient pas de dessin.
+- **À suivre** : les Doc Martins, la Ceinture golémique et les Jambières titanesques n'ont pas encore de dessin sur le
+  mineur non plus.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Administration : donner la place de chef d'un lobby
 - **Pour le joueur** : rien. Nouvelle commande sur le VPS : `set-leader.js --name X` fait de X le chef de son lobby (il doit
   déjà y être) ; l'ancien chef reste comme simple membre.

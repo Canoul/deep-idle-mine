@@ -4,7 +4,15 @@ import { IDS } from '../src/config.js';
 import { compassScan, decide, tackler } from '../src/sim/ai.js';
 import { stepDir } from '../src/sim/actions.js';
 import { planReturn } from '../src/sim/path.js';
+import { createMiner } from '../src/sim/mineur.js';
 import { worldFrom, run } from './helpers.js';
+
+test('torches et passerelles : un stock entier même avec un bonus en % (22,2 → 22), illimité reste illimité', () => {
+  const m = createMiner(0, { carac:{ torches:22.200000000000003, bridges:Infinity } });
+  assert.equal(m.torches, 22);
+  assert.equal(m.carac.torches, 22);
+  assert.equal(m.bridges, Infinity);
+});
 
 test('boussole : ne renseigne que la ligne du mineur', () => {
   const G=worldFrom([

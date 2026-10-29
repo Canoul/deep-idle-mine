@@ -5087,3 +5087,17 @@ Règles (voir CLAUDE.md) :
   ready = always), route `POST /api/admin/party-lead` {name}, script `scripts/set-leader.js`.
 - **Tests** ✅ admin-party +1 (membre → chef, déjà chef, sans groupe, relais) ; party, admin-end-session : 50/50.
 
+## 29/10/2026 — Torches à virgule, skin des Lunettes Gucci (Jules)
+- **Torches** : `m.carac.torches` pouvait être décimal (bonus en % via anneaux / maîtrises, sans `r2` final :
+  22.200000000000003) et s'affichait tel quel dans le HUD (`src/ui/hud.js`). `src/sim/mineur.js` `createMiner` arrondit à
+  l'inférieur `carac.torches` et `carac.bridges` (si fini ; Infinity reste Infinity) : stock de départ, recharge en surface
+  (`session.js` stepMiner) et glyphe qui rend une torche (`actions.js`) lisent tous l'entier. L'onglet Stuff garde la valeur
+  décimale de la stat (ce n'est pas un stock).
+- **Lunettes Gucci** : absentes de `SKIN.armor` (`src/skins.js`), donc aucun calque. Ajout `skins/gucci_glasses`
+  (`scripts/gen_textures.py`, `textures/skins/gucci_glasses.png`), calque de la case casque. Seul ce PNG change à la
+  régénération.
+- **Tests** ✅ `tests/miner.test.js` (+1 : 22,2 → 22, passerelles illimitées) et `tests/skins.test.js` : 23/23. Rendu des
+  lunettes vérifié sur un aperçu agrandi corps + calque, ⚠️ pas vu en jeu. Simulation 3 mineurs × 5 : areas 3,0,
+  profondeur 189,8, 0 bloquée.
+- Reste sans skin (case visible, pas de calque) : Doc Martins (pieds), Ceinture golémique, Jambières titanesques.
+
