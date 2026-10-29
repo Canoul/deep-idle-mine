@@ -4975,3 +4975,14 @@ Règles (voir CLAUDE.md) :
   couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
   lobby 18/18 ; `npm run test:anticheat` 109/109.
 - ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.
+
+## 29/10/2026 — Geoffrey — Correctif : Dash sur le boss de la tour, quel que soit le côté voulu
+- **Constat** (partie seed 949593874, tower_demon niveau 2, 20:52, après la mise en ligne de 20:32 ; rejeu identique au
+  serveur : échec, boss 689 PV) : Dash prêt, barbare sur le toit à 2-6 cases du boss, statut « Va au contact de Démon »,
+  pas de Dash. `dashBoss(G, m, goals)` ne visait que les cases du côté voulu (`wantedSide` : à l'opposé des autres, ici
+  « R ») ; il arrivait toujours par la gauche → jamais.
+- **Correctif** : `dashBoss(G, m, cells)` (toutes les cases de contact) ; il arrive du côté le plus proche, puis traverse
+  le boss (il frappe de l'intérieur, `contactSide` 'in') vers son côté voulu.
+- **Tests** ✅ tower-spells +1 (barbare côté gauche, voulu « R », à 4 cases : il dashe et frappe), échoue sans le correctif ;
+  tower* 63/63. Rejeu de la partie : 10 Dash pendant le combat (avant 4), victoire 9:30. `simulate:tower --count 6`
+  niveaux 1 et 2 : 0 « bloqué ».

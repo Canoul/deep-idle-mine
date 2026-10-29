@@ -536,7 +536,7 @@ export function decide(G, m){
     return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`);
   }
   const cells = contactCells(G), goals = cells.filter(c => !want || c[2] === want);
-  if(!here && dashBoss(G, m, goals.length ? goals : cells)) return act(m, 'wait', DT, {}, `Dash sur ${G.boss.name}`);
+  if(!here && dashBoss(G, m, cells)) return act(m, 'wait', DT, {}, `Dash sur ${G.boss.name}`);   // la case de contact de son côté, même si son côté voulu est l'autre (il traverse ensuite)
   if(here && !goals.length){ m.face = here === 'L' ? 1 : -1; combatSpells(G, m, G.boss); return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`); }   // son côté n'existe pas (boss au bord)
   const path = planTo(G, m, goals.length ? goals : cells);
   if(!path?.length){ G.stats.blocked++; return act(m, 'wait', 0.5, {}, mobs.length ? `Attend (${mobName}s)` : 'Bloqué'); }
@@ -823,8 +823,9 @@ function dash(G, m, o){
   return true;
 }
 
-/* Dash vers le boss (29/10/2026, Geoffrey) : sur le toit, sur sa ligne, de 2 à range cases d'une case de contact de son
-   côté (parmi goals) ; il y arrive et frappe (dmg × ses dégâts, recul et provocation comme un coup). Le boss n'est PAS
+/* Dash vers le boss (29/10/2026, Geoffrey) : sur le toit, sur sa ligne, de 2 à range cases de la case de contact de son
+   côté (parmi goals : toutes les cases de contact, pas seulement celles du côté voulu par le barbare ; correctif du 29/10 au
+   soir : sinon, arrivé du « mauvais » côté, il ne dashait jamais) ; il y arrive et frappe (dmg × ses dégâts, recul et provocation comme un coup). Le boss n'est PAS
    étourdi (décision du créateur : pas sur les boss) */
 function dashBoss(G, m, goals){
   const b = G.boss;

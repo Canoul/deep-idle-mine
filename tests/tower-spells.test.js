@@ -77,3 +77,21 @@ test('Dash sur le boss de la tour (29/10) : il fonce au contact et frappe ; le b
   }
   assert.ok(hits > 0, `${hits} Dash sur le boss en 4 tours`);
 });
+
+test("Dash sur le boss même du « mauvais » côté (29/10, partie 949593874) : le côté voulu par le barbare ne bloque plus le Dash", async () => {
+  const { wantedSide, contactCells } = await import('../src/sim/tower/session.js');
+  const G = newTower(5, { side: 'demon', miners: team() });
+  let i = 0; while(!G.boss.engaged && !G.over && i++ < 60000) tickTower(G);
+  assert.ok(G.boss.engaged, 'combat engagé');
+  G.boss.air = null; G.mobs.forEach(o => { o.hp = 0; });
+  const y = G.roof - 1, [L] = contactCells(G).filter(c => c[2] === 'L');
+  const barb = G.miners.find(m => m.name === 'Barb');
+  for(const m of G.miners){ m.y = y; m.x = L[0]; m.action = null; m.kx = 0; }   // les autres à gauche : le barbare veut la droite
+  barb.x = L[0] - 4; barb.spellCd.dash = 0;
+  assert.equal(wantedSide(G, barb), 'R');
+  const hp = G.boss.hp;
+  decide(G, barb);
+  assert.equal(barb.x, L[0], 'il fonce sur la case de contact de son côté');
+  assert.ok(G.boss.hp < hp, 'et frappe');
+  assert.ok(barb.spellCd.dash > G.t);
+});
