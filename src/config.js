@@ -1309,6 +1309,20 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
     { label:'Minerais',  cats:['combustible', 'ore'] },
     { label:'Matériaux', cats:['ingot', 'material', 'mob', 'gem'] },
     { label:'Stuff',     cats:['stuff', 'rune'] },
+  ],
+  /* onglets (29/10/2026, Geoffrey) : un filtre de la grille. Icône = la texture d'un objet (icon) ou une icône pixel (px) ;
+     le nom n'apparaît qu'en bulle. Un objet va dans le premier onglet qui le cite (items), sinon dans celui de sa
+     catégorie (cats), sinon dans le dernier (divers). */
+  tabs: [
+    { id:'all',   px:'bag',               name:'Tout' },
+    { id:'bloc',  icon:'Pierre',          name:'Blocs',            cats:['bloc'], items:['Stonebrick angélique', 'Stonebrick démoniaque'] },
+    { id:'ore',   icon:'Fer',             name:'Minerais',         cats:['ore', 'combustible', 'residu'] },
+    { id:'stuff', icon:'Casque en fer',   name:'Stuff',            cats:['stuff'] },
+    { id:'mob',   icon:'Peau de gobelin', name:'Butin des mobs',   cats:['mob'],
+      items:['Tissu sombre', 'Vésicule de gaz', 'Pierre glissante', 'Cuir de minotaure', 'Rotten flesh', 'Fragment de cœur'] },
+    { id:'mat',   icon:'Lingot de fer',   name:'Matériaux (gemmes, lingots, alliages, plumes, cristaux, argent)', cats:['ingot', 'gem', 'material'] },
+    { id:'rune',  icon:'Rune',            name:'Runes',            cats:['rune'] },
+    { id:'misc',  icon:'Treasure T1',     name:'Divers (coffres, clés, plans, parchemins, glyphes…)', cats:['treasure', 'key', 'blueprint', 'scroll', 'glyph', 'furnace'] },
   ] };
 
 /* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)

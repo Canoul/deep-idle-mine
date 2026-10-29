@@ -4860,6 +4860,14 @@ Règles (voir CLAUDE.md) :
   les bannières, `HINT` (#ff7a2e, `--acc`) pour « E : entrer » et « Tour ouverte ! » (ancien : #f2ece4 / #ffc27a / #ffd27a).
   Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
 
+## 29/10/2026 — Geoffrey — Inventaire : onglets (filtre)
+- `INVENTORY.tabs` (config) : id, icône (`icon` = texture d'un objet, ou `px` = icône pixel), nom (bulle), `items` puis
+  `cats`. `src/ui/inventory.js` : `tabOf(item)` (items d'abord, puis catégorie, sinon le dernier onglet), `tabSlots(inv,
+  tab, n)` (vrais numéros de slot : glisser-déposer et infos inchangés), onglet gardé en mémoire du module. `index.html`
+  `#invTabs` ; style `.invTab`. Aide « ? » de l'inventaire complétée. Affichage seul : rien côté serveur.
+- **Tests** ✅ inventory (nouveau test : tout objet du catalogue a un onglet, cas demandés, filtre sans trou), stuff :
+  24/24. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+
 ## 29/10/2026 — Correctif : le Carreau sur téléphone (Jules)
 - **Symptôme** (retour d'un joueur) : en promenade sur mobile, chaque toucher ouvrait un onglet (« y aller puis
   entrer » sur le bâtiment touché, et les bâtiments couvrent presque tout l'écran).
@@ -4873,3 +4881,4 @@ Règles (voir CLAUDE.md) :
   mobile (playwright `--mobile`) : 4 touchers à droite = la place traversée jusqu'au Concasseur sans onglet ouvert, bouton
   « Entrer : Concasseur » → onglet ouvert ; ordinateur 1600 × 900 : clic sur le chevalement → Lobby, bouton en bas.
 - ⚠️ Pas vérifié sur un vrai téléphone ni en paysage sur téléphone (mode « couvrir l'écran » comme sur ordinateur).
+
