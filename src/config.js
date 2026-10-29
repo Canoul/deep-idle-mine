@@ -1643,9 +1643,12 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
    returnMax : temps laissé à la remontée de fin de run (s de jeu) · treasureMul : chance d'un treasure ·
    rareMul : chances de butin rare (glyphes, butin des mobs, shiny, donjon) · dungeonWinchGap : écart minimal du donjon à
    la colonne du treuil en prison (DUNGEON.winchGap ne laisse pas de place dans 25 colonnes) ·
-   offlineMax / batchMs / presentFor / seenWriteMs : temps réels (ms), serveur · salt : seed d'un run. */
+   offlineMax / batchMs / presentFor / seenWriteMs : temps réels (ms), serveur : plafond sans visite, écart entre deux
+   paquets du joueur absent, « présent » si sa dernière demande date de moins de presentFor, écriture de lastSeenAt en
+   base au plus toutes les seenWriteMs · payoutRetries : versements d'un run relancés par le serveur après un échec ·
+   salt : seed d'un run. */
 export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5,
-  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, bars: 24, salt: 0x9a150e };
+  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5, bars: 24, salt: 0x9a150e };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

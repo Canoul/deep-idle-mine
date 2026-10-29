@@ -22,7 +22,12 @@ function createRunner(spawn, onEnd){
     g.ended = false;
     let tail = Promise.resolve();
     g.queue = (op, ...args) => {
-      const run = tail.then(() => g.call(op, ...args)).then(({ value, state }) => {
+      /* une demande en file derrière celle qui a terminé (ou fermé) la partie : rejetée, sinon elle attendrait pour
+         toujours un fil d'exécution arrêté */
+      const run = tail.then(() => {
+        if(games.get(record.id) !== g) throw new Error(`partie ${record.id} fermée`);
+        return g.call(op, ...args);
+      }).then(({ value, state }) => {
         g.tick = state.tick;
         if(state.over && !g.ended){ g.ended = true; close(record.id); onEnd(record.id, state.summary); }
         return value;
@@ -69,7 +74,8 @@ export function createLiveRunner({ onEnd = () => {} } = {}){
       call: (op, ...args) => dead ? Promise.reject(dead) : new Promise((resolve, reject) => {
         const id = next++; waiting.set(id, { resolve, reject }); w.postMessage({ id, op, args });
       }),
-      stop: () => { w.removeAllListeners('exit'); w.terminate(); },
+      /* arrêt : les demandes en cours sont rejetées, les suivantes aussi */
+      stop: () => { w.removeAllListeners('exit'); die(new Error('partie fermée')); w.terminate(); },
     };
   }, onEnd);
 }

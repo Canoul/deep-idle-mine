@@ -18,10 +18,12 @@
      fin. Chaque run est une partie du moteur (id « prison:<id>:<run> ») ; à sa fin, coffre, XP et énergie sont versés
      avec cette clé (une seule fois, même rejoué), puis le run suivant démarre. Arrêt (bouton, ou lancement d'une mine,
      d'une tour ou d'une instance) : le run est arrêté au tick atteint, son coffre (pas le sac du mineur) et son énergie
-     sont versés, la prison est fermée.
+     sont versés, la prison est fermée. Rythme (pumpPrisons, seePrison) : en direct quand le joueur regarde, par paquets
+     toutes les PRISON.batchMs quand il est absent (moteur fermé entre deux), arrêtée (waiting) 24 h après sa dernière
+     visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -45,7 +47,8 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../../src/meta/energy.js';
-import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison } from '../../src/shared/prison.js';
+import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
+         addAway } from '../../src/shared/prison.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
@@ -141,7 +144,7 @@ function createLocks(){
 export const ADMIN_MAX_QTY = 1000;
 
 export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
-                                    config = GAME_SERVER, randomSeed = () => crypto.randomInt(2**31),
+                                    config = GAME_SERVER, prison: cfg = PRISON, randomSeed = () => crypto.randomInt(2**31),
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
@@ -320,23 +323,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       })().catch(e => { console.error(`Session ${rec.id} :`, e.message); live.close(rec.id); })   // relancée au prochain passage
         .finally(() => pumping.delete(rec.id)));
     }
-    /* prisons (29/10, chemin minimal : le run suit le temps réel, comme une session regardée ; présence, paquets hors
-       ligne et plafond de 24 h viendront ensuite), après les sessions, sur le budget restant */
-    for(const p of (await store.listPrisons()).map(r => sanitizePrison(r.value)).filter(p => p?.state === 'running')){
-      if(left < 1) break;
-      const id = runId(p);
-      if(pumping.has(id) || !openRun(p)) continue;
-      const tick = live.tickOf(id), target = prisonTarget(p);
-      if(tick >= target) continue;
-      const share = Math.min(target - tick, Math.floor(left));
-      left -= share;
-      pumping.add(id);
-      jobs.push((async () => {
-        const end = tick + share;
-        while(live.has(id) && live.tickOf(id) < end) await live.advance(id, Math.min(end, live.tickOf(id) + maxStep));
-      })().catch(e => { console.error(`Prison ${id} :`, e.message); live.close(id); })
-        .finally(() => pumping.delete(id)));
-    }
+    jobs.push(...await pumpPrisons(left));
     await Promise.all(jobs);
     await Promise.all(settling.values());
     await Promise.all(prisonSettling.values());
@@ -346,36 +333,69 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
   /* verrous d'un versement de run : la prison et tout ce qu'un run crédite (pris ensemble, toujours dans le même ordre) */
   const prisonLocks = accountId => ['prison:' + accountId, 'inv:' + accountId, 'xp:' + accountId, 'energy:' + accountId];
-  const loadPrison = async accountId => sanitizePrison(await store.getPrison(accountId));   // revérifiée à chaque fois
+  /* Présence (spec « Présence ») : la dernière visite est gardée en mémoire à chaque demande (seen) et écrite en base
+     au plus toutes les seenWriteMs (seenWritten) ; la prison relue prend la plus récente des deux. */
+  const seen = new Map(), seenWritten = new Map();
+  const loadPrison = async accountId => {        // revérifiée à chaque fois
+    const p = sanitizePrison(await store.getPrison(accountId));
+    if(p && seen.has(accountId)) p.lastSeenAt = Math.max(p.lastSeenAt, seen.get(accountId));
+    return p;
+  };
   const runEnded = new Map();      // id du run → bilan : run terminé dans le moteur, pas encore versé
-  const runsClosed = new Set();    // runs versés ou en cours d'arrêt : jamais rouverts dans le moteur
+  const payoutTries = new Map();   // id du run → versements relancés après un échec (au plus cfg.payoutRetries)
+  const closedRun = new Map();     // id de la prison → dernier run versé (jamais rouvert) ; oublié quand elle est fermée
   const runOwner = new Map();      // id du run ouvert → compte (onEnd : un run de prison, pas une session)
   const prisonSettling = new Map();   // id du run → versement en cours
-  /* tick que le run doit avoir atteint maintenant (temps réel, à la vitesse de la prison) */
-  const prisonTarget = p => prisonTickAt(clock() - p.runStartedAt - p.pausedMs, p.speed);
-  /* le run en cours tourne dans le moteur (après un redémarrage : rejoué depuis son début) ; false s'il est fini */
+  const batching = new Set();      // comptes dont le paquet (joueur absent) a commencé et n'est pas fini
+  const watching = new Map();      // compte → vues ou arrêts en cours (pump ne ferme pas le moteur sous eux)
+  async function watch(accountId, fn){
+    watching.set(accountId, (watching.get(accountId) ?? 0) + 1);
+    try { return await fn(); }
+    finally { const n = watching.get(accountId) - 1; n > 0 ? watching.set(accountId, n) : watching.delete(accountId); }
+  }
+  /* Index des prisons qui tournent ou attendent (comptes), pour que pump ne relise qu'elles : bâti depuis le stockage
+     au premier besoin (démarrage du serveur), complété au lancement, une prison fermée en sort au passage suivant. */
+  let prisonIndex = null;
+  const indexOfPrisons = () => prisonIndex ??= store.listPrisons()
+    .then(list => new Set(list.filter(r => ['running', 'waiting'].includes(sanitizePrison(r.value)?.state)).map(r => r.account)));
+  /* tick que le run doit avoir atteint maintenant (temps réel à la vitesse de la prison, plafonné : prisonDueMs) */
+  const dueTick = p => prisonTickAt(prisonDueMs(p, clock(), cfg), p.speed);
+  /* le run en cours tourne dans le moteur (après un redémarrage : rejoué depuis son début) ; false s'il est fini.
+     Toujours appelé sous le verrou 'prison:' du compte, avec la prison relue (jamais un run déjà passé). */
   function openRun(p){
     const id = runId(p);
-    if(runsClosed.has(id) || runEnded.has(id)) return false;
+    if(p.run <= (closedRun.get(p.id) ?? 0) || runEnded.has(id)) return false;
     runOwner.set(id, p.account);
     if(!live.has(id)) live.open(runRecord(p));
     return true;
   }
   /* fin d'un run dans le moteur (objectif atteint ou temps max) : versé, sous les verrous du joueur, s'il est toujours
-     le run en cours d'une prison qui tourne (sinon, un arrêt l'a déjà versé) */
+     le run en cours d'une prison qui tourne (sinon, un arrêt l'a déjà versé). Un échec laisse le bilan dans runEnded :
+     pump relance le versement (retryPayout). */
   function prisonEnded(id, summary){
     runEnded.set(id, summary);
     const accountId = runOwner.get(id);
     const job = withLock.many(prisonLocks(accountId), async () => {
       const p = await loadPrison(accountId);
       if(p?.state === 'running' && runId(p) === id && runEnded.has(id)) await settleRun(p, runEnded.get(id), { stopped: false });
+      else if(p?.state !== 'running' || runId(p) !== id){ runEnded.delete(id); runOwner.delete(id); payoutTries.delete(id); }   // déjà versé
     }).finally(() => prisonSettling.delete(id));
     prisonSettling.set(id, job);
     return job;
   }
+  /* versement d'un run fini resté en échec : relancé, au plus cfg.payoutRetries fois (clé prison:<id>:<run> : jamais deux
+     fois) ; ensuite, il attend l'arrêt de la prison (qui le verse avec ce même bilan) */
+  function retryPayout(id){
+    const n = payoutTries.get(id) ?? 0;
+    if(n >= cfg.payoutRetries) return;
+    payoutTries.set(id, n + 1);
+    console.error(`Prison ${id} : versement relancé (${n + 1}/${cfg.payoutRetries})`);
+    prisonEnded(id, runEnded.get(id)).catch(e => console.error(`Prison ${id} : versement en échec :`, e.message));
+  }
   /* Verse un run (verrous prisonLocks déjà pris) : coffre (shares : coffre + glyphes trouvés, sans le sac du mineur),
      XP du mineur et de sa spécialisation, énergie au prorata du temps de jeu ; clé « prison:<id>:<run> » partout
-     (rejoué : rien deux fois). Puis : arrêt → prison fermée ; sinon run suivant, qui démarre où le précédent a fini. */
+     (rejoué : rien deux fois). Joueur absent : ajouté au bilan de l'absence (away). Puis : arrêt → prison fermée ;
+     sinon run suivant, qui démarre où le précédent a fini. */
   async function settleRun(p, summary, { stopped }){
     const key = runId(p), share = (summary?.shares || []).find(s => s.account === p.account) ?? {};
     const bag = share.bag && typeof share.bag === 'object' ? share.bag : {};
@@ -392,43 +412,151 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       p.totals.runs++;
       p.totals.energy = Math.round((p.totals.energy + energy) * 10) / 10;
       for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
+      if(!isPresent(p, clock(), cfg)) addAway(p, energy, bag);
     }
-    if(stopped){ p.state = 'done'; p.endedAt = clock(); }
-    else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; p.run++; }
-    runsClosed.add(key); runEnded.delete(key); runOwner.delete(key); live.close(key);
+    if(stopped){ p.state = 'done'; p.endedAt = clock(); closedRun.delete(p.id); }
+    else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; closedRun.set(p.id, p.run); p.run++; }
+    runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); live.close(key);
     await store.putPrison(p.account, p);
   }
-  /* Arrête la prison de ce compte (verrous prisonLocks déjà pris) : le run en cours est joué jusqu'au tick dû puis
-     arrêté là (fin immédiate), et versé. Sans effet si la prison est absente ou fermée. → { prison, stopped } */
-  async function stopPrisonOf(accountId){
+  /* Arrête la prison de ce compte (verrous prisonLocks déjà pris) : le run en cours est joué jusqu'au tick dû (plafonné :
+     une prison qui attend s'arrête où elle s'était arrêtée) puis arrêté là (fin immédiate), et versé. Sans effet si la
+     prison est absente ou fermée. → { prison, stopped } */
+  const stopPrisonOf = accountId => watch(accountId, async () => {
     const p = await loadPrison(accountId);
     if(!p || p.state === 'done') return { prison: p, stopped: false };
     const id = runId(p);
     if(!runEnded.has(id) && openRun(p)){
-      runsClosed.add(id);                              // pump ne le rouvre plus pendant l'arrêt
       try {
-        const target = prisonTarget(p);
+        const target = dueTick(p);
         while(live.has(id) && live.tickOf(id) < target) await live.advance(id, Math.min(target, live.tickOf(id) + maxStep));
         if(live.has(id)) await live.finish(id);       // le bilan arrive par onEnd (runEnded)
-      } catch(e){ runsClosed.delete(id); live.close(id); throw e; }
+      } catch(e){ if(!runEnded.has(id)){ live.close(id); throw e; } }   // fini entre-temps (pump, une vue) : son bilan est là
     }
     const summary = runEnded.get(id);
     if(!summary) console.error(`Prison ${id} : arrêt sans bilan du moteur, rien n'est versé`);
     await settleRun(p, summary ?? { shares: [], t: 0 }, { stopped: true });
     return { prison: p, stopped: true };
+  });
+  /* avance le run jusqu'au tick end, par blocs de maxStep (les demandes d'affichage passent entre deux) */
+  async function advanceRun(id, end){
+    while(live.has(id) && live.tickOf(id) < end) await live.advance(id, Math.min(end, live.tickOf(id) + maxStep));
+  }
+  /* Joue la prison de ce compte vers le tick dû, run après run (un run fini est versé avant le suivant), en au plus
+     budget ticks (un run rouvert se rejoue depuis son début : ces ticks comptent). Sans verrou pendant le calcul (le
+     versement prend les verrous du joueur) ; la prison est relue sous le verrou 'prison:' avant chaque run.
+     → { upToDate } : le run en cours a atteint le tick dû. */
+  async function playPrison(accountId, budget = Infinity){
+    let left = budget;
+    while(true){
+      const step = await withLock('prison:' + accountId, async () => {
+        const p = await loadPrison(accountId);
+        if(p?.state !== 'running') return { stop: true };
+        const id = runId(p);
+        if(runEnded.has(id)) return { wait: prisonSettling.get(id), stop: !prisonSettling.has(id) };   // versement relancé par pump
+        if(!openRun(p)) return { stop: true };
+        return { id, target: dueTick(p) };
+      });
+      if(step.stop) return { upToDate: false };
+      if(step.wait){ await step.wait.catch(() => {}); continue; }
+      const { id, target } = step, tick = live.tickOf(id) ?? 0;
+      if(tick >= target) return { upToDate: true };
+      const end = Math.min(target, tick + Math.floor(left));
+      if(end <= tick) return { upToDate: false };
+      left -= end - tick;
+      await advanceRun(id, end);
+      if(runEnded.has(id)){ await prisonSettling.get(id)?.catch(() => {}); continue; }   // run fini : le suivant
+      if(!live.has(id) || live.tickOf(id) < target) return { upToDate: false };        // budget épuisé (ou fermé)
+    }
+  }
+  /* Paquet fini (joueur absent, prison à jour) : lastBatchAt = maintenant ; plafond atteint → waiting ; moteur fermé
+     (le paquet suivant rejoue le run depuis son début), sauf si le joueur regarde entre-temps. */
+  async function endBatch(accountId){
+    await withLock('prison:' + accountId, async () => {
+      batching.delete(accountId);
+      const p = await loadPrison(accountId);
+      if(p?.state !== 'running') return;
+      const now = clock();
+      p.lastBatchAt = now;
+      if(now >= p.lastSeenAt + cfg.offlineMax) p.state = 'waiting';
+      await store.putPrison(accountId, p);
+      if(!isPresent(p, now, cfg) && !watching.has(accountId)) live.close(runId(p));
+    });
+  }
+  /* Prisons dans pump (spec « Rythme »), sur le budget left laissé par les sessions : d'abord celles que le joueur
+     regarde (comme une session, la moins en retard d'abord), puis les paquets des absents (au plus un toutes les
+     batchMs, joué au plus vite jusqu'au tick dû, plafonné à lastSeenAt + offlineMax ; un paquet commencé continue aux
+     passages suivants jusqu'à être à jour). Un absent sans paquet dû : moteur fermé. → les calculs lancés. */
+  async function pumpPrisons(left){
+    const index = await indexOfPrisons(), now = clock();
+    const present = [], absent = [];
+    for(const accountId of [...index]){
+      if(pumping.has('prison:' + accountId)) continue;
+      const p = await loadPrison(accountId);
+      if(!p || p.state === 'done'){
+        /* sous le verrou : un lancement en cours l'ajoute après l'avoir écrite */
+        await withLock('prison:' + accountId, async () => { if(!['running', 'waiting'].includes((await loadPrison(accountId))?.state)) index.delete(accountId); });
+        continue;
+      }
+      if(p.state !== 'running') continue;                       // waiting : plus rien jusqu'à sa visite
+      const id = runId(p);
+      if(runEnded.has(id)){ if(!prisonSettling.has(id)) retryPayout(id); continue; }
+      if(isPresent(p, now, cfg)) present.push(p);
+      else if(batching.has(accountId) || batchDue(p, now, cfg)) absent.push(p);
+      else if(live.has(id) && !watching.has(accountId)) live.close(id);
+    }
+    const lag = p => dueTick(p) - (live.tickOf(runId(p)) ?? 0);
+    present.sort((a, b) => lag(a) - lag(b));
+    const jobs = [];
+    for(const p of [...present, ...absent]){
+      if(left < 1) break;
+      const accountId = p.account, batch = !present.includes(p), key = 'prison:' + accountId;
+      if(pumping.has(key)) continue;
+      const share = Math.min(Math.max(0, lag(p)), Math.floor(left));
+      if(share <= 0 && !batch) continue;
+      left -= share;
+      pumping.add(key);
+      if(batch) batching.add(accountId);
+      jobs.push((async () => {
+        const { upToDate } = await playPrison(accountId, share);
+        if(batch && upToDate) await endBatch(accountId);
+      })().catch(e => { if(live.has(runId(p))){ console.error(`Prison ${runId(p)} :`, e.message); live.close(runId(p)); } })   // relancée au prochain passage
+        .finally(() => pumping.delete(key)));
+    }
+    return jobs;
   }
   /* sessions qui empêchent de lancer une prison : mine, tour, instance (pas la mine instantanée) */
   const sessionOf = async accountId => (await store.sessionsOf(accountId))
     .find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
-  /* ce que le navigateur voit de sa prison (objectif et minerais du run en cours si le moteur le fait tourner) */
-  async function prisonView(accountId){
-    const p = await loadPrison(accountId);
-    if(!p) return null;
-    const id = runId(p);
-    let info = null;
-    if(p.state === 'running' && live.has(id)) info = await live.info(id).catch(() => null);
-    return publicPrison(p, info);
-  }
+  /* retard joué à une visite : au plus un paquet et le rejeu d'un run (au-delà, pump finit le rattrapage) */
+  const catchUpBudget = p => prisonTickAt(cfg.batchMs, p.speed) + Math.ceil(cfg.runMax / DT);
+  /* Visite du joueur (state, vue de la prison) : le retard est joué (au plus un paquet et le rejeu d'un run), la visite
+     notée (touchPrison : une prison qui attendait repart d'où elle s'était arrêtée), puis la prison est envoyée avec le
+     bilan de l'absence (une seule fois) et, si withView, la vue du run depuis le tick since.
+     → { prison: publicPrison | null, view: vue | null } */
+  const seePrison = (accountId, { since = null, withView = false } = {}) => watch(accountId, async () => {
+    const p0 = await loadPrison(accountId);
+    if(!p0) return { prison: null, view: null };
+    if(p0.state === 'running') await playPrison(accountId, catchUpBudget(p0));   // avant la visite : le bilan compte ces runs
+    const seenNow = await withLock('prison:' + accountId, async () => {
+      const p = await loadPrison(accountId);
+      if(!p) return null;
+      const away = p.away, now = clock();
+      const changed = touchPrison(p, now, cfg);   // fermée : seul le bilan (arrêtée pendant l'absence) est remis à zéro
+      seen.set(accountId, p.lastSeenAt);
+      if(changed || (p.state !== 'done' && !(now - (seenWritten.get(accountId) ?? -Infinity) < cfg.seenWriteMs))){
+        await store.putPrison(accountId, p); seenWritten.set(accountId, now);
+      }
+      return { p, away };
+    });
+    if(!seenNow) return { prison: null, view: null };
+    let { p } = seenNow;
+    if(p.state === 'running'){ await playPrison(accountId, catchUpBudget(p)); p = await loadPrison(accountId) ?? p; }   // repris après une attente, ou moteur fermé
+    const id = runId(p), on = p.state === 'running' && live.has(id);
+    const info = on ? await live.info(id).catch(() => null) : null;
+    const view = on && withView ? await live.view(id, since).catch(() => null) : null;
+    return { prison: publicPrison(p, info, { away: seenNow.away, cfg }), view };
+  });
 
   /* ---------- fin de session ---------- */
 
@@ -590,7 +718,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
                prefs: await loadPrefs(me.id),
                session: publicSession(active), ended: publicSession(ended),
-               prison: await prisonView(me.id) };
+               prison: (await seePrison(me.id)).prison };
     },
 
     /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
@@ -754,7 +882,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
     async prisonStart(me, members = null){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
-      return withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
+      await withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
         const old = await loadPrison(me.id);
         if(old && old.state !== 'done') fail('prison_running', 409, 'Ta prison tourne déjà.');
         if(await sessionOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours : termine-la d\'abord.');
@@ -765,16 +893,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
         const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax, now: clock(), speed });
         await store.putPrison(me.id, p);
+        (await indexOfPrisons()).add(me.id);
         openRun(p);
-        return { prison: await prisonView(me.id) };
       });
+      return { prison: (await seePrison(me.id)).prison };
     },
     /* « Sortir de prison » : le run en cours est arrêté au tick atteint ; son coffre (pas le sac) et son énergie sont
        versés, la prison est fermée. Rejoué, ou sans prison : rien. */
     async prisonStop(me){
       return withLock.many(['acct:' + me.id, ...prisonLocks(me.id)], async () => {
         const { prison } = await stopPrisonOf(me.id);
-        return { prison: publicPrison(prison) };
+        return { prison: publicPrison(prison, null, { cfg }) };
       });
     },
 
@@ -889,6 +1018,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const ok = rec.status === 'running' && ensureLive(rec);
       return { view: ok ? await live.view(rec.id, s) : null, status: ok ? 'running' : 'settling',
                clock: rec.dev ? rec.clock : null, now: clock() };
+    },
+
+    /* la prison du joueur, pour l'afficher (GET /api/game/prison) : c'est une visite (présence, retour après une
+       attente) ; le retard est joué avant l'envoi. view : le run en cours depuis le tick since (absent : carte entière). */
+    async prisonView(me, since){
+      const s = Number.isSafeInteger(since) && since >= 0 ? since : null;
+      const r = await seePrison(me.id, { since: s, withView: true });
+      return { ...r, now: clock() };
     },
 
     /* mode dev : vitesse et pause de la session (l'horloge est sur le serveur, la partie aussi) */
