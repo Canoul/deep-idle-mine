@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Spec : la Prison (farm AFK solo) et l'énergie
+- **Pour le joueur** : rien pour l'instant, c'est une spec. L'idée : un mode solo sans fin, la **Prison**, qui tourne
+  même hors ligne (24 h au plus), rapporte la moitié d'une mine à 3 et recharge l'**énergie** (8 par heure de jeu) ;
+  lancer une mine classique coûte 6 à 12 d'énergie sur 100.
+- **Décisions** (Geoffrey) : celles des questions du 29/10, dans `docs/superpowers/specs/2026-10-29-prison-energie-design.md`.
+- **À suivre** : relecture de la spec par Geoffrey, puis le plan de réalisation.
+- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
 - **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais
   jaune doré, comme les titres de l'interface ; « E : entrer » passe en orange. Demande de Geoffrey (« le blanc dénote »).
