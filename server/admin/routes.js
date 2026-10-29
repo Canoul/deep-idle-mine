@@ -7,6 +7,8 @@
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
+   POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
+   POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -38,10 +40,36 @@ export function adminAllowed(req, token){
   return !!m && sameToken(m[1], token);
 }
 
-/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) */
-export function adminRoutes({ accounts, game, token }){
+/* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
+   party : le service des groupes (adminMove, adminReady), facultatif */
+export function adminRoutes({ accounts, game, party = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
+  /* compte désigné par son pseudo (champ `field` du corps) */
+  const byName = async (ctx, field = 'name') => {
+    const name = ctx.body?.[field];
+    if(typeof name !== 'string' || !name.trim()) throw new HttpError(400, 'bad_request', `${field} : le pseudo du joueur.`);
+    const acc = await accounts.findAccountByName(nameKey(name));
+    if(!acc) throw new HttpError(404, 'no_account', `Aucun compte « ${name} ».`);
+    return acc;
+  };
+  const noParty = () => { if(!party) throw new HttpError(503, 'no_party_service', 'Groupes indisponibles sur ce serveur.'); };
+  const members = r => r.party.members.map(m => `${m.name}${m.leader ? ' (chef)' : m.always ? ' (prêt tout le temps)' : m.ready ? ' (prêt)' : ''}`).join(', ');
   return {
+    /* lobbies (29/10/2026, Geoffrey) : déplacer un joueur dans le lobby d'un autre, le mettre prêt */
+    'POST /api/admin/party-move': async ctx => {
+      guard(ctx); noParty();
+      const acc = await byName(ctx), host = await byName(ctx, 'to');
+      const r = await party.adminMove(acc, host);
+      console.log(`Admin : ${acc.name} (${acc.id}) ${r.moved ? 'mis' : 'déjà'} dans le lobby de ${host.name} (${r.party.code}) : ${members(r)}`);
+      return { account: acc.name, host: host.name, ...r };
+    },
+    'POST /api/admin/party-ready': async ctx => {
+      guard(ctx); noParty();
+      const acc = await byName(ctx);
+      const r = await party.adminReady(acc, { ready: ctx.body?.ready, always: ctx.body?.always });
+      console.log(`Admin : prêt pour ${acc.name} (${acc.id}), lobby ${r.party.code} : ${members(r)}`);
+      return { account: acc.name, ...r };
+    },
     'POST /api/admin/give': async ctx => {
       guard(ctx);
       const { name, item, quality } = ctx.body ?? {}, qty = ctx.body?.qty ?? 1;

@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
+- **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
+  `move-to-lobby.js --name X --to Y` met X dans le lobby de Y ; `set-ready.js --name X` le met prêt, `--always on` le met
+  « prêt tout le temps » (comme sa case : il reste prêt d'une session à l'autre). Mode d'emploi dans `docs/deploiement-ovh.md`.
+- **Règles gardées** : refusé si l'un des deux est en session ou si le lobby est complet ; à l'arrivée, les autres repassent
+  « pas prêt », comme quand quelqu'un rejoint normalement.
+- **État** : 🧪 sur la branche `geoffrey/admin-lobby` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
 - **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
   rend **8 à 12 Poudre de rêve**, quelle que soit sa qualité (un fragment de rune : 1 à 6). Avec **100 Poudre de rêve**,

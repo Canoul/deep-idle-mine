@@ -28,7 +28,7 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(giant ? giantRoutes(giant) : {}),
                    ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
-                   ...(game && store ? adminRoutes({ accounts: store, game, token: config.adminToken }) : {}) };
+                   ...(game && store ? adminRoutes({ accounts: store, game, party, token: config.adminToken }) : {}) };
   let proxyChecked = !config.logProxyCheck;
 
   /* une fois par démarrage : l'adresse retenue et l'en-tête reçu, pour vérifier le réglage des relais en ligne */
