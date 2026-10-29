@@ -399,6 +399,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
   seulement : la simulation ne change pas (cause des étourdissements et anneaux du groupe ajoutés pour l'affichage).
+  **Depuis le 29/10** : les états du joueur regardé (mine : le mineur suivi ; tours, instance, MI, Bloc géant : clic sur
+  un joueur de l'équipe), avec son nom devant ; aussi au Bloc géant (ancien : son propre mineur seulement, pas au Bloc géant).
 
 - **Fond : la session en cours** (28/10, Geoffrey ; `src/ui/backdrop.js`) : pendant une session, hors onglet Session, la
   mine (dessin seul, sans panneaux) remplace le mur du fond, assombrie (CSS `.bgSession`). Option « Session en cours en

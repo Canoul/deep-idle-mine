@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — États (buffs / debuffs) d'un autre joueur, dans tous les modes
+- **Pour le joueur** : la rangée d'états en haut à droite de la mine montre maintenant les états du joueur qu'on regarde,
+  avec son nom devant les icônes quand ce n'est pas soi. Mine classique : le mineur suivi (clic dans l'équipe). Tours,
+  Instance et Mine instantanée : un clic sur un joueur de l'équipe (ou du classement) montre ses états, un clic sur soi
+  ou à nouveau sur lui revient aux siens. **Bloc géant** : la rangée d'états existe maintenant aussi (Inspiration, Fast
+  learner, anneaux…), avec le même choix dans « Devant le bloc ».
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
 - **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
   équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
