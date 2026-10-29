@@ -28,7 +28,7 @@ Modèle d'entrée :
   « prêt tout le temps » (comme sa case : il reste prêt d'une session à l'autre). Mode d'emploi dans `docs/deploiement-ovh.md`.
 - **Règles gardées** : refusé si l'un des deux est en session ou si le lobby est complet ; à l'arrivée, les autres repassent
   « pas prêt », comme quand quelqu'un rejoint normalement.
-- **État** : 🧪 sur la branche `geoffrey/admin-lobby` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
 - **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
