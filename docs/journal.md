@@ -32,7 +32,12 @@ Modèle d'entrée :
   cage). Les deux parties de canoul, Sõnata et Allaiks échouent, et une des trois de Nbrick, Akake et LeTaz.
 - **À suivre** : la simulation de l'instance (`npm run simulate:instance`) ne compte ni skills, ni sorts, ni améliorations :
   à refaire avec de vrais profils. Rendre la défense utile dans l'instance (piste à discuter).
-- **État** : 🧪 sur la branche `geoffrey/instance-regen-roi` (pas en ligne)
+- **Niveau 2 (préparé, pas encore jouable)** : ses valeurs sont dans la config et la simulation (spawners 200 / un gobelin
+  toutes les 15 s, gobelins 350 PV, roi 6 000 PV, etc.). Simulé avec le stuff d'aujourd'hui : impossible (aucun spawner
+  cassé) ; il faut environ 2 × les dégâts et 1,5 × le minage de la meilleure équipe. Valeurs gardées telles quelles
+  (Geoffrey). Reste à faire pour le jouer : choix du niveau dans le lobby, serveur, coffre (× 1,5 ressources et chances
+  d'objets), classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10 (niveau 1 ; niveau 2 pas encore proposé aux joueurs)
 
 ## 29/10/2026 — Geoffrey — Correctif : le jeu à 1 image par seconde depuis le Carreau
 - **Pour le joueur** : depuis l'arrivée de la ville en fond d'écran, le jeu tournait à environ 1 image par seconde
