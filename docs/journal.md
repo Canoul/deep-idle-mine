@@ -28,7 +28,7 @@ Modèle d'entrée :
 - **Pour le joueur** : en revenant au Lobby ou en passant en promenade dans le Carreau, la liste du chat global
   repartait sur les plus vieux messages. Elle reste maintenant sur les derniers ; si tu remontes pour relire, elle ne
   bouge plus toute seule.
-- **État** : 🧪 sur la branche `jules/fix-chat-bas` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Jules — Le Carreau : la ville du spawn
 - **Pour le joueur** : hors session, le fond de l'écran n'est plus un mur : c'est **le Carreau**, une petite ville
