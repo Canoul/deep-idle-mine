@@ -27,7 +27,7 @@ Modèle d'entrée :
   affiche maintenant la taille de son groupe : « En session mine (1/3) · reste 23 min ». On repère d'un coup d'œil les
   joueurs **seuls ou à deux**, pour leur écrire ou les attendre à la fin de leur session et monter un groupe de 3. Ceux
   qui ont quitté la session ne comptent plus. Pas de chiffre pour le Bloc géant (salle commune, pas un groupe).
-- **État** : 🧪 sur la branche `jules/online-taille-groupe` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 29/10/2026 — Jules — Correctifs : torches à virgule, Lunettes Gucci invisibles
 - **Pour le joueur** : le compteur de torches affichait « 22.200000000000003 en réserve » quand un bonus en % (anneau,
