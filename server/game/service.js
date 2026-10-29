@@ -976,7 +976,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
     /* areas que le joueur peut choisir pour sa prison : 0 à son area max débloquée (mode dev : toutes) */
     /* profil de la prison que le joueur aurait s'il y entrait maintenant (lobby : ce que la carte contiendra) */
-    prisonProfile: async me => ({ profile: prisonProfile(await store.sessionsOf(me.id), me.id) }),
+    prisonProfile: async me => ({ profile: prisonProfile(await store.sessionsOf(me.id), me.id, dev) }),
     /* body (mode dev seulement) : { speed } (GAME.devSpeeds) */
     async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
@@ -990,7 +990,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         prisonLimit.hit(me.id);
         /* contenu de la prison (29/10/2026, Geoffrey) : le profil des 10 dernières mines classiques du joueur (area moyenne,
            minerais, treasures, mobs ; src/meta/prison-profile.js), figé pour toute la prison ; pas de choix d'area */
-        const profile = prisonProfile(await store.sessionsOf(me.id), me.id), area = profile.area;
+        const profile = prisonProfile(await store.sessionsOf(me.id), me.id, dev), area = profile.area;
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
         const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });

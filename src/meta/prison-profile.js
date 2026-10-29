@@ -30,11 +30,12 @@ function shares(counts, allowed){
 }
 const add = (acc, counts) => { for(const [k, n] of Object.entries(isObj(counts) ? counts : {})) if(Number.isFinite(n) && n > 0) acc[k] = (acc[k] || 0) + n; };
 
-/* les dernières mines classiques terminées où le joueur était présent à la fin : [{ at, areas, bag, killsBy }] */
-export function lastMines(sessions, account, max = PRISON.profileSessions){
+/* les dernières mines classiques terminées où le joueur était présent à la fin : [{ at, areas, bag, killsBy }] ;
+   withDev : compter aussi les mines du mode dev (serveur de dev : il n'y a que celles-là) */
+export function lastMines(sessions, account, max = PRISON.profileSessions, withDev = false){
   const out = [];
   for(const s of Array.isArray(sessions) ? sessions : []){
-    if(!s || (s.mode ?? 'mine') !== 'mine' || s.dev || s.status !== 'done' || !isObj(s.result) || s.result.abandoned) continue;
+    if(!s || (s.mode ?? 'mine') !== 'mine' || (s.dev && !withDev) || s.status !== 'done' || !isObj(s.result) || s.result.abandoned) continue;
     const share = (s.result.shares || []).find(x => x?.account === account);
     if(!share || share.left) continue;
     const miner = (s.result.miners || []).find(m => m?.account === account);
@@ -45,8 +46,8 @@ export function lastMines(sessions, account, max = PRISON.profileSessions){
 }
 
 /* profil d'après l'historique du joueur (records de sessions du serveur) */
-export function prisonProfile(sessions, account){
-  const mines = lastMines(sessions, account);
+export function prisonProfile(sessions, account, withDev = false){
+  const mines = lastMines(sessions, account, PRISON.profileSessions, withDev);
   if(!mines.length) return { n: 0, area: PRISON.fallbackArea, ores: null, treasures: null, mobs: null };
   const bag = {}, kills = {};
   for(const m of mines){ add(bag, m.bag); add(kills, m.killsBy); }
