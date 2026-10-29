@@ -24,6 +24,13 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : un buff du porteur
+- **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session ». C'est un **buff** (cadre vert) chez
+  **celui qui la porte**, seulement : un gobelin qui naît à 10 cases ou moins de lui est asservi. La bulle le rappelle ;
+  sous l'icône, le nombre de ses gobelins asservis au travail. Les autres mineurs n'ont rien, et ils ne frappent jamais
+  un gobelin asservi (c'était déjà le cas, c'est maintenant vérifié par un test sur une vraie partie).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Nerf : Gants tactique et Ceinture du Géant (≈ +10 % de DPS chacun)
 - **Pour le joueur** : les **Gants tactique** passent à vitesse d'attaque **+10 %** (avant +20 %) et la **Ceinture du
   Géant** à dégâts **+1,5** (avant +5 ; ténacité +12,5 % inchangée). Chacune donne maintenant environ +10 % de DPS : les

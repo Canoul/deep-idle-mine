@@ -4605,3 +4605,15 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ tier2 (valeurs attendues 20 → 10, 39,2 x → 19,6 x, total 120 → 110), stuff-balance, mob-drops, gearscore,
   wiki, amelioration : 82/82. Ni simulation ni économie touchées.
 
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff du porteur (✅ en ligne le 29/10)
+- **Demande** : « c'est un buff individuel, ça n'impacte pas les autres mineurs à côté, hormis qu'ils ne doivent pas tuer
+  les gobelins asservis ». Première version du matin (buff pour tout mineur à 10 cases du porteur) : mauvaise lecture,
+  remplacée dans le même chantier.
+- **Quoi** : `crownOf(G, m)` (src/sim/effects.js) → buff `crown` (EFFECTS.list, `kind:'buff'`) chez le porteur seul
+  (`carac.goblinThrall > 0`, `y > 0`, `G.thralls` présent = la mine) ; `stacks` = ses asservis au travail. Retiré de
+  `sessionBonuses` et `bonusLine` ; bulle dans `effectTip` (src/ui/effects.js). Simulation inchangée.
+- **Asservis jamais frappés** : ils vivent dans `G.thralls`, jamais dans `G.mobs` ; coups, Cleave, Dynamite, Dash,
+  Hand of Justice, Ulti shen ne lisent que `G.mobs`. Test « personne ne frappe un gobelin asservi » : partie d'1 h à 3
+  barbares (Cleave, Dynamite, Dash, HoJ, 60 dégâts), le porteur au milieu : chaque asservi vit tout son temps ✅.
+- **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
+  échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.

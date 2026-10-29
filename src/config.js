@@ -720,8 +720,9 @@ export const EFFECTS = {
     /* bonus de session (une seule icône, le détail dans sa bulle) */
     ring:         { kind:'session', name:'Anneau',              icon:'ring',      color:'#ffd23f' },
     shrine:       { kind:'session', name:'Shrine',              icon:'shrine',    color:'#c9a227' },
+    /* Couronne du Roi Gobelin : buff de son porteur seul (29/10 ; avant : bonus de session) */
+    crown:        { kind:'buff',    name:'Couronne du Roi Gobelin', icon:'crown', color:'#ffd23f' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
-    crown:        { kind:'session', name:'Gobelins asservis',   icon:'crown',     color:'#ffd23f' },
   },
   session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
   /* états des mobs et des boss, au-dessus de leur barre de PV */
