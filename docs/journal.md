@@ -24,6 +24,14 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Tours niveau 2 : stonebricks 2 fois plus dures et 2 fois plus lourdes
+- **Pour le joueur** : au niveau 2 des tours, les stonebricks sont **2 fois plus dures** (avant 1,75) et pèsent **2 fois
+  plus** dans le sac (avant 1,5). Le reste du niveau 2 ne change pas. Le niveau 1 non plus.
+- **À suivre** : en simulation, les équipes de base montent l'étage 4 environ une minute plus tard qu'avant et n'arrivent
+  plus à l'étage 5 dans les 10 min. Le repère noté le 28/10 (équipe à 2,5 de minage et 40 de dégâts) perdait déjà le
+  niveau 2 (0/4) : aucune équipe mesurée ne le gagne encore.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Jules — Correctif : police du texte plus lisible (VT323 à la place de Jersey 10)
 - **Pour le joueur** : les petits textes et surtout les chiffres se lisent enfin : avant, « 89 % XP » ressemblait à
   « 99 % XP » et « 3 615 GS » à « 3 616 GS » (orbe d'XP, barre de niveau, gear score…). Le texte courant passe en
