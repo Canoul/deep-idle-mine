@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Nerf : Gants tactique et Ceinture du Géant (≈ +10 % de DPS chacun)
+- **Pour le joueur** : les **Gants tactique** passent à vitesse d'attaque **+10 %** (avant +20 %) et la **Ceinture du
+  Géant** à dégâts **+1,5** (avant +5 ; ténacité +12,5 % inchangée). Chacune donne maintenant environ +10 % de DPS : les
+  gants +10 % quelle que soit l'arme, la ceinture +10,7 % avec une épée en fer ou la Masse du Roi Gobelin, +8,1 % avec
+  l'épée en acier (ses dégâts s'ajoutent à ceux de l'arme, avant les % de dégâts). Les pièces déjà fabriquées ou trouvées
+  changent aussi (stats relues dans le catalogue).
+- **À suivre** : les Gants de boucher (+4,05 dégâts) donnent maintenant nettement plus que les Gants tactique (+28,6 %
+  contre +10 % avec l'épée en fer).
+- **État** : ✅ en ligne le 29/10
+
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
 - **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
   jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite

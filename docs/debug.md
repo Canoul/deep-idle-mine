@@ -4595,3 +4595,13 @@ Règles (voir CLAUDE.md) :
   dépend de la remontée mesurée (`secPerRow`) ; une remontée lente (tacles) rend le trajet court et met le focus en
   veille plus tôt.
 
+## 29/10/2026 — Geoffrey — Gants tactique et Ceinture du Géant : ≈ +10 % de DPS chacun
+- `STUFF.items['Gants tactique'].stats.attackSpeed` 20 → 10 ; `STUFF.items['Ceinture du Géant'].stats.damage` 5 → 1,5
+  (ténacité 12,5 inchangée ; toujours hors règle du butin des mobs, `OFF_RULE` de `tests/stuff-balance.test.js`).
+- Vérifié avant : `rawDps` (src/meta/stuff.js) = formule des coups en session (`hitDamage` src/sim/actions.js, attente
+  `ai.js`) ; les dégâts fixes du stuff sont dans `carac.damage`, donc multipliés par damagePct, critique, double attaque.
+- DPS (`rawDps`, sans skills ni anneaux) : épée en fer 17,5 → ceinture 19,38 (+10,7 %), gants 19,25 (+10 %) ; épée en
+  acier 23,13 → 25,00 (+8,1 %), 25,44 (+10 %). GS : Gants tactique 100 → 50, Ceinture du Géant 263 → 123.
+- **Tests** ✅ tier2 (valeurs attendues 20 → 10, 39,2 x → 19,6 x, total 120 → 110), stuff-balance, mob-drops, gearscore,
+  wiki, amelioration : 82/82. Ni simulation ni économie touchées.
+
