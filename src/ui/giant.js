@@ -9,6 +9,7 @@ import { helpLine } from './help.js';
 import { createGiantRenderer } from '../render/giant.js';
 import { fitCanvas } from './fit.js';
 import { createEffectsBar, placeEffectsBar, focusedMiner } from './effects.js';
+import { showSpellBar, placeSpellBar } from './hud.js';
 import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
@@ -141,7 +142,9 @@ export function setupGiant(h){
     if(!visiting()) return;
     renderer.draw(view);
     showEffects();
+    showSpellBar($('spellBarGt'), view?.me, view?.t ?? 0);   // sorts et recharges (29/10)
     fitCanvas($('cvGt'), $('cvGtWrap'));
+    placeSpellBar($('spellBarGt'), $('cvGt'), $('cvGtWrap'));
     raf = requestAnimationFrame(frame);
   }
   async function pollView(){

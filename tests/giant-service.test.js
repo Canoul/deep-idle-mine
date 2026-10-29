@@ -36,6 +36,7 @@ test('entrer : une visite, la salle en direct, puis la visite se ferme et ses po
   const r = await giant.enter(A);
   assert.ok(r.visit.endsAt > 0);
   assert.equal(r.view.miners.length, 1); assert.equal(r.view.me.id, r.visit.minerId);
+  assert.deepEqual(r.view.me.spells, []); assert.deepEqual(r.view.me.spellCd, {});   // barre des sorts (29/10)
   let i = await giant.info(A);
   assert.equal(i.present, 1); assert.deepEqual(i.mine, { points: 0, visits: 1 }); assert.ok(i.visit);
   await assert.rejects(giant.enter(A), { code: 'in_visit' });

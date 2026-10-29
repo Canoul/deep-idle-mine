@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SETS } from '../src/config.js';
-import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName } from '../src/meta/sets.js';
+import { createSets, setOp, applySet, snapshot, sanitizeSets, cleanName, equippedSet } from '../src/meta/sets.js';
 import { createStuff, stuffOp } from '../src/meta/stuff.js';
 import { createSkills } from '../src/meta/skills.js';
 import { createSpells } from '../src/meta/spells.js';
@@ -175,4 +175,28 @@ test('panneau des sets : Équiper / Enregistrer par set, « + Nouveau set » jus
   assert.match(inSession, /prochaine session/);
   const busy = setsHtml({ list, max:20 }, { busy:true });
   assert.match(busy, /data-act="equip" disabled/); assert.match(busy, /data-act="save" disabled/);
+});
+
+test('set équipé (29/10/2026) : celui qui correspond exactement à l\'équipement actuel, sinon aucun ; ligne dans la liste', async () => {
+  const k = kit(), sets = createSets();
+  const cur = () => snapshot(k.stuff, k.skills, k.spells);
+  const now = () => equippedSet(sets.list, k.stuff.worn, k.skills, k.spells.slots);
+  assert.equal(now(), null, 'aucun set');
+  setOp(sets, { action:'create', opId:'c1' }, cur());                 // Set 1 : rien de porté
+  assert.equal(now()?.name, 'Set 1');
+  wear(k, 'pioche', k.uid(PICK)[0], 'w1');
+  assert.equal(now(), null, 'pièce portée en plus : plus le set');
+  setOp(sets, { action:'create', opId:'c2' }, cur());                 // Set 2 : la pioche
+  assert.equal(now()?.name, 'Set 2');
+  wear(k, 'pioche', k.uid(PICK)[0], 'w2');                            // l'autre exemplaire (resté dans l'inventaire) : pas la même pièce
+  assert.equal(now(), null);
+  k.skills.ranks.x_inconnu = 0;                                       // un rang à 0 ne compte pas
+  applySet(sets, { id:2, opId:'e1' }, { ...k, points:0, spec:{} });
+  assert.equal(now()?.name, 'Set 2');
+  k.spells.slots[0] = 'dash';
+  assert.equal(now(), null, 'sort différent');
+  const { setsHtml } = await import('../src/ui/sets.js');
+  assert.match(setsHtml({ list:sets.list }, { current:sets.list[1] }), /Set équipé : <b>Set 2<\/b>[^]*setRow on" data-set="2"/);
+  assert.match(setsHtml({ list:sets.list }), /Set équipé : <span class="mut">aucun/);
+  assert.doesNotMatch(setsHtml({ list:[] }), /Set équipé/);
 });
