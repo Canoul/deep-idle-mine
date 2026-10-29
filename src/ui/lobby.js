@@ -291,12 +291,14 @@ export function setupLobby(h){
     $('launchCost').textContent = cost ? launchCostText(st.energy) : '';
     $('launchCost').classList.toggle('err', cost && /pas assez/.test($('launchCost').textContent));
     $('prisonStopLobby').hidden = !def?.prison || jv || !prisonActive(st.prison);
-    /* area de la prison (29/10) : relue au serveur en arrivant sur la prison (au plus une fois par minute) */
-    if(def?.prison && !jv && account && !offline && Date.now() - st.prisonAreasAt > 60e3){
+    /* area de la prison (29/10) : mode dev seulement (hors dev, elle vient des 10 dernières mines du joueur) ; relue au
+       serveur en arrivant sur la prison (au plus une fois par minute) */
+    const devArea = !!st.info?.dev;
+    if(devArea && def?.prison && !jv && account && !offline && Date.now() - st.prisonAreasAt > 60e3){
       st.prisonAreasAt = Date.now();
       h.prisonAreas?.().then(a => { st.prisonAreas = a; render(); }).catch(() => { st.prisonAreasAt = 0; });
     }
-    const pa = def?.prison && !jv ? prisonAreaState({ areas: st.prisonAreas, prison: st.prison, choice: st.prisonArea }) : { show:false };
+    const pa = devArea && def?.prison && !jv ? prisonAreaState({ areas: st.prisonAreas, prison: st.prison, choice: st.prisonArea }) : { show:false };
     $('prisonAreaRow').hidden = !pa.show;
     if(pa.show){
       st.prisonArea = pa.area;
@@ -614,7 +616,7 @@ export function setupLobby(h){
       if(!ps.can) return;
       if(ps.action === 'view') return h.onShowPrison?.();
       st.busy = true; render();
-      try { await h.onPrisonStart?.({ area: st.prisonArea ?? undefined }); } finally { st.busy = false; st.prisonAreasAt = 0; render(); }
+      try { await h.onPrisonStart?.(st.info?.dev ? { area: st.prisonArea ?? undefined } : {}); } finally { st.busy = false; st.prisonAreasAt = 0; render(); }
       return;
     }
     const ls = launchState(st);

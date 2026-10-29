@@ -49,7 +49,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
   `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Carte 25 × 50
-  (une area, contenu de l'area max débloquée du joueur), barreaux de chaque côté, treuil du logisticien posé dès le début du run (29/10 ; ancien : pas de treuil), pas de k hole, shrines ni Gallianix, donjon à gauche
+  (une area ; **contenu = profil des 10 dernières mines classiques** du joueur, figé au lancement, `src/meta/prison-profile.js` :
+  area moyenne atteinte, répartition des minerais, tiers des treasures, types de mobs tués (kills par type enregistrés depuis le
+  29/10) ; ancien : area max débloquée, puis area au choix ; mode dev : area au choix et vitesses ×1-×300), barreaux de chaque côté,
+  treuil du logisticien posé dès le début du run (29/10 ; ancien : pas de treuil), mobs × 3 moins souvent, pièges et k hole × 0,5
+  (29/10 ; ancien : pas de k hole), pas de shrines ni Gallianix, donjon à gauche
   du puits (`dungeonWinchGap` 3). Minerais × `oreMul` 0,52 (pris sur pierre, terre, pierre dure) : mesuré à 0,48 (acier) et 0,43 (fer)
   de la part d'un joueur d'une mine à 3, en poids de minerais ; treasures et butins rares × 0,5 ; run fini à 80 % des minerais (ou 3 h de
   jeu) : remontée, coffre versé (clé `prison:<id>:<run>`), XP et énergie, run suivant. Résidus dans l'inventaire sans jauges du Jugement

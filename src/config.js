@@ -1694,7 +1694,14 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
    l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). */
 /* spawnDelayMul (29/10/2026, Geoffrey) : l'attente entre deux tirages d'apparition de mobs est × 3 en prison : le mineur
    est seul, il subit le rythme d'un mineur d'une mine à 3 (où les tirages se partagent entre les 3) */
+/* Profil des 10 dernières mines (29/10/2026, Geoffrey ; src/shared/prison-profile.js) : au lancement, la prison lit les
+   profileSessions dernières mines classiques terminées du joueur (historique) : area = area moyenne atteinte (arrondie ;
+   aucune mine : fallbackArea) ; minerais : leur répartition dans sa part du butin (la part totale de minerais reste celle
+   de l'area × oreMul) ; treasures : tier tiré selon la répartition des Treasure TX reçus (aucun : celui de l'area) ; mobs :
+   types tirés selon ses kills par type (enregistrés depuis le 29/10 ; aucun : la table de l'area). Figé pour toute la
+   prison. trapMul : chance des pièges · kholeMul : chance du k hole (avant : pas de k hole en prison). */
 export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 3,
+  profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3 };
 

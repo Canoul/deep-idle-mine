@@ -17,8 +17,8 @@ export const runSeed = (seed, run) => (hash(seed, run) ^ PRISON.salt) | 0;
 
 /* nouveau run : miner = spec du mineur (comme une entrée de opts.miners : carac, skills, prefs…), areaMax = contenu,
    run = numéro du run (1, 2…). opts.id / opts.account : id de la session et compte du joueur (partage du coffre). */
-export function newPrisonRun(seed, { miner = {}, areaMax = 0, run = 1, id, account } = {}){
-  const G = newSession(runSeed(seed, run), { miners:[miner], prison:{ areaMax }, id, accounts: account != null ? [account] : undefined });
+export function newPrisonRun(seed, { miner = {}, areaMax = 0, profile = null, run = 1, id, account } = {}){
+  const G = newSession(runSeed(seed, run), { miners:[miner], prison:{ areaMax, profile }, id, accounts: account != null ? [account] : undefined });
   G.prison.run = run;
   G.prison.endTick = null;   // tick de la fin du run (but atteint ou temps max), null avant
   log(G, `⛓ Run ${run} : prison (contenu de l'area ${G.prison.areaMax})`);

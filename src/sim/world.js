@@ -1,5 +1,6 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
 import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X } from '../config.js';
+import { pickShare } from '../meta/prison-profile.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
@@ -44,6 +45,18 @@ export function prisonComp(comp, oreMul){
   const p = Math.max(-S, Math.min(T, S * (oreMul - 1))), out = { ...comp };
   for(const n of ores) out[n] = comp[n] + comp[n] / S * p;
   for(const n of land) out[n] = comp[n] - comp[n] / T * p;
+  return out;
+}
+
+/* composition de la prison avec le profil du joueur (29/10/2026) : la part totale de minerais reste celle de prisonComp,
+   répartie selon ses minerais des 10 dernières mines (profile.ores) ; sans profil de minerais : inchangée. Pure. */
+export function profileComp(comp, ores){
+  if(!ores) return comp;
+  const kind = n => BLOCKS[IDS[n]]?.type ?? null, out = {};
+  let S = 0;
+  for(const [n, v] of Object.entries(comp)){ if(kind(n) === 'ore') S += v; else out[n] = v; }
+  if(!(S > 0)) return comp;
+  for(const [n, part] of Object.entries(ores)) out[n] = (out[n] || 0) + S * part;
   return out;
 }
 
@@ -126,7 +139,7 @@ export function genArea(G,k){
   /* prison : contenu de l'area max (contentOf), part de minerais × PRISON.oreMul ; remplie sur box.w colonnes, les
      autres colonnes sont des barreaux (hors des comptes de l'area) */
   const ck = contentOf(G, k), box = prisonBox(G);
-  const base = G.prison ? prisonComp(areaComp(ck), PRISON.oreMul) : areaComp(ck);
+  const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores) : areaComp(ck);
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
   const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
   const filled = fillComp(r, comp, box ? box.w : W), { counts, big } = filled;
@@ -144,15 +157,15 @@ export function genArea(G,k){
     grid[i]=id; };
   /* prison : donjon et pièges entre les barreaux ; le donjon plus près du treuil (PRISON.dungeonWinchGap), chance × rareMul */
   const dp = planDungeon(G.seed, ck, box && { ...box, winchGap:PRISON.dungeonWinchGap, chanceMul:PRISON.rareMul }),
-        traps = planTraps(G.seed, ck, dp, box);
+        traps = planTraps(G.seed, ck, dp, box && { ...box, chanceMul:PRISON.trapMul });   // prison : 2 fois moins de pièges
   if(dp) carve(dp, put);
   for(const p of traps) carveTrap(p, (x, ry) => grid[ry*W+x], put, IDS[big]);
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
   if(!G.noResidues) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10)
   /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
-  const kh = G.prison ? null : placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
-    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))]);
+  const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
+    ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], G.prison ? PRISON.kholeMul : 1);   // prison : 2 fois moins (29/10)
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
     G.ladder.push(new Uint8Array(W));
@@ -186,7 +199,9 @@ function placeTreasure(G, k, grid, counts, r){
   if(!spots.length) return null;
   const c=spots[Math.floor(r()*spots.length)], name=Object.keys(IDS).find(n=>IDS[n]===grid[c]);
   counts[name]--; counts.treasure=1; grid[c]=TREASURE_BLOCK;
-  const t={k, x:c%W, y:areaTop(k)+((c/W)|0), item:treasureItem(ck), opened:false};
+  /* prison (29/10) : tier tiré selon les Treasure TX des 10 dernières mines du joueur (profile.treasures) */
+  const tiers = G.prison?.profile?.treasures, item = tiers ? pickShare(tiers, r()) : treasureItem(ck);
+  const t={k, x:c%W, y:areaTop(k)+((c/W)|0), item, opened:false};
   G.treasures.set(t.y*W+t.x, t);
   return t;
 }

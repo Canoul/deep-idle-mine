@@ -145,7 +145,7 @@ function rareDrop(G,m,o){
 }
 
 export function killMob(G,m,o){
-  o.hp=0; G.stats.kills++; m.stats.kills++; gainXp(G,m,XP.mob[o.type]);
+  o.hp=0; G.stats.kills++; m.stats.kills++; if(m.stats.killsBy) m.stats.killsBy[o.type]=(m.stats.killsBy[o.type]||0)+1; gainXp(G,m,XP.mob[o.type]);
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
   glyphDrop(G,m,'kill');   // Glyphe (spé Barbare)
   if(o.type==='mimic'){

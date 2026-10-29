@@ -5172,3 +5172,23 @@ Règles (voir CLAUDE.md) :
   Mesure AVANT le changement (`simulate:prison --count 2 --chains 5 --hours 2 --gears acier --areas 5`) : area 5 ratio
   0,51, runs de 23 min ; area 6 (réf.) ratio 0,29, runs de 36 min. ⚠️ APRÈS : ni simulé ni testé (demande de Geoffrey) ;
   à mesurer : le rendement monte sans doute (moins de vols de gobelins, moins de combats), oreMul à revoir.
+
+## 29/10/2026 — Prison : contenu d'après les 10 dernières mines (Geoffrey, branche geoffrey/prison)
+- `src/meta/prison-profile.js` (nouveau, pur) : `lastMines(sessions, account)` (mines classiques `done`, pas dev, pas
+  abandonnées, joueur présent à la fin ; les plus récentes, `PRISON.profileSessions` 10), `prisonProfile` → `{ n, area
+  (moyenne de result.areasUnlocked, arrondie ; 0 mine : fallbackArea 1), ores { clé: part } (bag, noms BLOCKS → clés),
+  treasures { 'Treasure TX': part }, mobs { type: part } (miners[].stats.killsBy) }`, `sanitizeProfile`, `pickShare`.
+- Serveur `prisonStart` : `prisonProfile(store.sessionsOf(me.id))` → `p.profile` + `p.areaMax = profile.area` ; `body.area`
+  seulement en dev (sinon ignoré ; `area_locked` dev au-delà de 8). `src/shared/prison.js` : profile dans l'enregistrement,
+  `runRecord`, `buildPrisonRun` ; `newPrisonRun(…, { profile })` → `G.prison.profile` (sanitizeProfile, src/sim/session.js).
+- Carte (`src/sim/world.js`) : `profileComp(prisonComp(…), profile.ores)` (total de minerais inchangé, réparti selon les
+  parts) ; treasure : `pickShare(profile.treasures, r())` (tire un nombre de plus dans le hasard de l'area : les cartes de
+  prison changent avec un profil) ; pièges `chanceMul: PRISON.trapMul` 0,5 ; k hole posé en prison, `placeKhole(…, chanceMul)`
+  × `kholeMul` 0,5. `src/sim/khole.js` : `endOf(G)` = `G.endAt` en prison (au lieu de SESSION_LEN : un run dépasse 1 h).
+  Mobs (`spawnTableAt`) : `profile.mobs` sinon la table de l'area (minArea toujours vérifié à l'apparition).
+- Kills par type : `m.stats.killsBy` (src/sim/mineur.js, src/sim/actions.js), dans `summary.miners[].stats` (historique).
+- Lobby : liste Area seulement en mode dev.
+- ❌ **Ni simulé ni testé** (demande de Geoffrey) : seulement `node --check`. À vérifier : `tests/prison-server.test.js`
+  (le test « area de la prison : 0 à l'area max… » attend l'ancien choix hors dev : à réécrire), prison-sim, k hole en prison
+  (entrée, retour, fin de run pendant un k hole), `simulate:prison` (le script passe-t-il un profil ? sinon il mesure l'ancien
+  contenu), recalage d'oreMul.

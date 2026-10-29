@@ -2,7 +2,8 @@
    docs/superpowers/specs/2026-10-29-prison-energie-design.md.
 
    Enregistrement d'une prison (serveur, ns prison, clé = compte) :
-     { id, account, seed, run, specs, areaMax (l'area dont la carte a le contenu, choisie au lancement), speed, runStartedAt, pausedMs, state: 'running' | 'waiting' | 'done',
+     { id, account, seed, run, specs, areaMax (l'area dont la carte a le contenu), profile (src/meta/prison-profile.js :
+       les 10 dernières mines du joueur, figé au lancement ; null pour une prison d'avant le 29/10), speed, runStartedAt, pausedMs, state: 'running' | 'waiting' | 'done',
        lastSeenAt, lastBatchAt, endedAt, totals: { runs, energy, bag }, away: { runs, energy, bag }, lastAbsence }
    away : ce que les runs finis pendant l'absence du joueur ont rapporté (bilan montré une fois, puis remis à zéro par
    le serveur) · lastAbsence : { from, to } dernière absence (de la visite d'avant au retour), null avant la première.
@@ -12,6 +13,7 @@
 import { DT, GAME, PRISON } from '../config.js';
 import { minerSpecs } from './game.js';
 import { newPrisonRun, prisonGoal } from '../sim/prison.js';
+import { sanitizeProfile } from '../meta/prison-profile.js';
 
 const STATES = ['running', 'waiting', 'done'];
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
@@ -33,6 +35,7 @@ export function sanitizePrison(p){
     id: p.id, account: p.account, seed: p.seed, run: p.run,
     specs: isObj(p.specs) ? p.specs : {},
     areaMax: Number.isSafeInteger(p.areaMax) && p.areaMax >= 0 ? p.areaMax : 0,
+    profile: sanitizeProfile(p.profile),
     speed: isNum(p.speed) && p.speed > 0 ? p.speed : GAME.speed,
     startedAt: isNum(p.startedAt) ? p.startedAt : p.runStartedAt,
     runStartedAt: p.runStartedAt,
@@ -48,8 +51,8 @@ export function sanitizePrison(p){
 }
 
 /* nouvelle prison : run 1, qui commence maintenant */
-export function newPrisonRecord({ id, account, seed, specs, areaMax = 0, now, speed = GAME.speed }){
-  return { id, account, seed, run: 1, specs, areaMax, speed, startedAt: now, runStartedAt: now, pausedMs: 0, state: 'running',
+export function newPrisonRecord({ id, account, seed, specs, areaMax = 0, profile = null, now, speed = GAME.speed }){
+  return { id, account, seed, run: 1, specs, areaMax, profile, speed, startedAt: now, runStartedAt: now, pausedMs: 0, state: 'running',
            lastSeenAt: now, lastBatchAt: null, endedAt: null, totals: noTotals(), away: noTotals(), lastAbsence: null };
 }
 
@@ -58,7 +61,7 @@ export const runId = p => `prison:${p.id}:${p.run}`;
 
 /* pseudo-session pour le moteur (server/game/live-game.js) */
 export const runRecord = p => ({
-  id: runId(p), mode: 'prison', seed: p.seed, run: p.run, specs: p.specs, areaMax: p.areaMax,
+  id: runId(p), mode: 'prison', seed: p.seed, run: p.run, specs: p.specs, areaMax: p.areaMax, profile: p.profile ?? null,
   players: [{ account: p.account, name: String(p.specs?.name ?? '') }], leaves: [], focus: [],
 });
 
@@ -67,7 +70,7 @@ export function buildPrisonRun(rec){
   const a = rec.players[0].account, s = rec.specs || {};
   const miner = minerSpecs({ mode: 'prison', players: rec.players, prefs: { [a]: s.prefs }, looks: { [a]: s.look },
                              gear: { [a]: s.gear }, skills: { [a]: s.skills }, spells: { [a]: s.spells } })[0];
-  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, run: rec.run, id: rec.id, account: a });
+  return newPrisonRun(rec.seed, { miner, areaMax: rec.areaMax, profile: rec.profile ?? null, run: rec.run, id: rec.id, account: a });
 }
 
 /* ticks de jeu joués après elapsedMs de temps réel à la vitesse speed (pas de plafond : un run peut durer plus d'une heure) */

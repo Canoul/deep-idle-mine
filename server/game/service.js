@@ -28,6 +28,7 @@ import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstanc
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
+import { prisonProfile } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
@@ -980,7 +981,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
     /* areas que le joueur peut choisir pour sa prison : 0 à son area max débloquée (mode dev : toutes) */
     prisonAreas: me => prisonAreasOf(me.id),
-    /* body : { area } (facultatif : son area max ; refusé au-delà, revérifié ici) ; mode dev : { speed } (GAME.devSpeeds) */
+    /* body (mode dev seulement) : { area } (remplace l'area du profil), { speed } (GAME.devSpeeds) */
     async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
       if(body?.area !== undefined && body.area !== null && !isInt(body.area)) fail('bad_request', 400, 'Area invalide.');
@@ -991,13 +992,19 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const lim = prisonLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de prisons lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         prisonLimit.hit(me.id);
-        /* area de la prison (29/10/2026, Geoffrey) : choisie de 0 à l'area max débloquée ; absente = l'area max */
-        const { areaMax, max } = await prisonAreasOf(me.id);
-        const area = isInt(body?.area) ? body.area : areaMax;
-        if(area < 0 || area > max) fail('area_locked', 409, `Area ${area} pas encore débloquée (tu peux aller jusqu'à l'area ${max}).`);
+        /* contenu de la prison (29/10/2026, Geoffrey) : le profil des 10 dernières mines classiques du joueur (area moyenne,
+           minerais, treasures, mobs ; src/meta/prison-profile.js), figé pour toute la prison. Mode dev : { area } la remplace
+           (0 à toutes les areas) ; hors dev, une area demandée est ignorée. */
+        const profile = prisonProfile(await store.sessionsOf(me.id), me.id);
+        let area = profile.area;
+        if(dev && isInt(body?.area)){
+          const { max } = await prisonAreasOf(me.id);
+          if(body.area < 0 || body.area > max) fail('area_locked', 409, `Area ${body.area} : de 0 à ${max}.`);
+          area = body.area;
+        }
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
-        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, now: clock(), speed: runSpeed });
+        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);
         openRun(p);

@@ -42,10 +42,10 @@ const inBox = (b, x, ry, gap = 1) => x >= b.x0-gap && x < b.x0+b.w+gap && ry >= 
 
 /* tirage de l'area k (à part de la seed : le reste de l'area ne change pas) ; s'il sort, le k hole remplace un bloc de
    terrain (pas un résidu), hors des boîtes avoid ({x0, ry0, w, h} : donjon, pièges). Renvoie { x, ry } ou null. */
-export function placeKhole(seed, k, grid, counts, avoid = []){
+export function placeKhole(seed, k, grid, counts, avoid = [], chanceMul = 1){
   if(k < KHOLE.fromArea) return null;
   const r = mulberry32(hash(seed ^ KHOLE.salt, k+1));
-  if(!(r() < KHOLE.chance)) return null;
+  if(!(r() < KHOLE.chance * chanceMul)) return null;   // prison : × PRISON.kholeMul (29/10)
   const spots = [];
   for(let i=0; i<grid.length; i++){
     const x = i%W, ry = (i/W)|0;
@@ -56,6 +56,10 @@ export function placeKhole(seed, k, grid, counts, avoid = []){
   counts[key]--; grid[c] = KHOLE_BLOCK;
   return { x: c%W, ry: (c/W)|0 };
 }
+
+/* fin de la partie pour le k hole : la session (1 h) ; en prison (29/10), la fin du run (G.endAt : infinie tant que le run
+   n'est pas rappelé, puis le temps de la remontée), car un run peut durer plus d'une heure */
+const endOf = G => G.prison ? G.endAt : SESSION_LEN;
 
 /* G.kholes : [{ k, x, y, opensAt (découvert : heure d'aspiration), used }] */
 export function registerKhole(G, k, p){
@@ -217,7 +221,7 @@ export function enterKhole(G, h){
   h.used = true;
   const n = G.kholes.indexOf(h), map = KHOLE.maps[h.map - 1] ?? pickMap(G.seed, n);   // h.map : carte imposée (admin)
   /* retour au bout de la durée de la carte, ou quand il ne reste que endMargin s de session (le temps de déposer) */
-  const until = Math.min(G.t + map.duration, SESSION_LEN - KHOLE.endMargin);
+  const until = Math.min(G.t + map.duration, endOf(G) - KHOLE.endMargin);
   G.khole = { n, k: h.k, x: h.x, y: h.y, map, until, world: take(G, WORLD) };
   const spawn = buildDimension(G, n, h.k, map);
   G.miners.forEach((m, i) => { const p = spawn(i); placeMiner(m, p.x, p.y, 'Aspiré par le k hole'); });
@@ -270,7 +274,7 @@ export function updateKhole(G){
     if(G.khole.map.wave) updateWaves(G);
     return;
   }
-  if(G.t >= SESSION_LEN - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
+  if(G.t >= endOf(G) - KHOLE.endMargin - 1e-9) return;   // fin de session proche : il ne s'ouvre plus
   for(const h of G.kholes || []){
     if(h.used) continue;
     if(h.opensAt == null){

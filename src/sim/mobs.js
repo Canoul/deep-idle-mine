@@ -371,7 +371,8 @@ function tpSpot(G,p){
    Les PV dépendent de l'area où le mob naît (mobHp). */
 const tableOf = k => MOBS.spawnTable[Math.max(0, Math.min(MOBS.spawnTable.length-1, k))];
 /* table d'apparition à la ligne y : celle du contenu de son area (prison : l'area max du joueur) */
-export const spawnTableAt = (G, y) => tableOf(contentAt(G, y));
+/* prison (29/10) : selon les kills par type des 10 dernières mines du joueur (profile.mobs), sinon la table de l'area */
+export const spawnTableAt = (G, y) => G.prison?.profile?.mobs ?? tableOf(contentAt(G, y));
 export function pickType(table, r){
   let acc=0; const types=Object.keys(table);
   for(const t of types){ acc+=table[t]; if(r<acc) return t; }

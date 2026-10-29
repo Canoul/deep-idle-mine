@@ -15,6 +15,7 @@ import { updateTraps, veiled, inTrapRoom } from './trap.js';
 import { log } from './log.js';
 import { muleOnLeave } from './mule.js';
 import { updateKhole, exitKhole, inMine } from './khole.js';
+import { sanitizeProfile } from '../meta/prison-profile.js';
 import { afterDecide, updateSpells } from './spells.js';
 import { shareChest } from '../meta/share.js';
 import { xpShare, specXpOf } from '../meta/level.js';
@@ -41,7 +42,7 @@ export function newSession(seed, opts={}){
        effets sur la génération (oreBonus : points de terrain changés en minerais, src/meta/shrines.js) */
     shrines: Array.isArray(opts.shrines) && !opts.prison ? opts.shrines.filter(id => shrineOf(id)) : [],
   };
-  if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0) }; G.endAt = Infinity; }
+  if(opts.prison){ G.prison = { areaMax: Math.max(0, opts.prison.areaMax | 0), profile: sanitizeProfile(opts.prison.profile) }; G.endAt = Infinity; }
   G.oreBonus = shrineEffects(G.shrines).orePoints;
   /* Escalateur (skill Logisticien) : le seau du treuil va plus vite pour tout le groupe ; le meilleur rang des mineurs
      présents au lancement compte, sans cumul (figé, comme le stuff) */
