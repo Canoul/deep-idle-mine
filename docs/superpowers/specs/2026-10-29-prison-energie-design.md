@@ -101,8 +101,9 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
 
 ## Équilibrage
 
-- **Cible** : une heure de jeu en prison ≈ **50 % de la part d'un joueur dans une mine à 3** de même stuff, en pods
-  rapportés. Repère du 29/10 : session à 3 ≈ 4 100 pods de coffre, soit ≈ 1 380 par joueur → **≈ 690 pods par heure
+- **Cible** : une heure de jeu en prison ≈ **50 % de la part d'un joueur dans une mine à 3** de même stuff, en
+  **minerais rapportés** (poids des minerais seulement ; 29/10 : d'abord comptée en pods, pierre comprise, ce qui rendait
+  le pourcentage de minerais sans effet sur la mesure). Repère du 29/10 : session à 3 ≈ 4 100 pods de coffre, soit ≈ 1 380 par joueur → **≈ 690 pods par heure
   de jeu** en prison.
 - Réglage par `npm run simulate:prison` (nouveau script) : rendement par heure de jeu, durée moyenne d'un run, runs
   par heure, énergie par heure, pour plusieurs stuffs et areas max ; la taille reste 25 × 50, c'est la part de
