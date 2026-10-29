@@ -5142,3 +5142,20 @@ Règles (voir CLAUDE.md) :
   `info().copies` (dev) = pseudos ; `src/ui/lobby.js` `drawPresets` les ajoute aux listes (choix gardés au rafraîchissement).
   ✅ test dev-presets +1 (12/12), game-service 62/62 avec ; vérifié dans le service : Test_Mus barbare dash marche 4,04,
   Test_Canoul logisticien inspiration+zipette marche 5,23 pods 417. ⚠️ Liste du lobby pas vue à l'écran.
+
+## 29/10/2026 — Prison : area au choix, vitesse en mode dev (Geoffrey, branche geoffrey/prison)
+- **Area** : `prisonStart(me, members, { area })` (routes jeu et groupes passent le corps ; `party.prisonLaunch(me, body)`) :
+  entier de 0 à `prisonAreasOf().max` (= areaMax ; dev : `max(areaMax, AREAS.length − 1)`), sinon `area_locked` (409) ou
+  `bad_request` ; absente = areaMax. Rangée dans le champ `areaMax` de la prison (= l'area dont la carte a le contenu, nom
+  gardé). `GET /api/game/prison/areas` → `{ areaMax, max }`. `publicPrison` ajoute `area` et `speed`. Lobby :
+  `prisonAreaState` (pur, testé), `#prisonAreaRow`, relu au plus une fois par minute. Log du run : « contenu de l'area N »
+  (avant N+1, faux : la carte a le contenu de l'area N, comme le HUD « Area N »).
+- **Vitesse (dev)** : lancement `{ speed }` (GAME.devSpeeds, ignoré hors dev) ; `POST /api/game/prison/clock { speed }`
+  (`prisonClock`, 403 hors dev) : `runStartedAt` recalé pour que le tick dû reste le même à la nouvelle vitesse (pas le
+  tick du moteur, en retard : le run reculerait). `src/main.js` `updatePrisonUI` : boutons de vitesse de la barre de la
+  mine sur la prison, pause masquée ; `smooth` suit `prison.speed`.
+- **Tests** ✅ prison-server +2 (area : défaut, choix, refus, route ; dev : toutes les areas, ×300 au lancement, ×1 en
+  direct au même tick, refus hors dev), prison-ui +1 (`prisonAreaState`) ; prison*, lobby, party : 111/111. Vérifié en HTTP
+  sur `npm run dev` (Test_Canoul) : areas 0-8, area 9 refusée, area 2 à ×300 (run 1 fini en 3 s), ×20, sortie.
+- ⚠️ `endedAway` estime l'heure réelle de fin d'un run avec `t / p.speed` : après un changement de vitesse en dev, le bilan
+  « pendant ton absence » peut se tromper d'un run (dev seulement). Liste Area pas vue à l'écran.

@@ -2,7 +2,7 @@
    docs/superpowers/specs/2026-10-29-prison-energie-design.md.
 
    Enregistrement d'une prison (serveur, ns prison, clé = compte) :
-     { id, account, seed, run, specs, areaMax, speed, runStartedAt, pausedMs, state: 'running' | 'waiting' | 'done',
+     { id, account, seed, run, specs, areaMax (l'area dont la carte a le contenu, choisie au lancement), speed, runStartedAt, pausedMs, state: 'running' | 'waiting' | 'done',
        lastSeenAt, lastBatchAt, endedAt, totals: { runs, energy, bag }, away: { runs, energy, bag }, lastAbsence }
    away : ce que les runs finis pendant l'absence du joueur ont rapporté (bilan montré une fois, puis remis à zéro par
    le serveur) · lastAbsence : { from, to } dernière absence (de la visite d'avant au retour), null avant la première.
@@ -118,6 +118,6 @@ export const runInfo = G => ({ goal: prisonGoal(G), mined: G.areas[0].oreMined }
 export function publicPrison(p, info = null, { away = p?.away, cfg = PRISON } = {}){
   if(!p) return null;
   const a = away ?? noTotals();
-  return { state: p.state, run: p.run, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
+  return { state: p.state, run: p.run, area: p.areaMax, speed: p.speed, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
            waitAt: p.lastSeenAt + cfg.offlineMax, away: { runs: a.runs, energy: a.energy, bag: { ...a.bag } } };
 }

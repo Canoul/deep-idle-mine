@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MINE_MODES, ENERGY, PRISON } from '../src/config.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError } from '../src/ui/prison.js';
-import { mineModes, prisonLaunchState } from '../src/ui/lobby.js';
+import { mineModes, prisonLaunchState, prisonAreaState } from '../src/ui/lobby.js';
 
 const now = 1_800_000_000_000;
 
@@ -119,4 +119,14 @@ test('sondage de la prison : 401 → arrêt ; no_session → état relu ; autre 
   assert.equal(d(3), PRISON.uiRetry * 4);
   assert.equal(d(50), PRISON.uiPoll, 'plafonné');
   assert.ok(PRISON.uiRetry > 250, 'plus lent que la vue en direct');
+});
+
+/* choix de l'area de la prison dans le lobby (29/10/2026) */
+test('lobby : area de la prison au choix, de 0 à l\'area max ; rien quand elle tourne', () => {
+  assert.deepEqual(prisonAreaState({ areas: { areaMax: 3, max: 3 }, prison: null, choice: null }), { show: true, area: 3, options: [0, 1, 2, 3] });
+  assert.equal(prisonAreaState({ areas: { areaMax: 3, max: 3 }, prison: null, choice: 1 }).area, 1);
+  assert.equal(prisonAreaState({ areas: { areaMax: 3, max: 3 }, prison: null, choice: 7 }).area, 3);   // plus permis : l'area max
+  assert.equal(prisonAreaState({ areas: { areaMax: 0, max: 5 }, prison: null, choice: 5 }).area, 5);   // mode dev
+  assert.equal(prisonAreaState({ areas: { areaMax: 3, max: 3 }, prison: { state: 'running' }, choice: 1 }).show, false);
+  assert.equal(prisonAreaState({ areas: null }).show, false);
 });

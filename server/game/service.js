@@ -23,7 +23,7 @@
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -228,6 +228,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* À appeler sous le verrou 'xp:'. areaMax 0 = « aucune ou pas encore connue » (pas de champ à part) : on recalcule alors
      depuis l'historique, ce qui ne coûte rien pour un nouveau joueur et ne peut que monter la valeur. */
   const catchUpAreaMax = async (accountId, pr) => { if(pr.areaMax === 0) raiseAreaMax(pr, await historyAreaMax(accountId)); };
+  /* areas de prison au choix du joueur (29/10/2026) : 0 à areaMax ; mode dev : toutes les areas du jeu */
+  const prisonAreasOf = async accountId => {
+    const areaMax = await areaMaxOf(accountId);
+    return { areaMax, max: dev ? Math.max(areaMax, AREAS.length - 1) : areaMax };
+  };
   /* area max du joueur (contenu de la Prison) ; 0 pour un nouveau joueur */
   const areaMaxOf = accountId => withLock('xp:' + accountId, async () => {
     const pr = await loadProgress(accountId), before = pr.areaMax;
@@ -964,8 +969,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* lance une prison (solo). members : membres de son groupe au lobby (service des groupes), comme start ; plusieurs →
        refus. Une seule prison à la fois ; pas pendant une mine, une tour ou une instance (la mine instantanée et le Bloc
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
-    async prisonStart(me, members = null){
+    /* areas que le joueur peut choisir pour sa prison : 0 à son area max débloquée (mode dev : toutes) */
+    prisonAreas: me => prisonAreasOf(me.id),
+    /* body : { area } (facultatif : son area max ; refusé au-delà, revérifié ici) ; mode dev : { speed } (GAME.devSpeeds) */
+    async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
+      if(body?.area !== undefined && body.area !== null && !isInt(body.area)) fail('bad_request', 400, 'Area invalide.');
       await withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
         const old = await loadPrison(me.id);
         if(old && old.state !== 'done') fail('prison_running', 409, 'Ta prison tourne déjà.');
@@ -973,9 +982,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const lim = prisonLimit.check(me.id);
         if(!lim.ok) fail('rate_limited', 429, 'Trop de prisons lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
         prisonLimit.hit(me.id);
-        const areaMax = await areaMaxOf(me.id);
+        /* area de la prison (29/10/2026, Geoffrey) : choisie de 0 à l'area max débloquée ; absente = l'area max */
+        const { areaMax, max } = await prisonAreasOf(me.id);
+        const area = isInt(body?.area) ? body.area : areaMax;
+        if(area < 0 || area > max) fail('area_locked', 409, `Area ${area} pas encore débloquée (tu peux aller jusqu'à l'area ${max}).`);
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
-        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax, now: clock(), speed });
+        const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
+        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, now: clock(), speed: runSpeed });
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);
         openRun(p);
@@ -1111,6 +1124,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const s = Number.isSafeInteger(since) && since >= 0 ? since : null;
       const r = await seePrison(me.id, { since: s, withView: true, play: true });
       return { ...r, now: clock() };
+    },
+
+    /* mode dev : vitesse de la prison (29/10/2026). Le run garde le tick atteint : son début est recalé pour que, à la
+       nouvelle vitesse, le temps réel écoulé donne ce même tick (prisonDueMs / prisonTickAt). */
+    async prisonClock(me, body = {}){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      if(!GAME.devSpeeds.includes(body.speed)) fail('bad_request', 400, 'Vitesse invalide.');
+      return withLock.many(prisonLocks(me.id), async () => {
+        const p = await loadPrison(me.id);
+        if(!p || p.state === 'done') fail('no_prison', 404, 'Aucune prison en cours.');
+        const now = clock(), t = dueTick(p);   // le tick dû (le moteur, un peu en retard, le rattrape au prochain affichage)
+        p.speed = body.speed;
+        p.runStartedAt = Math.min(now, p.lastSeenAt + cfg.offlineMax) - p.pausedMs - t * DT * 1000 / p.speed;
+        await store.putPrison(me.id, p);
+        return { prison: publicPrison(p, null, { cfg }) };
+      });
     },
 
     /* mode dev : vitesse et pause de la session (l'horloge est sur le serveur, la partie aussi) */

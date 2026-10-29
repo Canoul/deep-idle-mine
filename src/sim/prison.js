@@ -21,7 +21,7 @@ export function newPrisonRun(seed, { miner = {}, areaMax = 0, run = 1, id, accou
   const G = newSession(runSeed(seed, run), { miners:[miner], prison:{ areaMax }, id, accounts: account != null ? [account] : undefined });
   G.prison.run = run;
   G.prison.endTick = null;   // tick de la fin du run (but atteint ou temps max), null avant
-  log(G, `⛓ Run ${run} : prison (contenu de l'area ${G.prison.areaMax + 1})`);
+  log(G, `⛓ Run ${run} : prison (contenu de l'area ${G.prison.areaMax})`);
   startWinch(G);
   return G;
 }

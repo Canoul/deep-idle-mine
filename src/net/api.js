@@ -70,7 +70,9 @@ export const gameApi = {
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),
   /* prison (29/10) : lancer (seul : refus not_solo dans un groupe de plusieurs), sortir, la regarder (vue de la mine du
      run en cours depuis le tick since ; le serveur joue le retard avant de répondre) → { prison, view } */
-  prisonStart: ()      => request('POST', '/api/game/prison/start', {}),
+  prisonStart: (opts = {}) => request('POST', '/api/game/prison/start', opts),   // { area, speed (dev) }
+  prisonAreas: ()      => request('GET', '/api/game/prison/areas'),              // { areaMax, max } : areas au choix
+  prisonClock: speed   => request('POST', '/api/game/prison/clock', { speed }),  // mode dev : vitesse de la prison
   prisonStop:  ()      => request('POST', '/api/game/prison/stop', {}),
   prisonView:  since   => request('GET', '/api/game/prison' + (since == null ? '' : '?since=' + since)),
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }

@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Prison : choisir son area ; vitesses du mode dev
+- **Pour le joueur** : avant d'entrer en prison, une liste **Area** (à côté du bouton) permet de choisir le contenu de la
+  carte, de l'area 0 jusqu'à sa plus profonde area débloquée (par défaut la plus profonde). Elle reste la même pour toute
+  la prison. **Mode dev** : toutes les areas au choix, et les boutons ×1 à ×300 accélèrent la prison en direct.
+- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
 - **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
   en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le

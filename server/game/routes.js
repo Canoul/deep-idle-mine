@@ -26,7 +26,9 @@ export function gameRoutes(game){
       return game.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
     'POST /api/game/chat':   async ctx => { needMe(ctx); return game.chatPost(ctx.me, obj(ctx.body)); },
     /* prison (29/10) : lancée seule (le service des groupes passe ses membres, refus s'ils sont plusieurs), arrêtée par le joueur */
-    'POST /api/game/prison/start': async ctx => { needMe(ctx); return [201, await game.prisonStart(ctx.me)]; },
+    'POST /api/game/prison/start': async ctx => { needMe(ctx); return [201, await game.prisonStart(ctx.me, null, obj(ctx.body))]; },
+    'GET /api/game/prison/areas':  async ctx => { needMe(ctx); return game.prisonAreas(ctx.me); },   // areas au choix (29/10)
+    'POST /api/game/prison/clock': async ctx => { needMe(ctx); return game.prisonClock(ctx.me, obj(ctx.body)); },   // vitesse (dev)
     'GET /api/game/prison':        async ctx => { needMe(ctx);
       const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');
       return game.prisonView(ctx.me, since === null || since === '' ? null : Number(since)); },

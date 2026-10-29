@@ -333,7 +333,8 @@ const lobby = setupLobby({
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
-  onPrisonStart: () => startPrison(),
+  onPrisonStart: opts => startPrison(opts),
+  prisonAreas: () => gameApi.prisonAreas(),   // areas au choix de la prison (29/10)
   onPrisonStop: () => stopPrison(),
   onShowPrison: () => nav.show('session'),
   onLaunch: async (opts, { party } = {}) => {
@@ -608,7 +609,7 @@ document.addEventListener('visibilitychange', () => {
 /* entre deux envois, les actions en cours avancent à l'écran (affichage seulement : le prochain envoi fait foi) */
 function smooth(dtr){
   if(prisonShown() && PG?.ready && !PG.over && performance.now() - prisonViewAt < 3000){
-    const rate = info.speed ?? GAME.speed;
+    const rate = prison?.speed ?? info.speed ?? GAME.speed;
     for(const m of PG.miners){ const a = m.action; if(a) a.t = Math.min(a.dur, a.t + dtr * rate); }
   }
   if(!G?.ready || G.over) return;
@@ -702,9 +703,10 @@ async function pollPrison(){
   if(!prisonActive(prison)) return;
   kickPrison(again ?? (prisonShown() && ui.tab === 'session' && !document.hidden ? VIEW_EVERY : PRISON.uiPoll));
 }
-async function startPrison(){
+async function startPrison(opts = {}){
   lobby.error('');
-  try { setPrison((await gameApi.prisonStart()).prison); nav.show('session'); }
+  /* mode dev : la prison part à la vitesse choisie dans la barre de la mine (29/10) */
+  try { setPrison((await gameApi.prisonStart({ ...opts, ...(info.dev && ui.speed ? { speed: ui.speed } : {}) })).prison); nav.show('session'); }
   catch(e){ lobby.error(e.message); }
 }
 async function stopPrison(){
@@ -724,6 +726,12 @@ function updatePrisonUI(){
   $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';
   if(rec) return;                               // une session est affichée : on n'y touche pas
   if(on){ $('run').hidden = !$('end').hidden; $('noSession').hidden = true; }   // un bilan affiché reste devant
+  /* mode dev (29/10) : les boutons de vitesse de la barre de la mine pilotent la prison (pas de pause en prison) */
+  if(on && info.dev){
+    renderSpeeds({ speed: prison.speed, paused: false }, info, async s => {
+      try { setPrison((await gameApi.prisonClock(s)).prison); kickPrison(); } catch(e){ tell(e.message); } });
+    for(const b of document.querySelectorAll('.pauseBtn')) b.hidden = true;
+  }
   else { $('run').hidden = true; $('noSession').hidden = !!giantUI?.active(); }
 }
 
