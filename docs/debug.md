@@ -4617,3 +4617,13 @@ Règles (voir CLAUDE.md) :
   barbares (Cleave, Dynamite, Dash, HoJ, 60 dégâts), le porteur au milieu : chaque asservi vit tout son temps ✅.
 - **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
   échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.
+
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : Graphite ingot + Tainted iron au lieu de Graphite ore (branche geoffrey/coffre-roi-loot)
+- **Quoi** : `GOBLIN_KING.loot.always` (src/config.js) : `Graphite ore` 20-40 retiré ; `Graphite ingot` 5-15 et
+  `Tainted iron` 10-20 ajoutés (avant les peaux). GAME_DESIGN.md (Roi Gobelin), wiki.html (texte du coffre). Les lignes
+  « où le trouver » du wiki viennent de la config (src/wiki/data.js) : rien à changer.
+- **Attention aux tests** : `rollLoot` tire un nombre par entrée `always`, puis un par famille : un `always` de plus
+  décale le hasard rejoué ; `tests/goblin-king.test.js` a un 0,5 de plus dans chaque `seq` / `open`.
+- **Tests** ✅ goblin-king 9/9, graphite, wiki, loot / treasure (44) ; `npm run test:anticheat` 108/108.
+- **Probabilités** (calcul + 200 000 ouvertures avec `openTreasure`) : objet du boss 7,00 % (simulé 6,91 %), couronne
+  1 % (0,97 %), au moins un rare toutes familles 17,30 % (17,35 %) ; moyennes 10 lingots, 15 Tainted iron, 75 peaux ✅.

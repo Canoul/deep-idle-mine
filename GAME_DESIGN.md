@@ -841,7 +841,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
 ### Roi Gobelin : son coffre et ses objets *(27/10/2026, Geoffrey ; `GOBLIN_KING` en config)*
 - **Le boss** est celui de l'**Instance I** (section Instances). Quand il tombe, **chaque joueur encore présent** reçoit un **Coffre du Roi Gobelin**, de qualité **R1 à R7** tirée comme les trésors des tours (rareté **Unique**, non empilable, nom « Antique Coffre du Roi Gobelin »). L'équipe peut aussi en donner (`scripts/give-item.js`, « Coffre du Roi Gobelin R4 »).
 - **Ouvert depuis l'inventaire** :
-  - toujours : **20 à 40 Graphite ore** et **50 à 100 Peaux de gobelin** ;
+  - toujours : **5 à 15 Graphite ingot**, **10 à 20 Tainted iron** et **50 à 100 Peaux de gobelin** *(29/10/2026, Geoffrey ; avant : 20 à 40 Graphite ore à la place des lingots et du fer)* ;
   - **un seul tirage pour les objets rares** (au plus un) : **Couronne du Roi Gobelin 1 %**, **Four en or BP 2 %**, **Masse du Roi Gobelin 2 %**, **Cape royale du Gobelin 2 %** (7 % d'avoir l'un des quatre) ;
   - un autre tirage : **Recette : Chitine 5 %**, **seulement si la recette n'est pas encore apprise** (sinon rien) ;
   - un autre tirage, **un parchemin de sort au plus** *(27/10/2026, Geoffrey)* : **Ulti shen 1 %**, **Fast learner 0,5 %**, **Cleave 1 %**, **Hand of Justice 1 %** (3,5 % d'en avoir un) ; **un sort déjà appris ne peut pas sortir** (ce tirage ne donne alors rien) ; un parchemin gardé dans l'inventaire sans l'avoir appris peut ressortir ;

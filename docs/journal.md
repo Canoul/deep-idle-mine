@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : lingots à la place du minerai de graphite
+- **Pour le joueur** : le coffre ne donne plus de minerai de graphite (20 à 40). À la place, toujours **5 à 15 lingots
+  de graphite** et **10 à 20 Tainted iron**, en plus des 50 à 100 peaux de gobelin. Les objets rares ne changent pas.
+- **Chances d'objet rare par coffre** (inchangées) : un objet du roi (couronne 1 %, plan du Four en or 2 %, masse 2 %,
+  cape 2 %) **7 %**, soit 1 coffre sur 14 ; la couronne seule 1 sur 100 (50 % de chances de l'avoir en 69 coffres). En
+  comptant aussi la recette de chitine (5 %), un parchemin (3,5 %) et une gemme (3 %) : **17,3 %** d'avoir au moins un
+  de tout ça (9,8 % une fois la recette et les sorts appris).
+- **État** : 🧪 sur la branche `geoffrey/coffre-roi-loot` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : un buff du porteur
 - **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session ». C'est un **buff** (cadre vert) chez
   **celui qui la porte**, seulement : un gobelin qui naît à 10 cases ou moins de lui est asservi. La bulle le rappelle ;

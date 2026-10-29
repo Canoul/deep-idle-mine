@@ -199,7 +199,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (rien de spécifique aux areas 7-8 pour l'instant).
 - **Roi Gobelin : coffre et objets** (27/10, Geoffrey ; `GOBLIN_KING`, `src/meta/loot.js` openGoblinChest,
   `src/sim/thrall.js`, GAME_DESIGN « Roi Gobelin ») : le boss est celui de l'Instance I ; son « Coffre du Roi
-  Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : graphite + peaux toujours, un objet rare au plus (Couronne 1 %,
+  Gobelin R1-R7 » (Unique, un par joueur présent à la victoire) : lingots de graphite 5-15 + Tainted iron 10-20 + peaux toujours (29/10 ; ancien : Graphite ore 20-40), un objet rare au plus (Couronne 1 %,
   Four en or BP 2 %, Masse 2 %, Cape royale 2 %), Recette : Chitine 5 % (si pas apprise), un parchemin de sort au plus (Ulti shen 1 %, Fast learner 0,5 %, Cleave 1 %,
   Hand of Justice 1 %, jamais un sort appris), gemmes 1 % ; le stuff sort
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
