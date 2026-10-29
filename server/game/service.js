@@ -17,7 +17,7 @@
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
 import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
-import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance } from '../../src/meta/leaderboard.js';
+import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, instanceRecordKey, splitInstanceKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
@@ -27,7 +27,7 @@ import { createInventory, deserialize, serialize, creditSession, addItem, remove
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot, TOWER_LEVELS } from '../../src/shared/tower.js';
-import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys } from '../../src/shared/instances.js';
+import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, INSTANCE_LEVELS } from '../../src/shared/instances.js';
 import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -228,7 +228,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
              leaves: rec.leaves.map(({ account, tick }) => ({ account, tick })),
              focus: (rec.focus || []).map(({ account, tick, focus }) => ({ account, tick, focus })), status: rec.status,
              ...(rec.modulation ? { modulation: rec.modulation } : {}),
-             ...(rec.level ? { level: rec.level } : {}),   // niveau de tour (28/10)
+             ...(rec.level ? { level: rec.level } : {}),   // niveau de tour (28/10), d'instance (29/10)
              ...(rec.shrines ? { shrines: rec.shrines } : {}),   // shrines actifs au lancement (28/10)
              result: rec.status === 'done' ? rec.result : null };
   }
@@ -321,7 +321,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(inst) for(const share of summary.shares || []){
         const here = share.account && !share.left && !hasLeft(rec, share.account);
         share.bag = refund ? (share.account && inst.key ? { [inst.key]: 1 } : {})
-          : here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random))]: 1 } : {};
+          : here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 } : {};   // niveau 2 : Coffre du Roi Gobelin II (29/10)
       }
       /* versement : seulement aux joueurs de la session encore présents (clé rendue : à tous), une seule fois par session */
       for(const share of summary.shares || []){
@@ -388,9 +388,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const fight = Number.isFinite(r.awake) ? r.t - r.awake : null;
     const next = sanitizeInstanceRecord({ t: r.t, fight, at: rec.endedAt ?? clock(), instance: rec.mode, team: heirs.map(name), session: rec.id });
     if(!next) return;
+    /* un record par niveau (29/10) : clé « compte » au niveau 1, « compte#2 » au niveau 2 (instanceRecordKey) */
     for(const a of heirs) await withLock('instance_record:' + a, async () => {
-      const prev = sanitizeInstanceRecord(await store.getInstanceRecord(a));
-      if(betterInstance(prev, next)) await store.putInstanceRecords([[a, next]]);
+      const key = instanceRecordKey(a, rec.level ?? 1);
+      const prev = sanitizeInstanceRecord(await store.getInstanceRecord(key));
+      if(betterInstance(prev, next)) await store.putInstanceRecords([[key, next]]);
     });
   }
   /* au premier classement après un démarrage : les victoires en tour encore gardées (sessions des 30 derniers jours,
@@ -414,9 +416,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const spec = Object.fromEntries(SKILLS.trees.map(t => [t.id, progress.map(({ id, p }) => ({ id, value: p.spec[t.id] ?? 0, level: specLevels(p)[t.id].level }))]));
     const tower = (await store.listTowerRecords()).map(({ account, value }) => ({ id: account, r: sanitizeTowerRecord(value) }))
       .filter(x => x.r).map(({ id, r }) => ({ id, value: r.t, at: r.at, side: r.side, team: r.team }));
-    const instance = (await store.listInstanceRecords()).map(({ account, value }) => ({ id: account, r: sanitizeInstanceRecord(value) }))
-      .filter(x => x.r).map(({ id, r }) => ({ id, value: r.t, at: r.at, team: r.team, fight: r.fight }));
-    boardCache = { at: clock(), data: { gs, xp, spec, tower, instance } };
+    const instRows = (await store.listInstanceRecords()).map(({ account, value }) => ({ ...splitInstanceKey(account), r: sanitizeInstanceRecord(value) }))
+      .filter(x => x.r && x.account);
+    const instanceBoard = level => instRows.filter(x => x.level === level).map(({ account, r }) => ({ id: account, value: r.t, at: r.at, team: r.team, fight: r.fight }));
+    boardCache = { at: clock(), data: { gs, xp, spec, tower, instance: instanceBoard(1), instance2: instanceBoard(2) } };
     return boardCache.data;
   }
 
@@ -491,6 +494,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
         let opening = null, level = null;
+        /* niveau d'instance (29/10/2026, Geoffrey) : INSTANCE.levels, 1 par défaut, même clé ; ouvert à tous */
+        if(inst){
+          level = body.level ?? 1;
+          if(!INSTANCE_LEVELS.includes(level)) fail('bad_request', 400, "Niveau d'instance inconnu.");
+        }
         if(side){
           /* niveau (28/10/2026, Geoffrey) : TOWER.levels, 1 par défaut ; chaque niveau une fois par ouverture */
           level = body.level ?? 1;
@@ -564,7 +572,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
-          ...(side ? { opening, level } : {}),
+          ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           ...(shrines.length ? { shrines } : {}),

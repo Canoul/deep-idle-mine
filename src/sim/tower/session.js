@@ -536,6 +536,7 @@ export function decide(G, m){
     return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`);
   }
   const cells = contactCells(G), goals = cells.filter(c => !want || c[2] === want);
+  if(!here && dashBoss(G, m, goals.length ? goals : cells)) return act(m, 'wait', DT, {}, `Dash sur ${G.boss.name}`);
   if(here && !goals.length){ m.face = here === 'L' ? 1 : -1; combatSpells(G, m, G.boss); return act(m, 'attack', hitT(G, m), { boss: true }, `Combat ${G.boss.name}`); }   // son côté n'existe pas (boss au bord)
   const path = planTo(G, m, goals.length ? goals : cells);
   if(!path?.length){ G.stats.blocked++; return act(m, 'wait', 0.5, {}, mobs.length ? `Attend (${mobName}s)` : 'Bloqué'); }
@@ -819,6 +820,26 @@ function dash(G, m, o){
   damageMob(G, m, o, strikeDmg(G, m) * S.dmg);
   if(o.hp > 0){ o.stunUntil = G.t + S.stun; o.grab = null; }
   log(G, `💨 ${m.name} : Dash`);
+  return true;
+}
+
+/* Dash vers le boss (29/10/2026, Geoffrey) : sur le toit, sur sa ligne, de 2 à range cases d'une case de contact de son
+   côté (parmi goals) ; il y arrive et frappe (dmg × ses dégâts, recul et provocation comme un coup). Le boss n'est PAS
+   étourdi (décision du créateur : pas sur les boss) */
+function dashBoss(G, m, goals){
+  const b = G.boss;
+  if(!ready(G, m, 'dash') || b.air || b.hp <= 0 || m.y !== G.roof - 1 || !towerSupported(G, m.x, m.y)) return false;
+  const tx = m.x < b.x ? b.x - 1 : m.x >= b.x + B.w ? b.x + B.w : null;
+  if(tx == null || !goals.some(([x, y]) => x === tx && y === m.y)) return false;
+  const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
+  if(n < S.minCells || n > S.range) return false;
+  for(let x = m.x + dir; x !== tx + dir; x += dir) if(!towerAir(G, x, m.y) || !towerSupported(G, x, m.y)) return false;
+  cast(G, m, 'dash', G.t, S.hitCd);
+  m.x = tx; m.kx = 0; m.face = dir;
+  log(G, `💨 ${m.name} : Dash sur ${b.name}`);
+  if(m.skill.taunt) b.taunt = m.id;
+  m.stats.hits++;
+  damageBoss(G, m, strikeDmg(G, m) * S.dmg, true);
   return true;
 }
 

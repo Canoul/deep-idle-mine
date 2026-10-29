@@ -37,7 +37,7 @@ test('objets : cases, stats et raretés du créateur ; pas craftables (sauf le F
 test('coffre : un par qualité (R1 à R7), Unique, non empilable, nom affiché « Antique Coffre du Roi Gobelin »', () => {
   for(let q = 1; q <= 7; q++){
     const it = CHEST(q);
-    assert.deepEqual(ITEMS[it].chest, { side:'goblin', q });
+    assert.deepEqual(ITEMS[it].chest, { side:'goblin', q, level:1 });
     assert.equal(ITEMS[it].stack, false); assert.equal(rarityOf(it), 'unique'); assert.ok(canOpen(it));
   }
   assert.equal(itemName(CHEST(5)), 'Antique Coffre du Roi Gobelin');
@@ -161,4 +161,27 @@ test('coffre : 2e tirage, un parchemin au plus (Ulti shen 1 %, Fast learner 0,5 
   for(let k = 0; k < N; k++){ const v = createInventory(); addItem(v, CHEST(1), 1); const l = openTreasure(v, CHEST(1), id(), rng).loot;
     const got = Object.keys(l).filter(x => x.startsWith('Parchemin')); assert.ok(got.length <= 1); n += got.length; }
   assert.ok(Math.abs(n / N - 0.035) < 0.004, `parchemin ${n / N}`);
+});
+
+test('coffre du niveau 2 de l\'instance (29/10) : « Coffre du Roi Gobelin II R1 » à R7, ressources × 1,5, chances des objets × 1,5', async () => {
+  const { INSTANCE } = await import('../src/config.js');
+  const { goblinChestTable } = await import('../src/meta/loot.js');
+  const C2 = q => goblinChestItem(q, 2);
+  assert.equal(C2(4), 'Coffre du Roi Gobelin II R4'); assert.equal(goblinChestItem(4), 'Coffre du Roi Gobelin R4');
+  for(let q = 1; q <= 7; q++){
+    assert.deepEqual(ITEMS[C2(q)].chest, { side:'goblin', q, level:2 });
+    assert.equal(ITEMS[C2(q)].stack, false); assert.equal(rarityOf(C2(q)), 'unique'); assert.ok(canOpen(C2(q)));
+  }
+  assert.deepEqual(INSTANCE.levels[2].chest, { res:1.5, drop:1.5 });
+  const T = goblinChestTable(2);
+  assert.deepEqual(T.always.map(a => [a.item, a.min, a.max]), [['Graphite ingot', 8, 23], ['Tainted iron', 15, 30], ['Peau de gobelin', 75, 150]]);
+  assert.ok(Math.abs(T.oneOf[0].items[0].chance - 0.015) < 1e-12, 'couronne 1 % → 1,5 %');
+  assert.deepEqual(goblinChestTable(1), { always: GOBLIN_KING.loot.always, oneOf: GOBLIN_KING.loot.oneOf.map(f => ({ ...f, items: f.items.map(i => ({ ...i })) })) });
+  assert.deepEqual(goblinChestTable(9), goblinChestTable(1), 'niveau inconnu : niveau 1');
+  const open = (...r) => { const inv = createInventory(); addItem(inv, C2(3), 1); const o = openTreasure(inv, C2(3), id(), seq(...r)); return { loot: o.loot, inv }; };
+  assert.deepEqual(open(0, 0, 0, 0.99, 0.99, 0.99, 0.99).loot, { 'Graphite ingot':8, 'Tainted iron':15, 'Peau de gobelin':75 });
+  const { loot, inv } = open(0.5, 0.5, 0.5, 0.014, 0.99, 0.99, 0.99);
+  assert.equal(loot[CROWN], 1, 'tirage 0,014 : couronne (sortie seulement sous 0,01 au niveau 1)');
+  assert.equal(countOf(inv, C2(3)), 0, 'le coffre est consommé');
+  const crown = inv.slots.find(s => s?.item === CROWN); assert.equal(crown.q, 3, 'identifiée à la qualité du coffre');
 });

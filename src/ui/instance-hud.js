@@ -22,7 +22,7 @@ export function phaseText(G){
 /* G : copie d'affichage ; me : ID du compte du joueur ; left : secondes réelles avant la fin (ou null) */
 export function updateInstanceHUD(G, me, left, focus = null){
   const def = instanceDef(G.instance), b = G.boss;
-  $('inTitle').textContent = `🗝 ${def?.label ?? 'Instance'}${def?.sub ? ' · ' + def.sub : ''}`;
+  $('inTitle').textContent = `🗝 ${def?.label ?? 'Instance'}${def?.sub ? ' · ' + def.sub : ''}${G.level > 1 ? ` · niveau ${G.level}` : ''}`;
   $('inTimer').textContent = fmt(G.t) + ' / ' + fmt(INSTANCE.duration);
   $('inTimeBar').style.width = Math.min(100, G.t / INSTANCE.duration * 100) + '%';
   $('inLeft').textContent = left == null ? '' : `fin dans ${fmt(left)}`;

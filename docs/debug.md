@@ -4940,3 +4940,38 @@ Règles (voir CLAUDE.md) :
   : 0/5 partout. Équipe du record, stats multipliées (5 seeds) : dégâts × 2,5 seuls → 0/5 (roi 4 306) ; dégâts × 3 → 0/5
   (roi 1 965) ; dégâts × 2 et minage × 1,5 → 5/5 en 9:39 ; × 2,5 et × 1,5 → 8:29 ; × 3 et × 2 → 6:14. Aucune épée au-dessus
   de l'acier (18,5) aujourd'hui.
+
+## 29/10/2026 — Geoffrey — Dash : boss des tours, roi gobelin, gobelins de l'instance
+- **Constat** (rejeu de l'équipe du record, Infernatiwar barbare avec Dash) : 0 Dash pendant les combats de boss (tour et
+  instance) alors qu'il était prêt 100 % du temps. Tour : `dash` seulement vers `liveMobs` (src/sim/tower/session.js) ;
+  instance : seulement vers le gobelin qui tacle (collé : n < minCells, ne part jamais).
+- **Quoi** : `dashBoss` dans les deux sessions : sur la ligne du boss (toit `roof - 1` / sol de l'instance), case de
+  contact de son côté (tour : parmi les `goals` du côté voulu), 2 à range cases, chemin libre et porteur ; arrive, frappe
+  `strikeDmg × S.dmg` (tour : `damageBoss(..., true)` + provocation + hits ; instance : `hitBoss`, recul et provocation).
+  **Pas d'étourdissement** (décision de Geoffrey). Instance : `decide` essaie aussi un Dash vers le gobelin le plus proche
+  de sa ligne quand aucun n'est à portée (comme la tour).
+- **Tests** ✅ instance-sim +2 (Dash sur le roi : contact, 500 %, pas d'étourdissement, pas à 1 case ; Dash sur un gobelin
+  non tacleur), tower-spells +1 (4 tours : Dash sur le boss, pas de stunUntil, 0 bloqué) ; tower*, instance*, spells : 122/122.
+- **Mesures** : rejeu (équipe du record) instance 13-15 Dash par partie dont 1-2 sur le roi ; tours 3-5 dont 1-3 sur le boss,
+  combat du boss 98 → 91, 106 → 84, 128 → 76, 214 → 174 s. `simulate:tower --count 6` : 0 « bloqué » ;
+  `simulate-instance --size 3 --count 5` : 0 bloqué. 6 vraies parties de l'instance : 3 victoires sur 6 (8:32, 9:04, 9:50).
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 jouable (étape 2 : lobby, serveur, coffre, classement)
+- **Lobby** (src/ui/lobby.js) : `instanceLevelState` (exporté) ; même rangée `#towerLevelRow` que la tour (`st.towerLevel`
+  partagé), seulement pour celui qui lance ; `level` envoyé au lancement pour une tour OU une instance ; texte de la carte
+  Instances (coffre II). HUD : « · niveau 2 » dans le titre (`G.level`, envoyé par instances-view). Rage affichée au seuil
+  du niveau (`G.cfg.boss.rageBelow`).
+- **Serveur** (server/game/service.js) : `level = body.level ?? 1`, refusé hors `INSTANCE_LEVELS` (`bad_request`, avant les
+  clés : rien consommé) ; `rec.level` gardé (instance : toujours, 1 compris) et renvoyé par `publicSession` ; coffre
+  `goblinChestItem(q, rec.level ?? 1)` ; records : clé `instanceRecordKey(compte, niveau)` (« compte » / « compte#2 », même
+  ns `instance_record` : les records d'avant restent au niveau 1) ; `leaderboardData` : `instance` (niveau 1) et `instance2`
+  via `splitInstanceKey` (clé abîmée : ignorée). Board `instance2` (src/meta/leaderboard.js BOARDS, FASTEST), social :
+  équipe + combat, `BOARD_INFO.instance2`, bouton « Roi gobelin II » (index.html).
+- **Coffre** (src/config.js, src/meta/loot.js) : `GOBLIN_KING.chest.levels` { 1:'', 2:' II' } ; objets « Coffre du Roi
+  Gobelin II R1-R7 » (`chest.level` 2, Unique) ; `goblinChestTable(level)` : always min/max × res arrondis, chances × drop
+  (INSTANCE.levels[n].chest ; inconnu = 1) ; `openGoblinChest(..., level)`.
+- **Tests** ✅ instance-server +2 (niveau 2 : rec.level, coffre II, même clé ; niveau absent = 1 ; niveaux inventés refusés
+  sans consommer la clé), leaderboard +2 (classement par niveau ; clés compte#2), goblin-king +1 (objets II, table × 1,5,
+  couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
+  lobby 18/18 ; `npm run test:anticheat` 109/109.
+- ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.

@@ -48,3 +48,16 @@ test('serveur : un parchemin de sort déjà appris ne sort jamais d\'un coffre d
   assert.equal(opened, 400);
   assert.equal(scrolls, 0, 'tous les sorts sont appris : aucun parchemin');
 });
+
+test('coffre du Roi Gobelin II (niveau 2, 29/10) : même chemin, une seule ouverture par demande, niveau ou qualité inventés refusés', () => {
+  const C2 = goblinChestItem(4, 2), inv = createInventory();
+  assert.equal(openTreasure(inv, C2, 'a', () => 0), null, 'pas de coffre : rien');
+  addItem(inv, C2, 1);
+  const r = openTreasure(inv, C2, 'a', () => 0);
+  for(let k = 0; k < 5; k++) assert.equal(openTreasure(inv, C2, 'a', () => 0).repeated, true);
+  assert.equal(countOf(inv, C2), 0);
+  assert.equal(countOf(inv, 'Peau de gobelin'), r.loot['Peau de gobelin']);
+  assert.equal(countOf(inv, 'Couronne du Roi Gobelin'), 1);
+  for(const fake of ['Coffre du Roi Gobelin III R4', 'Coffre du Roi Gobelin II R9', 'Coffre du Roi Gobelin II', 'Coffre du Roi Gobelin 2 R4'])
+    assert.equal(openTreasure(inv, fake, 'f' + fake, () => 0), null, fake);
+});

@@ -439,6 +439,10 @@ export function decide(G, m){
   /* un gobelin à portée : on le frappe (le plus faible d'abord) */
   const near = liveGobs(G).filter(o => hitReach(G, m, o)).sort((a, b) => a.hp - b.hp)[0];
   if(near) return strike(G, m, near, 'Combat un gobelin');
+  /* Dash vers le gobelin le plus proche de sa ligne (29/10/2026, Geoffrey ; avant : seulement celui qui le tacle, collé
+     à lui : le Dash ne partait presque jamais) */
+  const dashTo = liveGobs(G).filter(o => o.y === m.y).sort((a, b) => Math.abs(a.x - m.x) - Math.abs(b.x - m.x))[0];
+  if(dashTo && dash(G, m, dashTo)) return act(m, 'wait', DT, {}, 'Dash sur un gobelin');
   /* les spawners */
   const s = targetSpawner(G);
   if(s){
@@ -454,6 +458,7 @@ export function decide(G, m){
   if(b.hp <= 0) return act(m, 'wait', 0.5, {}, 'Victoire');
   if(!bossActive(G)) return act(m, 'wait', 0.2, {}, `Le ${b.name} descend !`);
   if(inContact(G, m)) return strike(G, m, b, `Combat le ${b.name}`);
+  if(dashBoss(G, m)) return act(m, 'wait', DT, {}, `Dash sur le ${b.name}`);
   const path = planTo(G, m, contactCells(G));
   if(path?.length) return follow(G, m, path, G.cages.some(c => c.id === m.id) ? 'Sort de sa cage' : `Va au contact du ${b.name}`);
   G.stats.blocked++;
@@ -580,6 +585,23 @@ function dash(G, m, o){
   hitGoblin(G, m, o, strikeDmg(G, m) * S.dmg);
   if(o.hp > 0){ o.stunUntil = G.t + S.stun; o.grab = null; }
   log(G, `💨 ${m.name} : Dash`);
+  return true;
+}
+
+/* Dash vers le roi (29/10/2026, Geoffrey) : au sol, sur sa ligne, de 2 à range cases de la case à côté de lui (de son
+   côté) ; il y arrive et frappe (dmg × ses dégâts). Le roi n'est PAS étourdi (décision du créateur : pas sur les boss) */
+function dashBoss(G, m){
+  const b = G.boss;
+  if(!ready(G, m, 'dash') || !bossActive(G) || m.y !== b.y || !instSupported(G, m.x, m.y)) return false;
+  const tx = m.x < b.x ? b.x - 1 : m.x >= b.x + b.w ? b.x + b.w : null;
+  if(tx == null) return false;
+  const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
+  if(n < S.minCells || n > S.range) return false;
+  for(let x = m.x + dir; x !== tx + dir; x += dir) if(!open(G, x, m.y) || !instSupported(G, x, m.y)) return false;
+  cast(G, m, 'dash', G.t, S.hitCd);
+  m.x = tx; m.kx = 0; m.face = dir;
+  log(G, `💨 ${m.name} : Dash sur le ${b.name}`);
+  hitBoss(G, m, strikeDmg(G, m) * S.dmg);
   return true;
 }
 

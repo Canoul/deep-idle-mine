@@ -882,7 +882,8 @@ const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap
    moins (cercle) d'un porteur est asservi : il ne se bat pas, mine pendant life s à la vitesse d'un mineur de base
    (minerais à reach cases ou moins, même priorité que le porteur), puis disparaît ; ce qu'il mine va au coffre commun. */
 export const GOBLIN_KING = {
-  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
+  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king',
+           levels: { 1:'', 2:' II' } },   // niveaux de l'Instance I (29/10/2026) : suffixe du nom ; butin × INSTANCE.levels[n].chest
   loot: {
     always: [
       /* 29/10/2026 (Geoffrey) : lingots de graphite et fer souillé à la place du minerai de graphite (avant : Graphite ore 20-40) */
@@ -910,10 +911,11 @@ export const GOBLIN_KING = {
   },
   thrall: { radius:10, life:30, reach:6 },
 };
-/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') */
-export const goblinChestItem = q => `${GOBLIN_KING.chest.name} R${q}`;
-const GOBLIN_CHEST_ITEMS = Object.fromEntries(QUALITY_NUMS.map(q =>
-  [goblinChestItem(q), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q }, treasure:true }]));
+/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') ; niveau 2 de
+   l'instance (29/10/2026) : « Coffre du Roi Gobelin II R4 » (chest.level 2) */
+export const goblinChestItem = (q, level = 1) => `${GOBLIN_KING.chest.name}${GOBLIN_KING.chest.levels[level] ?? ''} R${q}`;
+const GOBLIN_CHEST_ITEMS = Object.fromEntries(Object.keys(GOBLIN_KING.chest.levels).map(Number).flatMap(level => QUALITY_NUMS.map(q =>
+  [goblinChestItem(q, level), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q, level }, treasure:true }])));
 
 /* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
