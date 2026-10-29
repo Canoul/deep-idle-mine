@@ -543,13 +543,15 @@ export function setupLobby(h){
   let shownCopies = null;
   const drawPresets = (copies = []) => {
     if(JSON.stringify(copies) === shownCopies) return;
-    const keep = [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value);
+    const keep = [...$('devPresets').querySelectorAll('select')].map(s => s.value);
     shownCopies = JSON.stringify(copies);
-    $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
-      `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${
-        SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')}${
-        copies.map(w => `<option value="${esc(copyPresetId(w))}">👤 ${esc(copyName(w))} (copie)</option>`).join('')}</select>`).join('');
-    $('devPresets').querySelectorAll('[data-preset]').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
+    const opts = SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')+
+      copies.map(w => `<option value="${esc(copyPresetId(w))}">👤 ${esc(copyName(w))} (copie)</option>`).join('');
+    /* ton preset (29/10/2026) : ton mineur prend le stuff, les skills et les sorts du preset, garde ton nom */
+    $('devPresets').innerHTML = `<span>Ton preset</span><select data-self="1"><option value="">Aucun (ton équipement)</option>${opts}</select>`+
+      Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
+      `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${opts}</select>`).join('');
+    $('devPresets').querySelectorAll('select').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
   };
   drawPresets();
   const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
@@ -601,7 +603,8 @@ export function setupLobby(h){
       const v = parseFloat(i.value);
       if(Number.isFinite(v) && v !== +i.dataset.base) (overrides[i.dataset.obj] ??= {})[i.dataset.key] = v;   // seulement ce qui change
     }
-    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), botPresets: botPresets() };
+    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), botPresets: botPresets(),
+             selfPreset: $('devPresets').querySelector('[data-self]')?.value || undefined };
   }
 
   $('launchBtn').onclick = async () => {

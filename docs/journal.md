@@ -32,7 +32,8 @@ Modèle d'entrée :
 - **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
   en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le
   niveau d'un vrai joueur. Premiers : Test_Canoul et Test_Mus (mot de passe preset1234). Les mêmes copies sont aussi au
-  choix pour les **mineurs de test** du panneau dev du lobby (« 👤 Test_Canoul (copie) »), à côté des 3 presets acier.
+  choix pour les **mineurs de test** du panneau dev du lobby (« 👤 Test_Canoul (copie) »), à côté des 3 presets acier, et
+  pour **son propre mineur** (ligne « Ton preset » : on garde son nom, l'XP et le butin restent à son compte).
 - **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
   ne sont pas visibles, on lui met ceux de sa spé.
 - **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne ; outil local seulement)

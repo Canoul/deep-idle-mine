@@ -152,6 +152,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
   /* copies (copy:<pseudo>) des mineurs de test, rangées dans la session au lancement : { botCopies: [copie | null] } ou rien */
+  /* preset du joueur qui lance (mode dev) : { selfPreset, selfCopy? } ou rien ; une copie introuvable → rien */
+  const selfPresetOf = id => {
+    const t = sanitizeBotPresets([id])?.[0];
+    if(!t) return {};
+    if(!isCopyPresetId(t)) return { selfPreset: t };
+    const snap = devCopies()[t.slice(COPY_PREFIX.length)];
+    return snap ? { selfPreset: t, selfCopy: snap } : {};
+  };
   const botCopiesOf = presets => {
     if(!presets?.some(isCopyPresetId)) return {};
     const all = devCopies();
@@ -934,6 +942,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
           botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
           ...(dev ? botCopiesOf(sanitizeBotPresets(body.botPresets)) : {}),   // copies de vrais joueurs (data/presets/)
+          ...(dev ? selfPresetOf(body.selfPreset) : {}),   // preset du joueur qui lance (mode dev, 29/10)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening, level } : inst ? { level } : {}),

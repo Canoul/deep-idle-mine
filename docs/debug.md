@@ -5162,3 +5162,9 @@ Règles (voir CLAUDE.md) :
 - **Correctif (même jour)** : les boutons de vitesse étaient créés mais invisibles en prison (`.prisonOn #speedBtns
   {display:none}` dans `src/ui/style.css`). Classe `prisonDev` sur la vue Session (prison regardée en mode dev) : la
   règle devient `.prisonOn:not(.prisonDev) #speedBtns`. Hors dev, toujours masqués. ✅ controls, prison-ui 13/13.
+- **Ton preset** (même jour, mode dev) : `body.selfPreset` (arbre ou `copy:<pseudo>`) → `record.selfPreset` (+ `selfCopy`,
+  la copie) via `selfPresetOf` (service). `minerSpecs` : place 0 (celui qui lance) avec preset → look, stuff, skills,
+  glyphes, sorts, auras du preset (`own(i)` faux) ; nom, préférences et compte inchangés ; `groupRings(record, selfGear)`
+  compte les anneaux du preset. Lobby : ligne « Ton preset » en tête de `#devPresets`, `devOptions().selfPreset`.
+  ✅ dev-presets +1 (14/14), game-service, anneaux, prison-server : 108/108. Vérifié en HTTP (serveur redémarré :
+  le code serveur n'est relu qu'au démarrage) : Test_Mus + Ton preset canoul → Couronne, inspiration+zipette.

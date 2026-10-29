@@ -130,3 +130,21 @@ test('mineur de test copié (copy:<pseudo>) : la copie rangée dans la session, 
   assert.equal(none.name, 'Mineur test 2');                      // copie introuvable : stats de base
   assert.deepEqual(minerSpecs(rec), minerSpecs(JSON.parse(JSON.stringify(rec))), 'rejeu identique depuis la session');
 });
+
+test('preset du joueur qui lance (mode dev) : son mineur prend stuff, skills et sorts du preset, garde son nom', () => {
+  const base = { players:[{ account:'A', name:'Moi' }, { account:'B', name:'Ami' }], bots:0,
+                 skills:{ A:{ tree:'barbare', ranks:{} } }, looks:{ A:{ casque:'Casque en pierre' } }, gear:{ A:{} } };
+  const [me, ami] = minerSpecs({ ...base, selfPreset:'copy:canoul', selfCopy:SNAP });
+  assert.equal(me.name, 'Moi');
+  assert.equal(me.look.casque, 'Casque en fer');
+  assert.equal(me.skillTree, 'logisticien');
+  assert.deepEqual(me.spells, ['inspiration', 'zipette']);
+  assert.equal(ami.name, 'Ami');                                  // les autres joueurs gardent le leur
+  const [plain] = minerSpecs(base);
+  assert.notEqual(plain.skillTree, 'logisticien');
+  assert.ok(me.carac.speed > plain.carac.speed);
+  const [acier] = minerSpecs({ ...base, selfPreset:'mineur' });
+  assert.equal(acier.look.casque, 'Casque en acier');
+  assert.equal(acier.skillTree, 'mineur');
+  assert.equal(minerSpecs({ ...base, selfPreset:'copy:absent' })[0].name, 'Moi');   // copie introuvable : mineur de base, son nom
+});
