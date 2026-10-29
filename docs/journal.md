@@ -31,7 +31,7 @@ Modèle d'entrée :
 - **Décisions** : Jersey 10 n'est nette qu'à 20 px ou plus, et le jeu l'affichait à 15-17 px. Pixelify Sans (son 5
   ressemble à un S) et Tiny5 (son 8 ressemble à un e) ont été écartées après comparaison.
 - **À suivre** : VT323 est un peu plus large : les boutons « Où miner » du lobby passent sur 3 lignes au lieu de 2.
-- **État** : 🧪 sur la branche `jules/police-lisible` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
 - **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
