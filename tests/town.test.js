@@ -289,3 +289,10 @@ test('toucher la ville : au doigt, marcher là où on touche sans jamais entrer 
   assert.equal(enterLabel(buildingOf('session')), 'Préparer une session');
   assert.equal(enterLabel(buildingOf('lobby')), 'Préparer une session');
 });
+
+/* 29/10 : ctx.filter posé sur le contexte de la ville (sol assombri) = refait à chaque drawImage par Chrome, 1,3 s par
+   image (1 fps). Le dessin de la ville n'en met jamais sur son contexte principal (voile noir à la place) */
+test('rendu de la ville : jamais de ctx.filter sur le contexte principal (1 fps sur Chrome)', () => {
+  const src = readFileSync(new URL('../src/render/town.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(src, /\bctx\.filter\b/);
+});

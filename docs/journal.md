@@ -22,6 +22,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Correctif : le jeu à 1 image par seconde depuis le Carreau
+- **Pour le joueur** : depuis l'arrivée de la ville en fond d'écran, le jeu tournait à environ 1 image par seconde
+  sur Chrome (et les navigateurs de la même famille). C'est réparé : la ville a exactement le même aspect, mais
+  l'assombrissement du sol et la statue en pierre sont dessinés autrement, des centaines de fois plus vite.
+- **À suivre** (Jules) : dans le dessin de la ville, ne pas utiliser de filtre canvas (`ctx.filter`) à chaque image.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Correctif : l'inventaire tout petit depuis les onglets
 - **Pour le joueur** : depuis l'arrivée des onglets, la grille de l'inventaire était rétrécie et poussée sur la
   droite. Elle reprend sa taille d'avant, avec les onglets juste au-dessus et la fiche de l'objet à droite.

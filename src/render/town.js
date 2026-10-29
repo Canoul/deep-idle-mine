@@ -101,6 +101,25 @@ export function createTownRenderer(cv){
       ctx.fillRect(Math.round(sx + b.smoke[0] + Math.sin(p * 6 + k) * 3 - s / 2 + p * 12), Math.round(sy + b.smoke[1] - 4 - p * 44), Math.round(s), Math.round(s));
     }
   }
+  /* statue : le mineur en pierre (×2), dessiné à part avec son filtre, gardé et refait toutes les 2 s au plus (le temps
+     que ses textures arrivent) ; un filtre par image coûterait déjà cher (voir le sol) */
+  const stoneCv = document.createElement('canvas'), stoneCtx = stoneCv.getContext('2d');
+  const stoneRaw = document.createElement('canvas'), rawCtx = stoneRaw.getContext('2d');
+  stoneCv.width = stoneRaw.width = 4 * T; stoneCv.height = stoneRaw.height = 4 * T;
+  const stoneSprite = createMinerSprite(rawCtx, TEX, T);
+  let stone = null;
+  function statueImage(look, now){
+    const key = JSON.stringify(look);
+    if(stone && stone.key === key && now - stone.at < 2000) return stoneCv;
+    rawCtx.clearRect(0, 0, 4 * T, 4 * T); rawCtx.imageSmoothingEnabled = false;
+    rawCtx.save(); rawCtx.translate(T, T); rawCtx.scale(2, 2);
+    stoneSprite({ id: 0, face: 1, look, auras: {}, name: null, action: null }, 0, 0, false, now);
+    rawCtx.restore();
+    stoneCtx.clearRect(0, 0, 4 * T, 4 * T); stoneCtx.imageSmoothingEnabled = false;
+    stoneCtx.filter = 'grayscale(1) brightness(.8) contrast(1.2)'; stoneCtx.drawImage(stoneRaw, 0, 0); stoneCtx.filter = 'none';
+    stone = { key, at: now };
+    return stoneCv;
+  }
   /* place du Carreau : feu de camp au milieu, statue du n°1 (TOWN.statueBoard) en pierre sur son socle, bannières des
      jauges Ange / Démon (remplies selon la jauge, qui pulsent quand la tour est ouverte) ; colonnes : TOWN.place */
   function drawPlace(b, X, now, scene){
@@ -114,13 +133,7 @@ export function createTownRenderer(cv){
     blit('town_lamppost', X + (b.w - 1) * T, (G - 2) * T, T, 2 * T);
     const sx = X + TOWN.place.statue * T;
     blit('town_pedestal', sx, (G - 1) * T, 2 * T, T);
-    if(scene.statue){
-      ctx.save();
-      ctx.filter = 'grayscale(1) brightness(.8) contrast(1.2)';
-      ctx.translate(Math.round(sx), (G - 3) * T); ctx.scale(2, 2);
-      sprite({ id: 0, face: 1, look: scene.statue.look ?? {}, auras: {}, name: null, action: null }, 0, 0, false, now);
-      ctx.restore();
-    }
+    if(scene.statue) ctx.drawImage(statueImage(scene.statue.look ?? {}, now), Math.round(sx) - T, (G - 3) * T - T);
     for(const side of ['angel', 'demon']){
       const bx = X + TOWN.place[side] * T, by = (G - 2) * T, j = scene.judgment?.[side];
       blit('town_banner_' + side, bx, by, T, 2 * T);
@@ -221,13 +234,14 @@ export function createTownRenderer(cv){
       drawSky(camX);
       drawClouds(camX, now);
       drawFar(camX);
-      ctx.save(); ctx.filter = `brightness(${TOWN.groundDim})`;          // rue et terre assombries (crépuscule)
       for(let x = Math.floor(camX); x < camX + cols + 1; x++){
         const px = (x - camX) * T;
         blit(x >= street[0] && x < street[1] ? 'town_cobble' : 'dirt', px, G * T);   // hors de la rue : terre battue (plus d'herbe verte)
         for(let y = G + 1; y < TOWN.rows; y++) blit(y === G + 1 ? 'dirt' : 'stone', px, y * T);
       }
-      ctx.restore();
+      /* rue et terre assombries (crépuscule) : un voile noir par-dessus, même rendu que brightness(groundDim). Jamais de
+         ctx.filter sur les cases : Chrome refait le filtre à chaque drawImage, 1,3 s par image (1 fps, 29/10) */
+      ctx.fillStyle = `rgba(0,0,0,${1 - TOWN.groundDim})`; ctx.fillRect(0, G * T, cols * T, (TOWN.rows - G) * T);
       /* bords : falaise collée au bord gauche, porte de palissade collée au bord droit (TOWN.edges), posées sur le sol */
       const cliff = ok(TOWN.edges.left), gate = ok(TOWN.edges.right);
       if(cliff) ctx.drawImage(cliff, Math.round(-camX * T), G * T - cliff.naturalHeight);

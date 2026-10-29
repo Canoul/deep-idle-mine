@@ -4890,3 +4890,16 @@ Règles (voir CLAUDE.md) :
   de la grille. Écran ≤ tablette : `.invInfo` repasse en `grid-column:1;grid-row:auto` (sous la grille).
 - ✅ Vérifié en capture Chrome sans interface (page de test avec style.css) à 1400 px (onglets + grille à gauche, fiche
   à droite) et 600 px (une colonne). Pas de test unitaire (CSS seul).
+
+## 29/10/2026 — Correctif : 1 fps depuis le Carreau en fond (Geoffrey)
+- **Cause** : `src/render/town.js` dessinait les cases du sol (~240 `drawImage` par image) sous
+  `ctx.filter = brightness(TOWN.groundDim)` ; Chrome applique le filtre à chaque `drawImage`. Mesuré en Chrome sans
+  interface (page isolée, 60 × 4 cases, ×2) : **1295 ms/image** avec filtre, 0,8 ms sans, 0,74 ms avec voile.
+- **Correctif** : sol dessiné sans filtre puis voile `rgba(0,0,0,1 - groundDim)` sur la zone du sol (même rendu que
+  brightness). Statue (`grayscale/brightness/contrast`) : dessinée dans un canvas à part (`statueImage`), filtrée là,
+  gardée et refaite au plus toutes les 2 s (textures qui arrivent) ou quand son apparence change.
+- **Tests** ✅ `tests/town.test.js` (nouveau : pas de `ctx.filter` dans le rendu de la ville). ⚠️ Pas vu à l'écran
+  (statue à vérifier visuellement) ; la mesure Chrome du rendu complet n'a pas abouti (seule la mesure isolée).
+- Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
+  navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
+
