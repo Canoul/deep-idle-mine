@@ -1,7 +1,7 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
-import { areaOf, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
+import { areaOf, contentAt, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
 import { startAction, collect, placedTorch, mineT, moveT, climbT, winchT, ladderTime, rushTime, warcryOf } from './mineur.js';
 import { provoke, revealMimic, mobCanEnter } from './mobs.js';
@@ -35,12 +35,15 @@ function lootOf(G,m,n){
   return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
 
+/* prison : chaque chance de butin rare × PRISON.rareMul (glyphes, shiny, butin rare des mobs) */
+const rareMul = G => G.prison ? PRISON.rareMul : 1;
+
 function oreMinedIn(G,y,t){ const k=areaOf(y); G.areas[k].oreMined++; oreRemoved(G,k,t); tryUnlock(G); }
 
 /* shiny : un minerai qui a une recette de four tombe parfois déjà cuit (SHINY) ; renvoie le shiny ou null */
 export function shinyOf(G,t){
   const s=Object.hasOwn(SHINY.items, BLOCKS[t].name) ? SHINY.items[BLOCKS[t].name] : null;
-  return s && G.shinyRng() < SHINY.chance ? s.item : null;
+  return s && G.shinyRng() < SHINY.chance*rareMul(G) ? s.item : null;
 }
 
 /* fortune : combien d'exemplaires EN PLUS d'un minerai miné (m.carac.fortune, en %) ; 0 le plus souvent
@@ -89,12 +92,12 @@ export function mineBlock(G,m,x,y){
 /* drop d'un glyphe (GLYPHS.drop) : à un événement de sa spécialisation ('block', 'ladder', 'kill'), d.chance de trouver UN
    glyphe de son arbre qu'il ne possède pas encore (ni au lancement, ni trouvé dans la session), tiré au hasard parmi
    eux. Hasard à part (glyphRng) : sans spécialisation ou sans glyphe à trouver, rien n'est tiré. */
-function glyphDrop(G,m,event){
+export function glyphDrop(G,m,event){
   const d=GLYPHS.drop[m?.skillTree];
   if(!d || d.event!==event || !G.glyphRng) return;
   m.glyphFound ??= [];
   const have=new Set([...(m.glyphsOwned||[]), ...m.glyphFound]), left=glyphsOfTree(m.skillTree).filter(n => !have.has(n));
-  if(!left.length || !(G.glyphRng() < d.chance)) return;
+  if(!left.length || !(G.glyphRng() < d.chance*rareMul(G))) return;
   const g=left[Math.floor(G.glyphRng()*left.length)];
   m.glyphFound.push(g); G.stats.glyphs=(G.stats.glyphs||0)+1;
   log(G, `✨ ${m.name} trouve un ${g} !`);
@@ -122,7 +125,7 @@ export function breakBlock(G,m,x,y){
 /* treasure : un objet Treasure TX (tier selon l'area du treasure) va dans l'inventaire du mineur.
    Aucun minerai : rien ne compte pour le déblocage de l'area. */
 function openTreasure(G,m,x,y){
-  const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(areaOf(y));
+  const tr=G.treasures.get(y*W+x), item=tr ? tr.item : treasureItem(contentAt(G,y));
   if(tr) tr.opened=true;
   collect(m, item, TREASURE.itemWeight, TREASURE.itemCount);
   G.stats.treasures++; m.stats.treasures++;
@@ -136,7 +139,7 @@ function rareDrop(G,m,o){
   for(const d of MOB_DROPS.items){
     if(d.mob!==o.type) continue;
     const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
-    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)));
+    const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)))*rareMul(G);
     if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
   }
 }

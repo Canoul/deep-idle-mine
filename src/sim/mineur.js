@@ -1,9 +1,13 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
-import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS } from '../config.js';
+import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS, SESSION_LEN } from '../config.js';
 import { lumAt } from './light.js';
 import { cleanRings } from './effects.js';
+
+/* temps de jeu restant avant la fin (s) : la fin de session, ou G.endAt (prison : Infinity pendant le run, l'heure de
+   la fin de run une fois le but atteint ; src/sim/prison.js) */
+export const timeLeft = G => (G.endAt ?? SESSION_LEN) - G.t;
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
 

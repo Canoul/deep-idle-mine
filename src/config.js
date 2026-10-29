@@ -147,6 +147,8 @@ export const BLOCKS = {
   21:{name:'Mithril ore', type:'ore', tex:'mithril', w:3, hard:4.5, color:'#7d828c', dot:'#b8d4f0', val:5},
   22:{name:'Cobalt ore',  type:'ore', tex:'cobalt',  w:4, hard:5.5, color:'#7d828c', dot:'#2f5fe0', val:7},
   23:{name:'Thorium ore', type:'ore', tex:'thorium', w:4, hard:5.5, color:'#7d828c', dot:'#7ee04a', val:7},
+  /* barreaux de prison (29/10/2026, PRISON) : bordent la carte de la prison de chaque côté ; incassables, non minables */
+  24:{name:'Barreaux de prison', type:'special', tex:'prison_bars', w:0, hard:Infinity, color:'#2a2a33', dot:'#5a5a66', unbreakable:true, noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
@@ -741,7 +743,7 @@ export const EFFECTS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -1630,6 +1632,18 @@ export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3,
    cost.min) ; la prison la recharge de prisonPerHour par heure de jeu. max : plafond · start : énergie d'un nouveau
    compte · memory : dernières clés d'opération mémorisées (idempotence). */
 export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonPerHour: 8, memory: 200 };
+
+/* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,
+   une seule area (AREA_H lignes) au contenu de l'area max débloquée du joueur, width colonnes centrées sur le coffre
+   entre deux rangées de barreaux incassables (bloc `bars`).
+   oreMul : part de minerais de la composition (× oreMul, pris sur le terrain ; réglée par simulation) ·
+   resetAt : part des minerais du run à miner avant la remontée de fin de run · runMax : durée max d'un run (s de jeu) ·
+   returnMax : temps laissé à la remontée de fin de run (s de jeu) · treasureMul : chance d'un treasure ·
+   rareMul : chances de butin rare (glyphes, butin des mobs, shiny, donjon) · dungeonWinchGap : écart minimal du donjon à
+   la colonne du treuil en prison (DUNGEON.winchGap ne laisse pas de place dans 25 colonnes) ·
+   offlineMax / batchMs / presentFor / seenWriteMs : temps réels (ms), serveur · salt : seed d'un run. */
+export const PRISON = { width: 25, oreMul: 1, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5,
+  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, bars: 24, salt: 0x9a150e };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

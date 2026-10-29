@@ -1,5 +1,5 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
-import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP } from '../config.js';
+import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X } from '../config.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
@@ -17,11 +17,34 @@ export const isResidue = t => !!t && BLOCKS[t].family==='residu';
 export const isTarget = t => isOre(t) || typeOf(t)==='treasure' || isResidue(t);
 /* objet rapporté par un treasure de l'area k (Treasure T1, T2…) ; le dernier tier couvre les areas au-delà */
 export const treasureItem = k => (TREASURE.tiers.find(t => k <= t.maxArea) || TREASURE.tiers.at(-1)).item;
+/* chance d'un treasure dans l'area k (contenu ck) : moitié moins en prison (PRISON.treasureMul) */
+const chestChanceOf = (G, ck) => (areaDef(ck).chestChance || 0) * (G.prison ? PRISON.treasureMul : 1);
 
 export const areaDef  = k => AREAS[Math.min(k, AREAS.length-1)];
 export const areaComp = k => areaDef(k).comp;
 export const areaOf   = y => y < AREA_Y0 ? -1 : Math.floor((y-AREA_Y0)/AREA_H);
 export const areaTop  = k => AREA_Y0 + k*AREA_H;   // première couche de l'area k
+
+/* Prison (PRISON, src/sim/prison.js) : l'area k a le CONTENU (composition, mobs, treasures, donjon, pièges, résidus) de
+   l'area max du joueur, G.prison.areaMax ; dans la mine, le contenu de l'area k est celui de l'area k. L'index d'area
+   (G.areas[k], déblocage, navigation de l'IA) reste areaOf. */
+export const contentOf = (G, k) => G.prison && k >= 0 ? G.prison.areaMax : k;   // k < 0 : couches au-dessus des areas
+export const contentAt = (G, y) => contentOf(G, areaOf(y));
+/* colonnes de la prison : { x0, w } (PRISON.width colonnes centrées sur le coffre), ou null hors prison */
+export const prisonBox = G => G.prison ? { x0: CHEST_X - Math.floor(PRISON.width/2), w: PRISON.width } : null;
+/* composition de la prison : chaque minerai × oreMul, la différence prise sur le terrain (pierre, terre, pierre dure)
+   dans sa proportion ; somme inchangée (100). Plafonnée au terrain disponible. Pure. */
+export function prisonComp(comp, oreMul){
+  if(oreMul === 1) return { ...comp };
+  const kind = n => BLOCKS[IDS[n]]?.type ?? null;
+  const ores = Object.keys(comp).filter(n => kind(n) === 'ore'), land = Object.keys(comp).filter(n => kind(n) === 'terrain');
+  const S = ores.reduce((s, n) => s + comp[n], 0), T = land.reduce((s, n) => s + comp[n], 0);
+  if(!(S > 0) || !(T > 0)) return { ...comp };
+  const p = Math.max(-S, Math.min(T, S * (oreMul - 1))), out = { ...comp };
+  for(const n of ores) out[n] = comp[n] + comp[n] / S * p;
+  for(const n of land) out[n] = comp[n] - comp[n] / T * p;
+  return out;
+}
 
 export const maxRow = G => G.tiles.length-1;
 /* sous la dernière area débloquée, tout est barrière (l'IA l'ignore comme case non franchissable) */
@@ -99,24 +122,35 @@ export function fillComp(r, comp, w=W, h=AREA_H){
    résidus et k hole par-dessus. */
 export function genArea(G,k){
   const r = mulberry32(hash(G.seed, k+1));
+  /* prison : contenu de l'area max (contentOf), part de minerais × PRISON.oreMul ; remplie sur box.w colonnes, les
+     autres colonnes sont des barreaux (hors des comptes de l'area) */
+  const ck = contentOf(G, k), box = prisonBox(G);
+  const base = G.prison ? prisonComp(areaComp(ck), PRISON.oreMul) : areaComp(ck);
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
-  const comp = G.oreBonus > 0 ? oreBonusComp(areaComp(k), G.oreBonus) : areaComp(k);
-  const filled = fillComp(r, comp), { grid, counts, big } = filled;
-  let { oreTotal } = filled;
+  const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
+  const filled = fillComp(r, comp, box ? box.w : W), { counts, big } = filled;
+  let { grid, oreTotal } = filled;
+  if(box){
+    const g = new Uint8Array(W*AREA_H).fill(PRISON.bars);
+    for(let ry=0; ry<AREA_H; ry++) g.set(grid.subarray(ry*box.w, (ry+1)*box.w), ry*W + box.x0);
+    grid = g;
+  }
   /* donjon (DUNGEON) et pièges (TRAP) : tirages à part, posés par-dessus ; les comptes de l'area suivent les blocs
      remplacés (un mur de donjon n'y entre pas) */
   const put = (x, ry, id) => { const i=ry*W+x, old=grid[i]; if(old===id) return;
     const key=oreKey(old); if(key && counts[key]) counts[key]--;
     if(id===0) counts.air=(counts.air||0)+1; else if(oreKey(id) in counts) counts[oreKey(id)]++;
     grid[i]=id; };
-  const dp = planDungeon(G.seed, k), traps = planTraps(G.seed, k, dp);
+  /* prison : donjon et pièges entre les barreaux ; le donjon plus près du treuil (PRISON.dungeonWinchGap), chance × rareMul */
+  const dp = planDungeon(G.seed, ck, box && { ...box, winchGap:PRISON.dungeonWinchGap, chanceMul:PRISON.rareMul }),
+        traps = planTraps(G.seed, ck, dp, box);
   if(dp) carve(dp, put);
   for(const p of traps) carveTrap(p, (x, ry) => grid[ry*W+x], put, IDS[big]);
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
-  if(!G.noResidues) placeResidues(G.seed, k, grid, counts);   // pas de résidus si une tour était ouverte au lancement (23/10)
+  if(!G.noResidues) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10)
   /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
-  const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
+  const kh = G.prison ? null : placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
     ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))]);
   for(let ry=0; ry<AREA_H; ry++){
     G.tiles.push(grid.slice(ry*W,(ry+1)*W));
@@ -124,13 +158,13 @@ export function genArea(G,k){
     G.seen.push(new Uint8Array(W));
   }
   if(dp) registerDungeon(G, k, dp, areaTop(k)+dp.ry0);
-  for(const p of traps) registerTrap(G, k, p, areaTop(k)+p.ry0);
+  for(const p of traps) registerTrap(G, ck, p, areaTop(k)+p.ry0);   // PV des mobs : ceux du contenu
   if(kh) registerKhole(G, k, kh);
   // les mimics ne sont plus placés ici : ils naissent pendant la partie (un minerai de la roche devient un mimic, src/sim/mobs.js)
   /* ores : pour chaque minerai de l'area, le nombre initial et ce qu'il en reste dans la roche (focus minerai) */
   const ores = {};
   for(const n in counts) if(isOre(IDS[n])) ores[n] = { total:counts[n], left:counts[n] };
-  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, ores, chestChance:areaDef(k).chestChance||0, treasure};
+  G.areas[k] = {k, comp, counts, oreTotal, oreMined:0, ores, chestChance:chestChanceOf(G, ck), treasure};
 }
 
 /* clé de composition d'un bloc (IDS) : 3 → 'coal' */
@@ -145,12 +179,13 @@ export function oreRemoved(G,k,t){
 /* Treasure : un tirage par area (chestChance) ; s'il sort, le treasure remplace un bloc de terrain au hasard.
    Son butin (Treasure TX) dépend du tier de l'area : même seed → même coffre, même butin. */
 function placeTreasure(G, k, grid, counts, r){
-  if(!(r() < (areaDef(k).chestChance||0))) return null;
+  const ck = contentOf(G, k);
+  if(!(r() < chestChanceOf(G, ck))) return null;
   const spots=[]; for(let i=0;i<grid.length;i++) if(typeOf(grid[i])==='terrain') spots.push(i);
   if(!spots.length) return null;
   const c=spots[Math.floor(r()*spots.length)], name=Object.keys(IDS).find(n=>IDS[n]===grid[c]);
   counts[name]--; counts.treasure=1; grid[c]=TREASURE_BLOCK;
-  const t={k, x:c%W, y:areaTop(k)+((c/W)|0), item:treasureItem(k), opened:false};
+  const t={k, x:c%W, y:areaTop(k)+((c/W)|0), item:treasureItem(ck), opened:false};
   G.treasures.set(t.y*W+t.x, t);
   return t;
 }
@@ -158,9 +193,10 @@ function placeTreasure(G, k, grid, counts, r){
 /* Résidus angélique et démoniaque (JUDGMENT) : à partir de l'area fromArea, pct % des cases de l'area au total (les
    deux ensemble), à la place de pierre normale (jamais un minerai, un treasure, un mur de donjon ni une case vide). Tirage à part (seed +
    salt + area) et posé en dernier : le reste de l'area ne change pas. Comptes exacts (comme les minerais). */
-export function placeResidues(seed, k, grid, counts){
+export function placeResidues(seed, k, grid, counts, cells = grid.length){
   if(k < JUDGMENT.fromArea) return;
-  const r = mulberry32(hash(seed ^ JUDGMENT.salt, k+1)), n = Math.round(grid.length*JUDGMENT.pct/100);
+  /* cells : cases de l'area (prison : celles entre les barreaux) */
+  const r = mulberry32(hash(seed ^ JUDGMENT.salt, k+1)), n = Math.round(cells*JUDGMENT.pct/100);
   /* 23/10 (Geoffrey) : pct = les deux résidus ensemble (avant : pct de chaque, soit le double), pris dans la pierre
      normale seulement (avant : n'importe quel terrain). Moitié chacun ; s'il en reste un (nombre impair), son camp est
      tiré au sort (même seed, même camp). */
@@ -184,7 +220,7 @@ export const unlockNeed = a => Math.ceil(CFG.unlockRatio*a.oreTotal);
 
 /* Débloque l'area suivante si le seuil de minerais de la dernière area est atteint. Renvoie true si débloquée. */
 export function tryUnlock(G){
-  if(G.khole) return false;   // dans la dimension du k hole : rien à débloquer (ce n'est pas la mine)
+  if(G.khole || G.prison) return false;   // k hole : ce n'est pas la mine ; prison : une seule area, rien à débloquer
   const k = G.unlockedAreas-1, a = G.areas[k];
   if(a.oreMined < unlockNeed(a)) return false;
   genArea(G, G.unlockedAreas); G.unlockedAreas++;

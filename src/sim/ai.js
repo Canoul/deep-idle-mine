@@ -1,10 +1,10 @@
 /* IA du mineur : chaque appel à decide() choisit UNE action. Elle lit m.prefs (préférences) et la config ;
    ajouter un comportement = ajouter une préférence et la lire ici, pas réécrire l'IA. */
-import { W, AREA_H, SESSION_LEN, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
+import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, HELP, MULE, DUCK, DT } from '../config.js';
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf } from './mineur.js';
+import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf, timeLeft } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -167,7 +167,7 @@ function fight(G,m,o){
 const secPerRow = m => m.secPerRow ?? 1.25/m.carac.climbSpeed;
 const secPerRowDown = m => m.secPerRowDown ?? secPerRow(m);
 export function depthCap(G,m){
-  const left=SESSION_LEN-G.t, budget=left*(1-CFG.endWorkShare)-12;
+  const left=timeLeft(G), budget=left*(1-CFG.endWorkShare)-12;
   return Math.max(0, Math.floor(budget/(secPerRowDown(m)+secPerRow(m))));
 }
 /* descente mesurée (m.secPerRowDown) : du départ de la surface jusqu'à la profondeur de sa dernière remontée (le front),
@@ -179,7 +179,7 @@ function trackDescent(G,m){
 }
 
 function decideSurface(G,m){
-  const left=SESSION_LEN-G.t;
+  const left=timeLeft(G);
   if(huntDuck(G,m,left)) return;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
   if(m.load>0 || bagToEmpty(G,m)){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
@@ -298,7 +298,7 @@ function decideReturn(G,m,rp){
 }
 
 function decideWork(G,m){
-  const left=SESSION_LEN-G.t;
+  const left=timeLeft(G);
   m.goingDown=false;   // redescend au front par l'existant (skill Logisticien) : remis à vrai par digDown
   m.digCol=null;   // réservations rafraîchies à chaque décision
   if(!m.exploring) m.galleryRow=null;
@@ -500,7 +500,7 @@ function goTo(G,m,goal,status){
    posé s'il y en a un) et creuse tout droit jusqu'à la ligne visée, puis pose tout le treuil d'un coup. Il remonte
    comme d'habitude si l'oxygène, les pods, les torches ou le temps l'exigent (le chantier reprend ensuite). */
 function decideWinch(G,m){
-  const job=m.winchJob, left=SESSION_LEN-G.t;
+  const job=m.winchJob, left=timeLeft(G);
   if(m.y===0){
     m.status='Va installer le treuil';
     if(m.x!==WINCH.x){ if(!stepDir(G,m,Math.sign(WINCH.x-m.x),0,{noBridge:true})) idle(m); return; }
@@ -619,7 +619,7 @@ const needsPickup = (G,m) => {
   if(!isCarrier(G,m) || !mulePlaced(G) || pickBlocked(G,m)) return false;
   if(m.muleFetch) return true;
   if(!(G.mule.load>0)) return false;                       // sac vide : rien à perdre, pas de détour
-  if(m.reason==='fin de session') return SESSION_LEN-G.t>=muleEstT(G,m);
+  if(m.reason==='fin de session') return timeLeft(G)>=muleEstT(G,m);
   return m.pickPlan===m.returnStart;                        // décidé au début de cette remontée (planPickup)
 };
 /* au début de chaque remontée (une seule fois : sinon la fenêtre s'ouvrait en route et il redescendait, seed 79190) :
@@ -629,7 +629,7 @@ function planPickup(G,m){
   if(m.pickPlanAt===m.returnStart && !(m.pickPlanEmpty && G.mule?.load>0)) return;
   m.pickPlanAt=m.returnStart; m.pickPlan=null; m.pickPlanEmpty=!(G.mule?.load>0);
   if(!isCarrier(G,m) || !mulePlaced(G) || !(G.mule.load>0)) return;
-  const left=SESSION_LEN-G.t, via=muleEstT(G,m);
+  const left=timeLeft(G), via=muleEstT(G,m);
   if(left>=via && left<via+fetchFromTop(G,m)+CFG.endStayMin) m.pickPlan=m.returnStart;
 }
 /* temps estimé (avec la marge de 1,25 du retour) pour aller du sac au coffre : par le seau, puis à pied */
@@ -665,7 +665,7 @@ function goPickup(G,m){
 /* pods pleins : il va déposer dans le sac. Déposé (ou sac devenu plein, ramassé, trop loin) : il reprend son travail
    s'il a de la place, sinon il remonte au coffre comme d'habitude. Oxygène et fin de session passent avant. */
 function decideMule(G,m){
-  const left=SESSION_LEN-G.t;
+  const left=timeLeft(G);
   const back = reason => { m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m); };
   if(m.load<m.carac.pods-2){ m.mode='work'; return decideWork(G,m); }
   if(m.ox<=0) return back('oxygène');

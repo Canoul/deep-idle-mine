@@ -239,6 +239,14 @@ def main():
         rect(barrier, i, (i // 4) % 2 * 8, 2, 8, hexc('#4a4a66'))
     tex['barrier'] = barrier
 
+    # barreaux de prison (incassables) : barreaux verticaux gris foncé sur fond sombre, deux traverses
+    bars = noisy(hexc('#15151b'), 6, 0.05)
+    for bx in (1, 6, 11):
+        rect(bars, bx, 0, 3, 16, hexc('#4a4a56'))
+        rect(bars, bx, 0, 1, 16, hexc('#6a6a78'))   # reflet
+    rect(bars, 0, 3, 16, 2, hexc('#3a3a44')); rect(bars, 0, 11, 16, 2, hexc('#3a3a44'))
+    tex['prison_bars'] = bars
+
     # socle du coffre : dalle de pierre grise cerclée de fer, rivets aux coins (incassable)
     base = noisy(hexc('#5a5a62'), 18, 0.08)
     iron = hexc('#2e2e34')

@@ -60,7 +60,7 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
   area). Area max d'un nouveau joueur : 0.
 - **Plus petite que la mine** : la largeur du jeu reste 50 cases ; les colonnes de chaque côté sont des **barreaux
   incassables** (nouveau bloc « Barreaux de prison », non minable) ; en dessous des 50 lignes, la barrière du fond de
-  la mine. Donjon (10 × 10) et pièges (5 × 3) sont placés entre les barreaux.
+  la mine. Donjon (10 × 10) et pièges (5 × 3) sont placés entre les barreaux. Le donjon garde ses 2 cases de marge contre les barreaux et se tient à `PRISON.dungeonWinchGap` (3) colonnes du treuil (l'écart de la mine, 5, ne laisse pas de place dans 25 colonnes) : il tombe à gauche (x0 = 12).
 - **Pourcentage de minerais réglé** *(29/10, Geoffrey)* : la taille reste 25 × 50 ; c'est la part de minerais de la
   composition (`PRISON.oreMul`, au détriment de la pierre et de la terre) qui est ajustée par simulation pour tomber
   sur la cible (voir « Équilibrage »).
@@ -68,7 +68,7 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
 - **Contenu** : comme la mine de cette area, avec :
   - **2 fois moins de treasures** (`PRISON.treasureMul` 0,5 : chance d'un treasure dans l'area) ;
   - **chaque chance de butin rare × 0,5** (`PRISON.rareMul`) : glyphes, butin rare des mobs (`MOB_DROPS`) ; aussi les
-    shiny et les cristaux de pleine lune des donjons (Claude) ; le **contenu** d'un treasure ouvert ne change pas (Claude : déjà divisé par le nombre de
+    shiny (Claude) ; les donjons (donc leurs cristaux de pleine lune) ont une chance × 0,5 (`PRISON.rareMul`) ; le **contenu** d'un treasure ouvert ne change pas (Claude : déjà divisé par le nombre de
     treasures) ;
   - **pas de k hole**, **pas de shrines** (même si le joueur en a d'actifs), pas de Gallianix (Claude : il naît d'une
     area débloquée, il n'y en a qu'une) ;

@@ -5,7 +5,7 @@
    vole (pas de gravité) et asphyxie le mineur qu'il tacle. Le golem (2 × 2) casse les blocs et ébranle la mine
    (src/sim/golem.js). */
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, mobHp } from '../config.js';
-import { maxRow, isAir, isOre, supported, areaOf } from './world.js';
+import { maxRow, isAir, isOre, supported, contentAt, contentOf } from './world.js';
 import { log } from './log.js';
 import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
@@ -370,6 +370,8 @@ function tpSpot(G,p){
      peut naître (MOBS.minArea), tant qu'il y a moins de walkerCap mobs qui marchent (hors mobs de piège).
    Les PV dépendent de l'area où le mob naît (mobHp). */
 const tableOf = k => MOBS.spawnTable[Math.max(0, Math.min(MOBS.spawnTable.length-1, k))];
+/* table d'apparition à la ligne y : celle du contenu de son area (prison : l'area max du joueur) */
+export const spawnTableAt = (G, y) => tableOf(contentAt(G, y));
 export function pickType(table, r){
   let acc=0; const types=Object.keys(table);
   for(const t of types){ acc+=table[t]; if(r<acc) return t; }
@@ -379,26 +381,26 @@ export function pickType(table, r){
 function spawnMobs(G){
   G.spawnTimer-=DT;
   if(G.spawnTimer>0) return;
-  const k=G.unlockedAreas-1;
+  const k=contentOf(G, G.unlockedAreas-1);   // intensité : la dernière area débloquée (prison : son contenu)
   G.spawnTimer = MOBS.spawnDelay(G.rng, k);
   const n=G.miners.length; if(!n) return;
   const m=G.miners[G.spawnTurn % n]; G.spawnTurn++;
   if(m.y<=0) return;
-  const type=pickType(tableOf(areaOf(m.y)), G.rng());
+  const type=pickType(spawnTableAt(G, m.y), G.rng());
   if(type==='mimic') return spawnMimic(G,m);
   const live=G.mobs.filter(o=>isWalker(o)&&o.hp>0&&o.trap==null).length;   // les mobs de piège ne comptent pas
   if(live>=MOBS.walkerCap(k)) return;
   if(type==='chair') return spawnFlesh(G,m);
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
-    if(areaOf(y)<MOBS.minArea[type]) continue;
+    if(contentAt(G,y)<MOBS.minArea[type]) continue;
     for(let x=0;x<W;x++){ const d=Math.abs(x-m.x)+Math.abs(y-m.y); if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isAir(G,x,y)&&G.seen[y][x]&&(FLYERS.has(type)||supported(G,x,y))&&!dungeonAt(G,x,y)&&(type!=='golem'||fitsAt(G,x,y))) cand.push([x,y]); }   // jamais dans un donjon ; un volant naît aussi en l'air ; un golem là où il tient (2 × 2)
   }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];
   /* Couronne du Roi Gobelin (27/10) : un gobelin qui naît près d'un porteur est asservi (src/sim/thrall.js), pas un mob */
   if(type==='gobelin'){ const w=thrallOwner(G,x,y); if(w){ enslave(G,G.mobId++,x,y,w); return; } }
-  const hp=mobHp(type, areaOf(y));
+  const hp=mobHp(type, contentAt(G,y));
   const o={id:G.mobId++,type,x,y,hp,maxhp:hp,cd:1};
   if(MOBS.speed[type]) o.speed=MOBS.speed[type];
   if(type==='occultiste') o.cast=MOBS.occult.cooldown;
@@ -408,9 +410,9 @@ function spawnMobs(G){
 
 /* mur de chair : dans la roche, à côté du mineur visé (sa ligne vers le milieu du mur), assez loin pour qu'on le voie avancer (MOBS.chair.spawnDist) */
 function spawnFlesh(G,m){
-  if(areaOf(m.y)<MOBS.minArea.chair) return;
+  if(contentAt(G,m.y)<MOBS.minArea.chair) return;
   const at=fleshSpot(G,m); if(!at) return;
-  const hp=mobHp('chair', areaOf(m.y));
+  const hp=mobHp('chair', contentAt(G,m.y));
   G.mobs.push({id:G.mobId++, type:'chair', x:at.x, y:at.y, h:MOBS.chair.h, hp, maxhp:hp, cd:1, speed:MOBS.speed.chair, knockRes:MOBS.chair.knockRes});
   syncFlesh(G);
   log(G, '🩸 Un mur de chair recouvre la roche !');
@@ -429,6 +431,6 @@ function spawnMimic(G,m){
       if(d>=MOBS.spawnMin&&d<=MOBS.spawnMax&&isOre(G.tiles[y][x])&&!busy.has(y*W+x)) cand.push([x,y]); }
   if(!cand.length) return;
   const [x,y]=cand[Math.floor(G.rng()*cand.length)];
-  const hp=mobHp('mimic', areaOf(y));
+  const hp=mobHp('mimic', contentAt(G,y));
   G.mobs.push({id:G.mobId++, type:'mimic', x, y, hp, maxhp:hp, revealed:false, ore:G.tiles[y][x]});
 }

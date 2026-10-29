@@ -246,7 +246,7 @@ export function exitKhole(G){
    va s'ouvrir), vide, ou trop près de la fin (KHOLE.endMargin). Rejoué au même tick, il donne la même partie. */
 export function forceKhole(G, map = 0){
   const m = G.miners[0];
-  if(G.over || G.khole || !m || G.t >= SESSION_LEN - KHOLE.endMargin - KHOLE.warn) return false;
+  if(G.over || G.khole || G.prison || !m || G.t >= SESSION_LEN - KHOLE.endMargin - KHOLE.warn) return false;   // pas de k hole en prison
   if((G.kholes || []).some(h => !h.used && h.opensAt != null)) return false;
   (G.kholes ??= []).push({ k: Math.max(0, areaOf(m.y)), x: m.x, y: m.y, opensAt: G.t + KHOLE.warn, used: false,
     map: Number.isSafeInteger(map) && map >= 1 && map <= KHOLE.maps.length ? map : 0 });
