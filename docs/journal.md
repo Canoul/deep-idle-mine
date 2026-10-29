@@ -40,6 +40,12 @@ Modèle d'entrée :
 - **Décision** : pas de Dynamite en combat dans l'instance pour l'instant (Geoffrey).
 - **État** : ✅ en ligne le 29/10
 
+## 29/10/2026 — Geoffrey — Classements : les niveaux en sous-onglets
+- **Pour le joueur** : dans Social → Classements, plus de boutons « Tour céleste II » et « Roi gobelin II » : un bouton
+  **Tour céleste** et un bouton **Roi gobelin**, chacun avec ses sous-onglets **Niveau 1 / Niveau 2**, comme les
+  spécialisations.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Classement de la tour par niveau
 - **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
   **« Tour céleste »** (niveau 1) et **« Tour céleste II »** (niveau 2). Avant, les temps des deux niveaux étaient mélangés.

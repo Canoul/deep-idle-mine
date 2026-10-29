@@ -5026,3 +5026,13 @@ Règles (voir CLAUDE.md) :
   0 bloqué. Rejeux : instance 20:48 victoire 8:00.8 → 7:40.6 ; 7 parties d'instance : 4 victoires.
 - ⚠️ Dans la tour, la dynamite peut maintenant partir sur 2 Diablotins invoqués plutôt qu'être gardée pour le boss :
   partie seed 949593874 rejouée 9:30 → 9:40 (une seule sur le Démon au lieu de 2) ; seed 2001827804 : 9:46 → 9:51.
+
+## 29/10/2026 — Classements : niveaux en sous-onglets (Geoffrey)
+- `src/ui/social.js` : `boardSubs(groupe)` (pur, exporté) : `spec` → un sous-onglet par arbre (`spec:<arbre>`), `tower` /
+  `instance` → un par niveau tant que le classement existe dans BOARDS (`tower`, `tower2`…), sinon null. État :
+  `board` = bouton (gs, xp, spec, tower, instance), `sub[bouton]` = sous-onglet retenu ; `boardId()` = `sub[board] ?? board`.
+  Boutons de sous-onglet `data-sub` dans `#boardTrees` (avant : `data-tree`, Spécialisation seulement). Titre : « Tour céleste ·
+  Niveau 2 ». `index.html` : boutons `tower2` et `instance2` retirés. Serveur inchangé (mêmes ids de classement).
+- **Tests** ✅ `tests/leaderboard.test.js` (nouveau : sous-onglets, et chaque classement de BOARDS atteignable depuis
+  index.html), social, boot-check : 41/41. ⚠️ Pas vu à l'écran.
+

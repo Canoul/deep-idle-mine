@@ -12,7 +12,7 @@ import { SOCIAL_SERVER } from '../server/config.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { fakeLive } from './helpers.js';
 import { nameKey } from '../src/shared/account.js';
-import { BOARD_INFO, towerDetail, instanceDetail, rankText } from '../src/ui/social.js';
+import { BOARD_INFO, towerDetail, instanceDetail, rankText, boardSubs } from '../src/ui/social.js';
 import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
 import { instanceDurationMs } from '../src/shared/instances.js';
 
@@ -303,4 +303,17 @@ test("tour céleste II : les records d'avant les niveaux prennent le niveau de l
   assert.deepEqual((await social.leaderboard(B, 'tower2')).rows.map(x => [x.name, x.value]), [['Zoe', 350]]);
   assert.deepEqual(await store.getTowerRecord(A.id), { t: 500, at: 1000, side: 'demon', level: 1, team: ['Zoe'], session: 's1' });
   assert.equal((await store.getTowerRecord(C.id)).level, 1);
+});
+
+/* sous-onglets (29/10) : Spécialisation (un par arbre), Tour céleste et Roi gobelin (un par niveau) ; chaque classement
+   est atteignable par un bouton de index.html, ou un sous-onglet de son bouton */
+test('sous-onglets des classements : un par arbre, un par niveau ; chaque classement a son bouton', async () => {
+  assert.deepEqual(boardSubs('tower').map(s => [s.id, s.label]), [['tower', 'Niveau 1'], ['tower2', 'Niveau 2']]);
+  assert.deepEqual(boardSubs('instance').map(s => s.id), ['instance', 'instance2']);
+  assert.deepEqual(boardSubs('spec').map(s => s.id), SKILLS.trees.map(t => 'spec:' + t.id));
+  assert.equal(boardSubs('gs'), null); assert.equal(boardSubs('xp'), null);
+  const { readFileSync } = await import('node:fs');
+  const groups = [...readFileSync(new URL('../index.html', import.meta.url), 'utf8').matchAll(/data-board="([^"]+)"/g)].map(m => m[1]);
+  const reach = groups.flatMap(g => boardSubs(g)?.map(s => s.id) ?? [g]);
+  assert.deepEqual([...reach].sort(), [...BOARDS].sort());
 });
