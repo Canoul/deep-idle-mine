@@ -4627,3 +4627,18 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ goblin-king 9/9, graphite, wiki, loot / treasure (44) ; `npm run test:anticheat` 108/108.
 - **Probabilités** (calcul + 200 000 ouvertures avec `openTreasure`) : objet du boss 7,00 % (simulé 6,91 %), couronne
   1 % (0,97 %), au moins un rare toutes familles 17,30 % (17,35 %) ; moyennes 10 lingots, 15 Tainted iron, 75 peaux ✅.
+
+## 29/10/2026 — Geoffrey — Glissade adaptative au Bloc géant et dans la MI (affichage)
+- **Cause** Bloc géant : `src/render/giant.js` glissait sur `GIANT.viewPoll` (500 ms) fixes, alors que `pollView`
+  (src/ui/giant.js) relance son délai de 500 ms après la réponse : un envoi toutes les ~600-800 ms → mineur figé ~100 à
+  300 ms avant chaque envoi. Glissade en x seulement, saut au-delà de 4 cases. **MI** : `instantPos` (avancée du pas à
+  l'envoi) sans glissade entre deux envois → petits bonds.
+- **Correctif** : `src/shared/view.js` exporte `pace(M, prev, now)` (durée = moyenne lissée 0,7 / 0,3 du temps réel entre
+  envois, bornée 80-1500 ms ; déjà utilisée par la mine, maintenant partagée). Bloc géant : `glide` + `pace` + `shownPos`
+  sur une copie des mineurs (x et y, seuil de saut `TELEPORT` 6 comme partout). MI : `applyInstantView(v, prev, now)`
+  fait `glide` avec `instantPos` (déplacé dans `src/shared/instant-view.js`, réexporté par `src/render/instant.js`) ;
+  rendu et caméra lisent `shownPos`. `src/main.js` passe la copie d'avant à `applyInstantView`.
+- **Tests** ✅ instant-ui (nouveau test : glissade départ / milieu / arrivée, durée qui converge vers 700 ms pour un envoi
+  / 700 ms), view, camera, giant-service, giant-sim : 49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) ; le rendu du Bloc
+  géant n'a pas de test (canvas), il réutilise `glide` / `pace` / `shownPos` testés.
+
