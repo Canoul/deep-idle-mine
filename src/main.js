@@ -182,9 +182,10 @@ const craft = setupCraft({
     obtained.show({ title:'Tu as obtenu', entry: item, qty: recipeOf(item)?.qty ?? 1 });
   },
 });
+let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
-  onWorn: () => upgradeUI.refresh(),
+  onWorn: () => { upgradeUI.refresh(); setsUI?.refresh(); },   // sets : la ligne « Set équipé » (29/10)
 });
 
 const furnace = setupFurnace({
@@ -217,20 +218,22 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
 const spells = setupSpells({
   onOp: op => gameApi.spells({ ...op, opId: newOpId() }),
   onInventory: inv => setInventory(inv),
+  onChange: () => setsUI?.refresh(),   // ligne « Set équipé » (29/10)
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
-const setsUI = setupSets({
+setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
+  current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
 });
 
 applyRarityColors();   // couleurs des raretés (config)

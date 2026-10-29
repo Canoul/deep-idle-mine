@@ -4689,3 +4689,13 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ spells (showSpellBar), giant-service (me.spells / spellCd), tower-spells, giant-sim, instance-server : 72/72.
   ⚠️ Pas vu à l'écran (pas de navigateur ici) : vérifier la place de la barre dans une tour, une instance et au Bloc géant.
 
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- `src/meta/sets.js` `equippedSet(list, worn, skills, spellSlots)` : premier set dont l'uid de chaque case, l'arbre, les
+  rangs > 0 et les emplacements de sorts égalent l'équipement actuel ; null sinon. Rien de stocké (pas de « set actif »
+  côté serveur) : comparaison à l'affichage.
+- `src/ui/sets.js` : `setsHtml(…, { current })` (ligne `.setCur`, ligne du set `.setRow.on` + ✔), `setupSets({ current })`.
+  `src/ui/spells.js` : `onChange`, `slots()`. `src/main.js` : `setsUI.refresh()` sur changement de stuff (`onWorn`), de
+  skills (`onChange`) et de sorts (`onChange`) ; `let setsUI` déclaré avant `setupStuff`.
+- **Tests** ✅ sets (nouveau test : correspondance, pièce / exemplaire / sort différent, rang à 0, HTML), spells, skills :
+  61/61. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+

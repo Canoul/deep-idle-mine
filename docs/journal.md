@@ -24,6 +24,12 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
+  équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
+  ceux du moment ; si on change une pièce, un skill ou un sort, la ligne passe à « aucun ».
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Tours niveau 2 : stonebricks 2 fois plus dures et 2 fois plus lourdes
 - **Pour le joueur** : au niveau 2 des tours, les stonebricks sont **2 fois plus dures** (avant 1,75) et pèsent **2 fois
   plus** dans le sac (avant 1,5). Le reste du niveau 2 ne change pas. Le niveau 1 non plus.

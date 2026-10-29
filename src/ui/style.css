@@ -926,3 +926,6 @@ button.danger{color:var(--bad)}
 .shrine .shrineHead img{image-rendering:pixelated}
 .shrine .shrineRow{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap;margin-top:calc(1*var(--u))}
 .shrine .shrineRow input{width:4.5em}
+/* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
+.setCur{margin:0 0 calc(2*var(--u))}
+.setRow.on b{color:var(--ok)}
