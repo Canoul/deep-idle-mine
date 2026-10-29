@@ -435,6 +435,34 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return boardCache.data;
   }
 
+  /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite.
+     Renvoie { left, session, mode, ended } (ended : il était le dernier, la partie s'arrête pour de bon). */
+  async function leaveSession(accountId){
+    return withLock('acct:' + accountId, async () => {
+      const rec0 = await activeOf(accountId);
+      if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
+      return withLock('sess:' + rec0.id, async () => {
+        const rec = await store.getGameSession(rec0.id);
+        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+        const now = clock();
+        let ended = false;
+        if(rec.players.every(p => p.account === accountId || hasLeft(rec, p.account))){
+          /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
+          live.close(rec.id);
+          rec.leaves.push({ account: accountId, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
+          rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);
+          ended = true;
+          rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
+        } else {
+          if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+          rec.leaves.push({ account: accountId, tick: await live.leave(rec.id, accountId), at: now });
+        }
+        await store.putGameSession(rec);
+        return { left: true, session: rec.id, mode: rec.mode ?? 'mine', ended };
+      });
+    });
+  }
+
   /* termine une session tout de suite (dev, ou session dont l'heure est passée) ; sans effet sinon */
   async function settle(id){
     const rec = await store.getGameSession(id);
@@ -635,30 +663,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* fn(comptes) après chaque lancement d'une session normale (le service des inscriptions désinscrit ces joueurs) */
     onStart: fn => { startHooks.push(fn); },
 
-    /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite. */
-    async leave(me){
-      return withLock('acct:' + me.id, async () => {
-        const rec0 = await activeOf(me.id);
-        if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
-        return withLock('sess:' + rec0.id, async () => {
-          const rec = await store.getGameSession(rec0.id);
-          if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
-          const now = clock();
-          if(rec.players.every(p => p.account === me.id || hasLeft(rec, p.account))){
-            /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
-            live.close(rec.id);
-            rec.leaves.push({ account: me.id, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
-            rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);
-            rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
-          } else {
-            if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
-            rec.leaves.push({ account: me.id, tick: await live.leave(rec.id, me.id), at: now });
-          }
-          await store.putGameSession(rec);
-          return { left: true };
-        });
-      });
-    },
+    /* quitter (bouton « Quitter ») */
+    async leave(me){ return { left: (await leaveSession(me.id)).left }; },
 
     /* focus (minerai, area) changé pendant la session : appliqué tout de suite dans la partie, enregistré avec son
        tick (GAME_DESIGN §3). Aucune ressource en jeu : on vérifie la forme et le nombre de changements. */
@@ -765,6 +771,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });
     },
+
+    /* administration (29/10/2026, Geoffrey) : sort un joueur de sa session en cours, comme son bouton « Quitter » (il ne
+       reçoit rien de cette session ; les autres continuent ; dernier joueur : la partie s'arrête, personne ne reçoit rien) */
+    adminLeave: accountId => leaveSession(accountId),
 
     /* administration : retire qty exemplaires d'un objet à un compte (ex. un glyphe donné par erreur), sous les verrous
        de son inventaire et de ses skills (même ordre que glyph_pose). D'abord l'inventaire ; un glyphe posé sur son skill

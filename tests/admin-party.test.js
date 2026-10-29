@@ -143,3 +143,17 @@ test('scripts : move-to-lobby.js puis set-ready.js --always on, et leurs erreurs
   r = await run('scripts/move-to-lobby.js', ['--name', 'personne', '--to', 'akake']);
   assert.equal(r.ok, false); assert.match(r.out, /Aucun compte « personne »/);
 });
+
+/* chef du lobby (/api/admin/party-lead) */
+test('lead : un membre devient chef, l\'ancien chef reste membre ; déjà chef ou sans groupe', async () => {
+  for(const a of ACC) await party.leave(a);
+  await move('Monsta', 'Akake');
+  const r = await post('party-lead', { name: 'monsta' });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.changed, true);
+  assert.equal(r.data.party.leader, 'Monsta');
+  assert.deepEqual(r.data.party.members.map(m => [m.name, m.leader]), [['Akake', false], ['Monsta', true]]);
+  assert.equal((await post('party-lead', { name: 'Monsta' })).data.changed, false);
+  assert.equal((await post('party-lead', { name: 'Infernatiwar' })).data.error.code, 'no_party');
+  assert.equal((await post('party-lead', { name: 'Monsta' }, { 'x-forwarded-for': '1.2.3.4' })).status, 404);
+});

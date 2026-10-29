@@ -28,7 +28,20 @@ Modèle d'entrée :
   Les **Lunettes Gucci** se voient enfin sur le mineur (monture dorée, verre sombre) : elles n'avaient pas de dessin.
 - **À suivre** : les Doc Martins, la Ceinture golémique et les Jambières titanesques n'ont pas encore de dessin sur le
   mineur non plus.
-- **État** : 🧪 sur la branche `jules/fix-torches-lunettes` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : donner la place de chef d'un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `set-leader.js --name X` fait de X le chef de son lobby (il doit
+  déjà y être) ; l'ancien chef reste comme simple membre.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : forcer la fin de session d'un joueur, lancer un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `end-session.js --name X` sort X de sa session en cours, comme
+  son bouton « Quitter » : il ne reçoit rien de cette session et redevient libre tout de suite. En groupe, les autres continuent.
+- **Décision** (Geoffrey) : sortie sans butin (plutôt qu'arrêter la session de tout le groupe, ou la finir avec le butin).
+- **Aussi** : `launch-lobby.js --name X` lance le lobby de X (n'importe quel membre) dans la mine, même si tout le monde
+  n'est pas prêt.
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
 - **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :

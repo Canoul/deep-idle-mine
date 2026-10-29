@@ -523,6 +523,46 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       m.ready = (ready ?? (always !== undefined ? always : m.ready)) || m.always;   // comme ses cases : « tout le temps » l'emporte
       return { party: adminView(p) };
     },
+    /* lance le lobby de player (compte, n'importe quel membre) dans la mine classique, comme si le chef cliquait
+       « Lancer », SANS attendre que tout le monde soit prêt. Seul (sans groupe ou groupe d'un joueur) : sa session solo.
+       Refus du service de jeu inchangés (un membre encore en session, places du serveur…). */
+    async adminLaunch(player){
+      await sweep();
+      const p = partyOf(player.id);
+      const body = { mode: MINE_MODES[0].id };
+      if(!p || p.members.length === 1){
+        if(p) noChange(p);
+        const r = await game.start(player, body);
+        if(p) grace(p, r);
+        return { ...r, leader: displayName(player), members: [displayName(player)] };
+      }
+      noChange(p);
+      const leader = await getAccount(p.leader);
+      if(!leader) fail('account_not_found', 404, 'Le chef du groupe est introuvable.');
+      p.launching = true;                              // plus d'entrée ni de sortie pendant la création
+      try {
+        const members = [memberOf(p, p.leader), ...p.members.filter(m => m.account !== p.leader)];
+        const r = await game.start(leader, body, members.map(m => ({ account: m.account, name: m.name })));
+        grace(p, r);
+        unready(p);
+        return { ...r, leader: memberOf(p, p.leader).name, members: members.map(m => m.name) };
+      } finally { p.launching = false; }
+    },
+    /* donne la place de chef à player (compte), comme « Nommer chef » du chef actuel. Le nouveau chef n'a plus d'état
+       « prêt » ; l'ancien redevient membre, pas prêt (sauf « prêt tout le temps »). */
+    async adminPromote(player){
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const old = p.leader;
+      if(old !== player.id){
+        p.leader = player.id;
+        memberOf(p, player.id).ready = false;
+        const was = memberOf(p, old);
+        if(was) was.ready = !!was.always;
+      }
+      return { changed: old !== player.id, party: adminView(p) };
+    },
   };
   Object.assign(actions, admin);
   for(const k of Object.keys(actions)) actions[k] = saving(actions[k]);
