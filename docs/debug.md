@@ -4596,7 +4596,7 @@ Règles (voir CLAUDE.md) :
   veille plus tôt.
 
 
-## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff du porteur (branche geoffrey/couronne-aura)
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff du porteur (✅ en ligne le 29/10)
 - **Demande** : « c'est un buff individuel, ça n'impacte pas les autres mineurs à côté, hormis qu'ils ne doivent pas tuer
   les gobelins asservis ». Première version du matin (buff pour tout mineur à 10 cases du porteur) : mauvaise lecture,
   remplacée dans le même chantier.

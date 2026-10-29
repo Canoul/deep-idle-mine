@@ -29,7 +29,7 @@ Modèle d'entrée :
   **celui qui la porte**, seulement : un gobelin qui naît à 10 cases ou moins de lui est asservi. La bulle le rappelle ;
   sous l'icône, le nombre de ses gobelins asservis au travail. Les autres mineurs n'ont rien, et ils ne frappent jamais
   un gobelin asservi (c'était déjà le cas, c'est maintenant vérifié par un test sur une vraie partie).
-- **État** : 🧪 sur la branche `geoffrey/couronne-aura` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
 - **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
