@@ -8,6 +8,7 @@
     "start": "node server/main.js",
     "dev": "node server/dev.js",
     "dev:presets": "node scripts/dev-presets.js",
+    "dev:history": "node scripts/dev-history.js",
     "test": "node --test \"tests/*.test.js\"",
     "test:anticheat": "node --test \"tests/anticheat/*.test.js\"",
     "simulate": "node scripts/simulate.js",

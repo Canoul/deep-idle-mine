@@ -5196,3 +5196,7 @@ Règles (voir CLAUDE.md) :
   `GET /api/game/prison/profile` → `{ profile }` (ce que la prison aurait maintenant) ; `publicPrison.profile` (celui de la
   prison qui tourne). Lobby : `#prisonProfileRow`, texte `prisonProfileText` (src/ui/prison.js). Tests de l'ancien choix
   retirés (prison-server, prison-ui). ❌ rien relancé (demande de Geoffrey).
+- **Import d'historique** (même jour) : `scripts/dev-history.js` (`npm run dev:history -- --from <json> --name <compte>`) :
+  le `/api/game/history` d'un vrai joueur (téléchargé depuis son navigateur) → sessions `import:<id>` terminées, non dev,
+  dans data/ du compte local (mines classiques où il était là à la fin : area, part du butin ; pas de kills par type).
+  Pour que la prison de Test_Canoul suive les 10 dernières mines de canoul. ❌ pas testé.
