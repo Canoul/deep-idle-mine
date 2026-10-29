@@ -1156,10 +1156,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
-    /* sa session en cours vue par ses amis (onglet Social) : type de mine et temps restant (ms, null en mode dev), ou null */
+    /* sa session en cours vue par ses amis (onglet Social) : type de mine, temps restant (ms, null en mode dev), ou null ;
+       30/10 : size = joueurs encore dans la session (partis exclus) sur max, pour repérer les solos et duos */
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
-      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : await inGiant(accountId);
+      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: GAME.maxPlayers } : await inGiant(accountId);
     },
     /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
     playersInSession: async () => {

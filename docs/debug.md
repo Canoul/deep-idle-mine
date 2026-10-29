@@ -5101,3 +5101,10 @@ Règles (voir CLAUDE.md) :
   profondeur 189,8, 0 bloquée.
 - Reste sans skin (case visible, pas de calque) : Doc Martins (pieds), Ceinture golémique, Jambières titanesques.
 
+## 30/10/2026 — Social : taille du groupe d'un joueur en session (Jules)
+- **Quoi** : `game.activeSessionInfo` (server/game/service.js) renvoie aussi `size` (joueurs de `rec.players` pas dans
+  `rec.leaves`) et `max` (`GAME.maxPlayers`) ; le Bloc géant (`inGiant`) n'en a pas. `statusOf` (server/social/service.js)
+  les transmet s'ils existent ; `statusText` (src/ui/social.js) ajoute « (n/max) » au libellé de session, donc amis, Online
+  et « Who ? » du lobby (src/ui/lobby.js) l'affichent.
+- **Tests** ✅ `tests/social.test.js` +1 (solo 1/3, duo 2/3 dans amis et Online, 1/3 après un départ, textes, géant sans
+  taille) : 20/20 ; giant-service, tower-who, chat, party : 77/77. ⚠️ Pas vu dans le navigateur.

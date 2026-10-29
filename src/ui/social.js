@@ -34,7 +34,8 @@ export function statusText(f){
   if(f.status === 'session'){
     const mode = MINE_MODES.find(m => m.id === f.mode);
     const label = !f.mode || f.mode === 'mine' || !mode ? STATUS.session.label : `En session · ${mode.label}`;
-    return [label, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
+    const size = f.size ? ` (${f.size}/${f.max})` : '';               // 30/10 : solo, duo… (pas pour le Bloc géant)
+    return [label + size, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
   }
   return STATUS[f.status]?.label ?? '';
 }
