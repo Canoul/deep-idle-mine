@@ -19,6 +19,8 @@ import { createTowerViewer } from '../../src/shared/tower-view.js';
 import { buildInstanceGame, applyDueInstanceLeaves, isInstanceMode } from '../../src/shared/instances.js';
 import { tickInstance, endInstance } from '../../src/sim/instance/session.js';
 import { createInstanceViewer } from '../../src/shared/instances-view.js';
+import { buildPrisonRun, runInfo } from '../../src/shared/prison.js';
+import { tickPrison, endPrisonRun } from '../../src/sim/prison.js';
 
 /* ce qui change entre une session et une mine instantanée */
 const KINDS = {
@@ -26,11 +28,14 @@ const KINDS = {
   instant: { build: buildInstant, tick: tickInstant, end: endInstant, events: applyDueInstantLeaves, viewer: createInstantViewer },
   tower:   { build: buildTower, tick: tickTower, end: G => endTower(G, false), events: applyDueTowerLeaves, viewer: createTowerViewer },
   instance: { build: buildInstanceGame, tick: tickInstance, end: G => endInstance(G, false), events: applyDueInstanceLeaves, viewer: createInstanceViewer },
+  /* run de prison (record.mode 'prison', src/shared/prison.js) : aucun choix en cours de partie ; une fin immédiate
+     (arrêt de la prison) arrête le run au tick atteint, sans jouer la suite (endNow) */
+  prison: { build: buildPrisonRun, tick: tickPrison, end: endPrisonRun, events: () => {}, viewer: createViewer, endNow: true, info: runInfo },
 };
 
 export function createLiveGame(record){
   const rec = { ...record, leaves: [...(record.leaves || [])], focus: [...(record.focus || [])], kholes: [...(record.kholes || [])] };
-  const K = KINDS[rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : isInstanceMode(rec.mode) ? 'instance' : 'session'];
+  const K = KINDS[rec.mode === 'prison' ? 'prison' : rec.mode === 'mi' ? 'instant' : isTowerMode(rec.mode) ? 'tower' : isInstanceMode(rec.mode) ? 'instance' : 'session'];
   const withOverrides = fn => { applyOverrides(rec.overrides); try { return fn(); } finally { applyOverrides(null); } };
   const G = withOverrides(() => K.build(rec));
   const step = target => { while(!G.over && G.ticks < target){ K.events(G, rec); K.tick(G); } };
@@ -50,7 +55,9 @@ export function createLiveGame(record){
     khole(map){ const n = (G.kholes || []).length, tick = now(rec.kholes, { map }); return { tick, ok: (G.kholes || []).length > n }; },
     /* l'affichage pour un navigateur qui a déjà la partie au tick since */
     view(since){ return viewer(since); },
-    /* fin immédiate (mode dev : « fin libre ») : la partie est jouée jusqu'au bout */
-    finish(){ withOverrides(() => { step(Infinity); if(!G.over) K.end(G); }); },
+    /* fin immédiate (mode dev : « fin libre ») : la partie est jouée jusqu'au bout ; run de prison (endNow) : arrêté là */
+    finish(){ withOverrides(() => { if(!K.endNow) step(Infinity); if(!G.over) K.end(G); }); },
+    /* avancement propre au type de partie (prison : objectif et minerais minés du run), null sinon */
+    info(){ return K.info ? K.info(G) : null; },
   };
 }

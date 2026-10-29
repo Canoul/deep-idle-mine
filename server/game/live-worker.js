@@ -12,6 +12,7 @@ const OPS = {
   khole:   map => game.khole(map),
   finish:  () => game.finish(),
   view:    since => game.view(since),
+  info:    () => game.info(),
 };
 
 parentPort.on('message', ({ id, op, args }) => {

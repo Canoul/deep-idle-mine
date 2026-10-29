@@ -161,7 +161,8 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
 export function mineModes(cur, locked = false, judgment = null, dev = false){
   /* instances (27/10) : un seul bouton « Instances » pour toutes ; il ouvre l'instance choisie (la première sinon) */
   const curInst = MINE_MODES.find(m => m.id === cur)?.instance;
-  return MINE_MODES.filter(m => (!m.tower || dev || judgment?.sides?.[m.tower]?.open) && (!m.instance || m === MINE_MODES.find(x => x.instance))).map(m => {
+  /* Prison (29/10) : pas encore proposée ici, le lobby ne sait pas encore la lancer (route /api/game/prison/start) */
+  return MINE_MODES.filter(m => !m.prison && (!m.tower || dev || judgment?.sides?.[m.tower]?.open) && (!m.instance || m === MINE_MODES.find(x => x.instance))).map(m => {
     if(m.instance) return { id: curInst ? cur : m.id, label: '🗝 Instances', on: !!curInst, soon: false, done: false, disabled: false };   // aussi en session : on regarde la carte (Lancer reste grisé, 27/10)
     const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;
     /* pendant une session, on peut encore regarder la mine instantanée et s'y inscrire (22/10), et regarder le Bloc géant

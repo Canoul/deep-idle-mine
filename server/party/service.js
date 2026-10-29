@@ -455,6 +455,13 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { ...r, party: p ? publicParty(p, me.id) : null };
     },
 
+    /* lancer la prison (29/10) : solo seulement ; le service de jeu refuse si le groupe compte plusieurs joueurs */
+    async prisonLaunch(me){
+      touch(me);
+      const p = partyOf(me.id);
+      return game.prisonStart(me, p ? p.members.map(m => ({ account: m.account, name: m.name })) : null);
+    },
+
     async launch(me, body = {}){
       touch(me); await sweep();
       const p = partyOf(me.id);

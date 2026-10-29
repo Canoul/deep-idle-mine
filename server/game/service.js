@@ -14,6 +14,11 @@
    - Mine instantanée (GAME_DESIGN §6) : une session de type mode 'mi', ouverte à l'heure par le service des
      inscriptions (server/instant/) avec openInstant. Même vie qu'une session (partie en direct, départ = rien,
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
+   - Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md) : une par compte, solo, sans
+     fin. Chaque run est une partie du moteur (id « prison:<id>:<run> ») ; à sa fin, coffre, XP et énergie sont versés
+     avec cette clé (une seule fois, même rejoué), puis le run suivant démarre. Arrêt (bouton, ou lancement d'une mine,
+     d'une tour ou d'une instance) : le run est arrêté au tick atteint, son coffre (pas le sac du mineur) et son énergie
+     sont versés, la prison est fermée.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
 import { GAME, ENERGY, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
@@ -39,7 +44,8 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
-import { sanitizeEnergy, canPay, rollCost, spendEnergy, publicEnergy } from '../../src/meta/energy.js';
+import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../../src/meta/energy.js';
+import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison } from '../../src/shared/prison.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
@@ -145,8 +151,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   const shout = text => { if(text) Promise.resolve().then(() => announce(text)).catch(console.error); };
   const settling = new Map();      // id → promesse du versement en cours
   /* les parties en direct ; à la fin de l'une d'elles, son coffre est partagé et versé */
-  const live = liveRunner({ onEnd: (id, summary) => { settleWith(id, summary).catch(console.error); } });
+  const live = liveRunner({ onEnd: (id, summary) => { (runOwner.has(id) ? prisonEnded(id, summary) : settleWith(id, summary)).catch(console.error); } });
   const startLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);
+  const prisonLimit = createLimiter({ max: config.startsPerHour, window: 3600e3 }, clock);   // lancements de prison
   const chat = createChat({ clock });   // chat des sessions, en mémoire (effacé à la fin de chaque session)
   const startHooks = [];           // appelés après le lancement d'une session normale (comptes des joueurs)
   /* Bloc géant (server/giant/service.js) : { busy(compte) → { mode, leftMs } | null, players() → [compte] } ; une visite
@@ -233,6 +240,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   };
   const spellCtx = async accountId => ({ tree: (await loadSkills(accountId)).tree,
     spec: Object.fromEntries(Object.entries(specLevels(await loadProgress(accountId))).map(([t, s]) => [t, s.level])) });
+  /* le mineur d'un joueur, figé au lancement (session ou prison) : préférences, skills (glyphes actifs ; owned : glyphes
+     possédés, pour le drop), sorts équipés encore valides, apparence (src/skins.js) et pièces portées avec leur qualité
+     et leur niveau (gear) */
+  async function freezePlayer(accountId){
+    const sk = await loadSkills(accountId), inv = await loadInventory(accountId), st = await loadStuff(accountId, inv);
+    return { prefs: await loadPrefs(accountId), skills: { ...sessionSkills(sk), owned: ownedGlyphs(sk, inv) },
+             spells: equippedSpells(await loadSpells(accountId), await spellCtx(accountId)), look: lookOf(st), gear: gearOf(st) };
+  }
 
   /* ce que le navigateur voit d'une session */
   function publicSession(rec){
@@ -305,8 +320,114 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       })().catch(e => { console.error(`Session ${rec.id} :`, e.message); live.close(rec.id); })   // relancée au prochain passage
         .finally(() => pumping.delete(rec.id)));
     }
+    /* prisons (29/10, chemin minimal : le run suit le temps réel, comme une session regardée ; présence, paquets hors
+       ligne et plafond de 24 h viendront ensuite), après les sessions, sur le budget restant */
+    for(const p of (await store.listPrisons()).map(r => sanitizePrison(r.value)).filter(p => p?.state === 'running')){
+      if(left < 1) break;
+      const id = runId(p);
+      if(pumping.has(id) || !openRun(p)) continue;
+      const tick = live.tickOf(id), target = prisonTarget(p);
+      if(tick >= target) continue;
+      const share = Math.min(target - tick, Math.floor(left));
+      left -= share;
+      pumping.add(id);
+      jobs.push((async () => {
+        const end = tick + share;
+        while(live.has(id) && live.tickOf(id) < end) await live.advance(id, Math.min(end, live.tickOf(id) + maxStep));
+      })().catch(e => { console.error(`Prison ${id} :`, e.message); live.close(id); })
+        .finally(() => pumping.delete(id)));
+    }
     await Promise.all(jobs);
     await Promise.all(settling.values());
+    await Promise.all(prisonSettling.values());
+  }
+
+  /* ---------- prison ---------- */
+
+  /* verrous d'un versement de run : la prison et tout ce qu'un run crédite (pris ensemble, toujours dans le même ordre) */
+  const prisonLocks = accountId => ['prison:' + accountId, 'inv:' + accountId, 'xp:' + accountId, 'energy:' + accountId];
+  const loadPrison = async accountId => sanitizePrison(await store.getPrison(accountId));   // revérifiée à chaque fois
+  const runEnded = new Map();      // id du run → bilan : run terminé dans le moteur, pas encore versé
+  const runsClosed = new Set();    // runs versés ou en cours d'arrêt : jamais rouverts dans le moteur
+  const runOwner = new Map();      // id du run ouvert → compte (onEnd : un run de prison, pas une session)
+  const prisonSettling = new Map();   // id du run → versement en cours
+  /* tick que le run doit avoir atteint maintenant (temps réel, à la vitesse de la prison) */
+  const prisonTarget = p => prisonTickAt(clock() - p.runStartedAt - p.pausedMs, p.speed);
+  /* le run en cours tourne dans le moteur (après un redémarrage : rejoué depuis son début) ; false s'il est fini */
+  function openRun(p){
+    const id = runId(p);
+    if(runsClosed.has(id) || runEnded.has(id)) return false;
+    runOwner.set(id, p.account);
+    if(!live.has(id)) live.open(runRecord(p));
+    return true;
+  }
+  /* fin d'un run dans le moteur (objectif atteint ou temps max) : versé, sous les verrous du joueur, s'il est toujours
+     le run en cours d'une prison qui tourne (sinon, un arrêt l'a déjà versé) */
+  function prisonEnded(id, summary){
+    runEnded.set(id, summary);
+    const accountId = runOwner.get(id);
+    const job = withLock.many(prisonLocks(accountId), async () => {
+      const p = await loadPrison(accountId);
+      if(p?.state === 'running' && runId(p) === id && runEnded.has(id)) await settleRun(p, runEnded.get(id), { stopped: false });
+    }).finally(() => prisonSettling.delete(id));
+    prisonSettling.set(id, job);
+    return job;
+  }
+  /* Verse un run (verrous prisonLocks déjà pris) : coffre (shares : coffre + glyphes trouvés, sans le sac du mineur),
+     XP du mineur et de sa spécialisation, énergie au prorata du temps de jeu ; clé « prison:<id>:<run> » partout
+     (rejoué : rien deux fois). Puis : arrêt → prison fermée ; sinon run suivant, qui démarre où le précédent a fini. */
+  async function settleRun(p, summary, { stopped }){
+    const key = runId(p), share = (summary?.shares || []).find(s => s.account === p.account) ?? {};
+    const bag = share.bag && typeof share.bag === 'object' ? share.bag : {};
+    const inv = await loadInventory(p.account);
+    const fresh = !!creditSession(inv, key, bag);
+    if(fresh){ markFound(Object.keys(bag), p.specs?.name); await store.putInventory(p.account, JSON.parse(serialize(inv))); }
+    const xp = Number.isSafeInteger(share.xp) && share.xp > 0 ? share.xp : 0;
+    const pr = await loadProgress(p.account);
+    if(creditXp(pr, key, xp, { tree: sanitizeSkills(p.specs?.skills).tree, xp: specXpOf(xp) })) await store.putProgress(p.account, pr);
+    const t = Number.isFinite(summary?.t) && summary.t > 0 ? summary.t : 0, energy = energyOfTicks(t / DT);
+    const e = await loadEnergy(p.account);
+    if(creditEnergy(e, key, energy)) await store.putEnergy(p.account, e);
+    if(fresh){
+      p.totals.runs++;
+      p.totals.energy = Math.round((p.totals.energy + energy) * 10) / 10;
+      for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
+    }
+    if(stopped){ p.state = 'done'; p.endedAt = clock(); }
+    else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; p.run++; }
+    runsClosed.add(key); runEnded.delete(key); runOwner.delete(key); live.close(key);
+    await store.putPrison(p.account, p);
+  }
+  /* Arrête la prison de ce compte (verrous prisonLocks déjà pris) : le run en cours est joué jusqu'au tick dû puis
+     arrêté là (fin immédiate), et versé. Sans effet si la prison est absente ou fermée. → { prison, stopped } */
+  async function stopPrisonOf(accountId){
+    const p = await loadPrison(accountId);
+    if(!p || p.state === 'done') return { prison: p, stopped: false };
+    const id = runId(p);
+    if(!runEnded.has(id) && openRun(p)){
+      runsClosed.add(id);                              // pump ne le rouvre plus pendant l'arrêt
+      try {
+        const target = prisonTarget(p);
+        while(live.has(id) && live.tickOf(id) < target) await live.advance(id, Math.min(target, live.tickOf(id) + maxStep));
+        if(live.has(id)) await live.finish(id);       // le bilan arrive par onEnd (runEnded)
+      } catch(e){ runsClosed.delete(id); live.close(id); throw e; }
+    }
+    const summary = runEnded.get(id);
+    if(!summary) console.error(`Prison ${id} : arrêt sans bilan du moteur, rien n'est versé`);
+    await settleRun(p, summary ?? { shares: [], t: 0 }, { stopped: true });
+    return { prison: p, stopped: true };
+  }
+  /* sessions qui empêchent de lancer une prison : mine, tour, instance (pas la mine instantanée) */
+  const sessionOf = async accountId => (await store.sessionsOf(accountId))
+    .find(s => ACTIVE.includes(s.status) && !hasLeft(s, accountId) && s.mode !== 'mi') ?? null;
+  /* ce que le navigateur voit de sa prison (objectif et minerais du run en cours si le moteur le fait tourner) */
+  async function prisonView(accountId){
+    const p = await loadPrison(accountId);
+    if(!p) return null;
+    const id = runId(p);
+    let info = null;
+    if(p.state === 'running' && live.has(id)) info = await live.info(id).catch(() => null);
+    return publicPrison(p, info);
   }
 
   /* ---------- fin de session ---------- */
@@ -468,7 +589,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
                prefs: await loadPrefs(me.id),
-               session: publicSession(active), ended: publicSession(ended) };
+               session: publicSession(active), ended: publicSession(ended),
+               prison: await prisonView(me.id) };
     },
 
     /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
@@ -501,14 +623,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(!modeDef.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       if(modeDef.scheduled) fail('mode_scheduled', 400, `${modeDef.label} : elle s'ouvre à heure fixe, inscris-toi dans le lobby.`);
       if(modeDef.giant) fail('mode_giant', 400, `${modeDef.label} : on y entre seul, depuis son panneau dans le lobby.`);
+      if(modeDef.prison) fail('mode_prison', 400, `${modeDef.label} : elle se lance depuis son bouton dans le lobby.`);
       const side = modeDef.tower ?? null;
       /* instance (27/10) : une clé par joueur, vérifiée et consommée au lancement (sous le verrou des inventaires) */
       const inst = modeDef.instance ? instanceDef(mode) : null;
       if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
-      const invLocks = inst ? players.map(p => 'inv:' + p.account) : [];
       /* énergie (29/10) : seule la mine classique en coûte, hors mode dev ; verrou par compte, bots exclus (seuls les vrais joueurs) */
       const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];
-      return withLock.many([...players.map(p => 'acct:' + p.account), ...invLocks, ...energyLocks], async () => {
+      /* verrous : compte, et ceux d'un versement de prison (inventaire, XP, énergie, prison) : le lancement peut arrêter la
+         prison d'un joueur (29/10) ; ils couvrent aussi les clés d'instance et l'énergie */
+      return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
         let opening = null, level = null;
@@ -550,16 +674,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
         for(const p of players){
-          prefs[p.account] = await loadPrefs(p.account);
-          /* figés pour toute la session (glyphes actifs compris) ; owned : glyphes possédés, pour le drop (on trouve les autres) */
-          { const sk = await loadSkills(p.account); skills[p.account] = { ...sessionSkills(sk), owned: ownedGlyphs(sk, await loadInventory(p.account)) }; }
-          /* sorts équipés encore valides (débloqués, bonne spécialisation), figés eux aussi */
-          spells[p.account] = equippedSpells(await loadSpells(p.account), await spellCtx(p.account));
-          /* apparence pendant la session : l'équipement porté au lancement (src/skins.js) ; ses caractéristiques :
-             les mêmes pièces, avec leur qualité et leur niveau (gear) */
-          const st = await loadStuff(p.account, await loadInventory(p.account));
-          looks[p.account] = lookOf(st);
-          gear[p.account] = gearOf(st);
+          /* figés pour toute la session : préférences, skills (glyphes compris), sorts, apparence et pièces portées */
+          const f = await freezePlayer(p.account);
+          prefs[p.account] = f.prefs; skills[p.account] = f.skills; spells[p.account] = f.spells;
+          looks[p.account] = f.look; gear[p.account] = f.gear;
           /* tableau de bord de l'équipe : niveau, arbre et ilvl au lancement (mine classique, server/admin/dashboard.js) */
           if(mode === 'mine') statsAt[p.account] = launchSnapshot({ xp: (await loadProgress(p.account)).xp,
                                                                     tree: skills[p.account].tree, gear: gear[p.account] });
@@ -572,6 +690,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const over = players.filter(p => gearScore(gear[p.account]) >= TOWER.modulation.gsMax);
           if(over.length) fail('gs_too_high', 409, `Modulation : il faut moins de ${TOWER.modulation.gsMax} GS chacun. `+
             over.map(p => `${p.name || 'Un joueur'} a ${gearScore(gear[p.account])} GS`).join(', ') + '.');
+        }
+        /* prison (29/10) : lancer une mine, une tour ou une instance termine la prison de chaque joueur, après tous les refus
+           et avant la création de la session (coffre et énergie du run versés, pas le sac) : jamais deux parties pour un
+           joueur. Ce qui a été versé est relu (inventaire, énergie, glyphes possédés). */
+        for(const p of players){
+          if(!(await stopPrisonOf(p.account)).stopped) continue;
+          skills[p.account].owned = ownedGlyphs(await loadSkills(p.account), await loadInventory(p.account));
+          if(inst) invs[p.account] = await loadInventory(p.account);
+          if(energyLocks.length) energies[p.account] = await loadEnergy(p.account);
         }
         /* shrines du chef (28/10/2026, SHRINES) : mine classique hors mode dev ; chaque shrine actif perd une session ici,
            au lancement, et ses effets sont enregistrés dans la session (la partie se rejoue à l'identique) */
@@ -619,6 +746,35 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         ensureLive(rec);
         for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
         return { session: publicSession(rec) };
+      });
+    },
+
+    /* lance une prison (solo). members : membres de son groupe au lobby (service des groupes), comme start ; plusieurs →
+       refus. Une seule prison à la fois ; pas pendant une mine, une tour ou une instance (la mine instantanée et le Bloc
+       géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
+    async prisonStart(me, members = null){
+      if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
+      return withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
+        const old = await loadPrison(me.id);
+        if(old && old.state !== 'done') fail('prison_running', 409, 'Ta prison tourne déjà.');
+        if(await sessionOf(me.id)) fail('session_running', 409, 'Tu as déjà une session en cours : termine-la d\'abord.');
+        const lim = prisonLimit.check(me.id);
+        if(!lim.ok) fail('rate_limited', 429, 'Trop de prisons lancées. Réessaie un peu plus tard.', { retryAfter: lim.retryAfter });
+        prisonLimit.hit(me.id);
+        const areaMax = await areaMaxOf(me.id);
+        const specs = { name: displayName(me), ...await freezePlayer(me.id) };
+        const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax, now: clock(), speed });
+        await store.putPrison(me.id, p);
+        openRun(p);
+        return { prison: await prisonView(me.id) };
+      });
+    },
+    /* « Sortir de prison » : le run en cours est arrêté au tick atteint ; son coffre (pas le sac) et son énergie sont
+       versés, la prison est fermée. Rejoué, ou sans prison : rien. */
+    async prisonStop(me){
+      return withLock.many(['acct:' + me.id, ...prisonLocks(me.id)], async () => {
+        const { prison } = await stopPrisonOf(me.id);
+        return { prison: publicPrison(prison) };
       });
     },
 

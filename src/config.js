@@ -1428,6 +1428,8 @@ export const MINE_MODES = [
   { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
+  /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
+  { id:'prison', label:'Prison', icon:'⛓', ready:true, prison:true, solo:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },

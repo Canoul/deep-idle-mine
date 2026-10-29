@@ -6,7 +6,7 @@
    - createInlineRunner() : dans le fil principal (tests, et petit outil de diagnostic).
    Interface : open(record) · has(id) · advance(id, tick) · leave(id, compte) → tick · focus(id, compte, focus) → tick
                khole(id, carte) → { tick, ok } (k hole imposé, administration)
-               finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
+               finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · info(id) → avancement (prison) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
 import { Worker } from 'node:worker_threads';
 import { createLiveGame } from './live-game.js';
 
@@ -46,6 +46,7 @@ function createRunner(spawn, onEnd){
     khole:   (id, map) => get(id).queue('khole', map),
     finish:  id => get(id).queue('finish'),
     view:    (id, since) => get(id).queue('view', since),
+    info:    id => get(id).queue('info'),
     closeAll(){ for(const id of [...games.keys()]) close(id); },
   };
 }
@@ -78,7 +79,7 @@ export function createInlineRunner({ onEnd = () => {} } = {}){
   return createRunner(record => {
     const game = createLiveGame(record);
     const ops = { advance: t => game.advance(t), leave: a => game.leave(a), focus: (a, f) => game.focus(a, f), khole: map => game.khole(map), finish: () => game.finish(),
-                  view: since => game.view(since) };
+                  view: since => game.view(since), info: () => game.info() };
     return {
       tick: 0,
       call: async (op, ...args) => ({ value: ops[op](...args),
