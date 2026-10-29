@@ -29,7 +29,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot, TOWER_LEVELS } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys } from '../../src/shared/instances.js';
 import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
-import { sanitizeProgress, creditXp, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
+import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
 import { sanitizeSpells, spellOp, learnScroll, publicSpells, equippedSpells } from '../../src/meta/spells.js';
@@ -204,6 +204,19 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
   const loadEnergy = async accountId => sanitizeEnergy(await store.getEnergy(accountId));   // revérifiée à chaque fois, départ si absente
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
+  /* Rattrapage : max des `areas` de l'historique (session_stat, gardé sans limite) pour ce compte. */
+  const historyAreaMax = async accountId =>
+    (await store.allSessionStats()).reduce((m, r) => r?.account === accountId && Number.isSafeInteger(r.areas) ? Math.max(m, r.areas) : m, 0);
+  /* À appeler sous le verrou 'xp:'. areaMax 0 = « aucune ou pas encore connue » (pas de champ à part) : on recalcule alors
+     depuis l'historique, ce qui ne coûte rien pour un nouveau joueur et ne peut que monter la valeur. */
+  const catchUpAreaMax = async (accountId, pr) => { if(pr.areaMax === 0) raiseAreaMax(pr, await historyAreaMax(accountId)); };
+  /* area max du joueur (contenu de la Prison) ; 0 pour un nouveau joueur */
+  const areaMaxOf = accountId => withLock('xp:' + accountId, async () => {
+    const pr = await loadProgress(accountId), before = pr.areaMax;
+    await catchUpAreaMax(accountId, pr);
+    if(pr.areaMax !== before) await store.putProgress(accountId, pr);
+    return pr.areaMax;
+  });
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
   const pointsOf = async accountId => levelOf((await loadProgress(accountId)).xp).talentPoints;
@@ -345,9 +358,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* XP : sa part du pot commun, une seule fois par session (idempotent, comme le coffre) ; pas dans le MI */
         if(rec.mode !== 'mi' && !side && !isInstanceMode(rec.mode)) await withLock('xp:' + share.account, async () => {
           const pr = await loadProgress(share.account);
+          /* area max : mine classique, hors dev (l'historique de cette partie n'est pas encore écrit : rattrapage avant) */
+          let areaUp = false;
+          if(rec.mode === 'mine' && !rec.dev){ await catchUpAreaMax(share.account, pr); areaUp = raiseAreaMax(pr, summary.areasUnlocked); }
           /* XP de spécialisation : recalculée ici, pour l'arbre figé au lancement (rec.skills, revérifié) */
           const tree = sanitizeSkills(rec.skills?.[share.account]).tree;
-          if(creditXp(pr, rec.id, share.xp ?? 0, { tree, xp: specXpOf(share.xp) })) await store.putProgress(share.account, pr);
+          if(creditXp(pr, rec.id, share.xp ?? 0, { tree, xp: specXpOf(share.xp) }) || areaUp) await store.putProgress(share.account, pr);
         });
       }
       rec = await store.getGameSession(id);
@@ -432,7 +448,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   }
 
   return {
-    dev, speed,
+    dev, speed, areaMaxOf,
     /* wiki : objets secrets, et ceux déjà trouvés (leurs effets s'affichent) */
     wiki: async () => { const found = new Set(await store.listDiscovered?.() ?? []); return { secret: WIKI.secret, discovered: WIKI.secret.filter(i => found.has(i)) }; },
     info: () => ({ dev, speed: dev ? null : speed, speeds: dev ? GAME.devSpeeds : [speed], maxPlayers: GAME.maxPlayers }),
