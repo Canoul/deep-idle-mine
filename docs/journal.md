@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
+- **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
+  en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le
+  niveau d'un vrai joueur. Premiers : Test_Canoul et Test_Mus (mot de passe preset1234).
+- **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
+  ne sont pas visibles, on lui met ceux de sa spé.
+- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne ; outil local seulement)
+
 ## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
 - **Pour le joueur** : deux nouveautés liées.
   - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur

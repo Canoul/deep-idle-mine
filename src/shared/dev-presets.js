@@ -2,11 +2,11 @@
    scripts/dev-presets.js (comptes locaux) et par les sessions dev (mineurs de test, src/shared/game.js minerSpecs). */
 import { SKILLS, SPELLS, XP, GAME, GLYPHS, DEV_PRESETS } from '../config.js';
 import { createInventory, addItem, serialize } from '../meta/inventory.js';
-import { createStuff, stuffOp, equipSlotFor, gearOf, lookOf } from '../meta/stuff.js';
+import { createStuff, stuffOp, equipSlotFor, gearOf, lookOf, sanitizeStuff } from '../meta/stuff.js';
 import { createSkills, sanitizeSkills } from '../meta/skills.js';
-import { createSpells } from '../meta/spells.js';
+import { createSpells, sanitizeSpells } from '../meta/spells.js';
 import { createSets } from '../meta/sets.js';
-import { xpForLevel, levelOf, specLevelOf, createProgress } from '../meta/level.js';
+import { xpForLevel, levelOf, specLevelOf, createProgress, sanitizeProgress } from '../meta/level.js';
 
 export const isPresetTree = id => typeof id === 'string' && SKILLS.trees.some(t => t.id === id);
 export const presetName = tree => DEV_PRESETS.names[tree] ?? ('Test_' + tree).slice(0, 16);
@@ -40,6 +40,29 @@ export function buildPreset(tree, { keys = DEV_PRESETS.keys } = {}){
   SPELLS.list.filter(s => s.unlock.tree === tree && specLevelOf(xp).level >= s.unlock.level)
     .slice(0, SPELLS.openSlots).forEach((s, i) => { spells.slots[i] = s.id; });
   return { level, progress, inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets: createSets() };
+}
+
+/* sorts de la spé tree débloqués à cette XP de spé, dans les emplacements ouverts */
+const treeSpells = (tree, specXp) => SPELLS.list.filter(s => s.unlock.tree === tree && specLevelOf(specXp).level >= s.unlock.level)
+  .slice(0, SPELLS.openSlots).map(s => s.id);
+
+/* Copie d'un vrai personnage (29/10/2026, Geoffrey) : snap = ce que le jeu en ligne renvoie au joueur (/api/game/state)
+   ou sur la fiche d'un ami (/api/social/profile) : { stuff (pièces portées), skills { tree, ranks, glyphs? },
+   spells? { slots }, progress { xp, spec { arbre: { xp } } } }. Tout repasse par les vérifications du jeu (qualité,
+   lignes, rune, niveau, rangs, points). Sans sorts (fiche d'ami), ceux de sa spé débloqués à son niveau. */
+export function presetFromSnapshot(snap, { keys = DEV_PRESETS.keys } = {}){
+  if(!snap || typeof snap !== 'object' || !snap.stuff || !snap.skills) throw new Error('Copie invalide : il faut stuff et skills.');
+  if(!Number.isSafeInteger(keys) || keys < 0) throw new Error('--keys : un entier positif.');
+  const spec = Object.fromEntries(Object.entries(snap.progress?.spec ?? {}).map(([t, v]) => [t, typeof v === 'object' ? v?.xp : v]));
+  const progress = sanitizeProgress({ xp: snap.progress?.xp, spec });
+  const inv = createInventory(), stuff = sanitizeStuff({ worn: snap.stuff }, inv);
+  const lost = Object.entries(snap.stuff).filter(([slot, p]) => p && stuff.worn[slot]?.uid !== p.uid).map(([slot, p]) => `${slot} : ${p.item}`);
+  if(lost.length) throw new Error(`Pièces refusées par le jeu : ${lost.join(', ')}`);
+  const { tree, ranks, glyphs } = snap.skills;
+  const skills = { ...createSkills(), ...sanitizeSkills({ tree, ranks, glyphs: glyphs ?? {} }, levelOf(progress.xp).talentPoints) };
+  const spells = sanitizeSpells({ slots: snap.spells?.slots ?? treeSpells(tree, progress.spec[tree] ?? 0) });
+  if(keys) addItem(inv, DEV_PRESETS.key, keys);
+  return { level: levelOf(progress.xp).level, progress, inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets: createSets() };
 }
 
 /* ce qu'un mineur de test reçoit en session avec ce preset : { name, look, gear, skills:{tree, ranks, glyphs}, owned, spells:[id] }

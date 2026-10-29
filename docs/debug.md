@@ -5124,3 +5124,14 @@ Règles (voir CLAUDE.md) :
   en attente non relue, énergie plafonnée au bilan, `prison` par membre ; « absent » part de 50 d'énergie), `tests/prison-ui.test.js` (+3).
   Sujet + lobby / party / live / game-service / instance-server : 177/177 ; `npm run test:anticheat` 115/115.
 - **À vérifier** : le comportement réel d'un fil d'exécution qui meurt (Worker) dans `pump` (testé avec le moteur dans le fil principal).
+
+## 29/10/2026 — Presets copiés de vrais joueurs (Geoffrey, branche geoffrey/prison)
+- `src/shared/dev-presets.js` `presetFromSnapshot(snap, { keys })` : snap = `{ stuff, skills, spells?, progress }` tel que
+  renvoyé par `/api/game/state` (son propre compte) ou `/api/social/profile` (un ami : pas de sorts → ceux de sa spé à son
+  niveau). Tout repasse par sanitizeStuff / sanitizeSkills / sanitizeSpells / sanitizeProgress ; une pièce refusée →
+  erreur (rien d'écrit). `scripts/dev-presets.js --from <json>` : `{ pseudo: snap }` → comptes locaux `Test_<Pseudo>`.
+- Récupération (console du navigateur, connecté sur le jeu en ligne, lecture seule) : fetch de `/api/game/state`,
+  `/api/social`, `/api/social/profile`, puis téléchargement d'un .json (`copy()` n'existe pas dans tous les navigateurs).
+  Fichiers dans `data/presets/` (ignoré par git : stuff de vrais joueurs).
+- **Tests** ✅ `tests/dev-presets.test.js` +2 (11/11). Vérifié : Test_Canoul et Test_Mus relus par le service de jeu
+  (vérifications du serveur) = stuff identique à la copie, mêmes rangs, 4 glyphes / 0, sorts inspiration+zipette / dash.
