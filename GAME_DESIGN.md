@@ -356,7 +356,7 @@ Toutes les stats se comparent dans une seule unité : **x = 1 seconde de travail
 | Pods | 200 | 6 x *(prix « comme frein »)* | +88 = 528 x (Plastron en fer, 24/10 ; avant +50, et +33 avant le 23/10 ; torse volontairement plus fort, hors règle du tier) |
 | Oxygène | 300 | 4 x *(prix « comme frein »)* | +63 ≈ 250 x (Casque en fer, 27/10 ; avant +67) |
 | Dégâts | 5 | 40 x | 14 au lieu de 5 = 360 x (Épée en fer, 24/10 ; avant 11 = 240 x) ; 8 = 120 x (Épée en pierre) |
-| Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +20 % ≈ 39 x (Gants tactique) |
+| Vitesse d'attaque | 100 % | **1,96 x par %** (196 s de combat / 100) | +10 % ≈ 20 x (Gants tactique) |
 | Fortune | 0 % | **36 x par %** (1 % de minerai en plus = 1 % de 3 600 x) | +5 % = 180 x (Gants d'ouvrier) |
 | Rayon des torches | 5 | 27 x | – |
 | Découverte | 2 | ≈ 190 x *(estimation, effet indirect)* | +1 = Cape de Naingui |
@@ -661,7 +661,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
 
   | Objet | Recette | Effet |
   |---|---|---|
-  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +20 % (≈ 39 x) |
+  | Gants tactique (case gants) | 20 Shiny iron + 20 Tainted iron + 1 Jade inférieur | Vitesse d'attaque +10 % *(29/10/2026, Geoffrey : ≈ +10 % de DPS ; avant +20 %)* |
   | Gants d'ouvrier (case gants) | 20 Shiny gold + 20 Tainted iron | Fortune +5 % (≈ 180 x) |
   | Cape de Naingui (case cape) | 20 Tissu sombre + 1 Rubis inférieur + 1 Saphir inférieur | Découverte +1 |
 
@@ -762,7 +762,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | **Lanières en cuir du gobelin** (torse, inhabituel) — torse nu, deux sangles de cuir | Vitesse d'attaque +31,9 % *(combat, ÷ 2)*, Butin des mobs +12,5 % *(27/10 ; avant +44 % / +22 %)* | gobelin 0,1 % *(26/10 soir ; avant 0,5 %)* | 20 Chitine + 10 Peau de gobelin |
   | **Capuche sombre** (casque, rare) — capuche violette, visage sombre, yeux rouges | Recul +0,52, Critique +4,8 % *(combat, ÷ 2 ; 27/10, avant +0,13 / +9,7 %)* | occultiste 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Tissu sombre |
   | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,04 (250 x) *(27/10 ; avant +1,1)* | méphite 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Vésicule de gaz |
-  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +1,6, Ténacité +12,5 % *(combat, ÷ 2 ; 27/10, avant +3,1 / +25 %)* | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
+  | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +1,5, Ténacité +12,5 % *(29/10/2026, Geoffrey : ≈ +10 % de DPS avec une épée en fer ; 28/10 : +5 ; 27/10 : +1,6 ; avant +3,1 / +25 %)* | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
 
 - **Bulle d'info** : survoler une pièce (ou la toucher sur mobile) dans l'Inventaire, le Craft ou le Stuff affiche son nom et ses effets, un par ligne (ex. « Pioche en pierre / Vitesse de minage +0,2 »).
 - **Stats du mineur** : sous les cases, l'onglet liste les stats du mineur (oxygène, pods, vitesses, minage, dégâts, vitesse d'attaque, fortune, découverte, vision, boussole, torches, passerelles) : (base + bonus des pièces portées, en vert) × multiplicateur des skills (en bleu, ex. vitesse de minage ×1,06, dégâts ×1,15), puis l'effet de ses anneaux (en violet). Le total est exactement ce que le mineur a en session seul ; en groupe, les anneaux des autres s'y ajoutent.

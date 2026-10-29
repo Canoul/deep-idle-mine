@@ -1054,7 +1054,7 @@ export const STUFF = {
     /* 25/10/2026 (Geoffrey) : +10 torches, rayon 8 (au lieu de 5), pose deux fois plus rapide (0,5 s au lieu de 1) */
     'Lampe à incandescence': { slot:'torche', tex:'lamp_incandescent', stats:{ torches:10 }, set:{ torchRadius:8, torchTime:0.5 } },
     /* tier 2 (Treasure T2) : recettes débloquées par leur blueprint */
-    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:20 } },
+    'Gants tactique':      { slot:'gants',  tex:'gloves_tactical', stats:{ attackSpeed:10 } },   // 29/10 (Geoffrey) : ≈ +10 % de DPS (avant 20)
     'Gants d\'ouvrier':    { slot:'gants',  tex:'gloves_worker',   stats:{ fortune:5 } },
     'Cape de Naingui':     { slot:'cape',   tex:'cape_naingui',    stats:{ discoverMax:1 } },
     /* tier 3 (Treasure T3, 23/10/2026, Geoffrey) : au départ, acier = pièce en fer × 1,2 (plastron : pods 80).
@@ -1101,7 +1101,7 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Tissu sombre':10 } },
     'Nuage magique':       { slot:'jambes', tex:'cloud_magic',   stats:{ speed:1.04 },   // 250 x, une seule stat (avant 1,1 ; d'abord 1,4)
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
-    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:5, tenacity:12.5 },   // 28/10 (Geoffrey) : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
+    'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.5, tenacity:12.5 },   // 29/10 (Geoffrey) : dégâts 1,5 ≈ +10 % de DPS avec 14 dégâts fixes (avant 5) ; 28/10 : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
     'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases

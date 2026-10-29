@@ -209,7 +209,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
   **Capuche sombre** (casque, rare ; recul +0,13, critique +9,7 % ; occultiste 0,1 %), **Nuage magique** (jambes, rare ;
-  marche +1,1 ; méphite 0,1 %), **Ceinture du Géant** (ceinture, épique ; dégâts +3,1, ténacité +25 % ; minotaure 0,5 %,
+  marche +1,1 ; méphite 0,1 %), **Ceinture du Géant** (ceinture, épique ; **dégâts +1,5** (29/10, Geoffrey : ≈ +10 % de DPS ; 28/10 : +5 ; ancien +3,1), ténacité +12,5 % (ancien +25 %) ; minotaure 0,5 %,
   1 % en k hole ; nerf du 26/10 au soir, ancien 0,5 % / 1 % / 2 %). Chance × (1 + butin du mineur : stat Butin + skill Pillage ; 1 % à +50 % → 1,5 %), une seule pièce, hasard à part, un seul joueur la reçoit (partage normal). Tier 2
   pour les runes. Recyclage en quantités fixes (`STUFF.items[…].recycle`). Skins dessinés (torse nu à sangles, capuche,
   nuage, ceinture à cornes).
@@ -404,6 +404,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   fenêtre), panneaux qui glissent depuis les bords au même rythme ; l'inverse en sortant (l'onglet Session reste affiché
   par-dessus le temps que ses panneaux repartent) (`BACKDROP` dans backdrop.js : dim 0,4,
   450 ms). Ancien, jamais en ligne : la mine du fond figée à la place de la session.
+
+- **Gants tactique** (29/10, Geoffrey) : vitesse d'attaque **+10 %** (ancien +20 %), ≈ +10 % de DPS comme la Ceinture du
+  Géant (+10,7 % avec une épée en fer, +8,1 % en acier). Les Gants de boucher (+4,05 dégâts) font plus (+28,6 % en fer).
 
 - **DPS dans l'onglet Stuff** (28/10, Geoffrey ; `rawDps`, src/meta/stuff.js) : dégâts par seconde moyens sur cible immobile,
   sous le gear score. **Vitesse d'attaque sans paliers** (28/10) : le coup suivant part à l'heure exacte (`nowOf`), avant
