@@ -325,6 +325,7 @@ test('présent : vue toutes les 10 s → le run suit le temps réel (pump comme 
 
 test('absent : un paquet toutes les 10 min au plus, moteur fermé entre deux ; au retour, bilan des runs une seule fois', async () => {
   const { game, store, t, box } = setup();
+  await setEnergy(store, A.id, 50);             // de la place sous le plafond : le bilan compte l'énergie créditée
   await game.prisonStart(A);
   const p = await prisonOf(store, A.id);
   const q3 = afterRuns(p, 3), back = q3.runStartedAt + 60e3;   // 3 runs finis pendant l'absence
@@ -513,4 +514,114 @@ test('bilan à l\'heure de fin : run fini pendant l\'absence versé plus tard (s
     }
     assert.equal((await prisonOf(store, A.id)).away.runs, 0, 'fini sous les yeux du joueur');
   }
+});
+
+/* ---------- relecture finale : moteur en erreur, plafond des paquets, prisons en attente, énergie réelle ---------- */
+
+const C = { id: 'CCCC3333', name: 'Lea' };
+/* le moteur plante sur chaque avance (et fin) d'un run de prison ; les sessions ne sont pas touchées */
+function crashPrisons(box){
+  const advance = box.live.advance, finish = box.live.finish;
+  box.live.advance = (id, target) => id.startsWith('prison:') ? Promise.reject(new Error('moteur en panne')) : advance(id, target);
+  box.live.finish = id => id.startsWith('prison:') ? Promise.reject(new Error('moteur en panne')) : finish(id);
+}
+const quiet = async fn => { const err = console.error; console.error = () => {}; try { return await fn(); } finally { console.error = err; } };
+
+test('moteur en erreur : « Sortir de prison » réussit (rien versé, done) ; lancer une mine aussi', async () => {
+  {
+    const { game, store, t, box } = setup();
+    await game.prisonStart(A);
+    crashPrisons(box);
+    t.now = T0 + 60e3;
+    const r = await quiet(() => game.prisonStop(A));
+    assert.equal(r.prison.state, 'done');
+    assert.equal((await prisonOf(store, A.id)).state, 'done');
+    assert.equal(sumInv(await invOf(store, A.id)), 0, 'pas de bilan : rien de versé');
+    assert.equal(box.live.size, 0);
+  }
+  {
+    const { game, store, t, box } = setup();
+    await game.prisonStart(A);
+    crashPrisons(box);
+    t.now = T0 + 60e3;
+    await quiet(() => game.start(A, {}));
+    assert.ok(await game.activeSessionId(A.id), 'la mine est lancée');
+    assert.equal((await prisonOf(store, A.id)).state, 'done');
+  }
+});
+
+test('moteur en erreur dans pump : la prison s\'arrête après PRISON.crashMax plantages (journalisé), puis rien', async () => {
+  const { game, store, t, box } = setup();
+  await game.prisonStart(A);
+  crashPrisons(box);
+  const logs = [];
+  const err = console.error; console.error = (...a) => logs.push(a.join(' '));
+  try {
+    for(let i = 1; i <= PRISON.crashMax + 2; i++){ t.now = T0 + i * 1000; await game.pump(); }
+  } finally { console.error = err; }
+  assert.equal((await prisonOf(store, A.id)).state, 'done');
+  assert.ok(logs.some(l => /arrêtée/.test(l)), 'journalisé');
+  assert.equal(box.live.size, 0);
+  await game.start(A, {});
+  assert.ok(await game.activeSessionId(A.id));
+});
+
+test('paquets d\'absents : au plus PRISON.batchConcurrency (1) par passage, le reste au passage suivant', async () => {
+  assert.equal(PRISON.batchConcurrency, 1);
+  const { game, t, box } = setup();
+  for(const who of [A, B, C]) await game.prisonStart(who);
+  const advance = box.live.advance;
+  let ids = new Set();
+  box.live.advance = (id, target) => { ids.add(id); return advance(id, target); };
+  t.now = T0 + 20 * 60e3;                               // tous absents, un paquet dû pour chacun
+  const per = [];
+  for(let i = 0; i < 3; i++){ ids = new Set(); await game.pump(); per.push(ids.size); t.now += 200; }
+  assert.deepEqual(per, [1, 1, 1], 'un paquet par passage, chacun son tour');
+});
+
+test('une prison en attente sort de l\'index : pump ne la relit plus ; sa visite l\'y remet', async () => {
+  const cfg = { ...PRISON, offlineMax: 15 * 60e3, batchMs: 5 * 60e3 };
+  const { game, store, t, box } = setup({ prison: cfg });
+  await game.prisonStart(A);
+  for(t.now = T0 + 60e3; t.now <= T0 + 20 * 60e3; t.now += 60e3) await game.pump();
+  assert.equal((await prisonOf(store, A.id)).state, 'waiting');
+  await game.pump();
+  const get = store.getPrison.bind(store);
+  let reads = 0;
+  store.getPrison = async id => { reads++; return get(id); };
+  for(let i = 0; i < 3; i++){ t.now += 60e3; await game.pump(); }
+  assert.equal(reads, 0, 'jamais relue par pump');
+  store.getPrison = get;
+  await game.prisonView(A, null);
+  const n = box.advances;
+  t.now += 10e3; await game.pump();
+  assert.ok(box.advances > n, 'revenue : pump la fait tourner');
+});
+
+test('bilan d\'absence : l\'énergie réellement créditée (plafond), pas celle du run', async () => {
+  const { game, store, t } = setup();
+  await game.prisonStart(A);
+  const p = await prisonOf(store, A.id), G = replayRun(p);
+  assert.ok(energyOfTicks(G.ticks) > 1, 'le run rapporte plus que la place qui reste');
+  await setEnergy(store, A.id, 99);
+  t.now = runEndAt(p, G) + 60e3;
+  const v = await game.prisonView(A, null);
+  assert.equal(v.prison.away.runs, 1);
+  assert.equal(v.prison.away.energy, 1, 'plafonnée à 100');
+  assert.equal(await energyOf(store, A.id), 100);
+});
+
+test('vue du groupe : « prison en cours » par membre (le chef et le membre sont prévenus avant un lancement)', async () => {
+  const { game } = setup();
+  let n = 0;
+  const party = createPartyService({ game, clock: () => T0, getAccount: async () => null, newCode: () => ['K7Q4P2', 'H3XM9T'][n++ % 2] });
+  await game.prisonStart(B);
+  await party.create(A);
+  await party.join(B, 'K7Q4P2');
+  const of = async (who, id) => (await party.state(who)).party.members.find(m => m.account === id).prison;
+  assert.equal(await of(A, B.id), true);
+  assert.equal(await of(A, A.id), false);
+  assert.equal(await of(B, B.id), true);
+  await game.prisonStop(B);
+  assert.equal(await of(A, B.id), false);
 });

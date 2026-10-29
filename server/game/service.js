@@ -353,11 +353,36 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     try { return await fn(); }
     finally { const n = watching.get(accountId) - 1; n > 0 ? watching.set(accountId, n) : watching.delete(accountId); }
   }
-  /* Index des prisons qui tournent ou attendent (comptes), pour que pump ne relise qu'elles : bâti depuis le stockage
-     au premier besoin (démarrage du serveur), complété au lancement, une prison fermée en sort au passage suivant. */
+  /* Index des prisons qui tournent (comptes), pour que pump ne relise qu'elles : bâti depuis le stockage au premier
+     besoin (démarrage du serveur), complété au lancement et à la visite qui fait repartir une prison en attente
+     (seePrison) ; une prison fermée ou en attente en sort (pump, endBatch). */
   let prisonIndex = null;
   const indexOfPrisons = () => prisonIndex ??= store.listPrisons()
-    .then(list => new Set(list.filter(r => ['running', 'waiting'].includes(sanitizePrison(r.value)?.state)).map(r => r.account)));
+    .then(list => new Set(list.filter(r => sanitizePrison(r.value)?.state === 'running').map(r => r.account)))
+    .catch(e => { prisonIndex = null; throw e; });   // stockage en panne : relu au prochain besoin (pas d'index cassé à vie)
+  /* Plantages du moteur (relecture finale, 29/10) : un run qui plante à chaque rejeu ne doit ni bloquer l'arrêt ni
+     tourner sans fin. crashes : id du run → plantages ; au bout de cfg.crashMax, la prison est arrêtée (abandonPrison).
+     Seules les erreurs du moteur comptent (marquées prisonRun), pas celles du stockage. */
+  const crashes = new Map();
+  const engineError = (e, id) => { if(e && typeof e === 'object') e.prisonRun ??= id; return e; };
+  /* arrête la prison dont le run id plante : rien n'est versé sans bilan du moteur (sinon, ce bilan) ; journalisé */
+  const abandonPrison = (accountId, id) => withLock.many(prisonLocks(accountId), async () => {
+    const p = await loadPrison(accountId);
+    if(!p || p.state === 'done' || runId(p) !== id) return;
+    console.error(`Prison ${id} : le moteur plante à chaque rejeu (${cfg.crashMax} fois), prison arrêtée`);
+    await settleRun(p, runEnded.get(id) ?? { shares: [], t: 0 }, { stopped: true });
+  });
+  /* une erreur du moteur sur un run : moteur fermé (rejoué au prochain passage), comptée ; au plafond, prison arrêtée.
+     → la promesse de l'arrêt, ou null si l'erreur ne vient pas du moteur (à relancer) */
+  function runCrashed(accountId, e){
+    const id = e?.prisonRun;
+    if(!id) return null;
+    live.close(id);
+    const n = (crashes.get(id) ?? 0) + 1;
+    crashes.set(id, n);
+    console.error(`Prison ${id} : erreur du moteur (${n}/${cfg.crashMax}) :`, e.message);
+    return n >= cfg.crashMax ? abandonPrison(accountId, id) : Promise.resolve();
+  }
   /* tick que le run doit avoir atteint maintenant (temps réel à la vitesse de la prison, plafonné : prisonDueMs) */
   const dueTick = p => prisonTickAt(prisonDueMs(p, clock(), cfg), p.speed);
   /* le run en cours tourne dans le moteur (après un redémarrage : rejoué depuis son début) ; false s'il est fini.
@@ -407,32 +432,39 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const pr = await loadProgress(p.account);
     if(creditXp(pr, key, xp, { tree: sanitizeSkills(p.specs?.skills).tree, xp: specXpOf(xp) })) await store.putProgress(p.account, pr);
     const t = Number.isFinite(summary?.t) && summary.t > 0 ? summary.t : 0, energy = energyOfTicks(t / DT);
-    const e = await loadEnergy(p.account);
-    if(creditEnergy(e, key, energy)) await store.putEnergy(p.account, e);
+    /* énergie réellement créditée (plafond ENERGY.max) : c'est elle que comptent le bandeau et le bilan d'absence */
+    const e = await loadEnergy(p.account), before = e.value;
+    let gained = 0;
+    if(creditEnergy(e, key, energy)){ gained = Math.round((e.value - before) * 10) / 10; await store.putEnergy(p.account, e); }
     if(fresh){
       p.totals.runs++;
-      p.totals.energy = Math.round((p.totals.energy + energy) * 10) / 10;
+      p.totals.energy = Math.round((p.totals.energy + gained) * 10) / 10;
       for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
-      if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, energy, bag);
+      if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, gained, bag);
     }
-    if(stopped){ p.state = 'done'; p.endedAt = clock(); closedRun.delete(p.id); }
+    if(stopped){ p.state = 'done'; p.endedAt = clock(); closedRun.delete(p.id); batching.delete(p.account); }
     else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; closedRun.set(p.id, p.run); p.run++; }
-    runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); live.close(key);
+    runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); crashes.delete(key); live.close(key);
     await store.putPrison(p.account, p);
   }
   /* Arrête la prison de ce compte (verrous prisonLocks déjà pris) : le run en cours est joué jusqu'au tick dû (plafonné :
      une prison qui attend s'arrête où elle s'était arrêtée) puis arrêté là (fin immédiate), et versé. Sans effet si la
-     prison est absente ou fermée. → { prison, stopped } */
+     prison est absente ou fermée. Moteur en erreur : l'arrêt réussit quand même (rien n'est versé sans bilan, journalisé),
+     sinon ni « Sortir de prison » ni un lancement de mine ne passeraient. → { prison, stopped } */
   const stopPrisonOf = accountId => watch(accountId, async () => {
     const p = await loadPrison(accountId);
     if(!p || p.state === 'done') return { prison: p, stopped: false };
     const id = runId(p);
-    if(!runEnded.has(id) && openRun(p)){
+    if(!runEnded.has(id)){
       try {
-        const target = dueTick(p);
-        while(live.has(id) && live.tickOf(id) < target) await live.advance(id, Math.min(target, live.tickOf(id) + maxStep));
-        if(live.has(id)) await live.finish(id);       // le bilan arrive par onEnd (runEnded)
-      } catch(e){ if(!runEnded.has(id)){ live.close(id); throw e; } }   // fini entre-temps (pump, une vue) : son bilan est là
+        if(openRun(p)){
+          const target = dueTick(p);
+          while(live.has(id) && live.tickOf(id) < target) await live.advance(id, Math.min(target, live.tickOf(id) + maxStep));
+          if(live.has(id)) await live.finish(id);     // le bilan arrive par onEnd (runEnded)
+        }
+      } catch(e){                                     // fini entre-temps (pump, une vue) : son bilan est là
+        if(!runEnded.has(id)){ live.close(id); console.error(`Prison ${id} : moteur en erreur à l'arrêt :`, e.message); }
+      }
     }
     const summary = runEnded.get(id);
     if(!summary) console.error(`Prison ${id} : arrêt sans bilan du moteur, rien n'est versé`);
@@ -455,7 +487,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(p?.state !== 'running') return { stop: true };
         const id = runId(p);
         if(runEnded.has(id)) return { wait: prisonSettling.get(id), stop: !prisonSettling.has(id) };   // versement relancé par pump
-        if(!openRun(p)) return { stop: true };
+        try { if(!openRun(p)) return { stop: true }; } catch(e){ throw engineError(e, id); }
         return { id, target: dueTick(p) };
       });
       if(step.stop) return { upToDate: false };
@@ -466,7 +498,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(end <= tick) return { upToDate: false };
       left -= end - tick;
       try { await advanceRun(id, end); }
-      catch(e){ if(live.has(id) && !runEnded.has(id)) throw e; }   // fini ou fermé sous nos pieds (pump, une autre vue)
+      catch(e){ if(live.has(id) && !runEnded.has(id)) throw engineError(e, id); }   // fini ou fermé sous nos pieds (pump, une autre vue)
       if(runEnded.has(id)){ await prisonSettling.get(id)?.catch(() => {}); continue; }   // run fini : le suivant
       if(!live.has(id) || live.tickOf(id) < target) return { upToDate: false };        // budget épuisé (ou fermé)
     }
@@ -482,25 +514,27 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       p.lastBatchAt = now;
       if(now >= p.lastSeenAt + cfg.offlineMax) p.state = 'waiting';
       await store.putPrison(accountId, p);
+      if(p.state === 'waiting') (await indexOfPrisons()).delete(accountId);   // plus relue jusqu'à sa visite (seePrison)
       if(!isPresent(p, now, cfg) && !watching.has(accountId)) live.close(runId(p));
     });
   }
   /* Prisons dans pump (spec « Rythme »), sur le budget left laissé par les sessions : d'abord celles que le joueur
      regarde (comme une session, la moins en retard d'abord), puis les paquets des absents (au plus un toutes les
      batchMs, joué au plus vite jusqu'au tick dû, plafonné à lastSeenAt + offlineMax ; un paquet commencé continue aux
-     passages suivants jusqu'à être à jour). Un absent sans paquet dû : moteur fermé. → les calculs lancés. */
+     passages suivants jusqu'à être à jour ; au plus cfg.batchConcurrency paquets à la fois, les commencés d'abord, puis
+     le plus ancien : sur OVH le budget est illimité, sans cela tous les absents dus se calculeraient en même temps).
+     Un absent sans paquet dû : moteur fermé. → les calculs lancés. */
   async function pumpPrisons(left){
     const index = await indexOfPrisons(), now = clock();
     const present = [], absent = [];
     for(const accountId of [...index]){
       if(pumping.has('prison:' + accountId)) continue;
       const p = await loadPrison(accountId);
-      if(!p || p.state === 'done'){
-        /* sous le verrou : un lancement en cours l'ajoute après l'avoir écrite */
-        await withLock('prison:' + accountId, async () => { if(!['running', 'waiting'].includes((await loadPrison(accountId))?.state)) index.delete(accountId); });
+      if(p?.state !== 'running'){
+        /* fermée ou en attente : sort de l'index, sous le verrou (un lancement ou une visite l'y remet après l'avoir écrite) */
+        await withLock('prison:' + accountId, async () => { if((await loadPrison(accountId))?.state !== 'running') index.delete(accountId); });
         continue;
       }
-      if(p.state !== 'running') continue;                       // waiting : plus rien jusqu'à sa visite
       const id = runId(p);
       if(runEnded.has(id)){ if(!prisonSettling.has(id)) retryPayout(id); continue; }
       if(isPresent(p, now, cfg)) present.push(p);
@@ -509,8 +543,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     }
     const lag = p => dueTick(p) - (live.tickOf(runId(p)) ?? 0);
     present.sort((a, b) => lag(a) - lag(b));
+    const started = absent.filter(p => batching.has(p.account));
+    const fresh = absent.filter(p => !batching.has(p.account)).sort((a, b) => a.lastBatchAt - b.lastBatchAt);
+    const batches = [...started, ...fresh].slice(0, Math.max(0, cfg.batchConcurrency ?? 1));
     const jobs = [];
-    for(const p of [...present, ...absent]){
+    for(const p of [...present, ...batches]){
       if(left < 1) break;
       const accountId = p.account, batch = !present.includes(p), key = 'prison:' + accountId;
       if(pumping.has(key)) continue;
@@ -522,7 +559,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       jobs.push((async () => {
         const { upToDate } = await playPrison(accountId, share);
         if(batch && upToDate) await endBatch(accountId);
-      })().catch(e => { if(live.has(runId(p))){ console.error(`Prison ${runId(p)} :`, e.message); live.close(runId(p)); } })   // relancée au prochain passage
+      })().catch(e => runCrashed(accountId, e)                // moteur : compté, relancé au prochain passage (au plafond : arrêtée)
+          ?? (live.has(runId(p)) && (console.error(`Prison ${runId(p)} :`, e.message), live.close(runId(p)))))
+        .catch(e => console.error(`Prison de ${accountId} :`, e.message))
         .finally(() => pumping.delete(key)));
     }
     return jobs;
@@ -546,10 +585,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(changed || (p.state !== 'done' && !(now - (seenWritten.get(accountId) ?? -Infinity) < cfg.seenWriteMs))){
         await store.putPrison(accountId, p); seenWritten.set(accountId, now);
       }
+      if(p.state === 'running') (await indexOfPrisons()).add(accountId);   // repartie après une attente : pump la reprend
       return p;
     });
     if(!visit) return { prison: null, view: null };
-    if(play && visit.state === 'running') await playPrison(accountId, catchUpBudget(visit));
+    if(play && visit.state === 'running'){
+      try { await playPrison(accountId, catchUpBudget(visit)); }
+      catch(e){ const crash = runCrashed(accountId, e); if(!crash) throw e; await crash; }   // moteur : la vue répond quand même
+    }
     const { p, away } = await withLock('prison:' + accountId, async () => {
       const p = await loadPrison(accountId) ?? visit, away = p.away;
       if(hasAway(p)){ clearAway(p); await store.putPrison(accountId, p); }
@@ -1515,6 +1558,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
     gsFor: async accountId => gearScore(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
+    /* prison en cours (ou en attente) de ce joueur : le lobby du groupe prévient qu'un lancement la terminera (29/10) */
+    prisonActiveOf: async accountId => ['running', 'waiting'].includes((await loadPrison(accountId))?.state),
     /* niveau du mineur (fiche d'un joueur dans le Carreau, 29/10) */
     levelFor: async accountId => levelOf((await loadProgress(accountId)).xp).level,
     aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
