@@ -31,7 +31,7 @@ Modèle d'entrée :
   sur un autre marche dans tous les onglets ; pour le poser sur une case vide, c'est dans « Tout ».
 - **Décisions** : résidus avec les minerais, stonebricks avec les blocs, glyphes dans divers (rangement de Claude, à changer
   dans `INVENTORY.tabs`).
-- **État** : 🧪 sur la branche `geoffrey/inventaire-onglets` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
 - **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais
