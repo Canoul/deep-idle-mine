@@ -666,6 +666,7 @@ export const SPELLS = {
        rayon (un boss de donjon seulement s'il le combat déjà ; dans une tour, le boss aussi) */
     { id:'dynamite', name:'Dynamite', icon:'🧨', px:'fire', short:'Fait sauter les blocs tendres devant lui', unlock:{ tree:'mineur', level:10 }, needTree:'mineur', cd:150,
       reach:2, radius:2, throwTime:0.5, hardMul:3, dmg:0.5,
+      fightFoes:2,   // tours et instance (29/10/2026, Geoffrey) : en combat, elle part sur le boss, ou s'il y a au moins fightFoes mobs dans son rayon (valeur provisoire)
       desc:'Lance une dynamite devant lui (2 cases au plus) : dans un rayon de 2, elle casse les blocs moins durs que 3 × sa vitesse de minage, comme s\'il les minait, et inflige 50 % de ses dégâts aux mobs' },
     /* 27/10/2026 (Geoffrey) : le prochain allié à radius cases ou moins (cercle), qui travaille dans la mine (pas en
        remontée ni en descente depuis la surface) et à qui il manque de l'oxygène, regagne podsPct des pods max DU
@@ -850,6 +851,13 @@ export const RUNE = {
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
   rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
+  /* Poudre de rêve (29/10/2026, Geoffrey) : recycler une rune (inventaire) la détruit et rend min à max Poudre de rêve
+     (tirées par le serveur), quelle que soit sa qualité ; un fragment de rune rend fragment.min à fragment.max. */
+  dust: { item:'Poudre de rêve', tex:'dream_powder', rarity:'rare',
+          recycle: { rune:{ min:8, max:12 }, fragment:{ min:1, max:6 } } },
+  /* Rune fabriquée (craft, recette « Rune » de src/recipes.js, 29/10/2026, Geoffrey) : sa qualité est tirée avec ces
+     chances (pas celles de l'identification, UPGRADE.qualities), puis ses lignes comme une rune de tour. */
+  craftChances: { 1:0.15, 2:0.25, 3:0.30, 4:0.18, 5:0.06, 6:0.045, 7:0.015 },
 };
 
 /* ---- Aura du stuff (src/meta/aura.js, dessin : src/render/aura.js) ----
@@ -884,7 +892,8 @@ const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap
    moins (cercle) d'un porteur est asservi : il ne se bat pas, mine pendant life s à la vitesse d'un mineur de base
    (minerais à reach cases ou moins, même priorité que le porteur), puis disparaît ; ce qu'il mine va au coffre commun. */
 export const GOBLIN_KING = {
-  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
+  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king',
+           levels: { 1:'', 2:' II' } },   // niveaux de l'Instance I (29/10/2026) : suffixe du nom ; butin × INSTANCE.levels[n].chest
   loot: {
     always: [
       /* 29/10/2026 (Geoffrey) : lingots de graphite et fer souillé à la place du minerai de graphite (avant : Graphite ore 20-40) */
@@ -912,10 +921,11 @@ export const GOBLIN_KING = {
   },
   thrall: { radius:10, life:30, reach:6 },
 };
-/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') */
-export const goblinChestItem = q => `${GOBLIN_KING.chest.name} R${q}`;
-const GOBLIN_CHEST_ITEMS = Object.fromEntries(QUALITY_NUMS.map(q =>
-  [goblinChestItem(q), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q }, treasure:true }]));
+/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') ; niveau 2 de
+   l'instance (29/10/2026) : « Coffre du Roi Gobelin II R4 » (chest.level 2) */
+export const goblinChestItem = (q, level = 1) => `${GOBLIN_KING.chest.name}${GOBLIN_KING.chest.levels[level] ?? ''} R${q}`;
+const GOBLIN_CHEST_ITEMS = Object.fromEntries(Object.keys(GOBLIN_KING.chest.levels).map(Number).flatMap(level => QUALITY_NUMS.map(q =>
+  [goblinChestItem(q, level), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q, level }, treasure:true }])));
 
 /* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
@@ -976,7 +986,7 @@ export const RARITY = {
   default: 'commun',
   items: {
     ...Object.fromEntries(Object.values(GLYPHS.items).map(n => [n, GLYPHS.rarity])),   // glyphes (25/10)
-    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
+    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare', [RUNE.dust.item]:RUNE.dust.rarity,   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Cobalt ore':'inhabituel', 'Thorium ore':'inhabituel',   // Mithril ore : commun (27/10/2026, Geoffrey)
@@ -1291,6 +1301,7 @@ export const ITEMS = {
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
+  [RUNE.dust.item]:  { cat:'material', tex:RUNE.dust.tex, w:1, stack:true },             // recyclage des runes (RUNE.dust)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
@@ -1311,6 +1322,20 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
     { label:'Minerais',  cats:['combustible', 'ore'] },
     { label:'Matériaux', cats:['ingot', 'material', 'mob', 'gem'] },
     { label:'Stuff',     cats:['stuff', 'rune'] },
+  ],
+  /* onglets (29/10/2026, Geoffrey) : un filtre de la grille. Icône = la texture d'un objet (icon) ou une icône pixel (px) ;
+     le nom n'apparaît qu'en bulle. Un objet va dans le premier onglet qui le cite (items), sinon dans celui de sa
+     catégorie (cats), sinon dans le dernier (divers). */
+  tabs: [
+    { id:'all',   px:'bag',               name:'Tout' },
+    { id:'bloc',  icon:'Pierre',          name:'Blocs',            cats:['bloc'], items:['Stonebrick angélique', 'Stonebrick démoniaque'] },
+    { id:'ore',   icon:'Fer',             name:'Minerais',         cats:['ore', 'combustible', 'residu'] },
+    { id:'stuff', icon:'Casque en fer',   name:'Stuff',            cats:['stuff'] },
+    { id:'mob',   icon:'Peau de gobelin', name:'Butin des mobs',   cats:['mob'],
+      items:['Tissu sombre', 'Vésicule de gaz', 'Pierre glissante', 'Cuir de minotaure', 'Rotten flesh', 'Fragment de cœur'] },
+    { id:'mat',   icon:'Lingot de fer',   name:'Matériaux (gemmes, lingots, alliages, plumes, cristaux, argent)', cats:['ingot', 'gem', 'material'] },
+    { id:'rune',  icon:'Rune',            name:'Runes',            cats:['rune'], items:['Poudre de rêve'] },
+    { id:'misc',  icon:'Treasure T1',     name:'Divers (coffres, clés, plans, parchemins, glyphes…)', cats:['treasure', 'key', 'blueprint', 'scroll', 'glyph', 'furnace'] },
   ] };
 
 /* Recycler (inventaire, 25/10/2026, Geoffrey) : une pièce de stuff fabriquée (avec une recette du craft, src/recipes.js)
@@ -1462,7 +1487,8 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
      tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
      centre. À chaque seuil cageAt de ses PV (tous les 20 % manquants) : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
      cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
-     cageMaxWait s). Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
+     cageMaxWait s). Pendant ce temps et jusqu'à ce qu'un mineur pose le pied au sol, il régénère regenPct de ses PV max
+     toutes les regenEvery s. Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
 export const INSTANCE = {
   list: [
@@ -1479,14 +1505,27 @@ export const INSTANCE = {
      TOWER.view) ; avant : toute la salle à l'écran */
   view: { cols: 14, rows: 11 },
   spawner: { hp: 125, every: 20, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200) ; un gobelin toutes les 20 s (27/10, Geoffrey ; avant 30)
-  goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
+  goblin: { hp: 200, hitEvery: 1.75,   // 200 PV, un coup toutes les 1,75 s (29/10, Geoffrey ; avant 150 PV et 2 s, puis 175 PV le même jour ; le 27/10 : 125 PV)
             knock: 0.5, knockChance: 1, step: 0.45 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible) ; step : une case toutes les 0,45 s, vitesse × 2 (27/10, Geoffrey ; avant 0,9)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
           cageAt: [0.8, 0.6, 0.4, 0.2], cageRadius: 3,   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
           cageHard: 10, cageMaxWait: 90,
+          /* régénération (29/10/2026, Geoffrey) : dès un enfermement, regenPct de ses PV max toutes les regenEvery s, tant
+             qu'aucun mineur n'a posé le pied au sol ; un seuil déjà franchi ne réenferme pas (s'il remonte au-dessus) */
+          regenPct: 0.01, regenEvery: 2,
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
+  /* niveaux (29/10/2026, Geoffrey ; comme TOWER.levels) : choisis au lancement dans le Lobby, même clé (une par joueur).
+     Chaque niveau remplace les valeurs ci-dessus qu'il donne (spawner, goblin, boss) ; chest : multiplicateurs du Coffre
+     du Roi Gobelin de ce niveau (res : quantités des ressources sûres, drop : chances des objets). Valeurs provisoires. */
+  levels: {
+    1: { chest: { res: 1, drop: 1 } },
+    2: { spawner: { hp: 200, every: 15 },
+         goblin: { hp: 350, knock: 0.65 },
+         boss: { hp: 6000, knockRes: 50, hitEvery: 1.25, boostEvery: 8, rageBelow: 0.4, ragePush: 1.3, regenPct: 0.02 },   // ragePush : 0,65 × 2
+         chest: { res: 1.5, drop: 1.5 } },
+  },
 };
 
 
@@ -1577,6 +1616,7 @@ export const TOWN = {
   walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
+  portraitCols: 12,   // téléphone en hauteur : cases visibles en largeur (la ville se cale sur la largeur, 29/10)
   chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },

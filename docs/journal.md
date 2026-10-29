@@ -22,8 +22,6 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
----
-
 ## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
 - **Pour le joueur** : deux nouveautés liées.
   - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur
@@ -48,6 +46,121 @@ Modèle d'entrée :
   « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
   si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
 - **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+
+## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
+- **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
+  rend **8 à 12 Poudre de rêve**, quelle que soit sa qualité (un fragment de rune : 1 à 6). Avec **100 Poudre de rêve**,
+  la nouvelle recette **Rune** (onglet Craft, disponible dès le départ) fabrique une rune neuve de qualité tirée au
+  hasard : R1 15 %, R2 25 %, R3 30 %, R4 18 %, R5 6 %, R6 4,5 %, R7 1,5 %. La Poudre de rêve est rangée dans l'onglet
+  Runes de l'inventaire.
+- **Décisions** : un seul objet, la Poudre de rêve (rareté rare), sert au recyclage et à la recette. Chiffres provisoires.
+- **À suivre** : ~10 runes recyclées pour une neuve, R4 ou mieux 30 % du temps (22 % pour un trésor de tour) : à
+  surveiller, ça rend les tours un peu plus rentables pour qui accumule des petites runes.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — La Dynamite part aussi en combat (tours, Instance I)
+- **Pour le joueur** : le mineur lance maintenant sa Dynamite pendant les combats : sur le roi gobelin à son contact, sur
+  un groupe d'au moins 2 gobelins (instance) ou 2 mobs (tours). 50 % de ses dégâts à tout le rayon. La règle de dureté des
+  briques ne change pas.
+- **Repère** (vraies parties rejouées) : Instance I de 20:48, 2 → 4 Dynamites, victoire 8:00 → 7:40 ; au niveau 2 elle
+  part 4 fois (jusqu'à 53 gobelins touchés) ; Tour du Démon niveau 2 : 2 → 4 Dynamites (3 sur les Diablotins, 1 sur le Démon).
+- **Valeur provisoire** : 2 mobs dans le rayon au moins (`SPELL.dynamite.fightFoes`).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : le Dash du barbare sur le boss de la tour
+- **Pour le joueur** : dans la tour, le barbare ne dashait sur le boss que s'il arrivait déjà du côté où il veut se placer
+  (à l'opposé de ses coéquipiers) : en pratique presque jamais. Il fonce maintenant sur le boss de quelque côté qu'il arrive.
+- **Repère** : la partie de 20:52 (Infernatiwar, Monsta, Croustiflex, Tour du Démon niveau 2, ratée avec le boss à 689 PV),
+  rejouée avec le correctif : 10 Dash pendant le combat au lieu de 4, et victoire à 9:30. Partie seed 2001827804 : 3 Dash
+  sur le boss (tous depuis la droite) → 6 avec le correctif.
+- **Décision** : pas de Dynamite en combat dans l'instance pour l'instant (Geoffrey).
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classements : les niveaux en sous-onglets
+- **Pour le joueur** : dans Social → Classements, plus de boutons « Tour céleste II » et « Roi gobelin II » : un bouton
+  **Tour céleste** et un bouton **Roi gobelin**, chacun avec ses sous-onglets **Niveau 1 / Niveau 2**, comme les
+  spécialisations.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Classement de la tour par niveau
+- **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
+  **« Tour céleste »** (niveau 1) et **« Tour céleste II »** (niveau 2). Avant, les temps des deux niveaux étaient mélangés.
+  Les records déjà faits sont rangés au bon niveau.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Échap pour quitter un onglet
+- **Pour le joueur** : la touche **Échap** ferme l'onglet ouvert (Inventaire, Craft, Lobby…) et ramène à l'onglet
+  Session : la promenade dans le Carreau, ou la mine pendant une session. Si une fenêtre est ouverte (compte, objet
+  obtenu, question), Échap ferme d'abord la fenêtre, comme avant.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance I : le niveau 2 est jouable
+- **Pour le joueur** : dans le Lobby, l'Instance I propose **Niveau 1 / Niveau 2** (choisi par celui qui lance). Même clé.
+  Niveau 2 : spawners 200 coups et un gobelin toutes les 15 s, gobelins 350 PV, roi 6 000 PV qui frappe plus vite, enrage
+  sous 40 % et régénère 2 % dans les cages. Roi vaincu : un **Coffre du Roi Gobelin II** (× 1,5 de ressources, × 1,5 de
+  chances d'objets). Nouveau classement **« Roi gobelin II »** (onglet Social).
+- **Décisions** (Geoffrey) : même clé, ouvert à tous, un classement par niveau, valeurs gardées même si la simulation le dit
+  impossible avec le stuff d'aujourd'hui.
+- **À suivre** : vérifier à l'écran le choix du niveau dans le Lobby et le classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : le sort Dash sur les boss (tour, roi gobelin)
+- **Pour le joueur** : le Dash du barbare ne partait jamais sur le boss d'une tour ni sur le roi gobelin, et presque jamais
+  dans l'instance (0 ou 1 fois par partie). Maintenant, il fonce sur le boss quand il en est éloigné (après un recul ou une
+  projection) et frappe à 500 %, et dans l'instance il fonce sur les gobelins de sa ligne (≈ 14 Dash par partie).
+- **Décision** : le Dash n'étourdit pas les boss des tours ni le roi gobelin (Geoffrey). Les petits mobs, si.
+- **Repère** : tours simulées, combat du boss 5 à 50 s plus court ; Instance I (6 vraies parties) : toujours 3 victoires sur 6.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Instance I plus dure : gobelins plus solides, le roi se régénère dans les cages
+- **Pourquoi** : les 6 parties d'instance jouées le 29/10 étaient toutes des victoires (record 7:12). Le rejeu a montré
+  que tout se joue sur les dégâts pendant la phase des spawners ; l'armure ne sert à rien.
+- **Pour le joueur** : les gobelins ont **200 PV** (avant 150) et frappent toutes les **1,75 s** (avant 2 s). Quand le
+  roi enferme tout le monde, il **régénère 1 % de ses PV toutes les 2 s** tant que personne n'est redescendu au sol. S'il
+  remonte au-dessus d'un seuil, il ne réenferme pas en repassant dessous.
+- **Repère** : les 6 vraies parties rejouées avec ces règles : 3 victoires, en 9:10-9:59 (le roi reprend ≈ 350 PV par
+  cage). Les deux parties de canoul, Sõnata et Allaiks échouent, et une des trois de Nbrick, Akake et LeTaz.
+- **À suivre** : la simulation de l'instance (`npm run simulate:instance`) ne compte ni skills, ni sorts, ni améliorations :
+  à refaire avec de vrais profils. Rendre la défense utile dans l'instance (piste à discuter).
+- **Niveau 2 (préparé, pas encore jouable)** : ses valeurs sont dans la config et la simulation (spawners 200 / un gobelin
+  toutes les 15 s, gobelins 350 PV, roi 6 000 PV, etc.). Simulé avec le stuff d'aujourd'hui : impossible (aucun spawner
+  cassé) ; il faut environ 2 × les dégâts et 1,5 × le minage de la meilleure équipe. Valeurs gardées telles quelles
+  (Geoffrey). Reste à faire pour le jouer : choix du niveau dans le lobby, serveur, coffre (× 1,5 ressources et chances
+  d'objets), classement « Roi gobelin II ».
+- **État** : ✅ en ligne le 29/10 (niveau 1 ; niveau 2 pas encore proposé aux joueurs)
+
+## 29/10/2026 — Geoffrey — Correctif : le jeu à 1 image par seconde depuis le Carreau
+- **Pour le joueur** : depuis l'arrivée de la ville en fond d'écran, le jeu tournait à environ 1 image par seconde
+  sur Chrome (et les navigateurs de la même famille). C'est réparé : la ville a exactement le même aspect, mais
+  l'assombrissement du sol et la statue en pierre sont dessinés autrement, des centaines de fois plus vite.
+- **À suivre** (Jules) : dans le dessin de la ville, ne pas utiliser de filtre canvas (`ctx.filter`) à chaque image.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Correctif : l'inventaire tout petit depuis les onglets
+- **Pour le joueur** : depuis l'arrivée des onglets, la grille de l'inventaire était rétrécie et poussée sur la
+  droite. Elle reprend sa taille d'avant, avec les onglets juste au-dessus et la fiche de l'objet à droite.
+- **État** : ✅ en ligne le 29/10
+
+---
+
+## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
+- **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
+  pouvait pas se promener. Maintenant, au doigt, on marche là où on touche et on n'entre jamais tout seul ; devant une
+  porte, un bouton **« Entrer : Fonderie »** (ou « Préparer une session » devant le chevalement et la place) apparaît.
+  Sur téléphone en hauteur, la ville se cale sur la largeur de l'écran (la rue juste au-dessus du chat et de la barre,
+  le ciel en haut), le chat global est replié (le champ pour écrire ; toucher « Chat global » déplie les messages) et
+  le bouton se place sous le bandeau, dans le ciel. Sur ordinateur, rien ne change (clic sur un bâtiment = y aller
+  puis entrer, touche E), le bouton s'ajoute en bas au milieu.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Inventaire : onglets par type d'objet
+- **Pour le joueur** : au-dessus de la grille, une rangée d'icônes filtre l'inventaire : tout, blocs, minerais, stuff,
+  butin des mobs, matériaux (gemmes, lingots, alliages, shiny, plumes, cristaux, argent), runes, divers (coffres, clés,
+  plans, parchemins, glyphes). Le nom de chaque onglet s'affiche au survol ; un onglet vide est grisé. Glisser un objet
+  sur un autre marche dans tous les onglets ; pour le poser sur une case vide, c'est dans « Tout ».
+- **Décisions** : résidus avec les minerais, stonebricks avec les blocs, glyphes dans divers (rangement de Claude, à changer
+  dans `INVENTORY.tabs`).
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
 - **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais

@@ -29,7 +29,8 @@ export function effectTip(e){
     case 'tackled': L.push(`Un ${MOB_NAMES[e.src] ?? 'mob'} le tient : il ne peut que le combattre`,
                            `Libéré quand le mob meurt, est provoqué par un autre, ou après ${COMBAT.tackleGiveUp} s sans le frapper`); break;
     case 'caged': L.push('Le roi gobelin l\'a enfermé : il creuse pour sortir',
-                         `Le roi reprend le combat dès qu'un mineur sort (${INSTANCE.boss.cageMaxWait} s au plus)`); break;
+                         `Le roi reprend le combat dès qu'un mineur sort (${INSTANCE.boss.cageMaxWait} s au plus)`,
+                         `Il régénère ${INSTANCE.boss.regenPct * 100} % de ses PV (${INSTANCE.levels[2].boss.regenPct * 100} % au niveau 2) toutes les ${INSTANCE.boss.regenEvery} s tant que personne n'est redescendu au sol`); break;
     case 'scared': L.push('Pas de barbare avec lui dans le donjon : il fuit si le minotaure le tacle'); break;
     case 'choke': L.push(`Le méphite lui retire ${MOBS.mephite.oxygen} d'oxygène toutes les ${MOBS.mephite.every} s`, 'La ténacité peut l\'éviter'); break;
     case 'robbed': L.push(`Le gobelin lui vole un minerai toutes les ${MOBS.goblinStealEvery} s`, 'La ténacité peut l\'éviter'); break;

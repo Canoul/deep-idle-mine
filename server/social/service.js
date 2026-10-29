@@ -220,7 +220,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const r = rankBoard(board, (tree ? data.spec[tree] : data[board]).filter(e => !hidden.has(e.id)), me.id);
       const row = async ({ id, rank, value, me: mine, level, side, team, fight }) =>
         ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
-           ...(board === 'instance' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin : équipe, temps de combat (29/10)
+           ...(board === 'instance' || board === 'instance2' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin (niveaux 1 et 2) : équipe, temps de combat (29/10)
       return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
     },
 

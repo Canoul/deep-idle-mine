@@ -136,7 +136,11 @@ export function sourcesOf(item){
     if(a) out.push(`Coffre du Roi Gobelin : ${a.min} à ${a.max}, toujours`);
     for(const f of l.oneOf){ const i = f.items.find(x => x.item === item);
       if(i) out.push(`Coffre du Roi Gobelin : ${fmt(pct(i.chance))} % de chance${i.learnOnce ? ' (seulement si la recette n\'est pas encore apprise)' : i.spellOnce ? ' (seulement si le sort n\'est pas encore appris)' : ''}${isStuffItem(item) ? ', déjà identifiée à la qualité du coffre' : ''}`); } }
-  if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)');
+  if(item === RUNE.item) out.push('En ouvrant un trésor angélique ou démoniaque (rune de la même qualité que le trésor)',
+    `Craft : ${RECIPES[RUNE.item].cost[RUNE.dust.item]} ${RUNE.dust.item}, qualité tirée à la fabrication (${Object.entries(RUNE.craftChances).map(([q, c]) => `R${q} ${fmt(pct(c))} %`).join(', ')})`);
+  if(item === RUNE.fragment.item) out.push('En retirant une rune d\'une pièce (onglet Amélioration, gratuit) : ses % comptent pour moitié');
+  if(item === RUNE.dust.item){ const r = RUNE.dust.recycle;
+    out.push(`En recyclant une rune (${r.rune.min} à ${r.rune.max}, quelle que soit sa qualité) ou un fragment de rune (${r.fragment.min} à ${r.fragment.max}), depuis l'inventaire`); }
   for(const [side, list] of Object.entries(RINGS.drops)) for(const r of list) if(r.item === item)
     out.push(`En ouvrant un ${RUNE.treasures[side].name.toLowerCase()} : ${fmt(pct(r.chance))} % de chance (en plus de la rune, un anneau au plus)`);
   if(item === INSTANT_MINE.featherItem) out.push(`Mine instantanée : tas de plumes (${fmt(INSTANT_MINE.feather)} % de la mine), ${INSTANT_MINE.featherMin} à ${INSTANT_MINE.featherMax} par tas, au premier qui passe dessus`);
@@ -151,7 +155,7 @@ export function sourcesOf(item){
   }
   for(const [b, l] of Object.entries(CRUSHER.loot)) for(const f of l.oneOf){ const i = f.items.find(x => x.item === item); if(i) out.push(`Concasseur : ${String(Math.round(i.chance * 1e6) / 1e4).replace(".", ",")} % par lot de ${CRUSHER.batch} ${b.toLowerCase()}`); }
   for(const t of RESEARCH.tiers) if(blueprintsOfTier(t.tier).includes(item)) out.push(`Table de recherche, tier ${t.tier}`);
-  if(Object.hasOwn(RECIPES, item)) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
+  if(Object.hasOwn(RECIPES, item) && item !== RUNE.item) out.push(RECIPES[item].unlock ? `Craft (recette débloquée par « ${RECIPES[item].unlock} »)` : 'Craft (recette de base)');
   /* glyphes (drop, GLYPHS.drop) : trouvés par un mineur de la bonne spécialisation */
   if(ITEMS[item]?.cat === 'glyph'){
     const tree = skillNode(ITEMS[item].glyph)?.tree, d = tree && GLYPHS.drop[tree.id];
@@ -178,6 +182,8 @@ export function usesOf(item){
   const side = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(side) out.push(`Rapporté au coffre : remplit la jauge ${side.label === 'Ange' ? 'de l\'Ange' : 'du Démon'} du Jugement, commune à tous (${JUDGMENT.cap} pour ouvrir la tour)`);
   if(item === RUNE.item) out.push('Enchantement (onglet Amélioration) : se pose sur une pièce de stuff, une rune par pièce, définitif');
+  if(item === RUNE.item || item === RUNE.fragment.item){ const r = RUNE.dust.recycle[item === RUNE.item ? 'rune' : 'fragment'];
+    out.push(`Se recycle (inventaire) en ${r.min} à ${r.max} ${RUNE.dust.item}`); }
   if(d?.cat === 'combustible') out.push('Combustible du four');
   if(Object.hasOwn(FURNACE.recipes, item)) out.push(`Se fond au four → ${FURNACE.recipes[item].qty ?? 1} ${FURNACE.recipes[item].out}${FURNACE.recipes[item].unlock ? ` (recette à débloquer : « ${FURNACE.recipes[item].unlock} »)` : ''}`);
   const fr = Object.entries(FURNACE.recipes).find(([, r]) => r.unlock === item);

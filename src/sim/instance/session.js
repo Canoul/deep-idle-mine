@@ -23,22 +23,29 @@ import { ladderTime, nowOf } from '../mineur.js';
 import { inReach, push, driftsAway, reachOf, knockbackOf, knockOf, stopAction } from '../knock.js';
 import { genInstance, isOpen, toCenter, AIR, CAGE, SPAWNER } from './world.js';
 
-const I = INSTANCE, SP = I.spawner, GB = I.goblin, B = I.boss;
+const I = INSTANCE;
 export const INSTANCE_TICKS = Math.round(I.duration / DT);
+/* niveaux (29/10/2026) : réglages du niveau (INSTANCE.levels) par-dessus ceux de base ; G.cfg = { spawner, goblin, boss } */
+export const INSTANCE_LEVELS = Object.keys(I.levels).map(Number);
+export const instanceLevel = l => INSTANCE_LEVELS.includes(l) ? l : 1;
+export const levelCfg = l => { const L = I.levels[instanceLevel(l)];
+  return { spawner: { ...I.spawner, ...L.spawner }, goblin: { ...I.goblin, ...L.goblin }, boss: { ...I.boss, ...L.boss } }; };
 
 /* opts.miners : [{ name, account, color, look, auras, carac, skills, skillTree, spells }] ; opts.id ; opts.instance */
 export function newInstance(seed, opts = {}){
   seed = seed ?? ((Math.random() * 2**31) | 0);
   const world = genInstance();
   const specs = opts.miners ?? [{}];
+  const C = levelCfg(opts.level);   // réglages du niveau (spawner, goblin, boss)
   const G = {
-    mode: 'instance', instance: opts.instance ?? 'instance_1', seed, t: 0, ticks: 0, over: false, ...world,
+    mode: 'instance', instance: opts.instance ?? 'instance_1', level: instanceLevel(opts.level), cfg: C, seed, t: 0, ticks: 0, over: false, ...world,
     rng: mulberry32(seed ^ 0x1b873593), fightRng: mulberry32(seed ^ 0x85ebca6b),
     ladder: world.tiles.map(r => new Uint8Array(r.length)),
-    spawners: world.ledges.map(l => ({ id: l.id, side: l.side, level: l.level, x: l.sx, y: l.y, mx: l.mx, hp: SP.hp, maxhp: SP.hp, cd: 0, alive: true })),
+    spawners: world.ledges.map(l => ({ id: l.id, side: l.side, level: l.level, x: l.sx, y: l.y, mx: l.mx, hp: C.spawner.hp, maxhp: C.spawner.hp, cd: 0, alive: true })),
     goblins: [], nextGob: 0, target: null, inspire: null, warcry: null, cages: [],
-    boss: { name: B.name, hp: B.hp, maxhp: B.hp, w: B.w, h: B.h, x: Math.floor((world.w - B.w) / 2), y: world.plat.row - 1,
-            state: 'sleep', t: 0, cd: B.hitEvery, moveCd: 0, focus: null, taunt: null, hits: 0, phase: 0, knockRes: B.knockRes, kx: 0 },
+    boss: { name: C.boss.name, hp: C.boss.hp, maxhp: C.boss.hp, w: C.boss.w, h: C.boss.h, x: Math.floor((world.w - C.boss.w) / 2), y: world.plat.row - 1,
+            state: 'sleep', t: 0, cd: C.boss.hitEvery, moveCd: 0, focus: null, taunt: null, hits: 0, phase: 0, knockRes: C.boss.knockRes, kx: 0,
+            regen: null },   // regen : { t, gain } après un enfermement, jusqu'à ce qu'un mineur soit au sol
     log: [], timeline: { spawners: [], awake: null, cages: [], rage: null },
     stats: { ladders: 0, mined: 0, drilled: 0, spawned: 0, kills: 0, dmg: 0, bossDmg: 0, knocks: 0, boosts: 0, falls: 0, blocked: 0 }, summary: null,
   };
@@ -46,7 +53,7 @@ export function newInstance(seed, opts = {}){
   G.miners = specs.map((s, i) => createMiner(i, s, cx - 1 + (i % 3), world.floorY));
   G.roster = [...G.miners];
   G.id = opts.id ?? `instance-${seed}-${Date.now().toString(36)}`;
-  log(G, `🗝 Instance I : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} face aux ${G.spawners.length} spawners. Le ${B.name} attend en haut.`);
+  log(G, `🗝 Instance I : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} face aux ${G.spawners.length} spawners. Le ${G.cfg.boss.name} attend en haut.`);
   return G;
 }
 
@@ -71,7 +78,7 @@ const spawnerAt = (G, x, y) => G.spawners.find(s => s.alive && s.x === x && s.y 
 /* ---------- vitesses et coups ---------- */
 const inspireOn = G => !!G.inspire && G.t < G.inspire.until;
 export const instRate = (G, m) => m.carac.mineSpeed * (1 + (m.carac.mineSpeedPct || 0) / 100) * (1 + (inspireOn(G) ? G.inspire.pct : 0)) * (1 + (m.learned || 0));
-const cageT = (G, m) => B.cageHard / instRate(G, m);
+const cageT = (G, m) => G.cfg.boss.cageHard / instRate(G, m);
 const moveT = m => 1 / m.carac.speed;
 const climbT = m => 1 / m.carac.climbSpeed;
 const fallT = () => 1 / CFG.fallSpeed;
@@ -97,7 +104,7 @@ const stunned = (G, o) => o.stunUntil != null && G.t < o.stunUntil;
 /* qui il vise : la provocation, sinon un mineur qui casse un spawner à focusRange cases ou moins, sinon le plus proche */
 function preyOf(G, o){
   const t = byId(G, o.taunt); if(t) return t;
-  const drillers = G.miners.filter(m => m.action?.type === 'drill' && manh(o, m) <= SP.focusRange);
+  const drillers = G.miners.filter(m => m.action?.type === 'drill' && manh(o, m) <= G.cfg.spawner.focusRange);
   const pool = drillers.length ? drillers : G.miners;
   let best = null, bd = Infinity;
   for(const m of pool){ const d = manh(o, m); if(d < bd){ bd = d; best = m; } }
@@ -119,8 +126,8 @@ export function pushMiner(G, m, k, arc = false){
 }
 
 function spawnGoblin(G, s){
-  G.goblins.push({ id: G.nextGob++, x: s.mx, y: s.y, kx: 0, hp: GB.hp, maxhp: GB.hp, grab: null, grabHit: null, taunt: null,
-                   hit: GB.hitEvery, moveCd: GB.step, fall: 0, stunUntil: null, from: s.id });
+  G.goblins.push({ id: G.nextGob++, x: s.mx, y: s.y, kx: 0, hp: G.cfg.goblin.hp, maxhp: G.cfg.goblin.hp, grab: null, grabHit: null, taunt: null,
+                   hit: G.cfg.goblin.hitEvery, moveCd: G.cfg.goblin.step, fall: 0, stunUntil: null, from: s.id });
   G.stats.spawned++;
 }
 
@@ -128,7 +135,7 @@ function stepSpawners(G){
   for(const s of G.spawners){
     if(!s.alive) continue;
     s.cd -= DT;
-    if(s.cd <= 1e-9){ s.cd += SP.every; spawnGoblin(G, s); }
+    if(s.cd <= 1e-9){ s.cd += G.cfg.spawner.every; spawnGoblin(G, s); }
   }
 }
 
@@ -171,17 +178,17 @@ function stepGoblins(G){
     if(gobReach(G, o, p)){
       o.hit -= DT;
       if(o.hit <= 1e-9){
-        o.hit += GB.hitEvery; o.hits = (o.hits || 0) + 1;
+        o.hit += G.cfg.goblin.hitEvery; o.hits = (o.hits || 0) + 1;
         if(canTackle(o, p) && o.grab !== p.id){ o.grab = p.id; o.grabHit = G.t; p.stats.tackled++; }
-        if(G.fightRng() < GB.knockChance && pushMiner(G, p, GB.knock)) G.stats.gobKnocks = (G.stats.gobKnocks || 0) + 1;   // compté s'il a lieu (pas en plein pas)
+        if(G.fightRng() < G.cfg.goblin.knockChance && pushMiner(G, p, G.cfg.goblin.knock)) G.stats.gobKnocks = (G.stats.gobKnocks || 0) + 1;   // compté s'il a lieu (pas en plein pas)
         G.stats.gobHits = (G.stats.gobHits || 0) + 1;
       }
       continue;
     }
-    o.hit = Math.min(o.hit, GB.hitEvery);
+    o.hit = Math.min(o.hit, G.cfg.goblin.hitEvery);
     o.moveCd -= DT;
     if(o.moveCd > 1e-9) continue;
-    o.moveCd = GB.step;
+    o.moveCd = G.cfg.goblin.step;
     const step = gobStep(G, o, [[p.x - 1, p.y], [p.x + 1, p.y], [p.x, p.y]]);
     if(step){ o.face = Math.sign(step[0] - o.x) || o.face; o.x = step[0]; o.y = step[1]; o.kx = 0; }
   }
@@ -209,7 +216,7 @@ const bossActive = G => G.boss.hp > 0 && (G.boss.state === 'fight' || G.boss.sta
 const inContact = (G, m) => bossActive(G) && m.y === G.boss.y && instSupported(G, m.x, m.y) && m.x >= G.boss.x - 1 && m.x <= G.boss.x + G.boss.w;
 const contactCells = G => { const b = G.boss, out = [];
   for(let x = b.x - 1; x <= b.x + b.w; x++) if(x >= 0 && x < G.w && open(G, x, b.y)) out.push([x, b.y]); return out; };
-const rageOn = G => G.boss.hp < G.boss.maxhp * B.rageBelow;
+const rageOn = G => G.boss.hp < G.boss.maxhp * G.cfg.boss.rageBelow;
 
 function bossFocus(G){
   const b = G.boss, t = byId(G, b.taunt);
@@ -233,16 +240,18 @@ function stepBoss(G){
   }
   if(b.state === 'drop'){
     b.t += DT;
-    if(b.t >= B.dropTime - 1e-9){ b.state = 'fight'; b.y = G.floorY; b.cd = B.hitEvery; b.moveCd = 0; }
+    if(b.t >= G.cfg.boss.dropTime - 1e-9){ b.state = 'fight'; b.y = G.floorY; b.cd = G.cfg.boss.hitEvery; b.moveCd = 0; }
     return;
   }
-  /* enfermement : à chaque seuil de PV (une seule fois même si un coup en fait passer deux) */
-  const level = B.cageAt.filter(f => b.hp <= b.maxhp * f + 1e-9).length;
+  regen(G);
+  /* enfermement : à chaque seuil de PV (une seule fois même si un coup en fait passer deux ; b.phase ne redescend
+     jamais : remonté au-dessus d'un seuil par la régénération, il ne réenferme pas en repassant dessous) */
+  const level = G.cfg.boss.cageAt.filter(f => b.hp <= b.maxhp * f + 1e-9).length;
   if(level > b.phase){ b.phase = level; return cage(G); }
   if(b.state === 'wait'){
     b.t += DT;
-    const out = G.cages.some(c => { const m = byId(G, c.id); return m && (Math.hypot(m.x - c.x, m.y - c.y) > B.cageRadius + 0.5 || m.y >= G.floorY); });
-    if(out || b.t >= B.cageMaxWait || !G.miners.length){ b.state = 'fight'; b.cd = B.hitEvery; G.cages = []; log(G, `👑 Le ${b.name} reprend le combat`); }
+    const out = G.cages.some(c => { const m = byId(G, c.id); return m && (Math.hypot(m.x - c.x, m.y - c.y) > G.cfg.boss.cageRadius + 0.5 || m.y >= G.floorY); });
+    if(out || b.t >= G.cfg.boss.cageMaxWait || !G.miners.length){ b.state = 'fight'; b.cd = G.cfg.boss.hitEvery; G.cages = []; log(G, `👑 Le ${b.name} reprend le combat`); }
     return;
   }
   if(rageOn(G) && G.timeline.rage == null){ G.timeline.rage = G.t; log(G, `😡 Le ${b.name} enrage !`); }
@@ -251,22 +260,39 @@ function stepBoss(G){
   if(f && !contact && b.moveCd <= 1e-9){
     const dir = Math.sign(f.x + 0.5 - bossMid(G));
     if(Math.abs(f.x + 0.5 - bossMid(G)) > b.w / 2 && dir && bossFits(G, b.x + dir)){ b.x += dir; b.kx = 0; }
-    b.moveCd = 1 / (STATS.speed * B.speedMul * (rage ? B.rageSpeed : 1));
+    b.moveCd = 1 / (STATS.speed * G.cfg.boss.speedMul * (rage ? G.cfg.boss.rageSpeed : 1));
   }
   b.cd -= DT;
   if(b.cd > 1e-9) return;
-  b.cd += B.hitEvery;
+  b.cd += G.cfg.boss.hitEvery;
   if(!contact) return;
   b.hits++;
-  if(b.hits % B.boostEvery === 0) boost(G, f);
-  else pushMiner(G, f, rage ? B.ragePush : B.push, true);
+  if(b.hits % G.cfg.boss.boostEvery === 0) boost(G, f);
+  else pushMiner(G, f, rage ? G.cfg.boss.ragePush : G.cfg.boss.push, true);
+}
+
+/* régénération après un enfermement : regenPct des PV max toutes les regenEvery s, jusqu'à ce qu'un mineur pose le
+   pied au sol (sorti de sa cage et descendu : c'est là qu'on peut le frapper) */
+function regen(G){
+  const b = G.boss, r = b.regen;
+  if(!r) return;
+  if(G.miners.some(m => m.y >= G.floorY)){
+    b.regen = null;
+    if(r.gain > 0) log(G, `💚 Le ${b.name} a récupéré ${Math.round(r.gain)} PV`);
+    return;
+  }
+  r.t += DT;
+  if(r.t < G.cfg.boss.regenEvery - 1e-9) return;
+  r.t -= G.cfg.boss.regenEvery;
+  const d = Math.min(b.maxhp - b.hp, b.maxhp * G.cfg.boss.regenPct);
+  b.hp += d; r.gain += d;
 }
 
 /* coup boosté : projeté de boostHigh cases de haut puis boostLong de long, vers le centre (il s'arrête contre un bloc),
    puis il tombe (il peut atterrir sur un rebord). La résistance au recul réduit les deux distances. */
 function boost(G, m){
   const rnd = ([a, b]) => a + Math.floor(G.fightRng() * (b - a + 1));
-  const high = Math.round(knockOf(m, rnd(B.boostHigh))), long = Math.round(knockOf(m, rnd(B.boostLong)));
+  const high = Math.round(knockOf(m, rnd(G.cfg.boss.boostHigh))), long = Math.round(knockOf(m, rnd(G.cfg.boss.boostLong)));
   const dir = toCenter(G, m.x);
   let x = m.x, y = m.y;
   for(let i = 0; i < high && open(G, x, y - 1); i++) y--;
@@ -287,14 +313,14 @@ function cage(G){
     const l = ledges[i % ledges.length], cx = l.side === 'L' ? l.x0 + 2 : l.x1 - 2, cy = l.y;
     stopAction(m); m.action = null; m.x = cx; m.y = cy; m.kx = 0; m.ky = 0; m.knocked = false; m.hop = G.ticks;
     for(const o of G.goblins) if(o.grab === m.id) o.grab = null;
-    const R = B.cageRadius;
+    const R = G.cfg.boss.cageRadius;
     for(let y = cy - R; y <= cy; y++) for(let x = cx - R; x <= cx + R; x++){
       if(x < 0 || x >= G.w || y < 0 || (x === cx && y === cy) || Math.hypot(x - cx, y - cy) > R + 1e-9 || G.tiles[y][x] !== AIR) continue;
       G.tiles[y][x] = CAGE; G.ladder[y][x] = 0;
     }
     G.cages.push({ id: m.id, x: cx, y: cy });
   });
-  b.state = 'wait'; b.t = 0; b.kx = 0;
+  b.state = 'wait'; b.t = 0; b.kx = 0; b.regen = { t: 0, gain: 0 };
   G.timeline.cages.push(G.t);
   log(G, `🧱 Le ${b.name} enferme tout le monde sur les rebords ! (${Math.round(b.hp / b.maxhp * 100)} % de PV)`);
 }
@@ -413,6 +439,10 @@ export function decide(G, m){
   /* un gobelin à portée : on le frappe (le plus faible d'abord) */
   const near = liveGobs(G).filter(o => hitReach(G, m, o)).sort((a, b) => a.hp - b.hp)[0];
   if(near) return strike(G, m, near, 'Combat un gobelin');
+  /* Dash vers le gobelin le plus proche de sa ligne (29/10/2026, Geoffrey ; avant : seulement celui qui le tacle, collé
+     à lui : le Dash ne partait presque jamais) */
+  const dashTo = liveGobs(G).filter(o => o.y === m.y).sort((a, b) => Math.abs(a.x - m.x) - Math.abs(b.x - m.x))[0];
+  if(dashTo && dash(G, m, dashTo)) return act(m, 'wait', DT, {}, 'Dash sur un gobelin');
   /* les spawners */
   const s = targetSpawner(G);
   if(s){
@@ -428,6 +458,7 @@ export function decide(G, m){
   if(b.hp <= 0) return act(m, 'wait', 0.5, {}, 'Victoire');
   if(!bossActive(G)) return act(m, 'wait', 0.2, {}, `Le ${b.name} descend !`);
   if(inContact(G, m)) return strike(G, m, b, `Combat le ${b.name}`);
+  if(dashBoss(G, m)) return act(m, 'wait', DT, {}, `Dash sur le ${b.name}`);
   const path = planTo(G, m, contactCells(G));
   if(path?.length) return follow(G, m, path, G.cages.some(c => c.id === m.id) ? 'Sort de sa cage' : `Va au contact du ${b.name}`);
   G.stats.blocked++;
@@ -464,9 +495,9 @@ function drillSpells(G, m, s){
   mineBuffs(G, m);
   if(ready(G, m, 'dynamite')){
     cast(G, m, 'dynamite');
-    drain(G, m, s, SP.dynamite);
+    drain(G, m, s, G.cfg.spawner.dynamite);
     blastDamage(G, m, blastHurt(G, m, s.x, s.y));   // 28/10 : 50 % de ses dégâts aux gobelins et au roi du rayon
-    log(G, `🧨 ${m.name} : Dynamite sur le spawner (${SP.dynamite} coups)`);
+    log(G, `🧨 ${m.name} : Dynamite sur le spawner (${G.cfg.spawner.dynamite} coups)`);
   }
 }
 function mineBuffs(G, m){
@@ -497,7 +528,7 @@ function mineSpells(G, m, x, y){
   mineBuffs(G, m);
   if(!ready(G, m, 'dynamite')) return false;
   const R = SPELL.dynamite.radius, cells = [];
-  if(B.cageHard < dynHard(m))
+  if(G.cfg.boss.cageHard < dynHard(m))
     for(let yy = y - R; yy <= y + R; yy++) for(let xx = x - R; xx <= x + R; xx++)
       if(breakable(G, xx, yy) && Math.hypot(xx - x, yy - y) <= R + 1e-9) cells.push([xx, yy]);
   const hurt = blastHurt(G, m, x, y);
@@ -520,6 +551,17 @@ function combatSpells(G, m, target){
     const S = SPELL.cleave; cast(G, m, 'cleave');
     for(const o of liveGobs(G)) if(o !== target && manh(o, m) <= S.radius) hitGoblin(G, m, o, hitDmg(G, m) * S.dmg);
     if(target !== G.boss && inContact(G, m)) damageBoss(G, m, hitDmg(G, m) * S.dmg);
+  }
+  /* Dynamite en combat (29/10/2026, Geoffrey) : sur le roi (au contact, devant lui), ou sur un gobelin qui en a au moins
+     fightFoes dans le rayon (lui compris) ; 50 % de ses dégâts à tout le rayon, rien de cassé */
+  if(ready(G, m, 'dynamite')){
+    const S = SPELL.dynamite, boss = target === G.boss;
+    const hurt = boss ? blastHurt(G, m, m.x + m.face, m.y) : blastHurt(G, m, target.x, target.y);
+    if(boss ? hurt.king : hurt.gobs.length >= S.fightFoes){
+      cast(G, m, 'dynamite');
+      log(G, `🧨 ${m.name} : Dynamite en combat (${hurt.gobs.length} gobelin${hurt.gobs.length > 1 ? 's' : ''}${hurt.king ? `, le ${G.boss.name}` : ''})`);
+      blastDamage(G, m, hurt);
+    }
   }
 }
 /* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ulti shen (un
@@ -554,6 +596,23 @@ function dash(G, m, o){
   hitGoblin(G, m, o, strikeDmg(G, m) * S.dmg);
   if(o.hp > 0){ o.stunUntil = G.t + S.stun; o.grab = null; }
   log(G, `💨 ${m.name} : Dash`);
+  return true;
+}
+
+/* Dash vers le roi (29/10/2026, Geoffrey) : au sol, sur sa ligne, de 2 à range cases de la case à côté de lui (de son
+   côté) ; il y arrive et frappe (dmg × ses dégâts). Le roi n'est PAS étourdi (décision du créateur : pas sur les boss) */
+function dashBoss(G, m){
+  const b = G.boss;
+  if(!ready(G, m, 'dash') || !bossActive(G) || m.y !== b.y || !instSupported(G, m.x, m.y)) return false;
+  const tx = m.x < b.x ? b.x - 1 : m.x >= b.x + b.w ? b.x + b.w : null;
+  if(tx == null) return false;
+  const S = SPELL.dash, dir = Math.sign(tx - m.x), n = Math.abs(tx - m.x);
+  if(n < S.minCells || n > S.range) return false;
+  for(let x = m.x + dir; x !== tx + dir; x += dir) if(!open(G, x, m.y) || !instSupported(G, x, m.y)) return false;
+  cast(G, m, 'dash', G.t, S.hitCd);
+  m.x = tx; m.kx = 0; m.face = dir;
+  log(G, `💨 ${m.name} : Dash sur le ${b.name}`);
+  hitBoss(G, m, strikeDmg(G, m) * S.dmg);
   return true;
 }
 
@@ -639,7 +698,7 @@ export function endInstance(G, success){
   G.over = true;
   if(!success && G.miners.length) log(G, `⌛ Temps écoulé : ${brokenSpawners(G)} spawner${brokenSpawners(G) > 1 ? 's' : ''} sur ${G.spawners.length}, le ${G.boss.name} tient toujours (${Math.ceil(G.boss.hp)} PV).`);
   G.summary = {
-    mode: 'instance', instance: G.instance, id: G.id, seed: G.seed, success: !!success, t: G.t,
+    mode: 'instance', instance: G.instance, level: G.level, id: G.id, seed: G.seed, success: !!success, t: G.t,
     spawners: brokenSpawners(G), spawnersMax: G.spawners.length, bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, kills: G.stats.kills,
     awake: G.timeline.awake, loot: {},
     shares: G.roster.map(m => ({ miner: m.name, color: m.color, account: m.account, left: m.left != null, bag: {},

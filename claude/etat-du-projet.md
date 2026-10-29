@@ -123,6 +123,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     ouvrable) : non empilable, rareté **Unique** (6e rareté, orange foncé), nom « Antique Trésor démoniaque » dans la
     couleur de sa qualité (nom interne « Trésor démoniaque R5 »). Trésor ouvert → une **Rune** de cette qualité (lignes tirées à
     l'ouverture). **Enchantement** (onglet Amélioration) : la rune s'ajoute à une pièce, une par pièce, définitif ; **une pièce n'accepte qu'une rune de qualité ≤ à la sienne** (22/10) et doit être identifiée. **Retrait** (23/10 après-midi) : gratuit, la rune devient un **Fragment de rune** (% ÷ 2), reposable comme une rune, définitif une fois posé.
+    **Recyclage et craft des runes** (29/10, Geoffrey ; `RUNE.dust`, `RUNE.craftChances`, recette « Rune ») : recycler une rune (inventaire) → 8-12 **Poudre de rêve** (rare, empilable) quelle que soit sa qualité, un fragment → 1-6 (tirage serveur) ; recette de base **Rune** = 100 Poudre de rêve → rune de qualité tirée (15/25/30/18/6/4,5/1,5 %), lignes comme une rune de tour.
     **Aura du stuff** (25/10, Geoffrey ; `AURA`, `src/meta/aura.js`, `src/render/aura.js`) : pièce visible identifiée R4+ (armure ; pioche et épée seulement en main, en session) avec une vraie rune R4+ (pas un fragment) → halo pulsant de la couleur de la plus basse des deux (faible R4-R5, moyenne R6, forte R7), derrière le mineur, partout (mine, MI, tours, portraits). Le serveur envoie `auras: { case: qualité }` à côté de `look`.
   - ⚠️ Mesures : **0 résidu** en 8 sessions à 3 en stuff de base (personne n'entre en area 4).
   - **Regroupement dans les tours** (25/10, Geoffrey ; `TOWER.regroup`) : un mineur tombé qui trouve le toit vide attend les
@@ -140,9 +141,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
   gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 % ; **craft de base** depuis le 28/10, ancien : plan du Treasure T4), consommée au lancement avec la
   création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
-  gobelins 150 PV, tacle au premier coup, recul vers le centre), roi gobelin 3 500 PV (3 × 3, enferme tous les 20 %,
-  rage sous 33 %), 10 min. **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : à 3, fer 0/20, fer + acier 13/20, acier
-  20/20 (`npm run simulate:instance`) ; seul : impossible.
+  gobelins 200 PV et un coup / 1,75 s (29/10 ; ancien : 150 PV, 2 s), tacle au premier coup, recul vers le centre), roi gobelin
+  3 500 PV (3 × 3, enferme tous les 20 %, **régénère 1 % / 2 s après un enfermement tant que personne n'est au sol**
+  (29/10), rage sous 33 %), 10 min. **Niveau 2** (29/10, `INSTANCE.levels`) : choisi dans le Lobby, même clé, ouvert à tous ;
+  spawners 200 / 15 s, gobelins 350 PV, roi 6 000 PV (détail GAME_DESIGN) ; Coffre du Roi Gobelin II (× 1,5 ressources et
+  chances d'objets) ; classement « Roi gobelin II » (records sous la clé `compte#2` du ns instance_record). Simulé :
+  impossible avec le stuff du 29/10 (≈ 2 × dégâts et 1,5 × minage de la meilleure équipe). **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
+  20/20 (`npm run simulate:instance`) ; seul : impossible. ⚠️ Ce script ne donne aux mineurs que le stuff de base (ni skills,
+  ni sorts, ni améliorations, ni runes) : il sous-estime les vrais joueurs (0/5 en acier le 29/10 alors que les 6 vraies
+  parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 200 PV
+  / 1,75 s, régénération) = 3 victoires, en 9:10-9:59. Seule l'attaque compte (pas de PV pour les mineurs).
 - **Tier 4 : Treasure T4, mithril, thorium, cobalt** (27/10, Geoffrey ; GAME_DESIGN « Tier 4 », config `LOOT['Treasure T4']`,
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à
   l'area 6) ; four : Mithril ingot, Refined cobalt / thorium (`ore:5` par fournée), alliages Cobalt / Thorium ingot ; armures
@@ -198,7 +206,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   demandée seulement quand le sous-onglet est ouvert). Serveur : `server/social/`, stockage `social` dans PostgreSQL. **Voir le stuff d'un ami**
   (22/10, Jules) : bouton « Stuff » → niveau, spécialisation, pièces portées et stats, en lecture seule
   (`POST /api/social/profile`, réservé aux amis, jamais l'inventaire).
-  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste
+  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste et Tour céleste II
+  (29/10 : un par niveau de tour, records du niveau 2 sous la clé `compte#2` du ns tower_record, champ `level`)
   (meilleur temps par joueur, Ange et Démon confondus, avec l'équipe) ; top 50 + sa place (`LEADERBOARD`,
   `src/meta/leaderboard.js`, `POST /api/social/leaderboard`). Records de tour dans le ns `tower_record` (sans limite).
   **Roi gobelin** (29/10, Geoffrey) : meilleur temps de victoire de l'Instance I par joueur présent (de l'entrée à la
@@ -408,7 +417,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   matériaux → stuff → le reste, puis rareté du catalogue, la plus rare d'abord ; pas la qualité R1-R7), **glisser** un
   objet dans un autre slot (échange). **Recycler** une pièce de stuff fabriquée (recette de craft) : détruite, rend
   **60 %** de sa recette arrondi vers le bas (`RECYCLE.share`) ; amélioration et rune perdues ; interdit si portée ou
-  dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`).
+  dans un set. Le serveur vérifie tout (`/api/game/inventory`, `/api/game/recycle`). **Onglets** (29/10, `INVENTORY.tabs`) : icônes au-dessus de la
+  grille qui filtrent par type (tout, blocs, minerais, stuff, butin des mobs, matériaux, runes, divers).
 - **Annonces Discord** (25/10, Geoffrey) : un trésor de tour, un coffre du Roi Gobelin (instance) ou une identification
   de qualité `ANNOUNCE.minQuality` (**R6** depuis le 28/10 ; ancien : R7) ou plus, et l'ouverture d'une tour du Jugement (26/10), sont annoncés dans le salon du webhook (`server/social/discord.js`, adresse secrète
   `DIM_DISCORD_WEBHOOK` sur le VPS ; absente = aucune annonce). Pseudo visible en jeu, nom de la pièce ; jamais pour

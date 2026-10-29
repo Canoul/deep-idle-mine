@@ -12,14 +12,14 @@ import { SOCIAL_SERVER } from '../server/config.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { fakeLive } from './helpers.js';
 import { nameKey } from '../src/shared/account.js';
-import { BOARD_INFO, towerDetail, instanceDetail, rankText } from '../src/ui/social.js';
+import { BOARD_INFO, towerDetail, instanceDetail, rankText, boardSubs } from '../src/ui/social.js';
 import { createInventory, addItem, serialize } from '../src/meta/inventory.js';
 import { instanceDurationMs } from '../src/shared/instances.js';
 
 /* ---------- logique pure ---------- */
 
 test('classements : GS, XP, une XP de spé par arbre, tour, roi gobelin ; un nom inconnu est refusé', () => {
-  assert.deepEqual(BOARDS, ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'instance']);
+  assert.deepEqual(BOARDS, ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'tower2', 'instance', 'instance2']);
   assert.ok(isBoard('instance'));
   assert.equal(BOARD_INFO.instance.value({ value: 612.3 }), '10:12.3');
   assert.equal(instanceDetail({ name: 'Zoe', fight: 130.4, team: ['Zoe', 'Max', 'Lou'] }), 'combat 2:10.4 · avec Max, Lou');
@@ -49,7 +49,9 @@ test('top `size` : ma ligne s\'ajoute avec mon rang si je n\'y suis pas', () => 
 
 test('record de tour : revérifié, plus rapide seulement, temps affiché m:ss.d', () => {
   const ok = sanitizeTowerRecord({ t: 432.46, at: 5, side: 'demon', team: ['Zoe', 'Max', 'Lou', 'Trop'], session: 's1' });
-  assert.deepEqual(ok, { t: 432.5, at: 5, side: 'demon', team: ['Zoe', 'Max', 'Lou'], session: 's1' });
+  assert.deepEqual(ok, { t: 432.5, at: 5, side: 'demon', level: 1, team: ['Zoe', 'Max', 'Lou'], session: 's1' });
+  assert.equal(sanitizeTowerRecord({ t: 10, at: 1, side: 'angel', level: 2 }).level, 2, 'niveau gardé (29/10)');
+  for(const level of [0, 9, 'x', 1.5, null]) assert.equal(sanitizeTowerRecord({ t: 10, at: 1, side: 'angel', level }), null, `niveau ${level}`);
   for(const bad of [null, { t: 0, at: 1, side: 'angel' }, { t: 10, at: 1, side: 'nul' }, { t: Infinity, at: 1, side: 'angel' }, { t: 10, side: 'angel' }])
     assert.equal(sanitizeTowerRecord(bad), null);
   assert.ok(betterTower(null, ok)); assert.ok(betterTower({ t: 500 }, ok));
@@ -87,7 +89,7 @@ function setup({ dev = false } = {}){
   const party = createPartyService({ game, clock, getAccount: accounts.getAccount });
   const social = createSocialService({ store, accounts, party, game, clock, config: SOCIAL_SERVER });
   const advance = ms => { now += ms; };
-  const tower = async (players, t) => { towerT = t; await game.start({ id: players[0].account, name: players[0].name }, { mode: 'tower_angel' }, players);
+  const tower = async (players, t, level) => { towerT = t; await game.start({ id: players[0].account, name: players[0].name }, { mode: 'tower_angel', ...(level ? { level } : {}) }, players);
     advance(TOWER.duration / GAME.speed * 1000); await game.pump(); };
   return { store, game, social, advance, tower, clock };
 }
@@ -198,10 +200,10 @@ function setupInstance({ dev = false } = {}){
   const social = createSocialService({ store, accounts, party, game, clock: () => now, config: SOCIAL_SERVER });
   const keys = async ids => { for(const id of ids){ const inv = createInventory(); addItem(inv, INSTANCE.list[0].key, 1); await store.putInventory(id, JSON.parse(serialize(inv))); } };
   /* une instance jouée par players (clé donnée à chacun) ; r : { success, t, awake } ; bLeaves : B part avant la fin */
-  const play = async (players, r, bLeaves = false) => {
+  const play = async (players, r, bLeaves = false, level) => {
     res = r; leftB = bLeaves;
     await keys(players.map(p => p.account));
-    const s = await game.start({ id: players[0].account, name: players[0].name }, { mode: 'instance_1' }, players);
+    const s = await game.start({ id: players[0].account, name: players[0].name }, { mode: 'instance_1', ...(level ? { level } : {}) }, players);
     if(bLeaves){ now += 5_000; await game.leave(B); }
     if(!dev) now += instanceDurationMs();          // l'heure de fin est passée : la partie se termine (settle)
     await game.settle(s.session.id);
@@ -251,4 +253,67 @@ test('roi gobelin : rattrapage des victoires gardées d\'avant le classement ; a
   assert.deepEqual(r.rows.map(x => [x.rank, x.name, x.value, x.fight]), [[1, 'Lou', 650, 100], [2, 'Zoe', 700, 100], [2, 'Max', 700, 100]]);
   assert.ok(await store.getInstanceRecord(ADMIN.id), 'admin : record gardé…');
   assert.ok(!r.rows.some(x => x.name === 'Admin'), '… mais jamais affiché');
+});
+
+test("roi gobelin II (29/10) : un classement par niveau ; le niveau 2 ne touche pas au record du niveau 1", async () => {
+  const { social, play, store } = setupInstance();
+  await play(team, { success: true, t: 612, awake: 400 });
+  await play(team, { success: true, t: 580, awake: 380 }, false, 2);
+  assert.deepEqual((await social.leaderboard(A, 'instance')).rows.map(x => [x.name, x.value]), [['Zoe', 612], ['Max', 612]]);
+  const r2 = await social.leaderboard(A, 'instance2');
+  assert.deepEqual(r2.rows.map(x => [x.name, x.value, x.fight, x.team]), [['Zoe', 580, 200, ['Zoe', 'Max']], ['Max', 580, 200, ['Zoe', 'Max']]]);
+  assert.equal((await store.getInstanceRecord(A.id)).t, 612);
+  assert.equal((await store.getInstanceRecord(A.id + '#2')).t, 580);
+});
+
+test("clé d'un record d'instance : compte au niveau 1, « compte#2 » au niveau 2 ; une clé abîmée n'est pas classée", async () => {
+  const { instanceRecordKey, splitInstanceKey } = await import('../src/meta/leaderboard.js');
+  assert.equal(instanceRecordKey('AB12', 1), 'AB12'); assert.equal(instanceRecordKey('AB12', 2), 'AB12#2'); assert.equal(instanceRecordKey('AB12'), 'AB12');
+  assert.deepEqual(splitInstanceKey('AB12'), { account: 'AB12', level: 1 });
+  assert.deepEqual(splitInstanceKey('AB12#2'), { account: 'AB12', level: 2 });
+  for(const k of ['AB12#', 'AB12#x', 'AB12#0', 'AB12#-1']) assert.deepEqual(splitInstanceKey(k), { account: null, level: null }, k);
+});
+
+/* ---------- tour céleste II (29/10/2026) ---------- */
+
+test('tour céleste II : un classement par niveau ; le niveau 2 ne touche pas au record du niveau 1', async () => {
+  const { game, social, advance, store, tower } = setup();
+  await game.start(A, {}); advance(realDurationMs()); await game.pump();   // jauge de l'Ange remplie : tour ouverte
+  await tower(team, 432.5);
+  await tower(team, 300, 2);
+  assert.deepEqual((await social.leaderboard(A, 'tower')).rows.map(x => [x.name, x.value]), [['Zoe', 432.5], ['Max', 432.5]]);
+  const r2 = await social.leaderboard(A, 'tower2');
+  assert.deepEqual(r2.rows.map(x => [x.name, x.value, x.side, x.team]), [['Zoe', 300, 'angel', ['Zoe', 'Max']], ['Max', 300, 'angel', ['Zoe', 'Max']]]);
+  assert.deepEqual([(await store.getTowerRecord(A.id)).level, (await store.getTowerRecord(A.id + '#2')).level], [1, 2]);
+  assert.equal(BOARD_INFO.tower2.value({ value: 300 }), '5:00.0');
+});
+
+test("tour céleste II : les records d'avant les niveaux prennent le niveau de leur session ; un niveau 2 quitte le niveau 1", async () => {
+  const store = createMemoryGameStore();
+  const done = (id, t, players, extra = {}) => store.putGameSession({ id, mode: 'tower_demon', status: 'done', dev: false, players, leaves: [], endedAt: 1000,
+    result: { success: true, t, shares: players.map(p => ({ account: p.account, left: false, bag: {} })) }, ...extra });
+  await done('s1', 500, [{ account: A.id, name: 'Zoe' }]);                  // niveau 1, plus lent
+  await done('s2', 350, [{ account: A.id, name: 'Zoe' }], { level: 2 });    // niveau 2 : rangé au niveau 1 par l'ancien code
+  /* anciens records (sans level) : Zoe = sa victoire du niveau 2, Lou = une session oubliée (niveau 1 par défaut) */
+  await store.putTowerRecords([[A.id, { t: 350, at: 900, side: 'demon', team: ['Zoe'], session: 's2' }],
+                               [C.id, { t: 420, at: 800, side: 'angel', team: ['Lou'], session: 'perdue' }]]);
+  const game = createGameService({ store, liveRunner: fakeLive(() => ({})), clock: () => 9e6 });
+  const social = createSocialService({ store, accounts, party: createPartyService({ game, getAccount: accounts.getAccount }), game, config: SOCIAL_SERVER });
+  assert.deepEqual((await social.leaderboard(B, 'tower')).rows.map(x => [x.name, x.value]), [['Lou', 420], ['Zoe', 500]]);
+  assert.deepEqual((await social.leaderboard(B, 'tower2')).rows.map(x => [x.name, x.value]), [['Zoe', 350]]);
+  assert.deepEqual(await store.getTowerRecord(A.id), { t: 500, at: 1000, side: 'demon', level: 1, team: ['Zoe'], session: 's1' });
+  assert.equal((await store.getTowerRecord(C.id)).level, 1);
+});
+
+/* sous-onglets (29/10) : Spécialisation (un par arbre), Tour céleste et Roi gobelin (un par niveau) ; chaque classement
+   est atteignable par un bouton de index.html, ou un sous-onglet de son bouton */
+test('sous-onglets des classements : un par arbre, un par niveau ; chaque classement a son bouton', async () => {
+  assert.deepEqual(boardSubs('tower').map(s => [s.id, s.label]), [['tower', 'Niveau 1'], ['tower2', 'Niveau 2']]);
+  assert.deepEqual(boardSubs('instance').map(s => s.id), ['instance', 'instance2']);
+  assert.deepEqual(boardSubs('spec').map(s => s.id), SKILLS.trees.map(t => 'spec:' + t.id));
+  assert.equal(boardSubs('gs'), null); assert.equal(boardSubs('xp'), null);
+  const { readFileSync } = await import('node:fs');
+  const groups = [...readFileSync(new URL('../index.html', import.meta.url), 'utf8').matchAll(/data-board="([^"]+)"/g)].map(m => m[1]);
+  const reach = groups.flatMap(g => boardSubs(g)?.map(s => s.id) ?? [g]);
+  assert.deepEqual([...reach].sort(), [...BOARDS].sort());
 });

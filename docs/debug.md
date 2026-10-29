@@ -4860,6 +4860,204 @@ Règles (voir CLAUDE.md) :
   les bannières, `HINT` (#ff7a2e, `--acc`) pour « E : entrer » et « Tour ouverte ! » (ancien : #f2ece4 / #ffc27a / #ffd27a).
   Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
 
+## 29/10/2026 — Geoffrey — Inventaire : onglets (filtre)
+- `INVENTORY.tabs` (config) : id, icône (`icon` = texture d'un objet, ou `px` = icône pixel), nom (bulle), `items` puis
+  `cats`. `src/ui/inventory.js` : `tabOf(item)` (items d'abord, puis catégorie, sinon le dernier onglet), `tabSlots(inv,
+  tab, n)` (vrais numéros de slot : glisser-déposer et infos inchangés), onglet gardé en mémoire du module. `index.html`
+  `#invTabs` ; style `.invTab`. Aide « ? » de l'inventaire complétée. Affichage seul : rien côté serveur.
+- **Tests** ✅ inventory (nouveau test : tout objet du catalogue a un onglet, cas demandés, filtre sans trou), stuff :
+  24/24. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+
+## 29/10/2026 — Correctif : le Carreau sur téléphone (Jules)
+- **Symptôme** (retour d'un joueur) : en promenade sur mobile, chaque toucher ouvrait un onglet (« y aller puis
+  entrer » sur le bâtiment touché, et les bâtiments couvrent presque tout l'écran).
+- `src/ui/town.js` : `tapAction(hit, tx, touch)` (pur, exporté) : au doigt / stylet (`e.pointerType`), marcher jusqu'à
+  `tx` sans entrer ; à la souris, un bâtiment = sa porte + entrer (comme avant). Bouton `.townEnter` (« Entrer : nom »,
+  `enterLabel`) affiché devant une porte, sur tous les écrans. Téléphone en hauteur (`innerWidth < innerHeight`) :
+  `TOWN.portraitCols` (12) cases en largeur, canvas calé sur la largeur, rue posée au-dessus de la barre d'action ou du
+  chat replié (`limit`), fond `TOWN.sky[0]` au-dessus ; bouton sous `.townHint` ; pas de « E : … » sous les noms. Chat :
+  classe `mini` quand il est au-dessus de la barre (`placeChat`), liste cachée tant qu'on n'a pas touché le titre (`open`).
+- **Tests** ✅ `tests/town.test.js` 23/23 (nouveau : `tapAction`, `enterLabel`), `boot-check`. ✅ Vérifié en émulation
+  mobile (playwright `--mobile`) : 4 touchers à droite = la place traversée jusqu'au Concasseur sans onglet ouvert, bouton
+  « Entrer : Concasseur » → onglet ouvert ; ordinateur 1600 × 900 : clic sur le chevalement → Lobby, bouton en bas.
+- ⚠️ Pas vérifié sur un vrai téléphone ni en paysage sur téléphone (mode « couvrir l'écran » comme sur ordinateur).
+
+## 29/10/2026 — Correctif : grille de l'inventaire rétrécie par les onglets (Geoffrey)
+- **Cause** : `.invWrap` est une grille 2 colonnes (grille | fiche 150u, placement automatique). Le nouveau `#invTabs`
+  (commit 2b5ae4b) a pris la colonne 1, donc `#invGrid` est tombée dans la colonne 2 de 150u et la fiche en dessous.
+- `src/ui/style.css` : placement explicite : `.invTabs` et `.invGrid` en colonne 1, `.invInfo` en colonne 2 sur les
+  lignes 2-3 ; `grid-template-rows:auto auto 1fr` pour qu'une fiche plus haute que les onglets n'écarte pas les onglets
+  de la grille. Écran ≤ tablette : `.invInfo` repasse en `grid-column:1;grid-row:auto` (sous la grille).
+- ✅ Vérifié en capture Chrome sans interface (page de test avec style.css) à 1400 px (onglets + grille à gauche, fiche
+  à droite) et 600 px (une colonne). Pas de test unitaire (CSS seul).
+
+## 29/10/2026 — Correctif : 1 fps depuis le Carreau en fond (Geoffrey)
+- **Cause** : `src/render/town.js` dessinait les cases du sol (~240 `drawImage` par image) sous
+  `ctx.filter = brightness(TOWN.groundDim)` ; Chrome applique le filtre à chaque `drawImage`. Mesuré en Chrome sans
+  interface (page isolée, 60 × 4 cases, ×2) : **1295 ms/image** avec filtre, 0,8 ms sans, 0,74 ms avec voile.
+- **Correctif** : sol dessiné sans filtre puis voile `rgba(0,0,0,1 - groundDim)` sur la zone du sol (même rendu que
+  brightness). Statue (`grayscale/brightness/contrast`) : dessinée dans un canvas à part (`statueImage`), filtrée là,
+  gardée et refaite au plus toutes les 2 s (textures qui arrivent) ou quand son apparence change.
+- **Tests** ✅ `tests/town.test.js` (nouveau : pas de `ctx.filter` dans le rendu de la ville). ⚠️ Pas vu à l'écran
+  (statue à vérifier visuellement) ; la mesure Chrome du rendu complet n'a pas abouti (seule la mesure isolée).
+- Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
+  navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
+
+## 29/10/2026 — Échap quitte l'onglet ouvert (Geoffrey)
+- `src/ui/nav.js` : dans le `keydown` des raccourcis, `Escape` → `show(escapeTab(cur, overlay))` ; `escapeTab` (pur,
+  exporté) renvoie `'session'` sauf si on y est déjà ou si une fenêtre est ouverte. Fenêtres : `OVERLAYS` (`#obtained`,
+  `#dialog`, `#account` visibles) ou `e.defaultPrevented`. `#dialog` écoute en capture et coupe la propagation ;
+  `#account` et `#obtained` écoutent sur `window`, donc après `document` : au moment du test elles sont encore visibles,
+  Échap ne fait que les fermer. Ignoré pendant la saisie (input, textarea, select).
+- **Tests** ✅ `tests/nav.test.js` (nouveau : `escapeTab`, fenêtres d'`OVERLAYS` présentes dans index.html), `boot-check`.
+  ⚠️ Pas essayé dans le navigateur.
+- Point fragile : une nouvelle fenêtre qui se ferme à Échap doit être ajoutée à `OVERLAYS`, sinon Échap la ferme ET
+  quitte l'onglet.
+
+## 29/10/2026 — Geoffrey — Instance I : gobelins 175 PV / 1,75 s, régénération du roi après un enfermement
+- **Contexte** : analyse du record (session 6ed73842…, seed 71430292, 7:12,4) : rejeu local identique au résumé serveur
+  (t 432,4, réveil 308,7). Combat contre le roi ≈ 2 min pour tout le monde ; l'écart est la phase des spawners (5:08 contre
+  8:04 pour le profil « acier » de `simulate-instance`). Seuil net : profil acier dégâts 20 → 0/5, 22 → 5/5 (150 PV : 8 → 7
+  coups par gobelin). Les mineurs n'ont pas de PV dans l'instance : seules les stats d'attaque comptent. ⚠️
+  `scripts/simulate-instance.js` ne met que `equippedStats` (ni skills, ni sorts, ni lignes / runes / plus, Gants d'ouvrier) :
+  il sous-estime les vrais joueurs (0/5 en acier alors que les 6 vraies parties du 29/10 = 6 victoires).
+- **Quoi** : `INSTANCE.goblin` hp 175, hitEvery 1.75 ; `INSTANCE.boss.regenPct` 0.01, `regenEvery` 2 (src/config.js).
+  `src/sim/instance/session.js` : `boss.regen` = { t, gain } posé par `cage()` ; `regen(G)` appelé dans `stepBoss` avant le
+  test des seuils (états wait et fight) : +regenPct × maxhp toutes les regenEvery s, plafonné à maxhp ; s'arrête (regen =
+  null, log « 💚 … a récupéré N PV ») dès qu'un mineur a `y >= floorY`. `b.phase` ne redescend jamais : remonté au-dessus
+  d'un seuil, pas de nouvel enfermement. Bulle « enfermé » (src/ui/effects.js) : ligne sur la régénération.
+- **Tests** ✅ `tests/instance-sim.test.js` (+2 : paliers à 2 s, arrêt au sol, pas de relance en remontant, plafond PV max,
+  pas de réenfermement ; test de l'enfermement : +1 % après 2 s au lieu de PV figés ; gobelin 175 PV, premier coup à
+  hitEvery), instance-server, instance-key, effects, wiki, boot-check : 60/60.
+- **Mesure** : les 6 sessions d'instance en base (export lecture seule) rejouées avec les nouvelles règles : 5 victoires
+  (8:35 à 9:33, combat 136-158 s, ≈ 350 PV repris par cage, soit ≈ 20 s avant qu'un mineur touche le sol), 1 échec (roi
+  784 PV). `simulate-instance --size 3 --count 5` : 0/5 partout (acier : roi 2 226 PV), 0 bloqué.
+- ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).
+- **Ajout (même jour)** : gobelins 200 PV (au lieu de 175). Mêmes 6 parties rejouées : 3 victoires (9:10, 9:41, 9:59), 3 échecs
+  (roi 733, 1 638 et 3 066 PV). Tests instance-sim 15/15 ✅.
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 : simulation (étape 1 : sim seulement, pas encore jouable)
+- **Quoi** : `INSTANCE.levels` (src/config.js) : 1 = valeurs de base ; 2 = spawner 200 / 15 s, gobelin 350 PV / recul 0,65,
+  roi 6 000 PV, résistance au recul 50 %, coup / 1,25 s, projection tous les 8 coups, rage sous 40 % avec recul 1,3
+  (0,65 × 2), régénération 2 % ; `chest` { res, drop } (multiplicateurs du coffre, pas encore lus). Le recul normal du
+  roi reste 0,5 (pas donné pour le niveau 2). `src/sim/instance/session.js` : `levelCfg(l)`, `instanceLevel(l)`,
+  `INSTANCE_LEVELS` ; `G.level`, `G.cfg` = { spawner, goblin, boss } fusionnés ; tous les `SP.` / `GB.` / `B.` → `G.cfg.*` ;
+  `summary.level`. `buildInstanceGame` passe `record.level`. `scripts/simulate-instance.js --level 2`.
+- **Non-régression** ✅ : les 6 vraies parties rejouées au niveau 1 donnent exactement les mêmes temps qu'avant le remaniement.
+- **Tests** ✅ instance-sim +2 (fusion des réglages, niveau inconnu = 1, PV des spawners / gobelins / roi, summary.level,
+  rage sous 40 %, régénération 2 %), instance-server, instance-key : 29/29.
+- **Mesures niveau 2** : les 6 vraies parties (stuff du 29/10) : 0 victoire, **0 spawner cassé**, jusqu'à 89 gobelins en vie
+  (24 gobelins / min × 350 PV ≈ 140 DPS rien que pour suivre ; les équipes ont 75 à 101). `simulate-instance --level 2`
+  : 0/5 partout. Équipe du record, stats multipliées (5 seeds) : dégâts × 2,5 seuls → 0/5 (roi 4 306) ; dégâts × 3 → 0/5
+  (roi 1 965) ; dégâts × 2 et minage × 1,5 → 5/5 en 9:39 ; × 2,5 et × 1,5 → 8:29 ; × 3 et × 2 → 6:14. Aucune épée au-dessus
+  de l'acier (18,5) aujourd'hui.
+
+## 29/10/2026 — Geoffrey — Dash : boss des tours, roi gobelin, gobelins de l'instance
+- **Constat** (rejeu de l'équipe du record, Infernatiwar barbare avec Dash) : 0 Dash pendant les combats de boss (tour et
+  instance) alors qu'il était prêt 100 % du temps. Tour : `dash` seulement vers `liveMobs` (src/sim/tower/session.js) ;
+  instance : seulement vers le gobelin qui tacle (collé : n < minCells, ne part jamais).
+- **Quoi** : `dashBoss` dans les deux sessions : sur la ligne du boss (toit `roof - 1` / sol de l'instance), case de
+  contact de son côté (tour : parmi les `goals` du côté voulu), 2 à range cases, chemin libre et porteur ; arrive, frappe
+  `strikeDmg × S.dmg` (tour : `damageBoss(..., true)` + provocation + hits ; instance : `hitBoss`, recul et provocation).
+  **Pas d'étourdissement** (décision de Geoffrey). Instance : `decide` essaie aussi un Dash vers le gobelin le plus proche
+  de sa ligne quand aucun n'est à portée (comme la tour).
+- **Tests** ✅ instance-sim +2 (Dash sur le roi : contact, 500 %, pas d'étourdissement, pas à 1 case ; Dash sur un gobelin
+  non tacleur), tower-spells +1 (4 tours : Dash sur le boss, pas de stunUntil, 0 bloqué) ; tower*, instance*, spells : 122/122.
+- **Mesures** : rejeu (équipe du record) instance 13-15 Dash par partie dont 1-2 sur le roi ; tours 3-5 dont 1-3 sur le boss,
+  combat du boss 98 → 91, 106 → 84, 128 → 76, 214 → 174 s. `simulate:tower --count 6` : 0 « bloqué » ;
+  `simulate-instance --size 3 --count 5` : 0 bloqué. 6 vraies parties de l'instance : 3 victoires sur 6 (8:32, 9:04, 9:50).
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 jouable (étape 2 : lobby, serveur, coffre, classement)
+- **Lobby** (src/ui/lobby.js) : `instanceLevelState` (exporté) ; même rangée `#towerLevelRow` que la tour (`st.towerLevel`
+  partagé), seulement pour celui qui lance ; `level` envoyé au lancement pour une tour OU une instance ; texte de la carte
+  Instances (coffre II). HUD : « · niveau 2 » dans le titre (`G.level`, envoyé par instances-view). Rage affichée au seuil
+  du niveau (`G.cfg.boss.rageBelow`).
+- **Serveur** (server/game/service.js) : `level = body.level ?? 1`, refusé hors `INSTANCE_LEVELS` (`bad_request`, avant les
+  clés : rien consommé) ; `rec.level` gardé (instance : toujours, 1 compris) et renvoyé par `publicSession` ; coffre
+  `goblinChestItem(q, rec.level ?? 1)` ; records : clé `instanceRecordKey(compte, niveau)` (« compte » / « compte#2 », même
+  ns `instance_record` : les records d'avant restent au niveau 1) ; `leaderboardData` : `instance` (niveau 1) et `instance2`
+  via `splitInstanceKey` (clé abîmée : ignorée). Board `instance2` (src/meta/leaderboard.js BOARDS, FASTEST), social :
+  équipe + combat, `BOARD_INFO.instance2`, bouton « Roi gobelin II » (index.html).
+- **Coffre** (src/config.js, src/meta/loot.js) : `GOBLIN_KING.chest.levels` { 1:'', 2:' II' } ; objets « Coffre du Roi
+  Gobelin II R1-R7 » (`chest.level` 2, Unique) ; `goblinChestTable(level)` : always min/max × res arrondis, chances × drop
+  (INSTANCE.levels[n].chest ; inconnu = 1) ; `openGoblinChest(..., level)`.
+- **Tests** ✅ instance-server +2 (niveau 2 : rec.level, coffre II, même clé ; niveau absent = 1 ; niveaux inventés refusés
+  sans consommer la clé), leaderboard +2 (classement par niveau ; clés compte#2), goblin-king +1 (objets II, table × 1,5,
+  couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
+  lobby 18/18 ; `npm run test:anticheat` 109/109.
+- ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.
+
+## 29/10/2026 — Classement « Tour céleste II » : records de tour par niveau (Geoffrey)
+- `src/meta/leaderboard.js` : board `tower2` (BOARDS, FASTEST) ; `sanitizeTowerRecord` garde `level` (absent = 1, inconnu de
+  TOWER.levels = record invalide) ; `recordKey` / `splitRecordKey` (anciens noms `instanceRecordKey` / `splitInstanceKey`
+  gardés en alias), même schéma que l'instance : clé `compte` au niveau 1, `compte#2` au niveau 2.
+- `server/game/service.js` : `recordTower` écrit sous `recordKey(compte, rec.level)` ; un record d'un autre niveau sous
+  cette clé compte comme absent (remplacé). `backfillTowers` : avant le rattrapage, chaque record sans `level` (tous
+  sous la clé du compte, ancien code) reçoit le niveau de sa session (`sessionsWithStatus('done')`, 1 si elle n'est plus
+  gardée), sous le verrou `tower_record:`. Un ancien record du niveau 2 reste donc sous la clé du niveau 1, marqué 2 : exclu
+  du board `tower` (`r.level === clé`), et remplacé par la première victoire du niveau 1 rejouée. `leaderboardData` :
+  `tower` = niveau 1, `tower2` = niveau 2. UI : `BOARD_INFO.tower2`, bouton `data-board="tower2"` (index.html), détail
+  camp + équipe comme `tower`.
+- **Tests** ✅ `tests/leaderboard.test.js` 18/18 (nouveaux : deux niveaux séparés ; migration des anciens records),
+  social, town, tower*, judgment, instance*, nav, boot-check : 162/162. ⚠️ Pas vu à l'écran.
+- Point fragile : pas d'effacement dans le store ; un ancien record du niveau 2 rangé au niveau 1 sans victoire au niveau 1
+  rejouable reste dans `tower_record` sous la clé du compte (inoffensif, jamais classé).
+
+## 29/10/2026 — Geoffrey — Correctif : Dash sur le boss de la tour, quel que soit le côté voulu
+- **Constat** (partie seed 949593874, tower_demon niveau 2, 20:52, après la mise en ligne de 20:32 ; rejeu identique au
+  serveur : échec, boss 689 PV) : Dash prêt, barbare sur le toit à 2-6 cases du boss, statut « Va au contact de Démon »,
+  pas de Dash. `dashBoss(G, m, goals)` ne visait que les cases du côté voulu (`wantedSide` : à l'opposé des autres, ici
+  « R ») ; il arrivait toujours par la gauche → jamais.
+- **Correctif** : `dashBoss(G, m, cells)` (toutes les cases de contact) ; il arrive du côté le plus proche, puis traverse
+  le boss (il frappe de l'intérieur, `contactSide` 'in') vers son côté voulu.
+- **Tests** ✅ tower-spells +1 (barbare côté gauche, voulu « R », à 4 cases : il dashe et frappe), échoue sans le correctif ;
+  tower* 63/63. Rejeu de la partie : 10 Dash pendant le combat (avant 4), victoire 9:30. `simulate:tower --count 6`
+  niveaux 1 et 2 : 0 « bloqué ».
+
+## 29/10/2026 — Geoffrey — Dynamite en combat (tours, Instance I)
+- **Quoi** : `SPELL.dynamite.fightFoes` 2 (src/config.js). Instance (`combatSpells`) : sur le roi si `blastHurt` depuis
+  la case devant lui le touche, sinon sur la cible si au moins fightFoes gobelins dans le rayon autour d'elle ;
+  `blastDamage` (50 %), rien de cassé, log « Dynamite en combat (n gobelins, le Roi gobelin) ». Tour (`combatSpells`) :
+  en plus du boss, sur un mob si `blastFoes(cible)` ≥ fightFoes → `blast` (casse aussi les briques du rayon selon la règle
+  de dureté, inchangée).
+- **Tests** ✅ instance-sim +1 (gobelin seul : gardée ; 2 gobelins : lancée, 50 % ; roi au contact), tower-spells +1
+  (niveau 2, 4 tours : dynamites sur des mobs, 0 bloqué) ; les deux échouent sans le changement ; tower*, instance*,
+  spells : 127/127. `simulate:tower --count 6` niveaux 1 et 2, `simulate-instance --size 3 --count 5` niveaux 1 et 2 :
+  0 bloqué. Rejeux : instance 20:48 victoire 8:00.8 → 7:40.6 ; 7 parties d'instance : 4 victoires.
+- ⚠️ Dans la tour, la dynamite peut maintenant partir sur 2 Diablotins invoqués plutôt qu'être gardée pour le boss :
+  partie seed 949593874 rejouée 9:30 → 9:40 (une seule sur le Démon au lieu de 2) ; seed 2001827804 : 9:46 → 9:51.
+
+## 29/10/2026 — Classements : niveaux en sous-onglets (Geoffrey)
+- `src/ui/social.js` : `boardSubs(groupe)` (pur, exporté) : `spec` → un sous-onglet par arbre (`spec:<arbre>`), `tower` /
+  `instance` → un par niveau tant que le classement existe dans BOARDS (`tower`, `tower2`…), sinon null. État :
+  `board` = bouton (gs, xp, spec, tower, instance), `sub[bouton]` = sous-onglet retenu ; `boardId()` = `sub[board] ?? board`.
+  Boutons de sous-onglet `data-sub` dans `#boardTrees` (avant : `data-tree`, Spécialisation seulement). Titre : « Tour céleste ·
+  Niveau 2 ». `index.html` : boutons `tower2` et `instance2` retirés. Serveur inchangé (mêmes ids de classement).
+- **Tests** ✅ `tests/leaderboard.test.js` (nouveau : sous-onglets, et chaque classement de BOARDS atteignable depuis
+  index.html), social, boot-check : 41/41. ⚠️ Pas vu à l'écran.
+
+## 29/10/2026 — Recyclage des runes en Poudre de rêve, recette Rune (Geoffrey)
+- **Config** : `RUNE.dust` (item « Poudre de rêve », tex `dream_powder`, rareté rare, `recycle.rune` 8-12, `recycle.fragment`
+  1-6), `RUNE.craftChances` (R1-R7). ITEMS : Poudre de rêve `cat:'material'` (pas `'rune'` : `isRune` la prendrait pour une
+  rune posable), onglet Runes de l'inventaire via `items`. `src/recipes.js` : `'Rune'` 100 Poudre de rêve, de base.
+- **Logique** (`src/meta/craft.js`) : `recyclable` accepte `isRune` (rune et fragment) ; `recycleRange(item)` (affichage) ;
+  `recycleRefund(item, rng)` tire la poudre ; `recycleStuff(inv, uid, locked, rng)` : rune sans rng → `not_recyclable`.
+  `craft(inv, item, opId, rng)` : Rune → `rollRune(rollCraftedRuneQuality(rng), rng)` sur la case créée, renvoie `pieces` ;
+  Rune sans rng → `unknown` avant de rien retirer. `rollCraftedRuneQuality` dans `src/meta/piece.js`.
+- **Serveur** (`server/game/service.js`) : `recycle` et `craft` passent `random` (crypto) ; `craft` renvoie `piece` pour une rune
+  (`src/main.js` l'affiche dans « Tu as obtenu » avec sa qualité). Idempotence : recyclage = la pièce disparaît (rafale :
+  une seule réussite, les autres `not_owned`) ; craft = `opId` (rafale : une seule rune).
+- **UI** : `src/ui/inventory.js` fenêtre de recyclage d'une rune (fourchette, lignes perdues). Wiki : sources/usages
+  (`src/wiki/data.js`, + source du Fragment de rune qui affichait « Pas encore obtenable »), textes de `wiki.html`.
+  Texture `textures/dream_powder.png` (`scripts/gen_textures.py`).
+- **Tests** ✅ `tests/rune-recycle.test.js` (nouveau, 9 : fourchettes, toutes les valeurs sortent, bornes des chances,
+  distribution sur 100 000 tirages, craft consommé une fois, refus sans poudre ou sans rng, boucle fermée) ;
+  `tests/recycle.test.js` (une rune est maintenant recyclable) ; `tests/anticheat/recycle.test.js` (+2 : rafale de
+  recyclage d'une rune fabriquée, rafale de craft même opId ; l'ancien cas « rune non recyclable » vise un anneau) ;
+  craft, wiki, rune, game-service : 100/100 ; `npm run test:anticheat` 111/111. ⚠️ Pas vu à l'écran.
+- Point fragile : une rune donnée par `adminGive` n'a ni qualité ni lignes et disparaît à la relecture (déjà le cas avant) ;
+  pour tester, fabriquer la rune avec la recette.
+
 ## 29/10/2026 — Prison : rendement vs mine à 3 (simulate:prison) (Geoffrey, branche geoffrey/prison) 🧪
 - `scripts/simulate-prison.js` (`npm run simulate:prison`) : chaînes de runs de prison par heure de jeu contre la part d'un joueur d'une mine à 3
   (`runSession`, mêmes presets via `minerSpecs` ; stuff base / fer / acier). Défauts rapides (~2,5 min) ; mesure complète :

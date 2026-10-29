@@ -11,7 +11,7 @@ import { createTownService } from '../server/town/service.js';
 import { townRoutes } from '../server/town/routes.js';
 import { TOWN_SERVER } from '../server/config.js';
 import { bubbleLines } from '../src/render/town.js';
-import { enterTab, mergeOthers, cardHtml } from '../src/ui/town.js';
+import { enterTab, enterLabel, tapAction, mergeOthers, cardHtml } from '../src/ui/town.js';
 
 test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, dans la ville', () => {
   const { buildings, width } = townLayout();
@@ -277,4 +277,22 @@ test('service : statue = n°1 du classement GS, comptes cachés exclus, relue au
   r = await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
   assert.equal(r.statue.id, 'BBBB2222');
   assert.equal((await setup({ board: { gs: [] } }).town.ping(me('AAAA1111'), { spot: 'lobby' })).statue, null);
+});
+
+test('toucher la ville : au doigt, marcher là où on touche sans jamais entrer ; à la souris, un bâtiment = y aller puis entrer', () => {
+  const four = buildingOf('four');
+  assert.deepEqual(tapAction(four, four.x + 1, true), { to: four.x + 1, enter: false });
+  assert.deepEqual(tapAction(four, four.x + 1, false), { to: four.door, enter: true });
+  assert.deepEqual(tapAction(null, 42.5, true), { to: 42.5, enter: false });
+  assert.deepEqual(tapAction(null, 42.5, false), { to: 42.5, enter: false });
+  assert.equal(enterLabel(four), 'Entrer : Fonderie');
+  assert.equal(enterLabel(buildingOf('session')), 'Préparer une session');
+  assert.equal(enterLabel(buildingOf('lobby')), 'Préparer une session');
+});
+
+/* 29/10 : ctx.filter posé sur le contexte de la ville (sol assombri) = refait à chaque drawImage par Chrome, 1,3 s par
+   image (1 fps). Le dessin de la ville n'en met jamais sur son contexte principal (voile noir à la place) */
+test('rendu de la ville : jamais de ctx.filter sur le contexte principal (1 fps sur Chrome)', () => {
+  const src = readFileSync(new URL('../src/render/town.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(src, /\bctx\.filter\b/);
 });

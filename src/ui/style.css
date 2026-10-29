@@ -47,9 +47,16 @@ img,canvas{image-rendering:pixelated}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
 /* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : tout en bas à gauche */
 .townChat{display:none}
+/* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action */
+.townEnter{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
+ 
+  font-size:var(--fs-l);padding:calc(2*var(--u)) calc(8*var(--u));white-space:nowrap}
 .bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:6px;width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}   /* place exacte : src/ui/town.js placeChat */
 .townChat .card{margin:0;background:rgba(11,8,6,.85)}
 .townChat .chatLog{max-height:calc(46*var(--u))}
+/* téléphone : chat replié (champ seulement) ; toucher le titre le déplie (src/ui/town.js placeChat) */
+.townChat.mini:not(.open) .chatLog,.townChat.mini:not(.open) #gchatNote{display:none}
+.townChat.mini h2{cursor:pointer}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
 body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
@@ -438,9 +445,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
 .iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
-.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
+.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
-.invWrap>.invInfo{margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
+.invWrap>.invTabs,.invWrap>.invGrid{grid-column:1}   /* onglets au-dessus de la grille, colonne de gauche */
+.invWrap>.invInfo{grid-column:2;grid-row:2/span 2;margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
 .invOpen{margin-left:calc(4*var(--u))}
 
 /* ---------- compte : bouton de la barre du haut, et fenêtre (connexion, création, mon compte) ---------- */
@@ -649,7 +657,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .lobbyCols{grid-template-columns:1fr}
   .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
-  .invWrap>.invInfo{position:static;margin-top:calc(6*var(--u))}
+  .invWrap>.invInfo{grid-column:1;grid-row:auto;position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}
 }
 /* ---------- téléphone ---------- */
@@ -978,3 +986,10 @@ button.danger{color:var(--bad)}
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
 .setRow.on b{color:var(--ok)}
+/* onglets de l'inventaire (29/10/2026) : une icône par catégorie, grisée si vide */
+.invTabs{display:flex;flex-wrap:wrap;gap:calc(3*var(--u));margin:0 0 calc(6*var(--u))}
+.invTab{display:grid;place-items:center;width:calc(26*var(--u));height:calc(26*var(--u));padding:0}
+.invTab img,.invTab .pi{width:calc(16*var(--u));height:calc(16*var(--u));image-rendering:pixelated}
+.invTab.on{outline:calc(2*var(--u)) solid var(--acc);outline-offset:calc(-1*var(--u));background:var(--sel)}
+.invTab.none:not(.on){opacity:.4}
+.invNone{grid-column:1/-1}
