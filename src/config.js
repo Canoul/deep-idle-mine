@@ -1573,6 +1573,7 @@ export const TOWN = {
   walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
+  portraitCols: 12,   // téléphone en hauteur : cases visibles en largeur (la ville se cale sur la largeur, 29/10)
   chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },

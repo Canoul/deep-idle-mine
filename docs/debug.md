@@ -4859,3 +4859,17 @@ Règles (voir CLAUDE.md) :
 - `src/render/town.js` : constantes `LABEL` (#ffc27a, `--acc-lt` de style.css) pour les noms des bâtiments, la statue et
   les bannières, `HINT` (#ff7a2e, `--acc`) pour « E : entrer » et « Tour ouverte ! » (ancien : #f2ece4 / #ffc27a / #ffd27a).
   Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
+
+## 29/10/2026 — Correctif : le Carreau sur téléphone (Jules)
+- **Symptôme** (retour d'un joueur) : en promenade sur mobile, chaque toucher ouvrait un onglet (« y aller puis
+  entrer » sur le bâtiment touché, et les bâtiments couvrent presque tout l'écran).
+- `src/ui/town.js` : `tapAction(hit, tx, touch)` (pur, exporté) : au doigt / stylet (`e.pointerType`), marcher jusqu'à
+  `tx` sans entrer ; à la souris, un bâtiment = sa porte + entrer (comme avant). Bouton `.townEnter` (« Entrer : nom »,
+  `enterLabel`) affiché devant une porte, sur tous les écrans. Téléphone en hauteur (`innerWidth < innerHeight`) :
+  `TOWN.portraitCols` (12) cases en largeur, canvas calé sur la largeur, rue posée au-dessus de la barre d'action ou du
+  chat replié (`limit`), fond `TOWN.sky[0]` au-dessus ; bouton sous `.townHint` ; pas de « E : … » sous les noms. Chat :
+  classe `mini` quand il est au-dessus de la barre (`placeChat`), liste cachée tant qu'on n'a pas touché le titre (`open`).
+- **Tests** ✅ `tests/town.test.js` 23/23 (nouveau : `tapAction`, `enterLabel`), `boot-check`. ✅ Vérifié en émulation
+  mobile (playwright `--mobile`) : 4 touchers à droite = la place traversée jusqu'au Concasseur sans onglet ouvert, bouton
+  « Entrer : Concasseur » → onglet ouvert ; ordinateur 1600 × 900 : clic sur le chevalement → Lobby, bouton en bas.
+- ⚠️ Pas vérifié sur un vrai téléphone ni en paysage sur téléphone (mode « couvrir l'écran » comme sur ordinateur).
