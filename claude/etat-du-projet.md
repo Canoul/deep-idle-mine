@@ -58,8 +58,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - **Niveaux de tour** (28/10, Geoffrey ; `TOWER.levels`) : niveau 1 ou 2 choisi au lancement dans le Lobby, chacun
-    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 1,75 (ancien × 2), poids des
-    briques × 1,5, rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
+    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 2 (29/10 ; ancien × 1,75), poids des
+    briques × 2 (29/10 ; ancien × 1,5), rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
     à 2,5 minage / 40 dégâts, niveau 1 4/4, niveau 2 0/4 (`npm run simulate:tower -- --level 2`).
   - **Descente des mobs** (28/10, tous niveaux, `TOWER.mobs.descend`) : un mob sans proie dans son étage saute par la porte
     ouverte du sol quand un mineur est plus bas dans la tour.
@@ -175,7 +175,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Direction artistique** (21/10, Jules) : « Forge noire » en pixel art (brique brune, fer riveté, braise). Barre
   d'action en bas (touches 1-9, 0, -, =) entre deux orbes (temps / XP, ou O₂ / pods pendant la session), session en
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
-  `src/ui/pxicons.js`, `npm run textures:ui`). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
+  `src/ui/pxicons.js`, `npm run textures:ui`). Polices : titres en Jersey 15, texte en VT323 (29/10 ; ancien :
+  Jersey 10, illisible sous 20 px). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
@@ -313,7 +314,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   +5 % vitesse d'attaque, 30 s, recharge après l'effet, 180 s), **Cleave** et **Hand of Justice** (parchemins, sans source :
   50 % des dégâts à 2 cases, 10 s ; étourdit 3 s un mob qui se bat à 3 cases, 30 s). Mine classique (et k hole) seulement.
   Figés au lancement, déclenchés tout seuls dès que la recharge est finie et qu'ils servent ; barre des sorts en
-  session.
+  session (29/10 : aussi dans les tours, l'instance et le Bloc géant ; ancien : mine classique seulement).
   **Joués aussi dans les tours du Jugement** (28/10, Geoffrey ; zipette exceptée). **Dynamite** (rework 28/10) : blocs de
   dureté < 3 × vitesse de minage, 50 % des dégâts aux mobs du rayon (boss compris dans la tour). Simulation : `--spells id,id`.
   **Onglet refait le 28/10 (Jules, piste A « la barre de sorts »)** : la barre de sorts en grand en haut (comme en
@@ -324,7 +325,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Sets** (24/10, Geoffrey ; `SETS` en config, `src/meta/sets.js`, `src/ui/sets.js`, GAME_DESIGN §6 « Sets ») : une
   liste de sets (stuff porté, skills, sorts) à gauche des onglets Stuff, Skills et Sorts, et dans le Lobby sous l'équipe (28/10) ; Équiper remet tout d'un coup
   (pièce introuvable = case vide) ; **Équiper possible pendant une session, pour la suivante** (28/10, Geoffrey ; ancien :
-  hors session), créer / enregistrer hors session ; garde-fou 20 sets.
+  hors session), créer / enregistrer hors session ; garde-fou 20 sets. **Ligne « Set équipé »** (29/10) : le set dont le stuff,
+  les skills et les sorts sont exactement l'équipement actuel (marqué ✔), « aucun » sinon.
 - **Hors session** : inventaire en grille, Four (fonte, alliages, four en fer), Craft (recettes et blueprints),
   Stuff (13 cases dont 2 anneaux et une case Torche depuis le 25/10 : Lampe à incandescence, rayon des torches par mineur, et ses torches dessinées en lampe de mine depuis le 26/10 ; depuis le 26/10 débloquée par un **BP du Treasure T2** (2 %, aussi à la table de recherche tier 2, dont elle devient la 4e recette à apprendre pour ouvrir le tier 3 ; ancien : craftable de base) ; raretés commun → légendaire, tier 2), Table de recherche, Historique des sessions, wiki du
   joueur (`wiki.html`).
@@ -397,6 +399,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
   seulement : la simulation ne change pas (cause des étourdissements et anneaux du groupe ajoutés pour l'affichage).
+  **Depuis le 29/10** : les états du joueur regardé (mine : le mineur suivi ; tours, instance, MI, Bloc géant : clic sur
+  un joueur de l'équipe), avec son nom devant ; aussi au Bloc géant (ancien : son propre mineur seulement, pas au Bloc géant).
 
 - **Fond : la session en cours** (28/10, Geoffrey ; `src/ui/backdrop.js`) : pendant une session, hors onglet Session, la
   mine (dessin seul, sans panneaux) remplace le mur du fond, assombrie (CSS `.bgSession`). Option « Session en cours en

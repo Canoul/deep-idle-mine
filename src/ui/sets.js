@@ -3,31 +3,36 @@
    « + Nouveau set » enregistre l'équipement actuel. Pendant une session : tout reste permis
    (28/10/2026) ; ce qu'on équipe compte pour la prochaine session (le serveur vérifie tout, onOp). */
 import { ask, askText } from './dialog.js';
+import { equippedSet } from '../meta/sets.js';
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const HOSTS = ['setsStuff', 'setsSkills', 'setsSpells', 'setsLobby'];
 
 /* une liste de sets en HTML (list : [{ id, name }], max, locked : session en cours, busy : demande en cours) */
-export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false, msg = '' } = {}){
+/* current : le set équipé (equippedSet), null = aucun ; une ligne en haut le dit (29/10/2026), et sa ligne est marquée */
+export function setsHtml({ list = [], max = 20 }, { locked = false, busy = false, msg = '', current = null } = {}){
   const off = busy ? ' disabled' : '';
-  const rows = list.map(s => `<div class="setRow" data-set="${s.id}"><b title="${esc(s.name)}">${esc(s.name)}</b>`+
+  const head = list.length ? `<p class="setCur small">Set équipé : ${current ? `<b>${esc(current.name)}</b>` : '<span class="mut">aucun</span>'}</p>` : '';
+  const rows = list.map(s => `<div class="setRow${s.id === current?.id ? ' on' : ''}" data-set="${s.id}"><b title="${esc(s.name)}">${s.id === current?.id ? '✔ ' : ''}${esc(s.name)}</b>`+
     `<button data-act="equip"${off} title="${locked ? 'Équiper ce set pour la prochaine session (la session en cours ne change pas)' : 'Équiper le stuff, les skills et les sorts de ce set'}">Équiper</button>`+
     `<button data-act="save"${off} title="Remplacer ce set par ton équipement actuel">Enregistrer</button>`+
     `<button data-act="rename"${off} title="Renommer">✎</button>`+
     `<button data-act="delete"${off} title="Supprimer">×</button></div>`).join('');
-  return (rows || '<p class="mut small">Aucun set : enregistre ton équipement actuel.</p>')+
+  return head + (rows || '<p class="mut small">Aucun set : enregistre ton équipement actuel.</p>')+
     (list.length < max ? `<button class="setNew" data-act="create"${off}>+ Nouveau set</button>` : '')+
     (locked ? '<p class="mut small">Session en cours : un set équipé maintenant compte dès la prochaine session.</p>' : '')+
     (msg ? `<p class="small ${msg.ok ? 'mut' : 'err'}">${esc(msg.text)}</p>` : '');
 }
 
 /* onOp(op) → promesse de la réponse du serveur ({ sets, inventory, stuff, skills, spells, missing? }) ;
-   onLoadout(réponse) : l'équipement a peut-être changé ; inSession() : une session est en cours */
-export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false }){
+   onLoadout(réponse) : l'équipement a peut-être changé ; inSession() : une session est en cours ;
+   current() : l'équipement actuel { worn, skills, spells } (pour le set équipé ; refresh() quand il change) */
+export function setupSets({ onOp, onLoadout = () => {}, inSession = () => false, current = () => null }){
   let st = { list:[], max:20 }, busy = false, msg = '';
   const $ = id => document.getElementById(id);
 
   function render(){
-    const html = setsHtml(st, { locked:inSession(), busy, msg });
+    const c = current();
+    const html = setsHtml(st, { locked:inSession(), busy, msg, current: c ? equippedSet(st.list, c.worn, c.skills, c.spells) : null });
     for(const h of HOSTS){ const el = $(h); if(el && el._html !== html){ el.innerHTML = html; el._html = html; } }
   }
   async function send(op, done){

@@ -38,7 +38,7 @@ import { aurasOf } from './meta/aura.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
-import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
+import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { gearScore } from './meta/gearscore.js';
@@ -59,7 +59,7 @@ import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
 import { setupTooltips } from './ui/tooltip.js';
-import { createEffectsBar, placeEffectsBar } from './ui/effects.js';
+import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
 import { setupGuide } from './ui/guide.js';
 import { setupSocial } from './ui/social.js';
@@ -182,9 +182,10 @@ const craft = setupCraft({
     obtained.show({ title:'Tu as obtenu', entry: item, qty: recipeOf(item)?.qty ?? 1 });
   },
 });
+let setsUI = null;   // sets (créés plus bas) : les onglets Stuff, Skills et Sorts rafraîchissent la ligne « Set équipé »
 const stuff = setupStuff({
   onOp: async op => { const r = await gameApi.stuff({ ...op, opId: newOpId() }); setInventory(r.inventory); stuff.set(r.stuff); },
-  onWorn: () => upgradeUI.refresh(),
+  onWorn: () => { upgradeUI.refresh(); setsUI?.refresh(); },   // sets : la ligne « Set équipé » (29/10)
 });
 
 const furnace = setupFurnace({
@@ -217,20 +218,22 @@ const skills = setupSkills({
   onOp: op => gameApi.skills({ ...op, opId: newOpId() }),
   inSession: () => !!G && !G.over,
   inventory: () => ui.inv,                                   // glyphes possédés (case de glyphe)
-  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
+  onChange: (s, r) => { ui.skills = s; if(r?.inventory) setInventory(r.inventory); stuff.setSkills(s); lobby.update({ myTree: s?.tree ?? null }); spells.setContext({ tree: s?.tree ?? null }); setsUI?.refresh(); },   // Stuff : bonus des skills ; lobby et Sorts : sa spécialisation
 });
 
 /* sorts : le serveur vérifie et enregistre ; un parchemin appris quitte l'inventaire */
 const spells = setupSpells({
   onOp: op => gameApi.spells({ ...op, opId: newOpId() }),
   onInventory: inv => setInventory(inv),
+  onChange: () => setsUI?.refresh(),   // ligne « Set équipé » (29/10)
 });
 
 /* sets (Stuff, Skills, Sorts) : équiper change l'inventaire, le stuff, les skills et les sorts d'un coup */
-const setsUI = setupSets({
+setsUI = setupSets({
   onOp: op => gameApi.sets({ ...op, opId: newOpId() }),
   onLoadout: r => { setInventory(r.inventory); stuff.set(r.stuff); skills.set(r.skills); spells.set(r.spells); },
   inSession: () => !!rec,
+  current: () => ui.skills ? { worn: stuff.worn(), skills: ui.skills, spells: spells.slots() } : null,
 });
 
 applyRarityColors();   // couleurs des raretés (config)
@@ -506,7 +509,7 @@ function enterSession(session){
   window.G = G;                             // pour le débogage depuis la console (F12)
   /* la caméra suit son propre mineur ; les mineurs portent le nom de leur joueur */
   ui.names = Object.fromEntries(session.players.map(p => [p.account, p.name]));
-  ui.follow = null; ui.followSet = false; renderer.follow();
+  ui.follow = null; ui.followSet = false; ui.focus = null; renderer.follow();
   ui.speed = info.dev ? session.clock?.speed ?? 1 : session.speed; ui.paused = !!session.clock?.paused;
   renderSpeeds(ui, info, s => setClock({ speed:s }));
   $('seedLbl').textContent = info.dev ? `seed ${session.seed}` : '';
@@ -680,12 +683,29 @@ const fxBars = { mine: [createEffectsBar($('fxBar')), $('fxBar'), $('cv'), $('cv
                  mi: [createEffectsBar($('fxBarMi')), $('fxBarMi'), $('cvMi'), $('cvMiWrap')],
                  tower: [createEffectsBar($('fxBarTw')), $('fxBarTw'), $('cvTw'), $('cvTwWrap')],
                  instance: [createEffectsBar($('fxBarIn')), $('fxBarIn'), $('cvIn'), $('cvInWrap')] };
+/* tours, instance, MI : un clic sur un joueur de l'équipe (ou du classement) montre ses états ; sur soi, retour aux siens */
+for(const id of ['twTeam', 'inTeam', 'miRank']) $(id).addEventListener('pointerdown', e => {
+  const r = e.target.closest('[data-id]'); if(!r || e.button !== 0) return;
+  const m = G?.miners?.find(o => o.id === +r.dataset.id);
+  ui.focus = !m || m.account === acct.account?.id || ui.focus === m.id ? null : m.id;
+});
 function updateEffects(G){
   const key = !G ? null : G.mode === 'mi' || G.mode === 'tower' || G.mode === 'instance' ? G.mode : 'mine';
   for(const [k, [update, bar, cv, wrap, below]] of Object.entries(fxBars)){
     if(k !== key){ if(!bar.hidden) update(null); continue; }
-    update(G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0] ?? null);   // son propre mineur (spec du 28/10)
+    /* 29/10 : mine classique = le mineur suivi (clic dans l'équipe) ; tours, instance, MI = le joueur choisi dans l'équipe
+       ou le classement (ui.focus) ; par défaut son propre mineur (spec du 28/10) */
+    const f = focusedMiner(G.miners, acct.account?.id, key === 'mine' ? ui.follow : ui.focus);
+    update(f.m, f.name);
     if(!bar.hidden) placeEffectsBar(bar, cv, wrap, below);
+  }
+}
+/* barre des sorts des tours et de l'instance (29/10) : celle de son propre mineur ; la mine classique a la sienne (src/ui/hud.js) */
+const spellBars = { tower: [$('spellBarTw'), $('cvTw'), $('cvTwWrap')], instance: [$('spellBarIn'), $('cvIn'), $('cvInWrap')] };
+function updateSpellBars(G){
+  for(const [k, [el, cv, wrap]] of Object.entries(spellBars)){
+    showSpellBar(el, G && G.mode === k ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
+    placeSpellBar(el, cv, wrap);
   }
 }
 
@@ -700,9 +720,9 @@ function frame(now){
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
-    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null);
-    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000));
+    if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
+    else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);
@@ -711,6 +731,7 @@ function frame(now){
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateEffects(ui.tab==='session' ? shown : null);
+    updateSpellBars(ui.tab==='session' ? shown : null);
     updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){

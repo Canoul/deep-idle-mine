@@ -54,7 +54,7 @@ export function updateHUD(G, ui){
   $('mTorch').textContent=m.torches+' en réserve · '+(Number.isFinite(m.bridges) ? m.bridges+' passerelles' : 'passerelles illimitées');   // Infinity arrive en null (JSON)
   $('mInv').innerHTML=chips(m.inv);
   // sorts équipés du mineur suivi : recharge restante sur chaque sort
-  { const html=spellBarHtml(m, G.t); $('spellBar').hidden=!html; if(html) setHtml($('spellBar'), html); }
+  showSpellBar($('spellBar'), m, G.t);
 
   // coffre commun + contributions
   $('chestBox').innerHTML=chips(G.chest);
@@ -184,6 +184,20 @@ export function objectiveHtml(G){
 /* barre des sorts d'un mineur (m.spells, m.spellCd : heure où chaque sort est de nouveau prêt) au temps t de la partie :
    un carré par sort (icône pixel, couleur de sa famille comme dans l'onglet Sorts), grisé avec les secondes restantes
    pendant la recharge ; '' sans sort */
+/* remplit une barre des sorts (élément .spellBar) : cachée sans sort ; m null = cachée. Sert à tous les modes (29/10/2026 :
+   avant, seule la mine classique l'affichait) */
+export function showSpellBar(el, m, t){
+  if(!el) return;
+  const html = spellBarHtml(m, t);
+  if(el.hidden !== !html) el.hidden = !html;
+  if(html) setHtml(el, html);
+}
+/* place la barre en bas du canvas quand il est plus petit que sa zone (tours, instance, Bloc géant : canvas centré) */
+export function placeSpellBar(el, cv, wrap){
+  if(!el || el.hidden || !cv || !wrap) return;
+  const b = `${Math.round(Math.max(0, (wrap.clientHeight - cv.offsetHeight) / 2) + 6)}px`;
+  if(el.style.bottom !== b) el.style.bottom = b;
+}
 export function spellBarHtml(m, t){
   if(!m?.spells?.length) return '';
   return m.spells.map(id => {

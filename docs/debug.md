@@ -4657,6 +4657,60 @@ Règles (voir CLAUDE.md) :
   334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
   `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).
 
+## 29/10/2026 — Jules — Police du corps de texte : VT323 au lieu de Jersey 10
+- **Quoi** : `--f-body` (src/ui/style.css) passe de `'Jersey 10'` à `'VT323'` ; `--f-title` reste `'Jersey 15'` (repli
+  VT323). index.html charge `Jersey 15` + `VT323` depuis Google Fonts (Jersey 10 n'est plus chargée). CSP inchangée.
+- **Cause** : une police pixel n'est nette qu'aux multiples de sa grille. Jersey 10 est nette à 20 px, floue à
+  `--fs-s` 15 px / `--fs` 17 px : 8 → 9, 5 → 6 (signalé sur l'orbe d'XP). Comparaison à taille réelle (captures agrandies
+  sans lissage) : VT323 nette à 15/17/20/21 px ; Pixelify Sans : 5 ≈ S ; Tiny5 : 8 ≈ e.
+- **Vérification** ✅ lobby, inventaire, stuff, orbe à 1366×768 (compte Test_Mineur, `npm run dev`), pas de défilement
+  horizontal à 390×844 (lobby, stuff). Tests nav, controls, guide, help, perf, account-http : 40/41, le ❌ « la boîte de
+  mesures est dans les barres… » échoue aussi sur main sans ce changement, pas lié.
+- **Points fragiles** : VT323 est monospace, plus large que Jersey 10 : textes en `nowrap` un peu plus longs (boutons
+  « Où miner » sur 3 lignes à 1366 px). Le canvas (mine) écrit toujours en `sans-serif`, non concerné. VT323 n'a qu'une
+  graisse : le gras est simulé par le navigateur (déjà le cas avec Jersey).
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : dureté × 2, poids × 2 (✅ en ligne le 29/10)
+- **Quoi** : `TOWER.levels[2]` : `hard` 1,75 → 2, `weight` 1,5 → 2 (src/config.js). GAME_DESIGN.md, wiki.html, état du
+  projet ; commentaire de `brickW` (src/sim/tower/session.js).
+- **Tests** ✅ tower-level (config, brique 2 fois plus longue, sac plein au niveau 2 seulement), tower, tower-spells,
+  tower-boss : 54/54.
+- **Simulation** `npm run simulate:tower -- --level 2 --count 20`, avant → après : 0/20 victoires partout dans les deux
+  cas (équipes de base) ; étage 4 atteint à 7:46-7:47 → 8:20-9:56, étage 5 à 9:49 (équipe a) → jamais. ⚠️ Aucune équipe
+  mesurée ne gagne le niveau 2 (repère du 28/10 : 2,5 minage / 40 dégâts, 0/4, avant ce changement).
+
+## 29/10/2026 — Geoffrey — Barre des sorts dans les tours, l'instance et le Bloc géant
+- Seul `updateHUD` (mine classique, `#spellBar`) remplissait la barre ; les tours, l'instance et le Bloc géant jouent des
+  sorts (`spellCd` dans leurs simulations) sans les montrer. MI : pas de sorts dans `src/sim/instant/`, pas de barre.
+- `src/ui/hud.js` : `showSpellBar(el, m, t)` (cache sans sort / sans mineur) et `placeSpellBar(el, cv, wrap)` (bas du canvas
+  quand il est centré plus petit que sa zone). `index.html` : `#spellBarTw`, `#spellBarIn`, `#spellBarGt`. `src/main.js` :
+  `updateSpellBars` (son propre mineur, comme les états). `server/giant/service.js` viewOf : `me.spells`, `me.spellCd` ;
+  `src/ui/giant.js` frame : barre à chaque image, temps = `view.t` (rafraîchi à chaque réception, ~0,5 s).
+- **Tests** ✅ spells (showSpellBar), giant-service (me.spells / spellCd), tower-spells, giant-sim, instance-server : 72/72.
+  ⚠️ Pas vu à l'écran (pas de navigateur ici) : vérifier la place de la barre dans une tour, une instance et au Bloc géant.
+
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- `src/meta/sets.js` `equippedSet(list, worn, skills, spellSlots)` : premier set dont l'uid de chaque case, l'arbre, les
+  rangs > 0 et les emplacements de sorts égalent l'équipement actuel ; null sinon. Rien de stocké (pas de « set actif »
+  côté serveur) : comparaison à l'affichage.
+- `src/ui/sets.js` : `setsHtml(…, { current })` (ligne `.setCur`, ligne du set `.setRow.on` + ✔), `setupSets({ current })`.
+  `src/ui/spells.js` : `onChange`, `slots()`. `src/main.js` : `setsUI.refresh()` sur changement de stuff (`onWorn`), de
+  skills (`onChange`) et de sorts (`onChange`) ; `let setsUI` déclaré avant `setupStuff`.
+- **Tests** ✅ sets (nouveau test : correspondance, pièce / exemplaire / sort différent, rang à 0, HTML), spells, skills :
+  61/61. ⚠️ Pas vu à l'écran (pas de navigateur ici).
+
+## 29/10/2026 — Geoffrey — États du joueur regardé, et barre d'états au Bloc géant
+- `src/ui/effects.js` : `focusedMiner(miners, me, focus)` (choisi s'il est là, sinon le sien — `account` ou `me` —,
+  sinon le premier ; `name` si ce n'est pas le sien) ; `createEffectsBar` → `update(m, name)` ajoute un nœud `.fxWho`
+  (nom, bulle) devant les icônes.
+- `src/main.js` `updateEffects` : mine = `ui.follow` (déjà réglé par un clic dans `#teamBody`), tours / instance / MI =
+  `ui.focus` (clic `pointerdown` sur `[data-id]` de `#twTeam`, `#inTeam`, `#miRank` ; sur soi ou le même = null ; remis à
+  null au lancement d'une session). HUD : lignes `.pick` avec `data-id`, `.focus` sur le joueur choisi (4e paramètre).
+- Bloc géant : `server/giant/service.js` viewOf, chaque mineur porte `effects` (`minerEffects`) et `bonus`
+  (`sessionBonuses`) ; `index.html` `#fxBarGt` ; `src/ui/giant.js` `showEffects` à chaque image, choix dans `#gtPresent`.
+- **Tests** ✅ effects (focusedMiner, lignes cliquables), giant-service (effets dans la vue), instant-ui, tower-spells :
+  49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) : clic dans l'équipe, place du nom devant les icônes.
+
 ## 29/10/2026 — Geoffrey — Instance : recul vers le centre sans dépasser (aller-retour d'une demi-case)
 - **Cause** : `pushMiner` (src/sim/instance/session.js) poussait de k (0,5 ; rage 1) dans le sens `toCenter(G, m.x)`,
   calculé sur la case seule. Au centre (mid = 14) : x 13 → poussé à 13,9 (case 14) → sens inverse → 13,4 → … Trace

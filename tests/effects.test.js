@@ -180,3 +180,21 @@ test('sous l\'icône : les stacks, sinon les secondes restantes arrondies au-des
   assert.equal(badgeOf({ stacks: 4 }), '×4');
   assert.equal(badgeOf({}), '');
 });
+
+test('états d\'un autre joueur (29/10/2026) : le joueur choisi, sinon le sien, sinon le premier ; son nom si ce n\'est pas le sien', async () => {
+  const { focusedMiner } = await import('../src/ui/effects.js');
+  const list = [{ id:1, account:'B', name:'Bob' }, { id:2, account:'A', name:'Ana' }, { id:3, account:'C', name:'Cid' }];
+  assert.deepEqual(focusedMiner(list, 'A', null), { m:list[1], name:null });
+  assert.deepEqual(focusedMiner(list, 'A', 3), { m:list[2], name:'Cid' });
+  assert.deepEqual(focusedMiner(list, 'A', 9), { m:list[1], name:null }, 'parti : retour au sien');
+  assert.deepEqual(focusedMiner(list, 'Z', null), { m:list[0], name:'Bob' }, 'spectateur : le premier');
+  assert.deepEqual(focusedMiner([{ id:4, me:true, name:'Moi' }, { id:5, name:'Lou' }], null, 5), { m:{ id:5, name:'Lou' }, name:'Lou' });   // Bloc géant : drapeau me
+  assert.deepEqual(focusedMiner([], 'A', null), { m:null, name:null });
+});
+
+test('équipe des tours, de l\'instance et de la MI : lignes cliquables, joueur choisi marqué (29/10/2026)', async () => {
+  const { instantRanking } = await import('../src/ui/instant-hud.js');
+  assert.ok(instantRanking);   // module chargeable sans page
+  const src = await import('node:fs').then(fs => ['tower-hud', 'instance-hud', 'instant-hud'].map(f => fs.readFileSync(new URL(`../src/ui/${f}.js`, import.meta.url), 'utf8')));
+  for(const s of src){ assert.match(s, /data-id="\$\{[mt]\.id\}"/); assert.match(s, /' focus'/); }
+});
