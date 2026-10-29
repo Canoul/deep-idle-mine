@@ -235,71 +235,91 @@ def library():
 
 
 def training():
-    """Salle d'entraînement (Skills, 6 × 7) : palissade de pieux, cabane au toit de chaume, mannequin, râtelier"""
+    """Salle d'entraînement (Skills, 6 × 7) : caserne à colombages, pignon aux boucliers et épées croisées, grande porte
+    entre deux torches, mannequin de paille à gauche, cible de tir à l'arc à droite"""
     c = Pix(96, 112, 2913)
-    c.planks(30, 54, 60, 58, True, WOOD, WOOD2)                    # cabane
-    c.poly([(24, 58), (60, 30), (96, 58)], STRAW)
-    for y in range(30, 58, 3):
-        for x in range(96):
-            if c.get(x, y) == STRAW and (x + y) % 5 == 0:
-                c.set(x, y, STRAW2)
-    c.window(68, 68, 10, 10)
-    for i, x in enumerate(range(0, 96, 7)):                         # palissade pointue
-        top = 78 + (i % 3) * 3
-        c.poly([(x, 112), (x, top + 4), (x + 3, top), (x + 6, top + 4), (x + 6, 112)], WOODL if i % 2 else WOOD)
-    c.rect(0, 92, 96, 3, WOOD2)
-    c.rect(18, 70, 3, 42, WOOD)                                    # mannequin d'entraînement
-    c.rect(10, 78, 19, 3, WOOD)
-    c.poly([(12, 82), (27, 82), (25, 102), (14, 102)], STRAW)
-    c.disc(19.5, 72, 5, STRAW2)
-    c.rect(16, 86, 7, 2, CLOTH)
-    c.line(52, 112, 52, 84, WOOD, 2); c.line(60, 112, 60, 84, WOOD, 2)   # râtelier
-    c.rect(50, 86, 12, 2, WOOD2)
-    for x in (53, 56, 59):
-        c.line(x, 84, x + 2, 70, IRON2)
-    c.lantern(88, 60)
+    c.speckle(16, 50, 64, 62, PLAST, PLAST2)
+    for x in (16, 46, 77):
+        c.rect(x, 50, 3, 62, WOOD)
+    c.rect(16, 50, 64, 3, WOOD); c.rect(16, 80, 64, 3, WOOD)
+    c.line(19, 80, 45, 53, WOOD, 2); c.line(49, 53, 76, 80, WOOD, 2)
+    c.shingles([(10, 54), (48, 14), (86, 54)], ROOF, ROOF2)
+    c.poly([(30, 50), (48, 30), (66, 50)], WOOD2)                  # pignon
+    c.poly([(36, 34), (60, 34), (60, 42), (48, 50), (36, 42)], CLOTH2)   # écu
+    c.rect(47, 35, 2, 13, LIT2)
+    c.line(38, 30, 58, 48, IRON2, 2); c.line(58, 30, 38, 48, IRON2, 2)  # épées croisées
+    c.rect(36, 29, 4, 2, WOODL); c.rect(56, 29, 4, 2, WOODL)
+    c.rect(34, 86, 28, 26, WOOD2)                                  # grande porte double
+    c.rect(36, 88, 11, 24, WOODL); c.rect(49, 88, 11, 24, WOODL)
+    for y in (92, 104):
+        c.rect(36, y, 24, 2, IRON)
+    c.window(22, 60, 8, 10); c.window(66, 60, 8, 10)
+    for x in (26, 66):                                             # torches de part et d'autre de la porte
+        c.rect(x, 90, 3, 10, WOOD)
+        c.rect(x - 1, 85, 5, 5, LIT); c.rect(x, 84, 3, 3, LIT2); c.set(x + 1, 83, LIT3)
+    c.rect(6, 76, 3, 36, WOOD)                                     # mannequin de paille
+    c.rect(0, 82, 15, 3, WOOD)
+    c.poly([(2, 86), (13, 86), (12, 104), (3, 104)], STRAW)
+    c.recolor(0, 86, 15, 18, STRAW, STRAW2, 3)
+    c.disc(7.5, 76, 5, STRAW2)
+    c.rect(3, 92, 9, 2, CLOTH)
+    c.line(84, 112, 88, 92, WOOD, 2); c.line(94, 112, 90, 92, WOOD, 2)   # cible sur trépied
+    c.disc(89, 88, 7, H('#d8c89a')); c.disc(89, 88, 5, CLOTH2); c.disc(89, 88, 3, H('#d8c89a')); c.disc(89, 88, 1.5, CLOTH2)
+    c.line(84, 86, 89, 88, WOODL)                                  # flèche plantée
     return c.finish()
 
 
 def mage_tower():
-    """Tour du mage (Sorts, 4 × 11) : tour penchée en pierre bleutée, chapeau pointu tordu, fenêtres vertes"""
+    """Tour du mage (Sorts, 4 × 11) : tour en pierre bleutée qui penche un peu, chapeau pointu tordu bien posé dessus,
+    deux fenêtres vertes au-dessus de la porte, lueur sous le chapeau"""
     c = Pix(64, 176, 2914)
-    for y in range(64, 176):
-        lean = int((176 - y) * .06)
-        for x in range(14 + lean, 50 + lean):
-            row = (y - 64) // 6
-            joint = (y - 64) % 6 == 5 or (x + (row % 2) * 6) % 12 == 0
+    top = 66
+    for y in range(top, 176):
+        lean = round((176 - y) * .035)                             # au sommet : 4 px vers la droite
+        for x in range(14 + lean, 48 + lean):
+            row = (y - top) // 6
+            joint = (y - top) % 6 == 5 or (x - lean + (row % 2) * 6) % 12 == 0
             c.set(x, y, H('#1c2030') if joint else (BLUE if (x // 12 + row) % 3 else BLUE2))
-    c.poly([(8, 72), (20, 52), (26, 30), (36, 10), (46, 2), (44, 18), (40, 40), (56, 72)], SLATE)
-    c.recolor(0, 0, 64, 72, SLATE, SLATE2, 5)
-    c.rect(12, 70, 46, 4, IRON)
-    for y, x in ((90, 30), (122, 26), (150, 24)):
+    l = round((176 - top) * .035)
+    c.rect(10 + l, top - 2, 42, 5, IRON)                           # bord du chapeau, sur la tour
+    c.poly([(8 + l, top), (20 + l, top - 18), (26 + l, top - 36), (30 + l, top - 52), (24 + l, top - 64), (36 + l, top - 50),
+            (40 + l, top - 30), (46 + l, top - 14), (56 + l, top)], SLATE)
+    c.recolor(0, 0, 64, top, SLATE, SLATE2, 5)
+    c.rect(18 + l, top - 8, 26, 3, MAGICD)                         # ruban du chapeau
+    for y, x in ((88, 28), (116, 26)):
         c.window(x, y, 10, 12, MAGIC, MAGIC2, INK)
-    c.disc(40, 60, 3, MAGIC)
-    c.arch_door(22, 152, 18, 24)
-    for x, y in ((4, 40), (58, 28), (54, 96), (2, 118)):
+    c.arch_door(21, 148, 18, 28)
+    c.rect(24, 140, 12, 2, IRON)
+    for x, y in ((4, 40), (58, 22), (56, 100), (4, 124)):
         c.set(x, y, MAGIC2)
     return c.finish()
 
 
 def armory():
-    """Armurerie (Stuff, 6 × 6) : forge ouverte sous un auvent sur poteaux, enclume, foyer rougeoyant, râtelier"""
+    """Armurerie (Stuff, 6 × 6) : forge ouverte sous un auvent sur poteaux, vraie enclume (bigorne, table, pied) avec
+    son marteau, foyer rougeoyant, épées et bouclier au mur"""
     c = Pix(96, 96, 2915)
-    c.stones(36, 34, 58, 62)                                       # mur du fond en pierre
+    c.stones(36, 34, 58, 62)
     c.shingles([(0, 40), (28, 22), (96, 22), (96, 40)], ROOF, ROOF2)
     c.bricks(70, 0, 14, 24)
     c.rect(68, 0, 18, 3, IRON)
     for x in (4, 34):
         c.rect(x, 40, 4, 56, WOOD)
     c.rect(2, 40, 38, 3, WOOD2)
-    c.bricks(48, 66, 34, 30)                                       # foyer
+    c.bricks(48, 66, 34, 30)
     c.poly([(52, 96), (52, 80), (65, 72), (78, 80), (78, 96)], LIT)
     c.poly([(57, 96), (57, 84), (65, 79), (73, 84), (73, 96)], LIT2)
-    c.poly([(10, 84), (30, 84), (26, 88), (22, 88), (22, 96), (16, 96), (16, 88), (12, 88)], IRON)   # enclume
-    c.rect(10, 84, 20, 1, IRON2)
+    c.rect(6, 86, 14, 10, WOOD)                                    # billot
+    c.rect(6, 86, 14, 2, WOODL)
+    c.poly([(2, 80), (8, 78), (26, 78), (26, 82), (8, 82)], IRON)   # bigorne + table
+    c.rect(8, 78, 18, 1, IRON2)
+    c.poly([(10, 82), (24, 82), (21, 84), (13, 84)], IRON)         # taille de l'enclume
+    c.poly([(9, 84), (25, 84), (25, 86), (9, 86)], IRON)           # pied, posé sur le billot
+    c.rect(16, 74, 2, 5, WOODL); c.rect(13, 72, 8, 3, IRON2)       # marteau posé
     for x in (40, 44):
-        c.line(x, 66, x, 50, IRON2)                                # épées accrochées
-    c.poly([(84, 52), (94, 52), (94, 64), (89, 70), (84, 64)], CLOTH2)   # bouclier
+        c.line(x, 66, x, 50, IRON2)
+        c.rect(x - 1, 64, 3, 2, WOODL)
+    c.poly([(84, 52), (94, 52), (94, 64), (89, 70), (84, 64)], CLOTH2)
     c.rect(88, 54, 2, 12, IRON2)
     return c.finish()
 
@@ -374,26 +394,35 @@ def foundry():
 
 
 def crusher():
-    """Concasseur (5 × 7) : machine à vapeur en fer riveté, grand volant, trémie, goulotte de cailloux, tuyau"""
+    """Concasseur (5 × 7) : atelier en briques au toit de tôle, trémie en bois sur le toit, cheminée qui sort du toit,
+    grand volant sur son bâti relié par une courroie, goulotte qui crache les cailloux"""
     c = Pix(80, 112, 2919)
-    c.rect(10, 56, 50, 56, IRON)                                   # bâti
-    for y in range(58, 112, 8):
-        for x in range(12, 60, 8):
-            c.set(x, y, IRON2)
-    c.rect(10, 56, 50, 3, IRON2)
-    c.poly([(8, 56), (2, 26), (52, 26), (44, 56)], WOOD)           # trémie en bois
-    c.recolor(0, 26, 60, 30, WOOD, WOOD2, 4)
-    for x in range(6, 48, 4):
-        c.set(x, 25, STONEL); c.set(x + 2, 24, STONE)
-    c.ring(60, 74, 15, IRON, 3)                                    # volant
+    c.bricks(4, 58, 52, 54)
+    c.poly([(0, 60), (8, 46), (60, 46), (60, 60)], IRON)           # toit de tôle ondulée
+    for x in range(0, 60, 3):
+        for y in range(46, 61):
+            if c.get(x, y) == IRON:
+                c.set(x, y, IRON2)
+    c.poly([(10, 46), (6, 20), (36, 20), (32, 46)], WOOD)          # trémie sur le toit
+    c.recolor(0, 20, 40, 26, WOOD, WOOD2, 4)
+    for x in range(8, 35, 3):
+        c.set(x, 19, STONEL); c.set(x + 1, 18, STONE)
+    c.rect(42, 4, 8, 44, BRICK2)                                   # cheminée, sur le toit
+    c.rect(40, 0, 12, 5, IRON)
+    c.rect(42, 18, 8, 2, IRON)
+    c.window(14, 70, 12, 10)
+    c.arch_door(32, 88, 14, 24)
+    c.rect(56, 70, 4, 42, WOOD); c.rect(74, 70, 4, 42, WOOD)       # bâti du volant
+    c.rect(56, 70, 22, 3, WOOD2)
+    c.ring(67, 84, 11, IRON, 3)
     for a in range(0, 360, 60):
-        c.line(60, 74, round(60 + 12 * math.cos(math.radians(a))), round(74 + 12 * math.sin(math.radians(a))), IRON)
-    c.disc(60, 74, 3, IRON2)
-    c.rect(66, 0, 6, 58, IRON); c.rect(64, 0, 10, 4, IRON2)        # tuyau d'échappement
-    c.poly([(60, 112), (60, 100), (78, 110), (78, 112)], IRON2)    # goulotte
-    for i in range(16):
-        c.disc(64 + c.rnd.randrange(0, 15), 108 + c.rnd.randrange(0, 4), 1.6, STONEL if i % 2 else STONE)
-    c.window(22, 70, 12, 8, LIT, LIT2, IRON2)                      # foyer de la chaudière
+        c.line(67, 84, round(67 + 8 * math.cos(math.radians(a))),
+               round(84 + 8 * math.sin(math.radians(a))), IRON)
+    c.disc(67, 84, 2.5, IRON2)
+    c.line(56, 76, 67, 73, DARK); c.line(56, 92, 67, 95, DARK)     # courroie vers l'atelier
+    c.poly([(46, 104), (56, 100), (60, 108), (50, 112)], IRON2)    # goulotte
+    for i in range(14):
+        c.disc(56 + c.rnd.randrange(0, 22), 108 + c.rnd.randrange(0, 4), 1.6, STONEL if i % 2 else STONE)
     return c.finish()
 
 
@@ -419,24 +448,32 @@ def workshop():
 
 
 def jeweler():
-    """Joaillier (Amélioration, 5 × 8) : boutique étroite et haute, façade sombre, vitrine en saillie où brillent les gemmes"""
+    """Joaillier (Amélioration, 5 × 8) : boutique étroite et haute, façade sombre, vitrine sur deux étagères avec des
+    gemmes en losange bien rangées sur des coussins, collier, enseigne en losange"""
     c = Pix(80, 128, 2921)
     c.planks(10, 40, 60, 88, True, H('#2a1e2a'), H('#1e1520'))
     c.shingles([(4, 44), (40, 2), (76, 44)], SLATE, SLATE2)
     c.rect(34, 18, 12, 14, H('#2a1e2a'))
     c.window(36, 20, 8, 10, MAGIC, MAGIC2, INK)
-    c.rect(6, 82, 50, 4, WOOD2)                                    # vitrine en saillie
-    c.rect(8, 86, 46, 22, H('#1a1418'))
-    c.rect(10, 88, 42, 18, H('#3a2a20'))
-    for i in range(14):
-        col = GEMS[i % len(GEMS)]
-        x, y = 12 + c.rnd.randrange(0, 38), 90 + c.rnd.randrange(0, 14)
-        c.rect(x, y, 2, 2, col)
-        c.set(x, y, LIT3)
-    c.rect(6, 108, 50, 3, WOOD2)
     c.window(18, 52, 10, 12); c.window(48, 52, 10, 12)
+    c.rect(6, 80, 50, 4, WOOD2)                                    # vitrine en saillie
+    c.rect(8, 84, 46, 26, H('#1a1418'))
+    c.rect(10, 86, 42, 22, H('#3a2a20'))
+    c.rect(10, 96, 42, 2, WOOD); c.rect(10, 106, 42, 2, WOOD)      # deux étagères
+    for row, y in enumerate((91, 101)):
+        for k in range(5):
+            x = 13 + k * 8 + (row * 2)
+            c.rect(x - 2, y + 3, 6, 2, CLOTH)                      # coussin
+            col = GEMS[(k + row * 2) % len(GEMS)]
+            c.set(x + 1, y - 1, col)                               # losange de 3 × 3
+            c.rect(x, y, 3, 1, col)
+            c.set(x + 1, y + 1, col)
+            c.set(x + 1, y, LIT3)
+    for k in range(9):                                             # collier en arc
+        c.set(16 + k * 2, 88 + abs(4 - k) // 2 * -1 + 2, LIT2)
+    c.rect(6, 110, 50, 3, WOOD2)
     c.arch_door(58, 100, 12, 28)
-    c.rect(66, 70, 12, 2, IRON)                                    # enseigne en losange
+    c.rect(66, 70, 12, 2, IRON)
     c.poly([(72, 72), (78, 79), (72, 86), (66, 79)], GEMS[1])
     c.set(72, 76, LIT3)
     return c.finish()
@@ -504,6 +541,57 @@ def cloud():
     return (48, 16, c.p)
 
 
+def cliff():
+    """bord gauche de la ville (6 × 12) : falaise de roche en strates, rebords en saillie, vieille entrée de mine
+    condamnée par des planches, arbre mort accroché en haut"""
+    c = Pix(96, 192, 2928)
+    MARK = H('#010203')
+    pts = [(0, 6), (14, 0), (30, 10), (46, 4), (58, 18), (52, 36), (66, 52), (60, 70), (74, 92), (70, 112), (84, 134),
+           (80, 154), (96, 176), (96, 192), (0, 192)]
+    c.poly(pts, MARK)
+    tones = [H('#3a3440'), H('#302a36'), H('#28222e'), H('#342e3a')]
+    for y in range(192):
+        band = (y + int(6 * math.sin(y / 9))) // 10                # strates qui ondulent
+        for x in range(96):
+            if c.get(x, y) != MARK:
+                continue
+            col = tones[band % len(tones)]
+            if (x * 7 + y * 3) % 29 == 0:
+                col = STONEL
+            if (y + int(6 * math.sin(y / 9))) % 10 == 0 and (x + band * 5) % 9 > 2:
+                col = H('#1c1820')                                 # fissure entre deux strates
+            c.set(x, y, col)
+    for (x0, y0, w) in ((40, 36, 22), (52, 92, 24), (64, 134, 22)):   # rebords en saillie, éclairés
+        c.rect(x0, y0, w, 3, STONEL)
+        c.rect(x0, y0 + 3, w, 2, H('#1c1820'))
+    c.poly([(30, 192), (30, 150), (40, 140), (62, 140), (72, 150), (72, 192)], DARK)
+    c.rect(28, 140, 4, 52, WOOD); c.rect(70, 140, 4, 52, WOOD); c.rect(26, 138, 50, 5, WOOD)
+    for y, tilt in ((154, 4), (166, -3), (178, 5)):
+        c.line(30, y, 72, y + tilt, WOODL, 4)
+    c.line(36, 150, 66, 186, WOOD2, 2)
+    c.line(46, 4, 46, 22, WOOD2, 2)                                 # arbre mort sur la crête
+    c.line(46, 12, 36, 2, WOOD2); c.line(46, 8, 56, 0, WOOD2); c.line(41, 7, 38, 10, WOOD2)
+    return c.finish()
+
+
+def gate():
+    """bord droit de la ville (6 × 9) : palissade de pieux pointus, porte fermée par une barre, deux torches"""
+    c = Pix(96, 144, 2929)
+    for i, x in enumerate(range(0, 96, 8)):
+        top = 40 + (i % 3) * 4
+        c.poly([(x, 144), (x, top + 6), (x + 4, top), (x + 8, top + 6), (x + 8, 144)], WOOD if i % 2 else WOODL)
+    c.rect(0, 70, 96, 4, WOOD2); c.rect(0, 120, 96, 4, WOOD2)
+    c.rect(28, 84, 40, 60, WOOD2)                                  # porte
+    c.rect(30, 86, 36, 58, WOOD)
+    c.rect(48, 86, 1, 58, WOOD2)
+    c.rect(22, 106, 52, 5, IRON); c.rect(22, 106, 52, 1, IRON2)   # barre
+    c.poly([(26, 84), (48, 70), (70, 84)], WOOD2)
+    for x in (18, 76):                                             # torches
+        c.rect(x, 82, 3, 14, WOOD)
+        c.rect(x - 1, 76, 5, 6, LIT); c.rect(x, 75, 3, 3, LIT2); c.set(x + 1, 73, LIT3)
+    return c.finish()
+
+
 def town():
     """toutes les textures du Carreau : { nom: (largeur, hauteur, pixels) }"""
     return {
@@ -514,5 +602,5 @@ def town():
         'town_lamppost': lamppost(), 'town_campfire': campfire(), 'town_pedestal': pedestal(),
         'town_banner_angel': banner(H('#c8ccd8'), H('#7a8092'), LIT2),
         'town_banner_demon': banner(H('#5a2a8a'), H('#2e1248'), CLOTH2),
-        'town_cobble': cobble(), 'town_cloud': cloud(),
+        'town_cobble': cobble(), 'town_cloud': cloud(), 'town_cliff': cliff(), 'town_gate': gate(),
     }

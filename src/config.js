@@ -758,7 +758,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
   'town_cobble','town_campfire','town_lamppost','town_headframe','town_cloud',
   'town_banner_angel','town_banner_demon','town_pedestal','town_tavern','town_archives','town_library','town_training','town_mage_tower',
-  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler'];
+  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler','town_cliff','town_gate'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1565,7 +1565,7 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    ms au plus (le serveur revérifie) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
    n°1 du classement GS, bannières des jauges Ange / Démon, feu de camp au milieu) ; statueBoard : classement de la statue. */
 export const TOWN = {
-  rows: 16, ground: 12, gap: 3, margin: 6,
+  rows: 16, ground: 12, gap: 3, margin: 7,
   walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
   emoteMs: 3500, emoteGapMs: 1500,
@@ -1582,24 +1582,28 @@ export const TOWN = {
   /* ciel de crépuscule (dégradé de haut en bas), falaises au loin (la plus lointaine d'abord), brume au ras du sol, sol
      assombri (luminosité des pavés et de la terre) ; « plus sombre et en dégradé » : demande de Jules, 29/10 */
   sky: ['#16070a', '#3e140f', '#7a2e18', '#b45a2c'], far: ['#4a1c14', '#2a0e0a'], fog: 'rgba(255,130,70,.2)', groundDim: 0.5,
+  /* bords de la ville (29/10 soir, retour de Jules : « les bords de la map sont vides ») : falaise à gauche, porte de
+     palissade à droite, dessinées dans les marges (margin cases) ; on ne marche pas au-delà (src/shared/town.js, clampX) */
+  edges: { left: 'town_cliff', right: 'town_gate' },
   buildings: [
     { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
       glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
     { tab:'historique',   name:'Archives',             kind:'house', w:5, h:7,  sprite:'town_archives', glows:[[19, 72, 14], [61, 72, 14], [40, 24, 10]] },
     { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:9,  sprite:'town_library',
       glows:[[37, 84, 26], [13, 114, 12], [61, 114, 12], [80, 58, 12]] },
-    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:7,  sprite:'town_training', glows:[[73, 73, 14], [91, 64, 16]] },
+    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:7,  sprite:'town_training',
+      glows:[[26, 65, 12], [70, 65, 12], [27, 86, 14], [67, 86, 14]] },
     { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:11, sprite:'town_mage_tower',
-      glows:[[35, 96, 18, 'magic'], [31, 128, 18, 'magic'], [29, 156, 18, 'magic'], [40, 60, 10, 'magic']] },
+      glows:[[33, 94, 18, 'magic'], [31, 122, 18, 'magic'], [33, 59, 10, 'magic']] },
     { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:6,  sprite:'town_armory', smoke:[77, 0], glows:[[65, 86, 34]] },
     { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
     { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:3 },
     { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sprite:'town_headframe', glows:[[59, 64, 20]] },
     { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:9,  sprite:'town_foundry', smoke:[75, 0],
       glows:[[42, 128, 44], [12, 112, 12], [76, 112, 12]] },
-    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:7,  sprite:'town_crusher', smoke:[69, 0], glows:[[28, 74, 14]] },
+    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:7,  sprite:'town_crusher', smoke:[46, 0], glows:[[20, 75, 14]] },
     { tab:'craft',        name:'Atelier',              kind:'house', w:6, h:7,  sprite:'town_workshop', glows:[[65, 58, 16]] },
-    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:8,  sprite:'town_jeweler', glows:[[40, 25, 14, 'magic'], [31, 97, 22]] },
+    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:8,  sprite:'town_jeweler', glows:[[40, 25, 14, 'magic'], [31, 96, 24]] },
   ],
 };
 /* Pop-ups (28/10/2026, Jules) : avant, elles restaient tant qu'on n'avait pas cliqué. popupMs : une pop-up en haut à

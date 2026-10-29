@@ -55,6 +55,12 @@ Modèle d'entrée :
   Entrepôt (grange, grandes portes), Chevalement en potence, Fonderie à cheminée géante, Concasseur (machine à vapeur,
   volant), Atelier (auvent rayé, établi), Joaillier (vitrine de gemmes qui scintillent). Fenêtres, fours et lanternes
   rayonnent, les cheminées fument. Statue du classement GS validée par Jules.
+- **Retouches après les retours de Jules** : toit de la Tour du mage recentré (plus de fenêtre derrière la porte) ;
+  Salle d'entraînement refaite en caserne (boucliers et épées croisées, grande porte, torches, mannequin, cible) ;
+  enclume de l'Armurerie redessinée (bigorne, table, pied, marteau) ; Concasseur refait (atelier en briques, toit de
+  tôle, cheminée qui sort du toit, volant sur son bâti avec courroie) ; vitrine du Joaillier rangée sur deux étagères.
+  **Bords de la ville fermés** : falaise avec l'ancienne entrée de mine condamnée à gauche, porte de palissade à droite ;
+  on ne marche plus dans le vide.
 - **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
 - **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
 

@@ -47,6 +47,18 @@ test('sprites des bâtiments : chacun existe, chargé par le jeu, tient dans sa 
     assert.ok(TEXTURES.includes(n) && existsSync(new URL(`../textures/${n}.png`, import.meta.url)), n);
 });
 
+test('bords : falaise et porte tiennent dans les marges ; toute place devant un bâtiment est entre les deux', () => {
+  for(const n of [TOWN.edges.left, TOWN.edges.right]){
+    assert.ok(TEXTURES.includes(n), n);
+    const [w, h] = pngSize(new URL(`../textures/${n}.png`, import.meta.url));
+    assert.ok(w <= TOWN.margin * 16 && h <= TOWN.ground * 16, `${n} : ${w} × ${h}`);
+  }
+  for(const b of townBuildings()) for(const s of [-1, 1]){
+    const x = b.door + s * (TOWN.spread + (b.tab === 'lobby' ? TOWN.group : 0));
+    assert.equal(clampX(x), x, `${b.name} : une place sort de la ville`);
+  }
+});
+
 test('place : devant la porte de son onglet, écart stable tiré de l\'ID, dans ± spread', () => {
   const four = buildingOf('four');
   const a = restX('four', 'AAAA1111'), b = restX('four', 'BBBB2222');
@@ -61,12 +73,12 @@ test('ping : onglet connu, x fini ramené dans la ville et arrondi ; le reste es
   assert.deepEqual(cleanTownPing({ spot: 'craft' }), { spot: 'craft', x: null });
   assert.deepEqual(cleanTownPing({ spot: 'craft', x: null }), { spot: 'craft', x: null });
   assert.deepEqual(cleanTownPing({ spot: 'session', x: 12.3456 }), { spot: 'session', x: 12.35 });
-  assert.equal(cleanTownPing({ spot: 'session', x: -50 }).x, 1);
-  assert.equal(cleanTownPing({ spot: 'session', x: 1e9 }).x, TOWN_WIDTH - 1);
+  assert.equal(cleanTownPing({ spot: 'session', x: -50 }).x, TOWN.margin - 0.5);              // arrêté par la falaise
+  assert.equal(cleanTownPing({ spot: 'session', x: 1e9 }).x, TOWN_WIDTH - TOWN.margin + 0.5);  // … et par la porte
   for(const bad of [null, 'craft', 42, {}, { spot: 'nope' }, { spot: ['craft'] }, { spot: '__proto__' }, { spot: 'constructor' },
                     { spot: 'session', x: NaN }, { spot: 'session', x: Infinity }, { spot: 'session', x: '12' }, { spot: 'session', x: {} }])
     assert.equal(cleanTownPing(bad), null, JSON.stringify(bad));
-  assert.equal(clampX(0), 1);
+  assert.equal(clampX(0), TOWN.margin - 0.5);
 });
 
 test('marche : vitesse de base, long trajet en au plus rush secondes, arrêt pile sur la cible', () => {

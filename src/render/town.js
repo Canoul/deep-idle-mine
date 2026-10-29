@@ -223,6 +223,10 @@ export function createTownRenderer(cv){
         for(let y = G + 1; y < TOWN.rows; y++) blit(y === G + 1 ? 'dirt' : 'stone', px, y * T);
       }
       ctx.restore();
+      /* bords : falaise collée au bord gauche, porte de palissade collée au bord droit (TOWN.edges), posées sur le sol */
+      const cliff = ok(TOWN.edges.left), gate = ok(TOWN.edges.right);
+      if(cliff) ctx.drawImage(cliff, Math.round(-camX * T), G * T - cliff.naturalHeight);
+      if(gate) ctx.drawImage(gate, Math.round((TOWN_WIDTH - camX) * T - gate.naturalWidth), G * T - gate.naturalHeight);
       for(const b of townBuildings()){
         const X = (b.x - camX) * T;
         if(X > cols * T + T || X + (b.w + 2) * T < -T) continue;

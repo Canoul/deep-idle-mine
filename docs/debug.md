@@ -4685,3 +4685,11 @@ Règles (voir CLAUDE.md) :
 - ⚠️ Pas vérifié : téléphone ; la Fonderie et la Tour du mage, très hautes, ont leur nom près du bandeau d'aide en
   haut de l'écran en promenade (il peut passer dessous). `ctx.filter` (rue assombrie, statue grise) : sans effet sur de
   vieux Safari (rue plus claire).
+- **Retouches (retours de Jules, même soir)** : `scripts/gen_town.py` `mage_tower` (penche de 4 px au sommet, chapeau
+  posé sur le haut de la tour, 2 fenêtres au lieu de 3), `training` (refaite), `armory` (enclume), `crusher` (refait,
+  cheminée dans l'emprise), `jeweler` (gemmes en losange alignées), nouveaux `cliff` (96 × 192) et `gate` (96 × 144) ;
+  halos / fumée mis à jour dans `TOWN.buildings`. `TOWN.margin` 7 (ancien 6), `TOWN.edges` ; `clampX` = entre
+  `margin - 0.5` et `TOWN_WIDTH - margin + 0.5` (ancien 1 et `TOWN_WIDTH - 1`) : le serveur ramène aussi la position
+  d'un joueur en promenade entre la falaise et la porte. Rendu : falaise collée au bord gauche, porte au bord droit.
+  Tests ✅ `tests/town.test.js` 19/19 (nouveau : bords dans les marges, toute place devant un bâtiment entre les deux).
+  ✅ Vérifié dans le navigateur : arrêt au pied de la falaise et devant la porte.

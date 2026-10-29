@@ -36,7 +36,8 @@ export function restX(spot, id, group = null, cfg = TOWN){
 /* émote : son id si elle existe (TOWN.emotes), sinon null */
 export const emoteOf = id => typeof id === 'string' ? TOWN.emotes.find(e => e.id === id) ?? null : null;
 
-export const clampX = x => Math.min(TOWN_WIDTH - 1, Math.max(1, x));
+/* place ramenée dans la ville : entre la falaise (marge de gauche) et la porte (marge de droite), TOWN.edges */
+export const clampX = x => Math.min(TOWN_WIDTH - TOWN.margin + 0.5, Math.max(TOWN.margin - 0.5, x));
 
 /* ce que le navigateur envoie : { spot: onglet ouvert, x: sa place s'il se promène (sinon absent ou null) }.
    Renvoie { spot, x } (x arrondi au 1/100 de case, ramené dans la ville, ou null), ou null si invalide. */
