@@ -24,6 +24,12 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
+- **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
+  équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
+  ceux du moment ; si on change une pièce, un skill ou un sort, la ligne passe à « aucun ».
+- **État** : 🧪 sur la branche `geoffrey/set-equipe` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
 - **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
   durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque
