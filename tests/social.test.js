@@ -14,6 +14,7 @@ import { SERVER, SOCIAL_SERVER, ROOT } from '../server/config.js';
 import { nameKey } from '../src/shared/account.js';
 import { FAST_SCRYPT, fakeLive } from './helpers.js';
 import { realDurationMs } from '../src/shared/game.js';
+import { GAME } from '../src/config.js';
 import { statusText, onlineCountText } from '../src/ui/social.js';
 
 const A = { id:'AAAA1111', name:'Zoe', guest:false };
@@ -170,6 +171,26 @@ test('ami en session : on voit le type de mine et le temps qui lui reste (23/10)
   assert.equal(statusText({ status:'session', mode:'tower_angel', leftMs: 30_000 }), 'En session · Tour de l\'Ange · reste < 1 min');
   assert.equal(statusText({ status:'session', mode:'mine', leftMs:null }), 'En session mine', 'mode dev : pas de fin');
   assert.equal(statusText({ status:'lobby', size:2, max:3 }), 'Dans le lobby (2/3)');
+});
+
+test('joueur en session : on voit combien ils sont dans le groupe (30/10), pour repérer les solos et les duos', async () => {
+  const { social, party, game } = setup();
+  await friends(social, A, C); await friends(social, A, D); await friends(social, B, D);
+  await party.launch(C, {});                            // C seul
+  let f = friend(await social.state(A), C);
+  assert.equal(f.size, 1); assert.equal(f.max, GAME.maxPlayers);
+  await social.state(B); await social.join(D, B.id);   // B (chef) + D : un duo
+  await party.ready(D, true);
+  await party.launch(B, {});
+  f = friend(await social.state(A), D);
+  assert.equal(f.status, 'session'); assert.equal(f.size, 2);
+  const row = (await social.online(A)).players.find(p => p.id === D.id);
+  assert.equal(row.size, 2, 'la liste Online aussi');
+  await game.leave(B);                                  // B quitte : D reste seul dans la session
+  assert.equal(friend(await social.state(A), D).size, 1);
+  assert.equal(statusText({ status:'session', mode:'mine', size:1, max:3, leftMs: 23 * 60_000 - 1 }), 'En session mine (1/3) · reste 23 min');
+  assert.equal(statusText({ status:'session', mode:'tower_angel', size:2, max:3, leftMs:null }), 'En session · Tour de l\'Ange (2/3)');
+  assert.equal(statusText({ status:'session', mode:'giant', leftMs: 30_000 }).includes('/'), false, 'sans taille (Bloc géant) : rien');
 });
 
 test('limites : nombre d\'amis, demandes en attente', async () => {
