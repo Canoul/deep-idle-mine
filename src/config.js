@@ -755,7 +755,11 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
   'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
+  // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
+  'town_cobble','town_campfire','town_lamppost','town_headframe','town_cloud',
+  'town_banner_angel','town_banner_demon','town_pedestal','town_tavern','town_archives','town_library','town_training','town_mage_tower',
+  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler','town_cliff','town_slagheap'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1542,6 +1546,72 @@ export const GIANT = {
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
+/* Le Carreau (29/10/2026, Jules ; src/shared/town.js, src/render/town.js, src/ui/town.js) : la ville du spawn, en
+   surface de la mine, vue de côté. Hors session, elle remplace le mur du fond derrière les onglets ; ton mineur marche
+   jusqu'au bâtiment de l'onglet ouvert, les autres joueurs en ligne qui ne sont pas en session sont devant le leur.
+   Onglet Session sans session : la ville en plein écran, sans les panneaux, et on s'y promène (flèches, clic).
+   buildings : de gauche à droite, un par onglet (tab) ; la Taverne à côté de la place (29/10 soir, demande de Jules :
+   l'un des premiers bâtiments qu'on voit ; ancien : au bout gauche, l'Entrepôt à sa place) ; w × h : place du bâtiment en cases (largeur, hauteur au plus) ;
+   sprite : sa texture, dessinée d'un bloc, posée sur le sol et centrée (scripts/gen_town.py, direction « Crépuscule de
+   forge » inspirée de Darkest Dungeon, choisie par Jules le 29/10 ; ancien : maisons en tuiles mur + toit + enseigne) ;
+   glows : halos de lumière [x, y, rayon, 'magic' pour le vert] en pixels du sprite ; smoke : [x, y] haut de la cheminée
+   (fumée qui monte) ; kind : 'house', 'place' (Lobby : feu de camp, statue, bannières, sans sprite), 'headframe'
+   (chevalement au-dessus du puits : l'onglet Session). gap : cases entre deux bâtiments ; margin : avant le premier et
+   après le dernier. rows : hauteur de la scène en cases ; ground : ligne de l'herbe (les mineurs marchent dessus).
+   walk : vitesse de marche (cases/s) ; rush : un trajet long se fait en au plus rush secondes (vitesse augmentée) ;
+   spread : écart des joueurs devant une même porte (± cases, tiré de leur ID) ; dim : luminosité derrière les onglets ;
+   poll / walkPoll / hiddenPoll : le navigateur donne sa place au serveur (ms ; en promenade, plus souvent) ;
+   bubbleMs : un message du chat global reste en bulle au-dessus de son auteur ce temps ; reach : on entre dans un
+   bâtiment à moins de reach cases de sa porte. rows 16 / ground 12 depuis le 29/10 après-midi (ancien 18 / 13 : un peu
+   plus zoomé, demande de Jules).
+   Ajouts du 29/10 après-midi : group : les membres d'un même groupe se tiennent ensemble sur la place, à ± group cases
+   du point du groupe ; emotes : émotes de la promenade (id, icône, nom), visibles emoteMs ms, une toutes les emoteGapMs
+   ms au plus (le serveur revérifie) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
+   n°1 du classement GS, bannières des jauges Ange / Démon, feu de camp au milieu) ; statueBoard : classement de la statue. */
+export const TOWN = {
+  rows: 16, ground: 12, gap: 3, margin: 7,
+  walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
+  poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
+  emoteMs: 3500, emoteGapMs: 1500,
+  chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
+  emotes: [
+    { id:'wave',  icon:'👋', name:'Salut' },
+    { id:'mine',  icon:'⛏️', name:'On mine ?' },
+    { id:'gg',    icon:'🎉', name:'GG' },
+    { id:'laugh', icon:'😂', name:'Mdr' },
+    { id:'heart', icon:'❤️', name:'Merci' },
+    { id:'afk',   icon:'💤', name:'AFK' },
+  ],
+  place: { statue: 1, angel: 3, demon: 7 },
+  statueBoard: 'gs',
+  /* ciel de crépuscule (dégradé de haut en bas), falaises au loin (la plus lointaine d'abord), brume au ras du sol, sol
+     assombri (luminosité des pavés et de la terre) ; « plus sombre et en dégradé » : demande de Jules, 29/10 */
+  sky: ['#16070a', '#3e140f', '#7a2e18', '#b45a2c'], far: ['#4a1c14', '#2a0e0a'], fog: 'rgba(255,130,70,.2)', groundDim: 0.5,
+  /* bords de la ville (29/10 soir, retours de Jules : « les bords de la map sont vides », puis la porte de palissade
+     « pas ouf ») : falaise à gauche, terril qui couve à droite (ancien : palissade adossée à la roche), dessinés dans les
+     marges (margin cases) ; on ne marche pas au-delà (src/shared/town.js, clampX) */
+  edges: { left: 'town_cliff', right: 'town_slagheap' },
+  buildings: [
+    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
+    { tab:'historique',   name:'Archives',             kind:'house', w:5, h:7,  sprite:'town_archives', glows:[[19, 72, 14], [61, 72, 14], [40, 24, 10]] },
+    { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:9,  sprite:'town_library',
+      glows:[[37, 84, 26], [13, 114, 12], [61, 114, 12], [80, 58, 12]] },
+    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:7,  sprite:'town_training',
+      glows:[[26, 65, 12], [70, 65, 12], [27, 86, 14], [67, 86, 14]] },
+    { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:11, sprite:'town_mage_tower',
+      glows:[[33, 94, 18, 'magic'], [31, 122, 18, 'magic']] },
+    { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:6,  sprite:'town_armory', smoke:[77, 0], glows:[[65, 86, 34]] },
+    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
+      glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
+    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:3 },
+    { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sprite:'town_headframe', glows:[[59, 64, 20]] },
+    { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:9,  sprite:'town_foundry', smoke:[75, 0],
+      glows:[[42, 128, 44], [12, 112, 12], [76, 112, 12]] },
+    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:7,  sprite:'town_crusher', smoke:[46, 0], glows:[[20, 75, 14]] },
+    { tab:'craft',        name:'Atelier',              kind:'house', w:6, h:7,  sprite:'town_workshop', glows:[[65, 58, 16]] },
+    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:8,  sprite:'town_jeweler', glows:[[40, 25, 14, 'magic'], [31, 96, 24]] },
+  ],
+};
 /* Pop-ups (28/10/2026, Jules) : avant, elles restaient tant qu'on n'avait pas cliqué. popupMs : une pop-up en haut à
    gauche (invitation, demande d'ami, groupe trouvé) se ferme seule au bout de ce temps (ms) ; l'invitation et la demande
    restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce

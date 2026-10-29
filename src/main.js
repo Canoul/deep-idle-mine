@@ -35,6 +35,7 @@ import { createRenderer, TILE } from './render/canvas.js';
 import { followedMiner } from './render/camera.js';
 import { drawPortrait, lookOf } from './render/portrait.js';
 import { aurasOf } from './meta/aura.js';
+import { displayName, formatAccountId } from './shared/account.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
@@ -58,6 +59,7 @@ import { setupCraft } from './ui/craft.js';
 import { setupStuff } from './ui/stuff.js';
 import { setupUpgrade } from './ui/upgrade.js';
 import { createBackdrop, enterPanels, leavePanels } from './ui/backdrop.js';
+import { setupTown } from './ui/town.js';
 import { setupTooltips } from './ui/tooltip.js';
 import { createEffectsBar, placeEffectsBar, focusedMiner } from './ui/effects.js';
 import { fillHelp } from './ui/help.js';
@@ -68,7 +70,7 @@ import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, giantApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 
 const $ = id => document.getElementById(id);
@@ -89,6 +91,27 @@ const twRenderer = createTowerRenderer($('cvTw'));
 const inRenderer = createInstanceRenderer($('cvIn'));
 const SESSION_CV = { mine:'cv', mi:'cvMi', tower:'cvTw', instance:'cvIn' };
 const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSION_CV[mode]) });   // fond : la session en cours, hors onglet Session
+/* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
+const town = setupTown($('bgTown'), {
+  ping: body => townApi.ping(body),
+  emote: id => townApi.emote(id),
+  me: () => acct.account && !acct.offline ? { id: acct.account.id, name: displayName(acct.account) || formatAccountId(acct.account.id),
+                                              look: lookOf(stuff.worn()), auras: aurasOf(stuff.worn()),
+                                              level: progress?.level ?? null, tree: ui.skills?.tree ?? null, gs: null } : null,
+  onEnter: id => nav.show(id),
+  /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
+  friend: async id => setSocial(await socialApi.request(id)),
+  invite: async id => { await partyApi.invite(id); pollLobby(); },
+  /* promenade : la carte du chat global quitte le Lobby pour le bas de l'écran, et y revient à la fin */
+  onWalk: on => {
+    const card = $('gchatCard');
+    if(on){ gchatHome = { parent: card.parentNode, next: card.nextSibling }; town.chatSlot.appendChild(card); }
+    else if(gchatHome){ gchatHome.parent.insertBefore(card, gchatHome.next); gchatHome = null; }
+    gchat?.poke();
+  },
+});
+let gchatHome = null;                                // place de la carte du chat global dans le Lobby, pendant la promenade
+window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
 const isTw = () => isTowerMode(rec?.mode);   // tour de l'Ange ou du Démon : même principe d'affichage que la MI
 
@@ -284,8 +307,9 @@ const accountUI = createAccountUI($('account'), acct, {
     acct.account?.guest && 'Compte invité : sans pseudo ni mot de passe, tu ne pourras plus jamais y revenir.',
     G && !G.over && 'Ta session continue sur le serveur : tu la retrouveras en te reconnectant.',
     'Se déconnecter quand même ?'].filter(Boolean).join('\n'), { ok:'Se déconnecter' }),
-  options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on }],
-  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); },
+  options: () => [{ key:'bgSession', label:'Session en cours en fond d\'écran', title:'Pendant une session, la mine s\'affiche en fond, assombrie, derrière les autres onglets.', on: backdrop.on },
+                   { key:'bgTown', label:'Le Carreau (la ville) en fond d\'écran', title:'Hors session, la ville du spawn s\'affiche en fond, avec les autres joueurs en ligne ; l\'onglet Session sans session permet de s\'y promener.', on: town.on }],
+  setOption: (key, v) => { if(key === 'bgSession') backdrop.set(v); if(key === 'bgTown') town.set(v); },
 });
 
 /* ---------- lobby ---------- */
@@ -454,7 +478,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { judgment.set(await gameApi.judgment()); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }
@@ -481,9 +505,10 @@ const focusPanel = setupFocusPanel({
 
 /* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
 const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
-/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert */
+/* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert, ou
+   pendant la promenade dans le Carreau (sa carte est alors en bas de l'écran, 29/10) */
 gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id,
-                    paused: () => ui.tab !== 'lobby', time: true });
+                    paused: () => ui.tab !== 'lobby' && !town.walking, time: true });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -717,6 +742,8 @@ function frame(now){
   smooth(dtr);
   const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
   backdrop.draw(rec ? shown : null, ui.tab !== 'session', acct.account?.id, ui.follow);
+  /* le Carreau : fond quand il n'y a pas de session ; promenade quand l'onglet Session n'a rien d'autre à montrer */
+  town.frame(dtr, { show: !rec && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }

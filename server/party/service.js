@@ -490,6 +490,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     /* pour les tests et le journal */
     count: () => parties.size,
     lfgCount: () => queue.size,
+    /* pour le Carreau (ville du spawn, 29/10) : ce joueur cherche-t-il un groupe (seul, ou chef d'un groupe en recherche) ? */
+    searching: accountId => [...queue.values()].some(e => e.members.includes(accountId) && lfgValid(e)),
     _sweep: saving(sweep),
   };
 }

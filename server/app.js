@@ -14,17 +14,19 @@ import { partyRoutes } from './party/routes.js';
 import { instantRoutes } from './instant/routes.js';
 import { socialRoutes } from './social/routes.js';
 import { giantRoutes } from './giant/routes.js';
+import { townRoutes } from './town/routes.js';
 import { adminRoutes } from './admin/routes.js';
 
 /* game : service des sessions de jeu (server/game/service.js) ; sans lui, seules les routes de comptes existent.
    party : service des groupes (server/party/service.js) ; il prend en charge « Lancer la session ».
    instant : inscriptions à la mine instantanée (server/instant/service.js) ; social : amis (server/social/service.js) ;
-   giant : Bloc géant (server/giant/service.js). */
-export function createApp({ store, root, config = SERVER, service, game, party, instant, social, giant } = {}){
+   giant : Bloc géant (server/giant/service.js) ; town : le Carreau, ville du spawn (server/town/service.js). */
+export function createApp({ store, root, config = SERVER, service, game, party, instant, social, giant, town } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
   const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(giant ? giantRoutes(giant) : {}),
+                   ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
                    ...(game && store ? adminRoutes({ accounts: store, game, token: config.adminToken }) : {}) };
   let proxyChecked = !config.logProxyCheck;

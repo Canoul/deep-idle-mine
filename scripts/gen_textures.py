@@ -9,6 +9,8 @@ import random
 import struct
 import zlib
 
+from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
+
 S = 16
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'textures')
 
@@ -1313,6 +1315,8 @@ def main():
     for name, (w, h, px) in giant().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in instance().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in town().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     # golem (mob 2 × 2 cases) : 32 × 32 pixels
     png_wh(os.path.join(OUT, 'golem.png'), 32, 32, golem())

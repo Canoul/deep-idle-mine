@@ -4730,3 +4730,117 @@ Règles (voir CLAUDE.md) :
 - **Vérification** ✅ capture de la fenêtre « choisir une recette » à 1366×768 (le bouton tient dans la ligne) ;
   tests furnace + help 38/38.
 - **Point fragile** : avec VT323, éviter les glyphes spéciaux (fractions ½ ¼…) dans les boutons ; `×`, `·`, `→`, `✓` restent lisibles.
+
+## 29/10/2026 — Le Carreau, la ville du spawn (Jules)
+- **Quoi** : nouveau fond hors session + promenade. Config `TOWN` (`src/config.js` : plan, vitesses, cadences, bulles ;
+  `buildings` = un par onglet de `TABS`, ordre de gauche à droite) et `TOWN_SERVER` (`server/config.js`).
+  - `src/shared/town.js` (pur, partagé) : `townLayout` (x de chaque bâtiment, `door` = milieu), `restX(spot, id)` (porte
+    ± `TOWN.spread` tiré de l'ID par `hash01`), `cleanTownPing` (revérification serveur : onglet connu, x fini ramené
+    dans la ville, arrondi 1/100, sinon null), `buildingNear`, `stepToward` (vitesse `walk`, long trajet en ≤ `rush` s).
+  - `server/town/service.js` + `routes.js` : `POST /api/town` `{ spot, x? }` → `{ players, say }`. Présence en mémoire
+    (`presentFor` 40 s), joueurs en session exclus (`game.playersInSession`, relu au plus toutes les 3 s), moi exclu,
+    pseudo + `look` + `auras` relus au plus toutes les 20 s, bulle = dernier message du chat global de moins de
+    `TOWN.bubbleMs` (`social.recentChat(ms)`, ajouté hors de l'enveloppe « signe de vie » de `server/social/service.js`).
+    Branché dans `server/app.js` (`town`) et `server/main.js`. Ne crée ni ne déplace aucune ressource.
+  - `src/render/town.js` : canvas `TOWN.rows` cases de haut, largeur selon la fenêtre (`setCols`), dessiné en ×2
+    (`HIRES`) pour des textes nets. Nuages et montagnes en parallaxe, maisons en tuiles (murs, toit en escalier avec
+    bords en pente, porte, fenêtres, enseigne = texture du bâtiment), place (feu de camp + lueur), chevalement (sprite
+    80 × 112) avec le puits (`tunnel`), lampadaires, mineurs via `createMinerSprite` (moi encadré), bulles (`bubbleLines`).
+  - `src/ui/town.js` : `setupTown(root, { ping, me, onEnter })`, `frame(dt, { show, walk, tab })` appelé par la boucle
+    de `src/main.js` (show = pas de `rec`, compte connecté ; walk = onglet Session et `#noSession` visible). Ping toutes
+    les 2,5 s (1 s en promenade, 15 s onglet caché). `mergeOthers` : le x du serveur n'est qu'une cible (bug corrigé
+    pendant le dev : `x: null` écrasait la place affichée → NaN, joueur invisible). Promenade : classe `townWalk` sur
+    `<body>` (barre du haut, onglets et guide cachés, `.app` sans clics sauf la barre d'action et `#notifs`), `#bgTown.walk`
+    reçoit les clics. Option `bgTown` (localStorage `dim.bgTown`) dans Mon compte. Débogage : `TOWN_UI.state()`.
+  - Textures : `town()` dans `scripts/gen_textures.py` (15 nouvelles `town_*`, dont `town_headframe` 80 × 112,
+    `town_lamppost` 16 × 32, `town_cloud` 48 × 16), ajoutées à `TEXTURES` ; régénération sans changer les anciennes.
+- **Tests** ✅ `tests/town.test.js` (12 : plan, place, ping refusé : onglet inconnu / `__proto__` / NaN / Infinity /
+  texte, marche, bâtiment proche, `mergeOthers`, bulles, service : moi exclu, en session exclu, départ après
+  `presentFor`, bulles ≤ `bubbleMs`, cache de l'apparence, 400 / 401) + `boot-check`, `wiki`, `backdrop`, `social` :
+  54/54. Voisins (`grep TEXTURES|createApp`) : 278/278.
+  ✅ Vérifié dans le navigateur (serveur de dev sur le port 8123, `DIM_DATA_DIR` à part, 2 invités) : fond tamisé
+  derrière le Lobby et le Four (le mineur marche jusqu'à la Fonderie), promenade ← →, E devant le chevalement → Lobby,
+  clic sur la rue → marche, clic sur l'Entrepôt → Inventaire, l'autre invité visible sur la place, bulles (la mienne
+  vue à l'écran, celle de l'autre vue dans la réponse du serveur).
+- ⚠️ Pas vérifié : téléphone (largeur mini 8 cases, bandeau d'aide qui passe à la ligne), session lancée puis finie
+  (le fond doit repasser de la mine à la ville, et la promenade revenir après la fermeture du bilan), Bloc géant (la
+  visite garde l'onglet Session : `#noSession` caché, donc pas de promenade). Points fragiles : chaque ping relit la
+  liste des joueurs en session au plus toutes les 3 s (requête base en ligne) ; 80 joueurs au plus renvoyés ; la
+  présence en ville est séparée de la présence Social (`onlineFor` 45 s) : un onglet caché ne pinge que toutes les
+  15 s et part au bout de 40 s sans ping.
+
+## 29/10/2026 (après-midi) — Le Carreau : fiche joueur, groupes, émotes, statue, bannières (Jules)
+- **Quoi** : suite de l'entrée du matin, même branche `jules/spawn-ville`.
+  - Zoom : `TOWN.rows` 16 / `ground` 12 (ancien 18 / 13). Place `w` 11 (ancien 7), décor en colonnes `TOWN.place`.
+  - Serveur `server/town/service.js` : la réponse du ping ajoute pour chaque joueur `level` (`game.levelFor`, nouveau),
+    `tree` (`skillTreeOf`), `gs` (`gsFor`), `emote`, `group` (`{ tag, size, max }`, **repère donné par le service, jamais le
+    code du lobby**, null seul dans son groupe ; `party.groupOf`), `lfg` (`party.searching`, nouveau dans
+    `server/party/service.js` : membre d'une entrée valide de la file) ; et pour moi `group`, plus `statue` (n°1 de
+    `TOWN.statueBoard` via `game.leaderboardData` + `rankBoard`, comptes `LEADERBOARD.hidden` exclus, relue toutes les
+    `TOWN_SERVER.statueFor` 60 s). `POST /api/town/emote` `{ emote }` : id de `TOWN.emotes` (sinon 400), une toutes les
+    `TOWN.emoteGapMs` (sinon 429), visible `TOWN.emoteMs`. Le corps d'une requête doit être un objet (tableau : 400).
+  - `src/shared/town.js` : `restX(spot, id, group)` (sur la place, point du groupe ± `TOWN.group`), `emoteOf`.
+  - `src/render/town.js` : place (statue = `createMinerSprite` ×2 avec `ctx.filter` gris, socle `town_pedestal` ;
+    bannières `town_banner_angel` / `_demon` avec jauge dessinée, pulsation si ouverte), au-dessus du pseudo : marque de
+    groupe ou « ? », émote (saut pour 👋 / 🎉), bulle ; textes de la place seulement devant soi (`scene.meX`, ≤ 1,8 case).
+  - `src/ui/town.js` : `cardHtml` (fiche échappée), `.townCard` au clic sur un joueur (Échap / clic ailleurs : fermée),
+    barre `.townEmotes` dans le bandeau, `setJudgment(sides)` (appelé par `pollJudgment` dans `src/main.js`),
+    `mergeOthers(prev, list, now)` (`emoteAt`). `src/main.js` : `friend` = `socialApi.request(id)`, `invite` =
+    `partyApi.invite(id)` puis `pollLobby()`.
+  - Textures : `town_banner_angel`, `town_banner_demon` (16 × 32), `town_pedestal` (32 × 16).
+- **Tests** ✅ `tests/town.test.js` 17/17 (5 nouveaux : fiche + groupe sans code + seul + lfg ; émotes 400 / 429 /
+  expiration / 401 ; statue + compte caché + cache ; place d'un groupe ; fiche échappée) ; `party`, `social`,
+  `boot-check`, `wiki`, `game-http` : 74/74.
+  ✅ Vérifié dans le navigateur (port 8001, données à part, comptes Test_Mineur / Test_Barbare de `dev:presets`) : fiche
+  au clic (« Niv. 72 · 🪓 Barbare · 3615 GS »), « Inviter dans mon groupe » → invitation reçue, groupe rejoint → marque
+  2/3 chez les deux, émote 👋, « ? » d'un joueur en recherche de groupe, statue grise du n°1 (Test_Logisticien), bannières.
+- ⚠️ Pas vérifié : « Ajouter en ami » depuis la fiche (même appel que l'onglet Social), une tour ouverte (pulsation de la
+  bannière), téléphone. Points fragiles : `ctx.filter` (statue grise) absent des vieux Safari : statue en couleur ;
+  `game.leaderboardData` lit tous les comptes (cache `LEADERBOARD.cacheMs`), appelé au plus une fois par minute ici.
+
+## 29/10/2026 (soir) — Le Carreau : direction artistique « Crépuscule de forge » (Jules)
+- **Quoi** : choix de Jules parmi 3 maquettes (outil de maquettes, `.superpowers/brainstorm/`, non versionné) puis un
+  essai jetable de 3 bâtiments dans le jeu (validé : « plus sombre, ciel en dégradé »).
+  - `scripts/gen_town.py` (nouveau, importé par `scripts/gen_textures.py`, qui perd son ancienne fonction `town()`) :
+    classe `Pix` (polygones, briques, moellons, planches, tuiles, fenêtres, portes en arc, `finish()` = contour noir
+    extérieur 1 px + lumière rasante orange sur les pixels sous le ciel). 12 sprites de bâtiments `town_<nom>` (largeur
+    ≤ w × 16, hauteur dans `h`), et le décor redessiné sous les mêmes noms (`town_lamppost`, `town_campfire`,
+    `town_pedestal`, `town_banner_*`, `town_cobble`, `town_cloud`, `town_headframe`). **Supprimées** : `town_plank`,
+    `town_stone_blue`, `town_roof_*` (+ `_edge`), `town_door`, `town_window`, `town_sign`, `town_mug`. Régénérer ne change
+    aucune autre texture (vérifié avec git status).
+  - `src/config.js` `TOWN.buildings` : `{ tab, name, kind, w, h, sprite, glows: [[x, y, r, 'magic'?]], smoke: [x, y] }`
+    (`h` = hauteur du sprite en cases ; anciens champs `wall` / `roof` / `sign` / `chimney` retirés) ; place `h` 3 ;
+    `TOWN.sky` (4 couleurs du dégradé), `TOWN.far` (2 falaises), `TOWN.fog`, `TOWN.groundDim` (0,5).
+  - `src/render/town.js` : `drawSky` (dégradé + soleil + halo), `drawFar` (couleurs de config), `drawBuilding` (sprite
+    centré sur sa place, halos en `lighter` qui respirent, fumée), plus de `drawHouse` / toits en escalier / enseignes ;
+    sol hors de la rue = terre (plus d'herbe). `src/ui/town.js` : clic sur un bâtiment = sa hauteur `h`.
+- **Tests** ✅ `tests/town.test.js` 18/18 (nouveau : chaque sprite existe, est dans `TEXTURES`, tient dans `w × h`, un
+  sprite différent par bâtiment, halos / fumée dans le sprite, décor présent) + `wiki`, `boot-check`.
+  ✅ Vérifié dans le navigateur (port 8001, compte Test_Mineur) : promenade de la Taverne au Concasseur, labels, halos,
+  fumée, et derrière l'onglet Craft (lisible, tamisé).
+- ⚠️ Pas vérifié : téléphone ; la Fonderie et la Tour du mage, très hautes, ont leur nom près du bandeau d'aide en
+  haut de l'écran en promenade (il peut passer dessous). `ctx.filter` (rue assombrie, statue grise) : sans effet sur de
+  vieux Safari (rue plus claire).
+- **Retouches (retours de Jules, même soir)** : `scripts/gen_town.py` `mage_tower` (penche de 4 px au sommet, chapeau
+  posé sur le haut de la tour, 2 fenêtres au lieu de 3), `training` (refaite), `armory` (enclume), `crusher` (refait,
+  cheminée dans l'emprise), `jeweler` (gemmes en losange alignées), nouveaux `cliff` (96 × 192) et `gate` (96 × 144) ;
+  halos / fumée mis à jour dans `TOWN.buildings`. `TOWN.margin` 7 (ancien 6), `TOWN.edges` ; `clampX` = entre
+  `margin - 0.5` et `TOWN_WIDTH - margin + 0.5` (ancien 1 et `TOWN_WIDTH - 1`) : le serveur ramène aussi la position
+  d'un joueur en promenade entre la falaise et la porte. Rendu : falaise collée au bord gauche, porte au bord droit.
+  Tests ✅ `tests/town.test.js` 19/19 (nouveau : bords dans les marges, toute place devant un bâtiment entre les deux).
+  ✅ Vérifié dans le navigateur : arrêt au pied de la falaise et devant la porte.
+- **Retouches 2 (même soir)** : ordre de `TOWN.buildings` : Entrepôt en premier, Taverne juste avant la place.
+  `scripts/gen_town.py` : `rock()` partagé, `gate()` = falaise en strates + palissade (112 × 192), ruban vert de la tour
+  retiré (et son halo), billot de l'enclume recentré. Chat global en promenade : `setupTown` `onWalk(on)` + `chatSlot`
+  (`.townChat`), `src/main.js` déplace `#gchatCard` dans `chatSlot` puis le remet à sa place dans le Lobby (`gchatHome`) ;
+  `gchat` relu aussi quand `town.walking`. ✅ Vérifié dans le navigateur : message envoyé depuis la promenade (bulle au-
+  dessus de moi + ligne dans le chat), carte revenue dans le Lobby après la promenade, falaise de droite. Tests ✅ town,
+  boot-check, chat : 36/36.
+- **Retouches 3** : `scripts/gen_town.py` `gate()` remplacé par `slagheap()` (`town_slagheap`, 112 × 192 ; `town_gate`
+  supprimée), `TOWN.edges.right`. Chat en promenade : `placeChat()` dans `src/ui/town.js` (à la mise en promenade et au
+  redimensionnement) : en bas à gauche, largeur = place à gauche de `.dock` (au plus `TOWN.chatMax` 360 px) ; moins de
+  `TOWN.chatMin` (220 px) : au-dessus de la barre. ✅ Vu à 1600 et 1920 px de large (≈ 225 px et 360 px).
+- **Mise en ligne (29/10)** : fusion de `origin/main` dans la branche (conflits seulement dans `docs/journal.md` et
+  `docs/debug.md` : les deux côtés gardés). `main` est passé à la police VT323 (Jersey 10 n'est plus chargée) : les
+  textes du canvas de la ville (`src/render/town.js`, `FONT`) passent en VT323, 11 px (noms) / 10 px (bulles, interligne
+  9). Tests ✅ town, social, party, chat, boot-check, wiki, game-http, backdrop, skins : 124/124 ; vu dans le navigateur.

@@ -25,6 +25,33 @@ img,canvas{image-rendering:pixelated}
 .bgSession{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}   /* au-dessus de la vignette (body::before), sous .app */
 /* place, taille et luminosité posées par backdrop.js : plein écran assombri, ou en transition vers la place de la session */
 .bgSession canvas{position:absolute}
+/* le Carreau, la ville du spawn (src/ui/town.js) : fond hors session, au même étage que la mine du fond ; en promenade
+   (onglet Session sans session), plein écran sans la barre du haut ni les panneaux : seule la barre d'action reste */
+.bgTown{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bgTown canvas{position:absolute}
+.bgTown.walk{pointer-events:auto;cursor:pointer;touch-action:none}
+.townHint{display:none}
+.bgTown.walk .townHint{display:flex;flex-direction:column;align-items:center;gap:var(--u);position:absolute;top:calc(4*var(--u));left:50%;transform:translateX(-50%);
+  padding:calc(2*var(--u)) calc(6*var(--u));background:rgba(11,8,6,.75);border:var(--u) solid var(--line);color:var(--mut);font-size:var(--fs-s);pointer-events:none;text-align:center;max-width:calc(100vw - 32px)}
+.townHint b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
+.townHint kbd{color:var(--txt);font:inherit;border:var(--u) solid var(--line);padding:0 var(--u)}
+.townEmotes{display:flex;gap:var(--u);margin-top:var(--u);pointer-events:auto}
+.townEmotes button{min-width:calc(16*var(--u));padding:var(--u);font-size:var(--fs-l);line-height:1}
+/* fiche d'un joueur cliqué dans la ville (src/ui/town.js) */
+.townCard{position:absolute;z-index:3;display:flex;flex-direction:column;gap:var(--u);min-width:calc(110*var(--u));max-width:calc(100vw - 16px);
+  padding:calc(3*var(--u)) calc(5*var(--u));background:rgba(11,8,6,.92);border:var(--u) solid var(--line);font-size:var(--fs-s);pointer-events:auto;cursor:default}
+.townCard b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
+.townCard .tcStatus{color:var(--ok)}
+.tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
+.tcMsg:empty{display:none}
+body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
+/* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : tout en bas à gauche */
+.townChat{display:none}
+.bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:6px;width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}   /* place exacte : src/ui/town.js placeChat */
+.townChat .card{margin:0;background:rgba(11,8,6,.85)}
+.townChat .chatLog{max-height:calc(46*var(--u))}
+body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
+body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */
 /* transition avec l'onglet Session (backdrop.js) : les panneaux glissent depuis les bords (.bgEnter) ou y repartent
    (.bgLeave, l'onglet reste affiché par-dessus le nouveau le temps de la sortie), linéaire comme le zoom de la mine */
 @keyframes bgFromL{from{transform:translateX(-110%);opacity:0}}

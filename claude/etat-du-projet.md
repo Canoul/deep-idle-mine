@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 28/10/2026 (chat global du Lobby, en ligne).*
+*Dernière mise à jour : 29/10/2026 (le Carreau, ville du spawn, en ligne).*
 
 ---
 
@@ -42,6 +42,18 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## Systèmes en place
 
+- **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
+  `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une
+  ville minière vue de côté, un bâtiment par onglet ; ton mineur marche jusqu'au bâtiment de l'onglet ouvert, les autres
+  joueurs en ligne **hors session** sont devant le leur, avec bulle de leurs messages du chat global. Onglet Session sans
+  session = promenade plein écran sans panneaux (E / clic sur un bâtiment ouvre son onglet). Présence en mémoire sur le
+  serveur, rien en base, rien d'économique. Option « Le Carreau en fond d'écran » (Mon compte). Pendant une session, le
+  fond reste la mine (fond de Geoffrey du 28/10). Ajouts du 29/10 après-midi : fiche d'un joueur au clic (ami, inviter),
+  groupes regroupés sur la place avec une marque « 2/3 », « ? » doré pour qui cherche un groupe, émotes, statue du n°1 du
+  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place.
+  **Direction artistique du Carreau** (29/10, choix de Jules) : « Crépuscule de forge », inspirée de Darkest Dungeon :
+  ciel de crépuscule en dégradé, tons sombres, contour noir, lumières orange (vert pour la magie), une silhouette
+  propre à chaque bâtiment (sprites de `scripts/gen_town.py`). Ancien (29/10 matin) : maisons génériques en tuiles.
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
   - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,

@@ -116,6 +116,12 @@ export const SOCIAL_SERVER = {
   requestsPerHour: { max: 30, window: HOUR },       // demandes d'ami envoyées par compte (anti spam)
 };
 
+/* Le Carreau, la ville du spawn (server/town/service.js, 29/10/2026) : un joueur sans nouvelles depuis presentFor quitte
+   la ville ; son pseudo et son apparence sont relus au plus toutes les lookFor ms ; la liste des joueurs en session au
+   plus toutes les sessionsFor ms ; au plus maxPlayers autres joueurs renvoyés (les plus récents) ; la statue (n°1 du
+   classement) relue au plus toutes les statueFor ms. */
+export const TOWN_SERVER = { presentFor: 40e3, lookFor: 20e3, sessionsFor: 3e3, maxPlayers: 80, statueFor: 60e3 };
+
 export const PARTY_SERVER = {
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà

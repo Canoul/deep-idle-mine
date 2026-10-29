@@ -24,6 +24,53 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Jules — Le Carreau : la ville du spawn
+- **Pour le joueur** : hors session, le fond de l'écran n'est plus un mur : c'est **le Carreau**, une petite ville
+  minière vue de côté, avec **un bâtiment par onglet** (Taverne = Social, Archives = Historique, Bibliothèque =
+  Recherche, Salle d'entraînement = Skills, Tour du mage = Sorts, Armurerie = Stuff, Entrepôt = Inventaire, Place du
+  Carreau = Lobby, Chevalement au-dessus du puits = Session, Fonderie = Four, Concasseur, Atelier = Craft, Joaillier =
+  Amélioration). Quand tu changes d'onglet, **ton mineur marche jusqu'au bâtiment**. Les **autres joueurs en ligne qui
+  ne sont pas en session** sont là aussi, devant le bâtiment de l'onglet qu'ils regardent, avec leur stuff, et leurs
+  messages du **chat global** s'affichent en **bulle** au-dessus de leur tête.
+  Dans l'onglet **Session** sans session en cours : la ville en **plein écran, sans les panneaux**, et tu t'y promènes
+  (← → ou Q / D, clic sur la rue pour y aller, clic sur un bâtiment ou **E** devant sa porte pour ouvrir son onglet ;
+  le chevalement et la place mènent au Lobby, d'où on lance). Pendant une session, rien ne change : la mine reste en
+  fond. Case « Le Carreau (la ville) en fond d'écran » dans Mon compte pour revenir au mur.
+- **Décisions** (choix de Claude, à valider) : le nom « le Carreau » (les installations en surface d'une mine) ; l'ordre
+  des bâtiments ; l'onglet Session sans session devient la promenade (l'ancien écran « Tu n'es pas en session » ne se
+  voit plus qu'avec l'option décochée) ; pas d'interaction entre joueurs dans la ville pour l'instant (pas de clic sur
+  un joueur, pas d'émotes).
+- **Ajouts de l'après-midi** (validés par Jules) : un peu plus zoomé ; **clic sur un joueur** (en promenade) : sa fiche
+  (niveau, spé, GS, groupe) avec « Ajouter en ami » et « Inviter dans mon groupe » ; **groupes visibles** : sur la place,
+  les membres d'un même groupe se tiennent ensemble avec une marque « 2/3 » à la couleur du groupe, et un joueur qui
+  **cherche un groupe** porte un « ? » doré au-dessus de la tête ; **émotes** (👋 ⛏️ 🎉 😂 ❤️ 💤) dans le bandeau de la
+  promenade, vues par les autres ; la place s'est agrandie : **statue en pierre du n°1 du classement GS** sur un socle, et
+  deux **bannières** qui se remplissent avec les jauges Ange / Démon (elles pulsent quand la tour est ouverte). Les textes
+  de la statue et des bannières s'affichent quand on se tient devant.
+- **Nouvelle direction artistique** (fin d'après-midi, choisie par Jules parmi trois maquettes inspirées de Darkest
+  Dungeon : « Crépuscule de forge ») : ciel de crépuscule en dégradé rouge sombre → ambre, soleil bas, nuages rougis,
+  falaises au loin, brume orangée au ras du sol, rue sombre. **Chaque bâtiment a sa silhouette** en pixel art avec un
+  contour noir : Taverne penchée à colombages, Archives à horloge, Bibliothèque-chapelle à rosace, Salle d'entraînement
+  (palissade, mannequin, cabane de chaume), Tour du mage tordue aux fenêtres vertes, Armurerie (forge ouverte, enclume),
+  Entrepôt (grange, grandes portes), Chevalement en potence, Fonderie à cheminée géante, Concasseur (machine à vapeur,
+  volant), Atelier (auvent rayé, établi), Joaillier (vitrine de gemmes qui scintillent). Fenêtres, fours et lanternes
+  rayonnent, les cheminées fument. Statue du classement GS validée par Jules.
+- **Retouches après les retours de Jules** : toit de la Tour du mage recentré (plus de fenêtre derrière la porte) ;
+  Salle d'entraînement refaite en caserne (boucliers et épées croisées, grande porte, torches, mannequin, cible) ;
+  enclume de l'Armurerie redessinée (bigorne, table, pied, marteau) ; Concasseur refait (atelier en briques, toit de
+  tôle, cheminée qui sort du toit, volant sur son bâti avec courroie) ; vitrine du Joaillier rangée sur deux étagères.
+  **Bords de la ville fermés** : falaise avec l'ancienne entrée de mine condamnée à gauche, porte de palissade à droite ;
+  on ne marche plus dans le vide.
+- **Encore des retouches** : la **Taverne déménage à côté de la place** (l'un des premiers bâtiments qu'on voit),
+  l'Entrepôt prend sa place au bout gauche ; la porte de droite est maintenant **adossée à une falaise** comme à gauche ;
+  plus de barre verte sur la Tour du mage ; l'enclume est bien sur son billot. **Chat global en promenade** : en bas à
+  gauche de l'écran, pour écrire aux gens de la ville (le message s'affiche aussi en bulle) ; il revient dans le Lobby
+  quand on quitte la promenade. Puis : chat **tout en bas à gauche** (à côté de la barre d'action ; sur un écran trop
+  étroit, au-dessus d'elle) ; bord droit remplacé par un **terril** qui couve encore (braises), avec sa passerelle sur
+  pilotis et un wagonnet en haut (ancien : palissade adossée à la roche, « pas ouf » pour Jules).
+- **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Jules — Correctif : bouton « ½ » du four renommé « Moitié »
 - **Pour le joueur** : dans le four (choix de la recette et pose d'un minerai), le bouton « ½ » était illisible avec la
   nouvelle police. Il s'appelle maintenant **Moitié** ; il fait toujours la même chose (la moitié du maximum).

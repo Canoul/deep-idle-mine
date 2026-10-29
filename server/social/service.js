@@ -263,6 +263,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   };
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
+  /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
+  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => now - m.at <= ms); };
   return api;
 
   /* devenir amis : on retire les demandes dans les deux sens */
