@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Administration : forcer la fin de session d'un joueur
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `end-session.js --name X` sort X de sa session en cours, comme
+  son bouton « Quitter » : il ne reçoit rien de cette session et redevient libre tout de suite. En groupe, les autres continuent.
+- **Décision** (Geoffrey) : sortie sans butin (plutôt qu'arrêter la session de tout le groupe, ou la finir avec le butin).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
 - **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
   `move-to-lobby.js --name X --to Y` met X dans le lobby de Y ; `set-ready.js --name X` le met prêt, `--always on` le met

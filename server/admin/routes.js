@@ -8,6 +8,7 @@
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
+   POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
@@ -62,6 +63,14 @@ export function adminRoutes({ accounts, game, party = null, token }){
       const r = await party.adminMove(acc, host);
       console.log(`Admin : ${acc.name} (${acc.id}) ${r.moved ? 'mis' : 'déjà'} dans le lobby de ${host.name} (${r.party.code}) : ${members(r)}`);
       return { account: acc.name, host: host.name, ...r };
+    },
+    /* fin de session forcée (29/10/2026, Geoffrey) : comme son bouton « Quitter » */
+    'POST /api/admin/end-session': async ctx => {
+      guard(ctx);
+      const acc = await byName(ctx);
+      const r = await game.adminLeave(acc.id);
+      console.log(`Admin : ${acc.name} (${acc.id}) sorti de sa session ${r.session} (${r.mode})${r.ended ? ', partie arrêtée (plus personne)' : ', les autres continuent'}`);
+      return { account: acc.name, ...r };
     },
     'POST /api/admin/party-ready': async ctx => {
       guard(ctx); noParty();
