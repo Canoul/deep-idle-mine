@@ -23,6 +23,15 @@
     <i data-pxi="hourglass"></i><span id="navTimer">—</span>
     <div class="bar"><i id="navBar"></i></div>
   </div>
+  <!-- énergie (29/10) : coûte au lancement d'une mine classique, se recharge en prison (src/ui/prison.js) -->
+  <div class="navEnergy" id="navEnergy" hidden title="Énergie : une mine classique coûte de 6 à 12 au lancement. Elle se recharge en prison.">
+    <span class="bolt">⚡</span><span id="navEnergyTxt">—</span><div class="bar"><i id="navEnergyBar"></i></div>
+  </div>
+  <!-- prison en cours (29/10) : la voir, en sortir -->
+  <div class="navPrison" id="navPrison" hidden>
+    <button class="small" id="navPrisonBtn" title="Voir ta prison">⛓ Prison</button>
+    <button class="small" id="navPrisonStop" title="Arrêter la prison : le coffre du run en cours est versé, pas ce que le mineur porte">Sortir de prison</button>
+  </div>
   <a class="navWiki" href="wiki.html" target="_blank" rel="noopener" title="Règles, objets, recettes, mobs… (nouvel onglet)"><i data-pxi="book"></i><span>Wiki</span></a>
 </header>
 <div class="views" id="views">
@@ -80,6 +89,8 @@
     <div class="pslots" id="lobbySlots"></div>
     <div class="lobbyActions">
       <button class="on big" id="launchBtn"><i data-pxi="arrow"></i>Lancer la session</button>
+      <span class="launchCost small" id="launchCost" hidden title="Débitée au lancement, pour chaque joueur. Elle se recharge en prison."></span>
+      <button id="prisonStopLobby" hidden title="Le coffre du run en cours est versé, pas ce que le mineur porte">Sortir de prison</button>
       <button id="inviteBtn"><i data-pxi="group"></i>Inviter des joueurs</button>
       <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
       <button id="lfgBtn" hidden><i data-pxi="group"></i>Chercher un groupe</button>
@@ -130,8 +141,9 @@
   <p class="mut">Les sessions se lancent depuis le lobby.</p>
   <button class="on" id="toLobbyBtn"><i data-pxi="house"></i>Aller au lobby</button>
 </div>
-<!-- session en cours -->
+<!-- session en cours (ou prison : même affichage, avec son bandeau, 29/10) -->
 <div id="run" hidden>
+<div class="prisonBanner" id="prisonBanner" hidden><span>⛓</span><span id="prisonBannerTxt"></span></div>
 <header>
   <div class="timer" id="timer">00:00 / 60:00</div>
   <div class="grow"><div class="bar"><i id="timeBar"></i></div></div>

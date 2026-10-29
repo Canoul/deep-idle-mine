@@ -1646,9 +1646,10 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
    offlineMax / batchMs / presentFor / seenWriteMs : temps réels (ms), serveur : plafond sans visite, écart entre deux
    paquets du joueur absent, « présent » si sa dernière demande date de moins de presentFor, écriture de lastSeenAt en
    base au plus toutes les seenWriteMs · payoutRetries : versements d'un run relancés par le serveur après un échec ·
-   salt : seed d'un run. */
+   salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, hors de
+   l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). */
 export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5,
-  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5, bars: 24, salt: 0x9a150e };
+  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5, bars: 24, salt: 0x9a150e, uiPoll: 15e3 };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

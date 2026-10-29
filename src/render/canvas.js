@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, PRISON } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -57,7 +57,8 @@ export function createRenderer(cv){
         if(y<=0){ if(G.khole){ ctx.fillStyle='#1a0630'; ctx.fillRect(px,py,TILE,TILE); } else blit('sky',px,py,'#6cc3ee'); continue; }   // ciel de la dimension du k hole
         if(y===mr+1){ if(G.seen[mr][x]) blit('barrier',px,py,'#34344a'); continue; }
         if(y>mr) continue;
-        if(!G.seen[y][x]){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
+        /* barreaux de la prison (29/10) : toujours dessinés, même pas encore vus (ils ne cachent rien), assombris par la lumière */
+        if(!G.seen[y][x] && G.tiles[y][x]!==PRISON.bars){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
         const t=G.tiles[y][x];
         if(t===0) blit('tunnel',px,py,'#2a1f18');
         else{

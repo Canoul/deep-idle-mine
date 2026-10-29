@@ -78,7 +78,7 @@ export function updateHUD(G, ui){
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
   if(a.chestChance>0)
     h+=`<div class="row" style="margin-top:6px"><span>💰 Treasure ${a.treasure&&a.treasure.opened?esc(a.treasure.item.replace('Treasure ','')):''}</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
-  h+=objectiveHtml(G);
+  if(!ui.prison) h+=objectiveHtml(G);   // prison (29/10) : une seule area, rien à débloquer
   box.innerHTML=h;
 }
 

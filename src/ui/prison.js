@@ -1,0 +1,53 @@
+/* Prison et énergie côté navigateur (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md) :
+   textes de la jauge d'énergie (barre du haut), du bandeau de la prison (onglet Session) et du bilan d'absence.
+   Logique pure, testée (tests/prison-ui.test.js) : le serveur calcule tout, ces fonctions ne font que l'écrire. */
+import { ENERGY, PRISON } from '../config.js';
+
+const nf = n => Math.round(n).toLocaleString('fr-FR');
+const ok = v => Number.isFinite(v);
+
+/* jauge d'énergie : { value, max } → « 72 / 100 » (gardée au dixième par le serveur, affichée arrondie) */
+export const energyText = e => e && ok(e.value) ? `${Math.round(e.value)} / ${e.max ?? ENERGY.max}` : '—';
+export const energyPct = e => e && ok(e.value) ? Math.max(0, Math.min(100, e.value / (e.max || ENERGY.max) * 100)) : 0;
+
+/* coût d'une mine classique, à côté de « Lancer » : « 6 à 12 ⚡ » ; sous le minimum, le joueur est prévenu (le serveur
+   refuse de toute façon, message no_energy) */
+export function launchCostText(e){
+  const { min, max } = ENERGY.cost, base = `Coût : ${min} à ${max} ⚡`;
+  return e && ok(e.value) && Math.round(e.value * 10) / 10 < min ? `${base} · pas assez d'énergie (${Math.round(e.value)})` : base;
+}
+
+/* une prison qui tourne ou attend (pas fermée) */
+export const prisonActive = p => p?.state === 'running' || p?.state === 'waiting';
+/* bilan d'absence à montrer (envoyé une seule fois par le serveur) */
+export const hasAway = p => !!(p?.away && (p.away.runs > 0 || p.away.energy > 0 || Object.keys(p.away.bag ?? {}).length));
+
+/* temps avant la pause (plafond de 24 h sans visite) : « 23 h », « 25 min » */
+function untilText(ms){
+  const min = Math.max(0, ms) / 60e3;
+  return min >= 60 ? `${Math.round(min / 60)} h` : `${Math.max(1, Math.ceil(min))} min`;
+}
+
+/* Bandeau au-dessus de la prison : « Run 4 · 61 / 80 % des minerais · +12 ⚡ · pause dans 23 h ».
+   Minerais : part des minerais de la carte déjà minée (mined / goal ramené au seuil PRISON.resetAt), sur le seuil de fin
+   de run. Énergie : gagnée depuis le début de cette prison. p : publicPrison du serveur ; now : heure du serveur (ms). */
+export function prisonBanner(p, now = Date.now()){
+  if(!prisonActive(p)) return '';
+  const parts = [`Run ${p.run}`];
+  if(ok(p.mined) && ok(p.goal) && p.goal > 0){
+    const seuil = Math.round(PRISON.resetAt * 100);
+    parts.push(`${Math.min(seuil, Math.floor(p.mined / p.goal * seuil))} / ${seuil} % des minerais`);
+  }
+  if(ok(p.energy)) parts.push(`+${Math.round(p.energy)} ⚡`);
+  parts.push(p.state === 'waiting' ? `en pause (${Math.round(PRISON.offlineMax / 3600e3)} h sans visite)` : ok(p.waitAt) ? `pause dans ${untilText(p.waitAt - now)} sans visite` : '');
+  return parts.filter(Boolean).join(' · ');
+}
+
+/* Bilan au retour : « Pendant ton absence : 14 runs, + 334 ressources, + 112 énergie. » ; '' s'il n'y a rien */
+export function awayText(a){
+  if(!a || !(a.runs > 0)) return '';
+  const res = Object.values(a.bag ?? {}).reduce((s, n) => s + (ok(n) ? n : 0), 0);
+  return `Pendant ton absence : ${a.runs} run${a.runs > 1 ? 's' : ''}`+
+    (res > 0 ? `, + ${nf(res)} ressources` : '')+
+    (ok(a.energy) && a.energy > 0 ? `, + ${nf(a.energy)} énergie` : '')+'.';
+}
