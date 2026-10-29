@@ -881,7 +881,9 @@ export const GOBLIN_KING = {
   chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
   loot: {
     always: [
-      { item:'Graphite ore',    min:20, max:40  },
+      /* 29/10/2026 (Geoffrey) : lingots de graphite et fer souillé à la place du minerai de graphite (avant : Graphite ore 20-40) */
+      { item:'Graphite ingot',  min:5,  max:15  },
+      { item:'Tainted iron',    min:10, max:20  },
       { item:'Peau de gobelin', min:50, max:100 },
     ],
     oneOf: [
