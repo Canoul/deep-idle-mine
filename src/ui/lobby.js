@@ -7,7 +7,7 @@ import { gearScore } from '../meta/gearscore.js';
 import { statusText } from './social.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE } from '../config.js';
 import { joinLink } from '../shared/party.js';
-import { presetName } from '../shared/dev-presets.js';
+import { presetName, copyPresetId, copyName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
 import { pxi } from './pxicons.js';
 import { qhelp } from './help.js';
@@ -516,10 +516,20 @@ export function setupLobby(h){
   /* panneau dev : réglages appliqués à la session lancée (le serveur les vérifie et les borne) */
   $('devStats').innerHTML = DEV_TUNABLES.map(([obj, key, label, min, max]) =>
     `<span>${esc(label)}</span><input type="number" step="any" min="${min}" max="${max}" data-obj="${obj}" data-key="${key}" data-base="${TARGETS[obj][key]}" value="${TARGETS[obj][key]}">`).join('');
-  /* preset de chaque mineur de test (src/shared/dev-presets.js) : stuff, arbre et glyphes, sorts ; sans preset, stats de base */
-  $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
-    `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${
-      SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')}</select>`).join('');
+  /* preset de chaque mineur de test (src/shared/dev-presets.js) : stuff, arbre et glyphes, sorts ; sans preset, stats de base.
+     copies : vrais joueurs copiés (data/presets/, envoyés par le serveur dans info.copies) ; les choix faits sont gardés */
+  let shownCopies = null;
+  const drawPresets = (copies = []) => {
+    if(JSON.stringify(copies) === shownCopies) return;
+    const keep = [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value);
+    shownCopies = JSON.stringify(copies);
+    $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
+      `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${
+        SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')}${
+        copies.map(w => `<option value="${esc(copyPresetId(w))}">👤 ${esc(copyName(w))} (copie)</option>`).join('')}</select>`).join('');
+    $('devPresets').querySelectorAll('[data-preset]').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
+  };
+  drawPresets();
   const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
@@ -599,6 +609,7 @@ export function setupLobby(h){
       const { lfg, ...rest } = patch;
       Object.assign(st, rest);
       if('lfg' in patch) setLfg(lfg);
+      if(st.info?.dev) drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []);
       render();
     },
     /* rejoindre par un code venu d'un lien d'invitation */

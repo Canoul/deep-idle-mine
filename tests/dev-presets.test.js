@@ -117,3 +117,16 @@ test('copie d\'une fiche d\'ami (sans sorts) : les sorts de sa spé à son nivea
   assert.throws(() => presetFromSnapshot({ ...SNAP, stuff:{ casque:{ item:'Pioche en acier', uid:1 } } }), /refusées/);
   assert.throws(() => presetFromSnapshot(null), /invalide/);
 });
+
+test('mineur de test copié (copy:<pseudo>) : la copie rangée dans la session, son nom, son stuff et ses sorts', () => {
+  assert.deepEqual(sanitizeBotPresets(['copy:canoul', 'copy:a b', 'barbare']), ['copy:canoul', null, 'barbare']);
+  assert.equal(sanitizeBotPresets(['copy:', 'copy:../x']), null);
+  const rec = { players:[{ account:'A', name:'Moi' }], bots:2, botPresets:['copy:canoul', 'copy:absent'], botCopies:[SNAP, null] };
+  const [, bot, none] = minerSpecs(rec);
+  assert.equal(bot.name, 'Test_Canoul');
+  assert.equal(bot.look.casque, 'Casque en fer');
+  assert.ok(bot.carac.speed > none.carac.speed, 'la rune Marche du casque copié compte');
+  assert.deepEqual(bot.spells, ['inspiration', 'zipette']);
+  assert.equal(none.name, 'Mineur test 2');                      // copie introuvable : stats de base
+  assert.deepEqual(minerSpecs(rec), minerSpecs(JSON.parse(JSON.stringify(rec))), 'rejeu identique depuis la session');
+});

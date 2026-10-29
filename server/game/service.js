@@ -27,7 +27,7 @@ import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, J
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
-import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
+import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
@@ -145,10 +145,18 @@ export const ADMIN_MAX_QTY = 1000;
 
 export function createGameService({ store, liveRunner = createLiveRunner, clock = Date.now, dev = GAME_SERVER.dev, speed = GAME.speed,
                                     config = GAME_SERVER, prison: cfg = PRISON, randomSeed = () => crypto.randomInt(2**31),
+                                    /* mode dev : copies de vrais joueurs pour les mineurs de test, { pseudo: copie } (data/presets/) */
+                                    devCopies = () => ({}),
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
+  /* copies (copy:<pseudo>) des mineurs de test, rangées dans la session au lancement : { botCopies: [copie | null] } ou rien */
+  const botCopiesOf = presets => {
+    if(!presets?.some(isCopyPresetId)) return {};
+    const all = devCopies();
+    return { botCopies: presets.map(t => isCopyPresetId(t) ? all[t.slice(COPY_PREFIX.length)] ?? null : null) };
+  };
   const withLock = createLocks();
   /* une annonce ne bloque ni ne fait jamais échouer l'action qui la déclenche */
   const shout = text => { if(text) Promise.resolve().then(() => announce(text)).catch(console.error); };
@@ -769,7 +777,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     dev, speed, areaMaxOf,
     /* wiki : objets secrets, et ceux déjà trouvés (leurs effets s'affichent) */
     wiki: async () => { const found = new Set(await store.listDiscovered?.() ?? []); return { secret: WIKI.secret, discovered: WIKI.secret.filter(i => found.has(i)) }; },
-    info: () => ({ dev, speed: dev ? null : speed, speeds: dev ? GAME.devSpeeds : [speed], maxPlayers: GAME.maxPlayers }),
+    info: () => ({ dev, speed: dev ? null : speed, speeds: dev ? GAME.devSpeeds : [speed], maxPlayers: GAME.maxPlayers,
+                   ...(dev ? { copies: Object.keys(devCopies()) } : {}) }),
 
     /* état du joueur : inventaire, préférences, session en cours, et résultat d'une session terminée pas encore vu */
     async state(me){
@@ -919,6 +928,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
           botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
+          ...(dev ? botCopiesOf(sanitizeBotPresets(body.botPresets)) : {}),   // copies de vrais joueurs (data/presets/)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),
           ...(side ? { opening, level } : inst ? { level } : {}),

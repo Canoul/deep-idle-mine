@@ -67,16 +67,26 @@ export function presetFromSnapshot(snap, { keys = DEV_PRESETS.keys } = {}){
 
 /* ce qu'un mineur de test reçoit en session avec ce preset : { name, look, gear, skills:{tree, ranks, glyphs}, owned, spells:[id] }
    (owned : glyphes possédés, pour le drop, comme un joueur) */
-export function presetMiner(tree){
-  const p = buildPreset(tree, { keys: 0 });
-  return { name: presetName(tree), look: lookOf(p.stuff), gear: gearOf(p.stuff),
-           skills: { tree: p.skills.tree, ranks: p.skills.ranks, glyphs: p.skills.glyphs }, owned: Object.values(p.skills.glyphs),
-           spells: p.spells.slots.filter(Boolean) };
+const minerOf = (p, name) => ({ name, look: lookOf(p.stuff), gear: gearOf(p.stuff),
+  skills: { tree: p.skills.tree, ranks: p.skills.ranks, glyphs: p.skills.glyphs }, owned: Object.values(p.skills.glyphs),
+  spells: p.spells.slots.filter(Boolean) });
+export const presetMiner = tree => minerOf(buildPreset(tree, { keys: 0 }), presetName(tree));
+
+/* copie d'un vrai joueur comme mineur de test (29/10/2026) : « copy:<pseudo> » dans botPresets ; le serveur range la copie
+   dans la session (record.botCopies[j]) au lancement : la partie se rejoue sans le fichier. null si la copie est refusée */
+export const COPY_PREFIX = 'copy:';
+export const copyPresetId = who => COPY_PREFIX + who;
+export const isCopyPresetId = id => typeof id === 'string' && id.startsWith(COPY_PREFIX) && /^[\w-]{1,24}$/.test(id.slice(COPY_PREFIX.length));
+export const copyName = who => ('Test_' + who[0].toUpperCase() + who.slice(1).toLowerCase()).slice(0, 16);
+export function copyMiner(who, snap){
+  try { return minerOf(presetFromSnapshot(snap, { keys: 0 }), copyName(who)); }
+  catch { return null; }
 }
 
-/* presets des mineurs de test (mode dev) : une entrée par mineur de test, un arbre connu ou null ; null si aucun */
+/* presets des mineurs de test (mode dev) : une entrée par mineur de test, un arbre connu, une copie (copy:<pseudo>) ou
+   null ; null si aucun */
 export function sanitizeBotPresets(input){
   if(!Array.isArray(input)) return null;
-  const out = input.slice(0, GAME.maxPlayers).map(t => isPresetTree(t) ? t : null);
+  const out = input.slice(0, GAME.maxPlayers).map(t => isPresetTree(t) || isCopyPresetId(t) ? t : null);
   return out.some(Boolean) ? out : null;
 }

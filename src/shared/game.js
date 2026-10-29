@@ -16,7 +16,7 @@ import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPc
 import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
 import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
-import { presetMiner, sanitizeBotPresets } from './dev-presets.js';
+import { presetMiner, sanitizeBotPresets, isCopyPresetId, copyMiner, COPY_PREFIX } from './dev-presets.js';
 
 /* ---------- préférences ---------- */
 
@@ -83,8 +83,10 @@ export function applyOverrides(overrides){
 export function minerSpecs(record){
   const players = record.players || [], n = players.length + (record.bots|0);
   const botTrees = sanitizeBotPresets(record.botPresets) || [], presets = new Map();
-  const presetOf = i => { const t = i >= players.length ? botTrees[i - players.length] : null;
-    if(t && !presets.has(t)) presets.set(t, presetMiner(t)); return t ? presets.get(t) : null; };
+  /* copie d'un vrai joueur (copy:<pseudo>) : la copie rangée dans la session au lancement (record.botCopies[j]) */
+  const presetOf = i => { const j = i - players.length, t = i >= players.length ? botTrees[j] : null;
+    if(t && !presets.has(t)) presets.set(t, isCopyPresetId(t) ? copyMiner(t.slice(COPY_PREFIX.length), record.botCopies?.[j]) : presetMiner(t));
+    return t ? presets.get(t) : null; };
   const prefsOf = i => i < players.length ? sanitizePrefs(record.prefs?.[players[i].account]) : { ...PREFS };
   const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
                                          : presetOf(i)?.name ?? 'Mineur test ' + (i - players.length + 1);

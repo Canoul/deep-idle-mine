@@ -5135,3 +5135,10 @@ Règles (voir CLAUDE.md) :
   Fichiers dans `data/presets/` (ignoré par git : stuff de vrais joueurs).
 - **Tests** ✅ `tests/dev-presets.test.js` +2 (11/11). Vérifié : Test_Canoul et Test_Mus relus par le service de jeu
   (vérifications du serveur) = stuff identique à la copie, mêmes rangs, 4 glyphes / 0, sorts inspiration+zipette / dash.
+- **Mineurs de test copiés** (même jour) : `botPresets[j]` accepte `copy:<pseudo>` (`isCopyPresetId`). Au lancement (dev
+  seulement), le serveur range la copie dans la session : `record.botCopies[j]` (`botCopiesOf`, `devCopies` passé par
+  `server/main.js` = `readDevCopies(data/presets)`, `server/game/dev-copies.js`, relu à chaque appel). `minerSpecs` →
+  `copyMiner(pseudo, record.botCopies[j])` : le rejeu ne dépend pas du fichier ; copie absente ou refusée → mineur de base.
+  `info().copies` (dev) = pseudos ; `src/ui/lobby.js` `drawPresets` les ajoute aux listes (choix gardés au rafraîchissement).
+  ✅ test dev-presets +1 (12/12), game-service 62/62 avec ; vérifié dans le service : Test_Mus barbare dash marche 4,04,
+  Test_Canoul logisticien inspiration+zipette marche 5,23 pods 417. ⚠️ Liste du lobby pas vue à l'écran.
