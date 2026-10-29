@@ -4882,3 +4882,11 @@ Règles (voir CLAUDE.md) :
   « Entrer : Concasseur » → onglet ouvert ; ordinateur 1600 × 900 : clic sur le chevalement → Lobby, bouton en bas.
 - ⚠️ Pas vérifié sur un vrai téléphone ni en paysage sur téléphone (mode « couvrir l'écran » comme sur ordinateur).
 
+## 29/10/2026 — Correctif : grille de l'inventaire rétrécie par les onglets (Geoffrey)
+- **Cause** : `.invWrap` est une grille 2 colonnes (grille | fiche 150u, placement automatique). Le nouveau `#invTabs`
+  (commit 2b5ae4b) a pris la colonne 1, donc `#invGrid` est tombée dans la colonne 2 de 150u et la fiche en dessous.
+- `src/ui/style.css` : placement explicite : `.invTabs` et `.invGrid` en colonne 1, `.invInfo` en colonne 2 sur les
+  lignes 2-3 ; `grid-template-rows:auto auto 1fr` pour qu'une fiche plus haute que les onglets n'écarte pas les onglets
+  de la grille. Écran ≤ tablette : `.invInfo` repasse en `grid-column:1;grid-row:auto` (sous la grille).
+- ✅ Vérifié en capture Chrome sans interface (page de test avec style.css) à 1400 px (onglets + grille à gauche, fiche
+  à droite) et 600 px (une colonne). Pas de test unitaire (CSS seul).

@@ -22,6 +22,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Correctif : l'inventaire tout petit depuis les onglets
+- **Pour le joueur** : depuis l'arrivée des onglets, la grille de l'inventaire était rétrécie et poussée sur la
+  droite. Elle reprend sa taille d'avant, avec les onglets juste au-dessus et la fiche de l'objet à droite.
+- **État** : 🧪 sur la branche `geoffrey/fix-inventaire-taille` (pas en ligne)
+
 ---
 
 ## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
