@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { CHAT } from '../src/config.js';
 import { cleanChatText } from '../src/shared/chat.js';
 import { createChat } from '../server/game/chat.js';
+import { stuckToEnd } from '../src/ui/chat.js';
 import { realDurationMs } from '../src/shared/game.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
@@ -212,4 +213,14 @@ test('global : stockage trafiqué nettoyé à la reprise (texte invalide, numér
     const s2 = createMemoryGameStore(); await s2.putGlobalChat(bad);
     assert.deepEqual((await setupGlobal(s2).social.chatGet(ME, 0)).messages, [], JSON.stringify(bad));
   }
+});
+
+/* liste du chat (29/10) : elle suit les derniers messages si le joueur était en bas ; cachée (hauteur 0), l'état d'avant
+   est gardé (le navigateur la remet en haut en la réaffichant : ce n'est pas le joueur qui a remonté) */
+test('liste du chat : en bas, remontée, cachée', () => {
+  assert.equal(stuckToEnd({ scrollTop: 400, clientHeight: 100, scrollHeight: 500 }), true);
+  assert.equal(stuckToEnd({ scrollTop: 395, clientHeight: 100, scrollHeight: 500 }), true);        // à quelques pixels près
+  assert.equal(stuckToEnd({ scrollTop: 100, clientHeight: 100, scrollHeight: 500 }), false);       // remontée relire
+  assert.equal(stuckToEnd({ scrollTop: 0, clientHeight: 0, scrollHeight: 0 }, true), true);        // cachée : on garde
+  assert.equal(stuckToEnd({ scrollTop: 0, clientHeight: 0, scrollHeight: 0 }, false), false);
 });

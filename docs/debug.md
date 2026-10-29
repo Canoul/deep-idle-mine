@@ -4844,3 +4844,13 @@ Règles (voir CLAUDE.md) :
   `docs/debug.md` : les deux côtés gardés). `main` est passé à la police VT323 (Jersey 10 n'est plus chargée) : les
   textes du canvas de la ville (`src/render/town.js`, `FONT`) passent en VT323, 11 px (noms) / 10 px (bulles, interligne
   9). Tests ✅ town, social, party, chat, boot-check, wiki, game-http, backdrop, skins : 124/124 ; vu dans le navigateur.
+
+## 29/10/2026 — Correctif : liste du chat remise en haut quand elle se réaffiche (Jules)
+- **Cause** : une liste cachée (onglet fermé, `display:none`) ou déplacée dans la page (carte du chat global en
+  promenade) est remise en haut par le navigateur ; l'ancien test « on était en bas » était fait au moment du rendu, sur
+  cette position remise à zéro, donc la liste ne redescendait plus.
+- **Correctif** `src/ui/chat.js` : `stuckToEnd(el, prev)` (exporté) suivi à chaque défilement du joueur, état gardé
+  quand la liste est cachée (hauteur 0) ; `toEnd()` après chaque rendu, à chaque changement de taille (`ResizeObserver` :
+  réaffichage) et après le déplacement de la carte (`src/main.js` onWalk). Vaut pour les deux chats (session et global).
+- **Tests** ✅ `tests/chat.test.js` (nouveau : en bas / remontée / cachée), `boot-check`. ✅ Vérifié dans le navigateur
+  (15 messages) : 0 px du bas dans le Lobby, en promenade et au retour au Lobby.
