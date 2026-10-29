@@ -5071,3 +5071,14 @@ Règles (voir CLAUDE.md) :
 - ⚠️ La branche `geoffrey/prison` touche aussi `server/party/service.js` (ajouts en fin de `actions` : conflit possible,
   simple, à la fusion). Pas essayé sur le VPS.
 
+## 29/10/2026 — Administration : fin de session forcée (Geoffrey)
+- **Quoi** : `server/game/service.js` : le corps de `leave(me)` devient `leaveSession(accountId)` (renvoie aussi session, mode,
+  ended) ; `leave` et `adminLeave(accountId)` l'appellent. Route `POST /api/admin/end-session` {name}, script
+  `scripts/end-session.js`. Refusée si la session est déjà à l'heure de fin (`session_over`, résultat en cours de calcul).
+- **Tests** ✅ `tests/admin-end-session.test.js` (4 : en groupe, dernier joueur, refus et clé, script) ; game-service ✅.
+  Mise en ligne rapide à la demande de Geoffrey (pas de suite complète).
+- **Ajout (même jour)** : `party.adminLaunch(player)` (server/party/service.js) : comme `launch` du chef, mode mine
+  (`MINE_MODES[0]`), sans le contrôle « prêt » ; seul : `game.start` solo. Route `POST /api/admin/party-launch` {name},
+  script `scripts/launch-lobby.js`. Tests ✅ admin-end-session (+2 : membre non chef, personne prêt ; solo, inconnu),
+  admin-party, party : 49/49. Script lui-même non testé (copie des autres).
+
