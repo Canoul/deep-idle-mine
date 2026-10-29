@@ -4699,3 +4699,9 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ sets (nouveau test : correspondance, pièce / exemplaire / sort différent, rang à 0, HTML), spells, skills :
   61/61. ⚠️ Pas vu à l'écran (pas de navigateur ici).
 
+## 29/10/2026 — Jules — Four : bouton `½` → « Moitié »
+- **Quoi** : `src/ui/furnace.js`, `#fpickHalf` (deux fenêtres : pose d'un objet, choix de recette) affiche « Moitié » au
+  lieu de « ½ » : le glyphe ½ de VT323 est illisible à 15 px. Comportement inchangé. `GAME_DESIGN.md` mis à jour.
+- **Vérification** ✅ capture de la fenêtre « choisir une recette » à 1366×768 (le bouton tient dans la ligne) ;
+  tests furnace + help 38/38.
+- **Point fragile** : avec VT323, éviter les glyphes spéciaux (fractions ½ ¼…) dans les boutons ; `×`, `·`, `→`, `✓` restent lisibles.

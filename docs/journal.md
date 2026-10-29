@@ -24,6 +24,11 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Jules — Correctif : bouton « ½ » du four renommé « Moitié »
+- **Pour le joueur** : dans le four (choix de la recette et pose d'un minerai), le bouton « ½ » était illisible avec la
+  nouvelle police. Il s'appelle maintenant **Moitié** ; il fait toujours la même chose (la moitié du maximum).
+- **État** : 🧪 sur la branche `jules/fix-bouton-moitie` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Sets : ligne « Set équipé »
 - **Pour le joueur** : en haut de la liste des sets (onglets Stuff, Skills, Sorts et Lobby), une ligne dit quel set est
   équipé, et ce set est marqué ✔ dans la liste. C'est le set dont le stuff porté, les skills et les sorts sont exactement
