@@ -560,7 +560,7 @@ Des **bâtiments** qu'on active dans le lobby de la mine classique ; ils restent
 - D'autres shrines viendront : chacun a son prix, sa durée et son effet en config ; plusieurs shrines différents peuvent être actifs ensemble.
 
 ### Navigation
-Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et =). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
+Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et = ; Échap quitte l'onglet ouvert pour l'onglet Session, 29/10/2026). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
 - **Lobby** : le groupe, les préférences, le type de mine, Lancer (lecture seule pendant une session). Onglet ouvert par défaut ; un lien d'invitation y mène.
 - **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le minuteur de la barre du haut y mène aussi d'un clic.
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).

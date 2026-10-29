@@ -4903,3 +4903,14 @@ Règles (voir CLAUDE.md) :
 - Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
   navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
 
+## 29/10/2026 — Échap quitte l'onglet ouvert (Geoffrey)
+- `src/ui/nav.js` : dans le `keydown` des raccourcis, `Escape` → `show(escapeTab(cur, overlay))` ; `escapeTab` (pur,
+  exporté) renvoie `'session'` sauf si on y est déjà ou si une fenêtre est ouverte. Fenêtres : `OVERLAYS` (`#obtained`,
+  `#dialog`, `#account` visibles) ou `e.defaultPrevented`. `#dialog` écoute en capture et coupe la propagation ;
+  `#account` et `#obtained` écoutent sur `window`, donc après `document` : au moment du test elles sont encore visibles,
+  Échap ne fait que les fermer. Ignoré pendant la saisie (input, textarea, select).
+- **Tests** ✅ `tests/nav.test.js` (nouveau : `escapeTab`, fenêtres d'`OVERLAYS` présentes dans index.html), `boot-check`.
+  ⚠️ Pas essayé dans le navigateur.
+- Point fragile : une nouvelle fenêtre qui se ferme à Échap doit être ajoutée à `OVERLAYS`, sinon Échap la ferme ET
+  quitte l'onglet.
+

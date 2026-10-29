@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Échap pour quitter un onglet
+- **Pour le joueur** : la touche **Échap** ferme l'onglet ouvert (Inventaire, Craft, Lobby…) et ramène à l'onglet
+  Session : la promenade dans le Carreau, ou la mine pendant une session. Si une fenêtre est ouverte (compte, objet
+  obtenu, question), Échap ferme d'abord la fenêtre, comme avant.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Correctif : le jeu à 1 image par seconde depuis le Carreau
 - **Pour le joueur** : depuis l'arrivée de la ville en fond d'écran, le jeu tournait à environ 1 image par seconde
   sur Chrome (et les navigateurs de la même famille). C'est réparé : la ville a exactement le même aspect, mais
