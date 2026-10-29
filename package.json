@@ -12,6 +12,7 @@
     "test:anticheat": "node --test \"tests/anticheat/*.test.js\"",
     "simulate": "node scripts/simulate.js",
     "simulate:mi": "node scripts/simulate-instant.js",
+    "simulate:prison": "node scripts/simulate-prison.js",
     "simulate:tower": "node scripts/simulate-tower.js",
     "simulate:giant": "node scripts/simulate-giant.js",
     "simulate:instance": "node scripts/simulate-instance.js",
