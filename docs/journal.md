@@ -26,8 +26,10 @@ Modèle d'entrée :
 - **Pour le joueur** : dans la tour, le barbare ne dashait sur le boss que s'il arrivait déjà du côté où il veut se placer
   (à l'opposé de ses coéquipiers) : en pratique presque jamais. Il fonce maintenant sur le boss de quelque côté qu'il arrive.
 - **Repère** : la partie de 20:52 (Infernatiwar, Monsta, Croustiflex, Tour du Démon niveau 2, ratée avec le boss à 689 PV),
-  rejouée avec le correctif : 10 Dash pendant le combat au lieu de 4, et victoire à 9:30.
-- **État** : 🧪 sur la branche `geoffrey/fix-dash-tour` (pas en ligne)
+  rejouée avec le correctif : 10 Dash pendant le combat au lieu de 4, et victoire à 9:30. Partie seed 2001827804 : 3 Dash
+  sur le boss (tous depuis la droite) → 6 avec le correctif.
+- **Décision** : pas de Dynamite en combat dans l'instance pour l'instant (Geoffrey).
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Instance I : le niveau 2 est jouable
 - **Pour le joueur** : dans le Lobby, l'Instance I propose **Niveau 1 / Niveau 2** (choisi par celui qui lance). Même clé.
