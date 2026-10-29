@@ -11,6 +11,7 @@ import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
 import { rcls, rname, rlabel, pname } from './rarity.js';
 import { glyphInfo } from '../meta/glyphs.js';
+import { pxi } from './pxicons.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -102,6 +103,26 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
     (acts ? `<div class="iiActs">${acts}</div>` : '');
 }
 
+/* onglet d'un objet (INVENTORY.tabs, 29/10/2026) : le premier qui le cite, sinon celui de sa catégorie, sinon le dernier */
+export function tabOf(item, tabs = INVENTORY.tabs){
+  const cat = itemDef(item)?.cat, list = tabs.filter(t => t.id !== 'all');
+  return (list.find(t => t.items?.includes(item)) ?? list.find(t => t.cats?.includes(cat)) ?? list[list.length - 1]).id;
+}
+/* slots montrés par l'onglet tab : tous (avec les vides) pour « all », sinon les objets de l'onglet, sans trou */
+export function tabSlots(inv, tab, n){
+  if(tab === 'all') return Array.from({ length:n }, (_, i) => i);
+  return inv.slots.map((s, i) => s && tabOf(s.item) === tab ? i : -1).filter(i => i >= 0);
+}
+let tab = 'all';   // onglet ouvert (gardé d'un affichage à l'autre)
+function tabsHtml(inv){
+  const n = {}; for(const s of inv.slots) if(s){ const t = tabOf(s.item); n[t] = (n[t] || 0) + 1; }
+  return INVENTORY.tabs.map(t => {
+    const icon = t.px ? pxi(t.px) : iconHtml(t.icon), c = t.id === 'all' ? usedSlots(inv) : n[t.id] || 0;
+    return `<button class="invTab${t.id === tab ? ' on' : ''}${c ? '' : ' none'}" data-tab="${t.id}" role="tab" aria-selected="${t.id === tab}" `+
+           `aria-label="${esc(t.name)}" data-tip="${esc(t.name)}\n${c} slot${c > 1 ? 's' : ''}">${icon}</button>`;
+  }).join('');
+}
+
 /* fresh : slots qui viennent de recevoir des objets (mis en évidence jusqu'à la prochaine visite) ;
    actions : sur l'objet sélectionné (chacune a son bouton) : onOpen(item) ouvrir un treasure, onLearn(item) utiliser
    un blueprint, onEquip(slot, uid) équiper une pièce de stuff, onSort() trier, onMove({ from, to, item, uid }) déplacer
@@ -110,9 +131,14 @@ function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
 export function renderInventory(inv, fresh=new Set(), actions={}){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
   grid.style.setProperty('--cols', INVENTORY.cols);
-  let h = '';
-  for(let i=0; i<n; i++) h += slotHtml(inv.slots[i] || null, i, fresh);
-  grid.innerHTML = h;
+  const draw = () => {
+    $('invTabs').innerHTML = tabsHtml(inv);
+    const shown = tabSlots(inv, tab, n);
+    grid.innerHTML = shown.map(i => slotHtml(inv.slots[i] || null, i, fresh)).join('') ||
+      `<p class="mut invNone">Rien dans « ${esc(INVENTORY.tabs.find(t => t.id === tab)?.name ?? '')} ».</p>`;
+  };
+  draw();
+  $('invTabs').onclick = e => { const b = e.target.closest('[data-tab]'); if(b && b.dataset.tab !== tab){ tab = b.dataset.tab; draw(); } };
   const used = usedSlots(inv);
   $('invCount').textContent = used ? `${used} slot${used>1?'s':''} utilisé${used>1?'s':''}` : 'Vide : termine une session pour remplir ton inventaire.';
   $('invInfo').innerHTML = infoHtml(null);

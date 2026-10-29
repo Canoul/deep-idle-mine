@@ -113,3 +113,22 @@ test('affichage compact des quantités', () => {
   assert.equal(fmtQty(456789), '456k');
   assert.equal(fmtQty(1234567), '1,2M');
 });
+
+test('onglets de l\'inventaire (29/10/2026) : chaque objet a un onglet ; les cas demandés ; filtre sans trou', async () => {
+  const { tabOf, tabSlots } = await import('../src/ui/inventory.js');
+  const { ITEMS, INVENTORY } = await import('../src/config.js');
+  const ids = INVENTORY.tabs.map(t => t.id);
+  assert.deepEqual(ids, ['all', 'bloc', 'ore', 'stuff', 'mob', 'mat', 'rune', 'misc']);
+  for(const t of INVENTORY.tabs){ assert.ok(t.px || ITEMS[t.icon], `${t.id} : icône`); for(const i of t.items || []) assert.ok(ITEMS[i], i); }
+  for(const item of Object.keys(ITEMS)) assert.ok(ids.slice(1).includes(tabOf(item)), item);
+  const want = { 'Terre':'bloc', 'Stonebrick angélique':'bloc', 'Charbon':'ore', 'Mithril ore':'ore', 'Casque en fer':'stuff',
+    'Peau de gobelin':'mob', 'Chitine':'mob', 'Tissu sombre':'mob', 'Cuir de minotaure':'mob',
+    'Rubis inférieur':'mat', 'Lingot de fer':'mat', 'Steel ingot':'mat', 'Shiny iron':'mat', 'Plume d\'ange':'mat',
+    'Cristal de pleine lune':'mat', 'Pépite d\'argent':'mat', 'Barre d\'argent':'mat',
+    'Rune':'rune', 'Fragment de rune':'rune', 'Treasure T2':'misc', 'Coffre du Roi Gobelin R3':'misc', 'Clé d\'instance I':'misc', 'Gants tactique BP':'misc' };
+  for(const [item, t] of Object.entries(want)) assert.equal(tabOf(item), t, item);
+  const inv = { slots:[{ item:'Terre', qty:3 }, null, { item:'Fer', qty:1 }, { item:'Pierre', qty:2 }] };
+  assert.deepEqual(tabSlots(inv, 'bloc', 48), [0, 3]);          // vrais numéros de slot (glisser-déposer, infos)
+  assert.equal(tabSlots(inv, 'all', 48).length, 48);
+  assert.deepEqual(tabSlots(inv, 'rune', 48), []);
+});

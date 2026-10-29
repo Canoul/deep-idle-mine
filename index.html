@@ -277,6 +277,8 @@
 <section class="view" data-view="inventaire" hidden>
   <div class="invWrap">
     <div class="invHead"><h1><i data-pxi="bag"></i>Inventaire<i data-qhelp="inventory"></i></h1><span id="invCount" class="mut"></span><button id="invSort" title="Range par type (blocs, minerais, matériaux, stuff), puis du plus rare au plus commun. Tu peux aussi glisser un objet dans un autre slot.">Trier</button></div>
+    <!-- onglets de l'inventaire (filtre, 29/10/2026) : icônes, nom en bulle (src/ui/inventory.js, INVENTORY.tabs) -->
+    <div id="invTabs" class="invTabs" role="tablist" aria-label="Filtrer l'inventaire"></div>
     <div id="invGrid" class="invGrid"></div>
     <div id="invInfo" class="invInfo"></div>
   </div>
