@@ -24,6 +24,11 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Jules — Correctif : bouton « ½ » du four renommé « Moitié »
+- **Pour le joueur** : dans le four (choix de la recette et pose d'un minerai), le bouton « ½ » était illisible avec la
+  nouvelle police. Il s'appelle maintenant **Moitié** ; il fait toujours la même chose (la moitié du maximum).
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Instance : le mineur ne tremble plus au centre de la salle
 - **Pour le joueur** : en combat dans l'instance, les mineurs faisaient des allers-retours d'une demi-case. Ce n'était pas
   l'affichage (il glisse déjà comme dans la mine) : chaque coup d'un gobelin ou du roi repousse vers le centre de la

@@ -131,7 +131,7 @@ export function setupFurnace({ onOp }){
              `<button id="fpickOut">Tout retirer</button></div>` : '')+
       (items.length ? `<div class="fopts">${opts}</div>`+
          `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Quantité">`+
-         `<button id="fpickHalf" title="La moitié de ton stock">½</button><button id="fpickMax">Max</button><button class="on" id="fpickOk">Poser</button></div>`
+         `<button id="fpickHalf" title="La moitié de ton stock">Moitié</button><button id="fpickMax">Max</button><button class="on" id="fpickOk">Poser</button></div>`
        : `<p class="mut">${slot === 'ore' ? 'Aucun minerai à fondre dans ton inventaire.' : slot === 'fuel' ? 'Aucun combustible dans ton inventaire (charbon).' : 'Aucun ingrédient d\'alliage dans ton inventaire (bouton Recettes).'}</p>`)+
       `<p class="err" id="fpickErr" hidden></p><p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
     $('fpick').hidden = false;
@@ -178,7 +178,7 @@ export function setupFurnace({ onOp }){
     box.innerHTML = `<h3>Four ${i + 1} · choisir une recette</h3><div class="fopts frecs">${rows.map((r, k) =>
         (r.rec.mode !== rows[k - 1]?.rec.mode ? `<p class="mut small">${MODE_LABEL[r.rec.mode]}</p>` : '') + r.html).join('')}</div>`+
       `<div class="fqty"><input id="fpickQty" type="number" min="1" step="1" inputmode="numeric" placeholder="Fournées">`+
-      `<button id="fpickHalf" title="La moitié du maximum">½</button><button id="fpickMax">Max</button><button class="on" id="fpickOk"${pick ? '' : ' disabled'}>Lancer</button></div>`+
+      `<button id="fpickHalf" title="La moitié du maximum">Moitié</button><button id="fpickMax">Max</button><button class="on" id="fpickOk"${pick ? '' : ' disabled'}>Lancer</button></div>`+
       `<p class="mut small" id="fpickInfo"></p><p class="err" id="fpickErr" hidden></p>`+
       `<p class="mut small">Le four pose lui-même les ingrédients et le charbon pour le nombre de fournées choisi, en plus de ce qu'il contient déjà. Ils ne sont consommés qu'à la fin de chaque produit. Changer de recette rend à l'inventaire ce qui ne sert plus (le produit en cours est annulé, rien n'est perdu).</p>`+
       `<p style="text-align:right"><button id="fpickClose">Fermer</button></p>`;
