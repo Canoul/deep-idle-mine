@@ -259,3 +259,34 @@ test('niveau 2 : rage sous son seuil, régénération à son taux', () => {
   run(G, INSTANCE.boss.regenEvery);
   assert.ok(Math.abs(G.boss.hp - hp - G.boss.maxhp * INSTANCE.levels[2].boss.regenPct) < 1e-6);
 });
+
+test('Dash sur le roi (29/10) : au sol, sur sa ligne, il fonce à côté de lui et frappe à 500 % ; le roi n\'est pas étourdi', async () => {
+  const { SPELL } = await import('../src/meta/spells.js');
+  const { decide } = await import('../src/sim/instance/session.js');
+  const G = newInstance(9, { miners: [spec(0, { damage: 10, crit: 0, doubleAttack: 0 }, { spells: ['dash'], skillTree: 'barbare' })] });
+  quiet(G);
+  const b = G.boss; b.state = 'fight'; b.y = G.floorY; b.x = 14;
+  const m = G.miners[0]; m.y = G.floorY; m.x = b.x - 1 - 4; m.action = null;
+  decide(G, m);
+  assert.equal(m.x, b.x - 1, 'au contact, de son côté');
+  assert.ok(Math.abs(b.maxhp - b.hp - 10 * SPELL.dash.dmg) < 1e-6, '500 % de ses dégâts');
+  assert.equal(b.state, 'fight'); assert.equal(b.stunUntil, undefined, 'pas d\'étourdissement');
+  assert.ok(m.spellCd.dash > G.t, 'recharge');
+  /* trop près (1 case) : pas de Dash */
+  const H = newInstance(9, { miners: [spec(0, { damage: 10 }, { spells: ['dash'], skillTree: 'barbare' })] });
+  quiet(H); H.boss.state = 'fight'; H.boss.y = H.floorY; H.boss.x = 14;
+  const k = H.miners[0]; k.y = H.floorY; k.x = 12; k.action = null;
+  decide(H, k);
+  assert.equal(H.boss.hp, H.boss.maxhp); assert.ok(!(k.spellCd.dash > 0));
+});
+
+test('Dash sur un gobelin de sa ligne (29/10) : plus besoin d\'être taclé par lui', async () => {
+  const { decide } = await import('../src/sim/instance/session.js');
+  const G = newInstance(3, { miners: [spec(0, { damage: 10 }, { spells: ['dash'], skillTree: 'barbare' })] });
+  quiet(G);
+  const m = G.miners[0]; m.x = 4; m.y = G.floorY; m.action = null;
+  const o = goblin(G, 9, G.floorY);
+  decide(G, m);
+  assert.equal(m.x, 8, 'à côté du gobelin');
+  assert.ok(o.hp < o.maxhp && o.stunUntil > G.t, 'frappé et étourdi (un gobelin, pas un boss)');
+});

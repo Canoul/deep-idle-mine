@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Correctif : le sort Dash sur les boss (tour, roi gobelin)
+- **Pour le joueur** : le Dash du barbare ne partait jamais sur le boss d'une tour ni sur le roi gobelin, et presque jamais
+  dans l'instance (0 ou 1 fois par partie). Maintenant, il fonce sur le boss quand il en est éloigné (après un recul ou une
+  projection) et frappe à 500 %, et dans l'instance il fonce sur les gobelins de sa ligne (≈ 14 Dash par partie).
+- **Décision** : le Dash n'étourdit pas les boss des tours ni le roi gobelin (Geoffrey). Les petits mobs, si.
+- **Repère** : tours simulées, combat du boss 5 à 50 s plus court ; Instance I (6 vraies parties) : toujours 3 victoires sur 6.
+- **État** : 🧪 sur la branche `geoffrey/dash-boss` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Instance I plus dure : gobelins plus solides, le roi se régénère dans les cages
 - **Pourquoi** : les 6 parties d'instance jouées le 29/10 étaient toutes des victoires (record 7:12). Le rejeu a montré
   que tout se joue sur les dégâts pendant la phase des spawners ; l'armure ne sert à rien.
