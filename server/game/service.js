@@ -1149,6 +1149,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* apparence (noms des pièces portées, { case: objet }) : le skin de chaque membre dans le lobby */
     lookFor: async accountId => lookOf(await loadStuff(accountId, await loadInventory(accountId))),
     gsFor: async accountId => gearScore(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
+    /* niveau du mineur (fiche d'un joueur dans le Carreau, 29/10) */
+    levelFor: async accountId => levelOf((await loadProgress(accountId)).xp).level,
     aurasFor: async accountId => aurasOf(gearOf(await loadStuff(accountId, await loadInventory(accountId)))),
     /* heure de fin de sa dernière session terminée (0 si aucune) : le groupe compte son délai d'absence à partir d'elle */
     lastEndedAt: async accountId => Math.max(0, ...(await store.sessionsOf(accountId))

@@ -1787,6 +1787,27 @@ def town():
     r(hf, W, H, 29, 12, 1, 100, hexc('#2a2a30'))                                     # câble jusqu'au puits
     out['town_headframe'] = (W, H, hf)
 
+    # bannières des jauges du Jugement (16 × 32, 29/10 après-midi) : mât, étoffe à la couleur du camp, emblème ; le jeu
+    # dessine la jauge sur l'étoffe (colonne 4 à 11, lignes 6 à 25)
+    for name, cloth, dark, emblem in [('town_banner_angel', '#f4f7ff', '#b9c6e0', '#ffd23f'),
+                                      ('town_banner_demon', '#8b3fd9', '#4e1f80', '#ff3b1f')]:
+        bn = canvas(16, 32)
+        r(bn, 16, 32, 1, 0, 2, 32, hexc('#5e3a1e')); r(bn, 16, 32, 1, 0, 1, 32, hexc('#8a5a32'))
+        r(bn, 16, 32, 0, 0, 16, 2, hexc('#3b3b43'))
+        r(bn, 16, 32, 3, 2, 11, 26, hexc(cloth)); r(bn, 16, 32, 13, 2, 1, 26, hexc(dark))
+        for x in range(3, 14):                                    # bas en pointe
+            r(bn, 16, 32, x, 28, 1, max(0, 3 - abs(x - 8)), hexc(cloth))
+        r(bn, 16, 32, 4, 5, 8, 22, hexc(dark))                    # cadre de la jauge
+        r(bn, 16, 32, 6, 2, 4, 2, hexc(emblem))
+        out[name] = (16, 32, bn)
+
+    # socle de la statue (32 × 16) : pierre taillée, plaque dorée
+    pd = canvas(32, 16)
+    r(pd, 32, 16, 2, 2, 28, 14, hexc('#8d8a94')); r(pd, 32, 16, 0, 0, 32, 3, hexc('#b4b0bc'))
+    r(pd, 32, 16, 0, 13, 32, 3, hexc('#6d6a74')); r(pd, 32, 16, 29, 3, 1, 10, hexc('#6d6a74'))
+    r(pd, 32, 16, 9, 6, 14, 4, hexc('#c8a030')); r(pd, 32, 16, 9, 6, 14, 1, hexc('#ffd23f'))
+    out['town_pedestal'] = (32, 16, pd)
+
     # nuage (48 × 16) : boules blanches en escalier, dessous ombré
     cw, ch = 48, 16
     cl = canvas(cw, ch)

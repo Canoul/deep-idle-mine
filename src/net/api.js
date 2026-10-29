@@ -92,6 +92,7 @@ export const giantApi = {
 /* Le Carreau, la ville du spawn (29/10) : ma place (onglet ouvert, ou x en promenade) → les autres joueurs de la ville */
 export const townApi = {
   ping: body => request('POST', '/api/town', body),
+  emote: id  => request('POST', '/api/town/emote', { emote: id }),
 };
 
 export const socialApi = {

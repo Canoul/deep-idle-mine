@@ -23,11 +23,18 @@ export function hash01(s){
 }
 
 /* place d'un joueur devant le bâtiment de son onglet (spot) : la porte, décalée de ± TOWN.spread selon son ID pour que
-   les joueurs d'un même bâtiment ne se superposent pas. Onglet inconnu : la Place du Carreau (Lobby). */
-export function restX(spot, id, cfg = TOWN){
+   les joueurs d'un même bâtiment ne se superposent pas. Onglet inconnu : la Place du Carreau (Lobby).
+   group : repère de son groupe (nombre donné par le serveur, null sans groupe) ; sur la place, les membres d'un même
+   groupe se tiennent ensemble, à ± TOWN.group cases du point du groupe. */
+export function restX(spot, id, group = null, cfg = TOWN){
   const b = buildingOf(spot) ?? buildingOf('lobby');
+  if(group !== null && group !== undefined && b.tab === 'lobby')
+    return b.door + (hash01('g' + group) * 2 - 1) * cfg.spread + (hash01(id) * 2 - 1) * cfg.group;
   return b.door + (hash01(id) * 2 - 1) * cfg.spread;
 }
+
+/* émote : son id si elle existe (TOWN.emotes), sinon null */
+export const emoteOf = id => typeof id === 'string' ? TOWN.emotes.find(e => e.id === id) ?? null : null;
 
 export const clampX = x => Math.min(TOWN_WIDTH - 1, Math.max(1, x));
 

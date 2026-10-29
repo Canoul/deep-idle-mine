@@ -94,9 +94,14 @@ const backdrop = createBackdrop($('bgSession'), { sessionCanvas: mode => $(SESSI
 /* fond hors session : le Carreau, la ville du spawn (29/10) ; onglet Session sans session : on s'y promène */
 const town = setupTown($('bgTown'), {
   ping: body => townApi.ping(body),
+  emote: id => townApi.emote(id),
   me: () => acct.account && !acct.offline ? { id: acct.account.id, name: displayName(acct.account) || formatAccountId(acct.account.id),
-                                              look: lookOf(stuff.worn()), auras: aurasOf(stuff.worn()) } : null,
+                                              look: lookOf(stuff.worn()), auras: aurasOf(stuff.worn()),
+                                              level: progress?.level ?? null, tree: ui.skills?.tree ?? null, gs: null } : null,
   onEnter: id => nav.show(id),
+  /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
+  friend: async id => setSocial(await socialApi.request(id)),
+  invite: async id => { await partyApi.invite(id); pollLobby(); },
 });
 window.TOWN_UI = town;                               // débogage depuis la console (F12) : TOWN_UI.state()
 const isIn = () => isInstanceMode(rec?.mode);   // instance (27/10) : même principe d'affichage que les tours
@@ -462,7 +467,7 @@ let judgmentTimer = null;
 async function pollJudgment(){
   clearTimeout(judgmentTimer);
   if(acct.offline || !acct.account) return;
-  try { judgment.set(await gameApi.judgment()); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
+  try { const j = await gameApi.judgment(); judgment.set(j); town.setJudgment(j?.value?.sides ?? j?.sides); nav.badge('lobby', judgment.pending()); lobby.update({ judgment: judgment.view(), judgmentPending: judgment.pending() }); }
   catch(e){ console.warn(e); }
   judgmentTimer = setTimeout(pollJudgment, document.hidden ? JUDGMENT.poll * 4 : JUDGMENT.poll);
 }

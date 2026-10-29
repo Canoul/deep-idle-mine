@@ -40,8 +40,15 @@ Modèle d'entrée :
   des bâtiments ; l'onglet Session sans session devient la promenade (l'ancien écran « Tu n'es pas en session » ne se
   voit plus qu'avec l'option décochée) ; pas d'interaction entre joueurs dans la ville pour l'instant (pas de clic sur
   un joueur, pas d'émotes).
-- **À suivre** : cliquer sur un joueur (profil, inviter) ; vérifier sur téléphone ; à beaucoup de joueurs, ils se
-  serrent devant le même bâtiment (± 2 cases).
+- **Ajouts de l'après-midi** (validés par Jules) : un peu plus zoomé ; **clic sur un joueur** (en promenade) : sa fiche
+  (niveau, spé, GS, groupe) avec « Ajouter en ami » et « Inviter dans mon groupe » ; **groupes visibles** : sur la place,
+  les membres d'un même groupe se tiennent ensemble avec une marque « 2/3 » à la couleur du groupe, et un joueur qui
+  **cherche un groupe** porte un « ? » doré au-dessus de la tête ; **émotes** (👋 ⛏️ 🎉 😂 ❤️ 💤) dans le bandeau de la
+  promenade, vues par les autres ; la place s'est agrandie : **statue en pierre du n°1 du classement GS** sur un socle, et
+  deux **bannières** qui se remplissent avec les jauges Ange / Démon (elles pulsent quand la tour est ouverte). Les textes
+  de la statue et des bannières s'affichent quand on se tient devant.
+- **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases) ;
+  la statue suit le classement GS (choix de Claude : on pourrait alterner GS / XP / tour).
 - **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
 
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)

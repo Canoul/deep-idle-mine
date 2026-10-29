@@ -35,6 +35,15 @@ img,canvas{image-rendering:pixelated}
   padding:calc(2*var(--u)) calc(6*var(--u));background:rgba(11,8,6,.75);border:var(--u) solid var(--line);color:var(--mut);font-size:var(--fs-s);pointer-events:none;text-align:center;max-width:calc(100vw - 32px)}
 .townHint b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
 .townHint kbd{color:var(--txt);font:inherit;border:var(--u) solid var(--line);padding:0 var(--u)}
+.townEmotes{display:flex;gap:var(--u);margin-top:var(--u);pointer-events:auto}
+.townEmotes button{min-width:calc(16*var(--u));padding:var(--u);font-size:var(--fs-l);line-height:1}
+/* fiche d'un joueur cliqué dans la ville (src/ui/town.js) */
+.townCard{position:absolute;z-index:3;display:flex;flex-direction:column;gap:var(--u);min-width:calc(110*var(--u));max-width:calc(100vw - 16px);
+  padding:calc(3*var(--u)) calc(5*var(--u));background:rgba(11,8,6,.92);border:var(--u) solid var(--line);font-size:var(--fs-s);pointer-events:auto;cursor:default}
+.townCard b{color:var(--acc-lt);font:400 var(--fs-l)/1 var(--f-title)}
+.townCard .tcStatus{color:var(--ok)}
+.tcBtns{display:flex;flex-wrap:wrap;gap:calc(2*var(--u));margin-top:var(--u)}
+.tcMsg:empty{display:none}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
 body.townWalk .app{pointer-events:none}   /* les clics passent à la ville… */
 body.townWalk .dock,body.townWalk #notifs{pointer-events:auto}   /* … sauf la barre d'action et les pop-ups */

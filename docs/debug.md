@@ -4632,3 +4632,32 @@ Règles (voir CLAUDE.md) :
   liste des joueurs en session au plus toutes les 3 s (requête base en ligne) ; 80 joueurs au plus renvoyés ; la
   présence en ville est séparée de la présence Social (`onlineFor` 45 s) : un onglet caché ne pinge que toutes les
   15 s et part au bout de 40 s sans ping.
+
+## 29/10/2026 (après-midi) — Le Carreau : fiche joueur, groupes, émotes, statue, bannières (Jules)
+- **Quoi** : suite de l'entrée du matin, même branche `jules/spawn-ville`.
+  - Zoom : `TOWN.rows` 16 / `ground` 12 (ancien 18 / 13). Place `w` 11 (ancien 7), décor en colonnes `TOWN.place`.
+  - Serveur `server/town/service.js` : la réponse du ping ajoute pour chaque joueur `level` (`game.levelFor`, nouveau),
+    `tree` (`skillTreeOf`), `gs` (`gsFor`), `emote`, `group` (`{ tag, size, max }`, **repère donné par le service, jamais le
+    code du lobby**, null seul dans son groupe ; `party.groupOf`), `lfg` (`party.searching`, nouveau dans
+    `server/party/service.js` : membre d'une entrée valide de la file) ; et pour moi `group`, plus `statue` (n°1 de
+    `TOWN.statueBoard` via `game.leaderboardData` + `rankBoard`, comptes `LEADERBOARD.hidden` exclus, relue toutes les
+    `TOWN_SERVER.statueFor` 60 s). `POST /api/town/emote` `{ emote }` : id de `TOWN.emotes` (sinon 400), une toutes les
+    `TOWN.emoteGapMs` (sinon 429), visible `TOWN.emoteMs`. Le corps d'une requête doit être un objet (tableau : 400).
+  - `src/shared/town.js` : `restX(spot, id, group)` (sur la place, point du groupe ± `TOWN.group`), `emoteOf`.
+  - `src/render/town.js` : place (statue = `createMinerSprite` ×2 avec `ctx.filter` gris, socle `town_pedestal` ;
+    bannières `town_banner_angel` / `_demon` avec jauge dessinée, pulsation si ouverte), au-dessus du pseudo : marque de
+    groupe ou « ? », émote (saut pour 👋 / 🎉), bulle ; textes de la place seulement devant soi (`scene.meX`, ≤ 1,8 case).
+  - `src/ui/town.js` : `cardHtml` (fiche échappée), `.townCard` au clic sur un joueur (Échap / clic ailleurs : fermée),
+    barre `.townEmotes` dans le bandeau, `setJudgment(sides)` (appelé par `pollJudgment` dans `src/main.js`),
+    `mergeOthers(prev, list, now)` (`emoteAt`). `src/main.js` : `friend` = `socialApi.request(id)`, `invite` =
+    `partyApi.invite(id)` puis `pollLobby()`.
+  - Textures : `town_banner_angel`, `town_banner_demon` (16 × 32), `town_pedestal` (32 × 16).
+- **Tests** ✅ `tests/town.test.js` 17/17 (5 nouveaux : fiche + groupe sans code + seul + lfg ; émotes 400 / 429 /
+  expiration / 401 ; statue + compte caché + cache ; place d'un groupe ; fiche échappée) ; `party`, `social`,
+  `boot-check`, `wiki`, `game-http` : 74/74.
+  ✅ Vérifié dans le navigateur (port 8001, données à part, comptes Test_Mineur / Test_Barbare de `dev:presets`) : fiche
+  au clic (« Niv. 72 · 🪓 Barbare · 3615 GS »), « Inviter dans mon groupe » → invitation reçue, groupe rejoint → marque
+  2/3 chez les deux, émote 👋, « ? » d'un joueur en recherche de groupe, statue grise du n°1 (Test_Logisticien), bannières.
+- ⚠️ Pas vérifié : « Ajouter en ami » depuis la fiche (même appel que l'onglet Social), une tour ouverte (pulsation de la
+  bannière), téléphone. Points fragiles : `ctx.filter` (statue grise) absent des vieux Safari : statue en couleur ;
+  `game.leaderboardData` lit tous les comptes (cache `LEADERBOARD.cacheMs`), appelé au plus une fois par minute ici.

@@ -10,7 +10,7 @@ import { createTownService } from '../server/town/service.js';
 import { townRoutes } from '../server/town/routes.js';
 import { TOWN_SERVER } from '../server/config.js';
 import { bubbleLines } from '../src/render/town.js';
-import { enterTab, mergeOthers } from '../src/ui/town.js';
+import { enterTab, mergeOthers, cardHtml } from '../src/ui/town.js';
 
 test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, dans la ville', () => {
   const { buildings, width } = townLayout();
@@ -64,6 +64,22 @@ test('bâtiment devant soi : le plus proche à moins de reach ; le chevalement m
   assert.equal(enterTab(four), 'four');
 });
 
+test('place d\'un groupe : sur la place, les membres ensemble (à ± group du point du groupe) ; ailleurs, chacun à sa place', () => {
+  const a = restX('lobby', 'AAAA1111', 4), b = restX('lobby', 'BBBB2222', 4);
+  assert.ok(Math.abs(a - b) <= 2 * TOWN.group);
+  assert.equal(restX('four', 'AAAA1111', 4), restX('four', 'AAAA1111'));
+  assert.equal(restX('lobby', 'AAAA1111', null), restX('lobby', 'AAAA1111'));
+});
+
+test('fiche d\'un joueur : textes échappés, boutons sauf pour moi', () => {
+  const h = cardHtml({ name: '<img src=x onerror=alert(1)>', level: 3, tree: 'barbare', gs: 120.4, group: { size: 2, max: 3 } });
+  assert.ok(!h.includes('<img'));
+  assert.ok(h.includes('Niv. 3') && h.includes('120 GS') && h.includes('(2/3)'));
+  assert.ok(h.includes('data-act="invite"'));
+  assert.ok(!cardHtml({ name: 'Moi' }, true).includes('data-act'));
+  assert.ok(cardHtml({ name: 'X', lfg: true }).includes('Cherche un groupe'));
+});
+
 test('joueurs affichés : nouveau venu à sa place, x du serveur = cible seulement, absent retiré', () => {
   const four = { id: 'AAAA1111', name: 'Zoe', spot: 'four', x: null }, walker = { id: 'BBBB2222', name: null, spot: 'session', x: 40 };
   let m = mergeOthers(new Map(), [four, walker]);
@@ -73,7 +89,10 @@ test('joueurs affichés : nouveau venu à sa place, x du serveur = cible seuleme
   m = mergeOthers(m, [four, { ...walker, x: 50 }]);
   assert.equal(m.get('AAAA1111').x, restX('four', 'AAAA1111'));   // x: null ne l'efface pas
   assert.deepEqual([m.get('BBBB2222').x, m.get('BBBB2222').tx, m.get('BBBB2222').trip], [41, 50, 9]);
-  m = mergeOthers(m, [four]);
+  m = mergeOthers(m, [{ ...four, emote: 'wave' }], 500);
+  assert.equal(m.get('AAAA1111').emoteAt, 500);
+  m = mergeOthers(m, [{ ...four, emote: 'wave' }], 900);
+  assert.equal(m.get('AAAA1111').emoteAt, 500);                   // même émote : pas relancée
   assert.deepEqual([...m.keys()], ['AAAA1111']);
   for(const o of m.values()) assert.ok(Number.isFinite(o.x));
 });
@@ -89,17 +108,24 @@ test('bulle : lignes coupées, mots trop longs découpés, au plus 3 lignes', ()
 /* ---------- service du serveur ---------- */
 const ACC = { AAAA1111: { id: 'AAAA1111', name: 'Zoe' }, BBBB2222: { id: 'BBBB2222', name: null }, CCCC3333: { id: 'CCCC3333', name: 'Max' } };
 const me = id => ACC[id];
-function setup(){
-  let now = 1_000_000, playing = [], chat = [], looks = 0, sessions = 0;
+function setup({ board = null } = {}){
+  let now = 1_000_000, playing = [], chat = [], looks = 0, sessions = 0, boards = 0;
+  const groups = new Map(), lfg = new Set();
   const game = {
     playersInSession: async () => { sessions++; return playing; },
     lookFor: async id => { looks++; return { head: 'helmet_' + id }; },
     aurasFor: async () => ({}),
+    levelFor: async () => 7, skillTreeOf: async () => 'mineur', gsFor: async () => 520,
+    leaderboardData: board && (async () => { boards++; return board; }),
   };
-  const town = createTownService({ accounts: { getAccount: async id => ACC[id] ?? null }, game, clock: () => now,
+  const party = { groupOf: id => groups.get(id) ?? null, searching: id => lfg.has(id) };
+  const accounts = { getAccount: async id => ACC[id] ?? (id === 'ADMN0000' ? { id, name: 'admin' } : null),
+                     findAccountByName: async key => key === 'admin' ? { id: 'ADMN0000', name: 'admin' } : null };
+  const town = createTownService({ accounts, game, party, clock: () => now,
     recentChat: async ms => chat.filter(m => now - m.at <= ms) });
   return { town, advance: ms => { now += ms; }, setPlaying: p => { playing = p; }, say: (account, text) => chat.push({ account, text, at: now }),
-           looks: () => looks, sessions: () => sessions };
+           looks: () => looks, sessions: () => sessions, boards: () => boards,
+           group: (ids, code) => { for(const id of ids) groups.set(id, { code, size: ids.length, max: 3 }); }, lfg };
 }
 
 test('service : les autres joueurs avec leur place, moi exclu, pseudo d\'invité', async () => {
@@ -159,5 +185,61 @@ test('service : place invalide refusée (400), rien d\'enregistré ; route sans 
   assert.equal(s.town.count(), 0);
   const route = townRoutes(s.town)['POST /api/town'];
   await assert.rejects(route({ me: null, body: { spot: 'lobby' } }), e => e.status === 401);
-  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null });
+  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null, group: null, statue: null });
+  await assert.rejects(route({ me: me('AAAA1111'), body: ['lobby'] }), e => e.status === 400);
+});
+
+test('service : fiche (niveau, spé, GS) ; groupe = repère commun sans le code du lobby ; seul : pas de groupe ; cherche un groupe', async () => {
+  const s = setup();
+  s.group(['AAAA1111', 'BBBB2222'], 'K7Q4P2');
+  s.lfg.add('CCCC3333');
+  await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  await s.town.ping(me('BBBB2222'), { spot: 'lobby' });
+  const r = await s.town.ping(me('CCCC3333'), { spot: 'lobby' });
+  const byId = Object.fromEntries(r.players.map(p => [p.id, p]));
+  assert.deepEqual([byId.AAAA1111.level, byId.AAAA1111.tree, byId.AAAA1111.gs], [7, 'mineur', 520]);
+  assert.deepEqual(byId.AAAA1111.group, byId.BBBB2222.group);
+  assert.deepEqual(byId.AAAA1111.group, { tag: byId.AAAA1111.group.tag, size: 2, max: 3 });
+  assert.ok(!JSON.stringify(r).includes('K7Q4P2'), 'le code du lobby ne sort jamais');
+  assert.equal(r.group, null);
+  const mine = await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  assert.equal(mine.group.tag, byId.AAAA1111.group.tag);
+  assert.equal(mine.players.find(p => p.id === 'CCCC3333').lfg, true);
+  assert.equal(byId.AAAA1111.lfg, false);
+  s.group(['CCCC3333'], 'SOLO01');                                 // seul dans son groupe : rien à montrer
+  assert.equal((await s.town.ping(me('CCCC3333'), { spot: 'lobby' })).group, null);
+});
+
+test('service : émotes connues seulement, une toutes les emoteGapMs, visibles emoteMs', async () => {
+  const s = setup();
+  for(const bad of [undefined, null, 'dab', 42, '__proto__', ['wave']])
+    assert.throws(() => s.town.emote(me('AAAA1111'), bad), e => e.status === 400);
+  assert.deepEqual(s.town.emote(me('AAAA1111'), 'wave'), { emote: 'wave' });
+  assert.throws(() => s.town.emote(me('AAAA1111'), 'gg'), e => e.status === 429);
+  await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  let r = await s.town.ping(me('CCCC3333'), { spot: 'lobby' });
+  assert.equal(r.players[0].emote, 'wave');
+  s.advance(TOWN.emoteMs + 1);
+  await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  r = await s.town.ping(me('CCCC3333'), { spot: 'lobby' });
+  assert.equal(r.players[0].emote, null);
+  assert.deepEqual(s.town.emote(me('AAAA1111'), 'gg'), { emote: 'gg' });
+  const route = townRoutes(s.town)['POST /api/town/emote'];
+  await assert.rejects(route({ me: null, body: { emote: 'wave' } }), e => e.status === 401);
+});
+
+test('service : statue = n°1 du classement GS, comptes cachés exclus, relue au plus toutes les statueFor ms', async () => {
+  const board = { gs: [{ id: 'ADMN0000', value: 9999 }, { id: 'AAAA1111', value: 800 }, { id: 'CCCC3333', value: 1200 }] };
+  const s = setup({ board });
+  let r = await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  assert.deepEqual([r.statue.id, r.statue.name, r.statue.value], ['CCCC3333', 'Max', 1200]);
+  assert.deepEqual(r.statue.look, { head: 'helmet_CCCC3333' });
+  board.gs.push({ id: 'BBBB2222', value: 5000 });
+  r = await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  assert.equal(r.statue.id, 'CCCC3333');
+  assert.equal(s.boards(), 1);
+  s.advance(TOWN_SERVER.statueFor);
+  r = await s.town.ping(me('AAAA1111'), { spot: 'lobby' });
+  assert.equal(r.statue.id, 'BBBB2222');
+  assert.equal((await setup({ board: { gs: [] } }).town.ping(me('AAAA1111'), { spot: 'lobby' })).statue, null);
 });

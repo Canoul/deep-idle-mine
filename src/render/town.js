@@ -3,10 +3,10 @@
    (src/render/miner-sprite.js) avec leur bulle de chat. LIT la scène, ne la modifie jamais.
    Le canvas fait TOWN.rows cases de haut ; sa largeur (en cases) suit la forme de la fenêtre (setCols). Il est dessiné
    en résolution × HIRES : les textures restent en gros pixels, les textes (noms, bulles) sont plus nets. */
-import { TOWN } from '../config.js';
+import { TOWN, JUDGMENT } from '../config.js';
 import { loadTextures } from './textures.js';
 import { createMinerSprite } from './miner-sprite.js';
-import { townBuildings, TOWN_WIDTH, hash01 } from '../shared/town.js';
+import { townBuildings, TOWN_WIDTH, hash01, emoteOf } from '../shared/town.js';
 
 export const TOWN_TILE = 16;
 const T = TOWN_TILE, HIRES = 2;
@@ -96,28 +96,92 @@ export function createTownRenderer(cv){
     blit('town_sign', sx, sy);
     blit(b.sign, sx + 3, sy + 4, 10, 10);
   }
-  function drawPlace(b, X, now){
+  /* place du Carreau : feu de camp au milieu, statue du n°1 (TOWN.statueBoard) en pierre sur son socle, bannières des
+     jauges Ange / Démon (remplies selon la jauge, qui pulsent quand la tour est ouverte) ; colonnes : TOWN.place */
+  function drawPlace(b, X, now, scene){
     const fx = X + (b.door - b.x - 0.5) * T;
     const g = ctx.createRadialGradient(fx + T / 2, (G - 0.5) * T, 2, fx + T / 2, (G - 0.5) * T, 3 * T);
     const fl = 0.22 + 0.06 * Math.sin(now / 130) + 0.04 * Math.sin(now / 57);
     g.addColorStop(0, `rgba(255,170,60,${fl})`); g.addColorStop(1, 'rgba(255,170,60,0)');
     ctx.fillStyle = g; ctx.fillRect(fx - 3 * T, (G - 4) * T, 7 * T, 4 * T);
     blit('town_campfire', fx, (G - 1) * T);
-    blit('town_sign', X + T, (G - 2) * T); blit('town_lamppost', X, (G - 2) * T, T, 2 * T);
+    blit('town_lamppost', X, (G - 2) * T, T, 2 * T);
     blit('town_lamppost', X + (b.w - 1) * T, (G - 2) * T, T, 2 * T);
+    const sx = X + TOWN.place.statue * T;
+    blit('town_pedestal', sx, (G - 1) * T, 2 * T, T);
+    if(scene.statue){
+      ctx.save();
+      ctx.filter = 'grayscale(1) brightness(1.05) contrast(1.15)';
+      ctx.translate(Math.round(sx), (G - 3) * T); ctx.scale(2, 2);
+      sprite({ id: 0, face: 1, look: scene.statue.look ?? {}, auras: {}, name: null, action: null }, 0, 0, false, now);
+      ctx.restore();
+    }
+    for(const side of ['angel', 'demon']){
+      const bx = X + TOWN.place[side] * T, by = (G - 2) * T, j = scene.judgment?.[side];
+      blit('town_banner_' + side, bx, by, T, 2 * T);
+      if(!j) continue;
+      const k = j.open ? 1 : Math.max(0, Math.min(1, j.count / Math.max(1, j.cap))), h = Math.round(20 * k);
+      ctx.fillStyle = JUDGMENT.sides[side].color;
+      ctx.globalAlpha = j.open ? 0.6 + 0.4 * Math.sin(now / 200) : 1;
+      ctx.fillRect(Math.round(bx) + 5, by + 6 + 20 - h, 6, h);
+      ctx.globalAlpha = 1;
+    }
+  }
+  /* texte de la plaque de la statue ou d'une bannière (en promenade) : seulement celle devant laquelle je me tiens (la
+     plus proche à moins de 1,8 case), au-dessus des têtes, pour ne pas couvrir les joueurs de la place */
+  function drawPlaceLabels(b, camX, scene){
+    const items = [];
+    if(scene.statue) items.push({ cx: b.x + TOWN.place.statue + 1, text: `🏆 ${scene.statue.name} · n°1 · ${Math.round(scene.statue.value)} GS`, color: '#ffd27a' });
+    for(const side of ['angel', 'demon']){
+      const j = scene.judgment?.[side];
+      if(j) items.push({ cx: b.x + TOWN.place[side] + 0.5, color: j.open ? '#ffc27a' : '#f2ece4',
+                         text: j.open ? `${JUDGMENT.sides[side].tower} ouverte !` : `Jauge ${JUDGMENT.sides[side].label} : ${j.count} / ${j.cap}` });
+    }
+    const it = items.filter(i => Math.abs(i.cx - scene.meX) <= 1.8).sort((a, c) => Math.abs(a.cx - scene.meX) - Math.abs(c.cx - scene.meX))[0];
+    if(!it) return;
+    const y = (G - 3) * T - 4;
+    ctx.font = '9px "Jersey 10", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText(it.text, Math.round((it.cx - camX) * T), y);
+    ctx.fillStyle = it.color; ctx.fillText(it.text, Math.round((it.cx - camX) * T), y);
   }
   function drawHeadframe(b, X){
     blit('town_headframe', X, (G - b.h) * T, b.w * T, b.h * T);
   }
 
-  /* p : { x, face, walking, look, auras, name, say, me } */
+  /* p : { x, face, walking, look, auras, name, say, emote, emoteAt, group, lfg, me }. Au-dessus du pseudo, de bas en
+     haut : marque de groupe (« 2/3 », couleur du groupe) ou « ? » doré (cherche un groupe), émote, bulle. */
   function drawPlayer(p, camX, now){
     const px = (p.x - 0.5 - camX) * T;
     if(px < -2 * T || px > cols * T + T) return;
+    const e = emoteOf(p.emote), age = e ? now - (p.emoteAt ?? now) : 0;
+    const hop = e && (e.id === 'wave' || e.id === 'gg') && age < 600 ? -Math.round(4 * Math.sin(age / 600 * Math.PI)) : 0;
     const bob = p.walking && Math.floor(now / 110 + hash01(p.id ?? '') * 4) % 2 ? -1 : 0;
-    const py = (G - 1) * T + bob;
+    const py = (G - 1) * T + bob + hop, cx = Math.round(px + T / 2);
     sprite({ id: 0, face: p.face, look: p.look ?? {}, auras: p.auras ?? {}, name: p.name, action: null }, Math.round(px), Math.round(py), p.me, now);
-    if(p.say) drawBubble(p.say, px + T / 2, py - 11);
+    let top = py - 11;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    if(p.group){
+      const txt = `${p.group.size}/${p.group.max}`;
+      ctx.font = 'bold 7px sans-serif';
+      const w = Math.ceil(ctx.measureText(txt).width) + 6;
+      ctx.fillStyle = `hsl(${Math.round(hash01('g' + p.group.tag) * 360)},70%,42%)`;
+      ctx.fillRect(cx - w / 2, top - 8, w, 8);
+      ctx.fillStyle = '#fff'; ctx.fillText(txt, cx, top - 0.5);
+      top -= 10;
+    }
+    else if(p.lfg){
+      const y = top + Math.round(Math.sin(now / 250) * 1.5);
+      ctx.font = 'bold 12px sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(40,24,0,.9)';
+      ctx.strokeText('?', cx, y); ctx.fillStyle = '#ffd23f'; ctx.fillText('?', cx, y);
+      top -= 12;
+    }
+    if(e){
+      const pop = Math.min(1, age / 150);
+      ctx.font = `${Math.round(8 + 5 * pop)}px sans-serif`;
+      ctx.fillText(e.icon, cx, top);
+      top -= 14;
+    }
+    if(p.say) drawBubble(p.say, cx, top);
   }
   function drawBubble(text, cx, bottom){
     const lines = bubbleLines(text.slice(0, TOWN.bubbleMax));
@@ -132,7 +196,7 @@ export function createTownRenderer(cv){
   }
   function drawLabel(b, camX, hint){
     /* au-dessus du faîte (toit : Math.floor(w / 2) + 1 rangées), sans sortir du haut du canvas */
-    const top = b.kind === 'house' ? G - b.h - Math.floor(b.w / 2) - 1 : b.kind === 'place' ? G - 2 : G - b.h;
+    const top = b.kind === 'house' ? G - b.h - Math.floor(b.w / 2) - 1 : b.kind === 'place' ? G - 4 : G - b.h;
     const lines = [b.name, hint].filter(Boolean), cx = (b.door - camX) * T;
     const y0 = Math.max(9, top * T - 2 - (lines.length - 1) * 9);
     ctx.font = '9px "Jersey 10", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
@@ -147,7 +211,8 @@ export function createTownRenderer(cv){
     get cols(){ return cols; },
     /* largeur du canvas en cases (selon la forme de la fenêtre) */
     setCols(n){ n = Math.max(8, Math.min(TOWN_WIDTH, Math.ceil(n))); if(n !== cols){ cols = n; resize(); } },
-    /* scene : { camX (bord gauche, en cases), players, labels: bool (noms des bâtiments), near: bâtiment devant moi, hint } */
+    /* scene : { camX (bord gauche, en cases), players, labels: bool (noms des bâtiments), near: bâtiment devant moi, hint,
+       statue: { name, look, value } | null, judgment: { angel: { count, cap, open }, demon: … } | null, meX : ma place } */
     draw(scene, now = performance.now()){
       const camX = scene.camX;
       for(let y = 0; y < G; y++) for(let x = Math.floor(camX); x < camX + cols + 1; x++) blit('sky', (x - camX) * T, y * T);
@@ -162,7 +227,7 @@ export function createTownRenderer(cv){
         const X = (b.x - camX) * T;
         if(X > cols * T + T || X + (b.w + 2) * T < -T) continue;
         if(b.kind === 'house') drawHouse(b, X, now);
-        else if(b.kind === 'place') drawPlace(b, X, now);
+        else if(b.kind === 'place') drawPlace(b, X, now, scene);
         else if(b.kind === 'headframe'){
           for(let y = G; y < TOWN.rows; y++) blit('tunnel', X + T, y * T);   // le puits, sous la molette
           drawHeadframe(b, X);
@@ -172,7 +237,10 @@ export function createTownRenderer(cv){
       townBuildings().forEach((b, i) => { if(i % 2 === 0 && i < townBuildings().length - 1) blit('town_lamppost', (b.x + b.w + TOWN.gap / 2 - 0.5 - camX) * T, (G - 2) * T, T, 2 * T); });
       const ps = [...scene.players].sort((a, b) => (a.me ? 1 : 0) - (b.me ? 1 : 0));   // moi par-dessus les autres
       for(const p of ps) drawPlayer(p, camX, now);
-      if(scene.labels) for(const b of townBuildings()) drawLabel(b, camX, b === scene.near ? scene.hint : null);
+      if(scene.labels) for(const b of townBuildings()){
+        drawLabel(b, camX, b === scene.near ? scene.hint : null);
+        if(b.kind === 'place') drawPlaceLabels(b, camX, scene);
+      }
     },
   };
 }

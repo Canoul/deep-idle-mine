@@ -757,7 +757,8 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
   // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
   'town_plank','town_stone_blue','town_roof_red','town_roof_red_edge','town_roof_slate','town_roof_slate_edge','town_door','town_window',
-  'town_sign','town_cobble','town_campfire','town_mug','town_lamppost','town_headframe','town_cloud'];
+  'town_sign','town_cobble','town_campfire','town_mug','town_lamppost','town_headframe','town_cloud',
+  'town_banner_angel','town_banner_demon','town_pedestal'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1554,11 +1555,27 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    spread : écart des joueurs devant une même porte (± cases, tiré de leur ID) ; dim : luminosité derrière les onglets ;
    poll / walkPoll / hiddenPoll : le navigateur donne sa place au serveur (ms ; en promenade, plus souvent) ;
    bubbleMs : un message du chat global reste en bulle au-dessus de son auteur ce temps ; reach : on entre dans un
-   bâtiment à moins de reach cases de sa porte. */
+   bâtiment à moins de reach cases de sa porte. rows 16 / ground 12 depuis le 29/10 après-midi (ancien 18 / 13 : un peu
+   plus zoomé, demande de Jules).
+   Ajouts du 29/10 après-midi : group : les membres d'un même groupe se tiennent ensemble sur la place, à ± group cases
+   du point du groupe ; emotes : émotes de la promenade (id, icône, nom), visibles emoteMs ms, une toutes les emoteGapMs
+   ms au plus (le serveur revérifie) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
+   n°1 du classement GS, bannières des jauges Ange / Démon, feu de camp au milieu) ; statueBoard : classement de la statue. */
 export const TOWN = {
-  rows: 18, ground: 13, gap: 3, margin: 6,
-  walk: 6, rush: 4, spread: 2.2, dim: 0.55,
+  rows: 16, ground: 12, gap: 3, margin: 6,
+  walk: 6, rush: 4, spread: 2.2, dim: 0.55, group: 0.7,
   poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
+  emoteMs: 3500, emoteGapMs: 1500,
+  emotes: [
+    { id:'wave',  icon:'👋', name:'Salut' },
+    { id:'mine',  icon:'⛏️', name:'On mine ?' },
+    { id:'gg',    icon:'🎉', name:'GG' },
+    { id:'laugh', icon:'😂', name:'Mdr' },
+    { id:'heart', icon:'❤️', name:'Merci' },
+    { id:'afk',   icon:'💤', name:'AFK' },
+  ],
+  place: { statue: 1, angel: 3, demon: 7 },
+  statueBoard: 'gs',
   buildings: [
     { tab:'social',       name:'Taverne',              kind:'house', w:7, h:4, wall:'town_plank',    roof:'town_roof_red',   sign:'town_mug' },
     { tab:'historique',   name:'Archives',             kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_slate', sign:'scroll' },
@@ -1567,7 +1584,7 @@ export const TOWN = {
     { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:6, wall:'town_stone_blue', roof:'town_roof_slate', sign:'moon_crystal' },
     { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:3, wall:'stone',         roof:'town_roof_red',   sign:'helmet_iron' },
     { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:3, wall:'town_plank',    roof:'town_roof_slate', sign:'chest' },
-    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:7, h:0, sign:'town_campfire' },
+    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:0, sign:'town_campfire' },
     { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sign:'pickaxe_stone' },
     { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:3, wall:'dungeon_brick', roof:'town_roof_slate', sign:'ingot_iron', chimney:true },
     { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_red',   sign:'gem_ruby' },

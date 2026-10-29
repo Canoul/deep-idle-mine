@@ -48,7 +48,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   joueurs en ligne **hors session** sont devant le leur, avec bulle de leurs messages du chat global. Onglet Session sans
   session = promenade plein écran sans panneaux (E / clic sur un bâtiment ouvre son onglet). Présence en mémoire sur le
   serveur, rien en base, rien d'économique. Option « Le Carreau en fond d'écran » (Mon compte). Pendant une session, le
-  fond reste la mine (fond de Geoffrey du 28/10).
+  fond reste la mine (fond de Geoffrey du 28/10). Ajouts du 29/10 après-midi : fiche d'un joueur au clic (ami, inviter),
+  groupes regroupés sur la place avec une marque « 2/3 », « ? » doré pour qui cherche un groupe, émotes, statue du n°1 du
+  classement GS (choix de Claude) et bannières des jauges Ange / Démon sur la place.
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
   - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,

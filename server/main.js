@@ -36,7 +36,7 @@ const social = createSocialService({ store: gameStore, accounts: store, party, g
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
-const town = createTownService({ accounts: store, game, recentChat: ms => social.recentChat(ms) });
+const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms) });
 const server = http.createServer(createApp({ store, service, game, party, instant, social, giant, town, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
