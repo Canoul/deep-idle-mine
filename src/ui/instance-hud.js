@@ -20,7 +20,7 @@ export function phaseText(G){
 }
 
 /* G : copie d'affichage ; me : ID du compte du joueur ; left : secondes réelles avant la fin (ou null) */
-export function updateInstanceHUD(G, me, left){
+export function updateInstanceHUD(G, me, left, focus = null){
   const def = instanceDef(G.instance), b = G.boss;
   $('inTitle').textContent = `🗝 ${def?.label ?? 'Instance'}${def?.sub ? ' · ' + def.sub : ''}`;
   $('inTimer').textContent = fmt(G.t) + ' / ' + fmt(INSTANCE.duration);
@@ -34,7 +34,7 @@ export function updateInstanceHUD(G, me, left){
     `<p class="mut small">Spawners : ${(G.spawners || []).map(s => s.alive ? `<span title="${s.hp} / ${s.maxhp}">${s.id === G.target ? '🎯' : '●'}</span>` : '✔').join(' ')}`+
     ` · ${(G.goblins || []).length} gobelin${(G.goblins || []).length > 1 ? 's' : ''}${G.inspire ? ` · 🎺 ${G.inspire} s` : ''}</p>`);
   setHtml($('inTeam'), (G.miners.map(m =>
-    `<div class="row${m.account === me ? ' me' : ''}"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.focus && b.state !== 'sleep' ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
+    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.focus && b.state !== 'sleep' ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
     `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} gobelins` : ''}${m.stats.drilled ? `<br><small class="mut">${Math.round(m.stats.drilled)} coups sur les spawners</small>` : ''}</span></div>`).join('')
     || '<p class="mut">Tout le monde est parti.</p>'));
   setHtml($('inLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));

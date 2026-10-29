@@ -4699,6 +4699,31 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ sets (nouveau test : correspondance, pièce / exemplaire / sort différent, rang à 0, HTML), spells, skills :
   61/61. ⚠️ Pas vu à l'écran (pas de navigateur ici).
 
+## 29/10/2026 — Geoffrey — États du joueur regardé, et barre d'états au Bloc géant
+- `src/ui/effects.js` : `focusedMiner(miners, me, focus)` (choisi s'il est là, sinon le sien — `account` ou `me` —,
+  sinon le premier ; `name` si ce n'est pas le sien) ; `createEffectsBar` → `update(m, name)` ajoute un nœud `.fxWho`
+  (nom, bulle) devant les icônes.
+- `src/main.js` `updateEffects` : mine = `ui.follow` (déjà réglé par un clic dans `#teamBody`), tours / instance / MI =
+  `ui.focus` (clic `pointerdown` sur `[data-id]` de `#twTeam`, `#inTeam`, `#miRank` ; sur soi ou le même = null ; remis à
+  null au lancement d'une session). HUD : lignes `.pick` avec `data-id`, `.focus` sur le joueur choisi (4e paramètre).
+- Bloc géant : `server/giant/service.js` viewOf, chaque mineur porte `effects` (`minerEffects`) et `bonus`
+  (`sessionBonuses`) ; `index.html` `#fxBarGt` ; `src/ui/giant.js` `showEffects` à chaque image, choix dans `#gtPresent`.
+- **Tests** ✅ effects (focusedMiner, lignes cliquables), giant-service (effets dans la vue), instant-ui, tower-spells :
+  49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) : clic dans l'équipe, place du nom devant les icônes.
+
+## 29/10/2026 — Geoffrey — Instance : recul vers le centre sans dépasser (aller-retour d'une demi-case)
+- **Cause** : `pushMiner` (src/sim/instance/session.js) poussait de k (0,5 ; rage 1) dans le sens `toCenter(G, m.x)`,
+  calculé sur la case seule. Au centre (mid = 14) : x 13 → poussé à 13,9 (case 14) → sens inverse → 13,4 → … Trace
+  (seed 7919, 3 fer) : x+kx alterne 13,4 / 13,9 toutes les 1 à 4 s en combat. Mesure d'affichage (envoi / 8 ticks, glide) :
+  135 demi-tours de l'image sur 5 min.
+- **Correctif** : `centerX(G)` = milieu de la case du centre ; recul de min(k, écart) vers lui sur la position exacte
+  (x + 0,5 + kx), rien si déjà au centre (renvoie false : pas compté dans gobKnocks). `boost` (coup boosté) inchangé.
+  Après : 14 demi-tours (vrais déplacements).
+- **Tests** ✅ instance-sim (nouveau test : arrêt au centre, 4 coups de 0,5 depuis 2 cases, coup de 1 à 0,7 du centre),
+  instance-server, instance-key : 25/25. Simulation `simulate-instance --count 5 --size 3`, avant / après identiques
+  (fer 0/5, roi 3 500 PV ; fer + acier 0/5, ≈ 685 PV ; acier 0/5, ≈ 700 PV ; 0 bloqué). ⚠️ Les repères du 27/10
+  (fer + acier 13/20, acier 20/20) ne tiennent plus sur main, déjà avant ce correctif.
+
 ## 29/10/2026 — Jules — Four : bouton `½` → « Moitié »
 - **Quoi** : `src/ui/furnace.js`, `#fpickHalf` (deux fenêtres : pose d'un objet, choix de recette) affiche « Moitié » au
   lieu de « ½ » : le glyphe ½ de VT323 est illisible à 15 px. Comportement inchangé. `GAME_DESIGN.md` mis à jour.

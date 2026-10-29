@@ -926,6 +926,11 @@ button.danger{color:var(--bad)}
 .shrine .shrineHead img{image-rendering:pixelated}
 .shrine .shrineRow{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap;margin-top:calc(1*var(--u))}
 .shrine .shrineRow input{width:4.5em}
+/* états d'un autre joueur (29/10/2026) : son nom devant ses icônes ; lignes d'équipe cliquables, joueur choisi marqué */
+.fxWho{align-self:center;padding:0 calc(2*var(--u));font-size:.8em;color:var(--txt,#eee);background:rgba(0,0,0,.55);border:var(--u) solid var(--line)}
+.pick{cursor:pointer}
+.pick.focus{outline:var(--u) solid var(--acc);outline-offset:calc(-1*var(--u))}
+
 /* sets : ligne « Set équipé » et set équipé marqué (29/10/2026) */
 .setCur{margin:0 0 calc(2*var(--u))}
 .setRow.on b{color:var(--ok)}

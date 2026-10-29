@@ -103,11 +103,17 @@ function preyOf(G, o){
   for(const m of pool){ const d = manh(o, m); if(d < bd){ bd = d; best = m; } }
   return best;
 }
-/* recul d'un mineur vers le centre de la salle (pas en plein pas) ; arc : petit saut à l'affichage */
+/* recul d'un mineur vers le centre de la salle (pas en plein pas) ; arc : petit saut à l'affichage.
+   Il s'arrête au centre (milieu de la case du centre) au lieu de le dépasser (29/10/2026 : au centre, chaque coup le
+   faisait passer de l'autre côté et le suivant le renvoyait, une demi-case d'aller-retour en plein combat). Déjà au
+   centre : pas de recul (renvoie false). */
+export const centerX = G => Math.round(G.mid - 0.5) + 0.5;
 export function pushMiner(G, m, k, arc = false){
   if(m.action?.type === 'move') return false;
-  const dir = toCenter(G, m.x);
-  push(m, { x: m.x - dir, y: m.y }, k, (x, y) => open(G, x, y));
+  const gap = centerX(G) - (m.x + 0.5 + (m.kx || 0));
+  if(Math.abs(gap) < 1e-6) return false;
+  const dir = Math.sign(gap);
+  push(m, { x: m.x - dir, y: m.y }, Math.min(k, Math.abs(gap)), (x, y) => open(G, x, y));
   if(arc) m.hop = G.ticks;
   return true;
 }
