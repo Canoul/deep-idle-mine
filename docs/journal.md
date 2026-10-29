@@ -31,7 +31,15 @@ Modèle d'entrée :
   joueur parti avant la fin n'est pas classé, un échec ne compte pas. Les victoires des 30 derniers jours sont reprises.
 - **Décisions** : classé sur le temps total (comme la tour) ; le temps du combat seul est affiché à côté (choix de
   Claude, facile à inverser).
-- **État** : 🧪 sur la branche `geoffrey/classement-roi-gobelin` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Mouvements fluides au Bloc géant et dans la Mine instantanée
+- **Pour le joueur** : au **Bloc géant**, les mineurs marchaient par à-coups (« marche, arrêt, marche ») : leur glissade
+  durait 0,5 s pile alors qu'une nouvelle position arrive toutes les 0,6 à 0,8 s, donc ils s'arrêtaient avant chaque
+  réception. Dans la **Mine instantanée**, ils avançaient par petits bonds à chaque réception, sans glisser. Les deux
+  modes utilisent maintenant la glissade de la mine classique, qui se cale sur le vrai rythme des réceptions. Seul
+  l'affichage change, pas la partie.
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : lingots à la place du minerai de graphite
 - **Pour le joueur** : le coffre ne donne plus de minerai de graphite (20 à 40). À la place, toujours **5 à 15 lingots
