@@ -4,7 +4,7 @@ import { W, AREA_H, STATS, CFG, BLOCKS, BARRIER, MOBS, CHEST_X, SKILLS, WINCH, H
 import { DIRS, isOre, isTarget, isResidue, typeOf, areaOf, areaTop, maxRow, tileAt, isAir, supported, rowDone, fallInfo, landing, ontoLadder } from './world.js';
 import { search, firstStep, planReturn, planDown } from './path.js';
 import { stepDir, deepFall } from './actions.js';
-import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf, timeLeft } from './mineur.js';
+import { startAction, nowOf, idle, curLum, dk, moveT, climbT, mineT, lightR, compassR, baseMoveT, baseWinchT, warcryOf, timeLeft, workLeft } from './mineur.js';
 import { mulePlaced, isCarrier, muleFits, nearMule, muleAfterWinch } from './mule.js';
 import { log } from './log.js';
 import { mulberry32 } from '../core/rng.js';
@@ -167,7 +167,7 @@ function fight(G,m,o){
 const secPerRow = m => m.secPerRow ?? 1.25/m.carac.climbSpeed;
 const secPerRowDown = m => m.secPerRowDown ?? secPerRow(m);
 export function depthCap(G,m){
-  const left=timeLeft(G), budget=left*(1-CFG.endWorkShare)-12;
+  const left=workLeft(G), budget=left*(1-CFG.endWorkShare)-12;
   return Math.max(0, Math.floor(budget/(secPerRowDown(m)+secPerRow(m))));
 }
 /* descente mesurée (m.secPerRowDown) : du départ de la surface jusqu'à la profondeur de sa dernière remontée (le front),
@@ -179,8 +179,8 @@ function trackDescent(G,m){
 }
 
 function decideSurface(G,m){
-  const left=timeLeft(G);
-  if(huntDuck(G,m,left)) return;
+  const left=timeLeft(G);   // temps réel restant (ramassage du sac) ; le travail se juge sur workLeft (prison : fin de run)
+  if(huntDuck(G,m,workLeft(G))) return;
   if(m.x!==CHEST_X){ m.status='Va au coffre'; if(!stepDir(G,m,Math.sign(CHEST_X-m.x),0)) idle(m); return; }
   if(m.load>0 || bagToEmpty(G,m)){ m.status='Dépose au coffre'; startAction(m,'deposit',1,{}); return; }
   if(m.ox<m.carac.oxygenMax-0.5){ m.status='Recharge en oxygène'; idle(m,0.5); return; }
@@ -194,7 +194,7 @@ function decideSurface(G,m){
       return decideFetch(G,m);
     }
   }
-  if(left<CFG.endStayMin || depthCap(G,m)<3){ m.status='Fin de session proche'; idle(m,1); return; }
+  if(workLeft(G)<CFG.endStayMin || depthCap(G,m)<3){ m.status='Fin de session proche'; idle(m,1); return; }
   if(m.winchJob){ m.mode='winch'; return decideWinch(G,m); }   // chantier du treuil : il repart d'en haut, au milieu
   m.mode='departure';
   /* profondeur max de ce trajet, fixée quand il décide de repartir (sinon il remonterait sans cesse pour la suivre ;
@@ -313,11 +313,11 @@ function decideWork(G,m){
     if(G.khole);                    // dimension du k hole : pas de surface, aucune remontée (il attend la fin du compteur)
     else if(m.ox<=0) reason='oxygène';   // à 0 d'oxygène il remonte ; la remontée n'en consomme pas (pas de ralentissement)
     else if(m.load>=m.carac.pods-2) reason='pods pleins';
-    else if(left<=tRet+12) reason='fin de session';
+    else if(workLeft(G)<=tRet+12) reason='fin de session';
     else if(m.torches<=0) reason='plus de torches';
     /* donjon (25/10/2026, Geoffrey) : aller au donjon, attendre le barbare, le rejoindre et combattre le boss passent
        avant l'oxygène, les pods et les torches ; seule la fin de session passe avant (sortir du donjon : non) */
-    if(reason && reason!=='fin de session' && left>tRet+12 && dungeonGoal(G,m,true)) return;
+    if(reason && reason!=='fin de session' && workLeft(G)>tRet+12 && dungeonGoal(G,m,true)) return;
     /* Mule : pods pleins et un sac pas plein, plus près que la surface : il va y déposer */
     if(reason==='pods pleins' && muleWorth(G,m,rp)){ m.mode='mule'; log(G, `🎒 ${m.name} va déposer dans le sac`); return decideMule(G,m); }
     if(reason){ m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m,rp); }
@@ -500,7 +500,7 @@ function goTo(G,m,goal,status){
    posé s'il y en a un) et creuse tout droit jusqu'à la ligne visée, puis pose tout le treuil d'un coup. Il remonte
    comme d'habitude si l'oxygène, les pods, les torches ou le temps l'exigent (le chantier reprend ensuite). */
 function decideWinch(G,m){
-  const job=m.winchJob, left=timeLeft(G);
+  const job=m.winchJob, left=workLeft(G);
   if(m.y===0){
     m.status='Va installer le treuil';
     if(m.x!==WINCH.x){ if(!stepDir(G,m,Math.sign(WINCH.x-m.x),0,{noBridge:true})) idle(m); return; }
@@ -665,7 +665,7 @@ function goPickup(G,m){
 /* pods pleins : il va déposer dans le sac. Déposé (ou sac devenu plein, ramassé, trop loin) : il reprend son travail
    s'il a de la place, sinon il remonte au coffre comme d'habitude. Oxygène et fin de session passent avant. */
 function decideMule(G,m){
-  const left=timeLeft(G);
+  const left=workLeft(G);
   const back = reason => { m.mode='return'; m.reason=reason; m.returnStart=G.t; log(G, `↑ ${m.name} remonte : ${reason}`); return decideReturn(G,m); };
   if(m.load<m.carac.pods-2){ m.mode='work'; return decideWork(G,m); }
   if(m.ox<=0) return back('oxygène');

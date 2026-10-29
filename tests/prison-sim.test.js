@@ -204,3 +204,25 @@ test('rejeu : même seed, même spec, même run → même coffre', () => {
   assert.ok(Object.keys(a.chest).length > 0);
   assert.notEqual(newPrisonRun(9, { miner:spec, areaMax:2, run:4 }).seed, a.seed);
 });
+
+/* fin de run avec un sac de Mule chargé en bas (posé là où se tient le logisticien) : il remonte en passant le
+   prendre, le vide au coffre ; rien n'est perdu (revue du 29/10) */
+test('fin de run : le porteur de la Mule passe prendre son sac et le rapporte', () => {
+  const G = newPrisonRun(31, { miner:{ skills:{ winch:1, mule:1 }, skillTree:'logisticien' }, areaMax:1, run:2 });
+  const m = G.miners[0];
+  let i = 0;
+  while(!(m.y >= 12 && m.mode === 'work' && !m.action?.data?.fall) && i++ < 30000) tickPrison(G);
+  assert.ok(m.y >= 12, `mineur en y ${m.y}`);
+  G.mule = { carrier:m.id, placed:true, x:m.x, y:m.y, inv:{ 'Fer':7 }, by:{ [m.id]:{ 'Fer':7 } }, load:21 };
+  const before = G.chest['Fer'] || 0;
+  G.areas[0].oreMined = prisonGoal(G);
+  const max = Math.ceil(PRISON.returnMax/DT) + 2;
+  for(i=0; i<max && !G.over; i++) tickPrison(G);
+  assert.ok(G.over, 'le run ne finit pas');
+  assert.ok(G.t < G.prison.endTick*DT + PRISON.returnMax, `fini au filet de sécurité (${G.t})`);
+  assert.equal(G.mule.load, 0, 'sac vidé');
+  assert.ok((G.chest['Fer'] || 0) >= before + 7, `coffre : ${G.chest['Fer']}`);
+  assert.ok((G.summary.shares[0].bag['Fer'] || 0) >= 7);
+  assert.deepEqual(G.summary.lostBags, []);
+  assert.ok(G.log.some(l => /ramasse son sac/.test(l.msg)), 'ramassage au journal');
+});

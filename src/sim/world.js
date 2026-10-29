@@ -32,8 +32,9 @@ export const contentOf = (G, k) => G.prison && k >= 0 ? G.prison.areaMax : k;   
 export const contentAt = (G, y) => contentOf(G, areaOf(y));
 /* colonnes de la prison : { x0, w } (PRISON.width colonnes centrées sur le coffre), ou null hors prison */
 export const prisonBox = G => G.prison ? { x0: CHEST_X - Math.floor(PRISON.width/2), w: PRISON.width } : null;
-/* composition de la prison : chaque minerai × oreMul, la différence prise sur le terrain (pierre, terre, pierre dure)
-   dans sa proportion ; somme inchangée (100). Plafonnée au terrain disponible. Pure. */
+/* composition de la prison : chaque minerai × oreMul, la différence prise sur TOUS les blocs de terrain de la composition
+   (pierre, terre et pierre dure), chacun dans sa proportion (décision du 29/10) ; somme inchangée (100). Plafonnée au
+   terrain disponible. Pure. */
 export function prisonComp(comp, oreMul){
   if(oreMul === 1) return { ...comp };
   const kind = n => BLOCKS[IDS[n]]?.type ?? null;

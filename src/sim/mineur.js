@@ -8,6 +8,10 @@ import { cleanRings } from './effects.js';
 /* temps de jeu restant avant la fin (s) : la fin de session, ou G.endAt (prison : Infinity pendant le run, l'heure de
    la fin de run une fois le but atteint ; src/sim/prison.js) */
 export const timeLeft = G => (G.endAt ?? SESSION_LEN) - G.t;
+/* temps restant pour TRAVAILLER (miner, repartir, prolonger le treuil) : timeLeft, sauf en fin de run de prison
+   (G.prison.recall) où il vaut 0 ; timeLeft garde alors le budget de la remontée (PRISON.returnMax), pour que le porteur
+   de la Mule passe prendre son sac */
+export const workLeft = G => G.prison?.recall ? Math.min(0, timeLeft(G)) : timeLeft(G);
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
 
