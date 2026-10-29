@@ -5,7 +5,6 @@ import { minerEffects, sessionBonuses, mobEffects, cleanRings } from '../src/sim
 import { EFFECTS, INSTANCE } from '../src/config.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { createViewer } from '../src/shared/view.js';
-import { thrallOwner } from '../src/sim/thrall.js';
 
 const miner = (o = {}) => ({ id: 0, x: 5, y: 10, skill: {}, carac: {}, action: null, ...o });
 const ids = list => list.map(e => e.id);
@@ -81,7 +80,7 @@ test('boss : ciblé par le boss ; enfermé par le roi gobelin avec le temps avan
   assert.equal(one(minerEffects({ ...I, boss: { ...I.boss, state: 'fight' } }, miner()), 'caged'), undefined);
 });
 
-test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus : buff de zone)', () => {
+test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus : buff du porteur)', () => {
   const G = { shrines: ['abundance'], winchBoost: 0.25, thralls: [], miners: [] };
   const m = miner({ rings: [{ item: 'Anneau du rat', plus: 3 }], carac: { goblinThrall: 10 } });
   assert.deepEqual(sessionBonuses(G, m), [
@@ -89,33 +88,34 @@ test('bonus de session : anneaux, shrines, Escalateur (la couronne n\'y est plus
   assert.deepEqual(ids(sessionBonuses({}, m)), ['ring']);
 });
 
-test('couronne : buff pour tout mineur à son rayon du porteur (porteur compris), pas plus loin', () => {
-  const wearer = miner({ id: 0, name: 'Sonata', x: 10, y: 20, carac: { goblinThrall: 10 } });
-  const near = miner({ id: 1, x: 16, y: 28 });          // 6 et 8 : distance 10 pile (cercle, comme thrallOwner)
-  const far = miner({ id: 2, x: 10, y: 31 });           // 11 cases
-  const G = { t: 0, miners: [wearer, near, far], thralls: [{ owner: 0 }, { owner: 0 }, { owner: 3 }] };
-  assert.deepEqual(one(minerEffects(G, wearer), 'crown'), { id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
-  assert.deepEqual(one(minerEffects(G, near), 'crown'), { id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
-  assert.equal(one(minerEffects(G, far), 'crown'), undefined);
-  assert.equal(EFFECTS.list[one(minerEffects(G, near), 'crown').id].kind, 'buff');
-  /* porteur à la surface : la couronne n'agit pas (thrallOwner l'ignore) */
-  const up = { ...G, miners: [{ ...wearer, y: 0 }, near] };
-  assert.equal(one(minerEffects(up, { ...wearer, y: 0 }), 'crown'), undefined);
-  assert.equal(one(minerEffects(up, near), 'crown'), undefined);
+test('couronne : buff du porteur seul, pas des mineurs à côté', () => {
+  const wearer = miner({ id: 0, x: 10, y: 20, carac: { goblinThrall: 10 } });
+  const near = miner({ id: 1, x: 11, y: 20 });
+  const G = { t: 0, miners: [wearer, near], thralls: [{ owner: 0 }, { owner: 0 }, { owner: 3 }] };
+  assert.deepEqual(one(minerEffects(G, wearer), 'crown'), { id: 'crown', value: 10, stacks: 2 });
+  assert.equal(EFFECTS.list.crown.kind, 'buff');
+  assert.equal(one(minerEffects(G, near), 'crown'), undefined);
+  /* à la surface, la couronne n'agit pas (thrallOwner l'ignore) */
+  assert.equal(one(minerEffects(G, { ...wearer, y: 0 }), 'crown'), undefined);
   /* tours, instance : pas de gobelins asservis (G.thralls absent) */
   assert.equal(one(minerEffects({ t: 0, miners: [wearer] }, wearer), 'crown'), undefined);
-  /* deux porteurs : les deux noms, leurs asservis additionnés */
-  const two = { t: 0, miners: [wearer, { ...near, name: 'Jules', carac: { goblinThrall: 10 } }], thralls: [{ owner: 0 }, { owner: 1 }] };
-  assert.deepEqual(one(minerEffects(two, near), 'crown'), { id: 'crown', src: 'Sonata, Jules', value: 10, stacks: 2 });
 });
 
-test('couronne : même règle que la naissance d\'un asservi (thrallOwner)', () => {
-  const wearer = miner({ id: 0, x: 10, y: 20, carac: { goblinThrall: 10 } });
-  const G = { t: 0, miners: [wearer], thralls: [] };
-  for(const [x, y] of [[10, 30], [17, 27], [18, 27], [10, 31], [3, 13]]){
-    const buff = !!one(minerEffects(G, miner({ id: 5, x, y })), 'crown');
-    assert.equal(buff, thrallOwner(G, x, y) === wearer, `${x},${y}`);
+test('partie réelle : personne ne frappe un gobelin asservi (il vit tout son temps)', () => {
+  /* porteur au milieu d'un groupe qui se bat : coups, Cleave, Dynamite, Dash, Hand of Justice */
+  const fight = { carac: { damage: 60 }, spells: ['cleave', 'dynamite', 'dash', 'hand_of_justice'], skillTree: 'barbare' };
+  const G = newSession(7, { miners: [{ ...fight, carac: { damage: 60, goblinThrall: 10 } }, fight, fight] });
+  const born = new Map();
+  let seen = 0;
+  for(let i = 0; i < 36000 && !G.over; i++){
+    tick(G);
+    for(const o of G.thralls){ if(!born.has(o.id)){ born.set(o.id, o.until); seen++; } }
+    assert.ok(!G.mobs.some(o => born.has(o.id)), 'un asservi n\'est jamais un mob');
+    for(const [id, until] of born) if(!G.thralls.some(o => o.id === id) && G.t < until - 1e-6)
+      assert.fail(`asservi ${id} parti avant la fin de son temps (${G.t} < ${until})`);
+    for(const [id, until] of born) if(G.t >= until) born.delete(id);
   }
+  assert.ok(seen > 0, 'au moins un gobelin asservi dans la partie');
 });
 
 test('cleanRings : anneaux inconnus, rangs invalides', () => {
@@ -168,9 +168,9 @@ test('bulle des bonus de session : anneaux à leur niveau, shrine, Escalateur', 
   assert.equal(lines.length, 4);
 });
 
-test('bulle de la couronne : le porteur, le rayon, les asservis au travail', () => {
-  const tip = effectTip({ id: 'crown', src: 'Sonata', value: 10, stacks: 2 });
-  assert.match(tip, /^Couronne du Roi Gobelin\nÀ 10 cases ou moins de Sonata\n.*asservi.*\n2 au travail$/);
+test('bulle de la couronne : le rayon, l\'effet, les asservis au travail', () => {
+  const tip = effectTip({ id: 'crown', value: 10, stacks: 2 });
+  assert.match(tip, /^Couronne du Roi Gobelin\n.*10 cases ou moins de lui.*asservi.*\nPersonne ne frappe.*\n2 au travail$/);
   assert.equal(badgeOf({ id: 'crown', stacks: 0 }), '');
 });
 

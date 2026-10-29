@@ -4596,17 +4596,15 @@ Règles (voir CLAUDE.md) :
   veille plus tôt.
 
 
-## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff de zone (branche geoffrey/couronne-aura)
-- **Demande** : « le passif de la couronne ne marche qu'autour du porteur, pour tous les mineurs ». La règle de jeu
-  (`thrallOwner`, src/sim/thrall.js : gobelin né à `carac.goblinThrall` cases ou moins d'un porteur dans la mine) était
-  déjà juste ; seul l'affichage du 28/10 était faux (bonus de session, chez le porteur seul).
-- **Quoi** : `crownOf(G, m)` dans `src/sim/effects.js` → buff `crown` (EFFECTS.list, `kind:'buff'`) dans `minerEffects`
-  pour tout mineur à ce rayon d'un porteur (cercle, porteur `y > 0`, `G.thralls` présent = la mine) ; `src` = nom(s)
-  du ou des porteurs, `stacks` = asservis au travail de ces porteurs. Retiré de `sessionBonuses` et de `bonusLine` ;
-  bulle dans `effectTip` (src/ui/effects.js). Aucune modification de la simulation.
-- **Tests** ✅ `tests/effects.test.js` 17/17 (rayon pile 10, 11 cases, porteur à la surface, tours sans asservis, deux
-  porteurs, et le buff suit `thrallOwner` case par case) ; view, thrall/roi gobelin : verts. Partie d'1 h (seed 7,
-  3 mineurs, couronne sur le premier) : buff 3 485 / 3 600 échantillons chez le porteur (absent à la surface), 933 et
-  676 chez les deux autres, 0 dans les bonus de session ✅. Pas de simulation 5 sessions (simulation inchangée).
-- **Point fragile** : un asservi garde son maître même si le porteur s'éloigne ; `stacks` compte les asservis des porteurs
-  proches, pas ceux qui travaillent près du mineur.
+## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : buff du porteur (branche geoffrey/couronne-aura)
+- **Demande** : « c'est un buff individuel, ça n'impacte pas les autres mineurs à côté, hormis qu'ils ne doivent pas tuer
+  les gobelins asservis ». Première version du matin (buff pour tout mineur à 10 cases du porteur) : mauvaise lecture,
+  remplacée dans le même chantier.
+- **Quoi** : `crownOf(G, m)` (src/sim/effects.js) → buff `crown` (EFFECTS.list, `kind:'buff'`) chez le porteur seul
+  (`carac.goblinThrall > 0`, `y > 0`, `G.thralls` présent = la mine) ; `stacks` = ses asservis au travail. Retiré de
+  `sessionBonuses` et `bonusLine` ; bulle dans `effectTip` (src/ui/effects.js). Simulation inchangée.
+- **Asservis jamais frappés** : ils vivent dans `G.thralls`, jamais dans `G.mobs` ; coups, Cleave, Dynamite, Dash,
+  Hand of Justice, Ulti shen ne lisent que `G.mobs`. Test « personne ne frappe un gobelin asservi » : partie d'1 h à 3
+  barbares (Cleave, Dynamite, Dash, HoJ, 60 dégâts), le porteur au milieu : chaque asservi vit tout son temps ✅.
+- **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
+  échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.

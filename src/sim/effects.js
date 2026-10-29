@@ -9,7 +9,7 @@
    ctx : { foes : mobs qui peuvent tacler (G.mobs, G.goblins), dark : il est dans le noir, warcry : Cri de guerre qui
            s'applique à lui ({ until, dmg, speed }) ou null }
    sessionBonuses(G, m) → [{ id, src, value? }] : bonus permanents de la session (une seule icône à l'écran).
-   Couronne du Roi Gobelin : buff de zone autour du porteur, pour tous les mineurs (crownOf, 29/10).
+   Couronne du Roi Gobelin : buff du porteur seul (crownOf, 29/10).
    mobEffects(G, o) → ['stun', 'channel', 'taunt'] : états d'un mob. */
 import { EFFECTS, INSTANCE, RINGS } from '../config.js';
 import { SPELL } from '../meta/spells.js';
@@ -51,18 +51,14 @@ export function minerEffects(G, m, ctx = {}){
   return out.sort((x, y) => rank[KIND(x.id)] - rank[KIND(y.id)]);
 }
 
-/* Couronne du Roi Gobelin (29/10, Geoffrey) : son passif n'agit qu'autour du porteur, mais pour tous les mineurs.
-   Un mineur à goblinThrall cases ou moins d'un porteur (lui compris) a le buff : un gobelin qui naît près de lui
-   devient asservi (même règle que src/sim/thrall.js thrallOwner : cercle, porteur dans la mine, pas à la surface).
-   Seulement là où les gobelins asservis existent (G.thralls : la mine). stacks : asservis au travail de ces porteurs. */
+/* Couronne du Roi Gobelin (29/10, Geoffrey) : buff INDIVIDUEL de son porteur. Un gobelin qui naît à goblinThrall cases
+   ou moins de lui devient son asservi (src/sim/thrall.js thrallOwner : porteur dans la mine, pas à la surface). Les
+   autres mineurs n'ont rien, sauf qu'ils ne frappent jamais un asservi (rangé à part dans G.thralls, pas dans G.mobs).
+   Seulement là où les asservis existent (G.thralls : la mine). stacks : ses asservis au travail. */
 function crownOf(G, m){
-  if(!Array.isArray(G.thralls)) return null;
-  const by = (G.miners || []).filter(w => (w.carac?.goblinThrall || 0) > 0 && w.y > 0
-    && Math.hypot(w.x - m.x, w.y - m.y) <= w.carac.goblinThrall + 1e-9);
-  if(!by.length) return null;
-  const ids = new Set(by.map(w => w.id));
-  return { id:'crown', src:by.map(w => w.name).filter(Boolean).join(', ') || null,
-           value:Math.max(...by.map(w => w.carac.goblinThrall)), stacks:G.thralls.filter(o => ids.has(o.owner)).length };
+  const r = m.carac?.goblinThrall || 0;
+  if(r <= 0 || m.y <= 0 || !Array.isArray(G.thralls)) return null;
+  return { id:'crown', value:r, stacks:G.thralls.filter(o => o.owner === m.id).length };
 }
 
 /* Fast learner : dans la mine, un bonus par type de bloc (m.learned = { bloc: bonus }) ; dans les tours et
@@ -75,8 +71,8 @@ function learnedOf(m){
 }
 
 /* bonus permanents de la session : anneaux du groupe (m.rings, figés au lancement), shrines du chef (G.shrines),
-   Escalateur (G.winchBoost). Ancien (28/10) : la Couronne du Roi Gobelin y était, chez son porteur seul ; c'est un buff
-   de zone depuis le 29/10 (crownOf) */
+   Escalateur (G.winchBoost). Ancien (28/10) : la Couronne du Roi Gobelin y était ; c'est un buff du porteur depuis le
+   29/10 (crownOf) */
 export function sessionBonuses(G, m){
   const out = [];
   for(const r of m.rings || []) out.push({ id:'ring', src:r.item, value:r.plus || 0 });

@@ -391,7 +391,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/render/effects.js`) : en haut à droite de la mine (et tours, instance, MI), les états de **son propre mineur** avec
   le temps restant ou les stacks (rouge : étourdi, taclé, enfermé, effroi, asphyxie, vol, mur de chair, ciblé par le boss,
   dans le noir ; vert : Cri de guerre, Inspiration, Ruée, Navette, Braum, Glyphe Pillage, Fast learner, **Couronne du Roi
-  Gobelin** chez chaque mineur à 10 cases ou moins d'un porteur, depuis le 29/10) et **une seule icône « Bonus de
+  Gobelin** chez son porteur seul, depuis le 29/10) et **une seule icône « Bonus de
   session »** (anneaux du groupe, shrines, Escalateur ; ancien, 28/10 : la Couronne y était, chez son porteur seul). Animations sur le perso (étoiles,
   botte barrée, bulles…, onde quand un sort part) ; icônes des mobs et boss au-dessus de leur barre de vie. Affichage
   seulement : la simulation ne change pas (cause des étourdissements et anneaux du groupe ajoutés pour l'affichage).

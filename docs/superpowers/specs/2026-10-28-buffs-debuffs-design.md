@@ -82,11 +82,12 @@ flemme. Un effet ponctuel sur le perso (éclair, fumée…) quand ils partent, p
 | `escalator` | Escalateur | skill d'un logisticien du groupe | seau du treuil +5 %/rang (meilleur rang) | skills, avant la session |
 | ~~`crown_thralls`~~ | ~~Gobelins asservis~~ | ancien (28/10) : bonus de session du porteur seul, remplacé le 29/10 (ci-dessous) | | |
 
-**Couronne du Roi Gobelin (29/10, Geoffrey)** : « le passif de la couronne ne marche qu'autour du porteur, pour tous
-les mineurs ». Ce n'est donc plus un bonus de session : c'est un **buff** (cadre vert, id `crown`) chez **chaque
-mineur à 10 cases ou moins d'un porteur** (porteur compris ; cercle, porteur dans la mine, pas à la surface : même
-règle que `thrallOwner`, src/sim/thrall.js). Bulle : le porteur, le rayon, l'effet ; sous l'icône, le nombre de
-gobelins asservis au travail (×n). Seulement dans la mine (les tours, l'instance et la MI n'ont pas d'asservis).
+**Couronne du Roi Gobelin (29/10, Geoffrey)** : « c'est un buff individuel, ça n'impacte pas les autres mineurs à
+côté, hormis qu'ils ne doivent pas tuer les gobelins asservis ». Ce n'est donc plus un bonus de session : c'est un
+**buff** (cadre vert, id `crown`) chez **son porteur seul**, dans la mine (pas à la surface, ni dans les tours,
+l'instance, la MI). Bulle : le rayon, l'effet, « personne ne frappe un gobelin asservi » ; sous l'icône, ses asservis au
+travail (×n). Les autres mineurs ne frappent jamais un asservi : il est rangé à part (`G.thralls`, pas `G.mobs`).
+(Une première version du 29/10, buff pour tout mineur à 10 cases du porteur, est abandonnée : mauvaise lecture.)
 
 ### États des mobs et boss (mêmes icônes, au-dessus de leur barre de PV)
 
