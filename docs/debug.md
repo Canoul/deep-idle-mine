@@ -4618,7 +4618,7 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
   échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.
 
-## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : Graphite ingot + Tainted iron au lieu de Graphite ore (branche geoffrey/coffre-roi-loot)
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : Graphite ingot + Tainted iron au lieu de Graphite ore (✅ en ligne le 29/10)
 - **Quoi** : `GOBLIN_KING.loot.always` (src/config.js) : `Graphite ore` 20-40 retiré ; `Graphite ingot` 5-15 et
   `Tainted iron` 10-20 ajoutés (avant les peaux). GAME_DESIGN.md (Roi Gobelin), wiki.html (texte du coffre). Les lignes
   « où le trouver » du wiki viennent de la config (src/wiki/data.js) : rien à changer.

@@ -31,7 +31,7 @@ Modèle d'entrée :
   cape 2 %) **7 %**, soit 1 coffre sur 14 ; la couronne seule 1 sur 100 (50 % de chances de l'avoir en 69 coffres). En
   comptant aussi la recette de chitine (5 %), un parchemin (3,5 %) et une gemme (3 %) : **17,3 %** d'avoir au moins un
   de tout ça (9,8 % une fois la recette et les sorts appris).
-- **État** : 🧪 sur la branche `geoffrey/coffre-roi-loot` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Couronne du Roi Gobelin : un buff du porteur
 - **Pour le joueur** : la couronne n'est plus rangée dans « Bonus de session ». C'est un **buff** (cadre vert) chez
