@@ -4924,3 +4924,19 @@ Règles (voir CLAUDE.md) :
 - ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).
 - **Ajout (même jour)** : gobelins 200 PV (au lieu de 175). Mêmes 6 parties rejouées : 3 victoires (9:10, 9:41, 9:59), 3 échecs
   (roi 733, 1 638 et 3 066 PV). Tests instance-sim 15/15 ✅.
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 : simulation (étape 1 : sim seulement, pas encore jouable)
+- **Quoi** : `INSTANCE.levels` (src/config.js) : 1 = valeurs de base ; 2 = spawner 200 / 15 s, gobelin 350 PV / recul 0,65,
+  roi 6 000 PV, résistance au recul 50 %, coup / 1,25 s, projection tous les 8 coups, rage sous 40 % avec recul 1,3
+  (0,65 × 2), régénération 2 % ; `chest` { res, drop } (multiplicateurs du coffre, pas encore lus). Le recul normal du
+  roi reste 0,5 (pas donné pour le niveau 2). `src/sim/instance/session.js` : `levelCfg(l)`, `instanceLevel(l)`,
+  `INSTANCE_LEVELS` ; `G.level`, `G.cfg` = { spawner, goblin, boss } fusionnés ; tous les `SP.` / `GB.` / `B.` → `G.cfg.*` ;
+  `summary.level`. `buildInstanceGame` passe `record.level`. `scripts/simulate-instance.js --level 2`.
+- **Non-régression** ✅ : les 6 vraies parties rejouées au niveau 1 donnent exactement les mêmes temps qu'avant le remaniement.
+- **Tests** ✅ instance-sim +2 (fusion des réglages, niveau inconnu = 1, PV des spawners / gobelins / roi, summary.level,
+  rage sous 40 %, régénération 2 %), instance-server, instance-key : 29/29.
+- **Mesures niveau 2** : les 6 vraies parties (stuff du 29/10) : 0 victoire, **0 spawner cassé**, jusqu'à 89 gobelins en vie
+  (24 gobelins / min × 350 PV ≈ 140 DPS rien que pour suivre ; les équipes ont 75 à 101). `simulate-instance --level 2`
+  : 0/5 partout. Équipe du record, stats multipliées (5 seeds) : dégâts × 2,5 seuls → 0/5 (roi 4 306) ; dégâts × 3 → 0/5
+  (roi 1 965) ; dégâts × 2 et minage × 1,5 → 5/5 en 9:39 ; × 2,5 et × 1,5 → 8:29 ; × 3 et × 2 → 6:14. Aucune épée au-dessus
+  de l'acier (18,5) aujourd'hui.

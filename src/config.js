@@ -1501,6 +1501,16 @@ export const INSTANCE = {
              qu'aucun mineur n'a posé le pied au sol ; un seuil déjà franchi ne réenferme pas (s'il remonte au-dessus) */
           regenPct: 0.01, regenEvery: 2,
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
+  /* niveaux (29/10/2026, Geoffrey ; comme TOWER.levels) : choisis au lancement dans le Lobby, même clé (une par joueur).
+     Chaque niveau remplace les valeurs ci-dessus qu'il donne (spawner, goblin, boss) ; chest : multiplicateurs du Coffre
+     du Roi Gobelin de ce niveau (res : quantités des ressources sûres, drop : chances des objets). Valeurs provisoires. */
+  levels: {
+    1: { chest: { res: 1, drop: 1 } },
+    2: { spawner: { hp: 200, every: 15 },
+         goblin: { hp: 350, knock: 0.65 },
+         boss: { hp: 6000, knockRes: 50, hitEvery: 1.25, boostEvery: 8, rageBelow: 0.4, ragePush: 1.3, regenPct: 0.02 },   // ragePush : 0,65 × 2
+         chest: { res: 1.5, drop: 1.5 } },
+  },
 };
 
 

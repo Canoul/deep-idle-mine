@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { INSTANCE, STATS, DT } from '../src/config.js';
-import { newInstance, tickInstance, runInstance, instSupported, tackler, INSTANCE_TICKS, leaveInstance, pushMiner, centerX } from '../src/sim/instance/session.js';
+import { newInstance, tickInstance, runInstance, instSupported, tackler, INSTANCE_TICKS, leaveInstance, pushMiner, centerX, levelCfg, instanceLevel, endInstance } from '../src/sim/instance/session.js';
 import { genInstance, ledgesOf, platformOf, ROCK, SPAWNER, CAGE, AIR } from '../src/sim/instance/world.js';
 
 const spec = (i, carac = {}, extra = {}) => ({ name: 'M' + i, account: 'a' + i, carac: { ...STATS, ...carac }, ...extra });
@@ -225,4 +225,37 @@ test("régénération : jamais au-dessus des PV max ; remonté au-dessus d'un se
   run(G, DT);
   assert.equal(G.timeline.cages.length, 1, 'pas de nouvel enfermement');
   assert.notEqual(G.boss.state, 'wait');
+});
+
+test("niveaux (29/10) : le niveau 2 remplace les valeurs qu'il donne, garde les autres ; niveau inconnu = 1", () => {
+  assert.equal(instanceLevel(2), 2); assert.equal(instanceLevel(7), 1); assert.equal(instanceLevel('2'), 1); assert.equal(instanceLevel(undefined), 1);
+  const L2 = INSTANCE.levels[2], c = levelCfg(2);
+  assert.equal(c.goblin.hp, L2.goblin.hp); assert.equal(c.goblin.hitEvery, INSTANCE.goblin.hitEvery, 'gardé du niveau 1');
+  assert.equal(c.boss.hp, L2.boss.hp); assert.equal(c.boss.cageHard, INSTANCE.boss.cageHard);
+  assert.deepEqual(levelCfg(1), { spawner: INSTANCE.spawner, goblin: INSTANCE.goblin, boss: INSTANCE.boss });
+  const G = newInstance(4, { level: 2, miners: [spec(0, STRONG)] });
+  assert.equal(G.level, 2);
+  assert.equal(G.boss.maxhp, L2.boss.hp); assert.equal(G.boss.knockRes, L2.boss.knockRes);
+  assert.ok(G.spawners.every(s => s.maxhp === L2.spawner.hp));
+  run(G, 1);
+  assert.ok(G.goblins.length > 0 && G.goblins.every(o => o.maxhp === L2.goblin.hp));
+  endInstance(G, false);
+  assert.equal(G.summary.level, 2);
+  assert.equal(newInstance(4, { miners: [spec(0)] }).level, 1);
+});
+
+test('niveau 2 : rage sous son seuil, régénération à son taux', () => {
+  const G = newInstance(9, { level: 2, miners: [spec(0, STRONG)] });
+  quiet(G);
+  G.boss.state = 'fight'; G.boss.y = G.floorY; G.boss.hp = G.boss.maxhp * (INSTANCE.levels[2].boss.rageBelow - 0.01);
+  G.boss.phase = INSTANCE.boss.cageAt.filter(f => G.boss.hp <= G.boss.maxhp * f).length;   // pas d'enfermement ici
+  run(G, DT);
+  assert.ok(G.timeline.rage != null, 'enragé sous 40 %');
+  G.boss.state = 'fight'; G.boss.phase = 0; G.boss.hp = G.boss.maxhp * 0.79;   // repasse sous 80 % : enfermement
+  run(G, DT);
+  assert.equal(G.boss.state, 'wait');
+  G.miners[0].action = { type: 'test', dur: 1e9, t: 0, data: {} };
+  const hp = G.boss.hp;
+  run(G, INSTANCE.boss.regenEvery);
+  assert.ok(Math.abs(G.boss.hp - hp - G.boss.maxhp * INSTANCE.levels[2].boss.regenPct) < 1e-6);
 });
