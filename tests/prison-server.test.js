@@ -626,30 +626,12 @@ test('vue du groupe : « prison en cours » par membre (le chef et le membre son
   assert.equal(await of(A, B.id), false);
 });
 
-/* ---------- area au choix et vitesse du mode dev (29/10/2026, Geoffrey) ---------- */
-test('area de la prison : 0 à l\'area max débloquée, l\'area max par défaut ; au-delà ou invalide → refusé', async () => {
-  const { game, store } = setup();
-  await store.putProgress(A.id, { xp: 0, spec: {}, credited: [], areaMax: 3 });
-  assert.deepEqual(await game.prisonAreas(A), { areaMax: 3, max: 3 });
-  for(const bad of [4, -1]) await assert.rejects(game.prisonStart(A, null, { area: bad }), { code: 'area_locked' });
-  for(const bad of [1.5, '2', Infinity]) await assert.rejects(game.prisonStart(A, null, { area: bad }), { code: 'bad_request' });
-  assert.equal((await game.prisonStart(A, null, { area: 1 })).prison.area, 1);
-  assert.equal((await prisonOf(store, A.id)).areaMax, 1);
-  assert.equal(buildPrisonRun(runRecord(await prisonOf(store, A.id))).prison.areaMax, 1);   // la carte a le contenu de l'area 1
-  await game.prisonStop(A);
-  assert.equal((await game.prisonStart(A)).prison.area, 3);                                  // sans choix : l'area max
-  await game.prisonStop(A);
-  const r = await gameRoutes(game)['POST /api/game/prison/start']({ me: A, body: { area: 2 } });
-  assert.equal(r[1].prison.area, 2);
-});
-
-test('mode dev : toutes les areas au choix ; vitesse au lancement et en direct, sans perdre le tick atteint', async () => {
+/* ---------- vitesse du mode dev (29/10/2026, Geoffrey) ---------- */
+test('mode dev : vitesse au lancement et en direct, sans perdre le tick atteint', async () => {
   const { game, store, t } = setup({ dev: true });
-  const { max } = await game.prisonAreas(A);
-  assert.ok(max >= 5);
-  await game.prisonStart(A, null, { area: max, speed: 300 });
+  await game.prisonStart(A, null, { speed: 300 });
   let p = await prisonOf(store, A.id);
-  assert.equal(p.speed, 300); assert.equal(p.areaMax, max);
+  assert.equal(p.speed, 300);
   t.now += 2000;                                                       // 2 s réelles à ×300 = 600 s de jeu
   const before = prisonTickAt(prisonDueMs(p, t.now), p.speed);
   assert.equal(before, 6000);

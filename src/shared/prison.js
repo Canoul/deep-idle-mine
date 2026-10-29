@@ -121,6 +121,6 @@ export const runInfo = G => ({ goal: prisonGoal(G), mined: G.areas[0].oreMined }
 export function publicPrison(p, info = null, { away = p?.away, cfg = PRISON } = {}){
   if(!p) return null;
   const a = away ?? noTotals();
-  return { state: p.state, run: p.run, area: p.areaMax, speed: p.speed, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
+  return { state: p.state, run: p.run, area: p.areaMax, profile: p.profile ?? null, speed: p.speed, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
            waitAt: p.lastSeenAt + cfg.offlineMax, away: { runs: a.runs, energy: a.energy, bag: { ...a.bag } } };
 }

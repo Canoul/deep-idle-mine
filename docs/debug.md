@@ -5192,3 +5192,7 @@ Règles (voir CLAUDE.md) :
   (le test « area de la prison : 0 à l'area max… » attend l'ancien choix hors dev : à réécrire), prison-sim, k hole en prison
   (entrée, retour, fin de run pendant un k hole), `simulate:prison` (le script passe-t-il un profil ? sinon il mesure l'ancien
   contenu), recalage d'oreMul.
+- **Choix d'area retiré** (même jour) : plus de `body.area` (dev compris), plus de `prisonAreas` ni `/prison/areas` ;
+  `GET /api/game/prison/profile` → `{ profile }` (ce que la prison aurait maintenant) ; `publicPrison.profile` (celui de la
+  prison qui tourne). Lobby : `#prisonProfileRow`, texte `prisonProfileText` (src/ui/prison.js). Tests de l'ancien choix
+  retirés (prison-server, prison-ui). ❌ rien relancé (demande de Geoffrey).

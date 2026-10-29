@@ -1,7 +1,7 @@
 /* Prison et énergie côté navigateur (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md) :
    textes de la jauge d'énergie (barre du haut), du bandeau de la prison (onglet Session) et du bilan d'absence.
    Logique pure, testée (tests/prison-ui.test.js) : le serveur calcule tout, ces fonctions ne font que l'écrire. */
-import { ENERGY, PRISON } from '../config.js';
+import { ENERGY, PRISON, BLOCKS, IDS } from '../config.js';
 
 const nf = n => Math.round(n).toLocaleString('fr-FR');
 const ok = v => Number.isFinite(v);
@@ -15,6 +15,22 @@ export const energyPct = e => e && ok(e.value) ? Math.max(0, Math.min(100, e.val
 export function launchCostText(e){
   const { min, max } = ENERGY.cost, base = `Coût : ${min} à ${max} ⚡`;
   return e && ok(e.value) && Math.round(e.value * 10) / 10 < min ? `${base} · pas assez d'énergie (${Math.round(e.value)})` : base;
+}
+
+/* contenu de la prison d'après les 10 dernières mines (profil du serveur, src/meta/prison-profile.js), pour le lobby :
+   « Ta prison aura (d'après tes 7 dernières mines) : area 4 · minerais Fer 60 %, Or 30 % · treasures T2 70 %, T3 30 % ·
+   mobs gobelin 50 %… » ; running : la prison qui tourne (son profil figé) */
+const pctList = (parts, name) => Object.entries(parts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${name(k)} ${Math.round(v * 100)} %`).join(', ');
+const MOB_NAMES = { bestiole:'bestiole', gobelin:'gobelin', mimic:'mimic', occultiste:'occultiste', mephite:'méphite', golem:'golem', chair:'mur de chair' };
+export function prisonProfileText(p, running = false){
+  if(!p) return '';
+  const head = running ? 'Ta prison' : 'Ta prison aura';
+  if(!(p.n > 0)) return `${head} : aucune mine classique dans ton historique, contenu de l'area ${p.area ?? PRISON.fallbackArea}.`;
+  const parts = [`area ${p.area}`];
+  if(p.ores) parts.push('minerais ' + pctList(p.ores, k => BLOCKS[IDS[k]]?.name ?? k));
+  if(p.treasures) parts.push('treasures ' + pctList(p.treasures, k => k.replace('Treasure ', '')));
+  parts.push(p.mobs ? 'mobs ' + pctList(p.mobs, k => MOB_NAMES[k] ?? k) : "mobs de l'area");
+  return `${head} (d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}) : ${parts.join(' · ')}.`;
 }
 
 /* une prison qui tourne ou attend (pas fermée) */

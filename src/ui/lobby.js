@@ -15,7 +15,7 @@ import { drawPortrait } from '../render/portrait.js';
 import { sanitizeLook } from '../meta/stuff.js';
 import { sanitizeAuras } from '../meta/aura.js';
 import { ask, askText } from './dialog.js';
-import { prisonActive, launchCostText, readyPrisonText } from './prison.js';
+import { prisonActive, launchCostText, readyPrisonText, prisonProfileText } from './prison.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -72,14 +72,6 @@ export function launchState({ account, party, offline, busy, session }){
 }
 
 /* bouton principal quand « Prison » est choisie (29/10) : entrer (seul, hors session), ou la voir quand elle tourne */
-/* choix de l'area de la prison (29/10/2026) : areas = { areaMax, max } du serveur ; montré avant d'entrer (pas quand elle
-   tourne : son area est figée) ; choix gardé s'il est permis, sinon l'area max */
-export function prisonAreaState({ areas, prison, choice }){
-  if(!areas || prisonActive(prison) || !Number.isSafeInteger(areas.max) || areas.max < 0) return { show:false, area:null, options:[] };
-  const options = Array.from({ length: areas.max + 1 }, (_, i) => i);
-  const area = Number.isSafeInteger(choice) && choice >= 0 && choice <= areas.max ? choice : Math.min(areas.areaMax ?? areas.max, areas.max);
-  return { show:true, area, options };
-}
 export function prisonLaunchState({ account, party, offline, busy, session, prison }){
   if(prisonActive(prison)) return { can: !offline && !!account, label:'⛓ Voir la prison', action:'view' };
   if(offline || !account) return { can:false, label:'⛓ Entrer en prison' };
@@ -220,14 +212,14 @@ export function slotButtons({ account, party, session }, slot){
   return { promote: leader && slot.kind !== 'invited', kick: leader && !session };
 }
 
-/* h : { onLaunch(opts, { party }), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart({ area }), onPrisonStop(), onShowPrison(), prisonAreas(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
+/* h : { onLaunch(opts, { party }), onPrefs(prefs), onShowSession(), onMode(mode), onJudgment(), onPrisonStart(), onPrisonStop(), onShowPrison(), prisonProfile(), party: { create, join(code), invite(id), decline(code), leave, kick(id), ready(bool), alwaysReady(bool), promote(id), lfg(auto), lfgCancel } }
    Les fonctions du groupe renvoient l'état du groupe ou lèvent une erreur (message lisible). */
 export function setupLobby(h){
   /* session : la session en cours ({ id }) ou null ; pendant une session, le lobby est en lecture seule */
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false, shrines:[],
                session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false, who:null,     // view 'jugement' : jauges à la place de l'équipe
                lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null,
-               prison:null, energy:null, prisonAreas:null, prisonAreasAt:0, prisonArea:null };   // areas de la prison au choix (29/10)   // prison (publicPrison) et énergie ({ value, max }) du serveur (29/10)   // lfgWant : sa recherche, à relancer si le serveur a redémarré
+               prison:null, energy:null, prisonProfile:null, prisonProfileAt:0 };   // contenu de la prison d'après les 10 dernières mines (29/10)   // prison (publicPrison) et énergie ({ value, max }) du serveur (29/10)   // lfgWant : sa recherche, à relancer si le serveur a redémarré
 
   function render(){
     const { account, offline, info, party } = st;
@@ -291,21 +283,15 @@ export function setupLobby(h){
     $('launchCost').textContent = cost ? launchCostText(st.energy) : '';
     $('launchCost').classList.toggle('err', cost && /pas assez/.test($('launchCost').textContent));
     $('prisonStopLobby').hidden = !def?.prison || jv || !prisonActive(st.prison);
-    /* area de la prison (29/10) : mode dev seulement (hors dev, elle vient des 10 dernières mines du joueur) ; relue au
-       serveur en arrivant sur la prison (au plus une fois par minute) */
-    const devArea = !!st.info?.dev;
-    if(devArea && def?.prison && !jv && account && !offline && Date.now() - st.prisonAreasAt > 60e3){
-      st.prisonAreasAt = Date.now();
-      h.prisonAreas?.().then(a => { st.prisonAreas = a; render(); }).catch(() => { st.prisonAreasAt = 0; });
+    /* contenu de la prison (29/10) : d'après les 10 dernières mines ; celui de la prison qui tourne, sinon relu au serveur
+       en arrivant sur la prison (au plus une fois par minute) */
+    if(def?.prison && !jv && account && !offline && !prisonActive(st.prison) && Date.now() - st.prisonProfileAt > 60e3){
+      st.prisonProfileAt = Date.now();
+      h.prisonProfile?.().then(p => { st.prisonProfile = p; render(); }).catch(() => { st.prisonProfileAt = 0; });
     }
-    const pa = devArea && def?.prison && !jv ? prisonAreaState({ areas: st.prisonAreas, prison: st.prison, choice: st.prisonArea }) : { show:false };
-    $('prisonAreaRow').hidden = !pa.show;
-    if(pa.show){
-      st.prisonArea = pa.area;
-      const html = pa.options.map(i => `<option value="${i}">Area ${i}${i === st.prisonAreas.areaMax ? ' (ton max)' : i > st.prisonAreas.areaMax ? ' (dev)' : ''}</option>`).join('');
-      if($('prisonArea').innerHTML !== html) $('prisonArea').innerHTML = html;
-      $('prisonArea').value = String(pa.area);
-    }
+    const ptxt = def?.prison && !jv ? (prisonActive(st.prison) ? prisonProfileText(st.prison.profile, true) : prisonProfileText(st.prisonProfile)) : '';
+    $('prisonProfileRow').hidden = !ptxt;
+    $('prisonProfileRow').textContent = ptxt;
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
@@ -486,7 +472,6 @@ export function setupLobby(h){
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };
   $('lobbyToSession').onclick = () => h.onShowSession?.();
   $('prisonStopLobby').onclick = () => h.onPrisonStop?.();
-  $('prisonArea').onchange = () => { st.prisonArea = +$('prisonArea').value; };
 
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
   $('modulation').onchange = () => render();
@@ -616,7 +601,7 @@ export function setupLobby(h){
       if(!ps.can) return;
       if(ps.action === 'view') return h.onShowPrison?.();
       st.busy = true; render();
-      try { await h.onPrisonStart?.(st.info?.dev ? { area: st.prisonArea ?? undefined } : {}); } finally { st.busy = false; st.prisonAreasAt = 0; render(); }
+      try { await h.onPrisonStart?.(); } finally { st.busy = false; st.prisonProfileAt = 0; render(); }
       return;
     }
     const ls = launchState(st);

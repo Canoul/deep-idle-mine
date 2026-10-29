@@ -25,8 +25,8 @@ Modèle d'entrée :
 ## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
 - **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
   classiques : leur **area moyenne** (pierre, mobs, pièges, donjon), la **répartition de tes minerais**, les **tiers de tes
-  treasures** et les **mobs que tu as tués**. Figé jusqu'à ta sortie. Sans mine derrière soi : l'area 1. La liste « Area »
-  du lobby n'existe plus qu'en mode dev. Pièges et k hole 2 fois plus rares qu'en mine (le k hole n'existait pas en prison).
+  treasures** et les **mobs que tu as tués**. Figé jusqu'à ta sortie. Sans mine derrière soi : l'area 1. Plus de liste
+  « Area » (même en dev) : le lobby affiche ce que la prison contiendra, en %. Pièges et k hole 2 fois plus rares qu'en mine (le k hole n'existait pas en prison).
 - **Décisions** : moins de 10 mines → celles qu'on a ; kills par type enregistrés à partir de maintenant (en attendant,
   les mobs de l'area moyenne) ; total de minerais inchangé (× oreMul), seule la répartition suit l'historique.
 - **À suivre** : ni simulé ni testé (demande de Geoffrey) ; rendement à recaler (oreMul) ; tests de la prison à mettre à jour.

@@ -334,7 +334,7 @@ const lobby = setupLobby({
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
   onPrisonStart: opts => startPrison(opts),
-  prisonAreas: () => gameApi.prisonAreas(),   // areas au choix de la prison (29/10)
+  prisonProfile: () => gameApi.prisonProfile().then(r => r.profile),   // contenu de la prison d'après les 10 dernières mines (29/10)
   onPrisonStop: () => stopPrison(),
   onShowPrison: () => nav.show('session'),
   onLaunch: async (opts, { party } = {}) => {
