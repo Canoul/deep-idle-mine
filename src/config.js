@@ -1692,7 +1692,9 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
    doublé à chaque erreur jusqu'à uiPoll ·
    salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, hors de
    l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). */
-export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5,
+/* spawnDelayMul (29/10/2026, Geoffrey) : l'attente entre deux tirages d'apparition de mobs est × 3 en prison : le mineur
+   est seul, il subit le rythme d'un mineur d'une mine à 3 (où les tirages se partagent entre les 3) */
+export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 3,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3 };
 

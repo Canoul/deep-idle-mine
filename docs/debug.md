@@ -5168,3 +5168,7 @@ Règles (voir CLAUDE.md) :
   compte les anneaux du preset. Lobby : ligne « Ton preset » en tête de `#devPresets`, `devOptions().selfPreset`.
   ✅ dev-presets +1 (14/14), game-service, anneaux, prison-server : 108/108. Vérifié en HTTP (serveur redémarré :
   le code serveur n'est relu qu'au démarrage) : Test_Mus + Ton preset canoul → Couronne, inspiration+zipette.
+- **Mobs en prison** (même jour) : `PRISON.spawnDelayMul` 3, lu dans `spawnMobs` (`src/sim/mobs.js`) quand `G.prison`.
+  Mesure AVANT le changement (`simulate:prison --count 2 --chains 5 --hours 2 --gears acier --areas 5`) : area 5 ratio
+  0,51, runs de 23 min ; area 6 (réf.) ratio 0,29, runs de 36 min. ⚠️ APRÈS : ni simulé ni testé (demande de Geoffrey) ;
+  à mesurer : le rendement monte sans doute (moins de vols de gobelins, moins de combats), oreMul à revoir.

@@ -4,7 +4,7 @@
    frapper (25/10, avant : immobilisé). Recul et portée : src/sim/knock.js. Le gobelin vole des minerais ; l'occultiste se téléporte et étourdit sa cible ; le méphite
    vole (pas de gravité) et asphyxie le mineur qu'il tacle. Le golem (2 × 2) casse les blocs et ébranle la mine
    (src/sim/golem.js). */
-import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, mobHp } from '../config.js';
+import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, PRISON, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, contentAt, contentOf } from './world.js';
 import { log } from './log.js';
 import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
@@ -382,7 +382,7 @@ function spawnMobs(G){
   G.spawnTimer-=DT;
   if(G.spawnTimer>0) return;
   const k=contentOf(G, G.unlockedAreas-1);   // intensité : la dernière area débloquée (prison : son contenu)
-  G.spawnTimer = MOBS.spawnDelay(G.rng, k);
+  G.spawnTimer = MOBS.spawnDelay(G.rng, k) * (G.prison ? PRISON.spawnDelayMul : 1);   // prison : 3 fois moins de tirages (solo)
   const n=G.miners.length; if(!n) return;
   const m=G.miners[G.spawnTurn % n]; G.spawnTurn++;
   if(m.y<=0) return;
