@@ -25,11 +25,11 @@ Modèle d'entrée :
 ## 29/10/2026 — Geoffrey — Instance I plus dure : gobelins plus solides, le roi se régénère dans les cages
 - **Pourquoi** : les 6 parties d'instance jouées le 29/10 étaient toutes des victoires (record 7:12). Le rejeu a montré
   que tout se joue sur les dégâts pendant la phase des spawners ; l'armure ne sert à rien.
-- **Pour le joueur** : les gobelins ont **175 PV** (avant 150) et frappent toutes les **1,75 s** (avant 2 s). Quand le
+- **Pour le joueur** : les gobelins ont **200 PV** (avant 150) et frappent toutes les **1,75 s** (avant 2 s). Quand le
   roi enferme tout le monde, il **régénère 1 % de ses PV toutes les 2 s** tant que personne n'est redescendu au sol. S'il
   remonte au-dessus d'un seuil, il ne réenferme pas en repassant dessous.
-- **Repère** : les 6 vraies parties rejouées avec ces règles : 5 victoires, vers 9:10-9:30 (le roi reprend ≈ 350 PV par
-  cage). L'équipe la plus faible (canoul, Sõnata, Allaiks) échoue, roi à 784 PV.
+- **Repère** : les 6 vraies parties rejouées avec ces règles : 3 victoires, en 9:10-9:59 (le roi reprend ≈ 350 PV par
+  cage). Les deux parties de canoul, Sõnata et Allaiks échouent, et une des trois de Nbrick, Akake et LeTaz.
 - **À suivre** : la simulation de l'instance (`npm run simulate:instance`) ne compte ni skills, ni sorts, ni améliorations :
   à refaire avec de vrais profils. Rendre la défense utile dans l'instance (piste à discuter).
 - **État** : 🧪 sur la branche `geoffrey/instance-regen-roi` (pas en ligne)

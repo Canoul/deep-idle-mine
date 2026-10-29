@@ -58,8 +58,8 @@ test('casser un spawner : INSTANCE.spawner.hp « coups de pioche » à la vitess
   assert.ok(Math.abs(s.hp - (HP - INSTANCE.spawner.dynamite - 2)) < 0.6, `Dynamite : ${s.hp}`);
 });
 
-test('gobelin : 175 PV (29/10 ; avant 150), le premier coup tacle, recul de 0,5 vers le centre à chaque coup (27/10 ; avant 30 %)', () => {
-  assert.equal(INSTANCE.goblin.hp, 175);
+test('gobelin : 200 PV (29/10 ; avant 150), le premier coup tacle, recul de 0,5 vers le centre à chaque coup (27/10 ; avant 30 %)', () => {
+  assert.equal(INSTANCE.goblin.hp, 200);
   const G = newInstance(3, { miners: [spec(0, { damage: 0.001, knockRes: 0 })] });
   quiet(G);
   const m = G.miners[0]; m.x = 4; m.y = G.floorY;

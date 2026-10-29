@@ -1490,7 +1490,7 @@ export const INSTANCE = {
      TOWER.view) ; avant : toute la salle à l'écran */
   view: { cols: 14, rows: 11 },
   spawner: { hp: 125, every: 20, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200) ; un gobelin toutes les 20 s (27/10, Geoffrey ; avant 30)
-  goblin: { hp: 175, hitEvery: 1.75,   // 175 PV, un coup toutes les 1,75 s (29/10, Geoffrey ; avant 150 PV et 2 s ; le 27/10 : 125 PV)
+  goblin: { hp: 200, hitEvery: 1.75,   // 200 PV, un coup toutes les 1,75 s (29/10, Geoffrey ; avant 150 PV et 2 s, puis 175 PV le même jour ; le 27/10 : 125 PV)
             knock: 0.5, knockChance: 1, step: 0.45 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible) ; step : une case toutes les 0,45 s, vitesse × 2 (27/10, Geoffrey ; avant 0,9)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,

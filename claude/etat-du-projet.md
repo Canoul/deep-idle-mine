@@ -121,13 +121,13 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
   gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 % ; **craft de base** depuis le 28/10, ancien : plan du Treasure T4), consommée au lancement avec la
   création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
-  gobelins 175 PV et un coup / 1,75 s (29/10 ; ancien : 150 PV, 2 s), tacle au premier coup, recul vers le centre), roi gobelin
+  gobelins 200 PV et un coup / 1,75 s (29/10 ; ancien : 150 PV, 2 s), tacle au premier coup, recul vers le centre), roi gobelin
   3 500 PV (3 × 3, enferme tous les 20 %, **régénère 1 % / 2 s après un enfermement tant que personne n'est au sol**
   (29/10), rage sous 33 %), 10 min. **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
   20/20 (`npm run simulate:instance`) ; seul : impossible. ⚠️ Ce script ne donne aux mineurs que le stuff de base (ni skills,
   ni sorts, ni améliorations, ni runes) : il sous-estime les vrais joueurs (0/5 en acier le 29/10 alors que les 6 vraies
-  parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 175 PV
-  / 1,75 s, régénération) = 5 victoires, vers 9:10-9:30. Seule l'attaque compte (pas de PV pour les mineurs).
+  parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 200 PV
+  / 1,75 s, régénération) = 3 victoires, en 9:10-9:59. Seule l'attaque compte (pas de PV pour les mineurs).
 - **Tier 4 : Treasure T4, mithril, thorium, cobalt** (27/10, Geoffrey ; GAME_DESIGN « Tier 4 », config `LOOT['Treasure T4']`,
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à
   l'area 6) ; four : Mithril ingot, Refined cobalt / thorium (`ore:5` par fournée), alliages Cobalt / Thorium ingot ; armures

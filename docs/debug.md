@@ -4922,3 +4922,5 @@ Règles (voir CLAUDE.md) :
   (8:35 à 9:33, combat 136-158 s, ≈ 350 PV repris par cage, soit ≈ 20 s avant qu'un mineur touche le sol), 1 échec (roi
   784 PV). `simulate-instance --size 3 --count 5` : 0/5 partout (acier : roi 2 226 PV), 0 bloqué.
 - ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).
+- **Ajout (même jour)** : gobelins 200 PV (au lieu de 175). Mêmes 6 parties rejouées : 3 victoires (9:10, 9:41, 9:59), 3 échecs
+  (roi 733, 1 638 et 3 066 PV). Tests instance-sim 15/15 ✅.
