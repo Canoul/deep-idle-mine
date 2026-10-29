@@ -24,6 +24,16 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Jules — Correctif : le Carreau sur téléphone
+- **Pour le joueur** : sur téléphone, toucher l'écran pour marcher ouvrait l'onglet du premier bâtiment touché : on ne
+  pouvait pas se promener. Maintenant, au doigt, on marche là où on touche et on n'entre jamais tout seul ; devant une
+  porte, un bouton **« Entrer : Fonderie »** (ou « Préparer une session » devant le chevalement et la place) apparaît.
+  Sur téléphone en hauteur, la ville se cale sur la largeur de l'écran (la rue juste au-dessus du chat et de la barre,
+  le ciel en haut), le chat global est replié (le champ pour écrire ; toucher « Chat global » déplie les messages) et
+  le bouton se place sous le bandeau, dans le ciel. Sur ordinateur, rien ne change (clic sur un bâtiment = y aller
+  puis entrer, touche E), le bouton s'ajoute en bas au milieu.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Inventaire : onglets par type d'objet
 - **Pour le joueur** : au-dessus de la grille, une rangée d'icônes filtre l'inventaire : tout, blocs, minerais, stuff,
   butin des mobs, matériaux (gemmes, lingots, alliages, shiny, plumes, cristaux, argent), runes, divers (coffres, clés,

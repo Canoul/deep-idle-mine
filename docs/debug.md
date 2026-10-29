@@ -4868,3 +4868,17 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ inventory (nouveau test : tout objet du catalogue a un onglet, cas demandés, filtre sans trou), stuff :
   24/24. ⚠️ Pas vu à l'écran (pas de navigateur ici).
 
+## 29/10/2026 — Correctif : le Carreau sur téléphone (Jules)
+- **Symptôme** (retour d'un joueur) : en promenade sur mobile, chaque toucher ouvrait un onglet (« y aller puis
+  entrer » sur le bâtiment touché, et les bâtiments couvrent presque tout l'écran).
+- `src/ui/town.js` : `tapAction(hit, tx, touch)` (pur, exporté) : au doigt / stylet (`e.pointerType`), marcher jusqu'à
+  `tx` sans entrer ; à la souris, un bâtiment = sa porte + entrer (comme avant). Bouton `.townEnter` (« Entrer : nom »,
+  `enterLabel`) affiché devant une porte, sur tous les écrans. Téléphone en hauteur (`innerWidth < innerHeight`) :
+  `TOWN.portraitCols` (12) cases en largeur, canvas calé sur la largeur, rue posée au-dessus de la barre d'action ou du
+  chat replié (`limit`), fond `TOWN.sky[0]` au-dessus ; bouton sous `.townHint` ; pas de « E : … » sous les noms. Chat :
+  classe `mini` quand il est au-dessus de la barre (`placeChat`), liste cachée tant qu'on n'a pas touché le titre (`open`).
+- **Tests** ✅ `tests/town.test.js` 23/23 (nouveau : `tapAction`, `enterLabel`), `boot-check`. ✅ Vérifié en émulation
+  mobile (playwright `--mobile`) : 4 touchers à droite = la place traversée jusqu'au Concasseur sans onglet ouvert, bouton
+  « Entrer : Concasseur » → onglet ouvert ; ordinateur 1600 × 900 : clic sur le chevalement → Lobby, bouton en bas.
+- ⚠️ Pas vérifié sur un vrai téléphone ni en paysage sur téléphone (mode « couvrir l'écran » comme sur ordinateur).
+

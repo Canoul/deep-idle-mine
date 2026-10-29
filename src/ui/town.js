@@ -28,6 +28,15 @@ const LEFT = new Set(['ArrowLeft', 'q', 'Q', 'a', 'A']), RIGHT = new Set(['Arrow
 const ENTER = new Set(['e', 'E', 'ArrowUp', 'Enter', 'z', 'Z', 'w', 'W']);
 /* bâtiment → onglet ouvert en y entrant (le chevalement mène au Lobby : c'est là qu'on lance une session) */
 export const enterTab = b => b.tab === 'session' ? 'lobby' : b.tab;
+/* texte du bouton « Entrer » (et de l'indication sous le nom du bâtiment) devant la porte de b */
+export const enterLabel = b => b.tab === 'session' || b.tab === 'lobby' ? 'Préparer une session' : `Entrer : ${b.name}`;
+
+/* toucher / cliquer dans la ville : hit = bâtiment touché (ou null), tx = case visée, touch = doigt (pas la souris).
+   Renvoie { to : où marcher, enter : entrer en arrivant }. Au doigt (29/10, retour mobile : toucher pour marcher faisait
+   entrer dans le premier bâtiment touché, puis ramenait à sa porte, la place est large) : on marche là où on a touché,
+   on n'entre jamais tout seul ; devant une porte, le bouton « Entrer » fait le reste. À la souris, un clic sur un
+   bâtiment y va puis entre. */
+export const tapAction = (hit, tx, touch) => hit && !touch ? { to: hit.door, enter: true } : { to: tx, enter: false };
 
 /* joueurs reçus du serveur → joueurs affichés : prev (Map id → affiché) gardé pour ceux qui y sont encore (ils marchent
    de leur place affichée x vers leur nouvelle place tx) ; un nouveau venu apparaît directement à sa place ; un absent
@@ -64,12 +73,18 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
   root.appendChild(cv);
   const hint = document.createElement('div');
   hint.className = 'townHint';
-  hint.innerHTML = '<b>Le Carreau</b><span>← → marcher · clic : aller · <kbd>E</kbd> entrer · clic sur un joueur : sa fiche</span>'+
+  hint.innerHTML = '<b>Le Carreau</b><span>← → ou toucher : marcher · <kbd>E</kbd> ou bouton : entrer · toucher un joueur : sa fiche</span>'+
     `<div class="townEmotes">${TOWN.emotes.map(e => `<button data-emote="${e.id}" title="${esc(e.name)}">${e.icon}</button>`).join('')}</div>`;
   root.appendChild(hint);
   const card = document.createElement('div');
   card.className = 'townCard'; card.hidden = true;
   root.appendChild(card);
+  /* bouton « Entrer » devant une porte (indispensable au doigt : on n'entre plus en touchant le bâtiment) */
+  const enterBtn = document.createElement('button');
+  enterBtn.className = 'townEnter on'; enterBtn.hidden = true;
+  enterBtn.onclick = () => enter(near());
+  root.appendChild(enterBtn);
+  let enterFor = null;
   const chatSlot = document.createElement('div');
   chatSlot.className = 'townChat';
   root.appendChild(chatSlot);
@@ -79,7 +94,11 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     const below = !d || avail >= TOWN.chatMin;
     Object.assign(chatSlot.style, below ? { bottom: gap / 2 + 'px', width: Math.min(TOWN.chatMax, avail) + 'px' }
                                         : { bottom: innerHeight - d.top + gap / 2 + 'px', width: Math.min(TOWN.chatMax, innerWidth - 2 * gap) + 'px' });
+    /* au-dessus de la barre (téléphone) : replié, le champ pour écrire seulement (les messages sont en bulles) ;
+       toucher « Chat global » déplie la liste */
+    chatSlot.classList.toggle('mini', !below);
   }
+  chatSlot.addEventListener('click', e => { if(chatSlot.classList.contains('mini') && e.target.closest('h2')) chatSlot.classList.toggle('open'); });
   addEventListener('resize', () => { if(free) placeChat(); });
   const r = createTownRenderer(cv);
   let on = load(KEY, '1') !== '0';
@@ -154,23 +173,41 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
 
   /* clic : un joueur → sa fiche ; un bâtiment (sa façade) → y aller puis entrer ; ailleurs → y aller */
   root.addEventListener('pointerdown', e => {
-    if(!free || e.target.closest('.townHint, .townCard, .townChat')) return;
+    if(!free || e.target.closest('.townHint, .townCard, .townChat, .townEnter')) return;
     const b = cv.getBoundingClientRect(), s = b.height / (TOWN.rows * TOWN_TILE);
     const tx = camX + (e.clientX - b.left) / s / TOWN_TILE, ty = (e.clientY - b.top) / s / TOWN_TILE;
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
     if(who){ openCard(who, e.clientX, b.top + (TOWN.ground - 1.7) * s * TOWN_TILE); return; }
     closeCard();
-    const hit = ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - k.h);
-    if(hit){ go(hit.door); enterOnArrive = hit; if(Math.abs(x - hit.door) < 0.05) enter(hit); }
-    else { go(tx); enterOnArrive = null; }
+    const hit = (ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - k.h)) || null;
+    const act = tapAction(hit, tx, e.pointerType === 'touch' || e.pointerType === 'pen');
+    go(act.to);
+    enterOnArrive = act.enter ? hit : null;
+    if(act.enter && Math.abs(x - hit.door) < 0.05) enter(hit);
   });
 
+  root.style.background = TOWN.sky[0];                     // au-dessus de la ville (téléphone en hauteur) : le haut du ciel
+  let portrait = false;
   function size(){
-    r.setCols(TOWN.rows * innerWidth / Math.max(1, innerHeight));
-    /* plein écran, proportions gardées : le canvas couvre la fenêtre */
-    const s = Math.max(innerWidth / cv.width, innerHeight / cv.height);
-    Object.assign(cv.style, { width: cv.width * s + 'px', height: cv.height * s + 'px',
-      left: (innerWidth - cv.width * s) / 2 + 'px', top: (innerHeight - cv.height * s) / 2 + 'px' });
+    portrait = innerWidth < innerHeight;
+    r.setCols(portrait ? TOWN.portraitCols : TOWN.rows * innerWidth / Math.max(1, innerHeight));
+    if(!portrait){
+      /* plein écran, proportions gardées : le canvas couvre la fenêtre */
+      const s = Math.max(innerWidth / cv.width, innerHeight / cv.height);
+      Object.assign(cv.style, { width: cv.width * s + 'px', height: cv.height * s + 'px',
+        left: (innerWidth - cv.width * s) / 2 + 'px', top: (innerHeight - cv.height * s) / 2 + 'px' });
+      enterBtn.style.top = enterBtn.style.bottom = '';
+      return;
+    }
+    /* téléphone en hauteur (29/10) : la ville en largeur (TOWN.portraitCols cases), la rue posée juste au-dessus de la
+       barre d'action, ou du chat replié en promenade ; le sous-sol passe derrière la barre, le ciel remplit le haut */
+    const s = innerWidth / cv.width, tile = cv.height / TOWN.rows * s;
+    let limit = document.querySelector('.dock')?.getBoundingClientRect().top ?? innerHeight;
+    if(free && chatSlot.classList.contains('mini')) limit = Math.min(limit, chatSlot.getBoundingClientRect().top);
+    Object.assign(cv.style, { width: innerWidth + 'px', height: cv.height * s + 'px', left: '0px',
+      top: Math.round(limit - 4 - (TOWN.ground + 1) * tile) + 'px' });
+    /* bouton « Entrer » sous le bandeau d'aide, dans le ciel : il ne cache ni le mineur ni la rue */
+    enterBtn.style.top = Math.round(hint.getBoundingClientRect().bottom + 12) + 'px'; enterBtn.style.bottom = 'auto';
   }
   /* joueurs affichés, moi en dernier (dessiné par-dessus) */
   let walking = false;
@@ -214,8 +251,10 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     camX = Math.min(Math.max(0, x - r.cols / 2), Math.max(0, TOWN_WIDTH - r.cols));
     cv.style.filter = free ? '' : `brightness(${TOWN.dim}) saturate(.8)`;
     const b = free ? near() : null;
+    if(b !== enterFor){ enterFor = b; enterBtn.hidden = !b; if(b) enterBtn.textContent = enterLabel(b); }
     r.draw({ camX, players: shownPlayers(), labels: free, near: b, statue, judgment, meX: x,
-             hint: b ? (b.tab === 'session' || b.tab === 'lobby' ? 'E : préparer une session' : 'E : entrer') : null }, now);
+             /* « E : … » sous le nom du bâtiment, sauf au téléphone (pas de clavier : le bouton suffit) */
+             hint: b && !portrait ? (b.tab === 'session' || b.tab === 'lobby' ? 'E : préparer une session' : 'E : entrer') : null }, now);
   }
 
   return {
