@@ -36,7 +36,7 @@ Modèle d'entrée :
     une tour / une instance, l'arrête (le coffre est versé, pas le sac du mineur).
 - **Décisions** : la taille de la carte ne bouge pas, on règle la part de minerais (`oreMul` 0,52 : acier ≈ 0,48 et fer ≈ 0,43
   de la part d'un joueur dans une mine à 3, en poids de minerais ; c'est provisoire). Dans la prison, le donjon est à gauche du puits
-  (pas de place à droite) et il n'y a pas de treuil. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
+  (pas de place à droite). Un logisticien qui a le Treuil l'installe dès le début de chaque run : il remonte et redescend plus vite. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
   ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
 - **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
   coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, ≈ 10 min avec les

@@ -10,6 +10,7 @@ import { DT, PRISON, CHEST_X } from '../config.js';
 import { hash } from '../core/rng.js';
 import { newSession, tick, endSession } from './session.js';
 import { log } from './log.js';
+import { maxRow } from './world.js';
 
 /* seed d'un run : la seed de la prison et le numéro du run (chaque run a sa carte) */
 export const runSeed = (seed, run) => (hash(seed, run) ^ PRISON.salt) | 0;
@@ -21,7 +22,19 @@ export function newPrisonRun(seed, { miner = {}, areaMax = 0, run = 1, id, accou
   G.prison.run = run;
   G.prison.endTick = null;   // tick de la fin du run (but atteint ou temps max), null avant
   log(G, `⛓ Run ${run} : prison (contenu de l'area ${G.prison.areaMax + 1})`);
+  startWinch(G);
   return G;
+}
+
+/* treuil (29/10/2026, Geoffrey : l'atout du logisticien en prison) : dans la mine il se pose au déblocage d'une area,
+   la prison n'en a qu'une ; un logisticien qui a le skill Treuil part donc l'installer dès le début du run, jusqu'au
+   fond de la carte (ascenseur avec le Glyphe Treuil, comme au premier déblocage de la mine) */
+function startWinch(G){
+  const m = G.miners[0];
+  if(!m?.skill?.winch) return;
+  const bottom = maxRow(G), lift = !!m.skill.glyph_winch;
+  m.winchJob = { bottom, ...(lift ? { lift:true } : {}) };
+  log(G, lift ? `🛗 ${m.name} part installer l'ascenseur de la prison` : `🪣 ${m.name} part installer le treuil de la prison`);
 }
 
 /* nombre de blocs de minerai à miner pour finir le run */
