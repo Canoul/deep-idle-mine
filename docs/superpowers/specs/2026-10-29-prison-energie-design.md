@@ -55,12 +55,13 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
 
 ### La carte
 
-- **Une seule area de 25 × 25** *(29/10, Geoffrey)* (`PRISON.width`, `PRISON.height`), avec la **composition de
-  l'area max débloquée** par le joueur (minerais, blocs, mobs de cette area). Area max d'un nouveau joueur : 0.
+- **Une seule area, 25 de large et 50 de haut** *(29/10, Geoffrey ; la hauteur d'une area normale, `AREA_H`)*
+  (`PRISON.width`), avec la **composition de l'area max débloquée** par le joueur (minerais, blocs, mobs de cette
+  area). Area max d'un nouveau joueur : 0.
 - **Plus petite que la mine** : la largeur du jeu reste 50 cases ; les colonnes de chaque côté sont des **barreaux
-  incassables** (nouveau bloc « Barreaux de prison », non minable), et la carte s'arrête à 25 lignes (la barrière du
-  fond de la mine en dessous). Donjon (10 × 10) et pièges (5 × 3) sont placés dans ces 25 × 25.
-- **Pourcentage de minerais réglé** *(29/10, Geoffrey)* : la taille reste 25 × 25 ; c'est la part de minerais de la
+  incassables** (nouveau bloc « Barreaux de prison », non minable) ; en dessous des 50 lignes, la barrière du fond de
+  la mine. Donjon (10 × 10) et pièges (5 × 3) sont placés entre les barreaux.
+- **Pourcentage de minerais réglé** *(29/10, Geoffrey)* : la taille reste 25 × 50 ; c'est la part de minerais de la
   composition (`PRISON.oreMul`, au détriment de la pierre et de la terre) qui est ajustée par simulation pour tomber
   sur la cible (voir « Équilibrage »).
 - Même surface que la mine : coffre, départ, treuil, échelles, torches, lumière, oxygène, pods.
@@ -104,7 +105,7 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
   rapportés. Repère du 29/10 : session à 3 ≈ 4 100 pods de coffre, soit ≈ 1 380 par joueur → **≈ 690 pods par heure
   de jeu** en prison.
 - Réglage par `npm run simulate:prison` (nouveau script) : rendement par heure de jeu, durée moyenne d'un run, runs
-  par heure, énergie par heure, pour plusieurs stuffs et areas max ; la taille reste 25 × 25, c'est la part de
+  par heure, énergie par heure, pour plusieurs stuffs et areas max ; la taille reste 25 × 50, c'est la part de
   minerais (`PRISON.oreMul`) qui est réglée pour tomber sur la cible.
 - Énergie : à 8 par heure de jeu en prison et 9 en moyenne par session, un joueur qui alterne tient ≈ 11 sessions de
   mine par jour (≈ 22 en beta, vitesse ×2) ; en partant de 100, ≈ 11 sessions d'affilée.
@@ -113,9 +114,9 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
 
 ### Simulation (`src/sim/prison.js`)
 
-- Un run = une partie de mine (`newSession`) avec des options `prison` : une area de 25 lignes générée avec la
+- Un run = une partie de mine (`newSession`) avec des options `prison` : une area (50 lignes) générée avec la
   composition de `areaMax` (part des minerais × `oreMul` ; la génération prend l'area à copier en paramètre, son
-  numéro de profondeur reste 0 ; donjon et pièges tirés dans la largeur et la hauteur de la prison), colonnes de barreaux,
+  numéro de profondeur reste 0 ; donjon et pièges tirés dans la largeur de la prison), colonnes de barreaux,
   `treasureMul`, `rareMul`, pas de k hole, pas de shrines, pas de Gallianix, pas d'autre area à débloquer, **pas de
   fin à l'heure** (`SESSION_LEN` ignoré ; l'IA ne voit pas de « fin de session » à l'heure).
 - `G.resetGoal` (minerais à miner) ; quand il est atteint, l'IA reçoit la fin de run (même chemin que la fin de session,
