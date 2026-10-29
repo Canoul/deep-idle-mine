@@ -117,6 +117,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     `/api/admin/judgment`, même clé que give-item, sans redémarrage).
   - Retirer un objet (26/10) : `sudo node scripts/take-item.js --name X --item "Glyphe Ruée"` (route `/api/admin/take` ;
     inventaire puis glyphe posé, tout ou rien, sans redémarrage).
+  - Lobbies (29/10) : `sudo node scripts/move-to-lobby.js --name X --to Y` (met X dans le lobby de Y, route
+    `/api/admin/party-move`) et `sudo node scripts/set-ready.js --name X [--always on|off] [--ready on|off]` (route
+    `/api/admin/party-ready`), sans redémarrage.
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi

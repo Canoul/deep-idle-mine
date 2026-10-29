@@ -5057,3 +5057,17 @@ Règles (voir CLAUDE.md) :
   craft, wiki, rune, game-service : 100/100 ; `npm run test:anticheat` 111/111. ⚠️ Pas vu à l'écran.
 - Point fragile : une rune donnée par `adminGive` n'a ni qualité ni lignes et disparaît à la relecture (déjà le cas avant) ;
   pour tester, fabriquer la rune avec la recette.
+
+## 29/10/2026 — Administration des lobbies (Geoffrey)
+- **Quoi** : `server/party/service.js` : `adminMove(player, host)` (comptes ; comme `joinFriend` sans amitié : groupe de host
+  créé s'il n'en a pas, ancien groupe quitté, sortie de la file LFG, `unready` comme `join`) et `adminReady(player, { ready,
+  always })` (comme `ready` + `alwaysReady` ; « tout le temps » l'emporte, `alwaysOn` mis à jour ; possible en session).
+  Ajoutées à `actions` (donc enregistrées par `saving`). `server/admin/routes.js` : `POST /api/admin/party-move` {name, to},
+  `POST /api/admin/party-ready` {name, ready?, always?}, `party` passé par `server/app.js` (503 sans service de groupes),
+  log « Admin : … » avec l'état du lobby. Scripts `scripts/move-to-lobby.js`, `scripts/set-ready.js` (admin-client.js).
+- **Tests** ✅ `tests/admin-party.test.js` (7 : déplacement et ancien groupe, « pas prêt » à l'arrivée, prêt → lancement,
+  « tout le temps » en session, refus session / complet / même joueur / inconnu, valeurs invalides, fermé sans clé ou derrière
+  un relais, les deux scripts) ; admin, admin-take, admin-khole, give-item, party : 62/62.
+- ⚠️ La branche `geoffrey/prison` touche aussi `server/party/service.js` (ajouts en fin de `actions` : conflit possible,
+  simple, à la fusion). Pas essayé sur le VPS.
+
