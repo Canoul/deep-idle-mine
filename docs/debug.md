@@ -4870,3 +4870,33 @@ Règles (voir CLAUDE.md) :
   fer : 0,6 → 0,62 ; 0,55 → 0,57 ; 0,5 → 0,43. Références : acier 1388 minerais/h, fer 1149 (sur 2873 / 2418 pods).
 - **`PRISON.oreMul` = 0,52** (acier ≈ 0,5, fer ≈ 0,5 par interpolation ; non mesuré tel quel, incertitude ±0,1). Tests ✅ `tests/prison-sim.test.js` 14/14, aucune assertion changée
   (elles lisent `PRISON.oreMul`). À vérifier : mesure à 10 chaînes à 0,52, arbres logisticien/barbare, areas 1/3, stuff de base (mineur étourdi par les occultistes).
+
+## 29/10/2026 — Prison et énergie : documentation et vérification finale (Geoffrey, branche geoffrey/prison) 🧪
+- **Quoi** : docs seulement (`GAME_DESIGN.md` sections Énergie et Prison, `wiki.html` section `#prison` + sommaire + lien du lobby,
+  `src/wiki/wiki.js` remplit les valeurs depuis `ENERGY` / `PRISON` / `AREA_H`, `tests/wiki.test.js` vérifie les ids,
+  `claude/etat-du-projet.md`, `docs/journal.md`). Aucune règle changée.
+- **Fichiers du chantier** : `src/config.js` (`ENERGY`, `PRISON`), `src/meta/energy.js`, `src/sim/prison.js` (+ world, ai, session, dungeon, mobs, trap),
+  `src/shared/prison.js`, `server/game/service.js` (énergie, prison, paquets), `live.js`, `store.js`, `routes.js`, `src/ui/prison.js`, `lobby.js`, `src/main.js`,
+  `scripts/simulate-prison.js`.
+- **Vérification (29/10)** ✅ `node --test tests/energy*.test.js tests/prison*.test.js tests/area-max.test.js` + wiki : 80/80 puis wiki et boot-check 19/19 ;
+  `npm run test:anticheat` 115/115 ; `npm run simulate -- --miners 3 --count 5` : 0 bloquée (areas 3,0, profondeur 190, coffre 4141 pods, 226 s) ;
+  `npm run simulate:prison` (défaut, 3 chaînes) : acier / mineur area 5 : ratio minerais 0,47, 2,48 runs/h, run moyen 24 min.
+  Mesure de référence à 10 chaînes (T5) : acier 0,48, fer 0,43, runs ≈ 24–31 min. ⚠ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » échoue déjà sur main (non lié).
+- **Chiffres** : `oreMul` 0,52 = valeur provisoire (fer un peu sous la cible ; si besoin ≈ 0,55 : fer ≈ 0,46, acier ≈ 0,51, estimé). Coût serveur ≈ 7 min de CPU par joueur
+  et par jour à ×2 pour une prison 24 h/24 ; les paquets ×300 le concentrent, ne le réduisent pas.
+- **À vérifier** : mesure à 10 chaînes à 0,52 pour les arbres logisticien / barbare, areas 1/3, stuff de base (mineur étourdi sans fin par les occultistes en area 5, run fini à `runMax`) ;
+  passage en ligne : rattrapage de `areaMax` depuis `session_stat` (parcours à chaque fin de mine tant que areaMax = 0).
+- **Points fragiles (mineurs repoussés, encore ouverts)** :
+  - Énergie : `sanitizeEnergy(-Infinity)` → 100 ; `rollCost` non borné si `random` hors [0,1) ; clés d'énergie : mémoire de 200, une clé plus vieille peut être rejouée ;
+    énergie écrite juste avant `putGameSession` (plantage entre les deux = énergie perdue, jamais dupliquée) ; tests manquants : tour (énergie inchangée), éviction des clés.
+  - Lancement : peut arrêter la prison puis échouer (shrines / écriture de session) : rien de dupliqué, prison arrêtée à tort.
+  - Prison, paquets : `batching` jamais nettoyé pour une prison arrêtée en plein paquet ; `prisonIndex` garde une promesse rejetée ; `runsClosed` ne fait que grandir et `pump` relit
+    toutes les prisons ; `totals` / `away` perdent un run si le versement échoue après l'inventaire ; un arrêt volontaire compte dans `away` (> 30 s sans vue) ;
+    `lastAbsence` ne garde que la dernière absence, est effacé dès l'envoi (perdu si la réponse n'arrive pas) ; présence en mémoire perdue au redémarrage (≤ 60 s) ;
+    pas de test de `prisonStop` après `live.closeAll()`.
+  - Sim : `G.endAt` et `G.duckBase` valent Infinity (→ null en JSON) ; `simulate:prison` par défaut bruité (3 chaînes) ; pas de plafond de ticks dans sa boucle.
+  - Navigateur (⚠ à corriger avant mise en ligne) : bandeau calculé avec l'horloge locale au lieu de `serverNow()` (`main.js`) ; `syncAccount` → `setProgress` sans garde `st.ended` ;
+    erreurs du sondage de la prison (401 / 500) seulement en console ; finitions : panneau « Area 0 » contre journal « contenu de l'area N », « Coffre commun » / « XP de la session » en solo,
+    « Voir la prison » pendant une MI, pas d'état « chargement », couleur rouge par regex, logique `setPrison` non testée.
+  - Décisions à faire trancher : résidus de prison sans jauges du Jugement ni Discord ; refus d'énergie sans compter le run en cours (un joueur à 5 dont le run rendrait 2 est refusé) ;
+    treuil absent en prison (la récupération du sac de Mule reste prête pour le jour où).

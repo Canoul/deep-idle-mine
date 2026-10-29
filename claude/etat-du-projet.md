@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 29/10/2026 (le Carreau, ville du spawn, en ligne).*
+*Dernière mise à jour : 29/10/2026 (la Prison et l'énergie, sur la branche `geoffrey/prison`, pas en ligne).*
 
 ---
 
@@ -41,6 +41,22 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
+
+- **Énergie** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `ENERGY`, `src/meta/energy.js`) : jauge par
+  compte 0 à 100, départ 100. Lancer une **mine classique** coûte un entier tiré par le serveur dans [6, 12] par joueur (bots
+  et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
+  refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
+  plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
+  `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Carte 25 × 50
+  (une area, contenu de l'area max débloquée du joueur), barreaux de chaque côté, pas de treuil, k hole, shrines ni Gallianix, donjon à gauche
+  du puits (`dungeonWinchGap` 3). Minerais × `oreMul` 0,52 (pris sur pierre, terre, pierre dure) : mesuré à 0,48 (acier) et 0,43 (fer)
+  de la part d'un joueur d'une mine à 3, en poids de minerais ; treasures et butins rares × 0,5 ; run fini à 80 % des minerais (ou 3 h de
+  jeu) : remontée, coffre versé (clé `prison:<id>:<run>`), XP et énergie, run suivant. Résidus dans l'inventaire sans jauges du Jugement
+  ni Discord. Arrêt (bouton, ou lancement d'une mine / tour / instance) : coffre versé, pas le sac. Rythme : en direct quand le jeu est
+  ouvert (`uiPoll` 15 s), sinon paquets toutes les 10 min réelles dès 10 min après la dernière visite, pause après 24 h sans visite, reprise
+  sans rejouer l'attente ; seule la vue de la prison rattrape (`state()` note la présence). Coût serveur : ≈ 7 min de calcul par joueur et
+  par jour à ×2 (les paquets le concentrent, ne le réduisent pas).
 
 - **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
   `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une

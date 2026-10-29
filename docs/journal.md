@@ -24,12 +24,25 @@ Modèle d'entrée :
 
 ---
 
-## 29/10/2026 — Geoffrey — Spec : la Prison (farm AFK solo) et l'énergie
-- **Pour le joueur** : rien pour l'instant, c'est une spec. L'idée : un mode solo sans fin, la **Prison**, qui tourne
-  même hors ligne (24 h au plus), rapporte la moitié d'une mine à 3 et recharge l'**énergie** (8 par heure de jeu) ;
-  lancer une mine classique coûte 6 à 12 d'énergie sur 100.
-- **Décisions** (Geoffrey) : celles des questions du 29/10, dans `docs/superpowers/specs/2026-10-29-prison-energie-design.md`.
-- **À suivre** : relecture de la spec par Geoffrey, puis le plan de réalisation.
+## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
+- **Pour le joueur** : deux nouveautés liées.
+  - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur
+    du groupe). À partir de 6 on peut toujours lancer : si le coût tiré dépasse ce qui reste, on paie le reste et on tombe à 0.
+    En dessous de 6, lancement refusé (le groupe voit qui est à court). Rien d'autre ne coûte d'énergie. Pas de coût en mode dev.
+  - **Prison** : un mode solo sans fin (Lobby, « Où miner » → Prison). Petite mine de 25 × 50 entre deux rangées de barreaux, au
+    contenu de la plus profonde area débloquée, avec moins de minerais et deux fois moins de treasures et de butins rares.
+    Quand 80 % des minerais sont minés, le mineur remonte déposer, le coffre va dans l'inventaire et une carte neuve repart.
+    Elle recharge l'énergie (8 par heure de jeu). Elle tourne en direct quand le jeu est ouvert (le jeu redemande sa
+    prison toutes les 15 s), et **hors ligne** par paquets toutes les 10 min réelles, en pause après 24 h sans visite
+    (sans rejouer les heures d'attente). Au retour : un bilan « pendant ton absence ». « Sortir de prison », ou lancer une mine /
+    une tour / une instance, l'arrête (le coffre est versé, pas le sac du mineur).
+- **Décisions** : la taille de la carte ne bouge pas, on règle la part de minerais (`oreMul` 0,52 : acier ≈ 0,48 et fer ≈ 0,43
+  de la part d'un joueur dans une mine à 3, en poids de minerais ; c'est provisoire). Dans la prison, le donjon est à gauche du puits
+  (pas de place à droite) et il n'y a pas de treuil. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
+  ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
+- **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
+  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, à surveiller si beaucoup
+  de joueurs la laissent tourner.
 - **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
 
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
