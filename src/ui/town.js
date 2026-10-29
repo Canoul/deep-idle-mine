@@ -146,7 +146,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite }){
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
     if(who){ openCard(who, e.clientX, b.top + (TOWN.ground - 1.7) * s * TOWN_TILE); return; }
     closeCard();
-    const hit = ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - Math.max(k.h, 2) - (k.kind === 'house' ? Math.floor(k.w / 2) + 1 : 0));
+    const hit = ty < TOWN.ground && townBuildings().find(k => tx >= k.x && tx < k.x + k.w && ty >= TOWN.ground - k.h);
     if(hit){ go(hit.door); enterOnArrive = hit; if(Math.abs(x - hit.door) < 0.05) enter(hit); }
     else { go(tx); enterOnArrive = null; }
   });

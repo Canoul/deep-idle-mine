@@ -47,8 +47,15 @@ Modèle d'entrée :
   promenade, vues par les autres ; la place s'est agrandie : **statue en pierre du n°1 du classement GS** sur un socle, et
   deux **bannières** qui se remplissent avec les jauges Ange / Démon (elles pulsent quand la tour est ouverte). Les textes
   de la statue et des bannières s'affichent quand on se tient devant.
-- **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases) ;
-  la statue suit le classement GS (choix de Claude : on pourrait alterner GS / XP / tour).
+- **Nouvelle direction artistique** (fin d'après-midi, choisie par Jules parmi trois maquettes inspirées de Darkest
+  Dungeon : « Crépuscule de forge ») : ciel de crépuscule en dégradé rouge sombre → ambre, soleil bas, nuages rougis,
+  falaises au loin, brume orangée au ras du sol, rue sombre. **Chaque bâtiment a sa silhouette** en pixel art avec un
+  contour noir : Taverne penchée à colombages, Archives à horloge, Bibliothèque-chapelle à rosace, Salle d'entraînement
+  (palissade, mannequin, cabane de chaume), Tour du mage tordue aux fenêtres vertes, Armurerie (forge ouverte, enclume),
+  Entrepôt (grange, grandes portes), Chevalement en potence, Fonderie à cheminée géante, Concasseur (machine à vapeur,
+  volant), Atelier (auvent rayé, établi), Joaillier (vitrine de gemmes qui scintillent). Fenêtres, fours et lanternes
+  rayonnent, les cheminées fument. Statue du classement GS validée par Jules.
+- **À suivre** : vérifier sur téléphone ; à beaucoup de joueurs, ils se serrent devant le même bâtiment (± 2 cases).
 - **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
 
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)

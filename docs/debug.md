@@ -4661,3 +4661,27 @@ Règles (voir CLAUDE.md) :
 - ⚠️ Pas vérifié : « Ajouter en ami » depuis la fiche (même appel que l'onglet Social), une tour ouverte (pulsation de la
   bannière), téléphone. Points fragiles : `ctx.filter` (statue grise) absent des vieux Safari : statue en couleur ;
   `game.leaderboardData` lit tous les comptes (cache `LEADERBOARD.cacheMs`), appelé au plus une fois par minute ici.
+
+## 29/10/2026 (soir) — Le Carreau : direction artistique « Crépuscule de forge » (Jules)
+- **Quoi** : choix de Jules parmi 3 maquettes (outil de maquettes, `.superpowers/brainstorm/`, non versionné) puis un
+  essai jetable de 3 bâtiments dans le jeu (validé : « plus sombre, ciel en dégradé »).
+  - `scripts/gen_town.py` (nouveau, importé par `scripts/gen_textures.py`, qui perd son ancienne fonction `town()`) :
+    classe `Pix` (polygones, briques, moellons, planches, tuiles, fenêtres, portes en arc, `finish()` = contour noir
+    extérieur 1 px + lumière rasante orange sur les pixels sous le ciel). 12 sprites de bâtiments `town_<nom>` (largeur
+    ≤ w × 16, hauteur dans `h`), et le décor redessiné sous les mêmes noms (`town_lamppost`, `town_campfire`,
+    `town_pedestal`, `town_banner_*`, `town_cobble`, `town_cloud`, `town_headframe`). **Supprimées** : `town_plank`,
+    `town_stone_blue`, `town_roof_*` (+ `_edge`), `town_door`, `town_window`, `town_sign`, `town_mug`. Régénérer ne change
+    aucune autre texture (vérifié avec git status).
+  - `src/config.js` `TOWN.buildings` : `{ tab, name, kind, w, h, sprite, glows: [[x, y, r, 'magic'?]], smoke: [x, y] }`
+    (`h` = hauteur du sprite en cases ; anciens champs `wall` / `roof` / `sign` / `chimney` retirés) ; place `h` 3 ;
+    `TOWN.sky` (4 couleurs du dégradé), `TOWN.far` (2 falaises), `TOWN.fog`, `TOWN.groundDim` (0,5).
+  - `src/render/town.js` : `drawSky` (dégradé + soleil + halo), `drawFar` (couleurs de config), `drawBuilding` (sprite
+    centré sur sa place, halos en `lighter` qui respirent, fumée), plus de `drawHouse` / toits en escalier / enseignes ;
+    sol hors de la rue = terre (plus d'herbe). `src/ui/town.js` : clic sur un bâtiment = sa hauteur `h`.
+- **Tests** ✅ `tests/town.test.js` 18/18 (nouveau : chaque sprite existe, est dans `TEXTURES`, tient dans `w × h`, un
+  sprite différent par bâtiment, halos / fumée dans le sprite, décor présent) + `wiki`, `boot-check`.
+  ✅ Vérifié dans le navigateur (port 8001, compte Test_Mineur) : promenade de la Taverne au Concasseur, labels, halos,
+  fumée, et derrière l'onglet Craft (lisible, tamisé).
+- ⚠️ Pas vérifié : téléphone ; la Fonderie et la Tour du mage, très hautes, ont leur nom près du bandeau d'aide en
+  haut de l'écran en promenade (il peut passer dessous). `ctx.filter` (rue assombrie, statue grise) : sans effet sur de
+  vieux Safari (rue plus claire).

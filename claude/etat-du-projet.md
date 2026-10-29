@@ -50,7 +50,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   serveur, rien en base, rien d'économique. Option « Le Carreau en fond d'écran » (Mon compte). Pendant une session, le
   fond reste la mine (fond de Geoffrey du 28/10). Ajouts du 29/10 après-midi : fiche d'un joueur au clic (ami, inviter),
   groupes regroupés sur la place avec une marque « 2/3 », « ? » doré pour qui cherche un groupe, émotes, statue du n°1 du
-  classement GS (choix de Claude) et bannières des jauges Ange / Démon sur la place.
+  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place.
+  **Direction artistique du Carreau** (29/10, choix de Jules) : « Crépuscule de forge », inspirée de Darkest Dungeon :
+  ciel de crépuscule en dégradé, tons sombres, contour noir, lumières orange (vert pour la magie), une silhouette
+  propre à chaque bâtiment (sprites de `scripts/gen_town.py`). Ancien (29/10 matin) : maisons génériques en tuiles.
 - **Ange contre Démon** (22/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-22-ange-demon-design.md`,
   GAME_DESIGN §6, config `JUDGMENT`, `TOWER`, `RUNE`) :
   - **Une tour à la fois** (23/10 après-midi) : pendant qu'une tour est ouverte,

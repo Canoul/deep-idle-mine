@@ -756,9 +756,9 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
   'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
   // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
-  'town_plank','town_stone_blue','town_roof_red','town_roof_red_edge','town_roof_slate','town_roof_slate_edge','town_door','town_window',
-  'town_sign','town_cobble','town_campfire','town_mug','town_lamppost','town_headframe','town_cloud',
-  'town_banner_angel','town_banner_demon','town_pedestal'];
+  'town_cobble','town_campfire','town_lamppost','town_headframe','town_cloud',
+  'town_banner_angel','town_banner_demon','town_pedestal','town_tavern','town_archives','town_library','town_training','town_mage_tower',
+  'town_armory','town_warehouse','town_foundry','town_crusher','town_workshop','town_jeweler'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1547,8 +1547,11 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    surface de la mine, vue de côté. Hors session, elle remplace le mur du fond derrière les onglets ; ton mineur marche
    jusqu'au bâtiment de l'onglet ouvert, les autres joueurs en ligne qui ne sont pas en session sont devant le leur.
    Onglet Session sans session : la ville en plein écran, sans les panneaux, et on s'y promène (flèches, clic).
-   buildings : de gauche à droite, un par onglet (tab) ; w × h : murs en cases (sans le toit) ; wall / roof : textures ;
-   sign : texture de l'enseigne ; kind : 'house' (maison), 'place' (Lobby : feu de camp, pas de murs), 'headframe'
+   buildings : de gauche à droite, un par onglet (tab) ; w × h : place du bâtiment en cases (largeur, hauteur au plus) ;
+   sprite : sa texture, dessinée d'un bloc, posée sur le sol et centrée (scripts/gen_town.py, direction « Crépuscule de
+   forge » inspirée de Darkest Dungeon, choisie par Jules le 29/10 ; ancien : maisons en tuiles mur + toit + enseigne) ;
+   glows : halos de lumière [x, y, rayon, 'magic' pour le vert] en pixels du sprite ; smoke : [x, y] haut de la cheminée
+   (fumée qui monte) ; kind : 'house', 'place' (Lobby : feu de camp, statue, bannières, sans sprite), 'headframe'
    (chevalement au-dessus du puits : l'onglet Session). gap : cases entre deux bâtiments ; margin : avant le premier et
    après le dernier. rows : hauteur de la scène en cases ; ground : ligne de l'herbe (les mineurs marchent dessus).
    walk : vitesse de marche (cases/s) ; rush : un trajet long se fait en au plus rush secondes (vitesse augmentée) ;
@@ -1576,20 +1579,27 @@ export const TOWN = {
   ],
   place: { statue: 1, angel: 3, demon: 7 },
   statueBoard: 'gs',
+  /* ciel de crépuscule (dégradé de haut en bas), falaises au loin (la plus lointaine d'abord), brume au ras du sol, sol
+     assombri (luminosité des pavés et de la terre) ; « plus sombre et en dégradé » : demande de Jules, 29/10 */
+  sky: ['#16070a', '#3e140f', '#7a2e18', '#b45a2c'], far: ['#4a1c14', '#2a0e0a'], fog: 'rgba(255,130,70,.2)', groundDim: 0.5,
   buildings: [
-    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:4, wall:'town_plank',    roof:'town_roof_red',   sign:'town_mug' },
-    { tab:'historique',   name:'Archives',             kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_slate', sign:'scroll' },
-    { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:4, wall:'dungeon_brick', roof:'town_roof_slate', sign:'blueprint' },
-    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:3, wall:'town_plank',    roof:'town_roof_red',   sign:'glyph' },
-    { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:6, wall:'town_stone_blue', roof:'town_roof_slate', sign:'moon_crystal' },
-    { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:3, wall:'stone',         roof:'town_roof_red',   sign:'helmet_iron' },
-    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:3, wall:'town_plank',    roof:'town_roof_slate', sign:'chest' },
-    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:0, sign:'town_campfire' },
-    { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sign:'pickaxe_stone' },
-    { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:3, wall:'dungeon_brick', roof:'town_roof_slate', sign:'ingot_iron', chimney:true },
-    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_red',   sign:'gem_ruby' },
-    { tab:'craft',        name:'Atelier',              kind:'house', w:6, h:3, wall:'town_plank',    roof:'town_roof_red',   sign:'pickaxe_iron' },
-    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:4, wall:'town_stone_blue', roof:'town_roof_red', sign:'gem_sapphire_fine' },
+    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:8,  sprite:'town_tavern',  smoke:[89, 0],
+      glows:[[20, 57, 14], [57, 55, 14], [92, 55, 14], [86, 103, 16], [28, 103, 16]] },
+    { tab:'historique',   name:'Archives',             kind:'house', w:5, h:7,  sprite:'town_archives', glows:[[19, 72, 14], [61, 72, 14], [40, 24, 10]] },
+    { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:9,  sprite:'town_library',
+      glows:[[37, 84, 26], [13, 114, 12], [61, 114, 12], [80, 58, 12]] },
+    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:7,  sprite:'town_training', glows:[[73, 73, 14], [91, 64, 16]] },
+    { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:11, sprite:'town_mage_tower',
+      glows:[[35, 96, 18, 'magic'], [31, 128, 18, 'magic'], [29, 156, 18, 'magic'], [40, 60, 10, 'magic']] },
+    { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:6,  sprite:'town_armory', smoke:[77, 0], glows:[[65, 86, 34]] },
+    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:7,  sprite:'town_warehouse', glows:[[56, 34, 16], [18, 66, 10], [94, 66, 10]] },
+    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:11, h:3 },
+    { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sprite:'town_headframe', glows:[[59, 64, 20]] },
+    { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:9,  sprite:'town_foundry', smoke:[75, 0],
+      glows:[[42, 128, 44], [12, 112, 12], [76, 112, 12]] },
+    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:7,  sprite:'town_crusher', smoke:[69, 0], glows:[[28, 74, 14]] },
+    { tab:'craft',        name:'Atelier',              kind:'house', w:6, h:7,  sprite:'town_workshop', glows:[[65, 58, 16]] },
+    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:8,  sprite:'town_jeweler', glows:[[40, 25, 14, 'magic'], [31, 97, 22]] },
   ],
 };
 /* Pop-ups (28/10/2026, Jules) : avant, elles restaient tant qu'on n'avait pas cliqué. popupMs : une pop-up en haut à

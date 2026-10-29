@@ -3,9 +3,10 @@
    presentFor, bulles du chat global, apparence relue au plus toutes les lookFor ms), route HTTP. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TOWN } from '../src/config.js';
+import { readFileSync, existsSync } from 'node:fs';
+import { TOWN, TEXTURES } from '../src/config.js';
 import { TABS } from '../src/ui/nav.js';
-import { townLayout, TOWN_WIDTH, buildingOf, restX, cleanTownPing, buildingNear, stepToward, hash01, clampX } from '../src/shared/town.js';
+import { townLayout, townBuildings, TOWN_WIDTH, buildingOf, restX, cleanTownPing, buildingNear, stepToward, hash01, clampX } from '../src/shared/town.js';
 import { createTownService } from '../server/town/service.js';
 import { townRoutes } from '../server/town/routes.js';
 import { TOWN_SERVER } from '../server/config.js';
@@ -20,8 +21,30 @@ test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, da
   assert.ok(buildings[0].x >= TOWN.margin && buildings.at(-1).x + buildings.at(-1).w + TOWN.margin <= width);
   for(const b of buildings){
     assert.ok(b.door > b.x && b.door < b.x + b.w);
-    if(b.kind === 'house') assert.ok(TOWN.ground - b.h - Math.floor(b.w / 2) - 1 >= 0, `${b.name} dépasse du haut de la scène`);
+    assert.ok(b.h >= 1 && b.h <= TOWN.ground, `${b.name} dépasse du haut de la scène`);
   }
+});
+
+/* largeur × hauteur d'un PNG (en-tête IHDR) */
+const pngSize = file => { const d = readFileSync(file); return [d.readUInt32BE(16), d.readUInt32BE(20)]; };
+
+test('sprites des bâtiments : chacun existe, chargé par le jeu, tient dans sa place (w × h cases), halos et fumée dedans', () => {
+  for(const b of townBuildings()){
+    if(b.kind === 'place'){ assert.equal(b.sprite, undefined); continue; }
+    assert.ok(TEXTURES.includes(b.sprite), `${b.sprite} absent de TEXTURES`);
+    const [w, h] = pngSize(new URL(`../textures/${b.sprite}.png`, import.meta.url));
+    assert.ok(w <= b.w * 16, `${b.sprite} : ${w} px de large pour ${b.w} cases`);
+    assert.ok(h <= b.h * 16 && h > (b.h - 1) * 16, `${b.sprite} : ${h} px de haut pour h = ${b.h}`);
+    for(const [x, y, r, kind] of b.glows ?? []){
+      assert.ok(x >= 0 && x < w && y >= 0 && y < h && r > 0, `${b.sprite} : halo hors du sprite`);
+      assert.ok(kind === undefined || kind === 'magic');
+    }
+    if(b.smoke) assert.ok(b.smoke[0] >= 0 && b.smoke[0] < w && b.smoke[1] >= 0 && b.smoke[1] < h);
+  }
+  const silhouettes = new Set(townBuildings().filter(b => b.sprite).map(b => b.sprite));
+  assert.equal(silhouettes.size, townBuildings().length - 1, 'un sprite différent par bâtiment');
+  for(const n of ['town_lamppost', 'town_campfire', 'town_pedestal', 'town_banner_angel', 'town_banner_demon', 'town_cobble', 'town_cloud'])
+    assert.ok(TEXTURES.includes(n) && existsSync(new URL(`../textures/${n}.png`, import.meta.url)), n);
 });
 
 test('place : devant la porte de son onglet, écart stable tiré de l\'ID, dans ± spread', () => {
