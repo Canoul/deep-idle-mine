@@ -4861,12 +4861,12 @@ Règles (voir CLAUDE.md) :
   Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
 
 ## 29/10/2026 — Prison : rendement vs mine à 3 (simulate:prison) (Geoffrey, branche geoffrey/prison) 🧪
-- `scripts/simulate-prison.js` (`npm run simulate:prison`) : chaînes de runs de prison (pods = poids `itemW` de `shares[0].bag`) par heure
-  de jeu, contre la part d'un joueur d'une mine à 3 (`runSession`, mêmes presets via `minerSpecs`). Stuff base / fer / acier (acier = `DEV_PRESETS.gear`).
-  Défauts rapides (~2,5 min) ; mesure complète : `--count 3 --chains 10 --gears base,fer,acier --areas 1,3,5 --cache refs.json`. La référence à 3 coûte ~55 s la session.
-- Mesures (arbre mineur, areaMax = area atteinte à 3, soit 5 en fer/acier, 4 à mains nues), ratio prison / part d'un joueur :
-  oreMul 1 : acier 0,94, fer 0,87 (10 chaînes) ; 0,5 : 0,85 / 0,78 ; 0,25 : 0,82 / 0,84 ; 0,1 : fer 0,50 (acier 3 chaînes : 0,37). Base, oreMul 1 : 0,46 (3 chaînes, mineur étourdi par les occultistes).
-  Avec 3 chaînes seulement le bruit est énorme (acier à 0,25 : 1,00 puis 0,82 à 10 chaînes) : ne rien conclure sous ~10 chaînes.
-- Conclusion : `oreMul` ne fait presque pas bouger le rendement (moins de minerais = runs plus longs, plus de terrain miné). 0,45–0,55 n'est atteint
-  que vers oreMul 0,1 (carte presque sans minerais). `PRISON.oreMul` laissé à 1 : décision de design à prendre (autre levier, ex. vitesse de la prison ou part du butin).
-- Tests ✅ `tests/prison-sim.test.js` (14/14, inchangé). À vérifier : trees logisticien/barbare, area 1/3 fixes (à oreMul 1, 3 chaînes : ratio ≈ 1,2–1,3).
+- `scripts/simulate-prison.js` (`npm run simulate:prison`) : chaînes de runs de prison par heure de jeu contre la part d'un joueur d'une mine à 3
+  (`runSession`, mêmes presets via `minerSpecs` ; stuff base / fer / acier). Défauts rapides (~2,5 min) ; mesure complète :
+  `--count 3 --chains 10 --gears base,fer,acier --areas 1,3,5 --cache refs.json` (la référence à 3 coûte ~55 s la session). Avertit sous 10 chaînes.
+- Mesure en pods (première version) : ratio 0,8–0,95 quel que soit `oreMul` (0,25 à 3) : les pods comptent aussi pierre et terre, le sac se remplit au même
+  rythme, `oreMul` y pesait peu. D'où le changement de mesure (décision du 29/10) : on compare le POIDS DES MINERAIS (blocs de type `ore`), pods affichés à titre d'info.
+- Mesure en minerais (mineur, area 5, 5 chaînes, ±0,1) : acier : 0,6 → 0,48 ; 0,55 → 0,56 ; 0,5 → 0,55 (contrôleur : 0,46 à 3 chaînes) ; 1 → 0,67 (contrôleur).
+  fer : 0,6 → 0,62 ; 0,55 → 0,57 ; 0,5 → 0,43. Références : acier 1388 minerais/h, fer 1149 (sur 2873 / 2418 pods).
+- **`PRISON.oreMul` = 0,52** (acier ≈ 0,5, fer ≈ 0,5 par interpolation ; non mesuré tel quel, incertitude ±0,1). Tests ✅ `tests/prison-sim.test.js` 14/14, aucune assertion changée
+  (elles lisent `PRISON.oreMul`). À vérifier : mesure à 10 chaînes à 0,52, arbres logisticien/barbare, areas 1/3, stuff de base (mineur étourdi par les occultistes).
