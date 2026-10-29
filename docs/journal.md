@@ -31,6 +31,18 @@ Modèle d'entrée :
 - **Décision** : pas de Dynamite en combat dans l'instance pour l'instant (Geoffrey).
 - **État** : ✅ en ligne le 29/10
 
+## 29/10/2026 — Geoffrey — Classement de la tour par niveau
+- **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
+  **« Tour céleste »** (niveau 1) et **« Tour céleste II »** (niveau 2). Avant, les temps des deux niveaux étaient mélangés.
+  Les records déjà faits sont rangés au bon niveau.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Échap pour quitter un onglet
+- **Pour le joueur** : la touche **Échap** ferme l'onglet ouvert (Inventaire, Craft, Lobby…) et ramène à l'onglet
+  Session : la promenade dans le Carreau, ou la mine pendant une session. Si une fenêtre est ouverte (compte, objet
+  obtenu, question), Échap ferme d'abord la fenêtre, comme avant.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Instance I : le niveau 2 est jouable
 - **Pour le joueur** : dans le Lobby, l'Instance I propose **Niveau 1 / Niveau 2** (choisi par celui qui lance). Même clé.
   Niveau 2 : spawners 200 coups et un gobelin toutes les 15 s, gobelins 350 PV, roi 6 000 PV qui frappe plus vite, enrage
