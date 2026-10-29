@@ -97,6 +97,14 @@ export function towerLevelState({ tower, locked, party, account, doneLevels = []
   return { show: !!tower && !locked && !!account && leader, levels, level: open.includes(cur) ? cur : open[0] ?? null };
 }
 
+/* niveau d'instance (29/10/2026, Geoffrey ; INSTANCE.levels) : comme celui de la tour, choisi par celui qui lance (seul,
+   ou chef du groupe) ; ouvert à tous, sans limite (même clé). Le serveur revérifie. */
+export function instanceLevelState({ instance, locked, party, account, cur = null }){
+  const leader = !party || party.members.length < 2 || party.leader === account?.id;
+  const levels = Object.keys(INSTANCE.levels).map(Number).map(level => ({ level, done: false }));
+  return { show: !!instance && !locked && !!account && leader, levels, level: levels.some(l => l.level === cur) ? cur : levels[0].level };
+}
+
 /* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; sinon le prix,
    ce qui est déjà donné, et pour chaque objet un champ + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
 export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy = false } = {}){
@@ -255,7 +263,8 @@ export function setupLobby(h){
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
-    const tl = towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
+    const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel })   // niveau d'instance (29/10) : même rangée
+      : towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
     st.towerLevel = tl.level;
     $('towerLevelRow').hidden = !tl.show;
     $('towerLevelRow').innerHTML = tl.show ? '<span>Niveau :</span>' + tl.levels.map(l =>
@@ -422,7 +431,8 @@ export function setupLobby(h){
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
       (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span> `+
         qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle est consommée au lancement, et rendue si le groupe perd.\nOn la trouve dans les Treasure T3 (20 %).`)+`</p>`+
-        (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là.</p>` : '') : '');
+        (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là. `+
+          `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets).</p>` : '') : '');
   }
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };
   $('lobbyToSession').onclick = () => h.onShowSession?.();
@@ -535,8 +545,8 @@ export function setupLobby(h){
     const ls = launchState(st);
     if(ls.action === 'ready') return act(() => h.party.ready(ls.ready));   // membre : prêt / plus prêt
     st.busy = true; render();
-    const tw = !!MINE_MODES.find(m => m.id === st.mode)?.tower;
-    try { await h.onLaunch({ mode: st.mode, ...(tw && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
+    const md = MINE_MODES.find(m => m.id === st.mode), tw = !!md?.tower;
+    try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }); }
     finally { st.busy = false; render(); }
   };
 

@@ -7,9 +7,9 @@
    Ex aequo : même rang ; à égalité, le plus ancien d'abord (at), puis l'ID de compte. */
 import { SKILLS, JUDGMENT, LEADERBOARD, INSTANCE } from '../config.js';
 
-export const BOARDS = ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'instance'];
+export const BOARDS = ['gs', 'xp', ...SKILLS.trees.map(t => 'spec:' + t.id), 'tower', 'instance', 'instance2'];   // instance2 : niveau 2 (29/10)
 /* classements où le plus court gagne (temps) */
-const FASTEST = new Set(['tower', 'instance']);
+const FASTEST = new Set(['tower', 'instance', 'instance2']);
 export const isBoard = b => typeof b === 'string' && BOARDS.includes(b);
 /* arbre d'un classement de spécialisation (« spec:barbare » → 'barbare'), sinon null */
 export const specTree = b => isBoard(b) && b.startsWith('spec:') ? b.slice(5) : null;
@@ -49,6 +49,13 @@ export function sanitizeInstanceRecord(r){
   return { t, fight, at: r.at, instance: r.instance, team, session: typeof r.session === 'string' ? r.session : '' };
 }
 export const betterInstance = betterTower;
+/* clé d'un record d'instance (29/10/2026) : le compte au niveau 1 (records d'avant les niveaux), « compte#2 » au niveau 2 */
+export const instanceRecordKey = (account, level = 1) => level > 1 ? `${account}#${level}` : account;
+export function splitInstanceKey(key){
+  const [account, lv] = String(key).split('#');
+  const level = lv === undefined ? 1 : /^[0-9]+$/.test(lv) ? +lv : NaN;
+  return Number.isInteger(level) && level >= 1 ? { account, level } : { account: null, level: null };
+}
 
 /* 432,5 s → « 7:12.5 » */
 export function towerTime(t){

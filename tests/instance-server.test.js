@@ -79,14 +79,14 @@ test('quitter : comme une tour, le mineur sort ; la clé reste consommée', asyn
 });
 
 /* fin fabriquée (fakeLive) : résultat de la partie au choix */
-async function ended({ success, leftB = false }){
+async function ended({ success, leftB = false, level }){
   const store = createMemoryGameStore(), t = { now: Date.UTC(2026, 9, 27, 12, 0) };
   for(const id of [A.id, B.id]){ const inv = createInventory(); addItem(inv, KEY, 1); await store.putInventory(id, JSON.parse(serialize(inv))); }
   const summary = rec => ({ id: rec.id, mode: 'instance', instance: rec.mode, success,
     shares: rec.players.map(p => ({ account: p.account, left: leftB && p.account === B.id, bag: { 'Charbon': 99 } })) });
   /* mode dev : la partie se termine sur demande (settle) ; fakeLive renvoie le résultat voulu */
   const game = createGameService({ store, liveRunner: fakeLive(summary), clock: () => t.now, randomSeed: () => 7, dev: true });
-  const r = await game.start(A, { mode: 'instance_1' }, P);
+  const r = await game.start(A, { mode: 'instance_1', ...(level ? { level } : {}) }, P);
   if(leftB){ t.now += 5e3; await game.leave(B); }
   await game.settle(r.session.id);
   const inv = async id => deserialize(JSON.stringify(await store.getInventory(id)));
@@ -111,4 +111,26 @@ test('échec : la clé est rendue à tous les joueurs (partis compris), pas de c
   assert.equal(chests(await inv(A.id)).length, 0);
   await game.settle(rec.id);
   assert.equal(countOf(await inv(A.id), KEY), 1, 'idempotent');
+});
+
+test("niveau 2 (29/10) : même clé, niveau gardé dans la session, roi vaincu = Coffre du Roi Gobelin II ; niveau absent = 1", async () => {
+  const { rec, inv } = await ended({ success: true, level: 2 });
+  assert.equal(rec.level, 2);
+  const a = await inv(A.id);
+  assert.equal(chests(a).length, 1); assert.match(chests(a)[0].item, /^Coffre du Roi Gobelin II R[1-7]$/);
+  assert.equal(countOf(a, KEY), 0, 'une clé, comme au niveau 1');
+  const one = await ended({ success: true });
+  assert.equal(one.rec.level, 1);
+  assert.match(chests(await one.inv(A.id))[0].item, /^Coffre du Roi Gobelin R[1-7]$/);
+});
+
+test("niveau d'instance inventé : refusé, sans rien consommer", async () => {
+  for(const level of [0, 3, -1, 1.5, '2', Infinity, NaN, {}]){   // null ou absent : niveau 1 (comme la tour)
+    const { store, game } = await setup({ [A.id]: 1 });
+    await assert.rejects(game.start(A, { mode: 'instance_1', level }), e => e.code === 'bad_request', String(level));
+    assert.equal(await keysOf(store, A.id), 1, String(level));
+  }
+  const { game } = await setup({ [A.id]: 1 });
+  const r = await game.start(A, { mode: 'instance_1', level: 2 });
+  assert.equal(r.session.level, 2, 'le navigateur voit le niveau');
 });

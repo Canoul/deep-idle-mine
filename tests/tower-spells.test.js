@@ -66,3 +66,14 @@ test('un mob étourdi ne tacle pas et ne bouge pas', () => {
   for(let i = 0; i < 20; i++) tickTower(G);
   assert.equal(o.grab, null); assert.equal(o.x, x0);
 });
+
+test('Dash sur le boss de la tour (29/10) : il fonce au contact et frappe ; le boss n\'est pas étourdi', () => {
+  let hits = 0;
+  for(const seed of [1, 2, 3, 4]){
+    const G = runTower(seed, { side: seed % 2 ? 'demon' : 'angel', miners: team() });
+    hits += logs(G, /💨 Barb : Dash sur (Ange|Démon)/).length;
+    assert.equal(G.boss.stunUntil, undefined);
+    assert.equal(G.stats.blocked, 0);
+  }
+  assert.ok(hits > 0, `${hits} Dash sur le boss en 4 tours`);
+});

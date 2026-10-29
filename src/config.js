@@ -882,7 +882,8 @@ const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap
    moins (cercle) d'un porteur est asservi : il ne se bat pas, mine pendant life s à la vitesse d'un mineur de base
    (minerais à reach cases ou moins, même priorité que le porteur), puis disparaît ; ce qu'il mine va au coffre commun. */
 export const GOBLIN_KING = {
-  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king' },
+  chest: { name:'Coffre du Roi Gobelin', tex:'chest_goblin_king',
+           levels: { 1:'', 2:' II' } },   // niveaux de l'Instance I (29/10/2026) : suffixe du nom ; butin × INSTANCE.levels[n].chest
   loot: {
     always: [
       /* 29/10/2026 (Geoffrey) : lingots de graphite et fer souillé à la place du minerai de graphite (avant : Graphite ore 20-40) */
@@ -910,10 +911,11 @@ export const GOBLIN_KING = {
   },
   thrall: { radius:10, life:30, reach:6 },
 };
-/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') */
-export const goblinChestItem = q => `${GOBLIN_KING.chest.name} R${q}`;
-const GOBLIN_CHEST_ITEMS = Object.fromEntries(QUALITY_NUMS.map(q =>
-  [goblinChestItem(q), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q }, treasure:true }]));
+/* « Coffre du Roi Gobelin R4 » : un par qualité, non empilable, comme les trésors des tours (side 'goblin') ; niveau 2 de
+   l'instance (29/10/2026) : « Coffre du Roi Gobelin II R4 » (chest.level 2) */
+export const goblinChestItem = (q, level = 1) => `${GOBLIN_KING.chest.name}${GOBLIN_KING.chest.levels[level] ?? ''} R${q}`;
+const GOBLIN_CHEST_ITEMS = Object.fromEntries(Object.keys(GOBLIN_KING.chest.levels).map(Number).flatMap(level => QUALITY_NUMS.map(q =>
+  [goblinChestItem(q, level), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q, level }, treasure:true }])));
 
 /* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
@@ -1472,7 +1474,8 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
      tous les boostEvery coups (tous ses coups) : projection de boostHigh cases de haut et boostLong de long, vers le
      centre. À chaque seuil cageAt de ses PV (tous les 20 % manquants) : chaque mineur est téléporté sur un rebord différent et enfermé (blocs de dureté
      cageHard dans un rayon cageRadius, sur le rebord et au-dessus) ; il attend qu'un mineur sorte de sa cage (au plus
-     cageMaxWait s). Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
+     cageMaxWait s). Pendant ce temps et jusqu'à ce qu'un mineur pose le pied au sol, il régénère regenPct de ses PV max
+     toutes les regenEvery s. Sous rageBelow : push ragePush, vitesse × rageSpeed. Mêmes cibles que les gobelins.
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
 export const INSTANCE = {
   list: [
@@ -1489,14 +1492,27 @@ export const INSTANCE = {
      TOWER.view) ; avant : toute la salle à l'écran */
   view: { cols: 14, rows: 11 },
   spawner: { hp: 125, every: 20, dynamite: 6, focusRange: 10 },   // 125 coups (27/10, Geoffrey ; essayés : 50, 75, 200) ; un gobelin toutes les 20 s (27/10, Geoffrey ; avant 30)
-  goblin: { hp: 150, hitEvery: 2,   // 150 PV (27/10, Geoffrey ; avant 125)
+  goblin: { hp: 200, hitEvery: 1.75,   // 200 PV, un coup toutes les 1,75 s (29/10, Geoffrey ; avant 150 PV et 2 s, puis 175 PV le même jour ; le 27/10 : 125 PV)
             knock: 0.5, knockChance: 1, step: 0.45 },   // recul à chaque coup (27/10, Geoffrey ; avant 30 % : presque invisible) ; step : une case toutes les 0,45 s, vitesse × 2 (27/10, Geoffrey ; avant 0,9)
   boss: { name: 'Roi gobelin', w: 3, h: 3, hp: 3500, knockRes: 25,   // 3 500 PV (27/10, Geoffrey ; avant 3 000, puis 2 000)
           speedMul: 3, hitEvery: 1.5, push: 0.5,
           boostEvery: 10, boostHigh: [6, 7], boostLong: [6, 7], dropTime: 0.8,
           cageAt: [0.8, 0.6, 0.4, 0.2], cageRadius: 3,   // tous les 20 % de PV manquants (27/10, Geoffrey ; avant 75 / 50 / 25 %)
           cageHard: 10, cageMaxWait: 90,
+          /* régénération (29/10/2026, Geoffrey) : dès un enfermement, regenPct de ses PV max toutes les regenEvery s, tant
+             qu'aucun mineur n'a posé le pied au sol ; un seuil déjà franchi ne réenferme pas (s'il remonte au-dessus) */
+          regenPct: 0.01, regenEvery: 2,
           rageBelow: 0.33, ragePush: 1, rageSpeed: 2.5 },
+  /* niveaux (29/10/2026, Geoffrey ; comme TOWER.levels) : choisis au lancement dans le Lobby, même clé (une par joueur).
+     Chaque niveau remplace les valeurs ci-dessus qu'il donne (spawner, goblin, boss) ; chest : multiplicateurs du Coffre
+     du Roi Gobelin de ce niveau (res : quantités des ressources sûres, drop : chances des objets). Valeurs provisoires. */
+  levels: {
+    1: { chest: { res: 1, drop: 1 } },
+    2: { spawner: { hp: 200, every: 15 },
+         goblin: { hp: 350, knock: 0.65 },
+         boss: { hp: 6000, knockRes: 50, hitEvery: 1.25, boostEvery: 8, rageBelow: 0.4, ragePush: 1.3, regenPct: 0.02 },   // ragePush : 0,65 × 2
+         chest: { res: 1.5, drop: 1.5 } },
+  },
 };
 
 

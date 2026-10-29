@@ -4914,3 +4914,75 @@ Règles (voir CLAUDE.md) :
 - Point fragile : une nouvelle fenêtre qui se ferme à Échap doit être ajoutée à `OVERLAYS`, sinon Échap la ferme ET
   quitte l'onglet.
 
+## 29/10/2026 — Geoffrey — Instance I : gobelins 175 PV / 1,75 s, régénération du roi après un enfermement
+- **Contexte** : analyse du record (session 6ed73842…, seed 71430292, 7:12,4) : rejeu local identique au résumé serveur
+  (t 432,4, réveil 308,7). Combat contre le roi ≈ 2 min pour tout le monde ; l'écart est la phase des spawners (5:08 contre
+  8:04 pour le profil « acier » de `simulate-instance`). Seuil net : profil acier dégâts 20 → 0/5, 22 → 5/5 (150 PV : 8 → 7
+  coups par gobelin). Les mineurs n'ont pas de PV dans l'instance : seules les stats d'attaque comptent. ⚠️
+  `scripts/simulate-instance.js` ne met que `equippedStats` (ni skills, ni sorts, ni lignes / runes / plus, Gants d'ouvrier) :
+  il sous-estime les vrais joueurs (0/5 en acier alors que les 6 vraies parties du 29/10 = 6 victoires).
+- **Quoi** : `INSTANCE.goblin` hp 175, hitEvery 1.75 ; `INSTANCE.boss.regenPct` 0.01, `regenEvery` 2 (src/config.js).
+  `src/sim/instance/session.js` : `boss.regen` = { t, gain } posé par `cage()` ; `regen(G)` appelé dans `stepBoss` avant le
+  test des seuils (états wait et fight) : +regenPct × maxhp toutes les regenEvery s, plafonné à maxhp ; s'arrête (regen =
+  null, log « 💚 … a récupéré N PV ») dès qu'un mineur a `y >= floorY`. `b.phase` ne redescend jamais : remonté au-dessus
+  d'un seuil, pas de nouvel enfermement. Bulle « enfermé » (src/ui/effects.js) : ligne sur la régénération.
+- **Tests** ✅ `tests/instance-sim.test.js` (+2 : paliers à 2 s, arrêt au sol, pas de relance en remontant, plafond PV max,
+  pas de réenfermement ; test de l'enfermement : +1 % après 2 s au lieu de PV figés ; gobelin 175 PV, premier coup à
+  hitEvery), instance-server, instance-key, effects, wiki, boot-check : 60/60.
+- **Mesure** : les 6 sessions d'instance en base (export lecture seule) rejouées avec les nouvelles règles : 5 victoires
+  (8:35 à 9:33, combat 136-158 s, ≈ 350 PV repris par cage, soit ≈ 20 s avant qu'un mineur touche le sol), 1 échec (roi
+  784 PV). `simulate-instance --size 3 --count 5` : 0/5 partout (acier : roi 2 226 PV), 0 bloqué.
+- ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).
+- **Ajout (même jour)** : gobelins 200 PV (au lieu de 175). Mêmes 6 parties rejouées : 3 victoires (9:10, 9:41, 9:59), 3 échecs
+  (roi 733, 1 638 et 3 066 PV). Tests instance-sim 15/15 ✅.
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 : simulation (étape 1 : sim seulement, pas encore jouable)
+- **Quoi** : `INSTANCE.levels` (src/config.js) : 1 = valeurs de base ; 2 = spawner 200 / 15 s, gobelin 350 PV / recul 0,65,
+  roi 6 000 PV, résistance au recul 50 %, coup / 1,25 s, projection tous les 8 coups, rage sous 40 % avec recul 1,3
+  (0,65 × 2), régénération 2 % ; `chest` { res, drop } (multiplicateurs du coffre, pas encore lus). Le recul normal du
+  roi reste 0,5 (pas donné pour le niveau 2). `src/sim/instance/session.js` : `levelCfg(l)`, `instanceLevel(l)`,
+  `INSTANCE_LEVELS` ; `G.level`, `G.cfg` = { spawner, goblin, boss } fusionnés ; tous les `SP.` / `GB.` / `B.` → `G.cfg.*` ;
+  `summary.level`. `buildInstanceGame` passe `record.level`. `scripts/simulate-instance.js --level 2`.
+- **Non-régression** ✅ : les 6 vraies parties rejouées au niveau 1 donnent exactement les mêmes temps qu'avant le remaniement.
+- **Tests** ✅ instance-sim +2 (fusion des réglages, niveau inconnu = 1, PV des spawners / gobelins / roi, summary.level,
+  rage sous 40 %, régénération 2 %), instance-server, instance-key : 29/29.
+- **Mesures niveau 2** : les 6 vraies parties (stuff du 29/10) : 0 victoire, **0 spawner cassé**, jusqu'à 89 gobelins en vie
+  (24 gobelins / min × 350 PV ≈ 140 DPS rien que pour suivre ; les équipes ont 75 à 101). `simulate-instance --level 2`
+  : 0/5 partout. Équipe du record, stats multipliées (5 seeds) : dégâts × 2,5 seuls → 0/5 (roi 4 306) ; dégâts × 3 → 0/5
+  (roi 1 965) ; dégâts × 2 et minage × 1,5 → 5/5 en 9:39 ; × 2,5 et × 1,5 → 8:29 ; × 3 et × 2 → 6:14. Aucune épée au-dessus
+  de l'acier (18,5) aujourd'hui.
+
+## 29/10/2026 — Geoffrey — Dash : boss des tours, roi gobelin, gobelins de l'instance
+- **Constat** (rejeu de l'équipe du record, Infernatiwar barbare avec Dash) : 0 Dash pendant les combats de boss (tour et
+  instance) alors qu'il était prêt 100 % du temps. Tour : `dash` seulement vers `liveMobs` (src/sim/tower/session.js) ;
+  instance : seulement vers le gobelin qui tacle (collé : n < minCells, ne part jamais).
+- **Quoi** : `dashBoss` dans les deux sessions : sur la ligne du boss (toit `roof - 1` / sol de l'instance), case de
+  contact de son côté (tour : parmi les `goals` du côté voulu), 2 à range cases, chemin libre et porteur ; arrive, frappe
+  `strikeDmg × S.dmg` (tour : `damageBoss(..., true)` + provocation + hits ; instance : `hitBoss`, recul et provocation).
+  **Pas d'étourdissement** (décision de Geoffrey). Instance : `decide` essaie aussi un Dash vers le gobelin le plus proche
+  de sa ligne quand aucun n'est à portée (comme la tour).
+- **Tests** ✅ instance-sim +2 (Dash sur le roi : contact, 500 %, pas d'étourdissement, pas à 1 case ; Dash sur un gobelin
+  non tacleur), tower-spells +1 (4 tours : Dash sur le boss, pas de stunUntil, 0 bloqué) ; tower*, instance*, spells : 122/122.
+- **Mesures** : rejeu (équipe du record) instance 13-15 Dash par partie dont 1-2 sur le roi ; tours 3-5 dont 1-3 sur le boss,
+  combat du boss 98 → 91, 106 → 84, 128 → 76, 214 → 174 s. `simulate:tower --count 6` : 0 « bloqué » ;
+  `simulate-instance --size 3 --count 5` : 0 bloqué. 6 vraies parties de l'instance : 3 victoires sur 6 (8:32, 9:04, 9:50).
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 jouable (étape 2 : lobby, serveur, coffre, classement)
+- **Lobby** (src/ui/lobby.js) : `instanceLevelState` (exporté) ; même rangée `#towerLevelRow` que la tour (`st.towerLevel`
+  partagé), seulement pour celui qui lance ; `level` envoyé au lancement pour une tour OU une instance ; texte de la carte
+  Instances (coffre II). HUD : « · niveau 2 » dans le titre (`G.level`, envoyé par instances-view). Rage affichée au seuil
+  du niveau (`G.cfg.boss.rageBelow`).
+- **Serveur** (server/game/service.js) : `level = body.level ?? 1`, refusé hors `INSTANCE_LEVELS` (`bad_request`, avant les
+  clés : rien consommé) ; `rec.level` gardé (instance : toujours, 1 compris) et renvoyé par `publicSession` ; coffre
+  `goblinChestItem(q, rec.level ?? 1)` ; records : clé `instanceRecordKey(compte, niveau)` (« compte » / « compte#2 », même
+  ns `instance_record` : les records d'avant restent au niveau 1) ; `leaderboardData` : `instance` (niveau 1) et `instance2`
+  via `splitInstanceKey` (clé abîmée : ignorée). Board `instance2` (src/meta/leaderboard.js BOARDS, FASTEST), social :
+  équipe + combat, `BOARD_INFO.instance2`, bouton « Roi gobelin II » (index.html).
+- **Coffre** (src/config.js, src/meta/loot.js) : `GOBLIN_KING.chest.levels` { 1:'', 2:' II' } ; objets « Coffre du Roi
+  Gobelin II R1-R7 » (`chest.level` 2, Unique) ; `goblinChestTable(level)` : always min/max × res arrondis, chances × drop
+  (INSTANCE.levels[n].chest ; inconnu = 1) ; `openGoblinChest(..., level)`.
+- **Tests** ✅ instance-server +2 (niveau 2 : rec.level, coffre II, même clé ; niveau absent = 1 ; niveaux inventés refusés
+  sans consommer la clé), leaderboard +2 (classement par niveau ; clés compte#2), goblin-king +1 (objets II, table × 1,5,
+  couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
+  lobby 18/18 ; `npm run test:anticheat` 109/109.
+- ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.

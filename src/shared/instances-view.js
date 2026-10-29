@@ -35,14 +35,15 @@ export function createInstanceViewer(G){
   return function view(){
     const b = G.boss;
     return {
-      mode: 'instance', instance: G.instance, tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h, floorY: G.floorY,
+      mode: 'instance', instance: G.instance, level: G.level ?? 1, tick: G.ticks, t: G.t, over: G.over, w: G.w, h: G.h, floorY: G.floorY,
       plat: G.plat, ledges: G.ledges,
       tiles: G.tiles.map(r => Array.from(r, enc36).join('')), ladders: ladderList(G),
       spawners: G.spawners.map(s => ({ id: s.id, x: s.x, y: s.y, hp: Math.ceil(s.hp), maxhp: s.maxhp, alive: s.alive, side: s.side, level: s.level })),
       goblins: G.goblins.filter(o => o.hp > 0).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, face: o.face || 1, hp: Math.ceil(o.hp), maxhp: o.maxhp,
                                                          grab: o.grab, stun: o.stunUntil != null && G.t < o.stunUntil, taunt: o.taunt != null })),
       boss: { name: b.name, hp: Math.ceil(b.hp), maxhp: b.maxhp, x: b.x, kx: b.kx || 0, y: b.y, w: b.w, h: b.h, state: b.state, focus: b.focus,
-              rage: b.hp > 0 && b.hp < b.maxhp * INSTANCE.boss.rageBelow, taunt: b.taunt != null },
+              rage: b.hp > 0 && b.hp < b.maxhp * (G.cfg?.boss ?? INSTANCE.boss).rageBelow,   // seuil du niveau (29/10)
+              taunt: b.taunt != null },
       target: G.target, inspire: G.inspire && G.t < G.inspire.until ? Math.ceil(G.inspire.until - G.t) : 0,
       miners: G.miners.map(m => minerView(G, m)), stats: G.stats, log: G.log.slice(0, 50),
     };
@@ -54,7 +55,7 @@ export function applyInstanceView(v, prev = null, now = performance.now()){
   const ladder = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
   for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(ladder[y]) ladder[y][x] = 1; }
   const G = {
-    mode: 'instance', instance: v.instance, ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h, floorY: v.floorY,
+    mode: 'instance', instance: v.instance, level: v.level ?? 1, ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h, floorY: v.floorY,
     plat: v.plat, ledges: v.ledges || [],
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))), ladder,
     spawners: v.spawners || [], goblins: v.goblins || [], boss: v.boss, target: v.target, inspire: v.inspire || 0,

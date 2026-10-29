@@ -5,13 +5,13 @@
      départs), comme les tours. */
 import { INSTANCE, GAME } from '../config.js';
 import { minerSpecs } from './game.js';
-import { newInstance, leaveInstance, INSTANCE_TICKS } from '../sim/instance/session.js';
+import { newInstance, leaveInstance, INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel } from '../sim/instance/session.js';
 import { countOf } from '../meta/inventory.js';
 
 export const instanceDef = mode => INSTANCE.list.find(i => i.id === mode) ?? null;
 export const isInstanceMode = mode => !!instanceDef(mode);
 export const instanceDurationMs = (speed = GAME.speed) => INSTANCE.duration / speed * 1000;
-export { INSTANCE_TICKS };
+export { INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel };
 
 /* qui n'a pas sa clé : players [{ account, name }], invOf(compte) → inventaire ; renvoie les joueurs sans clé */
 export function missingKeys(mode, players, invOf){
@@ -24,7 +24,7 @@ export function instanceSpecs(record){
   const players = record.players || [];
   return minerSpecs(record).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
 }
-export const buildInstanceGame = record => newInstance(record.seed, { miners: instanceSpecs(record), id: record.id, instance: record.mode });
+export const buildInstanceGame = record => newInstance(record.seed, { miners: instanceSpecs(record), id: record.id, instance: record.mode, level: record.level });   // niveau (29/10) : 1 par défaut
 
 /* départs dont le moment est venu ; renvoie le nombre appliqué */
 export function applyDueInstanceLeaves(G, record){
