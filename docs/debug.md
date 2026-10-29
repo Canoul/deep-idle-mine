@@ -4669,3 +4669,12 @@ Règles (voir CLAUDE.md) :
 - **Points fragiles** : VT323 est monospace, plus large que Jersey 10 : textes en `nowrap` un peu plus longs (boutons
   « Où miner » sur 3 lignes à 1366 px). Le canvas (mine) écrit toujours en `sans-serif`, non concerné. VT323 n'a qu'une
   graisse : le gras est simulé par le navigateur (déjà le cas avec Jersey).
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : dureté × 2, poids × 2 (✅ en ligne le 29/10)
+- **Quoi** : `TOWER.levels[2]` : `hard` 1,75 → 2, `weight` 1,5 → 2 (src/config.js). GAME_DESIGN.md, wiki.html, état du
+  projet ; commentaire de `brickW` (src/sim/tower/session.js).
+- **Tests** ✅ tower-level (config, brique 2 fois plus longue, sac plein au niveau 2 seulement), tower, tower-spells,
+  tower-boss : 54/54.
+- **Simulation** `npm run simulate:tower -- --level 2 --count 20`, avant → après : 0/20 victoires partout dans les deux
+  cas (équipes de base) ; étage 4 atteint à 7:46-7:47 → 8:20-9:56, étage 5 à 9:49 (équipe a) → jamais. ⚠️ Aucune équipe
+  mesurée ne gagne le niveau 2 (repère du 28/10 : 2,5 minage / 40 dégâts, 0/4, avant ce changement).

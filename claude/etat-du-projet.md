@@ -58,8 +58,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     case « Modulation » au lancement d'une tour : chacun < 2000 GS (`TOWER.modulation.gsMax`). Récompense en plus : à décider.
     **Case cachée aux joueurs depuis le 26/10** (`TOWER.modulation.open: false`, visible en mode dev seulement) ; le GS reste affiché.
   - **Niveaux de tour** (28/10, Geoffrey ; `TOWER.levels`) : niveau 1 ou 2 choisi au lancement dans le Lobby, chacun
-    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 1,75 (ancien × 2), poids des
-    briques × 1,5, rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
+    gagné une fois par ouverture (un trésor chacun) ; niveau 2 (revu le 28/10 à 11 h) : PV mobs et boss × 2,5 (ancien × 2), dureté × 2 (29/10 ; ancien × 1,75), poids des
+    briques × 2 (29/10 ; ancien × 1,5), rage sous 50 %, recul des mobs × 2, **2 mobs invoqués sur le toit à chaque envol du boss**. Repère : équipe
     à 2,5 minage / 40 dégâts, niveau 1 4/4, niveau 2 0/4 (`npm run simulate:tower -- --level 2`).
   - **Descente des mobs** (28/10, tous niveaux, `TOWER.mobs.descend`) : un mob sans proie dans son étage saute par la porte
     ouverte du sol quand un mineur est plus bas dans la tour.

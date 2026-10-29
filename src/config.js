@@ -1754,10 +1754,11 @@ export const TOWER = {
      stonebricks, weight = poids des stonebricks dans le sac, mobKnock = recul des coups des Séraphins / Diablotins ;
      rageBelow : le boss enrage sous cette part de ses PV (niveau 1 : boss.rageBelow) ; summon : mobs invoqués sur le toit à
      chaque envol du boss (aux PV du niveau). 28/10 à 11 h (Geoffrey) : niveau 2 PV +150 % (avant × 2), dureté +75 %
-     (avant × 2), invocation de 2 mobs. Valeurs provisoires. */
+     (avant × 2), invocation de 2 mobs. 29/10 (Geoffrey) : niveau 2 dureté × 2 (avant × 1,75), poids × 2 (avant × 1,5).
+     Valeurs provisoires. */
   levels: {
     1: { hp: 1,   hard: 1,    weight: 1,   mobKnock: 1, rageBelow: 0.33, summon: 0 },
-    2: { hp: 2.5, hard: 1.75, weight: 1.5, mobKnock: 2, rageBelow: 0.5,  summon: 2 },
+    2: { hp: 2.5, hard: 2,    weight: 2,   mobKnock: 2, rageBelow: 0.5,  summon: 2 },
   },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
