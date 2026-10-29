@@ -429,9 +429,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
 .iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
-.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
+.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
-.invWrap>.invInfo{margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
+.invWrap>.invTabs,.invWrap>.invGrid{grid-column:1}   /* onglets au-dessus de la grille, colonne de gauche */
+.invWrap>.invInfo{grid-column:2;grid-row:2/span 2;margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
 .invOpen{margin-left:calc(4*var(--u))}
 
 /* ---------- compte : bouton de la barre du haut, et fenêtre (connexion, création, mon compte) ---------- */
@@ -640,7 +641,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .lobbyCols{grid-template-columns:1fr}
   .lobbyCols>.lobbyCol:last-child{order:-1}   /* l'équipe et Lancer d'abord */
   .invWrap,.stuffMain{grid-template-columns:1fr}
-  .invWrap>.invInfo{position:static;margin-top:calc(6*var(--u))}
+  .invWrap>.invInfo{grid-column:1;grid-row:auto;position:static;margin-top:calc(6*var(--u))}
   .view[data-view="stuff"] .stuffStatsCard{margin-top:calc(18*var(--u))}
 }
 /* ---------- téléphone ---------- */
