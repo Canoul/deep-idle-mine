@@ -27,7 +27,7 @@ Modèle d'entrée :
 ## 29/10/2026 — Jules — Le Carreau : noms des bâtiments en jaune doré
 - **Pour le joueur** : les noms des bâtiments (et les textes de la statue et des bannières) ne sont plus blancs mais
   jaune doré, comme les titres de l'interface ; « E : entrer » passe en orange. Demande de Geoffrey (« le blanc dénote »).
-- **État** : 🧪 sur la branche `jules/noms-batiments-jaunes` (pas en ligne)
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Jules — Correctif : le chat global repartait tout en haut
 - **Pour le joueur** : en revenant au Lobby ou en passant en promenade dans le Carreau, la liste du chat global
