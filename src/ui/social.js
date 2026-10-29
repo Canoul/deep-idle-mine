@@ -55,6 +55,7 @@ export const BOARD_INFO = {
            value: r => `Niv. ${r.level} · ${fr(r.value)} XP` },
   tower: { title: 'Tour céleste', help: 'Le meilleur temps pour vaincre le boss d\'une tour, Ange et Démon confondus (temps de jeu). Chaque joueur de l\'équipe garde son meilleur temps.',
            value: r => towerTime(r.value) },
+  tower2: { title: 'Tour céleste II', help: 'Comme « Tour céleste », au niveau 2 des tours.', value: r => towerTime(r.value) },
   instance: { title: 'Roi gobelin', help: 'Le meilleur temps pour vaincre le roi gobelin de l\'Instance I, de l\'entrée dans l\'instance à sa mort (temps de jeu). Sous le nom : le temps du combat contre le roi, de son réveil à sa mort. Chaque joueur présent à la victoire garde son meilleur temps.',
               value: r => towerTime(r.value) },
   instance2: { title: 'Roi gobelin II', help: "Comme « Roi gobelin », au niveau 2 de l'Instance I.", value: r => towerTime(r.value) },
@@ -105,7 +106,7 @@ export function setupSocial(h){
   /* ---------- classements ---------- */
   const boardId = () => board === 'spec' ? 'spec:' + tree : board;
   function boardRow(r){
-    const detail = board === 'tower' ? towerDetail(r) : board === 'instance' || board === 'instance2' ? instanceDetail(r) : '';
+    const detail = board === 'tower' || board === 'tower2' ? towerDetail(r) : board === 'instance' || board === 'instance2' ? instanceDetail(r) : '';
     return `<div class="frow lrow${r.me ? ' mine' : ''}"><span class="lrank">${r.rank}</span>`+
       `<span class="fname"><b>${esc(r.name)}</b>${detail ? `<small class="mut">${esc(detail)}</small>` : ''}</span>`+
       `<span class="lval">${esc(BOARD_INFO[board].value(r))}</span></div>`;

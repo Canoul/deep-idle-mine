@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Classement de la tour par niveau
+- **Pour le joueur** : dans Social → Classements, la tour a maintenant un classement par niveau, comme le roi gobelin :
+  **« Tour céleste »** (niveau 1) et **« Tour céleste II »** (niveau 2). Avant, les temps des deux niveaux étaient mélangés.
+  Les records déjà faits sont rangés au bon niveau.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Échap pour quitter un onglet
 - **Pour le joueur** : la touche **Échap** ferme l'onglet ouvert (Inventaire, Craft, Lobby…) et ramène à l'onglet
   Session : la promenade dans le Carreau, ou la mine pendant une session. Si une fenêtre est ouverte (compte, objet

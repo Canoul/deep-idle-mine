@@ -4986,3 +4986,20 @@ Règles (voir CLAUDE.md) :
   couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
   lobby 18/18 ; `npm run test:anticheat` 109/109.
 - ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.
+
+## 29/10/2026 — Classement « Tour céleste II » : records de tour par niveau (Geoffrey)
+- `src/meta/leaderboard.js` : board `tower2` (BOARDS, FASTEST) ; `sanitizeTowerRecord` garde `level` (absent = 1, inconnu de
+  TOWER.levels = record invalide) ; `recordKey` / `splitRecordKey` (anciens noms `instanceRecordKey` / `splitInstanceKey`
+  gardés en alias), même schéma que l'instance : clé `compte` au niveau 1, `compte#2` au niveau 2.
+- `server/game/service.js` : `recordTower` écrit sous `recordKey(compte, rec.level)` ; un record d'un autre niveau sous
+  cette clé compte comme absent (remplacé). `backfillTowers` : avant le rattrapage, chaque record sans `level` (tous
+  sous la clé du compte, ancien code) reçoit le niveau de sa session (`sessionsWithStatus('done')`, 1 si elle n'est plus
+  gardée), sous le verrou `tower_record:`. Un ancien record du niveau 2 reste donc sous la clé du niveau 1, marqué 2 : exclu
+  du board `tower` (`r.level === clé`), et remplacé par la première victoire du niveau 1 rejouée. `leaderboardData` :
+  `tower` = niveau 1, `tower2` = niveau 2. UI : `BOARD_INFO.tower2`, bouton `data-board="tower2"` (index.html), détail
+  camp + équipe comme `tower`.
+- **Tests** ✅ `tests/leaderboard.test.js` 18/18 (nouveaux : deux niveaux séparés ; migration des anciens records),
+  social, town, tower*, judgment, instance*, nav, boot-check : 162/162. ⚠️ Pas vu à l'écran.
+- Point fragile : pas d'effacement dans le store ; un ancien record du niveau 2 rangé au niveau 1 sans victoire au niveau 1
+  rejouable reste dans `tower_record` sous la clé du compte (inoffensif, jamais classé).
+
