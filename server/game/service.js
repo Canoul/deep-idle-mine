@@ -456,6 +456,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     if(fresh){
       p.totals.runs++;
       p.totals.energy = Math.round((p.totals.energy + gained) * 10) / 10;
+      p.totals.xp = (p.totals.xp || 0) + xp;   // XP versée (29/10) : panneau et bilan de sortie
       for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
       if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, gained, bag);
     }
@@ -486,7 +487,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const summary = runEnded.get(id);
     if(!summary) console.error(`Prison ${id} : arrêt sans bilan du moteur, rien n'est versé`);
     await settleRun(p, summary ?? { shares: [], t: 0 }, { stopped: true });
+    await store.putGameSession(prisonHistory(p));   // une ligne dans l'Historique (29/10)
     return { prison: p, stopped: true };
+  });
+  /* Historique (29/10/2026, Geoffrey) : une prison fermée y figure comme une session terminée (id « prison:<id> », le même
+     si l'arrêt est rejoué) : sa durée, son area et tout ce que ses runs ont versé. Rien n'est crédité ici (les runs l'ont
+     déjà été) ; seen : pas de bilan de fin de session à montrer. */
+  const prisonHistory = p => ({
+    id: 'prison:' + p.id, mode: 'prison', status: 'done', dev, seed: p.seed,
+    players: [{ account: p.account, name: String(p.specs?.name ?? '') }], leaves: [], focus: [], seen: [p.account],
+    startedAt: p.startedAt, endedAt: p.endedAt ?? clock(),
+    result: { prison: { runs: p.totals.runs, energy: p.totals.energy, area: p.areaMax },
+              shares: [{ account: p.account, left: false, bag: { ...p.totals.bag }, xp: p.totals.xp || 0 }], miners: [] },
   });
   /* avance le run jusqu'au tick end, par blocs de maxStep (les demandes d'affichage passent entre deux) */
   async function advanceRun(id, end){
@@ -1548,7 +1560,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const r = s.result, mine = (r.shares || []).find(x => x.account === me.id) ?? null;
         return { id: s.id, mode: s.mode ?? 'mine', seed: s.seed, dev: !!s.dev, startedAt: s.startedAt, endedAt: s.endedAt ?? null,
                  players: s.players.map(p => p.name || 'Joueur'), areas: r.areasUnlocked ?? null, depth: r.maxDepth ?? null,
-                 left: !!mine?.left || hasLeft(s, me.id), bag: mine?.bag ?? {}, xp: mine?.xp ?? 0 };
+                 left: !!mine?.left || hasLeft(s, me.id), bag: mine?.bag ?? {}, xp: mine?.xp ?? 0,
+                 ...(r.prison ? { prison: { runs: r.prison.runs | 0, energy: +r.prison.energy || 0, area: r.prison.area ?? null } } : {}) };
       }) };
     },
 

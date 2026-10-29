@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createMemoryGameStore } from '../../server/game/store.js';
 import { createGameService } from '../../server/game/service.js';
 import { createInlineRunner } from '../../server/game/live.js';
-import { GAME, DT } from '../../src/config.js';
+import { GAME, DT, PRISON } from '../../src/config.js';
 import { createEnergy } from '../../src/meta/energy.js';
 import { deserialize } from '../../src/meta/inventory.js';
 import { runRecord, buildPrisonRun, sanitizePrison } from '../../src/shared/prison.js';
@@ -39,7 +39,7 @@ test('run rejoué après un redémarrage (prison pas encore passée au run suiva
   await s1.game.prisonStart(A);
   const before = await store.getPrison(A.id);   // l'enregistrement tel qu'avant la fin du run
   const { at, bag } = endAt(sanitizePrison(before));
-  t.now = at;
+  t.now = Math.max(at, before.lastSeenAt + PRISON.batchMs);   // absent : versé au premier paquet (runs < 10 min depuis le 29/10)
   await s1.game.pump();
   const got = { items: await items(store), xp: await xpOf(store), energy: await energyOf(store) };
   assert.equal(got.items, total(bag)); assert.ok(got.xp > 0); assert.ok(got.energy > 40);

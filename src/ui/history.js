@@ -20,6 +20,8 @@ export function sessionCard(s){
   return `<div class="hCard"><div class="hTop"><b>${when(s.startedAt)}</b>`+
     `<span class="mut small">${esc(lasted(s.startedAt, s.endedAt))}${s.dev ? ' · dev' : ''} · ${s.players.length > 1 ? esc(s.players.join(', ')) : 'solo'}</span>`+
     `<span class="hSeed" title="Seed de la session">🌱 ${esc(s.seed)}</span></div>`+
+    /* prison (29/10) : ses runs, son area et l'énergie gagnée */
+    (s.prison ? `<div class="mut small">⛓ Prison · area ${esc(s.prison.area ?? '?')} · ${s.prison.runs} run${s.prison.runs > 1 ? 's' : ''} · +${num(Math.round(s.prison.energy))} ⚡</div>` : '')+
     `<div class="mut small">${s.areas != null ? `${s.areas} area${s.areas > 1 ? 's' : ''} débloquée${s.areas > 1 ? 's' : ''}` : ''}`+
     `${s.depth != null ? ` · profondeur ${s.depth}` : ''}${s.xp ? ` · +${num(s.xp)} XP` : ''}</div>`+
     `<div class="hLoot">${loot}</div></div>`;

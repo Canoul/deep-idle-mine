@@ -5200,3 +5200,22 @@ Règles (voir CLAUDE.md) :
   le `/api/game/history` d'un vrai joueur (téléchargé depuis son navigateur) → sessions `import:<id>` terminées, non dev,
   dans data/ du compte local (mines classiques où il était là à la fin : area, part du butin ; pas de kills par type).
   Pour que la prison de Test_Canoul suive les 10 dernières mines de canoul. ❌ pas testé.
+
+## 29/10/2026 — Prison : butin récapitulé, Historique, tests et simulation (Geoffrey, branche geoffrey/prison)
+- **Totaux** : `p.totals.xp` (settleRun), `sanitizeTotals` ; `publicPrison` envoie `totals { runs, energy, xp, bag }`,
+  `startedAt`, `endedAt`. **Historique** : `stopPrisonOf` écrit `prisonHistory(p)` (session `prison:<id>`, mode prison, done,
+  seen, `result.prison { runs, energy, area }`, `shares[0] { bag: totals.bag, xp }` ; rien n'est crédité) ; `history()` ajoute
+  `prison`. UI : `src/ui/prison-loot.js` (panneau `#prisonLootCard`, fenêtre `showPrisonRecap` à « Sortir de prison »),
+  `prisonTotalsLine` (src/ui/prison.js), ligne « ⛓ Prison » dans `src/ui/history.js`.
+- **Tests** ✅ prison-profile (nouveau, 3), prison-server +1 (totaux, Historique une seule fois, pas de bilan de session),
+  prison-ui +1 ; prison* + dev-presets 73/73 ; `test:anticheat` 118/118. Tests mis à jour (règles changées) : area par
+  défaut = fallbackArea ; totaux avec xp ; k hole permis en prison (moins d'1 carte sur 300 × KHOLE.chance) ; et 3 tests
+  (2 prison-server, 1 anticheat/prison) qui supposaient un run plus long que le premier paquet (batchMs 10 min) : depuis
+  `spawnDelayMul` 3, un run dure 6 à 9 min réelles → `t.now = max(fin du run, lastSeenAt + batchMs)`.
+- `npm test` : 1486/1490 ; 3 échecs **aussi sur origin/main** (vérifié dans un worktree détaché) : rarity (Poudre de rêve
+  oubliée par le recyclage des runes → corrigé ici), dev-spec (liste des modes dev sans instance, giant, prison) et perf
+  (3 barres de mine/tour au lieu de 2, l'instance en a une) : anciens, pas corrigés ici.
+- **Simulation** : `simulate:prison --count 2 --chains 5 --hours 2 --gears acier --areas 5` : avec oreMul 0,52 et les mobs
+  × 3 : ratio 0,87 (réf. area 6, runs 15 min), 0,96 (area 5) ; avec **oreMul 0,30** : **0,58** (réf.), **0,47** (area 5),
+  runs 13–16 min. ⚠️ 5 chaînes : ±0,1 ; le script ne fournit pas de profil (il mesure le contenu de l'area). `simulate
+  --miners 3 --count 5` (mine classique) : 0 bloquée, areas 3,0.

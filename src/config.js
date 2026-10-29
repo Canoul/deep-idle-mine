@@ -1678,7 +1678,7 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
 /* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,
    une seule area (AREA_H lignes) au contenu de l'area max débloquée du joueur, width colonnes centrées sur le coffre
    entre deux rangées de barreaux incassables (bloc `bars`).
-   oreMul : part de minerais de la composition (× oreMul, pris sur le terrain ; 0,52 réglé le 29/10 : minerais rapportés ≈ 50 % de la part d un joueur d une mine à 3, simulate:prison) ·
+   oreMul : part de minerais de la composition (× oreMul, pris sur le terrain ; 0,30 depuis le 29/10 au soir, après les mobs × 3 moins fréquents : ratio 0,58 à l'area de référence, 0,47 en area 5, acier, simulate:prison ; avant 0,52) ·
    resetAt : part des minerais du run à miner avant la remontée de fin de run · runMax : durée max d'un run (s de jeu) ·
    returnMax : temps laissé à la remontée de fin de run (s de jeu) · treasureMul : chance d'un treasure ·
    rareMul : chances de butin rare (glyphes, butin des mobs, shiny, donjon) · dungeonWinchGap : écart minimal du donjon à
@@ -1700,7 +1700,7 @@ export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonP
    de l'area × oreMul) ; treasures : tier tiré selon la répartition des Treasure TX reçus (aucun : celui de l'area) ; mobs :
    types tirés selon ses kills par type (enregistrés depuis le 29/10 ; aucun : la table de l'area). Figé pour toute la
    prison. trapMul : chance des pièges · kholeMul : chance du k hole (avant : pas de k hole en prison). */
-export const PRISON = { width: 25, oreMul: 0.52, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 3,
+export const PRISON = { width: 25, oreMul: 0.30, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 3,
   profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3 };

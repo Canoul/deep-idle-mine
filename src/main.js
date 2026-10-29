@@ -73,6 +73,7 @@ import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js'
 import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError } from './ui/prison.js';
+import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -712,9 +713,11 @@ async function startPrison(opts = {}){
 async function stopPrison(){
   if(!prisonActive(prison)) return;
   if(!await ask('Sortir de prison ?\nLe coffre du run en cours est versé dans ton inventaire, pas ce que le mineur porte sur lui.', { ok:'Sortir de prison' })) return;
-  try { setPrison((await gameApi.prisonStop()).prison); }
+  let out;
+  try { out = (await gameApi.prisonStop()).prison; setPrison(out); }
   catch(e){ tell(e.message); return; }
   if(ui.tab === 'session' && !rec) nav.show('lobby');
+  showPrisonRecap(out);   // tout ce que la prison a rapporté (29/10 ; aussi dans l'Historique)
 }
 /* barre du haut, onglet Session : la prison montrée (pas de session) ou non */
 function updatePrisonUI(){
@@ -722,6 +725,9 @@ function updatePrisonUI(){
   $('navPrison').hidden = !active;
   sessionView.classList.toggle('prisonOn', on);
   sessionView.classList.toggle('prisonDev', on && info.dev);   // mode dev : les boutons de vitesse restent visibles (29/10)
+  /* butin de la prison (29/10) : ce que les runs versés ont rapporté depuis l'entrée */
+  $('prisonLootCard').hidden = !on;
+  if(on){ const html = prisonLootHtml(prison.totals); if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html; }
   $('prisonBanner').hidden = !on;
   $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
   $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';

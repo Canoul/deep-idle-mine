@@ -70,7 +70,7 @@ test('lancer : running, run 1, specs figées ; relancer → prison_running ; en 
   assert.ok(Number.isInteger(s.prison.goal) && s.prison.goal > 0, 'objectif du run connu du moteur');
   assert.equal(s.prison.mined, 0);
   const p = await prisonOf(store, A.id);
-  assert.equal(p.account, A.id); assert.equal(p.seed, 4242); assert.equal(p.areaMax, 0);
+  assert.equal(p.account, A.id); assert.equal(p.seed, 4242); assert.equal(p.areaMax, PRISON.fallbackArea);   // aucune mine : fallbackArea (29/10)
   assert.ok(p.specs && p.specs.prefs && p.specs.skills && p.specs.gear, 'prefs, skills, stuff figés');
   assert.equal(box.live.size, 1);
   await assert.rejects(game.prisonStart(A), { code: 'prison_running' });
@@ -142,7 +142,7 @@ test('fin de run : coffre + XP + énergie crédités une fois, run 2 ; moteur fe
   const p = await prisonOf(store, A.id);
   const G = replayRun(p), sum = G.summary, bag = sum.shares[0].bag;
   assert.ok(total(bag) > 0 && sum.shares[0].xp > 0);
-  t.now = runEndAt(p, G);
+  t.now = Math.max(runEndAt(p, G), p.lastSeenAt + PRISON.batchMs);   // absent : versé au premier paquet (runs < 10 min depuis le 29/10)
   await game.pump();
   const p2 = await prisonOf(store, A.id);
   assert.equal(p2.run, 2); assert.equal(p2.state, 'running');
@@ -294,14 +294,14 @@ test('règles : prisonDueMs plafonné à lastSeenAt + offlineMax, touchPrison (a
   assert.equal(p.away.runs, 3, 'le bilan reste à envoyer (le serveur le remet à zéro une fois envoyé)');
   /* run fini pendant l'absence, versé après le retour : compté ; fini après le retour : non */
   assert.ok(endedAway(p, 2000e3, cfg)); assert.ok(!endedAway(p, 10e3, cfg)); assert.ok(!endedAway(p, 5005e3, cfg));
-  p.away = { runs: 0, energy: 0, bag: {} };
+  p.away = { runs: 0, energy: 0, xp: 0, bag: {} };
   /* présent : seul lastSeenAt change */
   assert.equal(touchPrison(p, 5010e3, cfg), false);
   assert.equal(p.lastSeenAt, 5010e3);
   const pub = publicPrison(p, null, { cfg });
   assert.equal(pub.waitAt, 5010e3 + 1000e3);
   assert.deepEqual(pub.away, { runs: 0, energy: 0, bag: {} });
-  assert.deepEqual(sanitizePrison({ ...p, away: { runs: -1, energy: NaN, bag: { coal: 1.5 } } }).away, { runs: 0, energy: 0, bag: {} });
+  assert.deepEqual(sanitizePrison({ ...p, away: { runs: -1, energy: NaN, bag: { coal: 1.5 } } }).away, { runs: 0, energy: 0, xp: 0, bag: {} });
 });
 
 test('présent : vue toutes les 10 s → le run suit le temps réel (pump comme une session, vue au tick dû)', async () => {
@@ -416,7 +416,7 @@ test('versement d\'un run en échec : pump le relance (une fois versé, une seul
   const put = store.putInventory.bind(store);
   let fail = 1;
   store.putInventory = async (...a) => { if(fail-- > 0) throw new Error('base indisponible'); return put(...a); };
-  t.now = runEndAt(p, G);
+  t.now = Math.max(runEndAt(p, G), p.lastSeenAt + PRISON.batchMs);   // absent : premier paquet
   const err = console.error; console.error = () => {};
   try { await game.pump(); } finally { console.error = err; }
   assert.equal((await prisonOf(store, A.id)).run, 1, 'pas versé');
@@ -645,4 +645,34 @@ test('mode dev : vitesse au lancement et en direct, sans perdre le tick atteint'
   await prod.game.prisonStart(A, null, { speed: 300 });
   assert.equal((await prisonOf(prod.store, A.id)).speed, GAME.speed);  // hors dev : la vitesse du jeu
   await assert.rejects(prod.game.prisonClock(A, { speed: 5 }), { code: 'forbidden' });
+});
+
+/* ---------- butin de la prison et Historique (29/10/2026, Geoffrey) ---------- */
+test('butin de la prison : totaux (runs, XP, énergie, objets) envoyés au navigateur ; à la sortie, une ligne dans l\'Historique, une seule', async () => {
+  const { game, store, t } = setup();
+  await setEnergy(store, A.id, 50);
+  await game.prisonStart(A);
+  const p = await prisonOf(store, A.id);
+  const G = replayRun(p), sum = G.summary, bag = sum.shares[0].bag;
+  t.now = Math.max(runEndAt(p, G), p.lastSeenAt + PRISON.batchMs);
+  await game.pump();                                                   // run 1 versé
+  const v = await game.prisonView(A, null);
+  assert.equal(v.prison.totals.runs, 1);
+  assert.equal(v.prison.totals.xp, sum.shares[0].xp);
+  assert.deepEqual(v.prison.totals.bag, bag);
+  assert.ok(v.prison.totals.energy > 0);
+  const r = await game.prisonStop(A);                                  // run 2 arrêté tout de suite
+  assert.equal(r.prison.state, 'done');
+  assert.ok(r.prison.totals.runs >= 1 && Number.isFinite(r.prison.endedAt));
+  await game.prisonStop(A);                                            // rejoué : rien de plus
+  const h = (await game.history(A)).sessions.filter(s => s.mode === 'prison');
+  assert.equal(h.length, 1);
+  assert.deepEqual(h[0].bag, r.prison.totals.bag);
+  assert.equal(h[0].xp, r.prison.totals.xp);
+  assert.equal(h[0].prison.runs, r.prison.totals.runs);
+  assert.equal(h[0].prison.area, p.areaMax);
+  const st = await game.state(A);
+  assert.equal(st.ended, null, 'pas de bilan de fin de session pour la prison');
+  assert.equal(st.session, null);
+  await game.start(A, { mode: 'mine' });                               // une session se lance toujours
 });

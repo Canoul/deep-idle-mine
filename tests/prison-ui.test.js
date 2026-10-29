@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MINE_MODES, ENERGY, PRISON } from '../src/config.js';
-import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError } from '../src/ui/prison.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError, prisonTotalsLine, prisonProfileText } from '../src/ui/prison.js';
 import { mineModes, prisonLaunchState } from '../src/ui/lobby.js';
 
 const now = 1_800_000_000_000;
@@ -121,3 +121,12 @@ test('sondage de la prison : 401 → arrêt ; no_session → état relu ; autre 
   assert.ok(PRISON.uiRetry > 250, 'plus lent que la vue en direct');
 });
 
+/* butin de la prison et contenu d'après les 10 dernières mines (29/10/2026) */
+test('butin de la prison : la ligne des totaux ; le contenu des 10 dernières mines', () => {
+  assert.equal(prisonTotalsLine({ runs: 3, xp: 1234, energy: 12.4, bag: { Fer: 2000, Or: 450 } }), '3 runs · +1 234 XP · +12 ⚡ · 2 450 objets');
+  assert.equal(prisonTotalsLine({ runs: 1, xp: 0, energy: 0, bag: {} }, { startedAt: 0, endedAt: 80 * 60e3 }), '1 run · +0 XP · +0 ⚡ · 0 objet · en 1 h 20');
+  assert.equal(prisonTotalsLine(null), '');
+  assert.match(prisonProfileText({ n: 0, area: 1 }), /aucune mine classique.*area 1/);
+  const t = prisonProfileText({ n: 10, area: 7, ores: { iron: 0.6, gold: 0.4 }, treasures: { 'Treasure T3': 1 }, mobs: null });
+  assert.match(t, /10 dernières mines/); assert.match(t, /area 7/); assert.match(t, /Fer 60 %, Or 40 %/); assert.match(t, /T3 100 %/); assert.match(t, /mobs de l'area/);
+});

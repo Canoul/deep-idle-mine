@@ -4,7 +4,7 @@
    minerais : le mineur remonte déposer, comme en fin de session. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { W, AREA_H, AREA_Y0, DT, PRISON, BLOCKS, SPAWN_X, CHEST_X, WINCH, DUNGEON, TRAP, MOBS, KHOLE_BLOCK, GLYPHS, SHINY, TREASURE_BLOCK } from '../src/config.js';
+import { W, AREA_H, AREA_Y0, DT, PRISON, BLOCKS, SPAWN_X, CHEST_X, WINCH, DUNGEON, TRAP, MOBS, KHOLE, KHOLE_BLOCK, GLYPHS, SHINY, TREASURE_BLOCK } from '../src/config.js';
 import { newPrisonRun, prisonGoal, tickPrison, endPrisonRun } from '../src/sim/prison.js';
 import { newSession, tick } from '../src/sim/session.js';
 import { areaComp, areaDef, prisonComp, contentOf, contentAt, maxRow } from '../src/sim/world.js';
@@ -145,12 +145,15 @@ test('butin rare : glyphes et shiny × rareMul', () => {
   assert.ok(Math.abs(b/a - PRISON.rareMul) / PRISON.rareMul < 0.2, `shiny ${b} / ${a}`);
 });
 
-test('ni k hole, ni shrine, ni Gallianix, ni nouvelle area', () => {
+/* k hole : permis en prison depuis le 29/10 (chance × PRISON.kholeMul) ; toujours ni shrine, ni Gallianix, ni nouvelle area */
+test('ni shrine, ni Gallianix, ni nouvelle area ; k hole 2 fois plus rare qu\'en mine', () => {
+  let kh = 0;
   for(let s=1; s<=300; s++){
     const G = newPrisonRun(s, { miner:{}, areaMax:2, run:1 });
-    for(const row of G.tiles) assert.ok(!row.includes(KHOLE_BLOCK), `k hole seed ${s}`);
-    assert.equal((G.kholes || []).length, 0);
+    if(G.tiles.some(row => row.includes(KHOLE_BLOCK))) kh++;
+    assert.equal((G.kholes || []).length, G.tiles.some(row => row.includes(KHOLE_BLOCK)) ? 1 : 0);
   }
+  assert.ok(kh < 300 * KHOLE.chance, `k hole : ${kh} cartes sur 300 (mine : ${300 * KHOLE.chance} attendues)`);
   const G = newPrisonRun(5, { miner:{}, areaMax:2, run:1 });
   const S = newSession(5, { shrines:['abundance'], prison:{ areaMax:2 } });
   assert.deepEqual(S.shrines, []);

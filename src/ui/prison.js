@@ -33,6 +33,17 @@ export function prisonProfileText(p, running = false){
   return `${head} (d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}) : ${parts.join(' · ')}.`;
 }
 
+/* totaux de la prison (publicPrison.totals) : « 3 runs · +1 234 XP · +12 ⚡ · 2 450 objets » ; p (facultatif) : la prison,
+   pour sa durée (« en 1 h 20 ») */
+const span = ms => { const min = Math.max(1, Math.round(ms / 60e3)); return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`; };
+export function prisonTotalsLine(t, p = null){
+  if(!t) return '';
+  const items = Object.values(t.bag ?? {}).reduce((s, n) => s + (ok(n) ? n : 0), 0);
+  const parts = [`${t.runs | 0} run${(t.runs | 0) > 1 ? 's' : ''}`, `+${nf(t.xp || 0)} XP`, `+${nf(t.energy || 0)} ⚡`, `${nf(items)} objet${items > 1 ? 's' : ''}`];
+  if(p && ok(p.startedAt) && ok(p.endedAt)) parts.push(`en ${span(p.endedAt - p.startedAt)}`);
+  return parts.join(' · ');
+}
+
 /* une prison qui tourne ou attend (pas fermée) */
 export const prisonActive = p => p?.state === 'running' || p?.state === 'waiting';
 /* bilan d'absence à montrer (envoyé une seule fois par le serveur) */

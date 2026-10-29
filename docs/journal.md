@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
+- **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
+  rapporté depuis l'entrée (runs, XP, énergie, objets). En sortant, une fenêtre récapitule tout, et la prison apparaît
+  dans l'**Historique**. La prison rapporte de nouveau environ la moitié d'une mine à 3 (avec 3 fois moins de mobs,
+  elle en rapportait 87 % : moins de minerais sur la carte, 0,30 au lieu de 0,52).
+- **À suivre** : mesure bruitée (5 chaînes, acier seulement) : à refaire plus large avant la mise en ligne.
+- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
 - **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
   classiques : leur **area moyenne** (pierre, mobs, pièges, donjon), la **répartition de tes minerais**, les **tiers de tes
