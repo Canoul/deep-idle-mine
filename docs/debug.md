@@ -4627,3 +4627,18 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ goblin-king 9/9, graphite, wiki, loot / treasure (44) ; `npm run test:anticheat` 108/108.
 - **Probabilités** (calcul + 200 000 ouvertures avec `openTreasure`) : objet du boss 7,00 % (simulé 6,91 %), couronne
   1 % (0,97 %), au moins un rare toutes familles 17,30 % (17,35 %) ; moyennes 10 lingots, 15 Tainted iron, 75 peaux ✅.
+
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » (branche geoffrey/classement-roi-gobelin)
+- **Quoi** : board `instance` (src/meta/leaderboard.js : `BOARDS`, tri croissant comme `tower`, `sanitizeInstanceRecord`
+  { t, fight, at, instance, team, session }, `betterInstance`) ; ns `instance_record` (server/game/store.js : mémoire,
+  fichier, PostgreSQL, `get/list/putInstanceRecords`) ; `recordInstance(rec)` après `recordTower` à la fin de session
+  (server/game/service.js) : instance réussie, pas dev, joueurs présents à la victoire ; `fight = r.t − r.awake`
+  (`G.timeline.awake`, réveil du roi) ; rattrapage des sessions `done` gardées (`backfillTowers`, même passage) ;
+  `leaderboardData().instance`. Social : ligne avec `team` et `fight` (server/social/service.js) ; `BOARD_INFO.instance`,
+  `instanceDetail` (« combat 2:10.4 · avec Max »), bouton « Roi gobelin » (index.html).
+- **Outil de test** : `fakeLive` (tests/helpers.js) termine maintenant une instance à `INSTANCE_TICKS` (avant : à la
+  durée d'une mine classique, une instance hors mode dev ne finissait jamais dans les tests).
+- **Tests** ✅ `tests/leaderboard.test.js` 14/14 (record revérifié, plus court gagne, présents seulement, échec et dev
+  ignorés, record plus lent qui ne remplace rien, rattrapage, admin caché) ; 27 fichiers serveur / store / social :
+  334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
+  `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).

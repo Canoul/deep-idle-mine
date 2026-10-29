@@ -24,6 +24,15 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » dans Social → Classements
+- **Pour le joueur** : un nouveau classement, à côté de « Tour céleste » : le **meilleur temps pour vaincre le roi
+  gobelin** (Instance I), de l'entrée dans l'instance à la mort du roi. Chaque joueur encore là à la victoire garde son
+  meilleur temps ; sous son nom, le **temps du combat contre le roi** (de son réveil à sa mort) et ses coéquipiers. Un
+  joueur parti avant la fin n'est pas classé, un échec ne compte pas. Les victoires des 30 derniers jours sont reprises.
+- **Décisions** : classé sur le temps total (comme la tour) ; le temps du combat seul est affiché à côté (choix de
+  Claude, facile à inverser).
+- **État** : 🧪 sur la branche `geoffrey/classement-roi-gobelin` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : lingots à la place du minerai de graphite
 - **Pour le joueur** : le coffre ne donne plus de minerai de graphite (20 à 40). À la place, toujours **5 à 15 lingots
   de graphite** et **10 à 20 Tainted iron**, en plus des 50 à 100 peaux de gobelin. Les objets rares ne changent pas.

@@ -218,8 +218,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const data = await game.leaderboardData(), tree = specTree(board);
       const hidden = new Set((await Promise.all(LEADERBOARD.hidden.map(n => accounts.findAccountByName(nameKey(n))))).filter(Boolean).map(a => a.id));
       const r = rankBoard(board, (tree ? data.spec[tree] : data[board]).filter(e => !hidden.has(e.id)), me.id);
-      const row = async ({ id, rank, value, me: mine, level, side, team }) =>
-        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}) });
+      const row = async ({ id, rank, value, me: mine, level, side, team, fight }) =>
+        ({ rank, name: await nameOf(id), value, me: mine, ...(level ? { level } : {}), ...(side ? { side, team } : {}),
+           ...(board === 'instance' ? { team: team ?? [], fight: fight ?? null } : {}) });   // roi gobelin : équipe, temps de combat (29/10)
       return { board, total: r.total, rows: await Promise.all(r.rows.map(row)), me: r.me && await row(r.me) };
     },
 
