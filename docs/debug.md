@@ -4678,3 +4678,14 @@ Règles (voir CLAUDE.md) :
 - **Simulation** `npm run simulate:tower -- --level 2 --count 20`, avant → après : 0/20 victoires partout dans les deux
   cas (équipes de base) ; étage 4 atteint à 7:46-7:47 → 8:20-9:56, étage 5 à 9:49 (équipe a) → jamais. ⚠️ Aucune équipe
   mesurée ne gagne le niveau 2 (repère du 28/10 : 2,5 minage / 40 dégâts, 0/4, avant ce changement).
+
+## 29/10/2026 — Geoffrey — Barre des sorts dans les tours, l'instance et le Bloc géant
+- Seul `updateHUD` (mine classique, `#spellBar`) remplissait la barre ; les tours, l'instance et le Bloc géant jouent des
+  sorts (`spellCd` dans leurs simulations) sans les montrer. MI : pas de sorts dans `src/sim/instant/`, pas de barre.
+- `src/ui/hud.js` : `showSpellBar(el, m, t)` (cache sans sort / sans mineur) et `placeSpellBar(el, cv, wrap)` (bas du canvas
+  quand il est centré plus petit que sa zone). `index.html` : `#spellBarTw`, `#spellBarIn`, `#spellBarGt`. `src/main.js` :
+  `updateSpellBars` (son propre mineur, comme les états). `server/giant/service.js` viewOf : `me.spells`, `me.spellCd` ;
+  `src/ui/giant.js` frame : barre à chaque image, temps = `view.t` (rafraîchi à chaque réception, ~0,5 s).
+- **Tests** ✅ spells (showSpellBar), giant-service (me.spells / spellCd), tower-spells, giant-sim, instance-server : 72/72.
+  ⚠️ Pas vu à l'écran (pas de navigateur ici) : vérifier la place de la barre dans une tour, une instance et au Bloc géant.
+

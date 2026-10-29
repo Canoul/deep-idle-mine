@@ -38,7 +38,7 @@ import { aurasOf } from './meta/aura.js';
 import { setupOrbs } from './ui/orbs.js';
 import { fitCanvas, fitMine, fitInstant, clearDock } from './ui/fit.js';
 import { pxi } from './ui/pxicons.js';
-import { updateHUD, showEnd, showSettling, updateNavSession, fmt } from './ui/hud.js';
+import { updateHUD, showEnd, showSettling, updateNavSession, fmt, showSpellBar, placeSpellBar } from './ui/hud.js';
 import { setupRunControls, setupCamera, renderSpeeds } from './ui/controls.js';
 import { setupLobby } from './ui/lobby.js';
 import { gearScore } from './meta/gearscore.js';
@@ -688,6 +688,14 @@ function updateEffects(G){
     if(!bar.hidden) placeEffectsBar(bar, cv, wrap, below);
   }
 }
+/* barre des sorts des tours et de l'instance (29/10) : celle de son propre mineur ; la mine classique a la sienne (src/ui/hud.js) */
+const spellBars = { tower: [$('spellBarTw'), $('cvTw'), $('cvTwWrap')], instance: [$('spellBarIn'), $('cvIn'), $('cvInWrap')] };
+function updateSpellBars(G){
+  for(const [k, [el, cv, wrap]] of Object.entries(spellBars)){
+    showSpellBar(el, G && G.mode === k ? G.miners.find(m => m.account === acct.account?.id) ?? null : null, G?.t ?? 0);
+    placeSpellBar(el, cv, wrap);
+  }
+}
 
 /* ---------- boucle d'affichage (la partie, elle, tourne sur le serveur) ---------- */
 let last = performance.now(), lastHud = 0;
@@ -711,6 +719,7 @@ function frame(now){
       $('realLeft').textContent = late ? 'connexion…' : info.dev ? '' : `fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
     }
     updateEffects(ui.tab==='session' ? shown : null);
+    updateSpellBars(ui.tab==='session' ? shown : null);
     updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){

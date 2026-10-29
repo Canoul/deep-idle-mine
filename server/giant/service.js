@@ -164,7 +164,7 @@ export function createGiantService({ store, game, clock = Date.now, config = GIA
       layout, t: G?.t ?? 0, inspire: G?.inspire && G.t < G.inspire.until ? Math.round(G.inspire.until - G.t) : 0,
       me: mine ? { id: mine.id, points: shownPoints(mine.points), leftMs: Math.round(Math.max(0, (mine.endTick - G.ticks) * DT) / speed * 1000),
                    ox: Math.round(mine.ox), oxMax: mine.carac.oxygenMax, rate: Math.round(giantRate(G, mine) * 100) / 100,
-                   status: mine.status } : null,
+                   status: mine.status, spells: mine.spells, spellCd: { ...mine.spellCd } } : null,   // sorts et recharges (barre des sorts, 29/10)
       miners: (G?.miners ?? []).map(m => ({ id: m.id, name: m.name, me: m.account === me.id, x: Math.round(m.x * 100) / 100, y: m.y,
         face: m.face, fly: m.fly ? { from: m.fly.from, to: m.fly.to, k: Math.min(1, m.fly.t / m.fly.dur) } : null,
         status: m.status, look: m.look, auras: m.auras, color: m.color,

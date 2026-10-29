@@ -74,6 +74,12 @@ Modèle d'entrée :
   un gobelin asservi (c'était déjà le cas, c'est maintenant vérifié par un test sur une vraie partie).
 - **État** : ✅ en ligne le 29/10
 
+## 29/10/2026 — Geoffrey — Recharge des sorts visible dans tous les modes
+- **Pour le joueur** : la barre des sorts (icônes et secondes de recharge) n'existait que dans la mine classique. Elle
+  apparaît maintenant aussi en bas de l'écran dans les **tours du Jugement**, l'**Instance** et le **Bloc géant**, avec les
+  sorts de son propre mineur. La Mine instantanée n'en a pas : aucun sort n'y part.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — Nerf : Gants tactique et Ceinture du Géant (≈ +10 % de DPS chacun)
 - **Pour le joueur** : les **Gants tactique** passent à vitesse d'attaque **+10 %** (avant +20 %) et la **Ceinture du
   Géant** à dégâts **+1,5** (avant +5 ; ténacité +12,5 % inchangée). Chacune donne maintenant environ +10 % de DPS : les
