@@ -18,6 +18,8 @@
    { t, at, side, team, session } (src/meta/leaderboard.js) ; gardé sans limite. Lu par les classements (onglet Social).
    Record d'instance (ns instance_record, clé = compte, 29/10/2026) : meilleur temps pour vaincre le roi gobelin,
    { t, fight, at, instance, team, session } (src/meta/leaderboard.js) ; gardé sans limite, lu par les classements.
+   Énergie (ns energy, clé = compte, 29/10/2026) : { value, keys } (src/meta/energy.js) ; un lancement de mine classique
+   en débite une fois (clé = id de session), écrit avec la session sous le verrou 'energy:compte'.
    Chat global (ns chat_global, clé 'state', 28/10/2026) : { next, msgs:[{ id, at, account, name, text }] }, les CHAT.keep
    derniers messages, gardés pour survivre aux redémarrages (server/social/service.js). */
 import fs from 'node:fs/promises';
@@ -45,6 +47,7 @@ export function createMemoryGameStore(initial = {}){
   const giantPlayers = new Map(Object.entries(initial.giantPlayers ?? {})); // Bloc géant : délai, visite en cours, récompenses prises
   const towerRecords = new Map(Object.entries(initial.towerRecords ?? {})); // classements : meilleur temps de tour, par compte
   const instanceRecords = new Map(Object.entries(initial.instanceRecords ?? {})); // classements : meilleur temps contre le roi gobelin, par compte
+  const energies = new Map(Object.entries(initial.energies ?? {}));   // énergie du compte (src/meta/energy.js)
   const chats = new Map(Object.entries(initial.chats ?? {}));         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
 
@@ -199,6 +202,10 @@ export function createMemoryGameStore(initial = {}){
       if(entries.length) await store.changed(entries.map(([id, r]) => ({ ns: 'instance_record', key: id, value: r })));
     },
 
+    /* énergie du compte (29/10) : { value, keys } */
+    async getEnergy(accountId){ return copy(energies.get(accountId)) ?? null; },
+    async putEnergy(accountId, e){ energies.set(accountId, copy(e)); await store.changed([{ ns: 'energy', key: accountId, value: e }]); },
+
     /* wiki : objets secrets trouvés en jeu (WIKI.secret) ; clé = nom de l'objet, valeur = { at } (premier trouvé) */
     async listDiscovered(){ return [...discovered.keys()]; },
     /* renvoie true si c'est la première fois (annonce Discord d'un BP, 27/10), false si l'objet était déjà trouvé */
@@ -216,7 +223,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), chats: Object.fromEntries(chats) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), chats: Object.fromEntries(chats) }; },
   };
   return store;
 }
@@ -246,12 +253,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'chat_global']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'chat_global']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, chats: rows.chat_global });
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, chats: rows.chat_global });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

@@ -16,7 +16,7 @@
      versement idempotent, reprise après redémarrage), mais chacun son butin, sans XP ni focus.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, ENERGY, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -39,6 +39,7 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
+import { sanitizeEnergy, canPay, rollCost, spendEnergy, publicEnergy } from '../../src/meta/energy.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
@@ -201,6 +202,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return r?.value ?? r;
   });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
+  const loadEnergy = async accountId => sanitizeEnergy(await store.getEnergy(accountId));   // revérifiée à chaque fois, départ si absente
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
   const publicProgress = p => ({ xp: p.xp, ...levelOf(p.xp), spec: specLevels(p) });
   /* skills : revérifiés avec les points du niveau (jamais plus de rangs que de points) */
@@ -445,6 +447,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,
                stuff: (await loadStuff(me.id, inv)).worn,
                progress: publicProgress(await loadProgress(me.id)),
+               energy: publicEnergy(await loadEnergy(me.id)),
                skills: publicSkills(await loadSkills(me.id), await pointsOf(me.id)),
                spells: publicSpells(await loadSpells(me.id), await spellCtx(me.id)),
                sets: publicSets(sanitizeSets(await store.getSets(me.id))),
@@ -487,7 +490,9 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const inst = modeDef.instance ? instanceDef(mode) : null;
       if(modeDef.instance && !inst?.ready) fail('mode_not_ready', 400, `${modeDef.label} : bientôt disponible.`);
       const invLocks = inst ? players.map(p => 'inv:' + p.account) : [];
-      return withLock.many([...players.map(p => 'acct:' + p.account), ...invLocks], async () => {
+      /* énergie (29/10) : seule la mine classique en coûte, hors mode dev ; verrou par compte, bots exclus (seuls les vrais joueurs) */
+      const energyLocks = mode === 'mine' && !dev ? players.map(p => 'energy:' + p.account) : [];
+      return withLock.many([...players.map(p => 'acct:' + p.account), ...invLocks, ...energyLocks], async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
         let opening = null, level = null;
@@ -518,6 +523,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           for(const p of players) invs[p.account] = await loadInventory(p.account);
           const miss = missingKeys(mode, players, a => invs[a]);
           if(miss.length) fail('no_key', 409, `Il faut une ${inst.key} par joueur : ${miss.map(p => p.name || 'un joueur').join(', ')} n'en ${miss.length > 1 ? 'ont' : 'a'} pas.`);
+        }
+        /* énergie : chaque joueur doit pouvoir payer (vérifié avant de compter le lancement ; rien n'est débité ici) */
+        const energies = {};
+        if(energyLocks.length){
+          for(const p of players) energies[p.account] = await loadEnergy(p.account);
+          const poor = players.filter(p => !canPay(energies[p.account]));
+          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}.`);
         }
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};
@@ -572,6 +584,16 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
         };
+        /* énergie : débit juste avant la création de la session, après tous les autres refus ; clé = id de session */
+        if(energyLocks.length){
+          rec.energy = {};
+          for(const p of players){
+            const cost = rollCost(random);
+            if(!spendEnergy(energies[p.account], rec.id, cost)) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${p.name || 'Un joueur'}.`);
+            rec.energy[p.account] = cost;
+          }
+          for(const p of players) await store.putEnergy(p.account, energies[p.account]);
+        }
         if(inst){
           /* la session et les clés consommées, en une seule écriture */
           for(const p of players) if(!removeItem(invs[p.account], inst.key, 1)) fail('no_key', 409, `Il faut une ${inst.key} par joueur.`);
