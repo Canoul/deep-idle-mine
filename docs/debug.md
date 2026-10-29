@@ -4903,6 +4903,17 @@ Règles (voir CLAUDE.md) :
 - Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
   navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
 
+## 29/10/2026 — Échap quitte l'onglet ouvert (Geoffrey)
+- `src/ui/nav.js` : dans le `keydown` des raccourcis, `Escape` → `show(escapeTab(cur, overlay))` ; `escapeTab` (pur,
+  exporté) renvoie `'session'` sauf si on y est déjà ou si une fenêtre est ouverte. Fenêtres : `OVERLAYS` (`#obtained`,
+  `#dialog`, `#account` visibles) ou `e.defaultPrevented`. `#dialog` écoute en capture et coupe la propagation ;
+  `#account` et `#obtained` écoutent sur `window`, donc après `document` : au moment du test elles sont encore visibles,
+  Échap ne fait que les fermer. Ignoré pendant la saisie (input, textarea, select).
+- **Tests** ✅ `tests/nav.test.js` (nouveau : `escapeTab`, fenêtres d'`OVERLAYS` présentes dans index.html), `boot-check`.
+  ⚠️ Pas essayé dans le navigateur.
+- Point fragile : une nouvelle fenêtre qui se ferme à Échap doit être ajoutée à `OVERLAYS`, sinon Échap la ferme ET
+  quitte l'onglet.
+
 ## 29/10/2026 — Geoffrey — Instance I : gobelins 175 PV / 1,75 s, régénération du roi après un enfermement
 - **Contexte** : analyse du record (session 6ed73842…, seed 71430292, 7:12,4) : rejeu local identique au résumé serveur
   (t 432,4, réveil 308,7). Combat contre le roi ≈ 2 min pour tout le monde ; l'écart est la phase des spawners (5:08 contre
@@ -4975,3 +4986,20 @@ Règles (voir CLAUDE.md) :
   couronne à 0,014), anticheat/goblin-king +1 (coffre II : idempotent, noms inventés refusés), lobby +1. Sujets : 224/224 +
   lobby 18/18 ; `npm run test:anticheat` 109/109.
 - ⚠️ Pas vérifié à l'écran (Lobby, classement) : il faut un serveur et un compte.
+
+## 29/10/2026 — Classement « Tour céleste II » : records de tour par niveau (Geoffrey)
+- `src/meta/leaderboard.js` : board `tower2` (BOARDS, FASTEST) ; `sanitizeTowerRecord` garde `level` (absent = 1, inconnu de
+  TOWER.levels = record invalide) ; `recordKey` / `splitRecordKey` (anciens noms `instanceRecordKey` / `splitInstanceKey`
+  gardés en alias), même schéma que l'instance : clé `compte` au niveau 1, `compte#2` au niveau 2.
+- `server/game/service.js` : `recordTower` écrit sous `recordKey(compte, rec.level)` ; un record d'un autre niveau sous
+  cette clé compte comme absent (remplacé). `backfillTowers` : avant le rattrapage, chaque record sans `level` (tous
+  sous la clé du compte, ancien code) reçoit le niveau de sa session (`sessionsWithStatus('done')`, 1 si elle n'est plus
+  gardée), sous le verrou `tower_record:`. Un ancien record du niveau 2 reste donc sous la clé du niveau 1, marqué 2 : exclu
+  du board `tower` (`r.level === clé`), et remplacé par la première victoire du niveau 1 rejouée. `leaderboardData` :
+  `tower` = niveau 1, `tower2` = niveau 2. UI : `BOARD_INFO.tower2`, bouton `data-board="tower2"` (index.html), détail
+  camp + équipe comme `tower`.
+- **Tests** ✅ `tests/leaderboard.test.js` 18/18 (nouveaux : deux niveaux séparés ; migration des anciens records),
+  social, town, tower*, judgment, instance*, nav, boot-check : 162/162. ⚠️ Pas vu à l'écran.
+- Point fragile : pas d'effacement dans le store ; un ancien record du niveau 2 rangé au niveau 1 sans victoire au niveau 1
+  rejouable reste dans `tower_record` sous la clé du compte (inoffensif, jamais classé).
+

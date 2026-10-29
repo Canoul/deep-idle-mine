@@ -560,7 +560,7 @@ Des **bâtiments** qu'on active dans le lobby de la mine classique ; ils restent
 - D'autres shrines viendront : chacun a son prix, sa durée et son effet en config ; plusieurs shrines différents peuvent être actifs ensemble.
 
 ### Navigation
-Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et =). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
+Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom de chaque onglet : **Lobby, Session, Inventaire, Stuff, Craft, Four, Concasseur, Amélioration, Recherche, Skills, Historique, Social** (touches 1 à 9, 0, - et = ; Échap quitte l'onglet ouvert pour l'onglet Session, 29/10/2026). Elle est encadrée de deux **orbes** : temps de session et XP ; pendant une session, oxygène et pods du mineur suivi *(direction artistique « Forge noire », 21/10/2026)*.
 - **Lobby** : le groupe, les préférences, le type de mine, Lancer (lecture seule pendant une session). Onglet ouvert par défaut ; un lien d'invitation y mène.
 - **Session** : la session en cours (les mineurs, la carte, le coffre commun), puis son bilan. L'ancienne adresse `#mine` y mène. Le minuteur de la barre du haut y mène aussi d'un clic.
 - **Inventaire** : tout ce que possède le joueur (voir ci-dessous).
@@ -589,6 +589,9 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
     joueur** présent à la victoire garde son meilleur temps ; sa ligne montre le camp et ses coéquipiers de ce jour-là.
     Un joueur parti avant la victoire n'est pas classé. Les victoires des 30 jours avant le 27/10 sont reprises.
     Les sessions du mode dev ne comptent pas.
+  - **Tour céleste II** *(29/10/2026, Geoffrey)* : **un classement par niveau de tour**, comme le roi gobelin. « Tour céleste »
+    ne compte plus que les victoires au niveau 1, « Tour céleste II » celles au niveau 2 (mêmes règles). Les records
+    d'avant ce classement sont rangés d'après le niveau de leur session (niveau 1 si elle n'est plus gardée).
   - **Roi gobelin** *(29/10/2026, Geoffrey)* : le **meilleur temps pour vaincre le roi gobelin** de l'Instance I, en temps
     de jeu **de l'entrée dans l'instance à sa mort** (spawners compris). Mêmes règles que la tour : chaque joueur présent
     à la victoire garde son meilleur temps, un joueur parti avant n'est pas classé, le mode dev ne compte pas, un échec
