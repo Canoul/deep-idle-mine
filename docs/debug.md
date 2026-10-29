@@ -5013,3 +5013,16 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ tower-spells +1 (barbare côté gauche, voulu « R », à 4 cases : il dashe et frappe), échoue sans le correctif ;
   tower* 63/63. Rejeu de la partie : 10 Dash pendant le combat (avant 4), victoire 9:30. `simulate:tower --count 6`
   niveaux 1 et 2 : 0 « bloqué ».
+
+## 29/10/2026 — Geoffrey — Dynamite en combat (tours, Instance I)
+- **Quoi** : `SPELL.dynamite.fightFoes` 2 (src/config.js). Instance (`combatSpells`) : sur le roi si `blastHurt` depuis
+  la case devant lui le touche, sinon sur la cible si au moins fightFoes gobelins dans le rayon autour d'elle ;
+  `blastDamage` (50 %), rien de cassé, log « Dynamite en combat (n gobelins, le Roi gobelin) ». Tour (`combatSpells`) :
+  en plus du boss, sur un mob si `blastFoes(cible)` ≥ fightFoes → `blast` (casse aussi les briques du rayon selon la règle
+  de dureté, inchangée).
+- **Tests** ✅ instance-sim +1 (gobelin seul : gardée ; 2 gobelins : lancée, 50 % ; roi au contact), tower-spells +1
+  (niveau 2, 4 tours : dynamites sur des mobs, 0 bloqué) ; les deux échouent sans le changement ; tower*, instance*,
+  spells : 127/127. `simulate:tower --count 6` niveaux 1 et 2, `simulate-instance --size 3 --count 5` niveaux 1 et 2 :
+  0 bloqué. Rejeux : instance 20:48 victoire 8:00.8 → 7:40.6 ; 7 parties d'instance : 4 victoires.
+- ⚠️ Dans la tour, la dynamite peut maintenant partir sur 2 Diablotins invoqués plutôt qu'être gardée pour le boss :
+  partie seed 949593874 rejouée 9:30 → 9:40 (une seule sur le Démon au lieu de 2) ; seed 2001827804 : 9:46 → 9:51.

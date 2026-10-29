@@ -552,6 +552,17 @@ function combatSpells(G, m, target){
     for(const o of liveGobs(G)) if(o !== target && manh(o, m) <= S.radius) hitGoblin(G, m, o, hitDmg(G, m) * S.dmg);
     if(target !== G.boss && inContact(G, m)) damageBoss(G, m, hitDmg(G, m) * S.dmg);
   }
+  /* Dynamite en combat (29/10/2026, Geoffrey) : sur le roi (au contact, devant lui), ou sur un gobelin qui en a au moins
+     fightFoes dans le rayon (lui compris) ; 50 % de ses dégâts à tout le rayon, rien de cassé */
+  if(ready(G, m, 'dynamite')){
+    const S = SPELL.dynamite, boss = target === G.boss;
+    const hurt = boss ? blastHurt(G, m, m.x + m.face, m.y) : blastHurt(G, m, target.x, target.y);
+    if(boss ? hurt.king : hurt.gobs.length >= S.fightFoes){
+      cast(G, m, 'dynamite');
+      log(G, `🧨 ${m.name} : Dynamite en combat (${hurt.gobs.length} gobelin${hurt.gobs.length > 1 ? 's' : ''}${hurt.king ? `, le ${G.boss.name}` : ''})`);
+      blastDamage(G, m, hurt);
+    }
+  }
 }
 /* à chaque décision : Hand of Justice (un gobelin qui tacle un allié, puis lui, à sa portée : étourdi), Ulti shen (un
    allié taclé, ou qui se bat contre le roi : il se téléporte à lui et frappe) */

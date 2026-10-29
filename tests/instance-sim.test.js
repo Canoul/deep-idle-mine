@@ -290,3 +290,26 @@ test('Dash sur un gobelin de sa ligne (29/10) : plus besoin d\'être taclé par 
   assert.equal(m.x, 8, 'à côté du gobelin');
   assert.ok(o.hp < o.maxhp && o.stunUntil > G.t, 'frappé et étourdi (un gobelin, pas un boss)');
 });
+
+test('Dynamite en combat (29/10) : sur un gobelin entouré (fightFoes) ou sur le roi, 50 % de ses dégâts au rayon ; pas pour un gobelin seul', async () => {
+  const { SPELL } = await import('../src/meta/spells.js');
+  const { decide } = await import('../src/sim/instance/session.js');
+  const S = SPELL.dynamite, carac = { damage: 10, crit: 0, doubleAttack: 0 };
+  const mk = () => { const G = newInstance(3, { miners: [spec(0, carac, { spells: ['dynamite'], skillTree: 'mineur' })] }); quiet(G);
+    const m = G.miners[0]; m.x = 6; m.y = G.floorY; m.action = null; return { G, m }; };
+  /* un gobelin seul au contact : pas de Dynamite */
+  { const { G, m } = mk(); goblin(G, 7, G.floorY); decide(G, m); assert.ok(!(m.spellCd.dynamite > 0), 'un seul : gardée'); }
+  /* deux gobelins au rayon : elle part, les deux prennent 50 % */
+  { const { G, m } = mk(); const a = goblin(G, 7, G.floorY), b = goblin(G, 8, G.floorY);
+    assert.equal(S.fightFoes, 2);
+    decide(G, m);
+    assert.ok(m.spellCd.dynamite > G.t, 'lancée');
+    assert.ok(Math.abs(b.maxhp - b.hp - 10 * S.dmg) < 1e-6, '50 % au gobelin d\'à côté');
+    assert.ok(a.hp < a.maxhp);
+    assert.ok(G.log.some(l => /Dynamite en combat \(2 gobelins\)/.test(l.msg))); }
+  /* le roi au contact : elle part, le roi prend 50 % */
+  { const { G, m } = mk(); const b = G.boss; b.state = 'fight'; b.y = G.floorY; b.x = m.x + 1;
+    decide(G, m);
+    assert.ok(m.spellCd.dynamite > G.t);
+    assert.ok(b.maxhp - b.hp >= 10 * S.dmg - 1e-6, 'le roi touché'); }
+});

@@ -95,3 +95,13 @@ test("Dash sur le boss même du « mauvais » côté (29/10, partie 949593874) :
   assert.ok(G.boss.hp < hp, 'et frappe');
   assert.ok(barb.spellCd.dash > G.t);
 });
+
+test('Dynamite en combat dans la tour (29/10) : sur un mob qui en a au moins fightFoes dans le rayon', () => {
+  let fights = 0;
+  for(const seed of [1, 2, 3, 4]){
+    const G = runTower(seed, { side: seed % 2 ? 'demon' : 'angel', level: 2, miners: team() });
+    fights += logs(G, /🧨 Min : dynamite, 0 bloc cassé, \d+ (Séraphin|Diablotin)s? touchés?/).length;
+    assert.equal(G.stats.blocked, 0);
+  }
+  assert.ok(fights > 0, `${fights} dynamites sur des mobs au niveau 2 (aucune brique cassable)`);
+});
