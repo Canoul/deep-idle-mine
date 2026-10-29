@@ -441,6 +441,16 @@ def main():
         rect(frag, x, y, 1, 1, hexc('#6b7080'))
     tex['rune_fragment'] = frag
 
+    # poudre de rêve (29/10) : petit tas de poudre violet-bleu, paillettes claires (recyclage des runes)
+    dust = blank()
+    for i, (x0, w) in enumerate([(7, 2), (6, 4), (5, 6), (4, 8), (3, 10), (2, 12)]):
+        rect(dust, x0, 8 + i, w, 1, hexc('#6a4fb3'))
+        rect(dust, x0, 8 + i, 1, 1, hexc('#8f7ad9'))                      # flanc éclairé
+    rect(dust, 2, 13, 12, 1, hexc('#3f2d73'))                              # base dans l'ombre
+    for (x, y) in [(7, 9), (9, 11), (5, 12), (11, 12), (8, 4), (5, 6), (11, 5)]:
+        rect(dust, x, y, 1, 1, hexc('#e8dcff'))                            # paillettes (et grains qui flottent)
+    tex['dream_powder'] = dust
+
     # stonebrick des tours : briques claires (ange) / sombres (démon), joints, décalées ; l'indestructible a des ferrures
     def stonebrick(base, mortar, light, seed, hard=None):
         px = noisy(hexc(base), seed, 0.08)

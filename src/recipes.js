@@ -15,6 +15,9 @@ export const RECIPES = {
   'Plastron en chitine': { cost: { 'Lingot de fer': 8, 'Chitine': 30 },  qty: 1, unlock: null },
   'Jambes en chitine':   { cost: { 'Lingot de fer': 7, 'Chitine': 30 },  qty: 1, unlock: null },
   'Bottes en chitine':   { cost: { 'Lingot de fer': 4, 'Chitine': 70 },  qty: 1, unlock: null },
+  /* Rune (29/10/2026, Geoffrey) : qualité tirée à la fabrication (RUNE.craftChances), lignes comme une rune de tour.
+     La Poudre de rêve vient du recyclage des runes (RUNE.dust) */
+  'Rune':                { cost: { 'Poudre de rêve': 100 },              qty: 1, unlock: null },
 
   /* Lampe à incandescence (25/10/2026, Geoffrey) : blueprint du Treasure T2 depuis le 26/10 (avant : de base) */
   'Lampe à incandescence': { cost: { 'Vésicule de gaz': 200, 'Charbon': 2000, 'Fragment de cœur': 20 }, qty: 1, unlock: 'Lampe à incandescence BP' },

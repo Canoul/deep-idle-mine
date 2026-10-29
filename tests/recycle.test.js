@@ -14,9 +14,10 @@ test('recycler : rend 60 % de chaque ingrédient, arrondi vers le bas ; un ingr�
     for(const [k, n] of Object.entries(recycleRefund(item))) assert.ok(n < r.cost[k], `${item} : jamais plus que la recette`);
 });
 
-test('recycler : seulement le stuff qui a une recette (pas le four, pas un anneau, pas une rune ni un minerai)', () => {
+test('recycler : seulement le stuff qui a une recette, et les runes (pas le four, pas un anneau ni un minerai)', () => {
   assert.equal(recyclable('Épée en fer'), true);
-  for(const item of ['Four en fer', 'Rune', 'Fer', 'Treasure T1', 'Blueprint parts', 'inconnu', undefined]) assert.equal(recyclable(item), false, String(item));
+  assert.equal(recyclable('Rune'), true);                       // 29/10 : rend de la Poudre de rêve (tests/rune-recycle.test.js)
+  for(const item of ['Four en fer', 'Poudre de rêve', 'Fer', 'Treasure T1', 'Blueprint parts', 'inconnu', undefined]) assert.equal(recyclable(item), false, String(item));
 });
 
 test('recycler : la pièce disparaît (amélioration comprise), les ingrédients arrivent ; renvoyer la demande ne rend rien de plus', () => {
