@@ -1626,6 +1626,11 @@ export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'F
    hidden : pseudos jamais classés (comptes de l'équipe pour tester, ex. « admin », 27/10). */
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 
+/* Énergie du compte (29/10/2026) : lancer une mine classique coûte un entier tiré dans cost.min..cost.max (refus sous
+   cost.min) ; la prison la recharge de prisonPerHour par heure de jeu. max : plafond · start : énergie d'un nouveau
+   compte · memory : dernières clés d'opération mémorisées (idempotence). */
+export const ENERGY = { max: 100, start: 100, cost: { min: 6, max: 12 }, prisonPerHour: 8, memory: 200 };
+
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
    maxLen : caractères par message · keep : derniers messages gardés par session · gapMs : délai minimal entre deux
