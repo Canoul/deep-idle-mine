@@ -89,6 +89,11 @@ export const giantApi = {
 };
 
 /* Amis (onglet Social) : liste, demandes, présence ; inviter / rejoindre un ami */
+/* Le Carreau, la ville du spawn (29/10) : ma place (onglet ouvert, ou x en promenade) → les autres joueurs de la ville */
+export const townApi = {
+  ping: body => request('POST', '/api/town', body),
+};
+
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),
   online:  ()   => request('GET', '/api/social/online'),                // tous les joueurs en ligne (onglet Online)

@@ -4595,3 +4595,40 @@ Règles (voir CLAUDE.md) :
   dépend de la remontée mesurée (`secPerRow`) ; une remontée lente (tacles) rend le trajet court et met le focus en
   veille plus tôt.
 
+## 29/10/2026 — Le Carreau, la ville du spawn (Jules)
+- **Quoi** : nouveau fond hors session + promenade. Config `TOWN` (`src/config.js` : plan, vitesses, cadences, bulles ;
+  `buildings` = un par onglet de `TABS`, ordre de gauche à droite) et `TOWN_SERVER` (`server/config.js`).
+  - `src/shared/town.js` (pur, partagé) : `townLayout` (x de chaque bâtiment, `door` = milieu), `restX(spot, id)` (porte
+    ± `TOWN.spread` tiré de l'ID par `hash01`), `cleanTownPing` (revérification serveur : onglet connu, x fini ramené
+    dans la ville, arrondi 1/100, sinon null), `buildingNear`, `stepToward` (vitesse `walk`, long trajet en ≤ `rush` s).
+  - `server/town/service.js` + `routes.js` : `POST /api/town` `{ spot, x? }` → `{ players, say }`. Présence en mémoire
+    (`presentFor` 40 s), joueurs en session exclus (`game.playersInSession`, relu au plus toutes les 3 s), moi exclu,
+    pseudo + `look` + `auras` relus au plus toutes les 20 s, bulle = dernier message du chat global de moins de
+    `TOWN.bubbleMs` (`social.recentChat(ms)`, ajouté hors de l'enveloppe « signe de vie » de `server/social/service.js`).
+    Branché dans `server/app.js` (`town`) et `server/main.js`. Ne crée ni ne déplace aucune ressource.
+  - `src/render/town.js` : canvas `TOWN.rows` cases de haut, largeur selon la fenêtre (`setCols`), dessiné en ×2
+    (`HIRES`) pour des textes nets. Nuages et montagnes en parallaxe, maisons en tuiles (murs, toit en escalier avec
+    bords en pente, porte, fenêtres, enseigne = texture du bâtiment), place (feu de camp + lueur), chevalement (sprite
+    80 × 112) avec le puits (`tunnel`), lampadaires, mineurs via `createMinerSprite` (moi encadré), bulles (`bubbleLines`).
+  - `src/ui/town.js` : `setupTown(root, { ping, me, onEnter })`, `frame(dt, { show, walk, tab })` appelé par la boucle
+    de `src/main.js` (show = pas de `rec`, compte connecté ; walk = onglet Session et `#noSession` visible). Ping toutes
+    les 2,5 s (1 s en promenade, 15 s onglet caché). `mergeOthers` : le x du serveur n'est qu'une cible (bug corrigé
+    pendant le dev : `x: null` écrasait la place affichée → NaN, joueur invisible). Promenade : classe `townWalk` sur
+    `<body>` (barre du haut, onglets et guide cachés, `.app` sans clics sauf la barre d'action et `#notifs`), `#bgTown.walk`
+    reçoit les clics. Option `bgTown` (localStorage `dim.bgTown`) dans Mon compte. Débogage : `TOWN_UI.state()`.
+  - Textures : `town()` dans `scripts/gen_textures.py` (15 nouvelles `town_*`, dont `town_headframe` 80 × 112,
+    `town_lamppost` 16 × 32, `town_cloud` 48 × 16), ajoutées à `TEXTURES` ; régénération sans changer les anciennes.
+- **Tests** ✅ `tests/town.test.js` (12 : plan, place, ping refusé : onglet inconnu / `__proto__` / NaN / Infinity /
+  texte, marche, bâtiment proche, `mergeOthers`, bulles, service : moi exclu, en session exclu, départ après
+  `presentFor`, bulles ≤ `bubbleMs`, cache de l'apparence, 400 / 401) + `boot-check`, `wiki`, `backdrop`, `social` :
+  54/54. Voisins (`grep TEXTURES|createApp`) : 278/278.
+  ✅ Vérifié dans le navigateur (serveur de dev sur le port 8123, `DIM_DATA_DIR` à part, 2 invités) : fond tamisé
+  derrière le Lobby et le Four (le mineur marche jusqu'à la Fonderie), promenade ← →, E devant le chevalement → Lobby,
+  clic sur la rue → marche, clic sur l'Entrepôt → Inventaire, l'autre invité visible sur la place, bulles (la mienne
+  vue à l'écran, celle de l'autre vue dans la réponse du serveur).
+- ⚠️ Pas vérifié : téléphone (largeur mini 8 cases, bandeau d'aide qui passe à la ligne), session lancée puis finie
+  (le fond doit repasser de la mine à la ville, et la promenade revenir après la fermeture du bilan), Bloc géant (la
+  visite garde l'onglet Session : `#noSession` caché, donc pas de promenade). Points fragiles : chaque ping relit la
+  liste des joueurs en session au plus toutes les 3 s (requête base en ligne) ; 80 joueurs au plus renvoyés ; la
+  présence en ville est séparée de la présence Social (`onlineFor` 45 s) : un onglet caché ne pinge que toutes les
+  15 s et part au bout de 40 s sans ping.

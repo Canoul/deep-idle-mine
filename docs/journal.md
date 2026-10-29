@@ -24,6 +24,26 @@ Modèle d'entrée :
 
 ---
 
+## 29/10/2026 — Jules — Le Carreau : la ville du spawn
+- **Pour le joueur** : hors session, le fond de l'écran n'est plus un mur : c'est **le Carreau**, une petite ville
+  minière vue de côté, avec **un bâtiment par onglet** (Taverne = Social, Archives = Historique, Bibliothèque =
+  Recherche, Salle d'entraînement = Skills, Tour du mage = Sorts, Armurerie = Stuff, Entrepôt = Inventaire, Place du
+  Carreau = Lobby, Chevalement au-dessus du puits = Session, Fonderie = Four, Concasseur, Atelier = Craft, Joaillier =
+  Amélioration). Quand tu changes d'onglet, **ton mineur marche jusqu'au bâtiment**. Les **autres joueurs en ligne qui
+  ne sont pas en session** sont là aussi, devant le bâtiment de l'onglet qu'ils regardent, avec leur stuff, et leurs
+  messages du **chat global** s'affichent en **bulle** au-dessus de leur tête.
+  Dans l'onglet **Session** sans session en cours : la ville en **plein écran, sans les panneaux**, et tu t'y promènes
+  (← → ou Q / D, clic sur la rue pour y aller, clic sur un bâtiment ou **E** devant sa porte pour ouvrir son onglet ;
+  le chevalement et la place mènent au Lobby, d'où on lance). Pendant une session, rien ne change : la mine reste en
+  fond. Case « Le Carreau (la ville) en fond d'écran » dans Mon compte pour revenir au mur.
+- **Décisions** (choix de Claude, à valider) : le nom « le Carreau » (les installations en surface d'une mine) ; l'ordre
+  des bâtiments ; l'onglet Session sans session devient la promenade (l'ancien écran « Tu n'es pas en session » ne se
+  voit plus qu'avec l'option décochée) ; pas d'interaction entre joueurs dans la ville pour l'instant (pas de clic sur
+  un joueur, pas d'émotes).
+- **À suivre** : cliquer sur un joueur (profil, inviter) ; vérifier sur téléphone ; à beaucoup de joueurs, ils se
+  serrent devant le même bâtiment (± 2 cases).
+- **État** : 🧪 sur la branche `jules/spawn-ville` (pas en ligne)
+
 ## 28/10/2026 — Geoffrey — Correctif : focus « Uniquement » sur un minerai trop profond (graphite)
 - **Pour le joueur** : avec « Uniquement » sur le graphite, le mineur creusait des galeries tout en haut de la mine sans
   jamais descendre. La raison : à chaque départ, il ne descend que jusqu'où il pourra remonter à temps, et le graphite

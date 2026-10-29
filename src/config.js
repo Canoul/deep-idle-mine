@@ -754,7 +754,10 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'helmet_mithril','chest_mithril','legs_mithril','boots_mithril','helmet_thorium','chest_thorium','legs_thorium','boots_thorium',
   'helmet_cobalt','chest_cobalt','legs_cobalt','boots_cobalt',
   'ring_tiger','ring_lion','ring_rat','ring_whale','ring_cuck','ring_nerd','ring_midas','ring_jester',
-  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph'];
+  'ladder','chest','miner','mimic','bug','goblin','occultist','mephite','golem','flesh_wall','flesh_icon','duck','heart_fragment','torch','stun','winch_rope','winch_top','bucket','lift_rail','lift_top','lift_cabin','backpack','scroll','glyph',
+  // le Carreau, ville du spawn (29/10/2026, src/render/town.js)
+  'town_plank','town_stone_blue','town_roof_red','town_roof_red_edge','town_roof_slate','town_roof_slate_edge','town_door','town_window',
+  'town_sign','town_cobble','town_campfire','town_mug','town_lamppost','town_headframe','town_cloud'];
 
 /* ---- Hors session : four (onglet Four) ----
    Un four : une case minerai (famille ore), une case combustible (famille combustible), une case sortie (lingots).
@@ -1539,6 +1542,39 @@ export const GIANT = {
 /* onglet Social : le navigateur redemande la liste d'amis et les notifications toutes les `poll` ms (onglet visible),
    `hiddenPoll` ms quand l'onglet est caché (ça reste un signe de vie : l'ami apparaît en ligne) */
 export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onlinePoll : liste Online, onglet ouvert seulement
+/* Le Carreau (29/10/2026, Jules ; src/shared/town.js, src/render/town.js, src/ui/town.js) : la ville du spawn, en
+   surface de la mine, vue de côté. Hors session, elle remplace le mur du fond derrière les onglets ; ton mineur marche
+   jusqu'au bâtiment de l'onglet ouvert, les autres joueurs en ligne qui ne sont pas en session sont devant le leur.
+   Onglet Session sans session : la ville en plein écran, sans les panneaux, et on s'y promène (flèches, clic).
+   buildings : de gauche à droite, un par onglet (tab) ; w × h : murs en cases (sans le toit) ; wall / roof : textures ;
+   sign : texture de l'enseigne ; kind : 'house' (maison), 'place' (Lobby : feu de camp, pas de murs), 'headframe'
+   (chevalement au-dessus du puits : l'onglet Session). gap : cases entre deux bâtiments ; margin : avant le premier et
+   après le dernier. rows : hauteur de la scène en cases ; ground : ligne de l'herbe (les mineurs marchent dessus).
+   walk : vitesse de marche (cases/s) ; rush : un trajet long se fait en au plus rush secondes (vitesse augmentée) ;
+   spread : écart des joueurs devant une même porte (± cases, tiré de leur ID) ; dim : luminosité derrière les onglets ;
+   poll / walkPoll / hiddenPoll : le navigateur donne sa place au serveur (ms ; en promenade, plus souvent) ;
+   bubbleMs : un message du chat global reste en bulle au-dessus de son auteur ce temps ; reach : on entre dans un
+   bâtiment à moins de reach cases de sa porte. */
+export const TOWN = {
+  rows: 18, ground: 13, gap: 3, margin: 6,
+  walk: 6, rush: 4, spread: 2.2, dim: 0.55,
+  poll: 2500, walkPoll: 1000, hiddenPoll: 15000, bubbleMs: 7000, bubbleMax: 60, reach: 2.5,
+  buildings: [
+    { tab:'social',       name:'Taverne',              kind:'house', w:7, h:4, wall:'town_plank',    roof:'town_roof_red',   sign:'town_mug' },
+    { tab:'historique',   name:'Archives',             kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_slate', sign:'scroll' },
+    { tab:'recherche',    name:'Bibliothèque',         kind:'house', w:6, h:4, wall:'dungeon_brick', roof:'town_roof_slate', sign:'blueprint' },
+    { tab:'skills',       name:'Salle d\'entraînement', kind:'house', w:6, h:3, wall:'town_plank',    roof:'town_roof_red',   sign:'glyph' },
+    { tab:'sorts',        name:'Tour du mage',         kind:'house', w:4, h:6, wall:'town_stone_blue', roof:'town_roof_slate', sign:'moon_crystal' },
+    { tab:'stuff',        name:'Armurerie',            kind:'house', w:6, h:3, wall:'stone',         roof:'town_roof_red',   sign:'helmet_iron' },
+    { tab:'inventaire',   name:'Entrepôt',             kind:'house', w:7, h:3, wall:'town_plank',    roof:'town_roof_slate', sign:'chest' },
+    { tab:'lobby',        name:'Place du Carreau',     kind:'place', w:7, h:0, sign:'town_campfire' },
+    { tab:'session',      name:'Chevalement',          kind:'headframe', w:5, h:7, sign:'pickaxe_stone' },
+    { tab:'four',         name:'Fonderie',             kind:'house', w:6, h:3, wall:'dungeon_brick', roof:'town_roof_slate', sign:'ingot_iron', chimney:true },
+    { tab:'concasseur',   name:'Concasseur',           kind:'house', w:5, h:3, wall:'stone',         roof:'town_roof_red',   sign:'gem_ruby' },
+    { tab:'craft',        name:'Atelier',              kind:'house', w:6, h:3, wall:'town_plank',    roof:'town_roof_red',   sign:'pickaxe_iron' },
+    { tab:'amelioration', name:'Joaillier',            kind:'house', w:5, h:4, wall:'town_stone_blue', roof:'town_roof_red', sign:'gem_sapphire_fine' },
+  ],
+};
 /* Pop-ups (28/10/2026, Jules) : avant, elles restaient tant qu'on n'avait pas cliqué. popupMs : une pop-up en haut à
    gauche (invitation, demande d'ami, groupe trouvé) se ferme seule au bout de ce temps (ms) ; l'invitation et la demande
    restent dans le Lobby et l'onglet Social. noticeMs : un rappel de mine instantanée sans bouton se ferme au bout de ce
