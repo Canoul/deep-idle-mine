@@ -4618,6 +4618,67 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/effects.test.js` 17/17 ; view ✅. Partie d'1 h (seed 7, couronne sur le premier) : buff 3 485 / 3 600
   échantillons chez le porteur (absent à la surface), 0 chez les deux autres, 0 dans les bonus ✅.
 
+## 29/10/2026 — Geoffrey — Coffre du Roi Gobelin : Graphite ingot + Tainted iron au lieu de Graphite ore (✅ en ligne le 29/10)
+- **Quoi** : `GOBLIN_KING.loot.always` (src/config.js) : `Graphite ore` 20-40 retiré ; `Graphite ingot` 5-15 et
+  `Tainted iron` 10-20 ajoutés (avant les peaux). GAME_DESIGN.md (Roi Gobelin), wiki.html (texte du coffre). Les lignes
+  « où le trouver » du wiki viennent de la config (src/wiki/data.js) : rien à changer.
+- **Attention aux tests** : `rollLoot` tire un nombre par entrée `always`, puis un par famille : un `always` de plus
+  décale le hasard rejoué ; `tests/goblin-king.test.js` a un 0,5 de plus dans chaque `seq` / `open`.
+- **Tests** ✅ goblin-king 9/9, graphite, wiki, loot / treasure (44) ; `npm run test:anticheat` 108/108.
+- **Probabilités** (calcul + 200 000 ouvertures avec `openTreasure`) : objet du boss 7,00 % (simulé 6,91 %), couronne
+  1 % (0,97 %), au moins un rare toutes familles 17,30 % (17,35 %) ; moyennes 10 lingots, 15 Tainted iron, 75 peaux ✅.
+
+## 29/10/2026 — Geoffrey — Glissade adaptative au Bloc géant et dans la MI (affichage)
+- **Cause** Bloc géant : `src/render/giant.js` glissait sur `GIANT.viewPoll` (500 ms) fixes, alors que `pollView`
+  (src/ui/giant.js) relance son délai de 500 ms après la réponse : un envoi toutes les ~600-800 ms → mineur figé ~100 à
+  300 ms avant chaque envoi. Glissade en x seulement, saut au-delà de 4 cases. **MI** : `instantPos` (avancée du pas à
+  l'envoi) sans glissade entre deux envois → petits bonds.
+- **Correctif** : `src/shared/view.js` exporte `pace(M, prev, now)` (durée = moyenne lissée 0,7 / 0,3 du temps réel entre
+  envois, bornée 80-1500 ms ; déjà utilisée par la mine, maintenant partagée). Bloc géant : `glide` + `pace` + `shownPos`
+  sur une copie des mineurs (x et y, seuil de saut `TELEPORT` 6 comme partout). MI : `applyInstantView(v, prev, now)`
+  fait `glide` avec `instantPos` (déplacé dans `src/shared/instant-view.js`, réexporté par `src/render/instant.js`) ;
+  rendu et caméra lisent `shownPos`. `src/main.js` passe la copie d'avant à `applyInstantView`.
+- **Tests** ✅ instant-ui (nouveau test : glissade départ / milieu / arrivée, durée qui converge vers 700 ms pour un envoi
+  / 700 ms), view, camera, giant-service, giant-sim : 49/49. ⚠️ Pas vu à l'écran (pas de navigateur ici) ; le rendu du Bloc
+  géant n'a pas de test (canvas), il réutilise `glide` / `pace` / `shownPos` testés.
+
+## 29/10/2026 — Geoffrey — Classement « Roi gobelin » (✅ en ligne le 29/10)
+- **Quoi** : board `instance` (src/meta/leaderboard.js : `BOARDS`, tri croissant comme `tower`, `sanitizeInstanceRecord`
+  { t, fight, at, instance, team, session }, `betterInstance`) ; ns `instance_record` (server/game/store.js : mémoire,
+  fichier, PostgreSQL, `get/list/putInstanceRecords`) ; `recordInstance(rec)` après `recordTower` à la fin de session
+  (server/game/service.js) : instance réussie, pas dev, joueurs présents à la victoire ; `fight = r.t − r.awake`
+  (`G.timeline.awake`, réveil du roi) ; rattrapage des sessions `done` gardées (`backfillTowers`, même passage) ;
+  `leaderboardData().instance`. Social : ligne avec `team` et `fight` (server/social/service.js) ; `BOARD_INFO.instance`,
+  `instanceDetail` (« combat 2:10.4 · avec Max »), bouton « Roi gobelin » (index.html).
+- **Outil de test** : `fakeLive` (tests/helpers.js) termine maintenant une instance à `INSTANCE_TICKS` (avant : à la
+  durée d'une mine classique, une instance hors mode dev ne finissait jamais dans les tests).
+- **Tests** ✅ `tests/leaderboard.test.js` 14/14 (record revérifié, plus court gagne, présents seulement, échec et dev
+  ignorés, record plus lent qui ne remplace rien, rattrapage, admin caché) ; 27 fichiers serveur / store / social :
+  334 ✅, 1 ❌ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » : rouge aussi sur main, pas lié.
+  `npm run test:anticheat` 108/108 ✅. Pas vérifié à l'écran (onglet Social, il faut un serveur).
+
+## 29/10/2026 — Jules — Police du corps de texte : VT323 au lieu de Jersey 10
+- **Quoi** : `--f-body` (src/ui/style.css) passe de `'Jersey 10'` à `'VT323'` ; `--f-title` reste `'Jersey 15'` (repli
+  VT323). index.html charge `Jersey 15` + `VT323` depuis Google Fonts (Jersey 10 n'est plus chargée). CSP inchangée.
+- **Cause** : une police pixel n'est nette qu'aux multiples de sa grille. Jersey 10 est nette à 20 px, floue à
+  `--fs-s` 15 px / `--fs` 17 px : 8 → 9, 5 → 6 (signalé sur l'orbe d'XP). Comparaison à taille réelle (captures agrandies
+  sans lissage) : VT323 nette à 15/17/20/21 px ; Pixelify Sans : 5 ≈ S ; Tiny5 : 8 ≈ e.
+- **Vérification** ✅ lobby, inventaire, stuff, orbe à 1366×768 (compte Test_Mineur, `npm run dev`), pas de défilement
+  horizontal à 390×844 (lobby, stuff). Tests nav, controls, guide, help, perf, account-http : 40/41, le ❌ « la boîte de
+  mesures est dans les barres… » échoue aussi sur main sans ce changement, pas lié.
+- **Points fragiles** : VT323 est monospace, plus large que Jersey 10 : textes en `nowrap` un peu plus longs (boutons
+  « Où miner » sur 3 lignes à 1366 px). Le canvas (mine) écrit toujours en `sans-serif`, non concerné. VT323 n'a qu'une
+  graisse : le gras est simulé par le navigateur (déjà le cas avec Jersey).
+
+## 29/10/2026 — Geoffrey — Tours niveau 2 : dureté × 2, poids × 2 (✅ en ligne le 29/10)
+- **Quoi** : `TOWER.levels[2]` : `hard` 1,75 → 2, `weight` 1,5 → 2 (src/config.js). GAME_DESIGN.md, wiki.html, état du
+  projet ; commentaire de `brickW` (src/sim/tower/session.js).
+- **Tests** ✅ tower-level (config, brique 2 fois plus longue, sac plein au niveau 2 seulement), tower, tower-spells,
+  tower-boss : 54/54.
+- **Simulation** `npm run simulate:tower -- --level 2 --count 20`, avant → après : 0/20 victoires partout dans les deux
+  cas (équipes de base) ; étage 4 atteint à 7:46-7:47 → 8:20-9:56, étage 5 à 9:49 (équipe a) → jamais. ⚠️ Aucune équipe
+  mesurée ne gagne le niveau 2 (repère du 28/10 : 2,5 minage / 40 dégâts, 0/4, avant ce changement).
+
 ## 29/10/2026 — Geoffrey — Barre des sorts dans les tours, l'instance et le Bloc géant
 - Seul `updateHUD` (mine classique, `#spellBar`) remplissait la barre ; les tours, l'instance et le Bloc géant jouent des
   sorts (`spellCd` dans leurs simulations) sans les montrer. MI : pas de sorts dans `src/sim/instant/`, pas de barre.
