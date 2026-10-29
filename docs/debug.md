@@ -4854,3 +4854,8 @@ Règles (voir CLAUDE.md) :
   réaffichage) et après le déplacement de la carte (`src/main.js` onWalk). Vaut pour les deux chats (session et global).
 - **Tests** ✅ `tests/chat.test.js` (nouveau : en bas / remontée / cachée), `boot-check`. ✅ Vérifié dans le navigateur
   (15 messages) : 0 px du bas dans le Lobby, en promenade et au retour au Lobby.
+
+## 29/10/2026 — Le Carreau : couleur des noms des bâtiments (Jules, demande de Geoffrey)
+- `src/render/town.js` : constantes `LABEL` (#ffc27a, `--acc-lt` de style.css) pour les noms des bâtiments, la statue et
+  les bannières, `HINT` (#ff7a2e, `--acc`) pour « E : entrer » et « Tour ouverte ! » (ancien : #f2ece4 / #ffc27a / #ffd27a).
+  Pseudos des joueurs inchangés (src/render/miner-sprite.js). Tests ✅ town, boot-check ; vu dans le navigateur.
