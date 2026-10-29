@@ -844,10 +844,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock('inv:' + me.id, async () => {
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
-        const r = craft(inv, item, opId);
+        const r = craft(inv, item, opId, random);       // Rune : qualité et lignes tirées par le serveur
         if(r.error) fail(r.error, r.error === 'not_enough' ? 409 : 400, CRAFT_ERRORS[r.error]);
         if(!r.repeated) await store.putInventory(me.id, JSON.parse(serialize(inv)));
-        return { item, inventory: publicInventory(inv) };
+        return { item, ...(r.pieces ? { piece: r.pieces[0] } : {}), inventory: publicInventory(inv) };
       });
     },
 
@@ -989,7 +989,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const inv = await loadInventory(me.id);
         await loadStuff(me.id, inv);                     // garde les uid uniques (pièces portées comprises)
         const sets = sanitizeSets(await store.getSets(me.id));
-        const r = recycleStuff(inv, body.uid, uid => inSomeSet(sets, uid));
+        const r = recycleStuff(inv, body.uid, uid => inSomeSet(sets, uid), random);   // rune : Poudre de rêve tirée
         if(r.error) fail(r.error, r.error === 'bad_request' || r.error === 'not_recyclable' ? 400 : 409, RECYCLE_ERRORS[r.error]);
         await store.putInventory(me.id, JSON.parse(serialize(inv)));
         return { item: r.item, refund: r.refund, inventory: publicInventory(inv) };

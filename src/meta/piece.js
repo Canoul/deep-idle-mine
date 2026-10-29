@@ -94,6 +94,12 @@ export function rollIdentity(item, rnd){
 
 /* coffre de tour : sa qualité, avec les chances de l'identification (RUNE) */
 export const rollChestQuality = rnd => rollQuality(rnd);
+/* rune fabriquée au craft (29/10/2026) : sa qualité, avec les chances RUNE.craftChances */
+export function rollCraftedRuneQuality(rnd){
+  let r = rnd();
+  for(const d of UPGRADE.qualities){ const c = RUNE.craftChances[d.q] ?? 0; if(r < c) return d.q; r -= c; }
+  return UPGRADE.qualities[0].q;          // reste d'arrondi des chances : la qualité la plus basse
+}
 /* rune de qualité q : { q, lines, s }, lignes tirées comme une identification de cette qualité */
 export function rollRune(q, rnd){
   const d = qualityDef(q);

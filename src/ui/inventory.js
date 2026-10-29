@@ -1,11 +1,11 @@
 /* Onglet Inventaire : affiche la grille de slots. Lit l'inventaire, ne le modifie jamais : ouvrir un treasure
    (onOpen), utiliser un blueprint (onLearn), équiper une pièce (onEquip), trier (onSort) ou glisser un objet dans un
    autre slot (onMove) est demandé au serveur, qui renvoie le nouvel inventaire. */
-import { INVENTORY, STUFF, TREASURE } from '../config.js';
+import { INVENTORY, STUFF, TREASURE, RUNE } from '../config.js';
 import { itemDef, isStackable, usedSlots, gridSize, countOf } from '../meta/inventory.js';
 import { canOpen } from '../meta/loot.js';
 import { unlockOf, unlockError } from '../meta/furnace.js';
-import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund } from '../meta/craft.js';
+import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund, recycleRange } from '../meta/craft.js';
 import { statLines, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
@@ -74,9 +74,9 @@ function unlockHtml(s, furn){
          ` <span class="mut small">ouvre le four ${d.slot + 1}</span>`;
 }
 
-/* pièce de stuff fabriquée (ou butin de mob à recyclage fixe) : bouton « Recycler » (une fenêtre demande de confirmer) */
+/* pièce de stuff fabriquée (ou butin de mob à recyclage fixe), rune : bouton « Recycler » (une fenêtre demande de confirmer) */
 const recycleHtml = s => s.uid != null && recyclable(s.item)
-  ? ` <button class="invRecycle" data-uid="${s.uid}" title="Détruit la pièce et rend une partie de ses matériaux">♻ Recycler</button>` : '';
+  ? ` <button class="invRecycle" data-uid="${s.uid}" title="${recycleRange(s.item) ? 'Détruit la rune et rend de la Poudre de rêve' : 'Détruit la pièce et rend une partie de ses matériaux'}">♻ Recycler</button>` : '';
 
 function infoHtml(s, pinned=false, inv=null, worn=null, furn=null){
   if(!s) return '<span class="mut">Survole ou clique un objet pour voir son détail.</span>';
@@ -201,6 +201,17 @@ export function showRecycle(piece, sets, onOk){
       `<p class="mut small">Enregistre ce set avec une autre pièce, ou supprime-le (onglet Stuff), puis recycle-la.</p>`+
       `<p style="text-align:right"><button class="on" id="recOk">OK</button></p>`;
     box.hidden = false; $('recOk').onclick = close;
+    return;
+  }
+  const range = recycleRange(piece.item);
+  if(range){                                   // rune ou fragment (29/10/2026) : Poudre de rêve, quantité tirée au recyclage
+    const frag = piece.item !== RUNE.item;
+    box.querySelector('.box').innerHTML = title + `<p>Recycler ${frag ? 'ce fragment' : 'cette rune'} ? ${frag ? 'Il' : 'Elle'} sera <b>détrui${frag ? 't' : 'te'}</b>, avec ses lignes. Tu récupères :</p>`+
+      `<div class="lootList"><div class="lootRow">${iconHtml(range.item)}${rname(range.item)}<b>× ${range.min} à ${range.max}</b></div></div>`+
+      `<p style="text-align:right"><button id="recNo">Annuler</button> <button class="on" id="recYes">♻ Recycler</button></p>`;
+    box.hidden = false;
+    $('recNo').onclick = close;
+    $('recYes').onclick = () => { $('recYes').disabled = true; close(); onOk(); };
     return;
   }
   const refund = recycleRefund(piece.item), names = Object.keys(refund);

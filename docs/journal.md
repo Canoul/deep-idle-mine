@@ -22,6 +22,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
+- **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
+  rend **8 à 12 Poudre de rêve**, quelle que soit sa qualité (un fragment de rune : 1 à 6). Avec **100 Poudre de rêve**,
+  la nouvelle recette **Rune** (onglet Craft, disponible dès le départ) fabrique une rune neuve de qualité tirée au
+  hasard : R1 15 %, R2 25 %, R3 30 %, R4 18 %, R5 6 %, R6 4,5 %, R7 1,5 %. La Poudre de rêve est rangée dans l'onglet
+  Runes de l'inventaire.
+- **Décisions** : un seul objet, la Poudre de rêve (rareté rare), sert au recyclage et à la recette. Chiffres provisoires.
+- **À suivre** : ~10 runes recyclées pour une neuve, R4 ou mieux 30 % du temps (22 % pour un trésor de tour) : à
+  surveiller, ça rend les tours un peu plus rentables pour qui accumule des petites runes.
+- **État** : ✅ en ligne le 29/10
+
 ## 29/10/2026 — Geoffrey — La Dynamite part aussi en combat (tours, Instance I)
 - **Pour le joueur** : le mineur lance maintenant sa Dynamite pendant les combats : sur le roi gobelin à son contact, sur
   un groupe d'au moins 2 gobelins (instance) ou 2 mobs (tours). 50 % de ses dégâts à tout le rayon. La règle de dureté des

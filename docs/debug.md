@@ -5036,3 +5036,24 @@ Règles (voir CLAUDE.md) :
 - **Tests** ✅ `tests/leaderboard.test.js` (nouveau : sous-onglets, et chaque classement de BOARDS atteignable depuis
   index.html), social, boot-check : 41/41. ⚠️ Pas vu à l'écran.
 
+## 29/10/2026 — Recyclage des runes en Poudre de rêve, recette Rune (Geoffrey)
+- **Config** : `RUNE.dust` (item « Poudre de rêve », tex `dream_powder`, rareté rare, `recycle.rune` 8-12, `recycle.fragment`
+  1-6), `RUNE.craftChances` (R1-R7). ITEMS : Poudre de rêve `cat:'material'` (pas `'rune'` : `isRune` la prendrait pour une
+  rune posable), onglet Runes de l'inventaire via `items`. `src/recipes.js` : `'Rune'` 100 Poudre de rêve, de base.
+- **Logique** (`src/meta/craft.js`) : `recyclable` accepte `isRune` (rune et fragment) ; `recycleRange(item)` (affichage) ;
+  `recycleRefund(item, rng)` tire la poudre ; `recycleStuff(inv, uid, locked, rng)` : rune sans rng → `not_recyclable`.
+  `craft(inv, item, opId, rng)` : Rune → `rollRune(rollCraftedRuneQuality(rng), rng)` sur la case créée, renvoie `pieces` ;
+  Rune sans rng → `unknown` avant de rien retirer. `rollCraftedRuneQuality` dans `src/meta/piece.js`.
+- **Serveur** (`server/game/service.js`) : `recycle` et `craft` passent `random` (crypto) ; `craft` renvoie `piece` pour une rune
+  (`src/main.js` l'affiche dans « Tu as obtenu » avec sa qualité). Idempotence : recyclage = la pièce disparaît (rafale :
+  une seule réussite, les autres `not_owned`) ; craft = `opId` (rafale : une seule rune).
+- **UI** : `src/ui/inventory.js` fenêtre de recyclage d'une rune (fourchette, lignes perdues). Wiki : sources/usages
+  (`src/wiki/data.js`, + source du Fragment de rune qui affichait « Pas encore obtenable »), textes de `wiki.html`.
+  Texture `textures/dream_powder.png` (`scripts/gen_textures.py`).
+- **Tests** ✅ `tests/rune-recycle.test.js` (nouveau, 9 : fourchettes, toutes les valeurs sortent, bornes des chances,
+  distribution sur 100 000 tirages, craft consommé une fois, refus sans poudre ou sans rng, boucle fermée) ;
+  `tests/recycle.test.js` (une rune est maintenant recyclable) ; `tests/anticheat/recycle.test.js` (+2 : rafale de
+  recyclage d'une rune fabriquée, rafale de craft même opId ; l'ancien cas « rune non recyclable » vise un anneau) ;
+  craft, wiki, rune, game-service : 100/100 ; `npm run test:anticheat` 111/111. ⚠️ Pas vu à l'écran.
+- Point fragile : une rune donnée par `adminGive` n'a ni qualité ni lignes et disparaît à la relecture (déjà le cas avant) ;
+  pour tester, fabriquer la rune avec la recette.

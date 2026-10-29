@@ -849,6 +849,13 @@ export const RUNE = {
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
   rarity: { 1:'commun', 2:'inhabituel', 3:'rare', 4:'epique', 5:'legendaire', 6:'legendaire', 7:'legendaire' },
+  /* Poudre de rêve (29/10/2026, Geoffrey) : recycler une rune (inventaire) la détruit et rend min à max Poudre de rêve
+     (tirées par le serveur), quelle que soit sa qualité ; un fragment de rune rend fragment.min à fragment.max. */
+  dust: { item:'Poudre de rêve', tex:'dream_powder', rarity:'rare',
+          recycle: { rune:{ min:8, max:12 }, fragment:{ min:1, max:6 } } },
+  /* Rune fabriquée (craft, recette « Rune » de src/recipes.js, 29/10/2026, Geoffrey) : sa qualité est tirée avec ces
+     chances (pas celles de l'identification, UPGRADE.qualities), puis ses lignes comme une rune de tour. */
+  craftChances: { 1:0.15, 2:0.25, 3:0.30, 4:0.18, 5:0.06, 6:0.045, 7:0.015 },
 };
 
 /* ---- Aura du stuff (src/meta/aura.js, dessin : src/render/aura.js) ----
@@ -977,7 +984,7 @@ export const RARITY = {
   default: 'commun',
   items: {
     ...Object.fromEntries(Object.values(GLYPHS.items).map(n => [n, GLYPHS.rarity])),   // glyphes (25/10)
-    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare',   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
+    [RUNE.item]:'epique', [RUNE.fragment.item]:'rare', [RUNE.dust.item]:RUNE.dust.rarity,   // résidus angélique et démoniaque : communs (gris), décision du 22/10 (Geoffrey)
     ...Object.fromEntries(Object.entries(CHEST_ITEMS).map(([n, d]) => [n, RUNE.rarity[d.chest.q]])),
     ...Object.fromEntries(Object.keys(TREASURE_ITEMS).map(n => [n, RUNE.treasureRarity])),
     'Cobalt ore':'inhabituel', 'Thorium ore':'inhabituel',   // Mithril ore : commun (27/10/2026, Geoffrey)
@@ -1292,6 +1299,7 @@ export const ITEMS = {
   ...CHEST_ITEMS,                                                                       // ancien : coffres des tours (RUNE)
   [RUNE.item]:       { cat:'rune', tex:RUNE.tex, w:1, stack:false },                   // une rune = une pièce (qualité, lignes)
   [RUNE.fragment.item]: { cat:'rune', tex:RUNE.fragment.tex, w:1, stack:false, fragment:true },   // rune retirée : lignes ÷ 2
+  [RUNE.dust.item]:  { cat:'material', tex:RUNE.dust.tex, w:1, stack:true },             // recyclage des runes (RUNE.dust)
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
@@ -1324,7 +1332,7 @@ export const INVENTORY = { cols:8, minSlots:48, maxUniqueAdd:1000,
     { id:'mob',   icon:'Peau de gobelin', name:'Butin des mobs',   cats:['mob'],
       items:['Tissu sombre', 'Vésicule de gaz', 'Pierre glissante', 'Cuir de minotaure', 'Rotten flesh', 'Fragment de cœur'] },
     { id:'mat',   icon:'Lingot de fer',   name:'Matériaux (gemmes, lingots, alliages, plumes, cristaux, argent)', cats:['ingot', 'gem', 'material'] },
-    { id:'rune',  icon:'Rune',            name:'Runes',            cats:['rune'] },
+    { id:'rune',  icon:'Rune',            name:'Runes',            cats:['rune'], items:['Poudre de rêve'] },
     { id:'misc',  icon:'Treasure T1',     name:'Divers (coffres, clés, plans, parchemins, glyphes…)', cats:['treasure', 'key', 'blueprint', 'scroll', 'glyph', 'furnace'] },
   ] };
 
