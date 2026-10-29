@@ -4903,3 +4903,40 @@ Règles (voir CLAUDE.md) :
 - Point fragile : le `filter` CSS de `cv.style` (fond tamisé, `src/ui/town.js`) reste : un seul filtre composé par le
   navigateur, pas par case ; à surveiller si un ralentissement revient sur un petit PC.
 
+## 29/10/2026 — Geoffrey — Instance I : gobelins 175 PV / 1,75 s, régénération du roi après un enfermement
+- **Contexte** : analyse du record (session 6ed73842…, seed 71430292, 7:12,4) : rejeu local identique au résumé serveur
+  (t 432,4, réveil 308,7). Combat contre le roi ≈ 2 min pour tout le monde ; l'écart est la phase des spawners (5:08 contre
+  8:04 pour le profil « acier » de `simulate-instance`). Seuil net : profil acier dégâts 20 → 0/5, 22 → 5/5 (150 PV : 8 → 7
+  coups par gobelin). Les mineurs n'ont pas de PV dans l'instance : seules les stats d'attaque comptent. ⚠️
+  `scripts/simulate-instance.js` ne met que `equippedStats` (ni skills, ni sorts, ni lignes / runes / plus, Gants d'ouvrier) :
+  il sous-estime les vrais joueurs (0/5 en acier alors que les 6 vraies parties du 29/10 = 6 victoires).
+- **Quoi** : `INSTANCE.goblin` hp 175, hitEvery 1.75 ; `INSTANCE.boss.regenPct` 0.01, `regenEvery` 2 (src/config.js).
+  `src/sim/instance/session.js` : `boss.regen` = { t, gain } posé par `cage()` ; `regen(G)` appelé dans `stepBoss` avant le
+  test des seuils (états wait et fight) : +regenPct × maxhp toutes les regenEvery s, plafonné à maxhp ; s'arrête (regen =
+  null, log « 💚 … a récupéré N PV ») dès qu'un mineur a `y >= floorY`. `b.phase` ne redescend jamais : remonté au-dessus
+  d'un seuil, pas de nouvel enfermement. Bulle « enfermé » (src/ui/effects.js) : ligne sur la régénération.
+- **Tests** ✅ `tests/instance-sim.test.js` (+2 : paliers à 2 s, arrêt au sol, pas de relance en remontant, plafond PV max,
+  pas de réenfermement ; test de l'enfermement : +1 % après 2 s au lieu de PV figés ; gobelin 175 PV, premier coup à
+  hitEvery), instance-server, instance-key, effects, wiki, boot-check : 60/60.
+- **Mesure** : les 6 sessions d'instance en base (export lecture seule) rejouées avec les nouvelles règles : 5 victoires
+  (8:35 à 9:33, combat 136-158 s, ≈ 350 PV repris par cage, soit ≈ 20 s avant qu'un mineur touche le sol), 1 échec (roi
+  784 PV). `simulate-instance --size 3 --count 5` : 0/5 partout (acier : roi 2 226 PV), 0 bloqué.
+- ⚠️ À vérifier en jeu : la remontée de la barre de PV du roi se voit-elle assez ? (seul le journal le dit).
+- **Ajout (même jour)** : gobelins 200 PV (au lieu de 175). Mêmes 6 parties rejouées : 3 victoires (9:10, 9:41, 9:59), 3 échecs
+  (roi 733, 1 638 et 3 066 PV). Tests instance-sim 15/15 ✅.
+
+## 29/10/2026 — Geoffrey — Instance I niveau 2 : simulation (étape 1 : sim seulement, pas encore jouable)
+- **Quoi** : `INSTANCE.levels` (src/config.js) : 1 = valeurs de base ; 2 = spawner 200 / 15 s, gobelin 350 PV / recul 0,65,
+  roi 6 000 PV, résistance au recul 50 %, coup / 1,25 s, projection tous les 8 coups, rage sous 40 % avec recul 1,3
+  (0,65 × 2), régénération 2 % ; `chest` { res, drop } (multiplicateurs du coffre, pas encore lus). Le recul normal du
+  roi reste 0,5 (pas donné pour le niveau 2). `src/sim/instance/session.js` : `levelCfg(l)`, `instanceLevel(l)`,
+  `INSTANCE_LEVELS` ; `G.level`, `G.cfg` = { spawner, goblin, boss } fusionnés ; tous les `SP.` / `GB.` / `B.` → `G.cfg.*` ;
+  `summary.level`. `buildInstanceGame` passe `record.level`. `scripts/simulate-instance.js --level 2`.
+- **Non-régression** ✅ : les 6 vraies parties rejouées au niveau 1 donnent exactement les mêmes temps qu'avant le remaniement.
+- **Tests** ✅ instance-sim +2 (fusion des réglages, niveau inconnu = 1, PV des spawners / gobelins / roi, summary.level,
+  rage sous 40 %, régénération 2 %), instance-server, instance-key : 29/29.
+- **Mesures niveau 2** : les 6 vraies parties (stuff du 29/10) : 0 victoire, **0 spawner cassé**, jusqu'à 89 gobelins en vie
+  (24 gobelins / min × 350 PV ≈ 140 DPS rien que pour suivre ; les équipes ont 75 à 101). `simulate-instance --level 2`
+  : 0/5 partout. Équipe du record, stats multipliées (5 seeds) : dégâts × 2,5 seuls → 0/5 (roi 4 306) ; dégâts × 3 → 0/5
+  (roi 1 965) ; dégâts × 2 et minage × 1,5 → 5/5 en 9:39 ; × 2,5 et × 1,5 → 8:29 ; × 3 et × 2 → 6:14. Aucune épée au-dessus
+  de l'acier (18,5) aujourd'hui.
