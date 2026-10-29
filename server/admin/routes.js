@@ -10,6 +10,7 @@
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
    POST /api/admin/party-launch {"name":"crousti"} : lance le lobby de crousti dans la mine, prêts ou pas (scripts/launch-lobby.js).
+   POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
@@ -80,6 +81,14 @@ export function adminRoutes({ accounts, game, party = null, token }){
       const r = await party.adminLaunch(acc);
       console.log(`Admin : lobby de ${acc.name} (${acc.id}) lancé dans la mine, session ${r.session?.id} : ${r.members.join(', ')} (chef ${r.leader})`);
       return { account: acc.name, session: r.session?.id ?? null, leader: r.leader, members: r.members };
+    },
+    /* chef du lobby (29/10/2026, Geoffrey) */
+    'POST /api/admin/party-lead': async ctx => {
+      guard(ctx); noParty();
+      const acc = await byName(ctx);
+      const r = await party.adminPromote(acc);
+      console.log(`Admin : ${acc.name} (${acc.id}) ${r.changed ? 'devient' : 'était déjà'} chef du lobby ${r.party.code} : ${members(r)}`);
+      return { account: acc.name, ...r };
     },
     'POST /api/admin/party-ready': async ctx => {
       guard(ctx); noParty();

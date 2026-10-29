@@ -22,6 +22,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 29/10/2026 — Geoffrey — Administration : donner la place de chef d'un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `set-leader.js --name X` fait de X le chef de son lobby (il doit
+  déjà y être) ; l'ancien chef reste comme simple membre.
+- **État** : 🧪 sur la branche `geoffrey/admin-chef` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Administration : forcer la fin de session d'un joueur, lancer un lobby
 - **Pour le joueur** : rien. Nouvelle commande sur le VPS : `end-session.js --name X` sort X de sa session en cours, comme
   son bouton « Quitter » : il ne reçoit rien de cette session et redevient libre tout de suite. En groupe, les autres continuent.
