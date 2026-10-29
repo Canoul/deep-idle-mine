@@ -123,8 +123,9 @@ test('sondage de la prison : 401 → arrêt ; no_session → état relu ; autre 
 
 /* butin de la prison et contenu d'après les 10 dernières mines (29/10/2026) */
 test('butin de la prison : la ligne des totaux ; le contenu des 10 dernières mines', () => {
-  assert.equal(prisonTotalsLine({ runs: 3, xp: 1234, energy: 12.4, bag: { Fer: 2000, Or: 450 } }), '3 runs · +1 234 XP · +12 ⚡ · 2 450 objets');
-  assert.equal(prisonTotalsLine({ runs: 1, xp: 0, energy: 0, bag: {} }, { startedAt: 0, endedAt: 80 * 60e3 }), '1 run · +0 XP · +0 ⚡ · 0 objet · en 1 h 20');
+  assert.equal(prisonTotalsLine({ runs: 3, xp: 1234, energy: 12.4, t: 3996, bag: { Fer: 2000, Or: 450 } }), '3 runs · 1 h 06 de jeu · +1 234 XP · +12 ⚡ · 2 450 objets');
+  assert.equal(prisonTotalsLine({ runs: 1, xp: 0, energy: 0, t: 600, bag: {} }, 90), '1 run · 11 min de jeu · +0 XP · +0 ⚡ · 0 objet');   // + le run en cours
+  assert.equal(prisonTotalsLine({ runs: 0, bag: {} }), '0 run · 0 s de jeu · +0 XP · +0 ⚡ · 0 objet');   // prison d'avant le compteur
   assert.equal(prisonTotalsLine(null), '');
   assert.match(prisonProfileText({ n: 0, area: 1 }), /aucune mine classique.*area 1/);
   const t = prisonProfileText({ n: 10, area: 7, ores: { iron: 0.6, gold: 0.4 }, treasures: { 'Treasure T3': 1 }, mobs: null });

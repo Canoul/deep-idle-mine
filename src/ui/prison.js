@@ -33,15 +33,16 @@ export function prisonProfileText(p, running = false){
   return `${head} (d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}) : ${parts.join(' · ')}.`;
 }
 
-/* totaux de la prison (publicPrison.totals) : « 3 runs · +1 234 XP · +12 ⚡ · 2 450 objets » ; p (facultatif) : la prison,
-   pour sa durée (« en 1 h 20 ») */
-const span = ms => { const min = Math.max(1, Math.round(ms / 60e3)); return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`; };
-export function prisonTotalsLine(t, p = null){
+/* temps de jeu « 1 h 07 », « 12 min », « 40 s » (secondes) */
+export const gameTime = s => { if(!ok(s) || s < 60) return `${Math.max(0, Math.round(ok(s) ? s : 0))} s`;
+  const min = Math.floor(s / 60); return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`; };
+/* totaux de la prison (publicPrison.totals) : « 3 runs · 1 h 07 de jeu · +1 234 XP · +12 ⚡ · 2 450 objets » ;
+   live : secondes du run en cours, ajoutées au temps de jeu (le panneau pendant la prison) */
+export function prisonTotalsLine(t, live = 0){
   if(!t) return '';
   const items = Object.values(t.bag ?? {}).reduce((s, n) => s + (ok(n) ? n : 0), 0);
-  const parts = [`${t.runs | 0} run${(t.runs | 0) > 1 ? 's' : ''}`, `+${nf(t.xp || 0)} XP`, `+${nf(t.energy || 0)} ⚡`, `${nf(items)} objet${items > 1 ? 's' : ''}`];
-  if(p && ok(p.startedAt) && ok(p.endedAt)) parts.push(`en ${span(p.endedAt - p.startedAt)}`);
-  return parts.join(' · ');
+  return [`${t.runs | 0} run${(t.runs | 0) > 1 ? 's' : ''}`, `${gameTime((t.t || 0) + (ok(live) ? live : 0))} de jeu`, `+${nf(t.xp || 0)} XP`,
+          `+${nf(t.energy || 0)} ⚡`, `${nf(items)} objet${items > 1 ? 's' : ''}`].join(' · ');
 }
 
 /* une prison qui tourne ou attend (pas fermée) */

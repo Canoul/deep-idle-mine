@@ -24,9 +24,10 @@ const sanitizeTotals = t => {
   return { runs: Number.isSafeInteger(t.runs) && t.runs >= 0 ? t.runs : 0,
            energy: isNum(t.energy) && t.energy >= 0 ? t.energy : 0,
            xp: Number.isSafeInteger(t.xp) && t.xp >= 0 ? t.xp : 0,
+           t: isNum(t.t) && t.t >= 0 ? t.t : 0,   // secondes de jeu des runs versés (29/10)
            bag: validBag(t.bag) ? { ...t.bag } : {} };
 };
-const noTotals = () => ({ runs: 0, energy: 0, xp: 0, bag: {} });
+const noTotals = () => ({ runs: 0, energy: 0, xp: 0, t: 0, bag: {} });
 
 /* relit un enregistrement (stockage) ; null s'il est absent ou abîmé */
 export function sanitizePrison(p){
@@ -126,6 +127,6 @@ export function publicPrison(p, info = null, { away = p?.away, cfg = PRISON } = 
      prison », fenêtre de sortie) */
   const t = p.totals;
   return { state: p.state, run: p.run, area: p.areaMax, profile: p.profile ?? null, speed: p.speed,
-           startedAt: p.startedAt, endedAt: p.endedAt, totals: { runs: t.runs, energy: t.energy, xp: t.xp ?? 0, bag: { ...t.bag } }, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
+           startedAt: p.startedAt, endedAt: p.endedAt, totals: { runs: t.runs, energy: t.energy, xp: t.xp ?? 0, t: t.t ?? 0, bag: { ...t.bag } }, goal: info?.goal ?? null, mined: info?.mined ?? null, energy: p.totals.energy,
            waitAt: p.lastSeenAt + cfg.offlineMax, away: { runs: a.runs, energy: a.energy, bag: { ...a.bag } } };
 }

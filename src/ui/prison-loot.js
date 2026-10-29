@@ -15,15 +15,15 @@ const itemsHtml = bag => {
                       : '<p class="mut small">Rien pour l\'instant : le butin arrive à la fin de chaque run.</p>';
 };
 
-/* contenu du panneau, pendant la prison */
-export const prisonLootHtml = t => `<div class="row"><span class="mut small">${prisonTotalsLine(t)}</span></div>${itemsHtml(t?.bag)}`;
+/* contenu du panneau, pendant la prison ; live : secondes de jeu du run en cours (compteur de temps) */
+export const prisonLootHtml = (t, live = 0) => `<div class="row"><span class="mut small">${prisonTotalsLine(t, live)}</span></div>${itemsHtml(t?.bag)}`;
 
 /* fenêtre de sortie : tout ce que la prison a rapporté (onClose : à la fermeture) */
 export function showPrisonRecap(p, onClose){
   const t = p?.totals, box = $('loot');
   if(!t || !box) return;
   box.querySelector('.box').innerHTML = `<h3>⛓ Sortie de prison</h3>`+
-    `<p>${prisonTotalsLine(t, p)}</p>${itemsHtml(t.bag)}`+
+    `<p>${prisonTotalsLine(t)}</p>${itemsHtml(t.bag)}`+
     `<p class="mut small">Tout est déjà dans ton inventaire. Ce bilan reste dans l'Historique.</p>`+
     `<p style="text-align:right"><button class="on" id="prisonRecapOk">OK</button></p>`;
   box.hidden = false;

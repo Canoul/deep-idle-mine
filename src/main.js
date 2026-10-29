@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -727,7 +727,10 @@ function updatePrisonUI(){
   sessionView.classList.toggle('prisonDev', on && info.dev);   // mode dev : les boutons de vitesse restent visibles (29/10)
   /* butin de la prison (29/10) : ce que les runs versés ont rapporté depuis l'entrée */
   $('prisonLootCard').hidden = !on;
-  if(on){ const html = prisonLootHtml(prison.totals); if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html; }
+  if(on){
+    const live = PG?.ready && PG.run === prison.run ? (PG.ticks | 0) * DT : 0;   // temps de jeu du run en cours
+    const html = prisonLootHtml(prison.totals, live); if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
+  }
   $('prisonBanner').hidden = !on;
   $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
   $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';

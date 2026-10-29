@@ -5219,3 +5219,8 @@ Règles (voir CLAUDE.md) :
   × 3 : ratio 0,87 (réf. area 6, runs 15 min), 0,96 (area 5) ; avec **oreMul 0,30** : **0,58** (réf.), **0,47** (area 5),
   runs 13–16 min. ⚠️ 5 chaînes : ±0,1 ; le script ne fournit pas de profil (il mesure le contenu de l'area). `simulate
   --miners 3 --count 5` (mine classique) : 0 bloquée, areas 3,0.
+- **Temps de jeu** (30/10, même chantier) : `totals.t` (secondes de jeu des runs versés, settleRun), `history().prison.t` ;
+  panneau : `+ PG.ticks × DT` du run en cours ; `gameTime`, `prisonTotalsLine(t, live)` (src/ui/prison.js). ✅ prison*,
+  history : 60/60, anticheat 118/118. Mesure sur la prison de Test_Canoul (profil canoul, area 7, rejouée run par run) :
+  8 runs, 1 h 07 de jeu, 453 minerais/h contre 707 par mine de 1 h sur ses 10 dernières : **64 %** (nombre et poids) ;
+  diamant 26 %, cobalt et thorium 0 ; tout le butin blocs compris : 122 % (beaucoup de pierre dure).
