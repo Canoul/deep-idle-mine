@@ -17,7 +17,7 @@
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
 import { GAME, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, treasureItem, goblinChestItem } from '../../src/config.js';
-import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
+import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, instanceRecordKey, splitInstanceKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
@@ -364,20 +364,17 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* ---------- classements (onglet Social → Classements, 27/10/2026) ---------- */
 
   /* tour céleste réussie (session terminée, pas en mode dev) : les joueurs présents à la victoire (ceux qui reçoivent le
-     trésor) gardent ce temps s'il bat leur record ; team = les pseudos de tous ces joueurs. Rejouée : ne change rien.
-     Un record par niveau (29/10) : clé « compte » au niveau 1, « compte#2 » au niveau 2 (recordKey) ; un record d'un autre
-     niveau sous cette clé (ancien record du niveau 2 rangé au niveau 1, voir backfillTowers) est remplacé. */
+     trésor) gardent ce temps s'il bat leur record ; team = les pseudos de tous ces joueurs. Rejouée : ne change rien. */
   async function recordTower(rec){
     const r = rec.result, side = towerSide(rec.mode);
     if(!side || rec.dev || !r?.success || !Number.isFinite(r.t)) return;
     const heirs = (r.shares || []).filter(s => s.account && !s.left && !hasLeft(rec, s.account)).map(s => s.account);
     const name = a => rec.players.find(p => p.account === a)?.name || '';
-    const level = rec.level ?? 1;
-    const next = sanitizeTowerRecord({ t: r.t, at: rec.endedAt ?? clock(), side, level, team: heirs.map(name), session: rec.id });
+    const next = sanitizeTowerRecord({ t: r.t, at: rec.endedAt ?? clock(), side, team: heirs.map(name), session: rec.id });
     if(!next) return;
     for(const a of heirs) await withLock('tower_record:' + a, async () => {
-      const key = recordKey(a, level), old = sanitizeTowerRecord(await store.getTowerRecord(key));
-      if(betterTower(old?.level === level ? old : null, next)) await store.putTowerRecords([[key, next]]);
+      const prev = sanitizeTowerRecord(await store.getTowerRecord(a));
+      if(betterTower(prev, next)) await store.putTowerRecords([[a, next]]);
     });
   }
   /* instance réussie (roi gobelin vaincu, 29/10/2026 ; pas en mode dev) : comme une tour. t = temps de jeu de l'entrée à
@@ -391,26 +388,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const fight = Number.isFinite(r.awake) ? r.t - r.awake : null;
     const next = sanitizeInstanceRecord({ t: r.t, fight, at: rec.endedAt ?? clock(), instance: rec.mode, team: heirs.map(name), session: rec.id });
     if(!next) return;
-    /* un record par niveau (29/10) : clé « compte » au niveau 1, « compte#2 » au niveau 2 (recordKey) */
+    /* un record par niveau (29/10) : clé « compte » au niveau 1, « compte#2 » au niveau 2 (instanceRecordKey) */
     for(const a of heirs) await withLock('instance_record:' + a, async () => {
-      const key = recordKey(a, rec.level ?? 1);
+      const key = instanceRecordKey(a, rec.level ?? 1);
       const prev = sanitizeInstanceRecord(await store.getInstanceRecord(key));
       if(betterInstance(prev, next)) await store.putInstanceRecords([[key, next]]);
     });
   }
   /* au premier classement après un démarrage : les victoires en tour encore gardées (sessions des 30 derniers jours,
-     d'avant les records) deviennent des records. Avant (29/10) : les records de tour d'avant les niveaux (sans level,
-     tous sous la clé du compte) reçoivent le niveau de leur session ; un record du niveau 2 reste sous la clé du niveau 1,
-     marqué niveau 2 : il n'y est plus classé et la prochaine victoire au niveau 1 le remplace (recordTower). */
+     d'avant les records) deviennent des records */
   let towerBackfill = null;
   const backfillTowers = () => towerBackfill ??= (async () => {
-    const done = await store.sessionsWithStatus('done'), levelOf = new Map(done.map(s => [s.id, s.level ?? 1]));
-    for(const { account } of await store.listTowerRecords()) await withLock('tower_record:' + account, async () => {
-      const raw = await store.getTowerRecord(account);
-      if(!raw || typeof raw !== 'object' || raw.level !== undefined) return;
-      await store.putTowerRecords([[account, { ...raw, level: levelOf.get(raw.session) ?? 1 }]]);
-    });
-    for(const rec of done){
+    for(const rec of await store.sessionsWithStatus('done')){
       if(isTowerMode(rec.mode)) await recordTower(rec);
       if(isInstanceMode(rec.mode)) await recordInstance(rec);   // victoires contre le roi gobelin d'avant le classement (29/10)
     }
@@ -425,13 +414,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const progress = (await store.listProgress()).map(({ account, value }) => ({ id: account, p: sanitizeProgress(value) }));
     const xp = progress.map(({ id, p }) => ({ id, value: p.xp, level: levelOf(p.xp).level }));
     const spec = Object.fromEntries(SKILLS.trees.map(t => [t.id, progress.map(({ id, p }) => ({ id, value: p.spec[t.id] ?? 0, level: specLevels(p)[t.id].level }))]));
-    const towerRows = (await store.listTowerRecords()).map(({ account, value }) => ({ ...splitRecordKey(account), r: sanitizeTowerRecord(value) }))
-      .filter(x => x.r && x.account && x.r.level === x.level);
-    const towerBoard = level => towerRows.filter(x => x.level === level).map(({ account, r }) => ({ id: account, value: r.t, at: r.at, side: r.side, team: r.team }));
-    const instRows = (await store.listInstanceRecords()).map(({ account, value }) => ({ ...splitRecordKey(account), r: sanitizeInstanceRecord(value) }))
+    const tower = (await store.listTowerRecords()).map(({ account, value }) => ({ id: account, r: sanitizeTowerRecord(value) }))
+      .filter(x => x.r).map(({ id, r }) => ({ id, value: r.t, at: r.at, side: r.side, team: r.team }));
+    const instRows = (await store.listInstanceRecords()).map(({ account, value }) => ({ ...splitInstanceKey(account), r: sanitizeInstanceRecord(value) }))
       .filter(x => x.r && x.account);
     const instanceBoard = level => instRows.filter(x => x.level === level).map(({ account, r }) => ({ id: account, value: r.t, at: r.at, team: r.team, fight: r.fight }));
-    boardCache = { at: clock(), data: { gs, xp, spec, tower: towerBoard(1), tower2: towerBoard(2), instance: instanceBoard(1), instance2: instanceBoard(2) } };
+    boardCache = { at: clock(), data: { gs, xp, spec, tower, instance: instanceBoard(1), instance2: instanceBoard(2) } };
     return boardCache.data;
   }
 

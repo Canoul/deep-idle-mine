@@ -186,8 +186,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   demandée seulement quand le sous-onglet est ouvert). Serveur : `server/social/`, stockage `social` dans PostgreSQL. **Voir le stuff d'un ami**
   (22/10, Jules) : bouton « Stuff » → niveau, spécialisation, pièces portées et stats, en lecture seule
   (`POST /api/social/profile`, réservé aux amis, jamais l'inventaire).
-  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste et Tour céleste II
-  (29/10 : un par niveau de tour, records du niveau 2 sous la clé `compte#2` du ns tower_record, champ `level`)
+  **Sous-onglet Classements** (27/10, Geoffrey) : Gear score, Niveau, Spécialisation (un par arbre), Tour céleste
   (meilleur temps par joueur, Ange et Démon confondus, avec l'équipe) ; top 50 + sa place (`LEADERBOARD`,
   `src/meta/leaderboard.js`, `POST /api/social/leaderboard`). Records de tour dans le ns `tower_record` (sans limite).
   **Roi gobelin** (29/10, Geoffrey) : meilleur temps de victoire de l'Instance I par joueur présent (de l'entrée à la

@@ -1,5 +1,4 @@
-/* Barre d'action (onglets, avec leur nom), toujours visible en bas de l'écran ; touches 1 à 9, 0, - et = pour changer d'onglet,
-   Échap pour quitter l'onglet ouvert (retour à l'onglet Session : la mine en cours, ou la promenade dans le Carreau).
+/* Barre d'action (onglets, avec leur nom), toujours visible en bas de l'écran ; touches 1 à 9, 0, - et = pour changer d'onglet.
    Changer d'onglet ne met jamais la session en pause : la mine continue de tourner en arrière-plan. */
 import { pxi } from './pxicons.js';
 
@@ -43,11 +42,6 @@ export function pickTab(hash, saved){
   return TABS[0].id;
 }
 
-/* Échap : quitter l'onglet ouvert pour l'onglet Session (comme la promenade, ou la mine pendant une session) ; rien si
-   on y est déjà ou si une fenêtre est ouverte (overlay : objet obtenu, dialogue, compte, voir OVERLAYS) */
-export const OVERLAYS = ['obtained', 'dialog', 'account'];
-export const escapeTab = (cur, overlay = false) => !overlay && cur && cur !== 'session' ? 'session' : null;
-
 /* Construit la barre et les vues manquantes (onglets pas encore développés = page d'attente).
    onChange(id) est appelé à chaque changement d'onglet. Renvoie { current() }. */
 export function setupNav(navEl, viewsEl, onChange=()=>{}){
@@ -78,15 +72,9 @@ export function setupNav(navEl, viewsEl, onChange=()=>{}){
   }
   list.onclick = e => { const b = e.target.closest('[data-tab]'); if(b) show(b.dataset.tab); };
   addEventListener('hashchange', () => show(pickTab(location.hash, cur)));
-  /* raccourcis : la touche d'un onglet l'ouvre (pas pendant la saisie d'un texte) ; Échap quitte l'onglet, sauf si une
-     fenêtre est ouverte (c'est elle qu'Échap ferme) */
+  /* raccourcis : la touche d'un onglet l'ouvre (pas pendant la saisie d'un texte) */
   document.addEventListener('keydown', e => {
     if(e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, textarea, select')) return;
-    if(e.key === 'Escape'){
-      const to = escapeTab(cur, e.defaultPrevented || OVERLAYS.some(o => document.getElementById(o)?.hidden === false));
-      if(to){ e.preventDefault(); show(to); }
-      return;
-    }
     const id = Object.keys(keyOf).find(k => keyOf[k] === e.key);
     if(id) show(id);
   });
