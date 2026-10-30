@@ -51,7 +51,7 @@ export function prisonRow({ account, name, prison, sessions }){
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pct = r => r == null ? '—' : Math.round(r * 100) + ' %';
 const col = r => r == null ? '' : r < 0.4 ? ' class="lo"' : r > 0.6 ? ' class="hi"' : ' class="ok"';
-const h = x => `${Math.floor(x)} h ${String(Math.round((x % 1) * 60)).padStart(2, '0')}`;
+const h = x => { const m = Math.round(x * 60); return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };   // 4 h 60 → 5 h 00 (30/10)
 
 /* page HTML autonome */
 export function renderPrisonDashboard(rows, now = new Date()){
