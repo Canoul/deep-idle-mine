@@ -5463,3 +5463,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ prison-server (nouveau : pièce équipée en cours de run → run 2 +1 Découverte, run 1 inchangé), prison-sim,
   prison-ui. ⚠️ « une tour et une instance lancées terminent la prison » échoue **déjà sur main** (clé d'instance 1 !== 0),
   sans lien : à regarder.
+
+## 30/10/2026 — Geoffrey — Prison : reset du run après 60 s d'étourdissement (branche geoffrey/prison-reset-stun)
+- `stunLocked(G)` (src/sim/prison.js), appelé par `tickPrison` après `tick` : `G.prison.stunFor` cumule le temps en action
+  `stun` (toutes causes), remis à 0 après `PRISON.stunGap` (5 s) sans étourdissement (`unstunFor`). À `stunReset` (60 s) :
+  log, `G.prison.stunReset = true`, `endPrisonRun` (fin immédiate comme un départ : coffre versé, sac perdu ; le serveur
+  passe au run suivant par le chemin normal). Lecture de « en cumulé d'un coup » : étourdissements enchaînés, pas le total du run.
+- Tests ✅ prison-sim (nouveau : 60 s en continu → fin ; 30 s + 10 s libre + 40 s → pas de fin) 16/16 ; prison-server : seul
+  « une tour et une instance… » échoue, déjà sur main.
+- Simulation (script à part, mineur de base, 5 prisons × 2 h) : area 3 : 33 runs, 0 reset ; area 5 : 26 runs, 3 resets ;
+  area 6 : 20 runs, 4 resets. `npm run simulate:prison` complet trop long pour la limite de temps (> 4 min).

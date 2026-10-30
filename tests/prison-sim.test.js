@@ -239,3 +239,20 @@ test('minerai rare d\'une petite carte : nombre de cases arrondi au hasard en pr
   for(let i = 0; i < N; i++){ const c = fillComp(rng(i), comp, 25, 50, frac).counts; assert.ok(c.cobalt === 0 || c.cobalt === 1); assert.equal(Object.values(c).reduce((s, v) => s + v, 0), 1250); n += c.cobalt; }
   assert.ok(Math.abs(n / N - 0.3) < 0.04, `prison : ${n / N} case de cobalt par carte en moyenne (0,3 attendu)`);
 });
+
+test('étourdi 60 s de suite (30/10) : le run finit tout de suite ; des étourdissements espacés ne comptent pas ensemble', () => {
+  const stun = (G, s) => { G.miners[0].action = { type:'stun', t:0, dur:s, data:{} }; };
+  const G = newPrisonRun(7, { miner:{}, areaMax:3, run:1 });
+  for(let i = 0; i < 20; i++) tickPrison(G);
+  /* étourdi en continu : on le ré-étourdit à chaque tick (chaînes d'occultistes) */
+  let n = 0;
+  while(!G.over && n++ < 2000){ stun(G, 1); tickPrison(G); }
+  assert.ok(G.over, 'run fini');
+  assert.ok(G.prison.stunReset);
+  assert.ok(n * DT <= PRISON.stunReset + 1e-6 && n * DT > PRISON.stunReset - 2, `au bout de ${n * DT} s`);
+  /* étourdi 30 s, libre 10 s (> stunGap), étourdi 40 s : pas de reset */
+  const H = newPrisonRun(7, { miner:{}, areaMax:3, run:1 });
+  for(const [on, s] of [[true, 30], [false, 10], [true, 40]])
+    for(let i = 0; i < s / DT && !H.over; i++){ if(on) stun(H, 1); else H.miners[0].action = null; tickPrison(H); }
+  assert.ok(!H.prison.stunReset);
+});

@@ -99,6 +99,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
+- **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
+  ne reste plus bloqué jusqu'au temps max du run (3 h) : le run s'arrête, le coffre est versé (pas son sac) et une carte
+  neuve commence.
+- **État** : 🧪 sur la branche `geoffrey/prison-reset-stun` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Prison : le stuff est relu à chaque run
 - **Pour le joueur** : avant, le stuff, les skills et les sorts étaient pris à l'entrée en prison et ne changeaient plus
   (une pièce de Découverte équipée ensuite ne comptait jamais, signalé par Infernatiwar). Maintenant ils sont repris au
