@@ -5,7 +5,8 @@
      départs), comme les tours. */
 import { INSTANCE, GAME } from '../config.js';
 import { minerSpecs } from './game.js';
-import { newInstance, leaveInstance, INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel } from '../sim/instance/session.js';
+import { newInstance, leaveInstance, tickInstance, endInstance, INSTANCE_TICKS, INSTANCE_LEVELS, instanceLevel } from '../sim/instance/session.js';
+import { newGolbute, leaveGolbute, tickGolbute, endGolbute, isGolbute } from '../sim/instance/golbute.js';
 import { countOf } from '../meta/inventory.js';
 
 export const instanceDef = mode => INSTANCE.list.find(i => i.id === mode) ?? null;
@@ -24,12 +25,20 @@ export function instanceSpecs(record){
   const players = record.players || [];
   return minerSpecs(record).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
 }
-export const buildInstanceGame = record => newInstance(record.seed, { miners: instanceSpecs(record), id: record.id, instance: record.mode, level: record.level });   // niveau (29/10) : 1 par défaut
+/* Instance II (30/10/2026) : le Golbute a sa propre partie (src/sim/instance/golbute.js), même interface */
+export const buildInstanceGame = record => record.mode === 'instance_2'
+  ? newGolbute(record.seed, { miners: instanceSpecs(record), id: record.id })
+  : newInstance(record.seed, { miners: instanceSpecs(record), id: record.id, instance: record.mode, level: record.level });   // niveau (29/10) : 1 par défaut
+export const tickAnyInstance = G => isGolbute(G) ? tickGolbute(G) : tickInstance(G);
+export const endAnyInstance = (G, success) => isGolbute(G) ? endGolbute(G, success) : endInstance(G, success);
+const leaveAny = (G, who) => isGolbute(G) ? leaveGolbute(G, who) : leaveInstance(G, who);
+/* niveaux d'une instance : INSTANCE.levels pour l'Instance I, le niveau 1 seul pour les autres (30/10) */
+export const levelsOf = mode => mode === 'instance_1' ? INSTANCE_LEVELS : [1];
 
 /* départs dont le moment est venu ; renvoie le nombre appliqué */
 export function applyDueInstanceLeaves(G, record){
   let n = 0;
   for(const l of record.leaves || [])
-    if(l.tick <= G.ticks && G.miners.some(m => m.account === l.account) && leaveInstance(G, l.account)) n++;
+    if(l.tick <= G.ticks && G.miners.some(m => m.account === l.account) && leaveAny(G, l.account)) n++;
   return n;
 }

@@ -5493,6 +5493,40 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu dans une vraie tour (vérifié sur des aperçus agrandis, sur le fond de briques de chaque tour). Le Diablotin n'a
   pas de contour : à 16 px de large, un contour d'un pixel remplissait les creux (jambes, ailes) et devenait du bruit.
 
+## 30/10/2026 — Geoffrey — Instance II, le Golbute (branche geoffrey/instance-2-golbute)
+- **Partie** : `src/sim/instance/golbute.js` (à part de l'Instance I, même interface). Branchement : `src/shared/instances.js`
+  (`buildInstanceGame` selon `record.mode`, `tickAnyInstance`, `endAnyInstance`, départs, `levelsOf` : niveau 1 seul pour
+  l'Instance II), `server/game/live-game.js` (KINDS.instance), `src/shared/instances-view.js` (`golbuteView`, golems et
+  rochers dans `applyInstanceView`), `src/render/instance.js` (`drawGolbute`), `src/ui/instance-hud.js` (`golbuteHUD`, bilan,
+  titre `#inBossTitle` dans index.html), `src/sim/effects.js` + `src/ui/effects.js` (états `dazed` et `dead`).
+- **Règles codées** : boss immobile, ses cases sont un mur (`golOpen`) sauf pendant la Division ; gravité à part des actions
+  (`gravity`) ; propulsion → chute ≥ `CFG.stunFall` → étourdi `CFG.stunTime` (cause `fall`) ; **un mineur déjà étourdi n'est
+  pas repropulsé (choix de Claude, à valider)** ; avalanche : ténacité = esquive totale, stack expiré si > 90 s ; mort à 6 ;
+  Division repoussée pendant un cristal (`G.next.split` = Infinity puis relancée 180 s après le retour du boss) ; dégâts
+  bloqués au palier du cristal (surplus perdu) ; enrage après le 2e cristal (avalanche suivante avancée si besoin).
+  Golems : 1 × 1, PV `mobHp('golem', 8)` = 456, coup / 1,5 s qui repousse d'une case (`knockOf` ≥ 0,5), pas de tacle réel
+  (`grab` pour l'affichage et Hand of Justice / Ulti shen).
+- **Serveur** : clé `Clé d'instance II` (T4 10 %, `family:'key'`), coffre `Coffre du Golbute Rq` (`GOLBUTE`, side `golbute`) ;
+  `canOpen` faux tant que `GOLBUTE.loot` est vide (sinon `openOne` passait dans la branche des coffres de tour = une rune) ;
+  `itemName` corrigé pour ce side. Presets dev : `DEV_PRESETS.key` est une liste (clés I et II).
+- **Tests** ✅ golbute (8, une mécanique chacun), instance-server (+2 : vraie partie, coffre et clé), anticheat/instance (+1,
+  coffre fermé ; ancien test « Instance II pas prête » → Instance III), tier4 (+1, 10 %), lobby, effects, rarity, wiki,
+  dev-presets. Navigateur ✅ (playwright, mode dev ×20 : combat, cristal, Division, avalanche + icône Sonné ×3).
+- **Équilibrage** (`npm run simulate:golbute -- --count 80 --tenacity 25`) : 7 600 PV / 600 coups → 20/80, 42 % du temps à
+  miner ; 7 200 / 660 → 8/80, 46 %. Sans ténacité : 0/20 (morts à ~6 min). Falaise nette : les victoires tombent à ~9 min 50.
+- ⚠️ À vérifier : le bilan de fin (instances ET mine) n'apparaissait pas à l'écran dans le navigateur headless (le Carreau
+  s'affiche par-dessus, `#end` non caché mais invisible) ; même chose sur main avec une mine classique : à confirmer dans un
+  vrai navigateur, sans lien avec l'Instance II.
+- 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
+  victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.
+
+### 30/10/2026 — Coffre du Golbute : butin et objets (branche geoffrey/instance-2-golbute)
+- `GOLBUTE.loot` (config) rempli ; `src/meta/loot.js` : le coffre du Golbute filtre learnOnce/spellOnce (ctx.spells) comme le Roi Gobelin ; un anneau sort sans qualité.
+- Objets : `STUFF` Némésis du Golbute (set blockMinePct 25), Torse de Gollex, Jambières du Golbute, Âme du Golbute (set golemOxygen 25) ; `RINGS` Anneau en pierre (add tenacity 3) ; rareté ; `UPGRADE.tiers['4.5']` ; nouvelles stats `STATS.blockMinePct`, `STATS.golemOxygen` (+ libellés), `GOLBUTE.golemOxygenRadius` 8.
+- Sim : `mineT`/`baseMineT` (src/sim/mineur.js) × (1 + blockMinePct/100) sur BLOCKS type terrain ; `killMob` golem → `golemOxygen` (src/sim/actions.js), porteurs encore là, cercle de 8.
+- Textures : pickaxe_nemesis, chest_gollex, legs_golbute, soul_golbute, ring_stone (gen_textures.py ; régénérer change aussi boss_demon et town_* : fichiers remis tels quels). Pas de skin portée (calques) pour ces pièces.
+- ✅ tests/golbute-items (4, nouveau), rarity, anneaux (9 anneaux), anticheat/instance (le coffre s'ouvre maintenant, idempotent), golbute, instance-server, goblin-king, gearscore… 136 + anticheat 118/118.
+
 ## 30/10/2026 — Minotaure : Charge, Rage, variantes de l'Arène (Jules)
 - **Quoi** : `src/sim/minotaur.js` (nouveau) : `charge` (états `o.charge` windup/run, `o.chargeCd`, course case par case à
   `speed` cases/s, arrêt sur le premier mineur `inReach` devant lui → `gore` : `stopAction` + `push` de `knock` (knockRes du

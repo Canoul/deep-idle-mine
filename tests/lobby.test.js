@@ -180,4 +180,6 @@ test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niv
   assert.equal(instanceLevelState({ instance: true, locked: false, party, account: me }).show, false, 'pas le chef : caché');
   assert.equal(instanceLevelState({ instance: false, locked: false, party: null, account: me }).show, false);
   assert.equal(instanceLevelState({ instance: true, locked: true, party: null, account: me }).show, false, 'session en cours');
+  const two = instanceLevelState({ instance: true, locked: false, party: null, account: me, cur: 2, mode: 'instance_2' });
+  assert.equal(two.show, false, 'Instance II (30/10) : un seul niveau, pas de rangée'); assert.equal(two.level, 1);
 });

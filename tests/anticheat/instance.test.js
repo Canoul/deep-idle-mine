@@ -37,7 +37,21 @@ test('sans clé : refusé, aucune session, aucune clé retirée aux autres ; une
   assert.equal((await store.sessionsWithStatus('running')).length, 0);
 });
 
-test('une instance pas encore prête (Instance II) est refusée', async () => {
+test('une instance pas encore prête (Instance III) est refusée ; l\'Instance II demande sa propre clé (30/10)', async () => {
   const { game } = await setup({ [A.id]: 1 });
-  await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.status === 400);
+  await assert.rejects(game.start(A, { mode: 'instance_3' }), e => e.status === 400);
+  await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.code === 'no_key');
+});
+
+test('Coffre du Golbute (30/10) : ouvert une fois (même opId : même butin), plus de rune, le coffre est retiré', async () => {
+  const { openTreasure, canOpen } = await import('../../src/meta/loot.js');
+  const inv = createInventory(); addItem(inv, 'Coffre du Golbute R4', 1);
+  assert.equal(canOpen('Coffre du Golbute R4'), true);
+  const a = openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random, { spells: [] });
+  assert.ok(a && !a.repeated && a.loot['Mithril ingot'] >= 2);
+  const b = openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random, { spells: [] });
+  assert.ok(b.repeated); assert.deepEqual(b.loot, a.loot);
+  assert.equal(countOf(inv, 'Coffre du Golbute R4'), 0);
+  assert.equal(countOf(inv, 'Rune'), 0);
+  assert.equal(countOf(inv, 'Mithril ingot'), a.loot['Mithril ingot']);
 });

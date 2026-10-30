@@ -84,7 +84,9 @@ export const mineRate = m => m.carac.mineSpeed*(1+(m.carac.mineSpeedPct||0)/100)
 export const warcryOf = (G,m) => m.warcry && G.t < m.warcry.until ? m.warcry : null;
 /* sorts : Inspiration (G.inspire, pour tout le groupe) et Fast learner (m.learned, par type de bloc) */
 const spellMine = (G,m,t) => (1+(G.inspire && G.t<G.inspire.until ? G.inspire.pct : 0))*(1+(m.learned?.[t]||0));
-export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*dk(G,m)*spellMine(G,m,t));
+/* Némésis du Golbute (30/10/2026) : + blockMinePct % de vitesse de minage sur les blocs de terrain (pas les minerais) */
+const blockMul = (m,t) => BLOCKS[t].type==='terrain' && m.carac.blockMinePct ? 1+m.carac.blockMinePct/100 : 1;
+export const mineT  = (G,m,t) => BLOCKS[t].hard/(mineRate(m)*blockMul(m,t)*dk(G,m)*spellMine(G,m,t));
 export const lightR = (G,m) => 2.2+(m.carac.light-2.2)*curLum(G,m);
 export const compassR = (G,m) => Math.floor(m.carac.compass*(lit(G,m) ? 1 : 0.5));
 
@@ -100,7 +102,7 @@ export const ladderTime = m => CFG.ladderTime*(m.skill?.glyph_tall_ladder ? GLYP
 /* durée du bonus de Ruée (s) : Glyphe Ruée → GLYPHS.rushTime */
 export const rushTime = m => m.skill?.glyph_ore_rush ? GLYPHS.rushTime : SKILLS.rushTime;
 export const baseLadderT = m => ladderTime(m)*(m.skill.tall_ladder ? 0.5 : 1);
-export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
+export const baseMineT  = (m,t) => BLOCKS[t].hard/(mineRate(m)*blockMul(m,t));
 
 /* ---- actions ---- */
 /* heure exacte du mineur pendant qu'il enchaîne ses actions dans un tick (m.now, posée par la boucle stepMiner) ; G.t en

@@ -130,6 +130,7 @@ export function sourcesOf(item){
   if(res) out.push(`Miné à partir de l'area ${JUDGMENT.fromArea} (${fmt(JUDGMENT.pct)} % des blocs de chaque area pour les deux résidus ensemble, à la place de la pierre)`);
   const chest = ITEMS[item]?.chest;
   if(chest?.side === 'goblin') out.push(`Instance I : un coffre pour chaque joueur encore là quand le roi gobelin tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
+  else if(chest?.side === 'golbute') out.push(`Instance II : un coffre pour chaque joueur encore là quand le Golbute tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   else if(chest) out.push(`${TOWER.sides[chest.side].tower} : un trésor pour chaque joueur présent quand le boss tombe (qualité R${chest.q} : ${fmt(pct(UPGRADE.qualities.find(q => q.q === chest.q)?.chance ?? 0))} % de chance)`);
   /* coffre du Roi Gobelin (GOBLIN_KING, 27/10) */
   { const l = GOBLIN_KING.loot, a = l.always.find(x => x.item === item);
@@ -177,7 +178,8 @@ export function usesOf(item){
   else if(d?.cat === 'stuff') out.push(`S'équipe (case ${SLOT_LABEL[d.slot]?.toLowerCase() ?? d.slot})`, 'S\'identifie et s\'améliore (onglet Amélioration)');
   if(UPGRADE.levels.some(l => Object.hasOwn(l.cost, item)))
     out.push(`Amélioration : ${UPGRADE.levels.map((l, i) => `${l.cost[item]} pour +${i + 1}`).join(', ')}`);
-  if(d?.cat === 'treasure') out.push(d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
+  if(d?.cat === 'treasure') out.push(d.chest?.side === 'golbute' ? 'Son butin arrive bientôt : il ne s\'ouvre pas encore (garde-le)'
+    : d.chest?.side === 'goblin' ? `S'ouvre dans l'inventaire : graphite, peaux de gobelin, et une chance de couronne, masse, cape ou plan du four en or (une pièce de stuff arrive identifiée R${d.chest.q})`
     : d.chest ? `S'ouvre dans l'inventaire : donne une Rune R${d.chest.q}` : 'S\'ouvre dans l\'inventaire (bouton « Ouvrir »)');
   const side = Object.values(JUDGMENT.sides).find(s => s.item === item);
   if(side) out.push(`Rapporté au coffre : remplit la jauge ${side.label === 'Ange' ? 'de l\'Ange' : 'du Démon'} du Jugement, commune à tous (${JUDGMENT.cap} pour ouvrir la tour)`);
@@ -256,6 +258,8 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
+  blockMinePct:"Némésis du Golbute : vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas sur les minerais.",
+  golemOxygen:"Âme du Golbute : un golem qui meurt à 8 cases ou moins de toi te rend cet oxygène (sans dépasser ton maximum).",
   goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',

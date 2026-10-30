@@ -152,7 +152,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   - Chef du lobby (29/10) : `sudo node scripts/set-leader.js --name X` (route `/api/admin/party-lead`).
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
-  `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
+  `src/ui/instance-hud.js`) : « Où miner » → Instances (I et II jouables depuis le 30/10, III « bientôt » ; ancien : II « bientôt »). **Instance I, le roi
   gobelin** : groupe de 1 à 3, une **Clé d'instance I** chacun (Treasure T3, 20 % à part depuis le 27/10 ; ancien : 5 % ; **craft de base** depuis le 28/10, ancien : plan du Treasure T4), consommée au lancement avec la
   création de la session. Salle 28 × 24, 3 rebords par côté avec un spawner chacun (125 coups, un gobelin / 30 s ;
   gobelins 200 PV et un coup / 1,75 s (29/10 ; ancien : 150 PV, 2 s), tacle au premier coup, recul vers le centre), roi gobelin
@@ -165,6 +165,15 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ni sorts, ni améliorations, ni runes) : il sous-estime les vrais joueurs (0/5 en acier le 29/10 alors que les 6 vraies
   parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 200 PV
   / 1,75 s, régénération) = 3 victoires, en 9:10-9:59. Seule l'attaque compte (pas de PV pour les mineurs).
+- **Instance II, le Golbute** (30/10, Geoffrey ; config `INSTANCE.golbute`, `src/sim/instance/golbute.js` (partie à part,
+  même interface que l'Instance I via `src/shared/instances.js` : `buildInstanceGame`, `tickAnyInstance`, `endAnyInstance`),
+  vue `golbuteView` dans `instances-view.js`, rendu `drawGolbute` dans `src/render/instance.js`, HUD `golbuteHUD`,
+  `npm run simulate:golbute`) : arène 20 × 20, golem 5 × 5 au milieu (10 700 PV ; ancien 7 600), autoattack qui propulse (chute = étourdi),
+  avalanche / 60 s (Sonné, mort à 6 stacks : la ténacité est obligatoire), Division / 3 min en 10 golems (area 8),
+  cristal à 66 et 33 % (720 coups de minage ; ancien 600), enrage après le 2e cristal ; 10 min, un seul niveau. **Clé d'instance II** :
+  Treasure T4, 10 %. **Coffre du Golbute** R1 à R7 par joueur présent à la victoire (`GOLBUTE`), **butin à définir** : il ne
+  s'ouvre pas tant que `GOLBUTE.loot` est vide. Équilibrage : compo de référence (1 mineur, 2 barbares, arbre max, armure
+  mithril, outils **acier** + 20 % ; ancien : fer) **avec 25 % de ténacité** : 40/160 victoires ; sans ténacité : 0. Détail GAME_DESIGN.
 - **Tier 4 : Treasure T4, mithril, thorium, cobalt** (27/10, Geoffrey ; GAME_DESIGN « Tier 4 », config `LOOT['Treasure T4']`,
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à
   l'area 6) ; four : Mithril ingot, Refined cobalt / thorium (`ore:5` par fournée), alliages Cobalt / Thorium ingot ; armures

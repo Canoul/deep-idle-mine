@@ -1,5 +1,5 @@
 /* Effets des actions du mineur sur le monde, et choix de l'action pour un pas dans une direction. */
-import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON } from '../config.js';
+import { W, STATS, CFG, BLOCKS, BRIDGE, MOBS, TREASURE, ITEMS, XP, SKILLS, SHINY, DUNGEON, DUCK, COMBAT, GLYPHS, MOB_DROPS, PRISON, GOLBUTE } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
 import { areaOf, contentAt, isOre, typeOf, treasureItem, isAir, tileAt, supported, tryUnlock, oreRemoved, oreKey, fallInfo, isWinch } from './world.js';
 import { updateLight } from './light.js';
@@ -34,6 +34,17 @@ function lootOf(G,m,n){
   const b=lootBonus(m); if(!(b>0)) return n;
   const sure=Math.floor(b);
   return n + sure + (G.rng() < b-sure ? 1 : 0);
+}
+/* Âme du Golbute (30/10/2026, Geoffrey) : un golem qui meurt rend golemOxygen d'oxygène à chaque porteur à
+   GOLBUTE.golemOxygenRadius cases ou moins (cercle), sans dépasser son maximum ; bonus personnel */
+function golemOxygen(G,o){
+  const R=GOLBUTE.golemOxygenRadius;
+  for(const p of G.miners){
+    const g=p.carac?.golemOxygen||0;
+    if(g>0 && p.left==null && (p.x-o.x)**2+(p.y-o.y)**2 <= R*R && p.ox<p.carac.oxygenMax){
+      p.ox=Math.min(p.carac.oxygenMax, p.ox+g); log(G, `🫁 ${p.name} : +${g} oxygène (Âme du Golbute)`);
+    }
+  }
 }
 /* butin d'un mob : base payante, le supplément (Pillage / looting) à 0 pod (30/10/2026) ; renvoie le total */
 function lootCol(G,m,item,w,base){
@@ -187,6 +198,7 @@ export function killMob(G,m,o){
     const n=lootCol(G,m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,r(C.flesh)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,r(C.chitin));
     log(G, `🗡 ${m.name} : mur de chair vaincu (+${n} ${C.flesh.item.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='golem'){
+    golemOxygen(G,o);   // Âme du Golbute (30/10)
     const it=MOBS.golem.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.golem.loot(G.rng));
     log(G, `🗡 ${m.name} : golem vaincu (+${n} ${it.toLowerCase()})`);
   } else {

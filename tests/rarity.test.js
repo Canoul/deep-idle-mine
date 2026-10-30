@@ -43,6 +43,8 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
                  'Recette : Chitine':'inhabituel', 'Four en or':'rare', 'Four en or BP':'rare' };
   for(const [n, r] of Object.entries(KING)) assert.equal(rarityOf(n), r, n);
   KING['Clé d\'instance I'] = 'inhabituel';   // Instances (27/10) : la clé du roi gobelin
+  KING['Clé d\'instance II'] = 'inhabituel';  // Instance II, le Golbute (30/10)
+  Object.assign(KING, { 'Némésis du Golbute':'legendaire', 'Âme du Golbute':'epique', 'Torse de Gollex':'rare', 'Jambières du Golbute':'rare' });   // Coffre du Golbute (30/10)
   assert.equal(rarityOf('Clé d\'instance I'), 'inhabituel');
   /* minerais profonds (27/10, Geoffrey) : mithril commun, cobalt et thorium inhabituels */
   const DEEP = ['Cobalt ore', 'Thorium ore'];

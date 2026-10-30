@@ -36,6 +36,9 @@ export function minerEffects(G, m, ctx = {}){
   if(m.fleshStacks > 0 && !(G.t > m.fleshUntil)) push({ id:'flesh', stacks:m.fleshStacks, left:left(G, m.fleshUntil) });
   if(G.boss && G.boss.hp > 0 && G.boss.focus != null && G.boss.focus === m.id && G.boss.engaged !== false) push({ id:'boss_focus' });
   if(ctx.dark) push({ id:'dark' });
+  /* Instance II, le Golbute (30/10/2026) : Sonné (stacks de l'avalanche) et Mort */
+  if(m.dead) push({ id:'dead' });
+  else if(m.dazed > 0 && G.t <= (m.dazedUntil ?? 0) + 1e-9) push({ id:'dazed', stacks:m.dazed, left:left(G, m.dazedUntil) });
   /* buffs */
   if(ctx.warcry && G.t < ctx.warcry.until) push({ id:'war_cry', left:left(G, ctx.warcry.until) });
   if(G.inspire && G.t < G.inspire.until) push({ id:'inspiration', left:left(G, G.inspire.until) });

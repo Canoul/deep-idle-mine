@@ -110,10 +110,11 @@ export function towerLevelState({ tower, locked, party, account, doneLevels = []
 
 /* niveau d'instance (29/10/2026, Geoffrey ; INSTANCE.levels) : comme celui de la tour, choisi par celui qui lance (seul,
    ou chef du groupe) ; ouvert à tous, sans limite (même clé). Le serveur revérifie. */
-export function instanceLevelState({ instance, locked, party, account, cur = null }){
+export function instanceLevelState({ instance, locked, party, account, cur = null, mode = 'instance_1' }){
   const leader = !party || party.members.length < 2 || party.leader === account?.id;
-  const levels = Object.keys(INSTANCE.levels).map(Number).map(level => ({ level, done: false }));
-  return { show: !!instance && !locked && !!account && leader, levels, level: levels.some(l => l.level === cur) ? cur : levels[0].level };
+  /* Instance II (30/10) : un seul niveau, pas de rangée « Niveau » */
+  const levels = (mode === 'instance_1' ? Object.keys(INSTANCE.levels).map(Number) : [1]).map(level => ({ level, done: false }));
+  return { show: !!instance && !locked && !!account && leader && levels.length > 1, levels, level: levels.some(l => l.level === cur) ? cur : levels[0].level };
 }
 
 /* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; sinon le prix,
@@ -317,7 +318,7 @@ export function setupLobby(h){
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
     $('devSteleRow').hidden = !(st.info?.dev && tower && !locked);   // stèle imposée en mode dev (30/10)
-    const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel })   // niveau d'instance (29/10) : même rangée
+    const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel, mode: st.mode })   // niveau d'instance (29/10) : même rangée
       : towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
     st.towerLevel = tl.level;
     $('towerLevelRow').hidden = !tl.show;
@@ -487,9 +488,11 @@ export function setupLobby(h){
       `<button data-inst="${i.id}" class="${i.id === cur.id ? 'on' : ''}"${i.ready ? '' : ' disabled title="Bientôt disponible"'}>`+
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
       (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span> `+
-        qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle n'est utilisée que si le groupe gagne : en cas d'échec, ou si tu quittes avant la fin, tu la gardes.\nOn la trouve dans les Treasure T3 (20 %).`)+`</p>`+
+        qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle n'est utilisée que si le groupe gagne : en cas d'échec, ou si tu quittes avant la fin, tu la gardes.\nOn la trouve dans les ${cur.keyFrom ?? 'Treasure T3 (20 %)'}.`)+`</p>`+
         (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là. `+
-          `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets).</p>` : '') : '');
+          `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets).</p>`
+        : cur.chest === 'golbute' ? `<p class="small">🗿 Un golem de 5 × 5. Ses <b>avalanches</b> sonnent tout le monde : à ${INSTANCE.golbute.avalanche.deathStacks} stacks, mort. `+
+          `<b>Prends de la ténacité</b> (elle esquive l'avalanche et les coups qui propulsent). 🎁 Golbute vaincu : un <b>Coffre du Golbute</b> (R1 à R7) pour chaque joueur encore là (son butin arrive bientôt).</p>` : '') : '');
   }
   $('instBody').onclick = e => { const b = e.target.closest('button[data-inst]'); if(b && !b.disabled) pick(b.dataset.inst); };
   $('lobbyToSession').onclick = () => h.onShowSession?.();

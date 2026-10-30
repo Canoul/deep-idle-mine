@@ -23,6 +23,9 @@ Modèle d'entrée :
 ```
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+
+## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
+- **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.
 - **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Une icône pour le site (favicon)
@@ -182,6 +185,16 @@ Modèle d'entrée :
 
 Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
 
+
+## 30/10/2026 — Geoffrey — Instance II : le Golbute
+- **Pour le joueur** : nouvelle instance dans « Où miner » → Instances. Un golem de 5 × 5 au milieu d'une arène vide,
+  10 min. Il tape le sol et projette les mineurs proches (la chute étourdit), fait tomber une avalanche toutes les
+  minutes (« Sonné » : à 6 stacks, mort), se divise en 10 golems toutes les 3 min, se cristallise à 66 % et 33 % (il
+  faut le miner) puis enrage. **La ténacité est indispensable.** Clé d'instance II dans les Treasure T4 (10 %).
+  Victoire : un Coffre du Golbute par joueur (son butin arrive plus tard ; en attendant il ne s'ouvre pas).
+- **Équilibrage** (simulation, provisoire) : 10 700 PV, 720 coups de cristal. Équipe de référence (1 mineur, 2 barbares,
+  armure en mithril, outils en acier + 20 %) avec 25 % de ténacité : 1 victoire sur 4 ; sans ténacité : jamais.
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
 - **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
