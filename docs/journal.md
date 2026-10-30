@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
+- **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.
+- **État** : 🧪 sur la branche `geoffrey/instance-2-golbute` (pas en ligne)
+
 ## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
 - **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
   - **Ange** : un archange en cuirasse d'or, auréole, cheveux d'or, grandes ailes déployées et épée de lumière ;

@@ -5519,3 +5519,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   vrai navigateur, sans lien avec l'Instance II.
 - 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
   victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.
+
+### 30/10/2026 — Coffre du Golbute : butin et objets (branche geoffrey/instance-2-golbute)
+- `GOLBUTE.loot` (config) rempli ; `src/meta/loot.js` : le coffre du Golbute filtre learnOnce/spellOnce (ctx.spells) comme le Roi Gobelin ; un anneau sort sans qualité.
+- Objets : `STUFF` Némésis du Golbute (set blockMinePct 25), Torse de Gollex, Jambières du Golbute, Âme du Golbute (set golemOxygen 25) ; `RINGS` Anneau en pierre (add tenacity 3) ; rareté ; `UPGRADE.tiers['4.5']` ; nouvelles stats `STATS.blockMinePct`, `STATS.golemOxygen` (+ libellés), `GOLBUTE.golemOxygenRadius` 8.
+- Sim : `mineT`/`baseMineT` (src/sim/mineur.js) × (1 + blockMinePct/100) sur BLOCKS type terrain ; `killMob` golem → `golemOxygen` (src/sim/actions.js), porteurs encore là, cercle de 8.
+- Textures : pickaxe_nemesis, chest_gollex, legs_golbute, soul_golbute, ring_stone (gen_textures.py ; régénérer change aussi boss_demon et town_* : fichiers remis tels quels). Pas de skin portée (calques) pour ces pièces.
+- ✅ tests/golbute-items (4, nouveau), rarity, anneaux (9 anneaux), anticheat/instance (le coffre s'ouvre maintenant, idempotent), golbute, instance-server, goblin-king, gearscore… 136 + anticheat 118/118.
