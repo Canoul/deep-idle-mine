@@ -60,3 +60,27 @@ test('caméra : le nombre de lignes visibles suit la hauteur de la fenêtre (sur
   cam.setRows(0); cam.setRows(2.5); cam.setRows(NaN);
   assert.equal(cam.rows, 22, 'valeurs invalides ignorées');
 });
+
+/* zoom (30/10/2026, Geoffrey) : pincer sur mobile */
+test('caméra : zoom ×2 autour d\'un point qui ne bouge pas, borné à ×1 et CAMERA.maxZoom, retour ×1 avec 0', () => {
+  const cam = createCamera(ROWS, 40);
+  settle(cam, 100, 20);
+  cam.pan(0, LAST);                                   // rien
+  const y = cam.y, wy = y + 0.5 * ROWS;               // ligne au milieu de l'écran
+  cam.zoomBy(2, 0.5, 0.5);
+  assert.equal(cam.zoom, 2);
+  assert.ok(Math.abs(cam.y + 0.5 * ROWS/2 - wy) < 1e-9, 'le milieu de l\'écran reste sur la même ligne');
+  assert.equal(cam.x, 10);                            // 40 colonnes, 20 visibles, centrées
+  cam.zoomBy(100); assert.equal(cam.zoom, CAMERA.maxZoom);
+  cam.zoomBy(0); assert.equal(cam.zoom, 1); assert.equal(cam.x, 0);
+});
+
+test('caméra zoomée : suit le mineur aussi à l\'horizontale ; glissée, elle reste dans la mine', () => {
+  const cam = createCamera(ROWS, 40);
+  cam.zoomBy(2);
+  for(let i = 0; i < 300; i++) cam.update(100, LAST, 35);
+  assert.ok(Math.abs(cam.x - 20) < 0.01, `x = ${cam.x}`);  // collée au bord droit (40 − 20)
+  cam.pan(0, LAST, -100);
+  assert.equal(cam.free, true); assert.equal(cam.x, 0);
+  cam.pan(0, LAST, 3); assert.equal(cam.x, 3);
+});

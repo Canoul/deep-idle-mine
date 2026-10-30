@@ -46,9 +46,11 @@ export function createRenderer(cv){
   function draw(G, followId){
     curG=G; frameNow=performance.now();
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
-    const [, fy]=drawPos(fm);
-    const camY=cam.update(fy, mr+1);
+    const [fx, fy]=drawPos(fm);
+    const camY=cam.update(fy, mr+1, fx);
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const z=cam.zoom; ctx.setTransform(z,0,0,z,-cam.x*TILE*z,0);   // zoom (30/10) : le reste se dessine comme au zoom ×1
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
     for(let y=y0;y<=y0+rows+1;y++){
       const py=(y-y0)*TILE+offY;
@@ -177,6 +179,7 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m);
       if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
+    ctx.setTransform(1,0,0,1,0,0);
     if(G.khole) drawKhole(G);
   }
 
@@ -191,13 +194,23 @@ export function createRenderer(cv){
   }
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
-  const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
-  const panPixels = px => pan(-px / (cv.clientHeight / rows || TILE));
+  const pan = (rows, cols = 0) => { if(curG) cam.pan(rows, maxRow(curG)+1, cols); };
+  /* glissé de dx, dy pixels à l'écran : la mine suit le doigt, au zoom actuel */
+  const panPixels = (dy, dx = 0) => {
+    const rowPx = (cv.clientHeight / rows || TILE) * cam.zoom, colPx = (cv.clientWidth / W || TILE) * cam.zoom;
+    pan(-dy / rowPx, -dx / colPx);
+  };
+  /* zoom autour d'un point de l'écran (clientX, clientY) */
+  const zoomAt = (f, clientX, clientY) => {
+    const r = cv.getBoundingClientRect();
+    const fx = r.width ? (clientX - r.left) / r.width : 0.5, fy = r.height ? (clientY - r.top) / r.height : 0.5;
+    cam.zoomBy(f, Math.max(0, Math.min(1, fx)), Math.max(0, Math.min(1, fy)));
+  };
   /* nombre de lignes visibles : le canvas change de hauteur, la caméra le sait (la surface reste visible en haut) */
   function setRows(n){
     if(n === rows || !Number.isInteger(n) || n < 1) return;
     rows = n; cv.height = rows*TILE; ctx.imageSmoothingEnabled = false; cam.setRows(n);
   }
 
-  return { draw, pan, panPixels, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
+  return { draw, pan, panPixels, zoomAt, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
 }

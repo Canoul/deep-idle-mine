@@ -511,7 +511,8 @@ export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
 export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
-  minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
+  minRows:20, maxRows:48,
+  maxZoom:4, wheelZoom:0.0025 };   // zoom (30/10, Geoffrey) : pincer à deux doigts ou Ctrl + molette, ×1 (toute la largeur) à ×maxZoom   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
