@@ -659,6 +659,17 @@ export function setupLobby(h){
     showJudgment(){ st.view = 'jugement'; render(); h.onJudgment?.(); },
     /* choisir un type de mine (ex. la tour ouverte, depuis le Jugement) s'il est proposé et pas déjà fait */
     pickMode(mode){ if(mineModes(st.mode, !!st.session, st.judgment, !!st.info?.dev).some(m => m.id === mode && !m.disabled)) pick(mode); },
+    /* recherche de groupe depuis le Carreau (30/10, Jules) : l'état comme si la mine classique était choisie (lfgState),
+       le nombre de joueurs en recherche et le début de la sienne */
+    lfgView: () => ({ ...lfgState({ ...st, mode: MINE_MODES[0].id }), players: st.lfg?.players ?? 0, start: st.lfgStart }),
+    /* lancer ou annuler sa recherche ; lancée, le lobby passe sur la mine classique (celle que la recherche remplit).
+       Renvoie le message d'erreur, '' si tout va bien. */
+    async toggleLfg(){
+      const classic = MINE_MODES[0].id;
+      if(st.lfg?.search?.mine) await act(() => h.party.lfgCancel());
+      else await act(() => h.party.lfg(st.lfgAuto), () => { if(st.mode !== classic) pick(classic); });
+      return $('lobbyErr').hidden ? '' : $('lobbyErr').textContent;
+    },
     error,
   };
 }

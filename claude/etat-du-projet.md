@@ -73,7 +73,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   serveur, rien en base, rien d'économique. Option « Le Carreau en fond d'écran » (Mon compte). Pendant une session, le
   fond reste la mine (fond de Geoffrey du 28/10). Ajouts du 29/10 après-midi : fiche d'un joueur au clic (ami, inviter),
   groupes regroupés sur la place avec une marque « 2/3 », « ? » doré pour qui cherche un groupe, émotes, statue du n°1 du
-  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place.
+  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place. **Recherche de groupe depuis la
+  ville** (30/10, Jules) : bouton dans la barre d'émotes (à la place de l'ancienne émote « ⛏️ On mine ? ») et à côté de
+  « Préparer une session » devant le chevalement / la place ; c'est la recherche du Lobby (`lobby.lfgView` / `toggleLfg`).
   **Direction artistique du Carreau** (29/10, choix de Jules) : « Crépuscule de forge », inspirée de Darkest Dungeon :
   ciel de crépuscule en dégradé, tons sombres, contour noir, lumières orange (vert pour la magie), une silhouette
   propre à chaque bâtiment (sprites de `scripts/gen_town.py`). Ancien (29/10 matin) : maisons génériques en tuiles.

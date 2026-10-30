@@ -1627,7 +1627,7 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    plus zoomé, demande de Jules).
    Ajouts du 29/10 après-midi : group : les membres d'un même groupe se tiennent ensemble sur la place, à ± group cases
    du point du groupe ; emotes : émotes de la promenade (id, icône, nom), visibles emoteMs ms, une toutes les emoteGapMs
-   ms au plus (le serveur revérifie) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
+   ms au plus (le serveur revérifie ; « ⛏️ On mine ? » remplacée le 30/10 par le bouton de recherche de groupe, src/ui/town.js) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
    n°1 du classement GS, bannières des jauges Ange / Démon, feu de camp au milieu) ; statueBoard : classement de la statue. */
 export const TOWN = {
   rows: 16, ground: 12, gap: 3, margin: 7,
@@ -1638,7 +1638,6 @@ export const TOWN = {
   chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },
-    { id:'mine',  icon:'⛏️', name:'On mine ?' },
     { id:'gg',    icon:'🎉', name:'GG' },
     { id:'laugh', icon:'😂', name:'Mdr' },
     { id:'heart', icon:'❤️', name:'Merci' },

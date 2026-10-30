@@ -22,6 +22,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Jules — Chercher un groupe depuis la ville (le Carreau)
+- **Pour le joueur** : plus besoin d'aller dans le Lobby pour chercher un groupe. Dans la promenade du Carreau :
+  - dans la **barre d'émotes**, un bouton groupe remplace l'émote « ⛏️ On mine ? » ; en recherche, il s'allume et affiche
+    le temps d'attente (« 0:46 ») ; un nouveau clic annule ;
+  - **devant le chevalement** (et la place), à côté de « Préparer une session », un bouton « Chercher un groupe (2 en
+    recherche) », puis « En recherche 0:46 · Annuler ».
+  C'est exactement la recherche du Lobby (mine classique) : le Lobby se met à jour, le « ? » doré apparaît au-dessus de
+  ton mineur (et chez les autres), et le « Groupe trouvé » arrive comme d'habitude.
+- **Décisions** : les deux emplacements (choix de Jules) ; l'émote « On mine ? » disparaît (même sens que le bouton).
+  Lancer la recherche depuis la ville passe le Lobby sur la mine classique.
+- **État** : 🧪 sur la branche `jules/carreau-recherche-groupe` (pas en ligne)
+
 ## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
 - **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
   - **Charge** : toutes les 8 s, il **gratte le sol** (il tremble, icône « ! » au-dessus de lui), puis **fonce**. Le

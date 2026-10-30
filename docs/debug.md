@@ -5535,3 +5535,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Mise à jour (même jour, Jules)** : `DUNGEON.boss.hp` 4000 → **2000** (« mob ++ », pas un boss). Mesure au preset acier,
   charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
   2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
+
+## 30/10/2026 — Carreau : recherche de groupe dans la ville (Jules)
+- **Quoi** : bouton de recherche de groupe dans la barre d'émotes de la promenade (à la place de l'émote `mine`, retirée de
+  `TOWN.emotes`) et à côté du bouton « Préparer une session » devant le chevalement et la place (`launchSpot`). Pas de
+  nouvelle route : la ville passe par le Lobby (`lobby.lfgView()` = `lfgState` en mode `MINE_MODES[0]` + `players` +
+  `start` ; `lobby.toggleLfg()` = `POST /api/party/lfg` ou `/lfg/cancel` via `act`, passe le lobby en mine classique si
+  la recherche démarre, renvoie le texte de `#lobbyErr`). Branché dans `src/main.js` (`setupTown(..., { lfg })`).
+- **Fichiers** : `src/ui/town.js` (`lfgButtons`, `launchSpot`, conteneur `.townDoor` à la place de `.townEnter`, message
+  d'erreur `.townLfgMsg` 5 s, `lfg` du mineur local pour son « ? » doré), `src/ui/lobby.js`, `src/main.js`,
+  `src/ui/style.css`, `src/config.js`.
+- **Mise en page** : paysage, la paire de boutons (≈ 510 px) mordait sur le chat replié au-dessus de la barre d'action
+  (fenêtre ≈ 1100 px) : `size()` la décale vers la droite si elle chevauche le chat en hauteur. Portrait : les deux
+  boutons s'empilent sous le bandeau (flex-wrap).
+- **Tests** ✅ `tests/town.test.js` +1 (textes des boutons, `launchSpot`, émote retirée), town + lobby + lfg : 60/60.
+  ✅ Vu à l'écran (mode dev, Test_Mineur, 1100 × 750 et 390 × 800) : lancer depuis le chevalement, Lobby à jour,
+  « ? » doré sur soi, timer, annuler depuis la barre.
+- ⚠️ Points fragiles : `renderLfg` relit `lobby.lfgView()` à chaque image (comparaison par JSON, DOM touché seulement si
+  ça change, soit au plus une fois par seconde pendant une recherche). Un ancien navigateur qui envoie l'émote `mine`
+  reçoit un 400 (sans effet visible : l'émote locale s'affiche quand même).
