@@ -566,7 +566,7 @@ Une jauge par compte qui limite les sessions de mine classique sans quota fixe :
 - **Seuil** *(29/10 ; ancien : le coût tiré devait tenir dans l'énergie restante)* : **dès 6 d'énergie** le lancement réussit toujours ; le coût débité est le coût tiré **plafonné à l'énergie restante** (elle peut tomber à 0). **Sous 6**, le lancement est refusé en nommant les joueurs à court ; rien n'est débité tant que tout le groupe n'a pas assez. Un lancement refusé faute d'énergie **n'arrête pas la prison**.
 - **Pas de remboursement** si l'on quitte la session avant la fin. Un lancement rejoué ne débite qu'une fois (clé = id de session).
 - **Recharge** : seulement en prison, **8 par heure de jeu** (`ENERGY.prisonPerHour`), au prorata du temps de jeu du run, versée à la fin de chaque run et à l'arrêt ; le surplus au-delà de 100 est perdu.
-- **Repère** : à 8 par heure de jeu et 9 en moyenne par session, un joueur qui alterne tient ≈ 11 sessions de mine par jour (≈ 22 en beta, vitesse ×2).
+- **Repère** *(30/10/2026, Geoffrey : recharge 4 par heure de jeu, avant 8)* : à 4 par heure de jeu (8 par heure réelle en beta, vitesse ×2) et 9 en moyenne par session, un joueur qui joue toute la journée tient ≈ 15 sessions de mine par jour en beta (avant ≈ 22) ; au réveil (jauge pleine, 100), ≈ 11 sessions d’affilée, puis une session toutes les ≈ 68 min de prison.
 
 ### Prison (Lobby, « Où miner » → Prison) *(idée de Geoffrey, 29/10/2026 ; valeurs provisoires, `PRISON` en config, `src/sim/prison.js`, `src/shared/prison.js` ; spec `docs/superpowers/specs/2026-10-29-prison-energie-design.md`)*
 Un mode **solo sans fin**, le « farm AFK » : rapporte environ la moitié de la part d'un joueur dans une mine à 3 et recharge l'énergie.

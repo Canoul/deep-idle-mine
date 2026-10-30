@@ -57,7 +57,7 @@ test('creditEnergy', () => {
 });
 
 test('energyOfTicks et publicEnergy', () => {
-  assert.equal(energyOfTicks(36000), 8);
-  assert.equal(energyOfTicks(4500), 1);
+  assert.equal(energyOfTicks(36000), 4, '1 h de jeu : 4 (30/10/2026, avant 8)');
+  assert.equal(energyOfTicks(9000), 1);
   assert.deepEqual(publicEnergy({ value: 42.46, keys: ['a'] }), { value: 42, max: 100 });
 });

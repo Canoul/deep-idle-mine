@@ -22,6 +22,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : énergie, vue et équilibrage
+- **Pour le joueur** : la prison recharge **4 d'énergie par heure de jeu** (8 par heure réelle), et tout le monde part de **0**.
+  La vue de la prison est zoomée sur sa carte (bords comme la mine), elle a le même fond et les mêmes transitions d'onglet
+  que la mine, et le panneau « Butin de la prison (total) » compte tout depuis l'entrée, run en cours compris.
+  Correctifs : golem collé sous la surface (mineur bloqué 3 h), cobalt et thorium qui n'apparaissaient jamais ; minerais
+  de la carte réglés à 51 % d'une mine (vrai profil de canoul).
+- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+
 ## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
 - **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
   rapporté depuis l'entrée (runs, XP, énergie, objets). En sortant, une fenêtre récapitule tout, et la prison apparaît
