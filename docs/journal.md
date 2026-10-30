@@ -20,7 +20,7 @@ Modèle d'entrée :
   Démon n'était que l'Ange recoloré). Rien ne change dans le combat.
 - **Décisions** : direction « guerriers » pour les deux camps (Jules), parmi 3 propositions (guerriers, biblique, style
   actuel amélioré).
-- **État** : 🧪 sur la branche `jules/sprites-ange-demon` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle / ancienne / enregistrée
 - **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (mines 1 à 10), « Ancienne » (mines 11 à 20) ou « Enregistrée » ; le bouton « 💾 Enregistrer » garde la compo affichée (une seule à la fois). Utile après avoir fait monter des amis plus faibles, ou été porté par plus fort.
