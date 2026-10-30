@@ -11,3 +11,6 @@ export function cleanChatText(v){
   const t = v.replace(BAD, ' ').replace(/\s+/g, ' ').trim();
   return t && [...t].length <= CHAT.maxLen ? t : null;
 }
+
+/* messages encore assez récents (moins de CHAT.maxAgeMs à l'instant now) : les plus vieux disparaissent (30/10/2026) */
+export const freshMessages = (msgs, now, maxAge = CHAT.maxAgeMs) => (msgs || []).filter(m => now - m.at < maxAge);

@@ -5536,6 +5536,56 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
   2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
 
+---
+
+## 30/10/2026 — Modération du chat (branche `geoffrey/moderation-chat`)
+- **Quoi** : `server/moderation/words.js` (listes STRICT : cherchées sur les lettres collées, donc même découpées et sur
+  plusieurs messages ; WORD : mot entier sur la forme espacée, pluriels s/x), `server/moderation/filter.js` (normalize :
+  minuscules, accents, leetspeak, homoglyphes cyrilliques, « ! » / « | » = i seulement entre deux lettres, avec la
+  position d'origine de chaque lettre ; findBanned, findJoined (messages précédents du salon < joinWindowMs, les
+  joinMessages derniers), mask), `server/moderation/service.js` (warn / bannedUntil / status / show / unban / forgive /
+  recent ; ns `moderation` du game store, mémoire + fichier + PostgreSQL). `server/game/chat.js` : `post` masque le
+  texte et renvoie `hits` + `original`. `game.chatPost` / `social.chatPost` : `moderation.warn` si hits, `warning` dans la
+  réponse. `server/app.js` : POST refusé (403 `banned`) pour un banni, sauf `/api/account/*` et `/api/admin/*` ; route
+  `GET /api/moderation/me`. `server/main.js` : service créé avant le jeu, `onBan` = `game.prisonStop`. Admin :
+  `POST /api/admin/moderation` (show / unban / forgive / recent), `scripts/moderation.js`. Navigateur :
+  `src/shared/moderation-text.js`, fenêtre d'avertissement (`src/ui/chat.js` onWarning), bandeau `#banBar`
+  (événement `dim:banned` sur toute erreur `banned`, et à chaque `refresh`). Config `MODERATION`.
+- **Tests** : `tests/moderation-filter.test.js` (déguisements, mots coupés, ~20 phrases normales sans faux positif),
+  `tests/moderation.test.js` (avertissement, motif, mot coupé entre deux joueurs, ban au 3e, fin du ban, retirer /
+  lever, joueur banni bloqué en HTTP), `tests/admin-moderation.test.js` ; + chat, social, town, party, game-http,
+  account-http, admin : tout vert ✅. Vérifié dans Chromium : masquage, fenêtre « Avertissement 1/3 », bandeau du ban.
+- **Points fragiles** : faux positifs connus et acceptés : un mot STRICT caché dans un mot anglais rare (« snigger »).
+  Un message masqué APRÈS coup n'existe pas : quand un mot est coupé sur deux messages, seul le nouveau est masqué (le
+  premier morceau, seul, n'est pas interdit). Un ban n'arrête pas une session déjà en cours ni un groupe déjà lancé.
+
+---
+
+## 30/10/2026 — Chat : messages de 18 h ou plus retirés (branche `geoffrey/chat-18h`)
+- **Quoi** : `CHAT.maxAgeMs` (18 h) ; `freshMessages` (`src/shared/chat.js`) ; `server/game/chat.js` : prune retire les
+  vieux messages à chaque message posté, `since` / `room` / `restore` ne renvoient, n'enregistrent et ne reprennent que
+  les récents (numéros conservés) ; `src/ui/chat.js` : filtre à l'ajout et toutes les minutes (horloge du navigateur).
+- **Tests** : `tests/chat.test.js` (nouveau test 18 h), moderation : 22/22 ✅.
+
+## 30/10/2026 — Carreau : recherche de groupe dans la ville (Jules)
+- **Quoi** : bouton de recherche de groupe dans la barre d'émotes de la promenade (à la place de l'émote `mine`, retirée de
+  `TOWN.emotes`) et à côté du bouton « Préparer une session » devant le chevalement et la place (`launchSpot`). Pas de
+  nouvelle route : la ville passe par le Lobby (`lobby.lfgView()` = `lfgState` en mode `MINE_MODES[0]` + `players` +
+  `start` ; `lobby.toggleLfg()` = `POST /api/party/lfg` ou `/lfg/cancel` via `act`, passe le lobby en mine classique si
+  la recherche démarre, renvoie le texte de `#lobbyErr`). Branché dans `src/main.js` (`setupTown(..., { lfg })`).
+- **Fichiers** : `src/ui/town.js` (`lfgButtons`, `launchSpot`, conteneur `.townDoor` à la place de `.townEnter`, message
+  d'erreur `.townLfgMsg` 5 s, `lfg` du mineur local pour son « ? » doré), `src/ui/lobby.js`, `src/main.js`,
+  `src/ui/style.css`, `src/config.js`.
+- **Mise en page** : paysage, la paire de boutons (≈ 510 px) mordait sur le chat replié au-dessus de la barre d'action
+  (fenêtre ≈ 1100 px) : `size()` la décale vers la droite si elle chevauche le chat en hauteur. Portrait : les deux
+  boutons s'empilent sous le bandeau (flex-wrap).
+- **Tests** ✅ `tests/town.test.js` +1 (textes des boutons, `launchSpot`, émote retirée), town + lobby + lfg : 60/60.
+  ✅ Vu à l'écran (mode dev, Test_Mineur, 1100 × 750 et 390 × 800) : lancer depuis le chevalement, Lobby à jour,
+  « ? » doré sur soi, timer, annuler depuis la barre.
+- ⚠️ Points fragiles : `renderLfg` relit `lobby.lfgView()` à chaque image (comparaison par JSON, DOM touché seulement si
+  ça change, soit au plus une fois par seconde pendant une recherche). Un ancien navigateur qui envoie l'émote `mine`
+  reçoit un 400 (sans effet visible : l'émote locale s'affiche quand même).
+
 ## 30/10/2026 — Favicon du site (Jules)
 - **Quoi** : `scripts/gen_favicon.py` (stdlib, grille 16×16 en caractères, palette = `--acc-dk` / `--panel` de
   `src/ui/style.css` + couleurs de `pickaxe_steel`) génère `textures/favicon-16.png`, `-32.png` et `-192.png` (agrandis
