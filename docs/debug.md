@@ -5559,3 +5559,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Un message masqué APRÈS coup n'existe pas : quand un mot est coupé sur deux messages, seul le nouveau est masqué (le
   premier morceau, seul, n'est pas interdit). Un ban n'arrête pas une session déjà en cours ni un groupe déjà lancé.
 
+---
+
+## 30/10/2026 — Chat : messages de 18 h ou plus retirés (branche `geoffrey/chat-18h`)
+- **Quoi** : `CHAT.maxAgeMs` (18 h) ; `freshMessages` (`src/shared/chat.js`) ; `server/game/chat.js` : prune retire les
+  vieux messages à chaque message posté, `since` / `room` / `restore` ne renvoient, n'enregistrent et ne reprennent que
+  les récents (numéros conservés) ; `src/ui/chat.js` : filtre à l'ajout et toutes les minutes (horloge du navigateur).
+- **Tests** : `tests/chat.test.js` (nouveau test 18 h), moderation : 22/22 ✅.
+
