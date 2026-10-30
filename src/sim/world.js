@@ -169,7 +169,7 @@ export function genArea(G,k){
   for(const p of traps) carveTrap(p, (x, ry) => grid[ry*W+x], put, IDS[big]);
   if(dp || traps.length) oreTotal = Object.keys(counts).filter(n=>isOre(IDS[n])).reduce((s,n)=>s+counts[n],0);
   const treasure = placeTreasure(G, k, grid, counts, r);
-  if(!G.noResidues) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10)
+  if(!G.noResidues && !G.prison) placeResidues(G.seed, ck, grid, counts, box ? box.w*AREA_H : grid.length);   // pas de résidus si une tour était ouverte au lancement (23/10), ni en prison (30/10/2026)
   /* k hole (KHOLE) : tirage à part, posé en dernier, hors du donjon et des pièges */
   const kh = placeKhole(G.seed, k, grid, counts, [...(dp ? [{ x0:dp.x0, ry0:dp.ry0, w:DUNGEON.size, h:DUNGEON.size }] : []),
     ...traps.map(p => ({ x0:p.x0, ry0:p.ry0, w:TRAP.w+2, h:TRAP.h+2 }))], G.prison ? PRISON.kholeMul : 1);   // prison : 2 fois moins (29/10)
