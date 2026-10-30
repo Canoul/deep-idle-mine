@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MINE_MODES, ENERGY, PRISON } from '../src/config.js';
-import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError, prisonTotalsLine, prisonProfileText } from '../src/ui/prison.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchCostText, launchPrisonText, readyPrisonText, prisonPollError, prisonTotalsLine, prisonProfileText, prisonOnScreen } from '../src/ui/prison.js';
 import { mineModes, prisonLaunchState } from '../src/ui/lobby.js';
 
 const now = 1_800_000_000_000;
@@ -132,3 +132,13 @@ test('butin de la prison : la ligne des totaux ; le contenu des 10 dernières mi
   const t = prisonProfileText({ n: 10, area: 7, ores: { iron: 0.6, gold: 0.4 }, treasures: { 'Treasure T3': 1 }, mobs: null });
   assert.match(t, /10 dernières mines/); assert.match(t, /area 7/); assert.match(t, /Fer 60 %, Or 40 %/); assert.match(t, /T3 100 %/); assert.match(t, /mobs de l'area/);
 });
+
+test('prison à l'écran : onglet Session ou fond derrière un autre onglet, rien si la page est cachée', () => {
+  const at = o => prisonOnScreen({ shown: true, tab: 'inventaire', backdrop: true, hidden: false, ...o });
+  assert.equal(at({}), true, 'en fond derrière l'inventaire : envois rapprochés');
+  assert.equal(at({ tab: 'session', backdrop: false }), true);
+  assert.equal(at({ backdrop: false }), false, 'option du fond coupée : on ne la voit pas');
+  assert.equal(at({ hidden: true }), false);
+  assert.equal(at({ shown: false }), false);
+});
+

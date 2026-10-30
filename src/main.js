@@ -73,7 +73,7 @@ import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js'
 import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError, moderationApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
 import { warningText, banBarText } from './shared/moderation-text.js';
-import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError } from './ui/prison.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError, prisonOnScreen } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 
 const $ = id => document.getElementById(id);
@@ -645,7 +645,7 @@ async function leave(){
    La prison tourne sur le serveur, même page fermée. L'onglet Session la montre comme une mine (même rendu, mêmes
    panneaux, son bandeau en haut) quand il n'y a pas de session en cours. Le jeu ouvert la redemande au moins toutes les
    PRISON.uiPoll ms (le serveur sait ainsi que le joueur est là, et la fait tourner en direct), toutes les VIEW_EVERY ms
-   quand on la regarde. Bilan d'absence : envoyé une seule fois par le serveur, montré par la réponse qui le porte. */
+   quand on la regarde (onglet Session, ou en fond derrière un autre onglet). Bilan d'absence : envoyé une seule fois par le serveur, montré par la réponse qui le porte. */
 const prisonShown = () => !rec && prisonActive(prison);
 /* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
    Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
@@ -719,7 +719,7 @@ async function pollPrison(){
   }
   finally { prisonBusy = false; }
   if(!prisonActive(prison)) return;
-  kickPrison(again ?? (prisonShown() && ui.tab === 'session' && !document.hidden ? VIEW_EVERY : PRISON.uiPoll));
+  kickPrison(again ?? (prisonOnScreen({ shown: prisonShown(), tab: ui.tab, backdrop: backdrop.on, hidden: document.hidden }) ? VIEW_EVERY : PRISON.uiPoll));
 }
 async function startPrison(opts = {}){
   lobby.error('');

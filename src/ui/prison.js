@@ -107,3 +107,6 @@ export function prisonPollError(e, errors = 1){
   if(e?.code === 'no_session' || e?.code === 'no_prison') return { action: 'refresh' };
   return { action: 'retry', delay: Math.min(PRISON.uiPoll, PRISON.uiRetry * 2 ** Math.max(0, errors - 1)) };
 }
+/* la prison demande ses envois rapprochés : elle est à l'écran, dans l'onglet Session ou en fond derrière un autre onglet
+   (31/10/2026 ; sans cela, le mineur du fond restait figé puis se téléportait à chaque PRISON.uiPoll) */
+export const prisonOnScreen = ({ shown, tab, backdrop, hidden }) => !!shown && !hidden && (tab === 'session' || !!backdrop);
