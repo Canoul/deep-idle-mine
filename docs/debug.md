@@ -5429,6 +5429,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ game-service (test du focus minerai : `FOCUS.ores = true` le temps du test ; nouveau test : flag false → `{ area }`
   seul), focus : 83/83. Docs : GAME_DESIGN (encadré « retiré »), wiki (texte du focus).
 
+<<<<<<< HEAD
+### 30/10/2026 — Fortune et butin en plus à 0 pod
+- `collect(m,name,w,n,free)` (src/sim/mineur.js) : free → `m.free[name] += n`, pas de pods. `uncollect(m,name,w,n)` retire les payants d'abord (vol du gobelin src/sim/mobs.js, dépôt Mule src/sim/mule.js : les gratuits passent sans prendre de place dans le sac de la Mule). Dépôt au coffre : `m.free = {}`.
+- Fortune : `collect(..., extra, true)` ; butin des mobs : `lootCol` (base payante, supplément Pillage/looting gratuit), même ordre de tirages qu'avant.
+- ✅ tests/fortune-pods (nouveau), goblin, mobs, mob-drops, combat, dungeon, khole, loot, mule, prison*, skills* (213/213) ; anticheat 118/118 ; simulate 3 mineurs × 5 : 0 bloquée.
+- ⚠️ Tour : son propre sac (briques), non concerné. Le tableau GS (`Fortune : valeur calculée sans le coût en pods`) est maintenant juste ; à remesurer si besoin.
+=======
 ---
 
 ## 30/10/2026 — Instance : clé prise à la victoire (branche `geoffrey/cle-consommee-victoire`)
@@ -5446,3 +5453,4 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   session à la fois). Si un jour on peut échanger ou recycler une clé, le joueur qui s'en débarrasse pendant l'instance
   n'aura simplement pas de coffre.
 
+>>>>>>> origin/main
