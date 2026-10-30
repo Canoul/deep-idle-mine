@@ -29,18 +29,19 @@ Modèle d'entrée :
     **résistance au recul** (Doc Martins, faites avec son cuir !) réduit la projection. S'il rate et percute le mur, c'est
     **lui qui est sonné 3 s** et prend **+50 % de dégâts**. Le barbare peut couper la charge en l'étourdissant (Dash).
   - **Rage** sous 33 % de ses PV : il frappe deux fois plus vite, repousse plus fort et charge toutes les 5 s.
-  - Le minotaure du donjon passe à **4 000 PV** (avant 1 000). Mesuré avec le **preset acier** (stuff acier, arbre au
-    max, sorts), comme demandé par Geoffrey : à 3 (barbare, mineur, logisticien), le combat dure **environ 50 s** avec
-    **6 charges** (à 2 500 PV et une charge toutes les 12 s : 30 s et 2 charges) ; un barbare seul met environ 2 min 30.
+  - Le minotaure du donjon passe à **2 000 PV** (avant 1 000). Mesuré avec le **preset acier** (stuff acier, arbre au
+    max, sorts), comme demandé par Geoffrey : à 3 (barbare, mineur, logisticien), il tenait **11 s** ; maintenant
+    **environ 22 s**, avec 2 charges ; un barbare seul met environ 1 min 15.
   - **Arène du k hole** : deux minotaures différents (1 000 PV chacun, la carte dure 2 min) : le **Minotaure brun** charge,
     le **Minotaure noir** (nouveau sprite) ne charge pas mais **enrage dès 50 %** et frappe encore plus vite.
 - **Décisions** : Charge + Rage (Jules, sur demande de Geoffrey de « rajouter des effets ») ; un brun et un noir dans
   l'Arène ; on garde le sprite actuel (1 case) ; Geoffrey valide la projection pendant la charge et demande de régler
-  PV et recharge au preset acier : 4 000 PV, charge toutes les 8 s. L'Arène garde 1 000 PV (un mineur seul en acier y
+  PV et recharge au preset acier : charge toutes les 8 s ; 2 000 PV (Jules : c'est un « mob ++ », pas
+  un boss ; 4 000 PV, essayés, le mettaient au niveau des boss des tours). L'Arène garde 1 000 PV (un mineur seul en acier y
   met déjà 1 min 40 sur 2 min). Valeurs provisoires dans `MINOTAUR` (config).
 - **À suivre** : les mineurs n'esquivent pas la charge (l'IA ne change pas) : elle touche presque toujours. Si on veut
   qu'on puisse « la voir venir et l'éviter », il faudra apprendre aux mineurs à s'écarter de sa ligne. À regarder en jeu.
-- **État** : 🧪 sur la branche `jules/minotaure-effets` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
 - **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :

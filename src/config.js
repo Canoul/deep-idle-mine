@@ -1764,7 +1764,7 @@ export const PREF_OPTIONS = {
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
   areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
-  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:4000 },   // 4 000 PV (30/10/2026, Geoffrey et Jules : preset acier à 3 ≈ 50 s ; avant 2 500 le même jour, et 1 000)
+  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:2000 },   // 2 000 PV (30/10/2026, Jules : un « mob ++ », pas un boss ; preset acier à 3 ≈ 22 s, barbare seul ≈ 1 min 13 ; avant 1 000 : 11 s à 3)
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   leather: { item:'Cuir de minotaure', min:1, max:3, tex:'minotaur_leather' },   // en plus des cristaux, même partage (27/10/2026, Geoffrey)
   scaredTime: 15,

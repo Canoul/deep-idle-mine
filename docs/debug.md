@@ -5532,3 +5532,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ minotaur, dungeon (4 000 PV ; tests « oxygène à 0 » et « Fuir » : 15 000 ticks, barbare seul sans stuff
   ≈ 13 min), khole, diagnostics, wiki, spells, combat, effects, view : 138/138. Simulation 3 × 5 (après fusion de main) : areas 3,0,
   profondeur 189,8, 0 bloquée (inchangée).
+- **Mise à jour (même jour, Jules)** : `DUNGEON.boss.hp` 4000 → **2000** (« mob ++ », pas un boss). Mesure au preset acier,
+  charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
+  2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
