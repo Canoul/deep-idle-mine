@@ -22,6 +22,24 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Modération du chat : mots interdits, avertissements, ban de 24 h
+- **Pour le joueur** : dans le chat global et le chat de session, les insultes et injures (racistes, homophobes,
+  sexistes, validistes, incitation au suicide ; français et anglais) sont **remplacées par des astérisques** pour tout le
+  monde. Celui qui écrit reçoit une fenêtre **« Avertissement 1/3 : Insulte »** (le motif change selon le mot). Le filtre
+  voit à travers les déguisements : « n1gg3r », « n i g g e r », « connnnard », lettres cyrilliques, et un mot coupé sur
+  plusieurs messages, même par deux joueurs (« ni » puis « gger » : c'est celui qui complète qui est averti). Les jurons
+  d'humeur (putain, merde, fuck) ne sont pas filtrés. Au **3e avertissement : ban de 24 h**. Le joueur banni peut
+  regarder le jeu mais ne peut plus rien faire (lancer, crafter, écrire…), un bandeau rouge dit jusqu'à quand, et sa
+  prison s'arrête. Wiki à jour.
+- **Pour l'équipe** : `sudo node /opt/deep-idle-mine/scripts/moderation.js --name PSEUDO` montre chaque avertissement
+  (date, salon, motif, mots repérés, le message tel qu'il l'a écrit et tel qu'il a été publié) ; `--recent` les derniers
+  de tout le monde ; `--unban` lève un ban ; `--forgive 2` (ou `all`) retire un avertissement. La liste des mots est dans
+  `server/moderation/words.js`, facile à compléter.
+- **Décisions** (Geoffrey) : 3 avertissements → 24 h. Choix de Claude à valider : seul celui qui complète un mot coupé
+  est averti ; jurons d'humeur non filtrés ; une session déjà lancée va au bout pendant le ban ; les avertissements ne
+  s'effacent pas avec le temps (seulement par un ban, qui remet le compteur à 0, ou à la main).
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
 - **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
   - **Charge** : toutes les 8 s, il **gratte le sol** (il tremble, icône « ! » au-dessus de lui), puis **fonce**. Le

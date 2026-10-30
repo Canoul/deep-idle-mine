@@ -23,7 +23,9 @@
    Prison (ns prison, clé = compte, 29/10/2026) : la prison du joueur, en cours ou la dernière terminée (src/shared/prison.js) ;
    ses runs versés sont retenus par les clés « prison:<id>:<run> » de l'inventaire, de la progression et de l'énergie.
    Chat global (ns chat_global, clé 'state', 28/10/2026) : { next, msgs:[{ id, at, account, name, text }] }, les CHAT.keep
-   derniers messages, gardés pour survivre aux redémarrages (server/social/service.js). */
+   derniers messages, gardés pour survivre aux redémarrages (server/social/service.js).
+   Modération (ns moderation, clé = compte, 30/10/2026) : { warnings:[{ at, channel, motif, words, text, masked, with }],
+   bans:[{ at, until, motif }], bannedUntil, countFrom } (server/moderation/service.js). */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -52,7 +54,8 @@ export function createMemoryGameStore(initial = {}){
   const energies = new Map(Object.entries(initial.energies ?? {}));   // énergie du compte (src/meta/energy.js)
   const prisons = new Map(Object.entries(initial.prisons ?? {}));
   const prisonCompos = new Map(Object.entries(initial.prisonCompos ?? {}));   // compos de prison du compte : { cur, prev, saved } (30/10)     // prison du compte (src/shared/prison.js)
-  const chats = new Map(Object.entries(initial.chats ?? {}));         // chat global du lobby, clé 'state'
+  const chats = new Map(Object.entries(initial.chats ?? {}));
+  const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
   const copy = o => o && structuredClone(o);
 
   const store = {
@@ -165,6 +168,11 @@ export function createMemoryGameStore(initial = {}){
     async getGlobalChat(){ return copy(chats.get('state')) ?? null; },
     async putGlobalChat(c){ chats.set('state', copy(c)); await store.changed([{ ns: 'chat_global', key: 'state', value: c }]); },
 
+    /* modération du chat (30/10/2026) : avertissements et bans d'un compte */
+    async getModeration(accountId){ return copy(moderations.get(accountId)) ?? null; },
+    async listModerations(){ return [...moderations.entries()].map(([account, m]) => ({ account, value: copy(m) })); },
+    async putModeration(accountId, m){ moderations.set(accountId, copy(m)); await store.changed([{ ns: 'moderation', key: accountId, value: m }]); },
+
     /* tableau de bord : lignes de stats ; une ligne déjà écrite n'est jamais remplacée (fin de session rejouée) */
     async putSessionStats(rows){
       const fresh = rows.filter(r => !sessionStats.has(r.key));
@@ -234,7 +242,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), moderations: Object.fromEntries(moderations) }; },
   };
   return store;
 }
@@ -264,12 +272,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'moderation']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global });
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, moderations: rows.moderation });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

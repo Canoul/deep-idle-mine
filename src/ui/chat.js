@@ -13,7 +13,7 @@ const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', mi
 export const stuckToEnd = (el, prev = true, slack = 8) => el.clientHeight ? el.scrollTop + el.clientHeight >= el.scrollHeight - slack : prev;
 
 /* h : { prefix (ids <prefix>Log, Input, Note, Form ; 'chat' par défaut), get(after) → { messages },
-         post(text) → { message }, meId() → ID du compte du joueur,
+         post(text) → { message, warning? }, meId() → ID du compte du joueur, onWarning(warning) : mot interdit (30/10),
          paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages } */
 export function setupChat(h){
   const p = h.prefix ?? 'chat';
@@ -56,7 +56,7 @@ export function setupChat(h){
     const text = cleanChatText(input.value);
     if(!on || busy || text === null) return;
     busy = true;
-    try { add([(await h.post(text)).message]); input.value = ''; note.textContent = ''; }
+    try { const r = await h.post(text); add([r.message]); input.value = ''; note.textContent = ''; if(r.warning) h.onWarning?.(r.warning); }
     catch(err){ note.textContent = err.message; }
     finally { busy = false; }
   };
