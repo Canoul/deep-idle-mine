@@ -4,6 +4,8 @@
    Le service vérifie qui écrit ; ici : texte, cadence, messages gardés. */
 import { CHAT } from '../../src/config.js';
 import { cleanChatText } from '../../src/shared/chat.js';
+import { MODERATION } from '../../src/config.js';
+import { moderate } from '../moderation/filter.js';
 
 /* gapMs : délai entre deux messages d'un même joueur ; ttlMs : un salon sans message depuis ce temps est oublié */
 export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.ttlMs } = {}){
@@ -17,7 +19,10 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
   }
 
   return {
-    /* { msg } ou { error: 'bad_text' | 'too_fast' } ; name : donné par le serveur */
+    /* { msg, hits, original } ou { error: 'bad_text' | 'too_fast' } ; name : donné par le serveur.
+       Modération (30/10/2026) : le texte publié a ses mots interdits masqués, y compris un mot commencé dans les messages
+       précédents du salon (MODERATION.joinMessages, moins de joinWindowMs) ; hits : ce qui a été trouvé (pour l'avertir),
+       original : le texte tel qu'écrit (gardé seulement dans sa fiche de modération). */
     post(roomId, account, name, text){
       const now = clock();
       prune(now);
@@ -26,11 +31,13 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       if(lastBy.has(account)) return { error: 'too_fast' };
       let r = rooms.get(roomId);
       if(!r) rooms.set(roomId, r = { next: 1, msgs: [], at: now });
-      const msg = { id: r.next++, at: now, account, name, text: t };
+      const prev = r.msgs.filter(m => now - m.at <= MODERATION.joinWindowMs);
+      const mod = moderate(t, prev);
+      const msg = { id: r.next++, at: now, account, name, text: mod.text };
       r.msgs.push(msg);
       if(r.msgs.length > CHAT.keep) r.msgs.shift();
       r.at = now; lastBy.set(account, now);
-      return { msg };
+      return { msg, hits: mod.hits, original: t };
     },
     /* messages après le numéro after (0 : tous ceux gardés) */
     since: (roomId, after) => (rooms.get(roomId)?.msgs ?? []).filter(m => m.id > after),

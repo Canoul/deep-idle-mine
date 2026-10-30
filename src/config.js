@@ -1742,6 +1742,14 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
    (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
 export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000 };
 
+/* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
+   remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés
+   depuis le dernier ban) → ban de banMs : plus aucune action de jeu (seulement lire, et se déconnecter), sa prison
+   s'arrête. Mots coupés sur plusieurs messages : les joinMessages derniers messages du salon de moins de joinWindowMs
+   comptent avec le nouveau (« ni » puis « gger », même d'un autre joueur : c'est celui qui complète qui est averti).
+   keep : avertissements et bans gardés par joueur (historique pour la commande scripts/moderation.js). */
+export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, joinWindowMs: 60e3, keep: 50 };
+
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
 export const PREF_OPTIONS = {

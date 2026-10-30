@@ -151,6 +151,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     devCopies = () => ({}),
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
+                                    /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
+                                    moderation = null,
                                     /* annonces Discord (server/social/discord.js) : announce(texte), en tâche de fond */
                                     announce = () => {} }){
   /* copies (copy:<pseudo>) des mineurs de test, rangées dans la session au lancement : { botCopies: [copie | null] } ou rien */
@@ -1173,7 +1175,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const r = chat.post(rec.id, me.id, rec.players.find(p => p.account === me.id).name, body.text);
       if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
       if(r.error === 'too_fast') fail('too_many', 429, 'Doucement : un message par seconde au plus.');
-      return { message: r.msg };
+      /* mot interdit (30/10) : publié masqué, et un avertissement pour son auteur */
+      const warning = r.hits.length && moderation
+        ? await moderation.warn(me.id, { channel: 'session', text: r.original, masked: r.msg.text, hits: r.hits }) : null;
+      return { message: r.msg, ...(warning ? { warning } : {}) };
     },
     /* messages de sa session après le numéro after (absent ou invalide : tous ceux gardés) */
     async chatGet(me, after){

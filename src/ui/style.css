@@ -996,3 +996,7 @@ button.danger{color:var(--bad)}
 .invTab.on{outline:calc(2*var(--u)) solid var(--acc);outline-offset:calc(-1*var(--u));background:var(--sel)}
 .invTab.none:not(.on){opacity:.4}
 .invNone{grid-column:1/-1}
+
+/* modération du chat (30/10) : bandeau du joueur banni, au-dessus de tout */
+.banBar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:calc(3*var(--u)) calc(6*var(--u));background:#5a0f0f;color:#ffd9d9;
+  text-align:center;font-size:calc(9*var(--u));box-shadow:0 calc(var(--u)) 0 #2a0505}

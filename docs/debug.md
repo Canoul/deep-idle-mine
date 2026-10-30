@@ -5535,3 +5535,27 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Mise à jour (même jour, Jules)** : `DUNGEON.boss.hp` 4000 → **2000** (« mob ++ », pas un boss). Mesure au preset acier,
   charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
   2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
+
+---
+
+## 30/10/2026 — Modération du chat (branche `geoffrey/moderation-chat`)
+- **Quoi** : `server/moderation/words.js` (listes STRICT : cherchées sur les lettres collées, donc même découpées et sur
+  plusieurs messages ; WORD : mot entier sur la forme espacée, pluriels s/x), `server/moderation/filter.js` (normalize :
+  minuscules, accents, leetspeak, homoglyphes cyrilliques, « ! » / « | » = i seulement entre deux lettres, avec la
+  position d'origine de chaque lettre ; findBanned, findJoined (messages précédents du salon < joinWindowMs, les
+  joinMessages derniers), mask), `server/moderation/service.js` (warn / bannedUntil / status / show / unban / forgive /
+  recent ; ns `moderation` du game store, mémoire + fichier + PostgreSQL). `server/game/chat.js` : `post` masque le
+  texte et renvoie `hits` + `original`. `game.chatPost` / `social.chatPost` : `moderation.warn` si hits, `warning` dans la
+  réponse. `server/app.js` : POST refusé (403 `banned`) pour un banni, sauf `/api/account/*` et `/api/admin/*` ; route
+  `GET /api/moderation/me`. `server/main.js` : service créé avant le jeu, `onBan` = `game.prisonStop`. Admin :
+  `POST /api/admin/moderation` (show / unban / forgive / recent), `scripts/moderation.js`. Navigateur :
+  `src/shared/moderation-text.js`, fenêtre d'avertissement (`src/ui/chat.js` onWarning), bandeau `#banBar`
+  (événement `dim:banned` sur toute erreur `banned`, et à chaque `refresh`). Config `MODERATION`.
+- **Tests** : `tests/moderation-filter.test.js` (déguisements, mots coupés, ~20 phrases normales sans faux positif),
+  `tests/moderation.test.js` (avertissement, motif, mot coupé entre deux joueurs, ban au 3e, fin du ban, retirer /
+  lever, joueur banni bloqué en HTTP), `tests/admin-moderation.test.js` ; + chat, social, town, party, game-http,
+  account-http, admin : tout vert ✅. Vérifié dans Chromium : masquage, fenêtre « Avertissement 1/3 », bandeau du ban.
+- **Points fragiles** : faux positifs connus et acceptés : un mot STRICT caché dans un mot anglais rare (« snigger »).
+  Un message masqué APRÈS coup n'existe pas : quand un mot est coupé sur deux messages, seul le nouveau est masqué (le
+  premier morceau, seul, n'est pas interdit). Un ban n'arrête pas une session déjà en cours ni un groupe déjà lancé.
+

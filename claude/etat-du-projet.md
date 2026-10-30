@@ -213,6 +213,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
 - **Chat de session** (22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
+- **Modération du chat** (30/10, Geoffrey, branche `geoffrey/moderation-chat`) : mots interdits masqués (global et session,
+  même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action
+  de jeu, prison arrêtée). Liste : `server/moderation/words.js`. Outil : `scripts/moderation.js` (fiche, recent, unban, forgive).
 - **Chat global** (28/10, Jules, en ligne) : carte du **Lobby**, tous les comptes
   (invités compris), en session ou non ; un message / 3 s (`CHAT.globalGapMs`), 50 derniers gardés **en base** (ns
   `chat_global`, survit aux redémarrages) ; `server/social/service.js` (`chatPost` / `chatGet`, `/api/social/chat`), même
