@@ -21,8 +21,13 @@ export async function request(method, path, body){
   const isJson = (res.headers.get('content-type') ?? '').includes('application/json');
   if(!isJson) throw new OfflineError('Pas de serveur de jeu à cette adresse.');
   const data = await res.json();
-  if(!res.ok) throw new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
-                                 +res.headers.get('retry-after') || null);
+  if(!res.ok){
+    const err = new ApiError(res.status, data?.error?.code ?? 'error', data?.error?.message ?? 'Erreur inconnue.',
+                             +res.headers.get('retry-after') || null);
+    /* joueur banni (modération du chat, 30/10) : la page affiche le bandeau, quelle que soit l'action refusée */
+    if(err.code === 'banned' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('dim:banned'));
+    throw err;
+  }
   return data;
 }
 
@@ -102,6 +107,9 @@ export const townApi = {
   ping: body => request('POST', '/api/town', body),
   emote: id  => request('POST', '/api/town/emote', { emote: id }),
 };
+
+/* modération du chat (30/10) : { warnings, max, bannedUntil, motif } */
+export const moderationApi = { me: () => request('GET', '/api/moderation/me') };
 
 export const socialApi = {
   state:   ()   => request('GET', '/api/social'),

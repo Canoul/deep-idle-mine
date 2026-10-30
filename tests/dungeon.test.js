@@ -58,7 +58,7 @@ test('donjon : carré 10×10 de briques incassables, intérieur vide, une seule 
     assert.ok(d.y0>=top+2 && d.y0+S-1<=top+AREA_H-3);
     for(let x=d.x0;x<d.x0+S;x++) assert.ok(Math.abs(x-WINCH.x)>DUNGEON.winchGap, `colonne ${x}`);
     const boss=G.mobs.find(o=>o.id===d.boss);
-    assert.equal(boss.type, 'minotaure'); assert.equal(boss.hp, 1000);
+    assert.equal(boss.type, 'minotaure'); assert.equal(boss.hp, 2000);   // 30/10 : 2 000 PV (avant 1 000)
     assert.ok(interior(d,boss.x,boss.y)); assert.equal(G.tiles[boss.y+1][boss.x], DUNGEON_WALL, 'il est posé sur le sol');
     /* les comptes de l'area suivent ce qui reste vraiment dans la roche */
     const real={}; for(let y=top;y<top+AREA_H;y++) for(const t of G.tiles[y]) if(BLOCKS[t]?.type==='ore'){ const k=Object.keys(IDS).find(n=>IDS[n]===t); real[k]=(real[k]||0)+1; }
@@ -124,7 +124,7 @@ test('oxygène à 0 : le barbare va quand même combattre le boss, et ne remonte
   const { G, d, boss } = scene({ miners:1, trees:['barbare'] });
   const m=G.miners[0]; foundThen(G, d, m);
   let returnedEarly=false;
-  for(let i=0;i<6000 && boss.hp>0;i++){ run(G,1); if(boss.hp>0 && m.mode==='return') returnedEarly=true; }
+  for(let i=0;i<15000 && boss.hp>0;i++){ run(G,1); if(boss.hp>0 && m.mode==='return') returnedEarly=true; }   // 2 000 PV seul, sans stuff : ≈ 6-7 min (30/10)
   assert.equal(returnedEarly, false, 'il n\'a pas remonté');
   assert.ok(boss.hp<=0 && d.barbIn, 'boss vaincu');
   for(let i=0;i<1200 && m.mode!=='return';i++) run(G,1);   // (un mob qui le tacle d'abord : le tacle oblige)
@@ -212,7 +212,7 @@ test('avec un barbare : « Fuir » attend avec les autres mais n\'entre jamais',
   const { G, d, boss } = scene({ miners:2, trees:['barbare', null], prefs:[{}, { fightMobs:'flee' }] });
   const runner=G.miners[1];
   let checked=false;
-  for(let i=0;i<6000 && boss.hp>0;i++){
+  for(let i=0;i<15000 && boss.hp>0;i++){   // 2 000 PV, barbare seul sans stuff : ≈ 6-7 min (30/10)
     run(G,1); assert.ok(!inRoom(d,runner.x,runner.y), 'Fuir est entré');
     if(d.barbIn && boss.hp>0 && !checked){ assert.equal(mayEnter(G,runner,d), false); checked=true; }
   }
@@ -276,7 +276,7 @@ test('effroi passé : il sort du donjon tout seul ; taclé, il se bat (le tacle 
     const m=G.miners[0];
     m.x=boss.x+1; m.y=boss.y; m.scaredIn=d.id; m.scaredUntil=0;   // déjà là depuis plus de 15 s
     run(G,100);
-    assert.equal(boss.grab, m.id); assert.ok(boss.hp<1000, 'il le frappe'); assert.ok(m.y>0, 'pas de fuite hors effroi'); }
+    assert.equal(boss.grab, m.id); assert.ok(boss.hp<DUNGEON.boss.hp, 'il le frappe'); assert.ok(m.y>0, 'pas de fuite hors effroi'); }
 });
 
 /* ---------- butin ---------- */

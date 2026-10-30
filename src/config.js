@@ -743,6 +743,8 @@ export const EFFECTS = {
     taunt:   { name:'Provoqué',  icon:'shout',    color:'#ff8c1a' },
     rage:    { name:'Rage',      icon:'fire',     color:'#e5534b' },
     air:     { name:'En l\'air', icon:'feather',  color:'#d8f0ff' },
+    charge:  { name:'Charge',    icon:'alert',    color:'#ff8c1a' },   // minotaure qui gratte le sol (30/10/2026)
+    exposed: { name:'Vulnérable', icon:'target',  color:'#ffd23f' },   // minotaure sonné après une charge ratée
   },
   /* durée (ms, temps de la page) de l'animation d'un sort sur le perso, et sa couleur (onde qui s'élargit + icône du sort) */
   castAnim: 900,
@@ -757,7 +759,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','key_instance_2','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
@@ -1708,7 +1710,7 @@ export const SOCIAL = { poll:4000, hiddenPoll:20000, onlinePoll:5000 };   // onl
    plus zoomé, demande de Jules).
    Ajouts du 29/10 après-midi : group : les membres d'un même groupe se tiennent ensemble sur la place, à ± group cases
    du point du groupe ; emotes : émotes de la promenade (id, icône, nom), visibles emoteMs ms, une toutes les emoteGapMs
-   ms au plus (le serveur revérifie) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
+   ms au plus (le serveur revérifie ; « ⛏️ On mine ? » remplacée le 30/10 par le bouton de recherche de groupe, src/ui/town.js) ; place : décor de la Place du Carreau (colonnes depuis son bord gauche : statue du
    n°1 du classement GS, bannières des jauges Ange / Démon, feu de camp au milieu) ; statueBoard : classement de la statue. */
 export const TOWN = {
   rows: 16, ground: 12, gap: 3, margin: 7,
@@ -1719,7 +1721,6 @@ export const TOWN = {
   chatMin: 220, chatMax: 360,   // chat global en promenade : largeur (px) ; moins de chatMin à côté de la barre d'action : au-dessus d'elle
   emotes: [
     { id:'wave',  icon:'👋', name:'Salut' },
-    { id:'mine',  icon:'⛏️', name:'On mine ?' },
     { id:'gg',    icon:'🎉', name:'GG' },
     { id:'laugh', icon:'😂', name:'Mdr' },
     { id:'heart', icon:'❤️', name:'Merci' },
@@ -1821,7 +1822,16 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
    Chat global (28/10/2026, Jules) : un seul salon pour tous les joueurs (invités compris), carte du Lobby, mêmes
    maxLen et keep, gardé en base (survit aux redémarrages). globalGapMs : délai minimal entre deux messages d'un joueur
    (plus long : tout le monde le lit). Relu seulement quand l'onglet Lobby est ouvert. */
-export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000 };
+/* maxAgeMs (30/10/2026, Geoffrey) : un message de 18 h ou plus disparaît (serveur et écran), en plus de la limite keep */
+export const CHAT = { maxLen:200, keep:50, gapMs:1000, poll:3000, ttlMs:3*3600e3, globalGapMs:3000, maxAgeMs:18*3600e3 };
+
+/* Modération du chat (30/10/2026, Geoffrey ; server/moderation/) : un mot interdit (server/moderation/words.js) est
+   remplacé par des astérisques et vaut un avertissement à son auteur, avec un motif. warnings avertissements (comptés
+   depuis le dernier ban) → ban de banMs : plus aucune action de jeu (seulement lire, et se déconnecter), sa prison
+   s'arrête. Mots coupés sur plusieurs messages : les joinMessages derniers messages du salon de moins de joinWindowMs
+   comptent avec le nouveau (« ni » puis « gger », même d'un autre joueur : c'est celui qui complète qui est averti).
+   keep : avertissements et bans gardés par joueur (historique pour la commande scripts/moderation.js). */
+export const MODERATION = { warnings: 3, banMs: 24 * 3600e3, joinMessages: 3, joinWindowMs: 60e3, keep: 50 };
 
 /* Préférences de l'IA réglables dans le lobby (« Critères / préférences »), avec leurs valeurs permises.
    Ajouter une préférence = une entrée ici + sa lecture dans l'IA (principe d'architecture n°3). */
@@ -1845,11 +1855,33 @@ export const PREF_OPTIONS = {
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
   areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
-  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:1000 },
+  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:2000 },   // 2 000 PV (30/10/2026, Jules : un « mob ++ », pas un boss ; preset acier à 3 ≈ 22 s, barbare seul ≈ 1 min 13 ; avant 1 000 : 11 s à 3)
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   leather: { item:'Cuir de minotaure', min:1, max:3, tex:'minotaur_leather' },   // en plus des cristaux, même partage (27/10/2026, Geoffrey)
   scaredTime: 15,
   salt: 0x0d06e0,
+};
+
+/* ---- Minotaure : Charge et Rage (30/10/2026, Jules ; src/sim/minotaur.js) — valeurs provisoires ----
+   Charge : dès qu'il a une proie, toutes les every s (la première après first s), il gratte le sol windup s (immobile,
+   il ne frappe pas ; un étourdissement, ex. Dash du barbare, coupe la charge), puis fonce tout droit sur sa ligne vers sa
+   proie, speed cases/s, maxRun cases au plus. Le premier mineur qu'il touche est projeté de knock cases (sa résistance au
+   recul compte) et étourdi stun s (la ténacité l'ignore) ; la charge s'arrête là. S'il percute un obstacle sans avoir
+   touché personne, c'est lui qui est sonné missStun s et prend missVuln de dégâts en plus (+50 %) pendant ce temps.
+   Rage : sous below de ses PV, il frappe toutes les hitEvery s et repousse de knock (au lieu de MOBS.hitEvery et
+   MOBS.knock.minotaure) ; sa charge revient toutes les chargeEvery s.
+   variants : le minotaure du donjon a les deux ; dans l'Arène du k hole, le brun charge et le noir enrage (plus tôt,
+   plus fort) ; rage d'une variante = valeurs qui remplacent celles de rage. */
+export const MINOTAUR = {
+  charge: { every: 8, first: 4, windup: 1.5, speed: 12, maxRun: 12, knock: 3, stun: 2, missStun: 3, missVuln: 0.5 },
+  rage: { below: 0.33, hitEvery: 0.5, knock: 0.5, chargeEvery: 5 },
+  /* 30/10/2026 (Geoffrey : mesurer au preset acier) : charge toutes les 8 s, la première après 4 s, 5 s en rage (avant 12 / 6 / 8) :
+     à 3 en preset acier, 5 charges par combat au lieu de 2 */
+  variants: {
+    donjon: { name: 'Minotaure',      tex: 'minotaur',       charge: true,  rage: {} },
+    brun:   { name: 'Minotaure brun', tex: 'minotaur',       charge: true,  rage: null },
+    noir:   { name: 'Minotaure noir', tex: 'minotaur_black', charge: false, rage: { below: 0.5, hitEvery: 0.4, knock: 0.75 } },
+  },
 };
 
 /* ---- Butin rare des mobs (26/10/2026, Geoffrey ; src/sim/actions.js killMob) ----
@@ -1895,6 +1927,8 @@ export const MOB_DROPS = {
    - filons : spawnCols colonnes de gauche vides, puis comp (% des cases hors arrivée), 1 donjon (DUNGEON), `traps`
      pièges (TRAP, toujours posés) et treasurePct % de treasures (tier de l'area) ;
    - arene : vide, un minotaure (DUNGEON.boss, à découvert) à chaque bout ; fin quand ils sont tous vaincus ;
+     minoVariants : variante de chacun, de gauche à droite (MINOTAUR.variants ; 30/10/2026, Jules : un brun, un noir) ;
+     minoHp : leurs PV (1 000 : la carte dure 2 min ; le minotaure du donjon en a DUNGEON.boss.hp) ;
    - tresor : vide, `treasures` treasures sur la droite, d'un tier tiré au hasard (TREASURE.tiers) ; fin quand ils sont
      tous ouverts ;
    torchEvery : salle éclairée dès l'arrivée, une torche (rayon STATS.torchRadius) toutes les torchEvery colonnes.
@@ -1908,7 +1942,7 @@ export const KHOLE = {
   maps: [
     { id:'filons', label:'Filons', weight:1, duration:300, w:25, h:25, spawn:'left', spawnCols:5,
       comp: { hardstone:37, iron:30, gold:20, graphite:8, diamond:3 }, traps:5, dungeons:1, treasurePct:1 },
-    { id:'arene',  label:'Arène des minotaures', weight:1, duration:120, w:15, h:3, spawn:'middle', minotaurs:2, end:'bosses', seeAll:true, allFight:true, torchEvery:5 },
+    { id:'arene',  label:'Arène des minotaures', weight:1, duration:120, w:15, h:3, spawn:'middle', minotaurs:2, minoVariants:['brun','noir'], minoHp:1000, end:'bosses', seeAll:true, allFight:true, torchEvery:5 },
     { id:'tresor', label:'Salle au trésor', weight:1, duration:120, w:5, h:3, spawn:'left', treasures:2, end:'treasures', torchEvery:5 },
     { id:'vagues', label:'Vagues', weight:1, duration:180, w:15, h:3, spawn:'middle', wave:5, seeAll:true, allFight:true, torchEvery:5 },
   ],

@@ -18,6 +18,7 @@ const STUN_SRC = {
   hex:   'Canalisation de l\'occultiste',
   quake: 'Ébranlement du golem',
   land:  'Atterrissage du boss de la tour',
+  gore:  'Charge du minotaure',
 };
 
 /* bulle d'un état : « Titre\nligne\nligne » (format data-tip) */
