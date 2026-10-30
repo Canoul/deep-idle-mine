@@ -59,8 +59,8 @@ test('creditXp : une session n\'est comptée qu\'une fois ; quantités invalides
   for(const bad of [-1, 1.5, NaN, Infinity, '5', null]) assert.equal(creditXp(p, 's2', bad), false);
   assert.equal(creditXp(p, '', 5), false);
   assert.equal(p.xp, 500);
-  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, spec:{}, credited:[] });
-  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, spec:{}, credited:[] });
+  assert.deepEqual(sanitizeProgress({ xp:-3, credited:'x' }), { xp:0, spec:{}, credited:[], areaMax:0 });
+  assert.deepEqual(sanitizeProgress({ xp:1.5 }), { xp:0, spec:{}, credited:[], areaMax:0 });
 });
 
 /* ---------- XP de spécialisation ---------- */

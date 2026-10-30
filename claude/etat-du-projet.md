@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 30/10/2026 (stèles des tours : Exorcisme et Pacte).*
+*Dernière mise à jour : 30/10/2026 (prison et énergie en ligne ; voir aussi les entrées du 30/10).*
 
 ---
 
@@ -41,6 +41,29 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
+
+- **Énergie** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `ENERGY`, `src/meta/energy.js`) : jauge par
+  compte 0 à 100, départ 100. Lancer une **mine classique** coûte un entier tiré par le serveur dans [6, 12] par joueur (bots
+  et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
+  refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
+  plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
+  `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Carte 25 × 50
+  (une area ; **contenu = profil des 10 dernières mines classiques** du joueur, figé au lancement, `src/meta/prison-profile.js` :
+  area moyenne atteinte, répartition des minerais, tiers des treasures, types de mobs tués (kills par type enregistrés depuis le
+  29/10) ; ancien : area max débloquée, puis area au choix ; mode dev : area au choix et vitesses ×1-×300), barreaux de chaque côté,
+  treuil du logisticien posé dès le début du run (29/10 ; ancien : pas de treuil), mobs × 3 moins souvent, pièges et k hole × 0,5
+  (29/10 ; ancien : pas de k hole), pas de shrines ni Gallianix, donjon à gauche
+  du puits (`dungeonWinchGap` 3). Minerais × `oreMul` 0,52 (pris sur pierre, terre, pierre dure) : mesuré à 0,48 (acier) et 0,43 (fer)
+  de la part d'un joueur d'une mine à 3, en poids de minerais ; treasures et butins rares × 0,5 ; run fini à 80 % des minerais (ou 3 h de
+  jeu) : remontée, coffre versé (clé `prison:<id>:<run>`), XP et énergie, run suivant. Résidus dans l'inventaire sans jauges du Jugement
+  ni Discord. Arrêt (bouton, ou lancement d'une mine / tour / instance) : coffre versé, pas le sac. Rythme : en direct quand le jeu est
+  ouvert (`uiPoll` 15 s), sinon paquets toutes les 10 min réelles dès 10 min après la dernière visite, pause après 24 h sans visite, reprise
+  sans rejouer l'attente ; seule la vue de la prison rattrape (`state()` note la présence). Coût serveur : ≈ 7 min de jeu calculé par joueur et
+  par jour à ×2, plus les rejeux d'un run depuis son début à chaque paquet : ≈ ×1,5 en moyenne (≈ 10 min), jusqu'à ≈ ×9 pour un
+  run qui va jusqu'à `runMax` ; un seul paquet d'absent à la fois (`batchConcurrency`). Moteur qui plante sur un run : arrêt et
+  lancement passent quand même, prison arrêtée au bout de `crashMax` plantages. Le groupe voit qui a une prison en cours :
+  « Je suis prêt » / « Prêt tout le temps » et le lancement du chef demandent confirmation.
 
 - **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
   `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une
@@ -478,7 +501,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
-- Fondations : pas encore.
-- Sorts : déblocage des emplacements 3 et 4, source des parchemins (butin ? craft ?) et récompense des niveaux de
-  spécialisation autres que les sorts : à décider (24/10).
-- `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.
+- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
+  pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
+  heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
+  canoul, `scripts/simulate-prison-profile.js`), treasures ≈ 28 % (validé par Geoffrey) ; vue zoomée bornée aux colonnes
+  entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».
+  Correctifs : golem collé sous la surface (arrêt net seulement sous terre), minerais rares arrondis au hasard en prison.
+  **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).

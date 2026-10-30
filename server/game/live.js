@@ -6,7 +6,7 @@
    - createInlineRunner() : dans le fil principal (tests, et petit outil de diagnostic).
    Interface : open(record) · has(id) · advance(id, tick) · leave(id, compte) → tick · focus(id, compte, focus) → tick
                khole(id, carte) → { tick, ok } (k hole imposé, administration)
-               finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
+               finish(id) · view(id, since) → envoi pour les navigateurs (src/shared/view.js) · info(id) → avancement (prison) · close(id) · size. Toutes les demandes d'une partie passent dans l'ordre. */
 import { Worker } from 'node:worker_threads';
 import { createLiveGame } from './live-game.js';
 
@@ -22,7 +22,12 @@ function createRunner(spawn, onEnd){
     g.ended = false;
     let tail = Promise.resolve();
     g.queue = (op, ...args) => {
-      const run = tail.then(() => g.call(op, ...args)).then(({ value, state }) => {
+      /* une demande en file derrière celle qui a terminé (ou fermé) la partie : rejetée, sinon elle attendrait pour
+         toujours un fil d'exécution arrêté */
+      const run = tail.then(() => {
+        if(games.get(record.id) !== g) throw new Error(`partie ${record.id} fermée`);
+        return g.call(op, ...args);
+      }).then(({ value, state }) => {
         g.tick = state.tick;
         if(state.over && !g.ended){ g.ended = true; close(record.id); onEnd(record.id, state.summary); }
         return value;
@@ -46,6 +51,7 @@ function createRunner(spawn, onEnd){
     khole:   (id, map) => get(id).queue('khole', map),
     finish:  id => get(id).queue('finish'),
     view:    (id, since) => get(id).queue('view', since),
+    info:    id => get(id).queue('info'),
     closeAll(){ for(const id of [...games.keys()]) close(id); },
   };
 }
@@ -68,7 +74,8 @@ export function createLiveRunner({ onEnd = () => {} } = {}){
       call: (op, ...args) => dead ? Promise.reject(dead) : new Promise((resolve, reject) => {
         const id = next++; waiting.set(id, { resolve, reject }); w.postMessage({ id, op, args });
       }),
-      stop: () => { w.removeAllListeners('exit'); w.terminate(); },
+      /* arrêt : les demandes en cours sont rejetées, les suivantes aussi */
+      stop: () => { w.removeAllListeners('exit'); die(new Error('partie fermée')); w.terminate(); },
     };
   }, onEnd);
 }
@@ -78,7 +85,7 @@ export function createInlineRunner({ onEnd = () => {} } = {}){
   return createRunner(record => {
     const game = createLiveGame(record);
     const ops = { advance: t => game.advance(t), leave: a => game.leave(a), focus: (a, f) => game.focus(a, f), khole: map => game.khole(map), finish: () => game.finish(),
-                  view: since => game.view(since) };
+                  view: since => game.view(since), info: () => game.info() };
     return {
       tick: 0,
       call: async (op, ...args) => ({ value: ops[op](...args),

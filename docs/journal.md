@@ -38,6 +38,74 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : énergie, vue et équilibrage
+- **Pour le joueur** : la prison recharge **4 d'énergie par heure de jeu** (8 par heure réelle), et tout le monde part de **0**.
+  La vue de la prison est zoomée sur sa carte (bords comme la mine), elle a le même fond et les mêmes transitions d'onglet
+  que la mine, et le panneau « Butin de la prison (total) » compte tout depuis l'entrée, run en cours compris.
+  Correctifs : golem collé sous la surface (mineur bloqué 3 h), cobalt et thorium qui n'apparaissaient jamais ; minerais
+  de la carte réglés à 51 % d'une mine (vrai profil de canoul).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
+- **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
+  rapporté depuis l'entrée (runs, XP, énergie, objets). En sortant, une fenêtre récapitule tout, et la prison apparaît
+  dans l'**Historique**. La prison rapporte de nouveau environ la moitié d'une mine à 3 (avec 3 fois moins de mobs,
+  elle en rapportait 87 % : moins de minerais sur la carte, 0,30 au lieu de 0,52).
+- **À suivre** : mesure bruitée (5 chaînes, acier seulement) : à refaire plus large avant la mise en ligne.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
+- **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
+  classiques : leur **area moyenne** (pierre, mobs, pièges, donjon), la **répartition de tes minerais**, les **tiers de tes
+  treasures** et les **mobs que tu as tués**. Figé jusqu'à ta sortie. Sans mine derrière soi : l'area 1. Plus de liste
+  « Area » (même en dev) : le lobby affiche ce que la prison contiendra, en %. Pièges et k hole 2 fois plus rares qu'en mine (le k hole n'existait pas en prison).
+- **Décisions** : moins de 10 mines → celles qu'on a ; kills par type enregistrés à partir de maintenant (en attendant,
+  les mobs de l'area moyenne) ; total de minerais inchangé (× oreMul), seule la répartition suit l'historique.
+- **À suivre** : ni simulé ni testé (demande de Geoffrey) ; rendement à recaler (oreMul) ; tests de la prison à mettre à jour.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : choisir son area ; vitesses du mode dev
+- **Pour le joueur** : avant d'entrer en prison, une liste **Area** (à côté du bouton) permet de choisir le contenu de la
+  carte, de l'area 0 jusqu'à sa plus profonde area débloquée (par défaut la plus profonde). Elle reste la même pour toute
+  la prison. **Mode dev** : toutes les areas au choix, et les boutons ×1 à ×300 accélèrent la prison en direct.
+  **Mobs** : 3 fois moins d'apparitions en prison (on y est seul : c'est le rythme d'un mineur dans une mine à 3).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
+- **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
+  en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le
+  niveau d'un vrai joueur. Premiers : Test_Canoul et Test_Mus (mot de passe preset1234). Les mêmes copies sont aussi au
+  choix pour les **mineurs de test** du panneau dev du lobby (« 👤 Test_Canoul (copie) »), à côté des 3 presets acier, et
+  pour **son propre mineur** (ligne « Ton preset » : on garde son nom, l'XP et le butin restent à son compte).
+- **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
+  ne sont pas visibles, on lui met ceux de sa spé.
+- **État** : ✅ en ligne le 30/10 (outil local seulement)
+
+## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
+- **Pour le joueur** : deux nouveautés liées.
+  - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur
+    du groupe). À partir de 6 on peut toujours lancer : si le coût tiré dépasse ce qui reste, on paie le reste et on tombe à 0.
+    En dessous de 6, lancement refusé (le groupe voit qui est à court). Rien d'autre ne coûte d'énergie. Pas de coût en mode dev.
+  - **Prison** : un mode solo sans fin (Lobby, « Où miner » → Prison). Petite mine de 25 × 50 entre deux rangées de barreaux, au
+    contenu de la plus profonde area débloquée, avec moins de minerais et deux fois moins de treasures et de butins rares.
+    Quand 80 % des minerais sont minés, le mineur remonte déposer, le coffre va dans l'inventaire et une carte neuve repart.
+    Elle recharge l'énergie (8 par heure de jeu). Elle tourne en direct quand le jeu est ouvert (le jeu redemande sa
+    prison toutes les 15 s), et **hors ligne** par paquets toutes les 10 min réelles, en pause après 24 h sans visite
+    (sans rejouer les heures d'attente). Au retour : un bilan « pendant ton absence ». « Sortir de prison », ou lancer une mine /
+    une tour / une instance, l'arrête (le coffre est versé, pas le sac du mineur).
+- **Décisions** : la taille de la carte ne bouge pas, on règle la part de minerais (`oreMul` 0,52 : acier ≈ 0,48 et fer ≈ 0,43
+  de la part d'un joueur dans une mine à 3, en poids de minerais ; c'est provisoire). Dans la prison, le donjon est à gauche du puits
+  (pas de place à droite). Un logisticien qui a le Treuil l'installe dès le début de chaque run : il remonte et redescend plus vite. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
+  ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
+- **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
+  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, ≈ 10 min avec les
+  rejeux (jusqu'à ≈ ×9 pour un run très long) ; un seul paquet hors ligne calculé à la fois. À surveiller si beaucoup
+  de joueurs la laissent tourner.
+- **Relecture finale (29/10)** : dans un groupe, celui dont la prison tourne doit confirmer avant « Je suis prêt » ou
+  « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
+  si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Pièces en mithril : 2 fois plus de lingots de mithril
 - **Pour le joueur** : casque, plastron, jambes et bottes en mithril coûtent 2 fois plus de Mithril ingot : 30, 48, 42
   et 32 (avant 15, 24, 21 et 16). Le reste de la recette ne change pas.

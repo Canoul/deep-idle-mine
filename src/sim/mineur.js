@@ -1,9 +1,17 @@
 /* Le mineur : création, caractéristiques dérivées (lumière, vitesses), actions à durée, inventaire.
    Nommé mineur.js et pas miner.js : les bloqueurs anti-minage de cryptomonnaie (liste NoCoin, active par défaut
    dans Opera GX) bloquent tout fichier « /miner.js », et le jeu entier ne démarre plus. Ne pas le renommer. */
-import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS } from '../config.js';
+import { STATS, CFG, BLOCKS, PREFS, SPAWN_X, SKILLS, WINCH, GLYPHS, SESSION_LEN } from '../config.js';
 import { lumAt } from './light.js';
 import { cleanRings } from './effects.js';
+
+/* temps de jeu restant avant la fin (s) : la fin de session, ou G.endAt (prison : Infinity pendant le run, l'heure de
+   la fin de run une fois le but atteint ; src/sim/prison.js) */
+export const timeLeft = G => (G.endAt ?? SESSION_LEN) - G.t;
+/* temps restant pour TRAVAILLER (miner, repartir, prolonger le treuil) : timeLeft, sauf en fin de run de prison
+   (G.prison.recall) où il vaut 0 ; timeLeft garde alors le budget de la remontée (PRISON.returnMax), pour que le porteur
+   de la Mule passe prendre son sac */
+export const workLeft = G => G.prison?.recall ? Math.min(0, timeLeft(G)) : timeLeft(G);
 
 const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => [n.id, 0])));
 
@@ -50,7 +58,7 @@ export function createMiner(id, opts={}){
        appris par Fast learner ({ id de bloc: bonus de vitesse }) ; voir src/sim/spells.js */
     spells: Array.isArray(opts.spells) ? [...opts.spells] : [], spellCd: {}, learned: {},
     stats: { mined:0, ore:0, kills:0, trips:0, falls:0, tackled:0, maxDepth:0, treasures:0, stolen:0, xp:0, stuns:0,
-             hitTime:0 },   // hitTime : secondes passées à frapper un mob (tableau de bord de l'équipe)
+             hitTime:0, killsBy:{} },   // hitTime : secondes passées à frapper un mob (tableau de bord de l'équipe) ; killsBy : mobs tués par type (29/10, composition de la prison)
     fall:null,                      // chute en cours : { y0 : ligne de départ, blind : trou pas découvert }
   };
 }

@@ -29,6 +29,7 @@
   <a href="#bloc">Le Bloc géant</a>
   <a href="#instances">Les instances</a>
   <a href="#shrines">Les shrines</a>
+  <a href="#prison">La prison et l'énergie</a>
   <a href="#roigobelin">Le Roi Gobelin</a>
   <a href="#ange">Ange contre Démon</a>
   <a href="#objets">Les objets</a>
@@ -138,7 +139,7 @@
   <h1>Les onglets</h1>
   <p>La <b>barre d'action en bas</b> de l'écran donne accès à tout (touches <b>1 à 9, 0, -, = et ²</b> ; <b>Échap</b> quitte l'onglet ouvert et ramène à l'onglet Session : la mine en cours, ou la promenade dans le Carreau). De chaque côté, deux <b>orbes</b> : le temps de session et ton XP, ou, pendant une session, l'oxygène et les pods de ton mineur. Changer d'onglet ne met pas la session en pause : la mine continue de tourner.</p>
   <div class="tabs">
-    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
+    <div class="tabcard"><h3>🏠 Lobby</h3><p>Ton groupe, tes invitations, ta spécialisation, les préférences de ton mineur, <b>où miner</b> (la <b>Mine</b>, l'inscription à la <a href="#mi">Mine instantanée</a>, le <a href="#bloc">Bloc géant</a>, les <a href="#instances">instances</a>, la <a href="#prison">Prison</a>, les jauges du <a href="#ange">Jugement</a> et les tours quand elles sont ouvertes) et le bouton <b>Lancer</b>. Pendant une session, il reste visible mais en lecture seule (on peut quand même regarder la Mine instantanée et le Bloc géant).</p></div>
     <div class="tabcard"><h3>⛏ Session</h3><p>La mine en direct, en entier au centre, avec une <b>jauge de profondeur</b> (un repère par mineur) ; autour : ton équipe, le coffre, les panneaux Focus et le journal. Puis le bilan à la fin. Au lancement, tout le groupe y arrive automatiquement.</p></div>
     <div class="tabcard"><h3>🎒 Inventaire</h3><p>Tout ce que tu possèdes. Clique un objet pour voir sa fiche : tu peux y <b>ouvrir</b> un treasure (ou <b>tous</b> d'un coup avec « Ouvrir tout »), <b>utiliser</b> un blueprint ou un Four en fer, ou <b>équiper</b> une pièce de stuff, ou <b>recycler</b> une pièce fabriquée (elle est détruite et rend 60 % de sa recette, arrondi vers le bas ; une pièce du <a href="#mobs">butin rare</a> rend des matériaux fixes ; une <b>rune</b> rend 8 à 12 Poudre de rêve, un fragment de rune 1 à 6 ; pas une pièce portée ni enregistrée dans un set). Les nouveaux objets brillent d'un halo blanc. Le bouton <b>Trier</b> range tout par type (blocs, minerais, matériaux, stuff…) puis du plus rare au plus commun ; tu peux aussi <b>glisser</b> un objet dans un autre slot.</p></div>
     <div class="tabcard"><h3>🛡 Stuff</h3><p>Les <b>12 cases d'équipement</b> de ton mineur (casque, torse, jambes, pieds, gants, ceinture, pioche, épée, cape, boussole et <b>2 <a href="#anneaux">anneaux</a></b>) et le détail de ses stats. Un changement compte pour la <b>prochaine</b> session. À gauche, tes <a href="#sets">sets</a>.</p></div>
@@ -261,6 +262,28 @@
     <li><b>Shrine d'abondance</b> : <b>5 % de minerais en plus</b> dans toutes les areas. Une partie de la pierre et de la terre devient du minerai, au prorata de chaque minerai de l'area (charbon compris). Prix : <b>10 Pépites d'argent</b> (Bloc géant) et <b>20 Résidus angéliques</b>. Actif <b>5 sessions</b>.</li>
     <li><b>Stèle d'exorcisme</b> (Tour du Démon) et <b>Stèle du pacte</b> (Tour de l'Ange) : prix <b>240 Stonebricks</b> de l'autre camp (angéliques pour l'Exorcisme, démoniaques pour le Pacte). Elles comptent quand le chef lance une <b>tour de leur camp</b> (actives <b>3 tours</b>). Quand le boss meurt, le boss de l'autre camp <b>s'écrase sur le toit</b> : tout le monde est projeté en bas, le <b>treuil est brisé</b>, et <b>5 mobs de l'autre camp</b> (150 % de PV) envahissent chaque étage. Le nouveau boss a <b>150 % de PV</b>. Même chrono : il faut le tuer pour gagner. Récompense : un <b>trésor béni</b>, avec <b>deux fois plus de chances d'anneau</b>.</li>
   </ul>
+</section>
+
+<section id="prison">
+  <h1>La prison et l'énergie</h1>
+  <p class="lead">Une mine solo sans fin qui tourne même quand tu n'es pas là, et la jauge d'énergie qui limite les mines classiques.</p>
+  <h2>L'énergie</h2>
+  <ul>
+    <li>Une jauge de <b>0 à <span id="w-energy-max"></span></b> par compte, pleine au départ, affichée dans la barre du haut.</li>
+    <li>Lancer une <b>mine classique</b> coûte <b><span id="w-energy-cost"></span> d'énergie</b> (tirée au hasard par le serveur, pour chaque joueur du groupe). Dès qu'il te reste au moins <span id="w-energy-min"></span>, tu peux lancer : si le coût tiré dépasse ce qui reste, tu paies le reste et tu tombes à 0. En dessous, le lancement est refusé (le groupe est prévenu de qui est à court) et rien n'est débité.</li>
+    <li>Rien d'autre ne coûte d'énergie (mine instantanée, tours, instances, Bloc géant). Quitter une session avant la fin ne rembourse pas.</li>
+    <li>L'énergie <b>se recharge seulement en prison</b> : <b><span id="w-energy-regen"></span> par heure de jeu</b> passée en prison (au maximum, le surplus est perdu).</li>
+  </ul>
+  <h2>La prison</h2>
+  <ul>
+    <li>Lobby, « Où miner » → <b>Prison</b> (solo : impossible dans un groupe de plusieurs joueurs). Tu la lances une fois ; elle tourne jusqu'au bouton <b>Sortir de prison</b>.</li>
+    <li>Une petite mine de <b><span id="w-prison-size"></span></b> bordée de barreaux incassables, avec un contenu qui ressemble à <b>tes 10 dernières mines</b> : leur area moyenne (pierre, mobs, pièges, donjon), la même répartition de minerais que dans ta part du butin, les mêmes tiers de treasures, les mêmes mobs que ceux que tu as tués. Il est calculé quand tu entres en prison et reste le même jusqu'à ce que tu en sortes. Sans mine classique derrière toi : le contenu de l'area 1. Elle a <b>moins de minerais</b> que la mine et ses <b>treasures et butins rares sont deux fois moins fréquents</b>. Un panneau <b>Butin de la prison</b> additionne tout ce que tes runs ont rapporté ; en sortant, une fenêtre récapitule tout, et la prison reste dans ton <b>Historique</b>. Les mobs y apparaissent <b>3 fois moins souvent</b> (tu es seul), les pièges et le k hole sont <b>2 fois plus rares</b>. Pas de shrines. Un logisticien qui a le Treuil l'installe dès le début.</li>
+    <li>Quand <b><span id="w-prison-reset"></span> des minerais</b> sont minés (ou après <span id="w-prison-max"></span> h de jeu), ton mineur remonte tout déposer : le coffre va dans ton inventaire, tu gagnes l'XP et l'énergie du run, puis une carte neuve recommence. Sortir de prison verse le coffre du run en cours, <b>pas le sac</b> du mineur.</li>
+    <li>Ça rapporte environ <b>la moitié de la part d'un joueur dans une mine à 3</b>, en minerais. Les résidus minés en prison vont dans ton inventaire mais ne remplissent pas les jauges du Jugement.</li>
+    <li><b>Hors ligne</b>, elle continue : le serveur joue les runs par paquets, environ toutes les 10 minutes réelles. Après <b><span id="w-prison-offline"></span> h</b> sans que tu ouvres le jeu, elle se met en pause ; à ton retour elle repart sans rejouer les heures d'attente, avec un petit bilan « pendant ton absence ».</li>
+    <li>Pendant la prison tu peux former un groupe, jouer à la mine instantanée et entrer au Bloc géant : elle continue. <b>Lancer une mine classique, une tour ou une instance l'arrête</b> (coffre versé, pas le sac).</li>
+  </ul>
+  <p class="tip">💡 La boucle : mine en groupe pour gagner le plus, prison entre deux sessions pour recharger l'énergie et remplir l'inventaire.</p>
 </section>
 
 <section id="instances">

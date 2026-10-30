@@ -717,3 +717,14 @@ test('drop des glyphes : au lancement, les glyphes possédés (inventaire + pos�
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].owned.sort(), ['Glyphe Force brute', 'Glyphe Pillage']);
 });
+
+test('vue d\'une session en file derrière l\'avance qui la termine (partie fermée entre-temps) : settling, pas d\'erreur', async () => {
+  const me = { id: 'VVVV1111', name: 'Vue' };
+  const fake = fakeLive(() => ({ shares: [] }));
+  /* la partie se termine juste avant que la vue passe : le moteur la ferme et rejette la vue en file */
+  const liveRunner = opts => { const l = fake(opts); l.view = async id => { l.close(id); throw new Error(`partie ${id} fermée`); }; return l; };
+  const game = createGameService({ store: createMemoryGameStore(), liveRunner, randomSeed: () => 99 });
+  await game.start(me, {});
+  const v = await game.view(me, null);
+  assert.equal(v.view, null); assert.equal(v.status, 'settling');
+});

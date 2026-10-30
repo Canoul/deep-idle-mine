@@ -68,6 +68,13 @@ export const gameApi = {
   upgrade: op          => request('POST', '/api/game/upgrade', op),           // { action:'identify', uid, sacrifice, opId } | { action:'upgrade', uid, opId }
   /* la partie du serveur (affichage) : depuis le tick since déjà reçu (null : tout) */
   view:   since        => request('GET', '/api/game/view' + (since == null ? '' : '?since=' + since)),
+  /* prison (29/10) : lancer (seul : refus not_solo dans un groupe de plusieurs), sortir, la regarder (vue de la mine du
+     run en cours depuis le tick since ; le serveur joue le retard avant de répondre) → { prison, view } */
+  prisonStart: (opts = {}) => request('POST', '/api/game/prison/start', opts),   // { area, speed (dev) }
+  prisonProfile: ()    => request('GET', '/api/game/prison/profile'),            // { profile } : contenu d'après les 10 dernières mines
+  prisonClock: speed   => request('POST', '/api/game/prison/clock', { speed }),  // mode dev : vitesse de la prison
+  prisonStop:  ()      => request('POST', '/api/game/prison/stop', {}),
+  prisonView:  since   => request('GET', '/api/game/prison' + (since == null ? '' : '?since=' + since)),
   clock:  opts         => request('POST', '/api/game/clock', opts),      // dev : { speed, paused }        // { action:'equip'|'unequip', slot, uid, opId }   // { action, furnace, slot, item, qty, opId }
 };
 

@@ -51,7 +51,7 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const PIECES = ['Casque', 'Plastron', 'Jambes', 'Bottes'];
   const T4 = { 'Mithril ingot':'inhabituel', 'Refined cobalt':'inhabituel', 'Refined thorium':'inhabituel', 'Cobalt ingot':'rare', 'Thorium ingot':'rare',
     'Topaze':'rare', 'Saphir':'rare', 'Rubis':'rare', 'Jade':'rare', 'Saphir BP':'rare', 'Rubis BP':'rare', 'Jade BP':'rare',
-    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
+    'Clé d\'instance I BP':'inhabituel', 'Cuir de minotaure':'rare', 'Poudre de rêve':'rare', 'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
     ...Object.fromEntries(PIECES.flatMap(p => [[`${p} en mithril`, 'inhabituel'], [`${p} en mithril BP`, 'inhabituel'],
       [`${p} en thorium`, 'rare'], [`${p} en thorium BP`, 'rare'], [`${p} en cobalt`, 'rare'], [`${p} en cobalt BP`, 'rare']])),
     ...Object.fromEntries(['Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])) };

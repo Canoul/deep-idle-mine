@@ -84,3 +84,16 @@ test('caméra zoomée : suit le mineur aussi à l\'horizontale ; glissée, elle 
   assert.equal(cam.free, true); assert.equal(cam.x, 0);
   cam.pan(0, LAST, 3); assert.equal(cam.x, 3);
 });
+
+test('prison (30/10/2026) : caméra bornée aux colonnes entre les barreaux, zoom minimal = elles remplissent la largeur', () => {
+  const c = createCamera(34);
+  c.setBox({ x0: 13, x1: 37 });                       // 25 colonnes sur 50
+  assert.equal(c.zoom, 2);
+  for(let i = 0; i < 200; i++) c.update(10, 100, 13);  // mineur au bord gauche
+  assert.ok(Math.abs(c.x - 13) < 1e-6, `bord gauche de la carte au bord de l'écran (x ${c.x})`);
+  for(let i = 0; i < 200; i++) c.update(10, 100, 37);
+  assert.ok(Math.abs(c.x - 13) < 1e-6, '25 colonnes visibles : la carte ne défile pas');
+  c.zoomBy(0.5); assert.equal(c.zoom, 2, 'pas de dézoom sous la largeur de la carte');
+  c.zoomBy(2); assert.equal(c.zoom, 4); c.pan(0, 100, 50); assert.ok(c.x <= 38 - 50 / 4 + 1e-9, 'jamais au-delà des barreaux');
+  c.setBox(null); assert.equal(c.zoom, 1); assert.equal(c.x, 0);
+});

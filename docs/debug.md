@@ -5124,3 +5124,239 @@ Règles (voir CLAUDE.md) :
 - Lobby : carte Shrines aussi dans le lobby d'une tour (ses stèles) ; la mine les montre toutes. Case « Stèle du camp » en mode dev. `npm run simulate:tower -- --stele` (+ compo e, équipe 2,5 / 40).
 - Tests : `tests/stele.test.js` (5), shrines, tour, trésors, lobby ✅ ; anticheat ✅. ⚠️ Pas vu à l'écran (pas de navigateur) : affichage du 2e boss et des mobs de l'autre camp, carte Shrines dans le lobby d'une tour. ⚠️ Mobs de la phase 2 : avec `TOWER.mobs.descend`, ils descendent presque tous à l'étage 0 vers les mineurs tombés (vague au pied de la tour).
 
+## 29/10/2026 — Prison : rendement vs mine à 3 (simulate:prison) (Geoffrey, branche geoffrey/prison) 🧪
+- `scripts/simulate-prison.js` (`npm run simulate:prison`) : chaînes de runs de prison par heure de jeu contre la part d'un joueur d'une mine à 3
+  (`runSession`, mêmes presets via `minerSpecs` ; stuff base / fer / acier). Défauts rapides (~2,5 min) ; mesure complète :
+  `--count 3 --chains 10 --gears base,fer,acier --areas 1,3,5 --cache refs.json` (la référence à 3 coûte ~55 s la session). Avertit sous 10 chaînes.
+- Mesure en pods (première version) : ratio 0,8–0,95 quel que soit `oreMul` (0,25 à 3) : les pods comptent aussi pierre et terre, le sac se remplit au même
+  rythme, `oreMul` y pesait peu. D'où le changement de mesure (décision du 29/10) : on compare le POIDS DES MINERAIS (blocs de type `ore`), pods affichés à titre d'info.
+- Mesure en minerais (mineur, area 5, 5 chaînes, ±0,1) : acier : 0,6 → 0,48 ; 0,55 → 0,56 ; 0,5 → 0,55 (contrôleur : 0,46 à 3 chaînes) ; 1 → 0,67 (contrôleur).
+  fer : 0,6 → 0,62 ; 0,55 → 0,57 ; 0,5 → 0,43. Références : acier 1388 minerais/h, fer 1149 (sur 2873 / 2418 pods).
+- **`PRISON.oreMul` = 0,52** (acier ≈ 0,5, fer ≈ 0,5 par interpolation ; non mesuré tel quel, incertitude ±0,1).
+  → **Mis à jour le 29/10 (relecture finale)** : mesuré par le contrôleur à 0,52, 10 chaînes, area 5, arbre mineur : acier 0,48
+  (678 minerais/h contre 1405), fer 0,43 (473 contre 1111). Tests ✅ `tests/prison-sim.test.js` 14/14, aucune assertion changée
+  (elles lisent `PRISON.oreMul`). À vérifier : mesure à 10 chaînes à 0,52, arbres logisticien/barbare, areas 1/3, stuff de base (mineur étourdi par les occultistes).
+
+## 29/10/2026 — Prison et énergie : documentation et vérification finale (Geoffrey, branche geoffrey/prison) 🧪
+- **Quoi** : docs seulement (`GAME_DESIGN.md` sections Énergie et Prison, `wiki.html` section `#prison` + sommaire + lien du lobby,
+  `src/wiki/wiki.js` remplit les valeurs depuis `ENERGY` / `PRISON` / `AREA_H`, `tests/wiki.test.js` vérifie les ids,
+  `claude/etat-du-projet.md`, `docs/journal.md`). Aucune règle changée.
+- **Fichiers du chantier** : `src/config.js` (`ENERGY`, `PRISON`), `src/meta/energy.js`, `src/sim/prison.js` (+ world, ai, session, dungeon, mobs, trap),
+  `src/shared/prison.js`, `server/game/service.js` (énergie, prison, paquets), `live.js`, `store.js`, `routes.js`, `src/ui/prison.js`, `lobby.js`, `src/main.js`,
+  `scripts/simulate-prison.js`.
+- **Vérification (29/10)** ✅ `node --test tests/energy*.test.js tests/prison*.test.js tests/area-max.test.js` + wiki : 80/80 puis wiki et boot-check 19/19 ;
+  `npm run test:anticheat` 115/115 ; `npm run simulate -- --miners 3 --count 5` : 0 bloquée (areas 3,0, profondeur 190, coffre 4141 pods, 226 s) ;
+  `npm run simulate:prison` (défaut, 3 chaînes) : acier / mineur area 5 : ratio minerais 0,47, 2,48 runs/h, run moyen 24 min.
+  Mesure de référence à 10 chaînes (T5) : acier 0,48, fer 0,43, runs ≈ 24–31 min. ⚠ `tests/dev-spec.test.js` « lobby, mode dev : les tours… » échoue déjà sur main (non lié).
+- **Chiffres** : `oreMul` 0,52 = valeur provisoire (fer un peu sous la cible ; si besoin ≈ 0,55 : fer ≈ 0,46, acier ≈ 0,51, estimé). Coût serveur ≈ 7 min de CPU par joueur
+  et par jour à ×2 pour une prison 24 h/24 ; les paquets ×300 le concentrent, ne le réduisent pas.
+  → **Corrigé le 29/10 (relecture finale)** : il faut ajouter les rejeux (chaque paquet rejoue le run en cours depuis son début) : ≈ ×1,5 en moyenne,
+  jusqu'à ≈ ×9 pour un run qui va jusqu'à `runMax`. Mesure à 10 chaînes à 0,52 faite pour l'arbre mineur (contrôleur : acier 0,48, fer 0,43).
+- **À vérifier** : mesure à 10 chaînes à 0,52 pour les arbres logisticien / barbare, areas 1/3, stuff de base (mineur étourdi sans fin par les occultistes en area 5, run fini à `runMax`) ;
+  passage en ligne : rattrapage de `areaMax` depuis `session_stat` (parcours à chaque fin de mine tant que areaMax = 0).
+- **Points fragiles (mineurs repoussés, encore ouverts)** :
+  - Énergie : `sanitizeEnergy(-Infinity)` → 100 ; `rollCost` non borné si `random` hors [0,1) ; clés d'énergie : mémoire de 200, une clé plus vieille peut être rejouée ;
+    énergie écrite juste avant `putGameSession` (plantage entre les deux = énergie perdue, jamais dupliquée) ; tests manquants : tour (énergie inchangée), éviction des clés.
+  - Lancement : peut arrêter la prison puis échouer (shrines / écriture de session) : rien de dupliqué, prison arrêtée à tort.
+  - Prison, paquets : `batching` jamais nettoyé pour une prison arrêtée en plein paquet ; `prisonIndex` garde une promesse rejetée ; `runsClosed` ne fait que grandir et `pump` relit
+    toutes les prisons ; `totals` / `away` perdent un run si le versement échoue après l'inventaire ; un arrêt volontaire compte dans `away` (> 30 s sans vue) ;
+    `lastAbsence` ne garde que la dernière absence, est effacé dès l'envoi (perdu si la réponse n'arrive pas) ; présence en mémoire perdue au redémarrage (≤ 60 s) ;
+    pas de test de `prisonStop` après `live.closeAll()`.
+  - Sim : `G.endAt` et `G.duckBase` valent Infinity (→ null en JSON) ; `simulate:prison` par défaut bruité (3 chaînes) ; pas de plafond de ticks dans sa boucle.
+  - Navigateur (⚠ à corriger avant mise en ligne ; ✅ corrigé le 29/10, entrée « relecture finale » ci-dessous) : bandeau calculé avec l'horloge locale au lieu de `serverNow()` (`main.js`) ; `syncAccount` → `setProgress` sans garde `st.ended` ;
+    erreurs du sondage de la prison (401 / 500) seulement en console ; finitions : panneau « Area 0 » contre journal « contenu de l'area N », « Coffre commun » / « XP de la session » en solo,
+    « Voir la prison » pendant une MI, pas d'état « chargement », couleur rouge par regex, logique `setPrison` non testée.
+  - Décisions à faire trancher : résidus de prison sans jauges du Jugement ni Discord ; refus d'énergie sans compter le run en cours (un joueur à 5 dont le run rendrait 2 est refusé) ;
+    treuil absent en prison (la récupération du sac de Mule reste prête pour le jour où).
+
+## 29/10/2026 — Prison : corrections de la relecture finale (Geoffrey, branche geoffrey/prison) 🧪
+- **Moteur en erreur** (`server/game/service.js`) : `stopPrisonOf` ne relance plus l'erreur du moteur (journalisée, moteur fermé, rien
+  versé sans bilan, prison `done`) : « Sortir de prison » et `start()` (mine, tour, instance, et le groupe) passent. Les erreurs du moteur
+  (avance, ouverture) sont marquées `prisonRun` (`engineError`) ; `runCrashed` les compte par run (`crashes`), dans `pump` et dans la vue
+  (qui répond quand même) ; à `PRISON.crashMax` (5) : `abandonPrison` arrête la prison (journal « prison arrêtée »). Les erreurs du stockage
+  ne comptent pas (pas d'arrêt sur une panne de base).
+- **Plafond des paquets** : `PRISON.batchConcurrency` (1) paquets d'absents à la fois (les commencés d'abord, puis le `lastBatchAt` le plus
+  ancien), le reste au passage suivant. `batching` nettoyé à l'arrêt.
+- **Index** : seules les prisons `running` (en attente : sortie par `endBatch` / `pump`, remise par `seePrison` quand `touchPrison` la
+  repasse à `running`) ; une liste en échec n'est plus gardée (relue au besoin suivant).
+- **Énergie du bilan** : `settleRun` compte l'énergie réellement créditée (avant / après `creditEnergy`, plafond 100) dans `away` et
+  `totals` ; `creditEnergy` inchangé (booléen, idempotent).
+- **Groupe** : `game.prisonActiveOf` → `members[].prison` dans `party.state` ; `launchPrisonText` (chef / seul : nomme les membres dont la
+  prison sera arrêtée, vue du groupe relue avant de demander), `readyPrisonText` (« Je suis prêt », « Prêt tout le temps » : décoché si refus).
+  Le lancement par la recherche de groupe (LFG) ne demande pas (non couvert).
+- **Navigateur** : bandeau à `serverNow()` ; `syncAccount` garde `st.ended` ; sondage : 401 → arrêt (prison oubliée, relue au retour),
+  `no_session` → `refresh()`, autres erreurs → recul `PRISON.uiRetry` doublé jusqu'à `uiPoll` (`prisonPollError`).
+- **Tests** ✅ `tests/prison-server.test.js` (+6 : arrêt et mine avec moteur en panne, arrêt après crashMax, 1 paquet par passage, prison
+  en attente non relue, énergie plafonnée au bilan, `prison` par membre ; « absent » part de 50 d'énergie), `tests/prison-ui.test.js` (+3).
+  Sujet + lobby / party / live / game-service / instance-server : 177/177 ; `npm run test:anticheat` 115/115.
+- **À vérifier** : le comportement réel d'un fil d'exécution qui meurt (Worker) dans `pump` (testé avec le moteur dans le fil principal).
+
+## 29/10/2026 — Presets copiés de vrais joueurs (Geoffrey, branche geoffrey/prison)
+- `src/shared/dev-presets.js` `presetFromSnapshot(snap, { keys })` : snap = `{ stuff, skills, spells?, progress }` tel que
+  renvoyé par `/api/game/state` (son propre compte) ou `/api/social/profile` (un ami : pas de sorts → ceux de sa spé à son
+  niveau). Tout repasse par sanitizeStuff / sanitizeSkills / sanitizeSpells / sanitizeProgress ; une pièce refusée →
+  erreur (rien d'écrit). `scripts/dev-presets.js --from <json>` : `{ pseudo: snap }` → comptes locaux `Test_<Pseudo>`.
+- Récupération (console du navigateur, connecté sur le jeu en ligne, lecture seule) : fetch de `/api/game/state`,
+  `/api/social`, `/api/social/profile`, puis téléchargement d'un .json (`copy()` n'existe pas dans tous les navigateurs).
+  Fichiers dans `data/presets/` (ignoré par git : stuff de vrais joueurs).
+- **Tests** ✅ `tests/dev-presets.test.js` +2 (11/11). Vérifié : Test_Canoul et Test_Mus relus par le service de jeu
+  (vérifications du serveur) = stuff identique à la copie, mêmes rangs, 4 glyphes / 0, sorts inspiration+zipette / dash.
+- **Mineurs de test copiés** (même jour) : `botPresets[j]` accepte `copy:<pseudo>` (`isCopyPresetId`). Au lancement (dev
+  seulement), le serveur range la copie dans la session : `record.botCopies[j]` (`botCopiesOf`, `devCopies` passé par
+  `server/main.js` = `readDevCopies(data/presets)`, `server/game/dev-copies.js`, relu à chaque appel). `minerSpecs` →
+  `copyMiner(pseudo, record.botCopies[j])` : le rejeu ne dépend pas du fichier ; copie absente ou refusée → mineur de base.
+  `info().copies` (dev) = pseudos ; `src/ui/lobby.js` `drawPresets` les ajoute aux listes (choix gardés au rafraîchissement).
+  ✅ test dev-presets +1 (12/12), game-service 62/62 avec ; vérifié dans le service : Test_Mus barbare dash marche 4,04,
+  Test_Canoul logisticien inspiration+zipette marche 5,23 pods 417. ⚠️ Liste du lobby pas vue à l'écran.
+
+## 29/10/2026 — Prison : area au choix, vitesse en mode dev (Geoffrey, branche geoffrey/prison)
+- **Area** : `prisonStart(me, members, { area })` (routes jeu et groupes passent le corps ; `party.prisonLaunch(me, body)`) :
+  entier de 0 à `prisonAreasOf().max` (= areaMax ; dev : `max(areaMax, AREAS.length − 1)`), sinon `area_locked` (409) ou
+  `bad_request` ; absente = areaMax. Rangée dans le champ `areaMax` de la prison (= l'area dont la carte a le contenu, nom
+  gardé). `GET /api/game/prison/areas` → `{ areaMax, max }`. `publicPrison` ajoute `area` et `speed`. Lobby :
+  `prisonAreaState` (pur, testé), `#prisonAreaRow`, relu au plus une fois par minute. Log du run : « contenu de l'area N »
+  (avant N+1, faux : la carte a le contenu de l'area N, comme le HUD « Area N »).
+- **Vitesse (dev)** : lancement `{ speed }` (GAME.devSpeeds, ignoré hors dev) ; `POST /api/game/prison/clock { speed }`
+  (`prisonClock`, 403 hors dev) : `runStartedAt` recalé pour que le tick dû reste le même à la nouvelle vitesse (pas le
+  tick du moteur, en retard : le run reculerait). `src/main.js` `updatePrisonUI` : boutons de vitesse de la barre de la
+  mine sur la prison, pause masquée ; `smooth` suit `prison.speed`.
+- **Tests** ✅ prison-server +2 (area : défaut, choix, refus, route ; dev : toutes les areas, ×300 au lancement, ×1 en
+  direct au même tick, refus hors dev), prison-ui +1 (`prisonAreaState`) ; prison*, lobby, party : 111/111. Vérifié en HTTP
+  sur `npm run dev` (Test_Canoul) : areas 0-8, area 9 refusée, area 2 à ×300 (run 1 fini en 3 s), ×20, sortie.
+- ⚠️ `endedAway` estime l'heure réelle de fin d'un run avec `t / p.speed` : après un changement de vitesse en dev, le bilan
+  « pendant ton absence » peut se tromper d'un run (dev seulement). Liste Area pas vue à l'écran.
+- **Correctif (même jour)** : les boutons de vitesse étaient créés mais invisibles en prison (`.prisonOn #speedBtns
+  {display:none}` dans `src/ui/style.css`). Classe `prisonDev` sur la vue Session (prison regardée en mode dev) : la
+  règle devient `.prisonOn:not(.prisonDev) #speedBtns`. Hors dev, toujours masqués. ✅ controls, prison-ui 13/13.
+- **Ton preset** (même jour, mode dev) : `body.selfPreset` (arbre ou `copy:<pseudo>`) → `record.selfPreset` (+ `selfCopy`,
+  la copie) via `selfPresetOf` (service). `minerSpecs` : place 0 (celui qui lance) avec preset → look, stuff, skills,
+  glyphes, sorts, auras du preset (`own(i)` faux) ; nom, préférences et compte inchangés ; `groupRings(record, selfGear)`
+  compte les anneaux du preset. Lobby : ligne « Ton preset » en tête de `#devPresets`, `devOptions().selfPreset`.
+  ✅ dev-presets +1 (14/14), game-service, anneaux, prison-server : 108/108. Vérifié en HTTP (serveur redémarré :
+  le code serveur n'est relu qu'au démarrage) : Test_Mus + Ton preset canoul → Couronne, inspiration+zipette.
+- **Mobs en prison** (même jour) : `PRISON.spawnDelayMul` 3, lu dans `spawnMobs` (`src/sim/mobs.js`) quand `G.prison`.
+  Mesure AVANT le changement (`simulate:prison --count 2 --chains 5 --hours 2 --gears acier --areas 5`) : area 5 ratio
+  0,51, runs de 23 min ; area 6 (réf.) ratio 0,29, runs de 36 min. ⚠️ APRÈS : ni simulé ni testé (demande de Geoffrey) ;
+  à mesurer : le rendement monte sans doute (moins de vols de gobelins, moins de combats), oreMul à revoir.
+
+## 29/10/2026 — Prison : contenu d'après les 10 dernières mines (Geoffrey, branche geoffrey/prison)
+- `src/meta/prison-profile.js` (nouveau, pur) : `lastMines(sessions, account)` (mines classiques `done`, pas dev, pas
+  abandonnées, joueur présent à la fin ; les plus récentes, `PRISON.profileSessions` 10), `prisonProfile` → `{ n, area
+  (moyenne de result.areasUnlocked, arrondie ; 0 mine : fallbackArea 1), ores { clé: part } (bag, noms BLOCKS → clés),
+  treasures { 'Treasure TX': part }, mobs { type: part } (miners[].stats.killsBy) }`, `sanitizeProfile`, `pickShare`.
+- Serveur `prisonStart` : `prisonProfile(store.sessionsOf(me.id))` → `p.profile` + `p.areaMax = profile.area` ; `body.area`
+  seulement en dev (sinon ignoré ; `area_locked` dev au-delà de 8). `src/shared/prison.js` : profile dans l'enregistrement,
+  `runRecord`, `buildPrisonRun` ; `newPrisonRun(…, { profile })` → `G.prison.profile` (sanitizeProfile, src/sim/session.js).
+- Carte (`src/sim/world.js`) : `profileComp(prisonComp(…), profile.ores)` (total de minerais inchangé, réparti selon les
+  parts) ; treasure : `pickShare(profile.treasures, r())` (tire un nombre de plus dans le hasard de l'area : les cartes de
+  prison changent avec un profil) ; pièges `chanceMul: PRISON.trapMul` 0,5 ; k hole posé en prison, `placeKhole(…, chanceMul)`
+  × `kholeMul` 0,5. `src/sim/khole.js` : `endOf(G)` = `G.endAt` en prison (au lieu de SESSION_LEN : un run dépasse 1 h).
+  Mobs (`spawnTableAt`) : `profile.mobs` sinon la table de l'area (minArea toujours vérifié à l'apparition).
+- Kills par type : `m.stats.killsBy` (src/sim/mineur.js, src/sim/actions.js), dans `summary.miners[].stats` (historique).
+- Lobby : liste Area seulement en mode dev.
+- ❌ **Ni simulé ni testé** (demande de Geoffrey) : seulement `node --check`. À vérifier : `tests/prison-server.test.js`
+  (le test « area de la prison : 0 à l'area max… » attend l'ancien choix hors dev : à réécrire), prison-sim, k hole en prison
+  (entrée, retour, fin de run pendant un k hole), `simulate:prison` (le script passe-t-il un profil ? sinon il mesure l'ancien
+  contenu), recalage d'oreMul.
+- **Choix d'area retiré** (même jour) : plus de `body.area` (dev compris), plus de `prisonAreas` ni `/prison/areas` ;
+  `GET /api/game/prison/profile` → `{ profile }` (ce que la prison aurait maintenant) ; `publicPrison.profile` (celui de la
+  prison qui tourne). Lobby : `#prisonProfileRow`, texte `prisonProfileText` (src/ui/prison.js). Tests de l'ancien choix
+  retirés (prison-server, prison-ui). ❌ rien relancé (demande de Geoffrey).
+- **Import d'historique** (même jour) : `scripts/dev-history.js` (`npm run dev:history -- --from <json> --name <compte>`) :
+  le `/api/game/history` d'un vrai joueur (téléchargé depuis son navigateur) → sessions `import:<id>` terminées, non dev,
+  dans data/ du compte local (mines classiques où il était là à la fin : area, part du butin ; pas de kills par type).
+  Pour que la prison de Test_Canoul suive les 10 dernières mines de canoul. ❌ pas testé.
+
+## 29/10/2026 — Prison : butin récapitulé, Historique, tests et simulation (Geoffrey, branche geoffrey/prison)
+- **Totaux** : `p.totals.xp` (settleRun), `sanitizeTotals` ; `publicPrison` envoie `totals { runs, energy, xp, bag }`,
+  `startedAt`, `endedAt`. **Historique** : `stopPrisonOf` écrit `prisonHistory(p)` (session `prison:<id>`, mode prison, done,
+  seen, `result.prison { runs, energy, area }`, `shares[0] { bag: totals.bag, xp }` ; rien n'est crédité) ; `history()` ajoute
+  `prison`. UI : `src/ui/prison-loot.js` (panneau `#prisonLootCard`, fenêtre `showPrisonRecap` à « Sortir de prison »),
+  `prisonTotalsLine` (src/ui/prison.js), ligne « ⛓ Prison » dans `src/ui/history.js`.
+- **Tests** ✅ prison-profile (nouveau, 3), prison-server +1 (totaux, Historique une seule fois, pas de bilan de session),
+  prison-ui +1 ; prison* + dev-presets 73/73 ; `test:anticheat` 118/118. Tests mis à jour (règles changées) : area par
+  défaut = fallbackArea ; totaux avec xp ; k hole permis en prison (moins d'1 carte sur 300 × KHOLE.chance) ; et 3 tests
+  (2 prison-server, 1 anticheat/prison) qui supposaient un run plus long que le premier paquet (batchMs 10 min) : depuis
+  `spawnDelayMul` 3, un run dure 6 à 9 min réelles → `t.now = max(fin du run, lastSeenAt + batchMs)`.
+- `npm test` : 1486/1490 ; 3 échecs **aussi sur origin/main** (vérifié dans un worktree détaché) : rarity (Poudre de rêve
+  oubliée par le recyclage des runes → corrigé ici), dev-spec (liste des modes dev sans instance, giant, prison) et perf
+  (3 barres de mine/tour au lieu de 2, l'instance en a une) : anciens, pas corrigés ici.
+- **Simulation** : `simulate:prison --count 2 --chains 5 --hours 2 --gears acier --areas 5` : avec oreMul 0,52 et les mobs
+  × 3 : ratio 0,87 (réf. area 6, runs 15 min), 0,96 (area 5) ; avec **oreMul 0,30** : **0,58** (réf.), **0,47** (area 5),
+  runs 13–16 min. ⚠️ 5 chaînes : ±0,1 ; le script ne fournit pas de profil (il mesure le contenu de l'area). `simulate
+  --miners 3 --count 5` (mine classique) : 0 bloquée, areas 3,0.
+- **Temps de jeu** (30/10, même chantier) : `totals.t` (secondes de jeu des runs versés, settleRun), `history().prison.t` ;
+  panneau : `+ PG.ticks × DT` du run en cours ; `gameTime`, `prisonTotalsLine(t, live)` (src/ui/prison.js). ✅ prison*,
+  history : 60/60, anticheat 118/118. Mesure sur la prison de Test_Canoul (profil canoul, area 7, rejouée run par run) :
+  8 runs, 1 h 07 de jeu, 453 minerais/h contre 707 par mine de 1 h sur ses 10 dernières : **64 %** (nombre et poids) ;
+  diamant 26 %, cobalt et thorium 0 ; tout le butin blocs compris : 122 % (beaucoup de pierre dure).
+
+## 30/10/2026 — Codes navigateur : copier un vrai joueur pour le mode dev (Geoffrey)
+À coller dans la console (F12) de https://deepmineidle.fr/, connecté avec le compte du joueur ; lecture seule. Chacun
+télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ranger dans `data/presets/` (ignoré par git).
+- **Stuff, skills, sorts, progression** (le sien, et celui d'un ami dont le pseudo contient « mus » : à adapter) → fichier
+  pour `npm run dev:presets -- --from data/presets/<fichier>.json` (serveur arrêté) :
+  ```js
+  (async()=>{const j=(u,b)=>fetch(u,b?{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{credentials:'same-origin'}).then(r=>r.json());
+  const me=await j('/api/game/state'), so=await j('/api/social');
+  const mus=so.friends.find(f=>/mus/i.test(f.name)), fr=mus?await j('/api/social/profile',{id:mus.id}):null;
+  const out=JSON.stringify({canoul:{stuff:me.stuff,skills:me.skills,spells:me.spells,progress:me.progress},mus:fr&&{name:fr.name,stuff:fr.stuff,skills:fr.skills,progress:fr.progress}});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/json'}));a.download='presets-canoul-mus.json';a.click();})()
+  ```
+- **Historique** (profil de la prison) → `npm run dev:history -- --from data/presets/history-canoul.json --name Test_Canoul`
+  (serveur arrêté) :
+  ```js
+  (async()=>{const r=await fetch('/api/game/history',{credentials:'same-origin'}).then(r=>r.json());
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(r)],{type:'application/json'}));a.download='history-canoul.json';a.click();})()
+  ```
+- Piège vu le 29/10 : plusieurs discussions partagent le dossier du dépôt et peuvent y changer de branche ; le serveur dev
+  sert les fichiers du disque. Pour un chantier qui dure, le servir depuis son propre worktree (ex. `F:\dim-prison`, data/
+  recopié dedans).
+
+## 30/10/2026 — Prison d'un vrai joueur : scripts/simulate-prison-profile.js (Geoffrey, branche geoffrey/prison) 🧪
+- `node scripts/simulate-prison-profile.js --preset <codes navigateur>.json --who canoul --history history-canoul.json --runs 50`
+  : mineur construit comme le serveur (`minerSpecs`, mode prison, copie `copy:<who>`), profil = `prisonProfile` des sessions
+  importées (`importedSessions`, scripts/dev-history.js), `--runs` runs à la suite (`--chains` pour les répartir sur plusieurs
+  seeds) ; gain par heure de jeu (minerais en poids et en nombre, pods, chaque minerai, treasures, XP, énergie) comparé à sa
+  part de ses 10 dernières vraies mines (1 h de jeu chacune), et l'oreMul qui viserait 50 % (règle de trois).
+- Vérifié à blanc ✅ (preset acier sans historique ; faux historique : chemin du profil et de la référence).
+- ⚠️ Vu en passant : sans historique (area de repli 1) à oreMul 0,30, un run sur 3 est allé jusqu'à `runMax` (3 h), run moyen
+  66 min : les 80 % de minerais d'une carte d'area 1 très pauvre sont longs à atteindre. À regarder pour les nouveaux joueurs.
+- **Mesure sur le vrai profil de canoul (30/10)** : fichiers de ses codes navigateur (stuff, historique ; 10 dernières
+  mines : area 7, 1 986 minerais en poids et 738 en nombre par heure ; XP 1 953 par mine). 50 runs répartis sur 5 prisons
+  (`--chains 5`), runs bloqués à `runMax` mis à part : **oreMul 0,30 → 55 %**, **0,26 → 49 %**, **0,22 → 42 %** (poids et
+  nombre de minerais identiques à 1 point près). Runs de 10 à 14 min. Tout le butin (pods, pierre dure surtout) : 113 à 116 %.
+  XP : 1 419 par heure de jeu, **73 %** de ses mines (pas divisée comme les minerais). Cobalt et thorium : 0 en prison
+  alors que le profil leur donne ≈ 0,4 % chacun (⚠️ à comprendre). Treasures : trop peu sur 8 h pour conclure.
+- ❌ **Run bloqué 3 h** (oreMul 0,30, prison seed 2, run 1 ; aussi 1 run à 0,24) : un golem descendu à 14 PV / 397 reste
+  dans le puits juste sous la surface (25, 2) ; le mineur redescend, se fait tacler, étourdir et repousser jusqu'à la
+  surface (y 0, où le combat s'arrête), redescend… jusqu'à `runMax`. 1 run sur 50, mais 26 % du temps de jeu de la
+  mesure. `scripts/simulate-prison-profile.js` liste maintenant ces runs et donne le rendement sans eux.
+- **Correctifs (30/10)** : (1) **golem collé sous la surface** : l'« arrêt net » (src/sim/session.js, tick) coupait chaque pas
+  de descente d'un mineur à la surface dont l'adversaire (m.foe) était à portée, alors qu'à la surface l'IA ne combat pas :
+  boucle sans fin (prison : 3 h). Arrêt net seulement si `m.y > 0`. ✅ test golem « juste sous la surface » (échoue sans).
+  (2) **cobalt / thorium à 0** : `fillComp` arrondissait au plus proche (0,3 case de cobalt par carte de 25 × 50 → 0). En
+  prison seulement, arrondi au hasard (`fracRng`, `PRISON.fracSalt`, hasard à part : la mine ne change pas). ✅ test
+  prison-sim. (3) **`PRISON.oreMul` 0,30 → 0,24** (vrai profil canoul, 200 runs / 10 prisons : 0,26 → 52 %, 0,24 → 51 %,
+  0,22 → 45 %, 0,20 → 43 %). `tests/prison-server.test.js` fige oreMul à 0,30 (ses calendriers de paquets supposent un run
+  plus long que `batchMs`). ✅ prison*, golem, combat, knock, mobs, area-max, world 138/138 ; anticheat 118/118 ;
+  simulate 3 × 5 : 0 bloquée.
+- **Treasures (0,24, 200 runs, 32,7 h)** : posés sur 18 % des cartes (règle 0,4 × 0,5), ouverts 2 sur 3 (le run s'arrête à
+  80 % des minerais), + quelques T1 du k hole : 0,83 /h contre 3,0 /h dans ses mines (28 %).
+
+## 30/10/2026 — Prison : vue zoomée, fond et transitions, butin total, énergie de départ 0 (Geoffrey, branche geoffrey/prison) 🧪
+- **Vue** (`src/render/canvas.js`) : `prisonCols(G)` (colonnes sans barreaux de la ligne 1, gardé par partie) → `zoom = W / largeur`,
+  `ctx.setTransform` (agrandi, décalé de x0), caméra à `rows / zoom` lignes, `panPixels` à cette échelle ; transform remis à zéro
+  avant le voile du k hole. Mine : `prisonCols` null, zoom 1, rien ne change. Le fond (backdrop) dessine avec le même moteur.
+- **Fond et transitions** (`src/main.js`) : `prisonBackdrop()` (fonction déclarée : appelée par la nav avant sa ligne) → `backdrop.draw`
+  et `backdrop.switchTab` comme une session ; le Carreau est masqué quand la prison est en fond (option « Session en cours en fond
+  d'écran » du compte).
+- **Butin total** (`src/ui/prison-loot.js` `prisonOverall`) : runs versés + coffre, XP et énergie du run en cours ; titre « Butin de
+  la prison (total) ».
+- **Énergie** : `ENERGY.start` 0 (tous les comptes à 0 à la mise en ligne). Les tests qui lancent des mines partent de 100 :
+  `ENERGY.start = 100` dans `tests/helpers.js` (+ import de helpers dans instant-server, live, prison-server, anticheat
+  instance / instant / prison) ; `tests/energy.test.js` vérifie le départ à 0.
+- **Fluidité** : mesurée sur `npm run dev` (Playwright) : un envoi de vue toutes les ~290 ms, ticks réguliers (≈ 6 par envoi à ×2),
+  même glissade que la mine (`applyView` / `pace`). Pas de saccade trouvée côté données.
+- ✅ 512/513 tests du service + energy, camera, prison-ui, prison-sim (❌ dev-spec, déjà sur main). Captures vérifiées (session,
+  transition, fond).

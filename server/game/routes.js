@@ -25,6 +25,14 @@ export function gameRoutes(game){
       const after = new URL(ctx.req.url, 'http://x').searchParams.get('after');
       return game.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
     'POST /api/game/chat':   async ctx => { needMe(ctx); return game.chatPost(ctx.me, obj(ctx.body)); },
+    /* prison (29/10) : lancée seule (le service des groupes passe ses membres, refus s'ils sont plusieurs), arrêtée par le joueur */
+    'POST /api/game/prison/start': async ctx => { needMe(ctx); return [201, await game.prisonStart(ctx.me, null, obj(ctx.body))]; },
+    'GET /api/game/prison/profile': async ctx => { needMe(ctx); return game.prisonProfile(ctx.me); },   // contenu des 10 dernières mines (29/10)
+    'POST /api/game/prison/clock': async ctx => { needMe(ctx); return game.prisonClock(ctx.me, obj(ctx.body)); },   // vitesse (dev)
+    'GET /api/game/prison':        async ctx => { needMe(ctx);
+      const since = new URL(ctx.req.url, 'http://x').searchParams.get('since');
+      return game.prisonView(ctx.me, since === null || since === '' ? null : Number(since)); },
+    'POST /api/game/prison/stop':  async ctx => { needMe(ctx); return game.prisonStop(ctx.me); },
     'POST /api/game/finish': async ctx => { needMe(ctx); return game.finish(ctx.me); },
     'POST /api/game/open':   async ctx => { needMe(ctx); return game.open(ctx.me, obj(ctx.body)); },
     'POST /api/game/furnace': async ctx => { needMe(ctx); return game.furnace(ctx.me, obj(ctx.body)); },

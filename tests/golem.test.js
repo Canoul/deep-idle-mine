@@ -183,3 +183,15 @@ test('apparition dans la mine (area 5) : il naît dans une galerie d\'une case d
   assert.deepEqual([o.size, o.hp, o.maxhp, o.speed, o.knockRes], [2, 300, 300, 0.5, 100]);
   assert.ok(!solid(G, o.x, o.y - 1) && !solid(G, o.x + 1, o.y - 1) && !solid(G, o.x + 1, o.y), 'sa place est dégagée');
 });
+
+test('golem resté dans le puits juste sous la surface : le mineur redescend et le tue (30/10/2026 : bloqué 3 h en prison)', () => {
+  /* puits de 2 de large sous le mineur ; le golem (2 × 2) y attend, presque mort, et reste son adversaire (m.foe) : à la
+     surface, l'« arrêt net » coupait chaque pas de descente (le golem à portée) sans que le mineur puisse frapper */
+  const shaft = '#'.repeat(10) + 'H ' + '#'.repeat(38);   // puits à échelles : on y descend en grimpant (une chute n'est jamais coupée)
+  const G = worldFrom(['', shaft, shaft, shaft, shaft, '#'.repeat(50)]), m = G.miners[0];
+  G.spawnTimer = Infinity; m.x = 10; m.y = 0; m.ox = 1e6; m.mode = 'work';
+  const o = golem(G, { x: 10, y: 2, hp: 10, maxhp: 400, quakes: 3 });   // lignes 1 et 2 : collé sous la surface
+  m.foe = o.id; m.foeHit = 0;
+  run(G, 200);
+  assert.ok(o.hp <= 0, `golem à ${o.hp} PV, mineur en ${m.x},${m.y} (« ${m.status} »)`);
+});

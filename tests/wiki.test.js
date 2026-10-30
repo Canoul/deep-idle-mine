@@ -50,6 +50,7 @@ test('wiki : nouveautés — plumes de la mine instantanée, matériaux d\'amél
   for(const id of ['mi', 'amelioration', 'concasseur', 'w-mi', 'w-qualities', 'w-upgrade', 'w-mi-notify', 'w-mi-lost'])
     assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(!html.includes('Bientôt : liste d\'amis') && !html.includes('La barre à gauche') && !html.includes('viendra plus tard'));
+  for(const id of ['prison', 'w-energy-max', 'w-energy-cost', 'w-prison-size', 'w-prison-reset', 'w-prison-offline']) assert.ok(html.includes(`id="${id}"`), id);
   for(const id of ['ange', 'w-judgment', 'w-tower', 'w-runes']) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(by['Résidu angélique'].sources[0].startsWith('Miné à partir de l\'area 4'));
   assert.ok(by['Trésor démoniaque R7'].uses[0].includes('Rune R7'));

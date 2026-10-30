@@ -1,5 +1,5 @@
 /* Rendu canvas : LIT l'état de la simulation, ne le modifie jamais. */
-import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES } from '../config.js';
+import { W, CFG, BLOCKS, BRIDGE, CHEST_X, DUCK, SHRINES, PRISON } from '../config.js';
 import { maxRow } from '../sim/world.js';
 import { lightShown } from '../sim/light.js';
 import { lightR } from '../sim/mineur.js';
@@ -47,19 +47,23 @@ export function createRenderer(cv){
     curG=G; frameNow=performance.now();
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
     const [fx, fy]=drawPos(fm);
+    /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la caméra reste entre eux et son zoom
+       minimal fait remplir la largeur à ses colonnes (bords de la carte = bords de l'écran, comme la mine) */
+    cam.setBox(prisonCols(G));
     const camY=cam.update(fy, mr+1, fx);
     ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
     const z=cam.zoom; ctx.setTransform(z,0,0,z,-cam.x*TILE*z,0);   // zoom (30/10) : le reste se dessine comme au zoom ×1
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
-    for(let y=y0;y<=y0+rows+1;y++){
+    for(let y=y0;y<=y0+Math.ceil(rows/z)+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
         if(y<=0){ if(G.khole){ ctx.fillStyle='#1a0630'; ctx.fillRect(px,py,TILE,TILE); } else blit('sky',px,py,'#6cc3ee'); continue; }   // ciel de la dimension du k hole
         if(y===mr+1){ if(G.seen[mr][x]) blit('barrier',px,py,'#34344a'); continue; }
         if(y>mr) continue;
-        if(!G.seen[y][x]){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
+        /* barreaux de la prison (29/10) : toujours dessinés, même pas encore vus (ils ne cachent rien), assombris par la lumière */
+        if(!G.seen[y][x] && G.tiles[y][x]!==PRISON.bars){ ctx.fillStyle='#060608'; ctx.fillRect(px,py,TILE,TILE); continue; }
         const t=G.tiles[y][x];
         if(t===0) blit('tunnel',px,py,'#2a1f18');
         else{
@@ -179,8 +183,20 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m);
       if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
-    ctx.setTransform(1,0,0,1,0,0);
+    ctx.setTransform(1,0,0,1,0,0);   // la suite (voile du k hole) en coordonnées de l'écran
     if(G.khole) drawKhole(G);
+  }
+
+  /* colonnes jouables d'une carte de prison (entre les barreaux de la ligne 1), null en mine ; gardées par partie */
+  function prisonCols(G){
+    const row=G.tiles?.[1];
+    if(!row) return null;
+    if(G._cols !== undefined && G._colsRow === row) return G._cols;
+    let x0=0, x1=W-1;
+    while(x0<W && row[x0]===PRISON.bars) x0++;
+    while(x1>=0 && row[x1]===PRISON.bars) x1--;
+    G._colsRow=row;
+    return G._cols = (x0>0 || x1<W-1) && x1>=x0 ? { x0, x1 } : null;
   }
 
   /* dans la dimension du k hole : voile violet qui respire, et le temps avant le retour dans la mine */

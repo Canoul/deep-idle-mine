@@ -122,7 +122,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
 - Données locales : `data/accounts.json` et `data/game.json` (ignorés par git ; supprimer `data/` = repartir de zéro).
 - Presets (`DEV_PRESETS`) : stuff acier, arbre rempli et ses glyphes, sorts. Panneau dev : un preset par mineur de test.
   `npm run dev:presets` (serveur arrêté) : comptes locaux Test_Mineur / Test_Logisticien / Test_Barbare (mot de passe
-  `preset1234`, niveau et spé 72, 10 Clés d'instance I). Relancer = remise à neuf.
+  `preset1234`, niveau et spé 72, 10 Clés d'instance I). Relancer = remise à neuf. `npm run dev:presets -- --from
+  data/presets/<fichier>.json` : copie de vrais joueurs (Test_Canoul, Test_Mus ; stuff, skills, sorts, niveau réels).
 - Reproduire une partie : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
 - `node --test tests/<sujet>.test.js` : les tests d'un sujet (**c'est ce qu'on lance après une modification**).
   `npm test` : toute la suite, longue (plusieurs minutes), seulement sur demande.

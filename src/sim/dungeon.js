@@ -21,19 +21,24 @@ export const dungeonAt = (G,x,y) => G.dungeons?.length ? G.dungeons.find(d => in
 /* case devant l'entrée, dehors */
 export const front = d => ({ x: d.side==='L' ? d.hx-1 : d.hx+1, y: d.hy });
 
-/* colonnes de départ x0 possibles : à margin cases des bords, sans toucher la colonne du treuil ± winchGap */
-export function startColumns(){
-  const out=[], lo=WINCH.x-DUNGEON.winchGap, hi=WINCH.x+DUNGEON.winchGap;
-  for(let x0=DUNGEON.margin; x0+S-1<=W-1-DUNGEON.margin; x0++) if(x0+S-1<lo || x0>hi) out.push(x0);
+/* colonnes de départ x0 possibles : à margin cases des bords de la boîte, sans toucher la colonne du treuil ± winchGap.
+   box (facultatif) : { x0, w, winchGap } = colonnes [x0, x0 + w) où poser le donjon (prison : entre les barreaux) ;
+   défaut : toute la largeur, DUNGEON.winchGap. Peut être vide (boîte trop étroite). */
+export function startColumns({ x0:bx=0, w=W, winchGap=DUNGEON.winchGap } = {}){
+  const out=[], lo=WINCH.x-winchGap, hi=WINCH.x+winchGap;
+  for(let x0=bx+DUNGEON.margin; x0+S-1<=bx+w-1-DUNGEON.margin; x0++) if(x0+S-1<lo || x0>hi) out.push(x0);
   return out;
 }
 
-/* tirage du donjon de l'area k (hasard à part, tiré de la seed) : { x0, ry0, side, hry } en lignes de l'area, ou null */
-export function planDungeon(seed, k){
+/* tirage du donjon de l'area k (hasard à part, tiré de la seed) : { x0, ry0, side, hry } en lignes de l'area, ou null.
+   box (facultatif) : { x0, w, winchGap, chanceMul } (prison : entre les barreaux, chance × PRISON.rareMul) ; sans place
+   dans la boîte : pas de donjon. */
+export function planDungeon(seed, k, box = {}){
   if(!DUNGEON.areas.includes(k)) return null;
   const r = mulberry32(hash(seed, k+1) ^ DUNGEON.salt);
-  if(!(r() < DUNGEON.chance)) return null;
-  const xs = startColumns();
+  if(!(r() < DUNGEON.chance * (box?.chanceMul ?? 1))) return null;
+  const xs = startColumns(box ?? {});
+  if(!xs.length) return null;
   const x0 = xs[Math.floor(r()*xs.length)];
   const ry0 = DUNGEON.margin + Math.floor(r()*(AREA_H - 2*DUNGEON.margin - S + 1));
   const side = r()<0.5 ? 'L' : 'R';
