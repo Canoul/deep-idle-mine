@@ -5115,3 +5115,12 @@ Règles (voir CLAUDE.md) :
 - Inventaire (`src/ui/inventory.js`) : survol ignoré si `(hover: none)` ; fiche épinglée amenée à l'écran sous 1100 px.
 - Tests : `tests/camera.test.js` (2 nouveaux), controls, inventory ✅. ⚠️ Pas essayé sur un vrai téléphone (pas de navigateur dans la session cloud) : à vérifier au doigt (pincer, double appui, Équiper sur iPhone).
 
+## 30/10/2026 — Stèles des tours (Exorcisme, Pacte) + trésor béni (Geoffrey)
+
+- Config : `SHRINES.list.exorcisme` / `pacte` (`tower`, `effect:{ phase2, luck }`), `TOWER.stele`, `RUNE.luck` (variantes de `treasureItem(side, q, luck)` générées dans ITEMS, `chest.luck`).
+- `src/meta/shrines.js` : `consume(st, tower = null)` ne décompte que les shrines du lancement (mine : sans `tower` ; tour : ses stèles) ; `publicShrines` donne `tower`. Serveur (`startSession`) : shrines consommés aussi pour une tour (hors dev), `rec.stele` = la 1re stèle active (dev : `body.stele` si du bon camp) ; `rec.shrines` seulement pour la mine. Trésor de victoire : `treasureItem(side, q, shrineOf(rec.stele).effect.luck)`.
+- Tour (`src/sim/tower/session.js`) : `G.stele`, `startPhase2` à la mort du 1er boss (boss de l'autre camp, `boss.side`, PV × bossHp, `air.crash` → `landBoss(G, crashKnock)`), treuil cassé (`G.winchBroken`, un mineur dans le seau tombe), mobs `stele:true, side` dans `TOWER.stele.floors` ; `sealedFloor` : en phase 2, des mobs vivants ferment tout étage. `mobOf(G)` remplace le nom des mobs. Résumé : `stele`, `phase2`. Vue / rendu : `boss.side`, `mob.side`.
+- Ouverture (`src/meta/loot.js`) : chances de `RINGS.drops` × `RUNE.luck[chest.luck].rings`. Nom (`itemName`) : « … béni ».
+- Lobby : carte Shrines aussi dans le lobby d'une tour (ses stèles) ; la mine les montre toutes. Case « Stèle du camp » en mode dev. `npm run simulate:tower -- --stele` (+ compo e, équipe 2,5 / 40).
+- Tests : `tests/stele.test.js` (5), shrines, tour, trésors, lobby ✅ ; anticheat ✅. ⚠️ Pas vu à l'écran (pas de navigateur) : affichage du 2e boss et des mobs de l'autre camp, carte Shrines dans le lobby d'une tour. ⚠️ Mobs de la phase 2 : avec `TOWER.mobs.descend`, ils descendent presque tous à l'étage 0 vers les mineurs tombés (vague au pied de la tour).
+

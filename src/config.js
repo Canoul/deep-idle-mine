@@ -846,6 +846,10 @@ export const RUNE = {
      un % : inchangée). Un fragment se repose comme une rune (mêmes règles) ; un fragment posé ne se retire plus. */
   fragment: { item: 'Fragment de rune', tex: 'rune_fragment', factor: 0.5 },
   treasures: { angel: { name:'Trésor angélique', tex:'chest_angel' }, demon: { name:'Trésor démoniaque', tex:'chest_demon' } },
+  /* coefficients de chance d'un trésor (30/10/2026, Geoffrey) : même trésor, même table, chances multipliées (rings :
+     anneaux, RINGS.drops). Chaque entrée crée toute seule ses variantes R1 à R7 (« Trésor démoniaque R5 béni »), sans liste
+     à écrire. Donné par les stèles des tours (SHRINES, effect.luck). Ajouter un bonus = une entrée ici. */
+  luck: { beni: { label:'béni', rings:2 } },
   treasureRarity: 'unique',
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
@@ -877,9 +881,11 @@ export const AURA = {
 };
 const QUALITY_NUMS = [1,2,3,4,5,6,7];
 /* nom interne du trésor d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) : « Trésor démoniaque R5 » */
-export const treasureItem = (side, q) => `${RUNE.treasures[side].name} R${q}`;
+/* luck : un coefficient de RUNE.luck (30/10/2026) ou rien ; « Trésor démoniaque R5 béni » */
+export const treasureItem = (side, q, luck = null) => `${RUNE.treasures[side].name} R${q}` + (luck && RUNE.luck[luck] ? ` ${RUNE.luck[luck].label}` : '');
 const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap(([side, c]) =>
-  QUALITY_NUMS.map(q => [treasureItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q }, treasure:true }])));
+  [null, ...Object.keys(RUNE.luck)].flatMap(luck => QUALITY_NUMS.map(q => [treasureItem(side, q, luck),
+    { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q, ...(luck ? { luck } : {}) }, treasure:true }]))));
 /* ---- Roi Gobelin (27/10/2026, Geoffrey) ----
    Le boss n'existe pas encore (à définir) : à sa mort, CHAQUE joueur recevra un « Coffre du Roi Gobelin » de qualité R1
    à R7 (chances UPGRADE.qualities, comme les trésors des tours). En attendant, il ne s'obtient que par l'admin
@@ -1538,6 +1544,15 @@ export const SHRINES = {
   list: {
     abundance: { name:'Shrine d\'abondance', desc:'5 % de minerais en plus', tex:'shrine_abundance', sessions:5,
                  price:{ 'Pépite d\'argent':10, 'Résidu angélique':20 }, effect:{ orePoints:5 } },
+
+    /* stèles des tours (30/10/2026, Geoffrey) : comme un shrine (don de n'importe quel membre, rattachées au chef), mais
+       décomptées au lancement d'une tour du camp `tower` par ce chef (sessions = tours lancées ; 3 : provisoire, choix de
+       Claude). Effet (TOWER.stele) : à la mort du boss, le boss de l'autre camp s'écrase sur le toit (phase 2) ; victoire =
+       trésor béni (luck : RUNE.luck). Elles ne touchent pas la mine classique. */
+    exorcisme: { name:'Stèle d\'exorcisme', desc:'Tour du Démon : l\'Ange s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_angel',
+                 sessions:3, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
+    pacte:     { name:'Stèle du pacte', desc:'Tour de l\'Ange : le Démon s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_demon',
+                 sessions:3, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
   },
   opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
   drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne
@@ -1871,6 +1886,12 @@ export const TOWER = {
     1: { hp: 1,   hard: 1,    weight: 1,   mobKnock: 1, rageBelow: 0.33, summon: 0 },
     2: { hp: 2.5, hard: 2,    weight: 2,   mobKnock: 2, rageBelow: 0.5,  summon: 2 },
   },
+  /* stèle (30/10/2026, Geoffrey ; SHRINES exorcisme / pacte) : à la mort du boss, le boss de l'autre camp tombe du ciel
+     (fallHigh blocs, fall s) et s'écrase au centre du toit : chaque mineur du toit est projeté de crashKnock cases (il tombe
+     de la tour), puis étourdi comme à un atterrissage s'il est resté dessus. Le treuil est cassé (plus de treuil de la
+     partie). mobs mobs de l'autre camp par étage (étages floors), réveillés, PV × mobHp ; boss PV × bossHp (par-dessus le
+     niveau). Même chrono ; victoire = le 2e boss tué (sinon rien). */
+  stele: { fallHigh: 10, fall: 0.8, crashKnock: 10, mobs: 5, floors: [0, 1, 2, 3, 4, 5], mobHp: 1.5, bossHp: 1.5 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },

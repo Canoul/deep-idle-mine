@@ -10,7 +10,7 @@
    Pods (26/10/2026, Geoffrey) : chaque stonebrick minée va dans le sac du mineur (m.inv, m.load) ; plein, il redescend au
    coffre commun (TOWER.chest, au milieu de l'étage 0) le vider dans G.chest. Victoire : summary.loot = coffre + sacs des
    présents ; le serveur le partage en parts égales et ajoute les trésors (server/game/service.js). */
-import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH } from '../../config.js';
+import { TOWER, DT, STATS, BLOCKS, CFG, COMBAT, WINCH, SHRINES } from '../../config.js';
 import { mulberry32 } from '../../core/rng.js';
 import { aoeOf } from '../../meta/skills.js';
 import { SPELL } from '../../meta/spells.js';
@@ -28,6 +28,11 @@ const B = TOWER.boss, MB = TOWER.mobs;
 export const TOWER_LEVELS = Object.keys(TOWER.levels).map(Number);
 export const towerLevel = l => TOWER_LEVELS.includes(l) ? l : 1;
 
+/* stèle (30/10/2026, TOWER.stele) : l'autre camp ; nom des mobs en cours (phase 2 : ceux de l'autre camp) */
+const otherSide = side => side === 'angel' ? 'demon' : 'angel';
+const mobOf = G => TOWER.sides[G.phase2 ? otherSide(G.side) : G.side].mob;
+const steleOf = id => (typeof id === 'string' && Object.hasOwn(SHRINES.list, id) && SHRINES.list[id].effect?.phase2) ? SHRINES.list[id] : null;
+
 export function newTower(seed, opts = {}){
   seed = seed ?? ((Math.random() * 2**31) | 0);
   const side = opts.side ?? 'angel';
@@ -37,6 +42,7 @@ export function newTower(seed, opts = {}){
   const inner = world.x1 - world.x0 - 1;
   const G = {
     mode: 'tower', side, level, lv: LV, seed, t: 0, ticks: 0, over: false, ...world,
+    stele: steleOf(opts.stele) && SHRINES.list[opts.stele].tower === side ? opts.stele : null, phase2: false, winchBroken: false,
     rng: mulberry32(seed ^ 0x2545f491), fightRng: mulberry32(seed ^ 0x6a09e667),
     ladder: world.tiles.map(r => new Uint8Array(r.length)),
     /* découvert : tout l'extérieur de la tour ; l'intérieur se découvre étage par étage (revealFloor) */
@@ -44,7 +50,7 @@ export function newTower(seed, opts = {}){
     floorSeen: new Array(TOWER.floors).fill(false),
     torches: [], light: new Map(),
     mobs: placeMobs(world, seed, MB.hp * LV.hp),
-    boss: { name: TOWER.sides[side].boss, hp: B.hp * LV.hp, maxhp: B.hp * LV.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
+    boss: { name: TOWER.sides[side].boss, side, hp: B.hp * LV.hp, maxhp: B.hp * LV.hp, cd: B.hitEvery, x: world.bx, y: world.by, w: B.w, h: B.h,
             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, knockRes: B.knockRes,
             phase: 0, air: null, lift: 0 },
     inspire: null, warcry: null,          // sorts de groupe en cours (Inspiration, Cri de guerre ; 28/10)
@@ -62,6 +68,7 @@ export function newTower(seed, opts = {}){
   G.roster = [...G.miners];
   G.winchBoost = Math.max(0, ...G.miners.map(m => m.skill.winch_speed || 0));   // Escalateur : le meilleur rang du groupe
   revealFloor(G, 0);
+  if(G.stele) log(G, `🗿 ${SHRINES.list[G.stele].name} : ${TOWER.sides[otherSide(side)].boss} viendra après ${TOWER.sides[side].boss}`);
   log(G, `${TOWER.sides[side].tower} : ${G.miners.length} mineur${G.miners.length > 1 ? 's' : ''} au pied de la tour. ${G.boss.name} attend au sommet.`);
   return G;
 }
@@ -113,8 +120,8 @@ const inBlockFloor = (G, x, y) => { const k = floorOf(G, y);
   return k >= 0 && k < TOWER.floors && G.kinds[k] === 'blocks' && y >= floorTop(G, k) && y <= floorBottom(G, k) && x > G.x0 && x < G.x1 ? k : -1; };
 /* porte d'un plafond scellée : étage « mobs » avec un mob vivant, ou étage « blocs » avec un bloc pas encore miné
    (25/10, Geoffrey : il faut vider tout l'étage) */
-export const sealedFloor = (G, k) => G.kinds[k] === 'mobs' ? G.mobs.some(o => o.floor === k && o.hp > 0)
-  : G.kinds[k] === 'blocks' && (G.blocksLeft?.[k] ?? 0) > 0;
+export const sealedFloor = (G, k) => (G.kinds[k] === 'mobs' || G.phase2) && G.mobs.some(o => o.floor === k && o.hp > 0)   // phase 2 (stèle) : les mobs ferment tout étage
+  || G.kinds[k] === 'blocks' && (G.blocksLeft?.[k] ?? 0) > 0;
 const sealed = (G, x, y) => isCeil(G, y) && sealedFloor(G, floorOf(G, y));
 const breakable = (G, x, y) => inTower(G, x, y) && G.tiles[y][x] !== 0 && !BLOCKS[G.tiles[y][x]].unbreakable && !sealed(G, x, y);
 
@@ -126,7 +133,7 @@ export function revealFloor(G, k){
   if(G.timeline.floors[k] == null) G.timeline.floors[k] = G.t;
   const mobs = G.mobs.filter(o => o.floor === k);
   for(const o of mobs) o.awake = true;
-  if(k > 0) log(G, mobs.length ? `👁 Étage ${k} : ${mobs.length} ${TOWER.sides[G.side].mob}s se réveillent !` : `Étage ${k} atteint`);
+  if(k > 0) log(G, mobs.length ? `👁 Étage ${k} : ${mobs.length} ${mobOf(G)}s se réveillent !` : `Étage ${k} atteint`);
 }
 function checkFloors(G){
   for(const m of G.miners){
@@ -241,7 +248,7 @@ function descendMob(G, o){
     let y = o.y; while(y + 1 <= G.floor && towerAir(G, col, y + 1)) y++;
     const from = o.floor;
     Object.assign(o, { y, kx: 0, floor: floorOf(G, y), grab: null, knockLock: false, hop: G.ticks });   // hop : petit saut à l'affichage
-    log(G, `⬇ Un ${TOWER.sides[G.side].mob} saute de l'étage ${from === TOWER.floors ? 'du toit' : from} à l'étage ${o.floor}`);
+    log(G, `⬇ Un ${mobOf(G)} saute de l'étage ${from === TOWER.floors ? 'du toit' : from} à l'étage ${o.floor}`);
     return;
   }
   const v = DT / MB.step, dx = Math.sign(col - o.x) || -Math.sign(o.kx || 0);
@@ -266,7 +273,7 @@ function summonMobs(G, n){
     G.mobs.push({ id: G.mobs.length, floor: TOWER.floors, x, y, hp, maxhp: hp, awake: true, cd: MB.step, grab: null, taunt: null, summoned: true });
     made++;
   }
-  if(made) log(G, `📯 ${G.boss.name} invoque ${made} ${TOWER.sides[G.side].mob}${made > 1 ? 's' : ''} sur le toit !`);
+  if(made) log(G, `📯 ${G.boss.name} invoque ${made} ${mobOf(G)}${made > 1 ? 's' : ''} sur le toit !`);
 }
 
 /* Marche d'un mob (25/10/2026, mouvement continu, comme dans la mine) : sur la ligne du bas de son étage, il GLISSE vers
@@ -319,7 +326,7 @@ function mobDied(G, m, o){
   const left = G.mobs.filter(q => q.floor === o.floor && q.hp > 0).length;
   const where = o.floor >= TOWER.floors ? 'toit' : `étage ${o.floor}`;
   /* « porte ouverte » seulement pour un étage « mobs » (un mob descendu ou invoqué ailleurs : simple compte, 28/10) */
-  log(G, left || G.kinds[o.floor] !== 'mobs' ? `⚔ ${m.name} abat un ${TOWER.sides[G.side].mob} (${where} : encore ${left})`
+  log(G, left || (G.kinds[o.floor] !== 'mobs' && !G.phase2) ? `⚔ ${m.name} abat un ${mobOf(G)} (${where} : encore ${left})`
               : `🚪 Étage ${o.floor} nettoyé : la porte du plafond s'ouvre`);
 }
 
@@ -460,7 +467,7 @@ export function decide(G, m){
     if(path?.length) return follow(G, m, path, 'Va installer le treuil');
     m.winchJob = null;                                    // pas de chemin : il remonte comme d'habitude
   }
-  const mobName = TOWER.sides[G.side].mob;
+  const mobName = mobOf(G);
   /* taclé : il ne fait que combattre le mob qui le tient ; repoussé, il revient au contact (pas marqués data.fight :
      le tacle ne les interrompt pas) */
   const tk = tackler(G, m);
@@ -658,7 +665,7 @@ function land(G, m){
     if(m.fallN >= CFG.stunFall) log(G, `💫 ${m.name} tombe ${m.y >= G.floor ? "jusqu'au pied de la tour" : 'plus bas'} (${m.fallN} cases)`);
     if(m.y >= G.roof){ G.stats.falls++; m.stats.falls++; m.fell = true; }   // tombé : regroupement en remontant
     /* logisticien (skill Treuil) tombé au pied de la tour, dehors : il installera le treuil (un seul par partie) */
-    if(m.skill.winch && !G.winch && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))
+    if(m.skill.winch && !G.winch && !G.winchBroken && m.y === G.floor && (m.x < G.x0 || m.x > G.x1) && !G.miners.some(o => o.winchJob))
       m.winchJob = m.x < G.x0 ? 'L' : 'R';
   }
   m.fallN = 0; m.knocked = false;
@@ -704,6 +711,7 @@ function damageBoss(G, m, dmg, push = false){
   if(!G.boss.engaged){ G.boss.engaged = true; G.timeline.engaged = G.t; log(G, `⚔ ${m.name} engage le combat contre ${G.boss.name}`); }
   if(G.boss.hp <= 0){
     log(G, `🏆 ${G.boss.name} est vaincu ! Coup final de ${m.name}.`);
+    if(G.stele && !G.phase2) return startPhase2(G);   // stèle : l'autre boss arrive (30/10)
     endTower(G, true);
   }
 }
@@ -757,7 +765,7 @@ function blast(G, m, cx, cy){
   if(boss) damageBoss(G, m, hitDmg(G, m) * S.dmg);
   cast(G, m, 'dynamite');
   log(G, `🧨 ${m.name} : dynamite, ${cells.length} bloc${cells.length > 1 ? 's' : ''} cassé${cells.length > 1 ? 's' : ''}`+
-         `${foes.length ? `, ${foes.length} ${TOWER.sides[G.side].mob}${foes.length > 1 ? 's' : ''} touché${foes.length > 1 ? 's' : ''}` : ''}${boss ? `, ${G.boss.name} touché` : ''}`);
+         `${foes.length ? `, ${foes.length} ${mobOf(G)}${foes.length > 1 ? 's' : ''} touché${foes.length > 1 ? 's' : ''}` : ''}${boss ? `, ${G.boss.name} touché` : ''}`);
 }
 /* en combat (il frappe un mob ou le boss) : Cri de guerre (lui et les mineurs à son rayon), Cleave (les mobs à son
    rayon ; le boss s'il est à son contact), Dynamite sur le boss (s'il est dans le rayon), ou sur un mob entouré (fightFoes, 29/10) */
@@ -794,7 +802,7 @@ function supportSpells(G, m){
   if(ready(G, m, 'hand_of_justice')){
     const S = SPELL.hand_of_justice;
     const o = liveMobs(G).filter(o => o.grab != null && !(o.stunUntil > G.t) && mobDist(o, m) <= S.range).sort((a, b) => (a.grab === m.id) - (b.grab === m.id))[0];
-    if(o){ cast(G, m, 'hand_of_justice'); o.stunUntil = G.t + S.stun; o.grab = null; log(G, `⚖ ${m.name} : Hand of Justice étourdit un ${TOWER.sides[G.side].mob}`); }
+    if(o){ cast(G, m, 'hand_of_justice'); o.stunUntil = G.t + S.stun; o.grab = null; log(G, `⚖ ${m.name} : Hand of Justice étourdit un ${mobOf(G)}`); }
   }
   if(ready(G, m, 'ulti_shen') && !tackler(G, m)){
     const S = SPELL.ulti_shen;
@@ -924,9 +932,47 @@ function startJump(G, level){
   log(G, `🦅 ${G.boss.name} s'envole au-dessus du toit !`);
   summonMobs(G, G.lv.summon || 0);   // niveau 2 : 2 mobs à chaque envol (28/10)
 }
+/* ---------- stèle : phase 2 (30/10/2026, Geoffrey ; TOWER.stele) ----------
+   Le boss de l'autre camp tombe du ciel au centre du toit (PV × bossHp), le treuil est cassé, et mobs mobs de l'autre camp
+   (PV × mobHp, réveillés) apparaissent dans chaque étage de floors : leur étage reste fermé tant qu'il en reste. */
+function startPhase2(G){
+  const S = TOWER.stele, other = otherSide(G.side), hp = B.hp * G.lv.hp * S.bossHp, old = G.boss;
+  G.phase2 = true; G.timeline.phase2 = G.t;
+  G.boss = { ...old, name: TOWER.sides[other].boss, side: other, hp, maxhp: hp, cd: B.hitEvery, x: G.bx, kx: 0,
+             target: null, focus: null, taunt: null, engaged: true, moveCd: 0, phase: 0,
+             air: { stage: 'fall', t: 0, crash: true }, lift: S.fallHigh };
+  log(G, `☄ ${G.boss.name} tombe du ciel !`);
+  if(G.winch){
+    log(G, `🔨 ${G.boss.name} brise ${G.winch.lift ? "l'ascenseur" : 'le treuil'}`);
+    for(const m of G.miners) if(m.action?.data?.winch){ m.action = null; m.knocked = true; m.fallN = 0; }   // dans le seau : il tombe
+    G.winch = null;
+  }
+  G.winchBroken = true;
+  for(const m of G.miners) m.winchJob = null;
+  const mhp = MB.hp * G.lv.hp * S.mobHp;
+  let made = 0;
+  for(const k of S.floors){
+    if(k < 0 || k >= TOWER.floors) continue;
+    const entry = k > 0 ? gateCols(G, k - 1) : [], y = floorBottom(G, k), cols = [];
+    for(let x = G.x0 + 1; x < G.x1; x++) if(!entry.some(g => Math.abs(g - x) <= 1) && towerAir(G, x, y) && towerAir(G, x, y - 1) && !towerAir(G, x, y + 1)) cols.push(x);
+    for(let i = 0; i < S.mobs && cols.length; i++){
+      const x = cols.splice(Math.floor(G.rng() * cols.length), 1)[0];
+      G.mobs.push({ id: G.mobs.length, floor: k, x, y, hp: mhp, maxhp: mhp, awake: true, cd: MB.step, grab: null, taunt: null, side: other, stele: true });
+      made++;
+    }
+  }
+  if(made) log(G, `📯 ${made} ${mobOf(G)}s envahissent la tour !`);
+}
+
 function stepJump(G){
   const b = G.boss, a = b.air;
   a.t += DT;
+  if(a.crash){                                        // phase 2 : chute depuis le ciel, puis l'écrasement
+    const p = Math.min(1, a.t / TOWER.stele.fall);
+    b.lift = TOWER.stele.fallHigh * (1 - p);
+    if(p >= 1) landBoss(G, TOWER.stele.crashKnock);
+    return;
+  }
   if(a.stage === 'fly'){
     const p = Math.min(1, a.t / B.jumpFly);
     b.x = Math.round(a.x0 + (G.bx - a.x0) * p); b.lift = B.jumpHigh * p;
@@ -939,13 +985,13 @@ function stepJump(G){
     if(p >= 1) landBoss(G);
   }
 }
-function landBoss(G){
+function landBoss(G, n = B.jumpKnock){
   const b = G.boss;
   b.air = null; b.lift = 0; b.cd = B.hitEvery; b.moveCd = 0;
-  log(G, `💥 ${G.boss.name} retombe sur le toit !`);
+  log(G, n > B.jumpKnock ? `💥 ${G.boss.name} s'écrase sur le toit !` : `💥 ${G.boss.name} retombe sur le toit !`);
   for(const m of [...G.miners]){
     if(!onTop(G, m)) continue;
-    knock(G, m, B.jumpKnock);
+    knock(G, m, n);
     if(!towerSupported(G, m.x, m.y)) continue;   // projeté hors du toit : il tombe
     if((m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
     m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: { cause: 'land' } }; m.status = 'Étourdi (atterrissage)';
@@ -998,6 +1044,7 @@ export function endTower(G, success){
   if(!success && G.boss.hp > 0 && G.miners.length) log(G, `⌛ Temps écoulé : ${G.boss.name} tient toujours (${Math.ceil(G.boss.hp)} PV).`);
   G.summary = {
     mode: 'tower', id: G.id, seed: G.seed, side: G.side, level: G.level, success: !!success, t: G.t,
+    ...(G.stele ? { stele: G.stele, phase2: G.phase2 } : {}),
     bossHp: Math.ceil(G.boss.hp), bossMax: G.boss.maxhp, mined: G.stats.mined, knocks: G.stats.knocks, falls: G.stats.falls,
     floor: reached(G), kills: G.stats.kills, loot: success ? towerLoot(G) : {},
     shares: G.roster.map(m => ({ miner: m.name, color: m.color, account: m.account, left: m.left != null, bag: {},

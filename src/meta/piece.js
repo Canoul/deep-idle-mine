@@ -152,7 +152,7 @@ export const treasureOf = item => ITEMS[item]?.treasure ? ITEMS[item].chest : nu
    tel quel sinon ; couleur du nom : celle de la qualité d'un trésor, null sinon (celle de la rareté) */
 export function itemName(item){
   const t = treasureOf(item);
-  return t ? `${qualityDef(t.q).label} ${(RUNE.treasures[t.side] ?? GOBLIN_KING.chest).name}` : item;
+  return t ? `${qualityDef(t.q).label} ${(RUNE.treasures[t.side] ?? GOBLIN_KING.chest).name}` + (RUNE.luck?.[t.luck] ? ` ${RUNE.luck[t.luck].label}` : '') : item;
 }
 export const itemColor = item => { const t = treasureOf(item); return t ? qualityDef(t.q).color : null; };
 

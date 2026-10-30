@@ -81,10 +81,10 @@ export function createTowerRenderer(cv){
       if(a > 0.01){ ctx.fillStyle = `rgba(4,2,8,${a.toFixed(2)})`; ctx.fillRect(x * T, y * T, T, T); }
     }
     /* mobs des étages (2 cases de haut) et leur vie */
-    const mobTex = TOWER.sides[G.side]?.mobTex;
     for(const o of G.mobs || []){
+      const ms = o.side ?? G.side;   // phase 2 d'une stèle : mobs de l'autre camp (30/10)
       const [ox, oy] = posOf(G, o, now), px = ox * T, py = (oy - 1) * T;
-      blit(mobTex, px, py, G.side === 'demon' ? '#8a1f2a' : '#e8f0ff', T, 2 * T);
+      blit(TOWER.sides[ms]?.mobTex, px, py, ms === 'demon' ? '#8a1f2a' : '#e8f0ff', T, 2 * T);
       if(o.awake && o.hp < o.maxhp){
         ctx.fillStyle = '#000'; ctx.fillRect(px + 1, py - 4, T - 2, 3);
         ctx.fillStyle = '#ff5a3b'; ctx.fillRect(px + 1, py - 4, (T - 2) * Math.max(0, o.hp / o.maxhp), 3);
@@ -105,12 +105,13 @@ export function createTowerRenderer(cv){
     /* boss et sa barre de vie */
     const b = G.boss, bw = TOWER.boss.w * T, bh = TOWER.boss.h * T, bxp = bx0 * T, byp = by0 * T;
     if(b.hp > 0){
-      const img = bossTex(G.side);
+      const bs = b.side ?? G.side;   // phase 2 d'une stèle : le boss de l'autre camp (30/10)
+      const img = bossTex(bs);
       if(ready(img)) ctx.drawImage(img, bxp, byp, bw, bh);
-      else { ctx.fillStyle = G.side === 'demon' ? '#5a1f4a' : '#f4f7ff'; ctx.fillRect(bxp, byp, bw, bh); }
+      else { ctx.fillStyle = bs === 'demon' ? '#5a1f4a' : '#f4f7ff'; ctx.fillRect(bxp, byp, bw, bh); }
       const pct = Math.max(0, b.hp / b.maxhp);
       ctx.fillStyle = '#000'; ctx.fillRect(bxp - 2, byp - 8, bw + 4, 6);
-      ctx.fillStyle = pct < (TOWER.levels[G.level] ?? TOWER.levels[1]).rageBelow ? '#ff3b3b' : G.side === 'demon' ? '#c48bff' : '#8fd8ff';
+      ctx.fillStyle = pct < (TOWER.levels[G.level] ?? TOWER.levels[1]).rageBelow ? '#ff3b3b' : bs === 'demon' ? '#c48bff' : '#8fd8ff';
       ctx.fillRect(bxp - 1, byp - 7, (bw + 2) * pct, 4);
       drawMobFx(ctx, [b.rage && 'rage', b.air && 'air', b.taunt && 'taunt'].filter(Boolean), bxp + bw / 2, byp - 8, bw, now, T);   // états du boss (28/10)
     }
