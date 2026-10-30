@@ -5,7 +5,7 @@ import { createEnergy, sanitizeEnergy, canPay, rollCost, spendEnergy, creditEner
 
 test('créer et assainir : un compte part de 0 (30/10/2026 : tous les joueurs à 0 à la mise en ligne)', () => {
   assert.equal(ENERGY.start, 0);
-  assert.deepEqual(createEnergy(), { value: 0, keys: [] });
+  assert.deepEqual(createEnergy(), { value: 0, keys: [], at: null });
   assert.equal(sanitizeEnergy(null).value, 0);
   assert.equal(sanitizeEnergy({ value: 'x' }).value, 0);
   assert.equal(sanitizeEnergy({ value: -5 }).value, 0);

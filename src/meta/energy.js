@@ -6,12 +6,22 @@ import { ENERGY, DT } from '../config.js';
 const tenth = n => Math.round(n * 10) / 10;
 const clamp = n => Math.min(ENERGY.max, Math.max(0, n));
 
-export function createEnergy(){ return { value: ENERGY.start, keys: [] }; }
+export function createEnergy(){ return { value: ENERGY.start, keys: [], at: null }; }   // at : dernier calcul du repos (ms, serveur)
 export function sanitizeEnergy(e){
   const out = createEnergy();
   if(e && typeof e.value === 'number' && Number.isFinite(e.value)) out.value = tenth(clamp(e.value));
   if(Array.isArray(e?.keys)) out.keys = e.keys.filter(k => typeof k === 'string').slice(-ENERGY.memory);
+  if(typeof e?.at === 'number' && Number.isFinite(e.at)) out.at = e.at;
   return out;
+}
+/* repos (30/10/2026) : ajoute l'énergie de repos entre from et now (ms réels, vitesse speed), plafonnée ; e.at = now.
+   Renvoie le gain. from : début du repos (le serveur prend le plus tard entre e.at et la fin de la dernière activité) */
+export function settleIdle(e, from, now, speed){
+  const ms = Number.isFinite(from) ? Math.max(0, now - from) : 0;
+  const before = e.value;
+  e.value = tenth(clamp(e.value + ms / 3600e3 * speed * ENERGY.idlePerHour));
+  e.at = now;
+  return tenth(e.value - before);
 }
 
 export const canPay = e => e.value >= ENERGY.cost.min;

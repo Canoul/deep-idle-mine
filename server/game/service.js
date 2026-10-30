@@ -47,7 +47,7 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
-import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../../src/meta/energy.js';
+import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
          addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
@@ -229,7 +229,19 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     return r?.value ?? r;
   });
   /* progression (XP totale) : relue et revérifiée à chaque fois ; le navigateur voit niveau, avancement et points */
-  const loadEnergy = async accountId => sanitizeEnergy(await store.getEnergy(accountId));   // revérifiée à chaque fois, départ si absente
+  /* énergie relue et revérifiée à chaque fois (départ si absente) ; repos (30/10/2026) : sans session en cours ni prison
+     (qui tourne ou attend), le temps depuis le dernier calcul ou la fin de la dernière activité rapporte ENERGY.idlePerHour
+     par heure de jeu ; enregistré dès qu'il rapporte. Pendant une activité, rien (la prison recharge à sa façon). */
+  const loadEnergy = async accountId => {
+    const e = sanitizeEnergy(await store.getEnergy(accountId)), now = clock();
+    const prisonRec = sanitizePrison(await store.getPrison?.(accountId));
+    const busy = !!await activeOf(accountId) || prisonRec?.state === 'running' || prisonRec?.state === 'waiting';
+    if(e.at == null){ e.at = now; await store.putEnergy(accountId, e); return e; }   // premier calcul : le repos compte à partir d'ici
+    if(busy){ e.at = now; return e; }
+    const lastEnd = (await store.sessionsOf(accountId)).reduce((m, s) => Math.max(m, Number.isFinite(s?.endedAt) ? s.endedAt : 0), prisonRec?.endedAt ?? 0);
+    if(settleIdle(e, Math.max(e.at, lastEnd), now, GAME.speed) > 0) await store.putEnergy(accountId, e);
+    return e;
+  };
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
   /* Rattrapage : max des `areas` de l'historique (session_stat, gardé sans limite) pour ce compte. */
   const historyAreaMax = async accountId =>
@@ -1038,6 +1050,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const profile = prisonProfile(await store.sessionsOf(me.id), me.id, dev), area = profile.area;
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
+        await loadEnergy(me.id);   // repos soldé jusqu'à l'entrée en prison (30/10/2026)
         const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);

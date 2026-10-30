@@ -1689,7 +1689,9 @@ export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3,
 /* Énergie du compte (29/10/2026) : lancer une mine classique coûte un entier tiré dans cost.min..cost.max (refus sous
    cost.min) ; la prison la recharge de prisonPerHour par heure de jeu. max : plafond · start : énergie d'un nouveau
    compte · memory : dernières clés d'opération mémorisées (idempotence). */
-export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPerHour: 4, memory: 200 };
+/* idlePerHour (30/10/2026, Geoffrey) : au repos (ni session en cours, ni prison), le compte regagne idlePerHour d'énergie
+   par heure de JEU (× GAME.speed par heure réelle), plafonnée à max ; calculée par le serveur à la lecture */
+export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPerHour: 4, idlePerHour: 3, memory: 200 };
 
 /* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,
    une seule area (AREA_H lignes) au contenu de l'area max débloquée du joueur, width colonnes centrées sur le coffre
