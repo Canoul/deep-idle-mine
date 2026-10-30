@@ -5657,3 +5657,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Fusion avec main (30/10, après la mise en ligne de l'Instance II) : conflits seulement dans la doc (journal, debug) ;
   `gen_textures.py` fusionné sans conflit. L'entrée du 27/10 « Lancer grisé », restée dans le bloc modèle du journal sur
   main, est rangée avec les entrées du 27/10. ✅ en ligne le 30/10.
+
+## 30/10/2026 — Stèles : retours de partie (Geoffrey)
+- `src/meta/shrines.js` : `consume(st)` = mine classique seulement ; `steleFor(st, camp)`, `setStele(st, { shrine, on })`
+  (champ `off`, relu par `sanitizeShrines`), `spendStele(st, id, opId)` (idempotent via `ops`, opId `stele:<session>`).
+  `SHRINES.list.*.sessions` : 1 (les anciennes valeurs 2-3 sont ramenées à 1 par le plafond de `sanitizeShrines`).
+- `server/game/service.js` : plus rien pris au lancement d'une tour ; `rec.steleOwner` = le chef ; `settleWith` consomme à
+  la victoire, sous `shrine:<chef>`. Sessions lancées avant ce correctif : pas de `steleOwner`, déjà décomptées, rien à
+  reprendre. Une stèle déjà engagée dans une partie en cours du même chef (il l'a quittée) ne compte pas une seconde fois.
+  Route `POST /api/party/stele` (`party.steleSet`, chef seulement, `not_leader`).
+- `src/sim/tower/session.js` : `landBoss` : à l'écrasement, tirage de ténacité AVANT la projection ; atterrissage normal
+  inchangé (projection toujours, ténacité sur l'étourdissement). `startPhase2` : `engaged: false` (avant : true, il marchait
+  sur le premier arrivé), `fell = true` pour ceux qui ne sont pas sur le toit (regroupement), `winchBroken` seulement si un
+  treuil était posé. `knockRes` était déjà gardé par le `...old`.
+- `src/ui/lobby.js` : `shownShrines` (pur), bouton `data-stele-set`.
+- Point à confirmer : « le logisticien ne pose pas de treuil sur le 2e boss si il n'en avait pas fait avant » lu comme un
+  bug (il doit pouvoir le poser). Lobby : plus de paiement d'avance depuis la Mine, tour ouverte obligatoire.
+

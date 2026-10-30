@@ -50,7 +50,7 @@ import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
          addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
-import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
+import { sanitizeShrines, give as giveShrine, consume as consumeShrines, steleFor, setStele, spendStele, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
@@ -85,7 +85,7 @@ const SPELL_ERRORS = { unknown: 'Sort inconnu.', locked: 'Ce sort n\'est pas enc
                        not_scroll: 'Cet objet n\'est pas un parchemin de sort.', already_learned: 'Tu connais déjà ce sort : ton parchemin est gardé.',
                        not_owned: 'Tu n\'as pas ce parchemin.', bad_request: 'Demande invalide.' };
 const SHRINE_ERRORS = { bad_shrine: 'Shrine inconnu.', bad_item: 'Ce shrine ne demande pas cet objet.', bad_qty: 'Quantité invalide.',
-  active: 'Ce shrine est déjà actif.', full: 'Cet objet est déjà entièrement donné.', not_owned: 'Tu n\'en as pas assez.' };
+  active: 'Ce shrine est déjà actif.', not_charged: 'Cette stèle n\'est pas chargée.', full: 'Cet objet est déjà entièrement donné.', not_owned: 'Tu n\'en as pas assez.' };
 const SET_ERRORS = { unknown: 'Set introuvable.', too_many: 'Tu as déjà le nombre maximum de sets.',
                      bad_name: 'Nom vide ou trop long.', session_running: 'Impossible pendant une session : termine-la d\'abord.',
                      bad_request: 'Demande invalide.' };
@@ -692,6 +692,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const i = heirs.indexOf(share);
           share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random), shrineOf(rec.stele)?.effect?.luck ?? null)]: 1, ...parts[i] } : {};   // stèle : trésor béni (30/10)
         }
+        /* stèle (30/10/2026, Geoffrey) : sa charge n'est consommée qu'à la victoire ; un échec la laisse au chef */
+        if(summary.success && rec.steleOwner) await withLock('shrine:' + rec.steleOwner, async () => {
+          const st = sanitizeShrines(await store.getShrines(rec.steleOwner));
+          if(spendStele(st, rec.stele, 'stele:' + rec.id)) await store.putShrines(rec.steleOwner, st);
+        });
       }
       /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
          I : Coffre du Roi Gobelin), qualité tirée par le serveur comme un trésor de tour.
@@ -1004,14 +1009,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         }
         /* shrines du chef (28/10/2026, SHRINES) : mine classique hors mode dev ; chaque shrine actif perd une session ici,
            au lancement, et ses effets sont enregistrés dans la session (la partie se rejoue à l'identique) */
-        const shrines = (mode === 'mine' || side) && !dev ? await withLock('shrine:' + me.id, async () => {
-          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st, side || null);   // tour : ses stèles (30/10)
+        const shrines = mode === 'mine' && !dev ? await withLock('shrine:' + me.id, async () => {
+          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st);
           if(used.length) await store.putShrines(me.id, st);
           return used;
         }) : [];
-        /* stèle d'une tour (30/10/2026, SHRINES exorcisme / pacte) : la première active de ce camp ; en mode dev, imposée par
-           body.stele (pour tester sans la payer) */
-        const stele = side ? (dev ? (shrineOf(body.stele)?.tower === side ? body.stele : null) : shrines[0] ?? null) : null;
+        /* stèle d'une tour (30/10/2026, SHRINES exorcisme / pacte) : celle de ce camp, chargée et activée par le chef ; rien
+           n'est pris ici, la charge part à la victoire (settleWith). Déjà engagée dans une partie en cours de ce chef (il l'a
+           quittée) : elle ne compte pas une seconde fois. En mode dev, imposée par body.stele (pour tester sans la payer) */
+        let stele = side && dev && shrineOf(body.stele)?.tower === side ? body.stele : null;
+        if(side && !dev){
+          const id = steleFor(sanitizeShrines(await store.getShrines(me.id)), side);
+          const taken = (await store.sessionsOf(me.id)).some(s => ACTIVE.includes(s.status) && s.stele === id && s.steleOwner === me.id);
+          stele = taken ? null : id;
+        }
         const rec = {
           id: crypto.randomUUID(),
           mode,
@@ -1029,8 +1040,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
-          ...(shrines.length && !side ? { shrines } : {}),
-          ...(stele ? { stele } : {}),
+          ...(shrines.length ? { shrines } : {}),
+          ...(stele ? { stele, ...(dev ? {} : { steleOwner: me.id }) } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
@@ -1572,6 +1583,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           await store.putShrinesAndInventory(leaderId, st, me.id, JSON.parse(serialize(inv)));
         }
         return { shrines: publicShrines(st), inventory: publicInventory(inv), given: r.given, activated: r.activated };
+      });
+    },
+    /* le chef active ou désactive une stèle chargée (30/10/2026) : body = { shrine, on } */
+    async steleSet(leaderId, body = {}){
+      return withLock('shrine:' + leaderId, async () => {
+        const st = sanitizeShrines(await store.getShrines(leaderId)), r = setStele(st, { shrine: body.shrine, on: body.on });
+        if(r.error) fail(r.error, r.error === 'not_charged' ? 409 : 400, SHRINE_ERRORS[r.error]);
+        await store.putShrines(leaderId, st);
+        return { shrines: publicShrines(st) };
       });
     },
     /* code d'un nouveau lobby de ce chef : le sien, gardé, tant qu'il a un shrine (actif ou en cours de paiement) ;

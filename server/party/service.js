@@ -459,6 +459,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { ...r, party: p ? publicParty(p, me.id) : null };
     },
 
+    /* activer ou désactiver une stèle chargée : le chef du groupe, ou soi-même seul ; body = { shrine, on } (30/10/2026) */
+    async steleSet(me, body = {}){
+      touch(me);
+      const p = partyOf(me.id);
+      if(p && p.leader !== me.id) fail('not_leader', 403, 'Seul le chef du groupe peut le faire.');
+      return game.steleSet(me.id, body);
+    },
+
     /* lancer la prison (29/10) : solo seulement ; le service de jeu refuse si le groupe compte plusieurs joueurs */
     async prisonLaunch(me, body = {}){
       touch(me);
