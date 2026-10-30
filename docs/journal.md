@@ -27,7 +27,7 @@ Modèle d'entrée :
   de diamant** sur une case sombre au cadre orange, aux couleurs de l'interface. La même icône sert si on ajoute le site
   à l'écran d'accueil d'un téléphone.
 - **À suivre** : rien ; pour retoucher le dessin, modifier la grille dans `scripts/gen_favicon.py` et le relancer.
-- **État** : 🧪 sur la branche `jules/favicon` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
 - **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
