@@ -377,6 +377,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #log,.miLog{max-height:calc(110*var(--u));overflow:auto;color:var(--mut)}
 #log div,.miLog div{padding:var(--u) 0;box-shadow:0 var(--u) 0 var(--sep)}
 #log b{color:var(--txt);font-weight:400}
+/* téléphone (30/10/2026) : pas de défilement interne du journal (le doigt y restait coincé, sans pouvoir descendre
+   jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
+@media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
