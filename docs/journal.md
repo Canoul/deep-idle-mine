@@ -15,7 +15,7 @@ Modèle d'entrée :
   temps que leur Coffre du Roi Gobelin). **Échec** ou **départ avant la fin** (un joueur, ou tout le groupe qui quitte) :
   on **garde sa clé**. Avant, elle était prise au lancement et rendue seulement en cas d'échec : un joueur parti avant
   une victoire la perdait. Textes du lobby, de l'écran de fin et du wiki mis à jour.
-- **État** : 🔧 branche `geoffrey/cle-consommee-victoire`, pas en ligne
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : plus de minerais (oreMul 0,24 → 0,27)
 - **Pour nous** : la prison contient 12,5 % de minerais en plus, pour viser 50 % du rendement d'une mine (on était vers 40 %).
