@@ -810,9 +810,10 @@ export const FURNACE = {
     { out:'Tainted iron', in:{ 'Lingot de fer':5, 'Chitine':15 }, fuel:50, time:180, tex:'ingot_tainted' },   // chitine 15 depuis le 25/10/2026 (Geoffrey ; avant 20)
     { out:'Tainted gold', in:{ 'Lingot d\'or':5,  'Peau de gobelin':20 }, fuel:50, time:180, tex:'ingot_tainted_gold' },
     { out:'Steel ingot',  in:{ 'Tainted iron':3,  'Graphite ingot':5 },   fuel:50, time:180, tex:'ingot_steel' },   // 23/10, Geoffrey ; graphite 10 → 5 (26/10)
-    /* 27/10/2026 (Geoffrey) ; combustible et durée provisoires (comme les autres alliages, choix de Claude) */
-    { out:'Cobalt ingot',  in:{ 'Mithril ingot':5, 'Refined cobalt':5 },  fuel:50, time:180, tex:'ingot_cobalt' },
-    { out:'Thorium ingot', in:{ 'Mithril ingot':5, 'Refined thorium':5 }, fuel:50, time:180, tex:'ingot_thorium' },
+    /* 27/10/2026 (Geoffrey) ; combustible et durée provisoires (comme les autres alliages, choix de Claude) ; 3 Tainted gold
+       en plus depuis le 30/10/2026 (Geoffrey, 3e case du four) */
+    { out:'Cobalt ingot',  in:{ 'Mithril ingot':5, 'Refined cobalt':5, 'Tainted gold':3 },  fuel:50, time:180, tex:'ingot_cobalt' },
+    { out:'Thorium ingot', in:{ 'Mithril ingot':5, 'Refined thorium':5, 'Tainted gold':3 }, fuel:50, time:180, tex:'ingot_thorium' },
   ],
   opMemory: 50,        // dernières demandes retenues (une demande renvoyée n'agit pas deux fois)
 };

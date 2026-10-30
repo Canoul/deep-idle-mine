@@ -5704,3 +5704,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Enquête en cours** : tour à ~1 fps signalée le 30/10, cause inconnue. Écarté : coût du tick et de la vue (0,04 / 0,13 ms, 7 Ko),
   charge du VPS (0,36 sur 2 cœurs, une seule mesure), blocage de `pump` par la prison. Il manque une ligne `?perf` prise pendant le lag.
 
+## 30/10/2026 — Four : 3e case d'alliage (Geoffrey)
+- **Quoi** : `src/meta/furnace.js` : case `c` (`INPUTS.alloy`, `SLOTS`, `newFurnace`), `alloyOf(...items)` (2 ou 3, ensemble exact),
+  `alloyFits(items)` (tous dans une même recette, il peut en manquer : c'est lui qui contrôle `load`), `activeRecipe` sur les cases
+  remplies. `src/ui/furnace.js` : case, libellé, signature d'affichage, choix des objets, texte d'état. Un four enregistré sans `c`
+  est relu normalement. `FURNACE.alloys` : Cobalt ingot et Thorium ingot + 3 Tainted gold (premières recettes à 3).
+- **Tests** ✅ `tests/furnace-trio.test.js` (8, avec une recette de test) ; furnace, graphite, iron-furnace-gold-compass, tier4,
+  game-service ; `tests/anticheat/furnace.test.js` : tir aléatoire étendu à `c` ; `npm run test:anticheat` 119/119.
+- ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
+  recette à 2, le four cuit celle à 2 tant que la 3e case est vide : éviter ce cas en config, ou décider d'une règle.
+

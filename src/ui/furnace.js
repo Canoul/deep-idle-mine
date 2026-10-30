@@ -5,7 +5,7 @@
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
-import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyOf, alloysWith, INPUTS, oreFor,
+import { advance, progress, ingotMs, accepts, recipeOf, activeRecipe, batches, alloyFits, alloysWith, INPUTS, oreFor,
          allRecipes, recipeUsable, recipeMax, recipePlan, FUEL } from '../meta/furnace.js';
 
 const $ = id => document.getElementById(id);
@@ -13,10 +13,10 @@ const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&
 const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const icon = item => { const d = itemDef(item); return d?.tex ? `<img src="textures/${d.tex}.png" alt="">` : ''; };
 const mmss = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
-const LABEL = { ore:'Minerai', a:'Ingrédient 1', b:'Ingrédient 2', fuel:'Combustible', out:'Sortie' };
+const LABEL = { ore:'Minerai', a:'Ingrédient 1', b:'Ingrédient 2', c:'Ingrédient 3', fuel:'Combustible', out:'Sortie' };
 const MODE_LABEL = { smelt:'Fondre', alloy:'Alliage' };
 const modeOf = f => f.mode === 'alloy' ? 'alloy' : 'smelt';
-const FURN_SLOTS = ['ore', 'a', 'b', 'fuel', 'out'];   // toutes les cases d'un four (« Tout retirer »)
+const FURN_SLOTS = ['ore', 'a', 'b', 'c', 'fuel', 'out'];   // toutes les cases d'un four (« Tout retirer »)
 const x = (item, n) => `${icon(item)}${rname(item, `${item} ×${num(n)}`)}`;
 
 /* onOp({ action, furnace, slot, item, qty }) → promesse (rejetée avec un message lisible) */
@@ -47,10 +47,11 @@ export function setupFurnace({ onOp }){
     return 'À l\'arrêt.';
   }
   function alloyStatus(f, r){
-    if(!f.a && !f.b) return 'Pose les deux ingrédients d\'un alliage (bouton Recettes).';
+    const put = INPUTS.alloy.filter(s => f[s]).map(s => f[s].item);
+    if(!put.length) return 'Pose les ingrédients d\'un alliage (bouton Recettes).';
     if(!r){
-      const one = (f.a || f.b).item, names = [...new Set(alloysWith(one).flatMap(a => Object.keys(a.in)).filter(i => i !== one))];
-      return `Ajoute l'autre ingrédient : ${esc(names.join(' ou '))}.`;
+      const names = [...new Set(alloysWith(put[0]).filter(a => put.every(i => Object.hasOwn(a.in, i))).flatMap(a => Object.keys(a.in)).filter(i => !put.includes(i)))];
+      return `Ajoute un autre ingrédient : ${esc(names.join(' ou '))}.`;
     }
     for(const [slot, n] of Object.entries(r.need)) if(!f[slot] || f[slot].qty < n)
       return slot === 'fuel' ? `Il faut ${n} combustibles pour un ${esc(r.out)}.` : `Il faut ${n} ${esc(f[slot]?.item ?? '')} pour un ${esc(r.out)}.`;
@@ -82,7 +83,7 @@ export function setupFurnace({ onOp }){
     shown = sig(list);
   }
   /* ce qui change l'affichage hors barre : contenu des cases et marche/arrêt */
-  const sig = list => JSON.stringify(list.map(f => [f.mode, f.ore, f.a, f.b, f.fuel, f.out, f.since]));
+  const sig = list => JSON.stringify(list.map(f => [f.mode, f.ore, f.a, f.b, f.c, f.fuel, f.out, f.since]));
 
   /* rafraîchissement léger : la barre et le texte avancent ; tout est redessiné si un lingot vient de finir */
   function refresh(){
@@ -112,8 +113,8 @@ export function setupFurnace({ onOp }){
   /* ---- fenêtre de choix : objet, quantité (saisie libre ou Max), ou retirer le contenu ---- */
   function openPicker(i, slot){
     const f = view()[i], cur = f[slot], mode = modeOf(f);
-    const other = slot === 'a' ? f.b : slot === 'b' ? f.a : null;   // alliage : l'autre ingrédient déjà posé
-    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode, inv) && (!other || alloyOf(s.item, other.item))).map(s => s.item))];   // recette fermée : seulement une fois apprise
+    const others = INPUTS.alloy.includes(slot) ? INPUTS.alloy.filter(s => s !== slot && f[s]).map(s => f[s].item) : [];   // alliage : les autres ingrédients déjà posés
+    const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode, inv) && (!others.length || alloyFits([s.item, ...others]))).map(s => s.item))];   // recette fermée : seulement une fois apprise
     let pick = cur?.item ?? items[0] ?? null;
     const box = $('fpick').querySelector('.box');
     const info = it => {

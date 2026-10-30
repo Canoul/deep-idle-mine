@@ -47,20 +47,20 @@ test('four : sauvegarde trafiquée (quantités folles, objets interdits, fours e
   const st = sanitizeFurnaces({ list: Array.from({ length: 10 }, () => ({
     ore:{ item:'Charbon', qty:50 }, fuel:{ item:'Charbon', qty:-5 }, out:{ item:'Lingot de fer', qty:1.5 }, since:Infinity })) });
   assert.equal(st.list.length, FURNACE.max);
-  for(const f of st.list) assert.deepEqual(f, { tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
+  for(const f of st.list) assert.deepEqual(f, { tier:0, mode:'smelt', ore:null, a:null, b:null, c:null, fuel:null, out:null, since:null });
 });
 
 test('alliage : matière conservée sur 300 suites d\'actions au hasard (modes, ingrédients, quantités trafiquées)', () => {
   const r = mulberry32(77);
   const BAG = { 'Lingot de fer':60, Chitine:200, Charbon:600, Fer:50 };
-  const tot = (inv, st, name) => { let n = countOf(inv, name); for(const f of st.list) for(const s of ['ore','a','b','fuel','out']) if(f[s]?.item === name) n += f[s].qty; return n; };
+  const tot = (inv, st, name) => { let n = countOf(inv, name); for(const f of st.list) for(const s of ['ore','a','b','c','fuel','out']) if(f[s]?.item === name) n += f[s].qty; return n; };
   for(let t = 0; t < 300; t++){
     const inv = createInventory(); addAll(inv, BAG);
     const st = createFurnaces(); let now = 1e6; const ids = [];
     for(let k = 0; k < 30; k++){
       const pick = a => a[Math.floor(r() * a.length)];
       const opId = ids.length && r() < 0.2 ? pick(ids) : 'o' + t + '-' + k; ids.push(opId);
-      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode','empty','emptyAll']), slot:pick(['ore','a','b','fuel','out']),
+      const o = { furnace:0, opId, action:pick(['load','load','unload','collect','mode','empty','emptyAll']), slot:pick(['ore','a','b','c','fuel','out']),
                   item:pick(Object.keys(BAG)), qty:r() < 0.2 ? pick(BAD_QTY) : 1 + Math.floor(r() * 40), mode:pick(['smelt','alloy','x']) };
       furnaceOp(st, inv, o, now);
       now += Math.floor(r() * 400_000);
