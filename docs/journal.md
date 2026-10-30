@@ -10,7 +10,7 @@ Modèle d'entrée :
 
 ```
 ## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle ou précédente
-- **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (les 10 dernières) ou « Précédente » (les 10 d'avant), par ex. après avoir fait monter des amis plus faibles, ou été porté par plus fort. Choisir la précédente la garde : elle prend la place de l'actuelle.
+- **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (les 10 dernières) ou « Précédente » (la moyenne des mines 11 à 20, disponible dès qu'on a plus de 10 mines), par ex. après avoir fait monter des amis plus faibles, ou été porté par plus fort. Choisir la précédente la garde : elle prend la place de l'actuelle.
 - **État** : 🧪 sur la branche `geoffrey/prison-paliers` (pas en ligne)
 
 ## 30/10/2026 — Geoffrey — Fortune et butin en plus : 0 pod

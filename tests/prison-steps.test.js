@@ -10,6 +10,11 @@ const mine = (i, a) => ({ mode: 'mine', status: 'done', endedAt: i, players: [{ 
 const hist = list => list.map(([i, a]) => mine(i, a));
 const range = (from, to, a) => Array.from({ length: to - from + 1 }, (_, k) => [from + k, a]);
 
+test('premier calcul avec 20 mines : actuelle = mines 1 à 10, précédente = mines 11 à 20', () => {
+  const s = prisonSteps(null, hist([...range(1, 10, 2), ...range(11, 20, 6)]), A);
+  assert.equal(s.cur.area, 6); assert.equal(s.cur.n, 10); assert.equal(s.prev.area, 2); assert.equal(s.prev.n, 10);
+});
+
 test('moins de 10 mines : la compo suit les dernières mines, pas de précédente', () => {
   const s = prisonSteps(null, hist(range(1, 4, 3)), A);
   assert.equal(s.cur.n, 4); assert.equal(s.cur.area, 3); assert.equal(s.prev, null);
@@ -20,7 +25,7 @@ test('palier figé : 5 nouvelles mines ne changent rien, 10 nouvelles décalent 
   assert.equal(s.cur.area, 7); assert.equal(s.cur.to, 10);
   const pl = [...range(1, 10, 7), ...range(11, 15, 2)];   // il PL des amis en area 2
   s = prisonSteps(s, hist(pl), A);
-  assert.equal(s.cur.area, 7, '5 mines : rien ne bouge'); assert.equal(s.prev, null);
+  assert.equal(s.cur.area, 7, '5 mines : rien ne bouge'); assert.equal(s.cur.to, 10);
   s = prisonSteps(s, hist([...pl, ...range(16, 20, 2)]), A);
   assert.equal(s.cur.area, 2, 'palier suivant : les 10 mines de PL'); assert.equal(s.prev.area, 7, 'il peut reprendre son ancienne compo');
 });

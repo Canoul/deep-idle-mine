@@ -72,7 +72,8 @@ export function prisonSteps(old, sessions, account, withDev = false){
   const pack = ms => ({ ...profileOf(ms), to: ms.length ? ms[0].at : 0 });
   const prev = sanitizeStep(old?.prev);
   let cur = sanitizeStep(old?.cur);
-  if(!cur || cur.n < N) return { cur: pack(all.slice(0, N)), prev };
+  /* pas encore de palier complet enregistré : actuelle = mines 1 à 10, précédente = mines 11 à 20 (30/10, Geoffrey) */
+  if(!cur || cur.n < N) return { cur: pack(all.slice(0, N)), prev: prev ?? (all.length > N ? pack(all.slice(N, 2 * N)) : null) };
   let p = prev;
   const newer = all.filter(m => m.at > cur.to).reverse();   // plus anciennes d'abord
   while(newer.length >= N){ p = cur; cur = pack(newer.splice(0, N).reverse()); }
