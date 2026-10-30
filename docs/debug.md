@@ -5714,3 +5714,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
   recette à 2, le four cuit celle à 2 tant que la 3e case est vide : éviter ce cas en config, ou décider d'une règle.
 
+## 30/10/2026 — Orbe (Geoffrey)
+- **Quoi** : `ITEMS.Orbe` (material, empilable, poids 1, texture `orb`), recette de base (src/recipes.js), texture dans
+  `scripts/gen_textures.py`. Sans usage.
+- **Tests** ✅ craft +1, boot-check, wiki, rarity, inventory.
+

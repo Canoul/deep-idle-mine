@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Nouvel objet : l'Orbe
+- **Pour le joueur** : un **Orbe** se fabrique dans l'onglet Craft, dès le départ : 30 Tissu sombre + 30 Vésicule de gaz + 10 Pierre
+  glissante. Il n'a pas encore d'usage.
+- **À suivre** : son usage, et sa rareté (commune par défaut).
+- **État** : 🧪 sur la branche `geoffrey/orbe` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
 - **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent
   que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.

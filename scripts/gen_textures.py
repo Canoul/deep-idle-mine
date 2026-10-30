@@ -522,6 +522,17 @@ def main():
     rect(cry, 12, 12, 1, 1, pale); rect(cry, 13, 2, 1, 1, pale)     # éclats
     tex['moon_crystal'] = cry
 
+    # Orbe (30/10) : sphère sombre et violette, reflet clair
+    orb = blank()
+    od, om, ol, oh = hexc('#2a1a3e'), hexc('#5b3a8c'), hexc('#9a6fd0'), hexc('#efe3ff')
+    for yy, (x0, w) in enumerate([(6, 4), (4, 8), (3, 10), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (3, 10), (4, 8), (6, 4)], start=2):
+        rect(orb, x0, yy, w, 1, om)
+        rect(orb, x0 + w - 2, yy, 2, 1, od)                         # côté dans l'ombre
+    rect(orb, 4, 11, 8, 2, od); rect(orb, 6, 13, 4, 1, od)          # dessous
+    rect(orb, 5, 4, 4, 1, ol); rect(orb, 4, 5, 3, 2, ol)            # lumière
+    rect(orb, 5, 5, 2, 1, oh)                                       # reflet
+    tex['orb'] = orb
+
     # Clé d'instance I (27/10) : clé de fer vert-de-gris (gobelins), anneau, tige et panneton, « I » gravé
     key = blank()
     kc, kd, kl = hexc('#7fae6a'), hexc('#4a6e3e'), hexc('#c9e6b4')
