@@ -41,7 +41,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 ## 30/10/2026 — Geoffrey — Pièces en mithril : 2 fois plus de lingots de mithril
 - **Pour le joueur** : casque, plastron, jambes et bottes en mithril coûtent 2 fois plus de Mithril ingot : 30, 48, 42
   et 32 (avant 15, 24, 21 et 16). Le reste de la recette ne change pas.
-- **État** : 🧪 sur la branche `geoffrey/mithril-x2` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Social : voir combien de joueurs il y a dans une session en cours
 - **Pour le joueur** : dans l'onglet Social (amis et liste **Online**) et dans le « Who ? » des tours, un joueur en session
