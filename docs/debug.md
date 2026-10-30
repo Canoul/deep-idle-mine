@@ -5395,3 +5395,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   (mines/h) ; rendement = moyenne des % des minerais que ses mines rapportent. Les mines de plus de 30 jours sont effacées par le
   serveur : la référence suit.
 - ✅ `tests/prison-dashboard.test.js` 2/2 ; vérifié en local (serveur, route, script, page).
+- **30/10, suite** : module déplacé dans `src/meta/prison-dashboard.js` (partagé navigateur / serveur) ; route `GET /api/game/admin/prison`
+  (compte non invité dont le pseudo est dans `ADMIN_VIEW.names`, sinon 404) ; bouton dans `src/ui/account.js` (`isTeam`), onglet ouvert au clic puis
+  rempli. ✅ vérifié en local (bouton, onglet, 404 pour un autre compte) ; « admin » est un pseudo réservé à l'inscription (compte créé à part).

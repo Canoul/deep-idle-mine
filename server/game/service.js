@@ -57,7 +57,7 @@ import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
-import { prisonRow } from '../admin/prison-dashboard.js';
+import { prisonRow } from '../../src/meta/prison-dashboard.js';
 import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, discoveryMessage } from '../social/discord.js';
 import { RECIPES } from '../../src/recipes.js';
 import { createLiveRunner } from './live.js';

@@ -1684,6 +1684,9 @@ export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'F
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
    serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.
    hidden : pseudos jamais classés (comptes de l'équipe pour tester, ex. « admin », 27/10). */
+/* comptes de l'équipe qui voient les outils d'équilibrage dans le jeu (30/10/2026 : rendement de la prison, Mon compte),
+   par pseudo ; le serveur refuse ces données à tout autre compte */
+export const ADMIN_VIEW = { names:['admin'] };
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
 
 /* Énergie du compte (29/10/2026) : lancer une mine classique coûte un entier tiré dans cost.min..cost.max (refus sous

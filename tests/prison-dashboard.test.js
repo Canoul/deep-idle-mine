@@ -1,7 +1,7 @@
 /* Tableau de bord de la prison (30/10/2026) : % minerai par minerai (prison ÷ mines, par heure de jeu), moyenne des minerais. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { prisonRow, renderPrisonDashboard } from '../server/admin/prison-dashboard.js';
+import { prisonRow, renderPrisonDashboard } from '../src/meta/prison-dashboard.js';
 
 const A = 'acc1';
 const mine = (i, bag) => ({ id: 'm' + i, mode: 'mine', status: 'done', endedAt: 1000 + i, result: { areasUnlocked: 7, shares: [{ account: A, bag }], miners: [] } });

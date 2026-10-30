@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Rendement de la prison dans le jeu (compte admin)
+- **Pour nous** : connecté avec le compte « admin », « Mon compte » (portrait en haut à gauche) a un bouton « 📊 Rendement de la prison » qui ouvre le tableau dans un nouvel onglet. Les autres comptes ne voient pas le bouton et le serveur leur refuse les données. Liste des comptes : `ADMIN_VIEW` en config.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Tableau de bord de la prison
 - **Pour le joueur** : rien (outil de l'équipe).
 - **Pour nous** : `scripts/dashboard-prison.js` produit une page avec, pour chaque joueur, le rendement de sa prison comparé à ses 10 dernières mines, minerai par minerai (gain par heure de jeu), et la moyenne. Cible : 50 %.
