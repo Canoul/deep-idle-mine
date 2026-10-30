@@ -934,7 +934,12 @@ function frame(now){
     }
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff
-    navSession.classList.toggle('live', !!rec);
+    navSession.classList.toggle('live', !!rec || prisonActive(prison));
+    /* prison (30/10/2026) : la barre du haut la montre comme une session (run, avancée vers la fin du run) */
+    if(!rec && !waiting && prisonActive(prison)){
+      $('navTimer').textContent = `Prison · run ${prison.run}`;
+      $('navBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
+    }
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`
         : `· fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
