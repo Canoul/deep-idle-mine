@@ -17,6 +17,7 @@
     "simulate:tower": "node scripts/simulate-tower.js",
     "simulate:giant": "node scripts/simulate-giant.js",
     "simulate:instance": "node scripts/simulate-instance.js",
+    "simulate:golbute": "node scripts/simulate-golbute.js",
     "weights": "node scripts/weights.js",
     "stat-values": "node scripts/stat-values.js",
     "textures": "python scripts/gen_textures.py",
