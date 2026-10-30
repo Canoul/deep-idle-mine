@@ -9,7 +9,7 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey)
+## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey) ✅ en ligne le 30/10
 
 - Deux nouveaux « shrines » pour les tours du Jugement, payés dans le Lobby comme le Shrine d'abondance : **Stèle d'exorcisme** (Tour du Démon, 240 Stonebricks angéliques) et **Stèle du pacte** (Tour de l'Ange, 240 Stonebricks démoniaques). Actives 3 tours lancées par le chef (valeur provisoire, à confirmer).
 - Effet : quand le boss meurt, le boss de l'autre camp s'écrase sur le toit, projette tout le monde de 10 cases, casse le treuil, et 5 mobs de l'autre camp (150 % de PV) envahissent chaque étage. Le 2e boss a 150 % de PV. Même chrono de 10 min : il faut le tuer pour gagner.
