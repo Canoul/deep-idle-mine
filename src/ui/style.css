@@ -47,10 +47,19 @@ img,canvas{image-rendering:pixelated}
 body.townWalk .topbar,body.townWalk .views,body.townWalk .guide{visibility:hidden}
 /* chat global en promenade (sa carte est déplacée ici, src/main.js onWalk) : tout en bas à gauche */
 .townChat{display:none}
-/* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action */
-.townEnter{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
- 
-  font-size:var(--fs-l);padding:calc(2*var(--u)) calc(8*var(--u));white-space:nowrap}
+/* bouton « Entrer » devant une porte (src/ui/town.js) : au milieu, au-dessus de la barre d'action ; « Chercher un
+   groupe » à côté devant le chevalement et la place (30/10) */
+.townDoor{position:absolute;left:50%;bottom:calc(var(--dock-h) + 12px);transform:translateX(-50%);z-index:3;pointer-events:auto;   /* téléphone : sous le bandeau (town.js size) */
+  display:flex;flex-wrap:wrap;justify-content:center;gap:calc(3*var(--u));width:max-content;max-width:calc(100vw - 16px)}
+.townDoor button{font-size:var(--fs-l);padding:calc(2*var(--u)) calc(8*var(--u));white-space:nowrap}
+/* recherche de groupe dans la barre d'émotes (à la place de « On mine ? ») : icône, puis le temps de recherche */
+.townEmotes .townLfg{display:inline-flex;align-items:center;justify-content:center;gap:var(--u)}
+.townEmotes .townLfg:not(.on){color:var(--acc-lt)}
+.townEmotes .townLfg .pi{width:1em;height:1em}
+.townEmotes .townLfg span{font-size:var(--fs-s)}
+.townEmotes .townLfg span:empty{display:none}
+.townLfgMsg{color:var(--bad)}
+.townLfgMsg:empty{display:none}
 .bgTown.walk .townChat{display:block;position:absolute;left:12px;bottom:6px;width:min(360px,calc(100vw - 24px));pointer-events:auto;cursor:auto}   /* place exacte : src/ui/town.js placeChat */
 .townChat .card{margin:0;background:rgba(11,8,6,.85)}
 .townChat .chatLog{max-height:calc(46*var(--u))}

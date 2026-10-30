@@ -108,6 +108,8 @@ const town = setupTown($('bgTown'), {
   /* fiche d'un joueur dans la ville : demande d'ami (par ID : un invité n'a pas de pseudo), invitation dans mon groupe */
   friend: async id => setSocial(await socialApi.request(id)),
   invite: async id => { await partyApi.invite(id); pollLobby(); },
+  /* recherche de groupe depuis la ville (30/10) : celle du Lobby (lobby est créé plus bas, appelé seulement ensuite) */
+  lfg: { view: () => lobby.lfgView(), toggle: () => lobby.toggleLfg() },
   /* promenade : la carte du chat global quitte le Lobby pour le bas de l'écran, et y revient à la fin */
   onWalk: on => {
     const card = $('gchatCard');

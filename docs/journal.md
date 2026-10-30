@@ -22,6 +22,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Jules — Chercher un groupe depuis la ville (le Carreau)
+- **Pour le joueur** : plus besoin d'aller dans le Lobby pour chercher un groupe. Dans la promenade du Carreau :
+  - dans la **barre d'émotes**, un bouton groupe remplace l'émote « ⛏️ On mine ? » ; en recherche, il s'allume et affiche
+    le temps d'attente (« 0:46 ») ; un nouveau clic annule ;
+  - **devant le chevalement** (et la place), à côté de « Préparer une session », un bouton « Chercher un groupe (2 en
+    recherche) », puis « En recherche 0:46 · Annuler ».
+  C'est exactement la recherche du Lobby (mine classique) : le Lobby se met à jour, le « ? » doré apparaît au-dessus de
+  ton mineur (et chez les autres), et le « Groupe trouvé » arrive comme d'habitude.
+- **Décisions** : les deux emplacements (choix de Jules) ; l'émote « On mine ? » disparaît (même sens que le bouton).
+  Lancer la recherche depuis la ville passe le Lobby sur la mine classique.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Chat : les messages disparaissent au bout de 18 h
 - **Pour le joueur** : le chat garde toujours ses 50 derniers messages, mais un message de **18 h ou plus disparaît**
   tout seul : le serveur ne l'envoie plus et ne l'enregistre plus, et il s'efface de l'écran même si la page reste

@@ -11,7 +11,7 @@ import { createTownService } from '../server/town/service.js';
 import { townRoutes } from '../server/town/routes.js';
 import { TOWN_SERVER } from '../server/config.js';
 import { bubbleLines } from '../src/render/town.js';
-import { enterTab, enterLabel, tapAction, mergeOthers, cardHtml } from '../src/ui/town.js';
+import { enterTab, enterLabel, tapAction, mergeOthers, cardHtml, lfgButtons, launchSpot } from '../src/ui/town.js';
 
 test('plan : un bâtiment par onglet, de gauche à droite sans chevauchement, dans la ville', () => {
   const { buildings, width } = townLayout();
@@ -295,4 +295,20 @@ test('toucher la ville : au doigt, marcher là où on touche sans jamais entrer 
 test('rendu de la ville : jamais de ctx.filter sur le contexte principal (1 fps sur Chrome)', () => {
   const src = readFileSync(new URL('../src/render/town.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(src, /\bctx\.filter\b/);
+});
+
+/* 30/10 (Jules) : recherche de groupe depuis la ville, barre d'émotes et devant le chevalement / la place */
+test('recherche de groupe dans la ville : boutons selon la recherche du Lobby', () => {
+  assert.equal(lfgButtons(null), null);
+  assert.equal(lfgButtons({ show: false }), null, 'groupe complet, membre, hors ligne : pas de bouton');
+  assert.deepEqual(lfgButtons({ show: true, searching: false, players: 0 }),
+    { on: false, disabled: false, time: '', title: 'Chercher un groupe', door: 'Chercher un groupe' });
+  assert.equal(lfgButtons({ show: true, searching: false, players: 2 }).door, 'Chercher un groupe (2 en recherche)');
+  const mine = lfgButtons({ show: true, searching: true, cancel: true, start: 1000 }, 103000);
+  assert.deepEqual([mine.on, mine.disabled, mine.time, mine.door], [true, false, '1:42', 'En recherche 1:42 · Annuler']);
+  const chief = lfgButtons({ show: true, searching: true, cancel: false, start: 0 }, 5000);
+  assert.deepEqual([chief.on, chief.disabled, chief.door], [true, true, 'Recherche du chef 0:05']);
+  assert.ok(launchSpot(buildingOf('session')) && launchSpot(buildingOf('lobby')));
+  assert.ok(!launchSpot(buildingOf('four')) && !launchSpot(null));
+  assert.ok(!TOWN.emotes.some(e => e.id === 'mine'), '« On mine ? » remplacée par le bouton');
 });
