@@ -1,6 +1,7 @@
 /* Routes HTTP des groupes (/api/party/…). Toutes exigent un compte connecté.
    « Lancer la session » reste POST /api/game/start : quand un service de groupes existe, il passe par lui
-   (seul = session solo, en groupe = le chef lance pour tous). */
+   (seul = session solo, en groupe = le chef lance pour tous). La prison aussi (POST /api/game/prison/start) : refusée si
+   le groupe compte plusieurs joueurs. */
 import { PartyError } from './service.js';
 
 const needMe = ctx => { if(!ctx.me) throw new PartyError('not_authenticated', 401, 'Connecte-toi pour jouer.'); };
@@ -23,5 +24,6 @@ export function partyRoutes(party){
     'POST /api/party/promote': async ctx => { needMe(ctx); return party.promote(ctx.me, str(ctx.body.id)); },
     'POST /api/party/shrine':  async ctx => { needMe(ctx); return party.shrineGive(ctx.me, obj(ctx.body)); },
     'POST /api/game/start':    async ctx => { needMe(ctx); return [201, await party.launch(ctx.me, obj(ctx.body))]; },
+    'POST /api/game/prison/start': async ctx => { needMe(ctx); return [201, await party.prisonLaunch(ctx.me, obj(ctx.body))]; },
   };
 }

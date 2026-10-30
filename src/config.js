@@ -147,6 +147,8 @@ export const BLOCKS = {
   21:{name:'Mithril ore', type:'ore', tex:'mithril', w:3, hard:4.5, color:'#7d828c', dot:'#b8d4f0', val:5},
   22:{name:'Cobalt ore',  type:'ore', tex:'cobalt',  w:4, hard:5.5, color:'#7d828c', dot:'#2f5fe0', val:7},
   23:{name:'Thorium ore', type:'ore', tex:'thorium', w:4, hard:5.5, color:'#7d828c', dot:'#7ee04a', val:7},
+  /* barreaux de prison (29/10/2026, PRISON) : bordent la carte de la prison de chaque côté ; incassables, non minables */
+  24:{name:'Barreaux de prison', type:'special', tex:'prison_bars', w:0, hard:Infinity, color:'#2a2a33', dot:'#5a5a66', unbreakable:true, noDrop:true},
 };
 export const BARRIER = 7, BRIDGE = 8, TREASURE_BLOCK = 10, DUNGEON_WALL = 11, CHEST_BASE = 18, KHOLE_BLOCK = 20;
 /* clés utilisées dans les compositions d'areas ; « air » = case vide (id 0), générée en poches */
@@ -341,15 +343,15 @@ export const CRUSHER = {
 export const RESEARCH = {
   parts: 'Blueprint parts',
   tiers: [
-    { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:15, max:30 } },   // 25/10 au soir : avant 30 à 60
-    { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:30, max:45 } },   // 28/10 (Geoffrey) : avant 40 à 70
+    { tier:1, label:'Tier 1', from:'Treasure T1', cost:100, recycle:{ min:10, max:20 } },   // 30/10 (Geoffrey) : avant 15 à 30 (25/10 au soir : avant 30 à 60)
+    { tier:2, label:'Tier 2', from:'Treasure T2', cost:150, recycle:{ min:15, max:30 } },   // 30/10 (Geoffrey) : avant 30 à 45 (28/10 : avant 40 à 70)
     /* tier 3 (23/10/2026, Geoffrey) : recherche à 200 parts (26/10 ; avant 150). weights : poids d'un blueprint dans le
        tirage (1 par défaut) ; le plan épique sort 4 fois moins souvent que chaque autre */
-    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:45, max:60 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },   // recyclage 28/10 (Geoffrey) : avant 40 à 70
+    { tier:3, label:'Tier 3', from:'Treasure T3', cost:200, recycle:{ min:20, max:35 }, weights:{ 'Plastron de l\'équilibre BP':0.25 } },   // recyclage 30/10 (Geoffrey) : avant 45 à 60 (28/10 : avant 40 à 70)
     /* tier 4 (28/10/2026, Geoffrey) : plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des tiers 1 à 3
        sont apprises (règle commune, tierUnlocked). stages : le tirage se fait dans la première étape dont une recette
        reste à apprendre (chances égales) ; l'étape suivante s'ouvre quand toutes ses recettes sont apprises. */
-    { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:60, max:75 }, stages:[
+    { tier:4, label:'Tier 4', from:'Treasure T4', cost:250, recycle:{ min:25, max:40 }, stages:[
       [...['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en mithril BP`),
        'Lunettes Gucci BP', 'Doc Martins BP', 'Ceinture golémique BP', 'Gants de boucher BP'],
       ['thorium', 'cobalt'].flatMap(m => ['Casque', 'Plastron', 'Jambes', 'Bottes'].map(p => `${p} en ${m} BP`)),
@@ -511,7 +513,8 @@ export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
 export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
-  minRows:20, maxRows:48 };   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
+  minRows:20, maxRows:48,
+  maxZoom:4, wheelZoom:0.0025 };   // zoom (30/10, Geoffrey) : pincer à deux doigts ou Ctrl + molette, ×1 (toute la largeur) à ×maxZoom   // lignes visibles : la mine remplit la largeur, et montre autant de lignes que la hauteur en permet
 
 /* ---- Skills (onglet Skills, src/meta/skills.js) ----
    1 point par niveau gagné (XP.talentPerLevel). Trois arbres ; dépenser un point dans un arbre bloque les deux autres
@@ -744,7 +747,7 @@ export const EFFECTS = {
 
 
 /* textures : fichiers de textures/ (générés par scripts/gen_textures.py) */
-export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
+export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold','diamond','graphite','mithril','cobalt','thorium','tunnel','barrier','prison_bars','chest_base','khole','sky','bridge','treasure','treasure_t1','treasure_t2','treasure_t3',
   'blueprint','bp_parts','gem_ruby','gem_jade','gem_sapphire',
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
@@ -847,6 +850,10 @@ export const RUNE = {
      un % : inchangée). Un fragment se repose comme une rune (mêmes règles) ; un fragment posé ne se retire plus. */
   fragment: { item: 'Fragment de rune', tex: 'rune_fragment', factor: 0.5 },
   treasures: { angel: { name:'Trésor angélique', tex:'chest_angel' }, demon: { name:'Trésor démoniaque', tex:'chest_demon' } },
+  /* coefficients de chance d'un trésor (30/10/2026, Geoffrey) : même trésor, même table, chances multipliées (rings :
+     anneaux, RINGS.drops). Chaque entrée crée toute seule ses variantes R1 à R7 (« Trésor démoniaque R5 béni »), sans liste
+     à écrire. Donné par les stèles des tours (SHRINES, effect.luck). Ajouter un bonus = une entrée ici. */
+  luck: { beni: { label:'béni', rings:2 } },
   treasureRarity: 'unique',
   /* ancien : coffres empilables, plus donnés depuis le 22/10 ; rareté (contour de case) selon la qualité */
   chests: { angel: { name:'Coffre angélique', tex:'chest_angel' }, demon: { name:'Coffre démoniaque', tex:'chest_demon' } },
@@ -878,9 +885,11 @@ export const AURA = {
 };
 const QUALITY_NUMS = [1,2,3,4,5,6,7];
 /* nom interne du trésor d'une tour (side : 'angel' | 'demon') et d'une qualité (1 à 7) : « Trésor démoniaque R5 » */
-export const treasureItem = (side, q) => `${RUNE.treasures[side].name} R${q}`;
+/* luck : un coefficient de RUNE.luck (30/10/2026) ou rien ; « Trésor démoniaque R5 béni » */
+export const treasureItem = (side, q, luck = null) => `${RUNE.treasures[side].name} R${q}` + (luck && RUNE.luck[luck] ? ` ${RUNE.luck[luck].label}` : '');
 const TREASURE_ITEMS = Object.fromEntries(Object.entries(RUNE.treasures).flatMap(([side, c]) =>
-  QUALITY_NUMS.map(q => [treasureItem(side, q), { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q }, treasure:true }])));
+  [null, ...Object.keys(RUNE.luck)].flatMap(luck => QUALITY_NUMS.map(q => [treasureItem(side, q, luck),
+    { cat:'treasure', tex:c.tex, w:RUNE.chestWeight, stack:false, chest:{ side, q, ...(luck ? { luck } : {}) }, treasure:true }]))));
 /* ---- Roi Gobelin (27/10/2026, Geoffrey) ----
    Le boss n'existe pas encore (à définir) : à sa mort, CHAQUE joueur recevra un « Coffre du Roi Gobelin » de qualité R1
    à R7 (chances UPGRADE.qualities, comme les trésors des tours). En attendant, il ne s'obtient que par l'admin
@@ -1453,6 +1462,8 @@ export const MINE_MODES = [
   { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
+  /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
+  { id:'prison', label:'Prison', icon:'⛓', ready:true, prison:true, solo:true },
   /* tours du Jugement : proposées seulement quand elles sont ouvertes (JUDGMENT, TOWER) */
   { id:'tower_angel', label:'Tour de l\'Ange', icon:'😇', ready:true, tower:'angel' },
   { id:'tower_demon', label:'Tour du Démon',   icon:'😈', ready:true, tower:'demon' },
@@ -1469,7 +1480,7 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
 
 /* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
    provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
-   clé par joueur (key), consommée au lancement. Instance I (le roi gobelin) :
+   clé par joueur (key), vérifiée au lancement et prise seulement à la victoire (30/10/2026, Geoffrey ; ancien : consommée au lancement, rendue en cas d'échec). Instance I (le roi gobelin) :
    - salle w × h cases d'air (sol, murs et plafond indestructibles), tout éclairé, pas d'oxygène ni de pods ; rebords
      (ledgeW cases de large, 1 de haut, collés aux murs) tous les ledgeEvery cases de hauteur, ledges par côté ; un
      spawner par rebord, collé au mur ; plateforme du roi : platform.w de large, à platform.height cases du sol ; départ
@@ -1539,6 +1550,15 @@ export const SHRINES = {
   list: {
     abundance: { name:'Shrine d\'abondance', desc:'5 % de minerais en plus', tex:'shrine_abundance', sessions:5,
                  price:{ 'Pépite d\'argent':10, 'Résidu angélique':20 }, effect:{ orePoints:5 } },
+
+    /* stèles des tours (30/10/2026, Geoffrey) : comme un shrine (don de n'importe quel membre, rattachées au chef), mais
+       décomptées au lancement d'une tour du camp `tower` par ce chef (sessions = tours lancées ; 3 : provisoire, choix de
+       Claude). Effet (TOWER.stele) : à la mort du boss, le boss de l'autre camp s'écrase sur le toit (phase 2) ; victoire =
+       trésor béni (luck : RUNE.luck). Elles ne touchent pas la mine classique. */
+    exorcisme: { name:'Stèle d\'exorcisme', desc:'Tour du Démon : l\'Ange s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_angel',
+                 sessions:3, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
+    pacte:     { name:'Stèle du pacte', desc:'Tour de l\'Ange : le Démon s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_demon',
+                 sessions:3, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
   },
   opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
   drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne
@@ -1666,7 +1686,51 @@ export const GUIDE = { pickaxe:'Pioche en pierre', ingot:'Lingot de fer', ore:'F
    propre place ; le navigateur redemande le classement affiché toutes les `refresh` ms (sous-onglet ouvert seulement), le
    serveur recalcule au plus toutes les `cacheMs` ms. teamMax : coéquipiers gardés dans un record de tour.
    hidden : pseudos jamais classés (comptes de l'équipe pour tester, ex. « admin », 27/10). */
+/* comptes de l'équipe qui voient les outils d'équilibrage dans le jeu (30/10/2026 : rendement de la prison, Mon compte),
+   par pseudo ; le serveur refuse ces données à tout autre compte */
+export const ADMIN_VIEW = { names:['admin'] };
 export const LEADERBOARD = { size:50, refresh:30_000, cacheMs:15_000, teamMax:3, hidden:['admin'] };
+
+/* Énergie du compte (29/10/2026) : lancer une mine classique coûte un entier tiré dans cost.min..cost.max (refus sous
+   cost.min) ; la prison la recharge de prisonPerHour par heure de jeu. max : plafond · start : énergie d'un nouveau
+   compte · memory : dernières clés d'opération mémorisées (idempotence). */
+/* idlePerHour (30/10/2026, Geoffrey) : au repos (ni session en cours, ni prison), le compte regagne idlePerHour d'énergie
+   par heure de JEU (× GAME.speed par heure réelle), plafonnée à max ; calculée par le serveur à la lecture */
+export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPerHour: 4, idlePerHour: 3, memory: 200 };
+
+/* Prison (29/10/2026, spec docs/superpowers/specs/2026-10-29-prison-energie-design.md ; src/sim/prison.js) : mode solo,
+   une seule area (AREA_H lignes) au contenu de l'area max débloquée du joueur, width colonnes centrées sur le coffre
+   entre deux rangées de barreaux incassables (bloc `bars`).
+   oreMul : part de minerais de la composition (× oreMul, pris sur le terrain ; 0,24 depuis le 30/10 : 51 % sur le vrai profil de canoul, 200 runs, après les correctifs du golem au bord du puits et de l'arrondi des minerais rares ; avant 0,30 (29/10 au soir), 0,52) ·
+   resetAt : part des minerais du run à miner avant la remontée de fin de run · runMax : durée max d'un run (s de jeu) ·
+   returnMax : temps laissé à la remontée de fin de run (s de jeu) · treasureMul : chance d'un treasure ·
+   rareMul : chances de butin rare (glyphes, butin des mobs, shiny, donjon) · dungeonWinchGap : écart minimal du donjon à
+   la colonne du treuil en prison (DUNGEON.winchGap ne laisse pas de place dans 25 colonnes) ·
+   offlineMax / batchMs / presentFor / seenWriteMs : temps réels (ms), serveur : plafond sans visite, écart entre deux
+   paquets du joueur absent, « présent » si sa dernière demande date de moins de presentFor, écriture de lastSeenAt en
+   base au plus toutes les seenWriteMs · payoutRetries : versements d'un run relancés par le serveur après un échec ·
+   batchConcurrency : paquets d'absents calculés en même temps (les autres attendent le passage suivant, comme une
+   seule session dépassée à la fois) · crashMax : plantages du moteur sur un même run avant que le serveur arrête la
+   prison (rien n'est versé sans bilan) · uiRetry : premier délai (ms) avant de redemander la prison après une erreur,
+   doublé à chaque erreur jusqu'à uiPoll ·
+   salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, hors de
+   l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). */
+/* spawnDelayMul (29/10/2026, Geoffrey) : l'attente entre deux tirages d'apparition de mobs est × 3 en prison : le mineur
+   est seul, il subit le rythme d'un mineur d'une mine à 3 (où les tirages se partagent entre les 3) */
+/* Profil des 10 dernières mines (29/10/2026, Geoffrey ; src/shared/prison-profile.js) : au lancement, la prison lit les
+   profileSessions dernières mines classiques terminées du joueur (historique) : area = area moyenne atteinte (arrondie ;
+   aucune mine : fallbackArea) ; minerais : leur répartition dans sa part du butin (la part totale de minerais reste celle
+   de l'area × oreMul) ; treasures : tier tiré selon la répartition des Treasure TX reçus (aucun : celui de l'area) ; mobs :
+   types tirés selon ses kills par type (enregistrés depuis le 29/10 ; aucun : la table de l'area). Figé pour toute la
+   prison. trapMul : chance des pièges · kholeMul : chance du k hole (avant : pas de k hole en prison). */
+/* stunReset (30/10/2026, Geoffrey) : le mineur étourdi stunReset s de suite (en cumulant les étourdissements qui
+   s'enchaînent, à moins de stunGap s l'un de l'autre) → le run est fini tout de suite (coffre versé, sac perdu) et une
+   carte neuve commence, au lieu d'attendre runMax. Valeurs provisoires. */
+export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 2.73,   /* 30/10 : 3 → 2,73 = +10 % de mobs */
+  profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
+  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
+  batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,
+  fracSalt: 0x5f7a11 };   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.
@@ -1894,6 +1958,12 @@ export const TOWER = {
     1: { hp: 1,   hard: 1,    weight: 1,   mobKnock: 1, rageBelow: 0.33, summon: 0 },
     2: { hp: 2.5, hard: 2,    weight: 2,   mobKnock: 2, rageBelow: 0.5,  summon: 2 },
   },
+  /* stèle (30/10/2026, Geoffrey ; SHRINES exorcisme / pacte) : à la mort du boss, le boss de l'autre camp tombe du ciel
+     (fallHigh blocs, fall s) et s'écrase au centre du toit : chaque mineur du toit est projeté de crashKnock cases (il tombe
+     de la tour), puis étourdi comme à un atterrissage s'il est resté dessus. Le treuil est cassé (plus de treuil de la
+     partie). mobs mobs de l'autre camp par étage (étages floors), réveillés, PV × mobHp ; boss PV × bossHp (par-dessus le
+     niveau). Même chrono ; victoire = le 2e boss tué (sinon rien). */
+  stele: { fallHigh: 10, fall: 0.8, crashKnock: 10, mobs: 5, floors: [0, 1, 2, 3, 4, 5], mobHp: 1.5, bossHp: 1.5 },
   sides: {
     angel: { tower:'Tour de l\'Ange',  boss:'Ange',  brick:14, hard:15, bossTex:'boss_angel', icon:'😇', mob:'Séraphin',  mobTex:'seraph' },
     demon: { tower:'Tour du Démon', boss:'Démon', brick:16, hard:17, bossTex:'boss_demon', icon:'😈', mob:'Diablotin', mobTex:'imp' },
@@ -1922,7 +1992,10 @@ export const MOB_INFO = {
    maxChanges : changements max par joueur et par session (protège l'enregistrement).
    Focus d'area (même enregistrement, clé « area ») : le mineur travaille dans cette area, sans descendre plus bas ni
    viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
-export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
+/* ores : focus minerai accessible en jeu (30/10/2026, Geoffrey : retiré pour l'instant, gardé dans le code ; true le rend).
+   Quand il est false, le panneau « Focus minerai » est caché et le serveur ignore les minerais d'un focus envoyé ; le
+   focus d'area reste. */
+export const FOCUS = { ores:false, modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
 
 /* Spécialisation imposée aux mineurs en mode développeur (25/10/2026, Geoffrey) : pour chaque place (les joueurs du
    groupe dans l'ordre, puis les mineurs de test), un arbre de skills et un niveau ; l'arbre est rempli étage par étage

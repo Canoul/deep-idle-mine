@@ -76,7 +76,8 @@ function openOne(inv, item, rng, ctx = {}){
     Object.assign(inv.slots[i], rollRune(chest.q, rng));
     loot = { [RUNE.item]: 1 };
     if(ITEMS[item].treasure){                // trésor de tour : au plus un anneau, tirage unique (RINGS.drops)
-      const ring = rollLoot({ always:[], oneOf:[{ items: RINGS.drops[chest.side] ?? [] }] }, rng);
+      const k = RUNE.luck[chest.luck]?.rings ?? 1;   // trésor béni (stèles, 30/10) : chances des anneaux × k
+      const ring = rollLoot({ always:[], oneOf:[{ items: (RINGS.drops[chest.side] ?? []).map(r => ({ ...r, chance: r.chance * k })) }] }, rng);
       addAll(inv, ring);
       Object.assign(loot, ring);
     }

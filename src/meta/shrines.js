@@ -67,10 +67,12 @@ export function give(st, inv, { shrine, item, qty, opId }){
   return { ...result, repeated:false };
 }
 
-/* lancement d'une mine classique par ce chef : renvoie les shrines actifs (ordre de SHRINES.list) et leur retire une
-   session chacun (retirés à 0) */
-export function consume(st){
-  const used = SHRINE_IDS.filter(id => st.active[id] > 0);
+/* lancement par ce chef : renvoie les shrines actifs (ordre de SHRINES.list) qui comptent pour ce lancement et leur
+   retire une session chacun (retirés à 0). tower : null = mine classique (les shrines sans `tower`), 'angel' / 'demon' =
+   une tour de ce camp (ses stèles, 30/10/2026) */
+export const shrineFor = (id, tower = null) => (shrineOf(id)?.tower ?? null) === tower;
+export function consume(st, tower = null){
+  const used = SHRINE_IDS.filter(id => st.active[id] > 0 && shrineFor(id, tower));
   for(const id of used) if(--st.active[id] <= 0) delete st.active[id];
   return used;
 }
@@ -101,6 +103,6 @@ export function oreBonusComp(comp, pts){
 /* ce que voit le lobby : chaque shrine, son prix, ce qui est déjà donné, les sessions restantes s'il est actif */
 export const publicShrines = st => SHRINE_IDS.map(id => {
   const d = SHRINES.list[id];
-  return { id, name:d.name, desc:d.desc, tex:d.tex, sessions:d.sessions, price:{ ...d.price },
+  return { id, name:d.name, desc:d.desc, tex:d.tex, sessions:d.sessions, price:{ ...d.price }, tower: d.tower ?? null,
            paid:{ ...(st.paid[id] ?? {}) }, left: st.active[id] ?? 0 };
 });

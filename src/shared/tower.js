@@ -19,7 +19,7 @@ export function towerSpecs(record){
   return minerSpecs(record).map((s, i) => ({ ...s, account: players[i]?.account ?? null }));
 }
 
-export const buildTower = record => newTower(record.seed, { side: towerSide(record.mode), level: towerLevel(record.level), miners: towerSpecs(record), id: record.id });
+export const buildTower = record => newTower(record.seed, { side: towerSide(record.mode), level: towerLevel(record.level), miners: towerSpecs(record), id: record.id, stele: record.stele ?? null });   // stèle : 30/10
 
 /* départs dont le moment est venu ; renvoie le nombre appliqué */
 export function applyDueTowerLeaves(G, record){

@@ -76,7 +76,7 @@ test('lobby, mode dev : les tours sont toujours dans « Où miner » et jamais g
   const { mineModes } = await import('../src/ui/lobby.js');
   const j = { sides: { angel: { open: false, done: true }, demon: { open: true, done: true } } };
   const dev = mineModes('mine', false, j, true);
-  assert.deepEqual(dev.map(m => m.id), ['mine', 'mi', 'tower_angel', 'tower_demon']);
+  assert.deepEqual(dev.map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'tower_angel', 'tower_demon']);
   assert.ok(dev.filter(m => m.id.startsWith('tower')).every(m => !m.disabled));
-  assert.deepEqual(mineModes('mine', false, j).map(m => m.id), ['mine', 'mi', 'tower_demon'], 'jeu normal : inchangé');
+  assert.deepEqual(mineModes('mine', false, j).map(m => m.id), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'tower_demon'], 'jeu normal : inchangé');
 });

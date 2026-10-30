@@ -207,6 +207,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .navSession .bar{width:calc(48*var(--u))}
 .navSession.live{cursor:pointer}
 .navSession.live:hover{color:var(--acc-lt)}
+/* énergie et prison (29/10, src/ui/prison.js) : jauge et boutons de la barre du haut */
+.navEnergy{display:flex;align-items:center;gap:calc(2*var(--u));font-size:var(--fs-l);font-variant-numeric:tabular-nums;white-space:nowrap}
+.navEnergy .bolt{color:#ffd23f;text-shadow:var(--u) var(--u) 0 #000}
+.navEnergy .bar{width:calc(36*var(--u))}
+.navEnergy .bar i{background:#ffd23f}
+.navEnergy.low #navEnergyTxt{color:var(--bad)}
+.navPrison{display:flex;gap:var(--u)}
+.navPrison button{min-height:0;padding:var(--u) calc(3*var(--u))}
+.navPrison button.on{color:var(--acc-lt)}
 .navWiki{display:inline-flex;align-items:center;gap:calc(2*var(--u));color:var(--mut);text-decoration:none}
 .navWiki:hover{color:var(--acc-lt)}
 .navWiki .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
@@ -330,6 +339,13 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #run>header,#miRun>header,#twRun>header,#gtRun>header,#inRun>header{display:flex;flex-wrap:wrap;gap:calc(4*var(--u)) calc(6*var(--u));align-items:center;padding:calc(3*var(--u)) calc(6*var(--u));
   background:#120d0a;box-shadow:0 var(--u) 0 #000}
 .timer{font-size:var(--fs-xl);font-variant-numeric:tabular-nums}
+/* prison (29/10) : bandeau au-dessus de la mine ; ni chat, ni focus, ni vitesse (rien à choisir pendant un run) */
+.prisonBanner{display:flex;align-items:center;justify-content:center;gap:calc(3*var(--u));padding:calc(2*var(--u)) calc(6*var(--u));
+  background:var(--sel);box-shadow:inset 0 calc(-1*var(--u)) 0 var(--acc-dk);font-size:var(--fs-l);font-variant-numeric:tabular-nums;text-align:center}
+.prisonBanner>span:first-child{color:var(--acc)}
+.prisonOn #chatCard,.prisonOn #focusCard,.prisonOn #focusAreaCard,.prisonOn:not(.prisonDev) #speedBtns,.prisonOn #pauseBtn,.prisonOn #seedLbl{display:none!important}   /* vitesses : en mode dev seulement (29/10) */
+.lobbyActions .launchCost{align-self:center;color:var(--mut)}
+.lobbyActions .launchCost.err{color:var(--bad)}
 .grow{flex:1;min-width:calc(60*var(--u))}
 .speedBtns{display:flex;gap:var(--u)}
 .runGrid{flex:1;min-height:0;display:grid;grid-template-columns:calc(125*var(--u)) minmax(0,1fr) calc(24*var(--u)) calc(125*var(--u));
@@ -361,6 +377,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #log,.miLog{max-height:calc(110*var(--u));overflow:auto;color:var(--mut)}
 #log div,.miLog div{padding:var(--u) 0;box-shadow:0 var(--u) 0 var(--sep)}
 #log b{color:var(--txt);font-weight:400}
+/* téléphone (30/10/2026) : pas de défilement interne du journal (le doigt y restait coincé, sans pouvoir descendre
+   jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
+@media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
@@ -650,6 +669,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
   .topbar{gap:calc(3*var(--u));padding:0 calc(3*var(--u))}
   .brand,.navWiki span,.navAccount .who small{display:none}
   .navSession .bar{width:calc(30*var(--u))}
+  .navEnergy .bar,#navPrisonBtn{display:none}
   .dock{left:calc(2*var(--u));right:calc(2*var(--u));transform:none;justify-content:center}
   .orb{display:none}
   .dock ul{overflow-x:auto;max-width:100%}

@@ -16,26 +16,46 @@ export function setupRunControls(ui, h){
 }
 
 /* Se déplacer dans la mine : molette, glisser (souris ou doigt), flèches ↑ ↓ et PageUp / PageDown.
-   La caméra ne suit plus personne ; « Suivre » (ou Début, ou un mineur de l'équipe) la ramène.
-   cam : { pan(rows), panPixels(px), follow() } (le rendu) ; isActive() : la session est affichée */
+   Zoomer (30/10) : pincer à deux doigts, ou Ctrl + molette (et pincer sur un pavé tactile) ; zoomée, on glisse aussi
+   à l'horizontale. Double appui / double clic : retour au zoom ×1.
+   La caméra ne suit plus personne quand on la glisse ; « Suivre » (ou Début, ou un mineur de l'équipe) la ramène.
+   cam : { pan(rows), panPixels(dy, dx), zoomAt(f, x, y), follow() } (le rendu) ; isActive() : la session est affichée */
 export function setupCamera(cv, cam, isActive){
   cv.addEventListener('wheel', e => {
     e.preventDefault();
+    if(e.ctrlKey){ cam.zoomAt(Math.exp(-e.deltaY * CAMERA.wheelZoom * (e.deltaMode === 1 ? 30 : 1)), e.clientX, e.clientY); return; }
     const rows = e.deltaMode === 1 ? e.deltaY : e.deltaMode === 2 ? e.deltaY * 30 : e.deltaY / 100;   // lignes, pages ou pixels
     cam.pan(rows * CAMERA.wheelRows);
   }, { passive:false });
-  let drag = null;
+  const pts = new Map();   // doigts (ou souris) posés : id → { x, y }
+  let pinch = null;        // distance entre les deux doigts au dernier mouvement
+  const two = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x)/2, y: (a.y + b.y)/2 }; };
   cv.addEventListener('pointerdown', e => {
-    if(e.button !== 0) return;
-    drag = { id:e.pointerId, y:e.clientY }; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging');
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    pts.set(e.pointerId, { x:e.clientX, y:e.clientY }); cv.setPointerCapture(e.pointerId); cv.classList.add('dragging');
+    pinch = pts.size === 2 ? two() : null;
   });
   cv.addEventListener('pointermove', e => {
-    if(!drag || e.pointerId !== drag.id) return;
-    const dy = e.clientY - drag.y; drag.y = e.clientY;
-    if(dy) cam.panPixels(dy);
+    const p = pts.get(e.pointerId);
+    if(!p) return;
+    if(pts.size >= 2){
+      p.x = e.clientX; p.y = e.clientY;
+      if(pts.size !== 2) return;
+      const now = two();
+      if(pinch && pinch.d > 0 && now.d > 0) cam.zoomAt(now.d / pinch.d, now.x, now.y);
+      if(pinch) cam.panPixels(now.y - pinch.y, now.x - pinch.x);
+      pinch = now; return;
+    }
+    const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if(dx || dy) cam.panPixels(dy, dx);
   });
-  const end = e => { if(drag && e.pointerId === drag.id){ drag = null; cv.classList.remove('dragging'); } };
+  const end = e => {
+    if(!pts.delete(e.pointerId)) return;
+    pinch = pts.size === 2 ? two() : null;
+    if(!pts.size) cv.classList.remove('dragging');
+  };
   cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('dblclick', e => { e.preventDefault(); cam.zoomAt(0, e.clientX, e.clientY); });   // f = 0 : retour au ×1
   document.addEventListener('keydown', e => {
     if(!isActive() || e.target.closest?.('input, textarea, select')) return;
     const rows = { ArrowUp:-1, ArrowDown:1, PageUp:-3, PageDown:3 }[e.key];

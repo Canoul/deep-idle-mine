@@ -1,5 +1,5 @@
 /* Wiki du joueur : remplit les tableaux de wiki.html avec les valeurs du jeu (src/wiki/data.js lit la config). */
-import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS } from '../config.js';
+import { RARITY, ITEMS, STATS, FURNACE, CRUSHER, AREAS, DUCK, XP, BLOCKS, ENERGY, PRISON, AREA_H } from '../config.js';
 import { rarityOf } from '../meta/rarity.js';
 import { itemName, itemColor } from '../meta/piece.js';
 import * as D from './data.js';
@@ -221,6 +221,14 @@ function stats(){
 
 /* ---------- treasures ---------- */
 function treasures(){
+  $('w-energy-max').textContent = ENERGY.max;
+  $('w-energy-cost').textContent = `${ENERGY.cost.min} à ${ENERGY.cost.max}`;
+  $('w-energy-min').textContent = ENERGY.cost.min;
+  $('w-energy-regen').textContent = ENERGY.prisonPerHour;
+  $('w-prison-size').textContent = `${PRISON.width} × ${AREA_H} cases`;
+  $('w-prison-reset').textContent = `${Math.round(PRISON.resetAt * 100)} %`;
+  $('w-prison-max').textContent = PRISON.runMax / 3600;
+  $('w-prison-offline').textContent = PRISON.offlineMax / 3600e3;
   $('w-treasure-chance').textContent = D.treasureChanceText();
   $('w-mob-drops').innerHTML = table(['Pièce', 'Obtention', 'Recyclage'], D.mobDropRows().map(r => tr([item(r.item), esc(r.chance), ings(r.recycle)])));
   $('w-treasure-tiers').innerHTML = table(['Objet obtenu', 'Treasure enfoui dans les areas'], D.treasureTierRows().map(t => tr([item(t.item), t.areas])));

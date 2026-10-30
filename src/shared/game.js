@@ -16,7 +16,7 @@ import { sanitizeLook, sanitizeGear, equippedStats, ringsOf, withRings, ringXpPc
 import { sanitizeSkills, skillEffects, withSkillStats, slotMastery } from '../meta/skills.js';
 import { withGlyphStats, nodeOfGlyph } from '../meta/glyphs.js';
 import { sessionSpells } from '../meta/spells.js';
-import { presetMiner, sanitizeBotPresets } from './dev-presets.js';
+import { presetMiner, sanitizeBotPresets, isCopyPresetId, copyMiner, COPY_PREFIX } from './dev-presets.js';
 
 /* ---------- préférences ---------- */
 
@@ -83,34 +83,47 @@ export function applyOverrides(overrides){
 export function minerSpecs(record){
   const players = record.players || [], n = players.length + (record.bots|0);
   const botTrees = sanitizeBotPresets(record.botPresets) || [], presets = new Map();
-  const presetOf = i => { const t = i >= players.length ? botTrees[i - players.length] : null;
-    if(t && !presets.has(t)) presets.set(t, presetMiner(t)); return t ? presets.get(t) : null; };
+  /* copie d'un vrai joueur (copy:<pseudo>) : la copie rangée dans la session au lancement (record.botCopies[j]) ;
+     mode dev, preset du joueur qui lance (29/10/2026) : record.selfPreset (et record.selfCopy pour une copie), son mineur
+     (place 0) prend stuff, skills, glyphes et sorts du preset, garde son nom ; XP et butin restent à son compte */
+  const selfTree = sanitizeBotPresets([record.selfPreset])?.[0] ?? null;
+  const build = (t, copy) => isCopyPresetId(t) ? copyMiner(t.slice(COPY_PREFIX.length), copy) : presetMiner(t);
+  const presetOf = i => {
+    if(i < players.length){
+      if(i !== 0 || !selfTree) return null;
+      if(!presets.has('self')) presets.set('self', build(selfTree, record.selfCopy));
+      return presets.get('self');
+    }
+    const j = i - players.length, t = botTrees[j];
+    if(t && !presets.has(t)) presets.set(t, build(t, record.botCopies?.[j]));
+    return t ? presets.get(t) : null; };
+  const own = i => i < players.length && !presetOf(i);   // la place d'un joueur, avec son propre équipement
   const prefsOf = i => i < players.length ? sanitizePrefs(record.prefs?.[players[i].account]) : { ...PREFS };
   const nameOf = i => i < players.length ? (String(players[i].name || '').slice(0, 24) || 'Joueur ' + (i + 1))
                                          : presetOf(i)?.name ?? 'Mineur test ' + (i - players.length + 1);
-  const lookOf = i => i < players.length ? sanitizeLook(record.looks?.[players[i].account]) : sanitizeLook(presetOf(i)?.look);
+  const lookOf = i => own(i) ? sanitizeLook(record.looks?.[players[i].account]) : sanitizeLook(presetOf(i)?.look);
   /* caractéristiques : base + stuff porté au lancement : les pièces avec leur qualité et leur niveau (record.gear,
      revérifié) ; une session plus ancienne n'a que les noms (record.looks) */
-  const gearOf = i => i < players.length && record.gear?.[players[i].account]
+  const gearOf = i => own(i) && record.gear?.[players[i].account]
     ? Object.values(sanitizeGear(record.gear[players[i].account]))
     : presetOf(i) ? Object.values(sanitizeGear(presetOf(i).gear)) : Object.values(lookOf(i));
   /* skills figés au lancement (record.skills[compte], revérifiés) : effets en partie + multiplicateurs de stats ; en mode
      dev, une spécialisation imposée à cette place (record.devSpecs[i]) les remplace, mineurs de test compris */
-  const rawSkills = i => record.devSpecs?.[i] ? devSkills(record.devSpecs[i]) : i < players.length ? record.skills?.[players[i].account] : presetOf(i)?.skills ?? null;
+  const rawSkills = i => record.devSpecs?.[i] ? devSkills(record.devSpecs[i]) : own(i) ? record.skills?.[players[i].account] : presetOf(i)?.skills ?? null;
   const skillsOf = i => skillEffects(sanitizeSkills(rawSkills(i)));
   /* anneaux : leur effet va à tout le groupe (une fois par anneau différent), après stuff et skills (RINGS) */
-  const rings = record.rings ?? groupRings(record);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
+  const rings = record.rings ?? groupRings(record, selfTree ? presetOf(0)?.gear : null);   // Bloc géant : anneaux de tous les présents, passés à part (src/shared/giant-room.js)
   const modeDef = MINE_MODES.find(m => m.id === record.mode);
   const mine = !modeDef?.tower && !modeDef?.giant;   // tour, Bloc géant : pas de Glyphe Mule (son skill n'y agit pas)
   const caracOf = i => withGlyphStats(withRings(withSkillStats(equippedStats(gearOf(i), slotMastery(skillsOf(i))), skillsOf(i)), rings), skillsOf(i), mine);   // glyphes en dernier ; maîtrises (28/10) : stats de la pièce
   const treeOf = i => sanitizeSkills(rawSkills(i)).tree;
   /* Anneau du nerd : % d'XP pour son porteur seul, sur sa part du pot (src/sim/session.js shareBySegments) */
   /* sorts figés au lancement (record.spells[compte], revérifiés : connus, bonne spécialisation, slots ouverts) */
-  const spellsOf = i => sessionSpells(i < players.length ? record.spells?.[players[i].account] : presetOf(i)?.spells, treeOf(i));
+  const spellsOf = i => sessionSpells(own(i) ? record.spells?.[players[i].account] : presetOf(i)?.spells, treeOf(i));
   /* aura des pièces visibles (src/meta/aura.js) : seulement avec les pièces complètes (record.gear) */
-  const aurasAt = i => aurasOf(sanitizeGear(i < players.length ? record.gear?.[players[i].account] : presetOf(i)?.gear));
+  const aurasAt = i => aurasOf(sanitizeGear(own(i) ? record.gear?.[players[i].account] : presetOf(i)?.gear));
   /* glyphes possédés au lancement (drop : on ne trouve que les autres), figés par le serveur, revérifiés */
-  const ownedOf = i => { const o = i < players.length ? record.skills?.[players[i].account]?.owned : presetOf(i)?.owned; return Array.isArray(o) ? o.filter(n => nodeOfGlyph(n)) : []; };
+  const ownedOf = i => { const o = own(i) ? record.skills?.[players[i].account]?.owned : presetOf(i)?.owned; return Array.isArray(o) ? o.filter(n => nodeOfGlyph(n)) : []; };
   const spec = i => ({ name: nameOf(i), prefs: prefsOf(i), look: lookOf(i), auras: aurasAt(i), carac: caracOf(i), skills: skillsOf(i), skillTree: treeOf(i), glyphsOwned: ownedOf(i),
                        xpPct: ringXpPct(ringsOf(gearOf(i))), spells: spellsOf(i),
                        rings: rings.filter(r => !RINGS.items[r.item].xp || ringsOf(gearOf(i)).some(o => o.item === r.item)) });   // anneaux qui agissent sur lui (affichage, src/sim/effects.js) : le nerd seulement pour son porteur
@@ -118,8 +131,10 @@ export function minerSpecs(record){
   return TEAM.slice(0, n).map((t, i) => ({ x: t.x, home: t.home, ...spec(i) }));
 }
 
-/* anneaux portés par les joueurs de la session au lancement (RINGS), chacun une fois */
-export const groupRings = record => ringsOf((record.players || []).flatMap(p => record.gear?.[p.account]
+/* anneaux portés par les joueurs de la session au lancement (RINGS), chacun une fois ; selfGear : le stuff du preset du
+   joueur qui lance (mode dev) à la place du sien */
+export const groupRings = (record, selfGear = null) => ringsOf((record.players || []).flatMap((p, i) => i === 0 && selfGear
+  ? Object.values(sanitizeGear(selfGear)) : record.gear?.[p.account]
   ? Object.values(sanitizeGear(record.gear[p.account])) : Object.values(sanitizeLook(record.looks?.[p.account]))));
 
 export function buildSession(record){

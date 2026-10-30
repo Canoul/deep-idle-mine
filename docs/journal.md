@@ -39,6 +39,208 @@ Modèle d'entrée :
   qu'on puisse « la voir venir et l'éviter », il faudra apprendre aux mineurs à s'écarter de sa ligne. À regarder en jeu.
 - **État** : 🧪 sur la branche `jules/minotaure-effets` (pas en ligne)
 
+## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
+- **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
+  - **Ange** : un archange en cuirasse d'or, auréole, cheveux d'or, grandes ailes déployées et épée de lumière ;
+  - **Démon** : un seigneur démon massif, peau rouge fissurée de lave, épaulières à pointes, grandes cornes, ailes de
+    chauve-souris, hache et queue, avec un contour de braise pour bien le voir sur le fond sombre de sa tour ;
+  - **Séraphin** : un petit soldat de l'Ange (casque et cuirasse d'or, lance de lumière) au lieu d'une copie en
+    miniature de l'Ange ; **Diablotin** : même idée qu'avant, en plus lisible.
+  Les boss sont maintenant en pleine résolution, aussi nets que le Roi gobelin (avant : chaque pixel était doublé, et le
+  Démon n'était que l'Ange recoloré). Rien ne change dans le combat.
+- **Décisions** : direction « guerriers » pour les deux camps (Jules), parmi 3 propositions (guerriers, biblique, style
+  actuel amélioré).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle / ancienne / enregistrée
+- **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (mines 1 à 10), « Ancienne » (mines 11 à 20) ou « Enregistrée » ; le bouton « 💾 Enregistrer » garde la compo affichée (une seule à la fois). Utile après avoir fait monter des amis plus faibles, ou été porté par plus fort.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Fortune et butin en plus : 0 pod
+- **Pour nous** : les minerais en plus donnés par la Fortune et le butin en plus des mobs (Pillage, butin des mobs) vont dans le sac sans peser : ils ne remplissent plus les pods. La Fortune devient vraiment utile en mine (avant, elle remplissait juste le sac plus vite).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Instance : la clé n'est prise qu'à la victoire
+- **Pour le joueur** : la Clé d'instance I est toujours **vérifiée** au lancement (une par joueur), mais elle n'est plus
+  prise tout de suite : elle n'est utilisée **que si le groupe gagne**, chez les joueurs encore là à la victoire (en même
+  temps que leur Coffre du Roi Gobelin). **Échec** ou **départ avant la fin** (un joueur, ou tout le groupe qui quitte) :
+  on **garde sa clé**. Avant, elle était prise au lancement et rendue seulement en cas d'échec : un joueur parti avant
+  une victoire la perdait. Textes du lobby, de l'écran de fin et du wiki mis à jour.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : plus de minerais (oreMul 0,24 → 0,27)
+- **Pour nous** : la prison contient 12,5 % de minerais en plus, pour viser 50 % du rendement d'une mine (on était vers 40 %).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : +10 % de mobs
+- **Pour nous** : en prison, les mobs apparaissent 10 % plus souvent (attente entre deux apparitions × 2,73 au lieu de × 3 par rapport à une mine).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau prison : « 4 h 60 » corrigé, force des spés en prison
+- **Pour nous** : le tableau affichait « 4 h 60 » au lieu de « 5 h 00 ». Comparaison des spés en prison (stuff acier, profil canoul area 7, 30 runs chacune) : logisticien 669 minerais (poids)/h, mineur 618 (−8 %), barbare 582 (−13 %).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau de la prison : spé, GS et temps par action
+- **Pour nous** : le tableau « Rendement de la prison » montre aussi la spé, le GS du stuff emporté, et le % du temps passé à miner / se déplacer / combattre / autre, en prison et dans ses mines (mines jouées à partir de maintenant : avant, ce n'était pas mesuré). Nouvelle colonne « Spé mines » : la spé la plus jouée sur ses 10 dernières mines (celle qui revient le plus souvent), à côté de la spé emportée en prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Rendement de la prison dans le jeu (compte admin)
+- **Pour nous** : connecté avec le compte « admin », « Mon compte » (portrait en haut à gauche) a un bouton « 📊 Rendement de la prison » qui ouvre le tableau dans un nouvel onglet. Les autres comptes ne voient pas le bouton et le serveur leur refuse les données. Liste des comptes : `ADMIN_VIEW` en config.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Tableau de bord de la prison
+- **Pour le joueur** : rien (outil de l'équipe).
+- **Pour nous** : `scripts/dashboard-prison.js` produit une page avec, pour chaque joueur, le rendement de sa prison comparé à ses 10 dernières mines, minerai par minerai (gain par heure de jeu), et la moyenne. Cible : 50 %.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Énergie au repos
+- **Pour le joueur** : un joueur qui ne fait rien (ni session en cours, ni prison) regagne **3 d'énergie par heure de jeu** (6 par heure réelle), jusqu'à 100. La prison reste meilleure (4 par heure de jeu).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif téléphone : défiler jusqu'aux onglets dans l'onglet Session
+- **Pour le joueur** : sur téléphone, le journal de la session ne retient plus le doigt (il montre ses 8 dernières lignes) : la page défile jusqu'à la barre des onglets.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison sans résidus
+- **Pour le joueur** : plus de résidus angéliques ou démoniaques dans les cartes de prison (les runs déjà commencés gardent les leurs jusqu'à leur fin).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : l'onglet Session montre la prison
+- **Pour le joueur** : en prison, l'onglet Session affichait « Tu n'es pas en session » sur le jeu en ligne (ça ne marchait qu'en mode développeur). Il montre maintenant la prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : la barre du haut montre la prison
+- **Pour le joueur** : en prison, l'indicateur de session en haut affiche « Prison · run N » et l'avancée du run (avant : « aucune »).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : la prison compte comme une session dans Social
+- **Pour le joueur** : un joueur en prison s'affiche « En session · Prison » (amis et liste Online), et on ne peut plus l'inviter comme s'il était libre.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey) ✅ en ligne le 30/10
+
+- Deux nouveaux « shrines » pour les tours du Jugement, payés dans le Lobby comme le Shrine d'abondance : **Stèle d'exorcisme** (Tour du Démon, 240 Stonebricks angéliques) et **Stèle du pacte** (Tour de l'Ange, 240 Stonebricks démoniaques). Actives 3 tours lancées par le chef (valeur provisoire, à confirmer).
+- Effet : quand le boss meurt, le boss de l'autre camp s'écrase sur le toit, projette tout le monde de 10 cases, casse le treuil, et 5 mobs de l'autre camp (150 % de PV) envahissent chaque étage. Le 2e boss a 150 % de PV. Même chrono de 10 min : il faut le tuer pour gagner.
+- Bonus : un **trésor béni**, deux fois plus de chances d'anneau. C'est un simple coefficient : on pourra en ajouter d'autres sans réécrire de liste de coffres.
+- ⚠️ Équilibrage : en simulation, une équipe 2,5 minage / 40 dégâts tue le 1er boss vers 8 min 17, puis n'a plus le temps (2e boss presque intact). À régler (plus de temps, moins de PV, moins de mobs…).
+
+## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey) ✅ en ligne le 30/10
+
+- **Carte de la session** : on peut zoomer en pinçant à deux doigts (sur ordinateur : Ctrl + molette), jusqu'à ×4. Zoomée, la caméra suit toujours ton mineur, aussi de gauche à droite ; un glissé la déplace dans tous les sens, « Suivre » la ramène. Double appui : retour à la vue entière.
+- **Inventaire sur mobile** : toucher une pièce la sélectionne du premier coup (le survol simulé de l'iPhone avalait l'appui) et la fiche avec le bouton « Équiper » vient à l'écran.
+
+## 30/10/2026 — Nerf du recyclage des blueprints (Geoffrey) ✅ en ligne le 30/10
+
+Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
+
+
+## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
+- **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
+  ne reste plus bloqué jusqu'au temps max du run (3 h) : le run s'arrête, le coffre est versé (pas son sac) et une carte
+  neuve commence.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : le stuff est relu à chaque run
+- **Pour le joueur** : avant, le stuff, les skills et les sorts étaient pris à l'entrée en prison et ne changeaient plus
+  (une pièce de Découverte équipée ensuite ne comptait jamais, signalé par Infernatiwar). Maintenant ils sont repris au
+  début de chaque run : ce qu'on équipe pendant la prison compte dès le run suivant.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Focus minerai retiré du jeu (gardé dans le code)
+- **Pour le joueur** : le panneau « Focus minerai » n'apparaît plus pendant la session ; le Focus area reste. L'option
+  est gardée : un réglage (`FOCUS.ores` dans la config) la remet.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif (suite) : les anciens bilans de session ne reviennent plus un par un
+- **Pour le joueur** : les bilans quittés sans bouton avant le premier correctif s'étaient accumulés (jusqu'à 30 jours) ;
+  chaque rechargement en montrait un plus ancien. Maintenant, seul le bilan de ta dernière session peut s'afficher, une
+  fois. Les anciens restent dans l'onglet Historique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Lobby : la Prison en premier dans « Où miner »
+- **Pour le joueur** : le bouton Prison est le premier de « Où miner » (la Mine reste choisie par défaut). Quand on n'a
+  pas assez d'énergie pour lancer une mine, le message dit maintenant qu'elle se recharge en prison.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Correctif : le bilan de session revenait à chaque rechargement
+- **Pour le joueur** : un bilan de session quitté sans ses boutons (autre onglet, Échap, nouvelle partie lancée depuis
+  le lobby) revenait à chaque actualisation de la page. Il est maintenant marqué vu dès qu'il s'affiche : on le voit
+  une fois, et les résultats restent dans l'onglet Historique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : énergie, vue et équilibrage
+- **Pour le joueur** : la prison recharge **4 d'énergie par heure de jeu** (8 par heure réelle), et tout le monde part de **0**.
+  La vue de la prison est zoomée sur sa carte (bords comme la mine), elle a le même fond et les mêmes transitions d'onglet
+  que la mine, et le panneau « Butin de la prison (total) » compte tout depuis l'entrée, run en cours compris.
+  Correctifs : golem collé sous la surface (mineur bloqué 3 h), cobalt et thorium qui n'apparaissaient jamais ; minerais
+  de la carte réglés à 51 % d'une mine (vrai profil de canoul).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
+- **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
+  rapporté depuis l'entrée (runs, XP, énergie, objets). En sortant, une fenêtre récapitule tout, et la prison apparaît
+  dans l'**Historique**. La prison rapporte de nouveau environ la moitié d'une mine à 3 (avec 3 fois moins de mobs,
+  elle en rapportait 87 % : moins de minerais sur la carte, 0,30 au lieu de 0,52).
+- **À suivre** : mesure bruitée (5 chaînes, acier seulement) : à refaire plus large avant la mise en ligne.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
+- **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
+  classiques : leur **area moyenne** (pierre, mobs, pièges, donjon), la **répartition de tes minerais**, les **tiers de tes
+  treasures** et les **mobs que tu as tués**. Figé jusqu'à ta sortie. Sans mine derrière soi : l'area 1. Plus de liste
+  « Area » (même en dev) : le lobby affiche ce que la prison contiendra, en %. Pièges et k hole 2 fois plus rares qu'en mine (le k hole n'existait pas en prison).
+- **Décisions** : moins de 10 mines → celles qu'on a ; kills par type enregistrés à partir de maintenant (en attendant,
+  les mobs de l'area moyenne) ; total de minerais inchangé (× oreMul), seule la répartition suit l'historique.
+- **À suivre** : ni simulé ni testé (demande de Geoffrey) ; rendement à recaler (oreMul) ; tests de la prison à mettre à jour.
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Prison : choisir son area ; vitesses du mode dev
+- **Pour le joueur** : avant d'entrer en prison, une liste **Area** (à côté du bouton) permet de choisir le contenu de la
+  carte, de l'area 0 jusqu'à sa plus profonde area débloquée (par défaut la plus profonde). Elle reste la même pour toute
+  la prison. **Mode dev** : toutes les areas au choix, et les boutons ×1 à ×300 accélèrent la prison en direct.
+  **Mobs** : 3 fois moins d'apparitions en prison (on y est seul : c'est le rythme d'un mineur dans une mine à 3).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
+- **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
+  en local un compte « Test_<Pseudo> » avec le stuff porté exact (qualité, runes, +N), les skills, glyphes, sorts et le
+  niveau d'un vrai joueur. Premiers : Test_Canoul et Test_Mus (mot de passe preset1234). Les mêmes copies sont aussi au
+  choix pour les **mineurs de test** du panneau dev du lobby (« 👤 Test_Canoul (copie) »), à côté des 3 presets acier, et
+  pour **son propre mineur** (ligne « Ton preset » : on garde son nom, l'XP et le butin restent à son compte).
+- **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
+  ne sont pas visibles, on lui met ceux de sa spé.
+- **État** : ✅ en ligne le 30/10 (outil local seulement)
+
+## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
+- **Pour le joueur** : deux nouveautés liées.
+  - **Énergie** : une jauge de 0 à 100 dans la barre du haut. Lancer une mine classique coûte 6 à 12 (pour chaque joueur
+    du groupe). À partir de 6 on peut toujours lancer : si le coût tiré dépasse ce qui reste, on paie le reste et on tombe à 0.
+    En dessous de 6, lancement refusé (le groupe voit qui est à court). Rien d'autre ne coûte d'énergie. Pas de coût en mode dev.
+  - **Prison** : un mode solo sans fin (Lobby, « Où miner » → Prison). Petite mine de 25 × 50 entre deux rangées de barreaux, au
+    contenu de la plus profonde area débloquée, avec moins de minerais et deux fois moins de treasures et de butins rares.
+    Quand 80 % des minerais sont minés, le mineur remonte déposer, le coffre va dans l'inventaire et une carte neuve repart.
+    Elle recharge l'énergie (8 par heure de jeu). Elle tourne en direct quand le jeu est ouvert (le jeu redemande sa
+    prison toutes les 15 s), et **hors ligne** par paquets toutes les 10 min réelles, en pause après 24 h sans visite
+    (sans rejouer les heures d'attente). Au retour : un bilan « pendant ton absence ». « Sortir de prison », ou lancer une mine /
+    une tour / une instance, l'arrête (le coffre est versé, pas le sac du mineur).
+- **Décisions** : la taille de la carte ne bouge pas, on règle la part de minerais (`oreMul` 0,52 : acier ≈ 0,48 et fer ≈ 0,43
+  de la part d'un joueur dans une mine à 3, en poids de minerais ; c'est provisoire). Dans la prison, le donjon est à gauche du puits
+  (pas de place à droite). Un logisticien qui a le Treuil l'installe dès le début de chaque run : il remonte et redescend plus vite. Les résidus de prison vont dans l'inventaire sans remplir les jauges du Jugement
+  ni annonce Discord. Un lancement refusé faute d'énergie n'arrête pas la prison.
+- **À suivre** : mesurer le fer à 0,52 sur plus de chaînes (peut-être 0,55) ; trancher le Jugement et Discord pour la prison ;
+  coût serveur : une prison 24 h/24 ≈ 7 min de calcul par joueur et par jour à la vitesse ×2 de la beta, ≈ 10 min avec les
+  rejeux (jusqu'à ≈ ×9 pour un run très long) ; un seul paquet hors ligne calculé à la fois. À surveiller si beaucoup
+  de joueurs la laissent tourner.
+- **Relecture finale (29/10)** : dans un groupe, celui dont la prison tourne doit confirmer avant « Je suis prêt » ou
+  « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
+  si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Pièces en mithril : 2 fois plus de lingots de mithril
+- **Pour le joueur** : casque, plastron, jambes et bottes en mithril coûtent 2 fois plus de Mithril ingot : 30, 48, 42
+  et 32 (avant 15, 24, 21 et 16). Le reste de la recette ne change pas.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Social : voir combien de joueurs il y a dans une session en cours
 - **Pour le joueur** : dans l'onglet Social (amis et liste **Online**) et dans le « Who ? » des tours, un joueur en session
   affiche maintenant la taille de son groupe : « En session mine (1/3) · reste 23 min ». On repère d'un coup d'œil les

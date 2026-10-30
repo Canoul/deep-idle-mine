@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 29/10/2026 (le Carreau, ville du spawn, en ligne).*
+*Dernière mise à jour : 30/10/2026 (prison et énergie en ligne ; voir aussi les entrées du 30/10).*
 
 ---
 
@@ -41,6 +41,29 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (Ancien : un seul onglet « Mine » avec lobby → session → bilan ; `#mine` mène maintenant à Session.)
 
 ## Systèmes en place
+
+- **Énergie** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `ENERGY`, `src/meta/energy.js`) : jauge par
+  compte 0 à 100, départ 100. Lancer une **mine classique** coûte un entier tiré par le serveur dans [6, 12] par joueur (bots
+  et mode dev exclus) ; **dès 6** le lancement passe, le coût débité est plafonné à l'énergie restante (jamais négative) ; sous 6,
+  refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
+  plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
+- **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
+  `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Stuff, skills, sorts et préférences relus à chaque run (30/10 ; ancien : figés à l'entrée). Carte 25 × 50
+  (une area ; **contenu = profil des 10 dernières mines classiques** du joueur, figé au lancement, `src/meta/prison-profile.js` :
+  area moyenne atteinte, répartition des minerais, tiers des treasures, types de mobs tués (kills par type enregistrés depuis le
+  29/10) ; ancien : area max débloquée, puis area au choix ; mode dev : area au choix et vitesses ×1-×300), barreaux de chaque côté,
+  treuil du logisticien posé dès le début du run (29/10 ; ancien : pas de treuil), mobs × 3 moins souvent, pièges et k hole × 0,5
+  (29/10 ; ancien : pas de k hole), pas de shrines ni Gallianix, donjon à gauche
+  du puits (`dungeonWinchGap` 3). Minerais × `oreMul` 0,52 (pris sur pierre, terre, pierre dure) : mesuré à 0,48 (acier) et 0,43 (fer)
+  de la part d'un joueur d'une mine à 3, en poids de minerais ; treasures et butins rares × 0,5 ; run fini à 80 % des minerais (ou 3 h de
+  jeu) : remontée, coffre versé (clé `prison:<id>:<run>`), XP et énergie, run suivant. Résidus dans l'inventaire sans jauges du Jugement
+  ni Discord. Arrêt (bouton, ou lancement d'une mine / tour / instance) : coffre versé, pas le sac. Rythme : en direct quand le jeu est
+  ouvert (`uiPoll` 15 s), sinon paquets toutes les 10 min réelles dès 10 min après la dernière visite, pause après 24 h sans visite, reprise
+  sans rejouer l'attente ; seule la vue de la prison rattrape (`state()` note la présence). Coût serveur : ≈ 7 min de jeu calculé par joueur et
+  par jour à ×2, plus les rejeux d'un run depuis son début à chaque paquet : ≈ ×1,5 en moyenne (≈ 10 min), jusqu'à ≈ ×9 pour un
+  run qui va jusqu'à `runMax` ; un seul paquet d'absent à la fois (`batchConcurrency`). Moteur qui plante sur un run : arrêt et
+  lancement passent quand même, prison arrêtée au bout de `crashMax` plantages. Le groupe voit qui a une prison en cours :
+  « Je suis prêt » / « Prêt tout le temps » et le lancement du chef demandent confirmation.
 
 - **Le Carreau, la ville du spawn** (29/10, Jules ; **en ligne le 29/10** ; config `TOWN`,
   `src/shared/town.js`, `server/town/`, `src/render/town.js`, `src/ui/town.js`) : hors session, le fond de page est une
@@ -135,7 +158,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (29/10), rage sous 33 %), 10 min. **Niveau 2** (29/10, `INSTANCE.levels`) : choisi dans le Lobby, même clé, ouvert à tous ;
   spawners 200 / 15 s, gobelins 350 PV, roi 6 000 PV (détail GAME_DESIGN) ; Coffre du Roi Gobelin II (× 1,5 ressources et
   chances d'objets) ; classement « Roi gobelin II » (records sous la clé `compte#2` du ns instance_record). Simulé :
-  impossible avec le stuff du 29/10 (≈ 2 × dégâts et 1,5 × minage de la meilleure équipe). **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
+  impossible avec le stuff du 29/10 (≈ 2 × dégâts et 1,5 × minage de la meilleure équipe). **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **clé prise seulement à la victoire** chez les présents ; échec ou départ : clé gardée (30/10 ; ancien : consommée au lancement et rendue en cas d'échec, 27/10 ; avant : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
   20/20 (`npm run simulate:instance`) ; seul : impossible. ⚠️ Ce script ne donne aux mineurs que le stuff de base (ni skills,
   ni sorts, ni améliorations, ni runes) : il sous-estime les vrais joueurs (0/5 en acier le 29/10 alors que les 6 vraies
   parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 200 PV
@@ -179,6 +202,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   par ce chef (décomptées au lancement), dessinés à la surface près du coffre ; lobby au même code tant qu'il y en a un.
   **Shrine d'abondance** : 10 pépites d'argent + 20 résidus angéliques, 5 sessions, 5 points de terrain → minerais au
   prorata dans toutes les areas. D'autres shrines prévus.
+  **Stèles des tours** (30/10, Geoffrey ; `SHRINES.list` exorcisme / pacte, `TOWER.stele`) : shrines décomptés au lancement
+  d'une tour de leur camp par le chef (3 tours, provisoire). **Exorcisme** (Tour du Démon, 240 Stonebricks angéliques),
+  **Pacte** (Tour de l'Ange, 240 démoniaques). À la mort du boss, le boss de l'autre camp s'écrase sur le toit (projection
+  10 cases), casse le treuil, 5 mobs de l'autre camp à 150 % PV par étage, boss à 150 % PV ; même chrono, victoire = 2e
+  boss tué. Bonus : **trésor béni** (anneaux × 2) via `RUNE.luck`, coefficient générique (variantes R1-R7 générées).
+  ⚠️ À équilibrer : en simulation, 2,5 / 40 tue le 1er boss vers 8 min 17, jamais le 2e.
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
@@ -206,6 +235,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
   `src/ui/pxicons.js`, `npm run textures:ui`). Polices : titres en Jersey 15, texte en VT323 (29/10 ; ancien :
   Jersey 10, illisible sous 20 px). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
+- **Sprites des tours du Jugement** (30/10, Jules ; `scripts/gen_bosses.py`) : direction « guerriers » pour les deux camps
+  (choisie parmi guerriers / biblique / style actuel amélioré). Ange = archange en cuirasse d'or, épée de lumière, grandes
+  ailes ; Démon = seigneur démon massif, lave, hache, ailes de chauve-souris, liseré de braise ; Séraphin = petit soldat
+  de l'Ange ; Diablotin = même idée qu'avant, plus lisible. Boss en **48 × 80** (pleine résolution, 16 px par case ;
+  ancien : 24 × 40, pixels doublés en jeu, Démon = l'Ange recoloré).
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
@@ -308,7 +342,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Piège** (mine classique, 22/10, `src/sim/trap.js`, `TRAP` en config) : à partir de l'area 1, 2 tirages de 25 % par
   area ; salle 5 × 3 cachée dans des blocs normaux, 5 mobs (PV et vitesse × 1,5, hors quota) qui chassent le mineur dès
   qu'un bloc de paroi disparaît ; le barbare vient à la rescousse. Mobs qui ne grimpent pas (physique normale).
-- **Focus en session** (panneau de l'onglet Session) : focus minerai (Aucun / Cibler / Uniquement) et focus area.
+- **Focus en session** (panneau de l'onglet Session) : focus area. Focus minerai (Aucun / Cibler / Uniquement) **retiré du jeu le 30/10** (Geoffrey), gardé dans le code : `FOCUS.ores` en config le remet.
   « Plus profond » (de base) = travailler dans l'area débloquée la plus profonde et la suivre (22/10 ; ancien :
   descendre en ramassant tout ce qui est à portée). Coûte ≈ 15 % de valeur en solo, ≈ 24 % à 3 (seau 0,85×).
 - **Seuil d'ouverture d'une area : 60 %** des minerais de la dernière area ouverte (22/10, Geoffrey ; ancien : 40 %).
@@ -478,7 +512,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
-- Fondations : pas encore.
-- Sorts : déblocage des emplacements 3 et 4, source des parchemins (butin ? craft ?) et récompense des niveaux de
-  spécialisation autres que les sorts : à décider (24/10).
-- `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.
+- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
+  pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
+  heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
+  canoul, `scripts/simulate-prison-profile.js`), treasures ≈ 28 % (validé par Geoffrey) ; vue zoomée bornée aux colonnes
+  entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».
+  Correctifs : golem collé sous la surface (arrêt net seulement sous terre), minerais rares arrondis au hasard en prison.
+  **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).

@@ -259,7 +259,8 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
 
 /* ---------- focus minerai (changé pendant la session) ---------- */
 
-test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async () => {
+test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async t => {
+  const was = FOCUS.ores; FOCUS.ores = true; t.after(() => { FOCUS.ores = was; });   // focus minerai rendu accessible
   const { game, advance } = setup();
   const { session } = await game.start(ME, {});
   advance(10_000);
@@ -270,6 +271,14 @@ test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé
   const st = await game.state(ME);
   assert.deepEqual(st.session.focus, [{ account:ME.id, tick:event.tick, focus:{ coal:'only' } }]);
   assert.equal(st.session.id, session.id);
+});
+
+test('focus minerai retiré du jeu (30/10, FOCUS.ores false) : le serveur ne garde que l\'area', async () => {
+  assert.equal(FOCUS.ores, false);
+  const { game } = setup();
+  await game.start(ME, {});
+  const { event } = await game.focus(ME, { focus:{ coal:'only', iron:'target', area:1 } });
+  assert.deepEqual(event.focus, { area:1 });
 });
 
 test('mode dev : vitesse et pause sur le serveur ; la partie suit cette horloge', async () => {
@@ -716,4 +725,27 @@ test('drop des glyphes : au lancement, les glyphes possédés (inventaire + pos�
   await store.putInventory(ME.id, { slots:[{ item:'Glyphe Pillage', qty:1 }, { item:'Charbon', qty:5 }], nextUid:1, credited:[] });
   const { session } = await game.start(ME, {});
   assert.deepEqual((await store.getGameSession(session.id)).skills[ME.id].owned.sort(), ['Glyphe Force brute', 'Glyphe Pillage']);
+});
+
+test('vue d\'une session en file derrière l\'avance qui la termine (partie fermée entre-temps) : settling, pas d\'erreur', async () => {
+  const me = { id: 'VVVV1111', name: 'Vue' };
+  const fake = fakeLive(() => ({ shares: [] }));
+  /* la partie se termine juste avant que la vue passe : le moteur la ferme et rejette la vue en file */
+  const liveRunner = opts => { const l = fake(opts); l.view = async id => { l.close(id); throw new Error(`partie ${id} fermée`); }; return l; };
+  const game = createGameService({ store: createMemoryGameStore(), liveRunner, randomSeed: () => 99 });
+  await game.start(me, {});
+  const v = await game.view(me, null);
+  assert.equal(v.view, null); assert.equal(v.status, 'settling');
+});
+
+test('bilans jamais vus (30/10) : seul le dernier est montré ; une fois vu, les plus anciens ne reviennent pas', async () => {
+  const { game, advance } = setup();
+  const ids = [];
+  for(let i = 0; i < 3; i++){   // trois sessions finies, bilans jamais vus (quittés sans bouton avant le correctif)
+    ids.push((await game.start(ME, {})).session.id);
+    advance(realDurationMs()); await game.pump(); advance(1000);
+  }
+  assert.equal((await game.state(ME)).ended.id, ids[2], 'le plus récent');
+  await game.ack(ME, ids[2]);
+  assert.equal((await game.state(ME)).ended, null, 'les anciens non vus ne reviennent pas un par un');
 });

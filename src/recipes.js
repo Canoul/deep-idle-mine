@@ -57,10 +57,11 @@ export const RECIPES = {
 
   /* Treasure T4 (27/10/2026, Geoffrey) : toutes débloquées par leur blueprint. Thorium et cobalt se fabriquent à partir de
      la pièce en mithril (consommée : l'exemplaire le plus simple d'abord, src/meta/craft.js) */
-  'Casque en mithril':   { cost: { 'Mithril ingot': 15, 'Steel ingot': 5, 'Shiny iron': 10 }, qty: 1, unlock: 'Casque en mithril BP' },
-  'Plastron en mithril': { cost: { 'Mithril ingot': 24, 'Steel ingot': 8, 'Shiny iron': 10 }, qty: 1, unlock: 'Plastron en mithril BP' },
-  'Jambes en mithril':   { cost: { 'Mithril ingot': 21, 'Steel ingot': 7, 'Shiny iron': 10 }, qty: 1, unlock: 'Jambes en mithril BP' },
-  'Bottes en mithril':   { cost: { 'Mithril ingot': 16, 'Steel ingot': 4, 'Shiny iron': 10 }, qty: 1, unlock: 'Bottes en mithril BP' },
+  /* 30/10/2026 (Geoffrey) : lingots de mithril × 2 sur les pièces en mithril (avant 15 / 24 / 21 / 16) */
+  'Casque en mithril':   { cost: { 'Mithril ingot': 30, 'Steel ingot': 5, 'Shiny iron': 10 }, qty: 1, unlock: 'Casque en mithril BP' },
+  'Plastron en mithril': { cost: { 'Mithril ingot': 48, 'Steel ingot': 8, 'Shiny iron': 10 }, qty: 1, unlock: 'Plastron en mithril BP' },
+  'Jambes en mithril':   { cost: { 'Mithril ingot': 42, 'Steel ingot': 7, 'Shiny iron': 10 }, qty: 1, unlock: 'Jambes en mithril BP' },
+  'Bottes en mithril':   { cost: { 'Mithril ingot': 32, 'Steel ingot': 4, 'Shiny iron': 10 }, qty: 1, unlock: 'Bottes en mithril BP' },
   'Casque en thorium':   { cost: { 'Casque en mithril': 1, 'Thorium ingot': 10, 'Rubis': 1, 'Diamant': 25 },   qty: 1, unlock: 'Casque en thorium BP' },
   'Plastron en thorium': { cost: { 'Plastron en mithril': 1, 'Thorium ingot': 16, 'Topaze': 1, 'Diamant': 25 }, qty: 1, unlock: 'Plastron en thorium BP' },
   'Jambes en thorium':   { cost: { 'Jambes en mithril': 1, 'Thorium ingot': 14, 'Saphir': 1, 'Diamant': 25 },  qty: 1, unlock: 'Jambes en thorium BP' },

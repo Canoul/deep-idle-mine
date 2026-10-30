@@ -145,8 +145,11 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
 
   let pinned = null;
   const at = e => { const c = e.target.closest('.slot'); return c ? inv.slots[+c.dataset.i] || null : undefined; };
-  grid.onmouseover = e => { if(pinned) return; const s = at(e); if(s !== undefined) $('invInfo').innerHTML = infoHtml(s); };
-  grid.onmouseleave = () => { if(!pinned) $('invInfo').innerHTML = infoHtml(null); };
+  /* survol : souris seulement. Sur un écran tactile, le survol simulé au premier appui changeait la fiche et l'iPhone
+     avalait le clic : la pièce n'était jamais choisie, donc pas de bouton « Équiper » (30/10, Geoffrey) */
+  const hover = !matchMedia('(hover: none)').matches;
+  grid.onmouseover = e => { if(pinned || !hover) return; const s = at(e); if(s !== undefined) $('invInfo').innerHTML = infoHtml(s); };
+  grid.onmouseleave = () => { if(!pinned && hover) $('invInfo').innerHTML = infoHtml(null); };
   grid.onclick = e => {
     const c = e.target.closest('.slot'); if(!c) return;
     grid.querySelectorAll('.slot.sel').forEach(x => x.classList.remove('sel'));
@@ -154,6 +157,8 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
     pinned = (s && pinned !== s) ? s : null;
     if(pinned) c.classList.add('sel');
     $('invInfo').innerHTML = infoHtml(pinned || s, !!pinned, inv, actions.worn?.(), actions.furnaces?.());
+    /* petit écran : la fiche (et ses boutons Équiper, Ouvrir…) est sous la grille, on la fait venir à l'écran */
+    if(pinned && matchMedia('(max-width: 1100px)').matches) $('invInfo').scrollIntoView({ behavior:'smooth', block:'nearest' });
   };
   $('invSort').disabled = !used;
   $('invSort').onclick = () => { $('invSort').disabled = true; actions.onSort?.(); };

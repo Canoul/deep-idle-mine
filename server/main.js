@@ -11,6 +11,8 @@ import { GAME_SERVER } from './config.js';
 import { createFileGameStore, createPgGameStore } from './game/store.js';
 import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
+import { readDevCopies } from './game/dev-copies.js';
+import path from 'node:path';
 import { createPartyService } from './party/service.js';
 import { createInstantService } from './instant/service.js';
 import { createSocialService } from './social/service.js';
@@ -25,7 +27,9 @@ const store = db ? await createPgStore(db) : await createFileStore(SERVER.dataDi
 const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
 /* annonces Discord (trésor ou identification R7) : seulement si DIM_DISCORD_WEBHOOK est défini */
-const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }) });
+/* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
+const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }),
+                                 devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')) });
 const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 /* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */

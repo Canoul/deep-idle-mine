@@ -74,11 +74,12 @@ export function updateHUD(G, ui){
   const ai=areaOf(m.y), box=$('areaBody');
   if(ai<0){ box.innerHTML='<div class="mut">Surface. Le mineur creuse vers l\'area 0…</div>'; return; }
   const a=G.areas[ai];
-  let h=`<div class="row"><b>Area ${ai}</b></div>`+areaCompHtml(a);
+  /* prison (29/10) : sa carte est l'area 0, mais son contenu est celui d'une autre area (profil des 10 dernières mines) */
+  let h=`<div class="row"><b>Area ${ui.prison && Number.isSafeInteger(ui.prisonArea) ? ui.prisonArea : ai}</b></div>`+areaCompHtml(a);
   // treasure : on n'affiche que la probabilité (sa présence reste une surprise), et s'il a été trouvé
   if(a.chestChance>0)
     h+=`<div class="row" style="margin-top:6px"><span>💰 Treasure ${a.treasure&&a.treasure.opened?esc(a.treasure.item.replace('Treasure ','')):''}</span><span>${a.treasure&&a.treasure.opened?'✔ trouvé':Math.round(a.chestChance*100)+' % de chances'}</span></div>`;
-  h+=objectiveHtml(G);
+  if(!ui.prison) h+=objectiveHtml(G);   // prison (29/10) : une seule area, rien à débloquer
   box.innerHTML=h;
 }
 

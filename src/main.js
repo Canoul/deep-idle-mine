@@ -13,7 +13,7 @@
      (src/ui/instant-lobby.js) ; à l'heure, le serveur l'ouvre et le navigateur bascule sur Session, où elle a son
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
-import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE } from './config.js';
+import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
 import { emptyView, applyView } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
@@ -72,6 +72,8 @@ import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
 import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
+import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError } from './ui/prison.js';
+import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 
 const $ = id => document.getElementById(id);
 const ui = { speed:1, paused:false, follow:null, inv:{ slots:[] }, fresh:new Set(), tab:'lobby' };
@@ -82,6 +84,9 @@ let G = null;              // copie d'affichage de la partie du serveur (src/sha
 let clockOffset = 0;       // heure du serveur − heure locale (ms)
 let waiting = false;       // partie finie, résultat du serveur attendu
 let waitingFor = null;     // … celui de cette session (id)
+/* prison (29/10) : la sienne (publicPrison du serveur), la copie d'affichage du run regardé (même format que la mine),
+   heure de son dernier envoi */
+let prison = null, PG = null, prisonViewAt = 0;
 let pendingJoin = joinCodeFromHash(location.hash);   // lien d'invitation (#rejoindre=CODE), lu avant que la barre change l'adresse
 const serverNow = () => Date.now() + clockOffset;
 const renderer = createRenderer($('cv'));
@@ -278,10 +283,12 @@ nav = setupNav($('nav'), $('views'), id => {
   ui.tab = id;
   /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
   const sessView = document.querySelector('.view[data-view="session"]');
-  if(backdrop.switchTab(from, id, rec && G?.ready ? G : null)) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
+  /* … et la prison comme la mine (30/10/2026) */
+  if(backdrop.switchTab(from, id, rec && G?.ready ? G : prisonBackdrop())) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby') gchat?.poke();        // chat global : relu seulement Lobby ouvert, tout de suite en y revenant
   if(id==='lobby' && wantJudgment){ wantJudgment = false; setTimeout(() => lobby.showJudgment()); }   // différé : le lobby n'est pas encore créé au tout début
@@ -328,11 +335,22 @@ const lobby = setupLobby({
   onShowSession: () => nav.show('session'),
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
-  onLaunch: async opts => {
+  onPrisonStart: opts => startPrison(opts),
+  prisonSaveCompo: compo => gameApi.prisonSaveCompo(compo),   // enregistrer une compo (30/10)
+  prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
+  onPrisonStop: () => stopPrison(),
+  onShowPrison: () => nav.show('session'),
+  onLaunch: async (opts, { party } = {}) => {
     lobby.error('');
+    /* lancer une mine, une tour ou une instance termine la prison de chaque joueur (29/10) : on prévient, en nommant les
+       membres dont la prison tourne (vue du groupe relue au serveur, qui fait foi) */
+    const team = party?.members?.length > 1 ? ((await partyApi.state().catch(() => null))?.party ?? party) : party;
+    const q = launchPrisonText({ mine: prisonActive(prison), party: team, meId: acct.account?.id });
+    if(q && !await ask(q, { ok:'Lancer quand même' })) return;
     try {
       enterSession((await gameApi.start(opts)).session); nav.show('session'); instantLobby.refresh();
-      if(isInstanceMode(opts.mode)) gameApi.state().then(st => setInventory(st.inventory)).catch(() => {});   // clé consommée au lancement
+      /* clé d'instance consommée, énergie débitée, prison terminée : relus au serveur */
+      gameApi.state().then(st => { setInventory(st.inventory); setEnergy(st.energy); setPrison(st.prison, { sync:false }); }).catch(() => {});
     }   // lancer désinscrit du MI
     catch(e){
       if(e instanceof ApiError && e.code === 'session_running') return refresh();
@@ -364,7 +382,7 @@ giantUI = setupGiant({ api: giantApi, nav, onInventory: (inv, bag) => setInvento
 const sessionView = document.querySelector('.view[data-view="session"]');
 let pane = 'session', hadSession = false, hadGiant = false;
 function updatePanes(){
-  const sess = !!rec || !$('end').hidden, gt = !!giantUI?.active();
+  const sess = !!rec || !$('end').hidden || prisonShown(), gt = !!giantUI?.active();
   if(sess && !hadSession) pane = 'session';
   if(gt && !hadGiant) pane = 'giant';
   hadSession = sess; hadGiant = gt;
@@ -385,6 +403,7 @@ function showNoSession(){
   setsUI.refresh(); sessionFlag();   // sets de nouveau disponibles
   $('run').hidden = true; $('miRun').hidden = true; $('twRun').hidden = true; $('inRun').hidden = true; $('noSession').hidden = !!giantUI?.active();   // une visite au Bloc géant garde l'onglet
   lobby.update({ account:acct.account, offline:acct.offline, info, session:null });
+  updatePrisonUI();   // la prison reprend l'onglet Session
   pollLobby();
 }
 $('toLobbyBtn').onclick = () => nav.show('lobby');
@@ -393,6 +412,8 @@ $('twLeaveBtn').onclick = () => leave();
 $('inLeaveBtn').onclick = () => leave();
 const navSession = document.querySelector('.navSession');
 navSession.onclick = () => { if(rec || giantUI?.active()) nav.show('session'); };
+$('navPrisonBtn').onclick = () => nav.show('session');
+$('navPrisonStop').onclick = () => stopPrison();
 
 /* lobby : groupe, invitations ; le chef a lancé → tout le groupe passe à l'onglet Session. Continue pendant la session
    (plus lentement) pour que le lobby, en lecture seule, montre le groupe ; sert aussi de signe de vie au groupe,
@@ -495,7 +516,7 @@ addEventListener('hashchange', e => {
 
 /* ---------- session ---------- */
 setupRunControls(ui, { onLeave: leave, onClock: setClock, onFollow: id => { ui.follow = id; renderer.follow(); } });
-setupCamera($('cv'), renderer, () => !!G?.ready && ui.tab === 'session');
+setupCamera($('cv'), renderer, () => (!!G?.ready || prisonShown() && !!PG?.ready) && ui.tab === 'session');
 
 /* focus : le serveur l'applique tout de suite dans la partie (et l'enregistre avec son tick) */
 const focusPanel = setupFocusPanel({
@@ -543,6 +564,7 @@ function enterSession(session){
   $('end').hidden = true; $('noSession').hidden = true; $('run').hidden = mi || tw || ins; $('miRun').hidden = !mi; $('twRun').hidden = !tw; $('inRun').hidden = !ins;
   if(mi || tw || ins) chat.stop(); else chat.start();
   lobby.update({ session:{ id:session.id } });   // lobby en lecture seule
+  updatePrisonUI();                              // la session passe devant la prison (mine instantanée)
   pollView();
   pollLobby();                                   // le lobby continue de montrer le groupe
 }
@@ -582,12 +604,17 @@ async function pollView(){
 }
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && G && !waiting) pollView();
+  if(document.visibilityState === 'visible' && prisonActive(prison)) kickPrison();
   if(document.visibilityState === 'visible' && !G) pollLobby();
   if(document.visibilityState === 'visible') pollSocial();
 });
 
 /* entre deux envois, les actions en cours avancent à l'écran (affichage seulement : le prochain envoi fait foi) */
 function smooth(dtr){
+  if(prisonShown() && PG?.ready && !PG.over && performance.now() - prisonViewAt < 3000){
+    const rate = prison?.speed ?? info.speed ?? GAME.speed;
+    for(const m of PG.miners){ const a = m.action; if(a) a.t = Math.min(a.dur, a.t + dtr * rate); }
+  }
   if(!G?.ready || G.over) return;
   const rate = info.dev ? (ui.paused ? 0 : ui.speed) : rec.speed;
   if(performance.now() - lastView > 3000) return;              // plus de nouvelles : on n'invente rien
@@ -595,12 +622,134 @@ function smooth(dtr){
 }
 
 async function leave(){
+  if(prisonShown()) return stopPrison();   // même bouton, pendant qu'on regarde la prison (29/10)
   if(!G || G.over) return;
   if(!await ask(isIn() ? 'Quitter l\'instance ?\nTu ne recevras pas de coffre. Si le groupe gagne sans toi, ta clé est perdue (elle est rendue si le groupe perd).' : isTw() ? 'Quitter la tour ?\nTu ne recevras pas de trésor.' : isMi() ? 'Quitter la mine instantanée ?\nTu ne recevras rien de ce que tu as miné.'
                      : 'Quitter la session ?\nTu ne recevras rien de cette session : le coffre ira aux joueurs restants.', { ok:'Quitter', danger:true })) return;
   try { await gameApi.leave(); }
   catch(e){ if(!(e instanceof ApiError) || e.code !== 'no_session'){ tell(e.message); return; } }
   showNoSession(); nav.show('lobby');
+}
+
+/* ---------- prison (29/10/2026) et énergie ----------
+   La prison tourne sur le serveur, même page fermée. L'onglet Session la montre comme une mine (même rendu, mêmes
+   panneaux, son bandeau en haut) quand il n'y a pas de session en cours. Le jeu ouvert la redemande au moins toutes les
+   PRISON.uiPoll ms (le serveur sait ainsi que le joueur est là, et la fait tourner en direct), toutes les VIEW_EVERY ms
+   quand on la regarde. Bilan d'absence : envoyé une seule fois par le serveur, montré par la réponse qui le porte. */
+const prisonShown = () => !rec && prisonActive(prison);
+/* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
+   Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
+function prisonBackdrop(){ return !rec && prisonActive(prison) && PG?.ready ? PG : null; }
+function setEnergy(e){
+  if(!e) return;
+  $('navEnergy').hidden = false;
+  $('navEnergyTxt').textContent = energyText(e);
+  $('navEnergyBar').style.width = energyPct(e) + '%';
+  $('navEnergy').classList.toggle('low', e.value < ENERGY.cost.min);   // pas assez pour une mine
+  lobby.update({ energy: e });
+}
+let lastAway = null;
+function showAway(a){
+  const text = awayText(a), key = JSON.stringify(a);
+  if(!text || key === lastAway) return;   // deux réponses en même temps : un seul message
+  lastAway = key;
+  tell(text);
+}
+/* prison reçue du serveur (state, vue, lancement, arrêt) ; sync : un run vient d'être versé → inventaire, énergie, XP relus */
+function setPrison(p, { sync = true } = {}){
+  const was = prison;
+  /* state() ne connaît pas toujours l'avancement du run : on garde celui de la dernière vue (même run) */
+  if(p && was && p.run === was.run && p.goal == null) p = { ...p, goal: was.goal, mined: was.mined };
+  prison = p ?? null;
+  if(hasAway(prison)) showAway(prison.away);
+  if(!prisonActive(prison)) PG = null;
+  if(sync && was && prison && (was.run !== prison.run || was.energy !== prison.energy || prisonActive(was) !== prisonActive(prison))) syncAccount();
+  lobby.update({ prison });
+  updatePrisonUI();
+  if(prisonActive(prison) && !prisonActive(was)) kickPrison();
+}
+/* inventaire, énergie, niveau : relus au serveur après un versement de run (sans toucher à la session) */
+async function syncAccount(){
+  try {
+    const st = await gameApi.state();
+    setInventory(st.inventory); setEnergy(st.energy);
+    if(!st.ended || st.session) setProgress(st.progress);   // un bilan à montrer : showResult annonce la montée de niveau
+    skills.set(st.skills);
+    setPrison(st.prison, { sync:false });
+  } catch(e){ console.warn(e); }
+}
+let prisonTimer = null, prisonBusy = false, prisonErrors = 0;
+function kickPrison(delay = 0){ clearTimeout(prisonTimer); prisonTimer = setTimeout(pollPrison, delay); }
+async function pollPrison(){
+  clearTimeout(prisonTimer);
+  if(prisonBusy || acct.offline || !acct.account || !prisonActive(prison)) return;
+  prisonBusy = true;
+  let again = null;
+  try {
+    const r = await gameApi.prisonView(PG?.ready ? PG.ticks : null);
+    prisonErrors = 0;
+    setPrison(r.prison);
+    if(r.view && prisonActive(prison)){
+      if(PG && PG.run !== prison.run && !r.view.full){ PG = null; again = 0; }   // run suivant : sa carte entière d'abord
+      else {
+        if(!PG || PG.run !== prison.run){ PG = emptyView(); PG.run = prison.run; if(!rec){ ui.follow = null; renderer.follow(); } }
+        applyView(PG, r.view); prisonViewAt = performance.now();
+        if(!rec && ui.follow == null && PG.miners.length) ui.follow = (PG.miners.find(m => m.account === acct.account?.id) ?? PG.miners[0]).id;
+      }
+    }
+  } catch(e){
+    console.warn(e);
+    /* déconnecté : on s'arrête ; plus de prison ni de session côté serveur : état relu ; sinon recul (PRISON.uiRetry…) */
+    const next = prisonPollError(e, ++prisonErrors);
+    if(next.action === 'stop') return void setPrison(null, { sync:false });   // reconnecté : state() la renvoie et relance
+    if(next.action === 'refresh') return void refresh().catch(console.warn);
+    again = next.delay;
+  }
+  finally { prisonBusy = false; }
+  if(!prisonActive(prison)) return;
+  kickPrison(again ?? (prisonShown() && ui.tab === 'session' && !document.hidden ? VIEW_EVERY : PRISON.uiPoll));
+}
+async function startPrison(opts = {}){
+  lobby.error('');
+  /* mode dev : la prison part à la vitesse choisie dans la barre de la mine (29/10) */
+  try { setPrison((await gameApi.prisonStart({ ...opts, ...(info.dev && ui.speed ? { speed: ui.speed } : {}) })).prison); nav.show('session'); }
+  catch(e){ lobby.error(e.message); }
+}
+async function stopPrison(){
+  if(!prisonActive(prison)) return;
+  if(!await ask('Sortir de prison ?\nLe coffre du run en cours est versé dans ton inventaire, pas ce que le mineur porte sur lui.', { ok:'Sortir de prison' })) return;
+  let out;
+  try { out = (await gameApi.prisonStop()).prison; setPrison(out); }
+  catch(e){ tell(e.message); return; }
+  if(ui.tab === 'session' && !rec) nav.show('lobby');
+  showPrisonRecap(out);   // tout ce que la prison a rapporté (29/10 ; aussi dans l'Historique)
+}
+/* barre du haut, onglet Session : la prison montrée (pas de session) ou non */
+function updatePrisonUI(){
+  const on = prisonShown(), active = prisonActive(prison);
+  $('navPrison').hidden = !active;
+  sessionView.classList.toggle('prisonOn', on);
+  sessionView.classList.toggle('prisonDev', on && info.dev);   // mode dev : les boutons de vitesse restent visibles (29/10)
+  /* butin de la prison (29/10) : ce que les runs versés ont rapporté depuis l'entrée */
+  $('prisonLootCard').hidden = !on;
+  if(on){
+    const cur = PG?.ready && PG.run === prison.run, live = cur ? (PG.ticks | 0) * DT : 0;   // temps de jeu du run en cours
+    const html = prisonLootHtml(prison.totals, live, cur ? { chest: PG.chest, xp: PG.stats?.xp } : null);   // total, run en cours compris (30/10)
+    if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
+  }
+  $('prisonBanner').hidden = !on;
+  $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
+  $('leaveBtn').title = on ? 'Le coffre du run en cours est versé, pas ce que le mineur porte' : 'Tu ne recevras rien de cette session';
+  if(rec) return;                               // une session est affichée : on n'y touche pas
+  if(on){ $('run').hidden = !$('end').hidden; $('noSession').hidden = true; }   // un bilan affiché reste devant
+  /* mode dev (29/10) : les boutons de vitesse de la barre de la mine pilotent la prison (pas de pause en prison) */
+  if(on && info.dev){
+    renderSpeeds({ speed: prison.speed, paused: false }, info, async s => {
+      try { setPrison((await gameApi.prisonClock(s)).prison); kickPrison(); } catch(e){ tell(e.message); } });
+    for(const b of document.querySelectorAll('.pauseBtn')) b.hidden = true;
+  }
+  /* 30/10/2026 : seulement sans prison (avant : ce « sinon » suivait « prison ET mode dev », il cachait la prison hors dev) */
+  if(!on){ $('run').hidden = true; $('noSession').hidden = !!giantUI?.active(); }
 }
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */
@@ -629,8 +778,12 @@ function showResult(st){
   rec = null; G = null; waiting = false; chat.stop();
   setsUI.refresh(); sessionFlag();
   lobby.update({ session:null });            // on peut relancer depuis le lobby pendant qu'on lit le bilan
+  setEnergy(st.energy); setPrison(st.prison, { sync:false });
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
+  /* bilan vu dès qu'il s'affiche (30/10, Geoffrey) : avant, seuls ses boutons le marquaient « vu » ; le quitter autrement
+     (autre onglet, Échap, relancer depuis le lobby) le faisait revenir à chaque rechargement de la page */
+  gameApi.ack(ended.id).catch(() => {});
   const done = endAck = () => { endAck = null; gameApi.ack(ended.id).catch(() => {}); };
   const back = () => { done(); $('end').hidden = true; showNoSession(); nav.show('lobby'); };
   const toInv = () => { done(); $('end').hidden = true; showNoSession(); nav.show('inventaire'); };
@@ -674,6 +827,7 @@ async function refresh(){
   spells.set(st.spells);
   setsUI.set(st.sets);
   lobby.update({ prefs: st.prefs });
+  setEnergy(st.energy); setPrison(st.prison, { sync:false });
   if(st.session) enterSession(st.session);
   else showNoSession();
   if(st.ended && !st.session) showResult(st);
@@ -742,16 +896,31 @@ function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   if(perfOn) perf.frame(now);
   smooth(dtr);
-  const shown = G?.ready ? G : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
-  backdrop.draw(rec ? shown : null, ui.tab !== 'session', acct.account?.id, ui.follow);
-  /* le Carreau : fond quand il n'y a pas de session ; promenade quand l'onglet Session n'a rien d'autre à montrer */
-  town.frame(dtr, { show: !rec && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
+  const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
+  const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
+  ui.prison = pz && shown === PG;
+  ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
+  /* fond : la session en cours, ou la prison (30/10/2026 : même fond et mêmes transitions que la mine) */
+  const bgG = rec ? shown : prisonBackdrop();
+  backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
+  /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
+  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }
     if(ins && ui.tab==='session') updateInstanceHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(tw && ui.tab==='session') updateTowerHUD(shown, acct.account?.id, rec.finishAt ? Math.max(0, (rec.finishAt - serverNow()) / 1000) : null, ui.focus);
     else if(mi && ui.tab==='session') updateInstantHUD(shown, acct.account?.id, Math.max(0, (rec.finishAt - serverNow()) / 1000), ui.focus);
+    else if(ui.prison && ui.tab==='session'){
+      updateHUD(shown, ui);
+      $('followBtn').hidden = !renderer.free;
+      /* en-tête : temps de jeu du run et avancement vers la fin du run ; bandeau : run, minerais, énergie, pause */
+      $('timer').textContent = `Run ${prison.run} · ${fmt(shown.t)}`;
+      $('timeBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
+      $('realLeft').textContent = performance.now() - prisonViewAt > 5000 ? 'connexion…' : '';
+      $('prisonBannerTxt').textContent = prisonBanner(prison, serverNow());
+      $('prisonBanner').title = Number.isFinite(prison.goal) ? `${prison.mined} minerais minés sur ${prison.goal} pour finir le run` : '';
+    }
     else if(shown && ui.tab==='session'){
       updateHUD(shown, ui);
       focusPanel.update(shown, acct.account?.id);
@@ -761,7 +930,7 @@ function frame(now){
     }
     updateEffects(ui.tab==='session' ? shown : null);
     updateSpellBars(ui.tab==='session' ? shown : null);
-    updateNavSession(shown, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
+    updateNavSession(rec ? shown : null, waiting, ins ? INSTANCE.duration : tw ? TOWER.duration : mi ? INSTANT_MINE.duration : SESSION_LEN);
     updateOrbs(shown, mi || tw || ins, ins ? INSTANCE.duration : tw ? TOWER.duration : undefined);
     if(ui.tab==='session'){
       ins ? fitCanvas($('cvIn'), $('cvInWrap')) : tw ? fitCanvas($('cvTw'), $('cvTwWrap')) : mi ? fitInstant($('cvMi'), $('cvMiWrap'), miRenderer, MI_TILE) : fitMine($('cv'), $('cvWrap'), renderer, CAMERA, TILE);   // la mine remplit la place libre
@@ -770,7 +939,12 @@ function frame(now){
     }
     const face = $('navAccount').querySelector('canvas');
     if(face) drawPortrait(face, lookOf(stuff.worn()), aurasOf(stuff.worn()));                  // portrait : le mineur avec son stuff
-    navSession.classList.toggle('live', !!rec);
+    navSession.classList.toggle('live', !!rec || prisonActive(prison));
+    /* prison (30/10/2026) : la barre du haut la montre comme une session (run, avancée vers la fin du run) */
+    if(!rec && !waiting && prisonActive(prison)){
+      $('navTimer').textContent = `Prison · run ${prison.run}`;
+      $('navBar').style.width = (prison.goal > 0 ? Math.min(100, prison.mined / prison.goal * 100) : 0) + '%';
+    }
     if(rec && ui.tab==='lobby')                                // bandeau du lobby : temps restant
       $('lobbySessLeft').textContent = waiting ? '· résultat…' : !shown ? '' : info.dev ? `· ${fmt(shown.t)} de jeu`
         : `· fin dans ${fmt(Math.max(0, (rec.finishAt - serverNow()) / 1000))}`;
