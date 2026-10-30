@@ -38,7 +38,7 @@ Modèle d'entrée :
 - **Décisions** (Geoffrey) : 3 avertissements → 24 h. Choix de Claude à valider : seul celui qui complète un mot coupé
   est averti ; jurons d'humeur non filtrés ; une session déjà lancée va au bout pendant le ban ; les avertissements ne
   s'effacent pas avec le temps (seulement par un ban, qui remet le compteur à 0, ou à la main).
-- **État** : 🔧 branche `geoffrey/moderation-chat`, pas en ligne
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
 - **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
