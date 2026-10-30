@@ -686,3 +686,19 @@ test('butin de la prison : totaux (runs, XP, énergie, objets) envoyés au navig
   assert.equal(st.session, null);
   await game.start(A, { mode: 'mine' });                               // une session se lance toujours
 });
+
+test('stuff relu à chaque run (30/10) : une pièce équipée pendant la prison compte au run suivant, pas au run en cours', async () => {
+  const { game, store, t } = setup();
+  await game.prisonStart(A);
+  const p = await prisonOf(store, A.id);
+  const disc = q => buildPrisonRun(runRecord(q)).miners[0].carac.discoverMax;
+  const before = disc(p);
+  await store.putInventoryAndStuff(A.id, JSON.parse(serialize(createInventory())), { worn: { casque: { item: 'Lunettes Gucci', uid: 1 } } });
+  assert.equal(disc(await prisonOf(store, A.id)), before, 'run en cours : inchangé');
+  t.now = Math.max(runEndAt(p), p.lastSeenAt + PRISON.batchMs);
+  await game.pump();
+  const p2 = await prisonOf(store, A.id);
+  assert.equal(p2.run, 2);
+  assert.equal(disc(p2), before + 1, 'run 2 : Découverte des lunettes');
+  assert.equal(p2.specs.name, p.specs.name);
+});

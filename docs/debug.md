@@ -5452,3 +5452,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   session à la fois). Si un jour on peut échanger ou recycler une clé, le joueur qui s'en débarrasse pendant l'instance
   n'aura simplement pas de coffre.
 
+
+## 30/10/2026 — Geoffrey — Prison : specs relues à chaque run (branche geoffrey/prison-stuff-a-chaque-run)
+- Signalement : Infernatiwar, Découverte 4, « ne s'applique pas bien en prison ». Le calcul est le même qu'en mine (vérifié :
+  `buildPrisonRun` → `minerSpecs`, Lunettes Gucci + Cape de Naingui : discoverMax 4, +63 % de cases découvertes) ; la cause
+  probable est le gel des specs à l'entrée (`freezePlayer` seulement dans `prisonStart`) : une pièce équipée après n'agit pas.
+  Non vérifié sur ses vraies données (pas d'accès à la base en ligne d'ici).
+- Correctif : `settleRun` (server/game/service.js), au passage au run suivant, `p.specs = { name, ...freezePlayer() }`. Le
+  run en cours garde ses specs (rejeu identique après redémarrage, elles sont rangées avec la prison).
+- Tests ✅ prison-server (nouveau : pièce équipée en cours de run → run 2 +1 Découverte, run 1 inchangé), prison-sim,
+  prison-ui. ⚠️ « une tour et une instance lancées terminent la prison » échoue **déjà sur main** (clé d'instance 1 !== 0),
+  sans lien : à regarder.
