@@ -780,6 +780,9 @@ function showResult(st){
   setEnergy(st.energy); setPrison(st.prison, { sync:false });
   const up = setProgress(st.progress);       // XP versée par le serveur : nouveau niveau ?
   skills.set(st.skills);                     // … et donc peut-être de nouveaux points de skill
+  /* bilan vu dès qu'il s'affiche (30/10, Geoffrey) : avant, seuls ses boutons le marquaient « vu » ; le quitter autrement
+     (autre onglet, Échap, relancer depuis le lobby) le faisait revenir à chaque rechargement de la page */
+  gameApi.ack(ended.id).catch(() => {});
   const done = endAck = () => { endAck = null; gameApi.ack(ended.id).catch(() => {}); };
   const back = () => { done(); $('end').hidden = true; showNoSession(); nav.show('lobby'); };
   const toInv = () => { done(); $('end').hidden = true; showNoSession(); nav.show('inventaire'); };

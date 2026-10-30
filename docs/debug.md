@@ -5360,3 +5360,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   même glissade que la mine (`applyView` / `pace`). Pas de saccade trouvée côté données.
 - ✅ 512/513 tests du service + energy, camera, prison-ui, prison-sim (❌ dev-spec, déjà sur main). Captures vérifiées (session,
   transition, fond).
+
+## 30/10/2026 — Geoffrey — Bilan de session qui revient à chaque rechargement (branche geoffrey/fix-bilan-reapparait)
+- **Cause** : `showResult` (src/main.js) n'appelait `gameApi.ack` que par les boutons du bilan (`back`, `toInv`) ou
+  `endAck` (session suivante lancée par le chef). Quitter le bilan autrement (onglet, Échap, lancer soi-même depuis le
+  lobby) laissait `rec.seen` sans le joueur : `state()` renvoyait `ended` et le bilan revenait à chaque chargement.
+- **Correctif** : `gameApi.ack(ended.id)` dès l'affichage du bilan (le serveur est idempotent : déjà vu = rien).
+- **Vérifié** ✅ navigateur (playwright, `npm run dev`, Test_Mineur) : session lancée puis finie, bilan affiché, onglet
+  Inventaire, rechargement → bilan absent, `state().ended` absent ; même scénario sans le correctif → le bilan revient ❌.
+  Pas de test unitaire (src/main.js n'en a pas).
