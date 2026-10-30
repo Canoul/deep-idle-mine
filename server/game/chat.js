@@ -3,7 +3,7 @@
    (room / restore) pour survivre aux redémarrages.
    Le service vérifie qui écrit ; ici : texte, cadence, messages gardés. */
 import { CHAT } from '../../src/config.js';
-import { cleanChatText } from '../../src/shared/chat.js';
+import { cleanChatText, freshMessages } from '../../src/shared/chat.js';
 import { MODERATION } from '../../src/config.js';
 import { moderate } from '../moderation/filter.js';
 
@@ -12,9 +12,9 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
   const rooms = new Map();    // id de salon → { next, msgs, at (dernier message) }
   const lastBy = new Map();   // compte → heure de son dernier message
 
-  /* oublie les salons sans message depuis ttlMs, et les cadences échues */
+  /* oublie les salons sans message depuis ttlMs, les messages de CHAT.maxAgeMs ou plus (30/10), et les cadences échues */
   function prune(now){
-    for(const [id, r] of rooms) if(now - r.at > ttlMs) rooms.delete(id);
+    for(const [id, r] of rooms) if(now - r.at > ttlMs) rooms.delete(id); else r.msgs = freshMessages(r.msgs, now);
     for(const [a, t] of lastBy) if(now - t >= gapMs) lastBy.delete(a);
   }
 
@@ -40,12 +40,12 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
       return { msg, hits: mod.hits, original: t };
     },
     /* messages après le numéro after (0 : tous ceux gardés) */
-    since: (roomId, after) => (rooms.get(roomId)?.msgs ?? []).filter(m => m.id > after),
+    since: (roomId, after) => freshMessages(rooms.get(roomId)?.msgs, clock()).filter(m => m.id > after),
     drop: roomId => { rooms.delete(roomId); },
     /* ce qu'il faut enregistrer d'un salon (null : aucun message) */
     room(roomId){
       const r = rooms.get(roomId);
-      return r ? { next: r.next, msgs: r.msgs.map(m => ({ ...m })) } : null;
+      return r ? { next: r.next, msgs: freshMessages(r.msgs, clock()).map(m => ({ ...m })) } : null;
     },
     /* reprend un salon enregistré, revérifié message par message (numéros croissants, texte valide) */
     restore(roomId, raw){
@@ -59,7 +59,7 @@ export function createChat({ clock = Date.now, gapMs = CHAT.gapMs, ttlMs = CHAT.
         last = m.id;
       }
       const next = Math.max(last + 1, Number.isSafeInteger(raw.next) ? raw.next : 1);
-      rooms.set(roomId, { next, msgs: msgs.slice(-CHAT.keep), at: msgs.at(-1)?.at ?? clock() });
+      rooms.set(roomId, { next, msgs: freshMessages(msgs, clock()).slice(-CHAT.keep), at: msgs.at(-1)?.at ?? clock() });
     },
   };
 }

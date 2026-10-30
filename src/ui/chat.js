@@ -2,7 +2,7 @@
    joueurs, 28/10). Les messages sont relus au serveur toutes les CHAT.poll ms, avec un champ pour écrire. Le serveur
    vérifie tout (qui écrit, texte, cadence) ; le texte reçu est toujours échappé à l'affichage, jamais interprété. */
 import { CHAT } from '../config.js';
-import { cleanChatText } from '../shared/chat.js';
+import { cleanChatText, freshMessages } from '../shared/chat.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -35,9 +35,12 @@ export function setupChat(h){
   function add(list){
     const fresh = list.filter(m => m.id > last);
     if(!fresh.length) return;
-    msgs = msgs.concat(fresh).slice(-CHAT.keep); last = msgs.at(-1).id;
+    last = fresh.at(-1).id;
+    msgs = freshMessages(msgs.concat(fresh), Date.now()).slice(-CHAT.keep);
     render();
   }
+  /* les messages de 18 h ou plus s'effacent aussi de l'écran, page ouverte (30/10) : vérifié chaque minute */
+  setInterval(() => { const kept = freshMessages(msgs, Date.now()); if(kept.length !== msgs.length){ msgs = kept; render(); } }, 60e3);
   async function poll(){
     clearTimeout(timer);
     if(!on || reading === gen) return;      // une seule relecture à la fois (poke pendant une relecture : rien)
