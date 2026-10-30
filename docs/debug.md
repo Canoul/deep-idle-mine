@@ -5369,3 +5369,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Vérifié** ✅ navigateur (playwright, `npm run dev`, Test_Mineur) : session lancée puis finie, bilan affiché, onglet
   Inventaire, rechargement → bilan absent, `state().ended` absent ; même scénario sans le correctif → le bilan revient ❌.
   Pas de test unitaire (src/main.js n'en a pas).
+
+## 30/10/2026 — Geoffrey — Énergie au repos (`ENERGY.idlePerHour` 3)
+- `settleIdle(e, from, now, speed)` (src/meta/energy.js), champ `e.at` (dernier calcul, ms). `loadEnergy` (server/game/service.js)
+  : sans session active (`activeOf`) ni prison `running` / `waiting`, crédite depuis max(e.at, fin de la dernière session ou de la
+  prison) ; enregistré dès qu'il rapporte ; premier calcul : `at` enregistré, rien de crédité. Soldé aussi à l'entrée en prison.
+- ⚠️ Le repos juste avant une tour ou une instance n'est compté que jusqu'à la dernière lecture de l'énergie (pas de solde au
+  lancement de ces modes). Bloc géant et mine instantanée : comptés comme des sessions s'ils en créent une (`activeOf`).
+- Tests ✅ energy (createEnergy a `at`), energy-server, prison-server, anticheat énergie et prison ; game-service : le test de
+  la table de recherche échoue parfois au hasard (passe seul et au 2e passage).
