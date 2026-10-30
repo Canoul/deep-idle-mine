@@ -5714,3 +5714,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
   recette à 2, le four cuit celle à 2 tant que la 3e case est vide : éviter ce cas en config, ou décider d'une règle.
 
+## 30/10/2026 — Prison : départ en area 2 (Geoffrey, branche geoffrey/prison-depart-area)
+- `PRISON.fallbackArea` 2 (avant 1), et plancher dans `profileOf` (src/meta/prison-profile.js) : area = max(fallbackArea,
+  moyenne) ; sans ça, une mine finie en area 0 donnait une prison plus basse que celle d'un joueur neuf.
+- Mesure (mineur sans stuff, 5 seeds × 3 runs, oreMul 0,27, script jetable) : area 1 176 minerais/h, runs 13,5 min ;
+  area 2 149 minerais/h, runs 16 min ; 0 run au plafond de 3 h. Moins de minerais mais 10 % de fer contre 1 %.
+- **Tests** ✅ prison-profile 3/3 ; ⚠️ pas vu à l'écran. ❌ prison-server « une tour et une instance lancées terminent la
+  prison » rouge **aussi sur main sans ce changement** : il attend la clé retirée au lancement, or elle l'est à la victoire
+  (service.js, `removeItem(inv, inst.key, 1)` au versement). Test à mettre à jour, pas touché ici.

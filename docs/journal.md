@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
+- **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
+  la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
+- **État** : 🧪 sur la branche `geoffrey/prison-depart-area` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
 - **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent
   que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.
