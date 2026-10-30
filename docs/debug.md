@@ -5734,3 +5734,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Vérifié** ✅ Chrome sans écran, page de test avec le vrai `setupFurnace` et le vrai CSS : 1280 × 900 et 500 × 900. Pas sur un vrai
   téléphone. Tests : furnace-trio +1, furnace.
 
+## 31/10/2026 — Prison : onglet caché (Geoffrey)
+- **Cause** : Chrome réveille un onglet caché depuis 5 min une fois par minute, alors que `PRISON.presentFor` valait 30 s. Entre deux
+  demandes le joueur devenait absent, aucun paquet n'était dû (`batchDue` compte depuis la dernière visite), donc `pumpPrisons` fermait
+  le moteur ; la demande suivante rejouait le run depuis le tick 0 (`catchUpBudget`) et `touchPrison` notait une `lastAbsence`.
+- **Correctif** : `presentFor` 30 s → 90 s (src/config.js). Un joueur parti garde son moteur ouvert 60 s de plus.
+- **Tests** ✅ prison-server +1 (une demande par minute pendant 5 min : 6 ouvertures avant, 1 après), prison-ui +1.
+- ❌ `une tour et une instance lancées terminent la prison` (tests/prison-server) échoue aussi sans ce correctif, ligne 227 : non traité.
+- ⚠️ Symptôme exact signalé non précisé par Geoffrey, reproduit par test seulement, pas dans un vrai navigateur. Firefox et Safari
+  limitent aussi les onglets cachés, avec d'autres rythmes, non mesurés.
+- ⚠️ Piste non prouvée pour le lag de la tour : ces rejeux ont pu charger le VPS quand plusieurs joueurs avaient la prison en arrière-plan.
+
