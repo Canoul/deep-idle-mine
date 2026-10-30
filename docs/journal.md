@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Correctif : l'onglet Session montre la prison
+- **Pour le joueur** : en prison, l'onglet Session affichait « Tu n'es pas en session » sur le jeu en ligne (ça ne marchait qu'en mode développeur). Il montre maintenant la prison.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Correctif : la barre du haut montre la prison
 - **Pour le joueur** : en prison, l'indicateur de session en haut affiche « Prison · run N » et l'avancée du run (avant : « aucune »).
 - **État** : ✅ en ligne le 30/10
