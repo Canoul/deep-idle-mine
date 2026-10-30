@@ -28,6 +28,7 @@ export function gameRoutes(game){
       return game.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
     'POST /api/game/chat':   async ctx => { needMe(ctx); return game.chatPost(ctx.me, obj(ctx.body)); },
     /* prison (29/10) : lancée seule (le service des groupes passe ses membres, refus s'ils sont plusieurs), arrêtée par le joueur */
+    'POST /api/game/prison/compo/save': async ctx => { needMe(ctx); return game.prisonSaveCompo(ctx.me, obj(ctx.body)); },   // enregistrer une compo (30/10)
     'POST /api/game/prison/start': async ctx => { needMe(ctx); return [201, await game.prisonStart(ctx.me, null, obj(ctx.body))]; },
     'GET /api/game/prison/profile': async ctx => { needMe(ctx); return game.prisonProfile(ctx.me); },   // contenu des 10 dernières mines (29/10)
     'POST /api/game/prison/clock': async ctx => { needMe(ctx); return game.prisonClock(ctx.me, obj(ctx.body)); },   // vitesse (dev)

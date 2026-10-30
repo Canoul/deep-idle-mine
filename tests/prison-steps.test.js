@@ -1,7 +1,7 @@
 /* Compo de la prison par paliers de 10 mines, actuelle ou précédente (30/10/2026, Geoffrey) */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { prisonSteps, chooseCompo } from '../src/meta/prison-profile.js';
+import { prisonSteps, prisonCompos, pickCompo } from '../src/meta/prison-profile.js';
 
 const A = 'acc';
 /* mine n° i (date i), area a */
@@ -42,14 +42,13 @@ test('mines supprimées de l\'historique (30 jours) : le palier enregistré rest
   assert.equal(s.cur.area, 5);
 });
 
-test('choisir la précédente : elle devient l\'actuelle et survit au palier suivant', () => {
-  let s = prisonSteps(null, hist(range(1, 10, 3)), A);
-  const h20 = [...range(1, 10, 3), ...range(11, 20, 8)];   // 10 mines portées par un ami fort
-  s = prisonSteps(s, hist(h20), A);
-  assert.equal(s.cur.area, 8);
-  s = chooseCompo(s, 'previous');
-  assert.equal(s.cur.area, 3); assert.equal(s.prev.area, 8); assert.equal(s.cur.to, 20, 'le palier en cours ne bouge pas');
-  s = prisonSteps(s, hist([...h20, ...range(21, 30, 4)]), A);
-  assert.equal(s.cur.area, 4); assert.equal(s.prev.area, 3, 'sa compo choisie reste disponible');
-  assert.equal(chooseCompo(s, 'current'), s);
+test('compo enregistrée : gardée quand les paliers avancent ; pickCompo sans compteur', () => {
+  let c = prisonCompos(null, hist([...range(1, 10, 3), ...range(11, 20, 8)]), A);
+  assert.equal(pickCompo(c, 'current').area, 8); assert.equal(pickCompo(c, 'previous').area, 3);
+  assert.equal(pickCompo(c, 'saved'), null);
+  c.saved = pickCompo(c, 'previous');
+  assert.ok(!('to' in c.saved));
+  c = prisonCompos(c, hist([...range(1, 10, 3), ...range(11, 20, 8), ...range(21, 30, 9), ...range(31, 40, 9)]), A);
+  assert.equal(pickCompo(c, 'current').area, 9); assert.equal(pickCompo(c, 'previous').area, 9);
+  assert.equal(pickCompo(c, 'saved').area, 3, 'la compo enregistrée reste');
 });

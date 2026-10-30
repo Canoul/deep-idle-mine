@@ -28,7 +28,7 @@ import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstanc
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
 import { sanitizeBotPresets, isCopyPresetId, COPY_PREFIX } from '../../src/shared/dev-presets.js';
-import { prisonSteps, chooseCompo } from '../../src/meta/prison-profile.js';
+import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
@@ -366,6 +366,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* Présence (spec « Présence ») : la dernière visite est gardée en mémoire à chaque demande (seen) et écrite en base
      au plus toutes les seenWriteMs (seenWritten) ; la prison relue prend la plus récente des deux. */
   const seen = new Map(), seenWritten = new Map();
+  /* compos de prison du compte (30/10) : paliers avancés d'après l'historique, et gardés (ns prison_compo) */
+  const advanceCompos = async accountId => {
+    const old = await store.getPrisonCompo(accountId), c = prisonCompos(old, await store.sessionsOf(accountId), accountId, dev);
+    if(JSON.stringify(c) !== JSON.stringify(old)) await store.putPrisonCompo(accountId, c);
+    return c;
+  };
+  const publicCompos = c => ({ profile: pickCompo(c, 'current'), previous: pickCompo(c, 'previous'), saved: pickCompo(c, 'saved') });
   const loadPrison = async accountId => {        // revérifiée à chaque fois
     const p = sanitizePrison(await store.getPrison(accountId));
     if(p && seen.has(accountId)) p.lastSeenAt = Math.max(p.lastSeenAt, seen.get(accountId));
@@ -1047,13 +1054,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
        géant, si). Le mineur est figé maintenant, comme pour une session ; le contenu est celui de son area max. */
     /* areas que le joueur peut choisir pour sa prison : 0 à son area max débloquée (mode dev : toutes) */
     /* profil de la prison que le joueur aurait s'il y entrait maintenant (lobby : ce que la carte contiendra) */
-    prisonProfile: async me => { const s = prisonSteps((await loadPrison(me.id))?.steps, await store.sessionsOf(me.id), me.id, dev);
-      return { profile: s.cur, previous: s.prev }; },   // paliers de 10 mines (30/10) : actuelle et précédente
+    /* compos (30/10) : actuelle (paliers de 10 mines), ancienne (mines 11 à 20), enregistrée ; les paliers sont gardés */
+    prisonProfile: async me => withLock('prison:' + me.id, async () => publicCompos(await advanceCompos(me.id))),
+    /* « Enregistrer » : which = 'current' | 'previous' devient la compo enregistrée (remplace l'ancienne enregistrée) */
+    async prisonSaveCompo(me, body = {}){
+      if(!['current', 'previous'].includes(body?.compo)) fail('bad_request', 400, 'Composition invalide.');
+      return withLock('prison:' + me.id, async () => {
+        const c = await advanceCompos(me.id), p = pickCompo(c, body.compo);
+        if(!p) fail('no_compo', 409, 'Cette composition n\'existe pas encore.');
+        c.saved = p; await store.putPrisonCompo(me.id, c);
+        return publicCompos(c);
+      });
+    },
     /* body (mode dev seulement) : { speed } (GAME.devSpeeds) */
     async prisonStart(me, members = null, body = {}){
       if(Array.isArray(members) && members.length > 1) fail('not_solo', 409, 'La prison se joue seul : quitte ton groupe pour la lancer.');
       if(body?.area !== undefined && body.area !== null && !isInt(body.area)) fail('bad_request', 400, 'Area invalide.');
-      if(body?.compo !== undefined && body.compo !== null && !['current', 'previous'].includes(body.compo)) fail('bad_request', 400, 'Composition invalide.');
+      if(body?.compo !== undefined && body.compo !== null && !['current', 'previous', 'saved'].includes(body.compo)) fail('bad_request', 400, 'Composition invalide.');
       await withLock.many(['acct:' + me.id, 'prison:' + me.id], async () => {
         const old = await loadPrison(me.id);
         if(old && old.state !== 'done') fail('prison_running', 409, 'Ta prison tourne déjà.');
@@ -1063,17 +1080,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         prisonLimit.hit(me.id);
         /* contenu de la prison (29/10/2026, Geoffrey) : le profil des 10 dernières mines classiques du joueur (area moyenne,
            minerais, treasures, mobs ; src/meta/prison-profile.js), figé pour toute la prison ; pas de choix d'area */
-        const steps = prisonSteps(old?.steps, await store.sessionsOf(me.id), me.id, dev);   // paliers de 10 mines (30/10)
-        if(body?.compo === 'previous' && !steps.prev) fail('no_previous', 409, 'Pas encore de composition précédente (il faut 10 mines de plus).');
-        /* compo précédente choisie (30/10, Geoffrey) : elle prend la place de l'actuelle (l'actuelle passe en précédente) ;
-           sinon, au palier suivant, elle disparaîtrait et il ne resterait que la trop forte. Le compteur de palier (to) reste. */
-        const chosen = chooseCompo(steps, body?.compo);
-        const { to: _to, ...profile } = chosen.cur, area = profile.area;
+        const compos = await advanceCompos(me.id);   // compos (30/10) : actuelle, ancienne (mines 11 à 20), enregistrée
+        const profile = pickCompo(compos, body?.compo ?? 'current'), area = profile?.area;
+        if(!profile) fail('no_compo', 409, 'Cette composition n\'existe pas encore.');
         const specs = { name: displayName(me), ...await freezePlayer(me.id) };
         const runSpeed = dev && GAME.devSpeeds.includes(body?.speed) ? body.speed : speed;
         await loadEnergy(me.id);   // repos soldé jusqu'à l'entrée en prison (30/10/2026)
         const p = newPrisonRecord({ id: crypto.randomUUID(), account: me.id, seed: randomSeed(), specs, areaMax: area, profile, now: clock(), speed: runSpeed });
-        p.steps = chosen;
         await store.putPrison(me.id, p);
         (await indexOfPrisons()).add(me.id);
         openRun(p);

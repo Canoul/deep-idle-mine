@@ -222,7 +222,12 @@ export function setupLobby(h){
   const st = { account:null, offline:false, info:null, prefs:null, busy:false, party:null, invites:[], inviteOpen:false, shrines:[],
                session:null, mode:MINE_MODES[0].id, view:null, judgmentPending:false, who:null,     // view 'jugement' : jauges à la place de l'équipe
                lfg:null, lfgStart:0, lfgAuto:false, lfgWant:null,
-               prison:null, energy:null, prisonProfile:null, prisonPrev:null, prisonCompo:'current', prisonProfileAt:0 };   // contenu de la prison d'après les 10 dernières mines (29/10)   // prison (publicPrison) et énergie ({ value, max }) du serveur (29/10)   // lfgWant : sa recherche, à relancer si le serveur a redémarré
+               prison:null, energy:null, prisonProfile:null, prisonPrev:null, prisonSaved:null, prisonCompo:'current', prisonProfileAt:0 };   // contenu de la prison d'après les 10 dernières mines (29/10)   // prison (publicPrison) et énergie ({ value, max }) du serveur (29/10)   // lfgWant : sa recherche, à relancer si le serveur a redémarré
+  /* compos de prison (30/10) : r = { profile (actuelle), previous (ancienne, mines 11 à 20), saved (enregistrée) } */
+  const setCompos = r => {
+    st.prisonProfile = r?.profile ?? null; st.prisonPrev = r?.previous ?? null; st.prisonSaved = r?.saved ?? null;
+    if((st.prisonCompo === 'previous' && !st.prisonPrev) || (st.prisonCompo === 'saved' && !st.prisonSaved)) st.prisonCompo = 'current';
+  };
 
   function render(){
     const { account, offline, info, party } = st;
@@ -293,15 +298,21 @@ export function setupLobby(h){
        en arrivant sur la prison (au plus une fois par minute) */
     if(def?.prison && !jv && account && !offline && !prisonActive(st.prison) && Date.now() - st.prisonProfileAt > 60e3){
       st.prisonProfileAt = Date.now();
-      h.prisonProfile?.().then(r => { st.prisonProfile = r?.profile ?? null; st.prisonPrev = r?.previous ?? null; if(!st.prisonPrev) st.prisonCompo = 'current'; render(); }).catch(() => { st.prisonProfileAt = 0; });
+      h.prisonProfile?.().then(r => { setCompos(r); render(); }).catch(() => { st.prisonProfileAt = 0; });
     }
-    const ptxt = def?.prison && !jv ? (prisonActive(st.prison) ? prisonProfileText(st.prison.profile, true) : prisonProfileText(st.prisonCompo === 'previous' && st.prisonPrev ? st.prisonPrev : st.prisonProfile)) : '';
+    const ptxt = def?.prison && !jv ? (prisonActive(st.prison) ? prisonProfileText(st.prison.profile, true) : (st.prisonCompo === 'previous' ? prisonProfileText(st.prisonPrev, false, 'compo ancienne : tes mines 11 à 20') : st.prisonCompo === 'saved' ? prisonProfileText(st.prisonSaved, false, 'compo enregistrée') : prisonProfileText(st.prisonProfile))) : '';
     $('prisonProfileRow').hidden = !ptxt;
     $('prisonProfileRow').textContent = ptxt;
     /* choix de la compo (30/10) : actuelle (10 dernières mines du palier) ou précédente (le palier d'avant) */
-    const showCompo = !!ptxt && !prisonActive(st.prison) && !!st.prisonPrev;
+    const showCompo = !!ptxt && !prisonActive(st.prison) && !!(st.prisonPrev || st.prisonSaved || st.prisonProfile?.n);
     $('prisonCompoRow').hidden = !showCompo;
-    if(showCompo) for(const b of $('prisonCompoRow').querySelectorAll('[data-compo]')) b.classList.toggle('on', b.dataset.compo === st.prisonCompo);
+    if(showCompo){
+      for(const b of $('prisonCompoRow').querySelectorAll('[data-compo]')){
+        b.classList.toggle('on', b.dataset.compo === st.prisonCompo);
+        b.hidden = (b.dataset.compo === 'previous' && !st.prisonPrev) || (b.dataset.compo === 'saved' && !st.prisonSaved);
+      }
+      $('prisonCompoSave').hidden = st.prisonCompo === 'saved';   // enregistrer l'actuelle ou l'ancienne
+    }
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
@@ -606,6 +617,12 @@ export function setupLobby(h){
   }
 
   for(const b of $('prisonCompoRow').querySelectorAll('[data-compo]')) b.onclick = () => { st.prisonCompo = b.dataset.compo; render(); };
+  $('prisonCompoSave').onclick = async () => {   // « Enregistrer » (30/10) : la compo affichée devient l'enregistrée
+    if(st.busy || st.prisonCompo === 'saved') return;
+    st.busy = true; render();
+    try { setCompos(await h.prisonSaveCompo?.(st.prisonCompo)); st.prisonCompo = 'saved'; }
+    catch(e){ console.error(e); } finally { st.busy = false; render(); }
+  };
   $('launchBtn').onclick = async () => {
     if(st.busy) return;
     if(MINE_MODES.find(m => m.id === st.mode)?.prison){   // prison (29/10) : la voir, ou y entrer
@@ -613,7 +630,7 @@ export function setupLobby(h){
       if(!ps.can) return;
       if(ps.action === 'view') return h.onShowPrison?.();
       st.busy = true; render();
-      try { await h.onPrisonStart?.(st.prisonPrev ? { compo: st.prisonCompo } : {}); } finally { st.busy = false; st.prisonProfileAt = 0; render(); }
+      try { await h.onPrisonStart?.({ compo: st.prisonCompo }); } finally { st.busy = false; st.prisonProfileAt = 0; render(); }
       return;
     }
     const ls = launchState(st);

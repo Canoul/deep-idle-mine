@@ -79,11 +79,17 @@ export function prisonSteps(old, sessions, account, withDev = false){
   while(newer.length >= N){ p = cur; cur = pack(newer.splice(0, N).reverse()); }
   return { cur, prev: p };
 }
-/* compo choisie à l'entrée : 'previous' → la précédente prend la place de l'actuelle, l'actuelle passe en précédente
-   (30/10, Geoffrey : sinon, au palier suivant, la précédente disparaîtrait) ; le palier en cours (to) ne bouge pas */
-export function chooseCompo(steps, which){
-  if(which !== 'previous' || !steps.prev) return steps;
-  return { cur: { ...steps.prev, to: steps.cur.to }, prev: { ...steps.cur } };
+/* compos du joueur (ns prison_compo, 30/10/2026, Geoffrey) : { cur, prev, saved } ; saved = compo qu'il a enregistrée
+   (bouton « Enregistrer ») : elle reste tant qu'il n'en enregistre pas une autre. Avance les paliers (prisonSteps). */
+export function prisonCompos(old, sessions, account, withDev = false){
+  return { ...prisonSteps(old, sessions, account, withDev), saved: sanitizeProfile(old?.saved) };
+}
+/* profil d'une compo : 'current' | 'previous' | 'saved' (sans le compteur de palier) ; null si absente */
+export function pickCompo(c, which){
+  const p = which === 'previous' ? c.prev : which === 'saved' ? c.saved : c.cur;
+  if(!p) return null;
+  const { to: _to, ...profile } = p;
+  return profile;
 }
 const sanitizeStep = s => { const p = sanitizeProfile(s); return p && Number.isFinite(s.to) ? { ...p, to: s.to } : null; };
 
