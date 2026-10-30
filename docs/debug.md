@@ -5378,3 +5378,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   lancement de ces modes). Bloc géant et mine instantanée : comptés comme des sessions s'ils en créent une (`activeOf`).
 - Tests ✅ energy (createEnergy a `at`), energy-server, prison-server, anticheat énergie et prison ; game-service : le test de
   la table de recherche échoue parfois au hasard (passe seul et au 2e passage).
+
+## 30/10/2026 — Geoffrey — « Où miner » : Prison en premier, message d'énergie (branche geoffrey/lobby-prison-en-premier)
+- `mineModes` (src/ui/lobby.js) trie la prison en tête **à l'affichage seulement** : `MINE_MODES` (config) garde son ordre,
+  car `MINE_MODES[0]` = mine classique partout (mode par défaut, LFG, coût d'énergie, serveur, groupes). Le bouton
+  Jugement reste avant les tours (son index compte les modes non-tours, inchangé).
+- Message `no_energy` (server/game/service.js) et `launchCostText` (src/ui/prison.js) : « recharge-la en prison ».
+- Tests ✅ lobby, dev-spec (son test d'ordre était déjà faux avant : instances, bloc géant, prison absents ; corrigé),
+  prison-ui, energy-server, prison-server : 75/75.

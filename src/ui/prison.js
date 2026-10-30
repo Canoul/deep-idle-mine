@@ -14,7 +14,7 @@ export const energyPct = e => e && ok(e.value) ? Math.max(0, Math.min(100, e.val
    refuse de toute façon, message no_energy) */
 export function launchCostText(e){
   const { min, max } = ENERGY.cost, base = `Coût : ${min} à ${max} ⚡`;
-  return e && ok(e.value) && Math.round(e.value * 10) / 10 < min ? `${base} · pas assez d'énergie (${Math.round(e.value)})` : base;
+  return e && ok(e.value) && Math.round(e.value * 10) / 10 < min ? `${base} · pas assez d'énergie (${Math.round(e.value)}) : recharge-la en prison` : base;
 }
 
 /* contenu de la prison d'après les 10 dernières mines (profil du serveur, src/meta/prison-profile.js), pour le lobby :
