@@ -847,7 +847,11 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     async state(me){
       const list = await store.sessionsOf(me.id);
       const active = list.find(s => ACTIVE.includes(s.status) && !hasLeft(s, me.id)) ?? null;
-      const ended = list.find(s => s.status === 'done' && !s.seen.includes(me.id) && !hasLeft(s, me.id)) ?? null;
+      /* bilan à montrer : seulement celui de sa DERNIÈRE session finie, s'il ne l'a pas vu (30/10/2026, Geoffrey). Avant :
+         le plus récent des non vus ; les bilans quittés sans bouton (avant le correctif du 30/10) revenaient alors un par
+         un, un plus ancien à chaque rechargement, jusqu'à 30 jours en arrière (keepEnded) */
+      const last = list.find(s => s.status === 'done' && !hasLeft(s, me.id));
+      const ended = last && !last.seen.includes(me.id) ? last : null;
       const inv = await loadInventory(me.id);
       const crusher = await withCrusher(me.id, (_, c) => publicCrusher(c, clock()));
       return { inventory: publicInventory(inv), furnaces: publicFurnaces(await loadFurnaces(me.id)), crusher,

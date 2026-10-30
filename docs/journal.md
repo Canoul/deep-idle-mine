@@ -71,6 +71,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Correctif (suite) : les anciens bilans de session ne reviennent plus un par un
+- **Pour le joueur** : les bilans quittés sans bouton avant le premier correctif s'étaient accumulés (jusqu'à 30 jours) ;
+  chaque rechargement en montrait un plus ancien. Maintenant, seul le bilan de ta dernière session peut s'afficher, une
+  fois. Les anciens restent dans l'onglet Historique.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Lobby : la Prison en premier dans « Où miner »
 - **Pour le joueur** : le bouton Prison est le premier de « Où miner » (la Mine reste choisie par défaut). Quand on n'a
   pas assez d'énergie pour lancer une mine, le message dit maintenant qu'elle se recharge en prison.
