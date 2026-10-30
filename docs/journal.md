@@ -103,7 +103,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Pour le joueur** : avant, le stuff, les skills et les sorts étaient pris à l'entrée en prison et ne changeaient plus
   (une pièce de Découverte équipée ensuite ne comptait jamais, signalé par Infernatiwar). Maintenant ils sont repris au
   début de chaque run : ce qu'on équipe pendant la prison compte dès le run suivant.
-- **État** : 🧪 sur la branche `geoffrey/prison-stuff-a-chaque-run` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Focus minerai retiré du jeu (gardé dans le code)
 - **Pour le joueur** : le panneau « Focus minerai » n'apparaît plus pendant la session ; le Focus area reste. L'option
