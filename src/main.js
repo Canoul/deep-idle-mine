@@ -747,7 +747,8 @@ function updatePrisonUI(){
       try { setPrison((await gameApi.prisonClock(s)).prison); kickPrison(); } catch(e){ tell(e.message); } });
     for(const b of document.querySelectorAll('.pauseBtn')) b.hidden = true;
   }
-  else { $('run').hidden = true; $('noSession').hidden = !!giantUI?.active(); }
+  /* 30/10/2026 : seulement sans prison (avant : ce « sinon » suivait « prison ET mode dev », il cachait la prison hors dev) */
+  if(!on){ $('run').hidden = true; $('noSession').hidden = !!giantUI?.active(); }
 }
 
 /* la partie du serveur est finie : on attend son résultat (partage et versement, quelques instants) */
