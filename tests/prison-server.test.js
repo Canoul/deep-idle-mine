@@ -330,6 +330,21 @@ test('présent : vue toutes les 10 s → le run suit le temps réel (pump comme 
   assert.equal(box.opens, 1, 'jamais refermé');
 });
 
+/* 31/10 : Chrome ne réveille un onglet caché depuis 5 min qu'une fois par minute : le jeu reste ouvert, le joueur n'est
+   pas absent, et le run ne doit ni se fermer ni se rejouer depuis le début à chaque réveil. */
+test('onglet caché (une demande par minute) : le moteur reste ouvert, aucune absence notée', async () => {
+  const { game, store, t, box } = setup();
+  await game.prisonStart(A, {});
+  const opens = box.opens;
+  for(let i = 1; i <= 60; i++){               // 5 min, pump toutes les 5 s
+    t.now = T0 + i * 5e3;
+    await game.pump();
+    if(i % 12 === 0) await game.prisonView(A, null);
+  }
+  assert.equal(box.opens, opens, 'run jamais rouvert');
+  assert.equal((await prisonOf(store, A.id)).lastAbsence ?? null, null);
+});
+
 test('absent : un paquet toutes les 10 min au plus, moteur fermé entre deux ; au retour, bilan des runs une seule fois', async () => {
   const { game, store, t, box } = setup();
   await setEnergy(store, A.id, 50);             // de la place sous le plafond : le bilan compte l'énergie créditée
@@ -343,7 +358,7 @@ test('absent : un paquet toutes les 10 min au plus, moteur fermé entre deux ; a
     const before = box.advances;
     await game.pump();
     const moved = box.advances > before;
-    if(moved && !prev) starts.push(t.now);
+    if(moved && !prev && t.now - T0 > PRISON.presentFor) starts.push(t.now);   // avant presentFor : encore présent, pas un paquet
     if(!moved) assert.equal(box.live.size, 0, `moteur fermé entre deux paquets (${(t.now - T0) / 60e3} min)`);
     prev = moved;
   }
