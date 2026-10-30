@@ -5395,3 +5395,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   (mines/h) ; rendement = moyenne des % des minerais que ses mines rapportent. Les mines de plus de 30 jours sont effacées par le
   serveur : la référence suit.
 - ✅ `tests/prison-dashboard.test.js` 2/2 ; vérifié en local (serveur, route, script, page).
+
+## 30/10/2026 — Geoffrey — Bilan qui revient : la vraie cause, l'arriéré de bilans non vus (branche geoffrey/fix-bilan-anciens)
+- Le correctif du matin (ack à l'affichage, src/main.js) ne suffisait pas : `state()` renvoyait le plus récent des bilans
+  **non vus** ; chaque ack en faisait apparaître un plus ancien au rechargement suivant (sessions gardées 30 j,
+  `keepEnded`). Un joueur avec un arriéré voyait donc un bilan à chaque rechargement.
+- Correctif : `state()` (server/game/service.js) ne regarde que **la dernière** session finie (non quittée) ; vue → rien.
+  Les anciens non vus sont ignorés (toujours dans l'historique).
+- Test ✅ `tests/game-service.test.js` « bilans jamais vus » (rouge avant, vert après) ; game-service, level, anticheat/server : 73/73.
