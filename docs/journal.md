@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Nerf du recyclage des blueprints (Geoffrey) ✅ en ligne le 30/10
+
+Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
+
 ## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
 - **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
   « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
