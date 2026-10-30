@@ -930,7 +930,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(energyLocks.length){
           for(const p of players) energies[p.account] = await loadEnergy(p.account);
           const poor = players.filter(p => !canPay(energies[p.account]));
-          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}.`);
+          if(poor.length) fail('no_energy', 409, `Pas assez d'énergie (${ENERGY.cost.min} au moins) : ${poor.map(p => p.name || 'Un joueur').join(', ')}. L'énergie se recharge en prison (Lobby, « Où miner », Prison).`);
         }
         const now = clock();
         const prefs = {}, looks = {}, gear = {}, skills = {}, spells = {}, statsAt = {};

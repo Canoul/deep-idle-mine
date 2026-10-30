@@ -178,11 +178,13 @@ export function lfgState({ account, party, offline, session, mode, lfg }){
    sauf la mine instantanée, le Bloc géant et les instances (on les regarde ; leur carte et le serveur refusent d'y entrer).
    Tours du Jugement : seulement quand elles sont ouvertes (judgment : vue du serveur, src/meta/judgment.js) ; grisées
    si le joueur les a déjà faites pendant cette ouverture. Mode dev : toujours là et jamais grisées (illimitées).
-   Prison (29/10) : solo, grisée quand on est dans un groupe de plusieurs (size : joueurs du groupe). */
+   Prison (29/10) : solo, grisée quand on est dans un groupe de plusieurs (size : joueurs du groupe) ; premier bouton
+   (30/10, Geoffrey). */
 export function mineModes(cur, locked = false, judgment = null, dev = false, size = 1){
   /* instances (27/10) : un seul bouton « Instances » pour toutes ; il ouvre l'instance choisie (la première sinon) */
   const curInst = MINE_MODES.find(m => m.id === cur)?.instance;
-  return MINE_MODES.filter(m => (!m.tower || dev || judgment?.sides?.[m.tower]?.open) && (!m.instance || m === MINE_MODES.find(x => x.instance))).map(m => {
+  const order = [...MINE_MODES].sort((a, b) => !!b.prison - !!a.prison);   // prison en premier (30/10)
+  return order.filter(m => (!m.tower || dev || judgment?.sides?.[m.tower]?.open) && (!m.instance || m === MINE_MODES.find(x => x.instance))).map(m => {
     if(m.instance) return { id: curInst ? cur : m.id, label: '🗝 Instances', on: !!curInst, soon: false, done: false, disabled: false };   // aussi en session : on regarde la carte (Lancer reste grisé, 27/10)
     if(m.solo && size > 1) return { id:m.id, label:`${m.icon} ${m.label}`, on: m.id === cur, soon: false, done: false, disabled: true, title: 'Elle se joue seul : quitte ton groupe pour la lancer.' };
     const done = !dev && !!m.tower && !!judgment?.sides?.[m.tower]?.done;

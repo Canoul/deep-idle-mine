@@ -70,8 +70,8 @@ test('pendant une session : Lancer impossible (« Session en cours »), même po
 test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable ; pendant une session, seuls la MI et le Bloc géant restent choisissables', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const m = mineModes('mine');
-  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false], ['prison', false, false, false]]);
-  assert.deepEqual(mineModes('mi').map(x => x.on), [false, true, false, false, false]);
+  assert.deepEqual(m.map(x => [x.id, x.on, x.disabled, x.soon]), [['prison', false, false, false], ['mine', true, false, false], ['mi', false, false, false], ['instance_1', false, false, false], ['giant', false, false, false]]);
+  assert.deepEqual(mineModes('mi').map(x => x.on), [false, false, true, false, false]);
   const ins = mineModes('instance_1').find(x => x.id === 'instance_1');
   assert.equal(ins.label, '🗝 Instances', 'un seul bouton pour toutes les instances (27/10)'); assert.equal(ins.on, true);
   const locked = mineModes('mine', true);
@@ -85,9 +85,9 @@ test('« Où miner » : Mine choisie par défaut, Mine instantanée choisissable
 test('« Où miner » : les tours du Jugement seulement quand elles sont ouvertes ; grisées si déjà faites', async () => {
   const { mineModes } = await import('../src/ui/lobby.js');
   const ids = j => mineModes('mine', false, j).map(m => m.id);
-  assert.deepEqual(ids(null), ['mine', 'mi', 'instance_1', 'giant', 'prison'], 'fermées : absentes');
+  assert.deepEqual(ids(null), ['prison', 'mine', 'mi', 'instance_1', 'giant'], 'fermées : absentes (prison en premier, 30/10)');
   const j = { sides: { angel: { open: true, done: false }, demon: { open: false, done: false } } };
-  assert.deepEqual(ids(j), ['mine', 'mi', 'instance_1', 'giant', 'prison', 'tower_angel']);
+  assert.deepEqual(ids(j), ['prison', 'mine', 'mi', 'instance_1', 'giant', 'tower_angel']);
   const done = mineModes('tower_angel', false, { sides: { angel: { open: true, done: true }, demon: { open: true, done: false } } });
   assert.equal(done.find(m => m.id === 'tower_angel').disabled, true);
   assert.equal(done.find(m => m.id === 'tower_demon').disabled, false);
