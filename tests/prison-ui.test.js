@@ -133,9 +133,9 @@ test('butin de la prison : la ligne des totaux ; le contenu des 10 dernières mi
   assert.match(t, /10 dernières mines/); assert.match(t, /area 7/); assert.match(t, /Fer 60 %, Or 40 %/); assert.match(t, /T3 100 %/); assert.match(t, /mobs de l'area/);
 });
 
-test('prison à l'écran : onglet Session ou fond derrière un autre onglet, rien si la page est cachée', () => {
+test("prison à l'écran : onglet Session ou fond derrière un autre onglet, rien si la page est cachée", () => {
   const at = o => prisonOnScreen({ shown: true, tab: 'inventaire', backdrop: true, hidden: false, ...o });
-  assert.equal(at({}), true, 'en fond derrière l'inventaire : envois rapprochés');
+  assert.equal(at({}), true, "en fond derrière l'inventaire : envois rapprochés");
   assert.equal(at({ tab: 'session', backdrop: false }), true);
   assert.equal(at({ backdrop: false }), false, 'option du fond coupée : on ne la voit pas');
   assert.equal(at({ hidden: true }), false);
