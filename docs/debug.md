@@ -5108,3 +5108,10 @@ Règles (voir CLAUDE.md) :
   et « Who ? » du lobby (src/ui/lobby.js) l'affichent.
 - **Tests** ✅ `tests/social.test.js` +1 (solo 1/3, duo 2/3 dans amis et Online, 1/3 après un départ, textes, géant sans
   taille) : 20/20 ; giant-service, tower-who, chat, party : 77/77. ⚠️ Pas vu dans le navigateur.
+
+## 30/10/2026 — Zoom de la caméra de session + Équiper sur mobile (Geoffrey)
+
+- Caméra (`src/render/camera.js`) : `x`, `zoom`, `zoomBy(f, fx, fy)` (point fixe sous le doigt, borné à 1..`CAMERA.maxZoom`, f = 0 → ×1), `update(fy, lastRow, fx)` suit aussi en x, `pan(rows, lastRow, cols)`. Rendu (`src/render/canvas.js`) : `setTransform(z,0,0,z,-x*TILE*z,0)` après le fond noir, remis à l'identité avant le voile du k hole. `panPixels(dy, dx)`, `zoomAt(f, clientX, clientY)`. Contrôles (`src/ui/controls.js`) : pointeurs suivis dans une Map, 2 doigts = pincer + glisser, Ctrl + molette = zoom, dblclick = ×1. Seule la mine classique (pas tours / instance / MI / fond d'écran, qui ont leur propre rendu au zoom ×1).
+- Inventaire (`src/ui/inventory.js`) : survol ignoré si `(hover: none)` ; fiche épinglée amenée à l'écran sous 1100 px.
+- Tests : `tests/camera.test.js` (2 nouveaux), controls, inventory ✅. ⚠️ Pas essayé sur un vrai téléphone (pas de navigateur dans la session cloud) : à vérifier au doigt (pincer, double appui, Équiper sur iPhone).
+
