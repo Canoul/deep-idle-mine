@@ -7,7 +7,7 @@ hébergement, question tranchée). Ce qui est remplacé est marqué « ancien »
 Ce fichier peut aussi être ajouté tel quel aux connaissances d'un projet claude.ai.
 Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md`.
 
-*Dernière mise à jour : 29/10/2026 (la Prison et l'énergie, sur la branche `geoffrey/prison`, pas en ligne).*
+*Dernière mise à jour : 30/10/2026 (prison et énergie en ligne ; voir aussi les entrées du 30/10).*
 
 ---
 
@@ -140,6 +140,14 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
     `/api/admin/judgment`, même clé que give-item, sans redémarrage).
   - Retirer un objet (26/10) : `sudo node scripts/take-item.js --name X --item "Glyphe Ruée"` (route `/api/admin/take` ;
     inventaire puis glyphe posé, tout ou rien, sans redémarrage).
+  - Lobbies (29/10) : `sudo node scripts/move-to-lobby.js --name X --to Y` (met X dans le lobby de Y, route
+    `/api/admin/party-move`) et `sudo node scripts/set-ready.js --name X [--always on|off] [--ready on|off]` (route
+    `/api/admin/party-ready`), sans redémarrage.
+  - Fin de session forcée (29/10) : `sudo node scripts/end-session.js --name X` (route `/api/admin/end-session`, comme « Quitter » :
+    sans butin, les autres continuent).
+  - Lancement forcé (29/10) : `sudo node scripts/launch-lobby.js --name X` (route `/api/admin/party-launch` : le lobby de X
+    part dans la mine classique, prêts ou pas).
+  - Chef du lobby (29/10) : `sudo node scripts/set-leader.js --name X` (route `/api/admin/party-lead`).
 - **Instances** (27/10, Geoffrey ; spec `docs/superpowers/specs/2026-10-27-instances-design.md`, GAME_DESIGN §6, config
   `INSTANCE`, `src/sim/instance/`, `src/shared/instances.js` + `instances-view.js`, `src/render/instance.js`,
   `src/ui/instance-hud.js`) : « Où miner » → Instances (I jouable, II et III « bientôt »). **Instance I, le roi
@@ -194,6 +202,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   par ce chef (décomptées au lancement), dessinés à la surface près du coffre ; lobby au même code tant qu'il y en a un.
   **Shrine d'abondance** : 10 pépites d'argent + 20 résidus angéliques, 5 sessions, 5 points de terrain → minerais au
   prorata dans toutes les areas. D'autres shrines prévus.
+  **Stèles des tours** (30/10, Geoffrey ; `SHRINES.list` exorcisme / pacte, `TOWER.stele`) : shrines décomptés au lancement
+  d'une tour de leur camp par le chef (3 tours, provisoire). **Exorcisme** (Tour du Démon, 240 Stonebricks angéliques),
+  **Pacte** (Tour de l'Ange, 240 démoniaques). À la mort du boss, le boss de l'autre camp s'écrase sur le toit (projection
+  10 cases), casse le treuil, 5 mobs de l'autre camp à 150 % PV par étage, boss à 150 % PV ; même chrono, victoire = 2e
+  boss tué. Bonus : **trésor béni** (anneaux × 2) via `RUNE.luck`, coefficient générique (variantes R1-R7 générées).
+  ⚠️ À équilibrer : en simulation, 2,5 / 40 tue le 1er boss vers 8 min 17, jamais le 2e.
 - **Recherche de groupe (LFG)** (22/10, Geoffrey ; GAME_DESIGN §6 « Jouer à plusieurs ») : bouton dans le Lobby
   (mine classique), file en mémoire du serveur (`server/party/service.js`, règle `src/shared/lfg.js`), lobby de 3
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
@@ -487,24 +501,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 
 ## En attente / hors périmètre
 
-- **Chantier Prison en cours (reprise, 30/10/2026, Geoffrey)** : branche `geoffrey/prison`, **pas en ligne**, pas encore
-  fusionnée avec `main` (qui a bougé depuis : `git merge origin/main` à faire avant la mise en ligne). Fait sur la branche
-  (détail dans le haut de `docs/journal.md` et la fin de `docs/debug.md`) :
-  - contenu de la prison = profil des 10 dernières mines (`src/meta/prison-profile.js`), plus de choix d'area, le lobby
-    affiche ce contenu ; mobs × 3 moins fréquents (`spawnDelayMul`), pièges et k hole × 0,5 (k hole nouveau en prison) ;
-    kills par type enregistrés dans les mines classiques ;
-  - panneau « Butin de la prison » (runs, temps de jeu, XP, énergie, objets), fenêtre à la sortie, ligne dans l'Historique ;
-  - `oreMul` 0,30 (avant 0,52) ;
-  - mode dev : vitesses ×1–×300 en prison, « Ton preset », copies de vrais joueurs (`dev:presets --from`), import
-    d'historique (`dev:history`).
-  **À décider** : `oreMul` 0,30 donne 0,58 (acier, area de réf.) mais **64 %** avec le stuff et le profil de canoul (1 h 07
-  de prison mesurée) ; ~0,23 viserait 50 % pour lui. **À vérifier** : k hole en prison jamais joué (entrée, retour, fin de run
-  pendant un k hole) ; `simulate:prison` ne passe pas de profil (il mesure le contenu de l'area) ; 2 tests anciens rouges
-  aussi sur `main` (dev-spec : liste des modes dev ; perf : nombre de barres). **Données locales** (ignorées par git) :
-  `data/presets/canoul-mus.json` (stuff de canoul et MUS) et `history-canoul.json` : sur un autre poste, les refaire avec
-  les codes navigateur de `docs/debug.md` (entrée « Codes navigateur »).
-
-- Fondations : pas encore.
-- Sorts : déblocage des emplacements 3 et 4, source des parchemins (butin ? craft ?) et récompense des niveaux de
-  spécialisation autres que les sorts : à décider (24/10).
-- `prototype/deep-idle-mine.html` : ancien prototype monolithique, gardé comme référence.
+- **Prison et énergie EN LIGNE (30/10/2026, Geoffrey)** : ancien chantier `geoffrey/prison`, fusionné. Énergie : départ **0**
+  pour tous (`ENERGY.start`), mine classique 6 à 12, refus sous 6 ; recharge **seulement en prison, 4 par heure de jeu** (8 par
+  heure réelle à ×2 ; ancien 8). Prison : contenu d'après les 10 dernières mines, `oreMul` **0,24** (51 % des minerais de
+  canoul, `scripts/simulate-prison-profile.js`), treasures ≈ 28 % (validé par Geoffrey) ; vue zoomée bornée aux colonnes
+  entre les barreaux (`camera.setBox`), fond et transitions d'onglet comme la mine, panneau « Butin de la prison (total) ».
+  Correctifs : golem collé sous la surface (arrêt net seulement sous terre), minerais rares arrondis au hasard en prison.
+  **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).

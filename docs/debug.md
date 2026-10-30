@@ -5058,6 +5058,72 @@ Règles (voir CLAUDE.md) :
 - Point fragile : une rune donnée par `adminGive` n'a ni qualité ni lignes et disparaît à la relecture (déjà le cas avant) ;
   pour tester, fabriquer la rune avec la recette.
 
+## 29/10/2026 — Administration des lobbies (Geoffrey)
+- **Quoi** : `server/party/service.js` : `adminMove(player, host)` (comptes ; comme `joinFriend` sans amitié : groupe de host
+  créé s'il n'en a pas, ancien groupe quitté, sortie de la file LFG, `unready` comme `join`) et `adminReady(player, { ready,
+  always })` (comme `ready` + `alwaysReady` ; « tout le temps » l'emporte, `alwaysOn` mis à jour ; possible en session).
+  Ajoutées à `actions` (donc enregistrées par `saving`). `server/admin/routes.js` : `POST /api/admin/party-move` {name, to},
+  `POST /api/admin/party-ready` {name, ready?, always?}, `party` passé par `server/app.js` (503 sans service de groupes),
+  log « Admin : … » avec l'état du lobby. Scripts `scripts/move-to-lobby.js`, `scripts/set-ready.js` (admin-client.js).
+- **Tests** ✅ `tests/admin-party.test.js` (7 : déplacement et ancien groupe, « pas prêt » à l'arrivée, prêt → lancement,
+  « tout le temps » en session, refus session / complet / même joueur / inconnu, valeurs invalides, fermé sans clé ou derrière
+  un relais, les deux scripts) ; admin, admin-take, admin-khole, give-item, party : 62/62.
+- ⚠️ La branche `geoffrey/prison` touche aussi `server/party/service.js` (ajouts en fin de `actions` : conflit possible,
+  simple, à la fusion). Pas essayé sur le VPS.
+
+## 29/10/2026 — Administration : fin de session forcée (Geoffrey)
+- **Quoi** : `server/game/service.js` : le corps de `leave(me)` devient `leaveSession(accountId)` (renvoie aussi session, mode,
+  ended) ; `leave` et `adminLeave(accountId)` l'appellent. Route `POST /api/admin/end-session` {name}, script
+  `scripts/end-session.js`. Refusée si la session est déjà à l'heure de fin (`session_over`, résultat en cours de calcul).
+- **Tests** ✅ `tests/admin-end-session.test.js` (4 : en groupe, dernier joueur, refus et clé, script) ; game-service ✅.
+  Mise en ligne rapide à la demande de Geoffrey (pas de suite complète).
+- **Ajout (même jour)** : `party.adminLaunch(player)` (server/party/service.js) : comme `launch` du chef, mode mine
+  (`MINE_MODES[0]`), sans le contrôle « prêt » ; seul : `game.start` solo. Route `POST /api/admin/party-launch` {name},
+  script `scripts/launch-lobby.js`. Tests ✅ admin-end-session (+2 : membre non chef, personne prêt ; solo, inconnu),
+  admin-party, party : 49/49. Script lui-même non testé (copie des autres).
+
+## 29/10/2026 — Administration : chef du lobby (Geoffrey)
+- **Quoi** : `party.adminPromote(player)` (server/party/service.js, comme `promote` : nouveau chef ready false, ancien chef
+  ready = always), route `POST /api/admin/party-lead` {name}, script `scripts/set-leader.js`.
+- **Tests** ✅ admin-party +1 (membre → chef, déjà chef, sans groupe, relais) ; party, admin-end-session : 50/50.
+
+## 29/10/2026 — Torches à virgule, skin des Lunettes Gucci (Jules)
+- **Torches** : `m.carac.torches` pouvait être décimal (bonus en % via anneaux / maîtrises, sans `r2` final :
+  22.200000000000003) et s'affichait tel quel dans le HUD (`src/ui/hud.js`). `src/sim/mineur.js` `createMiner` arrondit à
+  l'inférieur `carac.torches` et `carac.bridges` (si fini ; Infinity reste Infinity) : stock de départ, recharge en surface
+  (`session.js` stepMiner) et glyphe qui rend une torche (`actions.js`) lisent tous l'entier. L'onglet Stuff garde la valeur
+  décimale de la stat (ce n'est pas un stock).
+- **Lunettes Gucci** : absentes de `SKIN.armor` (`src/skins.js`), donc aucun calque. Ajout `skins/gucci_glasses`
+  (`scripts/gen_textures.py`, `textures/skins/gucci_glasses.png`), calque de la case casque. Seul ce PNG change à la
+  régénération.
+- **Tests** ✅ `tests/miner.test.js` (+1 : 22,2 → 22, passerelles illimitées) et `tests/skins.test.js` : 23/23. Rendu des
+  lunettes vérifié sur un aperçu agrandi corps + calque, ⚠️ pas vu en jeu. Simulation 3 mineurs × 5 : areas 3,0,
+  profondeur 189,8, 0 bloquée.
+- Reste sans skin (case visible, pas de calque) : Doc Martins (pieds), Ceinture golémique, Jambières titanesques.
+
+## 30/10/2026 — Social : taille du groupe d'un joueur en session (Jules)
+- **Quoi** : `game.activeSessionInfo` (server/game/service.js) renvoie aussi `size` (joueurs de `rec.players` pas dans
+  `rec.leaves`) et `max` (`GAME.maxPlayers`) ; le Bloc géant (`inGiant`) n'en a pas. `statusOf` (server/social/service.js)
+  les transmet s'ils existent ; `statusText` (src/ui/social.js) ajoute « (n/max) » au libellé de session, donc amis, Online
+  et « Who ? » du lobby (src/ui/lobby.js) l'affichent.
+- **Tests** ✅ `tests/social.test.js` +1 (solo 1/3, duo 2/3 dans amis et Online, 1/3 après un départ, textes, géant sans
+  taille) : 20/20 ; giant-service, tower-who, chat, party : 77/77. ⚠️ Pas vu dans le navigateur.
+
+## 30/10/2026 — Zoom de la caméra de session + Équiper sur mobile (Geoffrey)
+
+- Caméra (`src/render/camera.js`) : `x`, `zoom`, `zoomBy(f, fx, fy)` (point fixe sous le doigt, borné à 1..`CAMERA.maxZoom`, f = 0 → ×1), `update(fy, lastRow, fx)` suit aussi en x, `pan(rows, lastRow, cols)`. Rendu (`src/render/canvas.js`) : `setTransform(z,0,0,z,-x*TILE*z,0)` après le fond noir, remis à l'identité avant le voile du k hole. `panPixels(dy, dx)`, `zoomAt(f, clientX, clientY)`. Contrôles (`src/ui/controls.js`) : pointeurs suivis dans une Map, 2 doigts = pincer + glisser, Ctrl + molette = zoom, dblclick = ×1. Seule la mine classique (pas tours / instance / MI / fond d'écran, qui ont leur propre rendu au zoom ×1).
+- Inventaire (`src/ui/inventory.js`) : survol ignoré si `(hover: none)` ; fiche épinglée amenée à l'écran sous 1100 px.
+- Tests : `tests/camera.test.js` (2 nouveaux), controls, inventory ✅. ⚠️ Pas essayé sur un vrai téléphone (pas de navigateur dans la session cloud) : à vérifier au doigt (pincer, double appui, Équiper sur iPhone).
+
+## 30/10/2026 — Stèles des tours (Exorcisme, Pacte) + trésor béni (Geoffrey)
+
+- Config : `SHRINES.list.exorcisme` / `pacte` (`tower`, `effect:{ phase2, luck }`), `TOWER.stele`, `RUNE.luck` (variantes de `treasureItem(side, q, luck)` générées dans ITEMS, `chest.luck`).
+- `src/meta/shrines.js` : `consume(st, tower = null)` ne décompte que les shrines du lancement (mine : sans `tower` ; tour : ses stèles) ; `publicShrines` donne `tower`. Serveur (`startSession`) : shrines consommés aussi pour une tour (hors dev), `rec.stele` = la 1re stèle active (dev : `body.stele` si du bon camp) ; `rec.shrines` seulement pour la mine. Trésor de victoire : `treasureItem(side, q, shrineOf(rec.stele).effect.luck)`.
+- Tour (`src/sim/tower/session.js`) : `G.stele`, `startPhase2` à la mort du 1er boss (boss de l'autre camp, `boss.side`, PV × bossHp, `air.crash` → `landBoss(G, crashKnock)`), treuil cassé (`G.winchBroken`, un mineur dans le seau tombe), mobs `stele:true, side` dans `TOWER.stele.floors` ; `sealedFloor` : en phase 2, des mobs vivants ferment tout étage. `mobOf(G)` remplace le nom des mobs. Résumé : `stele`, `phase2`. Vue / rendu : `boss.side`, `mob.side`.
+- Ouverture (`src/meta/loot.js`) : chances de `RINGS.drops` × `RUNE.luck[chest.luck].rings`. Nom (`itemName`) : « … béni ».
+- Lobby : carte Shrines aussi dans le lobby d'une tour (ses stèles) ; la mine les montre toutes. Case « Stèle du camp » en mode dev. `npm run simulate:tower -- --stele` (+ compo e, équipe 2,5 / 40).
+- Tests : `tests/stele.test.js` (5), shrines, tour, trésors, lobby ✅ ; anticheat ✅. ⚠️ Pas vu à l'écran (pas de navigateur) : affichage du 2e boss et des mobs de l'autre camp, carte Shrines dans le lobby d'une tour. ⚠️ Mobs de la phase 2 : avec `TOWER.mobs.descend`, ils descendent presque tous à l'étage 0 vers les mineurs tombés (vague au pied de la tour).
+
 ## 29/10/2026 — Prison : rendement vs mine à 3 (simulate:prison) (Geoffrey, branche geoffrey/prison) 🧪
 - `scripts/simulate-prison.js` (`npm run simulate:prison`) : chaînes de runs de prison par heure de jeu contre la part d'un joueur d'une mine à 3
   (`runSession`, mêmes presets via `minerSpecs` ; stuff base / fer / acier). Défauts rapides (~2,5 min) ; mesure complète :

@@ -39,6 +39,10 @@ expliquant en une phrase ce que tu fais.
 - Chaque message de commit finit par une ligne `Par : <prénom>` (les sessions Claude dans le cloud signent
   « Claude », on perdrait qui a demandé quoi).
 
+**Simple changement de valeur** (Geoffrey, 30/10) : quand on demande juste de changer la valeur d'une variable de
+réglage, **ni tests, ni simulation, ni anticheat** : on change la valeur, une ligne au journal, et on met en ligne
+directement si c'est demandé. Ça doit prendre quelques secondes.
+
 **Mettre en ligne** : seulement quand la personne le demande (« mets en ligne », « merge », « c'est bon »).
 1. Tests du sujet verts ; simulation 5 sessions si la simulation ou l'IA a bougé ; `npm run test:anticheat` si
    l'économie a bougé (coffre, inventaire, craft, échanges).

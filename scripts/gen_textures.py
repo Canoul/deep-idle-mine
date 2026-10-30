@@ -1231,6 +1231,14 @@ def main():
     rect(sk_gbelt, 7, 10, 2, 1, hexc('#5a3a22'))
     rect(sk_gbelt, 6, 9, 1, 1, hexc('#e8dcc0')); rect(sk_gbelt, 9, 9, 1, 1, hexc('#e8dcc0'))
     tex['skins/giant_belt'] = sk_gbelt
+    # lunettes Gucci (29/10/2026) : sur la ligne de l'œil (regard à droite), branche dorée vers les cheveux, verre sombre
+    sk_glasses = blank()
+    rect(sk_glasses, 5, 4, 3, 1, hexc('#d4a017'))   # branche
+    rect(sk_glasses, 8, 4, 3, 2, hexc('#1b1b1f'))   # verre
+    rect(sk_glasses, 8, 4, 1, 1, hexc('#6a707a'))   # reflet
+    rect(sk_glasses, 11, 4, 1, 2, hexc('#d4a017'))  # monture, devant
+    rect(sk_glasses, 8, 6, 3, 1, hexc('#b8860b'))   # bas de la monture
+    tex['skins/gucci_glasses'] = sk_glasses
     # Roi Gobelin (27/10/2026) : couronne dorée sur la tête, cape rouge à bordure laineuse blanche (dos + col), masse en main
     sk_crown = blank()
     rect(sk_crown, 4, 1, 8, 2, hexc('#ffd23f')); rect(sk_crown, 4, 2, 8, 1, hexc('#b8860b'))

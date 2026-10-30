@@ -5,7 +5,7 @@
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { gearScore } from '../meta/gearscore.js';
 import { statusText } from './social.js';
-import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE } from '../config.js';
+import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { presetName, copyPresetId, copyName } from '../shared/dev-presets.js';
 import { queueTime } from '../shared/lfg.js';
@@ -123,14 +123,15 @@ export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy
   const head = leaderName ? `<p class="mut small">Shrines de <b>${e(leaderName)}</b> (chef du groupe) : chacun peut donner.</p>` : '';   // le reste : « ? » du titre
   return head + list.map(sh => {
     const top = `<div class="shrineHead"><img src="textures/${e(sh.tex)}.png" alt="" width="32" height="32"><span><b>${e(sh.name)}</b><br><small>${e(sh.desc)}</small></span></div>`;
-    if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> session${sh.left > 1 ? 's' : ''} de mine.</p></div>`;
+    const unit = n => sh.tower ? `tour${n > 1 ? 's' : ''}` : `session${n > 1 ? 's' : ''} de mine`;   // stèle (30/10) : des tours
+    if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> ${unit(sh.left)}.</p></div>`;
     const rows = Object.entries(sh.price).map(([item, q]) => {
       const got = sh.paid?.[item] ?? 0, need = q - got, mine = have(item);
       return `<div class="shrineRow"><span>${e(item)} : <b>${got} / ${q}</b> <small class="mut">(tu en as ${mine})</small></span>`+
         (need > 0 ? `<input type="number" min="1" max="${need}" value="${Math.max(1, Math.min(need, mine))}" data-shrine-qty="${e(sh.id)}|${e(item)}">`+
                     `<button data-shrine-give="${e(sh.id)}|${e(item)}"${busy || !mine ? ' disabled' : ''}>Donner</button>` : '<small class="ok">✔</small>')+`</div>`;
     }).join('');
-    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : actif pour ${sh.sessions} mines.</p></div>`;
+    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : actif pour ${sh.sessions} ${sh.tower ? 'tours lancées par le chef' : 'mines'}.</p></div>`;
   }).join('');
 }
 
@@ -237,10 +238,13 @@ export function setupLobby(h){
     const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
-    $('shrinesCard').hidden = !cards.prefs || cards.prison || !st.shrines?.length;   // shrines : lobby de la mine classique (28/10)
+    /* shrines : lobby de la mine classique (28/10), tous (stèles comprises, pour les payer d'avance) ; lobby d'une tour :
+       ses stèles seulement (30/10) */
+    const shownShrines = cards.prison ? [] : (st.shrines ?? []).filter(sh => !jv && (cards.prefs || (tower && sh.tower === tower)));   // prison : aucun (29/10)
+    $('shrinesCard').hidden = !shownShrines.length;
     if(!$('shrinesCard').hidden){
       const leader = party && party.members.length > 1 && party.leader !== account?.id ? party.members.find(m => m.account === party.leader)?.name ?? 'le chef' : null;
-      const html = shrinesHtml(st.shrines, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
+      const html = shrinesHtml(shownShrines, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
       if($('shrinesBody')._html !== html && !$('shrinesBody').contains(document.activeElement)){ $('shrinesBody').innerHTML = html; $('shrinesBody')._html = html; }
     }
     $('instCard').hidden = !cards.inst;
@@ -295,6 +299,7 @@ export function setupLobby(h){
     /* modulation : seulement pour une tour, et pour celui qui lance (seul ou chef) */
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
+    $('devSteleRow').hidden = !(st.info?.dev && tower && !locked);   // stèle imposée en mode dev (30/10)
     const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel })   // niveau d'instance (29/10) : même rangée
       : towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
     st.towerLevel = tl.level;
@@ -612,7 +617,7 @@ export function setupLobby(h){
     }
     st.busy = true; render();
     const md = MINE_MODES.find(m => m.id === st.mode), tw = !!md?.tower;
-    try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
+    try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(tw && st.info?.dev && $('devStele').checked ? { stele: Object.keys(SHRINES.list).find(id => SHRINES.list[id].tower === md.tower) } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
     finally { st.busy = false; render(); }
   };
 

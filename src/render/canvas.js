@@ -43,23 +43,19 @@ export function createRenderer(cv){
 
   /* followId : id du mineur suivi par la caméra (sauf si le joueur l'a déplacée : défilement libre) */
   let curG=null, frameNow=0;   // partie et heure de l'image en cours (pour les glissades)
-  let zoom=1;                  // agrandissement de la vue (prison : ses colonnes remplissent la largeur), 1 en mine
   function draw(G, followId){
     curG=G; frameNow=performance.now();
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
-    const [, fy]=drawPos(fm);
-    /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la vue est agrandie pour que ses
-       colonnes remplissent la largeur du canvas (bords de la carte = bords de l'écran, comme la mine), et la caméra
-       compte ses lignes à cette échelle */
-    const box=prisonCols(G);
-    zoom = box ? W/(box.x1-box.x0+1) : 1;
-    cam.setRows(Math.max(1, Math.ceil(rows/zoom)));
-    const camY=cam.update(fy, mr+1);
+    const [fx, fy]=drawPos(fm);
+    /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la caméra reste entre eux et son zoom
+       minimal fait remplir la largeur à ses colonnes (bords de la carte = bords de l'écran, comme la mine) */
+    cam.setBox(prisonCols(G));
+    const camY=cam.update(fy, mr+1, fx);
     ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
-    if(box) ctx.setTransform(zoom,0,0,zoom,-box.x0*TILE*zoom,0);
+    const z=cam.zoom; ctx.setTransform(z,0,0,z,-cam.x*TILE*z,0);   // zoom (30/10) : le reste se dessine comme au zoom ×1
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
-    for(let y=y0;y<=y0+Math.ceil(rows/zoom)+1;y++){
+    for(let y=y0;y<=y0+Math.ceil(rows/z)+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
@@ -214,13 +210,23 @@ export function createRenderer(cv){
   }
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
-  const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
-  const panPixels = px => pan(-px / (cv.clientHeight / (rows/zoom) || TILE));
+  const pan = (rows, cols = 0) => { if(curG) cam.pan(rows, maxRow(curG)+1, cols); };
+  /* glissé de dx, dy pixels à l'écran : la mine suit le doigt, au zoom actuel */
+  const panPixels = (dy, dx = 0) => {
+    const rowPx = (cv.clientHeight / rows || TILE) * cam.zoom, colPx = (cv.clientWidth / W || TILE) * cam.zoom;
+    pan(-dy / rowPx, -dx / colPx);
+  };
+  /* zoom autour d'un point de l'écran (clientX, clientY) */
+  const zoomAt = (f, clientX, clientY) => {
+    const r = cv.getBoundingClientRect();
+    const fx = r.width ? (clientX - r.left) / r.width : 0.5, fy = r.height ? (clientY - r.top) / r.height : 0.5;
+    cam.zoomBy(f, Math.max(0, Math.min(1, fx)), Math.max(0, Math.min(1, fy)));
+  };
   /* nombre de lignes visibles : le canvas change de hauteur, la caméra le sait (la surface reste visible en haut) */
   function setRows(n){
     if(n === rows || !Number.isInteger(n) || n < 1) return;
     rows = n; cv.height = rows*TILE; ctx.imageSmoothingEnabled = false; cam.setRows(n);
   }
 
-  return { draw, pan, panPixels, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
+  return { draw, pan, panPixels, zoomAt, setRows, follow: () => cam.follow(), get free(){ return cam.free; }, get rows(){ return rows; } };
 }

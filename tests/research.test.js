@@ -14,11 +14,11 @@ let n = 0; const id = () => 'op-rs-' + (++n);
 const fixed = v => () => v;
 const T1 = LOOT['Treasure T1'].oneOf.find(f => f.family === 'blueprint').items.map(i => i.item);
 
-test('config : tier 1 = 100 parts (recycle 15 à 30), tier 2 = 150 (30 à 45), tier 3 = 200 (45 à 60), tier 4 = 250 (60 à 75) (28/10) ; onglet présent', () => {
+test('config : tier 1 = 100 parts (recycle 10 à 20), tier 2 = 150 (15 à 30), tier 3 = 200 (20 à 35), tier 4 = 250 (25 à 40) (30/10) ; onglet présent', () => {
   assert.deepEqual(RESEARCH.tiers.map(t => [t.tier, t.cost]), [[1, 100], [2, 150], [3, 200], [4, 250]]);
   assert.deepEqual(tierBlueprints(1), T1);
   assert.equal(T1.length, 10);   // + Lance en fer BP (25/10)
-  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:15, max:30 }, { min:30, max:45 }, { min:45, max:60 }, { min:60, max:75 }]);
+  assert.deepEqual(RESEARCH.tiers.map(t => t.recycle), [{ min:10, max:20 }, { min:15, max:30 }, { min:20, max:35 }, { min:25, max:40 }]);
   assert.ok(TABS.some(t => t.id === 'recherche' && t.ready));
 });
 
@@ -65,11 +65,11 @@ test('recherche : demande rejouée (double clic) → même blueprint, payé une 
   assert.equal(countOf(back, PARTS), 200);
 });
 
-test('recycle : un blueprint détruit rend 15 à 30 parts (tier 1) ; seulement des blueprints possédés', () => {
+test('recycle : un blueprint détruit rend 10 à 20 parts (tier 1) ; seulement des blueprints possédés', () => {
   const inv = invWith({ 'Four en fer BP':2, Charbon:5 });
-  assert.deepEqual(recycle(inv, 'Four en fer BP', id(), fixed(0)), { ok:true, item:'Four en fer BP', parts:15, repeated:false });
-  assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0.9999999)).parts, 30);
-  assert.equal(countOf(inv, 'Four en fer BP'), 0); assert.equal(countOf(inv, PARTS), 45);
+  assert.deepEqual(recycle(inv, 'Four en fer BP', id(), fixed(0)), { ok:true, item:'Four en fer BP', parts:10, repeated:false });
+  assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0.9999999)).parts, 20);
+  assert.equal(countOf(inv, 'Four en fer BP'), 0); assert.equal(countOf(inv, PARTS), 30);
   assert.equal(recycle(inv, 'Four en fer BP', id(), fixed(0)).error, 'not_owned');
   assert.equal(recycle(inv, 'Charbon', id(), fixed(0)).error, 'bad_item');
   assert.equal(recycle(inv, PARTS, id(), fixed(0)).error, 'bad_item', 'les parts ne se recyclent pas');
@@ -127,12 +127,12 @@ test('tier 3 : le plan épique pèse 4 fois moins que chaque autre plan', () => 
   assert.equal(research(v, 3, id(), fixed(0.9999999)).item, T3.at(-1));
 });
 
-test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 45 à 60 parts', () => {
+test('tier 3 : un plan appris sort du tirage ; recycler un plan T3 rend 20 à 35 parts', () => {
   const inv = knowsTiers(T1, T2, T3.filter(b => b !== EPIC));
   assert.deepEqual(researchOdds(inv, 3), [{ item:EPIC, chance:1 }], 'seul reste le plan épique : il sort à coup sûr');
   addAll(inv, { 'Casque en acier BP':1 });
   const r = recycle(inv, 'Casque en acier BP', id(), fixed(0.9999999));
-  assert.equal(r.parts, 60);
+  assert.equal(r.parts, 35);
 });
 
 test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tout le T2 appris mais une recette du T1 manque)', () => {
@@ -147,7 +147,7 @@ test('tier 3 : fermé tant que TOUS les tiers inférieurs ne sont pas finis (tou
 });
 
 /* tier 4 (28/10/2026, Geoffrey) : 250 parts, plans du 1er jet du Treasure T4, ouvert quand les tiers 1 à 3 sont finis */
-test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts → un plan du T4 ; recycler un plan T4 rend 60 à 75 parts', () => {
+test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts → un plan du T4 ; recycler un plan T4 rend 25 à 40 parts', () => {
   const T4 = tierBlueprints(4);
   assert.ok(T4.includes('Casque en mithril BP') && T4.includes('Jambières titanesques BP'));
   assert.ok(!T4.includes('Saphir BP'), 'les plans du 2e jet (clé, gemmes) ne sortent pas de la recherche');
@@ -162,8 +162,8 @@ test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts �
   assert.ok(r.ok && T4.includes(r.item), r.item);
   assert.equal(countOf(inv, PARTS), 0);
   addAll(inv, { 'Casque en mithril BP':2 });
-  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0)).parts, 60);
-  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0.9999999)).parts, 75);
+  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0)).parts, 25);
+  assert.equal(recycle(inv, 'Casque en mithril BP', id(), fixed(0.9999999)).parts, 40);
 });
 
 /* tier 4 en trois étapes (28/10/2026, Geoffrey) : mithril + pièces spéciales, puis thorium et cobalt, puis les Jambières */

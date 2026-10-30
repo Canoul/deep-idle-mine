@@ -50,7 +50,7 @@ import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy } from '../../src/meta/energy.js';
 import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
          addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
-import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
+import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
@@ -658,7 +658,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const parts = splitTowerLoot(summary.loot, heirs.length, side, random);
         for(const share of summary.shares || []){
           const i = heirs.indexOf(share);
-          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random))]: 1, ...parts[i] } : {};
+          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random), shrineOf(rec.stele)?.effect?.luck ?? null)]: 1, ...parts[i] } : {};   // stèle : trésor béni (30/10)
         }
       }
       /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
@@ -784,6 +784,34 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     const instanceBoard = level => instRows.filter(x => x.level === level).map(({ account, r }) => ({ id: account, value: r.t, at: r.at, team: r.team, fight: r.fight }));
     boardCache = { at: clock(), data: { gs, xp, spec, tower: towerBoard(1), tower2: towerBoard(2), instance: instanceBoard(1), instance2: instanceBoard(2) } };
     return boardCache.data;
+  }
+
+  /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite.
+     Renvoie { left, session, mode, ended } (ended : il était le dernier, la partie s'arrête pour de bon). */
+  async function leaveSession(accountId){
+    return withLock('acct:' + accountId, async () => {
+      const rec0 = await activeOf(accountId);
+      if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
+      return withLock('sess:' + rec0.id, async () => {
+        const rec = await store.getGameSession(rec0.id);
+        if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+        const now = clock();
+        let ended = false;
+        if(rec.players.every(p => p.account === accountId || hasLeft(rec, p.account))){
+          /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
+          live.close(rec.id);
+          rec.leaves.push({ account: accountId, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
+          rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);
+          ended = true;
+          rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
+        } else {
+          if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
+          rec.leaves.push({ account: accountId, tick: await live.leave(rec.id, accountId), at: now });
+        }
+        await store.putGameSession(rec);
+        return { left: true, session: rec.id, mode: rec.mode ?? 'mine', ended };
+      });
+    });
   }
 
   /* termine une session tout de suite (dev, ou session dont l'heure est passée) ; sans effet sinon */
@@ -935,11 +963,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         }
         /* shrines du chef (28/10/2026, SHRINES) : mine classique hors mode dev ; chaque shrine actif perd une session ici,
            au lancement, et ses effets sont enregistrés dans la session (la partie se rejoue à l'identique) */
-        const shrines = mode === 'mine' && !dev ? await withLock('shrine:' + me.id, async () => {
-          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st);
+        const shrines = (mode === 'mine' || side) && !dev ? await withLock('shrine:' + me.id, async () => {
+          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st, side || null);   // tour : ses stèles (30/10)
           if(used.length) await store.putShrines(me.id, st);
           return used;
         }) : [];
+        /* stèle d'une tour (30/10/2026, SHRINES exorcisme / pacte) : la première active de ce camp ; en mode dev, imposée par
+           body.stele (pour tester sans la payer) */
+        const stele = side ? (dev ? (shrineOf(body.stele)?.tower === side ? body.stele : null) : shrines[0] ?? null) : null;
         const rec = {
           id: crypto.randomUUID(),
           mode,
@@ -957,7 +988,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
-          ...(shrines.length ? { shrines } : {}),
+          ...(shrines.length && !side ? { shrines } : {}),
+          ...(stele ? { stele } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,
@@ -1054,30 +1086,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     /* fn(comptes) après chaque lancement d'une session normale (le service des inscriptions désinscrit ces joueurs) */
     onStart: fn => { startHooks.push(fn); },
 
-    /* quitter : le joueur ne recevra rien de cette session (GAME_DESIGN §6). Son mineur quitte la partie tout de suite. */
-    async leave(me){
-      return withLock('acct:' + me.id, async () => {
-        const rec0 = await activeOf(me.id);
-        if(!rec0) fail('no_session', 404, 'Aucune session en cours.');
-        return withLock('sess:' + rec0.id, async () => {
-          const rec = await store.getGameSession(rec0.id);
-          if(rec.status !== 'running' || isDue(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
-          const now = clock();
-          if(rec.players.every(p => p.account === me.id || hasLeft(rec, p.account))){
-            /* plus aucun joueur : personne ne reçoit rien, la partie s'arrête */
-            live.close(rec.id);
-            rec.leaves.push({ account: me.id, tick: live.tickOf(rec.id) ?? targetTick(rec), at: now });
-            rec.status = 'done'; rec.endedAt = now; chat.drop(rec.id);
-            rec.result = { abandoned: true, shares: rec.players.map(p => ({ account: p.account, left: true, bag: {} })) };
-          } else {
-            if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée : son résultat arrive.');
-            rec.leaves.push({ account: me.id, tick: await live.leave(rec.id, me.id), at: now });
-          }
-          await store.putGameSession(rec);
-          return { left: true };
-        });
-      });
-    },
+    /* quitter (bouton « Quitter ») */
+    async leave(me){ return { left: (await leaveSession(me.id)).left }; },
 
     /* focus (minerai, area) changé pendant la session : appliqué tout de suite dans la partie, enregistré avec son
        tick (GAME_DESIGN §3). Aucune ressource en jeu : on vérifie la forme et le nombre de changements. */
@@ -1209,6 +1219,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });
     },
+
+    /* administration (29/10/2026, Geoffrey) : sort un joueur de sa session en cours, comme son bouton « Quitter » (il ne
+       reçoit rien de cette session ; les autres continuent ; dernier joueur : la partie s'arrête, personne ne reçoit rien) */
+    adminLeave: accountId => leaveSession(accountId),
 
     /* administration : retire qty exemplaires d'un objet à un compte (ex. un glyphe donné par erreur), sous les verrous
        de son inventaire et de ses skills (même ordre que glyph_pose). D'abord l'inventaire ; un glyphe posé sur son skill
@@ -1591,10 +1605,12 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
-    /* sa session en cours vue par ses amis (onglet Social) : type de mine et temps restant (ms, null en mode dev), ou null */
+    /* sa session en cours vue par ses amis (onglet Social) : type de mine, temps restant (ms, null en mode dev), ou null ;
+       30/10 : size = joueurs encore dans la session (partis exclus) sur max, pour repérer les solos et duos */
     activeSessionInfo: async accountId => {
       const rec = await activeOf(accountId);
-      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null } : await inGiant(accountId);
+      return rec ? { mode: rec.mode ?? 'mine', leftMs: rec.finishAt ? Math.max(0, rec.finishAt - clock()) : null,
+                     size: rec.players.filter(p => !hasLeft(rec, p.account)).length, max: GAME.maxPlayers } : await inGiant(accountId);
     },
     /* comptes qui jouent une session en ce moment (pas partis), navigateur ouvert ou non : la liste Online du Social */
     playersInSession: async () => {

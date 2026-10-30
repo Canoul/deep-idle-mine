@@ -21,6 +21,8 @@ const NO_SKILLS = Object.fromEntries(SKILLS.trees.flatMap(t => t.nodes.map(n => 
 /* opts.skills : effets des skills du joueur (src/meta/skills.js skillEffects), figés au lancement ; absents = aucun */
 export function createMiner(id, opts={}){
   const carac = { ...STATS, ...(opts.carac||{}) };
+  /* torches et passerelles se comptent à l'unité : un bonus en % (anneaux, maîtrises) donne 22,2 → 22 (29/10/2026) */
+  for(const k of ['torches', 'bridges']) if(Number.isFinite(carac[k])) carac[k] = Math.floor(carac[k]);
   return {
     skill: { ...NO_SKILLS, ...(opts.skills||{}) },
     skillTree: opts.skillTree ?? null, // arbre de skills choisi (mineur, logisticien, barbare) ou null

@@ -490,6 +490,92 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     },
 
   };
+
+  /* ---------- administration (29/10/2026, Geoffrey ; server/admin/routes.js) ---------- */
+
+  /* état d'un groupe pour le journal et le script : chef, membres, prêts */
+  const adminView = p => ({ code: p.code, leader: memberOf(p, p.leader)?.name,
+                            members: p.members.map(m => ({ name: m.name, leader: m.account === p.leader, ready: !!m.ready || !!m.always, always: !!m.always })) });
+  const admin = {
+    /* met player (compte) dans le lobby de host (compte), comme « Rejoindre » depuis l'onglet Social, sans amitié ni
+       code. host sans groupe : on lui en crée un, dont il est le chef. Mêmes refus que pour un joueur (en session,
+       groupe complet ou en cours de lancement). Comme pour toute arrivée, les autres repassent « pas prêt ». */
+    async adminMove(player, host){
+      await sweep();
+      if(player.id === host.id) fail('invalid_id', 400, 'Les deux pseudos désignent le même joueur.');
+      if(await game.activeSessionId(player.id)) fail('session_running', 409, `${displayName(player)} est en session : réessaie à la fin.`);
+      if(await game.activeSessionId(host.id)) fail('friend_in_session', 409, `${displayName(host)} est en session : réessaie à la fin.`);
+      const p = partyOf(host.id) ?? await create(host);
+      if(memberOf(p, player.id)) return { moved: false, party: adminView(p) };
+      noChange(p);
+      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, `Le groupe de ${displayName(host)} est complet.`);
+      const old = partyOf(player.id);
+      if(old){ noChange(old); removeMember(old, player.id); }
+      queue.delete(player.id);
+      unready(p);
+      p.members.push(newMember(player.id, displayName(player)));
+      p.invites.delete(player.id);
+      return { moved: true, party: adminView(p) };
+    },
+    /* met player prêt / pas prêt (ready) et coche / décoche « prêt tout le temps » (always), comme ses propres cases.
+       Chacun facultatif (au moins un). Possible pendant une session : vaut pour la suivante. */
+    async adminReady(player, { ready, always } = {}){
+      if(ready !== undefined && typeof ready !== 'boolean') fail('bad_request', 400, 'ready : true ou false.');
+      if(always !== undefined && typeof always !== 'boolean') fail('bad_request', 400, 'always : true ou false.');
+      if(ready === undefined && always === undefined) fail('bad_request', 400, 'Rien à changer : ready et/ou always.');
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const m = memberOf(p, player.id);
+      if(always !== undefined){
+        m.always = always;
+        if(always) alwaysOn.add(player.id); else alwaysOn.delete(player.id);
+      }
+      m.ready = (ready ?? (always !== undefined ? always : m.ready)) || m.always;   // comme ses cases : « tout le temps » l'emporte
+      return { party: adminView(p) };
+    },
+    /* lance le lobby de player (compte, n'importe quel membre) dans la mine classique, comme si le chef cliquait
+       « Lancer », SANS attendre que tout le monde soit prêt. Seul (sans groupe ou groupe d'un joueur) : sa session solo.
+       Refus du service de jeu inchangés (un membre encore en session, places du serveur…). */
+    async adminLaunch(player){
+      await sweep();
+      const p = partyOf(player.id);
+      const body = { mode: MINE_MODES[0].id };
+      if(!p || p.members.length === 1){
+        if(p) noChange(p);
+        const r = await game.start(player, body);
+        if(p) grace(p, r);
+        return { ...r, leader: displayName(player), members: [displayName(player)] };
+      }
+      noChange(p);
+      const leader = await getAccount(p.leader);
+      if(!leader) fail('account_not_found', 404, 'Le chef du groupe est introuvable.');
+      p.launching = true;                              // plus d'entrée ni de sortie pendant la création
+      try {
+        const members = [memberOf(p, p.leader), ...p.members.filter(m => m.account !== p.leader)];
+        const r = await game.start(leader, body, members.map(m => ({ account: m.account, name: m.name })));
+        grace(p, r);
+        unready(p);
+        return { ...r, leader: memberOf(p, p.leader).name, members: members.map(m => m.name) };
+      } finally { p.launching = false; }
+    },
+    /* donne la place de chef à player (compte), comme « Nommer chef » du chef actuel. Le nouveau chef n'a plus d'état
+       « prêt » ; l'ancien redevient membre, pas prêt (sauf « prêt tout le temps »). */
+    async adminPromote(player){
+      const p = partyOf(player.id);
+      if(!p) fail('no_party', 404, `${displayName(player)} n'est dans aucun groupe.`);
+      noChange(p);
+      const old = p.leader;
+      if(old !== player.id){
+        p.leader = player.id;
+        memberOf(p, player.id).ready = false;
+        const was = memberOf(p, old);
+        if(was) was.ready = !!was.always;
+      }
+      return { changed: old !== player.id, party: adminView(p) };
+    },
+  };
+  Object.assign(actions, admin);
   for(const k of Object.keys(actions)) actions[k] = saving(actions[k]);
   return {
     ...actions,

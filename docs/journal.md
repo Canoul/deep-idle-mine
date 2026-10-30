@@ -9,6 +9,22 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey) ✅ en ligne le 30/10
+
+- Deux nouveaux « shrines » pour les tours du Jugement, payés dans le Lobby comme le Shrine d'abondance : **Stèle d'exorcisme** (Tour du Démon, 240 Stonebricks angéliques) et **Stèle du pacte** (Tour de l'Ange, 240 Stonebricks démoniaques). Actives 3 tours lancées par le chef (valeur provisoire, à confirmer).
+- Effet : quand le boss meurt, le boss de l'autre camp s'écrase sur le toit, projette tout le monde de 10 cases, casse le treuil, et 5 mobs de l'autre camp (150 % de PV) envahissent chaque étage. Le 2e boss a 150 % de PV. Même chrono de 10 min : il faut le tuer pour gagner.
+- Bonus : un **trésor béni**, deux fois plus de chances d'anneau. C'est un simple coefficient : on pourra en ajouter d'autres sans réécrire de liste de coffres.
+- ⚠️ Équilibrage : en simulation, une équipe 2,5 minage / 40 dégâts tue le 1er boss vers 8 min 17, puis n'a plus le temps (2e boss presque intact). À régler (plus de temps, moins de PV, moins de mobs…).
+
+## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey) ✅ en ligne le 30/10
+
+- **Carte de la session** : on peut zoomer en pinçant à deux doigts (sur ordinateur : Ctrl + molette), jusqu'à ×4. Zoomée, la caméra suit toujours ton mineur, aussi de gauche à droite ; un glissé la déplace dans tous les sens, « Suivre » la ramène. Double appui : retour à la vue entière.
+- **Inventaire sur mobile** : toucher une pièce la sélectionne du premier coup (le survol simulé de l'iPhone avalait l'appui) et la fiche avec le bouton « Équiper » vient à l'écran.
+
+## 30/10/2026 — Nerf du recyclage des blueprints (Geoffrey) ✅ en ligne le 30/10
+
+Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
+
 ## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
 - **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
   « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
@@ -28,7 +44,7 @@ Modèle d'entrée :
   que la mine, et le panneau « Butin de la prison (total) » compte tout depuis l'entrée, run en cours compris.
   Correctifs : golem collé sous la surface (mineur bloqué 3 h), cobalt et thorium qui n'apparaissaient jamais ; minerais
   de la carte réglés à 51 % d'une mine (vrai profil de canoul).
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 29/10/2026 — Geoffrey — Prison : le butin récapitulé, la sortie dans l'Historique ; rendement recalé
 - **Pour le joueur** : un panneau **Butin de la prison** dans la vue de la prison additionne tout ce que les runs ont
@@ -36,7 +52,7 @@ Modèle d'entrée :
   dans l'**Historique**. La prison rapporte de nouveau environ la moitié d'une mine à 3 (avec 3 fois moins de mobs,
   elle en rapportait 87 % : moins de minerais sur la carte, 0,30 au lieu de 0,52).
 - **À suivre** : mesure bruitée (5 chaînes, acier seulement) : à refaire plus large avant la mise en ligne.
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 29/10/2026 — Geoffrey — Prison : le contenu vient des 10 dernières mines
 - **Pour le joueur** : la prison ressemble à ce qu'on trouve vraiment en mine. À l'entrée, elle lit tes 10 dernières mines
@@ -46,14 +62,14 @@ Modèle d'entrée :
 - **Décisions** : moins de 10 mines → celles qu'on a ; kills par type enregistrés à partir de maintenant (en attendant,
   les mobs de l'area moyenne) ; total de minerais inchangé (× oreMul), seule la répartition suit l'historique.
 - **À suivre** : ni simulé ni testé (demande de Geoffrey) ; rendement à recaler (oreMul) ; tests de la prison à mettre à jour.
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 29/10/2026 — Geoffrey — Prison : choisir son area ; vitesses du mode dev
 - **Pour le joueur** : avant d'entrer en prison, une liste **Area** (à côté du bouton) permet de choisir le contenu de la
   carte, de l'area 0 jusqu'à sa plus profonde area débloquée (par défaut la plus profonde). Elle reste la même pour toute
   la prison. **Mode dev** : toutes les areas au choix, et les boutons ×1 à ×300 accélèrent la prison en direct.
   **Mobs** : 3 fois moins d'apparitions en prison (on y est seul : c'est le rythme d'un mineur dans une mine à 3).
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 29/10/2026 — Geoffrey — Mode dev : copier le personnage d'un vrai joueur (Test_Canoul, Test_Mus)
 - **Pour le joueur** : rien, c'est un outil de test. `npm run dev:presets -- --from data/presets/<fichier>.json` crée
@@ -63,7 +79,7 @@ Modèle d'entrée :
   pour **son propre mineur** (ligne « Ton preset » : on garde son nom, l'XP et le butin restent à son compte).
 - **À suivre** : la copie se récupère depuis le navigateur du joueur (console, voir docs/debug.md) ; les sorts d'un ami
   ne sont pas visibles, on lui met ceux de sa spé.
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne ; outil local seulement)
+- **État** : ✅ en ligne le 30/10 (outil local seulement)
 
 ## 29/10/2026 — Geoffrey — La Prison (farm AFK solo) et l'énergie
 - **Pour le joueur** : deux nouveautés liées.
@@ -88,7 +104,48 @@ Modèle d'entrée :
 - **Relecture finale (29/10)** : dans un groupe, celui dont la prison tourne doit confirmer avant « Je suis prêt » ou
   « Prêt tout le temps », et le chef voit le nom des membres dont la prison sera arrêtée ; « Sortir de prison » marche même
   si le calcul de la prison plante ; le bilan d'absence compte l'énergie vraiment gagnée (pas « + 112 » quand on est à 100).
-- **État** : 🧪 sur la branche `geoffrey/prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Pièces en mithril : 2 fois plus de lingots de mithril
+- **Pour le joueur** : casque, plastron, jambes et bottes en mithril coûtent 2 fois plus de Mithril ingot : 30, 48, 42
+  et 32 (avant 15, 24, 21 et 16). Le reste de la recette ne change pas.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Social : voir combien de joueurs il y a dans une session en cours
+- **Pour le joueur** : dans l'onglet Social (amis et liste **Online**) et dans le « Who ? » des tours, un joueur en session
+  affiche maintenant la taille de son groupe : « En session mine (1/3) · reste 23 min ». On repère d'un coup d'œil les
+  joueurs **seuls ou à deux**, pour leur écrire ou les attendre à la fin de leur session et monter un groupe de 3. Ceux
+  qui ont quitté la session ne comptent plus. Pas de chiffre pour le Bloc géant (salle commune, pas un groupe).
+- **État** : ✅ en ligne le 30/10
+
+## 29/10/2026 — Jules — Correctifs : torches à virgule, Lunettes Gucci invisibles
+- **Pour le joueur** : le compteur de torches affichait « 22.200000000000003 en réserve » quand un bonus en % (anneau,
+  maîtrise) donnait un nombre à virgule. Le stock est maintenant un nombre entier, arrondi à l'inférieur (22,2 → 22).
+  Les **Lunettes Gucci** se voient enfin sur le mineur (monture dorée, verre sombre) : elles n'avaient pas de dessin.
+- **À suivre** : les Doc Martins, la Ceinture golémique et les Jambières titanesques n'ont pas encore de dessin sur le
+  mineur non plus.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : donner la place de chef d'un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `set-leader.js --name X` fait de X le chef de son lobby (il doit
+  déjà y être) ; l'ancien chef reste comme simple membre.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : forcer la fin de session d'un joueur, lancer un lobby
+- **Pour le joueur** : rien. Nouvelle commande sur le VPS : `end-session.js --name X` sort X de sa session en cours, comme
+  son bouton « Quitter » : il ne reçoit rien de cette session et redevient libre tout de suite. En groupe, les autres continuent.
+- **Décision** (Geoffrey) : sortie sans butin (plutôt qu'arrêter la session de tout le groupe, ou la finir avec le butin).
+- **Aussi** : `launch-lobby.js --name X` lance le lobby de X (n'importe quel membre) dans la mine, même si tout le monde
+  n'est pas prêt.
+- **État** : ✅ en ligne le 29/10
+
+## 29/10/2026 — Geoffrey — Administration : déplacer un joueur dans un lobby, le mettre prêt
+- **Pour le joueur** : rien. Deux nouvelles commandes sur le VPS, pour l'équipe (sans redémarrer le jeu) :
+  `move-to-lobby.js --name X --to Y` met X dans le lobby de Y ; `set-ready.js --name X` le met prêt, `--always on` le met
+  « prêt tout le temps » (comme sa case : il reste prêt d'une session à l'autre). Mode d'emploi dans `docs/deploiement-ovh.md`.
+- **Règles gardées** : refusé si l'un des deux est en session ou si le lobby est complet ; à l'arrivée, les autres repassent
+  « pas prêt », comme quand quelqu'un rejoint normalement.
+- **État** : ✅ en ligne le 29/10
 
 ## 29/10/2026 — Geoffrey — Recycler les runes en Poudre de rêve, et fabriquer des runes
 - **Pour le joueur** : une rune dont on ne veut pas a maintenant un bouton **♻ Recycler** dans l'inventaire : elle
