@@ -89,7 +89,7 @@ test('bouton Recettes : remplit les trois cases ; changer de recette rend la 3e'
   assert.equal(f.fuel.qty, 20);
   assert.equal(op(st, inv, { action:'recipe', out:'Tainted iron', count:1 }).ok, true);
   assert.equal(activeRecipe(f).out, 'Tainted iron');
-  assert.ok(!['a', 'b', 'c'].some(k => f[k]?.item === 'Lingot d'or'), 'plus d'or dans le four');
+  assert.ok(!['a', 'b', 'c'].some(k => f[k]?.item === "Lingot d'or"), "plus d'or dans le four");
   assert.equal(countOf(inv, 'Lingot d\'or'), 100, 'l\'ingrédient qui ne sert plus revient');
 });
 
