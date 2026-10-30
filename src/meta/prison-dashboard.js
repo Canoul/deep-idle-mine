@@ -29,8 +29,10 @@ export function prisonRow({ account, name, prison, sessions }){
   if(prison && (prison.state === 'running' || prison.state === 'waiting')){   // celle qui tourne : pas encore dans l'historique
     add(pBag, prison.totals?.bag); add(pTime, prison.totals?.time); pT += prison.totals?.t || 0; runs += prison.totals?.runs || 0;
   }
-  const mines = lastMines(sessions, account), mBag = {}, mTime = {};
-  for(const m of mines){ add(mBag, m.bag); add(mTime, m.time); }
+  const mines = lastMines(sessions, account), mBag = {}, mTime = {}, trees = {};
+  for(const m of mines){ add(mBag, m.bag); add(mTime, m.time); if(m.tree) trees[m.tree] = (trees[m.tree] || 0) + 1; }
+  /* spé jouée en mine (30/10) : celle des 10 dernières mines qui revient le plus (chaque mine = 1 h de jeu) */
+  const mineTree = Object.entries(trees).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const pH = pT / 3600, mH = mines.length * SESSION_LEN / 3600;
   const ores = {};
   for(const o of ORES){
@@ -40,7 +42,7 @@ export function prisonRow({ account, name, prison, sessions }){
   const ratios = Object.values(ores).map(r => r.ratio).filter(r => r != null);
   const gear = prison?.specs?.gear;
   return { account, name: name || 'Joueur', area: prison?.areaMax ?? null, state: prison?.state ?? null,
-           tree: prison?.specs?.skills?.tree ?? null, gs: gear ? gearScore(gear) : null,
+           tree: prison?.specs?.skills?.tree ?? null, mineTree, gs: gear ? gearScore(gear) : null,
            time: { prison: shares(pTime), mines: shares(mTime) },
            prisonHours: pH, runs, mines: mines.length, ores,
            ratio: ratios.length ? ratios.reduce((a, b) => a + b, 0) / ratios.length : null };
@@ -56,9 +58,9 @@ export function renderPrisonDashboard(rows, now = new Date()){
   const list = [...rows].sort((a, b) => (b.prisonHours || 0) - (a.prisonHours || 0));
   const ores = ORES.filter(o => list.some(r => r.ores[o]));
   const tcell = t => t ? TIMES.map(k => Math.round(t[k] * 100)).join(' / ') : '—';
-  const head = `<tr><th>Joueur</th><th>Spé</th><th>GS</th><th>Area</th><th>Prison (h de jeu)</th><th>Runs</th><th>Mines</th><th>Rendement</th>${ores.map(o => `<th>${esc(o)}</th>`).join('')}`+
+  const head = `<tr><th>Joueur</th><th title="Spé emportée en prison">Spé prison</th><th title="Spé la plus jouée sur ses 10 dernières mines">Spé mines</th><th>GS</th><th>Area</th><th>Prison (h de jeu)</th><th>Runs</th><th>Mines</th><th>Rendement</th>${ores.map(o => `<th>${esc(o)}</th>`).join('')}`+
     `<th title="% du temps : miner / se déplacer / combattre / autre (dépôts, attente, étourdi…)">Temps prison %<br><small>mine/dépl./combat/autre</small></th><th title="Même mesure sur ses 10 dernières mines (seulement celles jouées depuis le 30/10)">Temps mines %<br><small>mine/dépl./combat/autre</small></th></tr>`;
-  const body = list.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.tree ?? '—')}</td><td>${r.gs ?? '—'}</td><td>${r.area ?? '—'}</td><td>${h(r.prisonHours)}</td><td>${r.runs}</td><td>${r.mines}</td>`+
+  const body = list.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.tree ?? '—')}</td><td>${esc(r.mineTree ?? '—')}</td><td>${r.gs ?? '—'}</td><td>${r.area ?? '—'}</td><td>${h(r.prisonHours)}</td><td>${r.runs}</td><td>${r.mines}</td>`+
     `<td${col(r.ratio)}><b>${pct(r.ratio)}</b></td>`+
     ores.map(o => { const x = r.ores[o]; return `<td${col(x?.ratio)} title="${x ? `prison ${x.prison.toFixed(1)}/h · mines ${x.mines.toFixed(1)}/h` : ''}">${x ? pct(x.ratio) : ''}</td>`; }).join('')+
     `<td>${tcell(r.time?.prison)}</td><td>${tcell(r.time?.mines)}</td></tr>`).join('');

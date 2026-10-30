@@ -5413,3 +5413,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Prison : `totals.time` (settleRun, `cleanTime` de src/shared/prison.js), `result.prison.time` dans l'historique. Tableau
   (`src/meta/prison-dashboard.js`) : colonnes Spé, GS (`gearScore(specs.gear)`), Temps prison %, Temps mines % (`lastMines` rend `time`).
 - ✅ prison-dashboard 3/3 (somme des temps = durée d'un vrai run), prison-server, prison-ui, anticheat prison.
+
+### 30/10/2026 — Spé jouée en mine (tableau de bord prison)
+- `lastMines` renvoie aussi `tree` (= `statsAt[account].tree`, figé au lancement ; absent des sessions dev/anciennes → null) ; `prisonRow` → `mineTree` = arbre le plus fréquent sur les 10 dernières mines. Colonne « Spé mines » dans `renderPrisonDashboard`.
+- ✅ tests prison-dashboard + prison-profile (6/6).
