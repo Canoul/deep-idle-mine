@@ -56,6 +56,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
+  const energies = new Map();                // compte → { at, energy } : dernière énergie lue (energyField)
   const limit = createLimiter(config.requestsPerHour, clock);
   let chain = Promise.resolve();
   /* une écriture à la fois (une demande change deux comptes) */
@@ -94,6 +95,17 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     return g ? { status: 'lobby', size: g.size, max: g.max } : { status: 'online' };
   }
 
+  /* son énergie (31/10/2026) : relue au plus tous les energyFor, la lecture parcourt ses sessions et chaque navigateur
+     redemande ses amis toutes les quelques secondes ; { energy } ou rien si le service de jeu ne la donne pas */
+  async function energyField(id){
+    let c = energies.get(id);
+    if(!c || clock() - c.at >= config.energyFor){
+      c = { at: clock(), energy: await game.energyOf?.(id) };
+      energies.set(id, c);
+    }
+    return c.energy ? { energy: c.energy } : {};
+  }
+
   async function view(me){
     const s = await load(me.id);
     const meBusy = !!await game.activeSessionId(me.id);
@@ -103,7 +115,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const st = await statusOf(id);
       const g = party.groupOf(id);
       const together = !!(g && myGroup && g.code === myGroup.code);
-      friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, together,
+      friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, ...await energyField(id), together,
                      canInvite: !meBusy && st.status !== 'offline' && st.status !== 'session' && !together,
                      canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && g.size >= g.max) });
     }
@@ -175,7 +187,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       return view(me);
     }),
 
-    /* joueurs en ligne (tous, amis ou non) : { count, players:[{ id, displayId, name, status…, me, friend }] } */
+    /* joueurs en ligne (tous, amis ou non) : { count, players:[{ id, displayId, name, status…, energy, me, friend }] } */
     async online(me){
       const now = clock();
       for(const [id, t] of seen) if(now - t > config.onlineFor) seen.delete(id);     // oubliés : la Map ne grossit pas
@@ -187,7 +199,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
         players.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...await statusOf(id), me: id === me.id, friend: mine.has(id) });
       const busy = p => p.status === 'session' ? 1 : 0;                                 // pas en session au-dessus
       players.sort((a, b) => busy(a) - busy(b) || a.name.localeCompare(b.name, 'fr'));
-      return { count: players.length, players: players.slice(0, config.onlineListMax) };
+      const shown = players.slice(0, config.onlineListMax);
+      for(const p of shown) Object.assign(p, await energyField(p.id));
+      return { count: players.length, players: shown };
     },
 
     /* « Who ? » (lobby, tour ouverte) : joueurs qui n'ont pas encore fait la tour de ce camp pendant cette ouverture, pour

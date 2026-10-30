@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Voir l'énergie des gens dans Social
+- **Pour le joueur** : dans Social, les listes Amis et En ligne montrent l'énergie de chacun (« ⚡ 42/100 »), en rouge s'il ne peut plus
+  lancer de mine classique. Pratique pour savoir avant d'inviter. Le chiffre peut avoir jusqu'à 30 s de retard.
+- **Décisions** : visible par tout le monde dans En ligne, pas seulement par les amis ; pas dans les classements.
+- **État** : ✅ en ligne le 31/10
+
 ## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
 - **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
   la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
