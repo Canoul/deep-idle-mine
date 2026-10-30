@@ -329,7 +329,7 @@ export function setupLobby(h){
           : 'Prison : seul, sans fin. Ton mineur mine une petite carte au contenu de ton area max ; à 80 % des minerais, il dépose et une carte neuve commence. '+
             'Chaque run est versé dans ton inventaire et recharge ton énergie. Lancer une mine, une tour ou une instance la termine.')
       : def?.instance ? `${esc(def.label)} : <b>${INSTANCE.duration / 60} min</b> de jeu pour casser les ${INSTANCE.ledges * 2} spawners et vaincre le ${esc(INSTANCE.boss.name)}. `+
-                        `<b>Une clé par joueur</b>, consommée au lancement (même en cas d'échec).`
+                        `<b>Une clé par joueur</b>, utilisée seulement si le groupe gagne (échec ou départ : on la garde).`
       : tower ? `${esc(def.label)} : <b>${TOWER.duration / 60} min</b> de jeu pour traverser les ${TOWER.floors} étages (briques et mobs) et vaincre le boss sur le toit. `+
                 `Victoire : un trésor pour chaque joueur présent. Une seule victoire par ouverture. `+
                 `<button class="small${st.who?.side === def.tower ? ' on' : ''}" id="whoBtn" title="Joueurs en ligne qui n'ont pas encore fait cette tour">Who ?</button>`
@@ -472,7 +472,7 @@ export function setupLobby(h){
       `<button data-inst="${i.id}" class="${i.id === cur.id ? 'on' : ''}"${i.ready ? '' : ' disabled title="Bientôt disponible"'}>`+
       `<span><b>${esc(i.label)}</b>${i.sub ? `<br><small>${esc(i.sub)}</small>` : ''}</span>${i.ready ? '' : '<small>🔒 bientôt</small>'}</button>`).join('')}</div>`+
       (cur.key ? `<p class="instKeys"><span>🗝</span><span>Tes clés : <b class="${n ? 'ok' : 'err'}">${n} ${esc(cur.key)}</b></span> `+
-        qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle est consommée au lancement, et rendue si le groupe perd.\nOn la trouve dans les Treasure T3 (20 %).`)+`</p>`+
+        qhelp(`Clés d'instance\nChaque joueur du groupe doit avoir sa clé.\nElle n'est utilisée que si le groupe gagne : en cas d'échec, ou si tu quittes avant la fin, tu la gardes.\nOn la trouve dans les Treasure T3 (20 %).`)+`</p>`+
         (cur.chest === 'goblin' ? `<p class="small">🎁 Roi vaincu : un <b>Coffre du Roi Gobelin</b> (qualité R1 à R7) pour chaque joueur encore là. `+
           `<b>Niveau 2</b> : gobelins et roi bien plus solides ; un <b>Coffre du Roi Gobelin II</b> (× ${INSTANCE.levels[2].chest.res} ressources, × ${INSTANCE.levels[2].chest.drop} chances d'objets).</p>` : '') : '');
   }
