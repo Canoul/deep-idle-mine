@@ -45,6 +45,7 @@ export function sanitizePrison(p){
     specs: isObj(p.specs) ? p.specs : {},
     areaMax: Number.isSafeInteger(p.areaMax) && p.areaMax >= 0 ? p.areaMax : 0,
     profile: sanitizeProfile(p.profile),
+    steps: isObj(p.steps) ? p.steps : null,   // paliers de compo (30/10, revérifiés par prisonSteps)
     speed: isNum(p.speed) && p.speed > 0 ? p.speed : GAME.speed,
     startedAt: isNum(p.startedAt) ? p.startedAt : p.runStartedAt,
     runStartedAt: p.runStartedAt,

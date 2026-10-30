@@ -5463,3 +5463,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ prison-server (nouveau : pièce équipée en cours de run → run 2 +1 Découverte, run 1 inchangé), prison-sim,
   prison-ui. ⚠️ « une tour et une instance lancées terminent la prison » échoue **déjà sur main** (clé d'instance 1 !== 0),
   sans lien : à regarder.
+
+### 30/10/2026 — Prison : paliers de compo (actuelle / précédente)
+- `src/meta/prison-profile.js` : `profileOf(mines)`, `prisonSteps(old, sessions, account)` → `{ cur, prev }` (cur.to = date de la plus récente mine du paquet ; cur < 10 mines : suit les dernières ; sinon avance par paquets de 10 mines plus récentes que cur.to), `chooseCompo(steps, 'previous')` échange cur/prev en gardant cur.to.
+- Serveur : `p.steps` dans l'enregistrement prison (gardé par `sanitizePrison`, relu à chaque lancement : les sessions de plus de 30 jours peuvent disparaître sans décaler les paliers). `POST /api/game/prison/start { compo: 'current'|'previous' }` (409 `no_previous` sans précédente). `GET /prison/profile` → `{ profile, previous }`. Lobby : boutons « Actuelle / Précédente » (#prisonCompoRow) seulement si une précédente existe.
+- ✅ tests/prison-steps (5, nouveau), prison*, lobby*. ⚠️ `prison-server` « une tour et une instance lancées terminent la prison » échoue AUSSI sur main sans ce changement (attend 0, reçoit 1 : sans doute la clé d'instance prise à la victoire, chantier de Jules) : à regarder.

@@ -99,6 +99,9 @@
       <label class="chk" id="alwaysReadyRow" hidden title="Tu restes prêt d'une session à l'autre : le chef peut relancer sans attendre ton clic."><input type="checkbox" id="alwaysReady"> Prêt tout le temps</label>
       <div class="towerLevels" id="towerLevelRow" hidden></div>
       <p class="mut small" id="prisonProfileRow" hidden title="Calculé quand tu entres en prison, puis figé jusqu'à ta sortie"></p>
+      <p class="small" id="prisonCompoRow" hidden title="La compo change par paliers de 10 mines. Tu as joué avec des amis d'un autre niveau ? Reprends la précédente.">Compo :
+        <button type="button" class="btn small" data-compo="current">Actuelle (10 dernières)</button>
+        <button type="button" class="btn small" data-compo="previous">Précédente</button></p>
       <label class="chk" id="modulationRow" hidden><input type="checkbox" id="modulation"> <span id="modulationText">Modulation</span></label>
       <label class="chk" id="devSteleRow" hidden><input type="checkbox" id="devStele"> <span>Stèle du camp (mode dev, sans la payer)</span></label>
     </div>
