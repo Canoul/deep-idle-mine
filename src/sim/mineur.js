@@ -109,7 +109,22 @@ export const baseMineT  = (m,t) => BLOCKS[t].hard/mineRate(m);
 export const nowOf = (G,m) => m.now ?? G.t;
 export function startAction(m,type,dur,data){ m.action={type, dur:Math.max(0.05,dur), t:0, data:data||{}}; }
 export function idle(m,t){ if(!m.action) startAction(m,'wait', t||0.5, {}); }
-export function collect(m,name,w,n){ m.inv[name]=(m.inv[name]||0)+n; m.load+=w*n; }
+/* free (30/10/2026, Geoffrey) : exemplaires en plus de la fortune et du butin supplémentaire : dans le sac mais 0 pod
+   (m.free[name] = combien des m.inv[name] ne pèsent rien) */
+export function collect(m,name,w,n,free=false){
+  m.inv[name]=(m.inv[name]||0)+n;
+  if(free){ if(n>0){ m.free??={}; m.free[name]=(m.free[name]||0)+n; } } else m.load+=w*n;
+}
+/* retire n exemplaires de name du sac (vol, dépôt dans la Mule) : les payants d'abord (les pods baissent), puis les
+   gratuits ; renvoie les pods libérés */
+export function uncollect(m,name,w,n){
+  const have=m.inv[name]||0, fr=Math.min(m.free?.[name]||0, have), paid=Math.min(n, have-fr), freed=w*paid;
+  m.load-=freed;
+  if(n>paid && m.free){ m.free[name]=fr-(n-paid); if(!(m.free[name]>0)) delete m.free[name]; }
+  if(have<=n){ delete m.inv[name]; if(m.free) delete m.free[name]; } else m.inv[name]=have-n;
+  if(!Object.keys(m.inv).length) m.load=0;
+  return freed;
+}
 
 /* torche posée par m : r = son rayon, item = la pièce de sa case torche s'il en a une (Lampe à incandescence : rayon, et
    apparence de la torche, src/skins.js torchTexOf) */

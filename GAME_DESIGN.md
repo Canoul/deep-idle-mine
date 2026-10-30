@@ -229,7 +229,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Vitesse de minage | Divise le temps de minage | 1 *(provisoire)* |
 | Dégâts | Dégâts par coup contre les mobs | 5 *(provisoire)* |
 | Vitesse d'attaque | Rythme des coups contre un mob, **en %** (100 % = un coup toutes les 0,8 s, 200 % = deux fois plus vite ; ralentie dans le noir comme le reste) | 100 % *(provisoire)* |
-| Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon pèse dans les pods mais ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
+| Fortune | **Chance, en %, de dupliquer le minerai obtenu en le minant** (le minerai, ou son shiny). Le doublon **ne pèse rien dans les pods** *(30/10/2026, Geoffrey ; avant : il pesait)* et ne compte pas pour le déblocage de l'area. Au-delà de 100 % : un doublon sûr par tranche + une chance sur le reste. Ne s'applique ni à la terre/pierre ni au butin des mimics | 0 % *(provisoire)* |
 | Pods | Poids d'inventaire | 200 *(provisoire)* |
 | Ténacité *(21/10)* | **Chance, en %, d'ignorer un sort de mob qui le vise** : le vol du gobelin, la canalisation de l'occultiste, l'asphyxie du méphite *(24/10)*. **Un tirage à chaque sort** (chaque vol, chaque canalisation, chaque perte d'oxygène). Un sort ignoré est perdu (l'occultiste s'est téléporté et attend son prochain sort). Vient du skill Force brute (Barbare) | 0 % *(provisoire)* |
 
@@ -242,7 +242,7 @@ Pendant la session, un panneau **Focus area** de l'onglet Session permet de choi
 | Critique | Chance qu'un coup contre un mob fasse **le double** de dégâts |
 | Coup unique | Chance de casser un bloc **instantanément** |
 | Perçage | Chance de casser aussi **le bloc juste derrière** celui miné (dans la direction du coup) ; il rapporte son butin comme un bloc miné (fortune, shiny, déblocage), jamais une barrière, un mur de donjon ni un mimic, jamais en chaîne |
-| Butin des mobs | **Chance, en %, d'un butin en plus** à chaque mob tué (pas un multiplicateur, 22/10/2026) : 9 % = 9 % de chance d'avoir 1 de plus ; au-delà de 100 %, la partie entière est sûre (150 % = +1, et 50 % de chance de +2). S'ajoute au skill Pillage ; l'onglet Stats montre le total |
+| Butin des mobs | **Chance, en %, d'un butin en plus** à chaque mob tué (pas un multiplicateur, 22/10/2026) : 9 % = 9 % de chance d'avoir 1 de plus ; au-delà de 100 %, la partie entière est sûre (150 % = +1, et 50 % de chance de +2). S'ajoute au skill Pillage ; l'onglet Stats montre le total. Le butin en plus **ne pèse rien dans les pods** *(30/10/2026)* |
 
 ### Niveau et XP
 Le mineur du joueur a un **niveau**, rattaché à son compte, qui monte avec l'**XP** gagnée en session.

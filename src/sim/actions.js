@@ -34,6 +34,12 @@ function lootOf(G,m,n){
   const sure=Math.floor(b);
   return n + sure + (G.rng() < b-sure ? 1 : 0);
 }
+/* butin d'un mob : base payante, le supplément (Pillage / looting) à 0 pod (30/10/2026) ; renvoie le total */
+function lootCol(G,m,item,w,base){
+  const n=lootOf(G,m,base);
+  collect(m,item,w,Math.min(base,n)); if(n>base) collect(m,item,w,n-base,true);
+  return n;
+}
 
 /* prison : chaque chance de butin rare × PRISON.rareMul (glyphes, shiny, butin rare des mobs) */
 const rareMul = G => G.prison ? PRISON.rareMul : 1;
@@ -116,7 +122,8 @@ export function breakBlock(G,m,x,y){
   } else if(!BLOCKS[t].noDrop){ got=BLOCKS[t].name; collect(m, got, BLOCKS[t].w, 1); }
   if(got && isOre(t)){   // fortune : le minerai obtenu est dupliqué
     const extra=fortuneExtra(G,m);
-    if(extra){ collect(m, got, ITEMS[got].w, extra); m.stats.fortune=(m.stats.fortune||0)+extra; }
+    if(extra){ collect(m, got, ITEMS[got].w, extra, true);   // fortune : 0 pod (30/10)
+      m.stats.fortune=(m.stats.fortune||0)+extra; }
   }
   if(isOre(t)){ m.stats.ore++; oreMinedIn(G,y,t); gainXp(G,m,XP.ore[oreKey(t)]); oreSkills(G,m); }
   if(typeOf(t)==='treasure') openTreasure(G,m,x,y);
@@ -149,21 +156,18 @@ export function killMob(G,m,o){
   if(m.skill.glyph_loot) m.pillage=Math.min(GLYPHS.killDamageMax, (m.pillage||0)+GLYPHS.killDamagePct);   // Glyphe Pillage
   glyphDrop(G,m,'kill');   // Glyphe (spé Barbare)
   if(o.type==='mimic'){
-    G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootOf(G,m,MOBS.mimicLoot);
-    collect(m, b.name, b.w, n); oreMinedIn(G,o.y,o.ore);
+    G.tiles[o.y][o.x]=0; G.mimicCells.delete(o.y*W+o.x); updateLight(G); const b=BLOCKS[o.ore], n=lootCol(G,m,b.name,b.w,MOBS.mimicLoot);
+    oreMinedIn(G,o.y,o.ore);
     log(G, `🗡 ${m.name} : mimic vaincu (+${n} ${b.name})`);
   } else if(o.type==='gobelin'){
-    const n=lootOf(G,m,MOBS.goblinLoot(G.rng)), c=lootOf(G,m,MOBS.goblinChitin);
-    collect(m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const n=lootCol(G,m,MOBS.goblinItem,ITEMS[MOBS.goblinItem].w,MOBS.goblinLoot(G.rng)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.goblinChitin);
     log(G, `🗡 ${m.name} : gobelin vaincu (+${n} peau de gobelin, +${c} chitine)`);
   } else if(o.dungeon!=null || o.type===DUNGEON.boss.type){
     /* boss de donjon (et minotaure à découvert d'un k hole, src/sim/khole.js) : 1 à 3 Cristaux de pleine lune (Pillage
        compris) ; chaque joueur en recevra la quantité entière */
-    const L=DUNGEON.loot, n=lootOf(G,m,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
-    collect(m,L.item,ITEMS[L.item].w ?? 1,n);
+    const L=DUNGEON.loot, n=lootCol(G,m,L.item,ITEMS[L.item].w ?? 1,L.min+Math.floor(G.rng()*(L.max-L.min+1)));
     /* Cuir de minotaure (27/10/2026) : 1 à 3 en plus, même partage (SHARE.copyToAll) */
-    const C=DUNGEON.leather, c=C ? lootOf(G,m,C.min+Math.floor(G.rng()*(C.max-C.min+1))) : 0;
-    if(c) collect(m,C.item,ITEMS[C.item].w ?? 1,c);
+    const C=DUNGEON.leather, c=C ? lootCol(G,m,C.item,ITEMS[C.item].w ?? 1,C.min+Math.floor(G.rng()*(C.max-C.min+1))) : 0;
     log(G, `🗡 ${m.name} : ${DUNGEON.boss.name.toLowerCase()} vaincu ! (+${n} ${L.item}${c ? `, +${c} ${C.item}` : ''})`);
   } else if(o.type===DUCK.type){
     /* Gallianix : un Fragment de cœur une fois sur 4 (hasard du canard, pas de Pillage), rapporté au coffre commun */
@@ -171,25 +175,21 @@ export function killMob(G,m,o){
     if(r() < h.chance){ collect(m,h.item,ITEMS[h.item].w ?? 1,1); log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu (+1 ${h.item.toLowerCase()})`); }
     else log(G, `🗡 ${m.name} : Gallianix ${o.name} vaincu`);
   } else if(o.type==='occultiste'){
-    const it=MOBS.occult.item, n=lootOf(G,m,MOBS.occult.loot(G.rng)), c=lootOf(G,m,MOBS.occult.chitin(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const it=MOBS.occult.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.occult.loot(G.rng)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,MOBS.occult.chitin(G.rng));
     log(G, `🗡 ${m.name} : occultiste vaincu (+${n} ${it.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='mephite'){
-    const it=MOBS.mephite.item, n=lootOf(G,m,MOBS.mephite.loot(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n);
+    const it=MOBS.mephite.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.mephite.loot(G.rng));
     log(G, `🗡 ${m.name} : méphite vaincu (+${n} ${it.toLowerCase()})`);
   } else if(o.type==='chair'){
     /* mur de chair (28/10/2026) : Rotten flesh et chitine */
     const C=MOBS.chair, r=(a)=>a.min+Math.floor(G.rng()*(a.max-a.min+1));
-    const n=lootOf(G,m,r(C.flesh)), c=lootOf(G,m,r(C.chitin));
-    collect(m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,n); collect(m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,c);
+    const n=lootCol(G,m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,r(C.flesh)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,r(C.chitin));
     log(G, `🗡 ${m.name} : mur de chair vaincu (+${n} ${C.flesh.item.toLowerCase()}, +${c} chitine)`);
   } else if(o.type==='golem'){
-    const it=MOBS.golem.item, n=lootOf(G,m,MOBS.golem.loot(G.rng));
-    collect(m,it,ITEMS[it].w ?? 1,n);
+    const it=MOBS.golem.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.golem.loot(G.rng));
     log(G, `🗡 ${m.name} : golem vaincu (+${n} ${it.toLowerCase()})`);
   } else {
-    const n=lootOf(G,m,MOBS.bugLoot(G.rng)); collect(m,MOBS.bugItem,1,n);
+    const n=lootCol(G,m,MOBS.bugItem,1,MOBS.bugLoot(G.rng));
     log(G, `🗡 ${m.name} : bestiole vaincue (+${n} chitine)`);
   }
   rareDrop(G,m,o);
@@ -222,7 +222,7 @@ export function finishAction(G,m,a){
         parts.push(m.inv[k]+' '+k);
       }
       if(parts.length){ log(G, `📦 ${m.name} dépose : ${parts.join(', ')}`); G.stats.trips++; m.stats.trips++; }
-      m.inv={}; m.load=0;
+      m.inv={}; m.load=0; m.free={};
       if(isCarrier(G,m) && !G.mule.placed) emptyMule(G, m.name);   // Mule : le sac qu'il rapporte
       break; }
     /* Mule (src/sim/mule.js) : dépôt dans le sac, ramassage, pose (la case doit être restée vide) */
