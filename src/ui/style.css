@@ -504,7 +504,13 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .fodds .mut{flex-basis:100%;margin-top:calc(-1*var(--u))}
 .fodds img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
 .fparts img{width:calc(9*var(--u))!important;height:calc(9*var(--u))!important}
-.frecs{max-height:45vh;overflow-y:auto}             /* fenêtre « Recettes » du four (28/10) */
+/* fenêtre « Recettes » du four (28/10) ; 30/10 : plus large, chaque ingrédient d'un bloc (icône et nom jamais séparés), la liste
+   prend la place libre et le reste de la fenêtre (quantité, Fermer) reste visible */
+#fpick .box.frecBox{max-width:calc(310*var(--u));display:flex;flex-direction:column;overflow:hidden}
+.frecBox>*{flex-shrink:0}
+.frecBox .frecs{flex:1 1 auto;min-height:calc(70*var(--u));overflow-y:auto}
+.frecHead{display:flex;align-items:baseline;justify-content:space-between;gap:calc(4*var(--u))}
+.fpart{display:inline-flex;align-items:center;gap:var(--u);white-space:nowrap}
 .frecs>*{flex-shrink:0}
 .frecs p{margin:var(--u) 0 0}
 .frecRow b{text-align:right}

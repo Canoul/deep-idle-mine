@@ -19,7 +19,18 @@ Modèle d'entrée :
 ## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
 - **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
   la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
-- **État** : 🧪 sur la branche `geoffrey/prison-depart-area` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Nouvel objet : l'Orbe
+- **Pour le joueur** : un **Orbe** se fabrique dans l'onglet Craft, dès le départ : 30 Tissu sombre + 30 Vésicule de gaz + 10 Pierre
+  glissante. Il n'a pas encore d'usage.
+- **À suivre** : son usage, et sa rareté (commune par défaut).
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Four : fenêtre Recettes remise en ordre
+- **Pour le joueur** : avec 3 ingrédients, la fenêtre **Recettes** du four devenait illisible (icônes séparées de leur nom, durée seule
+  sur une ligne, bouton Fermer coupé). Elle est plus large, chaque ingrédient reste d'un bloc, la durée est en haut à droite.
+- **État** : ✅ en ligne le 31/10
 
 ## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
 - **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent

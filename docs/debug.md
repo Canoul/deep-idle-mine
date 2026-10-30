@@ -5722,3 +5722,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ prison-profile 3/3 ; ⚠️ pas vu à l'écran. ❌ prison-server « une tour et une instance lancées terminent la
   prison » rouge **aussi sur main sans ce changement** : il attend la clé retirée au lancement, or elle l'est à la victoire
   (service.js, `removeItem(inv, inst.key, 1)` au versement). Test à mettre à jour, pas touché ici.
+
+## 30/10/2026 — Orbe (Geoffrey)
+- **Quoi** : `ITEMS.Orbe` (material, empilable, poids 1, texture `orb`), recette de base (src/recipes.js), texture dans
+  `scripts/gen_textures.py`. Sans usage.
+- **Tests** ✅ craft +1, boot-check, wiki, rarity, inventory.
+
+## 30/10/2026 — Four : fenêtre Recettes (Geoffrey)
+- **Quoi** : `src/ui/furnace.js` : `.fpart` (icône + nom + « + », insécable), `.frecHead` (nom et durée), classe `.frecBox` posée par
+  `openRecipes`, retirée par `openPicker` (même `.box`). `style.css` : `.frecs{max-height:45vh}` remplacé (liste flexible, box en colonne).
+- **Vérifié** ✅ Chrome sans écran, page de test avec le vrai `setupFurnace` et le vrai CSS : 1280 × 900 et 500 × 900. Pas sur un vrai
+  téléphone. Tests : furnace-trio +1, furnace.
+

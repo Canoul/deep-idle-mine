@@ -2,6 +2,7 @@
    ajoutent une le temps de leur exécution. */
 import { test, afterEach, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { FURNACE } from '../src/config.js';
 import { createInventory, addAll, countOf } from '../src/meta/inventory.js';
 import { createFurnaces, furnaceOp, advance, activeRecipe, batches, alloyOf, alloyFits, sanitizeFurnaces } from '../src/meta/furnace.js';
@@ -102,4 +103,12 @@ test('relecture : un four enregistré sans case c continue ; le contenu de la ca
   assert.equal(activeRecipe(f).out, 'Tainted iron');
   const again = sanitizeFurnaces(JSON.parse(JSON.stringify({ list:[{ ...f, c:{ item:'Lingot d\'or', qty:3 } }], ops:[] })));
   assert.deepEqual(again.list[0].c, { item:'Lingot d\'or', qty:3 });
+});
+
+test('fenêtre Recettes : chaque ingrédient est un bloc insécable, la fenêtre garde ses boutons visibles', () => {
+  const ui = readFileSync(new URL('../src/ui/furnace.js', import.meta.url), 'utf8'), css = readFileSync(new URL('../src/ui/style.css', import.meta.url), 'utf8');
+  assert.match(ui, /class="fpart"/);
+  assert.match(ui, /classList\.remove\('frecBox'\)/, 'la fenêtre de choix d\'un objet reprend sa taille');
+  assert.match(css, /\.fpart\{[^}]*white-space:nowrap/);
+  assert.match(css, /\.box\.frecBox\{[^}]*flex-direction:column/);
 });
