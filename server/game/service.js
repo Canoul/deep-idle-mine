@@ -1129,6 +1129,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(rec.focus.filter(e => e.account === me.id).length >= FOCUS.maxChanges)
             fail('too_many', 429, 'Trop de changements de focus dans cette session.');
           const focus = sanitizeFocus(f);
+          if(!FOCUS.ores) for(const k of Object.keys(focus)) if(k !== 'area') delete focus[k];   // focus minerai retiré du jeu (30/10)
           if(!ensureLive(rec)) fail('session_over', 409, 'La session est terminée.');
           const ev = { account: me.id, tick: await live.focus(rec.id, me.id, focus), focus };
           rec.focus.push(ev);

@@ -1965,7 +1965,10 @@ export const MOB_INFO = {
    maxChanges : changements max par joueur et par session (protège l'enregistrement).
    Focus d'area (même enregistrement, clé « area ») : le mineur travaille dans cette area, sans descendre plus bas ni
    viser ailleurs ; absente = toujours plus profond (de base). maxArea : plus grand numéro accepté par le serveur. */
-export const FOCUS = { modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
+/* ores : focus minerai accessible en jeu (30/10/2026, Geoffrey : retiré pour l'instant, gardé dans le code ; true le rend).
+   Quand il est false, le panneau « Focus minerai » est caché et le serveur ignore les minerais d'un focus envoyé ; le
+   focus d'area reste. */
+export const FOCUS = { ores:false, modes:['none','target','only'], minLeft:0.2, valFactor:2, maxChanges:500, maxArea:99 };
 
 /* Spécialisation imposée aux mineurs en mode développeur (25/10/2026, Geoffrey) : pour chaque place (les joueurs du
    groupe dans l'ordre, puis les mineurs de test), un arbre de skills et un niveau ; l'arbre est rempli étage par étage
