@@ -479,7 +479,13 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, gained, bag);
     }
     if(stopped){ p.state = 'done'; p.endedAt = clock(); closedRun.delete(p.id); batching.delete(p.account); }
-    else { p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; closedRun.set(p.id, p.run); p.run++; }
+    else {
+      p.runStartedAt += p.pausedMs + t / p.speed * 1000; p.pausedMs = 0; closedRun.set(p.id, p.run); p.run++;
+      /* 30/10/2026 (Geoffrey) : stuff, skills, glyphes, sorts et préférences relus à chaque run (avant : figés à l'entrée
+         pour toute la prison ; une pièce de Découverte équipée ensuite ne comptait jamais). Le pseudo reste celui de
+         l'entrée. Rangés avec la prison : un run rejoué après un redémarrage garde les siens. */
+      p.specs = { name: p.specs?.name, ...await freezePlayer(p.account) };
+    }
     runEnded.delete(key); runOwner.delete(key); payoutTries.delete(key); crashes.delete(key); live.close(key);
     await store.putPrison(p.account, p);
   }

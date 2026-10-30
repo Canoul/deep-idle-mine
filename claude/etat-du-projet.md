@@ -48,7 +48,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
-  `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Carte 25 × 50
+  `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Stuff, skills, sorts et préférences relus à chaque run (30/10 ; ancien : figés à l'entrée). Carte 25 × 50
   (une area ; **contenu = profil des 10 dernières mines classiques** du joueur, figé au lancement, `src/meta/prison-profile.js` :
   area moyenne atteinte, répartition des minerais, tiers des treasures, types de mobs tués (kills par type enregistrés depuis le
   29/10) ; ancien : area max débloquée, puis area au choix ; mode dev : area au choix et vitesses ×1-×300), barreaux de chaque côté,

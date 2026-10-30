@@ -74,7 +74,7 @@ l'**énergie**, qui seule limite le nombre de sessions de mine classique.
     area débloquée, il n'y en a qu'une) ;
   - mobs, pièges, donjons et murs de chair : comme dans cette area.
 - **Tous les sorts, skills, glyphes et anneaux** du joueur marchent (anneaux : les siens seulement, il est seul),
-  figés au lancement comme en mine.
+  figés au lancement comme en mine. *30/10 (Geoffrey) : relus au début de chaque run (ancien : figés pour toute la prison).*
 
 ### Les runs
 
