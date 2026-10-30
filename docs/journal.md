@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Prison : plus de minerais (oreMul 0,24 → 0,27)
+- **Pour nous** : la prison contient 12,5 % de minerais en plus, pour viser 50 % du rendement d'une mine (on était vers 40 %).
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Prison : +10 % de mobs
 - **Pour nous** : en prison, les mobs apparaissent 10 % plus souvent (attente entre deux apparitions × 2,73 au lieu de × 3 par rapport à une mine).
 - **État** : ✅ en ligne le 30/10
