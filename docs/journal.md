@@ -17,9 +17,10 @@ Modèle d'entrée :
 ```
 
 ## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
-- **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les recettes actuelles n'en utilisent
+- **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent
   que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.
-- **À suivre** : aucune recette à 3 ingrédients n'existe encore : il suffit de les ajouter dans `FURNACE.alloys` (`in` à 3 objets).
+- **Recettes** : **Cobalt ingot** et **Thorium ingot** demandent maintenant **3 Tainted gold** en plus (5 Mithril ingot + 5 Refined
+  cobalt ou thorium + 3 Tainted gold).
 - **État** : 🧪 sur la branche `geoffrey/four-3-cases` (pas en ligne)
 
 ## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison

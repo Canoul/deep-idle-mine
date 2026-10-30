@@ -30,7 +30,7 @@ test('four : 10 mithril, 5 cobalt, 5 thorium (+ 10 charbon) ; alliages cobalt et
   }
   for(const [ing, out] of [['Refined cobalt', 'Cobalt ingot'], ['Refined thorium', 'Thorium ingot']]){
     const a = FURNACE.alloys.find(r => r.out === out);
-    assert.deepEqual(a.in, { 'Mithril ingot':5, [ing]:5 });
+    assert.deepEqual(a.in, { 'Mithril ingot':5, [ing]:5, 'Tainted gold':3 });   // Tainted gold : 30/10
   }
 });
 

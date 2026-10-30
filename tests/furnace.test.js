@@ -371,7 +371,7 @@ test('changer de recette : les produits d\'une autre sorte reviennent dans l\'in
 });
 
 test('changer de recette : Fondre → Alliage, et alliage → alliage en gardant l\'ingrédient commun', () => {
-  const { inv, st } = setup({ Fer:20, 'Lingot de fer':5, Chitine:15, 'Mithril ingot':10, 'Refined cobalt':5, 'Refined thorium':5, Charbon:300 });
+  const { inv, st } = setup({ Fer:20, 'Lingot de fer':5, Chitine:15, 'Mithril ingot':10, 'Refined cobalt':5, 'Refined thorium':5, 'Tainted gold':6, Charbon:300 });
   op(st, inv, { action:'recipe', out:'Lingot de fer', count:2 });
   op(st, inv, { action:'recipe', out:'Tainted iron', count:1 });
   assert.equal(st.list[0].mode, 'alloy'); assert.equal(countOf(inv, 'Fer'), 20);
@@ -379,7 +379,7 @@ test('changer de recette : Fondre → Alliage, et alliage → alliage en gardant
   assert.deepEqual([countOf(inv, 'Lingot de fer'), countOf(inv, 'Chitine')], [5, 15]);
   op(st, inv, { action:'recipe', out:'Thorium ingot', count:1 });
   const f = st.list[0];
-  assert.deepEqual([f.a, f.b].map(c => c.item).sort(), ['Mithril ingot', 'Refined thorium']);
+  assert.deepEqual([f.a, f.b, f.c].map(c => c.item).sort(), ['Mithril ingot', 'Refined thorium', 'Tainted gold']);
   assert.equal(countOf(inv, 'Refined cobalt'), 5); assert.equal(countOf(inv, 'Mithril ingot'), 5, 'le mithril commun reste dans le four');
   assert.equal(recipeMax(f, inv, 'Cobalt ingot'), 1, 'le max compte ce qui serait rendu');
 });

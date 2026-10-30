@@ -5708,7 +5708,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `src/meta/furnace.js` : case `c` (`INPUTS.alloy`, `SLOTS`, `newFurnace`), `alloyOf(...items)` (2 ou 3, ensemble exact),
   `alloyFits(items)` (tous dans une même recette, il peut en manquer : c'est lui qui contrôle `load`), `activeRecipe` sur les cases
   remplies. `src/ui/furnace.js` : case, libellé, signature d'affichage, choix des objets, texte d'état. Un four enregistré sans `c`
-  est relu normalement. Aucune recette à 3 en config.
+  est relu normalement. `FURNACE.alloys` : Cobalt ingot et Thorium ingot + 3 Tainted gold (premières recettes à 3).
 - **Tests** ✅ `tests/furnace-trio.test.js` (8, avec une recette de test) ; furnace, graphite, iron-furnace-gold-compass, tier4,
   game-service ; `tests/anticheat/furnace.test.js` : tir aléatoire étendu à `c` ; `npm run test:anticheat` 119/119.
 - ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
