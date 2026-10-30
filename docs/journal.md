@@ -9,6 +9,19 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
+- **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
+  - **Ange** : un archange en cuirasse d'or, auréole, cheveux d'or, grandes ailes déployées et épée de lumière ;
+  - **Démon** : un seigneur démon massif, peau rouge fissurée de lave, épaulières à pointes, grandes cornes, ailes de
+    chauve-souris, hache et queue, avec un contour de braise pour bien le voir sur le fond sombre de sa tour ;
+  - **Séraphin** : un petit soldat de l'Ange (casque et cuirasse d'or, lance de lumière) au lieu d'une copie en
+    miniature de l'Ange ; **Diablotin** : même idée qu'avant, en plus lisible.
+  Les boss sont maintenant en pleine résolution, aussi nets que le Roi gobelin (avant : chaque pixel était doublé, et le
+  Démon n'était que l'Ange recoloré). Rien ne change dans le combat.
+- **Décisions** : direction « guerriers » pour les deux camps (Jules), parmi 3 propositions (guerriers, biblique, style
+  actuel amélioré).
+- **État** : 🧪 sur la branche `jules/sprites-ange-demon` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle / ancienne / enregistrée
 - **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (mines 1 à 10), « Ancienne » (mines 11 à 20) ou « Enregistrée » ; le bouton « 💾 Enregistrer » garde la compo affichée (une seule à la fois). Utile après avoir fait monter des amis plus faibles, ou été porté par plus fort.
 - **État** : ✅ en ligne le 30/10

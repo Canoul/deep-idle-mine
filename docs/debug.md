@@ -5481,3 +5481,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   « une tour et une instance… » échoue, déjà sur main.
 - Simulation (script à part, mineur de base, 5 prisons × 2 h) : area 3 : 33 runs, 0 reset ; area 5 : 26 runs, 3 resets ;
   area 6 : 20 runs, 4 resets. `npm run simulate:prison` complet trop long pour la limite de temps (> 4 min).
+
+## 30/10/2026 — Sprites des tours du Jugement en « guerriers » (Jules)
+- **Quoi** : `scripts/gen_bosses.py` (nouveau : petite toile `Img` (rect, ellipse, anneau, ligne, polygone, symétrie,
+  contour) ; `bosses()` 48 × 80, `tower_mobs()` 16 × 32). `scripts/gen_textures.py` l'importe (comme `gen_town`) ; ses
+  anciennes `bosses()` (24 × 40) et `tower_mobs()` sont retirées ; les boss s'écrivent en 48 × 80. Seuls
+  `textures/boss_angel.png`, `boss_demon.png`, `seraph.png`, `imp.png` changent à la régénération. Aucun code du jeu :
+  `src/render/tower.js` étire déjà l'image sur `TOWER.boss.w × h` cases et les mobs sur 1 × 2.
+- **Tests** ✅ `tests/tower-sprites.test.js` (nouveau, 2 : boss = 16 px par case, mobs 16 × 32 et dans `TEXTURES`) ;
+  blueprint, blocked-names, tower-boss : 27/27.
+- ⚠️ Pas vu dans une vraie tour (vérifié sur des aperçus agrandis, sur le fond de briques de chaque tour). Le Diablotin n'a
+  pas de contour : à 16 px de large, un contour d'un pixel remplissait les creux (jambes, ailes) et devenait du bruit.
