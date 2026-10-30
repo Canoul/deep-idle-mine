@@ -5246,3 +5246,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Piège vu le 29/10 : plusieurs discussions partagent le dossier du dépôt et peuvent y changer de branche ; le serveur dev
   sert les fichiers du disque. Pour un chantier qui dure, le servir depuis son propre worktree (ex. `F:\dim-prison`, data/
   recopié dedans).
+
+## 30/10/2026 — Prison d'un vrai joueur : scripts/simulate-prison-profile.js (Geoffrey, branche geoffrey/prison) 🧪
+- `node scripts/simulate-prison-profile.js --preset <codes navigateur>.json --who canoul --history history-canoul.json --runs 50`
+  : mineur construit comme le serveur (`minerSpecs`, mode prison, copie `copy:<who>`), profil = `prisonProfile` des sessions
+  importées (`importedSessions`, scripts/dev-history.js), `--runs` runs à la suite (`--chains` pour les répartir sur plusieurs
+  seeds) ; gain par heure de jeu (minerais en poids et en nombre, pods, chaque minerai, treasures, XP, énergie) comparé à sa
+  part de ses 10 dernières vraies mines (1 h de jeu chacune), et l'oreMul qui viserait 50 % (règle de trois).
+- Vérifié à blanc ✅ (preset acier sans historique ; faux historique : chemin du profil et de la référence).
+- ⚠️ Vu en passant : sans historique (area de repli 1) à oreMul 0,30, un run sur 3 est allé jusqu'à `runMax` (3 h), run moyen
+  66 min : les 80 % de minerais d'une carte d'area 1 très pauvre sont longs à atteindre. À regarder pour les nouveaux joueurs.
