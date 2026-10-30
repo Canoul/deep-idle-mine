@@ -54,12 +54,23 @@ export function tickPrison(G){
   if(G.over) return;
   tick(G);
   if(G.over){ endPrisonRun(G); return; }   // joueur parti (leaveSession)
+  if(stunLocked(G)){ log(G, `⛓ Run ${G.prison.run} : étourdi ${PRISON.stunReset} s de suite, carte neuve`); G.prison.stunReset = true; endPrisonRun(G); return; }
   if(G.prison.endTick == null){
     if(G.areas[0].oreMined >= prisonGoal(G)) callBack(G, `${Math.round(PRISON.resetAt * 100)} % des minerais`);
     else if(G.ticks >= RUN_TICKS) callBack(G, 'temps max atteint');
   }
   if(G.prison.endTick == null) return;
   if(!G.miners.length || home(G, G.miners[0]) || G.ticks >= G.prison.endTick + RETURN_TICKS) endPrisonRun(G);
+}
+
+/* étourdi trop longtemps (30/10/2026, Geoffrey ; PRISON.stunReset) : temps étourdi cumulé (G.prison.stunFor), remis à
+   zéro après PRISON.stunGap s sans étourdissement (G.prison.unstunFor) ; vrai quand il atteint stunReset */
+function stunLocked(G){
+  const m = G.miners[0], P = G.prison;
+  if(!m) return false;
+  if(m.action?.type === 'stun'){ P.stunFor = (P.stunFor || 0) + DT; P.unstunFor = 0; }
+  else if((P.unstunFor = (P.unstunFor || 0) + DT) > PRISON.stunGap + 1e-9) P.stunFor = 0;
+  return (P.stunFor || 0) >= PRISON.stunReset - 1e-9;
 }
 
 /* le mineur a fini : à la surface, rien sur lui, il a décidé de sa suite (pas en route vers son sac : m.action posée

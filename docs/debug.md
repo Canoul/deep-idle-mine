@@ -5471,3 +5471,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Ajout (30/10, Geoffrey : « la précédente = moyenne des mines 11 à 20 ») : sans palier complet enregistré, `prev` = mines 11 à 20 de l'historique (dès 11 mines), donc le bouton « Précédente » existe dès la mise en ligne. ✅ prison-steps 6/6.
 - Remplacé (30/10, Geoffrey) : plus d'échange actuelle/précédente au lancement ; compo **enregistrée** à la place. Les compos vivent dans un nouveau ns `prison_compo` (`{ cur, prev, saved }`, store.getPrisonCompo/putPrisonCompo ; plus dans l'enregistrement prison) : un joueur qui n'est jamais entré en prison peut enregistrer. `prisonCompos`, `pickCompo` (src/meta/prison-profile.js) ; service `advanceCompos` (paliers gardés à chaque lecture), `prisonSaveCompo`, `POST /api/game/prison/compo/save { compo: 'current'|'previous' }` ; start `{ compo: 'current'|'previous'|'saved' }` (409 `no_compo`). Lobby : Actuelle / Ancienne / Enregistrée / 💾 Enregistrer.
 - ✅ prison-steps 6/6, prison-server « compos » (nouveau), prison-ui, lobby. ✅ vu dans le navigateur en `npm start` (Test_Canoul) : Ancienne → Enregistrer → « Enregistrée » apparaît et est sélectionnée, texte « compo enregistrée ».
+
+## 30/10/2026 — Geoffrey — Prison : reset du run après 60 s d'étourdissement (branche geoffrey/prison-reset-stun)
+- `stunLocked(G)` (src/sim/prison.js), appelé par `tickPrison` après `tick` : `G.prison.stunFor` cumule le temps en action
+  `stun` (toutes causes), remis à 0 après `PRISON.stunGap` (5 s) sans étourdissement (`unstunFor`). À `stunReset` (60 s) :
+  log, `G.prison.stunReset = true`, `endPrisonRun` (fin immédiate comme un départ : coffre versé, sac perdu ; le serveur
+  passe au run suivant par le chemin normal). Lecture de « en cumulé d'un coup » : étourdissements enchaînés, pas le total du run.
+- Tests ✅ prison-sim (nouveau : 60 s en continu → fin ; 30 s + 10 s libre + 40 s → pas de fin) 16/16 ; prison-server : seul
+  « une tour et une instance… » échoue, déjà sur main.
+- Simulation (script à part, mineur de base, 5 prisons × 2 h) : area 3 : 33 runs, 0 reset ; area 5 : 26 runs, 3 resets ;
+  area 6 : 20 runs, 4 resets. `npm run simulate:prison` complet trop long pour la limite de temps (> 4 min).
