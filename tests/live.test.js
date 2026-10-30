@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLiveGame } from '../server/game/live-game.js';
 import { createLiveRunner, createInlineRunner } from '../server/game/live.js';
+import './helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const rec = (extra = {}) => ({ id:'S1', seed:1823878970, players:[{ account:'AAAA', name:'A' }, { account:'BBBB', name:'B' }],
   bots:0, prefs:{}, overrides:null, leaves:[], focus:[], ...extra });

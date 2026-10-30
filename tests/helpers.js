@@ -2,7 +2,10 @@
    Légende : ' ' vide · '#' pierre · 'h' pierre dure · 'd' terre · 'c' charbon · 'T' coffre au trésor · 'H' échelle (case vide) · '=' passerelle · '@' mineur (case vide)
    La ligne 0 du dessin est la surface. Les lignes plus courtes que W sont complétées en pierre.
    Sous la dernière ligne : barrière (area suivante verrouillée). */
-import { W, IDS, BRIDGE, TREASURE_BLOCK } from '../src/config.js';
+import { W, IDS, BRIDGE, TREASURE_BLOCK, ENERGY } from '../src/config.js';
+/* Énergie : les tests qui lancent des mines (service de jeu, groupes, chat…) partent d'une jauge pleine. Le jeu, lui,
+   démarre à 0 depuis le 30/10/2026 (ENERGY.start) : tests/energy.test.js, qui n'importe pas ce fichier, vérifie ce départ. */
+ENERGY.start = 100;
 import { newSession } from '../src/sim/session.js';
 
 const CH = { ' ':0, '#':IDS.stone, 'd':IDS.dirt, 'h':IDS.hardstone, 'c':IDS.coal, 'T':TREASURE_BLOCK, 'H':0, '=':BRIDGE, '@':0 };

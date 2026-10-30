@@ -11,6 +11,7 @@ import { createEnergy } from '../../src/meta/energy.js';
 import { deserialize } from '../../src/meta/inventory.js';
 import { runRecord, buildPrisonRun, sanitizePrison } from '../../src/shared/prison.js';
 import { tickPrison } from '../../src/sim/prison.js';
+import '../helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const A = { id: 'AAAA1111', name: 'Zoe' };
 const T0 = Date.UTC(2026, 9, 29, 12, 0);

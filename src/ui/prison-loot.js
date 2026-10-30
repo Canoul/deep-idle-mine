@@ -4,6 +4,7 @@
 import { icon } from './craft.js';
 import { rname } from './rarity.js';
 import { prisonTotalsLine } from './prison.js';
+import { ENERGY } from '../config.js';
 
 const $ = id => document.getElementById(id);
 const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -15,8 +16,20 @@ const itemsHtml = bag => {
                       : '<p class="mut small">Rien pour l\'instant : le butin arrive à la fin de chaque run.</p>';
 };
 
-/* contenu du panneau, pendant la prison ; live : secondes de jeu du run en cours (compteur de temps) */
-export const prisonLootHtml = (t, live = 0) => `<div class="row"><span class="mut small">${prisonTotalsLine(t, live)}</span></div>${itemsHtml(t?.bag)}`;
+/* total de toute la prison (30/10/2026, Geoffrey) : les runs versés + le run en cours (son coffre, son XP, l'énergie de
+   son temps de jeu : ils seront versés à sa fin, ou à la sortie de prison). run = { chest, xp } du run regardé. */
+export function prisonOverall(t, live = 0, run = null){
+  const bag = { ...(t?.bag || {}) };
+  for(const [k, n] of Object.entries(run?.chest || {})) if(Number.isFinite(n) && n > 0) bag[k] = (bag[k] || 0) + n;
+  const liveEnergy = Number.isFinite(live) && live > 0 ? ENERGY.prisonPerHour * live / 3600 : 0;
+  return { runs: t?.runs | 0, t: t?.t || 0, xp: (t?.xp || 0) + (Number.isFinite(run?.xp) ? run.xp : 0),
+           energy: Math.round(((t?.energy || 0) + liveEnergy) * 10) / 10, bag };
+}
+
+/* contenu du panneau, pendant la prison ; live : secondes de jeu du run en cours ; run : { chest, xp } du run en cours */
+export const prisonLootHtml = (t, live = 0, run = null) => { const o = prisonOverall(t, live, run);
+  return `<div class="row"><span class="mut small">${prisonTotalsLine(o, live)}</span></div>`+
+    `<div class="row"><span class="mut small">Tout depuis l'entrée en prison, run en cours compris</span></div>${itemsHtml(o.bag)}`; };
 
 /* fenêtre de sortie : tout ce que la prison a rapporté (onClose : à la fermeture) */
 export function showPrisonRecap(p, onClose){

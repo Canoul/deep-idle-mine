@@ -5277,3 +5277,20 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   simulate 3 × 5 : 0 bloquée.
 - **Treasures (0,24, 200 runs, 32,7 h)** : posés sur 18 % des cartes (règle 0,4 × 0,5), ouverts 2 sur 3 (le run s'arrête à
   80 % des minerais), + quelques T1 du k hole : 0,83 /h contre 3,0 /h dans ses mines (28 %).
+
+## 30/10/2026 — Prison : vue zoomée, fond et transitions, butin total, énergie de départ 0 (Geoffrey, branche geoffrey/prison) 🧪
+- **Vue** (`src/render/canvas.js`) : `prisonCols(G)` (colonnes sans barreaux de la ligne 1, gardé par partie) → `zoom = W / largeur`,
+  `ctx.setTransform` (agrandi, décalé de x0), caméra à `rows / zoom` lignes, `panPixels` à cette échelle ; transform remis à zéro
+  avant le voile du k hole. Mine : `prisonCols` null, zoom 1, rien ne change. Le fond (backdrop) dessine avec le même moteur.
+- **Fond et transitions** (`src/main.js`) : `prisonBackdrop()` (fonction déclarée : appelée par la nav avant sa ligne) → `backdrop.draw`
+  et `backdrop.switchTab` comme une session ; le Carreau est masqué quand la prison est en fond (option « Session en cours en fond
+  d'écran » du compte).
+- **Butin total** (`src/ui/prison-loot.js` `prisonOverall`) : runs versés + coffre, XP et énergie du run en cours ; titre « Butin de
+  la prison (total) ».
+- **Énergie** : `ENERGY.start` 0 (tous les comptes à 0 à la mise en ligne). Les tests qui lancent des mines partent de 100 :
+  `ENERGY.start = 100` dans `tests/helpers.js` (+ import de helpers dans instant-server, live, prison-server, anticheat
+  instance / instant / prison) ; `tests/energy.test.js` vérifie le départ à 0.
+- **Fluidité** : mesurée sur `npm run dev` (Playwright) : un envoi de vue toutes les ~290 ms, ticks réguliers (≈ 6 par envoi à ×2),
+  même glissade que la mine (`applyView` / `pace`). Pas de saccade trouvée côté données.
+- ✅ 512/513 tests du service + energy, camera, prison-ui, prison-sim (❌ dev-spec, déjà sur main). Captures vérifiées (session,
+  transition, fond).

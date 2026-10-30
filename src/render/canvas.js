@@ -43,14 +43,23 @@ export function createRenderer(cv){
 
   /* followId : id du mineur suivi par la caméra (sauf si le joueur l'a déplacée : défilement libre) */
   let curG=null, frameNow=0;   // partie et heure de l'image en cours (pour les glissades)
+  let zoom=1;                  // agrandissement de la vue (prison : ses colonnes remplissent la largeur), 1 en mine
   function draw(G, followId){
     curG=G; frameNow=performance.now();
     const fm=followedMiner(G.miners, followId), mr=maxRow(G);
     const [, fy]=drawPos(fm);
+    /* prison (30/10/2026, Geoffrey) : la carte est entre deux rangées de barreaux ; la vue est agrandie pour que ses
+       colonnes remplissent la largeur du canvas (bords de la carte = bords de l'écran, comme la mine), et la caméra
+       compte ses lignes à cette échelle */
+    const box=prisonCols(G);
+    zoom = box ? W/(box.x1-box.x0+1) : 1;
+    cam.setRows(Math.max(1, Math.ceil(rows/zoom)));
     const camY=cam.update(fy, mr+1);
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    if(box) ctx.setTransform(zoom,0,0,zoom,-box.x0*TILE*zoom,0);
     const y0=Math.floor(camY), offY=-(camY-y0)*TILE;
-    for(let y=y0;y<=y0+rows+1;y++){
+    for(let y=y0;y<=y0+Math.ceil(rows/zoom)+1;y++){
       const py=(y-y0)*TILE+offY;
       for(let x=0;x<W;x++){
         const px=x*TILE;
@@ -178,7 +187,20 @@ export function createRenderer(cv){
     for(const m of order){ const [mx,my]=pos.get(m);
       if(m.action?.data?.winch) G.winch?.lift ? blit('lift_cabin', mx*TILE+shift.get(m), sy(my)) : blit('bucket', mx*TILE+shift.get(m), sy(my)+4);   // seau du treuil, ou cabine de l'ascenseur
       drawMiner(m, mx*TILE+shift.get(m), sy(my), G.miners.length>1 && m===fm); }
+    ctx.setTransform(1,0,0,1,0,0);   // la suite (voile du k hole) en coordonnées de l'écran
     if(G.khole) drawKhole(G);
+  }
+
+  /* colonnes jouables d'une carte de prison (entre les barreaux de la ligne 1), null en mine ; gardées par partie */
+  function prisonCols(G){
+    const row=G.tiles?.[1];
+    if(!row) return null;
+    if(G._cols !== undefined && G._colsRow === row) return G._cols;
+    let x0=0, x1=W-1;
+    while(x0<W && row[x0]===PRISON.bars) x0++;
+    while(x1>=0 && row[x1]===PRISON.bars) x1--;
+    G._colsRow=row;
+    return G._cols = (x0>0 || x1<W-1) && x1>=x0 ? { x0, x1 } : null;
   }
 
   /* dans la dimension du k hole : voile violet qui respire, et le temps avant le retour dans la mine */
@@ -193,7 +215,7 @@ export function createRenderer(cv){
 
   /* défilement libre : rows lignes (négatif = vers le haut) ; pixels : distance glissée à l'écran (CSS) */
   const pan = rows => { if(curG) cam.pan(rows, maxRow(curG)+1); };
-  const panPixels = px => pan(-px / (cv.clientHeight / rows || TILE));
+  const panPixels = px => pan(-px / (cv.clientHeight / (rows/zoom) || TILE));
   /* nombre de lignes visibles : le canvas change de hauteur, la caméra le sait (la surface reste visible en haut) */
   function setRows(n){
     if(n === rows || !Number.isInteger(n) || n < 1) return;

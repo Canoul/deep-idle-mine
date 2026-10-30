@@ -283,7 +283,8 @@ nav = setupNav($('nav'), $('views'), id => {
   ui.tab = id;
   /* transition avec l'onglet Session (src/ui/backdrop.js) : la mine du fond rétrécit ou s'agrandit, les panneaux glissent */
   const sessView = document.querySelector('.view[data-view="session"]');
-  if(backdrop.switchTab(from, id, rec && G?.ready ? G : null)) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
+  /* … et la prison comme la mine (30/10/2026) */
+  if(backdrop.switchTab(from, id, rec && G?.ready ? G : prisonBackdrop())) id==='session' ? enterPanels(sessView) : leavePanels(sessView, $('views'), () => ui.tab==='session');
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
@@ -635,6 +636,9 @@ async function leave(){
    PRISON.uiPoll ms (le serveur sait ainsi que le joueur est là, et la fait tourner en direct), toutes les VIEW_EVERY ms
    quand on la regarde. Bilan d'absence : envoyé une seule fois par le serveur, montré par la réponse qui le porte. */
 const prisonShown = () => !rec && prisonActive(prison);
+/* la prison affichée en fond (et pour les transitions d'onglet), comme une session : sa copie d'affichage si elle est prête.
+   Fonction déclarée (pas une const) : l'onglet affiché au chargement l'appelle avant cette ligne */
+function prisonBackdrop(){ return !rec && prisonActive(prison) && PG?.ready ? PG : null; }
 function setEnergy(e){
   if(!e) return;
   $('navEnergy').hidden = false;
@@ -728,8 +732,9 @@ function updatePrisonUI(){
   /* butin de la prison (29/10) : ce que les runs versés ont rapporté depuis l'entrée */
   $('prisonLootCard').hidden = !on;
   if(on){
-    const live = PG?.ready && PG.run === prison.run ? (PG.ticks | 0) * DT : 0;   // temps de jeu du run en cours
-    const html = prisonLootHtml(prison.totals, live); if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
+    const cur = PG?.ready && PG.run === prison.run, live = cur ? (PG.ticks | 0) * DT : 0;   // temps de jeu du run en cours
+    const html = prisonLootHtml(prison.totals, live, cur ? { chest: PG.chest, xp: PG.stats?.xp } : null);   // total, run en cours compris (30/10)
+    if($('prisonLootBody').innerHTML !== html) $('prisonLootBody').innerHTML = html;
   }
   $('prisonBanner').hidden = !on;
   $('leaveBtn').innerHTML = pxi('door') + (on ? 'Sortir de prison' : 'Quitter la session');
@@ -890,9 +895,11 @@ function frame(now){
   const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
   ui.prison = pz && shown === PG;
   ui.prisonArea = prison?.area ?? null;   // area du contenu de la prison (titre du panneau Area)
-  backdrop.draw(rec ? shown : null, ui.tab !== 'session', acct.account?.id, ui.follow);
-  /* le Carreau : fond quand il n'y a pas de session ; promenade quand l'onglet Session n'a rien d'autre à montrer */
-  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
+  /* fond : la session en cours, ou la prison (30/10/2026 : même fond et mêmes transitions que la mine) */
+  const bgG = rec ? shown : prisonBackdrop();
+  backdrop.draw(bgG, ui.tab !== 'session', acct.account?.id, ui.follow);
+  /* le Carreau : fond quand il n'y a ni session ni prison en fond ; promenade quand l'onglet Session n'a rien d'autre à montrer */
+  town.frame(dtr, { show: !rec && !(ui.prison && ui.tab === 'session') && !(bgG && backdrop.on) && !!acct.account && !acct.offline, walk: ui.tab === 'session' && !$('noSession').hidden, tab: ui.tab }, now);
   if(shown && ui.tab==='session') ins ? inRenderer.draw(shown, acct.account?.id) : tw ? twRenderer.draw(shown, acct.account?.id) : mi ? miRenderer.draw(shown, acct.account?.id) : renderer.draw(shown, ui.follow);
   if(now - lastHud > 120){
     if(perfOn){ const t = perfText(perf.stats()); for(const el of document.querySelectorAll('.perfBox')) el.textContent = t; }

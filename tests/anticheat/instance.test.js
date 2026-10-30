@@ -8,6 +8,7 @@ import { createGameService } from '../../server/game/service.js';
 import { createInlineRunner } from '../../server/game/live.js';
 import { INSTANCE } from '../../src/config.js';
 import { countOf, createInventory, addItem, serialize, deserialize } from '../../src/meta/inventory.js';
+import '../helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
 
 const KEY = INSTANCE.list[0].key;
 const A = { id: 'AAAA1111', name: 'Zoe' }, B = { id: 'BBBB2222', name: 'Max' };

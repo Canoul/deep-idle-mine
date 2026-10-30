@@ -17,6 +17,8 @@ import { createEnergy, energyOfTicks } from '../src/meta/energy.js';
 import { createInventory, addItem, serialize, deserialize, countOf } from '../src/meta/inventory.js';
 import { runRecord, buildPrisonRun, sanitizePrison, prisonTickAt, prisonDueMs, touchPrison, isPresent, batchDue, newPrisonRecord, publicPrison, endedAway } from '../src/shared/prison.js';
 import { tickPrison, endPrisonRun } from '../src/sim/prison.js';
+import './helpers.js';   // énergie pleine au départ des tests (ENERGY.start, 30/10/2026)
+
 
 const A = { id: 'AAAA1111', name: 'Zoe' }, B = { id: 'BBBB2222', name: 'Max' };
 const P = [{ account: A.id, name: 'Zoe' }, { account: B.id, name: 'Max' }];
