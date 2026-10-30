@@ -249,6 +249,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   ailes ; Démon = seigneur démon massif, lave, hache, ailes de chauve-souris, liseré de braise ; Séraphin = petit soldat
   de l'Ange ; Diablotin = même idée qu'avant, plus lisible. Boss en **48 × 80** (pleine résolution, 16 px par case ;
   ancien : 24 × 40, pixels doublés en jeu, Démon = l'Ange recoloré).
+- **Sprite du Golbute** (30/10, Jules ; `scripts/gen_golbute.py`, branche `jules/sprite-golbute`) : style Darkest Dungeon.
+  Colosse de pierre voûté en facettes, gros contour noir, yeux de braise, cœur et éclats de cristal, fers brisés aux
+  poignets ; forme cristallisée = même silhouette en cristal taillé. 80 × 80 (ancien : rectangles plats).
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 

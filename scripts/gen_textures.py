@@ -11,6 +11,7 @@ import zlib
 
 from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
+from gen_golbute import golbute   # le Golbute de l'Instance II et sa forme cristallisée (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'textures')
@@ -1578,41 +1579,6 @@ def instance():
     for x, y in [(38, 6), (45, 7), (39, 13), (44, 12)]:
         r(kg, W, H, x, y, 1, 1, hexc('#c9c9d1'))
     return {'instance_spawner': (16, 16, sp), 'instance_cage': (16, 16, cg), 'goblin_king': (W, H, kg)}
-
-
-def golbute():
-    """Instance II (30/10) : le Golbute, énorme golem de 5 × 5 cases (80 × 80 pixels), et sa forme cristallisée. Corps
-    en blocs de pierre (fissures, épaules massives, poings au sol), yeux de braise, sueur blanche comme le golem de la
-    mine ; cristallisé : le même en cristal bleu translucide, facettes claires."""
-    S = 80
-
-    def body(st, hi, lo, dk, eye, drip):
-        px = [(0, 0, 0, 0)] * (S * S)
-
-        def r(x, y, w, h, c):
-            for yy in range(y, y + h):
-                for xx in range(x, x + w):
-                    if 0 <= xx < S and 0 <= yy < S:
-                        px[yy * S + xx] = c
-        r(24, 2, 32, 20, st); r(26, 2, 28, 4, hi); r(24, 19, 32, 3, lo)              # tête
-        r(31, 9, 6, 4, eye); r(43, 9, 6, 4, eye); r(33, 10, 2, 2, hexc('#ffe08a')); r(45, 10, 2, 2, hexc('#ffe08a'))
-        r(33, 16, 14, 2, dk)                                                          # bouche
-        r(8, 22, 64, 30, st); r(8, 22, 64, 4, hi); r(8, 48, 64, 4, lo)                # torse et épaules
-        r(38, 26, 4, 22, lo)                                                          # jointure
-        for (x, y, w, h) in [(16, 30, 6, 2), (20, 32, 2, 5), (56, 28, 2, 7), (58, 35, 5, 2), (28, 40, 8, 2)]:
-            r(x, y, w, h, dk)                                                         # fissures
-        r(0, 24, 10, 34, lo); r(70, 24, 10, 34, lo)                                   # bras
-        r(0, 58, 14, 12, st); r(66, 58, 14, 12, st); r(0, 68, 14, 2, dk); r(66, 68, 14, 2, dk)   # poings
-        r(16, 52, 18, 26, st); r(46, 52, 18, 26, st); r(16, 74, 18, 4, lo); r(46, 74, 18, 4, lo)  # jambes
-        r(34, 52, 12, 10, lo)
-        if drip:
-            for (x, y, h) in [(27, 4, 4), (36, 2, 2), (52, 5, 3), (25, 22, 10), (50, 26, 14), (65, 30, 8), (3, 30, 12), (76, 32, 10)]:
-                r(x, y, 2, h, drip)
-            r(20, 78, 40, 2, drip)
-        return px
-    stone = body(hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148'), hexc('#ff8a2a'), hexc('#f4f1e8'))
-    cryst = body(hexc('#6fc7ee'), hexc('#d6f4ff'), hexc('#3f8fb8'), hexc('#1f5a7a'), hexc('#ffffff'), None)
-    return {'golbute': (S, S, stone), 'golbute_crystal': (S, S, cryst)}
 
 
 if __name__ == '__main__':

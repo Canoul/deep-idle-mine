@@ -5519,3 +5519,21 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   vrai navigateur, sans lien avec l'Instance II.
 - 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
   victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.
+
+## 30/10/2026 — Sprite du Golbute, style Darkest Dungeon (Jules ; branche jules/sprite-golbute, sur geoffrey/instance-2-golbute)
+- **Quoi** : `scripts/gen_golbute.py` (nouveau) remplace la fonction `golbute()` de `scripts/gen_textures.py` (retirée,
+  importée depuis le nouveau fichier, comme `gen_bosses`). 80 × 80 (5 × 5 cases, 16 px par case), deux images :
+  `golbute` (pierre) et `golbute_crystal`. Le corps est une liste de parties (`PARTS`, de l'arrière vers l'avant :
+  dos, éclats, jambes, bassin, torse, bras, avant-bras, poings, fers, épaules, tête, arcade, mâchoire), chacune découpée en
+  facettes (Voronoï, `random.Random(1730)` : même image à chaque régénération), éclairées d'en haut à gauche, assombries
+  vers le sol ; bord supérieur de chaque partie éclairé ; encre entre les parties et autour de la silhouette. Détails
+  dessinés par-dessus : fissures, filons et cœur de cristal, yeux, gueule, fers et chaînes, sueur blanche (pierre seulement).
+  Le cristal reprend exactement les mêmes parties et facettes (arêtes claires, lumière autour du cœur). Aucun code du jeu :
+  `drawGolbute` (`src/render/instance.js`) étire déjà l'image sur `boss.w × boss.h` cases.
+- Seuls `textures/golbute.png` et `golbute_crystal.png` changent à la régénération (`npm run textures`, ~1 s pour le Golbute).
+- **Tests** ✅ `tests/golbute-sprite.test.js` (nouveau, 2 : 80 × 80 et dans `TEXTURES` ; même silhouette pierre / cristal,
+  pieds au sol) ; golbute, tower-sprites : 12/12.
+- ⚠️ Pas vu dans une vraie partie : vérifié sur des aperçus agrandis, posé sur `tunnel` + `dungeon_brick` comme dans l'arène.
+  Les petits golems de la Division (`textures/golem.png`, 32 × 32) n'ont pas changé.
+- ⚠️ `docs/journal.md` : sur `geoffrey/instance-2-golbute`, une fusion avec main avait mis les entrées récentes à l'intérieur
+  du bloc « Modèle d'entrée » ; remis dans l'ordre (déplacement de lignes, rien de supprimé).
