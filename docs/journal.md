@@ -50,6 +50,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Correctif : le bilan de session revenait à chaque rechargement
+- **Pour le joueur** : un bilan de session quitté sans ses boutons (autre onglet, Échap, nouvelle partie lancée depuis
+  le lobby) revenait à chaque actualisation de la page. Il est maintenant marqué vu dès qu'il s'affiche : on le voit
+  une fois, et les résultats restent dans l'onglet Historique.
+- **État** : 🧪 sur la branche `geoffrey/fix-bilan-reapparait` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Prison : énergie, vue et équilibrage
 - **Pour le joueur** : la prison recharge **4 d'énergie par heure de jeu** (8 par heure réelle), et tout le monde part de **0**.
   La vue de la prison est zoomée sur sa carte (bords comme la mine), elle a le même fond et les mêmes transitions d'onglet
