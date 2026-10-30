@@ -57,6 +57,7 @@ import { aurasOf } from '../../src/meta/aura.js';
 import { identify, upgrade, enchant, unenchant } from '../../src/meta/upgrade.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { GAME_SERVER } from '../config.js';
+import { prisonRow } from '../admin/prison-dashboard.js';
 import { treasureMessage, identifyMessage, towerOpenMessage, blueprintMessage, discoveryMessage } from '../social/discord.js';
 import { RECIPES } from '../../src/recipes.js';
 import { createLiveRunner } from './live.js';
@@ -1581,6 +1582,15 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* administration : toutes les lignes du tableau de bord (route /api/admin/stats, scripts/dashboard.js) */
     adminStats: () => store.allSessionStats(),
+    /* tableau de bord de la prison (30/10/2026) : une ligne par compte qui a une prison (server/admin/prison-dashboard.js) */
+    async adminPrisonStats(){
+      const rows = [];
+      for(const { account, value } of await store.listPrisons()){
+        const p = sanitizePrison(value);
+        rows.push(prisonRow({ account, name: p?.specs?.name, prison: p, sessions: await store.sessionsOf(account) }));   // pseudo figé à l'entrée en prison
+      }
+      return rows;
+    },
 
     async history(me){
       const list = (await store.sessionsOf(me.id)).filter(s => s.status === 'done' && s.result).slice(0, 50);
