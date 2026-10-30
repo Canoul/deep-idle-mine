@@ -2,6 +2,7 @@
    textes de la jauge d'énergie (barre du haut), du bandeau de la prison (onglet Session) et du bilan d'absence.
    Logique pure, testée (tests/prison-ui.test.js) : le serveur calcule tout, ces fonctions ne font que l'écrire. */
 import { ENERGY, PRISON, BLOCKS, IDS } from '../config.js';
+import { capOres } from '../meta/prison-profile.js';
 
 const nf = n => Math.round(n).toLocaleString('fr-FR');
 const ok = v => Number.isFinite(v);
@@ -28,7 +29,7 @@ export function prisonProfileText(p, running = false, src = null){
   const head = running ? 'Ta prison' : 'Ta prison aura';
   if(!(p.n > 0)) return `${head} : aucune mine classique dans ton historique, contenu de l'area ${p.area ?? PRISON.fallbackArea}.`;
   const parts = [`area ${p.area}`];
-  if(p.ores) parts.push('minerais ' + pctList(p.ores, k => BLOCKS[IDS[k]]?.name ?? k));
+  if(p.ores) parts.push('minerais ' + pctList(capOres(p.ores), k => BLOCKS[IDS[k]]?.name ?? k));
   if(p.treasures) parts.push('treasures ' + pctList(p.treasures, k => k.replace('Treasure ', '')));
   parts.push(p.mobs ? 'mobs ' + pctList(p.mobs, k => MOB_NAMES[k] ?? k) : "mobs de l'area");
   return `${head} (${src ?? `d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}`}) : ${parts.join(' · ')}.`;

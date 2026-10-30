@@ -5763,3 +5763,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   écran sur une page de test avec le vrai CSS ; ⚠️ pas dans le vrai jeu, ni sur téléphone.
 - ❌ Déjà en échec sur `main`, sans lien : `energyOfTicks et publicEnergy` (tests/energy.test.js:60 attend 4 par heure, `ENERGY.prisonPerHour` vaut 8) et
   `une tour et une instance lancées terminent la prison` (tests/prison-server). Non traités.
+
+## 31/10/2026 — Prison : plafond cobalt / thorium (Geoffrey)
+- **Quoi** : `PRISON.oreCap` { cobalt 0,004, thorium 0,004 } ; `capOres` (src/meta/prison-profile.js) plafonne les parts et donne le surplus aux minerais sans plafond. Appelé à la lecture dans `profileComp` (src/sim/world.js) et `prisonProfileText` (src/ui/prison.js) : les profils gardés en base ne changent pas, les compos enregistrées sont couvertes.
+- **Constat base (lecture seule, 31/10)** : profil cobalt / thorium 0,9–1,1 % pour Croustiflex, Infernatiwar, Monsta ; 0,4 % pour canoul, Sõnata, Allaiks ; 0,1 % pour Nbrick, Akake, LeTaz. Mines : 7,7–8,5 par heure pour le trio, 0,6–3,2 pour les autres. Prison ÷ mines du trio sur ces minerais : 0,23–0,48, soit dans la norme. Aucune colonne du tableau ne vaut 9 : le chiffre signalé correspond sans doute aux mines par heure, non confirmé.
+- **Tests** ✅ prison-profile +1, prison-ui, prison-dashboard (18 verts). `tests/prison-server` non relancé pour ce sujet.
+- **Simulation** ✅ profil Croustiflex, area 7, acier mineur, 5 chaînes de 4 h (95 runs avec et sans plafond, aucun à `runMax`) : cobalt 2,07 → 0,78/h, thorium 2,52 → 1,03/h, fer 76 → 81, charbon 77 → 80, or 35 → 38 ; durée d'un run 768 → 773 s.
+- ⚠️ canoul, Sõnata et Allaiks peuvent être très légèrement touchés s'ils dépassent 0,4 % de peu. Une prison en cours prend le plafond au prochain rejeu : la carte du run en cours peut changer légèrement, comme à chaque réglage de `oreMul`.
+- ⚠️ Treasures et drops de cobalt / thorium non touchés.
