@@ -5386,3 +5386,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Message `no_energy` (server/game/service.js) et `launchCostText` (src/ui/prison.js) : « recharge-la en prison ».
 - Tests ✅ lobby, dev-spec (son test d'ordre était déjà faux avant : instances, bloc géant, prison absents ; corrigé),
   prison-ui, energy-server, prison-server : 75/75.
+
+## 30/10/2026 — Geoffrey — Tableau de bord de la prison
+- `server/admin/prison-dashboard.js` (`prisonRow`, `renderPrisonDashboard`, pur), `game.adminPrisonStats()` (une ligne par compte de
+  `store.listPrisons`, pseudo = `specs.name`), route `POST /api/admin/prison-stats` (même garde que les autres routes admin),
+  `scripts/dashboard-prison.js` (comme scripts/dashboard.js). Prison = prisons terminées (historique, mode prison : `result.prison.t`,
+  sa part) + celle qui tourne ou attend (`totals`) ; mines = `lastMines` (10, 1 h de jeu chacune). % par minerai = (prison/h) ÷
+  (mines/h) ; rendement = moyenne des % des minerais que ses mines rapportent. Les mines de plus de 30 jours sont effacées par le
+  serveur : la référence suit.
+- ✅ `tests/prison-dashboard.test.js` 2/2 ; vérifié en local (serveur, route, script, page).

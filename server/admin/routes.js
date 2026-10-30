@@ -6,6 +6,7 @@
    POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
+   POST /api/admin/prison-stats {} : rendement de la prison par joueur (scripts/dashboard-prison.js).
    POST /api/admin/khole {"name":"crousti","map":2} : ouvre un k hole dans sa session en cours (scripts/force-khole.js).
    POST /api/admin/party-move {"name":"crousti","to":"canoul"} : met crousti dans le lobby de canoul (scripts/move-to-lobby.js).
    POST /api/admin/end-session {"name":"crousti"} : le sort de sa session en cours, sans butin (scripts/end-session.js).
@@ -131,6 +132,11 @@ export function adminRoutes({ accounts, game, party = null, token }){
     'POST /api/admin/stats': async ctx => {
       guard(ctx);
       return { rows: await game.adminStats() };
+    },
+    /* tableau de bord de la prison : rendement par joueur (scripts/dashboard-prison.js) */
+    'POST /api/admin/prison-stats': async ctx => {
+      guard(ctx);
+      return { rows: await game.adminPrisonStats() };
     },
     'POST /api/admin/judgment': async ctx => {
       guard(ctx);
