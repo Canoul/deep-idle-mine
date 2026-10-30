@@ -5520,6 +5520,117 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
   victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.
 
+### 30/10/2026 — Coffre du Golbute : butin et objets (branche geoffrey/instance-2-golbute)
+- `GOLBUTE.loot` (config) rempli ; `src/meta/loot.js` : le coffre du Golbute filtre learnOnce/spellOnce (ctx.spells) comme le Roi Gobelin ; un anneau sort sans qualité.
+- Objets : `STUFF` Némésis du Golbute (set blockMinePct 25), Torse de Gollex, Jambières du Golbute, Âme du Golbute (set golemOxygen 25) ; `RINGS` Anneau en pierre (add tenacity 3) ; rareté ; `UPGRADE.tiers['4.5']` ; nouvelles stats `STATS.blockMinePct`, `STATS.golemOxygen` (+ libellés), `GOLBUTE.golemOxygenRadius` 8.
+- Sim : `mineT`/`baseMineT` (src/sim/mineur.js) × (1 + blockMinePct/100) sur BLOCKS type terrain ; `killMob` golem → `golemOxygen` (src/sim/actions.js), porteurs encore là, cercle de 8.
+- Textures : pickaxe_nemesis, chest_gollex, legs_golbute, soul_golbute, ring_stone (gen_textures.py ; régénérer change aussi boss_demon et town_* : fichiers remis tels quels). Pas de skin portée (calques) pour ces pièces.
+- ✅ tests/golbute-items (4, nouveau), rarity, anneaux (9 anneaux), anticheat/instance (le coffre s'ouvre maintenant, idempotent), golbute, instance-server, goblin-king, gearscore… 136 + anticheat 118/118.
+
+## 30/10/2026 — Minotaure : Charge, Rage, variantes de l'Arène (Jules)
+- **Quoi** : `src/sim/minotaur.js` (nouveau) : `charge` (états `o.charge` windup/run, `o.chargeCd`, course case par case à
+  `speed` cases/s, arrêt sur le premier mineur `inReach` devant lui → `gore` : `stopAction` + `push` de `knock` (knockRes du
+  mineur) + `m.goredUntil` sauf `resists` ; obstacle sans toucher → `o.stunUntil = o.exposedUntil` ; `maxRun` ou pas de sol →
+  arrêt), `breakCharge` (étourdi pendant la charge), `enrage` / `rageHit` (`o.rage` sous `below`), `exposedMul`. Branché dans
+  `src/sim/mobs.js` : `updateBoss` (donjon, cases = intérieur de la salle) et une branche `isMinotaur` dans la boucle
+  générique (Arène, `mobCanEnter`) ; `strike` lit `rageHit` ; l'étourdissement d'un mob appelle `breakCharge`.
+  `actions.js landHit` : dégâts × `exposedMul` (coup et double attaque). `ai.js` + `session.js` : `m.goredUntil` traité comme
+  `quakeUntil` (stun, cause `gore`). `effects.js mobEffects` : `charge` (windup), `rage`, `exposed` (`EFFECTS.mob`). Rendu :
+  `view.js` envoie `variant`, `canvas.js` choisit la texture (`MINOTAUR.variants[].tex`) et fait trembler pendant la
+  préparation. `khole.js buildRoom` : `minoVariants` (brun, noir) et `minoHp` (1000). `DUNGEON.boss.hp` 1000 → 2500.
+  Texture `textures/minotaur_black.png` (`gen_textures.py`, minotaure refait en fonction à palette ; `minotaur.png`
+  inchangé à l'octet).
+- **Tests** ✅ `tests/minotaur.test.js` (nouveau, 8 : préparation sans coup puis encornement, ténacité, résistance au
+  recul, charge ratée + vulnérabilité, coupure par étourdissement, boss enfermé pendant les charges, rage, variantes) ;
+  `tests/khole.test.js` +1 (brun à gauche / noir à droite) et PV de l'arène ; `tests/dungeon.test.js` (2 500 PV ; test
+  « oxygène à 0 » : 12 000 ticks au lieu de 6 000, barbare seul sans stuff ≈ 8 min). Dungeon, khole, combat, mob-drops,
+  spells, golem, effects, mobs, diagnostics, wiki, view, flesh, trap, tier4 : 0 échec. Simulation 3 × 5 : identique
+  (areas 3,0, profondeur 189,8, 0 bloquée ; le donjon est en areas 4-5, non atteintes).
+- **Chiffres** (scène de test du donjon, barbare en tête, 5 seeds) : avant (1000 PV, sans effets) 3 mineurs à 15 de dégâts
+  20 s, barbare seul 53 s ; après (2500 PV) 50 s et 154 s, ~4 charges par mineur et par minute, **0 charge ratée** (l'IA
+  n'esquive pas). Arène à 3 : 108 → 112 s (carte de 120 s : juste ; à 1-2 mineurs, finie à la limite des 120 s avant
+  comme après).
+- ⚠️ Pas vu à l'écran (tremblement, icônes Charge / Vulnérable, sprite noir en jeu). Points fragiles : la charge suppose
+  un boss au sol et une course horizontale ; une proie sur une échelle juste au-dessus le fait attendre (pas de charge) ;
+  l'Arène reste serrée en temps (2 min) avec peu de mineurs.
+
+## 30/10/2026 — Minotaure : réglage au preset acier (Jules, demande de Geoffrey)
+- **Quoi** : `DUNGEON.boss.hp` 2500 → **4000** ; `MINOTAUR.charge.every` 12 → **8**, `first` 6 → **4**,
+  `MINOTAUR.rage.chargeEvery` 8 → **5**. Arène inchangée (`minoHp` 1000).
+- **Mesure** (script hors dépôt : scène du donjon de `tests/dungeon.test.js`, mineurs construits par `minerSpecs({ players:[],
+  bots, botPresets })` comme une session dev avec presets, 5 seeds) : barbare + mineur + logisticien 50-53 s, 6 charges ;
+  barbare seul 148-153 s, 18 charges ; dégâts par coup : barbare 23,6, mineur et logisticien 18,5. Balayage : 2500 / 12 s →
+  30 s et 2 charges ; 3500 → 44 s ; 5000 → 66 s ; passer de 12 à 8 s ajoute surtout des charges (+1 à 3), presque pas de
+  temps. Arène au preset : 3 → 21-23 s, barbare seul 59 s, mineur seul 98 s (carte de 120 s). Les PV ne dépendent pas de
+  l'area : « areas 6, 7, 8 » donne la même chose (donjons en areas 4 et 5).
+- **Tests** ✅ minotaur, dungeon (4 000 PV ; tests « oxygène à 0 » et « Fuir » : 15 000 ticks, barbare seul sans stuff
+  ≈ 13 min), khole, diagnostics, wiki, spells, combat, effects, view : 138/138. Simulation 3 × 5 (après fusion de main) : areas 3,0,
+  profondeur 189,8, 0 bloquée (inchangée).
+- **Mise à jour (même jour, Jules)** : `DUNGEON.boss.hp` 4000 → **2000** (« mob ++ », pas un boss). Mesure au preset acier,
+  charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
+  2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
+
+---
+
+## 30/10/2026 — Modération du chat (branche `geoffrey/moderation-chat`)
+- **Quoi** : `server/moderation/words.js` (listes STRICT : cherchées sur les lettres collées, donc même découpées et sur
+  plusieurs messages ; WORD : mot entier sur la forme espacée, pluriels s/x), `server/moderation/filter.js` (normalize :
+  minuscules, accents, leetspeak, homoglyphes cyrilliques, « ! » / « | » = i seulement entre deux lettres, avec la
+  position d'origine de chaque lettre ; findBanned, findJoined (messages précédents du salon < joinWindowMs, les
+  joinMessages derniers), mask), `server/moderation/service.js` (warn / bannedUntil / status / show / unban / forgive /
+  recent ; ns `moderation` du game store, mémoire + fichier + PostgreSQL). `server/game/chat.js` : `post` masque le
+  texte et renvoie `hits` + `original`. `game.chatPost` / `social.chatPost` : `moderation.warn` si hits, `warning` dans la
+  réponse. `server/app.js` : POST refusé (403 `banned`) pour un banni, sauf `/api/account/*` et `/api/admin/*` ; route
+  `GET /api/moderation/me`. `server/main.js` : service créé avant le jeu, `onBan` = `game.prisonStop`. Admin :
+  `POST /api/admin/moderation` (show / unban / forgive / recent), `scripts/moderation.js`. Navigateur :
+  `src/shared/moderation-text.js`, fenêtre d'avertissement (`src/ui/chat.js` onWarning), bandeau `#banBar`
+  (événement `dim:banned` sur toute erreur `banned`, et à chaque `refresh`). Config `MODERATION`.
+- **Tests** : `tests/moderation-filter.test.js` (déguisements, mots coupés, ~20 phrases normales sans faux positif),
+  `tests/moderation.test.js` (avertissement, motif, mot coupé entre deux joueurs, ban au 3e, fin du ban, retirer /
+  lever, joueur banni bloqué en HTTP), `tests/admin-moderation.test.js` ; + chat, social, town, party, game-http,
+  account-http, admin : tout vert ✅. Vérifié dans Chromium : masquage, fenêtre « Avertissement 1/3 », bandeau du ban.
+- **Points fragiles** : faux positifs connus et acceptés : un mot STRICT caché dans un mot anglais rare (« snigger »).
+  Un message masqué APRÈS coup n'existe pas : quand un mot est coupé sur deux messages, seul le nouveau est masqué (le
+  premier morceau, seul, n'est pas interdit). Un ban n'arrête pas une session déjà en cours ni un groupe déjà lancé.
+
+---
+
+## 30/10/2026 — Chat : messages de 18 h ou plus retirés (branche `geoffrey/chat-18h`)
+- **Quoi** : `CHAT.maxAgeMs` (18 h) ; `freshMessages` (`src/shared/chat.js`) ; `server/game/chat.js` : prune retire les
+  vieux messages à chaque message posté, `since` / `room` / `restore` ne renvoient, n'enregistrent et ne reprennent que
+  les récents (numéros conservés) ; `src/ui/chat.js` : filtre à l'ajout et toutes les minutes (horloge du navigateur).
+- **Tests** : `tests/chat.test.js` (nouveau test 18 h), moderation : 22/22 ✅.
+
+## 30/10/2026 — Carreau : recherche de groupe dans la ville (Jules)
+- **Quoi** : bouton de recherche de groupe dans la barre d'émotes de la promenade (à la place de l'émote `mine`, retirée de
+  `TOWN.emotes`) et à côté du bouton « Préparer une session » devant le chevalement et la place (`launchSpot`). Pas de
+  nouvelle route : la ville passe par le Lobby (`lobby.lfgView()` = `lfgState` en mode `MINE_MODES[0]` + `players` +
+  `start` ; `lobby.toggleLfg()` = `POST /api/party/lfg` ou `/lfg/cancel` via `act`, passe le lobby en mine classique si
+  la recherche démarre, renvoie le texte de `#lobbyErr`). Branché dans `src/main.js` (`setupTown(..., { lfg })`).
+- **Fichiers** : `src/ui/town.js` (`lfgButtons`, `launchSpot`, conteneur `.townDoor` à la place de `.townEnter`, message
+  d'erreur `.townLfgMsg` 5 s, `lfg` du mineur local pour son « ? » doré), `src/ui/lobby.js`, `src/main.js`,
+  `src/ui/style.css`, `src/config.js`.
+- **Mise en page** : paysage, la paire de boutons (≈ 510 px) mordait sur le chat replié au-dessus de la barre d'action
+  (fenêtre ≈ 1100 px) : `size()` la décale vers la droite si elle chevauche le chat en hauteur. Portrait : les deux
+  boutons s'empilent sous le bandeau (flex-wrap).
+- **Tests** ✅ `tests/town.test.js` +1 (textes des boutons, `launchSpot`, émote retirée), town + lobby + lfg : 60/60.
+  ✅ Vu à l'écran (mode dev, Test_Mineur, 1100 × 750 et 390 × 800) : lancer depuis le chevalement, Lobby à jour,
+  « ? » doré sur soi, timer, annuler depuis la barre.
+- ⚠️ Points fragiles : `renderLfg` relit `lobby.lfgView()` à chaque image (comparaison par JSON, DOM touché seulement si
+  ça change, soit au plus une fois par seconde pendant une recherche). Un ancien navigateur qui envoie l'émote `mine`
+  reçoit un 400 (sans effet visible : l'émote locale s'affiche quand même).
+
+## 30/10/2026 — Favicon du site (Jules)
+- **Quoi** : `scripts/gen_favicon.py` (stdlib, grille 16×16 en caractères, palette = `--acc-dk` / `--panel` de
+  `src/ui/style.css` + couleurs de `pickaxe_steel`) génère `textures/favicon-16.png`, `-32.png` et `-192.png` (agrandis
+  sans lissage). `index.html` et `wiki.html` : `<link rel="icon">` 16 et 32 + `<link rel="apple-touch-icon">` 192.
+- **Pourquoi dans `textures/`** : le serveur ne sert que la liste blanche `SERVER.publicPaths` (`server/config.js`) ;
+  `/favicon.ico` à la racine n'y est pas, les navigateurs qui le demandent d'office reçoivent toujours un 404 (sans effet).
+- **Tests** ✅ `tests/favicon.test.js` (nouveau, 2 : les icônes déclarées par chaque page existent, sont publiques, PNG à la
+  bonne taille) ; `tests/wiki.test.js` : 13/13 avec le nouveau fichier.
+- ⚠️ Pas vu dans un vrai onglet (seulement l'aperçu 192 px). Le serveur envoie `Cache-Control: no-store` : l'icône
+  change dès le rechargement, mais certains navigateurs gardent l'ancienne icône (cache des favicons) un moment.
+
 ## 30/10/2026 — Sprites du Golbute et du golem, style Darkest Dungeon (Jules ; branche jules/sprite-golbute, sur geoffrey/instance-2-golbute)
 - **Quoi** : `scripts/gen_golbute.py` (nouveau) remplace la fonction `golbute()` de `scripts/gen_textures.py` (retirée,
   importée depuis le nouveau fichier, comme `gen_bosses`). 80 × 80 (5 × 5 cases, 16 px par case), deux images :
@@ -5543,3 +5654,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   animée de `canvas.js` (x = 0,62 case) tombe maintenant sur le dos, plus sur le torse.
 - ⚠️ `docs/journal.md` : sur `geoffrey/instance-2-golbute`, une fusion avec main avait mis les entrées récentes à l'intérieur
   du bloc « Modèle d'entrée » ; remis dans l'ordre (déplacement de lignes, rien de supprimé).
+- Fusion avec main (30/10, après la mise en ligne de l'Instance II) : conflits seulement dans la doc (journal, debug) ;
+  `gen_textures.py` fusionné sans conflit. L'entrée du 27/10 « Lancer grisé », restée dans le bloc modèle du journal sur
+  main, est rangée avec les entrées du 27/10. ✅ en ligne le 30/10.

@@ -15,10 +15,15 @@
    - Place : statue du n°1 du classement GS, bannières des jauges Ange / Démon (setJudgment).
    - Chat global en promenade (29/10 soir, demande de Jules) : la boîte chatSlot en bas à gauche reçoit la carte du chat
      global du Lobby le temps de la promenade (onWalk, src/main.js), pour écrire aux gens de la ville.
+   - Recherche de groupe (30/10, demande de Jules) : bouton dans la barre d'émotes (à la place de « ⛏️ On mine ? ») et à
+     côté de « Préparer une session » devant le chevalement et la place ; c'est la recherche du Lobby (mine classique,
+     src/ui/lobby.js lfgView / toggleLfg). Le « ? » doré s'affiche aussi au-dessus de son propre mineur.
    Option « Le Carreau en fond d'écran » (Mon compte), gardée dans ce navigateur. */
 import { TOWN, SKILLS } from '../config.js';
 import { createTownRenderer, TOWN_TILE } from '../render/town.js';
 import { TOWN_WIDTH, restX, clampX, stepToward, buildingNear, townBuildings } from '../shared/town.js';
+import { queueTime } from '../shared/lfg.js';
+import { pxi } from './pxicons.js';
 
 const KEY = 'dim.bgTown';
 const load = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch(e){ return d; } };
@@ -37,6 +42,24 @@ export const enterLabel = b => b.tab === 'session' || b.tab === 'lobby' ? 'Prép
    on n'entre jamais tout seul ; devant une porte, le bouton « Entrer » fait le reste. À la souris, un clic sur un
    bâtiment y va puis entre. */
 export const tapAction = (hit, tx, touch) => hit && !touch ? { to: hit.door, enter: true } : { to: tx, enter: false };
+
+/* devant ce bâtiment, « Préparer une session » (le chevalement, la place) : on y propose aussi la recherche de groupe */
+export const launchSpot = b => !!b && (b.tab === 'session' || b.tab === 'lobby');
+
+/* boutons de recherche de groupe du Carreau. lf : lobby.lfgView() ({ show, searching, cancel, players, start }) ;
+   null : pas de bouton (groupe complet, simple membre d'un groupe, hors ligne…). time : temps de recherche (barre
+   d'émotes, à côté de l'icône) ; title : bulle d'aide de la barre ; door : texte du bouton devant le chevalement ;
+   disabled : recherche lancée par le chef, qu'on ne peut pas annuler. */
+export function lfgButtons(lf, now = Date.now()){
+  if(!lf?.show) return null;
+  if(!lf.searching){
+    const n = lf.players > 0 ? ` (${lf.players} en recherche)` : '';
+    return { on: false, disabled: false, time: '', title: `Chercher un groupe${n}`, door: `Chercher un groupe${n}` };
+  }
+  const time = queueTime(now - (lf.start ?? now));
+  return lf.cancel ? { on: true, disabled: false, time, title: `En recherche de groupe (${time}) : annuler`, door: `En recherche ${time} · Annuler` }
+                   : { on: true, disabled: true, time, title: `Recherche lancée par le chef (${time})`, door: `Recherche du chef ${time}` };
+}
 
 /* joueurs reçus du serveur → joueurs affichés : prev (Map id → affiché) gardé pour ceux qui y sont encore (ils marchent
    de leur place affichée x vers leur nouvelle place tx) ; un nouveau venu apparaît directement à sa place ; un absent
@@ -67,24 +90,34 @@ export function cardHtml(p, me = false){
 /* root : boîte du fond (#bgTown) ; ping(body) : POST /api/town ; emote(id) : POST /api/town/emote ; me() : { id, name,
    look, auras } ou null (pas connecté) ; onEnter(onglet) : ouvrir un onglet ; friend(id) / invite(id) : boutons de la
    fiche d'un joueur (promesses ; une erreur affiche son message dans la fiche) ; onWalk(on) : la promenade commence
-   (true) ou s'arrête (false) */
-export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {} }){
+   (true) ou s'arrête (false) ; lfg : { view() : lobby.lfgView(), toggle() : lancer / annuler la recherche, promesse du
+   message d'erreur ('' si tout va bien) } */
+export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {}, lfg = null }){
   const cv = document.createElement('canvas');
   root.appendChild(cv);
   const hint = document.createElement('div');
   hint.className = 'townHint';
   hint.innerHTML = '<b>Le Carreau</b><span>← → ou toucher : marcher · <kbd>E</kbd> ou bouton : entrer · toucher un joueur : sa fiche</span>'+
-    `<div class="townEmotes">${TOWN.emotes.map(e => `<button data-emote="${e.id}" title="${esc(e.name)}">${e.icon}</button>`).join('')}</div>`;
+    `<div class="townEmotes"><button class="townLfg" data-lfg hidden>${pxi('group')}<span></span></button>`+
+    `${TOWN.emotes.map(e => `<button data-emote="${e.id}" title="${esc(e.name)}">${e.icon}</button>`).join('')}</div>`+
+    '<div class="townLfgMsg"></div>';
   root.appendChild(hint);
+  const lfgBar = hint.querySelector('[data-lfg]'), lfgMsg = hint.querySelector('.townLfgMsg');
   const card = document.createElement('div');
   card.className = 'townCard'; card.hidden = true;
   root.appendChild(card);
-  /* bouton « Entrer » devant une porte (indispensable au doigt : on n'entre plus en touchant le bâtiment) */
+  /* bouton « Entrer » devant une porte (indispensable au doigt : on n'entre plus en touchant le bâtiment) ; devant le
+     chevalement et la place, « Chercher un groupe » à côté (30/10) */
+  const door = document.createElement('div');
+  door.className = 'townDoor';
   const enterBtn = document.createElement('button');
-  enterBtn.className = 'townEnter on'; enterBtn.hidden = true;
+  enterBtn.className = 'on'; enterBtn.hidden = true;
   enterBtn.onclick = () => enter(near());
-  root.appendChild(enterBtn);
-  let enterFor = null;
+  const lfgDoor = document.createElement('button');
+  lfgDoor.hidden = true;
+  door.append(enterBtn, lfgDoor);
+  root.appendChild(door);
+  let enterFor = null, lfgKey = null, lfgShown = null, lfgMsgTimer = null;
   const chatSlot = document.createElement('div');
   chatSlot.className = 'townChat';
   root.appendChild(chatSlot);
@@ -170,10 +203,34 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     myEmote = { id: b.dataset.emote, at: performance.now() };
     try { await emote(b.dataset.emote); } catch(err){ /* trop rapide : seule l'émote locale s'affiche */ }
   });
+  /* recherche de groupe : barre d'émotes ou bouton du chevalement ; une erreur s'affiche quelques secondes sous la barre */
+  async function toggleLfg(){
+    if(!lfg || !lfgShown || lfgShown.disabled) return;
+    lfgBar.disabled = lfgDoor.disabled = true;
+    const msg = await lfg.toggle().catch(err => err?.message || 'Impossible pour le moment.');
+    lfgKey = null;                                           // redessiner les boutons à l'image suivante
+    lfgMsg.textContent = msg || '';
+    clearTimeout(lfgMsgTimer);
+    if(msg) lfgMsgTimer = setTimeout(() => { lfgMsg.textContent = ''; }, 5000);
+  }
+  lfgBar.onclick = toggleLfg;
+  lfgDoor.onclick = toggleLfg;
+  function renderLfg(b){
+    const v = lfg ? lfgButtons(lfg.view()) : null, atDoor = launchSpot(b);
+    const key = JSON.stringify([v, atDoor]);
+    if(key === lfgKey) return;
+    lfgKey = key; lfgShown = v;
+    lfgBar.hidden = !v; lfgDoor.hidden = !v || !atDoor;
+    if(!v) return;
+    lfgBar.classList.toggle('on', v.on); lfgDoor.classList.toggle('on', v.on);
+    lfgBar.disabled = lfgDoor.disabled = v.disabled;
+    lfgBar.title = v.title; lfgBar.querySelector('span').textContent = v.time;
+    lfgDoor.innerHTML = pxi('group') + esc(v.door);
+  }
 
   /* clic : un joueur → sa fiche ; un bâtiment (sa façade) → y aller puis entrer ; ailleurs → y aller */
   root.addEventListener('pointerdown', e => {
-    if(!free || e.target.closest('.townHint, .townCard, .townChat, .townEnter')) return;
+    if(!free || e.target.closest('.townHint, .townCard, .townChat, .townDoor')) return;
     const b = cv.getBoundingClientRect(), s = b.height / (TOWN.rows * TOWN_TILE);
     const tx = camX + (e.clientX - b.left) / s / TOWN_TILE, ty = (e.clientY - b.top) / s / TOWN_TILE;
     const who = ty >= TOWN.ground - 1.7 && ty < TOWN.ground && [...shownPlayers()].reverse().find(p => Math.abs(p.x - tx) <= 0.5);
@@ -196,7 +253,12 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
       const s = Math.max(innerWidth / cv.width, innerHeight / cv.height);
       Object.assign(cv.style, { width: cv.width * s + 'px', height: cv.height * s + 'px',
         left: (innerWidth - cv.width * s) / 2 + 'px', top: (innerHeight - cv.height * s) / 2 + 'px' });
-      enterBtn.style.top = enterBtn.style.bottom = '';
+      door.style.top = door.style.bottom = '';
+      /* deux boutons devant le chevalement (30/10) : plus large, la paire mordait sur le chat en bas à gauche ; décalée
+         vers la droite juste assez pour passer à côté (au milieu sinon) */
+      const c = free ? chatSlot.getBoundingClientRect() : null, d = door.getBoundingClientRect();
+      const half = d.width / 2, chat = c && c.top < d.bottom && c.bottom > d.top ? c.right + 12 : 0;
+      door.style.left = Math.round(Math.min(Math.max(innerWidth / 2, chat + half), innerWidth - half - 8)) + 'px';
       return;
     }
     /* téléphone en hauteur (29/10) : la ville en largeur (TOWN.portraitCols cases), la rue posée juste au-dessus de la
@@ -206,8 +268,9 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     if(free && chatSlot.classList.contains('mini')) limit = Math.min(limit, chatSlot.getBoundingClientRect().top);
     Object.assign(cv.style, { width: innerWidth + 'px', height: cv.height * s + 'px', left: '0px',
       top: Math.round(limit - 4 - (TOWN.ground + 1) * tile) + 'px' });
-    /* bouton « Entrer » sous le bandeau d'aide, dans le ciel : il ne cache ni le mineur ni la rue */
-    enterBtn.style.top = Math.round(hint.getBoundingClientRect().bottom + 12) + 'px'; enterBtn.style.bottom = 'auto';
+    /* boutons « Entrer » (et « Chercher un groupe ») sous le bandeau d'aide, dans le ciel : ils ne cachent ni le mineur
+       ni la rue */
+    door.style.top = Math.round(hint.getBoundingClientRect().bottom + 12) + 'px'; door.style.bottom = 'auto'; door.style.left = '';
   }
   /* joueurs affichés, moi en dernier (dessiné par-dessus) */
   let walking = false;
@@ -216,7 +279,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     if(m && x !== null){
       const em = myEmote && performance.now() - myEmote.at < TOWN.emoteMs ? myEmote : null;
       list.push({ id: m.id, name: m.name, look: m.look, auras: m.auras, level: m.level, tree: m.tree, gs: m.gs, x, face, walking,
-                  say: mySay, emote: em?.id ?? null, emoteAt: em?.at, group: myGroup, me: true });
+                  say: mySay, emote: em?.id ?? null, emoteAt: em?.at, group: myGroup, lfg: !!lfgShown?.on, me: true });
     }
     return list;
   }
@@ -252,6 +315,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     cv.style.filter = free ? '' : `brightness(${TOWN.dim}) saturate(.8)`;
     const b = free ? near() : null;
     if(b !== enterFor){ enterFor = b; enterBtn.hidden = !b; if(b) enterBtn.textContent = enterLabel(b); }
+    renderLfg(b);
     r.draw({ camX, players: shownPlayers(), labels: free, near: b, statue, judgment, meX: x,
              /* « E : … » sous le nom du bâtiment, sauf au téléphone (pas de clavier : le bouton suffit) */
              hint: b && !portrait ? (b.tab === 'session' || b.tab === 'lobby' ? 'E : préparer une session' : 'E : entrer') : null }, now);

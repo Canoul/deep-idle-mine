@@ -224,3 +224,22 @@ test('liste du chat : en bas, remontée, cachée', () => {
   assert.equal(stuckToEnd({ scrollTop: 0, clientHeight: 0, scrollHeight: 0 }, true), true);        // cachée : on garde
   assert.equal(stuckToEnd({ scrollTop: 0, clientHeight: 0, scrollHeight: 0 }, false), false);
 });
+
+/* ---------- messages de 18 h ou plus (30/10/2026) ---------- */
+test('un message de 18 h ou plus disparaît : plus envoyé, plus enregistré, plus repris après un redémarrage', async () => {
+  const { freshMessages } = await import('../src/shared/chat.js');
+  let now = 10_000_000;
+  const c = createChat({ clock: () => now, ttlMs: Infinity });
+  c.post('g', 'A', 'Zoe', 'vieux message');
+  now += CHAT.maxAgeMs - 60e3;
+  c.post('g', 'B', 'Max', 'récent');
+  assert.equal(c.since('g', 0).length, 2, 'moins de 18 h : gardé');
+  now += 60e3;
+  assert.deepEqual(c.since('g', 0).map(m => m.text), ['récent'], '18 h pile : parti');
+  assert.deepEqual(c.room('g').msgs.map(m => m.text), ['récent'], 'pas enregistré non plus');
+  const saved = { next: 3, msgs: [{ id: 1, at: now - CHAT.maxAgeMs, account: 'A', name: 'Zoe', text: 'vieux' }, { id: 2, at: now - 1000, account: 'B', name: 'Max', text: 'neuf' }] };
+  const d = createChat({ clock: () => now, ttlMs: Infinity }); d.restore('g', saved);
+  assert.deepEqual(d.since('g', 0).map(m => m.text), ['neuf'], 'redémarrage : le vieux message n\'est pas repris');
+  assert.equal(d.post('g', 'C', 'Lea', 'suite').msg.id, 3, 'les numéros continuent');
+  assert.equal(freshMessages([{ at: 0 }, { at: 5 }], CHAT.maxAgeMs + 1).length, 1);
+});

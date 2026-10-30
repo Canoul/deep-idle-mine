@@ -73,7 +73,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   serveur, rien en base, rien d'économique. Option « Le Carreau en fond d'écran » (Mon compte). Pendant une session, le
   fond reste la mine (fond de Geoffrey du 28/10). Ajouts du 29/10 après-midi : fiche d'un joueur au clic (ami, inviter),
   groupes regroupés sur la place avec une marque « 2/3 », « ? » doré pour qui cherche un groupe, émotes, statue du n°1 du
-  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place.
+  classement GS (validé par Jules) et bannières des jauges Ange / Démon sur la place. **Recherche de groupe depuis la
+  ville** (30/10, Jules) : bouton dans la barre d'émotes (à la place de l'ancienne émote « ⛏️ On mine ? ») et à côté de
+  « Préparer une session » devant le chevalement / la place ; c'est la recherche du Lobby (`lobby.lfgView` / `toggleLfg`).
   **Direction artistique du Carreau** (29/10, choix de Jules) : « Crépuscule de forge », inspirée de Darkest Dungeon :
   ciel de crépuscule en dégradé, tons sombres, contour noir, lumières orange (vert pour la magie), une silhouette
   propre à chaque bâtiment (sprites de `scripts/gen_town.py`). Ancien (29/10 matin) : maisons génériques en tuiles.
@@ -222,6 +224,9 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   formé d'un coup (3 solos → chez le premier ; groupe de 2 prioritaire), « Lancer dès que plein » au choix du chef.
 - **Chat de session** (22/10, Jules) : panneau dans l'onglet Session (mine classique), joueurs de la session
   seulement, en mémoire du serveur (`server/game/chat.js`, jamais en base), effacé à la fin ; réglages `CHAT`.
+- **Modération du chat** (30/10, Geoffrey, en ligne) : mots interdits masqués (global et session,
+  même déguisés ou coupés sur plusieurs messages / joueurs), avertissement avec motif, 3 → ban 24 h (plus aucune action
+  de jeu, prison arrêtée). Liste : `server/moderation/words.js`. Outil : `scripts/moderation.js` (fiche, recent, unban, forgive).
 - **Chat global** (28/10, Jules, en ligne) : carte du **Lobby**, tous les comptes
   (invités compris), en session ou non ; un message / 3 s (`CHAT.globalGapMs`), 50 derniers gardés **en base** (ns
   `chat_global`, survit aux redémarrages) ; `server/social/service.js` (`chatPost` / `chatGet`, `/api/social/chat`), même
@@ -340,9 +345,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (vagues de 5 mobs, 3 min) ; **dans l'arène et les vagues, tout le monde se bat, même sur « Ignorer » / « Fuir »** (27/10, `allFight` ; ancien : réglage respecté, mineur planté) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour
   à la surface de la mine, mine figée entre-temps ; à 30 s de la fin de session, il se referme. Technique : échange de
   carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
-- **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
+- **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure **2 000 PV** (30/10, Jules : un « mob ++ » ; ancien : 1000), Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe
   avant ; pas la sortie du donjon) ; la structure se révèle dès le seuil ou dès qu'on combat le boss.
+- **Minotaure : Charge et Rage** (30/10/2026, Jules, demande de Geoffrey ; `MINOTAUR` en config, `src/sim/minotaur.js`) :
+  **Charge** toutes les 8 s (la première à 4 s ; ancien : 12 s) (gratte le sol 1,5 s, coupée par un étourdissement, puis fonce : le premier mineur touché est
+  projeté de 3 et étourdi 2 s ; raté contre le mur : sonné 3 s et +50 % de dégâts) ; **Rage** sous 33 % (un coup / 0,5 s,
+  recul 0,5, charge toutes les 5 s).
+  Preset acier : à 3 ≈ 22 s (ancien : 11 s) ; barbare seul ≈ 1 min 13. Variantes (`o.variant`) : donjon = les deux ; Arène du k hole (1000 PV chacun,
+  `minoHp`) = **Minotaure brun** (Charge seule) et **Minotaure noir** (Rage dès 50 %, un coup / 0,4 s, recul 0,75 ;
+  texture `minotaur_black`). L'IA des mineurs n'esquive pas la charge.
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
   un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).

@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -258,6 +258,8 @@ const STAT_HELP = {
   compassRows:'Lignes en plus que voit la boussole, au-dessus ET en dessous de la sienne.',
   torches:    'Torches qu\'il emporte. À 0, il remonte en chercher.',
   torchRadius:"Distance éclairée par les torches qu'il pose (le long des galeries creusées). Chaque torche garde le rayon de celui qui l'a posée.",
+  blockMinePct:"Némésis du Golbute : vitesse de minage en plus sur les blocs de terrain (terre, pierre, pierre dure, résidus), pas sur les minerais.",
+  golemOxygen:"Âme du Golbute : un golem qui meurt à 8 cases ou moins de toi te rend cet oxygène (sans dépasser ton maximum).",
   goblinThrall:"Couronne du Roi Gobelin : un gobelin qui apparaît à cette distance ou moins du porteur est asservi. Il ne se bat pas, mine les minerais autour de lui pendant 30 s (vitesse d'un mineur de base, même priorité que le porteur) et ce qu'il mine va directement au coffre commun, puis il disparaît.",
   torchTime:  "Temps qu'il met à poser une torche.",
   bridges:    'Passerelles pour traverser les trous (illimitées).',
@@ -318,7 +320,7 @@ export function fmt(n){
 
 /* ---------- donjon ---------- */
 export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
-  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
+  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime, charge: MINOTAUR.charge, rage: MINOTAUR.rage,
   hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });
 
 /* ---------- piège ---------- */

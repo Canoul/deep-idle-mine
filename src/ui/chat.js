@@ -2,7 +2,7 @@
    joueurs, 28/10). Les messages sont relus au serveur toutes les CHAT.poll ms, avec un champ pour écrire. Le serveur
    vérifie tout (qui écrit, texte, cadence) ; le texte reçu est toujours échappé à l'affichage, jamais interprété. */
 import { CHAT } from '../config.js';
-import { cleanChatText } from '../shared/chat.js';
+import { cleanChatText, freshMessages } from '../shared/chat.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -13,7 +13,7 @@ const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', mi
 export const stuckToEnd = (el, prev = true, slack = 8) => el.clientHeight ? el.scrollTop + el.clientHeight >= el.scrollHeight - slack : prev;
 
 /* h : { prefix (ids <prefix>Log, Input, Note, Form ; 'chat' par défaut), get(after) → { messages },
-         post(text) → { message }, meId() → ID du compte du joueur,
+         post(text) → { message, warning? }, meId() → ID du compte du joueur, onWarning(warning) : mot interdit (30/10),
          paused() → true : on ne relit pas (ex. onglet fermé ; poke() relit dès qu'il rouvre), time : heure des messages } */
 export function setupChat(h){
   const p = h.prefix ?? 'chat';
@@ -35,9 +35,12 @@ export function setupChat(h){
   function add(list){
     const fresh = list.filter(m => m.id > last);
     if(!fresh.length) return;
-    msgs = msgs.concat(fresh).slice(-CHAT.keep); last = msgs.at(-1).id;
+    last = fresh.at(-1).id;
+    msgs = freshMessages(msgs.concat(fresh), Date.now()).slice(-CHAT.keep);
     render();
   }
+  /* les messages de 18 h ou plus s'effacent aussi de l'écran, page ouverte (30/10) : vérifié chaque minute */
+  setInterval(() => { const kept = freshMessages(msgs, Date.now()); if(kept.length !== msgs.length){ msgs = kept; render(); } }, 60e3);
   async function poll(){
     clearTimeout(timer);
     if(!on || reading === gen) return;      // une seule relecture à la fois (poke pendant une relecture : rien)
@@ -56,7 +59,7 @@ export function setupChat(h){
     const text = cleanChatText(input.value);
     if(!on || busy || text === null) return;
     busy = true;
-    try { add([(await h.post(text)).message]); input.value = ''; note.textContent = ''; }
+    try { const r = await h.post(text); add([r.message]); input.value = ''; note.textContent = ''; if(r.warning) h.onWarning?.(r.warning); }
     catch(err){ note.textContent = err.message; }
     finally { busy = false; }
   };

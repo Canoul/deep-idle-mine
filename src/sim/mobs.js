@@ -15,6 +15,7 @@ import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
 import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
 import { thrallOwner, enslave } from './thrall.js';
 import { isFlesh, fleshSpot, fleshStep, fleshAura, syncFlesh } from './flesh.js';
+import { isMinotaur, enrage, rageHit, charge, breakCharge } from './minotaur.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
@@ -106,9 +107,11 @@ function updateGrab(G,o){
 }
 
 /* coup d'un mob qui tacle (MOBS.hitEvery) : il repousse sa cible de MOBS.knock[type] blocs s'il est à portée (les
-   autres mobs ont 0 de poussée : leur coup, c'est leur effet, vol ou asphyxie) */
+   autres mobs ont 0 de poussée : leur coup, c'est leur effet, vol ou asphyxie). Minotaure enragé : sa cadence et son
+   recul de rage (src/sim/minotaur.js) */
 function strike(G,o){
-  const k=MOBS.knock[o.type] || 0, m=byId(G,o.grab), every=MOBS.hitEveryBy[o.type] ?? MOBS.hitEvery;
+  const r=rageHit(o), m=byId(G,o.grab);
+  const k=r?.knock ?? (MOBS.knock[o.type] || 0), every=r?.every ?? MOBS.hitEveryBy[o.type] ?? MOBS.hitEvery;
   if(!(k>0) || !m){ o.hit=every; return; }
   o.hit=(o.hit ?? every)-DT;
   if(o.hit>1e-9 || !inReach(G,o,m)) return;
@@ -167,12 +170,16 @@ function updateFlesh(G,o){
 }
 
 /* ---- boss de donjon (minotaure) : enfermé dans sa salle, il ne vise que les mineurs qui y sont (intérieur ou entrée),
-   marche vers eux sans jamais sortir et les tacle à 1 case. Rien d'autre. */
+   marche vers eux sans jamais sortir et les tacle à 1 case. Charge et Rage (30/10/2026, src/sim/minotaur.js) : il fonce
+   à travers sa salle, sans en sortir. */
 function updateBoss(G,o){
   const d=G.dungeons.find(x=>x.id===o.dungeon);
   const inside=m => m.y>0 && d && inRoom(d,m.x,m.y);
   const prey=()=>{ const t=tauntedBy(G,o); if(t && inside(t)) return t;
     let best=null, bd=Infinity; for(const m of G.miners){ if(!inside(m)) continue; const k=manhattan(m,o); if(k<bd){ bd=k; best=m; } } return best; };
+  enrage(G,o);
+  { const p=byId(G,o.grab) ?? prey();
+    if(charge(G,o,p,(x,y)=>interior(d,x,y) && isAir(G,x,y),resists)){ o.chase=p?.id ?? null; return; } }
   if(!keepsGrab(G,o,byId(G,o.grab),inside)) grab(G,o,prey());
   strike(G,o);
   const p=byId(G,o.grab) ?? prey(); o.chase = p?.id ?? null;
@@ -187,7 +194,7 @@ function updateBoss(G,o){
 export function updateMobs(G){
   for(const o of G.mobs){
     if(o.hp<=0) continue;
-    if(o.stunUntil>G.t){ o.grab=null; continue; }   // étourdi (Dash) : il ne tacle pas, ne bouge pas, ne lance rien
+    if(o.stunUntil>G.t){ o.grab=null; breakCharge(o); continue; }   // étourdi (Dash) : il ne tacle pas, ne bouge pas, ne lance rien ; la charge d'un minotaure est coupée
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
     if(o.type==='golem'){ updateGolem(G,o); continue; }
@@ -204,6 +211,11 @@ export function updateMobs(G){
     }
     if(!isFlyer(o) && !G.ladder[o.y]?.[o.x]) o.ky=0;   // poussé vers le haut hors d'une échelle : il retombe
     if(o.type==='occultiste' && occult(G,o)){ o.grab=null; o.chase=chaseOf(G,o); continue; }
+    if(isMinotaur(o)){                                // minotaure à découvert (Arène du k hole) : Charge et Rage
+      enrage(G,o);
+      const p=byId(G,o.grab) ?? preyOf(G,o), q=p && (o.grab!=null || inChase(o,p)) ? p : null;
+      if(charge(G,o,q,mobCanEnter(G,o),resists)){ o.chase=q?.id ?? null; continue; }
+    }
     updateGrab(G,o);
     if(o.type==='gobelin') goblinSteal(G,o);
     strike(G,o);

@@ -24,8 +24,8 @@ function setup(items){
   return { inv, st: createStuff() };
 }
 
-test('8 anneaux : rares sauf Midas et Bouffon (épiques), sans recette, deux cases d\'anneau', () => {
-  assert.equal(Object.keys(RINGS.items).length, 8);
+test('9 anneaux : rares sauf Midas et Bouffon (épiques), sans recette, deux cases d\'anneau', () => {
+  assert.equal(Object.keys(RINGS.items).length, 9);   // + Anneau en pierre (Coffre du Golbute, 30/10)
   for(const [name, d] of Object.entries(RINGS.items)){
     assert.equal(ITEMS[name].cat, 'stuff'); assert.equal(ITEMS[name].slot, 'anneau');
     assert.equal(RARITY.items[name], d.rarity);

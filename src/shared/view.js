@@ -38,7 +38,7 @@ function minerView(G, m){
   };
 }
 /* channel : id du mineur sur lequel un occultiste canalise (rayon noir) ; grab : mineur taclé */
-const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop,
+const mobView = (G, o) => ({ id: o.id, type: o.type, x: o.x, y: o.y, kx: o.kx || 0, ky: o.ky || 0, hp: o.hp, maxhp: o.maxhp, h: o.h, revealed: o.revealed, ore: o.ore, name: o.name, hop: o.hop, variant: o.variant,
   channel: o.channel ? o.channel.target : null, grab: o.grab ?? null, splash: o.splash ?? null, fx: mobEffects(G, o) });   // fx : états (étourdi, provoqué…)   // splash : dégâts de zone reçus
 
 /* ---------- serveur ---------- */

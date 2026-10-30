@@ -43,11 +43,15 @@ test('une instance pas encore prête (Instance III) est refusée ; l\'Instance I
   await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.code === 'no_key');
 });
 
-test('Coffre du Golbute (30/10) : tant que son butin est vide, il ne s\'ouvre pas (ni rune, ni rien), il reste dans l\'inventaire', async () => {
+test('Coffre du Golbute (30/10) : ouvert une fois (même opId : même butin), plus de rune, le coffre est retiré', async () => {
   const { openTreasure, canOpen } = await import('../../src/meta/loot.js');
   const inv = createInventory(); addItem(inv, 'Coffre du Golbute R4', 1);
-  assert.equal(canOpen('Coffre du Golbute R4'), false);
-  assert.equal(openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random), null);
-  assert.equal(countOf(inv, 'Coffre du Golbute R4'), 1);
+  assert.equal(canOpen('Coffre du Golbute R4'), true);
+  const a = openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random, { spells: [] });
+  assert.ok(a && !a.repeated && a.loot['Mithril ingot'] >= 2);
+  const b = openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random, { spells: [] });
+  assert.ok(b.repeated); assert.deepEqual(b.loot, a.loot);
+  assert.equal(countOf(inv, 'Coffre du Golbute R4'), 0);
   assert.equal(countOf(inv, 'Rune'), 0);
+  assert.equal(countOf(inv, 'Mithril ingot'), a.loot['Mithril ingot']);
 });

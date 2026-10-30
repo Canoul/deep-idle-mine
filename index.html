@@ -4,12 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Deep Mine Idle</title>
+<link rel="icon" type="image/png" sizes="32x32" href="textures/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="textures/favicon-16.png">
+<link rel="apple-touch-icon" href="textures/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
+<!-- joueur banni (modération du chat, 30/10) : bandeau en haut de l'écran -->
+<div id="banBar" class="banBar" hidden></div>
 <!-- fond : la session en cours, assombrie (src/ui/backdrop.js, option dans « Mon compte ») -->
 <div id="bgSession" class="bgSession" hidden></div>
 <!-- fond hors session : le Carreau, la ville du spawn ; promenade depuis l'onglet Session (src/ui/town.js) -->

@@ -26,9 +26,77 @@ Modèle d'entrée :
   **Le golem** (celui des mines et les petits golems de la Division) passe au même style : une bête de pierre voûtée,
   tête en avant, yeux de braise, crocs, éclats de cristal dans le dos, toujours couverte de sueur blanche.
 - **À suivre** : à regarder dans une vraie partie (vérifié sur des aperçus, sur le sol de l'arène et dans un tunnel).
-  Le golem des mines change aussi, mais seulement quand cette branche sera mise en ligne avec l'Instance II.
-- **État** : 🧪 sur la branche `jules/sprite-golbute`, construite sur `geoffrey/instance-2-golbute` : elle ne peut être
-  mise en ligne qu'avec l'Instance II (ou après).
+  Le golem des mines change aussi.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+
+## 30/10/2026 — Geoffrey — Coffre du Golbute : son butin et 5 nouveaux objets
+- **Pour le joueur** : le Coffre du Golbute s'ouvre. Toujours des lingots de mithril, du thorium et du cobalt raffinés, des pierres glissantes ; parfois un objet du Golbute : Némésis du Golbute (pioche légendaire, 1 %), Torse de Gollex (3 %), Jambières du Golbute (3 %), Âme du Golbute (torche épique, 2 %), Anneau en pierre (2 %), un parchemin de sort, la Recette : Chitine ou une gemme.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Une icône pour le site (favicon)
+- **Pour le joueur** : l'onglet du navigateur (jeu et wiki) affiche maintenant une petite **pioche d'acier avec un éclat
+  de diamant** sur une case sombre au cadre orange, aux couleurs de l'interface. La même icône sert si on ajoute le site
+  à l'écran d'accueil d'un téléphone.
+- **À suivre** : rien ; pour retoucher le dessin, modifier la grille dans `scripts/gen_favicon.py` et le relancer.
+
+## 30/10/2026 — Jules — Chercher un groupe depuis la ville (le Carreau)
+- **Pour le joueur** : plus besoin d'aller dans le Lobby pour chercher un groupe. Dans la promenade du Carreau :
+  - dans la **barre d'émotes**, un bouton groupe remplace l'émote « ⛏️ On mine ? » ; en recherche, il s'allume et affiche
+    le temps d'attente (« 0:46 ») ; un nouveau clic annule ;
+  - **devant le chevalement** (et la place), à côté de « Préparer une session », un bouton « Chercher un groupe (2 en
+    recherche) », puis « En recherche 0:46 · Annuler ».
+  C'est exactement la recherche du Lobby (mine classique) : le Lobby se met à jour, le « ? » doré apparaît au-dessus de
+  ton mineur (et chez les autres), et le « Groupe trouvé » arrive comme d'habitude.
+- **Décisions** : les deux emplacements (choix de Jules) ; l'émote « On mine ? » disparaît (même sens que le bouton).
+  Lancer la recherche depuis la ville passe le Lobby sur la mine classique.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Chat : les messages disparaissent au bout de 18 h
+- **Pour le joueur** : le chat garde toujours ses 50 derniers messages, mais un message de **18 h ou plus disparaît**
+  tout seul : le serveur ne l'envoie plus et ne l'enregistre plus, et il s'efface de l'écran même si la page reste
+  ouverte (vérifié chaque minute). Valable pour le chat global et le chat de session. Réglage : `CHAT.maxAgeMs`.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Modération du chat : mots interdits, avertissements, ban de 24 h
+- **Pour le joueur** : dans le chat global et le chat de session, les insultes et injures (racistes, homophobes,
+  sexistes, validistes, incitation au suicide ; français et anglais) sont **remplacées par des astérisques** pour tout le
+  monde. Celui qui écrit reçoit une fenêtre **« Avertissement 1/3 : Insulte »** (le motif change selon le mot). Le filtre
+  voit à travers les déguisements : « n1gg3r », « n i g g e r », « connnnard », lettres cyrilliques, et un mot coupé sur
+  plusieurs messages, même par deux joueurs (« ni » puis « gger » : c'est celui qui complète qui est averti). Les jurons
+  d'humeur (putain, merde, fuck) ne sont pas filtrés. Au **3e avertissement : ban de 24 h**. Le joueur banni peut
+  regarder le jeu mais ne peut plus rien faire (lancer, crafter, écrire…), un bandeau rouge dit jusqu'à quand, et sa
+  prison s'arrête. Wiki à jour.
+- **Pour l'équipe** : `sudo node /opt/deep-idle-mine/scripts/moderation.js --name PSEUDO` montre chaque avertissement
+  (date, salon, motif, mots repérés, le message tel qu'il l'a écrit et tel qu'il a été publié) ; `--recent` les derniers
+  de tout le monde ; `--unban` lève un ban ; `--forgive 2` (ou `all`) retire un avertissement. La liste des mots est dans
+  `server/moderation/words.js`, facile à compléter.
+- **Décisions** (Geoffrey) : 3 avertissements → 24 h. Choix de Claude à valider : seul celui qui complète un mot coupé
+  est averti ; jurons d'humeur non filtrés ; une session déjà lancée va au bout pendant le ban ; les avertissements ne
+  s'effacent pas avec le temps (seulement par un ban, qui remet le compteur à 0, ou à la main).
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
+- **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
+  - **Charge** : toutes les 8 s, il **gratte le sol** (il tremble, icône « ! » au-dessus de lui), puis **fonce**. Le
+    premier mineur touché est **projeté de 3 cases** et **étourdi 2 s**. La **ténacité** évite l'étourdissement, la
+    **résistance au recul** (Doc Martins, faites avec son cuir !) réduit la projection. S'il rate et percute le mur, c'est
+    **lui qui est sonné 3 s** et prend **+50 % de dégâts**. Le barbare peut couper la charge en l'étourdissant (Dash).
+  - **Rage** sous 33 % de ses PV : il frappe deux fois plus vite, repousse plus fort et charge toutes les 5 s.
+  - Le minotaure du donjon passe à **2 000 PV** (avant 1 000). Mesuré avec le **preset acier** (stuff acier, arbre au
+    max, sorts), comme demandé par Geoffrey : à 3 (barbare, mineur, logisticien), il tenait **11 s** ; maintenant
+    **environ 22 s**, avec 2 charges ; un barbare seul met environ 1 min 15.
+  - **Arène du k hole** : deux minotaures différents (1 000 PV chacun, la carte dure 2 min) : le **Minotaure brun** charge,
+    le **Minotaure noir** (nouveau sprite) ne charge pas mais **enrage dès 50 %** et frappe encore plus vite.
+- **Décisions** : Charge + Rage (Jules, sur demande de Geoffrey de « rajouter des effets ») ; un brun et un noir dans
+  l'Arène ; on garde le sprite actuel (1 case) ; Geoffrey valide la projection pendant la charge et demande de régler
+  PV et recharge au preset acier : charge toutes les 8 s ; 2 000 PV (Jules : c'est un « mob ++ », pas
+  un boss ; 4 000 PV, essayés, le mettaient au niveau des boss des tours). L'Arène garde 1 000 PV (un mineur seul en acier y
+  met déjà 1 min 40 sur 2 min). Valeurs provisoires dans `MINOTAUR` (config).
+- **À suivre** : les mineurs n'esquivent pas la charge (l'IA ne change pas) : elle touche presque toujours. Si on veut
+  qu'on puisse « la voir venir et l'éviter », il faudra apprendre aux mineurs à s'écarter de sa ligne. À regarder en jeu.
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
 - **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
@@ -124,11 +192,6 @@ Modèle d'entrée :
 
 Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
 
-## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
-- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
-  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
-  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
-- **État** : ✅ en ligne le 27/10
 
 ## 30/10/2026 — Geoffrey — Instance II : le Golbute
 - **Pour le joueur** : nouvelle instance dans « Où miner » → Instances. Un golem de 5 × 5 au milieu d'une arène vide,
@@ -138,7 +201,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   Victoire : un Coffre du Golbute par joueur (son butin arrive plus tard ; en attendant il ne s'ouvre pas).
 - **Équilibrage** (simulation, provisoire) : 10 700 PV, 720 coups de cristal. Équipe de référence (1 mineur, 2 barbares,
   armure en mithril, outils en acier + 20 %) avec 25 % de ténacité : 1 victoire sur 4 ; sans ténacité : jamais.
-- **État** : 🧪 sur la branche `geoffrey/instance-2-golbute` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
 - **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
@@ -938,6 +1001,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
   recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
 - **État** : ✅ en ligne le 28/10
+
+## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
+- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
+  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
+  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :

@@ -485,26 +485,30 @@ def main():
     tex['residue_angel'] = residue(4141, hexc('#8fd8ff'), hexc('#3d5a78'), hexc('#ffffff'))
     tex['residue_demon'] = residue(6666, hexc('#ff3b3b'), hexc('#6b2228'), hexc('#ffd0a0'))
 
-    # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots
-    mino = blank()
-    fur, fur_d, skin, skin_d, horn = hexc('#6b4226'), hexc('#4a2c18'), hexc('#a8714a'), hexc('#7d4f31'), hexc('#efe3c4')
-    rect(mino, 2, 0, 2, 1, horn); rect(mino, 1, 1, 2, 2, horn)      # corne gauche
-    rect(mino, 12, 0, 2, 1, horn); rect(mino, 13, 1, 2, 2, horn)    # corne droite
-    rect(mino, 4, 1, 8, 5, fur)                                     # tête de taureau
-    rect(mino, 3, 2, 1, 2, fur_d); rect(mino, 12, 2, 1, 2, fur_d)   # oreilles
-    rect(mino, 5, 3, 1, 1, hexc('#ff3b2f')); rect(mino, 10, 3, 1, 1, hexc('#ff3b2f'))   # yeux rouges
-    rect(mino, 6, 4, 4, 2, hexc('#8a5a3a'))                         # museau
-    rect(mino, 6, 5, 1, 1, fur_d); rect(mino, 9, 5, 1, 1, fur_d)    # naseaux
-    rect(mino, 7, 6, 2, 1, hexc('#c9c9c9'))                         # anneau
-    rect(mino, 3, 6, 10, 4, skin)                                   # torse large
-    rect(mino, 4, 7, 3, 1, skin_d); rect(mino, 9, 7, 3, 1, skin_d)  # pectoraux
-    rect(mino, 7, 8, 2, 2, skin_d)                                  # abdos
-    rect(mino, 1, 6, 2, 5, skin); rect(mino, 13, 6, 2, 5, skin)     # bras
-    rect(mino, 1, 10, 2, 1, skin_d); rect(mino, 13, 10, 2, 1, skin_d)   # poings
-    rect(mino, 4, 10, 8, 2, hexc('#3b2b1e'))                        # pagne
-    rect(mino, 4, 12, 3, 3, fur); rect(mino, 9, 12, 3, 3, fur)      # pattes arrière poilues
-    rect(mino, 4, 15, 3, 1, hexc('#222222')); rect(mino, 9, 15, 3, 1, hexc('#222222'))   # sabots
-    tex['minotaur'] = mino
+    # minotaure : debout sur ses pattes arrière, torse humain musclé, tête de taureau, cornes claires, sabots.
+    # Deux pelages (30/10/2026) : brun (donjon, Minotaure brun de l'Arène) et noir (Minotaure noir de l'Arène, enragé)
+    def minotaur(fur, fur_d, skin, skin_d, horn, eye, muzzle, ring, loin):
+        fur, fur_d, skin, skin_d, horn = hexc(fur), hexc(fur_d), hexc(skin), hexc(skin_d), hexc(horn)
+        mino = blank()
+        rect(mino, 2, 0, 2, 1, horn); rect(mino, 1, 1, 2, 2, horn)      # corne gauche
+        rect(mino, 12, 0, 2, 1, horn); rect(mino, 13, 1, 2, 2, horn)    # corne droite
+        rect(mino, 4, 1, 8, 5, fur)                                     # tête de taureau
+        rect(mino, 3, 2, 1, 2, fur_d); rect(mino, 12, 2, 1, 2, fur_d)   # oreilles
+        rect(mino, 5, 3, 1, 1, hexc(eye)); rect(mino, 10, 3, 1, 1, hexc(eye))   # yeux
+        rect(mino, 6, 4, 4, 2, hexc(muzzle))                            # museau
+        rect(mino, 6, 5, 1, 1, fur_d); rect(mino, 9, 5, 1, 1, fur_d)    # naseaux
+        rect(mino, 7, 6, 2, 1, hexc(ring))                              # anneau
+        rect(mino, 3, 6, 10, 4, skin)                                   # torse large
+        rect(mino, 4, 7, 3, 1, skin_d); rect(mino, 9, 7, 3, 1, skin_d)  # pectoraux
+        rect(mino, 7, 8, 2, 2, skin_d)                                  # abdos
+        rect(mino, 1, 6, 2, 5, skin); rect(mino, 13, 6, 2, 5, skin)     # bras
+        rect(mino, 1, 10, 2, 1, skin_d); rect(mino, 13, 10, 2, 1, skin_d)   # poings
+        rect(mino, 4, 10, 8, 2, hexc(loin))                             # pagne
+        rect(mino, 4, 12, 3, 3, fur); rect(mino, 9, 12, 3, 3, fur)      # pattes arrière poilues
+        rect(mino, 4, 15, 3, 1, hexc('#222222')); rect(mino, 9, 15, 3, 1, hexc('#222222'))   # sabots
+        return mino
+    tex['minotaur'] = minotaur('#6b4226', '#4a2c18', '#a8714a', '#7d4f31', '#efe3c4', '#ff3b2f', '#8a5a3a', '#c9c9c9', '#3b2b1e')
+    tex['minotaur_black'] = minotaur('#2b2523', '#141010', '#4d4340', '#332b29', '#d9cfb8', '#ff7a1a', '#3d3431', '#d4a83a', '#5a1414')
 
     # cristal de pleine lune : cristal pâle bleu-blanc, croissant de lune argenté, halo
     cry = blank()
@@ -1352,6 +1356,38 @@ def main():
                              ('ring_cuck', '#9aa1ab', '#7bd25a'), ('ring_nerd', '#9aa1ab', '#b77bff'),
                              ('ring_midas', '#ffd23f', '#fff2a8'), ('ring_jester', '#b06bff', '#ff4fb8')]:
         tex[name] = ring(metal, gem)
+    tex['ring_stone'] = ring('#7d828c', '#4fb3c9')                       # Anneau en pierre (Golbute, 30/10) : pierre grise, cristal cyan
+
+    # ---- Coffre du Golbute (30/10/2026, Geoffrey) : pierre grise du golem, cristal cyan ----
+    st, st_hi, st_lo, cy, cy_hi = hexc('#7d828c'), hexc('#b4bac4'), hexc('#4a4e55'), hexc('#4fb3c9'), hexc('#a8e6f2')
+    nem = blank()                                                         # Némésis : pioche à tête de roche, cristal au centre
+    for i in range(10):
+        rect(nem, 3 + i, 13 - i, 2, 2, hexc('#3b2a1a'))
+    for x, y in [(3, 4), (4, 3), (5, 2), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7), (13, 8)]:
+        rect(nem, x, y, 2, 2, st)
+    rect(nem, 5, 2, 4, 1, st_hi); rect(nem, 2, 4, 2, 2, st_lo); rect(nem, 13, 9, 2, 2, st_lo)
+    rect(nem, 7, 3, 2, 2, cy); rect(nem, 7, 3, 1, 1, cy_hi)
+    tex['pickaxe_nemesis'] = nem
+    gol = blank()                                                         # Torse de Gollex : plastron massif en blocs de pierre
+    rect(gol, 2, 3, 12, 11, st); rect(gol, 2, 3, 12, 1, st_hi); rect(gol, 2, 13, 12, 1, st_lo)
+    rect(gol, 0, 3, 3, 4, st_lo); rect(gol, 13, 3, 3, 4, st_lo)            # épaulières
+    for y in (6, 9):
+        rect(gol, 3, y, 10, 1, st_lo)                                     # joints
+    rect(gol, 7, 7, 2, 2, cy); rect(gol, 7, 7, 1, 1, cy_hi)
+    tex['chest_gollex'] = gol
+    lg = blank()                                                          # Jambières du Golbute : jambes de pierre, genoux de cristal
+    rect(lg, 4, 2, 8, 3, st); rect(lg, 4, 2, 8, 1, st_hi)
+    rect(lg, 4, 5, 3, 9, st); rect(lg, 9, 5, 3, 9, st)
+    rect(lg, 4, 13, 3, 1, st_lo); rect(lg, 9, 13, 3, 1, st_lo)
+    rect(lg, 5, 8, 1, 2, cy); rect(lg, 10, 8, 1, 2, cy)
+    tex['legs_golbute'] = lg
+    soul = blank()                                                        # Âme du Golbute : cristal qui flotte dans une lueur
+    for (x, y, w, h) in [(5, 3, 6, 10), (4, 5, 8, 6), (3, 7, 10, 2)]:
+        rect(soul, x, y, w, h, hexc('#4fb3c9', 90))
+    for (x, y, w, h) in [(7, 3, 2, 10), (6, 5, 4, 6), (5, 7, 6, 2)]:
+        rect(soul, x, y, w, h, cy)
+    rect(soul, 7, 4, 1, 4, cy_hi); rect(soul, 8, 9, 1, 3, hexc('#2a7f92'))
+    tex['soul_golbute'] = soul
 
     for name, px in tex.items():
         os.makedirs(os.path.dirname(os.path.join(OUT, name + '.png')), exist_ok=True)

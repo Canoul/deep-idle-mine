@@ -53,7 +53,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 }
 
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
-export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER }){
+export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
   const limit = createLimiter(config.requestsPerHour, clock);
@@ -253,7 +253,10 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
       if(r.error === 'too_fast') fail('too_many', 429, `Doucement : un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus.`);
       await serial(() => store.putGlobalChat(chat.room(GLOBAL)));   // état le plus récent, écritures l'une après l'autre
-      return { message: r.msg };
+      /* mot interdit (30/10) : publié masqué, et un avertissement pour son auteur */
+      const warning = r.hits.length && moderation
+        ? await moderation.warn(me.id, { channel: 'global', text: r.original, masked: r.msg.text, hits: r.hits }) : null;
+      return { message: r.msg, ...(warning ? { warning } : {}) };
     },
     /* messages après le numéro after (absent ou invalide : tous ceux gardés) */
     async chatGet(me, after){

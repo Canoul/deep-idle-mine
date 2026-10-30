@@ -74,9 +74,12 @@ function openOne(inv, item, rng, ctx = {}){
   const chest = chestOf(item);
   if(chest?.side === 'goblin') return openGoblinChest(inv, chest.q, rng, ctx, chest.level);
   if(chest?.side === 'golbute'){                // Coffre du Golbute : sa table (GOLBUTE.loot) ; une pièce de stuff arrive identifiée
-    const loot = rollLoot(GOLBUTE.loot, rng);
+    /* learnOnce / spellOnce (30/10) : comme le Coffre du Roi Gobelin ; un anneau n'a pas de qualité */
+    const spells = Array.isArray(ctx?.spells) ? ctx.spells : [];
+    const learned = i => (i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv)) || (i.spellOnce && spells.includes(spellOfScroll(i.item)?.id));
+    const loot = rollLoot(GOLBUTE.loot, rng, learned);
     for(const [name, n] of Object.entries(loot)){
-      if(!isStuff(name)){ addItem(inv, name, n); continue; }
+      if(!isStuff(name) || RINGS.items[name]){ addItem(inv, name, n); continue; }
       for(const i of addItem(inv, name, n)) inv.slots[i].q = chest.q;
     }
     return loot;
