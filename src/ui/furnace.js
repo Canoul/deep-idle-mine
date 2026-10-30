@@ -113,6 +113,7 @@ export function setupFurnace({ onOp }){
   /* ---- fenêtre de choix : objet, quantité (saisie libre ou Max), ou retirer le contenu ---- */
   function openPicker(i, slot){
     const f = view()[i], cur = f[slot], mode = modeOf(f);
+    $('fpick').querySelector('.box').classList.remove('frecBox');
     const others = INPUTS.alloy.includes(slot) ? INPUTS.alloy.filter(s => s !== slot && f[s]).map(s => f[s].item) : [];   // alliage : les autres ingrédients déjà posés
     const items = [...new Set(inv.slots.filter(s => s && accepts(slot, s.item, mode, inv) && (!others.length || alloyFits([s.item, ...others]))).map(s => s.item))];   // recette fermée : seulement une fois apprise
     let pick = cur?.item ?? items[0] ?? null;
@@ -165,14 +166,14 @@ export function setupFurnace({ onOp }){
   const WHY = { not_enough:'il en manque', inventory_full:'inventaire plein' };
   function openRecipes(i){
     const f = view()[i], box = $('fpick').querySelector('.box'), speed = FURNACE.tiers[f.tier]?.speed || 1;
+    box.classList.add('frecBox');
     const rows = allRecipes().map(rec => {
       const usable = recipeUsable(rec, inv), max = usable ? recipeMax(f, inv, rec.out) : 0;
       const why = !usable ? '🔒 à apprendre' : max ? `max ${num(max)}` : WHY[recipePlan(f, inv, rec.out, 1).error] ?? '—';
       const back = max ? recipePlan(f, inv, rec.out, 1).back : [];   // ce qui reviendra dans l'inventaire (changement de recette)
       return { rec, max, back, html: `<button class="fopt frecRow" data-out="${esc(rec.out)}"${max ? '' : ' disabled'}>${icon(rec.out)}`+
-        `<span>${rname(rec.out, rec.qty > 1 ? `${rec.out} ×${rec.qty}` : rec.out)}`+
-        `<span class="fparts">${[...Object.entries(rec.in), [FUEL, rec.fuel]].map(([it, n]) => x(it, n)).join('<span class="mut">+</span>')}`+
-        `<span class="mut">· ${mmss(rec.time * 1000 / speed)}</span></span></span>`+
+        `<span><span class="frecHead">${rname(rec.out, rec.qty > 1 ? `${rec.out} ×${rec.qty}` : rec.out)}<span class="mut">${mmss(rec.time * 1000 / speed)}</span></span>`+
+        `<span class="fparts">${[...Object.entries(rec.in), [FUEL, rec.fuel]].map(([it, n], k, all) => `<span class="fpart">${x(it, n)}${k < all.length - 1 ? '<span class="mut">+</span>' : ''}</span>`).join('')}</span></span>`+
         `<b class="small">${why}</b></button>` };
     });
     let pick = rows.find(r => r.max)?.rec.out ?? null;
