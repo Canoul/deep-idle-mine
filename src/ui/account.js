@@ -1,6 +1,9 @@
 /* Comptes côté jeu : écran de connexion au lancement, bloc compte dans la barre de navigation,
    fenêtre « Mon compte » (sécuriser un invité, changer de mot de passe, se déconnecter).
    Les règles (pseudo, mot de passe) viennent de src/shared/account.js ; le serveur refait toujours les vérifications. */
+import { ADMIN_VIEW } from '../config.js';
+import { renderPrisonDashboard } from '../meta/prison-dashboard.js';
+const isTeam = a => !!a && !a.guest && ADMIN_VIEW.names.some(n => n.toLowerCase() === String(a.name ?? a.displayName ?? '').toLowerCase());
 import { ACCOUNT } from '../config.js';
 import { checkName, checkPassword, parseRecoveryCode } from '../shared/account.js';
 import { accountApi, ApiError, OfflineError } from '../net/api.js';
@@ -98,6 +101,7 @@ const VIEWS = {
          il est perdu. Sécurise-le avec un pseudo et un mot de passe pour le garder (ton ID ne change pas).</p>
       <div class="acts"><button class="main" data-go="claim">Sécuriser mon compte</button></div>` : `
       <div class="acts"><button data-go="password">Changer de mot de passe</button></div>`}
+    ${isTeam(account) ? `<div class="acts"><button data-act="prisonDash" title="Rendement de la prison de chaque joueur contre ses 10 dernières mines (compte de l'équipe)">📊 Rendement de la prison</button></div>` : ''}
     ${optionsHtml(options)}
     <div class="acts end"><button data-act="logout">Se déconnecter</button><button data-act="close">Fermer</button></div>`,
 
@@ -186,6 +190,18 @@ export function createAccountUI(root, state, handlers = {}){
       el.disabled = true;
       try { signedIn(await accountApi.guest()); }
       catch(e){ el.disabled = false; tell(e instanceof ApiError ? e.message : 'Serveur injoignable. Réessaie dans un instant.'); }
+    }
+    /* compte de l'équipe (30/10/2026) : tableau de rendement de la prison dans un nouvel onglet (ouvert tout de suite, au clic,
+       pour ne pas être bloqué ; rempli quand le serveur répond) */
+    if(name === 'prisonDash'){
+      const w = window.open('', '_blank');
+      try {
+        const r = await fetch('/api/game/admin/prison', { credentials: 'same-origin' });
+        if(!r.ok) throw new Error('refusé (' + r.status + ')');
+        const html = renderPrisonDashboard((await r.json()).rows || []);
+        if(w){ w.document.open(); w.document.write(html); w.document.close(); }
+      } catch(e){ w?.close(); tell('Tableau de bord indisponible : ' + e.message); }
+      return;
     }
     if(name === 'logout'){
       if(!await on.confirmLeave()) return;

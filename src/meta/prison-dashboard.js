@@ -4,9 +4,10 @@
    ses mines lui rapportent (chaque minerai pèse autant, aucune échelle de valeur à inventer).
    Prison = toutes ses prisons terminées (historique, mode prison) + celle qui tourne (runs déjà versés).
    Mines = ses 10 dernières mines classiques (celles du profil de la prison), 1 h de jeu chacune.
-   Logique pure (testée dans tests/prison-dashboard.test.js) ; scripts/dashboard-prison.js écrit la page. */
-import { BLOCKS, SESSION_LEN } from '../../src/config.js';
-import { lastMines } from '../../src/meta/prison-profile.js';
+   Logique pure (testée dans tests/prison-dashboard.test.js), partagée : le serveur fait les lignes, la page est écrite par
+   scripts/dashboard-prison.js ou par le jeu (compte « admin », Mon compte, ADMIN_VIEW). */
+import { BLOCKS, SESSION_LEN } from '../config.js';
+import { lastMines } from './prison-profile.js';
 
 export const ORES = Object.values(BLOCKS).filter(b => b.type === 'ore').map(b => b.name);
 const isObj = v => !!v && typeof v === 'object';

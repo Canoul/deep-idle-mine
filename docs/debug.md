@@ -5403,3 +5403,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Correctif : `state()` (server/game/service.js) ne regarde que **la dernière** session finie (non quittée) ; vue → rien.
   Les anciens non vus sont ignorés (toujours dans l'historique).
 - Test ✅ `tests/game-service.test.js` « bilans jamais vus » (rouge avant, vert après) ; game-service, level, anticheat/server : 73/73.
+- **30/10, suite** : module déplacé dans `src/meta/prison-dashboard.js` (partagé navigateur / serveur) ; route `GET /api/game/admin/prison`
+  (compte non invité dont le pseudo est dans `ADMIN_VIEW.names`, sinon 404) ; bouton dans `src/ui/account.js` (`isTeam`), onglet ouvert au clic puis
+  rempli. ✅ vérifié en local (bouton, onglet, 404 pour un autre compte) ; « admin » est un pseudo réservé à l'inscription (compte créé à part).

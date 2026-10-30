@@ -8,7 +8,7 @@
    puis ouvre le fichier dans le navigateur. --env, --url : voir scripts/admin-client.js. */
 import fs from 'node:fs';
 import { arg, adminPost } from './admin-client.js';
-import { renderPrisonDashboard } from '../server/admin/prison-dashboard.js';
+import { renderPrisonDashboard } from '../src/meta/prison-dashboard.js';
 
 const { rows } = await adminPost('/api/admin/prison-stats', {});
 const html = renderPrisonDashboard(rows);
