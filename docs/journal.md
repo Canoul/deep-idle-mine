@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Nouvel objet : l'Orbe
+- **Pour le joueur** : un **Orbe** se fabrique dans l'onglet Craft, dès le départ : 30 Tissu sombre + 30 Vésicule de gaz + 10 Pierre
+  glissante. Il n'a pas encore d'usage.
+- **À suivre** : son usage, et sa rareté (commune par défaut).
+- **État** : ✅ en ligne le 31/10
+
 ## 30/10/2026 — Geoffrey — Four : fenêtre Recettes remise en ordre
 - **Pour le joueur** : avec 3 ingrédients, la fenêtre **Recettes** du four devenait illisible (icônes séparées de leur nom, durée seule
   sur une ligne, bouton Fermer coupé). Elle est plus large, chaque ingrédient reste d'un bloc, la durée est en haut à droite.
