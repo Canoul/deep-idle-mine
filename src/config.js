@@ -296,6 +296,8 @@ export const LOOT = {
          BP, la clé se crafte de base) */
       ...['Saphir BP', 'Rubis BP', 'Jade BP'].map(item =>
         ({ family:'blueprint', tex:'blueprint', items:[ { item, chance:0.05, learnOnce:true } ] })),
+      /* Clé d'instance II (30/10/2026, Geoffrey) : son propre tirage, 10 % */
+      { family:'key', tex:'key_instance_2', items:[ { item:'Clé d\'instance II', chance:0.10, tex:'key_instance_2' } ] },
       /* 3e jet : une gemme au plus */
       { family:'gem', items:[
         { item:'Topaze', chance:0.01, tex:'gem_topaz' },        { item:'Saphir', chance:0.01, tex:'gem_sapphire_fine' },
@@ -726,6 +728,9 @@ export const EFFECTS = {
     shrine:       { kind:'session', name:'Shrine',              icon:'shrine',    color:'#c9a227' },
     /* Couronne du Roi Gobelin : buff de son porteur seul (29/10 ; avant : bonus de session) */
     crown:        { kind:'buff',    name:'Couronne du Roi Gobelin', icon:'crown', color:'#ffd23f' },
+    /* Instance II, le Golbute (30/10/2026) : stacks de l'avalanche ; à INSTANCE.golbute.avalanche.deathStacks, mort */
+    dazed:        { kind:'debuff',  name:'Sonné',               icon:'rock',      color:'#c9a27a' },
+    dead:         { kind:'control', name:'Mort',                icon:'skull',     color:'#9a9a9a' },
     escalator:    { kind:'session', name:'Escalateur',          icon:'ladder',    color:'#6fc2ff' },
   },
   session: { name:'Bonus de session', icon:'ring', color:'#ffd23f' },
@@ -750,8 +755,8 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','angel_feather','angel_feathers',
-  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','moon_crystal','key_instance_1','key_instance_2','angel_feather','angel_feathers',
+  'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
   'ingot_mithril','refined_cobalt','refined_thorium','ingot_cobalt','ingot_thorium','minotaur_leather','rotten_flesh','treasure_t4',
@@ -934,6 +939,17 @@ export const goblinChestItem = (q, level = 1) => `${GOBLIN_KING.chest.name}${GOB
 const GOBLIN_CHEST_ITEMS = Object.fromEntries(Object.keys(GOBLIN_KING.chest.levels).map(Number).flatMap(level => QUALITY_NUMS.map(q =>
   [goblinChestItem(q, level), { cat:'treasure', tex:GOBLIN_KING.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'goblin', q, level }, treasure:true }])));
 
+/* ---- Golbute (Instance II, 30/10/2026, Geoffrey) : à sa mort, chaque joueur encore là reçoit un « Coffre du Golbute »
+   R1 à R7 (même principe que le Coffre du Roi Gobelin). Son butin est à définir (loot vide) : tant qu'il l'est, le coffre
+   ne s'ouvre pas, il attend dans l'inventaire (src/meta/loot.js canOpen). */
+export const GOLBUTE = {
+  chest: { name:'Coffre du Golbute', tex:'chest_golbute' },
+  loot: { always: [], oneOf: [] },
+};
+export const golbuteChestItem = q => `${GOLBUTE.chest.name} R${q}`;
+const GOLBUTE_CHEST_ITEMS = Object.fromEntries(QUALITY_NUMS.map(q =>
+  [golbuteChestItem(q), { cat:'treasure', tex:GOLBUTE.chest.tex, w:RUNE.chestWeight, stack:false, chest:{ side:'golbute', q }, treasure:true }]));
+
 /* ancien : nom de l'objet coffre d'une tour et d'une qualité (« Coffre angélique R4 ») */
 export const chestItem = (side, q) => `${RUNE.chests[side].name} R${q}`;
 const CHEST_ITEMS = Object.fromEntries(Object.entries(RUNE.chests).flatMap(([side, c]) =>
@@ -1009,7 +1025,7 @@ export const RARITY = {
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
-    'Clé d\'instance I':'inhabituel',
+    'Clé d\'instance I':'inhabituel', 'Clé d\'instance II':'rare',
     'Plume d\'ange':'rare',
     /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
     'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
@@ -1023,6 +1039,7 @@ export const RARITY = {
     ...Object.fromEntries(['Lunettes Gucci', 'Doc Martins', 'Ceinture golémique', 'Gants de boucher'].flatMap(n => [[n, 'rare'], [`${n} BP`, 'rare']])),
     'Jambières titanesques':'epique', 'Jambières titanesques BP':'epique',
     ...Object.fromEntries(Object.keys(GOBLIN_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
+    ...Object.fromEntries(Object.keys(GOLBUTE_CHEST_ITEMS).map(n => [n, RUNE.treasureRarity])),
     ...Object.fromEntries(Object.entries(RINGS.items).map(([n, d]) => [n, d.rarity])),
   },
 };
@@ -1298,7 +1315,8 @@ export const ITEMS = {
   ...GLYPH_ITEMS,                                                                       // glyphes (GLYPHS, 25/10)
   [DUCK.heart.item]: { cat:'material',  tex:DUCK.heart.tex, w:1, stack:true },             // laissé par le Gallianix (DUCK)              // ramassée dans la mine instantanée (INSTANT_MINE)
   ...TREASURE_ITEMS,                                                                    // trésors des tours (RUNE)
-  ...GOBLIN_CHEST_ITEMS,                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
+  ...GOBLIN_CHEST_ITEMS,
+  ...GOLBUTE_CHEST_ITEMS,                                                               // coffres du Golbute (GOLBUTE, 30/10)                                                                // coffres du Roi Gobelin (GOBLIN_KING, 27/10)
   'Four en or BP':     { cat:'blueprint', tex:'blueprint', stack:true },                // coffre du Roi Gobelin
   'Clé d\'instance I BP': { cat:'blueprint', tex:'blueprint', stack:true },             // ancien (28/10) : plus de source, la recette est de base ; un exemplaire gardé se recycle
   'Recette : Chitine': { cat:'blueprint', tex:'recipe_chitin', stack:true },            // débloque Peau de gobelin → Chitine au four
@@ -1312,6 +1330,7 @@ export const ITEMS = {
   ...Object.fromEntries(Object.values(LOOT).flatMap(t => t.oneOf.flatMap(f =>
     f.items.map(i => [i.item, { cat:f.family, tex:i.tex || f.tex, stack:true }])))),
   'Clé d\'instance I': { cat:'key', tex:'key_instance_1', w:1, stack:true },            // Treasure T3 ; ouvre l'Instance I (INSTANCE)
+  'Clé d\'instance II': { cat:'key', tex:'key_instance_2', w:1, stack:true },           // Treasure T4 (10 %) ; ouvre l'Instance II, le Golbute (30/10)
   'Cristal de pleine lune': { cat:'material', tex:'moon_crystal', w:1, stack:true },   // butin du minotaure (DUNGEON.loot) et du Treasure T3 ; après LOOT pour garder son poids
   ...Object.fromEntries(Object.entries(STUFF.items).map(([n, d]) => [n, { cat:'stuff', slot:d.slot, tex:d.tex, stats:d.stats ?? {}, set:d.set ?? {}, w:0, stack:false }])),
 };
@@ -1458,6 +1477,7 @@ export const MINE_MODES = [
   /* Instances (27/10/2026, INSTANCE) : un groupe de 1 à 3, une clé chacun ; le lobby les montre sous un seul bouton
      « Instances » (src/ui/lobby.js) */
   { id:'instance_1', label:'Instance I', icon:'🗝', ready:true, instance:true },
+  { id:'instance_2', label:'Instance II', icon:'🗝', ready:true, instance:true },   // Golbute (30/10/2026), même bouton « Instances »
   /* Bloc géant (26/10/2026) : on y entre seul depuis son panneau (GIANT), jamais par un lancement de groupe */
   { id:'giant', label:'Bloc géant', icon:'🌈', ready:true, giant:true },
   /* Prison (29/10/2026, PRISON) : solo, sans fin ; lancée et arrêtée par ses propres routes (/api/game/prison/…) */
@@ -1499,8 +1519,9 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
    - fin : roi mort (réussite) ou duration s de jeu (échec). Pas de récompense, pas d'XP, pas de butin pour l'instant. */
 export const INSTANCE = {
   list: [
-    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', ready:true, chest:'goblin' },   // chest : roi vaincu → un Coffre du Roi Gobelin par joueur (27/10)
-    { id:'instance_2', label:'Instance II',  ready:false },
+    { id:'instance_1', label:'Instance I',   sub:'Le roi gobelin', key:'Clé d\'instance I', keyFrom:'Treasure T3 (20 %)', ready:true, chest:'goblin' },   // chest : roi vaincu → un Coffre du Roi Gobelin par joueur (27/10)
+    /* Instance II (30/10/2026, Geoffrey) : le Golbute, golem de 5 × 5 (INSTANCE.golbute, src/sim/instance/golbute.js) */
+    { id:'instance_2', label:'Instance II',  sub:'Le Golbute', key:'Clé d\'instance II', keyFrom:'Treasure T4 (10 %)', ready:true, chest:'golbute' },
     { id:'instance_3', label:'Instance III', ready:false },
   ],
   duration: 600,                    // 10 min de jeu (27/10, Geoffrey ; avant 30 min)
@@ -1526,6 +1547,30 @@ export const INSTANCE = {
   /* niveaux (29/10/2026, Geoffrey ; comme TOWER.levels) : choisis au lancement dans le Lobby, même clé (une par joueur).
      Chaque niveau remplace les valeurs ci-dessus qu'il donne (spawner, goblin, boss) ; chest : multiplicateurs du Coffre
      du Roi Gobelin de ce niveau (res : quantités des ressources sûres, drop : chances des objets). Valeurs provisoires. */
+  /* Instance II : le Golbute (30/10/2026, Geoffrey ; src/sim/instance/golbute.js). Arène vide w × h (sol plat), les
+     mineurs partent à gauche (spawn : colonnes), le Golbute (boss.w × boss.h, résistance au recul 100 %) au sol, au milieu.
+     - slam (autoattack) : toutes les every s (× 1 / (1 + rage.atkSpeed) une fois enragé), chaque mineur au sol à range
+       cases de lui au plus est propulsé de high cases vers le haut et back en arrière, avec chance × (1 − recul %) ×
+       (1 − ténacité %) ; la chute qui suit l'étourdit (comme une chute dans la mine : CFG.stunFall cases, CFG.stunTime s).
+     - avalanche : toutes les every s (× (1 + rage.avalancheCd) enragé), sur TOUS les mineurs vivants ; la ténacité
+       l'esquive. Touché : étourdi stun s + un stack « Sonné » (dazed s, réactualisé à chaque coup) ; à deathStacks stacks,
+       il est mort (au sol, ne fait plus rien, pas de réanimation). Tous morts = échec.
+     - split (Division) : toutes les every s, le boss disparaît et laisse count golems 1 × 1 (PV du golem de l'area
+       area, MOBS ; coups toutes les hitEvery s qui repoussent de knock, sans ébranlement) ; il revient avec ses PV quand ils
+       sont tous morts. Il ne frappe plus pendant ce temps (l'avalanche continue). Repoussée pendant un cristal.
+     - crystal : à at × ses PV max, il se cristallise : insensible aux coups, il faut le miner (hp « coups » de minage,
+       comme un spawner de l'Instance I ; Dynamite = dynamite coups) ; seule l'avalanche continue.
+     - rage : après le cristal du dernier palier (33 %).
+     Valeurs provisoires (équilibrage : scripts/simulate-golbute.js). */
+  golbute: {
+    w: 20, h: 20, spawn: [1, 2, 3],
+    boss: { name: 'Golbute', w: 5, h: 5, hp: 7600, knockRes: 100 },   // 7 600 PV : 20 victoires sur 80 pour la compo de référence avec 25 % de ténacité (30/10, simulation ; Geoffrey : « environ 10 000 »)
+    slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
+    avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
+    split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8 },
+    crystal: { at: [0.66, 0.33], hp: 600, dynamite: 20 },   // 600 coups : 42 % des 10 min à miner (cible 45 % ; 660 coups : 46 % mais 8 victoires sur 80)
+    rage: { atkSpeed: 0.5, chance: 0.65, avalancheCd: -0.25 },
+  },
   levels: {
     1: { chest: { res: 1, drop: 1 } },
     2: { spawner: { hp: 200, every: 15 },
