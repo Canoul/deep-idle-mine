@@ -7,7 +7,8 @@
           --history data/presets/history-canoul.json [--runs 50] [--seed 1] [--oremul 0.3] [--chains 1]
 
    --preset : fichier des codes navigateur (docs/debug.md, « Codes navigateur ») : { canoul: { stuff, skills, spells, progress } }
-   --history : /api/game/history du joueur ({ sessions }) · --who : la clé du joueur dans --preset
+   --history : /api/game/history du joueur ({ sessions }) ; facultatif si --preset contient une clé « history » (code
+   navigateur « prison » de docs/debug.md : un seul fichier) · --who : la clé du joueur dans --preset
    --chains : les runs sont répartis en autant de prisons (seeds seed, seed+1…) ; défaut 1 = une prison de --runs runs.
    Sans --preset : preset acier (arbre mineur) ; sans --history : pas de profil (contenu de l'area PRISON.fallbackArea).
    Cible de la spec : prison ≈ 50 % des minerais (en poids) d'une mine, par heure de jeu. */
@@ -33,7 +34,8 @@ const fmt = (v, d = 0) => (Math.round(v * 10 ** d) / 10 ** d).toLocaleString('fr
 
 /* ---- le mineur (comme le serveur : minerSpecs, mode prison) ---- */
 const presetFile = opt('preset', null);
-const snap = presetFile ? JSON.parse(readFileSync(presetFile, 'utf8'))[WHO] : null;
+const presetJson = presetFile ? JSON.parse(readFileSync(presetFile, 'utf8')) : null;
+const snap = presetJson ? presetJson[WHO] : null;
 if(presetFile && !snap) throw new Error(`« ${WHO} » absent de ${presetFile}`);
 const miner = minerSpecs(snap
   ? { mode: 'prison', players: [], bots: 1, botPresets: ['copy:' + WHO], botCopies: [snap] }
@@ -41,9 +43,11 @@ const miner = minerSpecs(snap
 if(snap && !miner.carac) throw new Error('Copie refusée par le jeu (stuff ou skills invalides)');
 
 /* ---- profil et référence : ses 10 dernières mines ---- */
+/* l'historique : --history, ou la clé « history » du fichier --preset (code navigateur du 30/10 : un seul fichier) */
 const histFile = opt('history', null);
-const sessions = histFile ? importedSessions(JSON.parse(readFileSync(histFile, 'utf8')), ACC, WHO) : [];
-const profile = histFile ? prisonProfile(sessions, ACC) : null;
+const histJson = histFile ? JSON.parse(readFileSync(histFile, 'utf8')) : presetJson?.history ?? null;
+const sessions = histJson ? importedSessions(histJson, ACC, WHO) : [];
+const profile = histJson ? prisonProfile(sessions, ACC) : null;
 const mines = lastMines(sessions, ACC);
 const ref = mines.reduce((r, m) => { add(r.bag, m.bag); r.n++; return r; }, { bag: {}, n: 0 });
 
