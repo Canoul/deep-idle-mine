@@ -23,6 +23,9 @@ test('profil : 10 dernières mines classiques où le joueur était là ; area mo
   assert.deepEqual(p.treasures, { 'Treasure T3': 1 });
   assert.deepEqual(p.mobs, { gobelin: 0.75, golem: 0.25 });
   assert.equal(prisonProfile(s.slice(12), A).n, 0);
+  assert.equal(PRISON.fallbackArea, 2);
+  assert.equal(prisonProfile([mine(1, { areas: 0 })], A).area, 2, 'une mine en area 0 : pas plus bas que le départ d\'un nouveau joueur');
+  assert.equal(prisonProfile([mine(1, { areas: 3 })], A).area, 3);
   assert.deepEqual(prisonProfile([], A), { n: 0, area: PRISON.fallbackArea, ores: null, treasures: null, mobs: null });
   assert.equal(prisonProfile([mine(22, { dev: true, bag: { Fer: 1 } })], A, true).n, 1, 'serveur de dev : les mines dev comptent');
 });

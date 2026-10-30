@@ -20,7 +20,11 @@ Modèle d'entrée :
 - **Pour le joueur** : dans Social, les listes Amis et En ligne montrent l'énergie de chacun (« ⚡ 42/100 »), en rouge s'il ne peut plus
   lancer de mine classique. Pratique pour savoir avant d'inviter. Le chiffre peut avoir jusqu'à 30 s de retard.
 - **Décisions** : visible par tout le monde dans En ligne, pas seulement par les amis ; pas dans les classements.
-- **État** : 🧪 sur la branche `geoffrey/social-energie` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
+
+## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
+- **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
+  la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
 
 ## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
 - **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
