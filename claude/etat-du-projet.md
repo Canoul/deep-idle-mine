@@ -327,9 +327,16 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (vagues de 5 mobs, 3 min) ; **dans l'arène et les vagues, tout le monde se bat, même sur « Ignorer » / « Fuir »** (27/10, `allFight` ; ancien : réglage respecté, mineur planté) ; durée prise sur l'heure ; pas d'oxygène consommé, pods sans limite, aucune remontée ; retour
   à la surface de la mine, mine figée entre-temps ; à 30 s de la fin de session, il se referme. Technique : échange de
   carte dans la même partie (`src/sim/khole.js`, listes `WORLD` et `SPOT`). GAME_DESIGN §2.
-- **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure 1000 PV, Cristal de pleine lune, le barbare entre d'abord, effroi,
+- **Donjon** (mine classique ; **areas 4 et 5, 33 % chacune**, décision du 22/10, Geoffrey ; anciens : 100 % (quelques heures le 22/10), area 5 à 20 %) : minotaure **2 000 PV** (30/10, Jules : un « mob ++ » ; ancien : 1000), Cristal de pleine lune, le barbare entre d'abord, effroi,
   option « Fuir ». Depuis le 25/10 : le rôle au donjon passe avant l'oxygène, les pods et les torches (seule la fin de session passe
   avant ; pas la sortie du donjon) ; la structure se révèle dès le seuil ou dès qu'on combat le boss.
+- **Minotaure : Charge et Rage** (30/10/2026, Jules, demande de Geoffrey ; `MINOTAUR` en config, `src/sim/minotaur.js`) :
+  **Charge** toutes les 8 s (la première à 4 s ; ancien : 12 s) (gratte le sol 1,5 s, coupée par un étourdissement, puis fonce : le premier mineur touché est
+  projeté de 3 et étourdi 2 s ; raté contre le mur : sonné 3 s et +50 % de dégâts) ; **Rage** sous 33 % (un coup / 0,5 s,
+  recul 0,5, charge toutes les 5 s).
+  Preset acier : à 3 ≈ 22 s (ancien : 11 s) ; barbare seul ≈ 1 min 13. Variantes (`o.variant`) : donjon = les deux ; Arène du k hole (1000 PV chacun,
+  `minoHp`) = **Minotaure brun** (Charge seule) et **Minotaure noir** (Rage dès 50 %, un coup / 0,4 s, recul 0,75 ;
+  texture `minotaur_black`). L'IA des mineurs n'esquive pas la charge.
 - **Ténacité** (21/10) : stat en %, chance d'ignorer un sort de mob (vol du gobelin, canalisation de l'occultiste, asphyxie du méphite),
   un tirage par sort ; vient de Force brute (Barbare, +5 % par rang). Force brute donne aussi **2 % de dégâts de zone
   par rang** depuis le 23/10 (mobs à 1 case de la cible).

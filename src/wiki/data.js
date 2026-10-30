@@ -1,7 +1,7 @@
 /* Données du wiki du joueur, tirées de la config du jeu (logique pure, sans DOM : testable dans Node).
    Le wiki affiche toujours les valeurs actuelles : rien n'est recopié à la main. */
 import { STATS, CFG, BLOCKS, IDS, AREAS, AREA_H, W, TREASURE, LOOT, RESEARCH, MOBS, XP, SKILLS, FURNACE, CRUSHER, SHINY,
-         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT } from '../config.js';
+         STUFF, ITEMS, RARITY, DUCK, mobHp, MOB_INFO as MOB_LOOK, HELP, DUNGEON, TRAP, UPGRADE, INSTANT_MINE, JUDGMENT, TOWER, RUNE, RINGS, SPELLS, COMBAT, GLYPHS, MOB_DROPS, GOBLIN_KING , WIKI, GIANT, MINOTAUR } from '../config.js';
 import { RECIPES } from '../recipes.js';
 import { rarityOf } from '../meta/rarity.js';
 import { xpForLevel } from '../meta/level.js';
@@ -316,7 +316,7 @@ export function fmt(n){
 
 /* ---------- donjon ---------- */
 export const dungeonInfo = () => ({ areas: DUNGEON.areas, chance: DUNGEON.chance, size: DUNGEON.size, boss: DUNGEON.boss,
-  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime,
+  bossXp: XP.mob[DUNGEON.boss.type] ?? 0, loot: DUNGEON.loot, scared: DUNGEON.scaredTime, charge: MINOTAUR.charge, rage: MINOTAUR.rage,
   hits: Math.ceil(DUNGEON.boss.hp / STATS.damage), fightSec: Math.round(Math.ceil(DUNGEON.boss.hp / STATS.damage) * CFG.attackInterval) });
 
 /* ---------- piège ---------- */

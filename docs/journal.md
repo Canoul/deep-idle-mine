@@ -9,6 +9,40 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
+- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
+  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
+  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
+- **État** : ✅ en ligne le 27/10
+
+## JJ/MM/AAAA — Prénom — Titre court
+- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
+- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
+- **À suivre** : ce qui reste à faire ou à vérifier.
+- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
+```
+
+## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
+- **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :
+  - **Charge** : toutes les 8 s, il **gratte le sol** (il tremble, icône « ! » au-dessus de lui), puis **fonce**. Le
+    premier mineur touché est **projeté de 3 cases** et **étourdi 2 s**. La **ténacité** évite l'étourdissement, la
+    **résistance au recul** (Doc Martins, faites avec son cuir !) réduit la projection. S'il rate et percute le mur, c'est
+    **lui qui est sonné 3 s** et prend **+50 % de dégâts**. Le barbare peut couper la charge en l'étourdissant (Dash).
+  - **Rage** sous 33 % de ses PV : il frappe deux fois plus vite, repousse plus fort et charge toutes les 5 s.
+  - Le minotaure du donjon passe à **2 000 PV** (avant 1 000). Mesuré avec le **preset acier** (stuff acier, arbre au
+    max, sorts), comme demandé par Geoffrey : à 3 (barbare, mineur, logisticien), il tenait **11 s** ; maintenant
+    **environ 22 s**, avec 2 charges ; un barbare seul met environ 1 min 15.
+  - **Arène du k hole** : deux minotaures différents (1 000 PV chacun, la carte dure 2 min) : le **Minotaure brun** charge,
+    le **Minotaure noir** (nouveau sprite) ne charge pas mais **enrage dès 50 %** et frappe encore plus vite.
+- **Décisions** : Charge + Rage (Jules, sur demande de Geoffrey de « rajouter des effets ») ; un brun et un noir dans
+  l'Arène ; on garde le sprite actuel (1 case) ; Geoffrey valide la projection pendant la charge et demande de régler
+  PV et recharge au preset acier : charge toutes les 8 s ; 2 000 PV (Jules : c'est un « mob ++ », pas
+  un boss ; 4 000 PV, essayés, le mettaient au niveau des boss des tours). L'Arène garde 1 000 PV (un mineur seul en acier y
+  met déjà 1 min 40 sur 2 min). Valeurs provisoires dans `MINOTAUR` (config).
+- **À suivre** : les mineurs n'esquivent pas la charge (l'IA ne change pas) : elle touche presque toujours. Si on veut
+  qu'on puisse « la voir venir et l'éviter », il faudra apprendre aux mineurs à s'écarter de sa ligne. À regarder en jeu.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Nouveaux sprites pour l'Ange, le Démon, le Séraphin et le Diablotin
 - **Pour le joueur** : les boss des tours du Jugement sont redessinés en « guerriers » :
   - **Ange** : un archange en cuirasse d'or, auréole, cheveux d'or, grandes ailes déployées et épée de lumière ;
@@ -103,18 +137,6 @@ Modèle d'entrée :
 
 Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10 à 20 (avant 15 à 30), tier 2 : 15 à 30 (avant 30 à 45), tier 3 : 20 à 35 (avant 45 à 60), tier 4 : 25 à 40 (avant 60 à 75).
 
-## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
-- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
-  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
-  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
-- **État** : ✅ en ligne le 27/10
-
-## JJ/MM/AAAA — Prénom — Titre court
-- **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
-- **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
-- **À suivre** : ce qui reste à faire ou à vérifier.
-- **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
-```
 
 ## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute
 - **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)

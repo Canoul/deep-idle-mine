@@ -716,6 +716,8 @@ export function decide(G,m){
   { const oc=channeler(G,m); if(oc){ m.status='Étourdi (occultiste)'; startAction(m,'stun', oc.channel.left, {hex:true, cause:'hex'}); return; } }
   // ébranlement d'un golem (src/sim/golem.js) : étourdi jusqu'à m.quakeUntil
   if(m.quakeUntil>G.t+1e-9){ m.status='Étourdi (golem)'; startAction(m,'stun', m.quakeUntil-G.t, {cause:'quake'}); return; }
+  // encorné par la charge d'un minotaure (src/sim/minotaur.js) : étourdi jusqu'à m.goredUntil
+  if(m.goredUntil>G.t+1e-9){ m.status='Étourdi (minotaure)'; startAction(m,'stun', m.goredUntil-G.t, {cause:'gore'}); return; }
   /* taclé : il ne peut rien faire d'autre que combattre ce mob (même si « combat » est sur non, même en retour) ; il peut
      bouger pour rester à portée (25/10 ; avant : immobilisé). Ses pas sont marqués (data.fight) : le tacle ne les
      interrompt pas (src/sim/session.js) */
