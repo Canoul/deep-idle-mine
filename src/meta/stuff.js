@@ -51,6 +51,13 @@ export function sanitizeGear(gear){
 export const gearOf = st => sanitizeGear(st.worn);
 
 const num = v => String(v).replace('.', ',');
+/* une valeur de stat telle qu'on l'affiche : arrondie à STUFF.statDecimals (1 décimale par défaut), virgule française,
+   sans zéro inutile (373,89 d'oxygène → 374 ; Vitesse de minage +0,206 reste +0,206) ; STUFF.statFloor : à l'inférieur,
+   comme le jeu les compte (30,9 torches → 30) */
+export const statNum = (k, v) => {
+  const p = 10 ** (STUFF.statDecimals?.[k] ?? 1), round = STUFF.statFloor?.includes(k) ? Math.floor : Math.round;
+  return num(round(v * p + 1e-9) / p);
+};
 const unitOf = k => STUFF.statUnits?.[k] ?? '';
 /* effets d'une pièce (un nom d'objet, ou une pièce avec sa qualité et son niveau), un par ligne :
    ['Oxygène +30', 'Pods +25'] ; une valeur qui remplace la base (set, ex. l'épée) : 'Dégâts 11'.
@@ -64,12 +71,12 @@ export function statLines(entry){
   const b = pieceBonus({ item: p.item, plus: p.plus }), m = plusMult(p.plus | 0);
   const label = k => STUFF.statLabels[k] ?? k;
   return [
-    ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${num(v)}${unitOf(k)}`),
-    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + num(-v) : '+' + num(v)}${unitOf(k)}`),
+    ...Object.entries(b.set).map(([k, v]) => `${label(k)} ${statNum(k, v)}${unitOf(k)}`),
+    ...Object.entries(b.stats).map(([k, v]) => `${label(k)} ${v < 0 ? '−' + statNum(k, -v) : '+' + statNum(k, v)}${unitOf(k)}`),
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
-      `${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
+      `${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
-      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${num(roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
+      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
   ];
 }
 /* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur du tier de la pièce qu'elle enchantera */

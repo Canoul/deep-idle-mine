@@ -46,9 +46,9 @@ export function updateHUD(G, ui){
   $('mStatus').textContent=m.status;
   $('mDepth').textContent=depthText(m);
   const oxMax=m.carac?.oxygenMax ?? STATS.oxygenMax, pods=m.carac?.pods ?? STATS.pods;   // avec le stuff du mineur
-  $('mO2').textContent=Math.round(m.ox)+' / '+oxMax;
+  $('mO2').textContent=Math.round(m.ox)+' / '+Math.round(oxMax);   // maximum avec les % du stuff : 373,89 → 374
   $('o2Bar').style.width=(m.ox/oxMax*100)+'%';
-  $('mPods').textContent=Math.round(m.load)+' / '+pods;
+  $('mPods').textContent=Math.round(m.load)+' / '+Math.round(pods);
   $('podBar').style.width=Math.min(100,m.load/pods*100)+'%';
   $('podBar').style.background=m.load>=pods*0.9?'var(--bad)':'var(--ok)';
   $('mTorch').textContent=m.torches+' en réserve · '+(Number.isFinite(m.bridges) ? m.bridges+' passerelles' : 'passerelles illimitées');   // Infinity arrive en null (JSON)
