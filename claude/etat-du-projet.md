@@ -235,6 +235,11 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   3 colonnes avec la mine entière au centre et une jauge de profondeur, cadres et icônes pixel (`textures/ui/`,
   `src/ui/pxicons.js`, `npm run textures:ui`). Polices : titres en Jersey 15, texte en VT323 (29/10 ; ancien :
   Jersey 10, illisible sous 20 px). Le wiki garde l'ancien style. Maquettes : branche `jules/poc-design`.
+- **Sprites des tours du Jugement** (30/10, Jules ; `scripts/gen_bosses.py`) : direction « guerriers » pour les deux camps
+  (choisie parmi guerriers / biblique / style actuel amélioré). Ange = archange en cuirasse d'or, épée de lumière, grandes
+  ailes ; Démon = seigneur démon massif, lave, hache, ailes de chauve-souris, liseré de braise ; Séraphin = petit soldat
+  de l'Ange ; Diablotin = même idée qu'avant, plus lisible. Boss en **48 × 80** (pleine résolution, 16 px par case ;
+  ancien : 24 × 40, pixels doublés en jeu, Démon = l'Ange recoloré).
 - **Fenêtres de validation** (28/10, Geoffrey) : plus aucun `confirm` / `alert` / `prompt` du navigateur ; tout passe
   par `src/ui/dialog.js` (`ask`, `tell`, `askText`, promesses ; `#dialog` au-dessus de tout). Nouveau code : les utiliser.
 
