@@ -5719,3 +5719,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `scripts/gen_textures.py`. Sans usage.
 - **Tests** ✅ craft +1, boot-check, wiki, rarity, inventory.
 
+## 30/10/2026 — Four : fenêtre Recettes (Geoffrey)
+- **Quoi** : `src/ui/furnace.js` : `.fpart` (icône + nom + « + », insécable), `.frecHead` (nom et durée), classe `.frecBox` posée par
+  `openRecipes`, retirée par `openPicker` (même `.box`). `style.css` : `.frecs{max-height:45vh}` remplacé (liste flexible, box en colonne).
+- **Vérifié** ✅ Chrome sans écran, page de test avec le vrai `setupFurnace` et le vrai CSS : 1280 × 900 et 500 × 900. Pas sur un vrai
+  téléphone. Tests : furnace-trio +1, furnace.
+
