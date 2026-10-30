@@ -90,7 +90,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 ## 30/10/2026 — Geoffrey — Focus minerai retiré du jeu (gardé dans le code)
 - **Pour le joueur** : le panneau « Focus minerai » n'apparaît plus pendant la session ; le Focus area reste. L'option
   est gardée : un réglage (`FOCUS.ores` dans la config) la remet.
-- **État** : 🧪 sur la branche `geoffrey/retirer-focus-minerai` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Correctif (suite) : les anciens bilans de session ne reviennent plus un par un
 - **Pour le joueur** : les bilans quittés sans bouton avant le premier correctif s'étaient accumulés (jusqu'à 30 jours) ;
