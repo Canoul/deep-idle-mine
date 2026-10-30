@@ -52,7 +52,7 @@ const mines = lastMines(sessions, ACC);
 const ref = mines.reduce((r, m) => { add(r.bag, m.bag); r.n++; return r; }, { bag: {}, n: 0 });
 
 /* ---- prison : RUNS runs ---- */
-const tot = { bag: {}, t: 0, xp: 0, runs: 0, capped: 0 };
+const tot = { bag: {}, t: 0, xp: 0, runs: 0, capped: 0 }, ok = { bag: {}, t: 0 }, stuck = [];
 const perChain = Math.ceil(RUNS / CHAINS);
 for(let c = 0; c < CHAINS && tot.runs < RUNS; c++){
   for(let run = 1; run <= perChain && tot.runs < RUNS; run++){
@@ -60,7 +60,8 @@ for(let c = 0; c < CHAINS && tot.runs < RUNS; c++){
     while(!G.over) tickPrison(G);
     const s = G.summary, share = s.shares[0];
     add(tot.bag, share.bag); tot.t += s.t; tot.xp += share.xp || 0; tot.runs++;
-    if(s.t >= PRISON.runMax - 1) tot.capped++;
+    if(s.t >= PRISON.runMax - 1){ tot.capped++; stuck.push({ chain: c, run, seed: SEED0 + c, mined: G.areas[0].oreMined, goal: Math.ceil(PRISON.resetAt * G.areas[0].oreTotal), y: G.miners[0]?.y, status: G.miners[0]?.status }); }
+    else { add(ok.bag, share.bag); ok.t += s.t; }
     if(args.includes('--verbose')) console.log(`  run ${run} : ${Math.round(s.t / 60)} min, ${fmt(weigh(share.bag, ORES))} de minerais (poids)`);
   }
 }
@@ -79,4 +80,9 @@ row('Tout le butin (pods)', weigh(tot.bag) / h, weigh(ref.bag) / refH);
 for(const k of [...ORES].filter(k => tot.bag[k] || ref.bag[k])) row('  ' + k, (tot.bag[k] || 0) / h, (ref.bag[k] || 0) / refH, 1);
 for(const k of Object.keys({ ...tot.bag, ...ref.bag }).filter(k => /^Treasure T/.test(k)).sort()) row('  ' + k, (tot.bag[k] || 0) / h, (ref.bag[k] || 0) / refH, 2);
 console.log(`XP ${fmt(tot.xp / h)} /h · énergie ${ENERGY.prisonPerHour}/h de jeu (${fmt(ENERGY.prisonPerHour * h)} pour ces ${fmt(h, 1)} h)`);
+if(stuck.length){
+  console.log(`\n⚠ Runs arrêtés à runMax (${PRISON.runMax / 3600} h) : ${stuck.length} sur ${tot.runs}, ${Math.round(100 * stuck.length * PRISON.runMax / tot.t)} % du temps de jeu`);
+  for(const r of stuck) console.log(`   prison ${r.seed} run ${r.run} : ${r.mined}/${r.goal} minerais au bout de 3 h, mineur en y ${r.y} (« ${r.status} »)`);
+  if(ok.t > 0 && ref.n) console.log(`   Sans ces runs : ${fmt(weigh(ok.bag, ORES) / (ok.t / 3600))} minerais (poids) /h, soit ${Math.round(100 * weigh(ok.bag, ORES) / (ok.t / 3600) / (weigh(ref.bag, ORES) / refH))} % de ses mines`);
+}
 if(ref.n) console.log(`\nCible : 50 % des minerais (poids). oreMul pour l'atteindre ≈ ${fmt(PRISON.oreMul * 0.5 / (weigh(tot.bag, ORES) / h / (weigh(ref.bag, ORES) / refH)), 2)} (règle de trois : approximatif, à revérifier par une simulation)`);

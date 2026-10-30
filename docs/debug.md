@@ -5256,3 +5256,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Vérifié à blanc ✅ (preset acier sans historique ; faux historique : chemin du profil et de la référence).
 - ⚠️ Vu en passant : sans historique (area de repli 1) à oreMul 0,30, un run sur 3 est allé jusqu'à `runMax` (3 h), run moyen
   66 min : les 80 % de minerais d'une carte d'area 1 très pauvre sont longs à atteindre. À regarder pour les nouveaux joueurs.
+- **Mesure sur le vrai profil de canoul (30/10)** : fichiers de ses codes navigateur (stuff, historique ; 10 dernières
+  mines : area 7, 1 986 minerais en poids et 738 en nombre par heure ; XP 1 953 par mine). 50 runs répartis sur 5 prisons
+  (`--chains 5`), runs bloqués à `runMax` mis à part : **oreMul 0,30 → 55 %**, **0,26 → 49 %**, **0,22 → 42 %** (poids et
+  nombre de minerais identiques à 1 point près). Runs de 10 à 14 min. Tout le butin (pods, pierre dure surtout) : 113 à 116 %.
+  XP : 1 419 par heure de jeu, **73 %** de ses mines (pas divisée comme les minerais). Cobalt et thorium : 0 en prison
+  alors que le profil leur donne ≈ 0,4 % chacun (⚠️ à comprendre). Treasures : trop peu sur 8 h pour conclure.
+- ❌ **Run bloqué 3 h** (oreMul 0,30, prison seed 2, run 1 ; aussi 1 run à 0,24) : un golem descendu à 14 PV / 397 reste
+  dans le puits juste sous la surface (25, 2) ; le mineur redescend, se fait tacler, étourdir et repousser jusqu'à la
+  surface (y 0, où le combat s'arrête), redescend… jusqu'à `runMax`. 1 run sur 50, mais 26 % du temps de jeu de la
+  mesure. `scripts/simulate-prison-profile.js` liste maintenant ces runs et donne le rendement sans eux.
