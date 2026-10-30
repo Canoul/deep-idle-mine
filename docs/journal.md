@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 30/10/2026 — Geoffrey — Énergie au repos
 - **Pour le joueur** : un joueur qui ne fait rien (ni session en cours, ni prison) regagne **3 d'énergie par heure de jeu** (6 par heure réelle), jusqu'à 100. La prison reste meilleure (4 par heure de jeu).
-- **État** : 🧪 sur la branche `geoffrey/energie-repos` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Correctif téléphone : défiler jusqu'aux onglets dans l'onglet Session
 - **Pour le joueur** : sur téléphone, le journal de la session ne retient plus le doigt (il montre ses 8 dernières lignes) : la page défile jusqu'à la barre des onglets.
