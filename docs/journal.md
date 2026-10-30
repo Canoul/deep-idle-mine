@@ -26,7 +26,7 @@ Modèle d'entrée :
 - **Pour le joueur** : le chat garde toujours ses 50 derniers messages, mais un message de **18 h ou plus disparaît**
   tout seul : le serveur ne l'envoie plus et ne l'enregistre plus, et il s'efface de l'écran même si la page reste
   ouverte (vérifié chaque minute). Valable pour le chat global et le chat de session. Réglage : `CHAT.maxAgeMs`.
-- **État** : 🔧 branche `geoffrey/chat-18h`, pas en ligne
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Modération du chat : mots interdits, avertissements, ban de 24 h
 - **Pour le joueur** : dans le chat global et le chat de session, les insultes et injures (racistes, homophobes,
