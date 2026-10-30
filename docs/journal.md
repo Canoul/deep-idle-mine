@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Correctif téléphone : défiler jusqu'aux onglets dans l'onglet Session
+- **Pour le joueur** : sur téléphone, le journal de la session ne retient plus le doigt (il montre ses 8 dernières lignes) : la page défile jusqu'à la barre des onglets.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Prison sans résidus
 - **Pour le joueur** : plus de résidus angéliques ou démoniaques dans les cartes de prison (les runs déjà commencés gardent les leurs jusqu'à leur fin).
 - **État** : ✅ en ligne le 30/10
