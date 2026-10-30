@@ -7,6 +7,7 @@
 import { W, DT, CFG, MOBS, BLOCKS, DUCK, COMBAT, PRISON, mobHp } from '../config.js';
 import { maxRow, isAir, isOre, supported, contentAt, contentOf } from './world.js';
 import { log } from './log.js';
+import { uncollect } from './mineur.js';
 import { dungeonAt, inRoom, interior, noEntry } from './dungeon.js';
 import { veiled } from './trap.js';
 import { spawnDucks, updateDuck, duckCanEnter } from './duck.js';
@@ -272,8 +273,7 @@ function goblinSteal(G,o){
   if(resists(G,m)){ log(G, `💪 ${m.name} résiste au vol du gobelin`); return; }
   let r=Math.floor(G.rng()*total), name=ores[0];
   for(const k of ores){ if(r<m.inv[k]){ name=k; break; } r-=m.inv[k]; }
-  m.inv[name]--; m.load-=ORE_W.get(name);
-  if(!m.inv[name]) delete m.inv[name];
+  uncollect(m,name,ORE_W.get(name),1);
   G.stats.stolen++; m.stats.stolen++;
   log(G, `👺 Un gobelin vole 1 ${name} à ${m.name}`);
 }
