@@ -1721,7 +1721,7 @@ export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPer
    de l'area × oreMul) ; treasures : tier tiré selon la répartition des Treasure TX reçus (aucun : celui de l'area) ; mobs :
    types tirés selon ses kills par type (enregistrés depuis le 29/10 ; aucun : la table de l'area). Figé pour toute la
    prison. trapMul : chance des pièges · kholeMul : chance du k hole (avant : pas de k hole en prison). */
-export const PRISON = { width: 25, oreMul: 0.24, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 3,
+export const PRISON = { width: 25, oreMul: 0.24, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 2.73,   /* 30/10 : 3 → 2,73 = +10 % de mobs */
   profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,

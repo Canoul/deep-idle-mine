@@ -39,7 +39,7 @@ const snap = presetJson ? presetJson[WHO] : null;
 if(presetFile && !snap) throw new Error(`« ${WHO} » absent de ${presetFile}`);
 const miner = minerSpecs(snap
   ? { mode: 'prison', players: [], bots: 1, botPresets: ['copy:' + WHO], botCopies: [snap] }
-  : { mode: 'prison', players: [], bots: 1, botPresets: ['mineur'] })[0];
+  : { mode: 'prison', players: [], bots: 1, botPresets: [String(opt('bot', 'mineur'))] })[0];   // --bot mineur|logisticien|barbare (preset acier)
 if(snap && !miner.carac) throw new Error('Copie refusée par le jeu (stuff ou skills invalides)');
 
 /* ---- profil et référence : ses 10 dernières mines ---- */
@@ -69,7 +69,7 @@ for(let c = 0; c < CHAINS && tot.runs < RUNS; c++){
 /* ---- résultat ---- */
 const h = tot.t / 3600, refH = ref.n * SESSION_LEN / 3600;
 const row = (label, prisonV, refV, d = 0) => console.log(`${label.padEnd(26)} ${fmt(prisonV, d).padStart(9)} ${ref.n ? fmt(refV, d).padStart(9) + '   ' + (refV ? Math.round(100 * prisonV / refV) + ' %' : '—').padStart(5) : ''}`);
-console.log(`Prison de ${snap ? WHO : 'preset acier (mineur)'} · oreMul ${PRISON.oreMul} · ${tot.runs} runs en ${CHAINS} prison(s) · ${fmt(h, 1)} h de jeu · run moyen ${fmt(tot.t / tot.runs / 60, 1)} min` +
+console.log(`Prison de ${snap ? WHO : `preset acier (${opt('bot', 'mineur')})`} · oreMul ${PRISON.oreMul} · ${tot.runs} runs en ${CHAINS} prison(s) · ${fmt(h, 1)} h de jeu · run moyen ${fmt(tot.t / tot.runs / 60, 1)} min` +
   (tot.capped ? ` · ⚠ ${tot.capped} run(s) arrêtés à runMax` : ''));
 console.log(profile ? `Profil (${profile.n} mines) : area ${profile.area} · minerais ${JSON.stringify(Object.fromEntries(Object.entries(profile.ores || {}).map(([k, v]) => [k, Math.round(v * 100) + ' %'])))}`
                     : `Pas d'historique : contenu de l'area ${PRISON.fallbackArea}, sans profil`);

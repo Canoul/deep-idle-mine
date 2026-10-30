@@ -5417,3 +5417,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 30/10/2026 — Spé jouée en mine (tableau de bord prison)
 - `lastMines` renvoie aussi `tree` (= `statsAt[account].tree`, figé au lancement ; absent des sessions dev/anciennes → null) ; `prisonRow` → `mineTree` = arbre le plus fréquent sur les 10 dernières mines. Colonne « Spé mines » dans `renderPrisonDashboard`.
 - ✅ tests prison-dashboard + prison-profile (6/6).
+
+### 30/10/2026 — Force des spés en prison + affichage des heures
+- `prison-dashboard.js` : `h()` arrondit en minutes totales (4,999 h affichait « 4 h 60 »). `simulate-prison-profile.js --bot mineur|logisticien|barbare` (preset acier sans --preset).
+- Sim (oreMul 0.24, history canoul area 7, 30 runs / 3 prisons) : logisticien 669 poids/h (run 10,7 min), mineur 618 (12,1 min), barbare 582 (12,9 min). ⚠️ 30 runs : écarts de ±5 % possibles par le hasard.
