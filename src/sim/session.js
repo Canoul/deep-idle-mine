@@ -109,11 +109,23 @@ function braumGlyph(G){
   }
 }
 
+/* temps par action (30/10/2026, tableau de bord de la prison) : mine, move (pas, échelles, chutes, passerelles), fight,
+   other (dépôts, attente, étourdi, torches…) */
+export const TIME_CLASSES = ['mine', 'move', 'fight', 'other'];
+export function timeClass(a){
+  const t = a?.type;
+  if(t === 'mine') return 'mine';
+  if(t === 'attack') return 'fight';
+  if(t === 'move' || t === 'ladder' || t === 'bridge' || t === 'dash') return 'move';
+  return 'other';
+}
+
 export function tick(G){
   if(G.over) return;
   G.ticks++; G.t=G.ticks*DT;   // temps recalculé depuis le compteur : aucune dérive d'arrondi
   for(const m of G.miners){
     if(m.action?.type==='attack') m.stats.hitTime=(m.stats.hitTime||0)+DT;   // temps à frapper (tableau de bord)
+    { const k=timeClass(m.action), tt=(m.stats.time??={}); tt[k]=(tt[k]||0)+DT; }   // temps par action (30/10, tableau de la prison)
     stepMiner(G,m);
   }
   braumGlyph(G);   // Glyphe Braum : oxygène en entrant dans un piège ou un donjon

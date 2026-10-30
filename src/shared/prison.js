@@ -25,9 +25,16 @@ const sanitizeTotals = t => {
            energy: isNum(t.energy) && t.energy >= 0 ? t.energy : 0,
            xp: Number.isSafeInteger(t.xp) && t.xp >= 0 ? t.xp : 0,
            t: isNum(t.t) && t.t >= 0 ? t.t : 0,   // secondes de jeu des runs versés (29/10)
+           time: cleanTime(t.time),               // secondes par action (30/10 : mine, move, fight, other)
            bag: validBag(t.bag) ? { ...t.bag } : {} };
 };
-const noTotals = () => ({ runs: 0, energy: 0, xp: 0, t: 0, bag: {} });
+const noTotals = () => ({ runs: 0, energy: 0, xp: 0, t: 0, time: {}, bag: {} });
+/* temps par action relu : seulement mine, move, fight, other, nombres positifs */
+export function cleanTime(x){
+  const out = {};
+  if(isObj(x)) for(const k of ['mine', 'move', 'fight', 'other']) if(isNum(x[k]) && x[k] > 0) out[k] = x[k];
+  return out;
+}
 
 /* relit un enregistrement (stockage) ; null s'il est absent ou abîmé */
 export function sanitizePrison(p){

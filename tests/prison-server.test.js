@@ -301,14 +301,14 @@ test('règles : prisonDueMs plafonné à lastSeenAt + offlineMax, touchPrison (a
   assert.equal(p.away.runs, 3, 'le bilan reste à envoyer (le serveur le remet à zéro une fois envoyé)');
   /* run fini pendant l'absence, versé après le retour : compté ; fini après le retour : non */
   assert.ok(endedAway(p, 2000e3, cfg)); assert.ok(!endedAway(p, 10e3, cfg)); assert.ok(!endedAway(p, 5005e3, cfg));
-  p.away = { runs: 0, energy: 0, xp: 0, t: 0, bag: {} };
+  p.away = { runs: 0, energy: 0, xp: 0, t: 0, time: {}, bag: {} };
   /* présent : seul lastSeenAt change */
   assert.equal(touchPrison(p, 5010e3, cfg), false);
   assert.equal(p.lastSeenAt, 5010e3);
   const pub = publicPrison(p, null, { cfg });
   assert.equal(pub.waitAt, 5010e3 + 1000e3);
   assert.deepEqual(pub.away, { runs: 0, energy: 0, bag: {} });
-  assert.deepEqual(sanitizePrison({ ...p, away: { runs: -1, energy: NaN, bag: { coal: 1.5 } } }).away, { runs: 0, energy: 0, xp: 0, t: 0, bag: {} });
+  assert.deepEqual(sanitizePrison({ ...p, away: { runs: -1, energy: NaN, bag: { coal: 1.5 } } }).away, { runs: 0, energy: 0, xp: 0, t: 0, time: {}, bag: {} });
 });
 
 test('présent : vue toutes les 10 s → le run suit le temps réel (pump comme une session, vue au tick dû)', async () => {
