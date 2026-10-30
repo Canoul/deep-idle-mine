@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Prison : +10 % de mobs
+- **Pour nous** : en prison, les mobs apparaissent 10 % plus souvent (attente entre deux apparitions × 2,73 au lieu de × 3 par rapport à une mine).
+- **État** : 🧪 sur la branche `geoffrey/prison-spe-force` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Tableau prison : « 4 h 60 » corrigé, force des spés en prison
 - **Pour nous** : le tableau affichait « 4 h 60 » au lieu de « 5 h 00 ». Comparaison des spés en prison (stuff acier, profil canoul area 7, 30 runs chacune) : logisticien 669 minerais (poids)/h, mineur 618 (−8 %), barbare 582 (−13 %).
 - **État** : 🧪 sur la branche `geoffrey/prison-spe-force` (pas en ligne)
