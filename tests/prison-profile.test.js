@@ -1,7 +1,7 @@
 /* Contenu de la prison d'après les 10 dernières mines (29/10/2026, Geoffrey ; src/meta/prison-profile.js) */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { prisonProfile, lastMines, sanitizeProfile, pickShare } from '../src/meta/prison-profile.js';
+import { prisonProfile, lastMines, sanitizeProfile, pickShare, capOres } from '../src/meta/prison-profile.js';
 import { profileComp } from '../src/sim/world.js';
 import { newPrisonRun, tickPrison } from '../src/sim/prison.js';
 import { PRISON, AREAS } from '../src/config.js';
@@ -32,6 +32,23 @@ test('profil relu : parts revérifiées (clés inconnues, nombres invalides) ; t
   assert.deepEqual(p, { n: 3, area: 5, ores: { iron: 1 }, treasures: null, mobs: null });
   assert.equal(sanitizeProfile(null), null);
   assert.equal(pickShare({ a: 0.25, b: 0.75 }, 0.2), 'a'); assert.equal(pickShare({ a: 0.25, b: 0.75 }, 0.3), 'b');
+});
+
+test('plafond cobalt et thorium : le surplus va aux minerais sans plafond, le total ne bouge pas', () => {
+  const ores = { iron: 0.5, gold: 0.3, mithril: 0.18, cobalt: 0.01, thorium: 0.01 };
+  const out = capOres(ores);
+  assert.equal(out.cobalt, PRISON.oreCap.cobalt); assert.equal(out.thorium, PRISON.oreCap.thorium);
+  assert.ok(Math.abs(Object.values(out).reduce((a, b) => a + b, 0) - 1) < 1e-9);
+  assert.ok(Math.abs(out.iron / out.gold - ores.iron / ores.gold) < 1e-9, 'les autres gardent leurs proportions');
+  const low = { iron: 0.99, cobalt: 0.002, thorium: 0.008 };
+  assert.equal(capOres(low).cobalt, 0.002, 'sous le plafond : inchangé');
+  const under = { iron: 0.992, cobalt: 0.004, thorium: 0.004 };
+  assert.equal(capOres(under), under, 'rien à plafonner : même objet');
+  assert.equal(capOres(null), null);
+  const comp = { stone: 60, hardstone: 20, iron: 10, gold: 5, air: 5 };
+  assert.ok(Math.abs(profileComp(comp, ores).cobalt - 15 * PRISON.oreCap.cobalt) < 1e-9, 'plafond appliqué à la carte');
+  const G = newPrisonRun(7, { areaMax: 7, profile: { n: 10, area: 7, ores: { iron: 0.4, cobalt: 0.3, thorium: 0.3 } } });
+  assert.ok((G.areas[0].counts.cobalt || 0) <= 2 && (G.areas[0].counts.thorium || 0) <= 2, 'compo enregistrée riche : carte plafonnée');
 });
 
 test('carte de la prison : même part totale de minerais, répartie selon le profil ; un run se joue avec un profil', () => {

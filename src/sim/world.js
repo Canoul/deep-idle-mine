@@ -1,6 +1,6 @@
 /* Le monde : grille de blocs, génération déterministe des areas, gravité, déblocage. */
 import { W, AREA_H, AREA_Y0, CFG, BLOCKS, BARRIER, IDS, AREAS, GEN, TREASURE, TREASURE_BLOCK, WINCH, JUDGMENT, GLYPHS, DUNGEON, TRAP, PRISON, CHEST_X } from '../config.js';
-import { pickShare } from '../meta/prison-profile.js';
+import { pickShare, capOres } from '../meta/prison-profile.js';
 import { mulberry32, hash, shuffle } from '../core/rng.js';
 import { log } from './log.js';
 import { planDungeon, carve, registerDungeon } from './dungeon.js';
@@ -56,7 +56,7 @@ export function profileComp(comp, ores){
   let S = 0;
   for(const [n, v] of Object.entries(comp)){ if(kind(n) === 'ore') S += v; else out[n] = v; }
   if(!(S > 0)) return comp;
-  for(const [n, part] of Object.entries(ores)) out[n] = (out[n] || 0) + S * part;
+  for(const [n, part] of Object.entries(capOres(ores))) out[n] = (out[n] || 0) + S * part;   // plafonds PRISON.oreCap (31/10)
   return out;
 }
 

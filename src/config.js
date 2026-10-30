@@ -1822,7 +1822,9 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
   profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
   dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 90e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,
-  fracSalt: 0x5f7a11 };   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
+  fracSalt: 0x5f7a11,   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
+  /* 31/10/2026 (Geoffrey) : part maximale d'un minerai dans la répartition des minerais du profil ; le surplus va aux minerais sans plafond */
+  oreCap: { cobalt: 0.004, thorium: 0.004 } };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

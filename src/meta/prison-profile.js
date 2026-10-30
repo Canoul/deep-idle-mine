@@ -101,6 +101,21 @@ export function sanitizeProfile(p){
            ores: shares(p.ores, ORE_KEYS), treasures: shares(p.treasures, TREASURES), mobs: shares(p.mobs, MOB_TYPES) };
 }
 
+/* parts de minerais après PRISON.oreCap (31/10/2026, Geoffrey) : le surplus d'un minerai plafonné va aux minerais sans
+   plafond, à proportion ; le total reste le même. Appliqué à la lecture : vaut pour toutes les compos, même enregistrées. */
+export function capOres(ores, caps = PRISON.oreCap){
+  if(!ores) return ores;
+  const out = { ...ores };
+  let extra = 0, free = 0;
+  for(const [k, part] of Object.entries(out)){
+    if(caps[k] == null) free += part;
+    else if(part > caps[k]){ extra += part - caps[k]; out[k] = caps[k]; }
+  }
+  if(!(extra > 0)) return ores;
+  if(free > 0) for(const k of Object.keys(out)) if(caps[k] == null) out[k] *= 1 + extra / free;
+  return out;
+}
+
 /* tirage pondéré d'une clé de parts avec r dans [0, 1[ */
 export function pickShare(parts, r){
   let acc = 0; const keys = Object.keys(parts);
