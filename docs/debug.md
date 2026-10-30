@@ -5520,7 +5520,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
   victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.
 
-## 30/10/2026 — Sprite du Golbute, style Darkest Dungeon (Jules ; branche jules/sprite-golbute, sur geoffrey/instance-2-golbute)
+## 30/10/2026 — Sprites du Golbute et du golem, style Darkest Dungeon (Jules ; branche jules/sprite-golbute, sur geoffrey/instance-2-golbute)
 - **Quoi** : `scripts/gen_golbute.py` (nouveau) remplace la fonction `golbute()` de `scripts/gen_textures.py` (retirée,
   importée depuis le nouveau fichier, comme `gen_bosses`). 80 × 80 (5 × 5 cases, 16 px par case), deux images :
   `golbute` (pierre) et `golbute_crystal`. Le corps est une liste de parties (`PARTS`, de l'arrière vers l'avant :
@@ -5534,6 +5534,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/golbute-sprite.test.js` (nouveau, 2 : 80 × 80 et dans `TEXTURES` ; même silhouette pierre / cristal,
   pieds au sol) ; golbute, tower-sprites : 12/12.
 - ⚠️ Pas vu dans une vraie partie : vérifié sur des aperçus agrandis, posé sur `tunnel` + `dungeon_brick` comme dans l'arène.
-  Les petits golems de la Division (`textures/golem.png`, 32 × 32) n'ont pas changé.
+  Les petits golems de la Division (`textures/golem.png`, 32 × 32) n'ont pas changé (refaits ensuite, voir plus bas).
+- **Golem** (même jour, Jules) : `golem()` de `gen_textures.py` retirée, remplacée par celle de `gen_golbute.py` (32 × 32,
+  `GOLEM_PARTS`, regard vers la droite comme avant : `src/render/instance.js` le retourne selon `face`). Le moteur est
+  devenu la classe `_Stone` (paramètres : taille, nombre de facettes, ombre du sol, lumière du cristal, visage dans
+  l'ombre) ; le Golbute sort **identique au pixel près** après ce découpage (vérifié). Seul `textures/golem.png` change.
+  Tests ✅ golbute-sprite (+1 : 32 × 32, pieds au sol), golem, wiki : 29/29. ⚠️ Pas vu en vraie mine : la goutte de sueur
+  animée de `canvas.js` (x = 0,62 case) tombe maintenant sur le dos, plus sur le torse.
 - ⚠️ `docs/journal.md` : sur `geoffrey/instance-2-golbute`, une fusion avec main avait mis les entrées récentes à l'intérieur
   du bloc « Modèle d'entrée » ; remis dans l'ordre (déplacement de lignes, rien de supprimé).

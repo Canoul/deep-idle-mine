@@ -16,15 +16,17 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
-## 30/10/2026 — Jules — Le Golbute redessiné (style Darkest Dungeon)
+## 30/10/2026 — Jules — Le Golbute et le golem redessinés (style Darkest Dungeon)
 - **Pour le joueur** : le Golbute de l'Instance II n'est plus un bloc gris plat. C'est un colosse de pierre voûté, tête
   enfoncée sous une arcade lourde, yeux de braise et gueule pleine de crocs, épaules en rochers, bras de gorille dont
   les poings touchent le sol, fers brisés aux poignets avec leurs chaînes. Un **cœur de cristal** brille dans sa poitrine
   et des éclats de cristal lui percent le dos : on voit venir sa forme cristallisée. Cristallisé, il garde exactement la
   même silhouette, en cristal bleu taillé qui s'illumine autour du cœur. Gros contour noir, lumière d'en haut, bas du
   corps dans l'ombre. La sueur blanche du golem de la mine est gardée (plus discrète). Rien ne change dans le combat.
-- **À suivre** : à regarder dans une vraie partie (vérifié sur des aperçus, sur le sol de l'arène) ; les petits golems de
-  la Division gardent leur sprite actuel.
+  **Le golem** (celui des mines et les petits golems de la Division) passe au même style : une bête de pierre voûtée,
+  tête en avant, yeux de braise, crocs, éclats de cristal dans le dos, toujours couverte de sueur blanche.
+- **À suivre** : à regarder dans une vraie partie (vérifié sur des aperçus, sur le sol de l'arène et dans un tunnel).
+  Le golem des mines change aussi, mais seulement quand cette branche sera mise en ligne avec l'Instance II.
 - **État** : 🧪 sur la branche `jules/sprite-golbute`, construite sur `geoffrey/instance-2-golbute` : elle ne peut être
   mise en ligne qu'avec l'Instance II (ou après).
 

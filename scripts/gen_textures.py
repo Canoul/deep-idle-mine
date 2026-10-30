@@ -11,7 +11,7 @@ import zlib
 
 from gen_town import town   # le Carreau, ville du spawn (scripts/gen_town.py, 29/10/2026)
 from gen_bosses import bosses, tower_mobs   # boss et mobs des tours du Jugement (scripts/gen_bosses.py, 30/10/2026)
-from gen_golbute import golbute   # le Golbute de l'Instance II et sa forme cristallisée (scripts/gen_golbute.py, 30/10/2026)
+from gen_golbute import golbute, golem   # le Golbute de l'Instance II (et sa forme cristallisée) et le golem (scripts/gen_golbute.py, 30/10/2026)
 
 S = 16
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'textures')
@@ -1426,49 +1426,6 @@ def flesh_wall():
         put(cx, cy, pushi)
     # redressé : colonne de 16 × 96 (la ligne x du dessin couché devient la ligne y)
     return [px[(H - 1 - c) * W + r] for r in range(W) for c in range(H)]
-
-
-def golem():
-    """Golem (26/10) : mob de 2 × 2 cases (32 × 32 pixels), regard vers la droite. Un golem trapu en blocs de pierre
-    grise (fissures sombres, épaules massives, poings énormes), deux yeux de braise, qui sue un liquide blanc : gouttes
-    sur le front, coulures sur le torse et les bras, flaque au pied. Le jeu fait tomber une goutte de plus."""
-    S = 32
-    px = [(0, 0, 0, 0)] * (S * S)
-
-    def r(x, y, w, h, c):
-        for yy in range(y, y + h):
-            for xx in range(x, x + w):
-                if 0 <= xx < S and 0 <= yy < S:
-                    px[yy * S + xx] = c
-    st, hi, lo, dk = hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148')
-    white, cream = hexc('#f4f1e8'), hexc('#d9d4c6')
-    r(9, 2, 14, 9, st)                  # tête
-    r(10, 2, 12, 2, hi)
-    r(9, 9, 14, 2, lo)
-    r(16, 5, 3, 2, hexc('#ff8a2a'))     # yeux de braise
-    r(20, 5, 2, 2, hexc('#ff8a2a'))
-    r(17, 5, 1, 1, hexc('#ffe08a'))
-    r(12, 7, 1, 1, dk); r(13, 8, 1, 1, dk)   # fissure du front
-    r(4, 11, 24, 11, st)                # torse et épaules
-    r(4, 11, 24, 2, hi)
-    r(4, 20, 24, 2, lo)
-    r(15, 13, 2, 7, lo)                 # jointure des blocs
-    r(8, 15, 3, 1, dk); r(10, 16, 1, 2, dk); r(21, 14, 1, 3, dk); r(22, 17, 2, 1, dk)   # fissures
-    r(0, 12, 5, 12, lo); r(27, 12, 5, 12, lo)   # bras
-    r(0, 22, 6, 5, st); r(26, 22, 6, 5, st)     # poings
-    r(0, 26, 6, 1, dk); r(26, 26, 6, 1, dk)
-    r(7, 22, 7, 8, st); r(18, 22, 7, 8, st)     # jambes
-    r(7, 28, 7, 2, lo); r(18, 28, 7, 2, lo)
-    r(14, 22, 4, 4, lo)
-    # sueur blanche : gouttes sur le front, coulures sur le torse et les bras, flaque au pied
-    r(11, 3, 1, 2, white); r(14, 2, 1, 1, white); r(21, 3, 1, 1, white)
-    r(9, 10, 2, 1, white); r(10, 11, 1, 4, white); r(10, 15, 1, 1, cream)
-    r(19, 11, 1, 6, white); r(19, 17, 1, 1, cream)
-    r(25, 12, 1, 3, white)
-    r(1, 14, 1, 5, white); r(1, 19, 1, 1, cream)
-    r(30, 13, 1, 4, white)
-    r(12, 30, 4, 1, cream); r(19, 30, 5, 1, cream); r(9, 31, 16, 1, white)
-    return px
 
 
 def giant():
