@@ -5714,6 +5714,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
   recette à 2, le four cuit celle à 2 tant que la 3e case est vide : éviter ce cas en config, ou décider d'une règle.
 
+## 30/10/2026 — Prison : départ en area 2 (Geoffrey, branche geoffrey/prison-depart-area)
+- `PRISON.fallbackArea` 2 (avant 1), et plancher dans `profileOf` (src/meta/prison-profile.js) : area = max(fallbackArea,
+  moyenne) ; sans ça, une mine finie en area 0 donnait une prison plus basse que celle d'un joueur neuf.
+- Mesure (mineur sans stuff, 5 seeds × 3 runs, oreMul 0,27, script jetable) : area 1 176 minerais/h, runs 13,5 min ;
+  area 2 149 minerais/h, runs 16 min ; 0 run au plafond de 3 h. Moins de minerais mais 10 % de fer contre 1 %.
+- **Tests** ✅ prison-profile 3/3 ; ⚠️ pas vu à l'écran. ❌ prison-server « une tour et une instance lancées terminent la
+  prison » rouge **aussi sur main sans ce changement** : il attend la clé retirée au lancement, or elle l'est à la victoire
+  (service.js, `removeItem(inv, inst.key, 1)` au versement). Test à mettre à jour, pas touché ici.
+
 ## 30/10/2026 — Orbe (Geoffrey)
 - **Quoi** : `ITEMS.Orbe` (material, empilable, poids 1, texture `orb`), recette de base (src/recipes.js), texture dans
   `scripts/gen_textures.py`. Sans usage.
@@ -5736,6 +5745,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   limitent aussi les onglets cachés, avec d'autres rythmes, non mesurés.
 - ⚠️ Piste non prouvée pour le lag de la tour : ces rejeux ont pu charger le VPS quand plusieurs joueurs avaient la prison en arrière-plan.
 
+## 31/10/2026 — Énergie dans Social (Geoffrey)
+- **Quoi** : `energy` { value, max } sur les lignes Amis et Online ; affichée par `energyHTML` (src/ui/social.js), rouge sous `ENERGY.cost.min`.
+- **Serveur** : `loadEnergy` coupé en deux : `restedEnergy` calcule sans écrire, `loadEnergy` écrit. `game.energyOf` n'écrit rien et ne prend aucun
+  verrou : lire l'énergie d'un autre ne peut pas écraser un débit de lancement. Le service social la garde `SOCIAL_SERVER.energyFor` (30 s), car
+  `sessionsOf` copie les sessions du joueur et chaque navigateur redemande ses amis toutes les 4 s. Le cache n'est pas purgé : une entrée par compte vu.
+- **Tests** ✅ social +4 (amis hors ligne, Online, repos, aucune écriture, cache, affichage), energy-server, tower-who. Rendu vérifié ✅ en Chrome sans
+  écran sur une page de test avec le vrai CSS ; ⚠️ pas dans le vrai jeu, ni sur téléphone.
+- ❌ Déjà en échec sur `main`, sans lien : `energyOfTicks et publicEnergy` (tests/energy.test.js:60 attend 4 par heure, `ENERGY.prisonPerHour` vaut 8) et
+  `une tour et une instance lancées terminent la prison` (tests/prison-server). Non traités.
+
 ## 31/10/2026 — Prison : plafond cobalt / thorium (Geoffrey)
 - **Quoi** : `PRISON.oreCap` { cobalt 0,004, thorium 0,004 } ; `capOres` (src/meta/prison-profile.js) plafonne les parts et donne le surplus aux minerais sans plafond. Appelé à la lecture dans `profileComp` (src/sim/world.js) et `prisonProfileText` (src/ui/prison.js) : les profils gardés en base ne changent pas, les compos enregistrées sont couvertes.
 - **Constat base (lecture seule, 31/10)** : profil cobalt / thorium 0,9–1,1 % pour Croustiflex, Infernatiwar, Monsta ; 0,4 % pour canoul, Sõnata, Allaiks ; 0,1 % pour Nbrick, Akake, LeTaz. Mines : 7,7–8,5 par heure pour le trio, 0,6–3,2 pour les autres. Prison ÷ mines du trio sur ces minerais : 0,23–0,48, soit dans la norme. Aucune colonne du tableau ne vaut 9 : le chiffre signalé correspond sans doute aux mines par heure, non confirmé.
@@ -5743,4 +5762,3 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Simulation** ✅ profil Croustiflex, area 7, acier mineur, 5 chaînes de 4 h (95 runs avec et sans plafond, aucun à `runMax`) : cobalt 2,07 → 0,78/h, thorium 2,52 → 1,03/h, fer 76 → 81, charbon 77 → 80, or 35 → 38 ; durée d'un run 768 → 773 s.
 - ⚠️ canoul, Sõnata et Allaiks peuvent être très légèrement touchés s'ils dépassent 0,4 % de peu. Une prison en cours prend le plafond au prochain rejeu : la carte du run en cours peut changer légèrement, comme à chaque réglage de `oreMul`.
 - ⚠️ Treasures et drops de cobalt / thorium non touchés.
-

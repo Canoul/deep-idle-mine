@@ -4,7 +4,7 @@
 
    Profil : { n, area, ores, treasures, mobs }
      n         : nombre de mines lues (0 à profileSessions)
-     area      : area moyenne atteinte, arrondie (aucune mine : PRISON.fallbackArea) ; contenu de la carte
+     area      : area moyenne atteinte, arrondie, jamais sous PRISON.fallbackArea (le départ d'un nouveau joueur) ; contenu de la carte
      ores      : { clé de composition (coal, iron…) : part } d'après les minerais de sa part du butin, ou null
      treasures : { 'Treasure T1'… : part } d'après les Treasure TX de sa part du butin, ou null
      mobs      : { type : part } d'après ses kills par type (stats.killsBy, enregistrés depuis le 29/10), ou null
@@ -58,7 +58,7 @@ export function profileOf(mines){
   for(const m of mines){ add(bag, m.bag); add(kills, m.killsBy); }
   const ores = {};
   for(const [name, n] of Object.entries(bag)) if(ORE_KEY[name]) ores[ORE_KEY[name]] = (ores[ORE_KEY[name]] || 0) + n;
-  return { n: mines.length, area: Math.round(mines.reduce((s, m) => s + m.areas, 0) / mines.length),
+  return { n: mines.length, area: Math.max(PRISON.fallbackArea, Math.round(mines.reduce((s, m) => s + m.areas, 0) / mines.length)),
            ores: shares(ores, ORE_KEYS), treasures: shares(bag, TREASURES), mobs: shares(kills, MOB_TYPES) };
 }
 
