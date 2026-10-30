@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison
 - **Pour le joueur** : rien. Pour l'équipe : dans la prison, `?perf` n'affichait que les images par seconde ; il mesure maintenant
   aussi les envois du serveur, comme en session.
-- **État** : 🧪 sur la branche `geoffrey/perf-prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Plus de virgules inutiles dans les chiffres (oxygène, pods, torches…)
 - **Pour le joueur** : l'oxygène et les pods n'affichent plus de virgule (« 174 / 374 » au lieu de « 174/373.89 »), dans les
