@@ -5266,3 +5266,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   dans le puits juste sous la surface (25, 2) ; le mineur redescend, se fait tacler, étourdir et repousser jusqu'à la
   surface (y 0, où le combat s'arrête), redescend… jusqu'à `runMax`. 1 run sur 50, mais 26 % du temps de jeu de la
   mesure. `scripts/simulate-prison-profile.js` liste maintenant ces runs et donne le rendement sans eux.
+- **Correctifs (30/10)** : (1) **golem collé sous la surface** : l'« arrêt net » (src/sim/session.js, tick) coupait chaque pas
+  de descente d'un mineur à la surface dont l'adversaire (m.foe) était à portée, alors qu'à la surface l'IA ne combat pas :
+  boucle sans fin (prison : 3 h). Arrêt net seulement si `m.y > 0`. ✅ test golem « juste sous la surface » (échoue sans).
+  (2) **cobalt / thorium à 0** : `fillComp` arrondissait au plus proche (0,3 case de cobalt par carte de 25 × 50 → 0). En
+  prison seulement, arrondi au hasard (`fracRng`, `PRISON.fracSalt`, hasard à part : la mine ne change pas). ✅ test
+  prison-sim. (3) **`PRISON.oreMul` 0,30 → 0,24** (vrai profil canoul, 200 runs / 10 prisons : 0,26 → 52 %, 0,24 → 51 %,
+  0,22 → 45 %, 0,20 → 43 %). `tests/prison-server.test.js` fige oreMul à 0,30 (ses calendriers de paquets supposent un run
+  plus long que `batchMs`). ✅ prison*, golem, combat, knock, mobs, area-max, world 138/138 ; anticheat 118/118 ;
+  simulate 3 × 5 : 0 bloquée.
+- **Treasures (0,24, 200 runs, 32,7 h)** : posés sur 18 % des cartes (règle 0,4 × 0,5), ouverts 2 sur 3 (le run s'arrête à
+  80 % des minerais), + quelques T1 du k hole : 0,83 /h contre 3,0 /h dans ses mines (28 %).

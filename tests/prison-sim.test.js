@@ -229,3 +229,13 @@ test('fin de run : le porteur de la Mule passe prendre son sac et le rapporte', 
   assert.deepEqual(G.summary.lostBags, []);
   assert.ok(G.log.some(l => /ramasse son sac/.test(l.msg)), 'ramassage au journal');
 });
+
+test('minerai rare d\'une petite carte : nombre de cases arrondi au hasard en prison (moyenne exacte), au plus proche en mine (30/10/2026)', async () => {
+  const { fillComp } = await import('../src/sim/world.js');
+  const { mulberry32: rng } = await import('../src/core/rng.js');
+  const comp = { stone: 69.976, coal: 30, cobalt: 0.024, air: 0 };   // 0,024 % de 25 × 50 = 0,3 case de cobalt
+  assert.equal(fillComp(rng(1), comp, 25, 50).counts.cobalt, 0, 'mine : arrondi au plus proche, jamais de cobalt');
+  let n = 0; const N = 2000, frac = rng(7);
+  for(let i = 0; i < N; i++){ const c = fillComp(rng(i), comp, 25, 50, frac).counts; assert.ok(c.cobalt === 0 || c.cobalt === 1); assert.equal(Object.values(c).reduce((s, v) => s + v, 0), 1250); n += c.cobalt; }
+  assert.ok(Math.abs(n / N - 0.3) < 0.04, `prison : ${n / N} case de cobalt par carte en moyenne (0,3 attendu)`);
+});

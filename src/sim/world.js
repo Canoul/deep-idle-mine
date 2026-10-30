@@ -110,10 +110,17 @@ function placeClusters(grid, r, id, count, maxSize, out, w=W, h=AREA_H){
 /* Remplit une grille w × h (par défaut une area : W × AREA_H) selon une composition en % (comptes exacts) : minerais en
    filons, vide en poches, puis le reste (terrain) mélangé. Renvoie { grid, counts, big (terrain le plus présent),
    oreTotal }. Sert aux areas et à la dimension du k hole (src/sim/khole.js). */
-export function fillComp(r, comp, w=W, h=AREA_H){
+/* fracRng (prison, 30/10/2026) : nombre de cases de chaque MINERAI arrondi au hasard (partie entière, + 1 avec la chance de
+   la partie décimale : la moyenne est exacte) au lieu de l'arrondi au plus proche ; sinon un minerai rare d'une petite
+   carte (0,3 case de cobalt sur 25 × 50) n'apparaît jamais. Hasard à part : r et les cartes de la mine ne changent pas. */
+export function fillComp(r, comp, w=W, h=AREA_H, fracRng=null){
   const N = w*h;
   const counts = {}; let sum = 0;
-  for(const n in comp){ counts[n]=Math.round(comp[n]*N/100); sum+=counts[n]; }
+  for(const n in comp){
+    const x = comp[n]*N/100;
+    counts[n] = fracRng && typeOf(IDS[n])==='ore' ? Math.floor(x) + (fracRng() < x - Math.floor(x) ? 1 : 0) : Math.round(x);
+    sum+=counts[n];
+  }
   // l'arrondi est absorbé par le terrain le plus présent
   const big = Object.keys(counts).filter(n=>typeOf(IDS[n])==='terrain').sort((a,b)=>counts[b]-counts[a])[0];
   counts[big] += N - sum;
@@ -142,7 +149,7 @@ export function genArea(G,k){
   const base = G.prison ? profileComp(prisonComp(areaComp(ck), PRISON.oreMul), G.prison.profile?.ores) : areaComp(ck);
   /* Shrine d'abondance (28/10/2026) : G.oreBonus points de terrain changés en minerais, dans chaque area de la session */
   const comp = G.oreBonus > 0 ? oreBonusComp(base, G.oreBonus) : base;
-  const filled = fillComp(r, comp, box ? box.w : W), { counts, big } = filled;
+  const filled = fillComp(r, comp, box ? box.w : W, AREA_H, G.prison ? mulberry32(hash(G.seed, k+1) ^ PRISON.fracSalt) : null), { counts, big } = filled;
   let { grid, oreTotal } = filled;
   if(box){
     const g = new Uint8Array(W*AREA_H).fill(PRISON.bars);

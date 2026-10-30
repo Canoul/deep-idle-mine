@@ -24,6 +24,11 @@ const T0 = Date.UTC(2026, 9, 29, 12, 0);
 
 /* box.live : le moteur (dans le fil principal) ; box.advances : avances demandées ; box.opens : parties ouvertes ;
    box.reached : dernier tick atteint par partie */
+/* Ces tests règlent le CALENDRIER des runs (versements, paquets d'absents, bilans), pas l'équilibrage : plusieurs supposent
+   qu'un seul run finit avant le premier paquet (PRISON.batchMs). La durée d'un run dépend de PRISON.oreMul ; figée ici à la
+   valeur avec laquelle ces calendriers ont été écrits (0,30, 29/10), pour que régler l'équilibrage ne les casse pas. */
+PRISON.oreMul = 0.30;
+
 function setup({ dev = false, store = createMemoryGameStore(), t = { now: T0 }, prison, config } = {}){
   const box = { advances: 0, opens: 0, reached: new Map() };
   const liveRunner = opts => {

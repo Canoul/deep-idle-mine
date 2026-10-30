@@ -123,8 +123,10 @@ export function tick(G){
   updateThralls(G);   // gobelins asservis (Couronne du Roi Gobelin) : ils minent pour le coffre commun
   /* arrêt net (25/10/2026) : en marche vers le mob qu'il combat, il s'arrête dès que celui-ci entre dans sa portée, pour
      frapper le premier (sa portée peut dépasser celle du mob : stat reach, Lance en fer) */
+  /* … seulement sous terre (30/10/2026) : à la surface l'IA ne combat pas (decide : combat si m.y > 0) ; un golem resté
+     dans le puits juste sous lui coupait chaque pas de descente, sans coup ni pas : bloqué jusqu'à la fin (prison : 3 h) */
   for(const m of G.miners){
-    const a=m.action, o=m.foe!=null && a?.type==='move' && !a.data.fall ? G.mobs.find(q=>q.id===m.foe && q.hp>0) : null;
+    const a=m.action, o=m.y>0 && m.foe!=null && a?.type==='move' && !a.data.fall ? G.mobs.find(q=>q.id===m.foe && q.hp>0) : null;
     if(o && inReach(G,m,o,reachOf(m))) stopAction(m);
   }
   for(const m of G.miners){
