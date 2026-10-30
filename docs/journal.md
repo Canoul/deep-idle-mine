@@ -9,18 +9,25 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
-- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
-  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
-  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
-- **État** : ✅ en ligne le 27/10
-
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
 - **À suivre** : ce qui reste à faire ou à vérifier.
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
+
+## 30/10/2026 — Jules — Le Golbute et le golem redessinés (style Darkest Dungeon)
+- **Pour le joueur** : le Golbute de l'Instance II n'est plus un bloc gris plat. C'est un colosse de pierre voûté, tête
+  enfoncée sous une arcade lourde, yeux de braise et gueule pleine de crocs, épaules en rochers, bras de gorille dont
+  les poings touchent le sol, fers brisés aux poignets avec leurs chaînes. Un **cœur de cristal** brille dans sa poitrine
+  et des éclats de cristal lui percent le dos : on voit venir sa forme cristallisée. Cristallisé, il garde exactement la
+  même silhouette, en cristal bleu taillé qui s'illumine autour du cœur. Gros contour noir, lumière d'en haut, bas du
+  corps dans l'ombre. La sueur blanche du golem de la mine est gardée (plus discrète). Rien ne change dans le combat.
+  **Le golem** (celui des mines et les petits golems de la Division) passe au même style : une bête de pierre voûtée,
+  tête en avant, yeux de braise, crocs, éclats de cristal dans le dos, toujours couverte de sueur blanche.
+- **À suivre** : à regarder dans une vraie partie (vérifié sur des aperçus, sur le sol de l'arène et dans un tunnel).
+  Le golem des mines change aussi.
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
 
@@ -994,6 +1001,12 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Décisions** : valeurs de Geoffrey. Les plans du 2e jet du T4 (Clé d'instance I, gemmes) ne sortent pas de la
   recherche ; recyclés, ils rendent comme le tier 1 (15 à 30).
 - **État** : ✅ en ligne le 28/10
+
+## 27/10/2026 — Geoffrey — Correctif : « Lancer » grisé alors que tout le monde est prêt
+- **Pour le joueur** : si on avait ouvert (ou rechargé) la page pendant une session, le bouton **Lancer** et
+  « Inviter des joueurs » restaient grisés après la fin de la session, tant qu'on n'avait pas fermé le bilan avec le
+  bouton de retour. C'est corrigé : le lobby connaît le joueur dès l'ouverture de la page.
+- **État** : ✅ en ligne le 27/10
 
 ## 27/10/2026 — Geoffrey — Tier 4 : stats ajustées par Geoffrey ; plans secrets annoncés sur Discord
 - **Pour le joueur** : les stats offensives et de minage des nouvelles pièces sont divisées (choix de Geoffrey) :

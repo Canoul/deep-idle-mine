@@ -5630,3 +5630,30 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   bonne taille) ; `tests/wiki.test.js` : 13/13 avec le nouveau fichier.
 - ⚠️ Pas vu dans un vrai onglet (seulement l'aperçu 192 px). Le serveur envoie `Cache-Control: no-store` : l'icône
   change dès le rechargement, mais certains navigateurs gardent l'ancienne icône (cache des favicons) un moment.
+
+## 30/10/2026 — Sprites du Golbute et du golem, style Darkest Dungeon (Jules ; branche jules/sprite-golbute, sur geoffrey/instance-2-golbute)
+- **Quoi** : `scripts/gen_golbute.py` (nouveau) remplace la fonction `golbute()` de `scripts/gen_textures.py` (retirée,
+  importée depuis le nouveau fichier, comme `gen_bosses`). 80 × 80 (5 × 5 cases, 16 px par case), deux images :
+  `golbute` (pierre) et `golbute_crystal`. Le corps est une liste de parties (`PARTS`, de l'arrière vers l'avant :
+  dos, éclats, jambes, bassin, torse, bras, avant-bras, poings, fers, épaules, tête, arcade, mâchoire), chacune découpée en
+  facettes (Voronoï, `random.Random(1730)` : même image à chaque régénération), éclairées d'en haut à gauche, assombries
+  vers le sol ; bord supérieur de chaque partie éclairé ; encre entre les parties et autour de la silhouette. Détails
+  dessinés par-dessus : fissures, filons et cœur de cristal, yeux, gueule, fers et chaînes, sueur blanche (pierre seulement).
+  Le cristal reprend exactement les mêmes parties et facettes (arêtes claires, lumière autour du cœur). Aucun code du jeu :
+  `drawGolbute` (`src/render/instance.js`) étire déjà l'image sur `boss.w × boss.h` cases.
+- Seuls `textures/golbute.png` et `golbute_crystal.png` changent à la régénération (`npm run textures`, ~1 s pour le Golbute).
+- **Tests** ✅ `tests/golbute-sprite.test.js` (nouveau, 2 : 80 × 80 et dans `TEXTURES` ; même silhouette pierre / cristal,
+  pieds au sol) ; golbute, tower-sprites : 12/12.
+- ⚠️ Pas vu dans une vraie partie : vérifié sur des aperçus agrandis, posé sur `tunnel` + `dungeon_brick` comme dans l'arène.
+  Les petits golems de la Division (`textures/golem.png`, 32 × 32) n'ont pas changé (refaits ensuite, voir plus bas).
+- **Golem** (même jour, Jules) : `golem()` de `gen_textures.py` retirée, remplacée par celle de `gen_golbute.py` (32 × 32,
+  `GOLEM_PARTS`, regard vers la droite comme avant : `src/render/instance.js` le retourne selon `face`). Le moteur est
+  devenu la classe `_Stone` (paramètres : taille, nombre de facettes, ombre du sol, lumière du cristal, visage dans
+  l'ombre) ; le Golbute sort **identique au pixel près** après ce découpage (vérifié). Seul `textures/golem.png` change.
+  Tests ✅ golbute-sprite (+1 : 32 × 32, pieds au sol), golem, wiki : 29/29. ⚠️ Pas vu en vraie mine : la goutte de sueur
+  animée de `canvas.js` (x = 0,62 case) tombe maintenant sur le dos, plus sur le torse.
+- ⚠️ `docs/journal.md` : sur `geoffrey/instance-2-golbute`, une fusion avec main avait mis les entrées récentes à l'intérieur
+  du bloc « Modèle d'entrée » ; remis dans l'ordre (déplacement de lignes, rien de supprimé).
+- Fusion avec main (30/10, après la mise en ligne de l'Instance II) : conflits seulement dans la doc (journal, debug) ;
+  `gen_textures.py` fusionné sans conflit. L'entrée du 27/10 « Lancer grisé », restée dans le bloc modèle du journal sur
+  main, est rangée avec les entrées du 27/10. ✅ en ligne le 30/10.
