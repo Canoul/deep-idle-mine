@@ -1,7 +1,7 @@
 /* Ouverture d'un objet Treasure TX ou d'un coffre de tour (Coffre angélique R4 → une Rune R4) hors session : logique
    pure (le hasard est passé en paramètre). Un trésor de tour (RUNE.treasures) peut aussi donner un anneau (RINGS.drops).
    Le serveur fournit un hasard imprévisible : la seed ne doit pas permettre de prévoir le butin. */
-import { LOOT, ITEMS, RUNE, RINGS, TREASURE, GOBLIN_KING, INSTANCE } from '../config.js';
+import { LOOT, ITEMS, RUNE, RINGS, TREASURE, GOBLIN_KING, GOLBUTE, INSTANCE } from '../config.js';
 import { removeItem, addAll, addItem, countOf, OPEN_MEMORY } from './inventory.js';
 import { rollRune, isStuff } from './piece.js';
 import { recipeOfBlueprint, isUnlocked } from './craft.js';
@@ -9,7 +9,9 @@ import { spellOfScroll } from './spells.js';
 
 /* coffre de tour (RUNE) : { side, q } ou null */
 const chestOf = item => ITEMS[item]?.chest ?? null;
-export const canOpen = item => Object.hasOwn(LOOT, item) || !!chestOf(item);
+/* Coffre du Golbute (30/10/2026) : ne s'ouvre pas tant que sa table de butin est vide (GOLBUTE.loot, à définir) */
+const golbuteEmpty = () => !GOLBUTE.loot.always.length && !GOLBUTE.loot.oneOf.length;
+export const canOpen = item => Object.hasOwn(LOOT, item) || (!!chestOf(item) && !(chestOf(item).side === 'golbute' && golbuteEmpty()));
 
 const between = (min, max, rng) => min + Math.floor(rng() * (max - min + 1));
 
@@ -71,6 +73,14 @@ function openOne(inv, item, rng, ctx = {}){
   let loot;
   const chest = chestOf(item);
   if(chest?.side === 'goblin') return openGoblinChest(inv, chest.q, rng, ctx, chest.level);
+  if(chest?.side === 'golbute'){                // Coffre du Golbute : sa table (GOLBUTE.loot) ; une pièce de stuff arrive identifiée
+    const loot = rollLoot(GOLBUTE.loot, rng);
+    for(const [name, n] of Object.entries(loot)){
+      if(!isStuff(name)){ addItem(inv, name, n); continue; }
+      for(const i of addItem(inv, name, n)) inv.slots[i].q = chest.q;
+    }
+    return loot;
+  }
   if(chest){                                 // coffre de tour : une rune de sa qualité, lignes tirées maintenant
     const [i] = addItem(inv, RUNE.item, 1);
     Object.assign(inv.slots[i], rollRune(chest.q, rng));

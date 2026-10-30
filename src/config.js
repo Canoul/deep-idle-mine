@@ -1025,7 +1025,7 @@ export const RARITY = {
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
     'Cristal de pleine lune':'rare',
-    'Clé d\'instance I':'inhabituel', 'Clé d\'instance II':'rare',
+    'Clé d\'instance I':'inhabituel', 'Clé d\'instance II':'inhabituel',
     'Plume d\'ange':'rare',
     /* Roi Gobelin (27/10/2026, Geoffrey) ; ses coffres : comme les trésors des tours */
     'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',

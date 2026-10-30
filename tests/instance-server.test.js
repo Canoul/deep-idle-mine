@@ -26,7 +26,7 @@ const keysOf = async (store, id) => countOf(deserialize(JSON.stringify(await sto
 test('mode Instance I : listé, à part, une clé par instance', () => {
   const m = MINE_MODES.find(x => x.id === 'instance_1');
   assert.ok(m?.instance); assert.ok(isInstanceMode('instance_1')); assert.ok(!isInstanceMode('mine'));
-  assert.equal(INSTANCE.list.filter(i => i.ready).length, 1);
+  assert.equal(INSTANCE.list.filter(i => i.ready).length, 2, 'Instance I et Instance II (Golbute, 30/10)');
 });
 
 test('lancement : refusé si un joueur n\'a pas sa clé, sans rien consommer', async () => {
@@ -153,3 +153,51 @@ test('victoire rejouée : une seule clé prise, un seul coffre ; plus de clé à
   assert.equal(chests(b).length, 0, 'sans clé : pas de coffre');
   assert.equal(chests(deserialize(JSON.stringify(await store.getInventory(A.id)))).length, 1);
 });
+
+/* ---------- Instance II, le Golbute (30/10/2026) ---------- */
+const KEY2 = INSTANCE.list.find(i => i.id === 'instance_2').key;
+async function setup2(keys){
+  const store = createMemoryGameStore(), t = { now: Date.UTC(2026, 9, 30, 12, 0) };
+  for(const [id, n] of Object.entries(keys)) if(n){ const inv = createInventory(); addItem(inv, KEY2, n); await store.putInventory(id, JSON.parse(serialize(inv))); }
+  return { store, t };
+}
+const inv2 = async (store, id) => deserialize(JSON.stringify(await store.getInventory(id) ?? { v: 1, slots: [] }));
+
+test('Instance II : sa propre clé (celle de l\'Instance I ne suffit pas), niveau 1 seul, la vraie partie tourne jusqu\'au bout', async () => {
+  const m = MINE_MODES.find(x => x.id === 'instance_2');
+  assert.ok(m?.instance && m.ready && isInstanceMode('instance_2'));
+  const { store, game } = await setup({ [A.id]: 1 });   // Clé d'instance I seulement
+  await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.code === 'no_key');
+  const s2 = await setup2({ [A.id]: 1 });
+  const g = createGameService({ store: s2.store, liveRunner: createInlineRunner, clock: () => s2.t.now, randomSeed: () => 4242 });
+  await assert.rejects(g.start(A, { mode: 'instance_2', level: 2 }), e => e.code === 'bad_request', 'pas de niveau 2');
+  const r = await g.start(A, { mode: 'instance_2' });
+  assert.equal(r.session.mode, 'instance_2');
+  s2.t.now += instanceDurationMs(GAME.speed) + 1000;
+  await g.pump();
+  const rec = await s2.store.getGameSession(r.session.id);
+  assert.equal(rec.status, 'done');
+  assert.equal(rec.result.instance, 'instance_2');
+  assert.equal(rec.result.success, false, 'un mineur de base ne bat pas le Golbute');
+  assert.equal(countOf(await inv2(s2.store, A.id), KEY2), 1, 'échec : il garde sa clé');
+  void store;
+});
+
+test('Instance II gagnée : un Coffre du Golbute (R1 à R7) par joueur encore là, sa clé prise ; il ne s\'ouvre pas encore (butin à définir)', async () => {
+  const { store, t } = await setup2({ [A.id]: 1, [B.id]: 1 });
+  const summary = rec => ({ id: rec.id, mode: 'instance', instance: rec.mode, success: true,
+    shares: rec.players.map(p => ({ account: p.account, left: p.account === B.id, bag: { 'Charbon': 9 } })) });
+  const game = createGameService({ store, liveRunner: fakeLive(summary), clock: () => t.now, randomSeed: () => 7, dev: true });
+  const r = await game.start(A, { mode: 'instance_2' }, P);
+  t.now += 5e3; await game.leave(B);
+  await game.settle(r.session.id);
+  await game.settle(r.session.id);   // rejouée : rien deux fois
+  const a = await inv2(store, A.id), b = await inv2(store, B.id);
+  const golb = i => i.slots.filter(s => s && ITEMS[s.item]?.chest?.side === 'golbute');
+  assert.equal(golb(a).length, 1); assert.match(golb(a)[0].item, /^Coffre du Golbute R[1-7]$/);
+  assert.equal(countOf(a, KEY2), 0); assert.equal(countOf(a, 'Charbon'), 0);
+  assert.equal(golb(b).length, 0); assert.equal(countOf(b, KEY2), 1, 'parti : rien, il garde sa clé');
+  await assert.rejects(game.open(A, { item: golb(a)[0].item }), e => e.status === 400 || e.code === 'bad_request' || e.code === 'cannot_open');
+  assert.equal(golb(await inv2(store, A.id)).length, 1, 'toujours là');
+});
+

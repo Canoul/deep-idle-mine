@@ -14,7 +14,7 @@
      (prix, valeur d'un objet) s'applique aux pièces déjà tirées sans les rendre invalides. Ligne Découverte : { stat } ;
    - plus (0 à UPGRADE.levels.length) : niveau d'amélioration.
    Les nombres viennent de UPGRADE (config) : qualités, prix des stats en x, pas d'arrondi, paliers. */
-import { UPGRADE, ITEMS, STATS, RUNE, RINGS, GOBLIN_KING, STUFF } from '../config.js';
+import { UPGRADE, ITEMS, STATS, RUNE, RINGS, GOBLIN_KING, GOLBUTE, STUFF } from '../config.js';
 
 const QUALITY = new Map(UPGRADE.qualities.map(d => [d.q, d]));
 /* { q, label, color, chance, min, max, lines } de cette qualité, ou null */
@@ -152,7 +152,7 @@ export const treasureOf = item => ITEMS[item]?.treasure ? ITEMS[item].chest : nu
    tel quel sinon ; couleur du nom : celle de la qualité d'un trésor, null sinon (celle de la rareté) */
 export function itemName(item){
   const t = treasureOf(item);
-  return t ? `${qualityDef(t.q).label} ${(RUNE.treasures[t.side] ?? GOBLIN_KING.chest).name}` + (RUNE.luck?.[t.luck] ? ` ${RUNE.luck[t.luck].label}` : '') : item;
+  return t ? `${qualityDef(t.q).label} ${(RUNE.treasures[t.side] ?? (t.side === 'golbute' ? GOLBUTE.chest : GOBLIN_KING.chest)).name}` + (RUNE.luck?.[t.luck] ? ` ${RUNE.luck[t.luck].label}` : '') : item;
 }
 export const itemColor = item => { const t = treasureOf(item); return t ? qualityDef(t.q).color : null; };
 

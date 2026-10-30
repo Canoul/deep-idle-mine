@@ -48,6 +48,10 @@ export function effectTip(e){
     case 'crown': L.push(`Un gobelin qui naît à ${e.value} cases ou moins de lui devient asservi : il mine ${GOBLIN_KING.thrall.life} s pour le coffre au lieu d'attaquer`,
                          'Personne ne frappe un gobelin asservi',
                          ...(e.stacks ? [`${e.stacks} au travail`] : [])); break;
+    /* Instance II, le Golbute (30/10/2026) */
+    case 'dazed': L.push(`${e.stacks || 1} stack${(e.stacks || 1) > 1 ? 's' : ''} sur ${INSTANCE.golbute.avalanche.deathStacks} : à ${INSTANCE.golbute.avalanche.deathStacks}, il meurt`,
+                         `Chaque avalanche touchée en ajoute un et relance ${INSTANCE.golbute.avalanche.dazed} s ; la ténacité l'esquive`); break;
+    case 'dead': L.push(`Sonné ${INSTANCE.golbute.avalanche.deathStacks} fois : il reste au sol jusqu'à la fin`, 'Pas de réanimation ; il reçoit quand même le coffre si le groupe gagne'); break;
   }
   if(e.left != null) L.push(`Encore ${Math.ceil(e.left)} s`);
   return [d.name, ...L].join('\n');

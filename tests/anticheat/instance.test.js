@@ -37,7 +37,17 @@ test('sans clé : refusé, aucune session, aucune clé retirée aux autres ; une
   assert.equal((await store.sessionsWithStatus('running')).length, 0);
 });
 
-test('une instance pas encore prête (Instance II) est refusée', async () => {
+test('une instance pas encore prête (Instance III) est refusée ; l\'Instance II demande sa propre clé (30/10)', async () => {
   const { game } = await setup({ [A.id]: 1 });
-  await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.status === 400);
+  await assert.rejects(game.start(A, { mode: 'instance_3' }), e => e.status === 400);
+  await assert.rejects(game.start(A, { mode: 'instance_2' }), e => e.code === 'no_key');
+});
+
+test('Coffre du Golbute (30/10) : tant que son butin est vide, il ne s\'ouvre pas (ni rune, ni rien), il reste dans l\'inventaire', async () => {
+  const { openTreasure, canOpen } = await import('../../src/meta/loot.js');
+  const inv = createInventory(); addItem(inv, 'Coffre du Golbute R4', 1);
+  assert.equal(canOpen('Coffre du Golbute R4'), false);
+  assert.equal(openTreasure(inv, 'Coffre du Golbute R4', 'op-golbute-1', Math.random), null);
+  assert.equal(countOf(inv, 'Coffre du Golbute R4'), 1);
+  assert.equal(countOf(inv, 'Rune'), 0);
 });

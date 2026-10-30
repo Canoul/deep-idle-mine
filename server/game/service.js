@@ -23,7 +23,7 @@
      visite ; à son retour, l'attente passe dans pausedMs et le run repart où il s'était arrêté.
    Testable seul : on lui passe un stockage, une horloge et la façon de faire tourner les parties (liveRunner). */
 import crypto from 'node:crypto';
-import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem } from '../../src/config.js';
+import { GAME, ENERGY, PRISON, PREFS, FOCUS, FURNACE, MINE_MODES, CHAT, ITEMS, JUDGMENT, KHOLE, TOWER, WIKI, LEADERBOARD, SKILLS, AREAS, treasureItem, goblinChestItem, golbuteChestItem } from '../../src/config.js';
 import { sanitizeTowerRecord, betterTower, sanitizeInstanceRecord, betterInstance, recordKey, splitRecordKey } from '../../src/meta/leaderboard.js';
 import { DT } from '../../src/config.js';
 import { sanitizePrefs, sanitizeOverrides, sanitizeDevSpecs, tickAt, realDurationMs, TOTAL_TICKS } from '../../src/shared/game.js';
@@ -35,7 +35,7 @@ import { createInventory, deserialize, serialize, creditSession, addItem, remove
 import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot, TOWER_LEVELS } from '../../src/shared/tower.js';
-import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, INSTANCE_LEVELS } from '../../src/shared/instances.js';
+import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
 import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
@@ -699,7 +699,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const inst = isInstanceMode(rec.mode) ? instanceDef(rec.mode) : null;
       if(inst) for(const share of summary.shares || []){
         const here = share.account && !share.left && !hasLeft(rec, share.account);
-        share.bag = summary.success && here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 } : {};   // niveau 2 : Coffre du Roi Gobelin II (29/10)
+        /* Instance II (30/10) : un Coffre du Golbute ; un mineur mort pendant le combat le reçoit aussi (il est resté) */
+        share.bag = !(summary.success && here) ? {}
+          : inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 }   // niveau 2 : Coffre du Roi Gobelin II (29/10)
+          : inst.chest === 'golbute' ? { [golbuteChestItem(rollChestQuality(random))]: 1 } : {};
       }
       /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
@@ -931,7 +934,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         /* niveau d'instance (29/10/2026, Geoffrey) : INSTANCE.levels, 1 par défaut, même clé ; ouvert à tous */
         if(inst){
           level = body.level ?? 1;
-          if(!INSTANCE_LEVELS.includes(level)) fail('bad_request', 400, "Niveau d'instance inconnu.");
+          if(!levelsOf(mode).includes(level)) fail('bad_request', 400, "Niveau d'instance inconnu.");
         }
         if(side){
           /* niveau (28/10/2026, Geoffrey) : TOWER.levels, 1 par défaut ; chaque niveau une fois par ouverture */

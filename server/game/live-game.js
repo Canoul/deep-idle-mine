@@ -16,8 +16,7 @@ import { createInstantViewer } from '../../src/shared/instant-view.js';
 import { buildTower, applyDueTowerLeaves, isTowerMode } from '../../src/shared/tower.js';
 import { tickTower, endTower } from '../../src/sim/tower/session.js';
 import { createTowerViewer } from '../../src/shared/tower-view.js';
-import { buildInstanceGame, applyDueInstanceLeaves, isInstanceMode } from '../../src/shared/instances.js';
-import { tickInstance, endInstance } from '../../src/sim/instance/session.js';
+import { buildInstanceGame, applyDueInstanceLeaves, isInstanceMode, tickAnyInstance, endAnyInstance } from '../../src/shared/instances.js';
 import { createInstanceViewer } from '../../src/shared/instances-view.js';
 import { buildPrisonRun, runInfo } from '../../src/shared/prison.js';
 import { tickPrison, endPrisonRun } from '../../src/sim/prison.js';
@@ -27,7 +26,7 @@ const KINDS = {
   session: { build: buildSession, tick, end: endSession, events: applyDueEvents, viewer: createViewer },
   instant: { build: buildInstant, tick: tickInstant, end: endInstant, events: applyDueInstantLeaves, viewer: createInstantViewer },
   tower:   { build: buildTower, tick: tickTower, end: G => endTower(G, false), events: applyDueTowerLeaves, viewer: createTowerViewer },
-  instance: { build: buildInstanceGame, tick: tickInstance, end: G => endInstance(G, false), events: applyDueInstanceLeaves, viewer: createInstanceViewer },
+  instance: { build: buildInstanceGame, tick: tickAnyInstance, end: G => endAnyInstance(G, false), events: applyDueInstanceLeaves, viewer: createInstanceViewer },
   /* run de prison (record.mode 'prison', src/shared/prison.js) : aucun choix en cours de partie ; une fin immédiate
      (arrêt de la prison) arrête le run au tick atteint, sans jouer la suite (endNow) */
   prison: { build: buildPrisonRun, tick: tickPrison, end: endPrisonRun, events: () => {}, viewer: createViewer, endNow: true, info: runInfo },
