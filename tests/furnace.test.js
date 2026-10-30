@@ -146,7 +146,7 @@ test('relecture : état trafiqué nettoyé (cases invalides, trop de fours, mauv
     {}, {}, {},
   ], ops:['a', 3, 'b'] });
   assert.equal(st.list.length, FURNACE.max);
-  assert.deepEqual(st.list[0], { tier:0, mode:'smelt', ore:null, a:null, b:null, fuel:null, out:null, since:null });
+  assert.deepEqual(st.list[0], { tier:0, mode:'smelt', ore:null, a:null, b:null, c:null, fuel:null, out:null, since:null });
   assert.deepEqual(st.list[1].ore, { item:'Or', qty:20 }); assert.equal(st.list[1].since, 5);
   assert.deepEqual(st.ops, ['a', 'b']);
   assert.equal(sanitizeFurnaces(null).list.length, FURNACE.startOwned);

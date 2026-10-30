@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
+- **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les recettes actuelles n'en utilisent
+  que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.
+- **À suivre** : aucune recette à 3 ingrédients n'existe encore : il suffit de les ajouter dans `FURNACE.alloys` (`in` à 3 objets).
+- **État** : 🧪 sur la branche `geoffrey/four-3-cases` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison
 - **Pour le joueur** : rien. Pour l'équipe : dans la prison, `?perf` n'affichait que les images par seconde ; il mesure maintenant
   aussi les envois du serveur, comme en session.
