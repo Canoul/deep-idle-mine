@@ -5745,6 +5745,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   limitent aussi les onglets cachés, avec d'autres rythmes, non mesurés.
 - ⚠️ Piste non prouvée pour le lag de la tour : ces rejeux ont pu charger le VPS quand plusieurs joueurs avaient la prison en arrière-plan.
 
+## 31/10/2026 — Prison en fond derrière les onglets du jeu (Geoffrey)
+- **Cause** : c'est ce que Geoffrey signalait (l'entrée « onglet caché » juste au-dessus visait les onglets du navigateur, autre bug,
+  bien réel mais pas celui-ci). `pollPrison` ne passait à `VIEW_EVERY` que dans l'onglet Session, sinon `PRISON.uiPoll` (15 s), alors
+  que le fond dessine `PG` depuis le 30/10. `smooth` s'arrête 3 s après le dernier envoi : mineur figé, puis téléporté.
+- **Correctif** : `prisonOnScreen` (src/ui/prison.js), appelée par `pollPrison` (src/main.js) : envois rapprochés si l'option du fond est active.
+- **Tests** ✅ prison-ui +1. ⚠️ Pas vu dans un vrai navigateur. Chaque prison en fond fait 4 demandes par seconde au lieu d'une toutes
+  les 15 s, comme une prison regardée : à surveiller sur le VPS.
+
+
 ## 31/10/2026 — Énergie dans Social (Geoffrey)
 - **Quoi** : `energy` { value, max } sur les lignes Amis et Online ; affichée par `energyHTML` (src/ui/social.js), rouge sous `ENERGY.cost.min`.
 - **Serveur** : `loadEnergy` coupé en deux : `restedEnergy` calcule sans écrire, `loadEnergy` écrit. `game.energyOf` n'écrit rien et ne prend aucun

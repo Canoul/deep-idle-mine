@@ -1804,8 +1804,8 @@ export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPer
    seule session dépassée à la fois) · crashMax : plantages du moteur sur un même run avant que le serveur arrête la
    prison (rien n'est versé sans bilan) · uiRetry : premier délai (ms) avant de redemander la prison après une erreur,
    doublé à chaque erreur jusqu'à uiPoll ·
-   salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, hors de
-   l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). presentFor > 60 s (31/10/2026) : Chrome ne réveille
+   salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, quand elle
+   n'est pas à l'écran ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). presentFor > 60 s (31/10/2026) : Chrome ne réveille
    un onglet caché depuis 5 min qu'une fois par minute ; à 30 s, le run était fermé et rejoué depuis son début à chaque réveil. */
 /* spawnDelayMul (29/10/2026, Geoffrey) : l'attente entre deux tirages d'apparition de mobs est × 3 en prison : le mineur
    est seul, il subit le rythme d'un mineur d'une mine à 3 (où les tirages se partagent entre les 3) */
