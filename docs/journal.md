@@ -103,7 +103,7 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
 - **Pour le joueur** : en prison, un mineur étourdi 60 s de suite (étourdissements enchaînés compris, ex. occultistes)
   ne reste plus bloqué jusqu'au temps max du run (3 h) : le run s'arrête, le coffre est versé (pas son sac) et une carte
   neuve commence.
-- **État** : 🧪 sur la branche `geoffrey/prison-reset-stun` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Prison : le stuff est relu à chaque run
 - **Pour le joueur** : avant, le stuff, les skills et les sorts étaient pris à l'entrée en prison et ne changeaient plus
