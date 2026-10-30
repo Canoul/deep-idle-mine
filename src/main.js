@@ -303,8 +303,8 @@ function updateOrbs(shown, mi, len = mi ? INSTANT_MINE.duration : SESSION_LEN){
   const m = shown && !mi && !shown.over ? followedMiner(shown.miners, ui.follow) : null;
   if(m){
     const oxMax = m.carac?.oxygenMax ?? STATS.oxygenMax, pods = m.carac?.pods ?? STATS.pods;
-    orbs.set(0, m.ox / oxMax * 100, 'o2', `${Math.round(m.ox)}/${oxMax}`, 'Oxygène');
-    orbs.set(1, m.load / pods * 100, m.load >= pods * 0.9 ? 'full' : 'pods', `${Math.round(m.load)}/${pods}`, 'Pods');
+    orbs.set(0, m.ox / oxMax * 100, 'o2', `${Math.round(m.ox)}/${Math.round(oxMax)}`, 'Oxygène');
+    orbs.set(1, m.load / pods * 100, m.load >= pods * 0.9 ? 'full' : 'pods', `${Math.round(m.load)}/${Math.round(pods)}`, 'Pods');
     return;
   }
   orbs.set(0, shown ? shown.t / len * 100 : 0, shown ? 'time' : 'off', shown ? fmt(shown.t) : '—', 'Session');

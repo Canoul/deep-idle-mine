@@ -1200,6 +1200,12 @@ export const STUFF = {
                 piercing:'Perçage', looting:'Butin des mobs', doubleAttack:'Double attaque', knockRes:'Résistance au recul', reach:'Portée d\'attaque', knockback:'Recul',
                 goblinThrall:'Gobelins asservis (rayon)', blockMinePct:'Minage des blocs de terrain', golemOxygen:'Oxygène par golem tué (8 cases)' },
   statUnits: { blockMinePct:' %', goblinThrall:' blocs', torchTime:' s', reach:' bloc', knockback:' bloc', doubleAttack:' %', attackSpeed:' %', fortune:' %', tenacity:' %', knockRes:' %', mineSpeedPct:' %', damagePct:' %', crit:' %', oneTap:' %', piercing:' %', looting:' %' },   // unité affichée après la valeur d'une stat
+  /* décimales affichées au plus pour chaque stat (30/10/2026, Jules : pas de virgule quand elle ne sert à rien) ; une stat
+     absente en a 1 (bonus en %, dégâts : une amélioration les fait bouger de quelques dixièmes). 0 : un compte (torches,
+     pods, oxygène) ; 2 ou 3 : les vitesses, où 0,58 ou +0,206 se lisent (boosts de pioche, bottes, jambes) */
+  statDecimals: { oxygenMax:0, pods:0, torches:0, golemOxygen:0, discoverMax:0, compass:0, compassRows:0,
+                  speed:2, climbSpeed:2, reach:2, knockback:2, mineSpeed:3 },
+  statFloor: ['torches'],   // arrondies à l'inférieur, comme en session (src/sim/mineur.js : 30,9 torches = 30 posées)
   /* stats du mineur affichées dans l'onglet Stuff (base STATS + bonus des pièces portées), dans cet ordre */
   shownStats: ['oxygenMax','pods','speed','climbSpeed','mineSpeed','mineSpeedPct','damage','damagePct','attackSpeed','doubleAttack','reach','knockback','crit','fortune','tenacity','knockRes','oneTap','piercing','looting',
                'discoverMax','light','compass','compassRows','torches','torchRadius','torchTime'],   // goblinThrall (Gobelins asservis) cachée le 27/10 (Geoffrey)

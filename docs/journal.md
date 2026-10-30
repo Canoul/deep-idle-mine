@@ -16,6 +16,16 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Jules — Plus de virgules inutiles dans les chiffres (oxygène, pods, torches…)
+- **Pour le joueur** : l'oxygène et les pods n'affichent plus de virgule (« 174 / 374 » au lieu de « 174/373.89 »), dans les
+  bulles en bas, le panneau du mineur, la Visite du bloc géant et l'onglet Stuff. Les torches, l'oxygène rendu par l'Âme
+  du Golbute et les PV max des boss de tour sont des nombres entiers. Les torches s'affichent comme le jeu les compte
+  (30,9 → 30). Les autres bonus gardent une décimale au plus (25,75 % → 25,8 %).
+- **Décisions** : on garde les décimales **quand elles servent** : les vitesses (minage 1,77 ; boost de pioche +0,206 ;
+  marche, échelle), les dégâts (14,3) et les bonus en % (ténacité +16,3 %), qu'une amélioration +1 fait bouger de
+  quelques dixièmes. Réglage par stat : `STUFF.statDecimals` (config).
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Le Golbute et le golem redessinés (style Darkest Dungeon)
 - **Pour le joueur** : le Golbute de l'Instance II n'est plus un bloc gris plat. C'est un colosse de pierre voûté, tête
   enfoncée sous une arcade lourde, yeux de braise et gueule pleine de crocs, épaules en rochers, bras de gorille dont

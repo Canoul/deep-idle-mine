@@ -5674,3 +5674,24 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Point à confirmer : « le logisticien ne pose pas de treuil sur le 2e boss si il n'en avait pas fait avant » lu comme un
   bug (il doit pouvoir le poser). Lobby : plus de paiement d'avance depuis la Mine, tour ouverte obligatoire.
 
+## 30/10/2026 — Chiffres affichés sans décimales inutiles (Jules ; branche jules/chiffres-sans-decimales) ✅ en ligne le 30/10
+- **Bug** : bulle d'oxygène « 174/373.89 » : `src/main.js` (orbes) et `src/ui/hud.js` arrondissaient l'oxygène actuel mais
+  pas le maximum (`carac.oxygenMax`, avec les % du stuff) ; pareil pour les pods.
+- **Relevé** (lecture du code + script sur toutes les pièces de +0 à +9, `statLines`) : décimales inutiles sur
+  oxygène et pods (orbes, panneau du mineur, Visite du géant `server/giant/service.js` oxMax), panneau des stats
+  (`minerStats` arrondi à 2 décimales pour toutes les stats : 373,89), textes de pièces « Torches +10,3 »,
+  « Oxygène par golem tué 25,75 » (Âme du Golbute), « 25,75 % » (Némésis), PV max des boss et mobs de tour
+  (`B.hp × LV.hp`, `src/shared/tower-view.js` : maintenant `Math.ceil` comme les PV).
+  Déjà propres : énergie, XP, PV des instances, inventaire, sac de la tour.
+- **Correctif** : `STUFF.statDecimals` (config, décimales au plus par stat, 1 par défaut) et `STUFF.statFloor`
+  (torches : à l'inférieur, comme `createMiner` qui fait `Math.floor` depuis le 29/10) ; `statNum(k, v)` dans
+  `src/meta/stuff.js`, utilisé par `statLines` (pièces, runes posées) et `statsHTML` (`src/ui/stuff.js`, aussi la fiche
+  Social). Aucun changement de la partie (la simulation comptait déjà les torches à l'unité).
+- **Gardé exprès** : vitesse de minage (3 décimales dans les pièces, 2 au total), vitesses de marche / échelle, portée et
+  recul (2), dégâts, DPS et % (1), points / s du bloc géant (2), « % du tier » des runes seules, wiki.
+- **Tests** ✅ `tests/stat-display.test.js` (nouveau, 3) ; stuff, amelioration, anneaux, blueprint, dps, lance, obtained,
+  rune, tower (×3), giant (×3), wiki : tout vert. ⚠️ `tests/tier2.test.js` : 2 échecs **déjà présents sur main** (fortune :
+  le doublon ne pèse plus dans les pods ; recyclage d'un BP T1/T2 nerfé le 30/10) : tests pas mis à jour après ces
+  changements de Geoffrey, sans lien avec ce correctif.
+- ⚠️ Pas vu dans le navigateur (le serveur local qui tournait n'avait pas les comptes de test) ; vérifié sur le HTML
+  produit par `statsHTML` (ex. « Torches 41 (20 +21) », « Pods 415 », « Vitesse de minage 1,46 (1 +0,46) »).
