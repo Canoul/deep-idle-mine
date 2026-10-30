@@ -166,12 +166,12 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Instance II, le Golbute** (30/10, Geoffrey ; config `INSTANCE.golbute`, `src/sim/instance/golbute.js` (partie à part,
   même interface que l'Instance I via `src/shared/instances.js` : `buildInstanceGame`, `tickAnyInstance`, `endAnyInstance`),
   vue `golbuteView` dans `instances-view.js`, rendu `drawGolbute` dans `src/render/instance.js`, HUD `golbuteHUD`,
-  `npm run simulate:golbute`) : arène 20 × 20, golem 5 × 5 au milieu (7 600 PV), autoattack qui propulse (chute = étourdi),
+  `npm run simulate:golbute`) : arène 20 × 20, golem 5 × 5 au milieu (10 700 PV ; ancien 7 600), autoattack qui propulse (chute = étourdi),
   avalanche / 60 s (Sonné, mort à 6 stacks : la ténacité est obligatoire), Division / 3 min en 10 golems (area 8),
-  cristal à 66 et 33 % (600 coups de minage), enrage après le 2e cristal ; 10 min, un seul niveau. **Clé d'instance II** :
+  cristal à 66 et 33 % (720 coups de minage ; ancien 600), enrage après le 2e cristal ; 10 min, un seul niveau. **Clé d'instance II** :
   Treasure T4, 10 %. **Coffre du Golbute** R1 à R7 par joueur présent à la victoire (`GOLBUTE`), **butin à définir** : il ne
   s'ouvre pas tant que `GOLBUTE.loot` est vide. Équilibrage : compo de référence (1 mineur, 2 barbares, arbre max, armure
-  mithril, outils fer + 20 %) **avec 25 % de ténacité** : 20/80 victoires ; sans ténacité : 0. Détail GAME_DESIGN.
+  mithril, outils **acier** + 20 % ; ancien : fer) **avec 25 % de ténacité** : 40/160 victoires ; sans ténacité : 0. Détail GAME_DESIGN.
 - **Tier 4 : Treasure T4, mithril, thorium, cobalt** (27/10, Geoffrey ; GAME_DESIGN « Tier 4 », config `LOOT['Treasure T4']`,
   `FURNACE`, `STUFF.items`, `UPGRADE.tiers` 4 et '4.5', `src/recipes.js`) : Treasure T4 en areas 7 et 8 (le T3 s'arrête à
   l'area 6) ; four : Mithril ingot, Refined cobalt / thorium (`ore:5` par fournée), alliages Cobalt / Thorium ingot ; armures

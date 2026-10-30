@@ -122,8 +122,8 @@ Recycler un blueprint à la Table de recherche rend moins de parts : tier 1 : 10
   minutes (« Sonné » : à 6 stacks, mort), se divise en 10 golems toutes les 3 min, se cristallise à 66 % et 33 % (il
   faut le miner) puis enrage. **La ténacité est indispensable.** Clé d'instance II dans les Treasure T4 (10 %).
   Victoire : un Coffre du Golbute par joueur (son butin arrive plus tard ; en attendant il ne s'ouvre pas).
-- **Équilibrage** (simulation, provisoire) : 7 600 PV, 600 coups de cristal. Équipe de référence (1 mineur, 2 barbares,
-  armure en mithril, outils en fer + 20 %) avec 25 % de ténacité : 1 victoire sur 4 ; sans ténacité : jamais.
+- **Équilibrage** (simulation, provisoire) : 10 700 PV, 720 coups de cristal. Équipe de référence (1 mineur, 2 barbares,
+  armure en mithril, outils en acier + 20 %) avec 25 % de ténacité : 1 victoire sur 4 ; sans ténacité : jamais.
 - **État** : 🧪 sur la branche `geoffrey/instance-2-golbute` (pas en ligne)
 
 ## 30/10/2026 — Geoffrey — Prison : carte neuve si le mineur reste étourdi 1 minute

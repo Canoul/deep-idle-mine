@@ -5517,3 +5517,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ À vérifier : le bilan de fin (instances ET mine) n'apparaissait pas à l'écran dans le navigateur headless (le Carreau
   s'affiche par-dessus, `#end` non caché mais invisible) ; même chose sur main avec une mine classique : à confirmer dans un
   vrai navigateur, sans lien avec l'Instance II.
+- 30/10, 17 h : référence passée aux outils **en acier + 20 %** (Geoffrey). Rééquilibré : 10 700 PV / 720 coups → 40/160
+  victoires, 45 % du temps à miner (10 500 : 53/160 ; 10 800 : 32/160) ; 50 % de ténacité : 20/20 ; sans : 0/20.

@@ -1564,11 +1564,11 @@ export const INSTANCE = {
      Valeurs provisoires (équilibrage : scripts/simulate-golbute.js). */
   golbute: {
     w: 20, h: 20, spawn: [1, 2, 3],
-    boss: { name: 'Golbute', w: 5, h: 5, hp: 7600, knockRes: 100 },   // 7 600 PV : 20 victoires sur 80 pour la compo de référence avec 25 % de ténacité (30/10, simulation ; Geoffrey : « environ 10 000 »)
+    boss: { name: 'Golbute', w: 5, h: 5, hp: 10700, knockRes: 100 },   // 10 700 PV : 40 victoires sur 160 pour la compo de référence (outils en acier + 20 %) avec 25 % de ténacité (30/10, simulation ; avant, outils en fer + 20 % : 7 600)
     slam: { every: 2, range: 3, chance: 0.5, high: 3, back: 1 },
     avalanche: { every: 60, stun: 5, dazed: 90, deathStacks: 6 },
     split: { every: 180, count: 10, area: 8, hitEvery: 1.5, knock: 0.5, step: 1.8 },
-    crystal: { at: [0.66, 0.33], hp: 600, dynamite: 20 },   // 600 coups : 42 % des 10 min à miner (cible 45 % ; 660 coups : 46 % mais 8 victoires sur 80)
+    crystal: { at: [0.66, 0.33], hp: 720, dynamite: 20 },   // 720 coups : 45 % des 10 min à miner (cible 45 %)
     rage: { atkSpeed: 0.5, chance: 0.65, avalancheCd: -0.25 },
   },
   levels: {

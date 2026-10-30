@@ -1,5 +1,5 @@
 /* Instance II, le Golbute : équilibrage (30/10/2026). Compo de référence (Geoffrey) : 1 mineur et 2 barbares, arbre au
-   maximum avec ses sorts, armure en mithril, pioche et épée en fer avec 20 % de stats en plus. Mesure : victoires, temps
+   maximum avec ses sorts, armure en mithril, pioche et épée en acier avec 20 % de stats en plus (30/10, Geoffrey ; avant : en fer). Mesure : victoires, temps
    passé à miner le cristal (part des 10 min), PV restants, morts.
    Usage : npm run simulate:golbute -- [--count 20] [--seed 1] [--hp 10000] [--crystal 600] [--tenacity 0] [--verbose] */
 import { DEV_PRESETS, INSTANCE, DT } from '../src/config.js';
@@ -13,11 +13,11 @@ if(opt('hp', null) != null) INSTANCE.golbute.boss.hp = +opt('hp');
 if(opt('crystal', null) != null) INSTANCE.golbute.crystal.hp = +opt('crystal');
 const TEN = +opt('tenacity', 0);
 
-/* mineurs de référence : presets (arbre au max, sorts de la spé) avec le stuff de référence ; outils en fer + 20 % */
-DEV_PRESETS.gear = ['Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril', 'Pioche en fer', 'Épée en fer'];
+/* mineurs de référence : presets (arbre au max, sorts de la spé) avec le stuff de référence ; outils en acier + 20 % */
+DEV_PRESETS.gear = ['Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril', 'Pioche en acier', 'Épée en acier'];
 export function refMiners(tenacity = TEN){
   const specs = minerSpecs({ players: [], bots: 3, botPresets: ['mineur', 'barbare', 'barbare'] });
-  return specs.map(s => ({ ...s, carac: { ...s.carac, mineSpeed: s.carac.mineSpeed + 0.4 * 0.2, damage: s.carac.damage + 14 * 0.2,
+  return specs.map(s => ({ ...s, carac: { ...s.carac, mineSpeed: s.carac.mineSpeed + 0.58 * 0.2, damage: s.carac.damage + 18.5 * 0.2,
                                           tenacity: (s.carac.tenacity || 0) + tenacity } }));
 }
 
