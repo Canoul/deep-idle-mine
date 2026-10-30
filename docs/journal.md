@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
+- **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
+  croyait parti et rejouait ton run depuis le début à chaque réveil. Il t'attend maintenant 90 s au lieu de 30, le run continue normalement.
+- **À suivre** : vérifier en jeu avec un onglet caché plus de 5 min.
+- **État** : 🧪 sur la branche `geoffrey/fix-prison-onglet-cache` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Nouvel objet : l'Orbe
 - **Pour le joueur** : un **Orbe** se fabrique dans l'onglet Craft, dès le départ : 30 Tissu sombre + 30 Vésicule de gaz + 10 Pierre
   glissante. Il n'a pas encore d'usage.

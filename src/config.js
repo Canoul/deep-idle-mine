@@ -1805,7 +1805,8 @@ export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPer
    prison (rien n'est versé sans bilan) · uiRetry : premier délai (ms) avant de redemander la prison après une erreur,
    doublé à chaque erreur jusqu'à uiPoll ·
    salt : seed d'un run · uiPoll : le jeu ouvert redemande sa prison au moins toutes les uiPoll ms (navigateur, hors de
-   l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). */
+   l'onglet Session ; moins que presentFor, pour que le joueur reste « présent » et que sa prison tourne en direct). presentFor > 60 s (31/10/2026) : Chrome ne réveille
+   un onglet caché depuis 5 min qu'une fois par minute ; à 30 s, le run était fermé et rejoué depuis son début à chaque réveil. */
 /* spawnDelayMul (29/10/2026, Geoffrey) : l'attente entre deux tirages d'apparition de mobs est × 3 en prison : le mineur
    est seul, il subit le rythme d'un mineur d'une mine à 3 (où les tirages se partagent entre les 3) */
 /* Profil des 10 dernières mines (29/10/2026, Geoffrey ; src/shared/prison-profile.js) : au lancement, la prison lit les
@@ -1819,7 +1820,7 @@ export const ENERGY = { max: 100, start: 0, cost: { min: 6, max: 12 }, prisonPer
    carte neuve commence, au lieu d'attendre runMax. Valeurs provisoires. */
 export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, resetAt: 0.8, runMax: 3 * 3600, returnMax: 600, treasureMul: 0.5, rareMul: 0.5, spawnDelayMul: 2.73,   /* 30/10 : 3 → 2,73 = +10 % de mobs */
   profileSessions: 10, fallbackArea: 1, trapMul: 0.5, kholeMul: 0.5,
-  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 30e3, seenWriteMs: 60e3, payoutRetries: 5,
+  dungeonWinchGap: 3, offlineMax: 24 * 3600e3, batchMs: 10 * 60e3, presentFor: 90e3, seenWriteMs: 60e3, payoutRetries: 5,
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,
   fracSalt: 0x5f7a11 };   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
 

@@ -83,6 +83,7 @@ test('lobby : bouton de la prison (entrer, la voir quand elle tourne)', () => {
   assert.equal(prisonLaunchState({ account: null, prison: null }).can, false);
   assert.equal(prisonLaunchState({ account: me, prison: null, busy: true }).can, false);
   assert.ok(PRISON.uiPoll > 0 && PRISON.uiPoll < PRISON.presentFor, 'le jeu ouvert reste « présent » pour le serveur');
+  assert.ok(PRISON.presentFor > 60e3, 'même onglet caché : Chrome réveille la page une fois par minute');
 });
 
 /* ---------- relecture finale : confirmations du groupe, sondage de la prison ---------- */
