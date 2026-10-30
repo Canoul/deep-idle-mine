@@ -5535,3 +5535,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Mise à jour (même jour, Jules)** : `DUNGEON.boss.hp` 4000 → **2000** (« mob ++ », pas un boss). Mesure au preset acier,
   charge toutes les 8 s : 1000 → 11 s à 3 / 30 s barbare seul ; 1500 → 16 / 52 s ; **2000 → 22 / 73 s** (2 et 9 charges) ;
   2500 → 30 / 90 s. Tests dungeon : 2 000 PV ; marges de 15 000 ticks gardées. ✅ En ligne le 30/10.
+
+## 30/10/2026 — Favicon du site (Jules)
+- **Quoi** : `scripts/gen_favicon.py` (stdlib, grille 16×16 en caractères, palette = `--acc-dk` / `--panel` de
+  `src/ui/style.css` + couleurs de `pickaxe_steel`) génère `textures/favicon-16.png`, `-32.png` et `-192.png` (agrandis
+  sans lissage). `index.html` et `wiki.html` : `<link rel="icon">` 16 et 32 + `<link rel="apple-touch-icon">` 192.
+- **Pourquoi dans `textures/`** : le serveur ne sert que la liste blanche `SERVER.publicPaths` (`server/config.js`) ;
+  `/favicon.ico` à la racine n'y est pas, les navigateurs qui le demandent d'office reçoivent toujours un 404 (sans effet).
+- **Tests** ✅ `tests/favicon.test.js` (nouveau, 2 : les icônes déclarées par chaque page existent, sont publiques, PNG à la
+  bonne taille) ; `tests/wiki.test.js` : 13/13 avec le nouveau fichier.
+- ⚠️ Pas vu dans un vrai onglet (seulement l'aperçu 192 px). Le serveur envoie `Cache-Control: no-store` : l'icône
+  change dès le rechargement, mais certains navigateurs gardent l'ancienne icône (cache des favicons) un moment.
