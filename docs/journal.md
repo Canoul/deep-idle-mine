@@ -24,7 +24,7 @@ Modèle d'entrée :
 - **Décisions** : on garde les décimales **quand elles servent** : les vitesses (minage 1,77 ; boost de pioche +0,206 ;
   marche, échelle), les dégâts (14,3) et les bonus en % (ténacité +16,3 %), qu'une amélioration +1 fait bouger de
   quelques dixièmes. Réglage par stat : `STUFF.statDecimals` (config).
-- **État** : 🧪 sur la branche `jules/chiffres-sans-decimales` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Le Golbute et le golem redessinés (style Darkest Dungeon)
 - **Pour le joueur** : le Golbute de l'Instance II n'est plus un bloc gris plat. C'est un colosse de pierre voûté, tête
@@ -184,6 +184,17 @@ Modèle d'entrée :
 
 ## 30/10/2026 — Geoffrey — Correctif : la prison compte comme une session dans Social
 - **Pour le joueur** : un joueur en prison s'affiche « En session · Prison » (amis et liste Online), et on ne peut plus l'inviter comme s'il était libre.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Stèles des tours : retours de partie
+- **Pour le joueur** :
+  - une stèle a maintenant **une charge** (avant 3), consommée **seulement à la victoire** ; une défaite ne la consomme pas, et elle reste chargée tant qu'elle n'est pas utilisée ;
+  - une fois chargée, le chef peut l'**activer ou la désactiver** dans le lobby de la tour : plus de blocage si l'équipe n'arrive pas à passer la tour sous stèle ;
+  - elle n'apparaît que dans **sa** tour : le Pacte dans la Tour de l'Ange, l'Exorcisme dans la Tour du Démon (plus dans la Mine) ;
+  - la **ténacité** peut éviter la projection de l'arrivée du 2e boss ;
+  - le **logisticien** peut poser son treuil pendant le 2e boss s'il n'en avait pas ; un treuil déjà posé reste brisé ;
+  - le 2e boss suit les règles du 1er : il n'avance pas avant le premier coup, et ceux qui étaient en bas se regroupent avant de monter.
+- **À savoir** : les stèles déjà actives à 2 ou 3 tours passent à 1 charge.
 - **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey) ✅ en ligne le 30/10

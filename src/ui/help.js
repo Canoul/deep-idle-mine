@@ -26,7 +26,7 @@ Figées au lancement : elles comptent pour toute la session.`,
   shrines: `Shrines
 Un shrine se paie en objets ; une fois le prix atteint, il donne son bonus pendant plusieurs mines.
 Ils agissent dans les mines que tu lances, seul ou en chef de groupe.
-Les stèles (Exorcisme, Pacte) agissent dans les tours de leur camp que tu lances.
+Les stèles (Exorcisme, Pacte) se paient dans le lobby de leur tour : une charge, consommée à la victoire, gardée sinon. Le chef peut les activer ou les désactiver.
 Ton groupe peut t'aider à payer.`,
   gchat: `Chat global
 Tous les joueurs du jeu le lisent, en session ou non.

@@ -213,8 +213,8 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   par ce chef (décomptées au lancement), dessinés à la surface près du coffre ; lobby au même code tant qu'il y en a un.
   **Shrine d'abondance** : 10 pépites d'argent + 20 résidus angéliques, 5 sessions, 5 points de terrain → minerais au
   prorata dans toutes les areas. D'autres shrines prévus.
-  **Stèles des tours** (30/10, Geoffrey ; `SHRINES.list` exorcisme / pacte, `TOWER.stele`) : shrines décomptés au lancement
-  d'une tour de leur camp par le chef (3 tours, provisoire). **Exorcisme** (Tour du Démon, 240 Stonebricks angéliques),
+  **Stèles des tours** (30/10, Geoffrey ; `SHRINES.list` exorcisme / pacte, `TOWER.stele`) : shrines d'une tour de leur camp lancée par le chef : une charge,
+  consommée à la victoire (ancien : 3 tours décomptées au lancement), activable / désactivable par le chef (`off`, `POST /api/party/stele`), visibles dans le lobby de leur tour seulement. **Exorcisme** (Tour du Démon, 240 Stonebricks angéliques),
   **Pacte** (Tour de l'Ange, 240 démoniaques). À la mort du boss, le boss de l'autre camp s'écrase sur le toit (projection
   10 cases), casse le treuil, 5 mobs de l'autre camp à 150 % PV par étage, boss à 150 % PV ; même chrono, victoire = 2e
   boss tué. Bonus : **trésor béni** (anneaux × 2) via `RUNE.luck`, coefficient générique (variantes R1-R7 générées).
