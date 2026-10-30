@@ -5519,3 +5519,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu à l'écran (tremblement, icônes Charge / Vulnérable, sprite noir en jeu). Points fragiles : la charge suppose
   un boss au sol et une course horizontale ; une proie sur une échelle juste au-dessus le fait attendre (pas de charge) ;
   l'Arène reste serrée en temps (2 min) avec peu de mineurs.
+
+## 30/10/2026 — Minotaure : réglage au preset acier (Jules, demande de Geoffrey)
+- **Quoi** : `DUNGEON.boss.hp` 2500 → **4000** ; `MINOTAUR.charge.every` 12 → **8**, `first` 6 → **4**,
+  `MINOTAUR.rage.chargeEvery` 8 → **5**. Arène inchangée (`minoHp` 1000).
+- **Mesure** (script hors dépôt : scène du donjon de `tests/dungeon.test.js`, mineurs construits par `minerSpecs({ players:[],
+  bots, botPresets })` comme une session dev avec presets, 5 seeds) : barbare + mineur + logisticien 50-53 s, 6 charges ;
+  barbare seul 148-153 s, 18 charges ; dégâts par coup : barbare 23,6, mineur et logisticien 18,5. Balayage : 2500 / 12 s →
+  30 s et 2 charges ; 3500 → 44 s ; 5000 → 66 s ; passer de 12 à 8 s ajoute surtout des charges (+1 à 3), presque pas de
+  temps. Arène au preset : 3 → 21-23 s, barbare seul 59 s, mineur seul 98 s (carte de 120 s). Les PV ne dépendent pas de
+  l'area : « areas 6, 7, 8 » donne la même chose (donjons en areas 4 et 5).
+- **Tests** ✅ minotaur, dungeon (4 000 PV ; tests « oxygène à 0 » et « Fuir » : 15 000 ticks, barbare seul sans stuff
+  ≈ 13 min), khole, diagnostics, wiki, spells, combat, effects, view : 138/138. Simulation 3 × 5 (après fusion de main) : areas 3,0,
+  profondeur 189,8, 0 bloquée (inchangée).

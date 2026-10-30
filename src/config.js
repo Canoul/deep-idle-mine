@@ -1764,7 +1764,7 @@ export const PREF_OPTIONS = {
    Butin du boss : loot (chaque joueur présent à la fin en reçoit la quantité entière, comme les Treasure TX). */
 export const DUNGEON = {
   areas: [4, 5], chance: 0.33, size: 10, margin: 2, winchGap: 5, holeRows: 3,   // 33 % par area, tirages indépendants (22/10, Geoffrey ; avant : 100 %)
-  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:2500 },   // 2 500 PV avec la Charge et la Rage (30/10/2026, Jules ; avant 1 000)
+  boss: { type:'minotaure', name:'Minotaure', tex:'minotaur', hp:4000 },   // 4 000 PV (30/10/2026, Geoffrey et Jules : preset acier à 3 ≈ 50 s ; avant 2 500 le même jour, et 1 000)
   loot: { item:'Cristal de pleine lune', min:1, max:3, tex:'moon_crystal' },
   leather: { item:'Cuir de minotaure', min:1, max:3, tex:'minotaur_leather' },   // en plus des cristaux, même partage (27/10/2026, Geoffrey)
   scaredTime: 15,
@@ -1782,8 +1782,10 @@ export const DUNGEON = {
    variants : le minotaure du donjon a les deux ; dans l'Arène du k hole, le brun charge et le noir enrage (plus tôt,
    plus fort) ; rage d'une variante = valeurs qui remplacent celles de rage. */
 export const MINOTAUR = {
-  charge: { every: 12, first: 6, windup: 1.5, speed: 12, maxRun: 12, knock: 3, stun: 2, missStun: 3, missVuln: 0.5 },
-  rage: { below: 0.33, hitEvery: 0.5, knock: 0.5, chargeEvery: 8 },
+  charge: { every: 8, first: 4, windup: 1.5, speed: 12, maxRun: 12, knock: 3, stun: 2, missStun: 3, missVuln: 0.5 },
+  rage: { below: 0.33, hitEvery: 0.5, knock: 0.5, chargeEvery: 5 },
+  /* 30/10/2026 (Geoffrey : mesurer au preset acier) : charge toutes les 8 s, la première après 4 s, 5 s en rage (avant 12 / 6 / 8) :
+     à 3 en preset acier, 5 charges par combat au lieu de 2 */
   variants: {
     donjon: { name: 'Minotaure',      tex: 'minotaur',       charge: true,  rage: {} },
     brun:   { name: 'Minotaure brun', tex: 'minotaur',       charge: true,  rage: null },
