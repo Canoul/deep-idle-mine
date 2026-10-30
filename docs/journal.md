@@ -9,7 +9,7 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
-## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey)
+## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey) ✅ en ligne le 30/10
 
 - **Carte de la session** : on peut zoomer en pinçant à deux doigts (sur ordinateur : Ctrl + molette), jusqu'à ×4. Zoomée, la caméra suit toujours ton mineur, aussi de gauche à droite ; un glissé la déplace dans tous les sens, « Suivre » la ramène. Double appui : retour à la vue entière.
 - **Inventaire sur mobile** : toucher une pièce la sélectionne du premier coup (le survol simulé de l'iPhone avalait l'appui) et la fiche avec le bouton « Équiper » vient à l'écran.
