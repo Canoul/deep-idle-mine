@@ -22,6 +22,9 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : 8 d'énergie par heure de jeu (avant 4)
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Une icône pour le site (favicon)
 - **Pour le joueur** : l'onglet du navigateur (jeu et wiki) affiche maintenant une petite **pioche d'acier avec un éclat
   de diamant** sur une case sombre au cadre orange, aux couleurs de l'interface. La même icône sert si on ajoute le site
