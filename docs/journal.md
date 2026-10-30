@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Voir l'énergie des gens dans Social
+- **Pour le joueur** : dans Social, les listes Amis et En ligne montrent l'énergie de chacun (« ⚡ 42/100 »), en rouge s'il ne peut plus
+  lancer de mine classique. Pratique pour savoir avant d'inviter. Le chiffre peut avoir jusqu'à 30 s de retard.
+- **Décisions** : visible par tout le monde dans En ligne, pas seulement par les amis ; pas dans les classements.
+- **État** : 🧪 sur la branche `geoffrey/social-energie` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
 - **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
   croyait parti et rejouait ton run depuis le début à chaque réveil. Il t'attend maintenant 90 s au lieu de 30, le run continue normalement.

@@ -722,6 +722,8 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .towerWho .frow .fname{flex:1}
 .fname{flex:1;display:flex;flex-direction:column;min-width:0}
 .fname b{font:400 var(--fs-l)/1.1 var(--f-title);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fenergy{color:#ffd23f;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fenergy.low{color:var(--bad)}
 .fbtns{display:flex;gap:calc(2*var(--u));flex-wrap:wrap;justify-content:flex-end}
 .fbtns button{min-height:calc(15*var(--u));font-size:var(--fs-s)}
 .fbtns .x{min-width:calc(15*var(--u));padding:0}
