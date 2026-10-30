@@ -30,7 +30,7 @@ Modèle d'entrée :
 - **Pour le joueur** : derrière les onglets Inventaire, Craft, etc., la prison en fond n'était mise à jour que toutes les 15 secondes : le
   mineur restait figé, puis se téléportait. Elle bouge maintenant aussi bien que dans l'onglet Session.
 - **À suivre** : vérifier en jeu que le fond est fluide.
-- **État** : 🧪 sur la branche `geoffrey/fix-prison-fond` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
 - **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
