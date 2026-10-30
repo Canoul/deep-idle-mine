@@ -1,9 +1,13 @@
 /* Instance II, le Golbute : équilibrage (30/10/2026). Compo de référence (Geoffrey) : 1 mineur et 2 barbares, arbre au
    maximum avec ses sorts, armure en mithril, pioche et épée en acier avec 20 % de stats en plus (30/10, Geoffrey ; avant : en fer). Mesure : victoires, temps
    passé à miner le cristal (part des 10 min), PV restants, morts.
-   Usage : npm run simulate:golbute -- [--count 20] [--seed 1] [--hp 10000] [--crystal 600] [--tenacity 0] [--verbose] */
+   Usage : npm run simulate:golbute -- [--count 20] [--seed 1] [--hp 10000] [--crystal 600] [--tenacity 0] [--verbose]
+           [--from data/presets/<fichier>.json] : la vraie équipe de ce fichier ({ pseudo: copie }, comme npm run
+           dev:presets -- --from) à la place de la compo de référence (stuff, skills, glyphes, sorts réels ; --tenacity ajoute). */
+import { readFileSync } from 'node:fs';
 import { DEV_PRESETS, INSTANCE, DT } from '../src/config.js';
 import { minerSpecs } from '../src/shared/game.js';
+import { copyPresetId } from '../src/shared/dev-presets.js';
 import { newGolbute, tickGolbute } from '../src/sim/instance/golbute.js';
 
 const args = process.argv.slice(2);
@@ -11,7 +15,7 @@ const opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : (ar
 const COUNT = +opt('count', 20), SEED0 = +opt('seed', 1), VERBOSE = args.includes('--verbose');
 if(opt('hp', null) != null) INSTANCE.golbute.boss.hp = +opt('hp');
 if(opt('crystal', null) != null) INSTANCE.golbute.crystal.hp = +opt('crystal');
-const TEN = +opt('tenacity', 0);
+const TEN = +opt('tenacity', 0), FROM = opt('from', null);
 
 /* mineurs de référence : presets (arbre au max, sorts de la spé) avec le stuff de référence ; outils en acier + 20 % */
 DEV_PRESETS.gear = ['Casque en mithril', 'Plastron en mithril', 'Jambes en mithril', 'Bottes en mithril', 'Pioche en acier', 'Épée en acier'];
@@ -22,8 +26,16 @@ export function refMiners(tenacity = TEN){
 }
 
 if(process.argv[1]?.endsWith('simulate-golbute.js')) main();
+/* vraie équipe (--from) : chaque copie repasse par les vérifications du jeu (presetFromSnapshot) */
+function teamFrom(file, tenacity = TEN){
+  const team = JSON.parse(readFileSync(file, 'utf8')), names = Object.keys(team).slice(0, 3);
+  const specs = minerSpecs({ players: [], bots: names.length, botPresets: names.map(n => copyPresetId(n.replace(/[^\w-]/g, ''))), botCopies: names.map(n => team[n]) });
+  specs.forEach((s, i) => { if(!s.carac) throw new Error(`${names[i]} : copie refusée par le jeu`); });
+  return specs.map(s => ({ ...s, carac: { ...s.carac, tenacity: (s.carac.tenacity || 0) + tenacity } }));
+}
+
 function main(){
-const miners = refMiners();
+const miners = FROM ? teamFrom(FROM) : refMiners();
 if(VERBOSE) for(const m of miners) console.log(`${m.name} : minage ${m.carac.mineSpeed.toFixed(2)} (+${m.carac.mineSpeedPct || 0} %), dégâts ${m.carac.damage.toFixed(1)} (+${m.carac.damagePct || 0} %), vitesse d'attaque ${m.carac.attackSpeed} %, ténacité ${m.carac.tenacity || 0} %, recul ${m.carac.knockRes || 0} %, sorts ${m.spells.join(', ')}`);
 let wins = 0, mineT = 0, deaths = 0, hpLeft = 0, tWin = 0, phases = [0, 0, 0], splits = 0;
 for(let s = SEED0; s < SEED0 + COUNT; s++){
