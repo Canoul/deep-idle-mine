@@ -617,6 +617,8 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
 - **Trois sous-onglets** : **Amis** (tout ce qui suit), **Online** *(26/10/2026, Geoffrey)* et **Classements** *(27/10/2026, Geoffrey)*.
+- **Énergie visible** *(31/10/2026, Geoffrey)* : chaque ligne d'**Amis** (hors ligne compris) et d'**Online** montre l'énergie du
+  joueur (« ⚡ 42/100 »), **en rouge** sous 6 (il ne peut plus lancer de mine classique). Elle est visible par tous, pas seulement les amis.
 - **Classements** *(27/10/2026, Geoffrey)* : tous les joueurs (amis ou non, invités compris), **les 50 premiers** et, si on
   n'y est pas, **sa propre ligne avec son rang** *(valeur de config)*. Un joueur à 0 n'est pas classé. Le compte
   « admin » (comptes de test de l'équipe, liste en config) n'est jamais classé *(27/10)*. Ex aequo : même rang.

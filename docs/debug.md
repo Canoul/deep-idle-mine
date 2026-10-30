@@ -5745,3 +5745,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   limitent aussi les onglets cachés, avec d'autres rythmes, non mesurés.
 - ⚠️ Piste non prouvée pour le lag de la tour : ces rejeux ont pu charger le VPS quand plusieurs joueurs avaient la prison en arrière-plan.
 
+## 31/10/2026 — Énergie dans Social (Geoffrey)
+- **Quoi** : `energy` { value, max } sur les lignes Amis et Online ; affichée par `energyHTML` (src/ui/social.js), rouge sous `ENERGY.cost.min`.
+- **Serveur** : `loadEnergy` coupé en deux : `restedEnergy` calcule sans écrire, `loadEnergy` écrit. `game.energyOf` n'écrit rien et ne prend aucun
+  verrou : lire l'énergie d'un autre ne peut pas écraser un débit de lancement. Le service social la garde `SOCIAL_SERVER.energyFor` (30 s), car
+  `sessionsOf` copie les sessions du joueur et chaque navigateur redemande ses amis toutes les 4 s. Le cache n'est pas purgé : une entrée par compte vu.
+- **Tests** ✅ social +4 (amis hors ligne, Online, repos, aucune écriture, cache, affichage), energy-server, tower-who. Rendu vérifié ✅ en Chrome sans
+  écran sur une page de test avec le vrai CSS ; ⚠️ pas dans le vrai jeu, ni sur téléphone.
+- ❌ Déjà en échec sur `main`, sans lien : `energyOfTicks et publicEnergy` (tests/energy.test.js:60 attend 4 par heure, `ENERGY.prisonPerHour` vaut 8) et
+  `une tour et une instance lancées terminent la prison` (tests/prison-server). Non traités.

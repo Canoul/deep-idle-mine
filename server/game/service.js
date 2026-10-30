@@ -235,14 +235,18 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* énergie relue et revérifiée à chaque fois (départ si absente) ; repos (30/10/2026) : sans session en cours ni prison
      (qui tourne ou attend), le temps depuis le dernier calcul ou la fin de la dernière activité rapporte ENERGY.idlePerHour
      par heure de jeu ; enregistré dès qu'il rapporte. Pendant une activité, rien (la prison recharge à sa façon). */
-  const loadEnergy = async accountId => {
+  const restedEnergy = async accountId => {
     const e = sanitizeEnergy(await store.getEnergy(accountId)), now = clock();
     const prisonRec = sanitizePrison(await store.getPrison?.(accountId));
     const busy = !!await activeOf(accountId) || prisonRec?.state === 'running' || prisonRec?.state === 'waiting';
-    if(e.at == null){ e.at = now; await store.putEnergy(accountId, e); return e; }   // premier calcul : le repos compte à partir d'ici
-    if(busy){ e.at = now; return e; }
+    if(e.at == null){ e.at = now; return { e, changed: true }; }   // premier calcul : le repos compte à partir d'ici
+    if(busy){ e.at = now; return { e, changed: false }; }
     const lastEnd = (await store.sessionsOf(accountId)).reduce((m, s) => Math.max(m, Number.isFinite(s?.endedAt) ? s.endedAt : 0), prisonRec?.endedAt ?? 0);
-    if(settleIdle(e, Math.max(e.at, lastEnd), now, GAME.speed) > 0) await store.putEnergy(accountId, e);
+    return { e, changed: settleIdle(e, Math.max(e.at, lastEnd), now, GAME.speed) > 0 };
+  };
+  const loadEnergy = async accountId => {
+    const { e, changed } = await restedEnergy(accountId);
+    if(changed) await store.putEnergy(accountId, e);
     return e;
   };
   const loadProgress = async accountId => sanitizeProgress(await store.getProgress(accountId));
@@ -1691,6 +1695,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     close: () => live.closeAll(),
     /* ID de la session en cours du joueur (lancée par lui ou par le chef de son groupe), sinon null */
     activeSessionId: async accountId => (await activeOf(accountId))?.id ?? null,
+    /* son énergie vue par les autres (onglet Social, 31/10) : lecture seule, sans verrou ni écriture, pour ne jamais
+       écraser un débit ou un crédit en cours ; repos compté comme dans son bandeau */
+    energyOf: async accountId => publicEnergy((await restedEnergy(accountId)).e),
+
     /* sa session en cours vue par ses amis (onglet Social) : type de mine, temps restant (ms, null en mode dev), ou null ;
        30/10 : size = joueurs encore dans la session (partis exclus) sur max, pour repérer les solos et duos */
     activeSessionInfo: async accountId => {

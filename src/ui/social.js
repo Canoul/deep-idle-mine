@@ -9,7 +9,7 @@
    l'équipe et le temps du combat contre le roi) ; top LEADERBOARD.size et sa propre place, redemandé toutes les LEADERBOARD.refresh ms
    quand il est à l'écran.
    Affiche ce que renvoie le serveur ; chaque action passe par h (promesses rejetées avec un message lisible). */
-import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT } from '../config.js';
+import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT, ENERGY } from '../config.js';
 import { towerTime, isBoard } from '../meta/leaderboard.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
@@ -38,6 +38,13 @@ export function statusText(f){
     return [label + size, leftText(f.leftMs)].filter(Boolean).join(' · ');   // 23/10 : on voit quand il aura fini
   }
   return STATUS[f.status]?.label ?? '';
+}
+
+/* énergie d'un joueur (31/10) : « ⚡ 42/100 », en rouge s'il ne peut plus lancer de mine classique ; rien si inconnue */
+export function energyHTML(e){
+  if(!Number.isFinite(e?.value)) return '';
+  const low = e.value < ENERGY.cost.min;
+  return `<span class="fenergy${low ? ' low' : ''}" title="${low ? 'Pas assez d\'énergie pour lancer une mine classique' : 'Énergie'}">⚡ ${e.value}/${e.max}</span> · `;
 }
 
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
@@ -92,21 +99,21 @@ export function setupSocial(h){
   function friendRow(f){
     const why = f.together ? 'Déjà dans ton groupe' : f.status === 'session' ? 'En session' : f.status === 'offline' ? 'Hors ligne' : '';
     return `<div class="frow"><span class="fdot ${STATUS[f.status].cls}"></span>`+
-      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
+      `<span class="fname"><b>${esc(f.name)}</b><small class="mut">${energyHTML(f.energy)}${esc(statusText(f))}${f.together ? ' · avec toi' : ''}</small></span>`+
       `<span class="fbtns"><button data-profile="${esc(f.id)}" title="Voir son équipement, ses stats et son niveau">${pxi('helmet')}Stuff</button>`+
       `<button data-invite="${esc(f.id)}"${f.canInvite ? '' : ` disabled title="${esc(why || 'Indisponible')}"`}>${pxi('group')}Inviter</button>`+
       `<button data-join="${esc(f.id)}"${f.canJoin ? '' : ` disabled title="${esc(why || (f.status === 'lobby' ? 'Groupe complet' : 'Indisponible'))}"`}>${pxi('arrow')}Rejoindre</button>`+
       `<button class="x" data-remove="${esc(f.id)}" data-name="${esc(f.name)}" title="Retirer des amis">×</button></span></div>`;
   }
 
-  /* une ligne de la liste Online : p = { id, name, status…, me, friend } */
+  /* une ligne de la liste Online : p = { id, name, status…, energy, me, friend } */
   function onlineRow(p){
     const sent = st?.outgoing.some(r => r.id === p.id);
     const tag = p.me ? ' · toi' : p.friend ? ' · ami' : '';
     const btn = p.me || p.friend ? '' : sent ? '<button disabled title="Demande déjà envoyée">Demande envoyée</button>'
       : `<button data-add="${esc(p.id)}" title="Envoyer une demande d'ami">${pxi('person')}Ajouter</button>`;
     return `<div class="frow"><span class="fdot ${STATUS[p.status]?.cls ?? 'on'}"></span>`+
-      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${esc(statusText(p))}${tag}</small></span>`+
+      `<span class="fname"><b>${esc(p.name)}</b><small class="mut">${energyHTML(p.energy)}${esc(statusText(p))}${tag}</small></span>`+
       `<span class="fbtns">${btn}</span></div>`;
   }
   function renderOnline(){
