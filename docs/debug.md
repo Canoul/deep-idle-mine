@@ -5585,3 +5585,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Points fragiles : `renderLfg` relit `lobby.lfgView()` à chaque image (comparaison par JSON, DOM touché seulement si
   ça change, soit au plus une fois par seconde pendant une recherche). Un ancien navigateur qui envoie l'émote `mine`
   reçoit un 400 (sans effet visible : l'émote locale s'affiche quand même).
+
+## 30/10/2026 — Favicon du site (Jules)
+- **Quoi** : `scripts/gen_favicon.py` (stdlib, grille 16×16 en caractères, palette = `--acc-dk` / `--panel` de
+  `src/ui/style.css` + couleurs de `pickaxe_steel`) génère `textures/favicon-16.png`, `-32.png` et `-192.png` (agrandis
+  sans lissage). `index.html` et `wiki.html` : `<link rel="icon">` 16 et 32 + `<link rel="apple-touch-icon">` 192.
+- **Pourquoi dans `textures/`** : le serveur ne sert que la liste blanche `SERVER.publicPaths` (`server/config.js`) ;
+  `/favicon.ico` à la racine n'y est pas, les navigateurs qui le demandent d'office reçoivent toujours un 404 (sans effet).
+- **Tests** ✅ `tests/favicon.test.js` (nouveau, 2 : les icônes déclarées par chaque page existent, sont publiques, PNG à la
+  bonne taille) ; `tests/wiki.test.js` : 13/13 avec le nouveau fichier.
+- ⚠️ Pas vu dans un vrai onglet (seulement l'aperçu 192 px). Le serveur envoie `Cache-Control: no-store` : l'icône
+  change dès le rechargement, mais certains navigateurs gardent l'ancienne icône (cache des favicons) un moment.

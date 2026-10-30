@@ -22,6 +22,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Jules — Une icône pour le site (favicon)
+- **Pour le joueur** : l'onglet du navigateur (jeu et wiki) affiche maintenant une petite **pioche d'acier avec un éclat
+  de diamant** sur une case sombre au cadre orange, aux couleurs de l'interface. La même icône sert si on ajoute le site
+  à l'écran d'accueil d'un téléphone.
+- **À suivre** : rien ; pour retoucher le dessin, modifier la grille dans `scripts/gen_favicon.py` et le relancer.
+
 ## 30/10/2026 — Jules — Chercher un groupe depuis la ville (le Carreau)
 - **Pour le joueur** : plus besoin d'aller dans le Lobby pour chercher un groupe. Dans la promenade du Carreau :
   - dans la **barre d'émotes**, un bouton groupe remplace l'émote « ⛏️ On mine ? » ; en recherche, il s'allume et affiche
