@@ -5714,3 +5714,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas vu à l'écran : colonne d'entrée de 4 cases en alliage (`.fin`), à regarder sur téléphone. Si une recette à 3 contient une
   recette à 2, le four cuit celle à 2 tant que la 3e case est vide : éviter ce cas en config, ou décider d'une règle.
 
+## 30/10/2026 — Four : fenêtre Recettes (Geoffrey)
+- **Quoi** : `src/ui/furnace.js` : `.fpart` (icône + nom + « + », insécable), `.frecHead` (nom et durée), classe `.frecBox` posée par
+  `openRecipes`, retirée par `openPicker` (même `.box`). `style.css` : `.frecs{max-height:45vh}` remplacé (liste flexible, box en colonne).
+- **Vérifié** ✅ Chrome sans écran, page de test avec le vrai `setupFurnace` et le vrai CSS : 1280 × 900 et 500 × 900. Pas sur un vrai
+  téléphone. Tests : furnace-trio +1, furnace.
+
