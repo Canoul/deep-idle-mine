@@ -39,7 +39,7 @@ import { sanitizeFurnaces, furnaceOp, advance } from '../../src/meta/furnace.js'
 import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } from '../../src/meta/crusher.js';
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
-import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines } from '../../src/meta/shrines.js';
+import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
@@ -310,7 +310,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const parts = splitTowerLoot(summary.loot, heirs.length, side, random);
         for(const share of summary.shares || []){
           const i = heirs.indexOf(share);
-          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random))]: 1, ...parts[i] } : {};
+          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random), shrineOf(rec.stele)?.effect?.luck ?? null)]: 1, ...parts[i] } : {};   // stèle : trésor béni (30/10)
         }
       }
       /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
@@ -595,11 +595,14 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         }
         /* shrines du chef (28/10/2026, SHRINES) : mine classique hors mode dev ; chaque shrine actif perd une session ici,
            au lancement, et ses effets sont enregistrés dans la session (la partie se rejoue à l'identique) */
-        const shrines = mode === 'mine' && !dev ? await withLock('shrine:' + me.id, async () => {
-          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st);
+        const shrines = (mode === 'mine' || side) && !dev ? await withLock('shrine:' + me.id, async () => {
+          const st = sanitizeShrines(await store.getShrines(me.id)), used = consumeShrines(st, side || null);   // tour : ses stèles (30/10)
           if(used.length) await store.putShrines(me.id, st);
           return used;
         }) : [];
+        /* stèle d'une tour (30/10/2026, SHRINES exorcisme / pacte) : la première active de ce camp ; en mode dev, imposée par
+           body.stele (pour tester sans la payer) */
+        const stele = side ? (dev ? (shrineOf(body.stele)?.tower === side ? body.stele : null) : shrines[0] ?? null) : null;
         const rec = {
           id: crypto.randomUUID(),
           mode,
@@ -615,7 +618,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(side ? { opening, level } : inst ? { level } : {}),
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
-          ...(shrines.length ? { shrines } : {}),
+          ...(shrines.length && !side ? { shrines } : {}),
+          ...(stele ? { stele } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,

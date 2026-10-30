@@ -43,11 +43,11 @@ export function createTowerViewer(G){
       winch: G.winch ?? null,                                          // treuil du logisticien
       chestAt: G.chestAt ?? null, chest: G.chest ?? {},                // coffre commun (pods : TOWER.chest)
       seen: G.seen.map(r => r.join('')),
-      boss: { name: G.boss.name, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air,
+      boss: { name: G.boss.name, side: G.boss.side ?? G.side, hp: Math.ceil(G.boss.hp), maxhp: G.boss.maxhp, target: G.boss.target, x: G.boss.x, kx: G.boss.kx || 0, y: G.boss.y, lift: G.boss.lift || 0, air: !!G.boss.air,
               rage: G.boss.hp > 0 && G.boss.hp < G.boss.maxhp * (G.lv?.rageBelow ?? 0), taunt: G.boss.taunt != null },
       torches: G.torches.map(t => t.y * G.w + t.x), torchR: G.torches.map(t => t.r ?? null),   // rayon de chaque torche
       ...(G.torches.some(t => t.item) ? { torchItem: G.torches.map(t => t.item ?? null) } : {}),   // pièce de la case torche (apparence)
-      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null, fx: mobEffects(G, o) })),
+      mobs: G.mobs.filter(o => o.hp > 0 && G.seen[o.y]?.[o.x]).map(o => ({ id: o.id, ...(o.side ? { side: o.side } : {}), x: o.x, y: o.y, kx: o.kx || 0, hp: Math.ceil(o.hp), maxhp: o.maxhp, awake: o.awake, grab: o.grab, splash: o.splash ?? null, fx: mobEffects(G, o) })),
       reached: reached(G), mobsLeft: G.mobs.filter(o => o.hp > 0 && o.awake).length,
       miners: G.miners.map(m => minerView(G, m)), stats: G.stats, log: G.log.slice(0, 50),
     };

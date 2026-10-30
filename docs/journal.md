@@ -9,6 +9,13 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Stèles des tours : Exorcisme et Pacte (Geoffrey)
+
+- Deux nouveaux « shrines » pour les tours du Jugement, payés dans le Lobby comme le Shrine d'abondance : **Stèle d'exorcisme** (Tour du Démon, 240 Stonebricks angéliques) et **Stèle du pacte** (Tour de l'Ange, 240 Stonebricks démoniaques). Actives 3 tours lancées par le chef (valeur provisoire, à confirmer).
+- Effet : quand le boss meurt, le boss de l'autre camp s'écrase sur le toit, projette tout le monde de 10 cases, casse le treuil, et 5 mobs de l'autre camp (150 % de PV) envahissent chaque étage. Le 2e boss a 150 % de PV. Même chrono de 10 min : il faut le tuer pour gagner.
+- Bonus : un **trésor béni**, deux fois plus de chances d'anneau. C'est un simple coefficient : on pourra en ajouter d'autres sans réécrire de liste de coffres.
+- ⚠️ Équilibrage : en simulation, une équipe 2,5 minage / 40 dégâts tue le 1er boss vers 8 min 17, puis n'a plus le temps (2e boss presque intact). À régler (plus de temps, moins de PV, moins de mobs…).
+
 ## 30/10/2026 — Zoom sur la carte et bouton « Équiper » sur mobile (Geoffrey) ✅ en ligne le 30/10
 
 - **Carte de la session** : on peut zoomer en pinçant à deux doigts (sur ordinateur : Ctrl + molette), jusqu'à ×4. Zoomée, la caméra suit toujours ton mineur, aussi de gauche à droite ; un glissé la déplace dans tous les sens, « Suivre » la ramène. Double appui : retour à la vue entière.

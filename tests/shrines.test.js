@@ -82,7 +82,7 @@ test('lancement : chaque shrine actif perd une session, retiré à 0 ; relu et r
   assert.deepEqual(consume(st), []); assert.equal(hasShrines(st), false);
   assert.deepEqual(sanitizeShrines({ active: { abundance: 99 } }).active, { abundance: 5 }, 'jamais plus que la durée');
   assert.deepEqual(sanitizeShrines({ paid: { abundance: { [NUG]: 99, [RES]: -3, Fer: 4 } } }).paid, { abundance: { [NUG]: 10 } });
-  assert.deepEqual(publicShrines(createShrines())[0], { id: 'abundance', name: AB.name, desc: AB.desc, tex: AB.tex, sessions: 5, price: AB.price, paid: {}, left: 0 });
+  assert.deepEqual(publicShrines(createShrines())[0], { id: 'abundance', name: AB.name, desc: AB.desc, tex: AB.tex, sessions: 5, price: AB.price, tower: null, paid: {}, left: 0 });
 });
 
 /* ---------- serveur ---------- */
