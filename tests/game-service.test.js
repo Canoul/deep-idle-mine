@@ -259,7 +259,8 @@ test('chacun ne voit et ne touche que ses propres sessions', async () => {
 
 /* ---------- focus minerai (changé pendant la session) ---------- */
 
-test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async () => {
+test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé, visible dans la session', async t => {
+  const was = FOCUS.ores; FOCUS.ores = true; t.after(() => { FOCUS.ores = was; });   // focus minerai rendu accessible
   const { game, advance } = setup();
   const { session } = await game.start(ME, {});
   advance(10_000);
@@ -270,6 +271,14 @@ test('focus : appliqué tout de suite, au tick de la partie du serveur, nettoyé
   const st = await game.state(ME);
   assert.deepEqual(st.session.focus, [{ account:ME.id, tick:event.tick, focus:{ coal:'only' } }]);
   assert.equal(st.session.id, session.id);
+});
+
+test('focus minerai retiré du jeu (30/10, FOCUS.ores false) : le serveur ne garde que l\'area', async () => {
+  assert.equal(FOCUS.ores, false);
+  const { game } = setup();
+  await game.start(ME, {});
+  const { event } = await game.focus(ME, { focus:{ coal:'only', iron:'target', area:1 } });
+  assert.deepEqual(event.focus, { area:1 });
 });
 
 test('mode dev : vitesse et pause sur le serveur ; la partie suit cette horloge', async () => {

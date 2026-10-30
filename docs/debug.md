@@ -5421,3 +5421,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 30/10/2026 — Force des spés en prison + affichage des heures
 - `prison-dashboard.js` : `h()` arrondit en minutes totales (4,999 h affichait « 4 h 60 »). `simulate-prison-profile.js --bot mineur|logisticien|barbare` (preset acier sans --preset).
 - Sim (oreMul 0.24, history canoul area 7, 30 runs / 3 prisons) : logisticien 669 poids/h (run 10,7 min), mineur 618 (12,1 min), barbare 582 (12,9 min). ⚠️ 30 runs : écarts de ±5 % possibles par le hasard.
+
+## 30/10/2026 — Geoffrey — Focus minerai retiré du jeu, gardé dans le code (branche geoffrey/retirer-focus-minerai)
+- `FOCUS.ores` (src/config.js, false) : panneau `#focusCard` caché (src/ui/focus.js) ; `game.focus` (server/game/service.js)
+  supprime les clés de minerai du focus envoyé, garde `area`. La simulation (src/sim/focus.js) est intacte : une session
+  déjà lancée avec un focus minerai enregistré le rejoue tel quel.
+- Tests ✅ game-service (test du focus minerai : `FOCUS.ores = true` le temps du test ; nouveau test : flag false → `{ area }`
+  seul), focus : 83/83. Docs : GAME_DESIGN (encadré « retiré »), wiki (texte du focus).

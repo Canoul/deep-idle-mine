@@ -197,6 +197,8 @@ Le mineur décide seul. Le joueur influence l'IA via les stats, l'équipement et
 - **Fin de session** *(22/10/2026, Geoffrey ; `CFG.endWorkShare`)* : quand il repart de la surface, il fixe pour ce trajet une **profondeur maximale** : celle où l'aller et le retour depuis la surface prennent au plus **la moitié du temps restant**. Il ne descend pas plus bas et n'y vise pas de minerai : il mine **plus haut** (filons, galeries) au lieu d'aller au front pour remonter aussitôt. La vitesse de trajet est mesurée sur sa dernière remontée (échelles, treuil, détours compris). Il ne repart plus s'il reste moins de 45 s ou si cette profondeur est de moins de 3 couches. *(Avant : il repartait s'il restait 2 × son dernier retour + 30 s, et descendait toujours jusqu'au front.)*
 
 ### Focus minerai
+> **Retiré du jeu pour l'instant** *(30/10/2026, Geoffrey)* : le panneau n'est plus affiché et le serveur ignore les minerais d'un focus (le focus d'area reste). Les règles ci-dessous sont gardées dans le code (`FOCUS.ores` en config, `true` le remet).
+
 Pendant la session, un panneau **Focus minerai** de l'onglet Session permet de choisir, minerai par minerai, ce que vise le mineur du joueur. Il ne propose que les minerais **présents dans les areas débloquées** (la liste grandit avec les déblocages) et affiche, pour chacun, le restant sur le nombre initial.
 - Trois modes par minerai : **Aucun** (normal), **Cibler** (le minerai pèse plus lourd que le plus gros minerai : 2 × la valeur du diamant *(provisoire)*), **Uniquement** (l'IA ne vise que les minerais « Uniquement » et ignore les autres).
 - **« Uniquement » écrase « Cibler »** : dès qu'un minerai est en « Uniquement », les minerais en « Cibler » sont ignorés aussi.
