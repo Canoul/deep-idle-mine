@@ -12,7 +12,7 @@ Modèle d'entrée :
 ## 30/10/2026 — Geoffrey — Tableau de bord de la prison
 - **Pour le joueur** : rien (outil de l'équipe).
 - **Pour nous** : `scripts/dashboard-prison.js` produit une page avec, pour chaque joueur, le rendement de sa prison comparé à ses 10 dernières mines, minerai par minerai (gain par heure de jeu), et la moyenne. Cible : 50 %.
-- **État** : 🧪 sur la branche `geoffrey/tableau-prison` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — Énergie au repos
 - **Pour le joueur** : un joueur qui ne fait rien (ni session en cours, ni prison) regagne **3 d'énergie par heure de jeu** (6 par heure réelle), jusqu'à 100. La prison reste meilleure (4 par heure de jeu).
