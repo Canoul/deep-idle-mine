@@ -7,13 +7,15 @@
      Prix atteint → actif pour SHRINES.list[id].sessions mines classiques, paiement remis à zéro.
    - consume : au lancement d'une mine classique par ce chef, chaque shrine actif perd une session (retiré à 0) ;
      renvoie les shrines actifs pour cette session.
+   - stèles de tour (30/10/2026) : une charge, off:{ id:true } = désactivée par le chef (setStele). steleFor : la stèle qui
+     compte au lancement d'une tour ; spendStele : charge consommée à la victoire, une seule fois par session.
    - oreBonusComp : composition d'une area avec effect.orePoints points de terrain changés en minerais. */
 import { SHRINES, BLOCKS, IDS } from '../config.js';
 import { countOf, removeItem } from './inventory.js';
 
 export const SHRINE_IDS = Object.keys(SHRINES.list);
 export const shrineOf = id => (typeof id === 'string' && Object.hasOwn(SHRINES.list, id)) ? SHRINES.list[id] : null;
-export const createShrines = () => ({ active:{}, paid:{}, code:null, ops:[] });
+export const createShrines = () => ({ active:{}, paid:{}, off:{}, code:null, ops:[] });
 const nat = v => Number.isSafeInteger(v) && v > 0 ? v : 0;
 
 /* relu et revérifié : shrines connus, quantités entières, jamais plus que le prix ni plus de sessions que la durée */
@@ -23,7 +25,7 @@ export function sanitizeShrines(raw){
   for(const id of SHRINE_IDS){
     const def = SHRINES.list[id];
     const left = Math.min(def.sessions, nat(raw.active?.[id]));
-    if(left){ st.active[id] = left; continue; }   // actif : pas de paiement en cours
+    if(left){ st.active[id] = left; if(def.tower && raw.off?.[id] === true) st.off[id] = true; continue; }   // actif : pas de paiement en cours
     const paid = {};
     for(const [item, max] of Object.entries(def.price)){ const q = Math.min(max, nat(raw.paid?.[id]?.[item])); if(q) paid[item] = q; }
     if(Object.keys(paid).length) st.paid[id] = paid;
@@ -67,14 +69,33 @@ export function give(st, inv, { shrine, item, qty, opId }){
   return { ...result, repeated:false };
 }
 
-/* lancement par ce chef : renvoie les shrines actifs (ordre de SHRINES.list) qui comptent pour ce lancement et leur
-   retire une session chacun (retirés à 0). tower : null = mine classique (les shrines sans `tower`), 'angel' / 'demon' =
-   une tour de ce camp (ses stèles, 30/10/2026) */
-export const shrineFor = (id, tower = null) => (shrineOf(id)?.tower ?? null) === tower;
-export function consume(st, tower = null){
-  const used = SHRINE_IDS.filter(id => st.active[id] > 0 && shrineFor(id, tower));
+/* lancement d'une mine classique par ce chef : renvoie les shrines actifs (ordre de SHRINES.list), sans ceux des tours, et
+   leur retire une session chacun (retirés à 0) */
+export function consume(st){
+  const used = SHRINE_IDS.filter(id => st.active[id] > 0 && !shrineOf(id).tower);
   for(const id of used) if(--st.active[id] <= 0) delete st.active[id];
   return used;
+}
+
+/* stèle de ce camp qui compte au lancement d'une tour : chargée et pas désactivée, sinon null */
+export const steleFor = (st, tower) => SHRINE_IDS.find(id => st.active[id] > 0 && shrineOf(id).tower === tower && !st.off[id]) ?? null;
+/* le chef active (on = true) ou désactive une stèle chargée. Renvoie { ok } ou { error } : bad_shrine (pas une stèle),
+   bad_qty (on n'est pas un booléen), not_charged */
+export function setStele(st, { shrine, on }){
+  if(!shrineOf(shrine)?.tower) return { error:'bad_shrine' };
+  if(typeof on !== 'boolean') return { error:'bad_qty' };
+  if(!(st.active[shrine] > 0)) return { error:'not_charged' };
+  if(on) delete st.off[shrine]; else st.off[shrine] = true;
+  return { ok:true };
+}
+/* victoire avec cette stèle : une charge en moins (retirée à 0, la stèle est à repayer). Idempotent par opId (l'id de
+   session) : une fin de session rejouée ne la consomme pas deux fois. Renvoie true si elle a été consommée. */
+export function spendStele(st, id, opId){
+  if(!shrineOf(id)?.tower || !(st.active[id] > 0) || st.ops.some(o => o.id === opId)) return false;
+  if(--st.active[id] <= 0){ delete st.active[id]; delete st.off[id]; }
+  st.ops.push({ id:opId, result:{ ok:true } });
+  if(st.ops.length > SHRINES.opMemory) st.ops.splice(0, st.ops.length - SHRINES.opMemory);
+  return true;
 }
 
 /* effets cumulés des shrines d'une session (liste d'ids, revérifiée) */
@@ -104,5 +125,5 @@ export function oreBonusComp(comp, pts){
 export const publicShrines = st => SHRINE_IDS.map(id => {
   const d = SHRINES.list[id];
   return { id, name:d.name, desc:d.desc, tex:d.tex, sessions:d.sessions, price:{ ...d.price }, tower: d.tower ?? null,
-           paid:{ ...(st.paid[id] ?? {}) }, left: st.active[id] ?? 0 };
+           paid:{ ...(st.paid[id] ?? {}) }, left: st.active[id] ?? 0, ...(d.tower ? { on: !st.off[id] } : {}) };
 });

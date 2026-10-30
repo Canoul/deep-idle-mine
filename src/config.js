@@ -1634,14 +1634,14 @@ export const SHRINES = {
     abundance: { name:'Shrine d\'abondance', desc:'5 % de minerais en plus', tex:'shrine_abundance', sessions:5,
                  price:{ 'Pépite d\'argent':10, 'Résidu angélique':20 }, effect:{ orePoints:5 } },
 
-    /* stèles des tours (30/10/2026, Geoffrey) : comme un shrine (don de n'importe quel membre, rattachées au chef), mais
-       décomptées au lancement d'une tour du camp `tower` par ce chef (sessions = tours lancées ; 3 : provisoire, choix de
-       Claude). Effet (TOWER.stele) : à la mort du boss, le boss de l'autre camp s'écrase sur le toit (phase 2) ; victoire =
+    /* stèles des tours (30/10/2026, Geoffrey) : comme un shrine (don de n'importe quel membre, rattachées au chef), mais pour
+       les tours du camp `tower` lancées par ce chef : UNE charge (sessions : 1 ; ancien : 3, décomptées au lancement),
+       consommée seulement à la victoire, gardée sinon ; le chef peut l'activer ou la désactiver. Effet (TOWER.stele) : à la mort du boss, le boss de l'autre camp s'écrase sur le toit (phase 2) ; victoire =
        trésor béni (luck : RUNE.luck). Elles ne touchent pas la mine classique. */
     exorcisme: { name:'Stèle d\'exorcisme', desc:'Tour du Démon : l\'Ange s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_angel',
-                 sessions:3, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
+                 sessions:1, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
     pacte:     { name:'Stèle du pacte', desc:'Tour de l\'Ange : le Démon s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_demon',
-                 sessions:3, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
+                 sessions:1, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
   },
   opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
   drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne
@@ -2054,8 +2054,8 @@ export const TOWER = {
   },
   /* stèle (30/10/2026, Geoffrey ; SHRINES exorcisme / pacte) : à la mort du boss, le boss de l'autre camp tombe du ciel
      (fallHigh blocs, fall s) et s'écrase au centre du toit : chaque mineur du toit est projeté de crashKnock cases (il tombe
-     de la tour), puis étourdi comme à un atterrissage s'il est resté dessus. Le treuil est cassé (plus de treuil de la
-     partie). mobs mobs de l'autre camp par étage (étages floors), réveillés, PV × mobHp ; boss PV × bossHp (par-dessus le
+     de la tour ; la ténacité peut l'éviter), puis étourdi comme à un atterrissage s'il est resté dessus. Un treuil posé est
+     cassé (plus de treuil de la partie) ; sans treuil, le logisticien peut encore le poser. mobs mobs de l'autre camp par étage (étages floors), réveillés, PV × mobHp ; boss PV × bossHp (par-dessus le
      niveau). Même chrono ; victoire = le 2e boss tué (sinon rien). */
   stele: { fallHigh: 10, fall: 0.8, crashKnock: 10, mobs: 5, floors: [0, 1, 2, 3, 4, 5], mobHp: 1.5, bossHp: 1.5 },
   sides: {

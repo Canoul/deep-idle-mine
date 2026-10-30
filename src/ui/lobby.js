@@ -117,22 +117,28 @@ export function instanceLevelState({ instance, locked, party, account, cur = nul
   return { show: !!instance && !locked && !!account && leader && levels.length > 1, levels, level: levels.some(l => l.level === cur) ? cur : levels[0].level };
 }
 
-/* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; sinon le prix,
-   ce qui est déjà donné, et pour chaque objet un champ + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
+/* shrines visibles dans le lobby : mine classique, ceux sans tour ; lobby d'une tour, sa stèle seulement (30/10/2026) ;
+   rien ailleurs (Jugement, prison, instances…). mine : carte de la mine classique ; tower : camp de la tour choisie */
+export const shownShrines = (list, { mine = false, tower = null } = {}) => (list ?? []).filter(sh => sh.tower ? sh.tower === tower : mine);
+
+/* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; stèle chargée :
+   activée ou non, et le bouton du chef (30/10) ; sinon le prix, ce qui est déjà donné, et pour chaque objet un champ
+   + « Donner » (have : combien j'en ai). leaderName : null si c'est moi. */
 export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy = false } = {}){
   const e = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   const head = leaderName ? `<p class="mut small">Shrines de <b>${e(leaderName)}</b> (chef du groupe) : chacun peut donner.</p>` : '';   // le reste : « ? » du titre
   return head + list.map(sh => {
     const top = `<div class="shrineHead"><img src="textures/${e(sh.tex)}.png" alt="" width="32" height="32"><span><b>${e(sh.name)}</b><br><small>${e(sh.desc)}</small></span></div>`;
-    const unit = n => sh.tower ? `tour${n > 1 ? 's' : ''}` : `session${n > 1 ? 's' : ''} de mine`;   // stèle (30/10) : des tours
-    if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> ${unit(sh.left)}.</p></div>`;
+    if(sh.left > 0 && sh.tower) return `<div class="shrine on">${top}<p class="${sh.on ? 'ok' : 'mut'} small">${sh.on ? '✔ Chargée et activée' : 'Chargée, désactivée : la prochaine tour se joue sans elle'}. Consommée à la victoire, gardée sinon.</p>`+
+      (leaderName ? '<p class="mut small">Seul le chef peut l\'activer ou la désactiver.</p>' : `<button data-stele-set="${e(sh.id)}" data-on="${sh.on ? 0 : 1}"${busy ? ' disabled' : ''}>${sh.on ? 'Désactiver' : 'Activer'}</button>`)+`</div>`;
+    if(sh.left > 0) return `<div class="shrine on">${top}<p class="ok small">✔ Actif : encore <b>${sh.left}</b> session${sh.left > 1 ? 's' : ''} de mine.</p></div>`;
     const rows = Object.entries(sh.price).map(([item, q]) => {
       const got = sh.paid?.[item] ?? 0, need = q - got, mine = have(item);
       return `<div class="shrineRow"><span>${e(item)} : <b>${got} / ${q}</b> <small class="mut">(tu en as ${mine})</small></span>`+
         (need > 0 ? `<input type="number" min="1" max="${need}" value="${Math.max(1, Math.min(need, mine))}" data-shrine-qty="${e(sh.id)}|${e(item)}">`+
                     `<button data-shrine-give="${e(sh.id)}|${e(item)}"${busy || !mine ? ' disabled' : ''}>Donner</button>` : '<small class="ok">✔</small>')+`</div>`;
     }).join('');
-    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : actif pour ${sh.sessions} ${sh.tower ? 'tours lancées par le chef' : 'mines'}.</p></div>`;
+    return `<div class="shrine">${top}${rows}<p class="mut small">Prix atteint : ${sh.tower ? 'une charge, consommée à la victoire' : `actif pour ${sh.sessions} mines`}.</p></div>`;
   }).join('');
 }
 
@@ -246,13 +252,12 @@ export function setupLobby(h){
     const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
-    /* shrines : lobby de la mine classique (28/10), tous (stèles comprises, pour les payer d'avance) ; lobby d'une tour :
-       ses stèles seulement (30/10) */
-    const shownShrines = cards.prison ? [] : (st.shrines ?? []).filter(sh => !jv && (cards.prefs || (tower && sh.tower === tower)));   // prison : aucun (29/10)
-    $('shrinesCard').hidden = !shownShrines.length;
+    /* shrines : mine classique (28/10) ; lobby d'une tour : sa stèle seulement (30/10) ; prison : aucun (29/10) */
+    const shrineList = jv || cards.prison ? [] : shownShrines(st.shrines, { mine: cards.prefs, tower });
+    $('shrinesCard').hidden = !shrineList.length;
     if(!$('shrinesCard').hidden){
       const leader = party && party.members.length > 1 && party.leader !== account?.id ? party.members.find(m => m.account === party.leader)?.name ?? 'le chef' : null;
-      const html = shrinesHtml(shownShrines, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
+      const html = shrinesHtml(shrineList, { have: item => h.keys?.(item) ?? 0, leaderName: leader, busy: st.busy });
       if($('shrinesBody')._html !== html && !$('shrinesBody').contains(document.activeElement)){ $('shrinesBody').innerHTML = html; $('shrinesBody')._html = html; }
     }
     $('instCard').hidden = !cards.inst;
@@ -501,6 +506,12 @@ export function setupLobby(h){
   $('lfgBtn').onclick = () => act(() => st.lfg?.search?.mine ? h.party.lfgCancel() : h.party.lfg(st.lfgAuto));
   $('modulation').onchange = () => render();
   $('shrinesBody').onclick = e => {
+    const t = e.target.closest('button[data-stele-set]');
+    if(t && !t.disabled){
+      st.busy = true;
+      act(async () => { const r = await h.party.stele({ shrine: t.dataset.steleSet, on: t.dataset.on === '1' }); st.shrines = r.shrines; return r; }, () => { st.busy = false; }).finally(() => { st.busy = false; render(); });
+      return;
+    }
     const b = e.target.closest('button[data-shrine-give]'); if(!b || b.disabled) return;
     const [id, item] = b.dataset.shrineGive.split('|');
     const input = [...$('shrinesBody').querySelectorAll('input[data-shrine-qty]')].find(i => i.dataset.shrineQty === b.dataset.shrineGive);

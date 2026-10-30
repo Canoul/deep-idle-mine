@@ -933,22 +933,25 @@ function startJump(G, level){
   summonMobs(G, G.lv.summon || 0);   // niveau 2 : 2 mobs à chaque envol (28/10)
 }
 /* ---------- stèle : phase 2 (30/10/2026, Geoffrey ; TOWER.stele) ----------
-   Le boss de l'autre camp tombe du ciel au centre du toit (PV × bossHp), le treuil est cassé, et mobs mobs de l'autre camp
-   (PV × mobHp, réveillés) apparaissent dans chaque étage de floors : leur étage reste fermé tant qu'il en reste. */
+   Le boss de l'autre camp tombe du ciel au centre du toit (PV × bossHp), un treuil posé est cassé (sans treuil, le
+   logisticien peut encore en poser un), et mobs mobs de l'autre camp (PV × mobHp, réveillés) apparaissent dans chaque étage
+   de floors : leur étage reste fermé tant qu'il en reste. Mêmes règles que le 1er boss (30/10, Geoffrey) : recul
+   (knockRes gardé), il n'avance qu'une fois engagé, et ceux qui ne sont pas sur le toit se regroupent avant d'y monter. */
 function startPhase2(G){
   const S = TOWER.stele, other = otherSide(G.side), hp = B.hp * G.lv.hp * S.bossHp, old = G.boss;
   G.phase2 = true; G.timeline.phase2 = G.t;
   G.boss = { ...old, name: TOWER.sides[other].boss, side: other, hp, maxhp: hp, cd: B.hitEvery, x: G.bx, kx: 0,
-             target: null, focus: null, taunt: null, engaged: true, moveCd: 0, phase: 0,
+             target: null, focus: null, taunt: null, engaged: false, moveCd: 0, phase: 0,
              air: { stage: 'fall', t: 0, crash: true }, lift: S.fallHigh };
   log(G, `☄ ${G.boss.name} tombe du ciel !`);
   if(G.winch){
     log(G, `🔨 ${G.boss.name} brise ${G.winch.lift ? "l'ascenseur" : 'le treuil'}`);
     for(const m of G.miners) if(m.action?.data?.winch){ m.action = null; m.knocked = true; m.fallN = 0; }   // dans le seau : il tombe
     G.winch = null;
+    G.winchBroken = true;
+    for(const m of G.miners) m.winchJob = null;
   }
-  G.winchBroken = true;
-  for(const m of G.miners) m.winchJob = null;
+  for(const m of G.miners) if(!onTop(G, m)) m.fell = true;   // pas sur le toit : regroupement avant d'y monter (TOWER.regroup)
   const mhp = MB.hp * G.lv.hp * S.mobHp;
   let made = 0;
   for(const k of S.floors){
@@ -989,11 +992,13 @@ function landBoss(G, n = B.jumpKnock){
   const b = G.boss;
   b.air = null; b.lift = 0; b.cd = B.hitEvery; b.moveCd = 0;
   log(G, n > B.jumpKnock ? `💥 ${G.boss.name} s'écrase sur le toit !` : `💥 ${G.boss.name} retombe sur le toit !`);
+  const resists = m => (m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity;
   for(const m of [...G.miners]){
     if(!onTop(G, m)) continue;
+    if(n > B.jumpKnock && resists(m)){ log(G, `💪 ${m.name} résiste à l'écrasement`); continue; }   // stèle : la ténacité évite la projection (30/10)
     knock(G, m, n);
     if(!towerSupported(G, m.x, m.y)) continue;   // projeté hors du toit : il tombe
-    if((m.carac.tenacity || 0) > 0 && G.fightRng() * 100 < m.carac.tenacity){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
+    if(resists(m)){ log(G, `💪 ${m.name} résiste à l'atterrissage`); continue; }
     m.action = { type: 'stun', dur: B.jumpStun, t: 0, data: { cause: 'land' } }; m.status = 'Étourdi (atterrissage)';
     m.stats.stunned = (m.stats.stunned || 0) + 1;
   }
