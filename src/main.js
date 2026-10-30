@@ -696,7 +696,9 @@ async function pollPrison(){
   prisonBusy = true;
   let again = null;
   try {
+    const t0 = performance.now();
     const r = await gameApi.prisonView(PG?.ready ? PG.ticks : null);
+    if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     prisonErrors = 0;
     setPrison(r.prison);
     if(r.view && prisonActive(prison)){

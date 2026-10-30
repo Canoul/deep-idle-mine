@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison
+- **Pour le joueur** : rien. Pour l'équipe : dans la prison, `?perf` n'affichait que les images par seconde ; il mesure maintenant
+  aussi les envois du serveur, comme en session.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Jules — Plus de virgules inutiles dans les chiffres (oxygène, pods, torches…)
 - **Pour le joueur** : l'oxygène et les pods n'affichent plus de virgule (« 174 / 374 » au lieu de « 174/373.89 »), dans les
   bulles en bas, le panneau du mineur, la Visite du bloc géant et l'onglet Stuff. Les torches, l'oxygène rendu par l'Âme

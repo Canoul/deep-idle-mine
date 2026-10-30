@@ -5695,3 +5695,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   changements de Geoffrey, sans lien avec ce correctif.
 - ⚠️ Pas vu dans le navigateur (le serveur local qui tournait n'avait pas les comptes de test) ; vérifié sur le HTML
   produit par `statsHTML` (ex. « Torches 41 (20 +21) », « Pods 415 », « Vitesse de minage 1,46 (1 +0,46) »).
+
+## 30/10/2026 — ?perf dans la prison (Geoffrey)
+- **Quoi** : `pollPrison` (src/main.js) n'appelait pas `perf.view` : envoi, réponse et ticks restaient vides. Ajouté autour de
+  `gameApi.prisonView`. Pas vu à l'écran ⚠️.
+- **Tests** : `tests/perf.test.js` +1 ✅. ❌ « la boîte de mesures… » échoue toujours (3 `perfBox` pour 2 attendues), échec ancien,
+  voir plus haut, non corrigé ici.
+- **Enquête en cours** : tour à ~1 fps signalée le 30/10, cause inconnue. Écarté : coût du tick et de la vue (0,04 / 0,13 ms, 7 Ko),
+  charge du VPS (0,36 sur 2 cœurs, une seule mesure), blocage de `pump` par la prison. Il manque une ligne `?perf` prise pendant le lag.
+

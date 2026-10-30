@@ -25,3 +25,11 @@ test('la boîte de mesures est dans les barres de la mine et de la tour, cachée
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.equal((html.match(/class="mut small perfBox" hidden/g) || []).length, 2);
 });
+
+test('?perf mesure aussi les envois de la prison (30/10/2026)', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const at = main.indexOf('await gameApi.prisonView(');
+  assert.ok(at > 0);
+  assert.ok(main.slice(at, at + 150).includes('perf.view(t0'));
+});
+
