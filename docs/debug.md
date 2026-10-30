@@ -5421,3 +5421,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ### 30/10/2026 — Force des spés en prison + affichage des heures
 - `prison-dashboard.js` : `h()` arrondit en minutes totales (4,999 h affichait « 4 h 60 »). `simulate-prison-profile.js --bot mineur|logisticien|barbare` (preset acier sans --preset).
 - Sim (oreMul 0.24, history canoul area 7, 30 runs / 3 prisons) : logisticien 669 poids/h (run 10,7 min), mineur 618 (12,1 min), barbare 582 (12,9 min). ⚠️ 30 runs : écarts de ±5 % possibles par le hasard.
+
+### 30/10/2026 — Importance des stats : prison / mine (`scripts/stat-weights-prison.js`)
+- Mineur canoul réel, +20 % par stat, mine solo 3 sessions vs prison 16 runs (oreMul 0.27, profil area 7). Base : mine 2548 minerais (poids)/h, prison 1016/h.
+- Ratio gain prison / gain mine : mineSpeed 1,85 · speed 1,83 · damage 1,23 · attackSpeed 2,78 · crit 4,10 · fortune ≫ (mine +0,7 %, prison +12,1 %) · pods 0,89 · oxygenMax 0,54 · climbSpeed : mine dans le bruit (−3,8 %), prison +6,6 %.
+- ⚠️ bruit : 3 sessions / 16 runs, un gain < ±3 % n'est pas fiable ; ~10 min sur 2 cœurs.
