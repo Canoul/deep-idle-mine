@@ -32,7 +32,31 @@ Modèle d'entrée :
   ton mineur (et chez les autres), et le « Groupe trouvé » arrive comme d'habitude.
 - **Décisions** : les deux emplacements (choix de Jules) ; l'émote « On mine ? » disparaît (même sens que le bouton).
   Lancer la recherche depuis la ville passe le Lobby sur la mine classique.
-- **État** : 🧪 sur la branche `jules/carreau-recherche-groupe` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Chat : les messages disparaissent au bout de 18 h
+- **Pour le joueur** : le chat garde toujours ses 50 derniers messages, mais un message de **18 h ou plus disparaît**
+  tout seul : le serveur ne l'envoie plus et ne l'enregistre plus, et il s'efface de l'écran même si la page reste
+  ouverte (vérifié chaque minute). Valable pour le chat global et le chat de session. Réglage : `CHAT.maxAgeMs`.
+- **État** : ✅ en ligne le 30/10
+
+## 30/10/2026 — Geoffrey — Modération du chat : mots interdits, avertissements, ban de 24 h
+- **Pour le joueur** : dans le chat global et le chat de session, les insultes et injures (racistes, homophobes,
+  sexistes, validistes, incitation au suicide ; français et anglais) sont **remplacées par des astérisques** pour tout le
+  monde. Celui qui écrit reçoit une fenêtre **« Avertissement 1/3 : Insulte »** (le motif change selon le mot). Le filtre
+  voit à travers les déguisements : « n1gg3r », « n i g g e r », « connnnard », lettres cyrilliques, et un mot coupé sur
+  plusieurs messages, même par deux joueurs (« ni » puis « gger » : c'est celui qui complète qui est averti). Les jurons
+  d'humeur (putain, merde, fuck) ne sont pas filtrés. Au **3e avertissement : ban de 24 h**. Le joueur banni peut
+  regarder le jeu mais ne peut plus rien faire (lancer, crafter, écrire…), un bandeau rouge dit jusqu'à quand, et sa
+  prison s'arrête. Wiki à jour.
+- **Pour l'équipe** : `sudo node /opt/deep-idle-mine/scripts/moderation.js --name PSEUDO` montre chaque avertissement
+  (date, salon, motif, mots repérés, le message tel qu'il l'a écrit et tel qu'il a été publié) ; `--recent` les derniers
+  de tout le monde ; `--unban` lève un ban ; `--forgive 2` (ou `all`) retire un avertissement. La liste des mots est dans
+  `server/moderation/words.js`, facile à compléter.
+- **Décisions** (Geoffrey) : 3 avertissements → 24 h. Choix de Claude à valider : seul celui qui complète un mot coupé
+  est averti ; jurons d'humeur non filtrés ; une session déjà lancée va au bout pendant le ban ; les avertissements ne
+  s'effacent pas avec le temps (seulement par un ban, qui remet le compteur à 0, ou à la main).
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Jules — Le minotaure se bat enfin : Charge, Rage, et deux minotaures différents dans l'Arène
 - **Pour le joueur** : le minotaure n'était qu'un sac de PV qui tacle. Maintenant :

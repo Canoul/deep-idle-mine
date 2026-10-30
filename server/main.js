@@ -19,6 +19,7 @@ import { createSocialService } from './social/service.js';
 import { createGiantService } from './giant/service.js';
 import { createTownService } from './town/service.js';
 import { createDiscordAnnouncer } from './social/discord.js';
+import { createModerationService } from './moderation/service.js';
 
 const port = +(process.argv[2] || SERVER.port);
 /* stockage : PostgreSQL si DATABASE_URL est défini (en ligne), sinon fichiers dans data/ (en local) */
@@ -28,7 +29,9 @@ const service = createAccountService({ store });
 const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(SERVER.dataDir);
 /* annonces Discord (trésor ou identification R7) : seulement si DIM_DISCORD_WEBHOOK est défini */
 /* mode dev : copies de vrais joueurs pour les mineurs de test (data/presets/*.json, server/game/dev-copies.js) */
-const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }),
+/* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
+const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
+const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation,
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')) });
 const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
@@ -36,12 +39,12 @@ await party.load();                        // groupes d'avant le redémarrage (m
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });
 await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
-const social = createSocialService({ store: gameStore, accounts: store, party, game });
+const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
 const giant = createGiantService({ store: gameStore, game, dev: GAME_SERVER.dev });
 /* le Carreau : la ville du spawn (joueurs en ligne hors session, leur place, bulles du chat global) */
 const town = createTownService({ accounts: store, game, party, recentChat: ms => social.recentChat(ms) });
-const server = http.createServer(createApp({ store, service, game, party, instant, social, giant, town, root: ROOT }));
+const server = http.createServer(createApp({ store, service, game, party, instant, social, giant, town, moderation, root: ROOT }));
 
 /* sessions de jeu : le serveur les fait tourner en direct (reprises au démarrage), puis les fait avancer en continu ;
    chacune se termine et se partage d'elle-même au dernier tick, joueurs présents ou non */

@@ -70,8 +70,9 @@ import { setupNotify } from './ui/notify.js';
 import { setupObtained } from './ui/obtained.js';
 import { recipeOf } from './meta/craft.js';
 import { createAccountUI, bootAccount, renderNavAccount } from './ui/account.js';
-import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError } from './net/api.js';
+import { gameApi, partyApi, instantApi, socialApi, giantApi, townApi, ApiError, moderationApi } from './net/api.js';
 import { ask, tell } from './ui/dialog.js';
+import { warningText, banBarText } from './shared/moderation-text.js';
 import { energyText, energyPct, prisonBanner, awayText, hasAway, prisonActive, launchPrisonText, prisonPollError } from './ui/prison.js';
 import { prisonLootHtml, showPrisonRecap } from './ui/prison-loot.js';
 
@@ -529,10 +530,17 @@ const focusPanel = setupFocusPanel({
 });
 
 /* chat des joueurs de la session (mine classique) : le serveur vérifie qui écrit, le texte et la cadence */
-const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id });
+/* modération du chat (30/10) : fenêtre d'avertissement, bandeau du joueur banni */
+const onWarning = w => { tell(warningText(w)); if(w.banned) showBan(); };
+async function showBan(){
+  try { const s = await moderationApi.me(); const t = banBarText(s); $('banBar').textContent = t; $('banBar').hidden = !t; }
+  catch(e){ console.warn(e); }
+}
+window.addEventListener('dim:banned', showBan);
+const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id, onWarning });
 /* chat global du Lobby (28/10) : tous les joueurs, même en session ; relu seulement quand l'onglet Lobby est ouvert, ou
    pendant la promenade dans le Carreau (sa carte est alors en bas de l'écran, 29/10) */
-gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id,
+gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id, onWarning,
                     paused: () => ui.tab !== 'lobby' && !town.walking, time: true });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
@@ -820,6 +828,7 @@ function setProgress(p){
 
 async function refresh(){
   const st = await gameApi.state();
+  showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
   furnace.set(st.furnaces);

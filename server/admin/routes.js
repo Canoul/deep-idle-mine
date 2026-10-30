@@ -3,6 +3,7 @@
      curl -X POST http://127.0.0.1:8000/api/admin/give -H "Authorization: Bearer CLÉ" \
           -H "Content-Type: application/json" -d '{"name":"crousti","item":"Treasure T3","qty":1}'
      (« quality »: 1 à 7, facultatif : une pièce de stuff déjà identifiée dans cette qualité)
+   POST /api/admin/moderation {"name":"crousti","action":"show"} : avertissements et bans (unban, forgive, recent) (scripts/moderation.js).
    POST /api/admin/take {"name":"crousti","item":"Glyphe Ruée","qty":1} : retire un objet (inventaire, ou glyphe posé) (scripts/take-item.js).
    POST /api/admin/judgment {"side":"demon","count":175} : règle une jauge du Jugement (scripts/set-judgment.js).
    POST /api/admin/stats {} : lignes du tableau de bord (scripts/dashboard.js).
@@ -46,7 +47,7 @@ export function adminAllowed(req, token){
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
    party : le service des groupes (adminMove, adminReady), facultatif */
-export function adminRoutes({ accounts, game, party = null, token }){
+export function adminRoutes({ accounts, game, party = null, moderation = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -107,6 +108,30 @@ export function adminRoutes({ accounts, game, party = null, token }){
       const r = await game.adminGive(acc.id, item, qty, quality);
       console.log(`Admin : +${r.qty} ${r.item}${r.quality ? ` R${r.quality}` : ''} pour ${acc.name} (${acc.id}) : ${r.before} → ${r.after}`);
       return { account: acc.name, ...r };
+    },
+    /* modération du chat (30/10/2026, scripts/moderation.js) : action show | unban | forgive (index 1..n, absent = tous) |
+       recent (derniers avertissements de tout le monde, sans name) */
+    'POST /api/admin/moderation': async ctx => {
+      guard(ctx);
+      if(!moderation) throw new HttpError(503, 'no_moderation', 'Modération indisponible sur ce serveur.');
+      const action = ctx.body?.action ?? 'show';
+      if(action === 'recent'){
+        const rows = await moderation.recent(Number.isSafeInteger(ctx.body?.limit) ? Math.min(200, Math.max(1, ctx.body.limit)) : 30);
+        const names = new Map();
+        for(const r of rows) if(!names.has(r.account)) names.set(r.account, (await accounts.getAccount?.(r.account))?.name ?? r.account);
+        return { rows: rows.map(r => ({ ...r, name: names.get(r.account) })) };
+      }
+      const acc = await byName(ctx);
+      if(action === 'show') return { account: acc.name, ...(await moderation.show(acc.id)) };
+      if(action === 'unban'){ const r = await moderation.unban(acc.id); console.log(`Admin : ban levé pour ${acc.name} (${acc.id})`); return { account: acc.name, ...r }; }
+      if(action === 'forgive'){
+        const index = ctx.body?.index ?? null;
+        const r = await moderation.forgive(acc.id, index);
+        if(!r.ok) throw new HttpError(400, 'bad_request', `Avertissement n° ${index} introuvable (${r.count} au total).`);
+        console.log(`Admin : avertissement ${index ?? 'tous'} retiré pour ${acc.name} (${acc.id})`);
+        return { account: acc.name, ...r };
+      }
+      throw new HttpError(400, 'bad_request', 'action : show, unban, forgive ou recent.');
     },
     'POST /api/admin/take': async ctx => {
       guard(ctx);
