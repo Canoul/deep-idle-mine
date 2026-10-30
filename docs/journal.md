@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Tableau de la prison : spé, GS et temps par action
+- **Pour nous** : le tableau « Rendement de la prison » montre aussi la spé, le GS du stuff emporté, et le % du temps passé à miner / se déplacer / combattre / autre, en prison et dans ses mines (mines jouées à partir de maintenant : avant, ce n'était pas mesuré).
+- **État** : 🧪 sur la branche `geoffrey/prison-temps-actions` (pas en ligne)
+
 ## 30/10/2026 — Geoffrey — Rendement de la prison dans le jeu (compte admin)
 - **Pour nous** : connecté avec le compte « admin », « Mon compte » (portrait en haut à gauche) a un bouton « 📊 Rendement de la prison » qui ouvre le tableau dans un nouvel onglet. Les autres comptes ne voient pas le bouton et le serveur leur refuse les données. Liste des comptes : `ADMIN_VIEW` en config.
 - **État** : ✅ en ligne le 30/10

@@ -48,7 +48,7 @@ import { sanitizeCrusher, crusherOp, advance as advanceCrusher, publicCrusher } 
 import { craft, learn, recycleStuff } from '../../src/meta/craft.js';
 import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
-import { sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
+import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
          addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
 import { sanitizeShrines, give as giveShrine, consume as consumeShrines, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
@@ -471,6 +471,10 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       p.totals.energy = Math.round((p.totals.energy + gained) * 10) / 10;
       p.totals.xp = (p.totals.xp || 0) + xp;   // XP versée (29/10) : panneau et bilan de sortie
       p.totals.t = Math.round(((p.totals.t || 0) + t) * 10) / 10;   // temps de jeu des runs (29/10)
+      /* temps par action du run (30/10, tableau de bord) */
+      const rt = cleanTime((summary?.miners || []).find(m => m.account === p.account)?.stats?.time);
+      p.totals.time ??= {};
+      for(const [k, v] of Object.entries(rt)) p.totals.time[k] = Math.round(((p.totals.time[k] || 0) + v) * 10) / 10;
       for(const [item, n] of Object.entries(bag)) p.totals.bag[item] = (p.totals.bag[item] || 0) + n;
       if(endedAway(p, p.runStartedAt + p.pausedMs + t / p.speed * 1000, cfg)) addAway(p, gained, bag);
     }
@@ -511,7 +515,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
     id: 'prison:' + p.id, mode: 'prison', status: 'done', dev, seed: p.seed,
     players: [{ account: p.account, name: String(p.specs?.name ?? '') }], leaves: [], focus: [], seen: [p.account],
     startedAt: p.startedAt, endedAt: p.endedAt ?? clock(),
-    result: { prison: { runs: p.totals.runs, energy: p.totals.energy, area: p.areaMax, t: p.totals.t || 0 },
+    result: { prison: { runs: p.totals.runs, energy: p.totals.energy, area: p.areaMax, t: p.totals.t || 0, time: { ...(p.totals.time || {}) } },
               shares: [{ account: p.account, left: false, bag: { ...p.totals.bag }, xp: p.totals.xp || 0 }], miners: [] },
   });
   /* avance le run jusqu'au tick end, par blocs de maxStep (les demandes d'affichage passent entre deux) */

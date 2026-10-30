@@ -40,7 +40,7 @@ export function lastMines(sessions, account, max = PRISON.profileSessions, withD
     if(!share || share.left) continue;
     const miner = (s.result.miners || []).find(m => m?.account === account);
     out.push({ at: s.endedAt ?? s.startedAt ?? 0, areas: Number.isSafeInteger(s.result.areasUnlocked) ? s.result.areasUnlocked : 0,
-               bag: share.bag, killsBy: miner?.stats?.killsBy });
+               bag: share.bag, killsBy: miner?.stats?.killsBy, time: miner?.stats?.time ?? null });   // time : temps par action (30/10)
   }
   return out.sort((a, b) => b.at - a.at).slice(0, max);
 }

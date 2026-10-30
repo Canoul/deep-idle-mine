@@ -23,3 +23,15 @@ test('pas de mine ou pas de prison : pas de %', () => {
   const r = prisonRow({ account: A, name: 'x', prison: { state: 'running', totals: { t: 3600, bag: { Fer: 10 } } }, sessions: [] });
   assert.equal(r.ratio, null);
 });
+
+test('temps par action (30/10) : mesuré à chaque tick (somme = durée du run), en % dans le tableau', async () => {
+  const { newPrisonRun, tickPrison } = await import('../src/sim/prison.js');
+  const G = newPrisonRun(3, { areaMax: 2 });
+  while(!G.over) tickPrison(G);
+  const t = G.summary.miners[0].stats.time, sum = Object.values(t).reduce((a, b) => a + b, 0);
+  assert.ok(Math.abs(sum - G.summary.t) < 1, `somme ${sum} contre ${G.summary.t} s`);
+  assert.ok(t.mine > 0 && t.move > 0);
+  const r = prisonRow({ account: A, prison: { state: 'running', totals: { t: 100, bag: {}, time: { mine: 60, move: 30, other: 10 } } }, sessions: [] });
+  assert.deepEqual(r.time.prison, { mine: 0.6, move: 0.3, fight: 0, other: 0.1 });
+  assert.equal(r.time.mines, null);
+});

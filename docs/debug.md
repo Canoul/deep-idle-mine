@@ -5406,3 +5406,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **30/10, suite** : module déplacé dans `src/meta/prison-dashboard.js` (partagé navigateur / serveur) ; route `GET /api/game/admin/prison`
   (compte non invité dont le pseudo est dans `ADMIN_VIEW.names`, sinon 404) ; bouton dans `src/ui/account.js` (`isTeam`), onglet ouvert au clic puis
   rempli. ✅ vérifié en local (bouton, onglet, 404 pour un autre compte) ; « admin » est un pseudo réservé à l'inscription (compte créé à part).
+
+## 30/10/2026 — Geoffrey — Temps par action (prison et mines)
+- `timeClass` / `TIME_CLASSES` (src/sim/session.js) : à chaque tick, `m.stats.time[mine|move|fight|other] += DT` (move : pas, échelles,
+  passerelles, dash ; fight : attack ; other : le reste). Dans `summary.miners[].stats` (mines classiques et runs de prison).
+  Prison : `totals.time` (settleRun, `cleanTime` de src/shared/prison.js), `result.prison.time` dans l'historique. Tableau
+  (`src/meta/prison-dashboard.js`) : colonnes Spé, GS (`gearScore(specs.gear)`), Temps prison %, Temps mines % (`lastMines` rend `time`).
+- ✅ prison-dashboard 3/3 (somme des temps = durée d'un vrai run), prison-server, prison-ui, anticheat prison.
