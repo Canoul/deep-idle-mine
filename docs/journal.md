@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 30/10/2026 — Geoffrey — Prison : un nouveau joueur démarre en area 2
+- **Pour le joueur** : sans mine classique derrière soi, la prison a le contenu de l'area 2 (avant : area 1), avec du fer pour
+  la première pioche. La moyenne des 10 dernières mines ne descend plus sous l'area 2.
+
 ## 31/10/2026 — Geoffrey — Prison : plus de bug quand le jeu est dans un autre onglet
 - **Pour le joueur** : après 5 minutes dans un autre onglet, le navigateur ne réveille le jeu qu'une fois par minute. Le serveur te
   croyait parti et rejouait ton run depuis le début à chaque réveil. Il t'attend maintenant 90 s au lieu de 30, le run continue normalement.
