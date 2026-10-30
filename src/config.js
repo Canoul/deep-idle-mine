@@ -2030,7 +2030,7 @@ export const DEV_SPEC = { minLevel:1, maxLevel:30 };
 export const DEV_PRESETS = {
   names: { mineur:'Test_Mineur', logisticien:'Test_Logisticien', barbare:'Test_Barbare' },
   gear: ['Casque en acier', 'Plastron en acier', 'Jambes en acier', 'Bottes en acier', 'Pioche en acier', 'Épée en acier'],
-  key: 'Clé d\'instance I', keys: 10,
+  key: ['Clé d\'instance I', 'Clé d\'instance II'], keys: 10,   // 30/10 : une pile de chaque clé (Instance II)
 };
 
 /* Réglages modifiables en mode développeur seulement (panneau dev du lobby), appliqués à la session lancée.

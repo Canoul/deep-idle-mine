@@ -44,7 +44,7 @@ async function main(){
         await game.putProgress(acc.id, p.progress);
         await game.putLoadout(acc.id, p);
         console.log(`${created ? '+ créé' : '↻ remis à neuf'} « ${name} »${created ? ` (mot de passe : ${password})` : ''} · copie de ${snap.name ?? who} · niveau ${p.level}, spé ${p.skills.tree}`
-          + ` · ${Object.values(p.stuff.worn).filter(Boolean).length} pièces portées · sorts : ${p.spells.slots.filter(Boolean).join(', ') || 'aucun'} · ${keys} × ${DEV_PRESETS.key}`);
+          + ` · ${Object.values(p.stuff.worn).filter(Boolean).length} pièces portées · sorts : ${p.spells.slots.filter(Boolean).join(', ') || 'aucun'} · ${keys} × ${[].concat(DEV_PRESETS.key).join(", ")}`);
       }
       return;
     }
@@ -56,7 +56,7 @@ async function main(){
       await game.putProgress(acc.id, p.progress);
       await game.putLoadout(acc.id, p);
       console.log(`${created ? '+ créé' : '↻ remis à neuf'} « ${name} »${created ? ` (mot de passe : ${password})` : ''} · niveau ${p.level}, spé ${t.label} ${p.level}`
-        + ` · sorts : ${p.spells.slots.filter(Boolean).join(', ') || 'aucun'} · glyphes : ${Object.keys(p.skills.glyphs).length} · ${keys} × ${DEV_PRESETS.key}`);
+        + ` · sorts : ${p.spells.slots.filter(Boolean).join(', ') || 'aucun'} · glyphes : ${Object.keys(p.skills.glyphs).length} · ${keys} × ${[].concat(DEV_PRESETS.key).join(", ")}`);
     }
   } finally { await game.close?.(); await accounts.close?.(); }
   console.log(`Données locales : ${SERVER.dataDir}. Lance (ou relance) npm run dev.`);

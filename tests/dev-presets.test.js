@@ -31,7 +31,7 @@ for(const t of SKILLS.trees) test(`preset ${t.id} : tout passe la relecture du s
   const inv = deserialize(JSON.stringify(p.inventory));
   const st = sanitizeStuff(p.stuff, inv);
   assert.deepEqual(Object.values(st.worn).filter(Boolean).map(x => x.item).sort(), [...DEV_PRESETS.gear].sort());
-  assert.deepEqual(inv.slots.filter(Boolean).map(s => [s.item, s.qty]), [[DEV_PRESETS.key, 7]]);
+  assert.deepEqual(inv.slots.filter(Boolean).map(s => [s.item, s.qty]), [].concat(DEV_PRESETS.key).map(k => [k, 7]));   // une pile de chaque clé (30/10)
   /* sorts de la spé équipés et valides */
   const ctx = { tree: t.id, spec: { [t.id]: p.level } };
   const want = SPELLS.list.filter(s => s.unlock.tree === t.id).map(s => s.id);
@@ -106,7 +106,7 @@ test('copie d\'un personnage : stuff, skills, sorts et XP repris à l\'identique
   assert.deepEqual(p.progress.spec, { logisticien:107006 });
   assert.equal(p.level, 13);
   const inv = deserialize(JSON.stringify(p.inventory));
-  assert.equal(inv.slots.filter(Boolean).find(s => s.item === DEV_PRESETS.key).qty, DEV_PRESETS.keys);
+  for(const k of [].concat(DEV_PRESETS.key)) assert.equal(inv.slots.filter(Boolean).find(s => s.item === k).qty, DEV_PRESETS.keys);
   assert.ok(inv.nextUid > 64, 'les nouveaux objets ne reprennent pas un uid porté');
 });
 

@@ -528,6 +528,25 @@ def main():
     rect(key, 4, 4, 1, 1, hexc('#22301c'))
     tex['key_instance_1'] = key
 
+    # Clé d'instance II (30/10) : clé de pierre grise du Golbute, panneton cristallin bleu, « II » gravé
+    key2 = blank()
+    kc, kd, kl, cr = hexc('#9aa0a8'), hexc('#5d626a'), hexc('#d4d8de'), hexc('#7fd6ff')
+    for (x, y) in [(3, 2), (4, 2), (5, 2), (2, 3), (6, 3), (2, 4), (6, 4), (2, 5), (6, 5), (3, 6), (4, 6), (5, 6)]:
+        rect(key2, x, y, 1, 1, kc)
+    rect(key2, 3, 2, 3, 1, kl)
+    rect(key2, 4, 7, 1, 7, kc); rect(key2, 5, 7, 1, 7, kd)
+    rect(key2, 6, 10, 3, 1, cr); rect(key2, 6, 12, 2, 1, cr); rect(key2, 6, 13, 3, 1, hexc('#3f8fb8'))
+    rect(key2, 3, 4, 1, 1, hexc('#2a2d33')); rect(key2, 5, 4, 1, 1, hexc('#2a2d33'))
+    tex['key_instance_2'] = key2
+
+    # rocher de l'avalanche (30/10) : bloc de pierre arrondi, arêtes claires, ombre en bas
+    rk = blank()
+    for yy, (x0, w) in enumerate([(5, 6), (3, 10), (2, 12), (1, 14), (1, 14), (1, 14), (1, 14), (2, 12), (2, 12), (3, 10), (5, 6)], start=3):
+        rect(rk, x0, yy, w, 1, hexc('#8a8478'))
+    rect(rk, 4, 4, 5, 2, hexc('#b3ab9c')); rect(rk, 3, 6, 2, 3, hexc('#a39b8c'))
+    rect(rk, 3, 12, 10, 2, hexc('#5f594f')); rect(rk, 9, 7, 1, 3, hexc('#4a453d')); rect(rk, 10, 9, 2, 1, hexc('#4a453d'))
+    tex['golbute_rock'] = rk
+
     # plume d'ange (objet, mine instantanée) : plume blanche incurvée, rachis lavande, barbes fendues, tige dorée
     fea = blank()
     vane, vane_l, vane_d, quill, spark = hexc('#f4f1ff'), hexc('#ffffff'), hexc('#c9c3e6'), hexc('#e8c25a'), hexc('#fff6c8')
@@ -955,6 +974,8 @@ def main():
     tex['recipe_chitin'] = rec
     # coffre du Roi Gobelin : coffre de bois sombre, ferrures dorées, emblème vert (tête de gobelin)
     tex['chest_goblin_king'] = tower_chest(hexc('#6b4a22'), hexc('#3e2a12'), gold, hexc('#4f7d32'), [(6, 9), (9, 9), (7, 11), (8, 11)])
+    # coffre du Golbute (30/10) : coffre de pierre grise, ferrures sombres, cristal bleu au centre
+    tex['chest_golbute'] = tower_chest(hexc('#80868f'), hexc('#4d5259'), hexc('#2f3238'), hexc('#7fd6ff'), [(7, 9), (8, 9), (7, 10), (8, 10), (7, 11), (8, 11)])
 
     # butin rare des mobs (26/10/2026) : icônes d'inventaire
     # lanières en cuir du gobelin : deux sangles de cuir croisées, rivets dorés
@@ -1343,6 +1364,8 @@ def main():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in instance().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
+    for name, (w, h, px) in golbute().items():
+        png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     for name, (w, h, px) in town().items():
         png_wh(os.path.join(OUT, name + '.png'), w, h, px)
     # golem (mob 2 × 2 cases) : 32 × 32 pixels
@@ -1555,6 +1578,41 @@ def instance():
     for x, y in [(38, 6), (45, 7), (39, 13), (44, 12)]:
         r(kg, W, H, x, y, 1, 1, hexc('#c9c9d1'))
     return {'instance_spawner': (16, 16, sp), 'instance_cage': (16, 16, cg), 'goblin_king': (W, H, kg)}
+
+
+def golbute():
+    """Instance II (30/10) : le Golbute, énorme golem de 5 × 5 cases (80 × 80 pixels), et sa forme cristallisée. Corps
+    en blocs de pierre (fissures, épaules massives, poings au sol), yeux de braise, sueur blanche comme le golem de la
+    mine ; cristallisé : le même en cristal bleu translucide, facettes claires."""
+    S = 80
+
+    def body(st, hi, lo, dk, eye, drip):
+        px = [(0, 0, 0, 0)] * (S * S)
+
+        def r(x, y, w, h, c):
+            for yy in range(y, y + h):
+                for xx in range(x, x + w):
+                    if 0 <= xx < S and 0 <= yy < S:
+                        px[yy * S + xx] = c
+        r(24, 2, 32, 20, st); r(26, 2, 28, 4, hi); r(24, 19, 32, 3, lo)              # tête
+        r(31, 9, 6, 4, eye); r(43, 9, 6, 4, eye); r(33, 10, 2, 2, hexc('#ffe08a')); r(45, 10, 2, 2, hexc('#ffe08a'))
+        r(33, 16, 14, 2, dk)                                                          # bouche
+        r(8, 22, 64, 30, st); r(8, 22, 64, 4, hi); r(8, 48, 64, 4, lo)                # torse et épaules
+        r(38, 26, 4, 22, lo)                                                          # jointure
+        for (x, y, w, h) in [(16, 30, 6, 2), (20, 32, 2, 5), (56, 28, 2, 7), (58, 35, 5, 2), (28, 40, 8, 2)]:
+            r(x, y, w, h, dk)                                                         # fissures
+        r(0, 24, 10, 34, lo); r(70, 24, 10, 34, lo)                                   # bras
+        r(0, 58, 14, 12, st); r(66, 58, 14, 12, st); r(0, 68, 14, 2, dk); r(66, 68, 14, 2, dk)   # poings
+        r(16, 52, 18, 26, st); r(46, 52, 18, 26, st); r(16, 74, 18, 4, lo); r(46, 74, 18, 4, lo)  # jambes
+        r(34, 52, 12, 10, lo)
+        if drip:
+            for (x, y, h) in [(27, 4, 4), (36, 2, 2), (52, 5, 3), (25, 22, 10), (50, 26, 14), (65, 30, 8), (3, 30, 12), (76, 32, 10)]:
+                r(x, y, 2, h, drip)
+            r(20, 78, 40, 2, drip)
+        return px
+    stone = body(hexc('#80868f'), hexc('#a7adb5'), hexc('#5d626a'), hexc('#3d4148'), hexc('#ff8a2a'), hexc('#f4f1e8'))
+    cryst = body(hexc('#6fc7ee'), hexc('#d6f4ff'), hexc('#3f8fb8'), hexc('#1f5a7a'), hexc('#ffffff'), None)
+    return {'golbute': (S, S, stone), 'golbute_crystal': (S, S, cryst)}
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ export function buildPreset(tree, { keys = DEV_PRESETS.keys } = {}){
     if(r.error) throw new Error(`${item} : ${r.error}`);
   }
   stuff.ops = [];
-  if(keys) addItem(inv, DEV_PRESETS.key, keys);
+  if(keys) for(const k of [].concat(DEV_PRESETS.key)) addItem(inv, k, keys);
   const spells = createSpells();
   SPELLS.list.filter(s => s.unlock.tree === tree && specLevelOf(xp).level >= s.unlock.level)
     .slice(0, SPELLS.openSlots).forEach((s, i) => { spells.slots[i] = s.id; });
@@ -61,7 +61,7 @@ export function presetFromSnapshot(snap, { keys = DEV_PRESETS.keys } = {}){
   const { tree, ranks, glyphs } = snap.skills;
   const skills = { ...createSkills(), ...sanitizeSkills({ tree, ranks, glyphs: glyphs ?? {} }, levelOf(progress.xp).talentPoints) };
   const spells = sanitizeSpells({ slots: snap.spells?.slots ?? treeSpells(tree, progress.spec[tree] ?? 0) });
-  if(keys) addItem(inv, DEV_PRESETS.key, keys);
+  if(keys) for(const k of [].concat(DEV_PRESETS.key)) addItem(inv, k, keys);
   return { level: levelOf(progress.xp).level, progress, inventory: JSON.parse(serialize(inv)), stuff, skills, spells, sets: createSets() };
 }
 
