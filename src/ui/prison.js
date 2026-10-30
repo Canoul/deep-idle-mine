@@ -22,7 +22,8 @@ export function launchCostText(e){
    mobs gobelin 50 %… » ; running : la prison qui tourne (son profil figé) */
 const pctList = (parts, name) => Object.entries(parts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${name(k)} ${Math.round(v * 100)} %`).join(', ');
 const MOB_NAMES = { bestiole:'bestiole', gobelin:'gobelin', mimic:'mimic', occultiste:'occultiste', mephite:'méphite', golem:'golem', chair:'mur de chair' };
-export function prisonProfileText(p, running = false){
+/* src (30/10) : d'où vient la compo, à la place de « tes N dernières mines » (ancienne, enregistrée) */
+export function prisonProfileText(p, running = false, src = null){
   if(!p) return '';
   const head = running ? 'Ta prison' : 'Ta prison aura';
   if(!(p.n > 0)) return `${head} : aucune mine classique dans ton historique, contenu de l'area ${p.area ?? PRISON.fallbackArea}.`;
@@ -30,7 +31,7 @@ export function prisonProfileText(p, running = false){
   if(p.ores) parts.push('minerais ' + pctList(p.ores, k => BLOCKS[IDS[k]]?.name ?? k));
   if(p.treasures) parts.push('treasures ' + pctList(p.treasures, k => k.replace('Treasure ', '')));
   parts.push(p.mobs ? 'mobs ' + pctList(p.mobs, k => MOB_NAMES[k] ?? k) : "mobs de l'area");
-  return `${head} (d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}) : ${parts.join(' · ')}.`;
+  return `${head} (${src ?? `d'après tes ${p.n} dernière${p.n > 1 ? 's' : ''} mine${p.n > 1 ? 's' : ''}`}) : ${parts.join(' · ')}.`;
 }
 
 /* temps de jeu « 1 h 07 », « 12 min », « 40 s » (secondes) */

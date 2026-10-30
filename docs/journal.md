@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 30/10/2026 — Geoffrey — Prison : compo par paliers de 10 mines, actuelle / ancienne / enregistrée
+- **Pour le joueur** : le contenu de la prison ne glisse plus à chaque mine, il change tous les 10 mines. En entrant, on choisit « Actuelle » (mines 1 à 10), « Ancienne » (mines 11 à 20) ou « Enregistrée » ; le bouton « 💾 Enregistrer » garde la compo affichée (une seule à la fois). Utile après avoir fait monter des amis plus faibles, ou été porté par plus fort.
+- **État** : ✅ en ligne le 30/10
+
 ## 30/10/2026 — Geoffrey — Fortune et butin en plus : 0 pod
 - **Pour nous** : les minerais en plus donnés par la Fortune et le butin en plus des mobs (Pillage, butin des mobs) vont dans le sac sans peser : ils ne remplissent plus les pods. La Fortune devient vraiment utile en mine (avant, elle remplissait juste le sac plus vite).
 - **État** : ✅ en ligne le 30/10

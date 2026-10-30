@@ -48,7 +48,11 @@ export function lastMines(sessions, account, max = PRISON.profileSessions, withD
 
 /* profil d'après l'historique du joueur (records de sessions du serveur) */
 export function prisonProfile(sessions, account, withDev = false){
-  const mines = lastMines(sessions, account, PRISON.profileSessions, withDev);
+  return profileOf(lastMines(sessions, account, PRISON.profileSessions, withDev));
+}
+
+/* profil d'une liste de mines (lastMines) */
+export function profileOf(mines){
   if(!mines.length) return { n: 0, area: PRISON.fallbackArea, ores: null, treasures: null, mobs: null };
   const bag = {}, kills = {};
   for(const m of mines){ add(bag, m.bag); add(kills, m.killsBy); }
@@ -57,6 +61,37 @@ export function prisonProfile(sessions, account, withDev = false){
   return { n: mines.length, area: Math.round(mines.reduce((s, m) => s + m.areas, 0) / mines.length),
            ores: shares(ores, ORE_KEYS), treasures: shares(bag, TREASURES), mobs: shares(kills, MOB_TYPES) };
 }
+
+/* Paliers (30/10/2026, Geoffrey) : la compo ne glisse plus mine après mine, elle change par paquets de
+   PRISON.profileSessions mines. steps = { cur, prev } (gardés dans l'enregistrement de la prison) ; cur.to = date de la
+   plus récente mine de son paquet. Tant que cur a moins de 10 mines, il suit les dernières mines ; ensuite, il ne
+   change que quand 10 nouvelles mines sont finies (l'ancien cur devient prev). Le joueur choisit cur (« actuelle ») ou
+   prev (« précédente ») en entrant en prison : un PL avec des amis d'un autre niveau ne lui gâche pas sa prison. */
+export function prisonSteps(old, sessions, account, withDev = false){
+  const N = PRISON.profileSessions, all = lastMines(sessions, account, Infinity, withDev);   // plus récentes d'abord
+  const pack = ms => ({ ...profileOf(ms), to: ms.length ? ms[0].at : 0 });
+  const prev = sanitizeStep(old?.prev);
+  let cur = sanitizeStep(old?.cur);
+  /* pas encore de palier complet enregistré : actuelle = mines 1 à 10, précédente = mines 11 à 20 (30/10, Geoffrey) */
+  if(!cur || cur.n < N) return { cur: pack(all.slice(0, N)), prev: prev ?? (all.length > N ? pack(all.slice(N, 2 * N)) : null) };
+  let p = prev;
+  const newer = all.filter(m => m.at > cur.to).reverse();   // plus anciennes d'abord
+  while(newer.length >= N){ p = cur; cur = pack(newer.splice(0, N).reverse()); }
+  return { cur, prev: p };
+}
+/* compos du joueur (ns prison_compo, 30/10/2026, Geoffrey) : { cur, prev, saved } ; saved = compo qu'il a enregistrée
+   (bouton « Enregistrer ») : elle reste tant qu'il n'en enregistre pas une autre. Avance les paliers (prisonSteps). */
+export function prisonCompos(old, sessions, account, withDev = false){
+  return { ...prisonSteps(old, sessions, account, withDev), saved: sanitizeProfile(old?.saved) };
+}
+/* profil d'une compo : 'current' | 'previous' | 'saved' (sans le compteur de palier) ; null si absente */
+export function pickCompo(c, which){
+  const p = which === 'previous' ? c.prev : which === 'saved' ? c.saved : c.cur;
+  if(!p) return null;
+  const { to: _to, ...profile } = p;
+  return profile;
+}
+const sanitizeStep = s => { const p = sanitizeProfile(s); return p && Number.isFinite(s.to) ? { ...p, to: s.to } : null; };
 
 /* profil relu (enregistrement de la prison, partie) : parts revérifiées ; null si absent (ancienne prison : l'area seule) */
 export function sanitizeProfile(p){

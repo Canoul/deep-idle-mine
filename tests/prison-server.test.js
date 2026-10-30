@@ -702,3 +702,20 @@ test('stuff relu à chaque run (30/10) : une pièce équipée pendant la prison 
   assert.equal(disc(p2), before + 1, 'run 2 : Découverte des lunettes');
   assert.equal(p2.specs.name, p.specs.name);
 });
+
+/* compos de prison (30/10/2026, Geoffrey) : actuelle (mines 1 à 10), ancienne (11 à 20), enregistrée */
+test('compos : actuelle / ancienne / enregistrée ; enregistrer puis lancer avec, refus si absente', async () => {
+  const { game, store } = setup();
+  for(let i = 1; i <= 20; i++) await store.putGameSession({ id: 'old' + i, mode: 'mine', status: 'done', startedAt: T0 - 1e7 + i, endedAt: T0 - 1e6 + i,
+    players: [{ account: A.id, name: 'Zoe' }], result: { areasUnlocked: i <= 10 ? 2 : 6, shares: [{ account: A.id, bag: { Fer: 5 } }], miners: [{ account: A.id, stats: {} }] } });
+  let r = await game.prisonProfile(A);
+  assert.equal(r.profile.area, 6); assert.equal(r.previous.area, 2); assert.equal(r.saved, null);
+  await assert.rejects(game.prisonStart(A, null, { compo: 'saved' }), { code: 'no_compo' });
+  await assert.rejects(game.prisonStart(A, null, { compo: 'nimporte' }), { code: 'bad_request' });
+  await assert.rejects(game.prisonSaveCompo(A, { compo: 'saved' }), { code: 'bad_request' });
+  r = await game.prisonSaveCompo(A, { compo: 'previous' });
+  assert.equal(r.saved.area, 2);
+  await game.prisonStart(A, null, { compo: 'saved' });
+  assert.equal((await prisonOf(store, A.id)).areaMax, 2);
+  assert.equal((await game.prisonProfile(A)).saved.area, 2, 'gardée après le lancement');
+});

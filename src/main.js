@@ -336,7 +336,8 @@ const lobby = setupLobby({
   onMode: mode => { if(mode === 'mi') instantLobby.refresh(); if(mode === 'giant') giantUI?.shown(); },
   onJudgment: () => pollJudgment(),
   onPrisonStart: opts => startPrison(opts),
-  prisonProfile: () => gameApi.prisonProfile().then(r => r.profile),   // contenu de la prison d'après les 10 dernières mines (29/10)
+  prisonSaveCompo: compo => gameApi.prisonSaveCompo(compo),   // enregistrer une compo (30/10)
+  prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
   onPrisonStop: () => stopPrison(),
   onShowPrison: () => nav.show('session'),
   onLaunch: async (opts, { party } = {}) => {
