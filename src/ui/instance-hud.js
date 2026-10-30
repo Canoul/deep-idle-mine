@@ -49,9 +49,9 @@ export function showInstanceEnd(rec, me, onBack, onInventory){
   const nameOf = acc => rec.players.find(p => p.account === acc)?.name;
   $('endBox').innerHTML =
     `<h3>🗝 ${esc(def?.label ?? 'Instance')} : ${s.success ? `le ${esc(INSTANCE.boss.name)} est vaincu !` : 'échec'}</h3>`+
-    (mine?.left ? `<p>Tu as quitté l'instance avant la fin.${s.success ? '' : ' Le groupe a perdu : ta clé t\'est rendue.'}</p>`
-      : s.success ? `<p>Victoire en <b>${fmt(s.t)}</b>.${bagText(mine?.bag)}</p>`
-      : `<p>Temps écoulé : ${s.spawners} spawner${s.spawners > 1 ? 's' : ''} sur ${s.spawnersMax ?? 8} cassé${s.spawners > 1 ? 's' : ''}${s.spawners >= (s.spawnersMax ?? 8) ? `, le ${esc(INSTANCE.boss.name)} tient toujours (${s.bossHp} / ${s.bossMax} PV)` : ''}. <b>Ta clé t'est rendue.</b></p>`)+
+    (mine?.left ? `<p>Tu as quitté l'instance avant la fin : tu gardes ta clé.</p>`
+      : s.success ? `<p>Victoire en <b>${fmt(s.t)}</b> : ta clé est utilisée.${bagText(mine?.bag)}</p>`
+      : `<p>Temps écoulé : ${s.spawners} spawner${s.spawners > 1 ? 's' : ''} sur ${s.spawnersMax ?? 8} cassé${s.spawners > 1 ? 's' : ''}${s.spawners >= (s.spawnersMax ?? 8) ? `, le ${esc(INSTANCE.boss.name)} tient toujours (${s.bossHp} / ${s.bossMax} PV)` : ''}. <b>Tu gardes ta clé.</b></p>`)+
     (s.shares || []).map(p => `<div class="row share${p.account === me ? ' me' : ''}"><span>${esc(nameOf(p.account) ?? p.miner)}${p.account === me ? ' (toi)' : ''}</span>`+
       `<span>${p.left ? '<span class="mut">a quitté</span>' : `${p.stats?.bossDmg ?? 0} dégâts au roi · ${p.stats?.kills ?? 0} gobelins · ${p.stats?.drilled ?? 0} coups de spawner`}</span></div>`).join('')+
     '<p style="text-align:right"><button id="endInv">🎒 Voir l\'inventaire</button> <button class="on" id="endBack">Retour au lobby</button></p>';

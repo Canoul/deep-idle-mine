@@ -679,20 +679,22 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         }
       }
       /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
-         I : Coffre du Roi Gobelin), qualité tirée par le serveur comme un trésor de tour ; échec (temps écoulé, ou tout le
-         groupe parti) → la clé consommée au lancement est rendue à TOUS les joueurs de la session (partis compris) */
+         I : Coffre du Roi Gobelin), qualité tirée par le serveur comme un trésor de tour.
+         Clé (30/10/2026, Geoffrey ; ancien : prise au lancement, rendue à tous en cas d'échec) : vérifiée au lancement mais
+         PRISE SEULEMENT À LA VICTOIRE, chez chaque joueur encore présent, dans la même écriture que son coffre. Échec, ou
+         joueur parti avant la fin : il garde sa clé. Plus de clé à la victoire (impossible en jeu normal) : pas de coffre. */
       const inst = isInstanceMode(rec.mode) ? instanceDef(rec.mode) : null;
-      const refund = !!inst && !summary.success;
       if(inst) for(const share of summary.shares || []){
         const here = share.account && !share.left && !hasLeft(rec, share.account);
-        share.bag = refund ? (share.account && inst.key ? { [inst.key]: 1 } : {})
-          : here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 } : {};   // niveau 2 : Coffre du Roi Gobelin II (29/10)
+        share.bag = summary.success && here && inst.chest === 'goblin' ? { [goblinChestItem(rollChestQuality(random), rec.level ?? 1)]: 1 } : {};   // niveau 2 : Coffre du Roi Gobelin II (29/10)
       }
-      /* versement : seulement aux joueurs de la session encore présents (clé rendue : à tous), une seule fois par session */
+      /* versement : seulement aux joueurs de la session encore présents, une seule fois par session */
       for(const share of summary.shares || []){
-        if(!share.account || !inSession(rec, share.account) || (!refund && (share.left || hasLeft(rec, share.account)))) continue;
+        if(!share.account || !inSession(rec, share.account) || share.left || hasLeft(rec, share.account)) continue;
         await withLock('inv:' + share.account, async () => {
           const inv = await loadInventory(share.account);
+          /* instance gagnée : la clé part avec le versement du coffre (une seule fois, comme lui) */
+          if(inst && summary.success && inst.key && !inv.credited.includes(rec.id) && !removeItem(inv, inst.key, 1)) share.bag = {};
           if(!creditSession(inv, rec.id, share.bag)) return;
           const who = rec.players.find(p => p.account === share.account)?.name;
           markFound(Object.keys(share.bag || {}), who);
@@ -1026,11 +1028,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           }
           for(const p of players) await store.putEnergy(p.account, energies[p.account]);
         }
-        if(inst){
-          /* la session et les clés consommées, en une seule écriture */
-          for(const p of players) if(!removeItem(invs[p.account], inst.key, 1)) fail('no_key', 409, `Il faut une ${inst.key} par joueur.`);
-          await store.putGameSessionAndInventories(rec, players.map(p => [p.account, JSON.parse(serialize(invs[p.account]))]));
-        } else await store.putGameSession(rec);
+        /* instance : la clé est seulement vérifiée ici (plus haut) ; elle est prise à la victoire (30/10/2026) */
+        await store.putGameSession(rec);
         ensureLive(rec);
         for(const fn of startHooks) Promise.resolve().then(() => fn(players.map(p => p.account))).catch(console.error);
         return { session: publicSession(rec) };

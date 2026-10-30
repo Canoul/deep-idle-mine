@@ -158,7 +158,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   (29/10), rage sous 33 %), 10 min. **Niveau 2** (29/10, `INSTANCE.levels`) : choisi dans le Lobby, même clé, ouvert à tous ;
   spawners 200 / 15 s, gobelins 350 PV, roi 6 000 PV (détail GAME_DESIGN) ; Coffre du Roi Gobelin II (× 1,5 ressources et
   chances d'objets) ; classement « Roi gobelin II » (records sous la clé `compte#2` du ns instance_record). Simulé :
-  impossible avec le stuff du 29/10 (≈ 2 × dégâts et 1,5 × minage de la meilleure équipe). **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **échec : clé rendue à tous** (27/10 ; ancien : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
+  impossible avec le stuff du 29/10 (≈ 2 × dégâts et 1,5 × minage de la meilleure équipe). **Roi vaincu : un Coffre du Roi Gobelin par joueur présent** (27/10) ; **clé prise seulement à la victoire** chez les présents ; échec ou départ : clé gardée (30/10 ; ancien : consommée au lancement et rendue en cas d'échec, 27/10 ; avant : perdue) ; pas d'XP. Repères : **ancien** (27/10) à 3, fer 0/20, fer + acier 13/20, acier
   20/20 (`npm run simulate:instance`) ; seul : impossible. ⚠️ Ce script ne donne aux mineurs que le stuff de base (ni skills,
   ni sorts, ni améliorations, ni runes) : il sous-estime les vrais joueurs (0/5 en acier le 29/10 alors que les 6 vraies
   parties du 29/10 étaient 6 victoires). Repère actuel : ces 6 parties rejouées avec les règles du 29/10 (gobelins 200 PV

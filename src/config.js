@@ -1478,7 +1478,7 @@ export const WIKI = { secret: ['Couronne du Roi Gobelin', 'Masse du Roi Gobelin'
 
 /* Instances (concept de Geoffrey, 27/10/2026 ; spec docs/superpowers/specs/2026-10-27-instances-design.md). Valeurs
    provisoires. Lobby, « Où miner » → Instances : list (les instances pas prêtes sont grisées). Un groupe de 1 à 3, une
-   clé par joueur (key), consommée au lancement. Instance I (le roi gobelin) :
+   clé par joueur (key), vérifiée au lancement et prise seulement à la victoire (30/10/2026, Geoffrey ; ancien : consommée au lancement, rendue en cas d'échec). Instance I (le roi gobelin) :
    - salle w × h cases d'air (sol, murs et plafond indestructibles), tout éclairé, pas d'oxygène ni de pods ; rebords
      (ledgeW cases de large, 1 de haut, collés aux murs) tous les ledgeEvery cases de hauteur, ledges par côté ; un
      spawner par rebord, collé au mur ; plateforme du roi : platform.w de large, à platform.height cases du sol ; départ

@@ -5429,8 +5429,28 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - Tests ✅ game-service (test du focus minerai : `FOCUS.ores = true` le temps du test ; nouveau test : flag false → `{ area }`
   seul), focus : 83/83. Docs : GAME_DESIGN (encadré « retiré »), wiki (texte du focus).
 
+<<<<<<< HEAD
 ### 30/10/2026 — Fortune et butin en plus à 0 pod
 - `collect(m,name,w,n,free)` (src/sim/mineur.js) : free → `m.free[name] += n`, pas de pods. `uncollect(m,name,w,n)` retire les payants d'abord (vol du gobelin src/sim/mobs.js, dépôt Mule src/sim/mule.js : les gratuits passent sans prendre de place dans le sac de la Mule). Dépôt au coffre : `m.free = {}`.
 - Fortune : `collect(..., extra, true)` ; butin des mobs : `lootCol` (base payante, supplément Pillage/looting gratuit), même ordre de tirages qu'avant.
 - ✅ tests/fortune-pods (nouveau), goblin, mobs, mob-drops, combat, dungeon, khole, loot, mule, prison*, skills* (213/213) ; anticheat 118/118 ; simulate 3 mineurs × 5 : 0 bloquée.
 - ⚠️ Tour : son propre sac (briques), non concerné. Le tableau GS (`Fortune : valeur calculée sans le coût en pods`) est maintenant juste ; à remesurer si besoin.
+=======
+---
+
+## 30/10/2026 — Instance : clé prise à la victoire (branche `geoffrey/cle-consommee-victoire`)
+- **Quoi** : `server/game/service.js` `start` : la clé est seulement vérifiée (`missingKeys`), plus de `removeItem` ni de
+  `putGameSessionAndInventories` (simple `putGameSession`). Fin de session : `share.bag` = coffre si victoire et présent,
+  sinon `{}` (plus de clé rendue) ; versement réservé aux présents ; victoire : `removeItem(inv, key, 1)` sous le verrou
+  `inv:<compte>`, avant `creditSession`, seulement si la session n'est pas déjà créditée (idempotent) ; plus de clé →
+  `bag = {}` (pas de coffre, session marquée créditée).
+  Textes : `src/ui/lobby.js` (info et bulle des clés), `src/ui/instance-hud.js` (écran de fin), `wiki.html`, commentaire
+  `INSTANCE` (config), GAME_DESIGN, état du projet.
+- **Tests** : `tests/instance-server.test.js` (5 tests mis à la nouvelle règle + 1 nouveau : victoire rejouée = une
+  clé, un coffre ; sans clé à la victoire = pas de coffre), `tests/anticheat/instance.test.js` (lancements croisés : aucune
+  clé prise). instance* + lobby : 53/53 ✅ ; `npm run test:anticheat` : 118/118 ✅.
+- **Point fragile** : une clé n'est plus « bloquée » pendant l'instance ; elle n'a pas d'autre usage aujourd'hui (une
+  session à la fois). Si un jour on peut échanger ou recycler une clé, le joueur qui s'en débarrasse pendant l'instance
+  n'aura simplement pas de coffre.
+
+>>>>>>> origin/main

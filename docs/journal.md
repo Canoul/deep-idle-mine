@@ -9,9 +9,19 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+<<<<<<< HEAD
 ## 30/10/2026 — Geoffrey — Fortune et butin en plus : 0 pod
 - **Pour nous** : les minerais en plus donnés par la Fortune et le butin en plus des mobs (Pillage, butin des mobs) vont dans le sac sans peser : ils ne remplissent plus les pods. La Fortune devient vraiment utile en mine (avant, elle remplissait juste le sac plus vite).
-- **État** : 🧪 sur la branche `geoffrey/fortune-sans-pods` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
+=======
+## 30/10/2026 — Geoffrey — Instance : la clé n'est prise qu'à la victoire
+- **Pour le joueur** : la Clé d'instance I est toujours **vérifiée** au lancement (une par joueur), mais elle n'est plus
+  prise tout de suite : elle n'est utilisée **que si le groupe gagne**, chez les joueurs encore là à la victoire (en même
+  temps que leur Coffre du Roi Gobelin). **Échec** ou **départ avant la fin** (un joueur, ou tout le groupe qui quitte) :
+  on **garde sa clé**. Avant, elle était prise au lancement et rendue seulement en cas d'échec : un joueur parti avant
+  une victoire la perdait. Textes du lobby, de l'écran de fin et du wiki mis à jour.
+- **État** : ✅ en ligne le 30/10
+>>>>>>> origin/main
 
 ## 30/10/2026 — Geoffrey — Prison : plus de minerais (oreMul 0,24 → 0,27)
 - **Pour nous** : la prison contient 12,5 % de minerais en plus, pour viser 50 % du rendement d'une mine (on était vers 40 %).
