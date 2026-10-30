@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 30/10/2026 — Geoffrey — Four : fenêtre Recettes remise en ordre
 - **Pour le joueur** : avec 3 ingrédients, la fenêtre **Recettes** du four devenait illisible (icônes séparées de leur nom, durée seule
   sur une ligne, bouton Fermer coupé). Elle est plus large, chaque ingrédient reste d'un bloc, la durée est en haut à droite.
-- **État** : 🧪 sur la branche `geoffrey/four-recettes-ui` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 30/10/2026 — Geoffrey — Four : une 3e case d'ingrédient pour les alliages
 - **Pour le joueur** : en mode **Alliage**, chaque four a maintenant 3 cases d'ingrédients. Les autres alliages n'en utilisent
