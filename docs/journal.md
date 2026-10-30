@@ -21,7 +21,7 @@ Modèle d'entrée :
   que 2 et marchent comme avant, la 3e reste vide. Le bouton **Recettes** sait remplir les 3 cases.
 - **Recettes** : **Cobalt ingot** et **Thorium ingot** demandent maintenant **3 Tainted gold** en plus (5 Mithril ingot + 5 Refined
   cobalt ou thorium + 3 Tainted gold).
-- **État** : 🧪 sur la branche `geoffrey/four-3-cases` (pas en ligne)
+- **État** : ✅ en ligne le 30/10
 
 ## 30/10/2026 — Geoffrey — `?perf` fonctionne aussi en prison
 - **Pour le joueur** : rien. Pour l'équipe : dans la prison, `?perf` n'affichait que les images par seconde ; il mesure maintenant
