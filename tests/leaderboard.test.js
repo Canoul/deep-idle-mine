@@ -89,7 +89,7 @@ function setup({ dev = false } = {}){
   const party = createPartyService({ game, clock, getAccount: accounts.getAccount });
   const social = createSocialService({ store, accounts, party, game, clock, config: SOCIAL_SERVER });
   const advance = ms => { now += ms; };
-  const tower = async (players, t, level) => { towerT = t; await game.start({ id: players[0].account, name: players[0].name }, { mode: 'tower_angel', ...(level ? { level } : {}) }, players);
+  const tower = async (players, t) => { towerT = t; await game.start({ id: players[0].account, name: players[0].name }, { mode: 'tower_angel' }, players);
     advance(TOWER.duration / GAME.speed * 1000); await game.pump(); };
   return { store, game, social, advance, tower, clock };
 }
@@ -280,7 +280,10 @@ test('tour céleste II : un classement par niveau ; le niveau 2 ne touche pas au
   const { game, social, advance, store, tower } = setup();
   await game.start(A, {}); advance(realDurationMs()); await game.pump();   // jauge de l'Ange remplie : tour ouverte
   await tower(team, 432.5);
-  await tower(team, 300, 2);
+  /* Shrine héroïque (31/10) ; une nouvelle ouverture : une seule victoire par ouverture */
+  await store.putShrines(A.id, { active: { heroique: 1 } });
+  const j = await store.getJudgment(); j.done.angel.accounts = []; await store.putJudgment(j);
+  await tower(team, 300);
   assert.deepEqual((await social.leaderboard(A, 'tower')).rows.map(x => [x.name, x.value]), [['Zoe', 432.5], ['Max', 432.5]]);
   const r2 = await social.leaderboard(A, 'tower2');
   assert.deepEqual(r2.rows.map(x => [x.name, x.value, x.side, x.team]), [['Zoe', 300, 'angel', ['Zoe', 'Max']], ['Max', 300, 'angel', ['Zoe', 'Max']]]);
@@ -308,7 +311,7 @@ test("tour céleste II : les records d'avant les niveaux prennent le niveau de l
 /* sous-onglets (29/10) : Spécialisation (un par arbre), Tour céleste et Roi gobelin (un par niveau) ; chaque classement
    est atteignable par un bouton de index.html, ou un sous-onglet de son bouton */
 test('sous-onglets des classements : un par arbre, un par niveau ; chaque classement a son bouton', async () => {
-  assert.deepEqual(boardSubs('tower').map(s => [s.id, s.label]), [['tower', 'Niveau 1'], ['tower2', 'Niveau 2']]);
+  assert.deepEqual(boardSubs('tower').map(s => [s.id, s.label]), [['tower', 'Normal'], ['tower2', 'Héroïque']]);
   assert.deepEqual(boardSubs('instance').map(s => s.id), ['instance', 'instance2']);
   assert.deepEqual(boardSubs('spec').map(s => s.id), SKILLS.trees.map(t => 'spec:' + t.id));
   assert.equal(boardSubs('gs'), null); assert.equal(boardSubs('xp'), null);

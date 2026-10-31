@@ -18,10 +18,8 @@ export function towerState(side, v, now){
   const name = JUDGMENT.sides[side].tower;
   if(!v.open && v.paused) return { cls: 'closed paused', text: `${name} : en pause`, sub: 'L\'autre tour est ouverte : cette jauge ne bouge plus jusqu\'à sa fermeture, et les mines n\'ont plus de résidus.' };
   if(!v.open) return { cls: 'closed', text: `${name} : fermée`, sub: `Elle ouvre ${JUDGMENT.openHours} h quand la jauge atteint ${v.cap}.` };
-  if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Tous ses niveaux sont faits pour cette ouverture : tes trésors sont dans l\'inventaire.' };
-  const done = v.doneLevels ?? [];   // niveaux (28/10)
-  return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`,
-           sub: done.length ? `Niveau ${done.join(', ')} fait ; choisis-la ici pour l'autre niveau.` : 'Choisis-la ici, seul ou en groupe de 3, puis son niveau.' };
+  if(v.done) return { cls: 'done', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Déjà gagnée pendant cette ouverture : ton trésor est dans l\'inventaire.' };
+  return { cls: 'open', text: `${name} : ouverte · ${fmtLeft(v.openUntil - now)}`, sub: 'Choisis-la ici, seul ou en groupe de 3.' };
 }
 
 /* root : élément de la carte (Lobby, choix « Jugement ») ; onTower(side) : choisir la tour de ce camp dans « Où miner » */

@@ -79,6 +79,8 @@ export function consume(st){
 
 /* stèle de ce camp qui compte au lancement d'une tour : chargée et pas désactivée, sinon null */
 export const steleFor = (st, tower) => SHRINE_IDS.find(id => st.active[id] > 0 && shrineOf(id).tower === tower && !st.off[id]) ?? null;
+/* shrine héroïque (31/10/2026) : chargé et pas désactivé, sinon null ; les deux tours, en plus de la stèle du camp */
+export const heroicFor = st => SHRINE_IDS.find(id => st.active[id] > 0 && shrineOf(id).effect?.level && !st.off[id]) ?? null;
 /* le chef active (on = true) ou désactive une stèle chargée. Renvoie { ok } ou { error } : bad_shrine (pas une stèle),
    bad_qty (on n'est pas un booléen), not_charged */
 export function setStele(st, { shrine, on }){

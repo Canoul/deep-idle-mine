@@ -32,9 +32,9 @@ import { prisonCompos, pickCompo } from '../../src/meta/prison-profile.js';
 import { sanitizeFocus } from '../../src/sim/focus.js';
 import { displayName } from '../../src/shared/account.js';
 import { createInventory, deserialize, serialize, creditSession, addItem, removeItem, countOf, sortInventory, moveSlot } from '../../src/meta/inventory.js';
-import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasDone, markDone,
+import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgment, isOpen as towerOpen, anyOpen as anyTowerOpen, hasWon, markDone,
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
-import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot, TOWER_LEVELS } from '../../src/shared/tower.js';
+import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
 import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
@@ -50,7 +50,7 @@ import { research, recycle } from '../../src/meta/research.js';
 import { sanitizeEnergy, canPay, rollCost, spendEnergy, creditEnergy, energyOfTicks, publicEnergy, settleIdle } from '../../src/meta/energy.js';
 import { cleanTime, sanitizePrison, newPrisonRecord, runId, runRecord, prisonTickAt, publicPrison, prisonDueMs, touchPrison, isPresent, batchDue,
          addAway, endedAway, hasAway, clearAway } from '../../src/shared/prison.js';
-import { sanitizeShrines, give as giveShrine, consume as consumeShrines, steleFor, setStele, spendStele, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
+import { sanitizeShrines, give as giveShrine, consume as consumeShrines, steleFor, heroicFor, setStele, spendStele, hasShrines, publicShrines, shrineOf } from '../../src/meta/shrines.js';
 import { sanitizeStuff, stuffOp, lookOf, gearOf } from '../../src/meta/stuff.js';
 import { gearScore } from '../../src/meta/gearscore.js';
 import { aurasOf } from '../../src/meta/aura.js';
@@ -693,14 +693,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       if(side){
         const heirs = (summary.shares || []).filter(s => summary.success && s.account && !s.left && !hasLeft(rec, s.account));
         const parts = splitTowerLoot(summary.loot, heirs.length, side, random);
+        const luck = shrineOf(rec.stele)?.effect?.luck ?? null, extraBox = shrineOf(rec.heroic)?.effect?.extraBox ?? 0;   // stèle : trésor béni (30/10)
         for(const share of summary.shares || []){
           const i = heirs.indexOf(share);
-          share.bag = i >= 0 ? { [treasureItem(side, rollChestQuality(random), shrineOf(rec.stele)?.effect?.luck ?? null)]: 1, ...parts[i] } : {};   // stèle : trésor béni (30/10)
+          if(i < 0){ share.bag = {}; continue; }
+          /* Shrine héroïque (31/10/2026) : chance d'une 2e boîte, tirée par joueur, qualité tirée à part */
+          const boxes = {};
+          for(let n = extraBox > 0 && random() < extraBox ? 2 : 1; n > 0; n--){ const item = treasureItem(side, rollChestQuality(random), luck); boxes[item] = (boxes[item] ?? 0) + 1; }
+          share.bag = { ...boxes, ...parts[i] };
         }
-        /* stèle (30/10/2026, Geoffrey) : sa charge n'est consommée qu'à la victoire ; un échec la laisse au chef */
+        /* stèle (30/10/2026, Geoffrey), Shrine héroïque (31/10) : leur charge n'est consommée qu'à la victoire ; un échec la laisse au chef */
         if(summary.success && rec.steleOwner) await withLock('shrine:' + rec.steleOwner, async () => {
           const st = sanitizeShrines(await store.getShrines(rec.steleOwner));
-          if(spendStele(st, rec.stele, 'stele:' + rec.id)) await store.putShrines(rec.steleOwner, st);
+          const spent = [spendStele(st, rec.stele, 'stele:' + rec.id), spendStele(st, rec.heroic, 'heroic:' + rec.id)];
+          if(spent.some(Boolean)) await store.putShrines(rec.steleOwner, st);
         });
       }
       /* instance (27/10/2026, Geoffrey) : roi vaincu → chaque joueur encore présent reçoit un coffre de l'instance (Instance
@@ -956,20 +962,31 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       return withLock.many([...players.map(p => 'acct:' + p.account), ...players.flatMap(p => prisonLocks(p.account))], async () => {
         /* tour du Jugement : ouverte, et personne du groupe ne l'a déjà faite pendant cette ouverture ; en mode dev, toujours
            ouverte et sans limite (25/10, Geoffrey : pour la tester en boucle) */
-        let opening = null, level = null;
+        let opening = null, level = null, stele = null, heroic = null;
         /* niveau d'instance (29/10/2026, Geoffrey) : INSTANCE.levels, 1 par défaut, même clé ; ouvert à tous */
         if(inst){
           level = body.level ?? 1;
           if(!levelsOf(mode).includes(level)) fail('bad_request', 400, "Niveau d'instance inconnu.");
         }
         if(side){
-          /* niveau (28/10/2026, Geoffrey) : TOWER.levels, 1 par défaut ; chaque niveau une fois par ouverture */
-          level = body.level ?? 1;
-          if(!TOWER_LEVELS.includes(level)) fail('bad_request', 400, 'Niveau de tour inconnu.');
+          /* stèle (30/10/2026, SHRINES exorcisme / pacte) et Shrine héroïque (31/10) : ceux du chef, chargés et activés ; rien
+             n'est pris ici, la charge part à la victoire (settleWith). Déjà engagé dans une partie en cours de ce chef (il l'a
+             quittée) : il ne compte pas une seconde fois. En mode dev, imposés par body.stele et body.heroic (sans les payer).
+             Le niveau vient du Shrine héroïque, jamais du navigateur (niveau 2 retiré du lobby le 31/10). */
+          if(dev){
+            stele = shrineOf(body.stele)?.tower === side ? body.stele : null;
+            heroic = body.heroic === true ? heroicFor(sanitizeShrines({ active: { heroique: 1 } })) : null;
+          } else {
+            const sh = sanitizeShrines(await store.getShrines(me.id)), mine = (await store.sessionsOf(me.id)).filter(s => ACTIVE.includes(s.status) && s.steleOwner === me.id);
+            const free = (id, key) => id && !mine.some(s => s[key] === id) ? id : null;
+            stele = free(steleFor(sh, side), 'stele'); heroic = free(heroicFor(sh), 'heroic');
+          }
+          level = shrineOf(heroic)?.effect?.level ?? 1;
+          /* une seule victoire par joueur et par ouverture (31/10/2026, Geoffrey ; ancien : une par niveau) */
           const t = await withJudgment(j => ({ value: { open: towerOpen(j, side, clock()), opening: j[side].opening,
-                                                         done: players.filter(p => hasDone(j, side, p.account, level)) } }));
+                                                         done: players.filter(p => hasWon(j, side, p.account)) } }));
           if(!t.open && !dev) fail('tower_closed', 409, `${modeDef.label} est fermée : elle ouvre quand sa jauge du Jugement est pleine.`);
-          if(t.done.length && !dev) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà fait le niveau ${level} de cette tour pendant cette ouverture.`);
+          if(t.done.length && !dev) fail('tower_done', 409, `${t.done.map(p => p.name || 'Un joueur').join(', ')} a déjà gagné cette tour pendant cette ouverture.`);
           opening = t.opening;
         }
         /* mine classique : pas de résidus si une tour du Jugement est ouverte au lancement (23/10, figé dans la session) */
@@ -1033,15 +1050,6 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           if(used.length) await store.putShrines(me.id, st);
           return used;
         }) : [];
-        /* stèle d'une tour (30/10/2026, SHRINES exorcisme / pacte) : celle de ce camp, chargée et activée par le chef ; rien
-           n'est pris ici, la charge part à la victoire (settleWith). Déjà engagée dans une partie en cours de ce chef (il l'a
-           quittée) : elle ne compte pas une seconde fois. En mode dev, imposée par body.stele (pour tester sans la payer) */
-        let stele = side && dev && shrineOf(body.stele)?.tower === side ? body.stele : null;
-        if(side && !dev){
-          const id = steleFor(sanitizeShrines(await store.getShrines(me.id)), side);
-          const taken = (await store.sessionsOf(me.id)).some(s => ACTIVE.includes(s.status) && s.stele === id && s.steleOwner === me.id);
-          stele = taken ? null : id;
-        }
         /* mode dev : un preset par mineur (body.presets : les joueurs, puis les mineurs de test, 31/10/2026). Un mineur de
            test choisi compte, même si le nombre de mineurs de test demandé est plus petit */
         const places = dev ? sanitizeBotPresets(body.presets) : null, placeOfPlayers = places?.slice(0, players.length) ?? null;
@@ -1066,7 +1074,8 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           ...(modulation ? { modulation: { gsMax: TOWER.modulation.gsMax } } : {}),
           ...(residues === false ? { residues: false } : {}),
           ...(shrines.length ? { shrines } : {}),
-          ...(stele ? { stele, ...(dev ? {} : { steleOwner: me.id }) } : {}),
+          ...(stele ? { stele } : {}), ...(heroic ? { heroic } : {}),
+          ...((stele || heroic) && !dev ? { steleOwner: me.id } : {}),
           ...(mode === 'mine' && !dev ? { statsAt } : {}),
           leaves: [], focus: [], status: 'running', result: null, seen: [],
           clock: dev ? { tick: 0, at: now, speed: GAME.devSpeeds[0], paused: false } : null,

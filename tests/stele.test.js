@@ -145,8 +145,8 @@ test('charge consommée une seule fois par session (fin rejouée)', () => {
 
 test('lobby : stèle du pacte dans la Tour de l\'Ange seulement, exorcisme dans celle du Démon ; aucune en mine', () => {
   const list = publicShrines(createShrines()), ids = o => shownShrines(list, o).map(s => s.id);
-  assert.deepEqual(ids({ tower: 'angel' }), ['pacte']);
-  assert.deepEqual(ids({ tower: 'demon' }), ['exorcisme']);
+  assert.deepEqual(ids({ tower: 'angel' }), ['pacte', 'heroique']);
+  assert.deepEqual(ids({ tower: 'demon' }), ['exorcisme', 'heroique']);
   assert.deepEqual(ids({ mine: true }), ['abundance']);
   assert.deepEqual(ids({}), []);
   const on = publicShrines(sanitizeShrines({ active: { pacte: 1 } }))[2];
