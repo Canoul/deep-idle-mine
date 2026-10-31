@@ -6045,6 +6045,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `PRISON.mobXpMul` 0,5 lu dans `killMob` (src/sim/actions.js). `stats.xp` peut valoir x,5 en prison ; la part versée est arrondie vers le bas (`shareBySegments`), le HUD aussi.
 - **Tests** ✅ prison-profile +1, prison-sim, prison-ui, prison-server (❌ `une tour et une instance lancées terminent la prison` : déjà en échec sur main, sans lien). Simulation prison lancée sans blocage ; effet réel à mesurer en base.
 
+## 31/10/2026 — Lobby : qui on attend (Geoffrey) — branche `geoffrey/lobby-attente`
+- **Quoi** : `playing` devient une Map compte → temps restant dans `state()` (`server/party/service.js`), lue depuis
+  `game.activeSessionInfo` ; nouveau champ `playingLeftMs` par membre. `launchState` et les tags de place (`src/ui/lobby.js`)
+  l'affichent avec `leftText` de l'onglet Social. Le temps avance au rythme du rafraîchissement du lobby.
+- **Tests** : `tests/lobby.test.js`, `tests/party.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+
 ## 31/10/2026 — Orbe supérieur (Geoffrey)
 - **Quoi** : `ITEMS['Orbe supérieur']`, recette de base (src/recipes.js), texture `orb_superior` (scripts/gen_textures.py, liste des textures de src/config.js). Aucun usage pour l'instant.
 - **Tests** ✅ tests/craft.test.js. Aucun nouveau chemin de ressources : craft habituel. ⚠️ Texture non vue en jeu.

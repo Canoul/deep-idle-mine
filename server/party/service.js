@@ -62,13 +62,14 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   const invitesFor = accountId => [...parties.values()].filter(p => p.invites.has(accountId));
 
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
-  function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
+  function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
     const now = clock();
     return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             always: !!m.always,
-                                            playing: playing.has(m.account), tree: trees.get(m.account) ?? null,
+                                            playing: playing.has(m.account), playingLeftMs: playing.get(m.account) ?? null,   // temps restant (null en mode dev)
+                                            tree: trees.get(m.account) ?? null,
                                             specLevel: specLv.get(m.account) ?? null,
                                             look: looks.get(m.account) ?? {},
                                             auras: auras.get(m.account) ?? {},          // aura des pièces visibles (src/meta/aura.js)
@@ -259,9 +260,10 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(queue.has(me.id)) queue.get(me.id).seenAt = clock();
       await runLfg();
       const p = partyOf(me.id);
-      /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session » */
-      const playing = new Set();
-      if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account)) playing.add(m.account);
+      /* membres encore dans une session (la précédente, pas finie pour eux) : affichés « en session », avec le temps restant */
+      const playing = new Map();
+      if(p) for(const m of p.members) if(m.account !== me.id && await game.activeSessionId(m.account))
+        playing.set(m.account, (await game.activeSessionInfo?.(m.account))?.leftMs ?? null);
       /* spécialisation de chacun (arbre de skills choisi) */
       const trees = new Map();
       if(p) for(const m of p.members) trees.set(m.account, await game.skillTreeOf?.(m.account) ?? null);
