@@ -4,6 +4,7 @@
    Une route est une fonction async (ctx) → réponse :
      objet          → 200 + JSON
      [statut, obj]  → ce statut + JSON (obj absent = corps vide) */
+import { nameBanned } from './moderation/filter.js';
 import { MODERATION } from '../src/config.js';
 import { SERVER } from './config.js';
 import { HttpError, sendJson, sendError, readJson, parseCookies, sessionCookie, clientIp } from './http/http.js';
@@ -29,7 +30,7 @@ const banDate = t => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris'
 export function createApp({ store, root, config = SERVER, service, game, party, instant, social, giant, town, moderation } = {}){
   const accounts = service ?? createAccountService({ store });
   /* les futures routes (sauvegarde…) s'ajoutent ici, chacune dans son module */
-  const routes = { ...accountRoutes(accounts), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
+  const routes = { ...accountRoutes(accounts, { onRename: (id, name) => party?.rename(id, name) }), ...(game ? gameRoutes(game) : {}), ...(party ? partyRoutes(party) : {}),
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(giant ? giantRoutes(giant) : {}),
                    ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
@@ -73,6 +74,9 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
         const until = await moderation.bannedUntil(ctx.me.id);
         if(until) throw new HttpError(403, 'banned', `Tu es banni du jeu jusqu'au ${banDate(until)} (${MODERATION.warnings} avertissements pour langage interdit dans le chat).`);
       }
+      /* pseudo interdit (31/10/2026) : plus aucune action tant qu'il n'est pas changé ; lire reste permis */
+      if(ctx.me && req.method === 'POST' && !pathname.startsWith('/api/account/') && !pathname.startsWith('/api/admin/') && nameBanned(ctx.me.name))
+        throw new HttpError(403, 'must_rename', 'Change ton pseudo pour continuer.');
       if(req.method === 'POST') ctx.body = await readJson(req, config.maxBodyBytes);
       const out = await route(ctx);
       const [status, data] = Array.isArray(out) ? out : [200, out];

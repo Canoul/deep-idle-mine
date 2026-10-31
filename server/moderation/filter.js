@@ -66,6 +66,13 @@ export function findBanned(text){
   return out;
 }
 
+/* Pseudo interdit (31/10/2026, Geoffrey) : la liste du chat, sur le pseudo tel quel et découpé à ses majuscules (un pseudo n'a
+   pas d'espace : « SaleConnard » = « Sale Connard »). Les mots WORD restent en mot entier : « Conan » et « Falcon » passent. */
+export const nameBanned = name => {
+  const n = String(name ?? '');
+  return findBanned(n).length > 0 || findBanned(n.replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, '$1 $2')).length > 0;
+};
+
 /* remplace par « * » les caractères (hors espaces) des passages donnés */
 export function mask(text, spans){
   const chars = String(text).split('');
