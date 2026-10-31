@@ -5794,5 +5794,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Puis `DIM_DEV_COPY_URL=postgresql://dim_dev_lecture:<mot de passe>@<hôte Neon>/<base>?sslmode=require` dans `~/.dim-dev.env`.
   Contrôle : `SET ROLE dim_dev_lecture; SELECT * FROM dim_data LIMIT 1;` doit répondre « permission denied », puis `RESET ROLE;`.
 - **Tests** ✅ tests/dev-live-copies 4/4 (fausse connexion), dev-presets, boot-check ; format réel accepté sur la copie de canoul.
-- ⚠️ Pas encore essayé sur la vraie base. `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
+- **Vérifié sur la vraie base** ✅ 31/10 : vue lue (31 joueurs), `dim_data` refusée (permission denied), écriture refusée ; Croustiflex,
+  Infernatiwar et Monsta copiés par la route, 12 à 13 pièces, sorts réels. Session lancée avec ces copies : pas encore essayée.
+- ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
 
