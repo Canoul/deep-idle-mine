@@ -5860,3 +5860,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
+
+## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
+- **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
+- **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
+- **Corrigé au passage** : `stepToward` creusait à travers un bloc `taken` (minerai visé par un mineur) ; refusé maintenant.
+- **Mesure** : avant 7,8 blocs et 3,1 minerais par gobelin, 12,5 s inactif ; après 14,0 blocs et 4,2 minerais, 1,0 s inactif.
+- **Tests** ✅ goblin-thrall +4 (3 adaptés à l'ancien « il attend »), goblin-king, effects, session, anti-triche (119). Simulation `--miners 3 --count 5 --crown` : 0 bloquée.
+- ⚠️ Focus « seulement » : un minerai ignoré par le focus reste cassable comme de la roche (bonus sans gravité). `updateLight` est appelé à chaque bloc : plus souvent qu'avant, à surveiller. Stats de base seulement, pas vu en vrai partie.
