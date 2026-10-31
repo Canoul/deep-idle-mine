@@ -21,6 +21,19 @@ Modèle d'entrée :
   tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.
 - **État** : 🧪 sur la branche `geoffrey/social-prison-vert` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
+- **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
+- **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.
+- **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
+
+## 31/10/2026 — Geoffrey — Fluidité : le jeu lit la partie avec un petit tampon
+- **Pour le joueur** : le mineur et les mobs bougent plus régulièrement, surtout quand le réseau a un coup de mou. Le jeu affiche la partie 0,4 s en arrière, comme le tampon d'une vidéo (il y avait déjà environ 0,35 s de retard). Après un retard, le mineur rattrape doucement au lieu de sauter. Mine, prison, tours, instances et mine instantanée.
+- **À suivre** : regarder en jeu si la sensation est meilleure, et surveiller la charge du serveur (envois plus nombreux, partie avancée toutes les 100 ms). Le Bloc géant n'est pas concerné.
+
+## 31/10/2026 — Geoffrey — Grimoire : sorts débloqués devant
+- **Pour le joueur** : dans l'onglet Sorts, le grimoire montre d'abord les sorts débloqués, puis les parchemins en poche, les sorts d'une autre spé, et enfin ceux pas encore débloqués.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
   jeu. Les anciens messages de ce canal s'affichent en Général.
@@ -38,6 +51,10 @@ Modèle d'entrée :
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Chat : largeur débloquée en tour et en instance
+- **Pour le joueur** : en tour, en instance, en mine instantanée et au Bloc géant, le chat peut s'élargir jusqu'au bord de la mine ; il restait bloqué au minimum alors qu'il y avait de la place.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
@@ -65,6 +82,12 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
 - **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
 - **À suivre** : à regarder en jeu, en pierre et en cristal.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Tours : le Shrine héroïque remplace le niveau 2
+- **Pour le joueur** : plus de choix de niveau dans les tours. Un **Shrine héroïque** (30 Orbes, dans le lobby des deux tours) donne la difficulté de l'ancien niveau 2 et **25 % de chance d'une 2e boîte** pour chaque joueur. Il garde sa charge tant que la tour n'est pas gagnée, le chef peut le désactiver, et il se cumule avec le Pacte ou l'Exorcisme.
+- **Décisions** : une seule victoire par joueur et par ouverture, donc plus de 2e boîte garantie. Tirage par joueur ; la 2e boîte est la même que la 1re (bénie avec une stèle). Le classement « Tour céleste II » devient « Tour céleste héroïque », records gardés, avec ou sans stèle.
+- **À suivre** : Héroïque + stèle n'a pas été simulé ; la stèle seule n'était déjà pas gagnée en simulation (2e boss jamais tué). Un joueur qui a déjà gagné la tour pendant l'ouverture en cours, à n'importe quel niveau, ne peut plus la refaire à la mise en ligne.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo

@@ -12,7 +12,7 @@ const setHtml = (el, h) => { if(el && el._html !== h){ el.innerHTML = h; el._htm
 export function updateTowerHUD(G, me, left, focus = null){
   const S = TOWER.sides[G.side] ?? TOWER.sides.angel, b = G.boss;
   const LV = TOWER.levels[G.level] ?? TOWER.levels[1];   // niveau (28/10)
-  $('twTitle').textContent = `${S.icon} ${S.tower}${G.level > 1 ? ` · niveau ${G.level}` : ''}`;
+  $('twTitle').textContent = `${S.icon} ${S.tower}${G.level > 1 ? ' · Héroïque' : ''}`;
   $('twTimer').textContent = fmt(G.t) + ' / ' + fmt(TOWER.duration);
   $('twTimeBar').style.width = Math.min(100, G.t / TOWER.duration * 100) + '%';
   $('twLeft').textContent = left == null ? '' : `fin dans ${fmt(left)}`;

@@ -8,8 +8,7 @@ import { newTower, bagFull, mineT, towerLevel, tickTower } from '../src/sim/towe
 import { floorBottom, gateCols } from '../src/sim/tower/world.js';
 import { buildTower } from '../src/shared/tower.js';
 import { createTowerViewer, applyTowerView } from '../src/shared/tower-view.js';
-import { sanitizeJudgment, hasDone, markDone, doneLevels, publicJudgment } from '../src/meta/judgment.js';
-import { towerLevelState } from '../src/ui/lobby.js';
+import { sanitizeJudgment, hasDone, hasWon, markDone, doneLevels, publicJudgment } from '../src/meta/judgment.js';
 
 const team = n => Array.from({ length: n }, (_, i) => ({ name: 'M' + i, account: 'A' + i }));
 
@@ -47,30 +46,17 @@ test('niveau 2 : la partie du serveur et la copie d\'affichage connaissent le ni
   assert.equal(view.level, 2);
 });
 
-test('une victoire par niveau et par ouverture ; un ancien « fait » (compte seul) vaut le niveau 1', () => {
+test('une victoire par ouverture, quel que soit le niveau (31/10) ; un ancien « fait » (compte seul) vaut le niveau 1', () => {
   const j = sanitizeJudgment({ angel: { count: 0, openUntil: 1e12, opening: 4 }, done: { angel: { opening: 4, accounts: ['OLD'] } } });
   assert.equal(hasDone(j, 'angel', 'OLD'), true); assert.equal(hasDone(j, 'angel', 'OLD', 2), false);
   assert.equal(markDone(j, 'angel', 'ME', 2), true); assert.equal(markDone(j, 'angel', 'ME', 2), false, 'une seule fois');
   assert.deepEqual(doneLevels(j, 'angel', 'ME'), [2]);
-  markDone(j, 'angel', 'ME', 1);
   const v = publicJudgment(j, 0, 'ME').sides.angel;
-  assert.deepEqual(v.doneLevels, [1, 2]); assert.equal(v.done, true, 'tous les niveaux faits');
-  assert.equal(publicJudgment(j, 0, 'OLD').sides.angel.done, false, 'il lui reste le niveau 2');
+  assert.deepEqual(v.doneLevels, [2]); assert.equal(v.done, true);
+  assert.equal(publicJudgment(j, 0, 'OLD').sides.angel.done, true, 'une victoire d\'avant : la tour est faite');
+  assert.equal(hasWon(j, 'angel', 'OLD'), true); assert.equal(hasWon(j, 'angel', 'AUTRE'), false);
   const again = sanitizeJudgment(JSON.parse(JSON.stringify(j)));
-  assert.deepEqual(doneLevels(again, 'angel', 'ME'), [1, 2], 'relu après un redémarrage');
-});
-
-test('lobby : choix du niveau pour celui qui lance ; un niveau fait est grisé, on passe au suivant', () => {
-  const me = { id: 'ME' };
-  let s = towerLevelState({ tower: 'angel', account: me, doneLevels: [] });
-  assert.equal(s.show, true); assert.equal(s.level, 1); assert.deepEqual(s.levels.map(l => l.level), [1, 2]);
-  s = towerLevelState({ tower: 'angel', account: me, doneLevels: [1], cur: 1 });
-  assert.equal(s.level, 2); assert.equal(s.levels[0].done, true);
-  assert.equal(towerLevelState({ tower: 'angel', account: me, doneLevels: [], cur: 2 }).level, 2, 'le choix reste');
-  assert.equal(towerLevelState({ tower: 'angel', account: me, doneLevels: [1], dev: true, cur: 1 }).level, 1, 'mode dev : sans limite');
-  assert.equal(towerLevelState({ tower: null, account: me }).show, false);
-  assert.equal(towerLevelState({ tower: 'angel', account: me, locked: true }).show, false, 'pas pendant une session');
-  assert.equal(towerLevelState({ tower: 'angel', account: me, party: { members: [{}, {}], leader: 'X' } }).show, false, 'un membre ne choisit pas');
+  assert.deepEqual(doneLevels(again, 'angel', 'ME'), [2], 'relu après un redémarrage');
 });
 
 test('niveau 2 : à chaque envol, le boss invoque 2 mobs sur le toit (réveillés, aux PV du niveau) ; niveau 1 : aucun', () => {

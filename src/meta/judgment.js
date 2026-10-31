@@ -81,13 +81,14 @@ export function setCount(j, side, count, now){
   return true;
 }
 
-/* niveaux de tour (28/10/2026) : chaque niveau se gagne une fois par ouverture. Dans done.accounts, le niveau 1 est noté
-   par le compte seul (comme avant les niveaux), le niveau n > 1 par « compte:n ». */
+/* niveaux de tour (28/10/2026) : le niveau gagné est noté dans done.accounts, le niveau 1 par le compte seul (comme avant
+   les niveaux), le niveau n > 1 par « compte:n ». Une seule victoire par ouverture, quel que soit le niveau (31/10 : hasWon). */
 const doneKey = (account, level = 1) => level > 1 ? `${account}:${level}` : account;
 export const LEVELS = Object.keys(TOWER.levels).map(Number);
 export const hasDone = (j, side, account, level = 1) => j.done[side].opening === j[side].opening && j.done[side].accounts.includes(doneKey(account, level));
 /* niveaux déjà gagnés par ce joueur pendant l'ouverture en cours */
 export const doneLevels = (j, side, account) => LEVELS.filter(l => hasDone(j, side, account, l));
+export const hasWon = (j, side, account) => doneLevels(j, side, account).length > 0;
 /* note qu'un joueur a gagné le coffre de ce niveau pendant l'ouverture en cours ; false s'il l'avait déjà */
 export function markDone(j, side, account, level = 1){
   if(hasDone(j, side, account, level)) return false;
@@ -100,7 +101,7 @@ export function markDone(j, side, account, level = 1){
 export function publicJudgment(j, now, account){
   const sides = {};
   for(const s of SIDES) sides[s] = { count: j[s].count, cap: JUDGMENT.cap, open: isOpen(j, s, now), openUntil: j[s].openUntil,
-                                     done: !!account && doneLevels(j, s, account).length === LEVELS.length,   // tous les niveaux faits
+                                     done: !!account && hasWon(j, s, account),
                                      doneLevels: account ? doneLevels(j, s, account) : [], paused: paused(j, s, now) };
   return { sides, now, residues: !anyOpen(j, now) };
 }

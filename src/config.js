@@ -37,7 +37,7 @@ export const STATS = { oxygenMax:300, speed:3, climbSpeed:2.25, mineSpeed:1, dam
 export const CFG = {
   ladderTime:2, refillRate:30, unlockRatio:0.6,
   climbFactor:0.75,       // bestioles seulement : vitesse sur échelle = ×climbFactor (le mineur a sa stat climbSpeed)
-  oreReach:12, bridgeTime:1,
+  oreReach:12, farVal:5, bridgeTime:1,   // farVal : valeur (Mithril 5) dès laquelle une cible découverte au-delà de oreReach est visée avant de creuser une galerie (31/10/2026)
   futureTravelWeight:1, ladderPlanWeight:2, planMaxCost:30, foeLeash:10, foeGiveUp:15, mobStep:0.9,
   attackInterval:0.8,     // s entre deux coups à 100 % de vitesse d'attaque
   torchThreshold:0.33, darkLum:0.1, fallSpeed:8,
@@ -515,6 +515,13 @@ export const MULE = { capacityPct:2, depositTime:1, pickTime:1, pickBelow:10 };
    splashMs = durée de l'animation (ms, heure du navigateur) ; splashRise = pixels de montée ; splashGame = âge max du
    coup (s de partie) pour l'afficher (évite de rejouer de vieux coups à la reconnexion). Affichage seulement. */
 export const FX = { splashMs:1200, splashRise:10, splashGame:3 };
+
+/* Lecture en différé (31/10/2026, Geoffrey ; src/shared/view.js) : le navigateur affiche la partie bufferMs en arrière, en
+   se calant sur les ticks : un envoi en retard ne se voit pas. catchUp : part de vitesse en plus ou en moins pour revenir à
+   ce retard ; catchUpMs : écart (ms) qui donne ce maximum ; resetMs : au-delà de ce retard en plus, la lecture saute
+   (reconnexion) ; keep : positions gardées par mineur ou mob ; teleport : cases par tick au-delà desquelles un grand
+   déplacement n'est pas une marche (il apparaît directement). Valeurs provisoires. */
+export const FLUID = { bufferMs: 400, catchUp: 0.3, catchUpMs: 500, resetMs: 1500, keep: 16, teleport: 0.8 };
 
 export const CAMERA = { top:-3, margin:4, ease:0.15, wheelRows:3, keyRows:4,
   minRows:20, maxRows:48,
@@ -1650,6 +1657,11 @@ export const SHRINES = {
                  sessions:1, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
     pacte:     { name:'Stèle du pacte', desc:'Tour de l\'Ange : le Démon s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_demon',
                  sessions:1, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
+    /* Shrine héroïque (31/10/2026, Geoffrey) : les deux tours (tower:'any'), se cumule avec une stèle. Mêmes règles qu'une
+       stèle (une charge, prise à la victoire, le chef l'active ou la désactive). effect.level : niveau joué (TOWER.levels ;
+       le niveau 2 n'est plus au choix dans le lobby) ; effect.extraBox : chance, par joueur, d'une 2e boîte identique. */
+    heroique:  { name:'Shrine héroïque', desc:'Tours : boss, mobs et blocs bien plus solides ; 25 % de chance d\'une 2e boîte', tex:'orb',
+                 sessions:1, tower:'any', price:{ 'Orbe':30 }, effect:{ level:2, extraBox:0.25 } },
   },
   opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
   drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne

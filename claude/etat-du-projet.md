@@ -50,6 +50,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Lobby par activités** (31/10, Geoffrey) : menu des 6 activités, puis sets à gauche et carte de l'activité à droite (ancien : carte « Où miner »). Niveau et XP dans le bandeau du haut. Chat global permanent en bas à gauche, hauteur réglable (`CHAT.dock`, src/ui/chat-dock.js) ; ancien : carte du Lobby.
 - **Canaux du chat global** (31/10, Geoffrey) : Général, MP, Groupe, Commerce, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.
+- **Shrine héroïque** (31/10, Geoffrey ; `SHRINES.list.heroique`) : remplace le choix du niveau 2 des tours (niveau 2 = **ancien** au choix) : 30 Orbes, deux tours, cumulable avec une stèle, une charge prise à la victoire, 25 % de 2e boîte par joueur ; une seule victoire par ouverture (**ancien** : une par niveau).
 - **Mines au focus minerai et prison** (31/10, Geoffrey) : `PRISON.focusRef`, dès 6 areas débloquées une mine où un joueur du groupe a visé un minerai compte dans le profil pour la répartition de Nbrick, LeTaz et Akake ; compos gardées refaites une fois (`PRISON.compoVersion`), compo enregistrée effacée pour ces joueurs.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
   `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Stuff, skills, sorts et préférences relus à chaque run (30/10 ; ancien : figés à l'entrée). Carte 25 × 50
@@ -514,6 +515,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Équilibre du stuff** (27/10, Geoffrey ; `STUFF.combatStats`, `combatOnStuff`, `tests/stuff-balance.test.js`) :
   casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
+
+## Affichage
+
+- Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
 
 ## Hébergement
 

@@ -5,7 +5,7 @@
 import { towerLight } from '../sim/tower/world.js';
 import { reached, towerDark, warcryOf } from '../sim/tower/session.js';
 import { minerEffects, sessionBonuses, mobEffects } from '../sim/effects.js';
-import { glide } from './view.js';
+import { glide, playCopy, playTrack } from './view.js';
 
 const enc36 = v => v.toString(36);
 const ladderList = G => { const out = []; G.ladder.forEach((r, y) => r.forEach((v, x) => { if(v) out.push(y * G.w + x); })); return out; };
@@ -57,7 +57,7 @@ export function createTowerViewer(G){
 /* navigateur : une copie d'affichage de la partie. prev : la copie précédente (mouvement fluide : chaque mineur, mob et
    le boss glissent de leur position affichée vers la nouvelle, comme dans la mine, src/shared/view.js) ; now : heure de
    la page (ms) à l'arrivée de l'envoi. */
-export function applyTowerView(v, prev = null, now = performance.now()){
+export function applyTowerView(v, prev = null, now = performance.now(), speed = 0){
   const ladder = Array.from({ length: v.h + 1 }, () => new Uint8Array(v.w));
   for(const k of v.ladders || []){ const x = k % v.w, y = (k - x) / v.w; if(ladder[y]) ladder[y][x] = 1; }
   const G = {
@@ -72,10 +72,18 @@ export function applyTowerView(v, prev = null, now = performance.now()){
   };
   G.light = towerLight(G);
   if(G.boss) G.boss.id = 'boss';
+  if(speed > 0){                                      // lecture en différé (src/shared/view.js)
+    playCopy(G, prev, v.tick, speed, now);
+    playTrack(prev?.miners ?? [], G.miners, minerPos, v.tick);
+    playTrack(prev?.mobs ?? [], G.mobs, o => [o.x + (o.kx || 0), o.y], v.tick);
+    if(G.boss) playTrack(prev?.boss ? [prev.boss] : [], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], v.tick);
+  }
   if(prev?._at != null){
-    glide(prev, prev.miners, G.miners, minerPos, now);
-    glide(prev, prev.mobs, G.mobs, o => [o.x + (o.kx || 0), o.y], now);
-    if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], now);
+    if(!(speed > 0)){
+      glide(prev, prev.miners, G.miners, minerPos, now);
+      glide(prev, prev.mobs, G.mobs, o => [o.x + (o.kx || 0), o.y], now);
+      if(G.boss && prev.boss) glide(prev, [prev.boss], [G.boss], b => [b.x + (b.kx || 0), b.y - (b.lift || 0)], now);
+    }
     /* arc du recul : heure de la page où il a commencé (un nouvel arc = une nouvelle valeur de hop) */
     const was = new Map(prev.miners.map(m => [m.id, m]));
     for(const m of G.miners){ const p = was.get(m.id); m._hopAt = m.hop == null ? null : p?.hop === m.hop ? p._hopAt : now; }

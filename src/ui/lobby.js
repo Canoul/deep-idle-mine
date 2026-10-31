@@ -95,18 +95,8 @@ export function modulationState({ tower, locked, party, account, slots = [], myG
   return { show, over, text };
 }
 
-/* niveau de tour (28/10/2026, Geoffrey ; TOWER.levels) : choisi par celui qui lance (seul, ou chef du groupe), quand une
-   tour est choisie. doneLevels : niveaux que ce joueur a déjà gagnés pendant l'ouverture (grisés, sauf en mode dev). Le
-   niveau choisi reste s'il est jouable ; sinon le premier jouable. Le serveur revérifie pour chaque joueur du groupe. */
-export function towerLevelState({ tower, locked, party, account, doneLevels = [], dev = false, cur = null }){
-  const leader = !party || party.members.length < 2 || party.leader === account?.id;
-  const levels = Object.keys(TOWER.levels).map(Number).map(level => ({ level, done: !dev && doneLevels.includes(level) }));
-  const open = levels.filter(l => !l.done).map(l => l.level);
-  return { show: !!tower && !locked && !!account && leader, levels, level: open.includes(cur) ? cur : open[0] ?? null };
-}
-
-/* niveau d'instance (29/10/2026, Geoffrey ; INSTANCE.levels) : comme celui de la tour, choisi par celui qui lance (seul,
-   ou chef du groupe) ; ouvert à tous, sans limite (même clé). Le serveur revérifie. */
+/* niveau d'instance (29/10/2026, Geoffrey ; INSTANCE.levels) : choisi par celui qui lance (seul, ou chef du groupe) ; ouvert
+   à tous, sans limite (même clé). Le serveur revérifie. Tours : plus de niveau au choix, voir le Shrine héroïque (31/10). */
 export function instanceLevelState({ instance, locked, party, account, cur = null, mode = 'instance_1' }){
   const leader = !party || party.members.length < 2 || party.leader === account?.id;
   /* Instance II (30/10) : un seul niveau, pas de rangée « Niveau » */
@@ -114,9 +104,9 @@ export function instanceLevelState({ instance, locked, party, account, cur = nul
   return { show: !!instance && !locked && !!account && leader && levels.length > 1, levels, level: levels.some(l => l.level === cur) ? cur : levels[0].level };
 }
 
-/* shrines visibles dans le lobby : mine classique, ceux sans tour ; lobby d'une tour, sa stèle seulement (30/10/2026) ;
-   rien ailleurs (Jugement, prison, instances…). mine : carte de la mine classique ; tower : camp de la tour choisie */
-export const shownShrines = (list, { mine = false, tower = null } = {}) => (list ?? []).filter(sh => sh.tower ? sh.tower === tower : mine);
+/* shrines visibles dans le lobby : mine classique, ceux sans tour ; lobby d'une tour, sa stèle (30/10/2026) et les shrines
+   des deux tours (tower:'any', 31/10) ; rien ailleurs (Jugement, prison, instances…). mine : carte de la mine classique ; tower : camp de la tour choisie */
+export const shownShrines = (list, { mine = false, tower = null } = {}) => (list ?? []).filter(sh => sh.tower ? sh.tower === tower || (sh.tower === 'any' && !!tower) : mine);
 
 /* carte des shrines (28/10/2026) : ceux du chef du groupe (ou les siens, seul). Actif : sessions restantes ; stèle chargée :
    activée ou non, et le bouton du chef (30/10) ; sinon le prix, ce qui est déjà donné, et pour chaque objet un champ
@@ -351,8 +341,9 @@ export function setupLobby(h){
     const mod = modulationState({ tower:!!tower, locked, party, account, slots, myGs: h.gs?.(), dev: !!st.info?.dev });
     $('modulationRow').hidden = !mod.show;
     $('devSteleRow').hidden = !(st.info?.dev && tower && !locked);   // stèle imposée en mode dev (30/10)
-    const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel, mode: st.mode })   // niveau d'instance (29/10) : même rangée
-      : towerLevelState({ tower, locked, party, account, doneLevels: st.judgment?.sides?.[tower]?.doneLevels ?? [], dev: !!st.info?.dev, cur: st.towerLevel });
+    $('devHeroicRow').hidden = $('devSteleRow').hidden;              // Shrine héroïque imposé en mode dev (31/10)
+    const tl = def?.instance ? instanceLevelState({ instance: true, locked, party, account, cur: st.towerLevel, mode: st.mode })   // niveau d'instance (29/10)
+      : { show: false, levels: [], level: null };
     st.towerLevel = tl.level;
     $('towerLevelRow').hidden = !tl.show;
     $('towerLevelRow').innerHTML = tl.show ? '<span>Niveau :</span>' + tl.levels.map(l =>
@@ -716,7 +707,7 @@ export function setupLobby(h){
     }
     st.busy = true; render();
     const md = MINE_MODES.find(m => m.id === st.mode), tw = !!md?.tower;
-    try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(tw && st.info?.dev && $('devStele').checked ? { stele: Object.keys(SHRINES.list).find(id => SHRINES.list[id].tower === md.tower) } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
+    try { await h.onLaunch({ mode: st.mode, ...((tw || md?.instance) && st.towerLevel ? { level: st.towerLevel } : {}), ...(tw && $('modulation').checked ? { modulation: true } : {}), ...(tw && st.info?.dev && $('devStele').checked ? { stele: Object.keys(SHRINES.list).find(id => SHRINES.list[id].tower === md.tower) } : {}), ...(tw && st.info?.dev && $('devHeroic').checked ? { heroic: true } : {}), ...(st.info?.dev ? devOptions() : {}) }, { party: st.party }); }
     finally { st.busy = false; render(); }
   };
 
