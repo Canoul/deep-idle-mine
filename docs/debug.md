@@ -5944,3 +5944,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Grimoire trié (Geoffrey)
 - **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.
+
+## 31/10/2026 — Énergie dans le panneau Équipe (Geoffrey)
+- **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
+- **Tests** ✅ `tests/team-energy.test.js` (3), social.
+- ⚠️ Pas vu dans un navigateur. Cache `energyCache` jamais purgé : une entrée par compte vu (comme Social). Les comptes de test du mode dev n'ont pas de ligne d'énergie.

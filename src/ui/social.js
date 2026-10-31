@@ -13,6 +13,7 @@ import { SKILLS, MINE_MODES, SOCIAL, LEADERBOARD, JUDGMENT, ENERGY } from '../co
 import { towerTime, isBoard } from '../meta/leaderboard.js';
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { pxi } from './pxicons.js';
+import { energyHTML } from './energy-tag.js';
 import { qhelp } from './help.js';
 import { renderSlots, statsHTML } from './stuff.js';
 import { renderLevel } from './level.js';
@@ -42,12 +43,7 @@ export function statusText(f){
   return STATUS[f.status]?.label ?? '';
 }
 
-/* énergie d'un joueur (31/10) : « ⚡ 42/100 », en rouge s'il ne peut plus lancer de mine classique ; rien si inconnue */
-export function energyHTML(e){
-  if(!Number.isFinite(e?.value)) return '';
-  const low = e.value < ENERGY.cost.min;
-  return `<span class="fenergy${low ? ' low' : ''}" title="${low ? 'Pas assez d\'énergie pour lancer une mine classique' : 'Énergie'}">⚡ ${e.value}/${e.max}</span> · `;
-}
+export { energyHTML };   // src/ui/energy-tag.js (31/10)
 
 /* spécialisation d'une fiche : « ⛏ Mineur », ou null sans arbre choisi */
 export const treeText = skills => { const t = SKILLS.trees.find(x => x.id === skills?.tree); return t ? `${t.icon} ${t.label}` : null; };

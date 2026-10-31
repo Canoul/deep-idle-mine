@@ -21,6 +21,7 @@ import { setupInstantLobby } from './ui/instant-lobby.js';
 import { setupGiant } from './ui/giant.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
+import { setTeamEnergies } from './ui/energy-tag.js';
 import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
 import { createInstanceRenderer } from './render/instance.js';
 import { applyInstanceView } from './shared/instances-view.js';
@@ -592,6 +593,7 @@ async function pollView(){
   const id = rec.id, t0 = performance.now();
   try {
     const r = await gameApi.view(G.ready ? G.ticks : null);
+    setTeamEnergies(r.energies);   // panneaux Équipe (31/10)
     if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();

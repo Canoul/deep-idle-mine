@@ -2,6 +2,7 @@
    fait chacun, dégâts), journal. Lit la copie d'affichage, ne la modifie jamais. */
 import { INSTANCE } from '../config.js';
 import { fmt } from './hud.js';
+import { teamEnergyHTML } from './energy-tag.js';
 import { instanceDef } from '../shared/instances.js';
 import { itemName } from '../meta/piece.js';
 
@@ -46,7 +47,7 @@ export function updateInstanceHUD(G, me, left, focus = null){
     `<p class="mut small">Spawners : ${(G.spawners || []).map(s => s.alive ? `<span title="${s.hp} / ${s.maxhp}">${s.id === G.target ? '🎯' : '●'}</span>` : '✔').join(' ')}`+
     ` · ${(G.goblins || []).length} gobelin${(G.goblins || []).length > 1 ? 's' : ''}${G.inspire ? ` · 🎺 ${G.inspire} s` : ''}</p>`);
   setHtml($('inTeam'), (G.miners.map(m =>
-    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.focus && b.state !== 'sleep' ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
+    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''} ${teamEnergyHTML(m.account)}${m.id === b.focus && b.state !== 'sleep' ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
     `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} gobelins` : ''}${m.stats.drilled ? `<br><small class="mut">${Math.round(m.stats.drilled)} coups sur les spawners</small>` : ''}</span></div>`).join('')
     || '<p class="mut">Tout le monde est parti.</p>'));
   setHtml($('inLog'), (G.log || []).map(l => `<div><b>[${fmt(l.t)}]</b> ${esc(l.msg)}</div>`).join(''));
@@ -61,7 +62,7 @@ function golbuteHUD(G, me, focus, pct){
     `<div class="bar twBossBar" style="position:relative"><i style="width:${pct}%"></i>${(b.at || []).map(a => `<s style="position:absolute;left:${a * 100}%;top:0;bottom:0;width:1px;background:#9fe8ff"></s>`).join('')}</div>`+
     `<p class="mut small">${G.next?.avalanche != null ? `🪨 Avalanche dans ${G.next.avalanche} s` : ''}${G.next?.split != null && b.state === 'fight' ? ` · 🗿 Division dans ${G.next.split} s` : ''}${G.inspire ? ` · 🎺 ${G.inspire} s` : ''}</p>`);
   setHtml($('inTeam'), (G.miners.map(m =>
-    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.dead ? ' 💀' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
+    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''} ${teamEnergyHTML(m.account)}${m.dead ? ' 💀' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
     `<span>${Math.round(m.stats.bossDmg)} dégâts au ${esc(b.name)}${m.stats.kills ? ` · ${m.stats.kills} golems` : ''}`+
     `<br><small class="mut">${m.dead ? 'mort' : m.dazed ? `sonné ×${m.dazed} / ${A.deathStacks}` : 'pas sonné'}${m.stats.mined ? ` · ${Math.round(m.stats.mined)} coups sur le cristal` : ''}</small></span></div>`).join('')
     || '<p class="mut">Tout le monde est parti.</p>'));

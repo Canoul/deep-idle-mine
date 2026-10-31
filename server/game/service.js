@@ -373,6 +373,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
   /* Présence (spec « Présence ») : la dernière visite est gardée en mémoire à chaque demande (seen) et écrite en base
      au plus toutes les seenWriteMs (seenWritten) ; la prison relue prend la plus récente des deux. */
   const seen = new Map(), seenWritten = new Map();
+  /* énergie des joueurs d'une session à plusieurs, pour le panneau Équipe (31/10/2026) : { energies: { compte: { value, max } } }.
+     Pas dans la mine instantanée (pas de panneau, beaucoup de joueurs). Relue au plus tous les teamEnergyFor : la lecture
+     parcourt les sessions du joueur et chaque navigateur demande la vue très souvent. */
+  const energyCache = new Map();
+  const teamEnergies = async rec => {
+    if(rec.mode === 'mi' || rec.players.length < 2) return {};
+    const energies = {};
+    for(const { account } of rec.players){
+      let c = energyCache.get(account);
+      if(!c || clock() - c.at >= (config.teamEnergyFor ?? 0)){ c = { at: clock(), energy: publicEnergy((await restedEnergy(account)).e) }; energyCache.set(account, c); }
+      energies[account] = c.energy;
+    }
+    return { energies };
+  };
   /* compos de prison du compte (30/10) : paliers avancés d'après l'historique, et gardés (ns prison_compo) */
   const advanceCompos = async accountId => {
     const old = await store.getPrisonCompo(accountId), c = prisonCompos(old, await store.sessionsOf(accountId), accountId, dev);
@@ -1249,7 +1263,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
       const ok = rec.status === 'running' && ensureLive(rec);
       /* la partie peut se terminer (et le moteur la fermer) pendant que la vue attend son tour : « settling » */
       const view = ok ? await live.view(rec.id, s).catch(e => { if(live.has(rec.id)) throw e; return null; }) : null;
-      return { view, status: view ? 'running' : 'settling', clock: rec.dev ? rec.clock : null, now: clock() };
+      return { view, status: view ? 'running' : 'settling', clock: rec.dev ? rec.clock : null, now: clock(), ...await teamEnergies(rec) };
     },
 
     /* la prison du joueur, pour l'afficher (GET /api/game/prison) : c'est une visite (présence, retour après une
