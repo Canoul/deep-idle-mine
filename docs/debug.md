@@ -6074,3 +6074,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : entrée `forming` dans `ACTIVITIES` (src/ui/lobby.js), `kind:'forming'`, ouvre la même fenêtre ; `#formingBtn` caché au menu pour ne pas l'avoir en double.
 - **Tests** ✅ tests/lobby.test.js. Vérifié dans Chrome.
 
+## 31/10/2026 — Raffle forcé (Geoffrey)
+- **Quoi** : `scripts/force-raffle.js` → `POST /api/admin/raffle` (mêmes gardes que les autres routes admin) → `social.raffleForce` → `raffle.force` : `start` sans regarder le créneau ni `nextAt`, `null` (409) si un raffle est en cours. `social` passé à `adminRoutes` par server/app.js.
+- **Tests** ✅ `tests/admin-raffle.test.js` (2), `tests/raffle.test.js`, `tests/chat.test.js`. Pas lancé sur le vrai serveur.

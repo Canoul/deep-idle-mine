@@ -14,6 +14,7 @@
    POST /api/admin/party-launch {"name":"crousti"} : lance le lobby de crousti dans la mine, prêts ou pas (scripts/launch-lobby.js).
    POST /api/admin/party-lead {"name":"crousti"} : crousti devient chef de son lobby (scripts/set-leader.js).
    POST /api/admin/party-ready {"name":"crousti","ready":true,"always":true} : prêt / prêt tout le temps (scripts/set-ready.js).
+   POST /api/admin/raffle {} : lance un raffle tout de suite, à toute heure (scripts/force-raffle.js).
 
    Une requête n'est acceptée que si les TROIS conditions sont réunies, sinon la route répond « Route inconnue » (404),
    comme si elle n'existait pas :
@@ -46,8 +47,8 @@ export function adminAllowed(req, token){
 }
 
 /* accounts : le stockage des comptes (findAccountByName) ; game : le service de jeu (adminGive, adminTake, adminJudgment) ;
-   party : le service des groupes (adminMove, adminReady), facultatif */
-export function adminRoutes({ accounts, game, party = null, moderation = null, token }){
+   party : le service des groupes (adminMove, adminReady), facultatif ; social : raffle, facultatif */
+export function adminRoutes({ accounts, game, party = null, moderation = null, social = null, token }){
   const guard = ctx => { if(!adminAllowed(ctx.req, token)) throw hidden(); };
   /* compte désigné par son pseudo (champ `field` du corps) */
   const byName = async (ctx, field = 'name') => {
@@ -152,6 +153,15 @@ export function adminRoutes({ accounts, game, party = null, moderation = null, t
       const r = await game.adminKhole(acc.id, map);
       console.log(`Admin : k hole (${r.map}) dans la session ${r.session} de ${acc.name} (${acc.id}), tick ${r.tick}`);
       return { account: acc.name, ...r };
+    },
+    /* raffle forcé (31/10/2026, Geoffrey) */
+    'POST /api/admin/raffle': async ctx => {
+      guard(ctx);
+      if(!social) throw new HttpError(503, 'no_social', 'Raffle indisponible sur ce serveur.');
+      const r = await social.raffleForce();
+      if(!r) throw new HttpError(409, 'raffle_running', 'Un raffle est déjà en cours.');
+      console.log(`Admin : raffle forcé, ${r.lot}`);
+      return r;
     },
     /* tableau de bord de l'équipe : lignes de stats des mines classiques (scripts/dashboard.js) */
     'POST /api/admin/stats': async ctx => {

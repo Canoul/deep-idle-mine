@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Commande pour forcer un raffle
+- **Pour l'équipe** : sur le serveur, `sudo node /opt/deep-idle-mine/scripts/force-raffle.js` lance un raffle tout de suite, même la nuit. Le lot sort de la table habituelle, et la commande est refusée si un raffle est déjà en cours. Le prochain raffle automatique est reprogrammé après celui-ci.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Raffle : un tirage au sort dans le chat
 - **Pour le joueur** : toutes les 45 à 120 min, entre 8 h et 2 h, un lot est annoncé dans le chat global. On a 40 s pour taper `!join` : la commande n'apparaît pas dans le chat et une réponse visible par soi seul confirme l'inscription. À la fin, un inscrit gagne le lot, annoncé à tous.
 - **Décisions** : il faut un compte avec pseudo (pas les invités, à cause du multi-compte) ; la rune suit la table de l'identification ; sans inscrit, le lot est perdu et le chat le dit. Silver ingot = Barre d'argent, clés T1 / T2 = Clé d'instance I / II. Tombé la nuit, le raffle part entre 8 h et 9 h 15.
