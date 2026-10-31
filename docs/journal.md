@@ -74,6 +74,13 @@ Modèle d'entrée :
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Le bilan de fin de session s'affiche à nouveau à tous les coups
+- **Pour le joueur** : après une tour (ou toute autre session), le bilan pouvait ne jamais s'afficher depuis les correctifs du 30/10. Deux cas : le jeu
+  ouvert dans un autre onglet ou sur un autre appareil, qui recevait le bilan à ta place ; une mine instantanée commencée pendant la session.
+  Le bilan fermé ne revient toujours pas quand on recharge la page.
+- **À suivre** : vérifier sur la prochaine tour.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Gobelins asservis : ils creusent quand il n'y a plus de minerai
 - **Pour le joueur** : un gobelin asservi vise toujours les minerais d'abord. S'il n'y en a pas à 6 cases, il creuse tout droit dans la roche
   au lieu d'attendre, et reprend le premier minerai qu'il trouve. Il ne reste presque plus inactif (1 s sur 30, contre 12,5 s avant).
