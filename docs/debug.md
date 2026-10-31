@@ -6083,3 +6083,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Correction** : src/ui/chat.js : `display` montre sans toucher `last`, `add` réservé à la relecture, `poll()` juste après l'envoi ; `mergeMessages` (src/shared/chat.js) enlève les doublons.
 - **Lot** ✅ vérifié sur vrai serveur local : 10 Graphite ingot chez le gagnant, rien chez le perdant. Pas vérifiable d'ici sur le serveur en ligne. Le navigateur ne relisait pas l'inventaire : message du gagnant marqué `winner` (id de compte), `fresh` de `setupChat` → `gameApi.state()`.
 - **Tests** ✅ `tests/chat-ui.test.js` (DOM imité, rouge avant correction), `tests/raffle.test.js`, `tests/chat.test.js`.
+
+## 31/10/2026 — Craft : onglets par catégorie (Geoffrey)
+- **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
+- **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
+
