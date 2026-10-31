@@ -20,7 +20,7 @@ Modèle d'entrée :
 - **Pour le joueur** : un joueur en vert peut être invité, y compris en prison s'il a le jeu ouvert (Social et « Who ? »).
   Son statut affiche alors « En ligne - Prison ».
   Sa prison continue : elle ne se termine que si le chef lance avec lui, et « Je suis prêt » prévient avant.
-- **État** : 🧪 sur la branche `geoffrey/social-inviter-prison` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Shrines : le bouton Activer / Désactiver répond tout de suite
 - **Pour le joueur** : après un clic, le bouton d'un shrine chargé gardait son ancien texte jusqu'au clic suivant ailleurs, alors que le changement était déjà pris en compte. Il change maintenant tout de suite.
