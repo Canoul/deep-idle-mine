@@ -5,7 +5,7 @@
    seen 0 : le navigateur ne connaît jamais le contenu caché de la mine. Le navigateur affiche, il ne calcule rien. */
 
 import { minerEffects, sessionBonuses } from '../sim/effects.js';
-import { glide, pace } from './view.js';
+import { glide, playCopy, playTrack, pace } from './view.js';
 
 const enc36 = v => v.toString(36);
 /* échelles : liste des cases (y × w + x), peu nombreuses ; reconstruites en lignes côté navigateur (comme G.ladder) */
@@ -51,13 +51,14 @@ export function instantPos(m){
 /* navigateur : une copie d'affichage de la partie, que le rendu lit comme une vraie.
    prev : la copie d'avant ; les mineurs glissent de leur position affichée vers la nouvelle, sur la durée réelle entre deux
    envois (29/10/2026 : avant, ils avançaient par petits bonds à chaque envoi) */
-export function applyInstantView(v, prev = null, now = (globalThis.performance?.now() ?? 0)){
+export function applyInstantView(v, prev = null, now = (globalThis.performance?.now() ?? 0), speed = 0){
   const G = {
     mode: 'mi', ticks: v.tick, t: v.t, over: v.over, w: v.w, h: v.h,
     tiles: v.tiles.map(s => Uint8Array.from(s, c => parseInt(c, 36))),
     seen: (v.seen ?? v.tiles.map(s => '1'.repeat(s.length))).map(s => Uint8Array.from(s, c => c === '1' ? 1 : 0)),
     feathers: new Map(v.feathers), heapsLeft: v.heapsLeft ?? v.feathers.length, ladder: ladderRows(v), miners: v.miners, stats: v.stats, log: v.log,
   };
-  if(prev?._at != null) glide(prev, prev.miners, G.miners, instantPos, now);
+  if(speed > 0){ playCopy(G, prev, v.tick, speed, now); playTrack(prev?.miners ?? [], G.miners, instantPos, v.tick); }   // lecture en différé
+  else if(prev?._at != null) glide(prev, prev.miners, G.miners, instantPos, now);
   return pace(G, prev, now);
 }

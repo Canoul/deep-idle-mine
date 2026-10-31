@@ -88,6 +88,7 @@ test('mouvement fluide : à l\'arrivée d\'un envoi, rien ne saute ; la glissade
    plus de 6 cases dans le puits et apparaissait d'un coup au lieu de glisser */
 import { glide, playClock, playTrack } from '../src/shared/view.js';
 import { FLUID } from '../src/config.js';
+import { applyInstanceView } from '../src/shared/instances-view.js';
 test('treuil / ascenseur : un mineur dans le seau glisse même sur plus de 6 cases ; un vrai saut reste un saut', () => {
   const M = { _at:0, _dur:300 };
   const at = (y, winch) => ({ id:1, x:25, y, action: winch ? { type:'move', t:0, dur:0.1, data:{ x:25, y, fx:25, fy:y, winch:true } } : null });
@@ -188,5 +189,17 @@ test('applyView : avec la vitesse, lecture en différé ; sans, glissade simple'
   assert.ok(M._play && M.miners[0]._track.length >= 1);
   const P = applyView(emptyView(), g.view(null), 0);
   assert.equal(P._play, undefined); assert.equal(P.miners[0]._track, undefined);
+});
+
+test('différé : la tête de lecture passe d\'une copie à la suivante (tour, instance, mine instantanée), le boss compris', () => {
+  const base = { w: 5, h: 5, tiles: ['00000'], floorY: 4, t: 0, stats: {}, log: [], over: false, instance: 'instance_2' };
+  const v = (tick, x) => ({ ...base, tick, miners: [{ id: 0, x, y: 4, action: null }], boss: { x: 2, y: 4, kx: 0, hp: 1, maxhp: 1 }, golems: [], goblins: [] });
+  let G = null, now = 0;
+  for(let k = 0; k < 12; k++){ now = k * 250; G = applyInstanceView(v(k * 5, k), G, now, 2); }
+  assert.ok(G._play && G.miners[0]._track.length >= 10 && G.boss._track.length >= 10);
+  const x = shownPos(G, G.miners[0], now + 10)[0];
+  assert.ok(x > 8 && x < 11, `lu en arrière : ${x}`);
+  const off = applyInstanceView(v(5, 1), null, 0);
+  assert.equal(off._play, undefined);
 });
 

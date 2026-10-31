@@ -139,6 +139,11 @@ function moveHead(c, now){
   const rate = Math.max(1 - FLUID.catchUp, Math.min(1 + FLUID.catchUp, 1 + (behind - FLUID.bufferMs) / FLUID.catchUpMs));
   c.head = Math.min(c.newest, c.head + dt / c.tickMs * rate);
 }
+/* copie neuve à chaque envoi (tour, instance, mine instantanée) : reprend la tête de lecture de la précédente */
+export function playCopy(G, prev, tick, speed, now){
+  if(prev?._play) G._play = prev._play;
+  playClock(G, tick, speed, now);
+}
 export function playTrack(oldList, newList, target, tick){
   const old = new Map(oldList.map(o => [o.id, o]));
   for(const o of newList){

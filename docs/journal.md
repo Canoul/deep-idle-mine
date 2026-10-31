@@ -16,6 +16,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Fluidité : le jeu lit la partie avec un petit tampon
+- **Pour le joueur** : le mineur et les mobs bougent plus régulièrement, surtout quand le réseau a un coup de mou. Le jeu affiche la partie 0,4 s en arrière, comme le tampon d'une vidéo (il y avait déjà environ 0,35 s de retard). Après un retard, le mineur rattrape doucement au lieu de sauter. Mine, prison, tours, instances et mine instantanée.
+- **À suivre** : regarder en jeu si la sensation est meilleure, et surveiller la charge du serveur (envois plus nombreux, partie avancée toutes les 100 ms). Le Bloc géant n'est pas concerné.
+- **État** : 🧪 sur la branche `geoffrey/fluidite` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
   dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.

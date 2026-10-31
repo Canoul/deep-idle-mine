@@ -515,6 +515,10 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   casque / jambes / bottes = valeur du tier en GS (chitine 100, fer 250, acier 500 x depuis le 27/10 ; avant 400) ; plastrons hors règle (torse
   volontairement plus fort : 180 / 528 / 720 x) ; butin des mobs = 250 x à parts égales, stat de combat à moitié. Pièces dessinées à la main hors règle.
 
+## Affichage
+
+- Lecture en différé (31/10/2026) : le navigateur affiche la partie 0,4 s en arrière (`FLUID`, src/shared/view.js), envois à rythme fixe, partie avancée toutes les 100 ms. Détails : `docs/debug.md`.
+
 ## Hébergement
 
 - **Sécurité** : revue du 22/10 (Jules), mémo `docs/securite.md`. Le dépôt GitHub est **public** : jamais de

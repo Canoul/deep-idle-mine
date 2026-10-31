@@ -584,6 +584,7 @@ let viewTimer = null, lastView = 0;
 const perf = createPerf(), perfOn = new URLSearchParams(location.search).has('perf');
 for(const el of document.querySelectorAll('.perfBox')) el.hidden = !perfOn;
 /* envois à rythme fixe (31/10/2026) : l'attente déduit le temps de la réponse, sinon chaque variation du réseau décale la suite */
+const viewRate = () => info.dev ? ui.speed : rec.speed;   // vitesse de la partie affichée
 const nextView = (every, t0) => Math.max(0, every - (performance.now() - t0));
 async function pollView(){
   clearTimeout(viewTimer);
@@ -595,11 +596,11 @@ async function pollView(){
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();
     applyClock(r.clock);
-    if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
-    else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
-    else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
+    if(r.view?.mode === 'mi'){ G = applyInstantView(r.view, G?.mode === 'mi' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
+    else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null, performance.now(), viewRate()); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
-      applyView(G, r.view, performance.now(), info.dev ? ui.speed : rec.speed); lastView = performance.now();
+      applyView(G, r.view, performance.now(), viewRate()); lastView = performance.now();
       if(!ui.followSet && G.miners.length){                  // une fois : suivre son propre mineur
         ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true;
       }
