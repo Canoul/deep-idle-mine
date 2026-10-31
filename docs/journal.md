@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Fluidité : le jeu lit la partie avec un petit tampon
 - **Pour le joueur** : le mineur et les mobs bougent plus régulièrement, surtout quand le réseau a un coup de mou. Le jeu affiche la partie 0,4 s en arrière, comme le tampon d'une vidéo (il y avait déjà environ 0,35 s de retard). Après un retard, le mineur rattrape doucement au lieu de sauter. Mine, prison, tours, instances et mine instantanée.
 - **À suivre** : regarder en jeu si la sensation est meilleure, et surveiller la charge du serveur (envois plus nombreux, partie avancée toutes les 100 ms). Le Bloc géant n'est pas concerné.
-- **État** : 🧪 sur la branche `geoffrey/fluidite` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
