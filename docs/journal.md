@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Lobby : Groupes en formation et cadenas
+- **Pour le joueur** : un bouton **Groupes en formation** montre les groupes de 1 ou 2 joueurs, leur activité et l'apparence de chacun. Un clic pour entrer. Un groupe plein sort de la liste tout seul, sans F5. Le chef peut poser un **cadenas** : seuls les invités entrent. Il n'est jamais posé par défaut et ne passe pas d'un groupe à un autre.
+- **Décisions** : un joueur sans groupe n'apparaît pas dans la liste, il clique sur « Proposer mon groupe » (sinon tous les joueurs seuls du lobby seraient listés, même ceux qui veulent jouer seuls). Le cadenas bloque aussi le code, les liens de lobby et « rejoindre un ami », et coupe la recherche de groupe.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Quatre nouvelles pièces lâchées par les mobs
 - **Pour le joueur** : le **Piolet de gobelin** (pioche, minage +0,3), 0,5 % sur un gobelin. Le **Kilt ténébreux** (jambes, vitesse de minage +6,4 %), 0,5 % sur un occultiste. Le **Chapeau de naab** (casque, oxygène +8, pods +6, marche +0,14), bonnet à hélice et yeux qui louchent, 1 % sur une bestiole. L'**Épée cassée en carton** (épée, 7 dégâts), 1 % sur une bestiole. Toutes se recyclent et ont leur apparence sur le mineur.
 - **État** : ✅ en ligne le 31/10

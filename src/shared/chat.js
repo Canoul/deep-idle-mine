@@ -27,9 +27,9 @@ export function lobbyLink(mode, level){
   const ok = def?.ready && !def.solo && !def.giant && !def.scheduled;
   return { mode: ok ? def.id : MINE_MODES[0].id, level: Number.isSafeInteger(level) && level >= 1 && level <= 9 ? level : 1 };
 }
-/* « Instance I 2/3 », « Tour de l'Ange niv. 2 1/3 » */
+/* « Instance I 2/3 », « Tour de l'Ange niv. 2 1/3 » ; mode null : le chef n'a pas encore ouvert d'activité */
 export function lobbyLabel({ mode, level, size, max }){
-  const name = MINE_MODES.find(m => m.id === mode)?.label ?? MINE_MODES[0].label;
+  const name = mode === null ? 'Activité à choisir' : MINE_MODES.find(m => m.id === mode)?.label ?? MINE_MODES[0].label;
   return `${name}${level > 1 ? ` niv. ${level}` : ''} ${size}/${max}`;
 }
 

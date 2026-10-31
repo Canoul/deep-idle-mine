@@ -64,7 +64,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
   function publicParty(p, meId, playing = new Map(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
     const now = clock();
-    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null,
+    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null, locked: !!p.locked,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready,
                                             always: !!m.always,
@@ -77,6 +77,23 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
                                             prison: prisons.has(m.account),             // sa prison tourne : un lancement la terminera (29/10)
                                             away: !playing.has(m.account) && now - m.seenAt > config.awayAfter })),
              invited: [...p.invites.values()].map(i => ({ account: i.account, displayId: formatAccountId(i.account), name: i.name })) };
+  }
+
+  /* portrait d'un membre, tel que le montrent un lien de lobby et la liste des groupes en formation */
+  async function memberCard(m, p){
+    const tree = await game.skillTreeOf?.(m.account) ?? null;
+    return { name: m.name, leader: m.account === p.leader, tree, specLevel: await game.specLevelOf?.(m.account, tree) ?? null,
+             look: await game.lookFor?.(m.account) ?? {}, auras: await game.aurasFor?.(m.account) ?? {} };
+  }
+  /* même portrait, gardé un moment : la liste est relue souvent, et l'apparence d'un joueur change rarement */
+  const formingCards = new Map();            // compte → { at, card }
+  async function formingCard(m, p){
+    const c = formingCards.get(m.account);
+    if(c && clock() - c.at < config.formingCardMs) return { ...c.card, name: m.name, leader: m.account === p.leader };
+    if(formingCards.size >= config.formingCardsMax) formingCards.clear();
+    const card = await memberCard(m, p);
+    formingCards.set(m.account, { at: clock(), card });
+    return card;
   }
 
   /* ---------- ménage ---------- */
@@ -142,6 +159,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   async function notInSession(me){
     if(await game.activeSessionId(me.id)) fail('session_running', 409, 'Tu es déjà dans une session.');
   }
+  /* groupe verrouillé (31/10/2026, Geoffrey) : seul un invité y entre, par n'importe quel chemin (code, lien, ami) */
+  const noStranger = (p, accountId) => { if(p.locked && !p.invites.has(accountId)) fail('party_locked', 403, 'Ce groupe est verrouillé : il faut y être invité.'); };
   const noChange = p => { if(p.launching) fail('launching', 409, 'La session est en train d\'être lancée.'); };
 
   /* ---------- recherche de groupe (LFG) ---------- */
@@ -154,7 +173,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* une entrée vaut tant que l'équipe n'a pas bougé depuis son entrée dans la file (quelqu'un entre ou part : annulée) */
   function lfgValid(e){
     const p = partyOf(e.account);
-    if(p && (p.launching || (p.members.length > 1 && p.leader !== e.account))) return false;
+    if(p && (p.launching || p.locked || (p.members.length > 1 && p.leader !== e.account))) return false;
     return teamOf(e.account).join() === e.members.join();
   }
   /* sortent de la file : sans nouvelles depuis lfgTimeout (onglet fermé), équipe changée, quelqu'un en session */
@@ -222,7 +241,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* ce qu'on garde d'un groupe (pas les signes de vie, ni « en cours de lancement ») */
   const saved = p => ({ code: p.code, leader: p.leader, createdAt: p.createdAt,
                         members: p.members.map(m => ({ account: m.account, name: m.name, graceUntil: m.graceUntil ?? null, ready: !!m.ready, always: !!m.always })),
-                        invites: [...p.invites.values()] });
+                        invites: [...p.invites.values()], ...(p.locked ? { locked: true } : {}), ...(p.activity ? { activity: p.activity } : {}) });
   const written = new Map();                 // code → JSON déjà enregistré
   /* enregistre les groupes qui ont vraiment changé, efface ceux qui ont disparu */
   async function save(){
@@ -241,7 +260,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       if(!s?.code || !Array.isArray(s.members) || !s.members.length) continue;
       const p = { code: s.code, leader: s.leader, createdAt: s.createdAt ?? clock(), launching: false,
                   members: s.members.map(m => ({ account: m.account, name: m.name, seenAt: clock(), graceUntil: m.graceUntil ?? undefined, ready: m.ready === true, always: m.always === true })),
-                  invites: new Map((s.invites || []).map(i => [i.account, i])) };
+                  invites: new Map((s.invites || []).map(i => [i.account, i])), locked: s.locked === true, activity: s.activity ?? null };
       for(const m of p.members) if(m.always && !alwaysOn.has(m.account)) await setAlways(m.account, true);   // groupes d'avant le 31/10
       if(!p.members.some(m => m.account === p.leader)) p.leader = p.members[0].account;
       parties.set(p.code, p);
@@ -303,6 +322,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(me.id);
       if(p){
         noChange(p);
+        if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour chercher des joueurs.');
         if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
         if(p.members.length > 1 && p.leader !== me.id) fail('not_leader', 403, 'C\'est le chef du groupe qui lance la recherche.');
       }
@@ -340,6 +360,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       await notInSession(me);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
+      noStranger(p, me.id);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
@@ -382,6 +403,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       const p = partyOf(friend.id) ?? await create(friend);
       if(memberOf(p, me.id)) return { party: publicParty(p, me.id) };
       noChange(p);
+      noStranger(p, me.id);
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ce groupe est complet.');
       const old = partyOf(me.id);
       if(old){ noChange(old); removeMember(old, me.id); }
@@ -547,6 +569,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       touch(me); await sweep();
       await notInSession(me);
       const p = partyOf(me.id) ?? await create(me);
+      if(p.locked) fail('party_locked', 409, 'Ton groupe est verrouillé : ouvre-le pour l\'annoncer.');
       if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
       return { code: p.code, ...lobbyLink(ctx?.mode, ctx?.level), size: p.members.length, max: GAME.maxPlayers };
     },
@@ -558,11 +581,46 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       let playing = false;
       for(const m of p.members){
         if(await game.activeSessionId(m.account)) playing = true;
-        const tree = await game.skillTreeOf?.(m.account) ?? null;
-        members.push({ name: m.name, leader: m.account === p.leader, tree, specLevel: await game.specLevelOf?.(m.account, tree) ?? null,
-                       look: await game.lookFor?.(m.account) ?? {}, auras: await game.aurasFor?.(m.account) ?? {} });
+        members.push(await memberCard(m, p));
       }
-      return { members, size: members.length, max: GAME.maxPlayers, playing };
+      return { members, size: members.length, max: GAME.maxPlayers, playing, locked: !!p.locked };
+    },
+    /* verrouiller son groupe (31/10/2026, Geoffrey) : le chef seul. Une recherche de groupe en cours s'arrête */
+    async lock(me, value){
+      touch(me);
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, 'Tu n\'as pas de groupe.');
+      if(p.leader !== me.id) fail('not_leader', 403, 'Seul le chef peut verrouiller le groupe.');
+      if(typeof value !== 'boolean') fail('bad_request', 400, 'Demande invalide.');
+      p.locked = value;
+      if(value) queue.delete(me.id);
+      return { party: publicParty(p, me.id), lfg: lfgView(me) };
+    },
+    /* activité que le chef a ouverte dans son lobby ; null : aucune. Le navigateur la donne, elle ne sert qu'à l'affichage */
+    async activity(me, body = {}){
+      const p = partyOf(me.id);
+      if(!p || p.leader !== me.id) return { ok: false };
+      p.activity = body.mode == null ? null : lobbyLink(body.mode, body.level);
+      return { ok: true };
+    },
+    /* groupes en formation (31/10/2026, Geoffrey) : ouverts, avec une place, chef présent, personne en session ni en
+       prison. Ceux qui ont le plus de joueurs d'abord. Relue en boucle tant que la fenêtre est ouverte */
+    async forming(me){
+      await sweep();
+      const now = clock(), mine = partyOf(me.id)?.code, list = [];
+      for(const p of parties.values()){
+        if(list.length >= config.formingMax) break;
+        if(p.code === mine || p.locked || p.launching || p.members.length >= GAME.maxPlayers) continue;
+        if(now - memberOf(p, p.leader).seenAt > config.awayAfter) continue;
+        let busy = false;
+        for(const m of p.members) busy ||= !!await game.activeSessionId(m.account) || !!await game.prisonActiveOf?.(m.account);
+        if(busy) continue;
+        const members = [];
+        for(const m of p.members) members.push(await formingCard(m, p));
+        list.push({ code: p.code, mode: p.activity?.mode ?? null, level: p.activity?.level ?? 1, open: true,
+                    size: members.length, max: GAME.maxPlayers, members });
+      }
+      return { groups: list.sort((a, b) => b.size - a.size) };
     },
     async adminMove(player, host){
       await sweep();
@@ -645,7 +703,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     ...actions,
     load,
     /* pour l'onglet Social : groupe d'un joueur (taille, places) et invitations qu'il a reçues, sans ménage ni signe de vie */
-    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers } : null; },
+    groupOf: accountId => { const p = partyOf(accountId); return p ? { code: p.code, size: p.members.length, max: GAME.maxPlayers, locked: !!p.locked } : null; },
     invitesOf: accountId => invitesFor(accountId).map(q => ({ code: q.code, from: q.invites.get(accountId).from, at: q.invites.get(accountId).at,
                                                               members: q.members.map(m => m.name), full: q.members.length >= GAME.maxPlayers })),
     /* pour les tests et le journal */

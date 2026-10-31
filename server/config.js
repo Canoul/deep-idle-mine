@@ -130,6 +130,9 @@ export const SOCIAL_SERVER = {
 export const TOWN_SERVER = { presentFor: 40e3, lookFor: 20e3, sessionsFor: 3e3, maxPlayers: 80, statueFor: 60e3 };
 
 export const PARTY_SERVER = {
+  formingMax: 30,                   // groupes montrés au plus dans « Groupes en formation »
+  formingCardMs: 5e3,               // portrait d'un joueur gardé ce temps pour cette liste, relue en boucle
+  formingCardsMax: 500,
   awayAfter: 10e3,                  // membre affiché « absent » sans nouvelles depuis ce temps (onglet fermé, réseau)
   memberTimeout: 5 * MIN,           // … et retiré du groupe au-delà
   inviteTtl: HOUR,                  // invitation par ID valable ce temps

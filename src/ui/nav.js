@@ -45,7 +45,7 @@ export function pickTab(hash, saved){
 
 /* Échap : quitter l'onglet ouvert pour l'onglet Session (comme la promenade, ou la mine pendant une session) ; rien si
    on y est déjà ou si une fenêtre est ouverte (overlay : objet obtenu, dialogue, compte, voir OVERLAYS) */
-export const OVERLAYS = ['obtained', 'dialog', 'account'];
+export const OVERLAYS = ['obtained', 'dialog', 'account', 'forming'];
 export const escapeTab = (cur, overlay = false) => !overlay && cur && cur !== 'session' ? 'session' : null;
 
 /* Construit la barre et les vues manquantes (onglets pas encore développés = page d'attente).

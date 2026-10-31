@@ -115,6 +115,8 @@
       <button id="prisonStopLobby" hidden title="Le coffre du run en cours est versé, pas ce que le mineur porte">Sortir de prison</button>
       <button id="inviteBtn"><i data-pxi="group"></i>Inviter des joueurs</button>
       <button id="partyLeaveBtn" hidden>Quitter le groupe</button>
+      <button id="formingBtn" hidden title="Voir les groupes qui cherchent des joueurs, et en rejoindre un"><i data-pxi="group"></i>Groupes en formation</button>
+      <button id="partyLockBtn" hidden title="Verrouillé : seuls les joueurs invités peuvent entrer, et le groupe n'apparaît plus dans Groupes en formation"></button>
       <button id="lfgBtn" hidden><i data-pxi="group"></i>Chercher un groupe</button>
       <button id="lobbyPubBtn" hidden title="Annoncer ton lobby dans le canal LFG du chat : un clic sur le lien le rejoint"><i data-pxi="group"></i>Pub LFG</button>
       <span class="lfgCount small" id="lfgCount" hidden title="Joueurs qui cherchent un groupe en ce moment (mine classique)"></span>
@@ -448,6 +450,8 @@
 <div id="obtained" hidden></div>
 <!-- fenêtres de validation (confirmer, message, saisie) : remplacent celles du navigateur (src/ui/dialog.js) -->
 <div id="dialog" hidden></div>
+<!-- groupes en formation (src/ui/forming.js) -->
+<div id="forming" hidden></div>
 <!-- guide « Premiers pas » des nouveaux joueurs (src/ui/guide.js) -->
 <aside id="guide" class="guide" aria-label="Premiers pas" hidden></aside>
 <div id="account" hidden><div class="box"></div></div>

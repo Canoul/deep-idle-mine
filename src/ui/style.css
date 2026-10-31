@@ -463,10 +463,10 @@ body{--chat-w:calc(287.5*var(--u))}
 .chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}
 .chatLobby:hover,.chatLobby:focus-visible{color:#fff}
 .lobbyPeek{position:fixed;z-index:60;width:calc(190*var(--u));max-width:calc(100vw - 16px);padding:calc(4*var(--u));background:var(--panel,#1a1512);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--sep);pointer-events:none}
-.lobbyPeek b.tit{display:block;margin-bottom:calc(2*var(--u))}
-.lobbyPeek .peekSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-bottom:calc(2*var(--u))}
-.lobbyPeek .pslot{min-width:0;padding:calc(2*var(--u));font-size:var(--fs-s);overflow:hidden}
-.lobbyPeek .pslot .av{width:calc(24*var(--u));height:calc(24*var(--u))}
+.lobbyPeek b.tit,.formGroup b.tit{display:block;margin-bottom:calc(2*var(--u))}
+.lobbyPeek .peekSlots,.formGroup .peekSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-bottom:calc(2*var(--u))}
+.lobbyPeek .pslot,.formGroup .pslot{min-width:0;padding:calc(2*var(--u));font-size:var(--fs-s);overflow:hidden}
+.lobbyPeek .pslot .av,.formGroup .pslot .av{width:calc(24*var(--u));height:calc(24*var(--u))}
 .lobbyPeek .pslot b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lobbyPeek .pslot.free{opacity:.55}
 .chatLog b{color:var(--txt);font-weight:400}
@@ -833,6 +833,17 @@ body{--chat-w:calc(287.5*var(--u))}
 .obName{margin:calc(4*var(--u)) 0 calc(3*var(--u));font-size:var(--fs-l)}
 .obLine{color:var(--o2)}
 .obHint{margin:calc(4*var(--u)) 0 0}
+/* ---------- groupes en formation (src/ui/forming.js) ---------- */
+#forming{position:fixed;inset:0;background:rgba(8,5,4,.7);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
+#forming[hidden]{display:none}
+#forming .box{box-sizing:border-box;width:100%;max-width:calc(380*var(--u));max-height:100%;overflow:auto;padding:calc(6*var(--u));background:var(--panel,#1a1512);box-shadow:inset 0 0 0 var(--u) var(--line)}
+#forming .boxHead{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));margin-bottom:calc(4*var(--u))}
+#forming .boxHead h2{margin:0}
+.formList{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(170*var(--u)),1fr));gap:calc(4*var(--u))}
+.formGroup{padding:calc(3*var(--u));cursor:pointer;box-shadow:inset 0 0 0 var(--u) var(--line)}
+.formGroup:hover,.formGroup:focus-visible{box-shadow:inset 0 0 0 var(--u) var(--acc-lt);outline:none}
+#forming .boxFoot{margin:calc(4*var(--u)) 0 0}
+
 /* ---------- fenêtres de validation (src/ui/dialog.js) : au-dessus de tout, même au-dessus de « Tu as obtenu » ---------- */
 #dialog{position:fixed;inset:0;background:rgba(8,5,4,.7);display:flex;align-items:center;justify-content:center;z-index:70;padding:calc(6*var(--u))}
 #dialog[hidden]{display:none}

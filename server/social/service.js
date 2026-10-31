@@ -143,7 +143,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const together = !!(g && myGroup && g.code === myGroup.code);
       friends.push({ id, displayId: formatAccountId(id), name: await nameOf(id), ...st, ...await energyField(id), together,
                      canInvite: !meBusy && canBeInvited(st) && !together,
-                     canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && g.size >= g.max) });
+                     canJoin: !meBusy && (st.status === 'online' || st.status === 'lobby') && !together && !(g && (g.size >= g.max || g.locked)) });
     }
     const order = { lobby: 0, online: 1, session: 2, offline: 3 };
     friends.sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name, 'fr'));

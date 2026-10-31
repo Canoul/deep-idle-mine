@@ -146,6 +146,9 @@ export const partyApi = {
   devPresets: presets => request('POST', '/api/party/dev-presets', { presets }),   // mode dev : preset de chaque mineur
   alwaysReady: always => request('POST', '/api/party/always-ready', { always }),
   promote: id   => request('POST', '/api/party/promote', { id }),
+  forming: ()   => request('GET', '/api/party/forming'),                  // groupes en formation (31/10)
+  lock:    locked => request('POST', '/api/party/lock', { locked }),      // le chef verrouille son groupe (31/10)
+  activity: a   => request('POST', '/api/party/activity', a ?? {}),       // activité ouverte par le chef (31/10)
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)
   lfgCancel: () => request('POST', '/api/party/lfg/cancel', {}),
   shrine:  body => request('POST', '/api/party/shrine', body),   // don à un shrine du chef (28/10)

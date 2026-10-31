@@ -16,7 +16,9 @@ Instances, Bloc géant, Jugement : des défis à part, chacun a ses règles (le 
   team: `Équipe
 Jusqu'à 3 joueurs, un mineur chacun.
 Seul, tu gardes tout le coffre ; à plusieurs, il est partagé à parts égales à la fin.
-Invite un ami avec le bouton, ou rejoins un groupe avec son code.`,
+Invite un ami avec le bouton, ou rejoins un groupe avec son code.
+Groupes en formation : les groupes qui ont encore de la place ; un clic pour entrer.
+Le cadenas (chef du groupe) : seuls les invités peuvent entrer.`,
   prefs: `Critères / préférences
 Ton mineur joue tout seul : tu ne le diriges pas, tu le règles.
 Priorité : Minerais = il va d'abord chercher les minerais qu'il voit ; Descendre = il va d'abord en profondeur.

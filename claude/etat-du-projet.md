@@ -296,6 +296,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   identifié à la qualité du coffre. **Couronne** (casque, légendaire) : fortune +10, **gobelins asservis** (nés à 10 cases
   du porteur : 30 s à miner pour le coffre commun, ligne « Gobelins asservis » du coffre). **Four en or** = 3e four ×1,5.
   **Recette : Chitine** : 10 peaux + 10 charbon → 5 chitine au four. Lampe à incandescence passée au tier 2 des runes. Runes : masse et cape au tier 3 (400 x ; 500 x depuis le 27/10), **couronne au tier 4 (600 x)** (27/10).
+- **Groupes en formation** (31/10, Geoffrey ; src/ui/forming.js) : liste des groupes avec une place, activité et portraits, clic pour entrer. **Cadenas** du chef (`p.locked`) : invités seulement, tous chemins confondus.
 - **Butin rare des mobs** (26/10, Geoffrey ; 4 pièces de plus le 31/10, une pièce au plus par mob) : 8 pièces non craftables (`MOB_DROPS`, `src/sim/actions.js` rareDrop),
   chacune de la valeur en x de la pièce en fer de sa case (ceinture : 250 x ; prix mesurés du GS pour Nuage et Ceinture, tableau des runes pour Lanières et Capuche), deux stats moitié / moitié :
   **Lanières en cuir du gobelin** (torse, inhabituel ; vitesse d'attaque +44 %, butin +22 % ; gobelin 0,1 %),
