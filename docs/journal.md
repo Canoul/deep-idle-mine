@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Stuff : les cases ne se décalent plus avec les noms longs
+- **Pour le joueur** : la case Torche sortait du cadre avec la Lampe à incandescence, et d'autres cases pouvaient faire pareil sur une fenêtre étroite. Toutes les cases restent alignées : un nom trop long passe à la ligne, coupé si besoin.
+- **État** : 🧪 sur la branche `geoffrey/fix-cases-stuff` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Chat : [Chef de groupe] dans le canal de groupe
 - **Pour le joueur** : un message du chef dans le canal Groupe (/gr) s'affiche avec **[Chef de groupe]** au lieu de [Groupe], un peu plus clair que le bleu du canal. Tout le groupe le voit, le chef compris.
 - **État** : ✅ en ligne le 31/10
