@@ -220,7 +220,7 @@ test('service : place invalide refusée (400), rien d\'enregistré ; route sans 
   assert.equal(s.town.count(), 0);
   const route = townRoutes(s.town)['POST /api/town'];
   await assert.rejects(route({ me: null, body: { spot: 'lobby' } }), e => e.status === 401);
-  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null, group: null, statue: null });
+  assert.deepEqual(await route({ me: me('AAAA1111'), body: { spot: 'lobby' } }), { players: [], say: null, group: null, guild: null, statue: null });
   await assert.rejects(route({ me: me('AAAA1111'), body: ['lobby'] }), e => e.status === 400);
 });
 
