@@ -1,6 +1,6 @@
 /* Niveau du mineur : progression hors session, logique pure (partagée par le jeu et le serveur).
    Le compte ne stocke que son XP totale ; niveau, avancement et points de talent s'en déduisent. */
-import { XP, SKILLS } from '../config.js';
+import { XP, SKILLS, GUILD } from '../config.js';
 
 /* XP à gagner pour passer du niveau n au niveau n+1 (n ≥ 1) ; curve : XP.curve (mineur) ou XP.specCurve (spécialisation) */
 const toNext = (n, curve) => Math.round(curve.first * curve.factor ** (n - 1));
@@ -26,6 +26,10 @@ export const specLevels = progress => Object.fromEntries(SKILLS.trees.map(t => {
   const xp = progress?.spec?.[t.id] ?? 0;
   return [t.id, { xp, ...specLevelOf(xp) }];
 }));
+
+/* guilde : rawXp = XP brute des membres ; GUILD.xpPct % sur le total, pour ne pas perdre les petits gains (un run de prison) */
+export const guildXpOf = rawXp => Number.isSafeInteger(rawXp) && rawXp > 0 ? Math.floor(rawXp * GUILD.xpPct / 100) : 0;
+export const guildLevelOf = rawXp => curveLevel(guildXpOf(rawXp), XP.curve);
 
 /* XP totale nécessaire pour atteindre le niveau n */
 export function xpForLevel(n){ let t = 0; for(let k = 1; k < n; k++) t += xpToNext(k); return t; }
