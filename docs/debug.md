@@ -6112,3 +6112,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
 - **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
+
+## 31/10/2026 — Lien du Discord dans le bandeau (Geoffrey)
+- **Quoi** : un `<a class="navWiki">` de plus dans `.topbar` (index.html), icône `bubbles`, invitation https://discord.gg/waGJg9RJDy. Même lien dans wiki.html, rubrique Les onglets.
+- **Tests** ✅ tests/lien-discord.test.js. ✅ Bandeau rendu dans Chrome avec le vrai style.css et le pire cas (pseudo, session, énergie, prison) : tient à 1400, 1200 et 1000 px.
+- ⚠️ À 390 px avec une prison en cours, « Sortir de prison » est coupé et les liens Wiki et Discord sortent de l'écran : le bouton dépassait déjà avant ce lien. Sans prison, à contrôler sur un vrai téléphone.
+- ⚠️ L'invitation n'a pas été testée ; si elle expire, c'est le lien à changer dans index.html et wiki.html (et le test).
+

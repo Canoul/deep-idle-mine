@@ -77,6 +77,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
+- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki.
+- **État** : 🧪 sur la branche `geoffrey/lien-discord` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
   restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps
