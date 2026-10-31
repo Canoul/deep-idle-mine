@@ -21,6 +21,18 @@ Modèle d'entrée :
   plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
 - **État** : 🧪 sur la branche `geoffrey/fix-statue-gs` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
+- **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
+  `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
+- **Décisions** : « rejoint » = rejoint le lobby, pas la session en cours. Tout membre peut publier, un joueur seul aussi. Le lien marche dans tous les canaux,
+  pas dans le chat de session. Le code du groupe n'apparaît jamais dans le chat.
+- **À suivre** : l'essayer à deux en vrai. Le joueur qui rejoint n'est pas amené sur l'activité annoncée (le lobby ne partage pas l'activité choisie).
+
+## 31/10/2026 — Geoffrey — Pseudos : les mots interdits du chat ne passent plus
+- **Pour le joueur** : on ne peut plus créer un compte avec un pseudo interdit, un message d'erreur le dit. Un joueur qui en a déjà un doit le changer à sa prochaine connexion : une fenêtre impossible à fermer le lui demande, il garde son compte et son stuff.
+- **À suivre** : aucun des 31 pseudos lisibles n'est touché aujourd'hui. La liste de mots reste celle du chat.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
 - **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
   tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.
@@ -87,6 +99,10 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
 - **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
 - **À suivre** : à regarder en jeu, en pierre et en cristal.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Énergie de chacun dans le panneau Équipe
+- **Pour le joueur** : pendant une session à plusieurs, le panneau **Équipe** montre l'énergie de chaque joueur (« ⚡ 42/100 », en rouge s'il ne peut plus lancer de mine classique), en mine, en tour et en instance. Le chiffre peut avoir jusqu'à 30 s de retard.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Tours : le Shrine héroïque remplace le niveau 2

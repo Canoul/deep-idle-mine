@@ -21,6 +21,7 @@ import { setupInstantLobby } from './ui/instant-lobby.js';
 import { setupGiant } from './ui/giant.js';
 import { updateInstantHUD, showInstantEnd } from './ui/instant-hud.js';
 import { updateTowerHUD, showTowerEnd } from './ui/tower-hud.js';
+import { setTeamEnergies } from './ui/energy-tag.js';
 import { updateInstanceHUD, showInstanceEnd } from './ui/instance-hud.js';
 import { createInstanceRenderer } from './render/instance.js';
 import { applyInstanceView } from './shared/instances-view.js';
@@ -48,7 +49,8 @@ import { setupFocusPanel } from './ui/focus.js';
 import { setupChat } from './ui/chat.js';
 import { setupChatDock } from './ui/chat-dock.js';
 import { setupChatTabs, chatLine } from './ui/chat-tabs.js';
-import { parseChatInput } from './shared/chat.js';
+import { setupChatLobby } from './ui/chat-lobby.js';
+import { parseChatInput, LOBBY_TAG } from './shared/chat.js';
 import { renderInventory as drawInventory, showLoot, lootError } from './ui/inventory.js';
 import { setupNav } from './ui/nav.js';
 import { setupFurnace } from './ui/furnace.js';
@@ -336,6 +338,7 @@ const lobby = setupLobby({
   prisonSaveCompo: compo => gameApi.prisonSaveCompo(compo),   // enregistrer une compo (30/10)
   prisonProfile: () => gameApi.prisonProfile(),   // { profile, previous } : compo actuelle et précédente (paliers de 10 mines, 30/10)   // contenu de la prison d'après les 10 dernières mines (29/10)
   onPrisonStop: () => stopPrison(),
+  onPub: ctx => gchat.send({ channel: 'lfg', text: LOBBY_TAG, lobby: ctx }),   // « Pub LFG » (31/10)
   onShowPrison: () => nav.show('session'),
   onLaunch: async (opts, { party } = {}) => {
     lobby.error('');
@@ -539,7 +542,11 @@ const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), s
                                   save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
                           paused: () => document.hidden || gchatDock.folded, time: true,
-                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel(), gchatTabs.target()), sent: gchatTabs.sent });
+                          show: gchatTabs.show, line: chatLine, sent: gchatTabs.sent,
+                          parse: text => { const msg = parseChatInput(text, gchatTabs.channel(), gchatTabs.target()); return msg.lobby ? { ...msg, lobby: lobby.pubContext() } : msg; } });
+/* lien de lobby du chat (31/10/2026) : aperçu au survol, clic = rejoindre */
+setupChatLobby({ log: $('gchatLog'), peek: id => socialApi.chatLobby(id), onError: text => { $('gchatNote').textContent = text; },
+                 join: async id => { await socialApi.chatLobbyJoin(id); await pollLobby(); nav.show('lobby'); } });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){
@@ -592,6 +599,7 @@ async function pollView(){
   const id = rec.id, t0 = performance.now();
   try {
     const r = await gameApi.view(G.ready ? G.ticks : null);
+    setTeamEnergies(r.energies);   // panneaux Équipe (31/10)
     if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     if(!G || rec?.id !== id || waiting) return;
     clockOffset = r.now - Date.now();

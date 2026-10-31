@@ -4,7 +4,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CHAT } from '../src/config.js';
-import { cleanChatText } from '../src/shared/chat.js';
+import { cleanChatText, parseChatInput, lobbyLink, lobbyLabel } from '../src/shared/chat.js';
+import { chatLine } from '../src/ui/chat-tabs.js';
+import { peekHTML, peekStatus } from '../src/ui/chat-lobby.js';
 import { createChat } from '../server/game/chat.js';
 import { stuckToEnd } from '../src/ui/chat.js';
 import { realDurationMs } from '../src/shared/game.js';
@@ -13,6 +15,8 @@ import { createGameService } from '../server/game/service.js';
 import { createPartyService } from '../server/party/service.js';
 import { createSocialService } from '../server/social/service.js';
 import { fakeLive } from './helpers.js';
+import { socialRoutes } from '../server/social/routes.js';
+import { SOCIAL_SERVER } from '../server/config.js';
 
 const ME = { id:'AAAA1111', name:'Zoe', guest:false };
 const OTHER = { id:'BBBB2222', name:'Max', guest:false };
@@ -381,4 +385,103 @@ test('canal gardé : seulement après un envoi réussi, et le suivant du même c
   assert.equal(tabs.channel(), 'mp'); assert.equal(tabs.target(), 'Zoe');
   tabs.sent({ channel:'lfg', text:'d' });
   assert.equal(tabs.channel(), 'lfg'); assert.equal(tabs.target(), null);
+});
+
+/* ---------- lien de lobby (31/10/2026) ---------- */
+function setupLink(){
+  const clock = () => 1_000_000, store = createMemoryGameStore();
+  const FOURTH = { id:'DDDD4444', name:'Lou', guest:false };
+  const getAccount = async id => [ME, OTHER, OUT, FOURTH].find(a => a.id === id) ?? null;
+  const game = createGameService({ store, liveRunner:fakeLive(rec => ({ id:rec.id, shares:[] })), clock, randomSeed:() => 7 });
+  const party = createPartyService({ game, clock, getAccount });
+  const social = createSocialService({ store, game, party, clock, config:{ ...SOCIAL_SERVER }, accounts:{ getAccount, findAccountByName: async () => null } });
+  return { social, party, game, store, clock, FOURTH };
+}
+const pub = (s, who, extra = {}) => s.chatPost(who, { channel:'lfg', text:'%lobby', lobby:{ mode:'instance_1', level:1 }, ...extra });
+
+test('/lfg et %lobby : raccourci LFG, le lien est demandé, le reste du texte est gardé', () => {
+  assert.deepEqual(parseChatInput('/lfg %lobby toto'), { channel:'lfg', text:'%lobby toto', lobby:true });
+  assert.deepEqual(parseChatInput('/lfg salut'), { channel:'lfg', text:'salut' });
+  assert.equal(parseChatInput('bonjour').lobby, undefined);
+});
+
+test('activité du lien : seulement une activité de groupe, valeurs fausses ramenées à la mine ; libellé', () => {
+  assert.deepEqual(lobbyLink('instance_1', 2), { mode:'instance_1', level:2 });
+  for(const bad of ['prison', 'giant', 'mi', '<b>', null, 12]) assert.equal(lobbyLink(bad, 1).mode, 'mine', String(bad));
+  for(const bad of [0, -1, 1.5, 99, 'x', Infinity]) assert.equal(lobbyLink('mine', bad).level, 1, String(bad));
+  assert.equal(lobbyLabel({ mode:'instance_1', level:1, size:2, max:3 }), 'Instance I 2/3');
+  assert.equal(lobbyLabel({ mode:'tower_angel', level:2, size:1, max:3 }), "Tour de l'Ange niv. 2 1/3");
+});
+
+test('lien : le code du groupe n\'arrive jamais au navigateur, et le navigateur ne peut pas en imposer un', async () => {
+  const { social, party } = setupLink();
+  const { party:g } = await party.create(ME);
+  await party.join(OTHER, g.code);
+  const { message } = await pub(social, ME, { lobby:{ mode:'instance_1', level:1, code:'FAUX', size:1 } });
+  assert.deepEqual(message.lobby, { mode:'instance_1', level:1, size:2, max:3 });
+  assert.ok(!JSON.stringify(await social.chatGet(OUT, 0)).includes(g.code));
+  assert.ok(!JSON.stringify(await social.chatLobby(OUT, message.id)).includes(g.code));
+});
+
+test('lien : un joueur seul obtient un groupe ; survol, clic = rejoindre, puis complet', async () => {
+  const { social, FOURTH } = setupLink();
+  const { message } = await pub(social, ME);
+  let p = await social.chatLobby(OUT, message.id);
+  assert.deepEqual([p.open, p.size, p.max, p.members.map(m => m.name)], [true, 1, 3, ['Zoe']]);
+  await social.chatLobbyJoin(OUT, message.id);
+  await social.chatLobbyJoin(OTHER, message.id);
+  p = await social.chatLobby(ME, message.id);
+  assert.deepEqual(p.members.map(m => m.name), ['Zoe', 'Lea', 'Max']);
+  assert.equal(peekStatus(p), 'Complet');
+  await assert.rejects(social.chatLobbyJoin(FOURTH, message.id), { code:'party_full' });
+});
+
+test('lien refusé : groupe complet ; message sans lien ou numéro invalide', async () => {
+  const { social, party, FOURTH } = setupLink();
+  const { party:g } = await party.create(ME);
+  await party.join(OTHER, g.code); await party.join(OUT, g.code);
+  await assert.rejects(pub(social, ME), { code:'party_full' });
+  const { message } = await social.chatPost(FOURTH, { channel:'general', text:'salut' });
+  for(const id of [message.id, 999, -1, 1.5, 'x', null]) await assert.rejects(social.chatLobby(ME, id), { code:'not_found' });
+});
+
+test('lien : groupe dissous → aperçu fermé, clic refusé sans compter comme un faux code', async () => {
+  const { social, party } = setupLink();
+  const { message } = await pub(social, ME);
+  await party.leave(ME);
+  const p = await social.chatLobby(OUT, message.id);
+  assert.equal(p.open, false);
+  assert.equal(peekStatus(p), 'Ce groupe n\'existe plus');
+  for(let i = 0; i < 30; i++) await assert.rejects(social.chatLobbyJoin(OUT, message.id), { code:'party_not_found' });
+  const { party:g } = await party.create(OTHER);
+  assert.equal((await party.join(OUT, g.code)).party.code, g.code, 'pas de blocage du code');
+});
+
+test('lien repris après un redémarrage du chat', async () => {
+  const { social, store, game, party, clock } = setupLink();
+  const { message } = await pub(social, ME);
+  const again = createSocialService({ store, game, party, clock, accounts:{ getAccount: async () => null, findAccountByName: async () => null } });
+  assert.equal((await again.chatLobby(OUT, message.id)).open, true);
+});
+
+test('affichage : lien à la place de %lobby, texte échappé ; sans lien, %lobby reste du texte', () => {
+  const m = { id:7, at:0, name:'Zoe', channel:'lfg', text:'avant %lobby <i>après', lobby:{ mode:'instance_1', level:1, size:2, max:3 } };
+  assert.match(chatLine(m, 'x'), /avant <button[^>]*data-lobby="7"[^>]*>\[Instance I 2\/3\]<\/button> &lt;i&gt;après/);
+  assert.match(chatLine({ ...m, lobby:undefined }, 'x'), /avant %lobby/);
+  assert.match(chatLine({ ...m, text:'perdu' }, 'x'), /<\/button> perdu/);
+  assert.equal(peekStatus({ open:true, size:2, max:3, playing:true }), 'En session');
+  assert.equal(peekStatus({ open:true, size:2, max:3 }), null);
+  const h = peekHTML({ mode:'instance_1', level:1, open:true, size:2, max:3, members:[{ name:'<Zoe>', leader:true }, { name:'Max' }] });
+  assert.equal(h.match(/Place libre/g).length, 1); assert.match(h, /&lt;Zoe&gt;/);
+});
+
+test('routes du lien : aperçu et rejoindre par le numéro du message, numéro invalide refusé', async () => {
+  const { social, party } = setupLink();
+  const r = socialRoutes(social), { message } = await pub(social, ME);
+  const p = await r['POST /api/social/chat/lobby']({ me:OUT, body:{ id:message.id } });
+  assert.equal(p.size, 1);
+  await r['POST /api/social/chat/lobby/join']({ me:OUT, body:{ id:message.id } });
+  assert.deepEqual((await party.state(OUT)).party.members.map(m => m.name), ['Zoe', 'Lea']);
+  await assert.rejects(r['POST /api/social/chat/lobby/join']({ me:OUT, body:{ id:'x' } }), { code:'not_found' });
+  await assert.rejects(r['POST /api/social/chat/lobby']({ me:null, body:{ id:message.id } }), { code:'not_authenticated' });
 });

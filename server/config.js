@@ -90,6 +90,7 @@ export const LIMITS = {
    gratuite de Render (0,1 CPU), ~37 % du processeur par session. maxLive : sessions en même temps (au-delà, on
    refuse d'en lancer une nouvelle) ; DIM_MAX_LIVE pour changer. pumpEvery : rythme auquel les parties avancent. */
 export const GAME_SERVER = {
+  teamEnergyFor: 30e3,              // énergie des joueurs dans le panneau Équipe de la session : relue au plus tous ces ms (31/10/2026)
   dev: process.env.DIM_DEV === '1',
   maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 5 : 12))),
   pumpEvery: 100,                   // ms (31/10/2026 : 200 → 100, la partie arrive au navigateur par plus petits paquets)
