@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Plastron de l'équilibre : moins de pods
+- **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
+- **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
+- **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+- **État** : pas encore en ligne
+
 ## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie
 - **Pour le joueur** : l'onglet Craft a les mêmes onglets que l'inventaire (Tout, Blocs, Minerais, Stuff, Butin des mobs, Matériaux, Runes, Divers). Un onglet sans recette est grisé.
 - **État** : ✅ en ligne le 31/10
