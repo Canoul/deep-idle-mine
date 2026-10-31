@@ -1824,7 +1824,13 @@ export const PRISON = { stunReset: 60, stunGap: 5, width: 25, oreMul: 0.27, rese
   batchConcurrency: 1, crashMax: 5, uiRetry: 1000, bars: 24, salt: 0x9a150e, uiPoll: 15e3,
   fracSalt: 0x5f7a11,   // arrondi au hasard du nombre de cases de minerai d'une carte de prison (30/10/2026, src/sim/world.js fillComp)
   /* 31/10/2026 (Geoffrey) : part maximale d'un minerai dans la répartition des minerais du profil ; le surplus va aux minerais sans plafond */
-  oreCap: { cobalt: 0.004, thorium: 0.004 } };
+  oreCap: { cobalt: 0.004, thorium: 0.004 },
+  /* 31/10/2026 (Geoffrey) : mines jouées avec le focus minerai, retiré du jeu le 30/10 : à partir de focusRef.area débloquées,
+     leurs minerais comptent dans le profil pour une répartition de référence (ores : minerais par heure des 10 dernières mines
+     de Nbrick, LeTaz et Akake, le 31/10). compoVersion : à monter pour recalculer une fois les compos gardées des joueurs
+     qui ont de telles mines (paliers refaits, compo enregistrée effacée). */
+  focusRef: { area: 6, ores: { coal: 746, iron: 679.9, gold: 281.4, diamond: 20.5, graphite: 143.9, mithril: 24.4, cobalt: 2.4, thorium: 1.6 } },
+  compoVersion: 2 };
 
 /* Chat de session (22/10/2026) : les joueurs d'une session (encore là) s'écrivent pendant la partie, dans l'onglet
    Session. Gardé en mémoire du serveur seulement (rien en base), effacé à la fin de la session.

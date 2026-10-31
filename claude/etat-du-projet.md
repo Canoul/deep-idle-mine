@@ -48,6 +48,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   refus nommant les joueurs à court, un refus n'arrête pas la prison. Recharge **seulement en prison** : 8 par heure de jeu,
   plafonnée à 100, gardée au dixième. Aucun autre mode ne coûte.
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.
+- **Mines au focus minerai et prison** (31/10, Geoffrey) : `PRISON.focusRef`, dès 6 areas débloquées une mine où un joueur du groupe a visé un minerai compte dans le profil pour la répartition de Nbrick, LeTaz et Akake ; compos gardées refaites une fois (`PRISON.compoVersion`), compo enregistrée effacée pour ces joueurs.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
   `src/shared/prison.js`, `server/game/service.js` (prison, énergie), `src/ui/prison.js`, `npm run simulate:prison`) : farm AFK solo sans fin. Stuff, skills, sorts et préférences relus à chaque run (30/10 ; ancien : figés à l'entrée). Carte 25 × 50
   (une area ; **contenu = profil des 10 dernières mines classiques** du joueur, figé au lancement, `src/meta/prison-profile.js` :

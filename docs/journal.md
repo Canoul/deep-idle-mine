@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
+- **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
+- **Décisions** : règle pour tous, pas de liste de pseudos ; si un joueur du groupe a mis le focus, toute la mine compte. Pour Croustiflex, Infernatiwar et Monsta : mithril ÷ 3 environ, cobalt ÷ 3, thorium ÷ 5 par rapport à aujourd'hui. Les 10 prochaines mines, sans focus possible, formeront leur palier suivant, sans correction.
+- **À suivre** : canoul, Sõnata ou Allaiks seraient corrigés aussi s'ils ont des mines au focus. Une prison déjà en cours garde sa compo jusqu'à sa sortie. Le tableau de rendement cumule toutes les prisons et baissera lentement.
+- **État** : 🧪 sur la branche `geoffrey/prison-focus-ref` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Prison : cobalt et thorium plafonnés
 - **Pour le joueur** : dans la compo de la prison, le cobalt et le thorium ne dépassent plus 0,4 % chacun des minerais de la carte. La place libérée va aux autres minerais : la carte en contient autant qu'avant. Vaut pour toutes les compos (actuelle, ancienne, enregistrée) et le lobby affiche la valeur plafonnée.
 - **Décisions** : plafond commun à tous, pas de règle visant des pseudos. Seuls Croustiflex, Infernatiwar et Monsta sont vraiment touchés (0,9 à 1,1 % avant). Mesure sur la compo de Croustiflex (stuff acier, 20 h simulées) : cobalt 2,07 → 0,78 par heure, thorium 2,52 → 1,03. Valeur provisoire, `PRISON.oreCap`.
