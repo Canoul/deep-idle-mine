@@ -464,6 +464,13 @@ body{--chat-w:calc(287.5*var(--u))}
   body.chatOn .guide{display:none}   /* chat ouvert : le guide cacherait son champ, il revient quand on le replie */
   .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
 }
+/* téléphone (31/10/2026, CHAT.dock.phone) : le chat ne recouvre plus rien, il a son onglet, en plein écran entre le bandeau et la barre */
+.phoneOnly{display:none}
+body.phone .phoneOnly{display:block}
+body.phone .chatDock.folded{display:none}
+body.phone .chatDock{top:var(--top-h);bottom:calc(var(--dock-h) + 2*var(--u));left:0;width:100%;height:auto}
+body.phone .chatEdge,body.phone .chatFold{display:none}
+body.phone .chatDock .card{background:#0b0806}
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
 .chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}

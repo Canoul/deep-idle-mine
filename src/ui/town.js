@@ -261,7 +261,7 @@ export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWa
     const s = innerWidth / cv.width, tile = cv.height / TOWN.rows * s;
     let limit = document.querySelector('.dock')?.getBoundingClientRect().top ?? innerHeight;
     const dockEl = $chat();
-    if(free && dockEl && !dockEl.hidden && dockEl.classList.contains('folded')) limit = Math.min(limit, dockEl.getBoundingClientRect().top);
+    if(free && dockEl?.getClientRects().length && dockEl.classList.contains('folded')) limit = Math.min(limit, dockEl.getBoundingClientRect().top);
     Object.assign(cv.style, { width: innerWidth + 'px', height: cv.height * s + 'px', left: '0px',
       top: Math.round(limit - 4 - (TOWN.ground + 1) * tile) + 'px' });
     /* boutons « Entrer » (et « Chercher un groupe ») sous le bandeau d'aide, dans le ciel : ils ne cachent ni le mineur

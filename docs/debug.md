@@ -6098,3 +6098,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
 - ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
 
+## 31/10/2026 — Chat : onglet à part sur téléphone (Geoffrey)
+- **Quoi** : `CHAT.dock.phone` (media query) ; `CHAT_TAB` et `tabFor` dans src/ui/nav.js, hors de `TABS` (ni touche ni bâtiment du Carreau) ; nav pose `body.phone` et `body.chatTab`. src/ui/chat-dock.js : `shut()` remplace le repli sur téléphone, `refresh` à chaque entrée ou sortie de l'onglet. Un seul chat (#gchatDock), déplacé en CSS. src/ui/town.js : test du chat replié par `getClientRects`, sinon la rue se calait sur le haut de l'écran.
+- **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
+- **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
+- **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.

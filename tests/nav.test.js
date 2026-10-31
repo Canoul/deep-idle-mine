@@ -82,3 +82,14 @@ test('Échap quitte l\'onglet ouvert pour l\'onglet Session, sauf si une fenêtr
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   for(const id of OVERLAYS) assert.match(html, new RegExp(`id="${id}"`), `fenêtre #${id} absente de index.html`);
 });
+
+test('onglet Chat : téléphone seulement, sans touche ; ailleurs il redonne le Lobby', async () => {
+  const { CHAT_TAB, TAB_KEYS, tabFor } = await import('../src/ui/nav.js');
+  assert.equal(CHAT_TAB.phone, true);
+  assert.ok(!TABS.some(t => t.id === CHAT_TAB.id), 'pas dans les onglets communs (touches, bâtiments)');
+  assert.equal(TABS.length, TAB_KEYS.length);
+  assert.equal(pickTab('#chat', null), 'chat');
+  assert.equal(tabFor('chat', true), 'chat');
+  assert.equal(tabFor('chat', false), 'lobby');
+  assert.equal(tabFor('stuff', false), 'stuff');
+});

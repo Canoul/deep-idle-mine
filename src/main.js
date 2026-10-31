@@ -287,6 +287,7 @@ nav = setupNav($('nav'), $('views'), id => {
   if(id==='inventaire'){ renderInventory(ui.inv, ui.fresh); nav?.badge('inventaire', false); }
   if(id==='skills') skills?.refresh();   // le bouton reset suit la session en cours
   if(id==='historique') historyTab?.refresh();
+  if(nav && (from==='chat' || id==='chat')) gchatDock.refresh();   // téléphone : le chat a son onglet (pas au tout début : il n'est pas encore créé, et il se règle tout seul)
   if(id==='session' && prisonActive(prison)) kickPrison();   // on regarde la prison : envois rapprochés tout de suite
   guide?.refresh();                      // « Regarde ton butin » : l'inventaire vient d'être ouvert
   if(id==='lobby') setTimeout(() => lobby.showMenu());   // cliquer sur Lobby rouvre le menu des activités (différé : le lobby n'est pas encore créé au tout début)
