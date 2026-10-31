@@ -994,6 +994,14 @@ def main():
     rect(cape, 6, 2, 4, 2, hexc('#6a3d92'))
     rect(cape, 7, 3, 2, 2, hexc('#ffd23f'))                # fermoir
     tex['cape_naingui'] = cape
+    # Cape inclusive (31/10/2026) : les six bandes du drapeau LGBT, col et fermoir comme la cape de Naingui
+    pride = [hexc(c) for c in ('#e40303', '#ff8c00', '#ffed00', '#008026', '#004dff', '#750787')]
+    cape_inc = blank()
+    for i in range(12):
+        rect(cape_inc, 5 - i // 3, 3 + i, 6 + 2 * (i // 3), 1, pride[i // 2])
+    rect(cape_inc, 6, 2, 4, 2, hexc('#f4f0e6'))
+    rect(cape_inc, 7, 3, 2, 2, hexc('#ffd23f'))
+    tex['cape_inclusive'] = cape_inc
 
     # ---- Roi Gobelin (27/10/2026, Geoffrey) : objets du coffre du Roi Gobelin ----
     gold, gold_hi, gold_lo = hexc('#ffd23f'), hexc('#fff1a8'), hexc('#b8860b')
@@ -1299,6 +1307,18 @@ def main():
     rect(sk_cape_f, 3, 7, 1, 2, hexc('#4a2a6b'))
     rect(sk_cape_f, 9, 7, 2, 1, hexc('#ffd23f'))                # fermoir
     tex['skins/naingui_cape_front'] = sk_cape_f
+    # Cape inclusive (31/10/2026) : même coupe, six bandes du drapeau
+    sk_inc = blank()
+    for y in range(7, 15):
+        x0 = 3 if y < 9 else 2
+        rect(sk_inc, x0, y, 11 - x0, 1, pride[(y - 7) * 6 // 8])
+    tex['skins/inclusive_cape'] = sk_inc
+    sk_inc_f = blank()
+    for x in range(3, 9):
+        rect(sk_inc_f, x, 7, 1, 1, pride[x - 3])
+    rect(sk_inc_f, 3, 8, 1, 1, pride[0])
+    rect(sk_inc_f, 9, 7, 2, 1, hexc('#ffd23f'))
+    tex['skins/inclusive_cape_front'] = sk_inc_f
     # butin rare des mobs (26/10/2026) : calques sur le corps
     skin_c, skin_d = hexc('#e0ac7d'), hexc('#c48e62')
     sk_straps = blank()                            # lanières du gobelin : torse nu, deux sangles des épaules le long des côtes

@@ -36,7 +36,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
-import { rollChestQuality, rollRune, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
+import { rollChestQuality, rollRune, rolledSpec, rollStats, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
@@ -1335,6 +1335,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const before = countOf(inv, item);
         const touched = addItem(inv, item, qty);
         if(quality !== undefined) for(const i of touched) inv.slots[i].q = quality;
+        if(rolledSpec(item)) for(const i of touched) Object.assign(inv.slots[i], rollStats(item, random));   // Cape inclusive : jamais sans ses lignes
         await store.putInventory(accountId, JSON.parse(serialize(inv)));
         return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
       });

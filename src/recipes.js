@@ -74,6 +74,8 @@ export const RECIPES = {
   'Doc Martins':         { cost: { 'Cuir de minotaure': 50, 'Thorium ingot': 4, 'Tissu sombre': 100 },          qty: 1, unlock: 'Doc Martins BP' },
   'Ceinture golémique':  { cost: { 'Pierre glissante': 50, 'Thorium ingot': 5, 'Vésicule de gaz': 100 },         qty: 1, unlock: 'Ceinture golémique BP' },
   'Gants de boucher':    { cost: { 'Rotten flesh': 50, 'Mithril ingot': 15, 'Peau de gobelin': 500 },          qty: 1, unlock: 'Gants de boucher BP' },
+  'Cape inclusive':      { cost: { 'Tainted iron': 20, 'Tainted gold': 20, 'Diamant': 20, 'Graphite ingot': 20, 'Steel ingot': 20, 'Mithril ingot': 20,
+                           'Thorium ingot': 20, 'Cobalt ingot': 20, 'Orbe supérieur': 5 }, qty: 1, unlock: 'Cape inclusive BP' },   // 31/10 (Geoffrey)
   'Jambières titanesques': { cost: { 'Cobalt ingot': 25, 'Thorium ingot': 25, 'Topaze': 1, 'Jade': 1, 'Saphir': 1, 'Rubis': 1,
                            'Shiny gold': 50 }, qty: 1, unlock: 'Jambières titanesques BP' },
   'Saphir':              { cost: { 'Diamant': 50, 'Saphir inférieur': 3 }, qty: 1, unlock: 'Saphir BP' },

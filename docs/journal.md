@@ -13,6 +13,22 @@ Modèle d'entrée :
 - **Pour le joueur** : un raffle toutes les 30 à 60 min au lieu de 45 à 120 min. Les horaires (8 h à 2 h) et les lots ne changent pas. L'annonce du gagnant donne le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »).
 - **État** : 🧪 sur la branche `geoffrey/raffle-cd` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Craft : plus d'onglet vide
+- **Pour le joueur** : dans le Craft, un onglet sans recette disponible n'est plus affiché. Il apparaît dès qu'une recette de sa catégorie est apprise.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Téléphone : le clavier ne s'ouvre plus tout seul au four
+- **Pour le joueur** : sur téléphone, ouvrir une case du four, ses recettes ou une case du concasseur n'ouvre plus le clavier chiffré : il faut toucher la case de quantité. Sur ordinateur, le curseur s'y place toujours.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
+- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki, et « Sortir de prison » devient « Sortir » pour que tout tienne dans l'écran.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune
+- **Pour le joueur** : la gemme violette est remplacée par la vraie texture, en petit : la rune, ou le fragment si la pièce porte un fragment.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
 - **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
 - **État** : ✅ en ligne le 31/10
@@ -21,6 +37,13 @@ Modèle d'entrée :
 - **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
 - **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
 - **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouvelle pièce : Cape inclusive
+- **Pour le joueur** : une cape épique aux couleurs du drapeau LGBT, avec 4 lignes de stats tirées au hasard quand on la fabrique et montrées dans le pop-up. Son plan sort du Treasure T4 (0,5 %) et de la dernière étape de la recherche, avec les Jambières titanesques. Le wiki la cache tant que son plan n'est pas sorti.
+- **Décisions** : 1 500 x au total (2 fois le T4.5), 375 x par ligne ; doublons permis, Découverte possible (une au plus). Tirage définitif. Valeurs provisoires.
+- **Décision** : mêmes ratios pour la cape, les runes et les fragments : vitesse d'attaque ÷ 5, butin des mobs ÷ 4, stats de combat, ténacité et résistance au recul ÷ 3, coup unique ÷ 2. **Toutes les pièces déjà runées changent**. Le perçage des runes remonte (÷ 3 au lieu de ÷ 4).
+- **À suivre** : avec des doublons, une cape peut rester forte sur une seule stat (au pire +76 % de vitesse d'attaque). À surveiller dans les tours.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Téléphone : le chat a son propre onglet

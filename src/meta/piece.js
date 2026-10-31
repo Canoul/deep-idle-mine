@@ -1,7 +1,8 @@
 /* Une pièce de stuff et ce qu'elle porte (onglet Amélioration) : qualité R1 à R7, lignes de stats tirées à
    l'identification, niveau d'amélioration (+1 à +9). Logique pure, partagée par le jeu et le serveur (qui fait foi).
 
-   Une pièce : { item, uid, q?, lines?, s?, plus?, rune? }  (s = barème des fourchettes, UPGRADE.scale ; absent = 1)
+   Une pièce : { item, uid, q?, lines?, s?, plus?, rune?, rolled? }  (s = barème des fourchettes, UPGRADE.scale ; absent = 1)
+   - rolled : noms des stats tirées au craft (STUFF.items[…].rolled, Cape inclusive, 31/10/2026) ; leurs valeurs viennent de la config.
    - rune : { q, lines, s } posée par l'Enchantement (une seule, définitive) ; ses lignes comptent comme celles de
      l'identification (% de la valeur de cette pièce), niveau compris.
    Une Rune (RUNE.item) est elle-même une pièce : { item:'Rune', uid, q, lines, s }, jamais sans qualité, sans niveau.
@@ -40,6 +41,14 @@ const stepOf = k => UPGRADE.steps[k] ?? 0.01;
 const decimals = s => Math.max(0, -Math.floor(Math.log10(s) + 1e-9));
 export const roundStat = (k, v) => +(Math.round(v / stepOf(k)) * stepOf(k)).toFixed(decimals(stepOf(k)));
 
+/* x par point d'une stat pour le GS : prix mesuré (worth, sinon gs ; sinon priceBase), SANS l'ajustement de Geoffrey.
+   28/10/2026 (Geoffrey) : l'ajustement (UPGRADE.priceAdjust) divise les points d'une stat pour 1 x quand on DESSINE une
+   pièce (une pièce de 250 x porte 3 fois moins de minage), mais le GS reste au prix mesuré : la stat ne bouge pas, sa
+   valeur en GS est divisée d'autant (pioche en fer : 0,4 × 1 300 = 520 GS, pas 1 560). Ancien (27/10) : GS × ajustement. */
+export const statPrice = k => (UPGRADE.worth[k] ?? (UPGRADE.gs[k] || UPGRADE.priceBase?.[k])) ?? 0;
+/* x par point pour dessiner une pièce (stats du tier 4, butin des mobs) : prix mesuré × UPGRADE.priceAdjust (27/10) */
+export const designPrice = k => statPrice(k) * (UPGRADE.priceAdjust?.[k] ?? 1);
+
 /* valeur de l'objet en x (UPGRADE.worth, catalogue mesuré) : ses bonus (stats) et ce que ses valeurs `set` apportent en
    plus de la base (l'épée en fer : 11 dégâts au lieu de 5 → 6 × 40 = 240 x). Une stat sans valeur ne compte pas.
    À ne pas confondre avec UPGRADE.prices, qui convertit une ligne (un % de cette valeur) en points de stat. */
@@ -71,9 +80,34 @@ export function rollQuality(rnd){
 const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
 export const lineValue = (item, l, f = 1) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct * f);
-/* ligne d'une rune ou d'un fragment (f : runeFactor) : ajustements offensifs UPGRADE.runeDiv (31/10/2026) */
+/* ligne d'une rune ou d'un fragment (f : runeFactor) : ratios UPGRADE.runeDiv (31/10/2026) */
 export const runeLineFactor = (l, f = 1) => f / (UPGRADE.runeDiv[l.stat] ?? 1);
 export const runeLineValue = (item, l, f = 1) => lineValue(item, l, runeLineFactor(l, f));
+
+/* stats tirées au craft (STUFF.items[…].rolled, Cape inclusive, 31/10/2026) */
+export const rolledSpec = item => (Object.hasOwn(STUFF.items, item) ? STUFF.items[item].rolled : null) ?? null;
+/* prix d'une ligne tirée : prix de dessin × le ratio de la stat (UPGRADE.runeDiv, 31/10/2026, Geoffrey).
+   Portée, sans prix mesuré : le prix du tableau des lignes, ajusté pareil */
+export const rolledPrice = stat => stat in UPGRADE.runeDiv
+  ? (designPrice(stat) || UPGRADE.prices[stat] * (UPGRADE.priceAdjust[stat] ?? 1)) * UPGRADE.runeDiv[stat] : designPrice(stat);
+/* points d'une ligne tirée au craft : sa part du x de l'objet (au moins un pas) ; Découverte : +1 */
+export const rolledValue = (item, stat) => { const r = rolledSpec(item);
+  return stat === 'discoverMax' ? UPGRADE.discover.value : Math.max(stepOf(stat), roundStat(stat, r.x / r.lines / rolledPrice(stat))); };
+/* tirage au craft : { rolled:[stats] } ; doublons permis, une Découverte au plus (comme une rune) */
+export function rollStats(item, rnd){
+  const rolled = [];
+  for(let i = 0; i < rolledSpec(item).lines; i++){
+    const pool = rolled.includes('discoverMax') ? UPGRADE.pool : [...UPGRADE.pool, 'discoverMax'];
+    rolled.push(pool[Math.floor(rnd() * pool.length)]);
+  }
+  return { rolled };
+}
+/* tirage plausible pour cet objet : le bon nombre, des stats connues, une Découverte au plus */
+function validRolled(item, rolled){
+  const r = rolledSpec(item);
+  return !!r && Array.isArray(rolled) && rolled.length === r.lines && rolled.filter(k => k === 'discoverMax').length <= 1
+    && rolled.every(k => k === 'discoverMax' || UPGRADE.pool.includes(k));
+}
 
 /* lignes d'une qualité : nombre de lignes, stat et % tirés. Découverte : en R6/R7, une au plus, tirée comme une stat de
    plus de la banque (même chance que les autres, 25/10/2026 ; avant : 25 % par ligne) */
@@ -142,6 +176,7 @@ export function pieceBonus(entry, extra = 1){
   const p = typeof entry === 'string' ? { item: entry } : entry || {};
   const d = ITEMS[p.item]; if(!d) return { stats:{}, set:{} };
   const m = plusMult(p.plus | 0) * (extra > 0 ? extra : 1), stats = { ...(d.stats || {}) }, set = {};
+  for(const k of p.rolled || []) stats[k] = (stats[k] || 0) + rolledValue(p.item, k);
   for(const l of p.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
   for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + runeLineValue(p.item, l, runeFactor(p.rune));
   for(const k in stats) stats[k] = m === 1 || stats[k] < 0 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);   // un malus n'empire pas (Lance, 25/10)
@@ -199,6 +234,7 @@ export function sanitizePiece(raw){
   const id = sanitizeLines(raw);            // ancien barème (avant le 22/10/2026) → ramené dans les fourchettes actuelles
   if(id) Object.assign(p, id);
   else if(qualityDef(raw.q) && (raw.lines === undefined || (Array.isArray(raw.lines) && raw.lines.length === 0))) p.q = raw.q;   // identifiée depuis le 22/10 : qualité seule
+  if(validRolled(raw.item, raw.rolled)) p.rolled = [...raw.rolled];
   if(raw.rune && typeof raw.rune === 'object'){ const r = sanitizeLines(raw.rune); if(r) p.rune = raw.rune.frag === true ? { ...r, frag: true } : r; }
   return { ...p, ...plus };
 }

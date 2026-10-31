@@ -7,15 +7,9 @@
    Pas comptés : les skills, les sorts, les glyphes ; les anneaux (effet de groupe) ; les stats sans prix en x
    (torches portées, pose des torches, lumière, portée de la boussole…). */
 import { STATS, UPGRADE } from '../config.js';
-import { pieceBonus, isRing } from './piece.js';
+import { pieceBonus, isRing, statPrice, designPrice } from './piece.js';
+export { statPrice, designPrice };
 
-/* x par point d'une stat pour le GS : prix mesuré (worth, sinon gs ; sinon priceBase), SANS l'ajustement de Geoffrey.
-   28/10/2026 (Geoffrey) : l'ajustement (UPGRADE.priceAdjust) divise les points d'une stat pour 1 x quand on DESSINE une
-   pièce (une pièce de 250 x porte 3 fois moins de minage), mais le GS reste au prix mesuré : la stat ne bouge pas, sa
-   valeur en GS est divisée d'autant (pioche en fer : 0,4 × 1 300 = 520 GS, pas 1 560). Ancien (27/10) : GS × ajustement. */
-export const statPrice = k => (UPGRADE.worth[k] ?? (UPGRADE.gs[k] || UPGRADE.priceBase?.[k])) ?? 0;
-/* x par point pour dessiner une pièce (stats du tier 4, butin des mobs) : prix mesuré × UPGRADE.priceAdjust (27/10) */
-export const designPrice = k => statPrice(k) * (UPGRADE.priceAdjust?.[k] ?? 1);
 /* x par point pour le GS (28/10/2026, Geoffrey) : les stats offensives (UPGRADE.gsFromPrices) au prix du tableau des
    lignes (prices, celui des runes), les autres au prix mesuré (statPrice) */
 export const gsPrice = k => UPGRADE.gsFromPrices?.includes(k) && Number.isFinite(UPGRADE.prices[k]) ? UPGRADE.prices[k] : statPrice(k);

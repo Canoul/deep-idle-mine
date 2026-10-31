@@ -28,6 +28,7 @@ export const SKIN = {
     'Plastron de l\'équilibre': 'skins/balance_chest',  // moitié blanc angélique, moitié rouge démoniaque
     'Ceinture en peau de gobelin': 'skins/goblin_belt', // bande verte, boucle dorée
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
+    'Cape inclusive':      'skins/inclusive_cape_front', // devant : col aux couleurs du drapeau, fermoir doré
     /* butin rare des mobs (26/10/2026, MOB_DROPS) */
     'Lanières en cuir du gobelin': 'skins/goblin_straps', // torse nu, deux sangles de cuir des épaules le long des côtes
     'Kilt ténébreux':      'skins/dark_kilt',          // kilt violet plissé, ceinture dorée
@@ -44,6 +45,7 @@ export const SKIN = {
   /* calques dessinés DERRIÈRE le corps (même ordre de cases), ex. le dos d'une cape */
   back: {
     'Cape de Naingui':     'skins/naingui_cape',       // tissu sombre violet, jusqu'aux chevilles
+    'Cape inclusive':      'skins/inclusive_cape',     // six bandes du drapeau LGBT
     'Cape royale du Gobelin':  'skins/goblin_royal_cape', // velours rouge, bordure laineuse blanche (hermine)
   },
 

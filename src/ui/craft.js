@@ -7,7 +7,6 @@ import { statsText } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { rcls, rname } from './rarity.js';
 import { tabOf, tabsHtml } from './inventory.js';
-import { INVENTORY } from '../config.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -23,12 +22,14 @@ export function setupCraft({ onCraft }){
 
   function render(){
     /* seulement les recettes débloquées : celles à blueprint restent secrètes tant qu'on ne l'a pas utilisé */
-    const known = craftable(inv), list = recipesIn(known, tab);
-    $('craftTabs').innerHTML = tabsHtml(tab, known, 'recette');
+    const known = craftable(inv);
+    if(!recipesIn(known, tab).length) tab = 'all';
+    const list = recipesIn(known, tab);
+    $('craftTabs').innerHTML = tabsHtml(tab, known, 'recette', known.length, true);
     if(!sel || !list.includes(sel)) sel = list[0] ?? null;
     $('craftList').innerHTML = list.map(n =>
       `<button class="slot craftItem${rcls(n)}${n === sel ? ' sel' : ''}${canCraft(inv, n) ? ' ready' : ''}" data-item="${esc(n)}"${tipAttr(n)}>${icon(n)}</button>`).join('')
-      || (known.length ? `<p class="mut">Aucune recette dans « ${esc(INVENTORY.tabs.find(t => t.id === tab)?.name ?? '')} ».</p>` : '<p class="mut">Aucune recette pour l\'instant.</p>');
+      || '<p class="mut">Aucune recette pour l\'instant.</p>';
     if(!sel){ $('craftInfo').innerHTML = ''; return; }
     const r = recipeOf(sel), ok = canCraft(inv, sel);
     $('craftInfo').innerHTML =

@@ -6089,7 +6089,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/inventory-arrange.test.js`, `tests/anticheat/arrange.test.js`.
 
 ## 31/10/2026 — Craft : onglets par catégorie (Geoffrey)
-- **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
+- **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`. Onglets vides cachés dans le Craft (`hideEmpty`, grisés dans l'inventaire) ; onglet ouvert devenu vide : retour à Tout.
 - **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
 
 ## 31/10/2026 — Plastron de l'équilibre : pods 188 → 112 (Geoffrey)
@@ -6102,6 +6102,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
 - ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
 
+## 31/10/2026 — Pièces runées : texture à la place de la gemme (Geoffrey)
+- **Quoi** : `runeMark` (src/ui/rarity.js) rend un `<span>` avec `RUNE.tex` ou `RUNE.fragment.tex` en image de fond (`p.rune.frag`), et plus l'icône `gem`. Un `<span>` car les `<img>` des cases et des listes reçoivent des tailles de style.css (dont `#spick img`). `--rune` retiré. Remplace l'entrée précédente pour l'apparence.
+- **Tests** ✅ tests/rune-mark.test.js. ✅ Rendu vérifié dans Chrome sur une page de test (rune, fragment, avec et sans +N, ligne de liste).
+- ⚠️ Toujours pas vu en partie réelle. Le chemin `textures/…` de l'image de fond est relatif à index.html : à regarder si l'image manque.
+
 ## 31/10/2026 — Chat : onglet à part sur téléphone (Geoffrey)
 - **Quoi** : `CHAT.dock.phone` (media query) ; `CHAT_TAB` et `tabFor` dans src/ui/nav.js, hors de `TABS` (ni touche ni bâtiment du Carreau) ; nav pose `body.phone` et `body.chatTab`. src/ui/chat-dock.js : `shut()` remplace le repli sur téléphone, `refresh` à chaque entrée ou sortie de l'onglet. Un seul chat (#gchatDock), déplacé en CSS. src/ui/town.js : test du chat replié par `getClientRects`, sinon la rue se calait sur le haut de l'écran.
 - **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
@@ -6112,3 +6117,22 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RAFFLE.everyMin` 30 min, `everyMax` 60 min (avant 45 et 120). `lateMax` inchangé (75 min). Le `nextAt` déjà enregistré en ligne reste valable : le nouveau délai s'applique à partir du raffle suivant.
 - Annonce du gagnant : ` sur N participant(s)` ajouté dans `draw` (server/social/raffle.js).
 - **Tests** ✅ `tests/raffle.test.js`, `tests/admin-raffle.test.js`.
+
+## 31/10/2026 — Cape inclusive : stats tirées au craft (Geoffrey)
+- **Quoi** : `STUFF.items['Cape inclusive'].rolled = { lines:4, x:1500 }`. Pièce : champ `rolled` (noms des stats), valeurs recalculées depuis la config (`rolledValue`, src/meta/piece.js). `craft()` tire avec le hasard du serveur et renvoie `pieces` ; sans `rng`, refus avant de rien retirer. `sanitizePiece` retire un tirage trafiqué. `adminGive` tire aussi. `statPrice` et `designPrice` déplacés dans piece.js, réexportés par gearscore.js.
+- **Prix** : `rolledPrice` = `designPrice` × `UPGRADE.runeDiv`, table commune avec les runes et fragments (`runeLineFactor`). Les runes partent de `UPGRADE.prices`, la cape du prix de dessin : même ratio, valeurs différentes. La Portée, à `designPrice` 0, aurait valu Infinity : elle part de `prices` × `runeDiv` ; son GS reste 0, un tirage avec Portée affiche moins de x.
+- **Tests** : tests/cape-inclusive (nouveau), research, tier4, rarity ; anticheat 122 ✅. Chrome sans interface : plan appris, craft, pop-up, port et skin, aucune erreur de page ✅.
+- **Déjà faux avant ⚠️** : tests/tier4 « recettes du T4 » attend l'ancienne recette de la Clé d'instance I.
+- **Fragile** : une cape sans `rolled` n'a aucun effet (ne devrait pas exister, tous les chemins tirent). Une demande de craft rejouée ne renvoie pas la pièce : le pop-up affiche alors le texte générique.
+
+## 31/10/2026 — Téléphone : clavier ouvert tout seul (Geoffrey)
+- **Quoi** : `qty.focus()` à l'ouverture des fenêtres du four (2) et du concasseur (1) remplacé par `focusUnlessTouch` (src/ui/touch-focus.js, `(hover: none)`, même test que src/ui/inventory.js).
+- **Tests** ✅ `tests/focus-touch.test.js`. ⚠️ Pas essayé sur un vrai téléphone.
+
+## 31/10/2026 — Lien du Discord dans le bandeau (Geoffrey)
+- **Quoi** : un `<a class="navWiki">` de plus dans `.topbar` (index.html), icône `bubbles`, invitation https://discord.gg/waGJg9RJDy. Même lien dans wiki.html, rubrique Les onglets.
+- **Tests** ✅ tests/lien-discord.test.js. ✅ Bandeau rendu dans Chrome avec le vrai style.css et le pire cas (pseudo, session, énergie, prison) : tient à 1400, 1200 et 1000 px.
+- ⚠️→✅ À 390 px avec une prison en cours, « Sortir de prison » était coupé et les liens Wiki et Discord sortaient de l'écran. Corrigé : `.navLong` / `.navShort` dans `#navPrisonStop`, « Sortir » sous 700 px. Rendu Chrome à 390, 360 et 320 px (niveau, chrono, énergie, prison) : tous les éléments dans l'écran, le pseudo se raccourcit (`.who b`, points de suspension).
+- ⚠️ Pas essayé sur un vrai téléphone.
+- ⚠️ L'invitation n'a pas été testée ; si elle expire, c'est le lien à changer dans index.html et wiki.html (et le test).
+

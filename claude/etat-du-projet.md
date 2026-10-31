@@ -52,7 +52,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
 - **Canaux du chat global** (31/10, Geoffrey) : Général, MP, Groupe, Commerce, LFG, onglets par compte (ns `chat_prefs`, src/ui/chat-tabs.js).
 - **Plafond de la prison** (31/10, Geoffrey ; provisoire) : `PRISON.oreCap`, cobalt et thorium 0,4 % maximum chacun de la répartition des minerais, surplus redonné aux autres minerais.
 - **Mobs de l'area 7** (31/10, Geoffrey ; `MOBS.chien`, `MOBS.ver`, `MOBS.bleed`, src/sim/worm.js, src/sim/bleed.js) : Chien de magma (Bleed au tacle) ; Vers de terre rangé dans `G.worms` tant qu'il navigue (inciblable), dans `G.mobs` seulement coincé.
-- **Lignes de rune** (31/10, Geoffrey ; `UPGRADE.runeDiv`) : stats offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4, sur les runes et fragments seulement (**ancien** : pas de division).
+- **Lignes de rune** (31/10 au soir, Geoffrey ; `UPGRADE.runeDiv`) : vitesse d'attaque ÷ 5, butin ÷ 4, dégâts, dégâts %, double attaque, critique, perçage, portée, recul, ténacité, résistance au recul ÷ 3, coup unique ÷ 2, sur les runes, les fragments et la Cape inclusive (**ancien** : stats offensives ÷ 2, dégâts % ÷ 3, perçage ÷ 4 ; avant : pas de division).
 - **Shrine héroïque** (31/10, Geoffrey ; `SHRINES.list.heroique`) : remplace le choix du niveau 2 des tours (niveau 2 = **ancien** au choix) : 30 Orbes, deux tours, cumulable avec une stèle, une charge prise à la victoire, 25 % de 2e boîte par joueur ; une seule victoire par ouverture (**ancien** : une par niveau).
 - **Mines au focus minerai et prison** (31/10, Geoffrey) : `PRISON.focusRef`, dès 6 areas débloquées une mine où un joueur du groupe a visé un minerai compte dans le profil pour la répartition de Nbrick, LeTaz et Akake ; compos gardées refaites une fois (`PRISON.compoVersion`), compo enregistrée effacée pour ces joueurs.
 - **Prison** (29/10, Geoffrey ; 🧪 branche `geoffrey/prison`, pas en ligne ; config `PRISON`, `src/sim/prison.js`,
@@ -324,7 +324,7 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   Table de recherche **tier 3** (en ligne le 23/10) : **200 parts** (26/10 ; ancien : 150), plans du T3, plan
   épique 4 fois moins probable (poids 0,25), recyclage **45 à 60** (28/10 ; ancien 40 à 70). (Ancien : pas de tier 3.)
   **Tier 4** (28/10, Geoffrey) : **250 parts**, plans du 1er jet du Treasure T4, ouvert quand toutes les recettes des
-  tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques,
+  tiers 1 à 3 sont apprises, **en 3 étapes** (mithril + pièces spéciales → thorium et cobalt → Jambières titanesques et Cape inclusive,
   chaque étape ouverte quand les recettes de la précédente sont apprises), recyclage **60 à 75** ; tier 2 : recyclage **30 à 45** (28/10 ; ancien 40 à 70).
 - **Gallianix** (23/10, Geoffrey ; en ligne le 23/10) : canard de la surface, un par
   area débloquée en session, pseudo pris dans une liste en boucle (`DUCK.names`), 50 PV, ne tacle pas, ne tombe jamais
@@ -556,3 +556,4 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).
 
 - **Chat sur téléphone** (31/10, Geoffrey ; `CHAT.dock.phone`) : onglet Chat plein écran, sur téléphone seulement ; ailleurs, chat flottant inchangé.
+- **Cape inclusive** (31/10, Geoffrey ; épique, T4.5) : 4 stats tirées au craft (champ `rolled` de la pièce), 375 x chacune au prix de dessin ÷ les ratios de `UPGRADE.runeDiv`, doublons et Découverte possibles ; plan à 0,5 % dans le Treasure T4 et à la dernière étape de la recherche ; dans `WIKI.secret`.

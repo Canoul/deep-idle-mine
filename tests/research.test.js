@@ -169,7 +169,7 @@ test('tier 4 : fermé tant qu\'une recette des tiers 1 à 3 manque ; 250 parts �
 /* tier 4 en trois étapes (28/10/2026, Geoffrey) : mithril + pièces spéciales, puis thorium et cobalt, puis les Jambières */
 test('tier 4 : étapes = tous les plans du 1er jet du Treasure T4, chacun une fois', () => {
   const stages = RESEARCH.tiers.find(t => t.tier === 4).stages;
-  assert.deepEqual(stages.map(s => s.length), [8, 8, 1]);
+  assert.deepEqual(stages.map(s => s.length), [8, 8, 2]);
   assert.deepEqual([...stages.flat()].sort(), [...tierBlueprints(4)].sort());
   for(const bp of stages.flat()) assert.ok(RECIPES[Object.keys(RECIPES).find(r => RECIPES[r].unlock === bp)], bp + ' débloque une recette');
 });
@@ -186,7 +186,7 @@ test('tier 4 : on tire dans l\'étape en cours ; la suivante s\'ouvre quand tout
   assert.deepEqual(researchStage(s2, 4), { index:1, count:3, pool:S2.slice(3) }, 'les plans appris via un trésor sortent du tirage');
   const s3 = knowsTiers(T1, T2, T3, S1, S2);
   addAll(s3, { [PARTS]:250 });
-  assert.equal(research(s3, 4, id(), fixed(0.5)).item, S3[0], 'dernière étape : les Jambières à coup sûr');
+  assert.ok(S3.includes(research(s3, 4, id(), fixed(0.5)).item), 'dernière étape : Jambières ou Cape inclusive');
   const all = knowsTiers(T1, T2, T3, S1, S2, S3); addAll(all, { [PARTS]:250 });
   assert.equal(researchStage(all, 4), null);
   assert.equal(research(all, 4, id(), fixed(0)).error, 'nothing_left');
