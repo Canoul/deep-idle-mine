@@ -634,7 +634,7 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 
 ### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
 
-Tirage au sort dans le chat global, 30 à 60 min après la fin du précédent, de **8 h à 2 h** (heure de Paris). Tombé la nuit : entre 8 h et 9 h 15. Le lot est annoncé dans Général ; on a **40 s** pour taper `!join`, jamais publié, avec une réponse visible par le joueur seul (inscrit, déjà inscrit, pas de raffle, pseudo requis). Un seul gagnant, tiré parmi les inscrits, annoncé à tous. Sans inscrit, le lot est perdu et le chat le dit. Réservé aux comptes avec un pseudo.
+Tirage au sort dans le chat global, 30 à 60 min après la fin du précédent, de **8 h à 2 h** (heure de Paris). Tombé la nuit : entre 8 h et 9 h 15. Le lot est annoncé dans Général ; on a **40 s** pour taper `!join`, jamais publié, avec une réponse visible par le joueur seul (inscrit, déjà inscrit, pas de raffle, pseudo requis). Un seul gagnant, tiré parmi les inscrits, annoncé à tous avec le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »). Sans inscrit, le lot est perdu et le chat le dit. Réservé aux comptes avec un pseudo.
 
 | Chance | Lot |
 |---|---|

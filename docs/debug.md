@@ -6110,4 +6110,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Raffle : délai 30 à 60 min (Geoffrey)
 - **Quoi** : `RAFFLE.everyMin` 30 min, `everyMax` 60 min (avant 45 et 120). `lateMax` inchangé (75 min). Le `nextAt` déjà enregistré en ligne reste valable : le nouveau délai s'applique à partir du raffle suivant.
+- Annonce du gagnant : ` sur N participant(s)` ajouté dans `draw` (server/social/raffle.js).
 - **Tests** ✅ `tests/raffle.test.js`, `tests/admin-raffle.test.js`.

@@ -10,7 +10,7 @@ Modèle d'entrée :
 
 ```
 ## 31/10/2026 — Geoffrey — Raffle plus fréquent
-- **Pour le joueur** : un raffle toutes les 30 à 60 min au lieu de 45 à 120 min. Les horaires (8 h à 2 h) et les lots ne changent pas.
+- **Pour le joueur** : un raffle toutes les 30 à 60 min au lieu de 45 à 120 min. Les horaires (8 h à 2 h) et les lots ne changent pas. L'annonce du gagnant donne le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »).
 - **État** : 🧪 sur la branche `geoffrey/raffle-cd` (pas en ligne)
 
 ## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
