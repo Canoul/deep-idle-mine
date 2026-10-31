@@ -221,7 +221,7 @@ export function activityMenu(modes, { towerOpen = false, prisonOn = false } = {}
   });
 }
 
-/* Cartes visibles du lobby. view 'jugement' : les jauges à gauche, l'équipe à droite comme pour la Mine (25/10), mais
+/* Cartes visibles du lobby. view 'jugement' : les jauges et les sets à gauche, l'équipe à droite comme pour la Mine (25/10), mais
    rien ne se lance d'ici (pas de Lancer, de préférences ni de réglages dev). Mine instantanée : sa carte d'inscription
    à la place de l'équipe. dev : réglages dev permis (mode dev, celui qui lance, hors session). */
 export function lobbyCards({ view, mode, dev = false }){

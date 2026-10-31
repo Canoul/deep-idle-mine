@@ -244,11 +244,14 @@ test('un message de 18 h ou plus disparaît : plus envoyé, plus enregistré, pl
   assert.equal(freshMessages([{ at: 0 }, { at: 5 }], CHAT.maxAgeMs + 1).length, 1);
 });
 
-test('chat permanent : hauteur de départ 40 %, bornée quand on la règle', async () => {
-  const { dockShare } = await import('../src/ui/chat-dock.js');
+test('chat permanent : hauteur de départ 60 %, bornée quand on la règle ; largeur bornée', async () => {
+  const { dockShare, dockWidth } = await import('../src/ui/chat-dock.js');
   const { CHAT } = await import('../src/config.js');
-  assert.equal(CHAT.dock.share, 0.4);
-  assert.equal(dockShare(undefined), 0.4); assert.equal(dockShare(NaN), 0.4); assert.equal(dockShare('x'), 0.4);
+  assert.equal(CHAT.dock.share, 0.6);
+  assert.equal(dockShare(undefined), 0.6); assert.equal(dockShare(NaN), 0.6); assert.equal(dockShare('x'), 0.6);
+  assert.equal(dockWidth(500, 1920), 500);
+  assert.equal(dockWidth(1, 1920), CHAT.dock.minWidth); assert.equal(dockWidth(1900, 1000), 1000 * CHAT.dock.maxWidth);
+  assert.equal(dockWidth(undefined, 1920), null); assert.equal(dockWidth('x', 1920), null);
   assert.equal(dockShare(0.55), 0.55);
   assert.equal(dockShare(0), CHAT.dock.min); assert.equal(dockShare(1), CHAT.dock.max);
 });

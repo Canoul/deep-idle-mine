@@ -396,24 +396,29 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
    jusqu'aux onglets) ; il montre ses 8 dernières lignes et la page défile */
 @media (max-width:700px){#log,.miLog{max-height:none;overflow:visible} #log div:nth-child(n+9),.miLog div:nth-child(n+9){display:none}}
 /* chat de session et chat global du lobby (src/ui/chat.js) */
-.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,40dvh);display:flex;flex-direction:column}
+.chatDock{position:fixed;left:0;bottom:0;z-index:35;width:var(--chat-w);height:var(--chat-h,60dvh);display:flex;flex-direction:column}
 .chatDock.folded{height:auto}
-.chatGrip{position:relative;z-index:2;flex:none;height:calc(4*var(--u));cursor:ns-resize;background:var(--acc);touch-action:none}
-.chatDock.folded .chatGrip,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
-.chatDock .card{flex:1;min-height:0;margin:calc(7*var(--u)) 0 0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
+/* bordures à tirer, invisibles, à cheval sur le bord de la boîte (src/ui/chat-dock.js) */
+.chatEdge{position:absolute;z-index:2;touch-action:none}
+.chatEdge.top{left:0;right:0;top:-6px;height:12px;cursor:ns-resize}
+.chatEdge.right{top:0;bottom:0;right:-6px;width:12px;cursor:ew-resize}
+.chatEdge.corner{top:-6px;right:-6px;width:16px;height:16px;cursor:nesw-resize}
+.chatDock.folded .chatEdge,.chatDock.folded .chatLog,.chatDock.folded .chatForm,.chatDock.folded #gchatNote{display:none}
+.chatDock .card{flex:1;min-height:0;margin:0;display:flex;flex-direction:column;background:rgba(11,8,6,.92)}
 .chatDock h2{display:flex;align-items:center;gap:calc(2*var(--u))}
 .chatFold{margin-left:auto;min-height:0;min-width:calc(12*var(--u));height:calc(10*var(--u));padding:0}
 #gchatLog{flex:1;min-height:0;max-height:none}
-body{--chat-w:calc(115*var(--u))}
+body{--chat-w:calc(287.5*var(--u))}
 @media (min-width:1171px){   /* le contenu et la barre d'action se décalent : rien ne passe sous le chat */
   body.chatOn .views{margin-left:var(--chat-w)}
   body.chatOn .dock{left:calc(50% + var(--chat-w)/2);gap:0}
   body.chatOn #miRun,body.chatOn #twRun,body.chatOn #gtRun,body.chatOn #inRun{left:var(--chat-w)}
-  body.chatOn #run .runL{margin-bottom:var(--chat-h,40dvh)!important}   /* la mine garde sa largeur : la colonne de gauche s'arrête au-dessus du chat */
+  body.chatOn #run .runL{margin-bottom:var(--chat-h,60dvh)!important}   /* la mine garde sa largeur : la colonne de gauche s'arrête au-dessus du chat */
 }
 @media (min-width:1171px) and (max-width:1320px){ body.chatOn .dock .orb{display:none} }
 @media (max-width:1170px){
   .chatDock{width:100%;bottom:calc(var(--dock-h) + 2*var(--u))}
+  .chatEdge.right,.chatEdge.corner{display:none}   /* toute la largeur de l'écran */
   .chatDock.folded{width:calc(70*var(--u))}
   .guide{bottom:calc(var(--dock-h) + 30*var(--u))}   /* au-dessus du chat replié */
 }

@@ -64,6 +64,17 @@
   <div class="actHead"><button id="lobbyBack">← Activités</button><h2 id="actTitle"></h2></div>
   <div class="lobbyCols">
   <div class="lobbyCol">
+  <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
+  <div class="card" id="judgmentCard" hidden>
+    <h2><i data-pxi="radiance"></i>Ange contre Démon <i data-qhelp="judgment"></i></h2>
+    <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
+    <div class="seg" id="towerModes" hidden></div>
+  </div>
+  <!-- Instances (27/10) : liste des instances, clés (src/ui/lobby.js) -->
+  <div class="card instCard" id="instCard" hidden>
+    <h2>🗝 Instances</h2>
+    <div id="instBody"></div>
+  </div>
   <!-- sets (src/ui/sets.js) : la même liste que dans Stuff, Skills et Sorts, pour équiper un set avant de lancer -->
   <div class="card setsCard lobbySets">
     <h2>Sets</h2>
@@ -85,12 +96,6 @@
   </div>
   </div>
   <div class="lobbyCol">
-  <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
-  <div class="card" id="judgmentCard" hidden>
-    <h2><i data-pxi="radiance"></i>Ange contre Démon <i data-qhelp="judgment"></i></h2>
-    <div id="judgmentBody"><p class="mut small">Chargement…</p></div>
-    <div class="seg" id="towerModes" hidden></div>
-  </div>
   <!-- mine instantanée : compte à rebours et inscription (src/ui/instant-lobby.js) -->
   <div class="card miCard" id="miCard" hidden>
     <h2>Mine instantanée</h2>
@@ -130,11 +135,6 @@
       <input id="joinCode" placeholder="K7Q4P2" autocomplete="off" spellcheck="false" maxlength="10"><button>Rejoindre</button></div></form>
     <p class="mut" id="lobbyInfo"></p>
     <div class="towerWho" id="towerWho" hidden></div>
-  </div>
-  <!-- Instances (27/10) : liste des instances, clés (src/ui/lobby.js) -->
-  <div class="card instCard" id="instCard" hidden>
-    <h2>🗝 Instances</h2>
-    <div id="instBody"></div>
   </div>
   <!-- shrines : sous « Ton groupe », mine classique seulement (src/ui/lobby.js) -->
   <div class="card shrinesCard" id="shrinesCard" hidden>
@@ -436,7 +436,7 @@
 </div>
 <!-- chat global (31/10) : toujours là, à gauche et en bas, quel que soit l'onglet ; hauteur réglable (src/ui/chat-dock.js) -->
 <aside id="gchatDock" class="chatDock" hidden>
-  <div class="chatGrip" id="gchatGrip" title="Glisser pour régler la hauteur"></div>
+  <div class="chatEdge top" data-edge="h"></div><div class="chatEdge right" data-edge="w"></div><div class="chatEdge corner" data-edge="hw"></div>
   <div class="card" id="gchatCard"><h2>Chat global <i data-qhelp="gchat"></i><button class="chatFold" id="gchatFold" title="Replier ou déplier le chat">–</button></h2><div id="gchatLog" class="chatLog" aria-live="polite"></div>
     <form id="gchatForm" class="chatForm"><input id="gchatInput" autocomplete="off" placeholder="Message à tous les joueurs…" title="Écrire à tous les joueurs du jeu"><button>Envoyer</button></form>
     <div id="gchatNote" class="mut small"></div></div>

@@ -531,7 +531,7 @@ window.addEventListener('dim:banned', showBan);
 const chat = setupChat({ get: after => gameApi.chat(after), post: text => gameApi.say(text), meId: () => acct.account?.id, onWarning });
 /* chat global (28/10 ; permanent depuis le 31/10, src/ui/chat-dock.js) : tous les joueurs, même en session ; pas relu quand il
    est replié ou que la page est cachée */
-const gchatDock = setupChatDock({ dock: $('gchatDock'), grip: $('gchatGrip'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
+const gchatDock = setupChatDock({ dock: $('gchatDock'), edges: $('gchatDock').querySelectorAll('.chatEdge'), fold: $('gchatFold'), onChange: () => { gchat?.toEnd(); if(!gchatDock?.folded) gchat?.poke(); } });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: text => socialApi.say(text), meId: () => acct.account?.id, onWarning,
                           paused: () => document.hidden || gchatDock.folded, time: true });
 

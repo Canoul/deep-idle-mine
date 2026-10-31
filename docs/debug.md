@@ -5779,3 +5779,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ lobby +2, level +1, chat +1, town, prison-ui, dev-spec. Navigateur ✅ Chrome sans écran, mode dev, 1920, 1366, 1200 et 390 px : les 6 activités, tour puis retour, glissé du chat, aucune erreur console. Bug trouvé ainsi : le bandeau-titre de la carte captait le clic sur la barre.
 - **Session** : `#run` est fixe et ignore `.views` ; `.runL` reçoit `margin-bottom: var(--chat-h)` (`!important` contre `clearDock`, src/main.js). `#miRun`, `#twRun`, `#gtRun`, `#inRun` se décalent de `--chat-w`. `--chat-h` est posé sur `<html>`. Session dev vérifiée ✅ à 1366 px, tour, instance et MI en direct non vérifiées ⚠️.
 - ⚠️ Non vérifié : un vrai téléphone, un groupe à plusieurs comptes. Ordre fragile : le lien `#jugement` passe par `showMenu` puis `showJudgment`, ordre fixé par deux `setTimeout`.
+
+## 31/10/2026 — Lobby : chat réglable par ses bordures, Instance et Jugement à gauche (Geoffrey)
+- **Chat** : barre orange `.chatGrip` retirée ; bordures invisibles `.chatEdge` (haut, droite, coin), `dockWidth` (src/ui/chat-dock.js),
+  `CHAT.dock` minWidth / maxWidth. Départ : largeur × 2,5 (115 → 287,5 u), hauteur 40 → 60 %. Clé locale `chatDock2` pour oublier l'ancienne hauteur.
+- **Instance, Jugement** : `#judgmentCard` et `#instCard` en tête de la colonne de gauche du lobby, sets juste dessous (index.html).
+- **Tests** ✅ chat, lobby. ⚠️ Écrans de 1171 à 1400 px : le chat prend beaucoup de largeur au contenu, à regarder.
+

@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 /* Lobby : places affichées et bouton Lancer, depuis l'état du groupe envoyé par le serveur (logique pure). */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -203,3 +204,10 @@ test('menu du Lobby : en session, la Mine reste ouverte pour voir son groupe ; p
   const group = activityMenu(mineModes('mine', false, null, false, 2), { prisonOn: true }).find(a => a.id === 'prison');
   assert.equal(group.disabled, true); assert.ok(group.hint); assert.equal(group.note, 'en cours');
 });
+
+test('Instance et Jugement : leur carte en haut de la colonne de gauche, les sets juste dessous', () => {
+  const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const col = html.indexOf('class="lobbyCol"'), jug = html.indexOf('id="judgmentCard"'), inst = html.indexOf('id="instCard"'), sets = html.indexOf('lobbySets"');
+  assert.ok(col < jug && col < inst && jug < sets && inst < sets);
+});
+
