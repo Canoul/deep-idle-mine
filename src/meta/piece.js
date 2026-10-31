@@ -71,6 +71,9 @@ export function rollQuality(rnd){
 const pct1 = v => Math.round(v * 10) / 10;
 /* valeur d'une ligne sur cet objet, en points de sa stat */
 export const lineValue = (item, l, f = 1) => l.stat === 'discoverMax' ? UPGRADE.discover.value : linePoints(item, l.stat, l.pct * f);
+/* ligne d'une rune ou d'un fragment (f : runeFactor) : ajustements offensifs UPGRADE.runeDiv (31/10/2026) */
+export const runeLineFactor = (l, f = 1) => f / (UPGRADE.runeDiv[l.stat] ?? 1);
+export const runeLineValue = (item, l, f = 1) => lineValue(item, l, runeLineFactor(l, f));
 
 /* lignes d'une qualité : nombre de lignes, stat et % tirés. Découverte : en R6/R7, une au plus, tirée comme une stat de
    plus de la banque (même chance que les autres, 25/10/2026 ; avant : 25 % par ligne) */
@@ -140,7 +143,7 @@ export function pieceBonus(entry, extra = 1){
   const d = ITEMS[p.item]; if(!d) return { stats:{}, set:{} };
   const m = plusMult(p.plus | 0) * (extra > 0 ? extra : 1), stats = { ...(d.stats || {}) }, set = {};
   for(const l of p.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l);
-  for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + lineValue(p.item, l, runeFactor(p.rune));
+  for(const l of p.rune?.lines || []) stats[l.stat] = (stats[l.stat] || 0) + runeLineValue(p.item, l, runeFactor(p.rune));
   for(const k in stats) stats[k] = m === 1 || stats[k] < 0 ? roundStat(k, stats[k]) : roundStat(k, stats[k] * m);   // un malus n'empire pas (Lance, 25/10)
   for(const [k, v] of Object.entries(d.set || {})) set[k] = m === 1 ? v : roundStat(k, STATS[k] + (v - STATS[k]) * m);
   return { stats, set };

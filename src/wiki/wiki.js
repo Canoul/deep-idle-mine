@@ -151,6 +151,7 @@ function upgrade(){
     tr([`<b>R${r.q}</b> <b style="color:${esc(r.color)};text-shadow:0 0 2px #000,0 0 2px #000">${esc(r.label)}</b>`, num(r.lines),
         num(`${f(r.min)} à ${f(r.max)} %`), num(`${f(r.total)} %`)]))) +
     `<p class="small mut">En % de la valeur du tier de la pièce enchantée. En R6 et R7, une ligne peut être « +1 Découverte » à la place.</p>` +
+    `<p>Les <b>stats de combat</b> d'une rune comptent moins : dégâts, vitesse d'attaque, double attaque, critique, portée et recul <b>÷ 2</b>, dégâts % <b>÷ 3</b>, perçage <b>÷ 4</b>.</p>`+
     `<p>On peut <b>retirer une rune</b> d'une pièce (onglet Amélioration, gratuit) : elle revient dans l'inventaire en <b>Fragment de rune</b>, même qualité et mêmes lignes, mais <b>chaque % est divisé par 2</b> (la ligne +1 Découverte ne change pas). Un fragment se pose comme une rune ; une fois posé, il ne se retire plus.</p>`;
   const total = D.upgradeTotal();
   $('w-upgrade').innerHTML = table(['Niveau', '#Bonus sur toutes les stats', '#Réussite', 'Coût d\'un essai'], D.upgradeRows().map(r =>

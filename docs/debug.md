@@ -6011,3 +6011,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Correctif** (src/ui/style.css, sous 1170 px) : `.topbar` sans débordement, pseudo qui se raccourcit, sans titre ni barre de session ; pas de « aucune » sans session (sous 700 px) ; barre d'onglets qui défile ; chat replié sur une ligne ; guide caché chat ouvert.
 - **Vérifié** ✅ Chrome en téléphone simulé, 360 × 780, 390 × 844, 844 × 390, 1024 × 768, 1400 × 900 : page à la largeur de l'écran, marges égales, sans erreur ; onglets Lobby, Session, Inventaire, Stuff, Craft, Skills, Social. ⚠️ Pas vu sur un vrai téléphone.
 
+## 31/10/2026 — Runes : ajustements offensifs (Geoffrey)
+- **Quoi** : `UPGRADE.runeDiv` ; `runeLineValue`, `runeLineFactor` (src/meta/piece.js), utilisés par `pieceBonus`, `statLines`, `runeLines` et l'aperçu de src/ui/upgrade.js. Les % stockés ne changent pas : aucune migration. `lineValue` inchangé pour l'identification.
+- **Tests** ✅ tests/rune.test.js +1, tests/gearscore.test.js (exemple 46 → 16 GS), 25 fichiers liés aux pièces et runes ; anti-triche 119/119. ❌ Rouges aussi sur `main` propre : « une tour et une instance… », « fortune : le doublon… », « recycle : un BP du T2… », « recettes du T4… ».
+- ⚠️ Une session ou une prison en cours peut changer de résultat si elle est rejouée, ses stats étant recalculées. GS et classements baissent pour les pièces runées.
