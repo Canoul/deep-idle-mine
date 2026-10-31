@@ -578,6 +578,37 @@ export function setupLobby(h){
     $('devPresets').querySelectorAll('select').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
   };
   drawPresets();
+  const places = () => [...$('devPresets').querySelectorAll('[data-place]')].map(s => s.value || null);
+  const inGroup = () => (st.party?.members.length ?? 0) > 1;
+  /* dans un groupe, le choix est gardé par le serveur : chaque membre le voit, le chef le lance */
+  const shareChoice = async () => { if(inGroup()) st.party = (await h.party.devPresets(places())).party; };
+  /* noms des places (comme au lancement : le chef, les membres, puis les mineurs de test) et choix du groupe */
+  function drawPlaces(){
+    const members = [...(st.party?.members ?? [])].sort((a, b) => b.leader - a.leader);
+    const names = members.length ? members.map(m => m.name) : [st.account?.displayName ?? st.account?.name ?? 'Toi'];
+    $('devPresets').querySelectorAll('[data-place-name]').forEach((el, i) => { el.textContent = names[i] ?? `Mineur test ${i - names.length + 1}`; });
+    if(!inGroup()) return;
+    $('devPresets').querySelectorAll('[data-place]').forEach((s, i) => {
+      const v = st.party.devPresets?.[i] ?? '';
+      if(document.activeElement !== s && [...s.options].some(o => o.value === v)) s.value = v;
+    });
+  }
+  async function takePlayer(i){
+    const msg = $('devCopyMsg'), input = $('devPresets').querySelector(`[data-pick="${i}"]`);
+    msg.hidden = false; msg.textContent = 'Copie…';
+    try {
+      const r = await h.devCopy(input.value);
+      if(st.info) st.info.copies = r.copies;
+      drawPresets(r.copies);
+      $('devPresets').querySelector(`[data-place="${i}"]`).value = copyPresetId(r.who);
+      await shareChoice();
+      drawPlaces();
+      msg.textContent = `${r.name} copié.`;
+    } catch(e){ msg.textContent = e.message; }
+  }
+  $('devPresets').addEventListener('click', e => { const b = e.target.closest('[data-take]'); if(b) takePlayer(+b.dataset.take); });
+  $('devPresets').addEventListener('keydown', e => { const inp = e.target.closest('[data-pick]'); if(inp && e.key === 'Enter') takePlayer(+inp.dataset.pick); });
+  $('devPresets').addEventListener('change', e => { if(e.target.matches('[data-place]')) shareChoice().catch(err => { $('devCopyMsg').hidden = false; $('devCopyMsg').textContent = err.message; }); });
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
     `<span>Spé du mineur ${i + 1}</span><span class="devSpec"><select data-spec="${i}"><option value="">La sienne</option>${

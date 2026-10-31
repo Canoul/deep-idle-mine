@@ -5799,5 +5799,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Un preset par mineur** (31/10) : `body.presets` (joueurs puis mineurs de test) → `record.playerPresets` / `playerCopies` et `botPresets` ;
   mineurs de test déduits des presets ; groupe : `POST /api/party/dev-presets`, n'importe quel membre choisit, le chef lance ; panneau dev
   ouvert aux instances et aux membres (`.devMember` : presets seulement) ; mode dev sans clé d'instance (compte invité).
+- ❌→✅ 31/10 : plantage au démarrage (`drawPlaces is not defined`), bloc effacé par un patch. Ni `node --check` ni les tests ne l'ont vu : ils ne
+  chargent pas `setupLobby`. Vérifié ensuite dans Chrome sans écran, compte connecté : lignes, Instance, « Prendre », aucune erreur.
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
 
