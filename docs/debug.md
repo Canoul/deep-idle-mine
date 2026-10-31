@@ -5871,6 +5871,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
 
+## 31/10/2026 — Fluidité : lecture en différé (Geoffrey)
+- **Cause** : partie avancée par paquets de 200 ms, envois à 250 ms + temps de réponse, glissade calée sur l'heure d'arrivée. Un envoi en retard = arrêt puis rattrapage ; plus de 6 cases d'écart = téléportation.
+- **Quoi** : `src/shared/view.js` : `playClock`, `playTrack`, `playCopy`, `moveHead` : chaque objet garde ses positions avec leur tick, une tête de lecture avance `FLUID.bufferMs` (400) derrière le dernier envoi, sans le dépasser, et rattrape à ±30 % au plus. Actif si `speed` est passé à `applyView`, `applyTowerView`, `applyInstanceView`, `applyInstantView` (src/main.js `viewRate`) ; sinon ancienne glissade. Bloc géant non migré. Grande distance = téléportation seulement au-delà de `FLUID.teleport` case par tick. Envois à rythme fixe (`nextView`). `pumpEvery` 200 → 100. `?perf` : écart entre envois, micro-arrêts.
+- **Mesure** ✅ même partie (seed 4242, ×2, 30 s), Chrome, réseau simulé sur les envois, comparée à la partie rejouée tick par tick. Réseau 105 ms ± 30 : écart moyen 0,26 → 0,18 case, pire écart 1,0 → 0,7. Wifi 140 ± 60 : 0,31 → 0,25, pire écart 1,2 → 1,0, images à plus d'une case 0,9 → 0,2 %. Dispersion de vitesse un peu plus haute (40 → 51 %) : les vraies pauses du mineur ne sont plus gommées.
+- **Fausse piste** : une première simulation (mineur à vitesse constante, modèle de lecture sans mémoire) promettait 513 → 50 % : très surestimé. La première version sautait après un pic réseau (×27) : d'où la tête de lecture.
+- ⚠️ Pas mesuré en ligne ni sur plusieurs joueurs. +48 % de requêtes de vue environ (2,7 → 4 par seconde par joueur), pump deux fois plus souvent : à surveiller. Les actions (coup, minage) ne sont pas différées : elles peuvent précéder la position de 0,4 s. `tests/perf.test.js` « boîte de mesures » et `prison-server` « une tour et une instance » échouent, comme avant.
+- Sur le port dev : `?perf` dans l'adresse. Hébergement : l'adresse 82.223.196.89 est chez ARSYS (groupe IONOS), à confronter à la doc (OVH).
+
+
 ## 31/10/2026 — Gobelins asservis : roche sans minerai à portée (Geoffrey)
 - **Constat** (3 seeds, 3 mineurs, couronne sur le 1er, stats de base, 38 gobelins) : vie 29,9 s de jeu (≈ 15 s réelles à ×2), mais 12,5 s inactif ; 78 % de cette attente sans aucun minerai à `reach` (10 gobelins sur 38 nés sans minerai).
 - **Quoi** (src/sim/thrall.js) : `pickRock` (bloc cassable le plus proche, -1,5 tout droit dans `o.dir`), repli quand `pickTarget` ne trouve rien. `pickTarget` est relancé à chaque décision : un minerai entré dans `reach` passe devant.
@@ -5915,3 +5924,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
+
+## 31/10/2026 — Chat : largeur en tour (Geoffrey)
+- **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
+- **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.
+- **Tests** : vérifié ✅ dans Chrome sur une tour dev à 1872 × 815. `centralLeft` lit le DOM, pas de test unitaire. Instance, MI et Bloc géant : même mesure, non lancés ⚠️.
+
+## 31/10/2026 — Grimoire trié (Geoffrey)
+- **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.

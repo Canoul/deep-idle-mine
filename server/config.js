@@ -92,7 +92,7 @@ export const LIMITS = {
 export const GAME_SERVER = {
   dev: process.env.DIM_DEV === '1',
   maxLive: Math.max(1, +(process.env.DIM_MAX_LIVE || (ON_RENDER ? 5 : 12))),
-  pumpEvery: 200,                   // ms
+  pumpEvery: 100,                   // ms (31/10/2026 : 200 → 100, la partie arrive au navigateur par plus petits paquets)
   maxStep: 200,                     // ticks calculés d'un bloc : entre deux blocs, les demandes d'affichage passent
   /* budget de calcul : ticks par seconde, toutes sessions confondues (sans limite en local). Sur Render gratuit,
      ~54 ticks/s occupent tout le processeur (3 mineurs) ; une session à l'heure en demande 20 (x2). 45 laisse au
