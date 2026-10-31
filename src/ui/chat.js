@@ -56,16 +56,20 @@ export function setupChat(h){
     if(on && g === gen) timer = setTimeout(poll, document.hidden ? CHAT.poll * 5 : CHAT.poll);
   }
 
+  /* envoie un message ; true s'il est parti */
+  async function send(msg){
+    busy = true;
+    try { const r = await h.post(msg); add([r.message]); note.textContent = ''; h.sent?.(msg); if(r.warning) h.onWarning?.(r.warning); return true; }
+    catch(err){ note.textContent = err.message; return false; }
+    finally { busy = false; }
+  }
   $(p + 'Form').onsubmit = async e => {
     e.preventDefault();
     const text = cleanChatText(input.value);
     if(!on || busy || text === null) return;
     const msg = h.parse ? h.parse(text) : text;   // chat global : canal et raccourcis
     if(msg.error){ note.textContent = msg.error; return; }
-    busy = true;
-    try { const r = await h.post(msg); add([r.message]); input.value = ''; note.textContent = ''; h.sent?.(msg); if(r.warning) h.onWarning?.(r.warning); }
-    catch(err){ note.textContent = err.message; }
-    finally { busy = false; }
+    if(await send(msg)) input.value = '';
   };
 
   return {
@@ -77,6 +81,8 @@ export function setupChat(h){
     refresh: render,
     /* relire tout de suite (le panneau redevient visible) */
     poke(){ if(on) poll(); },
+    /* envoyer un message sans passer par le champ (bouton « Pub LFG » du lobby) */
+    send: msg => on && !busy ? send(msg) : Promise.resolve(false),
     /* retour aux derniers messages si le joueur suivait le fil (carte déplacée dans la page) */
     toEnd,
   };

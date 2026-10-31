@@ -23,6 +23,8 @@ export function socialRoutes(social){
       return social.chatGet(ctx.me, after === null || after === '' ? 0 : Number(after)); },
     'GET /api/social/chat-prefs':  async ctx => { needMe(ctx); return social.chatPrefs(ctx.me); },
     'POST /api/social/chat-prefs': async ctx => { needMe(ctx); return social.chatPrefsSave(ctx.me, ctx.body && typeof ctx.body === 'object' ? ctx.body : {}); },
+    'POST /api/social/chat/lobby':      async ctx => { needMe(ctx); return social.chatLobby(ctx.me, ctx.body.id); },
+    'POST /api/social/chat/lobby/join': async ctx => { needMe(ctx); return social.chatLobbyJoin(ctx.me, ctx.body.id); },
     'POST /api/social/chat':    async ctx => { needMe(ctx); return social.chatPost(ctx.me, ctx.body && typeof ctx.body === 'object' ? ctx.body : {}); },
   };
 }

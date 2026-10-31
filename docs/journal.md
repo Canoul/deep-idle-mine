@@ -16,6 +16,13 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
+- **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
+  `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
+- **Décisions** : « rejoint » = rejoint le lobby, pas la session en cours. Tout membre peut publier, un joueur seul aussi. Le lien marche dans tous les canaux,
+  pas dans le chat de session. Le code du groupe n'apparaît jamais dans le chat.
+- **À suivre** : l'essayer à deux en vrai. Le joueur qui rejoint n'est pas amené sur l'activité annoncée (le lobby ne partage pas l'activité choisie).
+
 ## 31/10/2026 — Geoffrey — Pseudos : les mots interdits du chat ne passent plus
 - **Pour le joueur** : on ne peut plus créer un compte avec un pseudo interdit, un message d'erreur le dit. Un joueur qui en a déjà un doit le changer à sa prochaine connexion : une fenêtre impossible à fermer le lui demande, il garde son compte et son stuff.
 - **À suivre** : aucun des 31 pseudos lisibles n'est touché aujourd'hui. La liste de mots reste celle du chat.

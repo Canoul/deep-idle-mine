@@ -445,6 +445,15 @@ body{--chat-w:calc(287.5*var(--u))}
 }
 .chatLog{max-height:calc(90*var(--u));overflow:auto;overflow-wrap:anywhere}
 .chatLog div{padding:var(--u) 0}
+.chatLobby{all:unset;cursor:pointer;color:#ffd23f;text-decoration:underline}
+.chatLobby:hover,.chatLobby:focus-visible{color:#fff}
+.lobbyPeek{position:fixed;z-index:60;width:calc(190*var(--u));max-width:calc(100vw - 16px);padding:calc(4*var(--u));background:var(--panel,#1a1512);box-shadow:0 0 0 var(--u) #000,0 0 0 calc(2*var(--u)) var(--sep);pointer-events:none}
+.lobbyPeek b.tit{display:block;margin-bottom:calc(2*var(--u))}
+.lobbyPeek .peekSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-bottom:calc(2*var(--u))}
+.lobbyPeek .pslot{min-width:0;padding:calc(2*var(--u));font-size:var(--fs-s);overflow:hidden}
+.lobbyPeek .pslot .av{width:calc(24*var(--u));height:calc(24*var(--u))}
+.lobbyPeek .pslot b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lobbyPeek .pslot.free{opacity:.55}
 .chatLog b{color:var(--txt);font-weight:400}
 .chatLog .mine b{color:var(--ok)}
 .chatLog time{color:var(--mut);margin-right:calc(2*var(--u))}

@@ -28,6 +28,7 @@ import { GAME, PARTY, MINE_MODES } from '../../src/config.js';
 import { CODE_ALPHABET, displayName, parseAccountId, formatAccountId } from '../../src/shared/account.js';
 import { parsePartyCode } from '../../src/shared/party.js';
 import { matchLfg } from '../../src/shared/lfg.js';
+import { lobbyLink } from '../../src/shared/chat.js';
 import { createLimiter } from '../accounts/ratelimit.js';
 import { PARTY_SERVER } from '../config.js';
 
@@ -538,6 +539,28 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
        groupe complet ou en cours de lancement). Comme pour toute arrivée, les autres repassent « pas prêt ». */
     /* comptes du groupe de ce joueur, lui compris ; [] sans groupe (chat de groupe, 31/10) */
     membersOf: id => partyOf(id)?.members.map(m => m.account) ?? [],
+    /* lien de lobby pour le chat (31/10/2026) : son groupe (créé s'il est seul), avec une place libre et hors session */
+    async chatLink(me, ctx){
+      touch(me); await sweep();
+      await notInSession(me);
+      const p = partyOf(me.id) ?? await create(me);
+      if(p.members.length >= GAME.maxPlayers) fail('party_full', 409, 'Ton groupe est déjà complet.');
+      return { code: p.code, ...lobbyLink(ctx?.mode, ctx?.level), size: p.members.length, max: GAME.maxPlayers };
+    },
+    /* aperçu d'un groupe au survol d'un lien, ou null s'il n'existe plus. Le code reste au serveur : voir le service social */
+    async peek(code){
+      const p = parties.get(code);
+      if(!p) return null;
+      const members = [];
+      let playing = false;
+      for(const m of p.members){
+        if(await game.activeSessionId(m.account)) playing = true;
+        const tree = await game.skillTreeOf?.(m.account) ?? null;
+        members.push({ name: m.name, leader: m.account === p.leader, tree, specLevel: await game.specLevelOf?.(m.account, tree) ?? null,
+                       look: await game.lookFor?.(m.account) ?? {}, auras: await game.aurasFor?.(m.account) ?? {} });
+      }
+      return { members, size: members.length, max: GAME.maxPlayers, playing };
+    },
     async adminMove(player, host){
       await sweep();
       if(player.id === host.id) fail('invalid_id', 400, 'Les deux pseudos désignent le même joueur.');

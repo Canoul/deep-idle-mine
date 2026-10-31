@@ -357,6 +357,8 @@ export function setupLobby(h){
     $('inviteBtn').classList.toggle('on', st.inviteOpen);
     $('partyLeaveBtn').hidden = !party || party.members.length < 2;
     $('partyLeaveBtn').disabled = locked;
+    /* « Pub LFG » (31/10/2026) : annonce son lobby dans le chat, tant qu'il reste une place */
+    $('lobbyPubBtn').hidden = !h.onPub || offline || !account || locked || !def || def.solo || def.giant || def.scheduled || (party?.members.length ?? 1) >= (party?.max ?? Infinity);
     $('joinRow').hidden = offline || !account || locked || (party && party.members.length > 1);
     renderLfg();
 
@@ -506,6 +508,9 @@ export function setupLobby(h){
     pick(b.dataset.mode);
   };
   $('towerModes').onclick = e => { const b = e.target.closest('button[data-mode]'); if(b && !b.disabled) pick(b.dataset.mode); };
+  /* ce que le lien de lobby annonce : l'activité affichée et son niveau */
+  const pubContext = () => { const def = MINE_MODES.find(m => m.id === st.mode); return { mode: st.mode, level: def?.tower || def?.instance ? st.towerLevel : 1 }; };
+  $('lobbyPubBtn').onclick = () => h.onPub?.(pubContext());
   function pick(mode){ st.screen = 'stage'; st.view = null; st.mode = mode; render(); scrollTo(0, 0); h.onMode?.(st.mode); }
   function showJudgment(){ st.screen = 'stage'; st.view = 'jugement'; render(); scrollTo(0, 0); h.onJudgment?.(); }
   /* retour : d'une tour au Jugement, sinon au menu */
@@ -712,6 +717,7 @@ export function setupLobby(h){
   };
 
   return {
+    pubContext,
     update(patch){
       const { lfg, ...rest } = patch;
       Object.assign(st, rest);
