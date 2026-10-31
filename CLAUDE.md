@@ -124,6 +124,8 @@ Tout ce qui existe aujourd'hui (systèmes, hébergement, équipe, chantiers en a
   `npm run dev:presets` (serveur arrêté) : comptes locaux Test_Mineur / Test_Logisticien / Test_Barbare (mot de passe
   `preset1234`, niveau et spé 72, 10 Clés d'instance I). Relancer = remise à neuf. `npm run dev:presets -- --from
   data/presets/<fichier>.json` : copie de vrais joueurs (Test_Canoul, Test_Mus ; stuff, skills, sorts, niveau réels).
+- Copier un vrai joueur : panneau dev du lobby, une ligne par mineur, pseudo puis « Prendre » (lecture seule, réglage `DIM_DEV_COPY_URL` dans
+  `~/.dim-dev.env`, mise en place dans `docs/debug.md`, entrée du 31/10/2026). `DATABASE_URL` est refusé en mode dev.
 - Reproduire une partie : mode dev, seed au choix dans le lobby (même seed + mêmes réglages = même partie).
 - `node --test tests/<sujet>.test.js` : les tests d'un sujet (**c'est ce qu'on lance après une modification**).
   `npm test` : toute la suite, longue (plusieurs minutes), seulement sur demande.

@@ -331,6 +331,15 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .dev input,.dev select{width:100%}
 .devSpec{display:grid;grid-template-columns:1fr calc(14*var(--u));gap:calc(2*var(--u))}
 .devNote{grid-column:1/-1;margin:0}
+.devCard button,.devCard input,.devCard select{min-height:calc(18*var(--u));font-size:var(--fs)}
+.devCard.devMember>.dev:not(#devPresets){display:none}
+#devPresets{grid-template-columns:1fr;gap:calc(4*var(--u))}
+.devMiner{display:grid;grid-template-columns:calc(62*var(--u)) minmax(0,1fr) minmax(0,1.2fr);gap:calc(3*var(--u));align-items:center}
+.devMiner b{font-weight:400;font-size:var(--fs);overflow-wrap:anywhere}
+.devPick{display:flex;gap:calc(2*var(--u))}
+.devPick input{flex:1;min-width:0}
+.devPick button{flex:none;padding:0 calc(6*var(--u))}
+@media (max-width:700px){ .devMiner{grid-template-columns:1fr} }
 
 /* ---------- onglet Session : panneaux à gauche, mine au centre, jauge, panneaux à droite ; collé à la fenêtre ---------- */
 /* le bilan ne couvre que l'onglet Session (pas toute la fenêtre) : calque limité à cette section */

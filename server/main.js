@@ -12,6 +12,7 @@ import { createFileGameStore, createPgGameStore } from './game/store.js';
 import { openDatabase } from './db/postgres.js';
 import { createGameService } from './game/service.js';
 import { readDevCopies } from './game/dev-copies.js';
+import { createLiveCopies } from './game/dev-live-copies.js';
 import path from 'node:path';
 import { createPartyService } from './party/service.js';
 import { createInstantService } from './instant/service.js';
@@ -32,8 +33,10 @@ const gameStore = db ? await createPgGameStore(db) : await createFileGameStore(S
 /* modération du chat (30/10) : un joueur banni voit sa prison arrêtée */
 const moderation = createModerationService({ store: gameStore, onBan: id => game.prisonStop({ id }).catch(() => {}) });
 const game = createGameService({ store: gameStore, announce: createDiscordAnnouncer({ url: SERVER.discordWebhook }), moderation,
-                                 devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')) });
-const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
+                                 devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
+                                 devLiveCopies: GAME_SERVER.dev && process.env.DIM_DEV_COPY_URL
+                                   ? createLiveCopies({ url: process.env.DIM_DEV_COPY_URL, dir: path.join(SERVER.dataDir, 'presets') }) : null });
+const party = createPartyService({ game, store: gameStore, dev: GAME_SERVER.dev, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 /* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });

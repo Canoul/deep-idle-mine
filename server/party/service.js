@@ -21,6 +21,7 @@
    demandé « lancer dès que plein » : la session Mine démarre alors aussitôt. La file vit en mémoire seulement (perdue
    au redémarrage : le navigateur s'en aperçoit grâce à `boot` et relance sa recherche).
    Testable seul : on lui passe le service de jeu, la recherche de compte et une horloge. */
+import { sanitizeBotPresets } from '../../src/shared/dev-presets.js';
 import crypto from 'node:crypto';
 import { GAME, PARTY, MINE_MODES } from '../../src/config.js';
 import { CODE_ALPHABET, displayName, parseAccountId, formatAccountId } from '../../src/shared/account.js';
@@ -35,7 +36,7 @@ export class PartyError extends Error {
 const fail = (code, status, message, extra) => { throw new PartyError(code, status, message, extra); };
 
 /* game : service des sessions ; getAccount(id) : compte ou null (pour inviter par ID) */
-export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER,
+export function createPartyService({ game, getAccount, store = null, clock = Date.now, config = PARTY_SERVER, dev = false,
                                      newCode = () => Array.from({ length: PARTY.codeLength }, () => CODE_ALPHABET[crypto.randomInt(32)]).join('') }){
   const parties = new Map();                 // code → groupe
   /* « Prêt tout le temps » (23/10/2026) : réglage du JOUEUR, pas du groupe. Seule la case le change ; il le garde en
@@ -56,7 +57,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
   /* ce que les membres voient de leur groupe (les ID de compte sont publics) */
   function publicParty(p, meId, playing = new Set(), trees = new Map(), looks = new Map(), specLv = new Map(), auras = new Map(), gs = new Map(), prisons = new Set()){
     const now = clock();
-    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching,
+    return { code: p.code, leader: p.leader, max: GAME.maxPlayers, launching: !!p.launching, devPresets: p.devPresets ?? null,
              members: p.members.map(m => ({ account: m.account, displayId: formatAccountId(m.account), name: m.name,
                                             leader: m.account === p.leader, me: m.account === meId, ready: !!m.ready || !!m.always,
                                             always: !!m.always,
@@ -418,6 +419,17 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       return { party: publicParty(p, me.id) };
     },
 
+    /* mode dev : preset de chaque mineur (31/10/2026), choisi par n'importe quel membre, appliqué quand le chef lance ;
+       mêmes places que le lancement : le chef, les autres membres, puis les mineurs de test. Gardé en mémoire seulement. */
+    async setDevPresets(me, presets){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      touch(me);
+      const p = partyOf(me.id);
+      if(!p) fail('no_party', 404, "Tu n'es dans aucun groupe.");
+      p.devPresets = sanitizeBotPresets(presets);
+      return { party: publicParty(p, me.id) };
+    },
+
     /* « Prêt tout le temps » : le membre reste prêt d'une session à l'autre (et quand quelqu'un arrive), le chef peut
        enchaîner sans attendre son clic. Possible pendant une session (on le coche pour la suivante). value : true / false. */
     async alwaysReady(me, value){
@@ -490,7 +502,7 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
       p.launching = true;                              // plus d'entrée ni de sortie pendant la création
       try {
         const members = [memberOf(p, me.id), ...p.members.filter(m => m.account !== me.id)];
-        const r = await game.start(me, body, members.map(m => ({ account: m.account, name: m.name })));
+        const r = await game.start(me, p.devPresets ? { ...body, presets: p.devPresets } : body, members.map(m => ({ account: m.account, name: m.name })));
         grace(p, r);
         unready(p);                                    // la session finie, chacun redira qu'il est prêt
         return r;

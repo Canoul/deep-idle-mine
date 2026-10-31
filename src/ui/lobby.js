@@ -232,7 +232,7 @@ export function lobbyCards({ view, mode, dev = false }){
   /* Prison (29/10) : l'équipe (soi), Lancer et les préférences (l'IA de la prison les lit) ; ni réglages dev ni shrines */
   const prison = !jv && !!def?.prison;
   return { judgment:jv, mi:!jv && mi, giant, inst, prison, team:(!mi && !giant) || jv, launch:!jv && !giant, prefs:!jv && !mi && !tower && !giant && !inst,
-           dev:!jv && !mi && !giant && !inst && !prison && dev };
+           dev:!jv && !mi && !giant && !prison && dev };
 }
 
 /* boutons du chef sur la place d'un autre membre : nommer chef (★) même pendant une session (25/10/2026 ; le serveur
@@ -273,7 +273,7 @@ export function setupLobby(h){
     const menu = st.screen === 'menu';
     $('lobbyMenu').hidden = !menu; $('lobbyStage').hidden = menu;
     $('actTitle').textContent = jv ? 'Jugement' : def?.instance ? 'Instances' : def?.label ?? '';
-    const cards = menu ? {} : lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
+    const cards = menu ? {} : lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
     /* shrines : mine classique (28/10) ; lobby d'une tour : sa stèle seulement (30/10) ; prison : aucun (29/10) */
@@ -385,7 +385,8 @@ export function setupLobby(h){
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     renderWho(tower && !locked && !offline ? def.tower : null);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !cards.dev;   // seuls les réglages de celui qui lance comptent ; rien pour la MI
+    $('devCard').hidden = !cards.dev;   // rien pour la MI
+    $('devCard').classList.toggle('devMember', !!party && party.leader !== account?.id);   // un membre : les presets seulement
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -603,14 +604,44 @@ export function setupLobby(h){
     shownCopies = JSON.stringify(copies);
     const opts = SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')+
       copies.map(w => `<option value="${esc(copyPresetId(w))}">👤 ${esc(copyName(w))} (copie)</option>`).join('');
-    /* ton preset (29/10/2026) : ton mineur prend le stuff, les skills et les sorts du preset, garde ton nom */
-    $('devPresets').innerHTML = `<span>Ton preset</span><select data-self="1"><option value="">Aucun (ton équipement)</option>${opts}</select>`+
-      Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
-      `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${opts}</select>`).join('');
+    /* un preset par mineur (31/10/2026) : le pseudo d'un vrai joueur, ou la liste. Un joueur garde son nom et son compte */
+    $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) => `<div class="devMiner"><b data-place-name="${i}"></b>
+      <select data-place="${i}"><option value="">Aucun</option>${opts}</select>
+      <span class="devPick"><input data-pick="${i}" type="text" maxlength="32" placeholder="Pseudo d'un joueur"><button data-take="${i}">Prendre</button></span></div>`).join('');
     $('devPresets').querySelectorAll('select').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
   };
   drawPresets();
-  const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
+  const places = () => [...$('devPresets').querySelectorAll('[data-place]')].map(s => s.value || null);
+  const inGroup = () => (st.party?.members.length ?? 0) > 1;
+  /* dans un groupe, le choix est gardé par le serveur : chaque membre le voit, le chef le lance */
+  const shareChoice = async () => { if(inGroup()) st.party = (await h.party.devPresets(places())).party; };
+  /* noms des places (comme au lancement : le chef, les membres, puis les mineurs de test) et choix du groupe */
+  function drawPlaces(){
+    const members = [...(st.party?.members ?? [])].sort((a, b) => b.leader - a.leader);
+    const names = members.length ? members.map(m => m.name) : [st.account?.displayName ?? st.account?.name ?? 'Toi'];
+    $('devPresets').querySelectorAll('[data-place-name]').forEach((el, i) => { el.textContent = names[i] ?? `Mineur test ${i - names.length + 1}`; });
+    if(!inGroup()) return;
+    $('devPresets').querySelectorAll('[data-place]').forEach((s, i) => {
+      const v = st.party.devPresets?.[i] ?? '';
+      if(document.activeElement !== s && [...s.options].some(o => o.value === v)) s.value = v;
+    });
+  }
+  async function takePlayer(i){
+    const msg = $('devCopyMsg'), input = $('devPresets').querySelector(`[data-pick="${i}"]`);
+    msg.hidden = false; msg.textContent = 'Copie…';
+    try {
+      const r = await h.devCopy(input.value);
+      if(st.info) st.info.copies = r.copies;
+      drawPresets(r.copies);
+      $('devPresets').querySelector(`[data-place="${i}"]`).value = copyPresetId(r.who);
+      await shareChoice();
+      drawPlaces();
+      msg.textContent = `${r.name} copié.`;
+    } catch(e){ msg.textContent = e.message; }
+  }
+  $('devPresets').addEventListener('click', e => { const b = e.target.closest('[data-take]'); if(b) takePlayer(+b.dataset.take); });
+  $('devPresets').addEventListener('keydown', e => { const inp = e.target.closest('[data-pick]'); if(inp && e.key === 'Enter') takePlayer(+inp.dataset.pick); });
+  $('devPresets').addEventListener('change', e => { if(e.target.matches('[data-place]')) shareChoice().catch(err => { $('devCopyMsg').hidden = false; $('devCopyMsg').textContent = err.message; }); });
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
     `<span>Spé du mineur ${i + 1}</span><span class="devSpec"><select data-spec="${i}"><option value="">La sienne</option>${
@@ -659,8 +690,7 @@ export function setupLobby(h){
       const v = parseFloat(i.value);
       if(Number.isFinite(v) && v !== +i.dataset.base) (overrides[i.dataset.obj] ??= {})[i.dataset.key] = v;   // seulement ce qui change
     }
-    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), botPresets: botPresets(),
-             selfPreset: $('devPresets').querySelector('[data-self]')?.value || undefined };
+    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), presets: places() };
   }
 
   for(const b of $('prisonCompoRow').querySelectorAll('[data-compo]')) b.onclick = () => { st.prisonCompo = b.dataset.compo; render(); };
@@ -699,7 +729,7 @@ export function setupLobby(h){
       /* groupe rejoint depuis le menu : ses places et « Je suis prêt » sont dans l'activité */
       if(alone && st.screen === 'menu' && (st.party?.members.length ?? 1) > 1){ st.screen = 'stage'; st.view = null; if(!MINE_MODES.find(m => m.id === st.mode)?.instance) st.mode = MINE_MODES[0].id; }
       if('lfg' in patch) setLfg(lfg);
-      if(st.info?.dev) drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []);
+      if(st.info?.dev){ drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []); drawPlaces(); }
       render();
     },
     /* rejoindre par un code venu d'un lien d'invitation */

@@ -149,6 +149,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
                                     config = GAME_SERVER, prison: cfg = PRISON, randomSeed = () => crypto.randomInt(2**31),
                                     /* mode dev : copies de vrais joueurs pour les mineurs de test, { pseudo: copie } (data/presets/) */
                                     devCopies = () => ({}),
+                                    devLiveCopies = null,
                                     /* hasard du butin, imprévisible, dans [0, 1[ : 48 bits aléatoires (randomInt refuse 2**48) */
                                     random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48,
                                     /* modération du chat (server/moderation/service.js, 30/10) : avertit l'auteur d'un mot interdit ; absente = rien */
@@ -901,6 +902,20 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
 
     /* fiche d'un joueur vue par un ami (onglet Social ; c'est le service social qui vérifie l'amitié) : niveau, stuff
        porté, skills. Lecture seule, rien sur l'inventaire ni la session. */
+    /* mode dev : copie un vrai joueur depuis la base en ligne (lecture seule, server/game/dev-live-copies.js) */
+    async devCopyPlayer(me, body = {}){
+      if(!dev) fail('forbidden', 403, 'Réservé au mode développeur.');
+      if(!devLiveCopies) fail('no_copy_db', 503, 'Accès à la base non réglé (DIM_DEV_COPY_URL, voir docs/debug.md).');
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      if(!name || name.length > 32) fail('bad_request', 400, 'Tape le pseudo du joueur.');
+      let r;
+      try { r = await devLiveCopies.read(name); }
+      catch(e){ console.error('Copie de joueur :', e.message); fail('copy_failed', 502, 'Base en ligne injoignable.'); }
+      if(!r) fail('not_found', 404, 'Aucun joueur avec ce pseudo.');
+      if(r.refused) fail('copy_refused', 409, `Copie de ${r.name} refusée par le jeu (stuff ou skills invalides).`);
+      return { who: r.who, name: r.name, copies: Object.keys(devCopies()) };
+    },
+
     async profile(accountId){
       const inv = await loadInventory(accountId);
       return { stuff: (await loadStuff(accountId, inv)).worn,
@@ -972,7 +987,7 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         const invs = {};
         if(inst){
           for(const p of players) invs[p.account] = await loadInventory(p.account);
-          const miss = missingKeys(mode, players, a => invs[a]);
+          const miss = dev ? [] : missingKeys(mode, players, a => invs[a]);   // mode dev : sans clé (compte invité, 31/10)
           if(miss.length) fail('no_key', 409, `Il faut une ${inst.key} par joueur : ${miss.map(p => p.name || 'un joueur').join(', ')} n'en ${miss.length > 1 ? 'ont' : 'a'} pas.`);
         }
         /* énergie : chaque joueur doit pouvoir payer (vérifié avant de compter le lancement ; rien n'est débité ici) */
@@ -1027,17 +1042,23 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
           const taken = (await store.sessionsOf(me.id)).some(s => ACTIVE.includes(s.status) && s.stele === id && s.steleOwner === me.id);
           stele = taken ? null : id;
         }
+        /* mode dev : un preset par mineur (body.presets : les joueurs, puis les mineurs de test, 31/10/2026). Un mineur de
+           test choisi compte, même si le nombre de mineurs de test demandé est plus petit */
+        const places = dev ? sanitizeBotPresets(body.presets) : null, placeOfPlayers = places?.slice(0, players.length) ?? null;
+        const botPresets = dev ? sanitizeBotPresets(places ? places.slice(players.length) : body.botPresets) : null;
+        const botsWanted = Math.max(dev && isInt(body.bots) ? body.bots : 0, (botPresets?.findLastIndex(Boolean) ?? -1) + 1);
         const rec = {
           id: crypto.randomUUID(),
           mode,
           seed: dev && isInt(body.seed) && body.seed >= 0 && body.seed < 2**31 ? body.seed : randomSeed(),
           players,
-          bots: dev && isInt(body.bots) ? Math.max(0, Math.min(GAME.maxPlayers - players.length, body.bots)) : 0,
+          bots: dev ? Math.max(0, Math.min(GAME.maxPlayers - players.length, botsWanted)) : 0,
           prefs, looks, gear, skills, spells,
           overrides: dev ? sanitizeOverrides(body.overrides) : null,
           devSpecs: dev ? sanitizeDevSpecs(body.devSpecs) : null,   // spécialisations imposées (mode dev)
-          botPresets: dev ? sanitizeBotPresets(body.botPresets) : null,   // presets des mineurs de test (mode dev)
-          ...(dev ? botCopiesOf(sanitizeBotPresets(body.botPresets)) : {}),   // copies de vrais joueurs (data/presets/)
+          botPresets,   // presets des mineurs de test (mode dev)
+          ...(dev ? botCopiesOf(botPresets) : {}),   // copies de vrais joueurs (data/presets/)
+          ...(placeOfPlayers?.some(Boolean) ? { playerPresets: placeOfPlayers, playerCopies: botCopiesOf(placeOfPlayers).botCopies ?? null } : {}),
           ...(dev ? selfPresetOf(body.selfPreset) : {}),   // preset du joueur qui lance (mode dev, 29/10)
           dev, speed: dev ? null : speed, startedAt: now,
           finishAt: dev ? null : now + (side ? towerDurationMs(speed) : inst ? instanceDurationMs(speed) : realDurationMs(speed)),

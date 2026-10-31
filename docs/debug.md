@@ -5776,6 +5776,36 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
 - **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
 
+## 31/10/2026 — Mode dev : copier un joueur depuis la base en ligne (Geoffrey)
+- **Quoi** : `server/game/dev-live-copies.js` lit la vue `dim_dev_copie` et écrit `data/presets/base-<pseudo>.json`, relu par
+  `readDevCopies` ; `game.devCopyPlayer` + `POST /api/game/dev/copy` (403 hors mode dev) ; champ dans le panneau dev (src/ui/lobby.js) ;
+  `server/dev-env.js` lit `.env` puis `~/.dim-dev.env` et refuse de démarrer si `DATABASE_URL` est présent.
+- **Mise en place Neon** : dans le SQL Editor, avec le compte propriétaire. Créer le compte en SQL, pas par la page Roles : un rôle créé
+  par la console entre dans `neon_superuser`, qui peut voir toute la table. Mot de passe en lettres et chiffres (il va dans une URL).
+  ```sql
+  CREATE ROLE dim_dev_lecture LOGIN PASSWORD '<mot de passe>';
+  CREATE VIEW dim_dev_copie AS
+    SELECT a.value->>'name' AS name, a.value->>'nameKey' AS name_key, d.ns, d.value
+    FROM dim_data a JOIN dim_data d ON d.key = a.key
+    WHERE a.ns = 'account' AND d.ns IN ('stuff', 'skills', 'spells', 'progress');
+  GRANT USAGE ON SCHEMA public TO dim_dev_lecture;
+  GRANT SELECT ON dim_dev_copie TO dim_dev_lecture;
+  ```
+  Puis `DIM_DEV_COPY_URL=postgresql://dim_dev_lecture:<mot de passe>@<hôte Neon>/<base>?sslmode=require` dans `~/.dim-dev.env`.
+  Contrôle : `SET ROLE dim_dev_lecture; SELECT * FROM dim_data LIMIT 1;` doit répondre « permission denied », puis `RESET ROLE;`.
+- **Tests** ✅ tests/dev-live-copies 4/4 (fausse connexion), dev-presets, boot-check ; format réel accepté sur la copie de canoul.
+- **Vérifié sur la vraie base** ✅ 31/10 : vue lue (31 joueurs), `dim_data` refusée (permission denied), écriture refusée ; Croustiflex,
+  Infernatiwar et Monsta copiés par la route, 12 à 13 pièces, sorts réels. Session lancée avec ces copies : pas encore essayée.
+- **Un preset par mineur** (31/10) : `body.presets` (joueurs puis mineurs de test) → `record.playerPresets` / `playerCopies` et `botPresets` ;
+  mineurs de test déduits des presets ; groupe : `POST /api/party/dev-presets`, n'importe quel membre choisit, le chef lance ; panneau dev
+  ouvert aux instances et aux membres (`.devMember` : presets seulement) ; mode dev sans clé d'instance (compte invité).
+- ❌→✅ 31/10 : plantage au démarrage (`drawPlaces is not defined`), bloc effacé par un patch. Ni `node --check` ni les tests ne l'ont vu : ils ne
+  chargent pas `setupLobby`. Vérifié ensuite dans Chrome sans écran, compte connecté : lignes, Instance, « Prendre », aucune erreur.
+- **Cookie** (31/10) : `cookieName` (server/config.js) : `dim_session_<port>` en mode dev, deux serveurs dev se déconnectaient l'un l'autre ;
+  inchangé en ligne.
+- ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
+
+
 ## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
 - **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
 - **Référence** : somme des « mines/h » de Nbrick, LeTaz et Akake lue dans le tableau du 31/10 (`prison-stats.json`), en dur dans la config. Parts après `capOres` : charbon 39,26, fer 35,78, or 14,81, diamant 1,08, graphite 7,57, mithril 1,28, cobalt 0,13, thorium 0,08 %.

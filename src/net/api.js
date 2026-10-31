@@ -77,6 +77,7 @@ export const gameApi = {
      run en cours depuis le tick since ; le serveur joue le retard avant de répondre) → { prison, view } */
   prisonStart: (opts = {}) => request('POST', '/api/game/prison/start', opts),   // { area, speed (dev) }
   prisonSaveCompo: compo => request('POST', '/api/game/prison/compo/save', { compo }),   // { profile, previous, saved }
+  devCopy: name        => request('POST', '/api/game/dev/copy', { name }),           // mode dev : { who, name, copies }
   prisonProfile: ()    => request('GET', '/api/game/prison/profile'),            // { profile } : contenu d'après les 10 dernières mines
   prisonClock: speed   => request('POST', '/api/game/prison/clock', { speed }),  // mode dev : vitesse de la prison
   prisonStop:  ()      => request('POST', '/api/game/prison/stop', {}),
@@ -139,6 +140,7 @@ export const partyApi = {
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
   ready:   ready => request('POST', '/api/party/ready', { ready }),
+  devPresets: presets => request('POST', '/api/party/dev-presets', { presets }),   // mode dev : preset de chaque mineur
   alwaysReady: always => request('POST', '/api/party/always-ready', { always }),
   promote: id   => request('POST', '/api/party/promote', { id }),
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)
