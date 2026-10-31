@@ -917,6 +917,7 @@ Ex. pioche en pierre +3 : 0,2 × 1,09 = 0,218 de vitesse de minage. Épée en fe
 
 - **Passif de la couronne : gobelins asservis.** Un **gobelin qui apparaît à 10 cases ou moins** (cercle) d'un mineur qui porte la couronne *(Geoffrey : « dans un rayon de 10 blocs du porteur »)* est **asservi** au lieu d'être un mob :
   - il ne se bat pas, ne vole rien, personne ne le frappe ; il ne donne ni XP ni butin ;
+  - **sans minerai à portée** *(31/10/2026, Geoffrey)*, il mine la roche la plus proche en gardant sa direction, et reprend le premier minerai qui entre dans sa portée (avant : il attendait) ;
   - pendant **30 s**, il **mine les minerais autour de lui** (6 cases au plus), avec la **même priorité que le porteur** (son focus minerai), à la **vitesse d'un mineur de base** (minage 1, marche, montée) ; il creuse droit vers le minerai (la pierre et la terre cassées en chemin comptent aussi) ; il laisse les minerais qu'un mineur vise ; il s'agrippe à la roche et ne tombe que dans le vide ;
   - **tout ce qu'il casse va directement dans le coffre commun**, et apparaît dans une ligne **« 👑 Gobelins asservis »** du panneau Coffre commun (aussi en solo) ; ses minerais comptent pour le déblocage de l'area ; pas de fortune ni de shiny *(choix de Claude : « mineur de base »)* ;
   - au bout de 30 s, il **disparaît** (journal : « Un gobelin asservi a fini son travail et disparaît ») ;
