@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
 - **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
   tourne page fermée, la pastille reste orange. Le texte « En session · Prison » et les boutons ne changent pas.
-- **État** : 🧪 sur la branche `geoffrey/social-prison-vert` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
 - **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
