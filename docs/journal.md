@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ## 31/10/2026 — Geoffrey — Mode dev : copier un vrai joueur en tapant son pseudo
 - **Pour l'équipe** : dans le lobby du mode développeur, on tape un pseudo et le personnage du joueur (stuff, skills, sorts, niveau) arrive
-  dans les presets, sans console ni fichier. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
+  dans les presets, sans console ni fichier. Un preset par mineur, en instance aussi, même avec un compte invité ou invité dans un groupe. Le serveur dev lit la base en ligne avec un compte qui ne peut rien modifier.
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
 - **État** : 🧪 sur la branche `geoffrey/dev-copie-joueur` (pas en ligne)
 

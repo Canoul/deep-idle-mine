@@ -138,7 +138,7 @@ test('Jugement (25/10) : jauges à gauche ET équipe à droite, comme pour la Mi
   const g = lobbyCards({ view:null, mode:'giant', dev:true });
   assert.deepEqual(g, { judgment:false, mi:false, giant:true, inst:false, prison:false, team:false, launch:false, prefs:false, dev:false }, 'Bloc géant : sa carte seule (26/10)');
   const i = lobbyCards({ view:null, mode:'instance_1', dev:true });
-  assert.deepEqual(i, { judgment:false, mi:false, giant:false, inst:true, prison:false, team:true, launch:true, prefs:false, dev:false }, 'instance : sa carte, l\'équipe et Lancer (27/10)');
+  assert.deepEqual(i, { judgment:false, mi:false, giant:false, inst:true, prison:false, team:true, launch:true, prefs:false, dev:true }, 'instance : sa carte, l\'équipe et Lancer (27/10)');
   const mi = lobbyCards({ view:null, mode:'mi' });
   assert.equal(mi.mi, true); assert.equal(mi.team, false);
   const pr = lobbyCards({ view:null, mode:'prison', dev:true });

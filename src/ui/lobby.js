@@ -212,7 +212,7 @@ export function lobbyCards({ view, mode, dev = false }){
   /* Prison (29/10) : l'équipe (soi), Lancer et les préférences (l'IA de la prison les lit) ; ni réglages dev ni shrines */
   const prison = !jv && !!def?.prison;
   return { judgment:jv, mi:!jv && mi, giant, inst, prison, team:(!mi && !giant) || jv, launch:!jv && !giant, prefs:!jv && !mi && !tower && !giant && !inst,
-           dev:!jv && !mi && !giant && !inst && !prison && dev };
+           dev:!jv && !mi && !giant && !prison && dev };
 }
 
 /* boutons du chef sur la place d'un autre membre : nommer chef (★) même pendant une session (25/10/2026 ; le serveur
@@ -249,7 +249,7 @@ export function setupLobby(h){
     if(!locked && !modes.some(m => m.id === st.mode && !m.done)) st.mode = MINE_MODES[0].id;
     const def = MINE_MODES.find(m => m.id === st.mode), mi = def?.scheduled, tower = def?.tower;
     const jv = st.view === 'jugement';   // Jugement : on regarde les jauges (et son équipe), rien ne se lance d'ici
-    const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked && !(party && party.leader !== account?.id) });
+    const cards = lobbyCards({ view:st.view, mode:st.mode, dev:!!info?.dev && !locked });
     $('judgmentCard').hidden = !cards.judgment;
     $('miCard').hidden = !cards.mi; $('teamCard').hidden = !cards.team; $('prefsCard').hidden = !cards.prefs;
     /* shrines : mine classique (28/10) ; lobby d'une tour : sa stèle seulement (30/10) ; prison : aucun (29/10) */
@@ -359,7 +359,8 @@ export function setupLobby(h){
              : `Session de <b>${realLen(info?.speed ?? GAME.speed)}</b>. Elle continue même si tu fermes la page.`);
     renderWho(tower && !locked && !offline ? def.tower : null);
     if(offline) error('Serveur injoignable. Réessaie dans un instant.');
-    $('devCard').hidden = !cards.dev;   // seuls les réglages de celui qui lance comptent ; rien pour la MI
+    $('devCard').hidden = !cards.dev;   // rien pour la MI
+    $('devCard').classList.toggle('devMember', !!party && party.leader !== account?.id);   // un membre : les presets seulement
     renderInvite();
     renderInvites();
     renderPrefs();
@@ -570,26 +571,13 @@ export function setupLobby(h){
     shownCopies = JSON.stringify(copies);
     const opts = SKILLS.trees.map(t => `<option value="${t.id}">${t.icon} ${esc(presetName(t.id))}</option>`).join('')+
       copies.map(w => `<option value="${esc(copyPresetId(w))}">👤 ${esc(copyName(w))} (copie)</option>`).join('');
-    /* ton preset (29/10/2026) : ton mineur prend le stuff, les skills et les sorts du preset, garde ton nom */
-    $('devPresets').innerHTML = `<span>Ton preset</span><select data-self="1"><option value="">Aucun (ton équipement)</option>${opts}</select>`+
-      Array.from({ length: GAME.maxPlayers - 1 }, (_, j) =>
-      `<span>Preset du mineur de test ${j + 1}</span><select data-preset="${j}"><option value="">Aucun (stats de base)</option>${opts}</select>`).join('');
+    /* un preset par mineur (31/10/2026) : le pseudo d'un vrai joueur, ou la liste. Un joueur garde son nom et son compte */
+    $('devPresets').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) => `<div class="devMiner"><b data-place-name="${i}"></b>
+      <select data-place="${i}"><option value="">Aucun</option>${opts}</select>
+      <span class="devPick"><input data-pick="${i}" type="text" maxlength="32" placeholder="Pseudo d'un joueur"><button data-take="${i}">Prendre</button></span></div>`).join('');
     $('devPresets').querySelectorAll('select').forEach((s, j) => { if(keep[j] && [...s.options].some(o => o.value === keep[j])) s.value = keep[j]; });
   };
   drawPresets();
-  /* copier un joueur du jeu en ligne (31/10/2026) : la copie rejoint les presets */
-  $('devCopyBtn').onclick = async () => {
-    const msg = $('devCopyMsg');
-    msg.hidden = false; msg.textContent = 'Copie…';
-    try {
-      const r = await h.devCopy($('devCopyName').value);
-      if(st.info) st.info.copies = r.copies;
-      drawPresets(r.copies);
-      msg.textContent = `${r.name} copié : à choisir dans les presets (recopier pour mettre à jour).`;
-      $('devCopyName').value = '';
-    } catch(e){ msg.textContent = e.message; }
-  };
-  const botPresets = () => [...$('devPresets').querySelectorAll('[data-preset]')].map(s => s.value || null);
   /* spécialisation imposée par place de mineur (joueurs du groupe dans l'ordre, puis mineurs de test) et niveau */
   $('devSpecs').innerHTML = Array.from({ length: GAME.maxPlayers }, (_, i) =>
     `<span>Spé du mineur ${i + 1}</span><span class="devSpec"><select data-spec="${i}"><option value="">La sienne</option>${
@@ -638,8 +626,7 @@ export function setupLobby(h){
       const v = parseFloat(i.value);
       if(Number.isFinite(v) && v !== +i.dataset.base) (overrides[i.dataset.obj] ??= {})[i.dataset.key] = v;   // seulement ce qui change
     }
-    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), botPresets: botPresets(),
-             selfPreset: $('devPresets').querySelector('[data-self]')?.value || undefined };
+    return { seed: Number.isSafeInteger(seed) ? seed : undefined, bots: +$('devBots').value, overrides, devSpecs: devSpecs(), presets: places() };
   }
 
   for(const b of $('prisonCompoRow').querySelectorAll('[data-compo]')) b.onclick = () => { st.prisonCompo = b.dataset.compo; render(); };
@@ -676,7 +663,7 @@ export function setupLobby(h){
       const { lfg, ...rest } = patch;
       Object.assign(st, rest);
       if('lfg' in patch) setLfg(lfg);
-      if(st.info?.dev) drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []);
+      if(st.info?.dev){ drawPresets(Array.isArray(st.info.copies) ? st.info.copies : []); drawPlaces(); }
       render();
     },
     /* rejoindre par un code venu d'un lien d'invitation */

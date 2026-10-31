@@ -36,7 +36,7 @@ const game = createGameService({ store: gameStore, announce: createDiscordAnnoun
                                  devCopies: () => readDevCopies(path.join(SERVER.dataDir, 'presets')),
                                  devLiveCopies: GAME_SERVER.dev && process.env.DIM_DEV_COPY_URL
                                    ? createLiveCopies({ url: process.env.DIM_DEV_COPY_URL, dir: path.join(SERVER.dataDir, 'presets') }) : null });
-const party = createPartyService({ game, store: gameStore, getAccount: id => store.getAccount(id) });
+const party = createPartyService({ game, store: gameStore, dev: GAME_SERVER.dev, getAccount: id => store.getAccount(id) });
 await party.load();                        // groupes d'avant le redémarrage (mise à jour automatique)
 /* mine instantanée : inscriptions retrouvées (lancer une session normale ne désinscrit plus : 22/10) */
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });

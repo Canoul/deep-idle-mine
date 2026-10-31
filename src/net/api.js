@@ -138,6 +138,7 @@ export const partyApi = {
   leave:   ()   => request('POST', '/api/party/leave', {}),
   kick:    id   => request('POST', '/api/party/kick', { id }),
   ready:   ready => request('POST', '/api/party/ready', { ready }),
+  devPresets: presets => request('POST', '/api/party/dev-presets', { presets }),   // mode dev : preset de chaque mineur
   alwaysReady: always => request('POST', '/api/party/always-ready', { always }),
   promote: id   => request('POST', '/api/party/promote', { id }),
   lfg:     auto => request('POST', '/api/party/lfg', { auto: auto === true }),   // recherche de groupe (mine classique)

@@ -5796,5 +5796,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/dev-live-copies 4/4 (fausse connexion), dev-presets, boot-check ; format réel accepté sur la copie de canoul.
 - **Vérifié sur la vraie base** ✅ 31/10 : vue lue (31 joueurs), `dim_data` refusée (permission denied), écriture refusée ; Croustiflex,
   Infernatiwar et Monsta copiés par la route, 12 à 13 pièces, sorts réels. Session lancée avec ces copies : pas encore essayée.
+- **Un preset par mineur** (31/10) : `body.presets` (joueurs puis mineurs de test) → `record.playerPresets` / `playerCopies` et `botPresets` ;
+  mineurs de test déduits des presets ; groupe : `POST /api/party/dev-presets`, n'importe quel membre choisit, le chef lance ; panneau dev
+  ouvert aux instances et aux membres (`.devMember` : presets seulement) ; mode dev sans clé d'instance (compte invité).
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
 
