@@ -22,6 +22,11 @@ Modèle d'entrée :
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Chat : le canal utilisé reste choisi
+- **Pour le joueur** : après un message en /gr, le suivant part en groupe sans rien préciser, et pareil pour /1, /2 et /c. Après un /w, le suivant repart au même joueur. On change de canal avec un autre raccourci ou le sélecteur, et le canal est gardé sur le compte.
+- **Décisions** : le canal ne change que si le message est bien parti (un /gr refusé sans groupe ne change rien).
+- **État** : 🧪 sur la branche `geoffrey/chat-canal-garde` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
 - **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
 - **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
