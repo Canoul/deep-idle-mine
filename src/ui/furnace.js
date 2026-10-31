@@ -2,6 +2,7 @@
    Ne modifie jamais rien lui-même : chaque action (poser, retirer, récupérer) est demandée au serveur (onOp),
    qui renvoie les fours et l'inventaire à jour. Entre deux réponses, la fonte est recalculée localement
    (même règle que le serveur, src/meta/furnace.js) pour faire avancer la barre : affichage seulement. */
+import { focusUnlessTouch } from './focus.js';
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
@@ -144,7 +145,7 @@ export function setupFurnace({ onOp }){
     });
     const qty = $('fpickQty');
     if(qty){
-      qty.focus();
+      focusUnlessTouch(qty);
       $('fpickMax').onclick = () => { if(pick) qty.value = countOf(inv, pick); };
       $('fpickHalf').onclick = () => { if(pick) qty.value = Math.max(1, Math.floor(countOf(inv, pick) / 2)); };   // moitié, arrondie en dessous (au moins 1)
       const ok = () => {
@@ -210,7 +211,7 @@ export function setupFurnace({ onOp }){
     };
     $('fpickOk').onclick = ok;
     qty.onkeydown = e => { if(e.key === 'Enter') ok(); };
-    qty.focus();
+    focusUnlessTouch(qty);
     $('fpickClose').onclick = closePicker;
   }
 

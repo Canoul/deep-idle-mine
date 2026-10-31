@@ -6112,3 +6112,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : tests/nav +1 ; nav, chat, town, guide : 81 ✅. Chrome sans interface 390×844 et 844×390 : chat plein écran entre bandeau et barre, message envoyé, caché ailleurs, retour Lobby en largeur PC, aucune erreur de page ✅.
 - **Panne évitée** : recharger sur #chat plantait (`gchatDock` lu avant sa création) ; le rappel d'onglet attend `nav`.
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
+
+## 31/10/2026 — Téléphone : clavier ouvert tout seul (Geoffrey)
+- **Quoi** : `qty.focus()` à l'ouverture des fenêtres du four (2) et du concasseur (1) remplacé par `focusUnlessTouch` (src/ui/focus.js, `(hover: none)`, même test que src/ui/inventory.js).
+- **Tests** ✅ `tests/focus-touch.test.js`. ⚠️ Pas essayé sur un vrai téléphone.

@@ -2,6 +2,7 @@
    Ne modifie jamais rien lui-même : chaque action (poser, retirer, récupérer) est demandée au serveur (onOp), qui
    renvoie le concasseur et l'inventaire à jour. Le butin est tiré par le serveur : quand la barre du cycle est pleine,
    l'onglet redemande l'état (onSync) au lieu de calculer quoi que ce soit. */
+import { focusUnlessTouch } from './focus.js';
 import { CRUSHER } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';
@@ -113,7 +114,7 @@ export function setupCrusher({ onOp, onSync }){
     });
     const qty = $('cpickQty');
     if(qty){
-      qty.focus();
+      focusUnlessTouch(qty);
       $('cpickMax').onclick = () => { if(pick) qty.value = countOf(inv, pick); };
       const ok = () => {
         const n = Number(qty.value);
