@@ -86,3 +86,21 @@ test('Orbe (30/10/2026) : de base, 30 tissus sombres + 30 vésicules de gaz + 10
   assert.deepEqual(RECIPES['Orbe'], { cost:{ 'Tissu sombre':30, 'Vésicule de gaz':30, 'Pierre glissante':10 }, qty:1, unlock:null });
   assert.equal(ITEMS['Orbe'].stack, true);
 });
+
+test('onglets du Craft (31/10/2026) : les mêmes que l\'inventaire, chaque recette dans un seul onglet', async () => {
+  const { recipesIn } = await import('../src/ui/craft.js');
+  const { tabOf, tabsHtml } = await import('../src/ui/inventory.js');
+  const { INVENTORY } = await import('../src/config.js');
+  const list = Object.keys(RECIPES);
+  assert.deepEqual(recipesIn(list, 'all'), list);
+  const tabs = INVENTORY.tabs.filter(t => t.id !== 'all').map(t => recipesIn(list, t.id));
+  assert.equal(tabs.reduce((n, l) => n + l.length, 0), list.length, 'aucune recette perdue ni en double');
+  assert.deepEqual(recipesIn(['Pioche en pierre', 'Orbe'], 'stuff'), ['Pioche en pierre']);
+  assert.equal(tabOf('Orbe'), 'mat');
+  const html = tabsHtml('stuff', ['Pioche en pierre', 'Orbe'], 'recette');
+  assert.match(html, /Tout\n2 recettes/);
+  assert.match(html, /class="invTab on" data-tab="stuff"/);
+  assert.match(html, /Stuff\n1 recette"/);
+  assert.match(html, /class="invTab none" data-tab="bloc"/);
+});
+

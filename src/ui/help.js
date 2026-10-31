@@ -71,6 +71,7 @@ Les stats du mineur à droite : en vert, ce que donne le stuff ; en bleu, ce que
 Sets : enregistre un équipement complet pour le remettre en un clic.`,
   craft: `Craft
 Une icône par recette connue ; ✔ = tu as tout ce qu'il faut. Clique une recette pour voir ses ingrédients.
+Les onglets du haut trient les recettes par catégorie, comme dans l'inventaire.
 D'autres recettes se débloquent avec des blueprints (treasures, onglet Recherche) : sélectionne le blueprint dans l'Inventaire, puis « Utiliser ».`,
   upgrade: `Amélioration
 Identification : donne une qualité (R1 à R7) à une pièce, en sacrifiant un 2e exemplaire du même objet.
