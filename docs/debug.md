@@ -6023,3 +6023,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `UPGRADE.runeDiv` ; `runeLineValue`, `runeLineFactor` (src/meta/piece.js), utilisés par `pieceBonus`, `statLines`, `runeLines` et l'aperçu de src/ui/upgrade.js. Les % stockés ne changent pas : aucune migration. `lineValue` inchangé pour l'identification.
 - **Tests** ✅ tests/rune.test.js +1, tests/gearscore.test.js (exemple 46 → 16 GS), 25 fichiers liés aux pièces et runes ; anti-triche 119/119. ❌ Rouges aussi sur `main` propre : « une tour et une instance… », « fortune : le doublon… », « recycle : un BP du T2… », « recettes du T4… ».
 - ⚠️ Une session ou une prison en cours peut changer de résultat si elle est rejouée, ses stats étant recalculées. GS et classements baissent pour les pièces runées.
+
+## 31/10/2026 — Stuff : sets en bandeau (Geoffrey)
+- **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
+- **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
+
