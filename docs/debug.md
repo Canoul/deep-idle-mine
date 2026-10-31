@@ -6087,3 +6087,18 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Tri des runes par qualité (Geoffrey)
 - **Quoi** : `sortKey` (src/meta/inventory.js) : `-runeQuality` après l'ordre du catalogue, seulement pour `RUNE.item` et `RUNE.fragment.item`. Qualité des autres pièces toujours ignorée (test du 25/10 gardé).
 - **Tests** ✅ `tests/inventory-arrange.test.js`, `tests/anticheat/arrange.test.js`.
+
+## 31/10/2026 — Craft : onglets par catégorie (Geoffrey)
+- **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
+- **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
+
+## 31/10/2026 — Plastron de l'équilibre : pods 188 → 112 (Geoffrey)
+- **Quoi** : `STUFF.items` (src/config.js), ratio GS / x du tier 2,92 → 2,01 (`pieceGS` 1 459 → 1 003, tier 3 = 500 x). 112 pods = 1 003 x, 111 pods = 997 x.
+- **Tests** : tests/steel-gear (3 valeurs), tests/stuff-balance +1.
+- **Fragile** : les lignes et runes de la pièce ne bougent pas, elles suivent le x du tier (500 x) et non les pods.
+
+## 31/10/2026 — Icône des pièces runées (Geoffrey)
+- **Quoi** : `runeMark(p)` dans src/ui/rarity.js (icône `gem`, rien sans `p.rune`), affichée par `slotHtml` (inventory.js), `renderSlots` et la liste de choix (stuff.js), `box` et `row` (upgrade.js). CSS `.pi.runeMark` et `.runeIco` (les listes n'ont pas de `.slot`), couleur `--rune`.
+- **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
+- ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
+

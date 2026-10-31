@@ -13,6 +13,19 @@ Modèle d'entrée :
 - **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
 - **État** : 🧪 sur la branche `geoffrey/tri-runes` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Plastron de l'équilibre : moins de pods
+- **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
+- **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
+- **À suivre** : il a moins de pods que le Plastron en acier (+137), mais reste plus fort que lui au total (1 003 x contre 822 x).
+
+## 31/10/2026 — Geoffrey — Icône sur les pièces runées
+- **Pour le joueur** : une petite gemme violette en bas à gauche de la case d'une pièce runée (rune ou fragment) : inventaire, stuff porté, fiche d'un ami, onglet Amélioration, listes de choix.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie
+- **Pour le joueur** : l'onglet Craft a les mêmes onglets que l'inventaire (Tout, Blocs, Minerais, Stuff, Butin des mobs, Matériaux, Runes, Divers). Un onglet sans recette est grisé.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Chat : des messages n'apparaissaient pas après en avoir envoyé un
 - **Pour le joueur** : envoyer un message juste après l'arrivée de ceux des autres les faisait sauter jusqu'au rechargement de la page : c'est comme ça qu'un compte a raté l'annonce du raffle en tapant `!join`. Corrigé pour le Chat global et le chat de session. Le gagnant d'un raffle voit maintenant son lot dans l'inventaire sans recharger.
 - **Vérifié** : raffle réel sur un serveur local, le lot arrive bien dans l'inventaire du gagnant.

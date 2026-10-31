@@ -1165,8 +1165,8 @@ export const STUFF = {
     'Bottes en acier':     { slot:'pieds',  tex:'boots_steel',   stats:{ speed:2.08 } },   // 27/10 (Geoffrey) : buff +100 x, ≈ 500 x (avant 1,67 ; 25/10 : 1,08)
     'Pioche en acier':     { slot:'pioche', tex:'pickaxe_steel', stats:{ mineSpeed:0.58 } },    // 27/10 (Geoffrey) : buff ≈ +100 x, 0,58 (au centième, comme en session ; avant 0,5 ; 25/10 : nerf, avant 0,6)
     'Épée en acier':       { slot:'epee',   tex:'sword_steel',   set:{ damage:18.5 } },   // remplace les mains nues (5) ; 27/10 (Geoffrey) : buff +100 x (avant 16 ; 24/10 : 13)
-    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:188, oxygenMax:30, mineSpeedPct:3, damagePct:3,
-                                   attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
+    'Plastron de l\'équilibre': { slot:'torse', tex:'chest_balance', stats:{ pods:112, oxygenMax:30, mineSpeedPct:3, damagePct:3,
+                                   attackSpeed:8, tenacity:3, fortune:2, looting:3, torches:8 } },   // 31/10 (Geoffrey) : pods 112 pour valoir 2 fois le tier 3, ≈ 1 000 x (avant 188, 1 459 x) ; 24/10 : × 1,5 arrondi (avant pods 125, oxygène 20, 2, 2, 5, 2, 1, 2, 5)
     /* tier 4 (Treasure T4, 27/10/2026, Geoffrey) : mithril = même stat que l'acier, à la valeur du T4 (650 x ; plastron
        hors règle, même rapport que l'acier : 137 pods pour 500 x). Thorium et cobalt (T4.5, 750 x) : deux stats à 50/50,
        aux prix du GS (worth, gs, avec les ajustements de Geoffrey UPGRADE.priceAdjust, 27/10) ; plastron

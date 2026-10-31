@@ -48,3 +48,9 @@ test('plastrons : hors règle, au-dessus de la valeur de leur tier (torse volont
   for(const [mat, tier] of Object.entries(MATERIALS))
     assert.ok(pieceGS(`Plastron en ${mat}`) > UPGRADE.tiers[tier].x, `Plastron en ${mat} : ${pieceGS(`Plastron en ${mat}`)} x`);
 });
+
+test('Plastron de l\'équilibre : 2 fois le x de son tier (31/10/2026, Geoffrey)', () => {
+  assert.equal(tierOf('Plastron de l\'équilibre'), 3);
+  assert.equal(pieceGS('Plastron de l\'équilibre'), 1003);
+  assert.ok(Math.abs(pieceGS('Plastron de l\'équilibre') / UPGRADE.tiers[3].x - 2) < 0.01);
+});

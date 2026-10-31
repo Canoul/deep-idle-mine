@@ -9,7 +9,7 @@ import { recipeOfBlueprint, isUnlocked, recyclable, recycleRefund, recycleRange 
 import { statLines, equipSlotFor } from '../meta/stuff.js';
 import { tipAttr } from './tooltip.js';
 import { pieceName } from '../meta/piece.js';
-import { rcls, rname, rlabel, pname } from './rarity.js';
+import { rcls, rname, rlabel, pname, runeMark } from './rarity.js';
 import { glyphInfo } from '../meta/glyphs.js';
 import { pxi } from './pxicons.js';
 
@@ -41,7 +41,7 @@ const fullQty = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function slotHtml(s, i, fresh){
   if(!s) return `<div class="slot empty" data-i="${i}"></div>`;
   const q = isStackable(s.item) ? `<span class="q">${fmtQty(s.qty)}</span>` : s.plus > 0 ? `<span class="q">+${s.plus}</span>` : '';
-  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${q}</div>`;
+  return `<div class="slot${rcls(s.item)}${fresh.has(i)?' fresh':''}" data-i="${i}" draggable="true"${tipAttr(s.item, `${pieceName(s)} × ${fullQty(s.qty)}`, s.uid != null ? s : null)}>${iconHtml(s.item)}${runeMark(s)}${q}</div>`;
 }
 
 /* blueprint : bouton « Utiliser » (débloque sa recette), ou pourquoi on ne peut pas */
@@ -114,12 +114,14 @@ export function tabSlots(inv, tab, n){
   return inv.slots.map((s, i) => s && tabOf(s.item) === tab ? i : -1).filter(i => i >= 0);
 }
 let tab = 'all';   // onglet ouvert (gardé d'un affichage à l'autre)
-function tabsHtml(inv){
-  const n = {}; for(const s of inv.slots) if(s){ const t = tabOf(s.item); n[t] = (n[t] || 0) + 1; }
+/* rangée d'onglets, aussi celle de l'onglet Craft (31/10/2026) : active = onglet ouvert, items = objets à compter, unit = mot
+   de la bulle (« 3 slots », « 3 recettes »), all = compte de « Tout » */
+export function tabsHtml(active, items, unit, all = items.length){
+  const n = {}; for(const item of items){ const t = tabOf(item); n[t] = (n[t] || 0) + 1; }
   return INVENTORY.tabs.map(t => {
-    const icon = t.px ? pxi(t.px) : iconHtml(t.icon), c = t.id === 'all' ? usedSlots(inv) : n[t.id] || 0;
-    return `<button class="invTab${t.id === tab ? ' on' : ''}${c ? '' : ' none'}" data-tab="${t.id}" role="tab" aria-selected="${t.id === tab}" `+
-           `aria-label="${esc(t.name)}" data-tip="${esc(t.name)}\n${c} slot${c > 1 ? 's' : ''}">${icon}</button>`;
+    const icon = t.px ? pxi(t.px) : iconHtml(t.icon), c = t.id === 'all' ? all : n[t.id] || 0;
+    return `<button class="invTab${t.id === active ? ' on' : ''}${c ? '' : ' none'}" data-tab="${t.id}" role="tab" aria-selected="${t.id === active}" `+
+           `aria-label="${esc(t.name)}" data-tip="${esc(t.name)}\n${c} ${unit}${c > 1 ? 's' : ''}">${icon}</button>`;
   }).join('');
 }
 
@@ -132,7 +134,7 @@ export function renderInventory(inv, fresh=new Set(), actions={}){
   const grid = $('invGrid'), n = gridSize(inv, INVENTORY.cols, INVENTORY.minSlots);
   grid.style.setProperty('--cols', INVENTORY.cols);
   const draw = () => {
-    $('invTabs').innerHTML = tabsHtml(inv);
+    $('invTabs').innerHTML = tabsHtml(tab, inv.slots.filter(Boolean).map(s => s.item), 'slot', usedSlots(inv));
     const shown = tabSlots(inv, tab, n);
     grid.innerHTML = shown.map(i => slotHtml(inv.slots[i] || null, i, fresh)).join('') ||
       `<p class="mut invNone">Rien dans « ${esc(INVENTORY.tabs.find(t => t.id === tab)?.name ?? '')} ».</p>`;
