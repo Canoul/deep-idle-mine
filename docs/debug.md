@@ -6084,6 +6084,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Lot** ✅ vérifié sur vrai serveur local : 10 Graphite ingot chez le gagnant, rien chez le perdant. Pas vérifiable d'ici sur le serveur en ligne. Le navigateur ne relisait pas l'inventaire : message du gagnant marqué `winner` (id de compte), `fresh` de `setupChat` → `gameApi.state()`.
 - **Tests** ✅ `tests/chat-ui.test.js` (DOM imité, rouge avant correction), `tests/raffle.test.js`, `tests/chat.test.js`.
 
+## 31/10/2026 — Tri des runes par qualité (Geoffrey)
+- **Quoi** : `sortKey` (src/meta/inventory.js) : `-runeQuality` après l'ordre du catalogue, seulement pour `RUNE.item` et `RUNE.fragment.item`. Qualité des autres pièces toujours ignorée (test du 25/10 gardé).
+- **Tests** ✅ `tests/inventory-arrange.test.js`, `tests/anticheat/arrange.test.js`.
+
 ## 31/10/2026 — Craft : onglets par catégorie (Geoffrey)
 - **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
 - **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).

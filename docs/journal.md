@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
+- **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Plastron de l'équilibre : moins de pods
 - **Pour le joueur** : le Plastron de l'équilibre donne +112 pods au lieu de +188 ; ses 8 autres stats ne changent pas. Les plastrons déjà fabriqués suivent.
 - **Décisions** : il valait 2,92 fois le x de son tier ; il vaut maintenant 2 fois (1 003 x au lieu de 1 459 x). Valeur provisoire.
