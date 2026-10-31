@@ -229,6 +229,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .navPrison{display:flex;gap:var(--u)}
 .navPrison button{min-height:0;padding:var(--u) calc(3*var(--u))}
 .navPrison button.on{color:var(--acc-lt)}
+.navShort{display:none}
 .navWiki{display:inline-flex;align-items:center;gap:calc(2*var(--u));color:var(--mut);text-decoration:none}
 .navWiki:hover{color:var(--acc-lt)}
 .navWiki .pi{width:calc(12*var(--u));height:calc(12*var(--u))}
@@ -775,7 +776,8 @@ body.phone .chatDock .card{background:#0b0806}
   .navSession>.pi{display:none}
   .topbar{gap:calc(2*var(--u))}
   .navSession,.navEnergy{font-size:var(--fs-s)}
-  .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small{display:none}
+  .navEnergy .bar,#navPrisonBtn,.navLevel .bar,.navLevel small,.navLong{display:none}
+  .navShort{display:inline}                                     /* « Sortir » : laisse la place aux liens Wiki et Discord */
   .dock ul button kbd{display:none}
   .guide{right:8px;bottom:calc(var(--dock-h) + 6*var(--u))}
   .invWrap,.furnWrap,.lobbyWrap{padding:calc(9*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
