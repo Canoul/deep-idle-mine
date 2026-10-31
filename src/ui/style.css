@@ -16,6 +16,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{background:var(--void) url(../../textures/ui/wall.png) 0 0/calc(96*var(--u)) repeat;image-rendering:pixelated}
+html{scrollbar-gutter:stable}
 body{margin:0;min-height:100dvh;color:var(--txt);font:400 var(--fs)/1.3 var(--f-body);overflow-x:clip}
 /* assombrit le mur par paliers (vignette sans flou) */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -254,7 +255,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .soon{text-align:center}
 .soon .big .pi{width:calc(48*var(--u));height:calc(48*var(--u));color:var(--mut)}
 .soon h2{margin:calc(3*var(--u)) 0 var(--u);font-size:var(--fs-xl)}
-.invWrap,.furnWrap,.lobbyWrap{position:relative;max-width:calc(450*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
+/* tous les onglets ont la même largeur, quel que soit leur contenu, et sont réduits à 80 % (31/10/2026, Geoffrey ; téléphone :
+   taille normale, le texte deviendrait illisible ; Session : son affichage suit la mine) */
+@media (min-width:701px){ .view:not([data-view="session"]){zoom:.8} }
+.invWrap,.furnWrap,.lobbyWrap{position:relative;width:100%;max-width:calc(560*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
 .invHead{display:flex;align-items:flex-end;justify-content:space-between;gap:calc(6*var(--u));margin-bottom:calc(15*var(--u));flex-wrap:wrap}
 .invHead h1,.lobbyWrap h1{display:flex;align-items:center;gap:calc(6*var(--u));margin:0;font-size:var(--fs-h1);line-height:.85;color:#ffe6c4;
   text-shadow:var(--u) var(--u) 0 var(--shadow),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
@@ -267,12 +271,10 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .ringStats{color:#c79bff}   /* effet des anneaux (groupe) */
 
 /* ---------- lobby (lecture seule pendant une session) ---------- */
-.lobbyWrap{max-width:calc(450*var(--u))}
 .lobbyWrap>h1{margin-bottom:calc(15*var(--u))}
 .inSession{display:flex;align-items:center;justify-content:space-between;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u));
   padding:calc(3*var(--u)) calc(6*var(--u));background:var(--sel);box-shadow:0 0 0 var(--u) var(--acc),calc(2*var(--u)) calc(2*var(--u)) 0 #000}
 .inSession .pi{color:var(--acc);margin-right:calc(2*var(--u))}
-.actMenu{max-width:calc(300*var(--u));margin:0 auto}
 .actList{display:flex;flex-direction:column;gap:calc(3*var(--u))}
 .actBtn{width:100%;justify-content:flex-start;gap:calc(6*var(--u));min-height:calc(30*var(--u));padding:calc(3*var(--u)) calc(8*var(--u));text-align:left}
 .actIcon{flex:none;width:calc(16*var(--u));text-align:center;font-size:var(--fs-xl)}
@@ -486,7 +488,7 @@ body{--chat-w:calc(287.5*var(--u))}
 .iiStats{margin:calc(3*var(--u)) 0 0;padding:0;list-style:none}
 .iiActs{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u));margin-top:calc(4*var(--u))}
 /* sur ordinateur : le détail de l'objet à droite de la grille (sinon caché sous la barre d'action) */
-.invWrap{max-width:calc(560*var(--u));display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
+.invWrap{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));grid-template-rows:auto auto 1fr;column-gap:calc(9*var(--u));align-items:start}
 .invWrap>.invHead{grid-column:1/-1}
 .invWrap>.invTabs,.invWrap>.invGrid{grid-column:1}   /* onglets au-dessus de la grille, colonne de gauche */
 .invWrap>.invInfo{grid-column:2;grid-row:2/span 2;margin-top:0;position:sticky;top:calc(var(--top-h) + 6*var(--u))}
@@ -518,7 +520,6 @@ body{--chat-w:calc(287.5*var(--u))}
 #account .chk input{min-height:0;width:calc(8*var(--u));height:calc(8*var(--u))}
 
 /* ---------- onglets Four et Concasseur ---------- */
-.furnWrap{max-width:calc(400*var(--u))}
 .furnList{display:flex;flex-direction:column;gap:calc(15*var(--u))}
 .furn h3,.crush h3{margin:0 0 calc(3*var(--u));font-size:var(--fs-l)}
 .fhead{display:flex;align-items:center;gap:calc(3*var(--u));flex-wrap:wrap;margin-bottom:calc(3*var(--u))}
@@ -624,14 +625,12 @@ body{--chat-w:calc(287.5*var(--u))}
   background:radial-gradient(ellipse at 50% 50%,#ff7a2e55 0 30%,#ff7a2e22 30% 60%,transparent 60%)}
 .stuffStatsCard{margin-top:calc(18*var(--u));max-width:calc(220*var(--u))}
 /* sur ordinateur : Sets | cases | stats (les stats à droite des cases) */
-.view[data-view="stuff"] .furnWrap{max-width:calc(720*var(--u))}
 .stuffMain{display:grid;grid-template-columns:minmax(0,1fr) calc(150*var(--u));column-gap:calc(9*var(--u));align-items:start}
 .view[data-view="stuff"] .stuffStatsCard{margin-top:0;max-width:none}
 .stuffLevel{padding-bottom:calc(4*var(--u));margin-bottom:calc(3*var(--u));box-shadow:0 var(--u) 0 var(--sep)}
 .view[data-view="stuff"]{position:relative}
 
 /* ---------- onglet Skills ---------- */
-.skWrap{max-width:calc(520*var(--u))}
 .skHead{display:flex;align-items:center;gap:calc(4*var(--u));flex-wrap:wrap;margin-bottom:calc(15*var(--u))}
 .skTrees{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(9*var(--u))}
 .skTree h3{margin:0 0 calc(4*var(--u));font-size:var(--fs-l);text-align:center}
@@ -848,7 +847,6 @@ button.danger{color:var(--bad)}
 .jnew{color:var(--gold, #ffd23f)}
 
 /* ---------- onglet Sorts (src/ui/spells.js) : la barre en haut, le grimoire et la fiche du sort dessous ---------- */
-.spWrap{max-width:calc(680*var(--u))}
 /* couleur d'une famille de sorts : --c (icône, texte), --cdk (fond de l'icône) */
 .tr-mineur{--c:#ffb347;--cdk:#4a2c0e} .tr-logisticien{--c:#7cc6f2;--cdk:#143247}
 .tr-barbare{--c:#ff6a5a;--cdk:#4d1510} .tr-scroll{--c:#c79bff;--cdk:#33205a}
@@ -978,8 +976,6 @@ button.danger{color:var(--bad)}
 @keyframes fxPulse{50%{box-shadow:0 0 0 var(--u) #000,inset 0 0 0 calc(2*var(--u)) var(--fx)}}
 
 /* ---------- sets (src/ui/sets.js) : à gauche dans Stuff, Skills et Sorts ---------- */
-.setWrap{max-width:calc(520*var(--u))}
-.skWrap{max-width:calc(640*var(--u))}
 .setLay{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
 .spGrid{display:grid;grid-template-columns:calc(120*var(--u)) minmax(0,1fr);gap:calc(9*var(--u));align-items:start}
 .setsCard h2{font-size:var(--fs)}

@@ -20,17 +20,15 @@ export function dockWidth(v, screen = innerWidth){
 /* largeur affichée : celle voulue, arrêtée au bord de l'interface centrale (limit), jamais sous minWidth */
 export const dockFit = (want, limit) => Math.max(CHAT.dock.minWidth, Math.min(want ?? CHAT.dock.startWidth, limit));
 
-/* bord gauche de l'interface centrale de l'onglet ouvert : la mine en session, sinon ses cartes, sinon son contenu */
+/* bord gauche de l'interface centrale de l'onglet ouvert : la mine en session, sinon son contenu (même largeur partout) */
 function centralLeft(){
-  const seen = el => el.getClientRects().length > 0, left = el => el.getBoundingClientRect().left;
+  const seen = el => el.getClientRects().length > 0;
   const view = document.querySelector('.view:not([hidden])');
   if(!view) return Infinity;
-  const canvas = [...view.querySelectorAll('#cvWrap, #cvMiWrap, #cvTwWrap, #cvGtWrap, #cvInWrap')].find(seen);
-  if(canvas) return left(canvas);
-  const cards = [...view.querySelectorAll('.card')].filter(seen).map(left);
-  if(cards.length) return Math.min(...cards);
-  const wrap = view.querySelector('.invWrap, .furnWrap') ?? view;
-  return left(wrap) + (parseFloat(getComputedStyle(wrap).paddingLeft) || 0);
+  const el = [...view.querySelectorAll('#cvWrap, #cvMiWrap, #cvTwWrap, #cvGtWrap, #cvInWrap')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
+  if(!el) return Infinity;
+  const pad = el.matches('.lobbyWrap, .invWrap, .furnWrap') ? (parseFloat(getComputedStyle(el).paddingLeft) || 0) * 0.8 : 0;
+  return el.getBoundingClientRect().left + pad;
 }
 
 /* edges : bordures à tirer (data-edge : h hauteur, w largeur, hw les deux) ; onChange() : taille ou pliage changé (le chat
