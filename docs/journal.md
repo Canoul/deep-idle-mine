@@ -25,6 +25,10 @@ Modèle d'entrée :
 - **À suivre** : créer le bot sur Discord et l'installer sur le serveur (`docs/bot-discord.md`), puis le tester en vrai.
 - **État** : 🧪 sur la branche `geoffrey/bot-report` (pas en ligne)
 
+## 31/10/2026 — Geoffrey — Téléphone : tout est recentré
+- **Pour le joueur** : sur téléphone, en portrait comme en paysage, la page reprend la largeur de l'écran et les onglets sont de nouveau centrés. Le bandeau du haut se compacte, la barre d'onglets défile, le chat replié tient sur une ligne, et le guide s'efface quand le chat est ouvert.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Stuff : les cases ne se décalent plus avec les noms longs
 - **Pour le joueur** : la case Torche sortait du cadre avec la Lampe à incandescence, et d'autres cases pouvaient faire pareil sur une fenêtre étroite. Toutes les cases restent alignées : un nom trop long passe à la ligne, coupé si besoin.
 - **État** : ✅ en ligne le 31/10

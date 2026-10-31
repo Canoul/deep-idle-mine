@@ -6013,3 +6013,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/bot-todo.test.js` ✅ 8/8 ; `discord.js` se charge et `bot/main.js` passe la vérification de syntaxe.
 - ⚠️ **`bot/main.js` n'a jamais tourné contre Discord** : pas de jeton. Copie, réactions et `/todo` restent à essayer en vrai.
 - ⚠️ Pas de rattrapage au redémarrage du bot. Une erreur après `save` (ex. `react`) laisse le sujet créé, sans emoji : réagir à la main marche.
+
+## 31/10/2026 — Téléphone : page dézoomée, plus rien de centré (Geoffrey)
+- **Cause** : le bandeau du haut, allongé par le niveau dans le lobby refait, dépassait l'écran (511 px pour 390 ; 1169 px pour 844 en paysage). Chrome élargit alors la page : les onglets restent à 390 px, calés à gauche, et les éléments fixes (barre d'onglets, guide) suivent la page. Les règles de la barre d'onglets ne valaient que sous 700 px. `.lobbyCols` en `1fr` : la colonne pouvait dépasser (`minmax(0,1fr)`).
+- **Correctif** (src/ui/style.css, sous 1170 px) : `.topbar` sans débordement, pseudo qui se raccourcit, sans titre ni barre de session ; pas de « aucune » sans session (sous 700 px) ; barre d'onglets qui défile ; chat replié sur une ligne ; guide caché chat ouvert.
+- **Vérifié** ✅ Chrome en téléphone simulé, 360 × 780, 390 × 844, 844 × 390, 1024 × 768, 1400 × 900 : page à la largeur de l'écran, marges égales, sans erreur ; onglets Lobby, Session, Inventaire, Stuff, Craft, Skills, Social. ⚠️ Pas vu sur un vrai téléphone.
+
