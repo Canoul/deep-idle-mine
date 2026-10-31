@@ -63,7 +63,7 @@ test('move : un nouveau venu remet les autres « pas prêt » (sauf « prêt tou
   await party.leave(monsta);
 });
 
-test("ready : prêt → le chef lance ; « prêt tout le temps » se coche pendant la session et passe avant « pas prêt »", async () => {
+test("ready : prêt → le chef lance ; « prêt tout le temps » se coche pendant la session et le met prêt ; « pas prêt » l'enlève, la case reste", async () => {
   await assert.rejects(party.launch(canoul, {}), /Pas encore prêt/);
   assert.equal((await setReady('crousti', true)).status, 200);
   const r = await party.launch(canoul, {});
@@ -74,8 +74,8 @@ test("ready : prêt → le chef lance ; « prêt tout le temps » se coche penda
   assert.equal(a.status, 200, JSON.stringify(a.data));
   assert.equal((await member(canoul, crousti)).always, true);
   assert.equal((await member(canoul, crousti)).ready, true);
-  assert.equal((await setReady('crousti', false)).data.party.members.find(m => m.name === 'Crousti').ready, true,
-    '« tout le temps » coché : « pas prêt » ne l\'enlève pas (comme sa case)');
+  const off = (await setReady('crousti', false)).data.party.members.find(m => m.name === 'Crousti');
+  assert.deepEqual([off.ready, off.always], [false, true], 'comme son bouton');
 });
 
 test('move : refusé si l\'un des deux est en session ; lobby complet ; même joueur ; pseudo inconnu', async () => {

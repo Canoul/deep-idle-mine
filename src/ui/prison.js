@@ -95,9 +95,9 @@ export function launchPrisonText({ mine = false, party = null, meId = null } = {
   return `Lancer termine ${who}.\nLe coffre du run en cours est versé dans ${others.length ? 'l\'inventaire de chacun' : 'ton inventaire'}, ${LOOT}`;
 }
 /* Membre : « Je suis prêt » ou « Prêt tout le temps » (always) alors que sa prison tourne : '' sinon */
-export function readyPrisonText({ prison, always = false } = {}){
+export function readyPrisonText({ prison } = {}){
   if(!prisonActive(prison)) return '';
-  return `${always ? 'Prêt tout le temps' : 'Prêt'} : quand le chef lance, ta prison est terminée.\n`+
+  return `Prêt : quand le chef lance, ta prison est terminée.\n`+
     `Le coffre du run en cours est versé dans ton inventaire, ${LOOT}`;
 }
 

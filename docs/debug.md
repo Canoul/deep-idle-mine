@@ -5869,3 +5869,16 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
 - **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
 - **Tests** ✅ lobby +1.
+
+## 31/10/2026 — « Prêt tout le temps » revu (Geoffrey) — branche `geoffrey/pret-prison`
+- **Panne** : la case n'était gardée que dans un groupe (`alwaysOn` en mémoire, reconstruit depuis les groupes au `load`).
+  La prison se fait seul : case cachée, et réglage perdu au premier redémarrage (⚠️ de l'entrée du 23/10, corrigé ici).
+- **Quoi** : store `getAlwaysReady` / `setAlwaysReady` (ns `always_ready`, `server/game/store.js`) ; `alwaysOn` relu au
+  `load`, les `m.always` des groupes existants y sont recopiés. `state` renvoie `alwaysReady`. Route `always-ready`
+  possible sans groupe. Sémantique : `m.always` ne vaut plus prêt (`publicParty`, `notReady`, `sweep`, `newMember`) ;
+  `unready` garde `always && ready` ; `ready(false)` enlève prêt ; cocher en session met `ready` (il était prêt).
+  Lobby : `alwaysReadyState` lit `st.alwaysReady`, plus de confirmation prison sur la case (reste sur « Je suis prêt »).
+  `adminReady` : `--always on/off` met aussi prêt / pas prêt ; `ready` donné l'emporte.
+- **Tests** : `tests/party`, `lobby`, `admin-party`, `prison-ui`.
+- ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+- ⚠️ Un membre coché pas prêt et absent est retiré après `memberTimeout`, comme tout membre pas prêt.
