@@ -6044,3 +6044,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Mesure base (20 joueurs)** : prison ÷ mines ≈ 0,7 en XP par heure de jeu ; minerais ≈ 0,37 ; XP des mobs déduite par soustraction, ×1,4 à ×3,8 selon le joueur en area 6-7. Cause du surplus de mobs non prouvée.
 - **Quoi** : `PRISON.mobXpMul` 0,5 lu dans `killMob` (src/sim/actions.js). `stats.xp` peut valoir x,5 en prison ; la part versée est arrondie vers le bas (`shareBySegments`), le HUD aussi.
 - **Tests** ✅ prison-profile +1, prison-sim, prison-ui, prison-server (❌ `une tour et une instance lancées terminent la prison` : déjà en échec sur main, sans lien). Simulation prison lancée sans blocage ; effet réel à mesurer en base.
+
+## 31/10/2026 — Orbe supérieur (Geoffrey)
+- **Quoi** : `ITEMS['Orbe supérieur']`, recette de base (src/recipes.js), texture `orb_superior` (scripts/gen_textures.py, liste des textures de src/config.js). Aucun usage pour l'instant.
+- **Tests** ✅ tests/craft.test.js. Aucun nouveau chemin de ressources : craft habituel. ⚠️ Texture non vue en jeu.
+
