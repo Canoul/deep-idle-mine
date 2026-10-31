@@ -333,6 +333,8 @@ test('préfixes : [Général], [LFG], de / à pour un MP', async () => {
   const { chatPrefix } = await import('../src/ui/chat-tabs.js');
   assert.equal(chatPrefix({ channel:'general', name:'admin' }, 'x'), '[Général] admin');
   assert.equal(chatPrefix({ channel:'group', name:'admin' }, 'x'), '[Groupe] admin');
+  assert.equal(chatPrefix({ channel:'group', name:'admin', leader:true }, 'x'), '[Chef de groupe] admin');
+  assert.equal(chatPrefix({ channel:'general', name:'admin', leader:true }, 'x'), '[Général] admin');
   assert.equal(chatPrefix({ channel:'lfg', name:'admin' }, 'x'), '[LFG] admin');
   assert.equal(chatPrefix({ channel:'mp', name:'admin', account:'a', toName:'Zoe' }, 'x'), 'de admin');
   assert.equal(chatPrefix({ channel:'mp', name:'admin', account:'x', toName:'Zoe' }, 'x'), 'à Zoe');
@@ -485,3 +487,25 @@ test('routes du lien : aperçu et rejoindre par le numéro du message, numéro i
   await assert.rejects(r['POST /api/social/chat/lobby/join']({ me:OUT, body:{ id:'x' } }), { code:'not_found' });
   await assert.rejects(r['POST /api/social/chat/lobby']({ me:null, body:{ id:message.id } }), { code:'not_authenticated' });
 });
+
+test('chef du groupe : ses messages /gr portent [Chef de groupe] pour tous, même après un changement de chef ou un redémarrage ; impossible à imiter', async () => {
+  const { social, party, store, advance } = setupGlobal();
+  const { party: p } = await party.create(ME).then(r => r?.party ? r : { party: r });
+  await party.join(OTHER, p.code);
+  await social.chatPost(ME, { channel:'group', text:'je mène', leader:true }); advance(4000);
+  await social.chatPost(OTHER, { channel:'group', text:'je suis', leader:true }); advance(4000);
+  await social.chatPost(ME, { channel:'general', text:'bonjour' });
+  const read = async who => (await social.chatGet(who, 0)).messages.map(m => [m.text, !!m.leader]);
+  const want = [['je mène', true], ['je suis', false], ['bonjour', false]];
+  assert.deepEqual(await read(ME), want, 'le chef se voit lui-même');
+  assert.deepEqual(await read(OTHER), want, 'les membres le voient');
+  await party.promote(ME, OTHER.id).catch(() => party.promote(ME, OTHER.displayId));
+  assert.deepEqual(await read(OTHER), want, 'titre gardé pour un message déjà envoyé');
+  const raw = await store.getGlobalChat();
+  const after = createSocialService({ store, game: {}, party: {}, clock: () => raw.msgs.at(-1).at + 1, accounts: { getAccount: async id => ACCOUNTS[id] ?? null } });
+  assert.deepEqual((await after.chatGet(OTHER, 0)).messages.map(m => [m.text, !!m.leader]), want, 'après un redémarrage');
+  const { chatLine } = await import('../src/ui/chat-tabs.js');
+  assert.match(chatLine({ id:1, at:0, channel:'group', name:'<Zoe>', text:'x', leader:true }, 'y'), /<span class="chLead">\[Chef de groupe\]<\/span> &lt;Zoe&gt; : x/);
+  assert.doesNotMatch(chatLine({ id:2, at:0, channel:'group', name:'[Chef de groupe]', text:'x' }, 'y'), /chLead/, 'un pseudo ne peut pas imiter le titre');
+});
+
