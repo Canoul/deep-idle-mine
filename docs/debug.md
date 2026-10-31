@@ -6033,6 +6033,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
 - **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
 
+## 31/10/2026 — Chien de magma, Vers de terre, Bleed (Geoffrey)
+- **Quoi** : `src/sim/bleed.js` (`addBleed`, `tickBleed`, `bleedSlow` : moveT, climbT, winchT, mineRate). `src/sim/worm.js` : le ver navigue dans `G.worms`, hors de `G.mobs` : aucun ciblage à filtrer. Coincé, il passe dans `G.mobs` (`type:'ver'`, `left`), branche en tête de `updateMobs`, `release` le rend à `G.worms` avec ses PV. Stun : `m.wormUntil`, lu dans ai.js (cause `worm`). Vue : `worms` (src/shared/view.js) ; dessin canvas.js ; `G.worms` sauvegardé par le k hole (`WORLD`). Compte dans `walkerCap`. `MOBS.noTrap` : ver. Textures : scripts/gen_textures.py.
+- **Tests** ✅ `tests/mobs-a7.test.js` (9) ; 24 fichiers liés 303/306. ❌ Rouges aussi sur `main` propre : « fortune : le doublon… », « recycle : un BP du T2… », « recettes du T4… ».
+- **Simulation** : acier, 3 mineurs, 3 seeds, table réelle : 0 ver, les mineurs n'atteignent pas l'area 7, donc les vraies valeurs ne sont pas mesurées. Forcé (chiens et vers 80 % de la table dès l'area 2, 2 seeds) ✅ 0 bloquée, 31,5 vers et 423,5 stacks par session, Bleed plafonné à 5, 75 chiens et 38 vers tués ; profondeur 301 (350), coffre 3 667 (4 400).
+- ⚠️ Équilibrage en area 7 jamais observé. Pas vu dans un navigateur : rendu du ver, textures. Une session en cours rejouée après la mise en ligne peut diverger (tables, IA).
+- ⚠️ Stun cause `worm` : pas de libellé dédié dans la bulle. Un ver coincé dont on mine le bloc reste à sa place. Peau et chair sans usage.
+
 ## 31/10/2026 — Prison : XP des mobs ×0,5 (Geoffrey)
 - **Mesure base (20 joueurs)** : prison ÷ mines ≈ 0,7 en XP par heure de jeu ; minerais ≈ 0,37 ; XP des mobs déduite par soustraction, ×1,4 à ×3,8 selon le joueur en area 6-7. Cause du surplus de mobs non prouvée.
 - **Quoi** : `PRISON.mobXpMul` 0,5 lu dans `killMob` (src/sim/actions.js). `stats.xp` peut valoir x,5 en prison ; la part versée est arrondie vers le bas (`shareBySegments`), le HUD aussi.

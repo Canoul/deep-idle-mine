@@ -197,6 +197,9 @@ export function killMob(G,m,o){
     const C=MOBS.chair, r=(a)=>a.min+Math.floor(G.rng()*(a.max-a.min+1));
     const n=lootCol(G,m,C.flesh.item,ITEMS[C.flesh.item].w ?? 1,r(C.flesh)), c=lootCol(G,m,MOBS.bugItem,ITEMS[MOBS.bugItem].w,r(C.chitin));
     log(G, `🗡 ${m.name} : mur de chair vaincu (+${n} ${C.flesh.item.toLowerCase()}, +${c} chitine)`);
+  } else if(o.type==='chien' || o.type==='ver'){
+    const C=MOBS[o.type], n=lootCol(G,m,C.item,ITEMS[C.item].w ?? 1,C.loot(G.rng));
+    log(G, `🗡 ${m.name} : ${o.type==='ver' ? 'vers de terre' : 'chien de magma'} vaincu (+${n} ${C.item.toLowerCase()})`);
   } else if(o.type==='golem'){
     golemOxygen(G,o);   // Âme du Golbute (30/10)
     const it=MOBS.golem.item, n=lootCol(G,m,it,ITEMS[it].w ?? 1,MOBS.golem.loot(G.rng));

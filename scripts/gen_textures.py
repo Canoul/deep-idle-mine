@@ -371,6 +371,53 @@ def main():
     rect(meph, 10, 13, 1, 1, gas_d)
     tex['mephite'] = meph
 
+    # Chien de magma (31/10) : silhouette de chien noire, fissures de lave, oeil jaune
+    dog = blank()
+    rock_c, rock_d, lava, lava_l = hexc('#2a1f1c'), hexc('#171110'), hexc('#e8541a'), hexc('#ffc23f')
+    rect(dog, 3, 7, 9, 5, rock_c)          # corps
+    rect(dog, 10, 4, 5, 5, rock_c)         # tête
+    rect(dog, 14, 6, 2, 2, rock_d)         # museau
+    rect(dog, 11, 2, 2, 2, rock_c)         # oreille
+    rect(dog, 3, 12, 2, 3, rock_d); rect(dog, 6, 12, 2, 3, rock_d); rect(dog, 9, 12, 2, 3, rock_c); rect(dog, 11, 12, 2, 2, rock_d)   # pattes
+    rect(dog, 1, 5, 2, 3, lava)            # queue de flamme
+    rect(dog, 1, 4, 1, 1, lava_l)
+    rect(dog, 13, 5, 1, 1, lava_l)         # oeil
+    for x, y in [(4, 8), (5, 9), (6, 8), (7, 10), (8, 9), (9, 8), (10, 10), (11, 7)]:
+        rect(dog, x, y, 1, 1, lava)
+    rect(dog, 6, 9, 1, 1, lava_l); rect(dog, 9, 9, 1, 1, lava_l)
+    tex['magma_dog'] = dog
+
+    # Vers de terre (31/10) : anneaux roses, tête à gueule ronde, queue qui dépasse d'un bloc (fond transparent)
+    pink, pink_d, pink_l, maw = hexc('#c9787a'), hexc('#8f4c52'), hexc('#e8a8a4'), hexc('#3a1216')
+    wh = blank()
+    rect(wh, 2, 2, 12, 12, pink); rect(wh, 2, 2, 12, 2, pink_l); rect(wh, 2, 12, 12, 2, pink_d)
+    rect(wh, 5, 5, 6, 6, maw)
+    for x, y in [(5, 5), (10, 5), (5, 10), (10, 10), (7, 5), (8, 10)]:
+        rect(wh, x, y, 1, 1, hexc('#f4f1e8'))
+    tex['worm_head'] = wh
+    wb = blank()
+    rect(wb, 2, 1, 12, 14, pink)
+    for y in (3, 7, 11):
+        rect(wb, 2, y, 12, 1, pink_d); rect(wb, 2, y + 1, 12, 1, pink_l)
+    tex['worm_body'] = wb
+    wt = blank()
+    rect(wt, 5, 8, 6, 8, pink); rect(wt, 6, 4, 4, 4, pink); rect(wt, 7, 1, 2, 3, pink_l)
+    for y in (6, 10, 13):
+        rect(wt, 5, y, 6, 1, pink_d)
+    tex['worm_tail'] = wt
+
+    # butins : peau noire veinée de lave, morceau de chair rose
+    hide = blank()
+    rect(hide, 2, 4, 12, 9, rock_c); rect(hide, 2, 4, 12, 1, hexc('#4a3530')); rect(hide, 2, 12, 12, 1, rock_d)
+    for x, y in [(4, 6), (5, 7), (7, 8), (8, 7), (10, 9), (11, 8)]:
+        rect(hide, x, y, 1, 1, lava)
+    tex['magma_dog_hide'] = hide
+    wf = blank()
+    rect(wf, 3, 5, 10, 7, pink); rect(wf, 4, 4, 8, 1, pink_l); rect(wf, 4, 12, 8, 1, pink_d)
+    for x in (5, 8, 11):
+        rect(wf, x, 6, 1, 5, pink_d)
+    tex['worm_flesh'] = wf
+
     # brique de donjon : pierre taillée violet sombre, joints noirs, briques décalées une rangée sur deux
     brick = noisy(hexc('#3d2c50'), 77, 0.10)
     mortar = hexc('#1a1224')

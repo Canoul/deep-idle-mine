@@ -15,11 +15,13 @@ import { inReach, push, recenter, driftsAway, gap, nearCell } from './knock.js';
 import { fitsAt, clearAt, golemCanEnter, golemFalls, golemStep, quake } from './golem.js';
 import { thrallOwner, enslave } from './thrall.js';
 import { isFlesh, fleshSpot, fleshStep, fleshAura, syncFlesh } from './flesh.js';
+import { addBleed, tickBleed } from './bleed.js';
+import { wormSpot, addWorm, updateWorms, updateStuck, release } from './worm.js';
 import { isMinotaur, enrage, rageHit, charge, breakCharge } from './minotaur.js';
 
 /* mobs qui se déplacent (ils comptent dans walkerCap et prennent les mineurs en chasse) ; les volants n'ont pas de
    gravité, les autres ont la même physique que le mineur */
-export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite', 'golem', 'chair']);
+export const WALKERS = new Set(['bestiole', 'gobelin', 'occultiste', 'mephite', 'golem', 'chair', 'chien']);
 export const isWalker = o => WALKERS.has(o.type);
 export const FLYERS = new Set(['mephite']);
 export const isFlyer = o => FLYERS.has(o.type);
@@ -60,7 +62,7 @@ export function mobCanEnter(G,o){
   if(o.type==='mimic') return () => false;
   if(o.type===DUCK.type) return (x,y) => y===o.y && duckCanEnter(G,x);
   if(o.type==='golem') return golemCanEnter(G);
-  if(isFlesh(o)) return () => false;   // mur de chair : ne se fait jamais repousser
+  if(isFlesh(o) || o.type==='ver') return () => false;   // mur de chair, vers coincé : ne se font jamais repousser
   const d=o.dungeon!=null ? G.dungeons.find(q=>q.id===o.dungeon) : null;
   return (x,y) => x>=0 && x<W && y>=1 && y<=maxRow(G) && isAir(G,x,y) && !veiled(G,x,y)
     && (d ? interior(d,x,y) : !dungeonAt(G,x,y));
@@ -192,8 +194,10 @@ function updateBoss(G,o){
 }
 
 export function updateMobs(G){
+  const dive=[];   // vers de terre qui replongent
   for(const o of G.mobs){
     if(o.hp<=0) continue;
+    if(o.type==='ver'){ if(updateStuck(o)) dive.push(o); continue; }   // coincé : ni tacle ni déplacement (src/sim/worm.js)
     if(o.stunUntil>G.t){ o.grab=null; breakCharge(o); continue; }   // étourdi (Dash) : il ne tacle pas, ne bouge pas, ne lance rien ; la charge d'un minotaure est coupée
     if(o.dungeon!=null){ updateBoss(G,o); continue; }
     if(o.type===DUCK.type){ updateDuck(G,o); continue; }   // Gallianix : surface, ne tacle pas (src/sim/duck.js)
@@ -218,6 +222,7 @@ export function updateMobs(G){
     }
     updateGrab(G,o);
     if(o.type==='gobelin') goblinSteal(G,o);
+    if(o.type==='chien') dogBite(G,o);
     strike(G,o);
     o.chase=chaseOf(G,o);
     o.cd=(o.cd||0)-DT;
@@ -237,8 +242,11 @@ export function updateMobs(G){
     }
     walk(G,o,m);
   }
+  if(dive.length){ G.mobs=G.mobs.filter(o=>!dive.includes(o)); for(const o of dive) release(G,o); }
   asphyxia(G);
   fleshAura(G,resists);
+  updateWorms(G,resists);
+  tickBleed(G);
   G.combat = G.mobs.some(o=>o.hp>0 && o.chase!=null);   // état « combattrigger » : un mob a pris un mineur en chasse
   spawnMobs(G);
   spawnDucks(G);
@@ -268,6 +276,17 @@ function walk(G,o,m){
   if(!open && nk*dx>0) nk = Math.max(0, k*dx) === 0 ? 0 : k;                 // un bloc devant : il ne dépasse pas le centre
   if(nk*dx > 0.5+1e-9 && open){ o.x += dx; nk -= dx; }                      // marche (et tombera s'il n'y a pas de sol)
   o.kx = nk;
+}
+
+/* Chien de magma : tant qu'il tacle un mineur, un stack de bleed toutes les MOBS.chien.every s de tacle */
+function dogBite(G,o){
+  const m=byId(G,o.grab);
+  if(!m){ o.bite=0; return; }
+  o.bite=(o.bite||0)+DT;
+  if(o.bite<MOBS.chien.every-1e-9) return;
+  o.bite-=MOBS.chien.every;
+  if(resists(G,m)) log(G, `💪 ${m.name} résiste à la morsure du chien de magma`);
+  else addBleed(G,m);
 }
 
 /* vol du gobelin : tant qu'il tacle un mineur, un minerai toutes les goblinStealEvery secondes, tiré au hasard parmi
@@ -401,9 +420,10 @@ function spawnMobs(G){
   if(m.y<=0) return;
   const type=pickType(spawnTableAt(G, m.y), G.rng());
   if(type==='mimic') return spawnMimic(G,m);
-  const live=G.mobs.filter(o=>isWalker(o)&&o.hp>0&&o.trap==null).length;   // les mobs de piège ne comptent pas
+  const live=G.mobs.filter(o=>(isWalker(o)||o.type==='ver')&&o.hp>0&&o.trap==null).length+(G.worms?.length ?? 0);   // les mobs de piège ne comptent pas
   if(live>=MOBS.walkerCap(k)) return;
   if(type==='chair') return spawnFlesh(G,m);
+  if(type==='ver') return spawnWorm(G,m);
   const cand=[];
   for(let y=Math.max(1,m.y-MOBS.spawnMax);y<=Math.min(maxRow(G),m.y+MOBS.spawnMax);y++){
     if(contentAt(G,y)<MOBS.minArea[type]) continue;
@@ -429,6 +449,14 @@ function spawnFlesh(G,m){
   G.mobs.push({id:G.mobId++, type:'chair', x:at.x, y:at.y, h:MOBS.chair.h, hp, maxhp:hp, cd:1, speed:MOBS.speed.chair, knockRes:MOBS.chair.knockRes});
   syncFlesh(G);
   log(G, '🩸 Un mur de chair recouvre la roche !');
+}
+
+/* vers de terre : dans la roche, à distance d'apparition du mineur visé */
+function spawnWorm(G,m){
+  if(contentAt(G,m.y)<MOBS.minArea.ver) return;
+  const at=wormSpot(G,m); if(!at) return;
+  addWorm(G,G.mobId++,at.x,at.y,mobHp('ver', contentAt(G,at.y)));
+  log(G, '🪱 Un vers de terre rôde dans la roche !');
 }
 
 /* un minerai de la roche (pas visé ni en train d'être miné, pas déjà un mimic) devient un mimic caché */

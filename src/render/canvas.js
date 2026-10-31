@@ -101,6 +101,13 @@ export function createRenderer(cv){
     }
     /* gobelins asservis (Couronne du Roi Gobelin, 27/10) : gobelin doré, petite couronne, pas de barre de vie ; il
        frappe le bloc qu'il mine (petit éclat) */
+    /* vers de terre qui navigue : sa file de cases, par-dessus la roche, seulement à portée de vue d'un mineur */
+    for(const w of G.worms || []){
+      for(const [i, [x, y]] of [[w.x, w.y], ...(w.trail || [])].entries()){
+        if(!G.miners.some(m=>Math.hypot(x-m.x,y-m.y)<=lightR(G,m)+0.5)) continue;
+        blit(i ? 'worm_body' : 'worm_head',x*TILE,sy(y),'#b56a6a');
+      }
+    }
     for(const o of G.thralls || []){
       const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
       if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
@@ -145,6 +152,8 @@ export function createRenderer(cv){
         const seen=G.miners.some(m=>Math.hypot(o.x-m.x,o.y-m.y)<=lightR(G,m)+0.5);
         if(!seen && lightShown(G,o.x,o.y)<CFG.darkLum) continue;
         if(o.type==='gobelin') blit('goblin',px,py,'#4f9d3a');
+        else if(o.type==='chien') blit('magma_dog',px,py,'#c8451b');
+        else if(o.type==='ver') blit('worm_tail',px,py,'#b56a6a');   // coincé : sa queue, par-dessus le bloc qui touche le vide
         else if(o.type==='occultiste') blit('occultist',px,py,'#3b2550');
         else if(o.type==='minotaure'){   // boss du donjon, minotaures de l'Arène (variante : texture) ; il tremble quand il gratte le sol
           const tex=(MINOTAUR.variants[o.variant] ?? MINOTAUR.variants.donjon).tex, shake=o.fx?.includes('charge') ? Math.round(Math.sin(frameNow/30)) : 0;

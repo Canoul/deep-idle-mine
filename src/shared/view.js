@@ -79,6 +79,7 @@ export function createViewer(G){
     const base = {
       tick: G.ticks, t: G.t, over: G.over, H: G.tiles.length,
       miners: G.miners.map(m => minerView(G, m)), mobs: G.mobs.map(o => mobView(G, o)),
+      worms: (G.worms || []).map(w => ({ id: w.id, x: w.x, y: w.y, trail: w.trail })),   // vers de terre qui naviguent (31/10)
       thralls: (G.thralls || []).map(o => ({ id: o.id, x: o.x, y: o.y, dig: o.dig ? { x: o.dig.x, y: o.dig.y } : null, left: Math.max(0, Math.round(o.until - G.t)) })),   // gobelins asservis (27/10)
       chest: G.chest, chestBy: G.chestBy, goblinChest: G.goblinChest || {}, shrines: G.shrines || [], stats: G.stats, areas: G.areas, unlockedAreas: G.unlockedAreas, winch: G.winch,
       mule: muleView(G),
@@ -192,7 +193,7 @@ const muleView = G => G.mule?.placed ? { x: G.mule.x, y: G.mule.y, load: Math.ro
 
 /* copie d'affichage vide (avant le premier envoi) */
 export function emptyView(){
-  return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], thralls: [], chest: {}, chestBy: {}, goblinChest: {},
+  return { tiles: [], ladder: [], seen: [], torches: [], light: new Map(), miners: [], mobs: [], worms: [], thralls: [], chest: {}, chestBy: {}, goblinChest: {},
            stats: {}, areas: [], unlockedAreas: 0, winch: null, mule: null, khole: null, log: [], t: 0, ticks: -1, over: false, ready: false };
 }
 
@@ -228,7 +229,7 @@ export function applyView(M, v, now = performance.now(), speed = 0){
     glide(M, M.mobs, v.mobs, mobPos, now);
   }
   pace(M, M, now);
-  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
+  Object.assign(M, { ticks: v.tick, t: v.t, over: v.over, miners: v.miners, mobs: v.mobs, worms: v.worms ?? [], thralls: v.thralls ?? [], chest: v.chest, chestBy: v.chestBy, goblinChest: v.goblinChest ?? {}, shrines: v.shrines ?? [],
                      stats: v.stats, areas: v.areas, unlockedAreas: v.unlockedAreas, winch: v.winch ?? null, mule: v.mule ?? null, khole: v.khole ?? null, ready: true });
   return M;
 }
