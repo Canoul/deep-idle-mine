@@ -5,6 +5,7 @@ import { rname } from './rarity.js';
 import { followedMiner } from '../render/camera.js';
 import { pxi } from './pxicons.js';
 import { treeOf } from './spells.js';
+import { teamEnergyHTML } from './energy-tag.js';
 
 const $ = id => document.getElementById(id);
 export const fmt = s => { s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
@@ -38,7 +39,7 @@ export function updateHUD(G, ui){
     <div class="mrow${t===m?' on':''}" data-id="${t.id}" title="Suivre ${esc(t.name)}">
       <span class="mname">${esc(t.name)}</span>
       <span class="mst">${esc(t.status)}</span>
-      <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}</span>
+      <span class="mmeta">prof ${t.y} · O₂ ${Math.round(t.ox)} · pods ${Math.round(t.load)}${teamEnergyHTML(t.account) ? ' · ' + teamEnergyHTML(t.account) : ''}</span>
     </div>`).join(''));
 
   // mineur suivi

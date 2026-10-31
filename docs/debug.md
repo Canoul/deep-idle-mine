@@ -5950,3 +5950,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/pseudo-banword, comptes, sécurité, modération, groupes : 78/78 ; parcours complet dans Chrome (création refusée, fenêtre impossible à fermer, rechargement, action refusée, nouveau pseudo). Vérifié sur les 31 pseudos lisibles par la vue : aucun touché.
 - **Limites** : la liste reste côté serveur, le refus vient donc à l'envoi. Les anciens noms déjà enregistrés (historique, classements figés, sessions) ne sont pas réécrits. Les mots WORD restent en mot entier : `xxConnardxx` passe. La page déjà ouverte d'un joueur ne se bloque qu'au prochain chargement (ses actions sont refusées avant).
 
+
+## 31/10/2026 — Énergie dans le panneau Équipe (Geoffrey)
+- **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
+- **Tests** ✅ `tests/team-energy.test.js` (3), social.
+- ⚠️ Pas vu dans un navigateur. Cache `energyCache` jamais purgé : une entrée par compte vu (comme Social). Les comptes de test du mode dev n'ont pas de ligne d'énergie.
