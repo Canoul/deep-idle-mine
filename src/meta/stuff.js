@@ -11,7 +11,7 @@ import { STUFF, ITEMS, STATS, RINGS, CFG } from '../config.js';
 import { takePiece, putPiece } from './inventory.js';
 import { withSkillStats, slotMastery, SKILL_STATS, SKILL_ADD } from './skills.js';
 import { withGlyphStats } from './glyphs.js';
-import { pieceBonus, pieceName, sanitizePiece, lineValue, plusMult, roundStat, runeFactor, isRing } from './piece.js';
+import { pieceBonus, pieceName, sanitizePiece, lineValue, runeLineValue, runeLineFactor, plusMult, roundStat, runeFactor, isRing } from './piece.js';
 import { pieceGS } from './gearscore.js';
 
 export const SLOT_IDS = STUFF.slots.map(s => s.id);
@@ -76,7 +76,7 @@ export function statLines(entry){
     ...(Array.isArray(p.lines) ? p.lines : []).map(l =>
       `${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l) * m))}${unitOf(l.stat)}`),
     ...(Array.isArray(p.rune?.lines) ? p.rune.lines : []).map(l =>
-      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, lineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
+      `${p.rune.frag ? 'Fragment' : 'Rune'} · ${label(l.stat)} +${statNum(l.stat, roundStat(l.stat, runeLineValue(p.item, l, runeFactor(p.rune)) * m))}${unitOf(l.stat)}`),
   ];
 }
 /* une rune seule n'a pas de valeur : ses lignes valent un % de la valeur du tier de la pièce qu'elle enchantera */
@@ -84,7 +84,7 @@ export function runeLines(p){
   const label = k => STUFF.statLabels[k] ?? k;
   const f = runeFactor(p);
   return (Array.isArray(p?.lines) ? p.lines : []).map(l => l.stat === 'discoverMax' ? `${label(l.stat)} +1`
-    : `${label(l.stat)} : ${num(Math.round(l.pct * f * 100) / 100)} % du tier de la pièce`);
+    : `${label(l.stat)} : ${num(Math.round(l.pct * runeLineFactor(l, f) * 100) / 100)} % du tier de la pièce`);
 }
 /* valeur d'un effet d'anneau à ce niveau : + RINGS.upgrade point(s) par rang (27/10/2026 : +3 % → +7,5 % au +9) */
 const ringVal = (v, plus) => r2(v + RINGS.upgrade * (plus | 0));

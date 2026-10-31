@@ -1292,6 +1292,10 @@ export const UPGRADE = {
      au prix mesuré (statPrice) : la stat est divisée ET sa valeur en GS aussi (28/10/2026, Geoffrey ; ancien : GS × ajustement). */
   priceAdjust: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2,
                  damagePct:3, piercing:4, mineSpeed:3, mineSpeedPct:3, tenacity:2, knockRes:3 },
+  /* LIGNES DE RUNE (31/10/2026, Geoffrey) : les ajustements offensifs valent aussi pour les runes et les fragments : leur ligne
+     donne ce nombre de fois moins de points. Pas pour les lignes d'identification, ni pour minage, ténacité et résistance
+     au recul. Les pièces gardent leur %, celles déjà runées suivent. */
+  runeDiv: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2, damagePct:3, piercing:4 },
   /* stats sans prix mesuré (gs à 0) mais ajustées : le prix du tableau des lignes (prices) sert de base */
   priceBase: { knockRes:5 },
   /* GS des stats OFFENSIVES (28/10/2026, Geoffrey) : comptées au prix du tableau des lignes (prices, celui des runes), pas au

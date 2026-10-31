@@ -20,6 +20,21 @@ Modèle d'entrée :
 - **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Runes : les stats offensives divisées comme sur les pièces
+- **Pour le joueur** : les lignes offensives des runes et des fragments rapportent moins : dégâts, vitesse d'attaque, double attaque, critique, portée et recul ÷ 2, dégâts % ÷ 3, perçage ÷ 4. Vaut aussi pour les runes déjà posées. Ex. : Doc Martins +2 avec une rune à +40,1 % de vitesse d'attaque → +20 %.
+- **Décisions** : les lignes d'identification ne changent pas, ni minage, ténacité et résistance au recul sur les runes.
+- **À suivre** : le Gear score des pièces runées baisse aussi, et les classements avec.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Bot Discord : reports et /todo
+- **Pour l'équipe** : un tag @admin sur Discord est copié dans #report avec un ID. Le premier emoji cliqué attribue le
+  sujet (1 Joe, 2 Djulo). Dans #todo, `/todo joe`, `/todo djulo`, `/todo done` et `/todo help` gèrent la liste. Rien ne
+  change pour les joueurs en jeu.
+- **Décisions** : service à part du jeu sur le serveur OVH, avec `discord.js` limité au dossier `bot/`. Un sujet terminé
+  garde son message dans #report, avec ✅.
+- **À suivre** : créer le bot sur Discord et l'installer sur le serveur (`docs/bot-discord.md`), puis le tester en vrai.
+- **État** : ✅ code en ligne le 31/10, bot à installer sur le serveur OVH
+
 ## 31/10/2026 — Geoffrey — Téléphone : tout est recentré
 - **Pour le joueur** : sur téléphone, en portrait comme en paysage, la page reprend la largeur de l'écran et les onglets sont de nouveau centrés. Le bandeau du haut se compacte, la barre d'onglets défile, le chat replié tient sur une ligne, et le guide s'efface quand le chat est ouvert.
 - **État** : ✅ en ligne le 31/10

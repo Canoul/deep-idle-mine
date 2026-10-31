@@ -165,6 +165,7 @@ src/main.js           lobby → session (reçoit la partie du serveur, aucune si
 server/               serveur Node : app (routeur), http/, accounts/, game/ (sessions qui font foi, partie en
                       direct dans un fil d'exécution), party/ (groupes), social/ (amis), instant/ (mine
                       instantanée), db/ (PostgreSQL)
+bot/                  bot Discord de l'équipe (reports, /todo), service à part avec son package.json : docs/bot-discord.md
 tests/                un fichier de test par sujet + helpers (mines dessinées en texte) ; tests/anticheat/
 scripts/              simulate.js, weights.js, stat-values.js, gen_textures.py
 deploy/ovh/           installation et mise à jour du serveur OVH
@@ -177,7 +178,7 @@ prototype/            ancien prototype monolithique (référence seulement)
 ## 8. Stack et architecture
 
 HTML/JS vanilla, sans dépendance. Pas de framework ni de bundler sans demander. Serveur : Node ≥ 20, modules
-intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande. Le serveur importe les règles depuis
+intégrés (http, crypto, fs) ; seule exception : `pg`, chargée à la demande (`discord.js` : seulement dans `bot/`, jamais dans le jeu). Le serveur importe les règles depuis
 `src/shared/` et `src/config.js` : une seule source de vérité pour le jeu et le serveur.
 
 **Principes à ne pas casser**
