@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
 - **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
-- **État** : 🧪 sur la branche `geoffrey/stuff-sets-bandeau` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Téléphone : tout est recentré
 - **Pour le joueur** : sur téléphone, en portrait comme en paysage, la page reprend la largeur de l'écran et les onglets sont de nouveau centrés. Le bandeau du haut se compacte, la barre d'onglets défile, le chat replié tient sur une ligne, et le guide s'efface quand le chat est ouvert.
