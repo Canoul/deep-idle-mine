@@ -16,6 +16,15 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Bot Discord : reports et /todo
+- **Pour l'équipe** : un tag @admin sur Discord est copié dans #report avec un ID. Le premier emoji cliqué attribue le
+  sujet (1 Joe, 2 Djulo). Dans #todo, `/todo joe`, `/todo djulo`, `/todo done` et `/todo help` gèrent la liste. Rien ne
+  change pour les joueurs en jeu.
+- **Décisions** : service à part du jeu sur le serveur OVH, avec `discord.js` limité au dossier `bot/`. Un sujet terminé
+  garde son message dans #report, avec ✅.
+- **À suivre** : créer le bot sur Discord et l'installer sur le serveur (`docs/bot-discord.md`), puis le tester en vrai.
+- **État** : 🧪 sur la branche `geoffrey/bot-report` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Stuff : les cases ne se décalent plus avec les noms longs
 - **Pour le joueur** : la case Torche sortait du cadre avec la Lampe à incandescence, et d'autres cases pouvaient faire pareil sur une fenêtre étroite. Toutes les cases restent alignées : un nom trop long passe à la ligne, coupé si besoin.
 - **État** : ✅ en ligne le 31/10

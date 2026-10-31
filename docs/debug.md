@@ -6005,3 +6005,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ bilan +1. Vrai Chrome piloté, vrai serveur dev, vraie partie jusqu'à la fin (`elementFromPoint` au centre du bilan) : avant caché (tour, mine), après visible (tour, mine, tour avec prison). Fin de partie par `POST /api/game/finish`, en échec de tour.
 - ⚠️ Pas rejoué : une vraie victoire de tour (l'affichage emprunte le même chemin, seul le texte change). Banc d'essai non gardé dans le dépôt.
 - **Leçon** : pour un bug d'affichage, vérifier dans un navigateur ce qui est au premier plan, pas seulement que l'élément existe.
+
+## 31/10/2026 — Bot Discord : reports et /todo (Geoffrey) — branche `geoffrey/bot-report`
+- **Quoi** : `bot/todo.js` (logique pure, ID par compteur), `bot/store.js` (JSON, écriture atomique), `bot/main.js` (Discord),
+  `deploy/ovh/deep-mine-bot.service`, `docs/bot-discord.md`. `bot/package.json` à part : `discord.js` n'entre pas dans le jeu,
+  le `npm ci` de la mise à jour automatique ne le touche pas. Sous-commandes `/todo joe`, `djulo`, `done`, `help`.
+- **Tests** : `tests/bot-todo.test.js` ✅ 8/8 ; `discord.js` se charge et `bot/main.js` passe la vérification de syntaxe.
+- ⚠️ **`bot/main.js` n'a jamais tourné contre Discord** : pas de jeton. Copie, réactions et `/todo` restent à essayer en vrai.
+- ⚠️ Pas de rattrapage au redémarrage du bot. Une erreur après `save` (ex. `react`) laisse le sujet créé, sans emoji : réagir à la main marche.
