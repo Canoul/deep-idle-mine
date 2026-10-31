@@ -5901,3 +5901,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
 - **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.
 - **Tests** : vérifié ✅ dans Chrome sur une tour dev à 1872 × 815. `centralLeft` lit le DOM, pas de test unitaire. Instance, MI et Bloc géant : même mesure, non lancés ⚠️.
+
+## 31/10/2026 — Grimoire trié (Geoffrey)
+- **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.
