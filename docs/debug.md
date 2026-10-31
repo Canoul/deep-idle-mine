@@ -6088,3 +6088,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `tabsHtml` (src/ui/inventory.js) exporté et partagé : il reçoit l'onglet ouvert, les objets à compter et le mot de la bulle. `recipesIn` et `#craftTabs` dans src/ui/craft.js, classement par `tabOf`, donc `INVENTORY.tabs`.
 - **Tests** ✅ tests/craft.test.js, tests/inventory.test.js. ✅ Vérifié dans Chrome (compte Test_Mineur).
 
+## 31/10/2026 — Icône des pièces runées (Geoffrey)
+- **Quoi** : `runeMark(p)` dans src/ui/rarity.js (icône `gem`, rien sans `p.rune`), affichée par `slotHtml` (inventory.js), `renderSlots` et la liste de choix (stuff.js), `box` et `row` (upgrade.js). CSS `.pi.runeMark` et `.runeIco` (les listes n'ont pas de `.slot`), couleur `--rune`.
+- **Tests** ✅ tests/rune-mark.test.js, tests/stuff-slots-css.test.js. ✅ Rendu vérifié dans Chrome sur une page de test avec le vrai style.css (cases de chaque rareté, avec et sans +N, et ligne de liste).
+- ⚠️ Pas vu en partie réelle avec une pièce runée sur un compte. La case d'une pièce portée dans le Stuff et la fiche d'un ami passent par le même code, sans capture dédiée.
+

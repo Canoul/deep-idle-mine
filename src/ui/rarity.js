@@ -3,6 +3,7 @@
 import { RARITY } from '../config.js';
 import { rarityOf, rarityDef } from '../meta/rarity.js';
 import { pieceName, pieceColor, itemName, itemColor } from '../meta/piece.js';
+import { pxi } from './pxicons.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -22,6 +23,9 @@ export function pname(p, tag = 'span'){
   const c = pieceColor(p);
   return c ? `<${tag} class="rn rq" style="color:${c}">${esc(pieceName(p))}</${tag}>` : rname(p.item, pieceName(p), tag);
 }
+
+/* petite icône en bas à gauche de la case d'une pièce qui porte une rune ou un fragment (rien sinon) */
+export const runeMark = p => p?.rune ? pxi('gem', 'runeMark') : '';
 
 /* libellé de la rareté, dans sa couleur (« Inhabituel ») */
 export const rlabel = item => `<span class="rn r-${rarityOf(item)}">${esc(rarityDef(item).label)}</span>`;

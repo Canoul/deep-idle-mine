@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Icône sur les pièces runées
+- **Pour le joueur** : une petite gemme violette en bas à gauche de la case d'une pièce runée (rune ou fragment) : inventaire, stuff porté, fiche d'un ami, onglet Amélioration, listes de choix.
+- **État** : 🧪 sur la branche `geoffrey/icone-rune` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Craft : recettes triées par catégorie
 - **Pour le joueur** : l'onglet Craft a les mêmes onglets que l'inventaire (Tout, Blocs, Minerais, Stuff, Butin des mobs, Matériaux, Runes, Divers). Un onglet sans recette est grisé.
 - **État** : ✅ en ligne le 31/10

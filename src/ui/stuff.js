@@ -6,7 +6,7 @@ import { piecesFor, statsText, minerStats, rawDps, statNum } from '../meta/stuff
 import { sanitizeSkills, skillEffects } from '../meta/skills.js';
 import { tipAttr } from './tooltip.js';
 import { icon } from './craft.js';
-import { rcls, pname } from './rarity.js';
+import { rcls, pname, runeMark } from './rarity.js';
 import { pxi } from './pxicons.js';
 import { drawPortrait, lookOf } from '../render/portrait.js';
 import { aurasOf } from '../meta/aura.js';
@@ -23,7 +23,7 @@ export function renderSlots(el, worn, tag = 'button'){
   el.innerHTML = STUFF.slots.map(s => {
     const p = worn[s.id];
     return `<${tag} class="stuffSlot${p ? ' full' : ''}" data-slot="${s.id}"${p ? tipAttr(p.item, p.item, p) : ` title="${esc(s.label)}"`}>`+
-           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
+           `<span class="slot${p ? rcls(p.item) : ''}">${p ? icon(p.item) + runeMark(p) : `<span class="sico">${SLOT_ICON[s.id] ? pxi(SLOT_ICON[s.id]) : ''}</span>`}</span>`+
            `<span class="slbl">${esc(s.label)}</span>${p ? pname(p).replace('class="rn', 'class="sname rn') : '<span class="sname mut">vide</span>'}</${tag}>`;
   }).join('');
   el.insertAdjacentHTML('beforeend', '<div class="stuffHero"><canvas width="16" height="16"></canvas></div>');
@@ -71,7 +71,7 @@ export function setupStuff({ onOp, onWorn }){
       `<h3>${s.icon} ${esc(s.label)}</h3>`+
       (cur ? `<div class="fcur">${icon(cur.item)}<span>Équipé : ${pname(cur, 'b')}${statLine(cur)}</span><button id="spickOff">Retirer</button></div>` : '')+
       (list.length
-        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}">${icon(p.item)}<span>${pname(p)}${statLine(p)}</span><b>Équiper</b></button>`).join('')}</div>`
+        ? `<div class="fopts">${list.map(p => `<button class="fopt" data-uid="${p.uid}"><span class="runeIco">${icon(p.item)}${runeMark(p)}</span><span>${pname(p)}${statLine(p)}</span><b>Équiper</b></button>`).join('')}</div>`
         : `<p class="mut">Aucune pièce « ${esc(s.label.toLowerCase())} » dans ton inventaire.${open === 'pioche' ? ' Fabrique-en une dans l\'onglet Craft.' : ''}</p>`)+
       `<p class="err" id="spickErr" hidden></p><p style="text-align:right"><button id="spickClose">Fermer</button></p>`;
     $('spick').hidden = false;

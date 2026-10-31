@@ -10,7 +10,7 @@ import { sacrificesFor, nextLevel, upgradeNeeds, ringDupes } from '../meta/upgra
 import { tipAttr } from './tooltip.js';
 import { helpLine } from './help.js';
 import { icon } from './craft.js';
-import { rcls, rname, pname } from './rarity.js';
+import { rcls, rname, pname, runeMark } from './rarity.js';
 import { ask } from './dialog.js';
 
 const $ = id => document.getElementById(id);
@@ -30,7 +30,7 @@ export const identifyChoices = (list, t) => t
 
 /* une case d'objet (vide : son libellé) */
 const box = (p, label, cls) => `<button class="slot upBox ${cls}${p ? rcls(p.item) : ' empty'}"${p ? tipAttr(p.item, p.item, p) : ''}>`+
-  `${p ? icon(p.item) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
+  `${p ? icon(p.item) + runeMark(p) : ''}</button><div class="upLbl">${p ? pname(p) : `<span class="mut">${esc(label)}</span>`}</div>`;
 /* onOp({ action:'identify', uid, sacrifice } | { action:'upgrade', uid } | { action:'enchant', uid, rune }) → promesse { piece, success } (rejetée avec un message lisible) ;
    worn() : pièces portées { case: pièce } (onglet Stuff) */
 export function setupUpgrade({ onOp, worn = () => ({}) }){
@@ -46,7 +46,7 @@ export function setupUpgrade({ onOp, worn = () => ({}) }){
   const runes = () => inv.slots.filter(s => s && s.uid != null && isRune(s.item));
   const byUid = uid => all().find(s => s.uid === uid) ?? null;
   /* une ligne de la liste des pièces : icône, nom (« équipée » si portée), effets */
-  const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}">${icon(p.item)}`+
+  const row = (p, extra = '') => `<button class="fopt upPick" data-uid="${p.uid}"><span class="runeIco">${icon(p.item)}${runeMark(p)}</span>`+
     `<span>${pname(p)}${isWorn(p) ? ' <small class="okmsg">équipée</small>' : ''}<br><small class="stuffStats">${esc(statLines(p).join(' · ') || 'Aucun effet')}</small></span>${extra}</button>`;
   /* prévenir avant de détruire une pièce portée : sa case se videra */
   const wornWarn = p => isWorn(p) ? ' Elle est équipée : sa case du stuff se videra.' : '';
