@@ -6005,3 +6005,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ bilan +1. Vrai Chrome piloté, vrai serveur dev, vraie partie jusqu'à la fin (`elementFromPoint` au centre du bilan) : avant caché (tour, mine), après visible (tour, mine, tour avec prison). Fin de partie par `POST /api/game/finish`, en échec de tour.
 - ⚠️ Pas rejoué : une vraie victoire de tour (l'affichage emprunte le même chemin, seul le texte change). Banc d'essai non gardé dans le dépôt.
 - **Leçon** : pour un bug d'affichage, vérifier dans un navigateur ce qui est au premier plan, pas seulement que l'élément existe.
+
+## 31/10/2026 — Téléphone : page dézoomée, plus rien de centré (Geoffrey)
+- **Cause** : le bandeau du haut, allongé par le niveau dans le lobby refait, dépassait l'écran (511 px pour 390 ; 1169 px pour 844 en paysage). Chrome élargit alors la page : les onglets restent à 390 px, calés à gauche, et les éléments fixes (barre d'onglets, guide) suivent la page. Les règles de la barre d'onglets ne valaient que sous 700 px. `.lobbyCols` en `1fr` : la colonne pouvait dépasser (`minmax(0,1fr)`).
+- **Correctif** (src/ui/style.css, sous 1170 px) : `.topbar` sans débordement, pseudo qui se raccourcit, sans titre ni barre de session ; pas de « aucune » sans session (sous 700 px) ; barre d'onglets qui défile ; chat replié sur une ligne ; guide caché chat ouvert.
+- **Vérifié** ✅ Chrome en téléphone simulé, 360 × 780, 390 × 844, 844 × 390, 1024 × 768, 1400 × 900 : page à la largeur de l'écran, marges égales, sans erreur ; onglets Lobby, Session, Inventaire, Stuff, Craft, Skills, Social. ⚠️ Pas vu sur un vrai téléphone.
+
