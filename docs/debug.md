@@ -5896,3 +5896,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Données : rien à migrer, `chatChannel` et `sanitizeChatPrefs` ramènent un canal inconnu sur Général.
 - **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
 - ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
+
+## 31/10/2026 — Bilan de tour jamais affiché (Geoffrey), régression des correctifs du 30/10
+- **Cause 1** (`1abfc1c`) : `ack` dès `showResult`. Un autre onglet ou appareil qui reçoit le bilan d'abord le marque vu ; l'écran du joueur reçoit `ended: null`, puis `showNoSession` dans `pollResult`, sans bilan.
+- **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
+- **Correctif** : `state(me, waitedId)` (route `?ended=<id>`) : l'écran qui attend sa session la reçoit même vue, seulement si le compte y a participé sans la quitter. `last` = fin la plus récente. `pollResult` et le `no_session` de `pollView` envoient l'id ; une page rechargée ne l'envoie pas.
+- **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
+- ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
+- ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.

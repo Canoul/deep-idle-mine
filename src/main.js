@@ -605,7 +605,7 @@ async function pollView(){
     }
     if(!r.view || G.over) return ended();
   } catch(e){
-    if(e instanceof ApiError && e.code === 'no_session') return refresh();   // quittée (autre onglet) ou déjà finie
+    if(e instanceof ApiError && e.code === 'no_session') return refresh(rec?.id);   // quittée (autre onglet) ou déjà finie
     console.warn(e);
   }
   viewTimer = setTimeout(pollView, document.hidden ? VIEW_HIDDEN : VIEW_EVERY);
@@ -772,7 +772,7 @@ function ended(){
 async function pollResult(){
   if(!waiting) return;
   try {
-    const st = await gameApi.state();
+    const st = await gameApi.state(waitingFor);
     const what = resultChoice(st.ended, waitingFor);
     if(what === 'show') return showResult(st);
     if(what === 'stale') gameApi.ack(st.ended.id).catch(() => {});   // ancien bilan jamais vu : pas celui de cette session
@@ -826,8 +826,8 @@ function setProgress(p){
   return up;
 }
 
-async function refresh(){
-  const st = await gameApi.state();
+async function refresh(waited){
+  const st = await gameApi.state(waited);
   showBan();
   setInventory(st.inventory);
   if(!st.ended || st.session) setProgress(st.progress);
