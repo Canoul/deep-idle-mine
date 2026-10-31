@@ -18,7 +18,7 @@ Modèle d'entrée :
 
 ## 31/10/2026 — Geoffrey — Grimoire : sorts débloqués devant
 - **Pour le joueur** : dans l'onglet Sorts, le grimoire montre d'abord les sorts débloqués, puis les parchemins en poche, les sorts d'une autre spé, et enfin ceux pas encore débloqués.
-- **État** : 🧪 sur la branche `geoffrey/fix-chat-largeur` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat : canal Commerce retiré
 - **Pour le joueur** : plus de canal Commerce ni de raccourci /c dans le chat global : il n'y a pas d'échanges dans le
@@ -41,7 +41,7 @@ Modèle d'entrée :
 
 ## 31/10/2026 — Geoffrey — Chat : largeur débloquée en tour et en instance
 - **Pour le joueur** : en tour, en instance, en mine instantanée et au Bloc géant, le chat peut s'élargir jusqu'au bord de la mine ; il restait bloqué au minimum alors qu'il y avait de la place.
-- **État** : 🧪 sur la branche `geoffrey/fix-chat-largeur` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
 - **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
