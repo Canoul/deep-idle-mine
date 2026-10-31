@@ -109,6 +109,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
   | **Une gemme** parmi : Rubis inférieur, Jade inférieur, Saphir inférieur | 1 | 1 % chacune (3 % au total) |
 
   *(décision ferme)* un seul tirage par famille : jamais deux blueprints ni deux gemmes dans le même Treasure. Le charbon et le fer sont les mêmes objets que ceux de la mine (ils s'empilent avec). Usage des blueprints : débloquer une recette (§6, Craft). Usage des gemmes : défini plus tard.
+- **Treasure dépassé** *(31/10/2026, Geoffrey)* : un joueur qui a appris toutes les recettes du tier du Treasure **et** du tier suivant ne tire plus aucun blueprint dans ce Treasure (le tirage ne donne rien, sans bonus ailleurs ; le reste du butin ne change pas). Exemple : tiers 1 à 3 appris → plus de BP dans les T1 et T2, encore dans le T3. Un BP gardé sans l'utiliser ne compte pas. Le dernier tier (T4) n'est pas concerné.
 - **Contenu du Treasure T2** *(valeurs provisoires, mêmes principes que le T1)* :
 
   | Objet | Quantité | Chance |

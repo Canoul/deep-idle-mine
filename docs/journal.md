@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Plus de blueprints dans les trésors dépassés
+- **Pour le joueur** : si tu as appris toutes les recettes du tier d'un trésor et du tier suivant, il ne donne plus de blueprint. Tiers 1 à 3 appris : plus rien dans les T1 et T2, encore dans le T3. Le reste du butin (parts, gemmes…) ne change pas.
+- **Décisions** : un plan gardé sans l'utiliser ne compte pas comme appris. Le T4 n'est pas touché, faute de tier suivant.
+- **À suivre** : moins de plans en double, donc un peu moins de Blueprint parts par recyclage pour les joueurs avancés.
+
 ## 31/10/2026 — Geoffrey — Raffle plus fréquent
 - **Pour le joueur** : un raffle toutes les 30 à 60 min au lieu de 45 à 120 min. Les horaires (8 h à 2 h) et les lots ne changent pas. L'annonce du gagnant donne le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »).
 - **État** : ✅ en ligne le 31/10

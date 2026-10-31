@@ -6136,3 +6136,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Pas essayé sur un vrai téléphone.
 - ⚠️ L'invitation n'a pas été testée ; si elle expire, c'est le lien à changer dans index.html et wiki.html (et le test).
 
+## 31/10/2026 — Plus de blueprints dans les Treasures dépassés (Geoffrey)
+- **Quoi** : `treasureBlueprintsDone(inv, item)` (src/meta/research.js) : `recipesLeft` vide pour le tier du Treasure et le suivant. Lu dans `openOne` (src/meta/loot.js) : le `skip` de `rollLoot` écarte alors tout objet de catégorie blueprint. Mêmes tirages, le lot perdu n'est pas redistribué. `Blueprint parts` (`always`) non concerné.
+- **Limites** : `recipesLeft` ne lit que la 1re famille blueprint d'un tier (T4 : sans Saphir, Rubis, Jade BP). Les BP sans recette (ceux qui ne débloquent rien) sortent du tirage avec les autres. Le T4 n'est pas concerné ; à revoir si un tier 5 arrive, le test T4 tombera alors.
+- **Tests** ✅ tests/loot.test.js (+5), research, treasure, blueprint, `npm run test:anticheat` 122/122.
+- ⚠️ Pas essayé dans le jeu avec un vrai compte.
+

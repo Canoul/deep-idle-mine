@@ -57,6 +57,12 @@ function pick(pool, t, rng){
 export const tierOfBlueprint = bp => RESEARCH.tiers.find(d => tierBlueprints(d.tier).includes(bp)) ?? null;
 /* recettes du tier que le joueur n'a pas encore apprises (les blueprints sans recette ne comptent pas) */
 export const recipesLeft = (inv, t) => tierBlueprints(t).map(recipeOfBlueprint).filter(r => r && !isUnlocked(r, inv));
+/* Treasure du tier t, dont le joueur a appris toutes les recettes des tiers t et t + 1 : plus aucun blueprint n'en sort
+   (31/10/2026, Geoffrey). Le dernier tier n'a pas de tier suivant : il n'est pas concerné. */
+export const treasureBlueprintsDone = (inv, item) => {
+  const t = RESEARCH.tiers.find(d => d.from === item)?.tier;
+  return !!tierOf(t + 1) && recipesLeft(inv, t).length === 0 && recipesLeft(inv, t + 1).length === 0;
+};
 /* tier ouvert : le premier toujours ; les suivants quand toutes les recettes de TOUS les tiers inférieurs sont apprises
    (25/10, Geoffrey : avant, seulement le tier juste d'avant ; des BP du T2 trouvés dans des Treasures ouvraient le T3
    avec un T1 incomplet) */
