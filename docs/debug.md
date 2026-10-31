@@ -6033,3 +6033,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
 - **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
 
+## 31/10/2026 — Prison : XP des mobs ×0,5 (Geoffrey)
+- **Mesure base (20 joueurs)** : prison ÷ mines ≈ 0,7 en XP par heure de jeu ; minerais ≈ 0,37 ; XP des mobs déduite par soustraction, ×1,4 à ×3,8 selon le joueur en area 6-7. Cause du surplus de mobs non prouvée.
+- **Quoi** : `PRISON.mobXpMul` 0,5 lu dans `killMob` (src/sim/actions.js). `stats.xp` peut valoir x,5 en prison ; la part versée est arrondie vers le bas (`shareBySegments`), le HUD aussi.
+- **Tests** ✅ prison-profile +1, prison-sim, prison-ui, prison-server (❌ `une tour et une instance lancées terminent la prison` : déjà en échec sur main, sans lien). Simulation prison lancée sans blocage ; effet réel à mesurer en base.

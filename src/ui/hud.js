@@ -66,7 +66,7 @@ export function updateHUD(G, ui){
     ? G.miners.map(t=>`<div class="row"><span>${sw(t.color)}${esc(t.name)}</span><span>${chips(G.chestBy[t.id])}</span></div>`).join('')
     : '') + gob;
   // XP de la session : pot commun, partagé à parts égales à la fin
-  { const xp=G.stats.xp||0, n=G.miners.length;
+  { const xp=Math.floor(G.stats.xp||0), n=G.miners.length;   // prison : demi-XP possible (PRISON.mobXpMul)
     $('xpBox').textContent = n>1 ? `${xp} (≈ ${Math.floor(xp/n)} chacun)` : String(xp); }
   renderLog(G.log);
   updateRail(G, m);
