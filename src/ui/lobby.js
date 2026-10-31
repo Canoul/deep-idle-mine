@@ -5,6 +5,7 @@
    Lit l'état et appelle des fonctions : le groupe et la session sont gérés par le serveur. */
 import { gearScore } from '../meta/gearscore.js';
 import { statusText } from './social.js';
+import { canBeInvited } from '../shared/party.js';
 import { GAME, PREF_OPTIONS, MOB_INFO, DEV_TUNABLES, DEV_TARGETS, DEV_SPEC, SESSION_LEN, SKILLS, MINE_MODES, TOWER, INSTANCE, SHRINES } from '../config.js';
 import { joinLink } from '../shared/party.js';
 import { presetName, copyPresetId, copyName } from '../shared/dev-presets.js';
@@ -138,7 +139,7 @@ export function shrinesHtml(list = [], { have = () => 0, leaderName = null, busy
 export function whoRows(list, party, now = Date.now()){
   const inParty = new Set((party?.members ?? []).map(m => m.account));
   return (list?.players ?? []).map(p => ({ ...p, text: p.status === 'offline' ? seenText(p.lastSeenAt, now) : statusText(p),
-                                           canInvite: p.status !== 'session' && p.status !== 'offline' && !inParty.has(p.id) }));
+                                           canInvite: canBeInvited(p) && !inParty.has(p.id) }));
 }
 /* joueur hors ligne de « Who ? » : « Hors ligne · vu il y a 3 h » (moins d'une heure : « il y a 25 min ») */
 export function seenText(at, now = Date.now()){
