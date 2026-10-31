@@ -3,6 +3,7 @@
 import { TOWER } from '../config.js';
 import { rname } from './rarity.js';
 import { fmt } from './hud.js';
+import { teamEnergyHTML } from './energy-tag.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -23,7 +24,7 @@ export function updateTowerHUD(G, me, left, focus = null){
     `<p class="mut small">Étage ${G.reached ?? 0} / ${TOWER.floors}${G.mobsLeft ? ` · ${G.mobsLeft} ${esc(S.mob)}${G.mobsLeft > 1 ? 's' : ''} réveillé${G.mobsLeft > 1 ? 's' : ''}` : ''}. `+
     `Il frappe le premier arrivé à son contact ; chaque coup peut le projeter (hors de la tour depuis le bord)${G.stats?.knocks ? ` : ${G.stats.knocks} projection${G.stats.knocks > 1 ? 's' : ''}` : ''}.</p>`);
   setHtml($('twTeam'), (G.miners.map(m =>
-    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''}${m.id === b.target ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
+    `<div class="row pick${m.account === me ? ' me' : ''}${m.id === focus && m.account !== me ? ' focus' : ''}" data-id="${m.id}" title="Voir ses états"><span>${esc(m.name)}${m.account === me ? ' (toi)' : ''} ${teamEnergyHTML(m.account)}${m.id === b.target ? ' 🎯' : ''}<br><small class="mut">${esc(m.status)}</small></span>`+
     `<span>${Math.round(m.stats.dmg)} dégâts${m.stats.kills ? ` · ${m.stats.kills} mobs` : ''}${m.stats.mined ? ` · ${m.stats.mined} blocs` : ''}`+
     `${m.pods ? `<br><small class="mut">sac ${Math.round(m.load || 0)} / ${Math.round(m.pods)} pods</small>` : ''}</span></div>`).join('') || '<p class="mut">Tout le monde est parti.</p>')
     + chestLine(G));

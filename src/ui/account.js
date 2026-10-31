@@ -14,6 +14,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&
 /* Vérification avant envoi (même messages que le serveur). Renvoie null ou le message à afficher. */
 export function checkForm(mode, v){
   if(mode === 'login') return v.name?.trim() && v.password ? null : 'Pseudo et mot de passe requis.';
+  if(mode === 'rename') return checkName(v.name);
   if(mode === 'register' || mode === 'claim'){
     return checkName(v.name) ?? checkPassword(v.password, v.name)
         ?? (v.password !== v.confirm ? 'Les deux mots de passe ne sont pas identiques.' : null);
@@ -119,6 +120,12 @@ const VIEWS = {
       <p class="err" hidden></p><button class="main" type="submit">Changer</button></form>
     <p class="links"><a href="#" data-go="profile">← Retour</a></p>`,
 
+  rename: ({ account }) => `<h3>Change ton pseudo</h3>
+    <p>Le pseudo « ${esc(account?.name)} » n'est pas autorisé. Choisis-en un autre pour continuer : ton compte, ton stuff et ta progression ne changent pas.</p>
+    <form data-mode="rename">${pseudoField('off')}
+      <p class="err" hidden></p>
+      <button type="submit">Changer de pseudo</button></form>
+    <button data-act="logout">Se déconnecter</button>`,
   done: ({ text }) => `<h3>C'est fait</h3><p>${esc(text)}</p>
     <div class="acts"><button class="main" data-go="profile">OK</button></div>`,
 };
@@ -145,6 +152,8 @@ export function createAccountUI(root, state, handlers = {}){
 
   /* écran de connexion (au lancement : impossible de le fermer sans se connecter) */
   function gate(){ closable = false; show('login'); }
+  /* compte déjà connecté dont le pseudo est interdit */
+  function forceRename(account){ state.account = account; closable = false; show('rename'); }
   /* fenêtre « Mon compte » (depuis la barre) */
   function openProfile(){ closable = true; show('profile'); }
 
@@ -157,6 +166,7 @@ export function createAccountUI(root, state, handlers = {}){
     finish(msg);
   }
   function finish(msg){
+    if(state.account?.mustRename){ closable = false; return show('rename'); }   // pseudo interdit : rien d'autre tant qu'il n'est pas changé
     if(!closable){ hide(); on.onSignedIn(state.account); }
     else { on.onChange(state.account); msg ? show('done', { text: msg }) : show('profile'); }
   }
@@ -172,6 +182,7 @@ export function createAccountUI(root, state, handlers = {}){
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     try {
+      if(mode === 'rename'){ state.account = (await accountApi.rename(v.name)).account; on.onChange(state.account); finish(); }
       if(mode === 'login')    signedIn(await accountApi.login(v.name, v.password));
       if(mode === 'register') signedIn(await accountApi.register(v.name, v.password));
       if(mode === 'recover')  signedIn(await accountApi.recover(v.name, v.code, v.password), 'Mot de passe changé.');
@@ -224,7 +235,7 @@ export function createAccountUI(root, state, handlers = {}){
   root.addEventListener('click', e => { if(e.target === root && closable) hide(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && closable && !root.hidden) hide(); });
 
-  return { gate, openProfile, hide, on };
+  return { gate, forceRename, openProfile, hide, on };
 }
 
 /* Bloc compte en bas de la barre de navigation. */
@@ -246,6 +257,10 @@ export function renderNavAccount(el, { account, offline }){
 export async function bootAccount(accountUI){
   try {
     const account = await accountApi.me();
+    if(account?.mustRename) return new Promise(resolve => {
+      accountUI.on.onSignedIn = a => resolve({ account: a, offline: false });
+      accountUI.forceRename(account);
+    });
     if(account) return { account, offline: false };
   } catch(e){
     if(e instanceof OfflineError) return { account: null, offline: true };

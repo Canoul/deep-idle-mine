@@ -5951,3 +5951,14 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ chat +9 (dont routes), social, lobby, party, anti-triche (119). Rendu ✅ Chrome sans écran, page de test avec le vrai CSS et `drawPortrait`.
 - ⚠️ Pas essayé dans le vrai jeu à deux navigateurs : bouton Pub LFG, survol réel, clic. Sur téléphone, pas de survol : le toucher rejoint directement.
 - ⚠️ Le nom recouvre un peu le bas du portrait dans l'aperçu. Le lien affiche la taille au moment du message ; seul l'aperçu est à jour. L'activité n'est pas partagée dans le groupe : un membre peut annoncer une autre activité que celle du chef. `peek` n'a pas de limite propre (seulement l'aperçu gardé 5 s côté navigateur).
+
+## 31/10/2026 — Pseudos interdits (Geoffrey)
+- **Quoi** : `nameBanned` (server/moderation/filter.js : liste du chat, pseudo tel quel et découpé aux majuscules). `validName` le refuse (création, sécurisation d'un invité, changement). `publicAccount` ajoute `mustRename`. `POST /api/account/rename` : seulement si le pseudo actuel est interdit. server/app.js : `must_rename` (403) sur tout POST hors `/api/account/` et `/api/admin/`. Navigateur : vue `rename` de src/ui/account.js, impossible à fermer, au démarrage et après connexion. `party.rename` met le groupe à jour.
+- **Tests** ✅ tests/pseudo-banword, comptes, sécurité, modération, groupes : 78/78 ; parcours complet dans Chrome (création refusée, fenêtre impossible à fermer, rechargement, action refusée, nouveau pseudo). Vérifié sur les 31 pseudos lisibles par la vue : aucun touché.
+- **Limites** : la liste reste côté serveur, le refus vient donc à l'envoi. Les anciens noms déjà enregistrés (historique, classements figés, sessions) ne sont pas réécrits. Les mots WORD restent en mot entier : `xxConnardxx` passe. La page déjà ouverte d'un joueur ne se bloque qu'au prochain chargement (ses actions sont refusées avant).
+
+
+## 31/10/2026 — Énergie dans le panneau Équipe (Geoffrey)
+- **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
+- **Tests** ✅ `tests/team-energy.test.js` (3), social.
+- ⚠️ Pas vu dans un navigateur. Cache `energyCache` jamais purgé : une entrée par compte vu (comme Social). Les comptes de test du mode dev n'ont pas de ligne d'énergie.
