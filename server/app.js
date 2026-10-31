@@ -34,7 +34,7 @@ export function createApp({ store, root, config = SERVER, service, game, party, 
                    ...(instant ? instantRoutes(instant) : {}), ...(social ? socialRoutes(social) : {}), ...(giant ? giantRoutes(giant) : {}),
                    ...(town ? townRoutes(town) : {}),
                    /* administration : depuis le serveur lui-même, avec la clé DIM_ADMIN_TOKEN (server/admin/routes.js) */
-                   ...(game && store ? adminRoutes({ accounts: store, game, party, moderation, token: config.adminToken }) : {}),
+                   ...(game && store ? adminRoutes({ accounts: store, game, party, moderation, social, token: config.adminToken }) : {}),
                    /* modération du chat (30/10) : ses avertissements et son ban, vus par le joueur */
                    ...(moderation ? { 'GET /api/moderation/me': async ctx => ctx.me ? moderation.status(ctx.me.id) : { warnings: 0, max: 0, bannedUntil: 0 } } : {}) };
   let proxyChecked = !config.logProxyCheck;

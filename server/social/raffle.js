@@ -41,6 +41,13 @@ export function createRaffle({ store, give, announce, clock = Date.now, random }
       state.nextAt = nextRaffleAt(now, random);   // premier démarrage, ou serveur rallumé dans le créneau fermé
       await save();
     }),
+    /* administration (scripts/force-raffle.js) : un raffle tout de suite, à toute heure ; null si un raffle est en cours */
+    force: () => serial(async () => {
+      await load();
+      if(state.current) return null;
+      await start(clock());
+      return { lot: lotLabel(state.current.lot), seconds: RAFFLE.joinMs / 1000 };
+    }),
     /* !join : le texte de la réponse, pour ce joueur seul */
     join: me => serial(async () => {
       await load();

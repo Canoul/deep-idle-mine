@@ -339,6 +339,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
   /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
+  api.raffleForce = () => raffle.force();   // administration (server/admin/routes.js)
   api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
   api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe
   return api;
