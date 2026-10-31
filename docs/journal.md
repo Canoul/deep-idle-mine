@@ -84,6 +84,10 @@ Modèle d'entrée :
 - **À suivre** : à regarder en jeu, en pierre et en cristal.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Énergie de chacun dans le panneau Équipe
+- **Pour le joueur** : pendant une session à plusieurs, le panneau **Équipe** montre l'énergie de chaque joueur (« ⚡ 42/100 », en rouge s'il ne peut plus lancer de mine classique), en mine, en tour et en instance. Le chiffre peut avoir jusqu'à 30 s de retard.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Tours : le Shrine héroïque remplace le niveau 2
 - **Pour le joueur** : plus de choix de niveau dans les tours. Un **Shrine héroïque** (30 Orbes, dans le lobby des deux tours) donne la difficulté de l'ancien niveau 2 et **25 % de chance d'une 2e boîte** pour chaque joueur. Il garde sa charge tant que la tour n'est pas gagnée, le chef peut le désactiver, et il se cumule avec le Pacte ou l'Exorcisme.
 - **Décisions** : une seule victoire par joueur et par ouverture, donc plus de 2e boîte garantie. Tirage par joueur ; la 2e boîte est la même que la 1re (bénie avec une stèle). Le classement « Tour céleste II » devient « Tour céleste héroïque », records gardés, avec ou sans stèle.
