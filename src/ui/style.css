@@ -255,9 +255,9 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 .soon{text-align:center}
 .soon .big .pi{width:calc(48*var(--u));height:calc(48*var(--u));color:var(--mut)}
 .soon h2{margin:calc(3*var(--u)) 0 var(--u);font-size:var(--fs-xl)}
-/* tous les onglets ont la même largeur, quel que soit leur contenu, et sont réduits à 80 % (31/10/2026, Geoffrey ; téléphone :
+/* tous les onglets ont la même largeur, quel que soit leur contenu, et sont réduits à 90 % (31/10/2026, Geoffrey ; téléphone :
    taille normale, le texte deviendrait illisible ; Session : son affichage suit la mine) */
-@media (min-width:701px){ .view:not([data-view="session"]){zoom:.8} }
+@media (min-width:701px){ .view:not([data-view="session"]){zoom:.9} }
 .invWrap,.furnWrap,.lobbyWrap{position:relative;width:100%;max-width:calc(560*var(--u));margin:0 auto;padding:calc(12*var(--u)) calc(9*var(--u)) calc(18*var(--u))}
 .invHead{display:flex;align-items:flex-end;justify-content:space-between;gap:calc(6*var(--u));margin-bottom:calc(15*var(--u));flex-wrap:wrap}
 .invHead h1,.lobbyWrap h1{display:flex;align-items:center;gap:calc(6*var(--u));margin:0;font-size:var(--fs-h1);line-height:.85;color:#ffe6c4;

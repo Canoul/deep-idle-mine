@@ -27,7 +27,7 @@ function centralLeft(){
   if(!view) return Infinity;
   const el = [...view.querySelectorAll('#cvWrap, #cvMiWrap, #cvTwWrap, #cvGtWrap, #cvInWrap')].find(seen) ?? view.querySelector('.lobbyWrap, .invWrap, .furnWrap');
   if(!el) return Infinity;
-  const pad = el.matches('.lobbyWrap, .invWrap, .furnWrap') ? (parseFloat(getComputedStyle(el).paddingLeft) || 0) * 0.8 : 0;
+  const pad = el.matches('.lobbyWrap, .invWrap, .furnWrap') ? (parseFloat(getComputedStyle(el).paddingLeft) || 0) * 0.9 : 0;
   return el.getBoundingClientRect().left + pad;
 }
 
