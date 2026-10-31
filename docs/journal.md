@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
+- **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
+- **État** : 🧪 sur la branche `geoffrey/tri-runes` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Chat : des messages n'apparaissaient pas après en avoir envoyé un
 - **Pour le joueur** : envoyer un message juste après l'arrivée de ceux des autres les faisait sauter jusqu'au rechargement de la page : c'est comme ça qu'un compte a raté l'annonce du raffle en tapant `!join`. Corrigé pour le Chat global et le chat de session. Le gagnant d'un raffle voit maintenant son lot dans l'inventaire sans recharger.
 - **Vérifié** : raffle réel sur un serveur local, le lot arrive bien dans l'inventaire du gagnant.
