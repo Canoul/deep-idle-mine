@@ -633,6 +633,17 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 - **Aide** *(28/10/2026, Jules)* : les explications sont des bulles **« ? »** à côté de ce qu'elles expliquent (survol, toucher), pas des paragraphes dans les pages.
 - **Guide « Premiers pas »** *(28/10/2026, Jules ; `GUIDE` en config)* : pour un nouveau joueur, un petit panneau au-dessus de la barre d'action liste 7 étapes : lancer une session, regarder son butin (Inventaire), fondre son fer (Four), crafter une **Pioche en pierre**, l'équiper, dépenser son premier point de skill, apprendre sa première recette par un blueprint. Chaque étape se coche **toute seule** d'après l'état réel du joueur ; l'onglet de l'étape en cours clignote dans la barre. Repliable, et « Masquer » le ferme pour toujours. **Aucun onglet n'est caché.** Un compte qui a déjà tout fait à sa première visite ne le voit jamais. Mémorisé dans le navigateur (pas sur le serveur).
 
+### Guilde *(31/10/2026, Geoffrey ; `GUILD` en config ; valeurs provisoires)*
+
+Onglet Guilde : sa guilde (si on en a une), Rechercher, Leaderboard. Bonus et bâtiments viendront plus tard.
+
+- **Créer** : gratuit, nom unique de 3 à 24 caractères, comptes avec pseudo seulement. Une guilde par joueur, 30 membres au plus.
+- **Grades** : Chef de guilde (tout) ; Officier (inviter, accepter une demande, exclure un membre, passer un membre officier, valider un bâtiment) ; Membre (rien). Seul le chef rétrograde, exclut un officier ou donne sa place (il devient alors officier).
+- **Entrer** : invitation par pseudo (accepter ou refuser), ou demande depuis Rechercher, validée par le chef ou un officier. Entrer annule ses autres invitations et demandes.
+- **Sortir** : n'importe qui peut quitter sans restriction. Le chef parti, le plus ancien officier le remplace, sinon le plus ancien membre. Le dernier parti, la guilde disparaît et son nom est libéré.
+- **Niveau** : 1 % de l'XP reçue par un membre (mine, groupe, prison) va à la guilde, même courbe que le niveau du mineur. Pas de rattrapage ; l'XP versée reste à la guilde, mais le compteur d'un membre repart de 0 s'il revient.
+- **Leaderboard** : par niveau, puis par XP de guilde.
+
 ### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
 
 Tirage au sort dans le chat global, 30 à 60 min après la fin du précédent, de **8 h à 2 h** (heure de Paris). Tombé la nuit : entre 8 h et 9 h 15. Le lot est annoncé dans Général ; on a **40 s** pour taper `!join`, jamais publié, avec une réponse visible par le joueur seul (inscrit, déjà inscrit, pas de raffle, pseudo requis). Un seul gagnant, tiré parmi les inscrits, annoncé à tous avec le nombre de participants (« toto a gagné 100 Chitine sur 12 participants »). Sans inscrit, le lot est perdu et le chat le dit. Réservé aux comptes avec un pseudo.

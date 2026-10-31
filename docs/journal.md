@@ -105,6 +105,11 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Guildes
+- **Pour le joueur** : nouvel onglet Guilde (touche G). Créer une guilde (gratuit), inviter un joueur par pseudo ou demander à rejoindre depuis Rechercher, grades Chef / Officier / Membre, promotion et exclusion, jusqu'à 30 membres. 1 % de l'XP de chaque membre va à la guilde, dont le niveau suit la même courbe que le mineur, et chaque membre voit l'XP qu'il a rapportée. Classement des guildes par niveau.
+- **Pas encore là** : les bonus et les bâtiments (emplacements prévus à l'écran, vides). Pas de bâtiment Guilde dans le Carreau.
+- **État** : 🧪 sur la branche `geoffrey/guilde` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
   restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps
