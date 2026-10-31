@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { focusUnlessTouch } from '../src/ui/focus.js';
+import { focusUnlessTouch } from '../src/ui/touch-focus.js';
 
 function focused(touch){
   globalThis.matchMedia = q => ({ matches: q === '(hover: none)' && touch });

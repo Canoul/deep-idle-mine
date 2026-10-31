@@ -2,7 +2,7 @@
    Ne modifie jamais rien lui-même : chaque action (poser, retirer, récupérer) est demandée au serveur (onOp),
    qui renvoie les fours et l'inventaire à jour. Entre deux réponses, la fonte est recalculée localement
    (même règle que le serveur, src/meta/furnace.js) pour faire avancer la barre : affichage seulement. */
-import { focusUnlessTouch } from './focus.js';
+import { focusUnlessTouch } from './touch-focus.js';
 import { FURNACE } from '../config.js';
 import { itemDef, countOf } from '../meta/inventory.js';
 import { rcls, rname } from './rarity.js';

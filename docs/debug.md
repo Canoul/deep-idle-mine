@@ -6114,5 +6114,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Pas vérifié ⚠️** : vrai téléphone et clavier virtuel (le champ peut passer dessous). En PC, `#chat` ouvre le Lobby mais l'adresse reste `#chat`, sans effet.
 
 ## 31/10/2026 — Téléphone : clavier ouvert tout seul (Geoffrey)
-- **Quoi** : `qty.focus()` à l'ouverture des fenêtres du four (2) et du concasseur (1) remplacé par `focusUnlessTouch` (src/ui/focus.js, `(hover: none)`, même test que src/ui/inventory.js).
+- **Quoi** : `qty.focus()` à l'ouverture des fenêtres du four (2) et du concasseur (1) remplacé par `focusUnlessTouch` (src/ui/touch-focus.js, `(hover: none)`, même test que src/ui/inventory.js).
 - **Tests** ✅ `tests/focus-touch.test.js`. ⚠️ Pas essayé sur un vrai téléphone.
