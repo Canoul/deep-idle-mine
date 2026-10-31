@@ -79,7 +79,7 @@ Modèle d'entrée :
   ouvert dans un autre onglet ou sur un autre appareil, qui recevait le bilan à ta place ; une mine instantanée commencée pendant la session.
   Le bilan fermé ne revient toujours pas quand on recharge la page.
 - **À suivre** : vérifier sur la prochaine tour.
-- **État** : 🧪 sur la branche `geoffrey/fix-bilan-tour` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Gobelins asservis : ils creusent quand il n'y a plus de minerai
 - **Pour le joueur** : un gobelin asservi vise toujours les minerais d'abord. S'il n'y en a pas à 6 cases, il creuse tout droit dans la roche
