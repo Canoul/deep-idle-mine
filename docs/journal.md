@@ -12,7 +12,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Nouvel objet : l'Orbe supérieur
 - **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
 - **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
-- **État** : 🧪 sur la branche `geoffrey/orbe-superieur` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
