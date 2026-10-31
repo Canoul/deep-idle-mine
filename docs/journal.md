@@ -16,6 +16,12 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
+- **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
+- **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.
+- **À suivre** : sur 5 sessions, les quantités rapportées ne bougent presque pas : ça corrige un comportement bizarre, pas le rendement. Le serveur calcule environ 15 % de plus dans les sessions profondes.
+- **État** : 🧪 sur la branche `geoffrey/fix-galerie-rares` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo
 - **Pour le joueur** : les mines jouées avec le focus minerai (retiré le 30/10) ne comptent plus pour leur butin dans la compo de la prison, à partir de 6 areas débloquées. Elles comptent pour une répartition de référence, celle des 10 dernières mines de Nbrick, LeTaz et Akake (mithril 1,28 %, cobalt 0,13 %, thorium 0,08 %). Les compos des joueurs concernés sont refaites une fois, et leur compo enregistrée est effacée.
 - **Décisions** : règle pour tous, pas de liste de pseudos ; si un joueur du groupe a mis le focus, toute la mine compte. Pour Croustiflex, Infernatiwar et Monsta : mithril ÷ 3 environ, cobalt ÷ 3, thorium ÷ 5 par rapport à aujourd'hui. Les 10 prochaines mines, sans focus possible, formeront leur palier suivant, sans correction.

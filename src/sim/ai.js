@@ -99,6 +99,19 @@ function explore(G,m,k,cap=Infinity){
   m.skipRows.add(target); idle(m,0.2);
 }
 
+/* la cible de la liste la plus proche par le chemin, sans limite de distance : { o, r }, r.n = case voisine où aller ; null si aucune */
+function farGoal(G,m,list){
+  const cells=new Map();
+  for(const o of list) for(const [dx,dy] of DIRS){
+    const nx=o.x+dx, ny=o.y+dy;
+    if(nx<0||nx>=W||ny<1||ny>maxRow(G)||(dy===-1 && deepFall(G,{...m,x:nx,y:ny},0,1))) continue;
+    if(!cells.has(ny*W+nx)) cells.set(ny*W+nx,o);
+  }
+  if(!cells.size) return null;
+  const r=search(G,m,m.x,m.y,true,(x,y)=>cells.has(y*W+x));
+  return r ? { o:cells.get(r.n), r } : null;
+}
+
 /* va vers un minerai : le mine s'il est adjacent, sinon suit l'itinéraire jusqu'à sa case voisine bn */
 function goOre(G,m,o,r,bn){
   const dx=o.x-m.x, dy=o.y-m.y;
@@ -333,7 +346,7 @@ function decideWork(G,m){
   // d'area comme pour le focus minerai (l'area visée est alors la plus proche qui a encore le minerai), et pour la
   // galerie qu'il va creuser (seed 23757 : galerie en haut de l'area 3, chemin par la dernière ligne de l'area 2)
   // … et pour un treasure ou un résidu visé hors de l'area de travail (voir inFocus plus bas)
-  const onTheWay = goal!==null && ((m.target && (areaOf(m.target.y)===goal || !isOre(G.tiles[m.target.y][m.target.x])))
+  const onTheWay = goal!==null && ((m.target && (m.target.far || areaOf(m.target.y)===goal || !isOre(G.tiles[m.target.y][m.target.x])))
     || (m.exploring && m.galleryRow!=null && areaOf(m.galleryRow)===goal));
   if(goal!==null && !onTheWay) return changeArea(G,m,goal);
   const R=compassR(G,m), ores=compassScan(G,m,R);
@@ -368,7 +381,11 @@ function decideWork(G,m){
      d'une area du dessus restait là toute la partie, même à 3 cases du treuil où tout le monde passe (seed 1384517703) */
   const inFocus = (y,t) => y<=cap && (!isOre(t) || (A!==null ? areaOf(y)===A : !act.length || areaGood(G,areaOf(y),act)));
   const tg=m.target;
-  if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
+  if(tg?.far){ const t=G.tiles[tg.y][tg.x], rival=oreTakenBy(G,m,tg.x,tg.y);
+    const f = isTarget(t) && tg.y<=cap && !(rival && rival.id<m.id) ? farGoal(G,m,[{...tg,t}]) : null;
+    if(f){ m.status=targetStatus(t); return goOre(G,m,tg,f.r,f.r.n); }
+    m.target=null; }
+  else if(tg){ const t=G.tiles[tg.y][tg.x], nb=nbrBest(tg), rival=oreTakenBy(G,m,tg.x,tg.y);
     if(isTarget(t) && targetVal(G,m,t)!==null && inFocus(tg.y,t) && nb.bn>=0 && !(rival && rival.id<m.id)){ m.status=targetStatus(t); return goOre(G,m,tg,r,nb.bn); }
     m.target=null; }
   for(const o of known.values()){
@@ -395,6 +412,9 @@ function decideWork(G,m){
   const range = (m.prefs.priority==='minerais'||!down) ? R : 3;
   if(best && Math.abs(best.x-m.x)<=range){ m.target={x:best.x,y:best.y}; m.status=targetStatus(best.t); return goOre(G,m,best,r,bestN); }
   if(down) return digDown(G,m);
+  /* cibles de valeur découvertes hors de portée : il va les chercher avant de creuser à l'aveugle (seed 1832289715) */
+  const f = G.khole ? null : farGoal(G,m,[...known.values()].filter(o=>o.y<=cap && (targetVal(G,m,o.t)??0)>=CFG.farVal && !oreTakenBy(G,m,o.x,o.y) && !veinTaken(G,m,o.x,o.y)));
+  if(f){ m.target={x:f.o.x,y:f.o.y,far:true}; m.status=targetStatus(f.o.t); return goOre(G,m,f.o,f.r,f.r.n); }
   const k = stopK ?? (m.exploring && m.exploreArea!=null ? m.exploreArea : G.unlockedAreas-1);
   explore(G,m, Math.min(k, Math.max(0,areaOf(cap))), cap);   // fin de session : galeries au-dessus de la profondeur max
 }

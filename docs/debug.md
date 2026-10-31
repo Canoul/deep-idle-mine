@@ -5785,3 +5785,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
 - ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
 - ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
+
+## 31/10/2026 — Galerie creusée alors que des résidus sont découverts, seed 1832289715 (Geoffrey)
+- **Cause** : `decideWork` (src/sim/ai.js) ignore toute cible à plus de `CFG.oreReach` (12) cases, résidus et treasures compris, puis tombe sur `explore`. La recherche de chemin normale est aussi bornée (`planMaxCost`).
+- **Quoi** : juste avant `explore`, `farGoal` cherche sans limite la plus proche des cibles connues de valeur ≥ `CFG.farVal` (5 : mithril et mieux, résidus, treasures), sous `m.tripCap`, non prises par un autre, hors k hole. Cible gardée avec `m.target.far` : son propre chemin à chaque décision, `onTheWay` vrai (pas de rappel par `focusGoal`), pas de filtre d'area.
+- **Reproduction** ✅ sonde sur la seed, 3 mineurs acier (mineur, logisticien, barbare ; le vrai stuff de la session est inconnu) : Test_Mineur 99 s de galerie sur 118 avec une cible connue, toutes à plus de 12 cases → 2 s sur 65. Avec des mineurs de base : non reproduit, ils ne vont pas assez bas.
+- **Tests** ✅ `tests/galerie-cibles.test.js` (4, dont 2 rouges avant le correctif) ; 51 fichiers de simulation : 585/587. ❌ Rouges aussi sur `main` propre, sans lien : `tests/tier2.test.js`, « fortune : le doublon… » et « recycle : un BP du T2… ». Les fichiers server et perf n'ont pas été relancés.
+- **Simulation** ✅ `--miners 3 --count 5` : 0 bloquée, areas 3,0, profondeur 189,8, allers-retours 28,6. Acier, 5 seeds, `farVal` Infinity → 5 : areas 7,2 = 7,2, profondeur 348 = 348, allers-retours 33,0 → 33,2, Fer 670,8 → 665,4, Or 277 → 279, Diamant 22 → 23, Mithril 29 → 27,6, résidus 20 → 19,8. Pas de gain mesurable sur cet échantillon.
+- ⚠️ Temps de calcul 234,5 → 269,1 s (+15 %, une seule mesure) : recherche sans limite à chaque décision pendant un trajet lointain. À surveiller sur le serveur ; piste : garder l'itinéraire.
+- ⚠️ Pas vu en jeu. Une session en cours rejouée après la mise en ligne peut diverger, comme à chaque changement d'IA.
+- ⚠️ Seul le cas « galerie » est traité : un mineur qui peut encore descendre descend.

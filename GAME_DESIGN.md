@@ -143,6 +143,7 @@ Vocabulaire : le **treasure** est l'entité enfouie dans la mine (on peut l'appe
 
   *(Choix de Claude, 27/10 : les quatre BP du 2e jet sont tirés chacun à part, la règle ne disant pas « 1 max ».)*
 - L'IA vise un treasure **une fois découvert** (comme un minerai très rentable) ; la boussole ne le signale pas. Un treasure (ou un résidu) découvert **à portée** (12 cases) est visé **quel que soit le focus d'area** (« Plus profond » compris) *(23/10/2026, Geoffrey : un treasure d'une area du dessus, collé au puits du treuil où tout le monde passe, restait là toute la partie)*.
+- **Avant de creuser une galerie** *(31/10/2026, seuil provisoire `CFG.farVal`)* : le mineur va chercher, à n'importe quelle distance, le plus proche résidu, treasure ou minerai découvert valant au moins le mithril, s'il reste au-dessus de la profondeur maximale du trajet. S'il peut encore descendre, il descend d'abord.
 - Le panneau d'area affiche la probabilité, puis le tier trouvé une fois le treasure ouvert.
 - Dans l'inventaire, chaque tier a son icône (T1 : ferrures argent, T2 : ferrures or).
 
