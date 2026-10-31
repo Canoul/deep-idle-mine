@@ -6057,6 +6057,5 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Butin des mobs : Piolet, Kilt, Chapeau de naab, Épée en carton (Geoffrey)
 - **Quoi** : 4 pièces dans `STUFF.items`, `MOB_DROPS`, `RARITY`, `UPGRADE.tiers` (Chapeau et Épée tier 1, Piolet et Kilt tier 2), `src/skins.js`, icônes et skins dans scripts/gen_textures.py. Gobelin, occultiste et bestiole font deux tirages ; `rareDrop` (src/sim/actions.js) s'arrête à la première pièce tombée, pour garder la règle du 26/10 (une pièce au plus par mob).
-- **Valeurs** : Kilt 63,8 % = 250 x / 3,92. Chapeau 33 x par stat, arrondi (oxygène 8, pods 6, marche 0,14). Épée : `set.damage` 7, remplace les mains nues (5), donc +2 réel. Piolet, Chapeau, Épée hors règle du butin (`OFF_RULE`, tests/stuff-balance.test.js).
-- **Points fragiles** : Kilt très au-dessus des Gants tactique (+10 %) ; à regarder en jeu.
+- **Valeurs** : Kilt : minage % 6,4 = 250 x / 39 (d'abord vitesse d'attaque +63,8 %, jugée trop forte, remplacée le même jour). Chapeau 33 x par stat, arrondi (oxygène 8, pods 6, marche 0,14). Épée : `set.damage` 7, remplace les mains nues (5), donc +2 réel. Piolet, Chapeau, Épée hors règle du butin (`OFF_RULE`, tests/stuff-balance.test.js).
 

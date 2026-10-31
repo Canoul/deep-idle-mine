@@ -1209,11 +1209,11 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
     'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.5, tenacity:12.5 },   // 29/10 (Geoffrey) : dégâts 1,5 ≈ +10 % de DPS avec 14 dégâts fixes (avant 5) ; 28/10 : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
-    /* butin des mobs du 31/10/2026 (Geoffrey). Kilt : 250 x de vitesse d'attaque (tier 2), dans la règle. Chapeau : 33 x
+    /* butin des mobs du 31/10/2026 (Geoffrey). Kilt : 250 x de vitesse de minage % (tier 2), dans la règle. Chapeau : 33 x
        de chaque stat, soit le x du tier 1. Piolet et épée : valeurs du créateur, hors règle (tests/stuff-balance.test.js) */
     'Piolet de gobelin':   { slot:'pioche', tex:'pick_goblin',   stats:{ mineSpeed:0.3 },
                              recycle:{ 'Tainted iron':6, 'Peau de gobelin':10 } },
-    'Kilt ténébreux':      { slot:'jambes', tex:'kilt_dark',     stats:{ attackSpeed:63.8 },
+    'Kilt ténébreux':      { slot:'jambes', tex:'kilt_dark',     stats:{ mineSpeedPct:6.4 },
                              recycle:{ 'Tainted gold':6, 'Tissu sombre':10 } },
     'Chapeau de naab':     { slot:'casque', tex:'hat_naab',      stats:{ oxygenMax:8, pods:6, speed:0.14 },
                              recycle:{ 'Chitine':20 } },

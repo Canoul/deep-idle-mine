@@ -121,7 +121,7 @@ test('wiki : chaque pièce dit d\'où elle tombe', () => {
 test('butin du 31/10 : les stats voulues par Geoffrey', () => {
   const I = STUFF.items;
   assert.deepEqual(I['Piolet de gobelin'].stats, { mineSpeed:0.3 });
-  assert.deepEqual(I['Kilt ténébreux'].stats, { attackSpeed:63.8 });
+  assert.deepEqual(I['Kilt ténébreux'].stats, { mineSpeedPct:6.4 });
   assert.deepEqual(I['Chapeau de naab'].stats, { oxygenMax:8, pods:6, speed:0.14 });
   assert.deepEqual(I['Épée cassée en carton'].set, { damage:7 });
   const gs = pieceGS('Chapeau de naab'), x = UPGRADE.tiers[1].x;

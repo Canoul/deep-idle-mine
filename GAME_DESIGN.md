@@ -830,7 +830,7 @@ Une grande grille de **slots** ; chaque slot contient un objet et sa quantité (
   | **Nuage magique** (jambes, rare) — les jambes deviennent un nuage jaune | Vitesse de marche +1,04 (250 x) *(27/10 ; avant +1,1)* | méphite 0,1 % *(avant 0,5 %)* | 30 Chitine + 10 Vésicule de gaz |
   | **Ceinture du Géant** (ceinture, épique) — noire, à cornes | Dégâts +1,5, Ténacité +12,5 % *(29/10/2026, Geoffrey : ≈ +10 % de DPS avec une épée en fer ; 28/10 : +5 ; 27/10 : +1,6 ; avant +3,1 / +25 %)* | minotaure 0,5 % (1 % dans un k hole) *(avant 1 % / 2 %)* | 50 Chitine + 5 Steel ingot |
   | **Piolet de gobelin** (pioche, inhabituel, tier 2) *(31/10/2026, Geoffrey)* — manche d'os, tête verte | Vitesse de minage +0,3 | gobelin 0,5 % | 6 Tainted iron + 10 Peau de gobelin |
-  | **Kilt ténébreux** (jambes, rare, tier 2) *(31/10/2026, Geoffrey)* — kilt violet plissé | Vitesse d'attaque +63,8 % (250 x) | occultiste 0,5 % | 6 Tainted gold + 10 Tissu sombre |
+  | **Kilt ténébreux** (jambes, rare, tier 2) *(31/10/2026, Geoffrey)* — kilt violet plissé | Vitesse de minage +6,4 % (250 x) | occultiste 0,5 % | 6 Tainted gold + 10 Tissu sombre |
   | **Chapeau de naab** (casque, inhabituel, tier 1) *(31/10/2026, Geoffrey)* — bonnet à hélice, yeux qui louchent | Oxygène +8, Pods +6, Marche +0,14 (33 x chacune) | bestiole 1 % | 20 Chitine |
   | **Épée cassée en carton** (épée, commune, tier 1) *(31/10/2026, Geoffrey)* — lame brisée, scotch | Dégâts 7 (remplace les mains nues) | bestiole 1 % | 20 Chitine |
 
