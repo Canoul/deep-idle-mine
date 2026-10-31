@@ -32,7 +32,11 @@ import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
 import { LEADERBOARD, CHAT } from '../../src/config.js';
 import { LOBBY_TAG } from '../../src/shared/chat.js';
+import crypto from 'node:crypto';
 import { createChat } from '../game/chat.js';
+import { createRaffle } from './raffle.js';
+import { isRaffleJoin } from '../../src/shared/raffle.js';
+import { RAFFLE } from '../../src/config.js';
 import { chatChannel, sanitizeChatPrefs } from '../../src/shared/chat.js';
 
 export class SocialError extends Error {
@@ -56,7 +60,8 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 }
 
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
-export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null }){
+export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null,
+                                      random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
   const energies = new Map();                // compte → { at, energy } : dernière énergie lue (energyField)
@@ -98,6 +103,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
     .then(raw => chat.restore(GLOBAL, raw)).catch(console.error);
   const nameOf = async id => displayName(await accounts.getAccount(id)) || formatAccountId(id);
+  const saveChat = () => serial(() => store.putGlobalChat(chat.room(GLOBAL)));
+  const raffle = createRaffle({ store, clock, random, give: (id, key, lot) => game.raffleGive(id, key, lot),
+    announce: async text => { await chatReady(); chat.system(GLOBAL, RAFFLE.name, text, CHAT.channels[0].id); await saveChat(); } });
 
   /* l'ami visé : par pseudo d'abord, sinon par ID (« 7K3Q-9XHP ») */
   async function findTarget(input){
@@ -290,6 +298,12 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     async chatPost(me, body = {}){
       await chatReady();
       const channel = chatChannel(body.channel).id;
+      /* !join (31/10) : jamais publié ; la réponse revient à ce joueur seul, dans le canal où il l'a tapé */
+      if(isRaffleJoin(body.text)){
+        const message = chat.notice(GLOBAL, RAFFLE.name, await raffle.join(me), channel);
+        await saveChat();
+        return { message };
+      }
       const reach = await audience(me, channel, body.to);
       const lobby = typeof body.text === 'string' && body.text.includes(LOBBY_TAG) ? { lobby: await party.chatLink(me, body.lobby) } : {};
       const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...reach, ...lobby });
@@ -325,6 +339,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   /* toute demande d'un joueur est un signe de vie (state() en premier : le navigateur l'appelle sans arrêt) */
   for(const k of Object.keys(api)){ const fn = api[k]; api[k] = (me, ...rest) => { seen.set(me.id, clock()); lastSeen.set(me.id, clock()); return fn(me, ...rest); }; }
   /* messages du chat global de moins de ms (bulles du Carreau, server/town/service.js) : pas un signe de vie */
+  api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
   api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe
   return api;
 

@@ -426,6 +426,7 @@ img[src*="textures/shiny_"]{animation:shinyGlint 1.6s steps(4) infinite}
 #gchatInput{flex:1 1 100%;order:-1}
 #gchatChan{flex:1;min-width:0;font-size:var(--fs-s)}
 .ch-general{color:#fff}
+.chSystem{color:#ffd24a}
 .ch-mp{color:#ff9ad5}
 .ch-group{color:#6db3ff}
 .chLead{color:#b5dcff}   /* [Chef de groupe] : un peu plus clair que son canal */

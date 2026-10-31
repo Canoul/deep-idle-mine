@@ -36,7 +36,7 @@ import { sanitizeJudgment, addResidues, refresh as refreshJudgment, publicJudgme
          setCount as setJudgmentCount, SIDES as JUDGMENT_SIDES } from '../../src/meta/judgment.js';
 import { towerSide, isTowerMode, towerDurationMs, splitTowerLoot } from '../../src/shared/tower.js';
 import { instanceDef, instanceDurationMs, isInstanceMode, missingKeys, levelsOf } from '../../src/shared/instances.js';
-import { rollChestQuality, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
+import { rollChestQuality, rollRune, isRing, canIdentify, qualityDef } from '../../src/meta/piece.js';
 import { sanitizeProgress, creditXp, raiseAreaMax, levelOf, specXpOf, specLevels } from '../../src/meta/level.js';
 import { sanitizeSkills, skillOp, skillRanks, spentPoints } from '../../src/meta/skills.js';
 import { glyphOp, sessionSkills, ownedGlyphs, nodeOfGlyph } from '../../src/meta/glyphs.js';
@@ -1337,6 +1337,26 @@ export function createGameService({ store, liveRunner = createLiveRunner, clock 
         if(quality !== undefined) for(const i of touched) inv.slots[i].q = quality;
         await store.putInventory(accountId, JSON.parse(serialize(inv)));
         return { item, qty, ...(quality !== undefined && { quality }), before, after: countOf(inv, item) };
+      });
+    },
+
+    /* Raffle (31/10/2026, server/social/raffle.js) : verse le lot une seule fois par raffle (id), même rejoué ; true si versé.
+       Rune : ses lignes sont tirées ici, comme à l'ouverture d'un coffre ; énergie : plafonnée à ENERGY.max */
+    raffleGive(accountId, id, lot){
+      return withLock('inv:' + accountId, async () => {
+        if(lot.energy){
+          const e = await loadEnergy(accountId);
+          if(!creditEnergy(e, id, lot.energy)) return false;
+          await store.putEnergy(accountId, e);
+          return true;
+        }
+        const inv = await loadInventory(accountId);
+        if(lot.rune) await loadStuff(accountId, inv);    // uid neuf : jamais celui d'une pièce portée
+        const slots = creditSession(inv, id, lot.rune ? { [lot.rune]: 1 } : { [lot.item]: lot.qty });
+        if(!slots) return false;
+        if(lot.rune) Object.assign(inv.slots[slots[0]], rollRune(lot.q, random));
+        await store.putInventory(accountId, JSON.parse(serialize(inv)));
+        return true;
       });
     },
 

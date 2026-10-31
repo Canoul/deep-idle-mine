@@ -632,6 +632,30 @@ Une **barre d'action** est **toujours visible en bas** de l'écran, avec le nom 
 - **Aide** *(28/10/2026, Jules)* : les explications sont des bulles **« ? »** à côté de ce qu'elles expliquent (survol, toucher), pas des paragraphes dans les pages.
 - **Guide « Premiers pas »** *(28/10/2026, Jules ; `GUIDE` en config)* : pour un nouveau joueur, un petit panneau au-dessus de la barre d'action liste 7 étapes : lancer une session, regarder son butin (Inventaire), fondre son fer (Four), crafter une **Pioche en pierre**, l'équiper, dépenser son premier point de skill, apprendre sa première recette par un blueprint. Chaque étape se coche **toute seule** d'après l'état réel du joueur ; l'onglet de l'étape en cours clignote dans la barre. Repliable, et « Masquer » le ferme pour toujours. **Aucun onglet n'est caché.** Un compte qui a déjà tout fait à sa première visite ne le voit jamais. Mémorisé dans le navigateur (pas sur le serveur).
 
+### Raffle *(31/10/2026, Geoffrey ; `RAFFLE` en config)*
+
+Tirage au sort dans le chat global, 45 à 120 min après la fin du précédent, de **8 h à 2 h** (heure de Paris). Tombé la nuit : entre 8 h et 9 h 15. Le lot est annoncé dans Général ; on a **40 s** pour taper `!join`, jamais publié, avec une réponse visible par le joueur seul (inscrit, déjà inscrit, pas de raffle, pseudo requis). Un seul gagnant, tiré parmi les inscrits, annoncé à tous. Sans inscrit, le lot est perdu et le chat le dit. Réservé aux comptes avec un pseudo.
+
+| Chance | Lot |
+|---|---|
+| 30 % | 100 Chitine |
+| 10 % | 25 Blueprint parts |
+| 10 % | 10 Graphite ingot |
+| 5 % | 1 Treasure T2 |
+| 5 % | 2 Treasure T1 |
+| 5 % | 1 Clé d'instance I |
+| 5 % | 10 énergie (plafonnée à 100) |
+| 5 % | 10 Tainted iron |
+| 5 % | 10 Tainted gold |
+| 5 % | 50 Blueprint parts |
+| 3 % | 1 Clé d'instance II |
+| 3 % | 1 Barre d'argent |
+| 3 % | 10 Steel ingot |
+| 2 % | 1 Treasure T3 |
+| 2 % | 100 Blueprint parts |
+| 1 % | 1 Treasure T4 |
+| 1 % | 1 Rune (qualité tirée avec les chances de l'identification, annoncée) |
+
 ### Social (onglet Social) *(demande du créateur, 21/10/2026)*
 - **Trois sous-onglets** : **Amis** (tout ce qui suit), **Online** *(26/10/2026, Geoffrey)* et **Classements** *(27/10/2026, Geoffrey)*.
 - **Énergie visible** *(31/10/2026, Geoffrey)* : chaque ligne d'**Amis** (hors ligne compris) et d'**Online** montre l'énergie du

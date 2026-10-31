@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Raffle : un tirage au sort dans le chat
+- **Pour le joueur** : toutes les 45 à 120 min, entre 8 h et 2 h, un lot est annoncé dans le chat global. On a 40 s pour taper `!join` : la commande n'apparaît pas dans le chat et une réponse visible par soi seul confirme l'inscription. À la fin, un inscrit gagne le lot, annoncé à tous.
+- **Décisions** : il faut un compte avec pseudo (pas les invités, à cause du multi-compte) ; la rune suit la table de l'identification ; sans inscrit, le lot est perdu et le chat le dit. Silver ingot = Barre d'argent, clés T1 / T2 = Clé d'instance I / II. Tombé la nuit, le raffle part entre 8 h et 9 h 15.
+- **À suivre** : à regarder en vrai. `!join` ne marche que dans le Chat global, pas dans le chat de l'onglet Session. Un joueur qui masque Général ne voit pas l'annonce.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Groupes en formation dans « Que veux-tu faire ? »
 - **Pour le joueur** : Groupes en formation est maintenant une ligne du menu des activités du lobby. Une fois dans une activité, le bouton reste dans la carte Équipe.
 - **État** : ✅ en ligne le 31/10

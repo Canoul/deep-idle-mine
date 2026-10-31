@@ -55,6 +55,7 @@ export function createMemoryGameStore(initial = {}){
   const prisons = new Map(Object.entries(initial.prisons ?? {}));
   const prisonCompos = new Map(Object.entries(initial.prisonCompos ?? {}));   // compos de prison du compte : { cur, prev, saved } (30/10)     // prison du compte (src/shared/prison.js)
   const chats = new Map(Object.entries(initial.chats ?? {}));
+  const raffles = new Map(Object.entries(initial.raffles ?? {}));
   const alwaysReady = new Map(Object.entries(initial.alwaysReady ?? {}));   // comptes qui ont coché « Prêt tout le temps »
   const chatPrefs = new Map(Object.entries(initial.chatPrefs ?? {}));   // réglages du chat par compte (31/10/2026)
   const moderations = new Map(Object.entries(initial.moderations ?? {}));   // modération du chat, par compte (server/moderation/, 30/10)         // chat global du lobby, clé 'state'
@@ -173,6 +174,9 @@ export function createMemoryGameStore(initial = {}){
     async putJudgment(j){ judgments.set('state', copy(j)); await store.changed([{ ns: 'judgment', key: 'state', value: j }]); },
 
     /* chat global (lobby) : un seul salon commun à tous les joueurs */
+    /* Raffle (31/10/2026, server/social/raffle.js) : le raffle en cours et l'heure du prochain */
+    async getRaffle(){ return copy(raffles.get('state')) ?? null; },
+    async putRaffle(r){ raffles.set('state', copy(r)); await store.changed([{ ns: 'raffle', key: 'state', value: r }]); },
     async getGlobalChat(){ return copy(chats.get('state')) ?? null; },
     async putGlobalChat(c){ chats.set('state', copy(c)); await store.changed([{ ns: 'chat_global', key: 'state', value: c }]); },
 
@@ -253,7 +257,7 @@ export function createMemoryGameStore(initial = {}){
                          signups: Object.fromEntries(signups), socials: Object.fromEntries(socials),
                          judgments: Object.fromEntries(judgments), discovered: Object.fromEntries(discovered),
                          giantDays: Object.fromEntries(giantDays), giantPlayers: Object.fromEntries(giantPlayers), sessionStats: Object.fromEntries(sessionStats),
-                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), moderations: Object.fromEntries(moderations) }; },
+                         towerRecords: Object.fromEntries(towerRecords), instanceRecords: Object.fromEntries(instanceRecords), energies: Object.fromEntries(energies), alwaysReady: Object.fromEntries(alwaysReady), chatPrefs: Object.fromEntries(chatPrefs), prisons: Object.fromEntries(prisons), prisonCompos: Object.fromEntries(prisonCompos), chats: Object.fromEntries(chats), raffles: Object.fromEntries(raffles), moderations: Object.fromEntries(moderations) }; },
   };
   return store;
 }
@@ -283,12 +287,12 @@ export async function createFileGameStore(dir){
 
 /* PostgreSQL (en ligne) : db ouverte par server/db/postgres.js, partagée avec les comptes */
 export async function createPgGameStore(db){
-  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation']);
+  const rows = await db.load(['inventory', 'furnace', 'crusher', 'stuff', 'prefs', 'progress', 'skills', 'spells', 'sets', 'game_session', 'party', 'always_ready', 'mi_signup', 'social', 'judgment', 'giant_day', 'giant_player', 'discovered', 'session_stat', 'tower_record', 'instance_record', 'shrine', 'energy', 'prison', 'prison_compo', 'chat_global', 'chat_prefs', 'moderation', 'raffle']);
   const store = createMemoryGameStore({ inventories: rows.inventory, furnaces: rows.furnace, crushers: rows.crusher, stuff: rows.stuff, prefs: rows.prefs,
                                         progress: rows.progress, skills: rows.skills, spells: rows.spells, sets: rows.sets,
                                         sessions: rows.game_session, parties: rows.party, signups: rows.mi_signup, socials: rows.social,
                                         judgments: rows.judgment, giantDays: rows.giant_day, giantPlayers: rows.giant_player, discovered: rows.discovered, sessionStats: rows.session_stat,
-                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, moderations: rows.moderation });
+                                        towerRecords: rows.tower_record, instanceRecords: rows.instance_record, shrines: rows.shrine, energies: rows.energy, alwaysReady: rows.always_ready, chatPrefs: rows.chat_prefs, prisons: rows.prison, prisonCompos: rows.prison_compo, chats: rows.chat_global, raffles: rows.raffle, moderations: rows.moderation });
   store.changed = changes => db.write(changes);
   store.close = () => db.flush();
   store.file = 'PostgreSQL';

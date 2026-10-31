@@ -25,7 +25,8 @@ function chatBody(m){
 }
 /* une ligne du chat, dans la couleur de son canal */
 export function chatLine(m, me){
-  const ch = chatChannel(m.channel), start = esc(chatPrefix(m, me));
+  if(m.system) return `<div class="chSystem"><time>${hhmm(m.at)}</time>${esc(m.text)}</div>`;   // message du jeu (Raffle, 31/10)
+  const ch =chatChannel(m.channel), start = esc(chatPrefix(m, me));
   const shown = m.leader && ch.id === 'group' ? start.replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`) : start;
   return `<div class="ch-${ch.id}"><time>${hhmm(m.at)}</time>${shown} : ${chatBody(m)}</div>`;
 }
