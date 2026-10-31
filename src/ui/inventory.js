@@ -115,10 +115,10 @@ export function tabSlots(inv, tab, n){
 }
 let tab = 'all';   // onglet ouvert (gardé d'un affichage à l'autre)
 /* rangée d'onglets, aussi celle de l'onglet Craft (31/10/2026) : active = onglet ouvert, items = objets à compter, unit = mot
-   de la bulle (« 3 slots », « 3 recettes »), all = compte de « Tout » */
-export function tabsHtml(active, items, unit, all = items.length){
+   de la bulle (« 3 slots », « 3 recettes »), all = compte de « Tout », hideEmpty = pas d'onglet vide (Craft) */
+export function tabsHtml(active, items, unit, all = items.length, hideEmpty = false){
   const n = {}; for(const item of items){ const t = tabOf(item); n[t] = (n[t] || 0) + 1; }
-  return INVENTORY.tabs.map(t => {
+  return INVENTORY.tabs.filter(t => !hideEmpty || t.id === 'all' || n[t.id]).map(t => {
     const icon = t.px ? pxi(t.px) : iconHtml(t.icon), c = t.id === 'all' ? all : n[t.id] || 0;
     return `<button class="invTab${t.id === active ? ' on' : ''}${c ? '' : ' none'}" data-tab="${t.id}" role="tab" aria-selected="${t.id === active}" `+
            `aria-label="${esc(t.name)}" data-tip="${esc(t.name)}\n${c} ${unit}${c > 1 ? 's' : ''}">${icon}</button>`;

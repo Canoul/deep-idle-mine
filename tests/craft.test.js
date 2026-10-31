@@ -102,5 +102,8 @@ test('onglets du Craft (31/10/2026) : les mêmes que l\'inventaire, chaque recet
   assert.match(html, /class="invTab on" data-tab="stuff"/);
   assert.match(html, /Stuff\n1 recette"/);
   assert.match(html, /class="invTab none" data-tab="bloc"/);
+  const craftTabs = tabsHtml('all', ['Pioche en pierre', 'Orbe'], 'recette', 2, true);
+  assert.deepEqual([...craftTabs.matchAll(/data-tab="(\w+)"/g)].map(m => m[1]), ['all', 'stuff', 'mat'], 'Craft : pas d\'onglet vide');
+  assert.match(tabsHtml('all', [], 'recette', 0, true), /data-tab="all"/);
 });
 
