@@ -10,7 +10,7 @@ Modèle d'entrée :
 
 ```
 ## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
-- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki.
+- **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki, et « Sortir de prison » devient « Sortir » pour que tout tienne dans l'écran.
 - **État** : 🧪 sur la branche `geoffrey/lien-discord` (pas en ligne)
 
 ## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune

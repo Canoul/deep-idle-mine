@@ -6116,6 +6116,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Lien du Discord dans le bandeau (Geoffrey)
 - **Quoi** : un `<a class="navWiki">` de plus dans `.topbar` (index.html), icône `bubbles`, invitation https://discord.gg/waGJg9RJDy. Même lien dans wiki.html, rubrique Les onglets.
 - **Tests** ✅ tests/lien-discord.test.js. ✅ Bandeau rendu dans Chrome avec le vrai style.css et le pire cas (pseudo, session, énergie, prison) : tient à 1400, 1200 et 1000 px.
-- ⚠️ À 390 px avec une prison en cours, « Sortir de prison » est coupé et les liens Wiki et Discord sortent de l'écran : le bouton dépassait déjà avant ce lien. Sans prison, à contrôler sur un vrai téléphone.
+- ⚠️→✅ À 390 px avec une prison en cours, « Sortir de prison » était coupé et les liens Wiki et Discord sortaient de l'écran. Corrigé : `.navLong` / `.navShort` dans `#navPrisonStop`, « Sortir » sous 700 px. Rendu Chrome à 390, 360 et 320 px (niveau, chrono, énergie, prison) : tous les éléments dans l'écran, le pseudo se raccourcit (`.who b`, points de suspension).
+- ⚠️ Pas essayé sur un vrai téléphone.
 - ⚠️ L'invitation n'a pas été testée ; si elle expire, c'est le lien à changer dans index.html et wiki.html (et le test).
 
