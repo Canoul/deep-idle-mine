@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Le Carreau : clic sur la statue
 - **Pour le joueur** : cliquer sur la statue du meilleur GS n'ouvre plus le Lobby : le mineur marche jusqu'à elle et sa
   plaque s'affiche. Cliquer ailleurs sur la place mène toujours au Lobby.
-- **État** : 🧪 sur la branche `geoffrey/fix-statue-gs` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
 - **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
