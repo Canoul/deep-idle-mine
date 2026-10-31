@@ -97,6 +97,10 @@ export function cardHtml(p, me = false){
 /* le chat global permanent (src/ui/chat-dock.js) : la promenade garde ses boutons à côté */
 const $chat = () => document.getElementById('gchatDock');
 
+/* promenade dans la ville : onglet Session sans session. Elle masque le contenu des onglets (body.townWalk) : jamais tant qu'un
+   bilan est affiché, il vit dans cet onglet (31/10/2026 : le bilan de fin de session restait invisible derrière la ville) */
+export const townWalks = (tab, noSessionHidden, endHidden) => tab === 'session' && !noSessionHidden && endHidden;
+
 export function setupTown(root, { ping, emote, me, onEnter, friend, invite, onWalk = () => {}, lfg = null }){
   const cv = document.createElement('canvas');
   root.appendChild(cv);
