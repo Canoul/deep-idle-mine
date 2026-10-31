@@ -6119,3 +6119,15 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : tests/cape-inclusive (nouveau), research, tier4, rarity ; anticheat 122 ✅. Chrome sans interface : plan appris, craft, pop-up, port et skin, aucune erreur de page ✅.
 - **Déjà faux avant ⚠️** : tests/tier4 « recettes du T4 » attend l'ancienne recette de la Clé d'instance I.
 - **Fragile** : une cape sans `rolled` n'a aucun effet (ne devrait pas exister, tous les chemins tirent). Une demande de craft rejouée ne renvoie pas la pièce : le pop-up affiche alors le texte générique.
+
+## 31/10/2026 — Téléphone : clavier ouvert tout seul (Geoffrey)
+- **Quoi** : `qty.focus()` à l'ouverture des fenêtres du four (2) et du concasseur (1) remplacé par `focusUnlessTouch` (src/ui/touch-focus.js, `(hover: none)`, même test que src/ui/inventory.js).
+- **Tests** ✅ `tests/focus-touch.test.js`. ⚠️ Pas essayé sur un vrai téléphone.
+
+## 31/10/2026 — Lien du Discord dans le bandeau (Geoffrey)
+- **Quoi** : un `<a class="navWiki">` de plus dans `.topbar` (index.html), icône `bubbles`, invitation https://discord.gg/waGJg9RJDy. Même lien dans wiki.html, rubrique Les onglets.
+- **Tests** ✅ tests/lien-discord.test.js. ✅ Bandeau rendu dans Chrome avec le vrai style.css et le pire cas (pseudo, session, énergie, prison) : tient à 1400, 1200 et 1000 px.
+- ⚠️→✅ À 390 px avec une prison en cours, « Sortir de prison » était coupé et les liens Wiki et Discord sortaient de l'écran. Corrigé : `.navLong` / `.navShort` dans `#navPrisonStop`, « Sortir » sous 700 px. Rendu Chrome à 390, 360 et 320 px (niveau, chrono, énergie, prison) : tous les éléments dans l'écran, le pseudo se raccourcit (`.who b`, points de suspension).
+- ⚠️ Pas essayé sur un vrai téléphone.
+- ⚠️ L'invitation n'a pas été testée ; si elle expire, c'est le lien à changer dans index.html et wiki.html (et le test).
+
