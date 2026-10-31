@@ -5860,3 +5860,12 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
 - ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
 - ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.
+
+## 31/10/2026 — Chat : canal gardé (Geoffrey)
+- **Quoi** : `sent` (src/ui/chat-tabs.js), appelé par src/ui/chat.js après un envoi réussi ; `prefs.channel`, et `prefs.to` pour un MP. `parseChatInput` reçoit le destinataire gardé ; le sélecteur montre « À pseudo » pendant un MP.
+- **Tests** ✅ chat +2.
+- ⚠️ Un joueur renommé ou supprimé : le MP gardé est refusé (« Ce joueur n'existe pas »), changer de canal débloque.
+
+## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
+- **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
+- **Tests** ✅ lobby +1.

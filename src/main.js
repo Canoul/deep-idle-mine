@@ -539,7 +539,7 @@ const gchatTabs = setupChatTabs({ bar: $('gchatTabs'), panel: $('gchatPanel'), s
                                   save: p => socialApi.chatPrefsSave(p).catch(console.warn), onChange: () => gchat?.refresh() });
 const gchat = setupChat({ prefix:'gchat', get: after => socialApi.chat(after), post: msg => socialApi.say(msg), meId: () => acct.account?.id, onWarning,
                           paused: () => document.hidden || gchatDock.folded, time: true,
-                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel()) });
+                          show: gchatTabs.show, line: chatLine, parse: text => parseChatInput(text, gchatTabs.channel(), gchatTabs.target()), sent: gchatTabs.sent });
 
 /* dev : vitesse et pause sont l'horloge de la session, sur le serveur */
 async function setClock(opts){

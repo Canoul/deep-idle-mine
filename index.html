@@ -55,15 +55,14 @@
     <h2>Invitations</h2>
     <div id="invitesList"></div>
   </div>
-  <!-- choix de l'activité (31/10) : ce qu'on voit en ouvrant le Lobby ; une activité ouverte remplace ce menu (src/ui/lobby.js) -->
+  <div class="actHead" id="lobbyStage" hidden><button id="lobbyBack">← Activités</button><h2 id="actTitle"></h2></div>
+  <div class="lobbyCols">
+  <div class="lobbyCol">
+  <!-- choix de l'activité (31/10) : ce qu'on voit en ouvrant le Lobby ; l'équipe reste à droite, une activité ouverte remplace ce menu (src/ui/lobby.js) -->
   <div class="card actMenu" id="lobbyMenu">
     <h2>Que veux-tu faire ? <i data-qhelp="where"></i></h2>
     <div class="actList" id="mineModes"></div>
   </div>
-  <div id="lobbyStage" hidden>
-  <div class="actHead"><button id="lobbyBack">← Activités</button><h2 id="actTitle"></h2></div>
-  <div class="lobbyCols">
-  <div class="lobbyCol">
   <!-- Jugement (Ange contre Démon) : jauges communes et tours, choix « Jugement » de « Où miner » (src/ui/judgment.js) -->
   <div class="card" id="judgmentCard" hidden>
     <h2><i data-pxi="radiance"></i>Ange contre Démon <i data-qhelp="judgment"></i></h2>
@@ -76,7 +75,7 @@
     <div id="instBody"></div>
   </div>
   <!-- sets (src/ui/sets.js) : la même liste que dans Stuff, Skills et Sorts, pour équiper un set avant de lancer -->
-  <div class="card setsCard lobbySets">
+  <div class="card setsCard lobbySets" id="lobbySetsCard">
     <h2>Sets</h2>
     <div id="setsLobby" class="setsBody"></div>
   </div>
@@ -141,7 +140,6 @@
   <div class="card shrinesCard" id="shrinesCard" hidden>
     <h2>Shrines <i data-qhelp="shrines"></i></h2>
     <div id="shrinesBody"></div>
-  </div>
   </div>
   </div>
   </div>
