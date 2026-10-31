@@ -86,7 +86,8 @@ test('mouvement fluide : à l\'arrivée d\'un envoi, rien ne saute ; la glissade
 
 /* 28/10/2026 : l'ascenseur (Glyphe Treuil) va vite ; entre deux envois (~0,3-0,5 s réelles à ×2), le mineur parcourt
    plus de 6 cases dans le puits et apparaissait d'un coup au lieu de glisser */
-import { glide } from '../src/shared/view.js';
+import { glide, playClock, playTrack } from '../src/shared/view.js';
+import { FLUID } from '../src/config.js';
 test('treuil / ascenseur : un mineur dans le seau glisse même sur plus de 6 cases ; un vrai saut reste un saut', () => {
   const M = { _at:0, _dur:300 };
   const at = (y, winch) => ({ id:1, x:25, y, action: winch ? { type:'move', t:0, dur:0.1, data:{ x:25, y, fx:25, fy:y, winch:true } } : null });
@@ -99,3 +100,93 @@ test('treuil / ascenseur : un mineur dans le seau glisse même sur plus de 6 cas
   assert.deepEqual(ride(15, true, 1, false), [25, 15], 'sort du seau en haut : glisse aussi');
   assert.deepEqual(ride(5, false, 15, false), [25, 15], 'hors du seau, 10 cases d\'un coup : apparaît directement');
 });
+
+/* lecture en différé (31/10/2026) : la vitesse à l'écran ne dépend plus du rythme des envois */
+const walk = (M, tick, id = 1, x = tick * 0.3, extra = {}) => { M.miners = M.miners ?? []; const o = { id, x, y: 0, ...extra };
+  playTrack(M.miners, [o], u => [u.x, u.y], tick); M.miners = [o]; return o; };
+
+test('différé : marche régulière malgré des paquets de 4, 8 ou 12 ticks et des envois irréguliers', () => {
+  const M = { miners: [] }, speed = 2;
+  /* un envoi toutes les 250 ms ± 40, partie par paquets de 100 ms (2 ticks à ×2) */
+  const lag = [0, 30, 80, 10, 60, 40, 90, 20, 70, 0, 50, 30, 90, 10, 60];
+  const arrivals = lag.map((l, k) => { const at = k * 250 + l; return [at, Math.floor((at - 40) / 100) * 2]; }).map(([at, t]) => [at, Math.max(0, t)]);
+  const speeds = []; let prev = null, i = 0;
+  for(let now = 0; now < 3600; now += 1000 / 60){
+    while(i < arrivals.length && arrivals[i][0] <= now){ playClock(M, arrivals[i][1], speed, arrivals[i][0]); walk(M, arrivals[i][1]); i++; }
+    const [x] = shownPos(M, M.miners[0], now);
+    if(prev != null && now > 1000 && now < 3000) speeds.push((x - prev) * 60);
+    prev = x;
+  }
+  const stops = speeds.filter(v => v < 0.01).length / speeds.length;
+  assert.ok(stops < 0.1, `images à l'arrêt : ${Math.round(stops * 100)} %`);
+  assert.ok(Math.max(...speeds) < 6 * 3, `pointe : ${Math.max(...speeds)} cases/s pour 6`);
+});
+
+test('différé : envoi en retard, le mineur continue vers la position déjà reçue ; jamais au-delà du dernier envoi', () => {
+  const M = { miners: [] };
+  playClock(M, 0, 2, 0); walk(M, 0);
+  playClock(M, 10, 2, 500); walk(M, 10);
+  const x = t => shownPos(M, M.miners[0], t)[0];
+  assert.equal(x(100), 0, 'pas encore parti : retard de lecture');
+  const a = x(800), b = x(800 + 100);
+  assert.ok(a > 0 && a < 3);
+  assert.ok(b > a, 'il continue sans le prochain envoi');
+  assert.equal(x(9000), 3, 'arrêté sur la dernière position reçue');
+});
+
+test('différé : gros retard, le mineur s\'arrête au dernier point reçu, repart sans saut et rattrape doucement', () => {
+  const M = { miners: [] };
+  let now = 0, tick = 0, prev = 0, biggest = 0;
+  const arrive = () => { playClock(M, tick, 2, now); walk(M, tick); };
+  arrive();
+  while(now < 6000){
+    now += 1000 / 60;
+    const late = now > 2000 && now < 2800;                          // aucun envoi pendant 0,8 s
+    if(!late && Math.floor(now / 250) !== Math.floor((now - 1000 / 60) / 250)){ tick = Math.floor(now / 50); arrive(); }
+    const x = shownPos(M, M.miners[0], now)[0];
+    if(now > 700) biggest = Math.max(biggest, x - prev);
+    assert.ok(x >= prev - 1e-9, 'jamais en arrière');
+    prev = x;
+  }
+  assert.ok(biggest <= 0.1 * 1.3 + 1e-6, `plus grand pas : ${biggest} case (0,1 à vitesse normale)`);
+  const behind = (M._play.newest - M._play.head) * M._play.tickMs;
+  assert.ok(behind < FLUID.bufferMs + 150, `retard revenu à la normale : ${behind} ms`);
+});
+
+test('différé : reconnexion, la lecture saute ; la vitesse change sans saut ; téléportation sans glissade, sauf dans le seau', () => {
+  const M = { miners: [] };
+  playClock(M, 100, 2, 1000);
+  playClock(M, 700, 2, 1000 + 30e3);
+  shownPos(M, walk(M, 700), 1000 + 30e3 + 1);
+  assert.ok(M._play.head > 690 - FLUID.bufferMs / 50);
+  const head = M._play.head;
+  playClock(M, 702, 5, 1000 + 30e3 + 10);
+  assert.equal(M._play.tickMs, 20); assert.ok(M._play.head >= head);
+  const T = { miners: [] }; playClock(T, 0, 2, 0); walk(T, 0, 1, 0); playClock(T, 10, 2, 300); walk(T, 10, 1, 20);
+  T._play.head = 5; T._play.at = 400;
+  assert.equal(shownPos(T, T.miners[0], 401)[0], 0, 'loin : pas de glissade');
+  const R = { miners: [] }, seau = { action: { data: { winch: true } } }; playClock(R, 0, 2, 0); walk(R, 0, 1, 0, seau); playClock(R, 10, 2, 300); walk(R, 10, 1, 20, seau);
+  R._play.head = 5; R._play.at = 400;
+  assert.ok(shownPos(R, R.miners[0], 401)[0] > 0, 'seau du treuil : il glisse');
+});
+
+test('différé : le suivi des positions reste borné, un tick reçu deux fois remplace le précédent', () => {
+  const M = { miners: [] };
+  for(let k = 0; k < 100; k++) walk(M, k);
+  assert.equal(M.miners[0]._track.length, FLUID.keep);
+  walk(M, 99, 1, 50);
+  assert.equal(M.miners[0]._track.length, FLUID.keep);
+  assert.equal(M.miners[0]._track.at(-1).x, 50);
+});
+
+test('applyView : avec la vitesse, lecture en différé ; sans, glissade simple', () => {
+  const rec = { seed: 7, players: [{ account: 'A', name: 'A' }] };
+  const g = createLiveGame(rec);
+  const M = applyView(emptyView(), g.view(null), 0, 2);
+  g.advance(5);
+  applyView(M, g.view(M.ticks), 250, 2);
+  assert.ok(M._play && M.miners[0]._track.length >= 1);
+  const P = applyView(emptyView(), g.view(null), 0);
+  assert.equal(P._play, undefined); assert.equal(P.miners[0]._track, undefined);
+});
+

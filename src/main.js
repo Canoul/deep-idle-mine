@@ -14,7 +14,7 @@
      propre affichage (src/render/instant.js, src/ui/instant-hud.js). */
 import { applyRarityColors } from './ui/rarity.js';
 import { GAME, PARTY, SESSION_LEN, INSTANT_MINE, STATS, SOCIAL, CAMERA, JUDGMENT, TOWER, MINE_MODES, INSTANCE, GUIDE, PRISON, ENERGY, DT } from './config.js';
-import { emptyView, applyView } from './shared/view.js';
+import { emptyView, applyView, shownPos } from './shared/view.js';
 import { applyInstantView } from './shared/instant-view.js';
 import { createInstantRenderer, MI_TILE } from './render/instant.js';
 import { setupInstantLobby } from './ui/instant-lobby.js';
@@ -583,12 +583,13 @@ let viewTimer = null, lastView = 0;
 /* mesures d'affichage, seulement avec ?perf dans l'adresse (src/ui/perf.js) */
 const perf = createPerf(), perfOn = new URLSearchParams(location.search).has('perf');
 for(const el of document.querySelectorAll('.perfBox')) el.hidden = !perfOn;
+/* envois à rythme fixe (31/10/2026) : l'attente déduit le temps de la réponse, sinon chaque variation du réseau décale la suite */
+const nextView = (every, t0) => Math.max(0, every - (performance.now() - t0));
 async function pollView(){
   clearTimeout(viewTimer);
   if(!G || !rec || waiting) return;
-  const id = rec.id;
+  const id = rec.id, t0 = performance.now();
   try {
-    const t0 = performance.now();
     const r = await gameApi.view(G.ready ? G.ticks : null);
     if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     if(!G || rec?.id !== id || waiting) return;
@@ -598,7 +599,7 @@ async function pollView(){
     else if(r.view?.mode === 'instance'){ G = applyInstanceView(r.view, G?.mode === 'instance' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view?.mode === 'tower'){ G = applyTowerView(r.view, G?.mode === 'tower' ? G : null); G.ready = true; window.G = G; lastView = performance.now(); }
     else if(r.view){
-      applyView(G, r.view); lastView = performance.now();
+      applyView(G, r.view, performance.now(), info.dev ? ui.speed : rec.speed); lastView = performance.now();
       if(!ui.followSet && G.miners.length){                  // une fois : suivre son propre mineur
         ui.follow = (G.miners.find(m => m.account === acct.account?.id) ?? G.miners[0]).id; ui.followSet = true;
       }
@@ -608,7 +609,7 @@ async function pollView(){
     if(e instanceof ApiError && e.code === 'no_session') return refresh();   // quittée (autre onglet) ou déjà finie
     console.warn(e);
   }
-  viewTimer = setTimeout(pollView, document.hidden ? VIEW_HIDDEN : VIEW_EVERY);
+  viewTimer = setTimeout(pollView, nextView(document.hidden ? VIEW_HIDDEN : VIEW_EVERY, t0));
 }
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible' && G && !waiting) pollView();
@@ -693,8 +694,8 @@ async function pollPrison(){
   if(prisonBusy || acct.offline || !acct.account || !prisonActive(prison)) return;
   prisonBusy = true;
   let again = null;
+  const t0 = performance.now();
   try {
-    const t0 = performance.now();
     const r = await gameApi.prisonView(PG?.ready ? PG.ticks : null);
     if(perfOn) perf.view(t0, performance.now(), r.view?.tick);
     prisonErrors = 0;
@@ -703,7 +704,7 @@ async function pollPrison(){
       if(PG && PG.run !== prison.run && !r.view.full){ PG = null; again = 0; }   // run suivant : sa carte entière d'abord
       else {
         if(!PG || PG.run !== prison.run){ PG = emptyView(); PG.run = prison.run; if(!rec){ ui.follow = null; renderer.follow(); } }
-        applyView(PG, r.view); prisonViewAt = performance.now();
+        applyView(PG, r.view, performance.now(), prison?.speed ?? info.speed ?? GAME.speed); prisonViewAt = performance.now();
         if(!rec && ui.follow == null && PG.miners.length) ui.follow = (PG.miners.find(m => m.account === acct.account?.id) ?? PG.miners[0]).id;
       }
     }
@@ -717,7 +718,7 @@ async function pollPrison(){
   }
   finally { prisonBusy = false; }
   if(!prisonActive(prison)) return;
-  kickPrison(again ?? (prisonOnScreen({ shown: prisonShown(), tab: ui.tab, backdrop: backdrop.on, hidden: document.hidden }) ? VIEW_EVERY : PRISON.uiPoll));
+  kickPrison(again ?? (prisonOnScreen({ shown: prisonShown(), tab: ui.tab, backdrop: backdrop.on, hidden: document.hidden }) ? nextView(VIEW_EVERY, t0) : PRISON.uiPoll));
 }
 async function startPrison(opts = {}){
   lobby.error('');
@@ -907,6 +908,10 @@ function frame(now){
   const dtr = Math.min(0.25, (now - last) / 1000); last = now;
   if(perfOn) perf.frame(now);
   smooth(dtr);
+  if(perfOn){                                    // le mineur suivi à l'écran (mine, prison) : micro-arrêts
+    const M = G?.ready ? G : prisonShown() && PG?.ready ? PG : null, m = M?.miners?.find(x => x.id === ui.follow);
+    if(m?._to) perf.step(shownPos(M, m, now), now);
+  }
   const pz = prisonShown() && !!PG?.ready;   // prison : affichée comme la mine classique (29/10)
   const shown = G?.ready ? G : pz ? PG : null, mi = shown?.mode === 'mi', tw = shown?.mode === 'tower', ins = shown?.mode === 'instance';
   ui.prison = pz && shown === PG;
