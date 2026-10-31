@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { prisonSteps, prisonCompos, pickCompo } from '../src/meta/prison-profile.js';
+import { PRISON } from '../src/config.js';
 
 const A = 'acc';
 /* mine n° i (date i), area a */
@@ -51,4 +52,26 @@ test('compo enregistrée : gardée quand les paliers avancent ; pickCompo sans c
   c = prisonCompos(c, hist([...range(1, 10, 3), ...range(11, 20, 8), ...range(21, 30, 9), ...range(31, 40, 9)]), A);
   assert.equal(pickCompo(c, 'current').area, 9); assert.equal(pickCompo(c, 'previous').area, 9);
   assert.equal(pickCompo(c, 'saved').area, 3, 'la compo enregistrée reste');
+});
+
+/* 31/10 : focus minerai retiré du jeu, les compos gardées qui en profitent sont refaites une seule fois */
+const focused = (i, a) => ({ ...mine(i, a), focus: [{ account: 'autre', tick: 5, focus: { mithril: 'only' } }] });
+const oldCompo = () => { const p = { n: 10, area: 7, ores: { mithril: 1 }, treasures: null, mobs: null }; return { cur: { ...p, to: 10 }, prev: null, saved: p }; };
+
+test('compos d\'avant le 31/10 : joueur avec une mine au focus → refaites une fois, compo enregistrée effacée', () => {
+  const h = Array.from({ length: 10 }, (_, k) => focused(k + 1, 7));
+  let c = prisonCompos(oldCompo(), h, A);
+  assert.equal(c.v, PRISON.compoVersion); assert.equal(c.saved, null);
+  assert.ok(Math.abs(c.cur.ores.mithril - 24.4 / 1900.1) < 1e-9, 'référence');
+  c.saved = pickCompo(c, 'current');
+  const again = prisonCompos(c, h, A);
+  assert.ok(again.saved, 'une seule fois : la compo enregistrée ensuite reste');
+  assert.ok(Math.abs(again.cur.ores.mithril - c.cur.ores.mithril) < 1e-9);
+});
+
+test('compos d\'avant le 31/10 : aucune mine au focus (ou area basse) → rien ne change', () => {
+  for(const h of [hist(range(1, 12, 7)), Array.from({ length: 12 }, (_, k) => focused(k + 1, PRISON.focusRef.area - 1))]){
+    const c = prisonCompos(oldCompo(), h, A);
+    assert.deepEqual(c.cur.ores, { mithril: 1 }); assert.ok(c.saved); assert.equal(c.v, PRISON.compoVersion);
+  }
 });

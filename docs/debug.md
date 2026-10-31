@@ -5775,3 +5775,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Craft de la Clé d'instance I (Geoffrey)
 - **Quoi** : `RECIPES['Clé d'instance I']` : 1 Barre d'argent + 5 Orbes (src/recipes.js). Tableaux du wiki générés depuis la config.
 - **Tests** ✅ craft +1, instance-key, instance-server, suite anti-triche.
+
+## 31/10/2026 — Prison : mines au focus minerai remplacées par une référence (Geoffrey)
+- **Quoi** : `lastMines` note `oreFocus` (un événement de `rec.focus` d'un joueur quelconque de la session vise un minerai ; le focus d'area seul ne compte pas). `oreParts` (src/meta/prison-profile.js) : une mine `refMine` (oreFocus et `areas` ≥ `PRISON.focusRef.area`, 6) pèse comme `PRISON.focusRef.ores`, les autres comptent pour leur butin. Area, mobs et treasures inchangés. `prisonCompos` : `v` = `PRISON.compoVersion` (2) ; compo gardée d'une autre version avec au moins une mine refMine dans l'historique → paliers refaits depuis l'historique, `saved` effacée, une seule fois. Sans mine refMine : compos gardées telles quelles, `v` posé.
+- **Référence** : somme des « mines/h » de Nbrick, LeTaz et Akake lue dans le tableau du 31/10 (`prison-stats.json`), en dur dans la config. Parts après `capOres` : charbon 39,26, fer 35,78, or 14,81, diamant 1,08, graphite 7,57, mithril 1,28, cobalt 0,13, thorium 0,08 %.
+- **Mesure** (calcul de parts, pas de simulation ; rendement supposé proportionnel à la part, stuff inchangé) : profils du trio aujourd'hui mithril 3,33–3,87 %, cobalt et thorium 0,40 % (plafond) → mithril × 0,33–0,39, cobalt × 0,32, thorium × 0,21, fer × 1,03–1,05.
+- **Tests** ✅ prison-profile +1, prison-steps +2, prison-dashboard, prison-sim, prison-ui, prison-server. ❌ Toujours rouge sans lien : « une tour et une instance lancées terminent la prison ».
+- ⚠️ Pas de lecture de la base : nombre réel de mines au focus inconnu. Si le trio a des mines au focus plus anciennes que le palier ou moins de 10 mines au focus, le résultat est un mélange de ses mines et de la référence.
+- ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
+- ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
+- ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).

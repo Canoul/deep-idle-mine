@@ -29,6 +29,10 @@ function shares(counts, allowed){
   return out;
 }
 const add = (acc, counts) => { for(const [k, n] of Object.entries(isObj(counts) ? counts : {})) if(Number.isFinite(n) && n > 0) acc[k] = (acc[k] || 0) + n; };
+/* un joueur de la session a-t-il visé un minerai ? (focus d'area seul : non.) Le butin est partagé : vaut pour tout le groupe */
+const usedOreFocus = s => (Array.isArray(s.focus) ? s.focus : []).some(e => isObj(e?.focus) && Object.keys(e.focus).some(k => k !== 'area'));
+/* mine dont les minerais comptent pour la référence PRISON.focusRef (lastMines) */
+const refMine = m => m.oreFocus && m.areas >= PRISON.focusRef.area;
 
 /* les dernières mines classiques terminées où le joueur était présent à la fin : [{ at, areas, bag, killsBy }] ;
    withDev : compter aussi les mines du mode dev (serveur de dev : il n'y a que celles-là) */
@@ -41,7 +45,8 @@ export function lastMines(sessions, account, max = PRISON.profileSessions, withD
     const miner = (s.result.miners || []).find(m => m?.account === account);
     out.push({ at: s.endedAt ?? s.startedAt ?? 0, areas: Number.isSafeInteger(s.result.areasUnlocked) ? s.result.areasUnlocked : 0,
                bag: share.bag, killsBy: miner?.stats?.killsBy, time: miner?.stats?.time ?? null,   // time : temps par action (30/10)
-               tree: s.statsAt?.[account]?.tree ?? null, t: s.result?.t ?? null });                   // spé figée au lancement (tableau de bord)
+               tree: s.statsAt?.[account]?.tree ?? null, t: s.result?.t ?? null,                      // spé figée au lancement (tableau de bord)
+               oreFocus: usedOreFocus(s) });
   }
   return out.sort((a, b) => b.at - a.at).slice(0, max);
 }
@@ -56,10 +61,24 @@ export function profileOf(mines){
   if(!mines.length) return { n: 0, area: PRISON.fallbackArea, ores: null, treasures: null, mobs: null };
   const bag = {}, kills = {};
   for(const m of mines){ add(bag, m.bag); add(kills, m.killsBy); }
-  const ores = {};
-  for(const [name, n] of Object.entries(bag)) if(ORE_KEY[name]) ores[ORE_KEY[name]] = (ores[ORE_KEY[name]] || 0) + n;
   return { n: mines.length, area: Math.max(PRISON.fallbackArea, Math.round(mines.reduce((s, m) => s + m.areas, 0) / mines.length)),
-           ores: shares(ores, ORE_KEYS), treasures: shares(bag, TREASURES), mobs: shares(kills, MOB_TYPES) };
+           ores: oreParts(mines), treasures: shares(bag, TREASURES), mobs: shares(kills, MOB_TYPES) };
+}
+
+/* parts de minerais d'une liste de mines : chaque mine jouée au focus minerai (refMine) pèse comme une mine de la référence
+   PRISON.focusRef, les autres comptent pour leur butin ; elles sortent toutes seules du calcul avec les nouvelles mines */
+function oreParts(mines){
+  const kept = mines.filter(m => !refMine(m)), bag = {}, ores = {};
+  for(const m of kept) add(bag, m.bag);
+  for(const [name, n] of Object.entries(bag)) if(ORE_KEY[name]) ores[ORE_KEY[name]] = (ores[ORE_KEY[name]] || 0) + n;
+  const own = shares(ores, ORE_KEYS);
+  if(kept.length === mines.length) return own;
+  const ref = shares(PRISON.focusRef.ores, ORE_KEYS);
+  if(!own) return ref;
+  const out = {};
+  for(const k of new Set([...Object.keys(own), ...Object.keys(ref)]))
+    out[k] = ((own[k] || 0) * kept.length + (ref[k] || 0) * (mines.length - kept.length)) / mines.length;
+  return out;
 }
 
 /* Paliers (30/10/2026, Geoffrey) : la compo ne glisse plus mine après mine, elle change par paquets de
@@ -80,9 +99,13 @@ export function prisonSteps(old, sessions, account, withDev = false){
   return { cur, prev: p };
 }
 /* compos du joueur (ns prison_compo, 30/10/2026, Geoffrey) : { cur, prev, saved } ; saved = compo qu'il a enregistrée
-   (bouton « Enregistrer ») : elle reste tant qu'il n'en enregistre pas une autre. Avance les paliers (prisonSteps). */
+   (bouton « Enregistrer ») : elle reste tant qu'il n'en enregistre pas une autre. Avance les paliers (prisonSteps).
+   v : PRISON.compoVersion ; un joueur qui a des mines refMine repart une fois de son historique, sans compo enregistrée. */
 export function prisonCompos(old, sessions, account, withDev = false){
-  return { ...prisonSteps(old, sessions, account, withDev), saved: sanitizeProfile(old?.saved) };
+  const v = PRISON.compoVersion;
+  if(old && old.v !== v && lastMines(sessions, account, Infinity, withDev).some(refMine))
+    return { ...prisonSteps(null, sessions, account, withDev), saved: null, v };
+  return { ...prisonSteps(old, sessions, account, withDev), saved: sanitizeProfile(old?.saved), v };
 }
 /* profil d'une compo : 'current' | 'previous' | 'saved' (sans le compteur de palier) ; null si absente */
 export function pickCompo(c, which){
