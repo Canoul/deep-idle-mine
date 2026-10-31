@@ -5902,5 +5902,6 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
 - **Correctif** : `state(me, waitedId)` (route `?ended=<id>`) : l'écran qui attend sa session la reçoit même vue, seulement si le compte y a participé sans la quitter. `last` = fin la plus récente. `pollResult` et le `no_session` de `pollView` envoient l'id ; une page rechargée ne l'envoie pas.
 - **Tests** ✅ bilan +3, les 2 tests de cause échouaient avant le correctif.
+- ❌ Sans lien, déjà sur `main` : `table de recherche par le serveur` (tests/game-service.test.js:401) est instable, il attend 15 à 30 parts au recyclage et échoue au hasard (2 fois sur 8 sur `main` sans ce correctif, 4 sur 8 avec, même tirage aléatoire). Non traité.
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
