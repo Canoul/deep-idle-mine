@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Pièces runées : la texture de la rune
+- **Pour le joueur** : la gemme violette est remplacée par la vraie texture, en petit : la rune, ou le fragment si la pièce porte un fragment.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Le bouton Trier range les runes par qualité
 - **Pour le joueur** : dans l'inventaire, **Trier** met les runes de la R7 à la R1, puis les fragments de rune de la même façon. Les autres pièces ne changent pas d'ordre.
 - **État** : ✅ en ligne le 31/10

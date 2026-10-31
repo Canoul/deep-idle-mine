@@ -130,8 +130,9 @@ select option{background:var(--panel)}
 .slot .noicon{color:var(--mut);text-transform:uppercase}
 .slot .q{position:absolute;right:var(--u);bottom:0;font-size:var(--fs-s);font-variant-numeric:tabular-nums;pointer-events:none;
   text-shadow:var(--u) 0 0 #000,calc(-1*var(--u)) 0 0 #000,0 var(--u) 0 #000,0 calc(-1*var(--u)) 0 #000}
-/* pièce runée (src/ui/rarity.js runeMark) : icône à l'échelle du pixel d'art, décalée de ses marges vides pour coller au coin */
-.pi.runeMark{position:absolute;left:calc(-3*var(--u));bottom:calc(-4*var(--u));width:calc(16*var(--u));height:calc(16*var(--u));color:var(--rune);pointer-events:none;
+/* pièce runée (src/ui/rarity.js runeMark) : la texture de sa rune, en petit dans le coin */
+.runeMark{position:absolute;left:calc(-1*var(--u));bottom:calc(-1*var(--u));width:calc(11*var(--u));height:calc(11*var(--u));background:center/100% 100% no-repeat;
+  image-rendering:pixelated;pointer-events:none;
   filter:drop-shadow(var(--u) 0 0 #000) drop-shadow(calc(-1*var(--u)) 0 0 #000) drop-shadow(0 var(--u) 0 #000) drop-shadow(0 calc(-1*var(--u)) 0 #000)}
 .runeIco{position:relative;display:block}
 .runeIco img{display:block;width:calc(16*var(--u));height:calc(16*var(--u))}
@@ -180,7 +181,7 @@ body.sessionOn .nextNote{display:block}
 @keyframes guidePulse{50%{outline-color:transparent}}
 
 /* raretés (RARITY en config, src/ui/rarity.js) : contour plein dans la case, nom en couleur */
-:root{--rune:#e6a8ff;--r-commun:#b4b0a8;--r-inhabituel:#58d26a;--r-rare:#5a9cff;--r-epique:#c37dff;--r-legendaire:#ffa23a;--r-unique:#c0480f}
+:root{--r-commun:#b4b0a8;--r-inhabituel:#58d26a;--r-rare:#5a9cff;--r-epique:#c37dff;--r-legendaire:#ffa23a;--r-unique:#c0480f}
 .slot.r-commun{--rc:var(--r-commun)} .slot.r-inhabituel{--rc:var(--r-inhabituel)} .slot.r-rare{--rc:var(--r-rare)}
 .slot.r-epique{--rc:var(--r-epique)} .slot.r-legendaire{--rc:var(--r-legendaire)} .slot.r-unique{--rc:var(--r-unique)}
 .slot[class*=" r-"]{outline:var(--u) solid var(--rc);outline-offset:calc(-4*var(--u))}
