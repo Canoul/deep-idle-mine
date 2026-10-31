@@ -62,6 +62,7 @@ export function sanitizeSocial(raw, cfg = SOCIAL_SERVER){
 /* accounts : { getAccount(id), findAccountByName(clé) } ; party : service des groupes ; game : service de jeu */
 export function createSocialService({ store, accounts, party, game, clock = Date.now, config = SOCIAL_SERVER, moderation = null,
                                       guildInvites = async () => [],   // invitations de guilde d'un joueur (server/guild/service.js)
+                                      guildMembers = async () => [],   // comptes de la guilde d'un joueur : lecteurs du canal Guilde
                                       random = () => crypto.randomBytes(6).readUIntBE(0, 6) / 2**48 }){
   const seen = new Map();                    // compte → dernier signe de vie (ms)
   const lastSeen = new Map();                // compte → dernier signe de vie, gardé whoRecentFor (« Who ? » : hors ligne récents)
@@ -87,6 +88,11 @@ export function createSocialService({ store, accounts, party, game, clock = Date
       const members = await party?.membersOf?.(me.id) ?? [];
       if(members.length < 2) fail('bad_request', 400, "Tu n'es pas dans un groupe.");
       return { to: members, ...(await party.isLeader?.(me.id) ? { leader: true } : {}) };   // chef du groupe à l'envoi (31/10) : décidé ici, jamais par le navigateur
+    }
+    if(channel === 'guild'){
+      const members = await guildMembers(me.id);
+      if(!members.length) fail('bad_request', 400, "Tu n'es pas dans une guilde.");
+      return { to: members };
     }
     if(channel !== 'mp') return {};
     const target = typeof to === 'string' ? await accounts.findAccountByName(nameKey(to)) : null;
@@ -345,7 +351,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   api.statusOf = statusOf;   // présence d'un membre de guilde (server/guild/service.js) : pas un signe de vie
   api.raffleForce = () => raffle.force();   // administration (server/admin/routes.js)
   api.raffleTick = () => raffle.tick();   // boucle du serveur (server/main.js) : pas un signe de vie
-  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe
+  api.recentChat = async ms => { await chatReady(); const now = clock(); return chat.since(GLOBAL, 0).filter(m => !m.to && now - m.at <= ms); };   // jamais un MP ni un message de groupe ou de guilde
   return api;
 
   /* devenir amis : on retire les demandes dans les deux sens */

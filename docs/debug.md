@@ -6154,3 +6154,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Limites** : prison déjà lancée : pas de nom jusqu'au prochain lancement. Le Carreau relit la guilde des autres toutes les `lookFor`.
 - **Tests** ✅ tests/guild-label.test.js, town, game-service, prison-server, instant-server, instance-server (rouge connu : « une tour et une instance… »). Simulation 2 sessions OK.
 - ⚠️ Rendu pas vu dans un navigateur.
+
+## 01/11/2026 — Canal Guilde du chat (Geoffrey)
+- **Quoi** : canal `guild` (CHAT.channels, `.ch-guild` violet), `/g` (parseChatInput), lecteurs décidés par `audience` (server/social/service.js) via `guildMembers` → `guild.membersOf`. Même mécanique que Groupe : `to` figé à l'envoi.
+- **Conséquences** : un nouveau membre ne lit pas l'historique ; un ancien membre garde ce qu'il pouvait lire (jusqu'à l'expiration du message, 18 h) mais ne reçoit plus rien. Seul dans sa guilde : le message passe, lu par lui seul. Les 300 messages gardés (globalKeep) sont communs à tous les canaux.
+- **Tests** ✅ tests/chat-guild.test.js, chat, chat-ui, social, guild-service.
+- ⚠️ Violet pas vu dans un navigateur.

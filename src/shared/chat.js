@@ -39,9 +39,9 @@ export function lobbyLabel({ mode, level, size, max }){
   return `${name}${level > 1 ? ` niv. ${level}` : ''} ${size}/${max}`;
 }
 
-const SHORTCUTS = { '1': 'general', '2': 'lfg', lfg: 'lfg', gr: 'group' };
+const SHORTCUTS = { '1': 'general', '2': 'lfg', lfg: 'lfg', gr: 'group', g: 'guild' };
 /* ce que le joueur a tapé → { channel, text, to? } ou { error } ; channel, target : canal gardé (et pseudo, pour un MP), sans raccourci.
-   /1 général · /2 ou /lfg LFG · /gr groupe · /w "pseudo" message privé (guillemets facultatifs sans espace) ; lobby : true si le texte
+   /1 général · /2 ou /lfg LFG · /gr groupe · /g guilde · /w "pseudo" message privé (guillemets facultatifs sans espace) ; lobby : true si le texte
    contient LOBBY_TAG */
 export function parseChatInput(input, channel = 'general', target = null){
   const msg = parseLine(input, channel, target);
@@ -53,7 +53,7 @@ function parseLine(input, channel, target){
     const to = w[1] ?? w[2], text = w[3];
     return to && text ? { channel: 'mp', to, text } : { error: 'Écris /w "pseudo" message.' };
   }
-  const m = /^\/(1|2|lfg|gr)(?:\s+(.*))?$/i.exec(input);
+  const m = /^\/(1|2|lfg|gr|g)(?:\s+(.*))?$/i.exec(input);
   if(m) return m[2] ? { channel: SHORTCUTS[m[1].toLowerCase()], text: m[2] } : { error: 'Écris ton message après le raccourci.' };
   return channel === 'mp' ? { channel, to: target, text: input } : { channel, text: input };
 }

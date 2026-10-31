@@ -44,7 +44,7 @@ await party.load();                        // groupes d'avant le redémarrage (m
 const instant = createInstantService({ game, party, store: gameStore, dev: GAME_SERVER.dev });
 await instant.load();
 /* amis (onglet Social) : demandes, présence, inviter / rejoindre un ami */
-const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation, guildInvites: id => guild.invitesOf(id) });
+const social = createSocialService({ store: gameStore, accounts: store, party, game, moderation, guildInvites: id => guild.invitesOf(id), guildMembers: id => guild.membersOf(id) });
 /* guildes : créées après les amis (présence des membres) ; game et social ne les appellent qu'une fois le serveur lancé */
 const guild = createGuildService({ store: gameStore, accounts: store, statusOf: id => social.statusOf(id) });
 /* Bloc géant : salle commune, visites, scores du jour, récompenses */
