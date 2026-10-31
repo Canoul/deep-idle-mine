@@ -30,6 +30,7 @@ import { createLimiter } from '../accounts/ratelimit.js';
 import { SOCIAL_SERVER } from '../config.js';
 import { isBoard, specTree, rankBoard } from '../../src/meta/leaderboard.js';
 import { LEADERBOARD, CHAT } from '../../src/config.js';
+import { LOBBY_TAG } from '../../src/shared/chat.js';
 import { createChat } from '../game/chat.js';
 import { chatChannel, sanitizeChatPrefs } from '../../src/shared/chat.js';
 
@@ -71,7 +72,8 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   const chat = createChat({ clock, gapMs: CHAT.globalGapMs, ttlMs: Infinity, keep: CHAT.globalKeep });
   /* canaux (31/10) : un message avec des lecteurs (to : MP, groupe) ne part qu'à eux et à son auteur ; to n'est jamais envoyé */
   const canRead = (m, id) => !m.to || m.account === id || m.to.includes(id);
-  const chatView = ({ to: _to, ...m }) => m;
+  /* le code du groupe d'un lien reste au serveur : survol et clic passent par le numéro du message, on ne peut pas essayer des codes */
+  const chatView = ({ to: _to, lobby, ...m }) => lobby ? { ...m, lobby: { mode: lobby.mode, level: lobby.level, size: lobby.size, max: lobby.max } } : m;
   /* lecteurs d'un message : {} (public), ou { to, toName? } ; le serveur décide, le navigateur donne seulement un pseudo */
   async function audience(me, channel, to){
     if(channel === 'group'){
@@ -84,6 +86,12 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     if(!target) fail('not_found', 404, 'Ce joueur n\'existe pas.');
     if(target.id === me.id) fail('bad_request', 400, 'Tu ne peux pas t\'écrire à toi-même.');
     return { to: [target.id], toName: displayName(target) };
+  }
+  async function lobbyOfMessage(me, id){
+    await chatReady();
+    const m = Number.isSafeInteger(id) ? chat.since(GLOBAL, id - 1).find(x => x.id === id && canRead(x, me.id)) : null;
+    if(!m?.lobby) fail('not_found', 404, 'Ce lien n\'est plus valable.');
+    return m.lobby;
   }
   let chatLoad = null;
   const chatReady = () => chatLoad ??= Promise.resolve().then(() => store.getGlobalChat?.())
@@ -281,7 +289,9 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     async chatPost(me, body = {}){
       await chatReady();
       const channel = chatChannel(body.channel).id;
-      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...await audience(me, channel, body.to) });
+      const reach = await audience(me, channel, body.to);
+      const lobby = typeof body.text === 'string' && body.text.includes(LOBBY_TAG) ? { lobby: await party.chatLink(me, body.lobby) } : {};
+      const r = chat.post(GLOBAL, me.id, displayName(me) || formatAccountId(me.id), body.text, { channel, ...reach, ...lobby });
       if(r.error === 'bad_text') fail('bad_request', 400, `Message vide ou trop long (${CHAT.maxLen} caractères au plus).`);
       if(r.error === 'too_fast') fail('too_many', 429, `Doucement : un message toutes les ${CHAT.globalGapMs / 1000} secondes au plus.`);
       await serial(() => store.putGlobalChat(chat.room(GLOBAL)));   // état le plus récent, écritures l'une après l'autre
@@ -294,6 +304,17 @@ export function createSocialService({ store, accounts, party, game, clock = Date
     async chatGet(me, after){
       await chatReady();
       return { messages: chat.since(GLOBAL, Number.isSafeInteger(after) && after > 0 ? after : 0).filter(m => canRead(m, me.id)).slice(-CHAT.keep).map(chatView) };
+    },
+    /* lien de lobby d'un message (31/10/2026) : son aperçu, tel qu'il est maintenant ; { open:false } si le groupe n'existe plus */
+    async chatLobby(me, id){
+      const link = await lobbyOfMessage(me, id), peek = await party.peek(link.code);
+      return { mode: link.mode, level: link.level, open: !!peek, ...(peek ?? { size: 0, max: link.max, members: [] }) };
+    },
+    /* cliquer sur le lien : rejoindre ce groupe (mêmes règles qu'avec son code) */
+    async chatLobbyJoin(me, id){
+      const link = await lobbyOfMessage(me, id);
+      if(!await party.peek(link.code)) fail('party_not_found', 404, 'Ce groupe n\'existe plus.');
+      return party.join(me, link.code);
     },
     /* réglages du chat de ce joueur (onglets, canaux masqués) */
     async chatPrefs(me){ return sanitizeChatPrefs(await store.getChatPrefs?.(me.id)); },

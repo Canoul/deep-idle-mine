@@ -16,6 +16,14 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat : lien vers son lobby
+- **Pour le joueur** : le bouton **Pub LFG** du lobby, ou **%lobby** dans un message (`/lfg %lobby on cherche un last`), met un lien
+  `[Instance I 2/3]` dans le chat. Au survol : un aperçu du groupe (portraits, places libres). Au clic : on rejoint le groupe.
+- **Décisions** : « rejoint » = rejoint le lobby, pas la session en cours. Tout membre peut publier, un joueur seul aussi. Le lien marche dans tous les canaux,
+  pas dans le chat de session. Le code du groupe n'apparaît jamais dans le chat.
+- **À suivre** : l'essayer à deux en vrai. Le joueur qui rejoint n'est pas amené sur l'activité annoncée (le lobby ne partage pas l'activité choisie).
+- **État** : 🧪 sur la branche `geoffrey/chat-lobby-lien` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Le mineur va chercher les résidus et minerais rares avant de creuser une galerie
 - **Pour le joueur** : au lieu de creuser une galerie à l'aveugle, le mineur va chercher ce qu'il a déjà découvert de valeur (résidu, treasure, mithril et mieux), même loin, tant qu'il peut y aller et remonter à temps. Avant, tout ce qui était à plus de 12 cases était ignoré (signalé sur la seed 1832289715).
 - **Décisions** : seuil au mithril (valeur 5), provisoire, `CFG.farVal`. Le charbon, le fer, l'or et le graphite ne valent pas l'aller-retour. Seules les galeries changent : quand il peut encore descendre, il descend.

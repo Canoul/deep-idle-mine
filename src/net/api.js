@@ -125,7 +125,9 @@ export const socialApi = {
   profile: id   => request('POST', '/api/social/profile', { id }),   // stuff, niveau et skills d'un ami
   leaderboard: board => request('POST', '/api/social/leaderboard', { board }),   // un classement (gs, xp, spec:<arbre>, tower)
   chat:    after => request('GET', '/api/social/chat?after=' + (after | 0)),   // chat global du lobby
-  say:     msg   => request('POST', '/api/social/chat', msg),                // { channel, text, to? }
+  say:     msg   => request('POST', '/api/social/chat', msg),                // { channel, text, to?, lobby? }
+  chatLobby:     id => request('POST', '/api/social/chat/lobby', { id }),        // aperçu d'un lien de lobby
+  chatLobbyJoin: id => request('POST', '/api/social/chat/lobby/join', { id }),   // rejoindre par ce lien
   chatPrefs:     () => request('GET', '/api/social/chat-prefs'),
   chatPrefsSave: p  => request('POST', '/api/social/chat-prefs', p),
 };

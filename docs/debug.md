@@ -5939,3 +5939,10 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 
 ## 31/10/2026 — Grimoire trié (Geoffrey)
 - **Quoi** : `grimoireOrder` (src/ui/spells.js), tri stable par état. **Tests** ✅ spells +1.
+
+## 31/10/2026 — Chat : lien de lobby (Geoffrey)
+- **Quoi** : `LOBBY_TAG` (`%lobby`), `lobbyLink`, `lobbyLabel`, raccourci `/lfg` (src/shared/chat.js). `party.chatLink`, `party.peek`. `social.chatLobby`, `social.chatLobbyJoin`, routes `POST /api/social/chat/lobby[/join]`. `src/ui/chat-lobby.js` (aperçu, clic), `chatBody` (chat-tabs.js), `send` (chat.js), bouton `#lobbyPubBtn`.
+- **Sécurité** : le code reste côté serveur (`m.lobby.code`, retiré par `chatView`) ; survol et clic passent par le numéro du message, donc pas d'essai de codes ni de contournement de `limit.join`. Un lien mort échoue avant `party.join`, sans compter comme un faux code. Le navigateur ne donne que l'activité affichée, revérifiée par `lobbyLink`.
+- **Tests** ✅ chat +9 (dont routes), social, lobby, party, anti-triche (119). Rendu ✅ Chrome sans écran, page de test avec le vrai CSS et `drawPortrait`.
+- ⚠️ Pas essayé dans le vrai jeu à deux navigateurs : bouton Pub LFG, survol réel, clic. Sur téléphone, pas de survol : le toucher rejoint directement.
+- ⚠️ Le nom recouvre un peu le bas du portrait dans l'aperçu. Le lien affiche la taille au moment du message ; seul l'aperçu est à jour. L'activité n'est pas partagée dans le groupe : un membre peut annoncer une autre activité que celle du chef. `peek` n'a pas de limite propre (seulement l'aperçu gardé 5 s côté navigateur).

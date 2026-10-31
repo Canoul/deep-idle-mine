@@ -2,7 +2,7 @@
    en crée un autre. Réglages gardés pour chaque compte sur le serveur (sanitizeChatPrefs, src/shared/chat.js).
    h : { bar, panel, select, save(prefs), onChange() : les messages à montrer ont changé } */
 import { CHAT } from '../config.js';
-import { sanitizeChatPrefs, chatChannel } from '../shared/chat.js';
+import { sanitizeChatPrefs, chatChannel, lobbyLabel, LOBBY_TAG } from '../shared/chat.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const hhmm = at => new Date(at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
@@ -13,8 +13,15 @@ export function chatPrefix(m, me){
   if(ch.id !== 'mp') return `[${ch.label}] ${m.name}`;
   return m.account === me ? `à ${m.toName ?? '?'}` : `de ${m.name}`;
 }
+/* texte d'un message ; lien de lobby (31/10/2026) : à la place de LOBBY_TAG, sinon en tête */
+function chatBody(m){
+  const t = esc(m.text);
+  if(!m.lobby) return t;
+  const link = `<button type="button" class="chatLobby" data-lobby="${esc(m.id)}">[${esc(lobbyLabel(m.lobby))}]</button>`, i = t.indexOf(LOBBY_TAG);
+  return i < 0 ? `${link} ${t}` : t.slice(0, i) + link + t.slice(i + LOBBY_TAG.length);
+}
 /* une ligne du chat, dans la couleur de son canal */
-export const chatLine = (m, me) => `<div class="ch-${chatChannel(m.channel).id}"><time>${hhmm(m.at)}</time>${esc(chatPrefix(m, me))} : ${esc(m.text)}</div>`;
+export const chatLine = (m, me) => `<div class="ch-${chatChannel(m.channel).id}"><time>${hhmm(m.at)}</time>${esc(chatPrefix(m, me))} : ${chatBody(m)}</div>`;
 
 export function setupChatTabs({ bar, panel, select, save, onChange }){
   let prefs = sanitizeChatPrefs(null), open = false, timer = null;
