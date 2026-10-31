@@ -26,6 +26,12 @@ Modèle d'entrée :
 - **À suivre** : le Gear score des pièces runées baisse aussi, et les classements avec.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Bot Discord : croix pour ignorer un sujet
+- **Pour l'équipe** : le bot ajoute une troisième réaction ❌ dans #report. Cliquée en premier, elle ignore le sujet : il
+  quitte la base et le message affiche « Sujet ignoré ». Sur un sujet déjà attribué, elle ne fait rien.
+- **À suivre** : relancer le bot sur le serveur après la mise en ligne.
+- **État** : ✅ code en ligne le 31/10, bot à relancer sur le serveur
+
 ## 31/10/2026 — Geoffrey — Bot Discord : reports et /todo
 - **Pour l'équipe** : un tag @admin sur Discord est copié dans #report avec un ID. Le premier emoji cliqué attribue le
   sujet (1 Joe, 2 Djulo). Dans #todo, `/todo joe`, `/todo djulo`, `/todo done` et `/todo help` gèrent la liste. Rien ne

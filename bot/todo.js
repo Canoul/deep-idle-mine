@@ -2,13 +2,14 @@
 
    Un sujet naît quand un message tague @admin : le bot le copie dans #report avec un ID et les réactions 1 / 2.
    N'importe qui peut réagir, le PREMIER emoji cliqué attribue le sujet (décision de Geoffrey, 31/10/2026) ; les réactions
-   suivantes ne changent rien. /todo done retire le sujet de la base.
+   suivantes ne changent rien. La croix en premier ignore le sujet : il quitte la base. /todo done le retire aussi.
    Les ID viennent d'un compteur qui ne redescend jamais : un ID n'est jamais réutilisé, même après /todo done. */
 
 export const ASSIGNEES = [
   { id: 'joe',   label: 'Joe',   emoji: '1️⃣' },
   { id: 'djulo', label: 'Djulo', emoji: '2️⃣' },
 ];
+export const IGNORE = '❌';
 const FIRST_ID = 1000;
 const REPORT_MAX = 1800;     // texte copié dans #report (Discord refuse plus de 2000 caractères par message)
 const LINE_MAX = 100;        // texte d'un sujet dans /todo
@@ -39,6 +40,13 @@ export function createTodo(state = {}){
       s.owner = who.id;
       return s;
     },
+    /* croix sur un message de #report : un sujet pas encore attribué quitte la base. Renvoie le sujet s'il vient d'être ignoré. */
+    ignore(reportId){
+      const s = [...subjects.values()].find(x => x.reportId === reportId);
+      if(!s || s.owner) return null;
+      subjects.delete(s.id);
+      return s;
+    },
     list: owner => [...subjects.values()].filter(s => s.owner === owner).sort((a, b) => a.id - b.id),
     /* target : { id } ou { owner } (parseDone). Renvoie les sujets retirés. */
     done(target){
@@ -60,12 +68,13 @@ export function parseDone(input){
 
 const cut = (t, max) => { const c = [...String(t ?? '')]; return c.length > max ? c.slice(0, max - 1).join('') + '…' : c.join(''); };
 
-/* message du bot dans #report ; une fois attribué, le choix est remplacé par le nom */
-export function reportText(s){
+/* message du bot dans #report ; une fois attribué ou ignoré, le choix est remplacé par le résultat */
+export function reportText(s, ignored = false){
   const quote = cut(s.text, REPORT_MAX).split('\n').map(l => `> ${l}`).join('\n');
   const who = assignee(s.owner);
   return `📩 **Report ID ${s.id}** de **${s.author}** dans #${s.channel}\n${quote}\n${s.url}\n\n`+
-    (who ? `✋ Attribué à **${who.label}**` : `**Qui s'en occupe ?**\n${ASSIGNEES.map((a, i) => `${i + 1} : ${a.label}`).join('\n')}`);
+    (ignored ? `${IGNORE} Sujet ignoré` : who ? `✋ Attribué à **${who.label}**`
+      : `**Qui s'en occupe ?**\n${ASSIGNEES.map((a, i) => `${i + 1} : ${a.label}`).join('\n')}\n${IGNORE} : ignorer`);
 }
 
 /* réponse de /todo <pseudo>, découpée en messages que Discord accepte */
@@ -88,5 +97,5 @@ export const HELP = [
   '`/todo done joe all` : retire tous les sujets de joe',
   '`/todo help` : cette aide',
   '',
-  'Dans #report, le premier emoji cliqué attribue le sujet : 1 pour Joe, 2 pour Djulo.',
+  `Dans #report, le premier emoji cliqué décide : 1 pour Joe, 2 pour Djulo, ${IGNORE} pour ignorer le sujet.`,
 ].join('\n');

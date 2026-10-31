@@ -1,10 +1,10 @@
 /* Bot Discord de l'équipe (31/10/2026, Geoffrey) : service à part du jeu, il ne redémarre pas à chaque mise à jour.
    - Un message qui tague le rôle admin, dans n'importe quel salon sauf #report et #todo, est copié dans #report.
-   - Dans #report, le premier emoji cliqué attribue le sujet (bot/todo.js).
+   - Dans #report, le premier emoji cliqué attribue le sujet, ou la croix l'ignore (bot/todo.js).
    - Dans #todo : /todo joe, /todo djulo, /todo done, /todo help.
    Installation : docs/bot-discord.md. Après un changement de ce dossier : sudo systemctl restart deep-mine-bot */
 import { Client, GatewayIntentBits, MessageFlags, Partials, SlashCommandBuilder } from 'discord.js';
-import { ASSIGNEES, HELP, createTodo, listMessages, parseDone, reportText } from './todo.js';
+import { ASSIGNEES, HELP, IGNORE, createTodo, listMessages, parseDone, reportText } from './todo.js';
 import { loadState, saveState } from './store.js';
 
 const need = name => { const v = process.env[name]; if(!v){ console.error(`Réglage manquant : ${name}`); process.exit(1); } return v; };
@@ -38,7 +38,7 @@ async function onMessage(message){
     const copy = await report.send({ content: reportText(s), allowedMentions: NO_PING });
     todo.setReport(s.id, copy.id);
     save();
-    for(const a of ASSIGNEES) await copy.react(a.emoji);
+    for(const emoji of [...ASSIGNEES.map(a => a.emoji), IGNORE]) await copy.react(emoji);
   } catch(e){
     if(!s.reportId) todo.cancel(s.id);
     console.error('Report non copié :', e);
@@ -47,11 +47,12 @@ async function onMessage(message){
 
 async function onReaction(reaction, user){
   if(user.bot || reaction.message.channelId !== REPORT) return;
-  const s = todo.claim(reaction.message.id, reaction.emoji.name);
+  const ignored = reaction.emoji.name === IGNORE;
+  const s = ignored ? todo.ignore(reaction.message.id) : todo.claim(reaction.message.id, reaction.emoji.name);
   if(!s) return;
   save();
   const report = await client.channels.fetch(REPORT);
-  await (await report.messages.fetch(s.reportId)).edit({ content: reportText(s), allowedMentions: NO_PING });
+  await (await report.messages.fetch(s.reportId)).edit({ content: reportText(s, ignored), allowedMentions: NO_PING });
 }
 
 /* le message de #report reste, avec ✅ : on voit ce qui est réglé */
