@@ -5801,3 +5801,32 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   Carte réelle de la seed, mineur placé juste au-dessus de chaque coffre : 1/5 visés avant, 5/5 après. Simulation `--miners 3 --count 5` : 0 bloquée, treasures 0,6 ouverts sur 1,6.
 - ⚠️ Le coffre exact du signalement n'est pas rejoué : le stuff et les réglages du joueur ne sont pas connus, une session simulée n'y passe pas. La cause est prouvée par scénario.
 - ⚠️ Coût : la recherche d'itinéraire tourne maintenant à chaque décision hors de son area (avant, seulement celle de `changeArea`). Non mesuré en jeu ; à surveiller.
+
+## 31/10/2026 — Lobby par activités, chat permanent, niveau dans le bandeau (Geoffrey)
+- **Quoi** : `activityMenu` et `st.screen` ('menu' / 'stage') dans src/ui/lobby.js ; en menu, `cards = {}` cache toutes les cartes. `showMenu` à chaque ouverture de l'onglet Lobby, sans effet dans un groupe. `update` ouvre l'activité si le joueur rejoint un groupe depuis le menu. `#lobbyErr` et `#invitesCard` sont sortis des colonnes pour rester visibles dans le menu.
+- **Chat** : carte `#gchatCard` déplacée dans `#gchatDock` (src/ui/chat-dock.js, `CHAT.dock`), hors de `.app` pour rester cliquable en promenade. Il n'est plus déplacé dans le Carreau : `chatSlot`, `placeChat`, `onWalk` de main.js, `.townChat`, `TOWN.chatMin/Max` retirés ou inutilisés. Relu toutes les 3 s sur tous les onglets (avant : Lobby seulement), sauf replié ou page cachée : **plus de requêtes `/api/social/chat`**.
+- **Mise en page** : au-dessus de 1170 px, `.views` et `.dock` se décalent de `--chat-w` ; entre 1171 et 1320 px, les orbes sont cachées car la barre ne tient pas. En dessous de 1170 px, le chat passe au-dessus de la barre d'action et recouvre le contenu s'il est déplié.
+- **Tests** ✅ lobby +2, level +1, chat +1, town, prison-ui, dev-spec. Navigateur ✅ Chrome sans écran, mode dev, 1920, 1366, 1200 et 390 px : les 6 activités, tour puis retour, glissé du chat, aucune erreur console. Bug trouvé ainsi : le bandeau-titre de la carte captait le clic sur la barre.
+- **Session** : `#run` est fixe et ignore `.views` ; `.runL` reçoit `margin-bottom: var(--chat-h)` (`!important` contre `clearDock`, src/main.js). `#miRun`, `#twRun`, `#gtRun`, `#inRun` se décalent de `--chat-w`. `--chat-h` est posé sur `<html>`. Session dev vérifiée ✅ à 1366 px, tour, instance et MI en direct non vérifiées ⚠️.
+- ⚠️ Non vérifié : un vrai téléphone, un groupe à plusieurs comptes. Ordre fragile : le lien `#jugement` passe par `showMenu` puis `showJudgment`, ordre fixé par deux `setTimeout`.
+
+## 31/10/2026 — Lobby : chat réglable par ses bordures, Instance et Jugement à gauche (Geoffrey)
+- **Chat** : barre orange `.chatGrip` retirée ; bordures invisibles `.chatEdge` (haut, droite, coin), `dockWidth` (src/ui/chat-dock.js),
+  `CHAT.dock` minWidth / maxWidth. Départ : largeur × 2,5 (115 → 287,5 u), hauteur 40 → 60 %. Clé locale `chatDock2` pour oublier l'ancienne hauteur.
+- **Instance, Jugement** : `#judgmentCard` et `#instCard` en tête de la colonne de gauche du lobby, sets juste dessous (index.html).
+- **Tests** ✅ chat, lobby. ⚠️ Écrans de 1171 à 1400 px : le chat prend beaucoup de largeur au contenu, à regarder.
+
+## 31/10/2026 — Chat flottant, largeur limitée par l'interface centrale (Geoffrey)
+- **Quoi** : plus aucun décalage (`.views`, `.dock`, `#miRun`…, orbes cachées : retirés, remplace l'entrée précédente). `dockFit` et `centralLeft` (src/ui/chat-dock.js) : largeur voulue arrêtée au bord gauche de la mine ou des cartes de l'onglet, recalculée par un ResizeObserver. `overNav` : chat plus large que le début de la barre d'action, son champ remonte au-dessus. `.lobbyWrap` passe de 560u à 450u, comme l'Inventaire ; `CHAT.dock.startWidth` 575 px.
+- **Tests** ✅ chat +1 (`dockFit`), lobby, town, level. Chrome sans écran, 1920 et 1366 px : chat tiré au maximum sur menu, Mine, Inventaire, Stuff, Craft, Session ; barre d'action immobile, aucune erreur.
+- ⚠️ Tour, instance, MI et Bloc géant en direct non regardés : leur canvas part du bord gauche, le chat y reste au minimum (160 px) et le recouvre. Inventaire : le contenu commence à ≈ 135 px en 1366, le minimum y mord de ≈ 25 px. La carte `#gchatDock` est revenue dans `.app`, sinon `.app` (z-index 1) la mettait au-dessus de la barre d'action.
+
+## 31/10/2026 — Onglets : même largeur, 90 % (Geoffrey ; d'abord 80 %)
+- **Quoi** : `.invWrap`, `.furnWrap`, `.lobbyWrap` à `width:100%` et `max-width: 560u` (retirés : `.lobbyWrap` 450u, `.furnWrap` 400u, Stuff 720u, `.skWrap` 520u, `.actMenu` 300u). `zoom:.9` sur `.view:not([data-view="session"])`, au-dessus de 700 px. `centralLeft` lit directement le contenu de l'onglet.
+- ⚠️ `zoom` : les fenêtres et listes posées dans une vue (`#loot`, `#fpick`, `#fview`…) sont réduites aussi. Firefox ne gère `zoom` que depuis la version 126. Session non réduite : la mine se règle sur son canvas.
+
+## 31/10/2026 — Chat global : canaux (Geoffrey)
+- **Quoi** : `CHAT.channels`, `globalKeep` 300 tous canaux, `tabsMax`, `tabNameMax`. `parseChatInput`, `sanitizeChatPrefs`, `chatChannel` (src/shared/chat.js). Serveur : champ `to` sur les MP et messages de groupe, `canRead` filtre chaque lecture, `chatView` retire `to` ; `recentChat` exclut tout message avec `to`. Lecteurs du groupe figés à l'envoi (`party.membersOf`). ns `chat_prefs` (`/api/social/chat-prefs`). Mot coupé cherché dans le même canal et pour les mêmes lecteurs. src/ui/chat-tabs.js.
+- ⚠️ Modération : les MP et messages de groupe passent aussi par le filtre, et le texte d'un mot interdit arrive dans la fiche de modération (visible des créateurs). Le contenu des MP est en clair dans `chat_global`, en base, comme le reste du chat.
+- ⚠️ Connu, ancien : un message reçu juste avant d'envoyer le sien peut sauter à l'écran (`add` avance `last` au numéro du message envoyé).
+- ⚠️ Taille du chat (hauteur, largeur, repli) : gardée dans le navigateur, pas sur le compte.

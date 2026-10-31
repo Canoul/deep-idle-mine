@@ -159,3 +159,15 @@ test('serveur : l\'XP est versée à la fin, une seule fois, et le niveau se lit
   assert.equal(p.level, 2); assert.equal(p.into, 800); assert.equal(p.talentPoints, 1);
   assert.equal((await store.getProgress(ME.id)).credited.length, 2);
 });
+
+test('bandeau du haut : niveau, barre, % et XP sur XP requise ; rien sans progression ; niveau max', async () => {
+  const { renderNavLevel } = await import('../src/ui/level.js');
+  const el = { innerHTML:'', hidden:true };
+  renderNavLevel(el, { xp:2600, level:3, into:100, need:2250 });
+  assert.equal(el.hidden, false);
+  assert.match(el.innerHTML, /Niv\. 3/); assert.match(el.innerHTML, /4 %/); assert.match(el.innerHTML, /100 \/ 2.250 XP/);
+  renderNavLevel(el, { xp:1e9, level:72, into:0, need:0 });
+  assert.match(el.innerHTML, /Niveau max/);
+  renderNavLevel(el, null);
+  assert.equal(el.hidden, true);
+});

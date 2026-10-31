@@ -508,6 +508,8 @@ export function createPartyService({ game, getAccount, store = null, clock = Dat
     /* met player (compte) dans le lobby de host (compte), comme « Rejoindre » depuis l'onglet Social, sans amitié ni
        code. host sans groupe : on lui en crée un, dont il est le chef. Mêmes refus que pour un joueur (en session,
        groupe complet ou en cours de lancement). Comme pour toute arrivée, les autres repassent « pas prêt ». */
+    /* comptes du groupe de ce joueur, lui compris ; [] sans groupe (chat de groupe, 31/10) */
+    membersOf: id => partyOf(id)?.members.map(m => m.account) ?? [],
     async adminMove(player, host){
       await sweep();
       if(player.id === host.id) fail('invalid_id', 400, 'Les deux pseudos désignent le même joueur.');

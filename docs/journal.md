@@ -16,6 +16,18 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Chat global : canaux, MP, onglets
+- **Pour le joueur** : chaque message part dans un canal, avec sa couleur : Général (blanc), MP (rose), Groupe (bleu), Commerce (beige), LFG (vert). Raccourcis : /1, /2 (LFG), /c, /gr, /w "pseudo". Un seul onglet au départ ; l'écrou choisit ses canaux, le « + » crée un onglet. Ces réglages sont gardés sur le compte.
+- **Décisions** : sans raccourci, le message part dans le canal du petit sélecteur à côté du champ. Un MP envoyé s'affiche « à pseudo ». MP possible vers un joueur hors ligne. Même modération et même rythme (3 s) sur tous les canaux. Pas de bulle du Carreau pour les MP et le Groupe.
+- **État** : ✅ en ligne le 31/10
+
+## 31/10/2026 — Geoffrey — Nouveau Lobby : menu des activités, chat permanent, niveau dans le bandeau
+- **Pour le joueur** : le Lobby s'ouvre sur un grand menu (Prison, Mine, Mine instantanée, Bloc géant, Jugement, Instances), une ligne de description pour chacun. Un clic ouvre l'activité : les sets à gauche, l'équipe ou la carte de l'activité à droite, un bouton « ← Activités » pour revenir. Le niveau, la barre d'XP, le % et l'XP sont dans le bandeau du haut, à côté du pseudo ; la carte « Mineur » disparaît. Le chat global n'est plus dans le Lobby : il reste affiché en bas à gauche sur tous les onglets, à 40 % de la hauteur, réglable en tirant sa barre orange, et repliable.
+- **Décisions** : préférences et réglages dev sous les sets, à gauche. Tours choisies depuis le Jugement, « ← Activités » y ramène. Instance et Jugement : leur carte à gauche, les sets dessous, l'équipe à droite. Cliquer sur l'onglet Lobby rouvre le menu, sauf dans un groupe (on reste sur l'activité, pour « Je suis prêt »). Rejoindre un groupe depuis le menu ouvre la Mine. Le chat de session reste dans l'onglet Session. Petit écran (moins de 1170 px) : chat replié au départ.
+- **Largeur des onglets** : tous les onglets ont maintenant la même largeur, quel que soit leur contenu, et tout est réduit à 90 %. Session et téléphone gardent leur taille.
+- **À suivre** : en session, la mine garde sa largeur et la colonne Équipe / Mineur s'arrête au-dessus du chat, en défilant ; plus le chat est haut, moins elle a de place. Le chat flotte par-dessus : le changer de taille ne déplace rien et le reste reste centré. Sa largeur s'arrête au début de l'interface centrale de l'onglet ouvert ; En tour, instance, mine instantanée et Bloc géant en direct, il peut recouvrir le bas à gauche de la mine (minimum 160 px).
+- **Chat** : plus de barre orange. On règle la hauteur et la largeur en tirant la bordure du chat (haut, droite ou coin). Au départ, il est 2,5 fois plus large et 1,5 fois plus haut.
+
 ## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
 - **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
 - **À suivre** : à regarder en jeu, en pierre et en cristal.
