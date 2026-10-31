@@ -6064,3 +6064,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ tests/party-forming.test.js (11), party, lobby, lfg, chat, admin-party, social. ✅ Vérifié dans Chrome avec deux navigateurs et deux joueurs par l'API : portrait dessiné, cadenas et groupe plein qui sortent de la liste sans recharger, refus 403 par code, entrée au clic.
 - **Points fragiles** : après un redémarrage du serveur, les chefs comptent comme vus (`load`), donc leurs groupes restent listés 10 s même si le joueur est parti. Le code du groupe est envoyé au navigateur avec la liste (nécessaire pour y entrer ; verrouiller le groupe le neutralise). Charge : chaque fenêtre ouverte lit la liste toutes les 3 s, non mesuré à plusieurs joueurs.
 
+## 31/10/2026 — Groupes en formation : ligne du menu (Geoffrey)
+- **Quoi** : entrée `forming` dans `ACTIVITIES` (src/ui/lobby.js), `kind:'forming'`, ouvre la même fenêtre ; `#formingBtn` caché au menu pour ne pas l'avoir en double.
+- **Tests** ✅ tests/lobby.test.js. Vérifié dans Chrome.
+
