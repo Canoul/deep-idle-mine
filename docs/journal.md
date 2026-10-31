@@ -11,7 +11,7 @@ Modèle d'entrée :
 ```
 ## 31/10/2026 — Geoffrey — Téléphone : le clavier ne s'ouvre plus tout seul au four
 - **Pour le joueur** : sur téléphone, ouvrir une case du four, ses recettes ou une case du concasseur n'ouvre plus le clavier chiffré : il faut toucher la case de quantité. Sur ordinateur, le curseur s'y place toujours.
-- **État** : 🧪 sur la branche `geoffrey/four-clavier` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Lien du Discord dans le bandeau
 - **Pour le joueur** : un lien « Discord du jeu » à côté du Wiki, dans le bandeau du haut. Il ouvre un nouvel onglet. Sur téléphone, seule son icône reste, comme pour le Wiki, et « Sortir de prison » devient « Sortir » pour que tout tienne dans l'écran.
