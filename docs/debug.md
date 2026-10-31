@@ -5932,6 +5932,11 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ La cause réelle du signalement n'est pas prouvée : pas d'accès aux données du serveur. Les deux chemins sont reproduits par test, pas dans un navigateur.
 - ⚠️ `pollResult` : session abandonnée → `showNoSession` ne ferme pas `#end` (« Session terminée… » pourrait rester à l'écran). Vu à la lecture, non testé, non corrigé.
 
+## 31/10/2026 — Social : pastille verte en prison (Geoffrey) — branche `geoffrey/social-prison-vert`
+- **Quoi** : `statusOf` ajoute `online` au statut prison (`server/social/service.js`), `statusDot` (`src/ui/social.js`) choisit la pastille
+  des listes Amis et Online. Le statut reste `session` : inviter / rejoindre refusés, tri inchangés.
+- **Tests** : `tests/social.test.js`. ✅ Vérifié par les tests ; ⚠️ pas essayé dans un navigateur.
+
 ## 31/10/2026 — Chat : largeur en tour (Geoffrey)
 - **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
 - **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.

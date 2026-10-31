@@ -114,7 +114,7 @@ export function createSocialService({ store, accounts, party, game, clock = Date
   async function statusOf(id){
     const ses = await game.activeSessionInfo(id);
     if(ses) return { status: 'session', mode: ses.mode, leftMs: ses.leftMs, ...(ses.size ? { size: ses.size, max: ses.max } : {}) };
-    if(await game.prisonActiveOf?.(id)) return { status: 'session', mode: 'prison' };   // prison (30/10/2026) : comptée comme une session
+    if(await game.prisonActiveOf?.(id)) return { status: 'session', mode: 'prison', online: online(id) };   // prison (30/10/2026) : comptée comme une session ; online : jeu ouvert (pastille verte, 31/10)
     if(!online(id)) return { status: 'offline' };
     const g = party.groupOf(id);
     return g ? { status: 'lobby', size: g.size, max: g.max } : { status: 'online' };
