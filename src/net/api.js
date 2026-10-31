@@ -46,7 +46,7 @@ export const accountApi = {
 /* Sessions de jeu : le serveur décide et vérifie tout ; le navigateur affiche et prévient. */
 export const gameApi = {
   info:   ()           => request('GET', '/api/game/info'),
-  state:  ()           => request('GET', '/api/game/state'),
+  state:  (ended)      => request('GET', '/api/game/state' + (ended ? `?ended=${encodeURIComponent(ended)}` : '')),   // ended : la session que cet écran vient de jouer
   history: ()          => request('GET', '/api/game/history'),
   judgment: ()         => request('GET', '/api/game/judgment'),  // jauges Ange / Démon (onglet Jugement)   // sessions terminées : seed et sa part
   prefs:  prefs        => request('POST', '/api/game/prefs', prefs),
