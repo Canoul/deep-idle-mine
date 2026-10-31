@@ -1657,6 +1657,11 @@ export const SHRINES = {
                  sessions:1, tower:'demon', price:{ 'Stonebrick angélique':240 }, effect:{ phase2:true, luck:'beni' } },
     pacte:     { name:'Stèle du pacte', desc:'Tour de l\'Ange : le Démon s\'écrase après le boss ; anneaux ×2 dans le trésor', tex:'brick_demon',
                  sessions:1, tower:'angel', price:{ 'Stonebrick démoniaque':240 }, effect:{ phase2:true, luck:'beni' } },
+    /* Shrine héroïque (31/10/2026, Geoffrey) : les deux tours (tower:'any'), se cumule avec une stèle. Mêmes règles qu'une
+       stèle (une charge, prise à la victoire, le chef l'active ou la désactive). effect.level : niveau joué (TOWER.levels ;
+       le niveau 2 n'est plus au choix dans le lobby) ; effect.extraBox : chance, par joueur, d'une 2e boîte identique. */
+    heroique:  { name:'Shrine héroïque', desc:'Tours : boss, mobs et blocs bien plus solides ; 25 % de chance d\'une 2e boîte', tex:'orb',
+                 sessions:1, tower:'any', price:{ 'Orbe':30 }, effect:{ level:2, extraBox:0.25 } },
   },
   opMemory: 50,          // dernières demandes de don retenues (une demande renvoyée n'agit pas deux fois)
   drawX: [20, 19, 18],   // colonnes de dessin à la surface, à gauche du coffre (CHEST_X = 22), un shrine actif par colonne

@@ -5916,6 +5916,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** : `tests/chat.test.js`. ✅ Vérifié par les tests.
 - ⚠️ `/c toto` n'est plus un raccourci : il part tel quel dans le canal choisi, comme toute commande inconnue.
 
+## 31/10/2026 — Tours : Shrine héroïque à la place du niveau 2 (Geoffrey)
+- **Quoi** : `SHRINES.list.heroique` (30 Orbes, `tower:'any'`, `effect { level:2, extraBox:0.25 }`, tex `orb`). `heroicFor` (src/meta/shrines.js). `start` (server/game/service.js) : niveau tiré du shrine du chef, `body.level` ignoré pour une tour ; `rec.heroic`, `rec.steleOwner` posé si stèle ou shrine. `settleWith` : 2e boîte par joueur, `spendStele` sur les deux ids. `hasWon` (src/meta/judgment.js) : une victoire par ouverture, tous niveaux confondus ; `public.done` en dépend. `TOWER.levels` et `rec.level` gardés : stats, records `#2` et HUD inchangés en interne. Lobby : rangée de niveau retirée pour les tours, `towerLevelState` supprimé, case dev `devHeroic` (`body.heroic`).
+- **Tests** ✅ `tests/heroique.test.js` (7), stele, shrines, judgment, tower-level, leaderboard, game-service : 281/283 ; anti-triche 119/119. ❌ Sans lien : « roi gobelin : record revérifié » rouge aussi sur `main` propre ; « table de recherche par le serveur » échoue au hasard (2 essais sur 4 sans changement).
+- ⚠️ Rendu du lobby pas regardé dans un navigateur. Pas de simulation de l'Héroïque + stèle (`npm run simulate:tower -- --stele`, niveau 2).
+- ⚠️ Une tour déjà lancée au moment de la mise en ligne garde son niveau. Une victoire d'avant, quel que soit son niveau, vaut « déjà gagnée » pour l'ouverture en cours.
+- ⚠️ `tests/tower-level.test.js` : le test du choix de niveau dans le lobby est retiré avec `towerLevelState`.
+
 ## 31/10/2026 — Bilan de tour jamais affiché (Geoffrey), régression des correctifs du 30/10
 - **Cause 1** (`1abfc1c`) : `ack` dès `showResult`. Un autre onglet ou appareil qui reçoit le bilan d'abord le marque vu ; l'écran du joueur reçoit `ended: null`, puis `showNoSession` dans `pollResult`, sans bilan.
 - **Cause 2** (`8757bb5`) : `last = list.find(...)`, liste triée par début. Une MI commencée pendant la tour et déjà vue masquait la tour.
