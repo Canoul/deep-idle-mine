@@ -236,7 +236,7 @@ test('ratios sur les runes (31/10/2026) : vitesse d\'attaque ÷ 5, butin ÷ 4, c
   }
   assert.equal(runeLineValue(PICK, { stat: 'discoverMax' }), lineValue(PICK, { stat: 'discoverMax' }), 'Découverte : pas un %');
   const piece = sanitizePiece({ uid: 1, item: 'Doc Martins', q: 2, s: UPGRADE.scale, lines: [{ stat: 'attackSpeed', pct: 20 }], rune: { q: 2, s: UPGRADE.scale, lines: [line] } });
-  assert.equal(pieceBonus(piece).stats.attackSpeed, roundStat('attackSpeed', 26 + 18.9), 'même pièce : identification entière, rune divisée');
+  assert.equal(pieceBonus(piece).stats.attackSpeed, roundStat('attackSpeed', 26 + 7.6), 'même pièce : identification entière, rune divisée');
 });
 
 test('tier : une ligne vaut un % du tier, pas de la valeur de la pièce ; les pièces déjà runées suivent', async () => {
