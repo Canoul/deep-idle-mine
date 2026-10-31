@@ -6,6 +6,7 @@ import { removeItem, addAll, addItem, countOf, OPEN_MEMORY } from './inventory.j
 import { rollRune, isStuff } from './piece.js';
 import { recipeOfBlueprint, isUnlocked } from './craft.js';
 import { spellOfScroll } from './spells.js';
+import { treasureBlueprintsDone } from './research.js';
 
 /* coffre de tour (RUNE) : { side, q } ou null */
 const chestOf = item => ITEMS[item]?.chest ?? null;
@@ -95,8 +96,10 @@ function openOne(inv, item, rng, ctx = {}){
       Object.assign(loot, ring);
     }
   } else {
-    /* learnOnce (Treasure T4, 27/10) : un BP dont la recette est déjà apprise ne sort pas */
-    loot = rollLoot(LOOT[item], rng, i => i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv));
+    /* learnOnce (Treasure T4, 27/10) : un BP dont la recette est déjà apprise ne sort pas ; plus aucun BP d'un Treasure
+       dépassé (31/10, treasureBlueprintsDone) */
+    const done = treasureBlueprintsDone(inv, item);
+    loot = rollLoot(LOOT[item], rng, i => (done && ITEMS[i.item]?.cat === 'blueprint') || (i.learnOnce && isUnlocked(recipeOfBlueprint(i.item), inv)));
     addAll(inv, loot);
   }
   return loot;

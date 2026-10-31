@@ -9,6 +9,12 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Plus de blueprints dans les trésors dépassés
+- **Pour le joueur** : si tu as appris toutes les recettes du tier d'un trésor et du tier suivant, il ne donne plus de blueprint. Tiers 1 à 3 appris : plus rien dans les T1 et T2, encore dans le T3. Le reste du butin (parts, gemmes…) ne change pas.
+- **Décisions** : un plan gardé sans l'utiliser ne compte pas comme appris. Le T4 n'est pas touché, faute de tier suivant.
+- **À suivre** : moins de plans en double, donc un peu moins de Blueprint parts par recyclage pour les joueurs avancés.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Craft : plus d'onglet vide
 - **Pour le joueur** : dans le Craft, un onglet sans recette disponible n'est plus affiché. Il apparaît dès qu'une recette de sa catégorie est apprise.
 - **État** : ✅ en ligne le 31/10
