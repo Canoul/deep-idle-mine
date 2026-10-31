@@ -1081,7 +1081,8 @@ button.danger{color:var(--bad)}
   .view[data-view="stuff"] .setLay{grid-template-columns:minmax(0,1fr);gap:calc(14*var(--u))}
   .view[data-view="stuff"] .setsBody{display:flex;flex-wrap:wrap;align-items:center;gap:calc(2*var(--u)) calc(6*var(--u))}
   .view[data-view="stuff"] .setsBody>p{flex:1 1 100%;margin:0}
-  .view[data-view="stuff"] .setRow{flex:1 1 0;min-width:calc(95*var(--u));border-bottom:0}
+  .view[data-view="stuff"] .setRow{flex:1 1 0;min-width:calc(95*var(--u));gap:var(--u);border-bottom:0}
+  .view[data-view="stuff"] .setRow button{min-height:calc(12*var(--u));padding:0 calc(2*var(--u));font-size:var(--fs-s)}
   .view[data-view="stuff"] .setsBody>.setNew{width:auto;margin:0}
 }
 /* onglets de l'inventaire (29/10/2026) : une icône par catégorie, grisée si vide */
