@@ -159,7 +159,7 @@ function rareDrop(G,m,o){
     if(d.mob!==o.type) continue;
     const r=(G.dropRng ??= mulberry32(G.seed ^ MOB_DROPS.salt));
     const chance=(G.khole && d.kholeChance!=null ? d.kholeChance : d.chance)*(1+Math.max(0, lootBonus(m)))*rareMul(G);
-    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); }
+    if(r() < chance){ collect(m,d.item,ITEMS[d.item].w ?? 0,1); log(G, `✨ ${m.name} : ${d.item} !`); return; }   // une pièce au plus par mob (31/10 : gobelin, occultiste et bestiole ont deux tirages)
   }
 }
 

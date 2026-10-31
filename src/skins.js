@@ -30,6 +30,8 @@ export const SKIN = {
     'Cape de Naingui':     'skins/naingui_cape_front', // devant : col violet et fermoir doré (le dos : back)
     /* butin rare des mobs (26/10/2026, MOB_DROPS) */
     'Lanières en cuir du gobelin': 'skins/goblin_straps', // torse nu, deux sangles de cuir des épaules le long des côtes
+    'Kilt ténébreux':      'skins/dark_kilt',          // kilt violet plissé, ceinture dorée
+    'Chapeau de naab':     'skins/naab_hat',           // bonnet à hélice, gros yeux qui louchent
     'Capuche sombre':      'skins/dark_hood',          // capuche violette de l'occultiste, visage sombre, yeux rouges
     'Nuage magique':       'skins/magic_cloud',        // les jambes deviennent un nuage jaune
     'Ceinture du Géant':   'skins/giant_belt',         // bande noire, cornes claires
@@ -58,6 +60,7 @@ export const SKIN = {
     'Pioche en pierre': 'skins/pick_stone',            // pierre : grise
     'Pioche en fer':    'skins/pick_iron',             // fer : acier clair
     'Pioche en acier':  'skins/pick_steel',            // acier : gris bleuté
+    'Piolet de gobelin': 'skins/pick_goblin',          // manche d'os, tête verte
   },
   /* arme sortie pour frapper un mob : l'épée équipée, sinon la pioche (mains nues + pioche) */
   sword: {
@@ -65,6 +68,7 @@ export const SKIN = {
     'Épée en fer':      'skins/sword_iron',
     'Lance en fer':     'skins/spear_iron',
     'Épée en acier':    'skins/sword_steel',
+    'Épée cassée en carton': 'skins/sword_cardboard',   // lame brisée, morceau de scotch
     'Masse du Roi Gobelin': 'skins/mace_goblin_king',   // 27/10 : manche de bois, tête de fer
   },
 };

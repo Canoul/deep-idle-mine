@@ -781,7 +781,7 @@ export const TEXTURES = ['dirt','grass','stone','hardstone','coal','iron','gold'
   'ingot_iron','ingot_gold','ingot_tainted','ingot_tainted_gold','ingot_graphite','ingot_steel','furnace_iron','compass_gold','shiny_iron','shiny_gold','pickaxe_stone','helmet_chitin','chest_chitin','legs_chitin','boots_chitin',
   'pickaxe_iron','sword_stone','sword_iron','spear_iron','helmet_iron','chest_iron','legs_iron','boots_iron','belt_goblin',
   'lamp_incandescent','pickaxe_steel','sword_steel','helmet_steel','chest_steel','legs_steel','boots_steel','chest_balance',
-  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','key_instance_1','key_instance_2','angel_feather','angel_feathers',
+  'gloves_tactical','gloves_worker','cape_naingui','straps_goblin','hood_dark','cloud_magic','belt_giant','dark_cloth','gas_vesicle','slippery_stone','dungeon_brick','minotaur','minotaur_black','moon_crystal','orb','orb_superior','pick_goblin','kilt_dark','hat_naab','sword_cardboard','key_instance_1','key_instance_2','angel_feather','angel_feathers',
   'residue_angel','residue_demon','rune','rune_fragment','chest_angel','chest_demon','giant_block','giant_fountain','giant_torch','instance_spawner','instance_cage','goblin_king','golbute','golbute_crystal','golbute_body','golbute_body_crystal','golbute_arm','golbute_arm_crystal','golbute_rock','chest_golbute',
   'brick_angel','brick_angel_hard','brick_demon','brick_demon_hard','boss_angel','boss_demon','seraph','imp',
   'crown_goblin_king','mace_goblin_king','cape_goblin_royal','furnace_gold','recipe_chitin','chest_goblin_king','nugget_silver','ingot_silver','shrine_abundance',
@@ -1080,6 +1080,7 @@ export const RARITY = {
       [[`${p} en acier`, 'inhabituel'], [`${p} en acier BP`, 'inhabituel']])),                  // 23/10, Geoffrey
     'Plastron de l\'équilibre':'epique', 'Plastron de l\'équilibre BP':'epique',
     'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',   // butin des mobs (MOB_DROPS)
+    'Piolet de gobelin':'inhabituel', 'Kilt ténébreux':'rare', 'Chapeau de naab':'inhabituel',   // butin des mobs, 31/10 ; Épée cassée en carton : commune
     'Cristal de pleine lune':'rare',
     'Clé d\'instance I':'inhabituel', 'Clé d\'instance II':'inhabituel',
     'Plume d\'ange':'rare',
@@ -1208,6 +1209,16 @@ export const STUFF = {
                              recycle:{ 'Chitine':30, 'Vésicule de gaz':10 } },
     'Ceinture du Géant':   { slot:'ceinture', tex:'belt_giant',  stats:{ damage:1.5, tenacity:12.5 },   // 29/10 (Geoffrey) : dégâts 1,5 ≈ +10 % de DPS avec 14 dégâts fixes (avant 5) ; 28/10 : dégâts 5 (avant 1,6 : 125 x ÷ 2) ; ténacité 25 → 12,5 (d'abord 12,6 dégâts)
                              recycle:{ 'Chitine':50, 'Steel ingot':5 } },
+    /* butin des mobs du 31/10/2026 (Geoffrey). Kilt : 250 x de vitesse de minage % (tier 2), dans la règle. Chapeau : 33 x
+       de chaque stat, soit le x du tier 1. Piolet et épée : valeurs du créateur, hors règle (tests/stuff-balance.test.js) */
+    'Piolet de gobelin':   { slot:'pioche', tex:'pick_goblin',   stats:{ mineSpeed:0.3 },
+                             recycle:{ 'Tainted iron':6, 'Peau de gobelin':10 } },
+    'Kilt ténébreux':      { slot:'jambes', tex:'kilt_dark',     stats:{ mineSpeedPct:6.4 },
+                             recycle:{ 'Tainted gold':6, 'Tissu sombre':10 } },
+    'Chapeau de naab':     { slot:'casque', tex:'hat_naab',      stats:{ oxygenMax:8, pods:6, speed:0.14 },
+                             recycle:{ 'Chitine':20 } },
+    'Épée cassée en carton': { slot:'epee', tex:'sword_cardboard', set:{ damage:7 },      // remplace les mains nues (5), comme une épée
+                               recycle:{ 'Chitine':20 } },
     /* coffre du Roi Gobelin (GOBLIN_KING, 27/10/2026, Geoffrey) : pas craftables, valeurs du créateur */
     'Couronne du Roi Gobelin': { slot:'casque', tex:'crown_goblin_king', stats:{ fortune:10 }, set:{ goblinThrall:10 } },   // passif : gobelins asservis à 10 cases
     'Masse du Roi Gobelin':    { slot:'epee',   tex:'mace_goblin_king',  set:{ damage:14 }, stats:{ crit:15 } },          // remplace les mains nues (5), comme une épée
@@ -1323,11 +1334,11 @@ export const UPGRADE = {
      de l'équilibre compris). Lignes gardées en % : les pièces déjà runées suivent sans migration. Une pièce absente des
      listes garderait sa propre valeur (tests/rune.test.js vérifie qu'il n'y en a pas). */
   tiers: {
-    1: { x:100, items:['Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
+    1: { x:100, items:['Chapeau de naab','Épée cassée en carton','Pioche en pierre','Épée en pierre','Casque en chitine','Plastron en chitine','Jambes en chitine',
                        'Bottes en chitine','Ceinture en peau de gobelin','Boussole en or'] },
     2: { x:250, items:['Pioche en fer','Épée en fer','Lance en fer','Casque en fer','Plastron en fer','Jambes en fer','Bottes en fer',
                        'Gants tactique','Gants d\'ouvrier','Cape de Naingui','Lampe à incandescence',   // lampe : plan du T2 depuis le 26/10 (tier le 27/10)
-                       'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant'] },   // butin des mobs : valeur du fer
+                       'Lanières en cuir du gobelin','Capuche sombre','Nuage magique','Ceinture du Géant','Piolet de gobelin','Kilt ténébreux'] },   // butin des mobs : valeur du fer
     /* 27/10/2026 (Geoffrey) : 500 x (avant 400), avec le buff de +100 x des pièces en acier */
     3: { x:500, items:['Pioche en acier','Épée en acier','Casque en acier','Plastron en acier','Jambes en acier',
                        'Bottes en acier','Plastron de l\'équilibre',
@@ -1951,6 +1962,11 @@ export const MOB_DROPS = {
     /* 26/10/2026 au soir (Geoffrey) : nerf, avant 0,5 % (gobelin, occultiste, méphite) et 1 % / 2 % (minotaure) */
     { mob:'gobelin',          item:'Lanières en cuir du gobelin', chance:0.001 },
     { mob:'occultiste',       item:'Capuche sombre',              chance:0.001 },
+    /* 31/10/2026 (Geoffrey) ; la bestiole a deux tirages, un par pièce */
+    { mob:'gobelin',          item:'Piolet de gobelin',           chance:0.005 },
+    { mob:'occultiste',       item:'Kilt ténébreux',              chance:0.005 },
+    { mob:'bestiole',         item:'Chapeau de naab',             chance:0.01 },
+    { mob:'bestiole',         item:'Épée cassée en carton',       chance:0.01 },
     { mob:'mephite',          item:'Nuage magique',               chance:0.001 },
     { mob:DUNGEON.boss.type,  item:'Ceinture du Géant',           chance:0.005, kholeChance:0.01 },   // k hole : toujours le double (choix de Claude)
   ],

@@ -9,6 +9,10 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Quatre nouvelles pièces lâchées par les mobs
+- **Pour le joueur** : le **Piolet de gobelin** (pioche, minage +0,3), 0,5 % sur un gobelin. Le **Kilt ténébreux** (jambes, vitesse de minage +6,4 %), 0,5 % sur un occultiste. Le **Chapeau de naab** (casque, oxygène +8, pods +6, marche +0,14), bonnet à hélice et yeux qui louchent, 1 % sur une bestiole. L'**Épée cassée en carton** (épée, 7 dégâts), 1 % sur une bestiole. Toutes se recyclent et ont leur apparence sur le mineur.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Nouvel objet : l'Orbe supérieur
 - **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
 - **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
