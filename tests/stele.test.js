@@ -8,7 +8,7 @@ import { createInventory, addItem, countOf } from '../src/meta/inventory.js';
 import { openTreasure } from '../src/meta/loot.js';
 import { itemName } from '../src/meta/piece.js';
 import { runTower, newTower, tickTower } from '../src/sim/tower/session.js';
-import { shownShrines, shrinesHtml } from '../src/ui/lobby.js';
+import { shownShrines, shrinesHtml, typingIn } from '../src/ui/lobby.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { createGameService } from '../server/game/service.js';
 import { createPartyService } from '../server/party/service.js';
@@ -153,6 +153,15 @@ test('lobby : stèle du pacte dans la Tour de l\'Ange seulement, exorcisme dans 
   assert.match(shrinesHtml([on]), /data-stele-set="pacte" data-on="0"/);
   assert.match(shrinesHtml([{ ...on, on: false }]), /data-on="1"/);
   assert.doesNotMatch(shrinesHtml([on], { leaderName: 'Zoe' }), /data-stele-set/, 'pas le chef : pas de bouton');
+});
+
+test('lobby : la carte se redessine après un clic sur un bouton ; pas pendant la saisie d\'une quantité', () => {
+  const input = { tagName: 'INPUT' }, button = { tagName: 'BUTTON' }, inside = new Set([input, button]);
+  const box = { contains: el => inside.has(el) };
+  assert.equal(typingIn(box, input), true);
+  assert.equal(typingIn(box, button), false, 'bouton Activer / Désactiver cliqué : il doit changer tout de suite');
+  assert.equal(typingIn(box, { tagName: 'INPUT' }), false, 'champ ailleurs dans la page');
+  assert.equal(typingIn(box, null), false);
 });
 
 const A = { id: 'AAAA1111', name: 'Zoe' }, B = { id: 'BBBB2222', name: 'Max' };

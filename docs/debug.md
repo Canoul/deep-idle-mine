@@ -5968,3 +5968,9 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `game.view` renvoie `energies` { compte: { value, max } } pour une session à plusieurs, hors MI (`teamEnergies`, server/game/service.js ; cache `GAME_SERVER.teamEnergyFor` 30 s, comme Social). `src/ui/energy-tag.js` : `energyHTML` (déplacé de social.js, toujours réexporté), `setTeamEnergies`, `teamEnergyHTML`. Affiché dans hud.js, tower-hud.js, instance-hud.js ; alimenté dans la boucle de vue de src/main.js.
 - **Tests** ✅ `tests/team-energy.test.js` (3), social.
 - ⚠️ Pas vu dans un navigateur. Cache `energyCache` jamais purgé : une entrée par compte vu (comme Social). Les comptes de test du mode dev n'ont pas de ligne d'énergie.
+
+## 31/10/2026 — Bouton Activer / Désactiver d'un shrine « qui lag » (Geoffrey)
+- **Cause** : `render` (src/ui/lobby.js) ne redessinait pas `shrinesBody` si `document.activeElement` y était, pour protéger la saisie des quantités. Un bouton cliqué garde le focus : la carte restait figée jusqu'au clic suivant ailleurs ; le serveur avait déjà appliqué le changement. Trouvé à la lecture, pas reproduit dans un navigateur.
+- **Quoi** : `typingIn` : seul un `INPUT` de la carte bloque le rendu. Vaut aussi pour « Donner ».
+- **Tests** ✅ stele +1.
+- ⚠️ Pas vu en jeu.
