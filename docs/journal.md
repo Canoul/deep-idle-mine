@@ -19,7 +19,7 @@ Modèle d'entrée :
 ## 31/10/2026 — Geoffrey — Pseudos : les mots interdits du chat ne passent plus
 - **Pour le joueur** : on ne peut plus créer un compte avec un pseudo interdit, un message d'erreur le dit. Un joueur qui en a déjà un doit le changer à sa prochaine connexion : une fenêtre impossible à fermer le lui demande, il garde son compte et son stuff.
 - **À suivre** : aucun des 31 pseudos lisibles n'est touché aujourd'hui. La liste de mots reste celle du chat.
-- **État** : 🧪 sur la branche `geoffrey/pseudo-banword` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Social : joueur en prison en vert
 - **Pour le joueur** : dans l'onglet Social, un joueur en prison qui a le jeu ouvert a une pastille verte. Si sa prison
