@@ -27,6 +27,10 @@ Modèle d'entrée :
 - **Largeur des onglets** : tous les onglets ont maintenant la même largeur, quel que soit leur contenu, et tout est réduit à 90 %. Session et téléphone gardent leur taille.
 - **À suivre** : en session, la mine garde sa largeur et la colonne Équipe / Mineur s'arrête au-dessus du chat, en défilant ; plus le chat est haut, moins elle a de place. Le chat flotte par-dessus : le changer de taille ne déplace rien et le reste reste centré. Sa largeur s'arrête au début de l'interface centrale de l'onglet ouvert ; En tour, instance, mine instantanée et Bloc géant en direct, il peut recouvrir le bas à gauche de la mine (minimum 160 px).
 - **Chat** : plus de barre orange. On règle la hauteur et la largeur en tirant la bordure du chat (haut, droite ou coin). Au départ, il est 2,5 fois plus large et 1,5 fois plus haut.
+
+## 31/10/2026 — Geoffrey — Golbute : avalanche et coup au sol retravaillés
+- **Pour le joueur** : les rochers de l'avalanche vont maintenant jusqu'au sol et s'y brisent dans la poussière. Pour son coup, le Golbute lève ses vrais bras et les écrase au sol de chaque côté, au lieu de deux rectangles gris.
+- **À suivre** : à regarder en jeu, en pierre et en cristal.
 - **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Prison : les mines au focus minerai ne gonflent plus la compo

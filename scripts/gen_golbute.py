@@ -280,8 +280,8 @@ class _Stone:
         return [c for row in s.out for c in row]
 
 
-def golbute_sprite(crystal=False):
-    g = _Stone(PARTS, S, crystal, seed=1730, nseeds=150, R=7.0, dark=(28, 52), glow=(40, 40, 34), face=('tete', 23),
+def golbute_sprite(crystal=False, parts=PARTS):
+    g = _Stone(parts, S, crystal, seed=1730, nseeds=150, R=7.0, dark=(28, 52), glow=(40, 40, 34), face=('tete', 23),
                hi=(40, 3, 1))
     put = g.put
 
@@ -386,9 +386,37 @@ def golem_sprite():
     return g.finish()
 
 
+# bras animés (31/10/2026) : le corps sans ses bras, et le bras gauche pris sur le sprite complet (le droit est son miroir)
+ARM_W = 34
+ARM_L = ('epauleG', 'brasG', 'avbrasG', 'poingG', 'ferG')
+ARM_ALL = ARM_L + ('epauleD', 'brasD', 'avbrasD', 'poingD', 'ferD')
+
+
+def _mask(parts, width, grow=2):
+    """pixels des parties, élargis de grow (trait d'encre, chaîne)"""
+    return [[any(p[1](x + dx, y + dy) for p in parts for dx in range(-grow, grow + 1) for dy in range(-grow, grow + 1))
+             for x in range(width)] for y in range(S)]
+
+
+def golbute_arms(crystal):
+    """(pixels du corps, 80 × 80 ; pixels du bras gauche, ARM_W × 80)"""
+    full = golbute_sprite(crystal)
+    rest = [p for p in PARTS if p[0] not in ARM_ALL]
+    raw, empty = golbute_sprite(crystal, rest), full[0]
+    keep = _mask(rest, S)
+    body = [raw[y * S + x] if keep[y][x] else empty for y in range(S) for x in range(S)]
+    arm = _mask([p for p in PARTS if p[0] in ARM_L], ARM_W)
+    return body, [full[y * S + x] if arm[y][x] else empty for y in range(S) for x in range(ARM_W)]
+
+
 def golbute():
-    """{ nom : (largeur, hauteur, pixels) } : le Golbute et sa forme cristallisée"""
-    return {'golbute': (S, S, golbute_sprite(False)), 'golbute_crystal': (S, S, golbute_sprite(True))}
+    """{ nom : (largeur, hauteur, pixels) } : le Golbute, sa forme cristallisée, et leurs corps et bras animés"""
+    out = {'golbute': (S, S, golbute_sprite(False)), 'golbute_crystal': (S, S, golbute_sprite(True))}
+    for crystal, end in ((False, ''), (True, '_crystal')):
+        body, arm = golbute_arms(crystal)
+        out['golbute_body' + end] = (S, S, body)
+        out['golbute_arm' + end] = (ARM_W, S, arm)
+    return out
 
 
 def golem():
