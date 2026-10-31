@@ -6028,3 +6028,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Quoi** : `IGNORE`, `ignore(reportId)`, `reportText(s, ignored)` (`bot/todo.js`) ; troisième réaction et `onReaction` (`bot/main.js`).
   Les messages de #report d'avant ce changement n'ont pas la croix, mais un ❌ ajouté à la main marche.
 - **Tests** : `tests/bot-todo.test.js` ✅ ; ⚠️ pas essayé sur Discord.
+
+## 31/10/2026 — Stuff : sets en bandeau (Geoffrey)
+- **Quoi** : CSS seul, `.view[data-view="stuff"]` au-dessus de 700 px : `.setLay` sur une colonne, `.setsBody` en ligne. Skills, Sorts et Lobby gardent leurs sets à gauche.
+- **Tests** : rendu vérifié dans Chrome ; aucun test automatique, c'est du style.
+

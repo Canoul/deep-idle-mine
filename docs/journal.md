@@ -16,6 +16,10 @@ Modèle d'entrée :
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
 
+## 31/10/2026 — Geoffrey — Stuff : les sets en bandeau, noms des pièces lisibles
+- **Pour le joueur** : dans l'onglet Stuff, les sets passent en bandeau au-dessus de la carte. Le nom des pièces a bien plus de place et ne s'écrit plus sur une colonne de quelques lettres. L'onglet garde la même largeur que les autres.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Runes : les stats offensives divisées comme sur les pièces
 - **Pour le joueur** : les lignes offensives des runes et des fragments rapportent moins : dégâts, vitesse d'attaque, double attaque, critique, portée et recul ÷ 2, dégâts % ÷ 3, perçage ÷ 4. Vaut aussi pour les runes déjà posées. Ex. : Doc Martins +2 avec une rune à +40,1 % de vitesse d'attaque → +20 %.
 - **Décisions** : les lignes d'identification ne changent pas, ni minage, ténacité et résistance au recul sur les runes.
