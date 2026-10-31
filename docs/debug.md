@@ -5869,3 +5869,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 ## 31/10/2026 — Menu du Lobby avec l'équipe (Geoffrey)
 - **Quoi** : `#lobbyMenu` dans la colonne de gauche de `.lobbyCols`, `#lobbyStage` réduit à l'en-tête « ← Activités ». `menuCards` ; au menu, `def` vaut null (aucun mode choisi). Retirés : exception de groupe de `showMenu`, ouverture de la Mine en rejoignant un groupe.
 - **Tests** ✅ lobby +1.
+
+## 31/10/2026 — Chat : largeur en tour (Geoffrey)
+- **Cause** : `centralLeft` lisait le bord de la zone (`#cvTwWrap`, 12 px) et non du canvas centré dedans (421 px à 1872 px de large) : limite sous `minWidth`, chat bloqué à 160 px.
+- **Correctif** : mesure sur `#cv`, `#cvMi`, `#cvTw`, `#cvGt`, `#cvIn`, aussi observés par le ResizeObserver.
+- **Tests** : vérifié ✅ dans Chrome sur une tour dev à 1872 × 815. `centralLeft` lit le DOM, pas de test unitaire. Instance, MI et Bloc géant : même mesure, non lancés ⚠️.

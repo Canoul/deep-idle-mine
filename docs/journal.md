@@ -22,6 +22,10 @@ Modèle d'entrée :
 - **À suivre** : Jules a besoin de son fichier `.dim-dev.env` pour s'en servir. `SET ROLE` ne marche pas dans Neon : voir `has_table_privilege`.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Chat : largeur débloquée en tour et en instance
+- **Pour le joueur** : en tour, en instance, en mine instantanée et au Bloc géant, le chat peut s'élargir jusqu'au bord de la mine ; il restait bloqué au minimum alors qu'il y avait de la place.
+- **État** : 🧪 sur la branche `geoffrey/fix-chat-largeur` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Menu du Lobby : l'équipe à droite
 - **Pour le joueur** : le choix des activités montre ton équipe à droite, seul ou en groupe : inviter, chercher un groupe, et « Je suis prêt » pour un membre. Le Lancer reste dans l'activité.
 - **Décisions** : cliquer sur l'onglet Lobby rouvre toujours le menu, même en groupe ; rejoindre un groupe n'ouvre plus la Mine.
