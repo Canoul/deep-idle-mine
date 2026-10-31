@@ -70,6 +70,18 @@ test('Clé d\'instance I (31/10/2026) : de base, 1 Barre d\'argent + 5 Orbes', (
   assert.deepEqual(RECIPES['Clé d\'instance I'], { cost:{ 'Barre d\'argent':1, 'Orbe':5 }, qty:1, unlock:null });
 });
 
+test('Orbe supérieur (31/10/2026) : de base, 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma', () => {
+  assert.deepEqual(RECIPES['Orbe supérieur'], { cost:{ 'Rotten flesh':20, 'Chair de vers':20, 'Peau de chien de magma':20 }, qty:1, unlock:null });
+  assert.equal(ITEMS['Orbe supérieur'].stack, true);
+  const inv = createInventory();
+  addAll(inv, { 'Rotten flesh':20, 'Chair de vers':20, 'Peau de chien de magma':19 });
+  assert.equal(canCraft(inv, 'Orbe supérieur'), false);
+  addAll(inv, { 'Peau de chien de magma':1 });
+  craft(inv, 'Orbe supérieur');
+  assert.equal(countOf(inv, 'Orbe supérieur'), 1);
+  assert.equal(countOf(inv, 'Rotten flesh') + countOf(inv, 'Chair de vers') + countOf(inv, 'Peau de chien de magma'), 0);
+});
+
 test('Orbe (30/10/2026) : de base, 30 tissus sombres + 30 vésicules de gaz + 10 pierres glissantes', () => {
   assert.deepEqual(RECIPES['Orbe'], { cost:{ 'Tissu sombre':30, 'Vésicule de gaz':30, 'Pierre glissante':10 }, qty:1, unlock:null });
   assert.equal(ITEMS['Orbe'].stack, true);
