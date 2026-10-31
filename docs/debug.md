@@ -6050,3 +6050,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   `game.activeSessionInfo` ; nouveau champ `playingLeftMs` par membre. `launchState` et les tags de place (`src/ui/lobby.js`)
   l'affichent avec `leftText` de l'onglet Social. Le temps avance au rythme du rafraîchissement du lobby.
 - **Tests** : `tests/lobby.test.js`, `tests/party.test.js` ✅ ; ⚠️ pas vu dans un navigateur.
+
+## 31/10/2026 — Orbe supérieur (Geoffrey)
+- **Quoi** : `ITEMS['Orbe supérieur']`, recette de base (src/recipes.js), texture `orb_superior` (scripts/gen_textures.py, liste des textures de src/config.js). Aucun usage pour l'instant.
+- **Tests** ✅ tests/craft.test.js. Aucun nouveau chemin de ressources : craft habituel. ⚠️ Texture non vue en jeu.
+

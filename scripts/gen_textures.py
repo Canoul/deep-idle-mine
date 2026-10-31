@@ -580,6 +580,19 @@ def main():
     rect(orb, 5, 5, 2, 1, oh)                                       # reflet
     tex['orb'] = orb
 
+    # Orbe supérieur (31/10) : même sphère, rouge sang, cerclée d'or
+    orb2 = blank()
+    sd, sm, sl, sh, sg = hexc('#4a0d16'), hexc('#a31f2e'), hexc('#e0606a'), hexc('#ffe6e0'), hexc('#e8b84a')
+    for yy, (x0, w) in enumerate([(6, 4), (4, 8), (3, 10), (3, 10), (2, 12), (2, 12), (2, 12), (2, 12), (3, 10), (3, 10), (4, 8), (6, 4)], start=2):
+        rect(orb2, x0, yy, w, 1, sm)
+        rect(orb2, x0 + w - 2, yy, 2, 1, sd)
+        rect(orb2, x0, yy, 1, 1, sg); rect(orb2, x0 + w - 1, yy, 1, 1, sg)   # cercle d'or
+    rect(orb2, 4, 11, 8, 2, sd); rect(orb2, 6, 13, 4, 1, sd)
+    rect(orb2, 6, 2, 4, 1, sg); rect(orb2, 6, 13, 4, 1, sg)
+    rect(orb2, 5, 4, 4, 1, sl); rect(orb2, 4, 5, 3, 2, sl)
+    rect(orb2, 5, 5, 2, 1, sh)
+    tex['orb_superior'] = orb2
+
     # Clé d'instance I (27/10) : clé de fer vert-de-gris (gobelins), anneau, tige et panneton, « I » gravé
     key = blank()
     kc, kd, kl = hexc('#7fae6a'), hexc('#4a6e3e'), hexc('#c9e6b4')

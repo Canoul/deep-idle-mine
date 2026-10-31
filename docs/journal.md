@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Nouvel objet : l'Orbe supérieur
+- **Pour le joueur** : un **Orbe supérieur** se fabrique dans l'onglet Craft, dès le départ : 20 Rotten flesh + 20 Chair de vers + 20 Peau de chien de magma.
+- **À suivre** : il ne sert à rien pour l'instant ; son usage reste à décider.
+- **État** : ✅ en ligne le 31/10
+
 ## JJ/MM/AAAA — Prénom — Titre court
 - **Pour le joueur** : ce qui change en jeu (ou « rien, c'est de l'organisation »).
 - **Décisions** : choix de design ou d'équilibrage tranchés (s'il y en a).
@@ -20,7 +25,7 @@ Modèle d'entrée :
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps
   restant (« Attente de Nunu (reste 6 min) ») au lieu de « Le groupe finit sa session… ». Tout le groupe voit aussi le temps
   restant sur la carte de ce joueur.
-- **État** : 🧪 sur la branche `geoffrey/lobby-attente` (pas en ligne)
+- **État** : ✅ en ligne le 31/10
 
 ## 31/10/2026 — Geoffrey — Deux nouveaux mobs en area 7 : Chien de magma et Vers de terre
 - **Pour le joueur** : à partir de l'area 7, le **Chien de magma** applique du **Bleed** toutes les 3 s de tacle (déplacement et minage −10 % par stack). Le **Vers de terre** traverse les blocs et charge toutes les 10 s : étourdi 3 s et un stack de Bleed. Il est intouchable, sauf quand il se coince (30 % par charge, 10 s), avec sa queue qui dépasse.
