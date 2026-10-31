@@ -58,8 +58,10 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
     await serial(async () => { await load(); if(await fn(me, ...args) !== false) await save(); });
     return view(me);
   };
+  /* entrer dans une guilde, ou en créer une : ses autres invitations et demandes tombent */
+  const dropPending = id => { for(const x of all()){ x.invites = x.invites.filter(i => i.id !== id); x.requests = x.requests.filter(r => r.id !== id); } };
   function enter(g, id){
-    for(const x of all()){ x.invites = x.invites.filter(i => i.id !== id); x.requests = x.requests.filter(r => r.id !== id); }
+    dropPending(id);
     g.members.push({ id, rank:RANK.member, joinedAt:clock(), rawXp:0 });
     byAccount.set(id, g.id);
   }
@@ -113,6 +115,7 @@ export function createGuildService({ store, accounts, statusOf, clock = Date.now
       outside(me);
       const key = guildNameKey(name);
       if(all().some(g => guildNameKey(g.name) === key)) fail('name_taken', 409, 'Ce nom est déjà pris.');
+      dropPending(me.id);
       const id = makeId();
       state.guilds[id] = { id, name, createdAt:clock(), rawXp:0, members:[{ id:me.id, rank:RANK.chief, joinedAt:clock(), rawXp:0 }], invites:[], requests:[] };
       byAccount.set(me.id, id);

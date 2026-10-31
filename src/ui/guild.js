@@ -10,6 +10,9 @@ const fr = n => Math.round(n).toLocaleString('fr-FR');
 const ACTIVITY = { online:{ label:'Connecté', cls:'on' }, session:{ label:'En session', cls:'play' }, offline:{ label:'Absent', cls:'off' } };
 const ACTION_LABEL = { promote:'Passer officier', demote:'Rétrograder', transfer:'Donner ma place de chef', kick:'Exclure' };
 
+/* relecture : une case d'actions ouverte ne doit pas se fermer ; un bouton qui garde le focus après un clic ne retient rien */
+export const holdsPanel = el => !!el?.matches('[data-gact]');
+
 /* sous-onglets : celui de sa guilde n'existe que si on en a une */
 export const guildTabs = st => [...(st.mine ? [{ id:'mine', label:esc(st.mine.name) }] : []), { id:'search', label:'Rechercher' }, { id:'board', label:'Leaderboard' }];
 
@@ -61,7 +64,7 @@ export function setupGuild({ root, api = guildApi, onChange = () => {} }){
     if(!tabs.some(t => t.id === tab)) tab = tabs[0].id;
     put($('guildTabs'), tabs.map(t => `<button data-gtab="${t.id}" class="${t.id === tab ? 'on' : ''}">${t.label}</button>`).join(''));
     $('guildMineTab').hidden = tab !== 'mine'; $('guildSearchTab').hidden = tab !== 'search'; $('guildBoardTab').hidden = tab !== 'board';
-    if(st.mine && !$('guildMine').contains(document.activeElement)) put($('guildMine'), mineHTML(st.mine));
+    if(st.mine && !holdsPanel(document.activeElement)) put($('guildMine'), mineHTML(st.mine));
     $('guildCreate').hidden = !!st.mine;
     $('guildInvitesCard').hidden = !st.invites.length;
     put($('guildInvites'), invitesHTML(st.invites));

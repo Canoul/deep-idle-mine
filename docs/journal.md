@@ -9,6 +9,11 @@ cours ? » ou lance `git branch -r --no-merged origin/main`.
 Modèle d'entrée :
 
 ```
+## 31/10/2026 — Geoffrey — Guildes
+- **Pour le joueur** : nouvel onglet Guilde (touche G). Créer une guilde (gratuit), inviter un joueur par pseudo ou demander à rejoindre depuis Rechercher, grades Chef / Officier / Membre, promotion et exclusion, jusqu'à 30 membres. 1 % de l'XP de chaque membre va à la guilde, dont le niveau suit la même courbe que le mineur, et chaque membre voit l'XP qu'il a rapportée. Classement des guildes par niveau.
+- **Pas encore là** : les bonus et les bâtiments (emplacements prévus à l'écran, vides). Pas de bâtiment Guilde dans le Carreau.
+- **État** : 🧪 sur la branche `geoffrey/guilde` (pas en ligne)
+
 ## 31/10/2026 — Geoffrey — Plus de blueprints dans les trésors dépassés
 - **Pour le joueur** : si tu as appris toutes les recettes du tier d'un trésor et du tier suivant, il ne donne plus de blueprint. Tiers 1 à 3 appris : plus rien dans les T1 et T2, encore dans le T3. Le reste du butin (parts, gemmes…) ne change pas.
 - **Décisions** : un plan gardé sans l'utiliser ne compte pas comme appris. Le T4 n'est pas touché, faute de tier suivant.
@@ -104,11 +109,6 @@ Modèle d'entrée :
 - **À suivre** : ce qui reste à faire ou à vérifier.
 - **État** : 🧪 sur la branche `prénom/sujet` (pas en ligne) → ✅ en ligne le JJ/MM
 ```
-
-## 31/10/2026 — Geoffrey — Guildes
-- **Pour le joueur** : nouvel onglet Guilde (touche G). Créer une guilde (gratuit), inviter un joueur par pseudo ou demander à rejoindre depuis Rechercher, grades Chef / Officier / Membre, promotion et exclusion, jusqu'à 30 membres. 1 % de l'XP de chaque membre va à la guilde, dont le niveau suit la même courbe que le mineur, et chaque membre voit l'XP qu'il a rapportée. Classement des guildes par niveau.
-- **Pas encore là** : les bonus et les bâtiments (emplacements prévus à l'écran, vides). Pas de bâtiment Guilde dans le Carreau.
-- **État** : 🧪 sur la branche `geoffrey/guilde` (pas en ligne)
 
 ## 31/10/2026 — Geoffrey — Lobby : on sait qui on attend
 - **Pour l'équipe** : quand un membre du groupe est encore en session, le bouton du chef affiche son nom et le temps

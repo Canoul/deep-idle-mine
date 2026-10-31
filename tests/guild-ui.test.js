@@ -1,7 +1,7 @@
 /* Guilde : affichage (src/ui/guild.js), textes échappés, cases d'actions, barre d'onglets. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { guildTabs, mineHTML, listHTML, boardHTML, invitesHTML } from '../src/ui/guild.js';
+import { guildTabs, holdsPanel, mineHTML, listHTML, boardHTML, invitesHTML } from '../src/ui/guild.js';
 import { TABS } from '../src/ui/nav.js';
 
 const NONE = { kick:false, promote:false, demote:false, transfer:false };
@@ -66,4 +66,11 @@ test('liste : demander à rejoindre, demande envoyée, guilde pleine, déjà en 
 
 test('Guilde dans la barre', () => {
   assert.ok(TABS.some(t => t.id === 'guilde' && t.ready));
+});
+
+test("relecture : seule une case ouverte retient le panneau, pas un bouton qui garde le focus", () => {
+  const el = sel => ({ matches:q => q === sel });
+  assert.equal(holdsPanel(el('[data-gact]')), true);
+  assert.equal(holdsPanel(el('button')), false);
+  assert.equal(holdsPanel(null), false);
 });

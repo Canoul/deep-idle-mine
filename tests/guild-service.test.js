@@ -211,3 +211,12 @@ test('état social : donne les invitations de guilde, pour le pop-up', async () 
   assert.deepEqual((await social.state(TOM)).guildInvites, [{ guildId:'g1', name:'Les Rois' }]);
   assert.equal(typeof (await social.statusOf(TOM.id)).status, 'string');
 });
+
+test('créer sa guilde annule ses demandes et invitations en attente', async () => {
+  const { guild } = setup();
+  await guild.create(ZOE, 'Les Rois'); await guild.create(MAX, 'Les Nains');
+  await guild.request(TOM, 'g1'); await guild.invite(MAX, 'Tom');
+  const v = await guild.create(TOM, 'Les Elfes');
+  assert.deepEqual(v.invites, []); assert.deepEqual(v.requests, []);
+  assert.deepEqual((await guild.view(ZOE)).mine.requests, []);
+});
