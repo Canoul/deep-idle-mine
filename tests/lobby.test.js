@@ -190,15 +190,18 @@ test("niveau d'instance (29/10) : choisi par celui qui lance (seul ou chef), niv
   assert.equal(two.show, false, 'Instance II (30/10) : un seul niveau, pas de rangée'); assert.equal(two.level, 1);
 });
 
-test('menu du Lobby : les 6 activités dans l\'ordre, une description chacune, sans les tours', async () => {
+test('menu du Lobby : les 6 activités et Groupes en formation dans l\'ordre, une description chacune, sans les tours', async () => {
   const { mineModes, activityMenu } = await import('../src/ui/lobby.js');
   const j = { sides: { angel: { open: true }, demon: { open: false } } };
   const menu = activityMenu(mineModes('mine', false, j), { towerOpen: true });
-  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine instantanée', 'Bloc géant', 'Jugement', 'Instances']);
+  assert.deepEqual(menu.map(a => a.title), ['Prison', 'Mine', 'Mine instantanée', 'Bloc géant', 'Jugement', 'Instances', 'Groupes en formation']);
   assert.ok(menu.every(a => a.desc));
   assert.equal(menu[4].kind, 'view'); assert.equal(menu[4].note, 'tour ouverte');
   assert.equal(menu[5].mode, 'instance_1');
   assert.equal(activityMenu(mineModes('instance_2'))[5].mode, 'instance_2', 'l\'instance choisie reste choisie');
+  const forming = activityMenu(mineModes('mine')).at(-1);
+  assert.deepEqual([forming.id, forming.kind, forming.disabled], ['forming', 'forming', false], 'Groupes en formation, dans le menu (31/10)');
+  assert.equal(activityMenu(mineModes('mine'), { noForming:true }).at(-1).disabled, true, 'pas en session ni hors ligne');
 });
 
 test('menu du Lobby : en session, la Mine reste ouverte pour voir son groupe ; prison grisée en groupe, repère si elle tourne', async () => {

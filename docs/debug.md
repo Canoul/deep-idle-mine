@@ -6069,3 +6069,8 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - **Tests** ✅ `tests/raffle.test.js` (14), `tests/anticheat/raffle.test.js` (3), `tests/chat.test.js` ; `npm run test:anticheat` 122/122. Pas vu dans un navigateur ni sur le vrai serveur.
 - ⚠️ La réponse à `!join` disparaît au rechargement de la page (non gardée, voulu). Une réponse fait avancer le numéro `last` du navigateur : un message public arrivé juste avant, pas encore relu, est sauté ; même faiblesse qu'un message normal envoyé (`send` puis `add`).
 - ⚠️ Annonce du lot sur deux messages (le texte d'un message n'a pas de saut de ligne). Si `give` échoue, le tirage est retenté à chaque tour de boucle avec le même gagnant.
+
+## 31/10/2026 — Groupes en formation : ligne du menu (Geoffrey)
+- **Quoi** : entrée `forming` dans `ACTIVITIES` (src/ui/lobby.js), `kind:'forming'`, ouvre la même fenêtre ; `#formingBtn` caché au menu pour ne pas l'avoir en double.
+- **Tests** ✅ tests/lobby.test.js. Vérifié dans Chrome.
+
