@@ -5801,5 +5801,7 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
   ouvert aux instances et aux membres (`.devMember` : presets seulement) ; mode dev sans clé d'instance (compte invité).
 - ❌→✅ 31/10 : plantage au démarrage (`drawPlaces is not defined`), bloc effacé par un patch. Ni `node --check` ni les tests ne l'ont vu : ils ne
   chargent pas `setupLobby`. Vérifié ensuite dans Chrome sans écran, compte connecté : lignes, Instance, « Prendre », aucune erreur.
+- **Cookie** (31/10) : `cookieName` (server/config.js) : `dim_session_<port>` en mode dev, deux serveurs dev se déconnectaient l'un l'autre ;
+  inchangé en ligne.
 - ⚠️ `pg` doit être installé dans le dossier d'où le serveur dev tourne (`npm install`).
 

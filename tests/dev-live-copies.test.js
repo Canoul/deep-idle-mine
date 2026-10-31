@@ -8,6 +8,7 @@ import path from 'node:path';
 import { createLiveCopies, COPY_VIEW } from '../server/game/dev-live-copies.js';
 import { readDevCopies } from '../server/game/dev-copies.js';
 import { loadDevEnv } from '../server/dev-env.js';
+import { cookieName } from '../server/config.js';
 import { createGameService } from '../server/game/service.js';
 import { createMemoryGameStore } from '../server/game/store.js';
 import { gameRoutes } from '../server/game/routes.js';
@@ -113,5 +114,13 @@ test('groupe : un membre choisit, le chef lance avec ce choix ; réservé au mod
   const off = createPartyService({ game: devGame(false).game });
   await off.create(A);
   await assert.rejects(off.setDevPresets(A, ['barbare']), { code: 'forbidden' });
+});
+
+test('cookie : un par port en mode dev, le même en ligne', () => {
+  assert.equal(cookieName({}, []), 'dim_session');
+  assert.equal(cookieName({ PORT: '9000' }, []), 'dim_session', 'en ligne, jamais changé : les joueurs resteraient connectés');
+  assert.equal(cookieName({ DIM_DEV: '1' }, []), 'dim_session_8000');
+  assert.equal(cookieName({ DIM_DEV: '1', PORT: '8123' }, []), 'dim_session_8123');
+  assert.equal(cookieName({ DIM_DEV: '1', PORT: '8123' }, ['node', 'dev.js', '8200']), 'dim_session_8200');
 });
 

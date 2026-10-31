@@ -20,6 +20,11 @@ export function proxyHops(env = process.env){
   return env.RENDER ? 1 : 0;
 }
 
+/* nom du cookie de connexion. Mode dev : un par port (31/10/2026) : les cookies de localhost ignorent le port, et deux
+   serveurs dev ouverts en même temps se déconnectaient l'un l'autre */
+export const cookieName = (env = process.env, argv = process.argv) =>
+  env.DIM_DEV ? `dim_session_${argv[2] || env.PORT || 8000}` : 'dim_session';
+
 export const SERVER = {
   port: +(process.env.PORT || 8000),
   /* adresse d'écoute. Sur un serveur loué (VPS), DIM_HOST=127.0.0.1 : seul le proxy https (Caddy), sur la même
@@ -30,7 +35,7 @@ export const SERVER = {
   dataDir: process.env.DIM_DATA_DIR || path.join(ROOT, 'data'),
   /* cookie de connexion. secure=true dès que le jeu est servi en https (en ligne ; automatique sur Render,
      DIM_SECURE_COOKIE=0 pour l'enlever, =1 pour le forcer ailleurs) */
-  cookie: { name: 'dim_session', secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
+  cookie: { name: cookieName(), secure: process.env.DIM_SECURE_COOKIE ? process.env.DIM_SECURE_COOKIE === '1' : ON_RENDER },
   /* derrière un hébergeur / proxy, l'adresse du joueur est dans X-Forwarded-For (voir proxyHops) */
   trustProxy: proxyHops(),
   /* au premier appel à l'API, on écrit dans le journal l'adresse retenue et l'en-tête reçu : pour vérifier en
