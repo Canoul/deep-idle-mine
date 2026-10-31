@@ -1407,6 +1407,78 @@ def main():
         rect(pk, 13, 8, 2, 1, hexc(dark))
         tex[name] = pk
 
+    # butin des mobs du 31/10 (Geoffrey) : icônes et skins
+    pio = blank()                                  # piolet de gobelin : manche d'os, tête verte, pointe en dent
+    for i in range(10):
+        rect(pio, 2 + i, 13 - i, 2, 2, hexc('#d8cfae'))
+    for x, y in [(6, 3), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (13, 6)]:
+        rect(pio, x, y, 2, 2, hexc('#5f8f3a'))
+    rect(pio, 7, 2, 3, 1, hexc('#9ccb5e'))
+    rect(pio, 14, 8, 1, 2, hexc('#f0ead2'))
+    tex['pick_goblin'] = pio
+    sk_pio = blank()
+    for i in range(9):
+        rect(sk_pio, 2 + i, 13 - i, 2, 2, hexc('#d8cfae'))
+    for x, y in [(5, 3), (6, 2), (7, 2), (8, 2), (9, 2), (10, 3), (11, 4), (12, 5), (12, 6), (13, 7)]:
+        rect(sk_pio, x, y, 2, 2, hexc('#5f8f3a'))
+    rect(sk_pio, 6, 2, 3, 1, hexc('#9ccb5e'))
+    rect(sk_pio, 13, 8, 2, 1, hexc('#f0ead2'))
+    tex['skins/pick_goblin'] = sk_pio
+
+    kilt = blank()                                 # kilt ténébreux : ceinture dorée, plis violets
+    rect(kilt, 3, 3, 10, 2, hexc('#1c1228'))
+    rect(kilt, 7, 3, 2, 2, hexc('#e8b84a'))
+    rect(kilt, 3, 5, 10, 7, hexc('#3a2257'))
+    rect(kilt, 2, 12, 12, 2, hexc('#3a2257'))
+    for x in (4, 7, 10, 12):
+        rect(kilt, x, 5, 1, 9, hexc('#1c1228'))
+    rect(kilt, 2, 13, 12, 1, hexc('#7a4fb0'))
+    tex['kilt_dark'] = kilt
+    sk_kilt = blank()
+    rect(sk_kilt, 4, 10, 8, 1, hexc('#1c1228'))
+    rect(sk_kilt, 4, 11, 8, 2, hexc('#3a2257'))
+    rect(sk_kilt, 3, 13, 10, 1, hexc('#3a2257'))
+    for x in (5, 8, 10):
+        rect(sk_kilt, x, 11, 1, 3, hexc('#1c1228'))
+    rect(sk_kilt, 3, 13, 10, 1, hexc('#7a4fb0'))
+    rect(sk_kilt, 7, 10, 2, 1, hexc('#e8b84a'))
+    tex['skins/dark_kilt'] = sk_kilt
+
+    hat = blank()                                  # chapeau de naab : bonnet à hélice, quartiers de couleurs vives
+    rect(hat, 7, 3, 2, 3, hexc('#c9cdd4'))
+    rect(hat, 2, 2, 5, 2, hexc('#ffd23f')); rect(hat, 9, 2, 5, 2, hexc('#ffd23f'))
+    rect(hat, 3, 6, 10, 2, hexc('#e63946')); rect(hat, 2, 8, 12, 4, hexc('#e63946'))
+    rect(hat, 6, 6, 4, 6, hexc('#3d8bff'))
+    rect(hat, 1, 12, 14, 2, hexc('#2fae5a'))
+    tex['hat_naab'] = hat
+    sk_hat = blank()                               # hélice jaune, bonnet tricolore, gros yeux qui louchent
+    rect(sk_hat, 4, 0, 3, 1, hexc('#ffd23f')); rect(sk_hat, 8, 0, 3, 1, hexc('#ffd23f'))
+    rect(sk_hat, 7, 0, 1, 2, hexc('#c9cdd4'))
+    rect(sk_hat, 5, 2, 6, 1, hexc('#e63946')); rect(sk_hat, 4, 3, 8, 1, hexc('#e63946'))
+    rect(sk_hat, 7, 2, 2, 2, hexc('#3d8bff'))
+    rect(sk_hat, 6, 4, 2, 2, hexc('#ffffff')); rect(sk_hat, 9, 4, 2, 2, hexc('#ffffff'))
+    rect(sk_hat, 7, 5, 1, 1, hexc('#120a1c')); rect(sk_hat, 9, 5, 1, 1, hexc('#120a1c'))
+    tex['skins/naab_hat'] = sk_hat
+
+    card = blank()                                 # épée cassée en carton : lame brisée, bord déchiré, scotch
+    for i in range(5):
+        rect(card, 5 + i, 9 - i, 2, 2, hexc('#b98a55'))
+    for i in range(4):
+        rect(card, 6 + i, 9 - i, 1, 1, hexc('#d8b483'))
+    rect(card, 10, 3, 2, 1, hexc('#8a6238')); rect(card, 11, 5, 1, 1, hexc('#8a6238'))
+    rect(card, 7, 7, 2, 2, hexc('#e8e2c8'))
+    rect(card, 3, 9, 5, 2, hexc('#8a6238'))
+    rect(card, 2, 12, 2, 2, hexc('#8a6238'))
+    tex['sword_cardboard'] = card
+    sk_card = blank()
+    for i in range(5):
+        rect(sk_card, 5 + i, 10 - i, 2, 2, hexc('#b98a55'))
+    rect(sk_card, 10, 4, 2, 1, hexc('#8a6238'))
+    rect(sk_card, 7, 8, 2, 2, hexc('#e8e2c8'))
+    rect(sk_card, 3, 10, 5, 2, hexc('#8a6238'))
+    rect(sk_card, 2, 12, 2, 3, hexc('#8a6238'))
+    tex['skins/sword_cardboard'] = sk_card
+
     # anneaux (23/10) : anneau vu de face (métal) et une pierre sur le dessus, couleur propre à chaque anneau
     def ring(metal, gem):
         px = blank()

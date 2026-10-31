@@ -36,7 +36,8 @@ test('rareté : la liste du créateur est inhabituelle, tout le reste du catalog
   const GLYPH = Object.keys(ITEMS).filter(n => ITEMS[n].cat === 'glyph');
   for(const n of GLYPH) assert.equal(rarityOf(n), 'epique', n);
   /* butin rare des mobs (26/10, tests/mob-drops.test.js) */
-  const MOB_STUFF = { 'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique' };
+  const MOB_STUFF = { 'Lanières en cuir du gobelin':'inhabituel', 'Capuche sombre':'rare', 'Nuage magique':'rare', 'Ceinture du Géant':'epique',
+                      'Piolet de gobelin':'inhabituel', 'Kilt ténébreux':'rare', 'Chapeau de naab':'inhabituel' };   // 31/10
   for(const [n, r] of Object.entries(MOB_STUFF)) assert.equal(rarityOf(n), r, n);
   /* coffre du Roi Gobelin (27/10, Geoffrey) ; ses coffres sont dans TOWER (chest), toujours Unique */
   const KING = { 'Couronne du Roi Gobelin':'legendaire', 'Masse du Roi Gobelin':'rare', 'Cape royale du Gobelin':'rare',
