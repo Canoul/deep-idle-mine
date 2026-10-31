@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ASSIGNEES, HELP, MESSAGE_MAX, createTodo, listMessages, parseDone, reportText } from '../bot/todo.js';
+import { ASSIGNEES, HELP, IGNORE, MESSAGE_MAX, createTodo, listMessages, parseDone, reportText } from '../bot/todo.js';
 import { loadState, saveState } from '../bot/store.js';
 
 const [ONE, TWO] = ASSIGNEES.map(a => a.emoji);
@@ -99,4 +99,21 @@ test('base JSON : absente = vide, gardée après écriture, illisible = erreur (
   fs.writeFileSync(file, '{ cassé');
   assert.throws(() => loadState(file));
   fs.rmSync(dir, { recursive: true });
+});
+
+test('croix : en premier, le sujet quitte la base et n\'est plus attribuable ; sur un sujet attribué, rien', () => {
+  const t = createTodo();
+  const s = report(t, 'm1'), kept = report(t, 'm2');
+  assert.match(reportText(s), /2 : Djulo\n❌ : ignorer/);
+  t.claim('rm2', ONE);
+  assert.equal(t.ignore('rm2'), null, 'déjà attribué');
+  assert.deepEqual(t.list('joe').map(x => x.id), [kept.id]);
+  assert.equal(t.ignore('inconnu'), null);
+  assert.equal(t.ignore('rm1').id, s.id);
+  assert.equal(t.ignore('rm1'), null, 'deux fois : rien');
+  assert.equal(t.claim('rm1', TWO), null, 'ignoré : plus attribuable');
+  assert.deepEqual(t.state().subjects.map(x => x.id), [kept.id]);
+  assert.ok(reportText(s, true).endsWith(`${IGNORE} Sujet ignoré`));
+  assert.doesNotMatch(reportText(s, true), /Qui s'en occupe/);
+  assert.ok(report(t, 'm3').id > kept.id, 'son ID n\'est pas réutilisé');
 });

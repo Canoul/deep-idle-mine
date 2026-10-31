@@ -7,7 +7,8 @@ Service à part du jeu (dossier `bot/`). Il ne redémarre pas quand le jeu se me
 - Un message qui tague le rôle **@admin**, dans n'importe quel salon sauf #report et #todo, est copié dans **#report**
   avec un ID. L'original reste, le copier ne notifie personne.
 - Le bot met les réactions 1 et 2. **N'importe qui peut réagir, le premier emoji cliqué attribue le sujet** : 1 pour Joe,
-  2 pour Djulo. Retirer sa réaction ou en ajouter une autre ne change plus rien.
+  2 pour Djulo. La croix ❌, si elle est cliquée en premier, ignore le sujet : il quitte la base et le message l'indique.
+  Retirer sa réaction ou en ajouter une autre ne change plus rien.
 - Dans **#todo** : `/todo joe`, `/todo djulo`, `/todo done 2483`, `/todo done joe all`, `/todo help`.
 - Un sujet terminé quitte la base et son message de #report reçoit ✅. Un ID n'est jamais réutilisé.
 
