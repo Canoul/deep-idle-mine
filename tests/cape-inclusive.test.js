@@ -36,6 +36,11 @@ test('chaque stat du tirage a un prix : une ligne vaut 375 x, à un pas d\'arron
     assert.ok(Number.isFinite(v) && Math.abs(v * rolledPrice(k) - 375) <= (UPGRADE.steps[k] ?? 0.01) * rolledPrice(k), k);
   }
   assert.equal(rolledValue(CAPE, 'discoverMax'), UPGRADE.discover.value);
+  /* stats offensives au barème nerfé des runes */
+  assert.equal(rolledValue(CAPE, 'attackSpeed'), 37.5);
+  assert.equal(rolledValue(CAPE, 'damagePct'), 25);
+  assert.equal(rolledValue(CAPE, 'doubleAttack'), 9.4);
+  assert.equal(rolledValue(CAPE, 'pods'), 63);   // hors runeDiv : prix de dessin
 });
 
 test('tirage : 4 lignes, doublons permis, une Découverte au plus', () => {
