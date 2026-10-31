@@ -556,4 +556,4 @@ Historique des changements : `docs/journal.md`. Règles du jeu : `GAME_DESIGN.md
   **À surveiller** : k hole en prison jamais joué en vrai ; tests anciens rouges aussi sur main (dev-spec, perf).
 
 - **Chat sur téléphone** (31/10, Geoffrey ; `CHAT.dock.phone`) : onglet Chat plein écran, sur téléphone seulement ; ailleurs, chat flottant inchangé.
-- **Cape inclusive** (31/10, Geoffrey ; épique, T4.5) : 4 stats tirées au craft (champ `rolled` de la pièce), 375 x chacune (stats offensives au barème nerfé des runes, autres au prix de dessin), doublons et Découverte possibles ; plan à 0,5 % dans le Treasure T4 et à la dernière étape de la recherche ; dans `WIKI.secret`.
+- **Cape inclusive** (31/10, Geoffrey ; épique, T4.5) : 4 stats tirées au craft (champ `rolled` de la pièce), 375 x chacune au prix de dessin (stats de combat ÷ 3, `UPGRADE.rolledCombatDiv`), doublons et Découverte possibles ; plan à 0,5 % dans le Treasure T4 et à la dernière étape de la recherche ; dans `WIKI.secret`.

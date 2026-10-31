@@ -86,8 +86,10 @@ export const runeLineValue = (item, l, f = 1) => lineValue(item, l, runeLineFact
 
 /* stats tirées au craft (STUFF.items[…].rolled, Cape inclusive, 31/10/2026) */
 export const rolledSpec = item => (Object.hasOwn(STUFF.items, item) ? STUFF.items[item].rolled : null) ?? null;
-/* prix d'une ligne tirée : stat offensive (UPGRADE.runeDiv) au barème nerfé des runes, sinon prix de dessin (31/10/2026, Geoffrey) */
-export const rolledPrice = stat => stat in UPGRADE.runeDiv ? UPGRADE.prices[stat] * UPGRADE.runeDiv[stat] : designPrice(stat);
+/* prix d'une ligne tirée : prix de dessin ; stat de combat (UPGRADE.runeDiv) : ce prix × UPGRADE.rolledCombatDiv (31/10/2026, Geoffrey).
+   Portée, sans prix mesuré : le prix du tableau des lignes, ajusté pareil */
+export const rolledPrice = stat => stat in UPGRADE.runeDiv
+  ? (designPrice(stat) || UPGRADE.prices[stat] * UPGRADE.runeDiv[stat]) * UPGRADE.rolledCombatDiv : designPrice(stat);
 /* points d'une ligne tirée au craft : sa part du x de l'objet (au moins un pas) ; Découverte : +1 */
 export const rolledValue = (item, stat) => { const r = rolledSpec(item);
   return stat === 'discoverMax' ? UPGRADE.discover.value : Math.max(stepOf(stat), roundStat(stat, r.x / r.lines / rolledPrice(stat))); };

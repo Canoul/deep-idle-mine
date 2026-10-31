@@ -1191,7 +1191,7 @@ export const STUFF = {
     'Ceinture golémique':  { slot:'ceinture', tex:'belt_golem',     stats:{ pods:54, knockRes:10.8 } },   // recul 32,5 ÷ 3
     'Gants de boucher':    { slot:'gants',    tex:'gloves_butcher', stats:{ damage:4.05 } },   // 8,1 ÷ 2
     /* 31/10/2026 (Geoffrey) : pas de stat fixe. rolled : `lines` stats tirées au craft par le serveur (la pièce garde leurs noms,
-       champ rolled), `x` partagé à parts égales (stats offensives : barème nerfé des runes, UPGRADE.runeDiv ; les autres : designPrice) ; doublons permis, Découverte possible (une au plus).
+       champ rolled), `x` partagé à parts égales (designPrice ; stats de combat de UPGRADE.runeDiv : UPGRADE.rolledCombatDiv fois moins de points) ; doublons permis, Découverte possible (une au plus).
        x = 2 × tier 4.5 */
     'Cape inclusive':      { slot:'cape', tex:'cape_inclusive', rolled:{ lines:4, x:1500 } },
     'Jambières titanesques': { slot:'jambes', tex:'legs_titan',     stats:{ climbSpeed:1.88, speed:1.95, mineSpeed:0.12, knockRes:15.6 } },   // minage 0,361 ÷ 3, recul 46,9 ÷ 3
@@ -1328,6 +1328,7 @@ export const UPGRADE = {
      donne ce nombre de fois moins de points. Pas pour les lignes d'identification, ni pour minage, ténacité et résistance
      au recul. Les pièces gardent leur %, celles déjà runées suivent. */
   runeDiv: { damage:2, attackSpeed:2, doubleAttack:2, crit:2, reach:2, knockback:2, damagePct:3, piercing:4 },
+  rolledCombatDiv: 3,   // lignes tirées au craft (Cape inclusive, 31/10/2026, Geoffrey) : stats de runeDiv, perçage et recul compris
   /* stats sans prix mesuré (gs à 0) mais ajustées : le prix du tableau des lignes (prices) sert de base */
   priceBase: { knockRes:5 },
   /* GS des stats OFFENSIVES (28/10/2026, Geoffrey) : comptées au prix du tableau des lignes (prices, celui des runes), pas au
