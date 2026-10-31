@@ -24,7 +24,11 @@ function chatBody(m){
   return i < 0 ? `${link} ${t}` : t.slice(0, i) + link + t.slice(i + LOBBY_TAG.length);
 }
 /* une ligne du chat, dans la couleur de son canal */
-export const chatLine = (m, me) => `<div class="ch-${chatChannel(m.channel).id}"><time>${hhmm(m.at)}</time>${esc(chatPrefix(m, me)).replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`)} : ${chatBody(m)}</div>`;
+export function chatLine(m, me){
+  const ch = chatChannel(m.channel), start = esc(chatPrefix(m, me));
+  const shown = m.leader && ch.id === 'group' ? start.replace(LEADER_TAG, `<span class="chLead">${LEADER_TAG}</span>`) : start;
+  return `<div class="ch-${ch.id}"><time>${hhmm(m.at)}</time>${shown} : ${chatBody(m)}</div>`;
+}
 
 export function setupChatTabs({ bar, panel, select, save, onChange }){
   let prefs = sanitizeChatPrefs(null), open = false, timer = null;

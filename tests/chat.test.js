@@ -505,7 +505,7 @@ test('chef du groupe : ses messages /gr portent [Chef de groupe] pour tous, mêm
   const after = createSocialService({ store, game: {}, party: {}, clock: () => raw.msgs.at(-1).at + 1, accounts: { getAccount: async id => ACCOUNTS[id] ?? null } });
   assert.deepEqual((await after.chatGet(OTHER, 0)).messages.map(m => [m.text, !!m.leader]), want, 'après un redémarrage');
   const { chatLine } = await import('../src/ui/chat-tabs.js');
-  assert.match(chatLine({ id:1, at:0, channel:'group', name:'<Zoe>', text:'x', leader:true }, 'y'), /<span class="chLead">\[Chef de groupe\]<\/span> &lt;Zoe> : x/);
+  assert.match(chatLine({ id:1, at:0, channel:'group', name:'<Zoe>', text:'x', leader:true }, 'y'), /<span class="chLead">\[Chef de groupe\]<\/span> &lt;Zoe&gt; : x/);
   assert.doesNotMatch(chatLine({ id:2, at:0, channel:'group', name:'[Chef de groupe]', text:'x' }, 'y'), /chLead/, 'un pseudo ne peut pas imiter le titre');
 });
 
