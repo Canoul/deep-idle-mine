@@ -28,6 +28,14 @@ Modèle d'entrée :
 - **À suivre** : leur prison n'était pas anormale (40 à 50 % de leurs mines, comme les autres) : ils rapportent 8 à 9 cobalt ou thorium par heure en mine, contre 1 à 3 pour les autres. Le plafond les met nettement sous la cible de 50 % sur ces deux minerais.
 - **État** : ✅ en ligne le 31/10
 
+## 31/10/2026 — Geoffrey — Le mineur prend les coffres sur la paroi de son puits
+- **Pour le joueur** : un mineur qui creuse ou descend pour rejoindre son area de travail ouvre maintenant les coffres découverts sur
+  son chemin. Avant, il passait à côté dès qu'il n'était pas encore dans son area : c'était le cas normal, avec le réglage de base « Plus profond ».
+  Sur la carte de la seed 134583339 : 1 coffre sur 5 était visé avant, 5 sur 5 maintenant.
+- **Décisions** : en route, seuls les coffres et les résidus le détournent, pas les minerais.
+- **À suivre** : vérifier en jeu sur la prochaine partie.
+- **État** : ✅ en ligne le 31/10
+
 ## 31/10/2026 — Geoffrey — Nouveau craft de la Clé d'instance I
 - **Pour le joueur** : la clé se crafte maintenant avec 1 Barre d'argent et 5 Orbes (avant : 250 peaux de gobelin, 20 pierres glissantes,
   50 tissus sombres et 1 Barre d'argent). L'Orbe a enfin un usage.

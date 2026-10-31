@@ -5785,3 +5785,13 @@ télécharge un fichier (`copy()` n'existe pas dans tous les navigateurs), à ra
 - ⚠️ `profile` d'une prison en cours : figé dans son enregistrement, non touché ; le changement s'applique à la prochaine entrée. Une compo enregistrée effacée : le lobby retombe sur Actuelle.
 - ⚠️ Le trio passe sous canoul, Sõnata et Allaiks (mithril 5,8–9,8/h en prison, cobalt ≈ 1,1–1,6/h), qui ne sont pas touchés s'ils n'ont pas de mine au focus.
 - ⚠️ `shares` renormalise à chaque relecture : écart de l'ordre de 1e-16 possible, donc une écriture `prison_compo` de plus au pire (comportement d'avant).
+
+## 31/10/2026 — Treasure sur la paroi du puits ignoré (Geoffrey, seed 134583339, signalé plusieurs fois)
+- **Cause** : `decideWork` (src/sim/ai.js) faisait `if(goal!==null && !onTheWay) return changeArea(...)` AVANT la recherche de cibles. Hors de son area de
+  travail, le mineur ne regardait donc rien. Avec « Plus profond » (réglage de base), c'est le cas dès qu'une area plus basse est débloquée. Le correctif du
+  23/10 (seed 1384517703) ne couvrait que le mineur déjà dans son area (`inFocus`) : celui qui traverse une area du dessus restait concerné.
+- **Correctif** : `away` remplace le `return` : recherche faite, minerais écartés, treasures et résidus visés sous les conditions habituelles (portée, `range`), sinon `changeArea`.
+- **Tests** ✅ treasure +3 (Plus profond, focus d'area, un minerai ne détourne pas), échec vérifié avant correctif (« Change d'area → area 1 »). focus, judgment, path, session.
+  Carte réelle de la seed, mineur placé juste au-dessus de chaque coffre : 1/5 visés avant, 5/5 après. Simulation `--miners 3 --count 5` : 0 bloquée, treasures 0,6 ouverts sur 1,6.
+- ⚠️ Le coffre exact du signalement n'est pas rejoué : le stuff et les réglages du joueur ne sont pas connus, une session simulée n'y passe pas. La cause est prouvée par scénario.
+- ⚠️ Coût : la recherche d'itinéraire tourne maintenant à chaque décision hors de son area (avant, seulement celle de `changeArea`). Non mesuré en jeu ; à surveiller.
