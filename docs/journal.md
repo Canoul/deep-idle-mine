@@ -23,7 +23,7 @@ Modèle d'entrée :
 - **Décisions** : service à part du jeu sur le serveur OVH, avec `discord.js` limité au dossier `bot/`. Un sujet terminé
   garde son message dans #report, avec ✅.
 - **À suivre** : créer le bot sur Discord et l'installer sur le serveur (`docs/bot-discord.md`), puis le tester en vrai.
-- **État** : 🧪 sur la branche `geoffrey/bot-report` (pas en ligne)
+- **État** : ✅ code en ligne le 31/10, bot à installer sur le serveur OVH
 
 ## 31/10/2026 — Geoffrey — Téléphone : tout est recentré
 - **Pour le joueur** : sur téléphone, en portrait comme en paysage, la page reprend la largeur de l'écran et les onglets sont de nouveau centrés. Le bandeau du haut se compacte, la barre d'onglets défile, le chat replié tient sur une ligne, et le guide s'efface quand le chat est ouvert.
